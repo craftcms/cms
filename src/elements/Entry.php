@@ -26,6 +26,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
+use craft\helpers\Db;
 use craft\helpers\Html;
 use craft\helpers\UrlHelper;
 use craft\models\EntryType;
@@ -1340,9 +1341,9 @@ EOD;
             }
         }
 
-        Craft::$app->getDb()->createCommand()
-            ->update(Table::ENTRIES, $data, ['id' => $this->id], [], false)
-            ->execute();
+        Db::update(Table::ENTRIES, $data, [
+            'id' => $this->id,
+        ], [], false);
 
         return true;
     }

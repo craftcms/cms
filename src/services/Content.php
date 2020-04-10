@@ -185,14 +185,12 @@ class Content extends Component
         // Insert/update the DB row
         if ($element->contentId) {
             // Update the existing row
-            Craft::$app->getDb()->createCommand()
-                ->update($this->contentTable, $values, ['id' => $element->contentId])
-                ->execute();
+            Db::update($this->contentTable, $values, [
+                'id' => $element->contentId,
+            ]);
         } else {
             // Insert a new row and store its ID on the element
-            Craft::$app->getDb()->createCommand()
-                ->insert($this->contentTable, $values)
-                ->execute();
+            Db::insert($this->contentTable, $values);
             $element->contentId = Craft::$app->getDb()->getLastInsertID($this->contentTable);
         }
 

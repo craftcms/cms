@@ -442,8 +442,7 @@ class Matrix extends Component
             return;
         }
 
-        $db = Craft::$app->getDb();
-        $transaction = $db->beginTransaction();
+        $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
             $blockType = $this->getBlockTypeById($blockTypeRecord->id);
@@ -500,9 +499,9 @@ class Matrix extends Component
                 Craft::$app->getFields()->deleteLayoutById($fieldLayoutId);
 
                 // Finally delete the actual block type
-                $db->createCommand()
-                    ->delete(Table::MATRIXBLOCKTYPES, ['id' => $blockTypeRecord->id])
-                    ->execute();
+                Db::delete(Table::MATRIXBLOCKTYPES, [
+                    'id' => $blockTypeRecord->id,
+                ]);
             }
 
             $transaction->commit();
@@ -756,7 +755,6 @@ class Matrix extends Component
         $blockIds = [];
         $collapsedBlockIds = [];
         $sortOrder = 0;
-        $db = Craft::$app->getDb();
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
@@ -769,10 +767,11 @@ class Matrix extends Component
                 } else if ((int)$block->sortOrder !== $sortOrder) {
                     // Just update its sortOrder
                     $block->sortOrder = $sortOrder;
-                    $db->createCommand()->update(Table::MATRIXBLOCKS,
-                        ['sortOrder' => $sortOrder],
-                        ['id' => $block->id], [], false)
-                        ->execute();
+                    Db::update(Table::MATRIXBLOCKS, [
+                        'sortOrder' => $sortOrder,
+                    ], [
+                        'id' => $block->id,
+                    ], [], false);
                 }
 
                 $blockIds[] = $block->id;

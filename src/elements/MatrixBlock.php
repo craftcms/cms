@@ -16,6 +16,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\MatrixBlockQuery;
 use craft\fields\Matrix;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
 use craft\models\MatrixBlockType;
 use craft\models\MatrixBlockType as MatrixBlockTypeModel;
 use craft\records\MatrixBlock as MatrixBlockRecord;
@@ -436,11 +437,11 @@ class MatrixBlock extends Element implements BlockElementInterface
         }
 
         // Update the block record
-        Craft::$app->getDb()->createCommand()
-            ->update(Table::MATRIXBLOCKS, [
-                'deletedWithOwner' => $this->deletedWithOwner,
-            ], ['id' => $this->id], [], false)
-            ->execute();
+        Db::update(Table::MATRIXBLOCKS, [
+            'deletedWithOwner' => $this->deletedWithOwner,
+        ], [
+            'id' => $this->id,
+        ], [], false);
 
         return true;
     }

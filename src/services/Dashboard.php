@@ -16,6 +16,7 @@ use craft\errors\WidgetNotFoundException;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\WidgetEvent;
 use craft\helpers\Component as ComponentHelper;
+use craft\helpers\Db;
 use craft\records\Widget as WidgetRecord;
 use craft\widgets\CraftSupport as CraftSupportWidget;
 use craft\widgets\Feed as FeedWidget;
@@ -380,9 +381,11 @@ class Dashboard extends Component
 
         // Update the user record
         $user->hasDashboard = true;
-        Craft::$app->getDb()->createCommand()
-            ->update(Table::USERS, ['hasDashboard' => true], ['id' => $user->id])
-            ->execute();
+        Db::update(Table::USERS, [
+            'hasDashboard' => true,
+        ], [
+            'id' => $user->id,
+        ]);
     }
 
     /**

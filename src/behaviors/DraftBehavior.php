@@ -101,13 +101,13 @@ class DraftBehavior extends BaseRevisionBehavior
      */
     public function handleSave()
     {
-        Craft::$app->getDb()->createCommand()
-            ->update(Table::DRAFTS, [
-                'name' => $this->draftName,
-                'notes' => $this->draftNotes,
-                'dateLastMerged' => Db::prepareDateForDb($this->dateLastMerged),
-            ], ['id' => $this->owner->draftId], [], false)
-            ->execute();
+        Db::update(Table::DRAFTS, [
+            'name' => $this->draftName,
+            'notes' => $this->draftNotes,
+            'dateLastMerged' => Db::prepareDateForDb($this->dateLastMerged),
+        ], [
+            'id' => $this->owner->draftId,
+        ], [], false);
     }
 
     /**
@@ -115,9 +115,9 @@ class DraftBehavior extends BaseRevisionBehavior
      */
     public function handleDelete()
     {
-        Craft::$app->getDb()->createCommand()
-            ->delete(Table::DRAFTS, ['id' => $this->owner->draftId])
-            ->execute();
+        Db::delete(Table::DRAFTS, [
+            'id' => $this->owner->draftId,
+        ]);
     }
 
     /**

@@ -31,6 +31,7 @@ use craft\events\AssetEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
 use craft\helpers\Assets as AssetsHelper;
+use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Html;
 use craft\helpers\Image;
@@ -1715,12 +1716,12 @@ class Asset extends Element
         }
 
         // Update the asset record
-        Craft::$app->getDb()->createCommand()
-            ->update(Table::ASSETS, [
-                'deletedWithVolume' => $this->deletedWithVolume,
-                'keptFile' => $this->keepFileOnDelete,
-            ], ['id' => $this->id], [], false)
-            ->execute();
+        Db::update(Table::ASSETS, [
+            'deletedWithVolume' => $this->deletedWithVolume,
+            'keptFile' => $this->keepFileOnDelete,
+        ], [
+            'id' => $this->id,
+        ], [], false);
 
         return true;
     }

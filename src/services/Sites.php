@@ -905,12 +905,11 @@ class Sites extends Component
             if ($transferContentTo !== null) {
                 $transferContentToSite = $this->getSiteById($transferContentTo);
 
-                Craft::$app->getDb()->createCommand()
-                    ->update(
-                        Table::SECTIONS_SITES,
-                        ['siteId' => $transferContentTo],
-                        ['sectionId' => $soloSectionIds])
-                    ->execute();
+                Db::update(Table::SECTIONS_SITES, [
+                    'siteId' => $transferContentTo,
+                ], [
+                    'sectionId' => $soloSectionIds,
+                ]);
 
                 // Update the project config too
                 $muteEvents = $projectConfig->muteEvents;
@@ -935,30 +934,25 @@ class Sites extends Component
                     Craft::$app->getTemplateCaches()->deleteCachesByElementId($entryIds);
 
                     // Update the entry tables
-                    Craft::$app->getDb()->createCommand()
-                        ->update(
-                            Table::CONTENT,
-                            ['siteId' => $transferContentTo],
-                            ['elementId' => $entryIds])
-                        ->execute();
+                    Db::update(Table::CONTENT, [
+                        'siteId' => $transferContentTo,
+                    ], [
+                        'elementId' => $entryIds,
+                    ]);
 
-                    Craft::$app->getDb()->createCommand()
-                        ->update(
-                            Table::ELEMENTS_SITES,
-                            ['siteId' => $transferContentTo],
-                            ['elementId' => $entryIds])
-                        ->execute();
+                    Db::update(Table::ELEMENTS_SITES, [
+                        'siteId' => $transferContentTo,
+                    ], [
+                        'elementId' => $entryIds,
+                    ]);
 
-                    Craft::$app->getDb()->createCommand()
-                        ->update(
-                            Table::RELATIONS,
-                            ['sourceSiteId' => $transferContentTo],
-                            [
-                                'and',
-                                ['sourceId' => $entryIds],
-                                ['not', ['sourceSiteId' => null]]
-                            ])
-                        ->execute();
+                    Db::update(Table::RELATIONS, [
+                        'sourceSiteId' => $transferContentTo,
+                    ], [
+                        'and',
+                        ['sourceId' => $entryIds],
+                        ['not', ['sourceSiteId' => null]],
+                    ]);
 
                     // All the Matrix tables
                     $blockIds = (new Query())
@@ -968,60 +962,43 @@ class Sites extends Component
                         ->column();
 
                     if (!empty($blockIds)) {
-                        Craft::$app->getDb()->createCommand()
-                            ->delete(
-                                Table::ELEMENTS_SITES,
-                                [
-                                    'elementId' => $blockIds,
-                                    'siteId' => $transferContentTo
-                                ])
-                            ->execute();
+                        Db::delete(Table::ELEMENTS_SITES, [
+                            'elementId' => $blockIds,
+                            'siteId' => $transferContentTo,
+                        ]);
 
-                        Craft::$app->getDb()->createCommand()
-                            ->update(
-                                Table::ELEMENTS_SITES,
-                                ['siteId' => $transferContentTo],
-                                [
-                                    'elementId' => $blockIds,
-                                    'siteId' => $site->id
-                                ])
-                            ->execute();
+                        Db::update(Table::ELEMENTS_SITES, [
+                            'siteId' => $transferContentTo,
+                        ], [
+                            'elementId' => $blockIds,
+                            'siteId' => $site->id,
+                        ]);
 
                         $matrixTablePrefix = Craft::$app->getDb()->getSchema()->getRawTableName('{{%matrixcontent_}}');
 
                         foreach (Craft::$app->getDb()->getSchema()->getTableNames() as $tableName) {
                             if (strpos($tableName, $matrixTablePrefix) === 0) {
-                                Craft::$app->getDb()->createCommand()
-                                    ->delete(
-                                        $tableName,
-                                        [
-                                            'elementId' => $blockIds,
-                                            'siteId' => $transferContentTo
-                                        ])
-                                    ->execute();
+                                Db::delete($tableName, [
+                                    'elementId' => $blockIds,
+                                    'siteId' => $transferContentTo,
+                                ]);
 
-                                Craft::$app->getDb()->createCommand()
-                                    ->update(
-                                        $tableName,
-                                        ['siteId' => $transferContentTo],
-                                        [
-                                            'elementId' => $blockIds,
-                                            'siteId' => $site->id
-                                        ])
-                                    ->execute();
+                                Db::update($tableName, [
+                                    'siteId' => $transferContentTo,
+                                ], [
+                                    'elementId' => $blockIds,
+                                    'siteId' => $site->id,
+                                ]);
                             }
                         }
 
-                        Craft::$app->getDb()->createCommand()
-                            ->update(
-                                Table::RELATIONS,
-                                ['sourceSiteId' => $transferContentTo],
-                                [
-                                    'and',
-                                    ['sourceId' => $blockIds],
-                                    ['not', ['sourceSiteId' => null]]
-                                ])
-                            ->execute();
+                        Db::update(Table::RELATIONS, [
+                            'sourceSiteId' => $transferContentTo,
+                        ], [
+                            'and',
+                            ['sourceId' => $blockIds],
+                            ['not', ['sourceSiteId' => null]],
+                        ]);
                     }
                 }
             } else {
@@ -1307,12 +1284,16 @@ class Sites extends Component
         $transaction = $db->beginTransaction();
 
         try {
-            $db->createCommand()
-                ->update(Table::SITES, ['primary' => false], ['id' => $oldPrimarySiteId])
-                ->execute();
-            $db->createCommand()
-                ->update(Table::SITES, ['primary' => true], ['id' => $newPrimarySiteId])
-                ->execute();
+            Db::update(Table::SITES, [
+                'primary' => false,
+            ], [
+                'id' => $oldPrimarySiteId,
+            ]);
+            Db::update(Table::SITES, [
+                'primary' => true,
+            ], [
+                'id' => $newPrimarySiteId,
+            ]);
 
             // Update all of the non-localized elements
             $nonLocalizedElementTypes = [];
@@ -1340,29 +1321,17 @@ class Sites extends Component
                         ['not', ['siteId' => $oldPrimarySiteId]]
                     ];
 
-                    $db->createCommand()
-                        ->delete(Table::ELEMENTS_SITES, $deleteCondition)
-                        ->execute();
-                    $db->createCommand()
-                        ->delete(Table::CONTENT, $deleteCondition)
-                        ->execute();
-                    $db->createCommand()
-                        ->delete(Table::SEARCHINDEX, $deleteCondition)
-                        ->execute();
+                    Db::delete(Table::ELEMENTS_SITES, $deleteCondition);
+                    Db::delete(Table::CONTENT, $deleteCondition);
+                    Db::delete(Table::SEARCHINDEX, $deleteCondition);
 
                     // Now swap the sites
                     $updateColumns = ['siteId' => $newPrimarySiteId];
                     $updateCondition = ['elementId' => $elementIds];
 
-                    $db->createCommand()
-                        ->update(Table::ELEMENTS_SITES, $updateColumns, $updateCondition, [], false)
-                        ->execute();
-                    $db->createCommand()
-                        ->update(Table::CONTENT, $updateColumns, $updateCondition, [], false)
-                        ->execute();
-                    $db->createCommand()
-                        ->update(Table::SEARCHINDEX, $updateColumns, $updateCondition, [], false)
-                        ->execute();
+                    Db::update(Table::ELEMENTS_SITES, $updateColumns, $updateCondition, [], false);
+                    Db::update(Table::CONTENT, $updateColumns, $updateCondition, [], false);
+                    Db::update(Table::SEARCHINDEX, $updateColumns, $updateCondition, [], false);
                 }
             }
 

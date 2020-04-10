@@ -452,7 +452,6 @@ class Drafts extends Component
             ->all();
 
         $elementsService = Craft::$app->getElements();
-        $db = Craft::$app->getDb();
 
         foreach ($drafts as $draftInfo) {
             /** @var ElementInterface|string $elementType */
@@ -469,9 +468,9 @@ class Drafts extends Component
                 // Perhaps the draft's row in the `entries` table was deleted manually or something.
                 // Just drop its row in the `drafts` table, and let that cascade to `elements` and whatever other tables
                 // still have rows for the draft.
-                $db->createCommand()
-                    ->delete(Table::DRAFTS, ['id' => $draftInfo['draftId']])
-                    ->execute();
+                Db::delete(Table::DRAFTS, [
+                    'id' => $draftInfo['draftId'],
+                ]);
             }
 
             Craft::info("Just deleted unsaved draft ID {$draftInfo['draftId']}", __METHOD__);
@@ -491,16 +490,13 @@ class Drafts extends Component
      */
     private function _insertDraftRow(int $sourceId = null, int $creatorId, string $name = null, string $notes = null, bool $trackChanges = false): int
     {
-        $db = Craft::$app->getDb();
-        $db->createCommand()
-            ->insert(Table::DRAFTS, [
-                'sourceId' => $sourceId,
-                'creatorId' => $creatorId,
-                'name' => $name,
-                'notes' => $notes,
-                'trackChanges' => $trackChanges,
-            ], false)
-            ->execute();
-        return $db->getLastInsertID(Table::DRAFTS);
+        Db::insert(Table::DRAFTS, [
+            'sourceId' => $sourceId,
+            'creatorId' => $creatorId,
+            'name' => $name,
+            'notes' => $notes,
+            'trackChanges' => $trackChanges,
+        ], false);
+        return Craft::$app->getDb()->getLastInsertID(Table::DRAFTS);
     }
 }

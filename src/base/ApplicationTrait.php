@@ -737,13 +737,13 @@ trait ApplicationTrait
             ->exists();
 
         if ($infoRowExists) {
-            $this->getDb()->createCommand()
-                ->update(Table::INFO, $attributes, ['id' => 1])
-                ->execute();
+            Db::update(Table::INFO, $attributes, [
+                'id' => 1,
+            ]);
         } else {
-            $this->getDb()->createCommand()
-                ->insert(Table::INFO, $attributes + ['id' => 1])
-                ->execute();
+            Db::insert(Table::INFO, $attributes + [
+                'id' => 1,
+            ]);
         }
 
         $this->setIsInstalled();

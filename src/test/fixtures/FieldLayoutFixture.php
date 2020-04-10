@@ -14,6 +14,7 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\fields\Matrix;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\services\Fields;
@@ -229,9 +230,7 @@ abstract class FieldLayoutFixture extends Fixture
         $link['tabId'] = $tab->id;
         $link['layoutId'] = $fieldLayout->id;
 
-        $executed = Craft::$app->getDb()->createCommand()
-            ->insert(Table::FIELDLAYOUTFIELDS, $link)
-            ->execute();
+        $executed = Db::insert(Table::FIELDLAYOUTFIELDS, $link);
 
         if (!$executed) {
             throw new InvalidArgumentException("Unable to link field $field->handle to field layout $fieldLayout->type");

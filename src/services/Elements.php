@@ -892,18 +892,13 @@ class Elements extends Component
             ]));
         }
 
-        Craft::$app->getDb()->createCommand()
-            ->update(
-                Table::ELEMENTS_SITES,
-                [
-                    'slug' => $element->slug,
-                    'uri' => $element->uri
-                ],
-                [
-                    'elementId' => $element->id,
-                    'siteId' => $element->siteId
-                ])
-            ->execute();
+        Db::update(Table::ELEMENTS_SITES, [
+            'slug' => $element->slug,
+            'uri' => $element->uri,
+        ], [
+            'elementId' => $element->id,
+            'siteId' => $element->siteId,
+        ]);
 
         // Fire a 'afterUpdateSlugAndUri' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_UPDATE_SLUG_AND_URI)) {
@@ -1030,8 +1025,7 @@ class Elements extends Component
      */
     public function mergeElements(ElementInterface $mergedElement, ElementInterface $prevailingElement): bool
     {
-        $db = Craft::$app->getDb();
-        $transaction = $db->beginTransaction();
+        $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             // Update any relations that point to the merged element
             $relations = (new Query())
@@ -1053,16 +1047,11 @@ class Elements extends Component
                     ->exists();
 
                 if (!$persistingElementIsRelatedToo) {
-                    $db->createCommand()
-                        ->update(
-                            Table::RELATIONS,
-                            [
-                                'targetId' => $prevailingElement->id
-                            ],
-                            [
-                                'id' => $relation['id']
-                            ])
-                        ->execute();
+                    Db::update(Table::RELATIONS, [
+                        'targetId' => $prevailingElement->id,
+                    ], [
+                        'id' => $relation['id'],
+                    ]);
                 }
             }
 
@@ -1084,15 +1073,11 @@ class Elements extends Component
                     ->exists();
 
                 if (!$persistingElementIsInStructureToo) {
-                    $db->createCommand()
-                        ->update(Table::STRUCTUREELEMENTS,
-                            [
-                                'elementId' => $prevailingElement->id
-                            ],
-                            [
-                                'id' => $structureElement['id']
-                            ])
-                        ->execute();
+                    Db::update(Table::STRUCTUREELEMENTS, [
+                        'elementId' => $prevailingElement->id,
+                    ], [
+                        'id' => $structureElement['id'],
+                    ]);
                 }
             }
 
@@ -1224,12 +1209,12 @@ class Elements extends Component
             Craft::$app->getTemplateCaches()->deleteCachesByElementId($element->id, false);
 
             if ($element->hardDelete) {
-                $db->createCommand()
-                    ->delete(Table::ELEMENTS, ['id' => $element->id])
-                    ->execute();
-                $db->createCommand()
-                    ->delete(Table::SEARCHINDEX, ['elementId' => $element->id])
-                    ->execute();
+                Db::delete(Table::ELEMENTS, [
+                    'id' => $element->id,
+                ]);
+                Db::delete(Table::SEARCHINDEX, [
+                    'elementId' => $element->id,
+                ]);
             } else {
                 // Soft delete the elements table row
                 $db->createCommand()
@@ -1895,8 +1880,6 @@ class Elements extends Component
         /** @var DraftBehavior|null $draftBehavior */
         $draftBehavior = $element->getIsDraft() ? $element->getBehavior('draft') : null;
 
-        $db = Craft::$app->getDb();
-
         // Are we tracking changes?
         // todo: remove the tableExists condition after the next breakpoint
         $trackChanges = (
@@ -1905,7 +1888,7 @@ class Elements extends Component
             $element::trackChanges() &&
             ($draftBehavior->trackChanges ?? true) &&
             !($draftBehavior->mergingChanges ?? false) &&
-            $db->tableExists(Table::CHANGEDATTRIBUTES)
+            Craft::$app->getDb()->tableExists(Table::CHANGEDATTRIBUTES)
         );
         $dirtyAttributes = [];
 
@@ -2194,33 +2177,29 @@ class Elements extends Component
             ArrayHelper::append($dirtyAttributes, ...$element->getDirtyAttributes());
 
             foreach ($dirtyAttributes as $attributeName) {
-                $db->createCommand()
-                    ->upsert(Table::CHANGEDATTRIBUTES, [
-                        'elementId' => $element->id,
-                        'siteId' => $element->siteId,
-                        'attribute' => $attributeName,
-                    ], [
-                        'dateUpdated' => $timestamp,
-                        'propagated' => $element->propagating,
-                        'userId' => $userId,
-                    ], [], false)
-                    ->execute();
+                Db::upsert(Table::CHANGEDATTRIBUTES, [
+                    'elementId' => $element->id,
+                    'siteId' => $element->siteId,
+                    'attribute' => $attributeName,
+                ], [
+                    'dateUpdated' => $timestamp,
+                    'propagated' => $element->propagating,
+                    'userId' => $userId,
+                ], [], false);
             }
 
             if (($fieldLayout = $element->getFieldLayout()) !== null) {
                 foreach ($element->getDirtyFields() as $fieldHandle) {
                     if (($field = $fieldLayout->getFieldByHandle($fieldHandle)) !== null) {
-                        $db->createCommand()
-                            ->upsert(Table::CHANGEDFIELDS, [
-                                'elementId' => $element->id,
-                                'siteId' => $element->siteId,
-                                'fieldId' => $field->id,
-                            ], [
-                                'dateUpdated' => $timestamp,
-                                'propagated' => $element->propagating,
-                                'userId' => $userId,
-                            ], [], false)
-                            ->execute();
+                        Db::upsert(Table::CHANGEDFIELDS, [
+                            'elementId' => $element->id,
+                            'siteId' => $element->siteId,
+                            'fieldId' => $field->id,
+                        ], [
+                            'dateUpdated' => $timestamp,
+                            'propagated' => $element->propagating,
+                            'userId' => $userId,
+                        ], [], false);
                     }
                 }
             }

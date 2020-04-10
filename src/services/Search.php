@@ -143,9 +143,7 @@ class Search extends Component
         if (!empty($ignoreFieldIds)) {
             $deleteCondition = ['and', $deleteCondition, ['not', ['fieldId' => $ignoreFieldIds]]];
         }
-        Craft::$app->getDb()->createCommand()
-            ->delete(Table::SEARCHINDEX, $deleteCondition)
-            ->execute();
+        Db::delete(Table::SEARCHINDEX, $deleteCondition);
 
         // Update the element attributes' keywords
         $searchableAttributes = array_flip($element::searchableAttributes());
@@ -406,9 +404,7 @@ SQL;
         }
 
         // Insert/update the row in searchindex
-        $db->createCommand()
-            ->insert(Table::SEARCHINDEX, $columns, false)
-            ->execute();
+        Db::insert(Table::SEARCHINDEX, $columns, false);
     }
 
     /**

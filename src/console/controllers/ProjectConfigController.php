@@ -11,6 +11,7 @@ use Craft;
 use craft\console\Controller;
 use craft\db\Table;
 use craft\helpers\Console;
+use craft\helpers\Db;
 use craft\services\Plugins;
 use yii\console\ExitCode;
 
@@ -152,9 +153,9 @@ class ProjectConfigController extends Controller
                 Craft::$app->getErrorHandler()->logException($e);
 
                 // Just remove the row
-                Craft::$app->getDb()->createCommand()
-                    ->delete(Table::PLUGINS, ['handle' => $handle])
-                    ->execute();
+                Db::delete(Table::PLUGINS, [
+                    'handle' => $handle,
+                ]);
             }
         }
     }

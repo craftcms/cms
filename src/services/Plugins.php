@@ -246,12 +246,11 @@ class Plugins extends Component
                     }
 
                     // Update our record of the plugin's version number
-                    Craft::$app->getDb()->createCommand()
-                        ->update(
-                            Table::PLUGINS,
-                            ['version' => $plugin->getVersion()],
-                            ['id' => $row['id']])
-                        ->execute();
+                    Db::update(Table::PLUGINS, [
+                        'version' => $plugin->getVersion(),
+                    ], [
+                        'id' => $row['id'],
+                    ]);
                 }
 
                 $this->_registerPlugin($plugin);
@@ -501,9 +500,7 @@ class Plugins extends Component
                 'installDate' => Db::prepareDateForDb(new \DateTime()),
             ];
 
-            $db->createCommand()
-                ->insert(Table::PLUGINS, $info)
-                ->execute();
+            Db::insert(Table::PLUGINS, $info);
 
             $info['installDate'] = DateTimeHelper::toDateTime($info['installDate']);
             $info['id'] = $db->getLastInsertID(Table::PLUGINS);
@@ -515,9 +512,9 @@ class Plugins extends Component
 
                 if ($db->getIsMysql()) {
                     // Explicitly remove the plugins row just in case the transaction was implicitly committed
-                    $db->createCommand()
-                        ->delete(Table::PLUGINS, ['handle' => $handle])
-                        ->execute();
+                    Db::delete(Table::PLUGINS, [
+                        'handle' => $handle,
+                    ]);
                 }
 
                 return false;
@@ -599,9 +596,9 @@ class Plugins extends Component
             // Clean up the plugins and migrations tables
             $id = $this->getStoredPluginInfo($handle)['id'];
 
-            Craft::$app->getDb()->createCommand()
-                ->delete(Table::PLUGINS, ['id' => $id])
-                ->execute();
+            Db::delete(Table::PLUGINS, [
+                'id' => $id,
+            ]);
 
             $transaction->commit();
         } catch (\Throwable $e) {
@@ -1199,12 +1196,12 @@ class Plugins extends Component
             throw new InvalidPluginException($handle);
         }
 
-        Craft::$app->getDb()->createCommand()
-            ->update(Table::PLUGINS, [
-                'licenseKeyStatus' => $licenseKeyStatus,
-                'licensedEdition' => $licensedEdition,
-            ], ['handle' => $handle])
-            ->execute();
+        Db::update(Table::PLUGINS, [
+            'licenseKeyStatus' => $licenseKeyStatus,
+            'licensedEdition' => $licensedEdition,
+        ], [
+            'handle' => $handle,
+        ]);
 
         // Update our cache of it
         if (isset($this->_enabledPluginInfo[$handle])) {

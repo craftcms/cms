@@ -789,8 +789,7 @@ abstract class Element extends Component implements ElementInterface
                     return null;
                 }
 
-                $db = Craft::$app->getDb();
-                $qb = $db->getQueryBuilder();
+                $qb = Craft::$app->getDb()->getQueryBuilder();
                 $query = new Query();
                 $sourceSelectSql = '(CASE';
                 $condition = ['or'];

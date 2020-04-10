@@ -926,9 +926,9 @@ class Fields extends Component
             }
 
             // Delete the row in fields
-            Craft::$app->getDb()->createCommand()
-                ->delete(Table::FIELDS, ['id' => $fieldRecord->id])
-                ->execute();
+            Db::delete(Table::FIELDS, [
+                'id' => $fieldRecord->id,
+            ]);
 
             $field->afterDelete();
 
@@ -1232,14 +1232,14 @@ class Fields extends Component
 
         if (!$isNewLayout) {
             // Delete the old tabs/fields
-            Craft::$app->getDb()->createCommand()
-                ->delete(Table::FIELDLAYOUTTABS, ['layoutId' => $layout->id])
-                ->execute();
+            Db::delete(Table::FIELDLAYOUTTABS, [
+                'layoutId' => $layout->id,
+            ]);
 
             // Because in MySQL, you can't even rely on cascading deletes to work. ¯\_(ツ)_/¯
-            Craft::$app->getDb()->createCommand()
-                ->delete(Table::FIELDLAYOUTFIELDS, ['layoutId' => $layout->id])
-                ->execute();
+            Db::delete(Table::FIELDLAYOUTFIELDS, [
+                'layoutId' => $layout->id,
+            ]);
 
             // Get the current layout
             $layoutRecord = FieldLayoutRecord::findWithTrashed()

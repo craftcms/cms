@@ -325,8 +325,7 @@ class Categories extends Component
         ProjectConfigHelper::ensureAllSitesProcessed();
         ProjectConfigHelper::ensureAllFieldsProcessed();
 
-        $db = Craft::$app->getDb();
-        $transaction = $db->beginTransaction();
+        $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
             $structureData = $data['structure'];
@@ -450,15 +449,12 @@ class Categories extends Component
                 if (!empty($siteData)) {
                     // Drop the old category URIs for any site settings that don't have URLs
                     if (!empty($sitesNowWithoutUrls)) {
-                        $db->createCommand()
-                            ->update(
-                                Table::ELEMENTS_SITES,
-                                ['uri' => null],
-                                [
-                                    'elementId' => $categoryIds,
-                                    'siteId' => $sitesNowWithoutUrls,
-                                ])
-                            ->execute();
+                        Db::update(Table::ELEMENTS_SITES, [
+                            'uri' => null,
+                        ], [
+                            'elementId' => $categoryIds,
+                            'siteId' => $sitesNowWithoutUrls,
+                        ]);
                     } else if (!empty($sitesWithNewUriFormats)) {
                         foreach ($categoryIds as $categoryId) {
                             App::maxPowerCaptain();
@@ -670,7 +666,9 @@ class Categories extends Component
         }
 
         // Nuke all the layout fields from the DB
-        Craft::$app->getDb()->createCommand()->delete(Table::FIELDLAYOUTFIELDS, ['fieldId' => $field->id])->execute();
+        Db::delete(Table::FIELDLAYOUTFIELDS, [
+            'fieldId' => $field->id,
+        ]);
 
         // Allow events again
         $projectConfig->muteEvents = false;

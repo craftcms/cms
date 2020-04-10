@@ -207,12 +207,7 @@ class AssetIndexer extends Component
             $values[] = [$volumeId, $sessionId, $entry['path'], $entry['size'], Db::prepareDateForDb(new \DateTime('@' . $entry['timestamp'])), false, false];
         }
 
-        Craft::$app->getDb()->createCommand()
-            ->batchInsert(
-                Table::ASSETINDEXDATA,
-                $attributes,
-                $values)
-            ->execute();
+        Db::batchInsert(Table::ASSETINDEXDATA, $attributes, $values);
     }
 
     /**
@@ -296,13 +291,9 @@ class AssetIndexer extends Component
     {
         // Only allow a few fields to be updated.
         $data = array_intersect_key($data, array_flip(['inProgress', 'completed', 'recordId']));
-
-        Craft::$app->getDb()->createCommand()
-            ->update(
-                Table::ASSETINDEXDATA,
-                $data,
-                ['id' => $entryId])
-            ->execute();
+        Db::update(Table::ASSETINDEXDATA, $data, [
+            'id' => $entryId,
+        ]);
     }
 
 

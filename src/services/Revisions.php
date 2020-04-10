@@ -15,6 +15,7 @@ use craft\db\Table;
 use craft\errors\InvalidElementException;
 use craft\events\RevisionEvent;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
@@ -129,17 +130,14 @@ class Revisions extends Component
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             // Create the revision row
-            $db = Craft::$app->getDb();
-            $db->createCommand()
-                ->insert(Table::REVISIONS, [
-                    'sourceId' => $source->id,
-                    'creatorId' => $creatorId,
-                    'num' => $num,
-                    'notes' => $notes,
-                ], false)
-                ->execute();
+            Db::insert(Table::REVISIONS, [
+                'sourceId' => $source->id,
+                'creatorId' => $creatorId,
+                'num' => $num,
+                'notes' => $notes,
+            ], false);
 
-            $newAttributes['revisionId'] = $db->getLastInsertID(Table::REVISIONS);
+            $newAttributes['revisionId'] = Craft::$app->getDb()->getLastInsertID(Table::REVISIONS);
             $newAttributes['behaviors']['revision'] = [
                 'class' => RevisionBehavior::class,
                 'sourceId' => $source->id,

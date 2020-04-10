@@ -10,6 +10,7 @@ namespace craft\web;
 use Craft;
 use craft\db\Table;
 use craft\errors\DbConnectException;
+use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use yii\db\Exception as DbException;
 
@@ -84,13 +85,11 @@ class AssetManager extends \yii\web\AssetManager
 
         // Store the hash for later
         try {
-            Craft::$app->getDb()->createCommand()
-                ->upsert(Table::RESOURCEPATHS, [
-                    'hash' => $hash,
-                ], [
-                    'path' => $alias,
-                ], [], false)
-                ->execute();
+            Db::upsert(Table::RESOURCEPATHS, [
+                'hash' => $hash,
+            ], [
+                'path' => $alias,
+            ], [], false);
         } catch (DbException $e) {
             // Craft is either not installed or not updated to 3.0.3+ yet
         } catch (DbConnectException $e) {

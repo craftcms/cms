@@ -16,6 +16,7 @@ use craft\elements\User;
 use craft\errors\WrongEditionException;
 use craft\events\ConfigEvent;
 use craft\events\RegisterUserPermissionsEvent;
+use craft\helpers\Db;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\models\CategoryGroup;
 use craft\models\Section;
@@ -365,9 +366,9 @@ class UserPermissions extends Component
         Craft::$app->requireEdition(Craft::Pro);
 
         // Delete any existing user permissions
-        Craft::$app->getDb()->createCommand()
-            ->delete(Table::USERPERMISSIONS_USERS, ['userId' => $userId])
-            ->execute();
+        Db::delete(Table::USERPERMISSIONS_USERS, [
+            'userId' => $userId,
+        ]);
 
         // Lowercase the permissions
         $permissions = array_map('strtolower', $permissions);
@@ -385,12 +386,7 @@ class UserPermissions extends Component
             }
 
             // Add the new user permissions
-            Craft::$app->getDb()->createCommand()
-                ->batchInsert(
-                    Table::USERPERMISSIONS_USERS,
-                    ['permissionId', 'userId'],
-                    $userPermissionVals)
-                ->execute();
+            Db::batchInsert(Table::USERPERMISSIONS_USERS, ['permissionId', 'userId'], $userPermissionVals);
         }
 
         // Cache the new permissions
@@ -415,9 +411,9 @@ class UserPermissions extends Component
         $userGroup = Craft::$app->getUserGroups()->getGroupByUid($uid);
 
         // Delete any existing group permissions
-        Craft::$app->getDb()->createCommand()
-            ->delete(Table::USERPERMISSIONS_USERGROUPS, ['groupId' => $userGroup->id])
-            ->execute();
+        Db::delete(Table::USERPERMISSIONS_USERGROUPS, [
+            'groupId' => $userGroup->id,
+        ]);
 
         $groupPermissionVals = [];
 
@@ -428,12 +424,7 @@ class UserPermissions extends Component
             }
 
             // Add the new group permissions
-            Craft::$app->getDb()->createCommand()
-                ->batchInsert(
-                    Table::USERPERMISSIONS_USERGROUPS,
-                    ['permissionId', 'groupId'],
-                    $groupPermissionVals)
-                ->execute();
+            Db::batchInsert(Table::USERPERMISSIONS_USERGROUPS, ['permissionId', 'groupId'], $groupPermissionVals);
         }
 
         // Update caches

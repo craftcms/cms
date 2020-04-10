@@ -12,6 +12,7 @@ use craft\base\ElementAction;
 use craft\base\ElementInterface;
 use craft\db\Table;
 use craft\elements\db\ElementQueryInterface;
+use craft\helpers\Db;
 
 /**
  * Delete represents a Delete element action.
@@ -100,9 +101,9 @@ class Delete extends ElementAction
         if ($this->hard) {
             $ids = $query->ids();
             if (!empty($ids)) {
-                Craft::$app->getDb()->createCommand()
-                    ->delete(Table::ELEMENTS, ['id' => $ids])
-                    ->execute();
+                Db::delete(Table::ELEMENTS, [
+                    'id' => $ids,
+                ]);
             }
         } else {
             $elementsService = Craft::$app->getElements();

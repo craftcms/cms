@@ -14,6 +14,7 @@ use craft\db\Table;
 use craft\errors\AssetDisallowedExtensionException;
 use craft\errors\MissingAssetException;
 use craft\errors\VolumeObjectNotFoundException;
+use craft\helpers\Db;
 use yii\console\ExitCode;
 use yii\db\Exception;
 use yii\helpers\Console;
@@ -202,7 +203,6 @@ class IndexAssetsController extends Controller
         }
 
         $remainingMissingFiles = $missingFiles;
-        $db = Craft::$app->getDb();
 
         if ($maybes && $this->confirm('Fix asset locations?')) {
             foreach ($missingFiles as $assetId => $path) {
@@ -215,12 +215,12 @@ class IndexAssetsController extends Controller
                         continue;
                     }
                     $this->stdout("Relocating asset {$assetId} to {$e->volume->name}/{$e->indexEntry->uri} ... ");
-                    $db->createCommand()
-                        ->update(Table::ASSETS, [
-                            'volumeId' => $e->volume->id,
-                            'folderId' => $e->folder->id,
-                        ], ['id' => $assetId])
-                        ->execute();
+                    Db::update(Table::ASSETS, [
+                        'volumeId' => $e->volume->id,
+                        'folderId' => $e->folder->id,
+                    ], [
+                        'id' => $assetId,
+                    ]);
                     $this->stdout('reindexing ... ');
                     $assetIndexer->indexFileByEntry($e->indexEntry, $this->cacheRemoteImages, false);
                     $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
@@ -234,9 +234,9 @@ class IndexAssetsController extends Controller
             $totalMissingFiles = count($remainingMissingFiles);
             $this->stdout('Deleting the' . ($totalMissingFiles > 1 ? ' ' . $totalMissingFiles : '') . ' missing asset record' . ($totalMissingFiles > 1 ? 's' : '') . ' ... ');
 
-            $db->createCommand()
-                ->delete(Table::ASSETS, ['id' => array_keys($remainingMissingFiles)])
-                ->execute();
+            Db::delete(Table::ASSETS, [
+                'id' => array_keys($remainingMissingFiles),
+            ]);
 
             $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
         }

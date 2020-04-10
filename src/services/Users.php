@@ -287,14 +287,11 @@ class Users extends Component
     {
         $preferences = $user->mergePreferences($preferences);
 
-        Craft::$app->getDb()->createCommand()
-            ->upsert(
-                Table::USERPREFERENCES,
-                ['userId' => $user->id],
-                ['preferences' => Json::encode($preferences)],
-                [],
-                false)
-            ->execute();
+        Db::upsert(Table::USERPREFERENCES, [
+            'userId' => $user->id,
+        ], [
+            'preferences' => Json::encode($preferences),
+        ], [], false);
     }
 
     /**
@@ -779,19 +776,12 @@ class Users extends Component
      */
     public function shunMessageForUser(int $userId, string $message, DateTime $expiryDate = null): bool
     {
-        $affectedRows = Craft::$app->getDb()->createCommand()
-            ->upsert(
-                Table::SHUNNEDMESSAGES,
-                [
-                    'userId' => $userId,
-                    'message' => $message
-                ],
-                [
-                    'expiryDate' => Db::prepareDateForDb($expiryDate)
-                ])
-            ->execute();
-
-        return (bool)$affectedRows;
+        return (bool)Db::upsert(Table::SHUNNEDMESSAGES, [
+            'userId' => $userId,
+            'message' => $message,
+        ], [
+            'expiryDate' => Db::prepareDateForDb($expiryDate),
+        ]);
     }
 
     /**
@@ -803,16 +793,10 @@ class Users extends Component
      */
     public function unshunMessageForUser(int $userId, string $message): bool
     {
-        $affectedRows = Craft::$app->getDb()->createCommand()
-            ->delete(
-                Table::SHUNNEDMESSAGES,
-                [
-                    'userId' => $userId,
-                    'message' => $message
-                ])
-            ->execute();
-
-        return (bool)$affectedRows;
+        return (bool)Db::delete(Table::SHUNNEDMESSAGES, [
+            'userId' => $userId,
+            'message' => $message,
+        ]);
     }
 
     /**
@@ -910,9 +894,9 @@ class Users extends Component
         }
 
         // Delete their existing groups
-        Craft::$app->getDb()->createCommand()
-            ->delete(Table::USERGROUPS_USERS, ['userId' => $userId])
-            ->execute();
+        Db::delete(Table::USERGROUPS_USERS, [
+            'userId' => $userId,
+        ]);
 
         if (!empty($groupIds)) {
             // Add the new ones
@@ -921,15 +905,7 @@ class Users extends Component
                 $values[] = [$groupId, $userId];
             }
 
-            Craft::$app->getDb()->createCommand()
-                ->batchInsert(
-                    Table::USERGROUPS_USERS,
-                    [
-                        'groupId',
-                        'userId'
-                    ],
-                    $values)
-                ->execute();
+            Db::batchInsert(Table::USERGROUPS_USERS, ['groupId', 'userId'], $values);
         }
 
         // Fire an 'afterAssignUserToGroups' event
@@ -1121,9 +1097,9 @@ class Users extends Component
         }
 
         // Nuke all the layout fields from the DB
-        Craft::$app->getDb()->createCommand()
-            ->delete(Table::FIELDLAYOUTFIELDS, ['fieldId' => $field->id])
-            ->execute();
+        Db::delete(Table::FIELDLAYOUTFIELDS, [
+            'fieldId' => $field->id,
+        ]);
 
         // Allow events again
         $projectConfig->muteEvents = false;

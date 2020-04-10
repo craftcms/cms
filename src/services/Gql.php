@@ -827,9 +827,9 @@ class Gql extends Component
 
         try {
             // Delete the scope
-            $db->createCommand()
-                ->delete(Table::GQLSCHEMAS, ['id' => $schemaRecord->id])
-                ->execute();
+            Db::delete(Table::GQLSCHEMAS, [
+                'id' => $schemaRecord->id,
+            ]);
 
             $transaction->commit();
         } catch (\Throwable $e) {

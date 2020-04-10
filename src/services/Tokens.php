@@ -132,18 +132,11 @@ class Tokens extends Component
      */
     public function incrementTokenUsageCountById(int $tokenId): bool
     {
-        $affectedRows = Craft::$app->getDb()->createCommand()
-            ->update(
-                Table::TOKENS,
-                [
-                    'usageCount' => new Expression('[[usageCount]] + 1')
-                ],
-                [
-                    'id' => $tokenId
-                ])
-            ->execute();
-
-        return (bool)$affectedRows;
+        return (bool)Db::update(Table::TOKENS, [
+            'usageCount' => new Expression('[[usageCount]] + 1'),
+        ], [
+            'id' => $tokenId,
+        ]);
     }
 
     /**
@@ -154,9 +147,9 @@ class Tokens extends Component
      */
     public function deleteTokenById(int $tokenId): bool
     {
-        Craft::$app->getDb()->createCommand()
-            ->delete(Table::TOKENS, ['id' => $tokenId])
-            ->execute();
+        Db::delete(Table::TOKENS, [
+            'id' => $tokenId,
+        ]);
 
         return true;
     }
@@ -173,9 +166,7 @@ class Tokens extends Component
             return false;
         }
 
-        $affectedRows = Craft::$app->getDb()->createCommand()
-            ->delete(Table::TOKENS, ['<=', 'expiryDate', Db::prepareDateForDb(new DateTime())])
-            ->execute();
+        $affectedRows = Db::delete(Table::TOKENS, ['<=', 'expiryDate', Db::prepareDateForDb(new DateTime())]);
 
         $this->_deletedExpiredTokens = true;
 

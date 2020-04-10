@@ -268,11 +268,9 @@ class AssetTransforms extends Component
         }
 
         if ($deleteTransformIndexes) {
-            Craft::$app->getDb()->createCommand()
-                ->delete(
-                    Table::ASSETTRANSFORMINDEX,
-                    ['location' => $this->_getNamedTransformFolderName($transformRecord->handle)])
-                ->execute();
+            Db::delete(Table::ASSETTRANSFORMINDEX, [
+                'location' => $this->_getNamedTransformFolderName($transformRecord->handle),
+            ]);
         }
 
         // Clear caches
@@ -358,11 +356,9 @@ class AssetTransforms extends Component
             ]));
         }
 
-        Craft::$app->getDb()->createCommand()
-            ->delete(
-                Table::ASSETTRANSFORMS,
-                ['uid' => $transformUid])
-            ->execute();
+        Db::delete(Table::ASSETTRANSFORMS, [
+            'uid' => $transformUid,
+        ]);
 
         // Clear caches
         $this->_transforms = null;
@@ -505,11 +501,9 @@ class AssetTransforms extends Component
 
         // Delete any invalid indexes
         if (!empty($invalidIndexIds)) {
-            Craft::$app->getDb()->createCommand()
-                ->delete(
-                    Table::ASSETTRANSFORMINDEX,
-                    ['id' => $invalidIndexIds])
-                ->execute();
+            Db::delete(Table::ASSETTRANSFORMINDEX, [
+                'id' => $invalidIndexIds,
+            ]);
         }
     }
 
@@ -562,9 +556,9 @@ class AssetTransforms extends Component
             }
 
             // Delete the out-of-date record
-            Craft::$app->getDb()->createCommand()
-                ->delete(Table::ASSETTRANSFORMINDEX, ['id' => $result['id']])
-                ->execute();
+            Db::delete(Table::ASSETTRANSFORMINDEX, [
+                'id' => $result['id'],
+            ]);
 
             // And the file.
             $transformUri = $asset->getFolder()->path . $this->getTransformSubpath($asset, new AssetTransformIndex($result));
@@ -829,16 +823,13 @@ class AssetTransforms extends Component
             ], [], false)
         );
 
-        $dbConnection = Craft::$app->getDb();
-        if (null !== $index->id) {
-            $dbConnection->createCommand()
-                ->update(Table::ASSETTRANSFORMINDEX, $values, ['id' => $index->id])
-                ->execute();
+        if ($index->id !== null) {
+            Db::update(Table::ASSETTRANSFORMINDEX, $values, [
+                'id' => $index->id,
+            ]);
         } else {
-            $dbConnection->createCommand()
-                ->insert(Table::ASSETTRANSFORMINDEX, $values)
-                ->execute();
-            $index->id = $dbConnection->getLastInsertID(Table::ASSETTRANSFORMINDEX);
+            Db::insert(Table::ASSETTRANSFORMINDEX, $values);
+            $index->id = Craft::$app->getDb()->getLastInsertID(Table::ASSETTRANSFORMINDEX);
         }
 
         return $index;
@@ -926,9 +917,9 @@ class AssetTransforms extends Component
      */
     public function deleteTransformIndexDataByAssetId(int $assetId)
     {
-        Craft::$app->getDb()->createCommand()
-            ->delete(Table::ASSETTRANSFORMINDEX, ['assetId' => $assetId])
-            ->execute();
+        Db::delete(Table::ASSETTRANSFORMINDEX, [
+            'assetId' => $assetId,
+        ]);
     }
 
     /**
@@ -938,9 +929,9 @@ class AssetTransforms extends Component
      */
     public function deleteTransformIndex(int $indexId)
     {
-        Craft::$app->getDb()->createCommand()
-            ->delete(Table::ASSETTRANSFORMINDEX, ['id' => $indexId])
-            ->execute();
+        Db::delete(Table::ASSETTRANSFORMINDEX, [
+            'id' => $indexId,
+        ]);
     }
 
     /**

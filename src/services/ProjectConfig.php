@@ -16,6 +16,7 @@ use craft\events\ConfigEvent;
 use craft\events\RebuildConfigEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
+use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\helpers\Path as PathHelper;
@@ -756,9 +757,9 @@ class ProjectConfig extends Component
                 $currentSet = $changeSet;
 
                 if (!empty($changeSet['removed'])) {
-                    $db->createCommand()
-                        ->delete(Table::PROJECTCONFIG, ['path' => array_keys($changeSet['removed'])])
-                        ->execute();
+                    Db::delete(Table::PROJECTCONFIG, [
+                        'path' => array_keys($changeSet['removed']),
+                    ]);
                 }
 
                 if (!empty($changeSet['added'])) {
@@ -809,15 +810,13 @@ class ProjectConfig extends Component
 
                     // Store in the DB
                     if (!empty($batch)) {
-                        $db->createCommand()
-                            ->delete(Table::PROJECTCONFIG, ['path' => $pathsToInsert])
-                            ->execute();
-                        $db->createCommand()
-                            ->delete(Table::PROJECTCONFIG, ['path' => array_keys($additionalCleanupPaths)])
-                            ->execute();
-                        $db->createCommand()
-                            ->batchInsert(Table::PROJECTCONFIG, ['path', 'value'], $batch, false)
-                            ->execute();
+                        Db::delete(Table::PROJECTCONFIG, [
+                            'path' => $pathsToInsert,
+                        ]);
+                        Db::delete(Table::PROJECTCONFIG, [
+                            'path' => array_keys($additionalCleanupPaths),
+                        ]);
+                        Db::batchInsert(Table::PROJECTCONFIG, ['path', 'value'], $batch, false);
                     }
                 }
 

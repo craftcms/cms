@@ -457,12 +457,10 @@ class User extends \yii\web\User
     {
         $token = Craft::$app->getSecurity()->generateRandomString(100);
 
-        Craft::$app->getDb()->createCommand()
-            ->insert(Table::SESSIONS, [
-                'userId' => $userId,
-                'token' => $token,
-            ])
-            ->execute();
+        Db::insert(Table::SESSIONS, [
+            'userId' => $userId,
+            'token' => $token,
+        ]);
 
         Craft::$app->getSession()->set($this->tokenParam, $token);
     }
@@ -516,12 +514,10 @@ class User extends \yii\web\User
         $token = $session->get($this->tokenParam);
         if ($token !== null) {
             $session->remove($this->tokenParam);
-            Craft::$app->getDb()->createCommand()
-                ->delete(Table::SESSIONS, [
-                    'token' => $token,
-                    'userId' => $identity->id,
-                ])
-                ->execute();
+            Db::delete(Table::SESSIONS, [
+                'token' => $token,
+                'userId' => $identity->id,
+            ]);
         }
 
         return true;

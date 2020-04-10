@@ -289,9 +289,9 @@ class UserGroups extends Component
             ]));
         }
 
-        Craft::$app->getDb()->createCommand()
-            ->delete(Table::USERGROUPS, ['uid' => $uid])
-            ->execute();
+        Db::delete(Table::USERGROUPS, [
+            'uid' => $uid,
+        ]);
 
         // Fire an 'afterDeleteUserGroup' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_USER_GROUP)) {

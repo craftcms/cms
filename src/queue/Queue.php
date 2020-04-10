@@ -192,24 +192,18 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
      */
     public function retry(string $id)
     {
-        $this->db->createCommand()
-            ->update(
-                $this->tableName,
-                [
-                    'dateReserved' => null,
-                    'timeUpdated' => null,
-                    'progress' => 0,
-                    'progressLabel' => null,
-                    'attempt' => 0,
-                    'fail' => false,
-                    'dateFailed' => null,
-                    'error' => null,
-                ],
-                ['id' => $id],
-                [],
-                false
-            )
-            ->execute();
+        Db::update($this->tableName, [
+            'dateReserved' => null,
+            'timeUpdated' => null,
+            'progress' => 0,
+            'progressLabel' => null,
+            'attempt' => 0,
+            'fail' => false,
+            'dateFailed' => null,
+            'error' => null,
+        ], [
+            'id' => $id,
+        ], [], false, $this->db);
     }
 
     /**
@@ -220,27 +214,19 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
         // Move expired messages into waiting list
         $this->_moveExpired();
 
-        $this->db->createCommand()
-            ->update(
-                $this->tableName,
-                [
-                    'dateReserved' => null,
-                    'timeUpdated' => null,
-                    'progress' => 0,
-                    'progressLabel' => null,
-                    'attempt' => 0,
-                    'fail' => false,
-                    'dateFailed' => null,
-                    'error' => null,
-                ],
-                [
-                    'channel' => $this->channel,
-                    'fail' => true,
-                ],
-                [],
-                false
-            )
-            ->execute();
+        Db::update($this->tableName, [
+            'dateReserved' => null,
+            'timeUpdated' => null,
+            'progress' => 0,
+            'progressLabel' => null,
+            'attempt' => 0,
+            'fail' => false,
+            'dateFailed' => null,
+            'error' => null,
+        ], [
+            'channel' => $this->channel,
+            'fail' => true,
+        ], [], false, $this->db);
     }
 
     /**
@@ -248,9 +234,9 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
      */
     public function release(string $id)
     {
-        $this->db->createCommand()
-            ->delete($this->tableName, ['id' => $id])
-            ->execute();
+        Db::delete($this->tableName, [
+            'id' => $id,
+        ], [], $this->db);
     }
 
     /**
@@ -258,9 +244,9 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
      */
     public function releaseAll()
     {
-        $this->db->createCommand()
-            ->delete($this->tableName, ['channel' => $this->channel])
-            ->execute();
+        Db::delete($this->tableName, [
+            'channel' => $this->channel,
+        ], [], $this->db);
     }
 
     /**
@@ -277,9 +263,9 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
             $data['progressLabel'] = $label;
         }
 
-        $this->db->createCommand()
-            ->update($this->tableName, $data, ['id' => $this->_executingJobId], [], false)
-            ->execute();
+        Db::update($this->tableName, $data, [
+            'id' => $this->_executingJobId,
+        ], [], false, $this->db);
     }
 
     /**
@@ -448,19 +434,13 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
         // Have we given up?
         if (parent::handleError($event)) {
             // Mark the job as failed
-            $this->db->createCommand()
-                ->update(
-                    $this->tableName,
-                    [
-                        'fail' => true,
-                        'dateFailed' => Db::prepareDateForDb(new \DateTime()),
-                        'error' => $event->error ? $event->error->getMessage() : null,
-                    ],
-                    ['id' => $event->id],
-                    [],
-                    false
-                )
-                ->execute();
+            Db::update($this->tableName, [
+                'fail' => true,
+                'dateFailed' => Db::prepareDateForDb(new \DateTime()),
+                'error' => $event->error ? $event->error->getMessage() : null,
+            ], [
+                'id' => $event->id,
+            ], [], false, $this->db);
         }
 
         // Don't tell run() to release the job
@@ -544,10 +524,7 @@ EOD;
             $data['channel'] = $this->channel;
         }
 
-        $this->db->createCommand()
-            ->insert($this->tableName, $data, false)
-            ->execute();
-
+        Db::insert($this->tableName, $data, false, $this->db);
         return $this->db->getLastInsertID($this->tableName);
     }
 
@@ -576,19 +553,13 @@ EOD;
             $payload['dateReserved'] = new \DateTime();
             $payload['timeUpdated'] = $payload['dateReserved']->getTimestamp();
             $payload['attempt'] = (int)$payload['attempt'] + 1;
-            $this->db->createCommand()
-                ->update(
-                    $this->tableName,
-                    [
-                        'dateReserved' => Db::prepareDateForDb($payload['dateReserved']),
-                        'timeUpdated' => $payload['timeUpdated'],
-                        'attempt' => $payload['attempt']
-                    ],
-                    ['id' => $payload['id']],
-                    [],
-                    false
-                )
-                ->execute();
+            Db::update($this->tableName, [
+                'dateReserved' => Db::prepareDateForDb($payload['dateReserved']),
+                'timeUpdated' => $payload['timeUpdated'],
+                'attempt' => $payload['attempt'],
+            ], [
+                'id' => $payload['id'],
+            ], [], false, $this->db);
         }
 
         $this->mutex->release($lockName);
@@ -630,27 +601,21 @@ EOD;
     {
         if ($this->_reserveTime !== time()) {
             $this->_reserveTime = time();
-            $this->db->createCommand()
-                ->update(
-                    $this->tableName,
-                    [
-                        'dateReserved' => null,
-                        'timeUpdated' => null,
-                        'progress' => 0,
-                        'progressLabel' => null,
-                    ],
-                    [
-                        'and',
-                        [
-                            'channel' => $this->channel,
-                            'fail' => false
-                        ],
-                        '[[timeUpdated]] < :time - [[ttr]]',
-                    ],
-                    [':time' => $this->_reserveTime],
-                    false
-                )
-                ->execute();
+            Db::update($this->tableName, [
+                'dateReserved' => null,
+                'timeUpdated' => null,
+                'progress' => 0,
+                'progressLabel' => null,
+            ], [
+                'and',
+                [
+                    'channel' => $this->channel,
+                    'fail' => false,
+                ],
+                '[[timeUpdated]] < :time - [[ttr]]',
+            ], [
+                ':time' => $this->_reserveTime,
+            ], false, $this->db);
         }
     }
 
