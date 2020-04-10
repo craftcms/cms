@@ -78,7 +78,7 @@ class ProjectConfigHelperTest extends Unit
                     'empty' => [],
                     'emptier' => '',
                     'gone' => null,
-                    'obj' => (object) ['okay'],
+                    'obj' => (object)['okay'],
                 ],
                 [
                     'emptier' => '',

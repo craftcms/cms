@@ -57,6 +57,7 @@ class Users extends BaseRelationField
     {
         return UserQuery::class;
     }
+
     /**
      * @inheritdoc
      * @since 3.3.0

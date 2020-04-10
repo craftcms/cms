@@ -11,8 +11,6 @@ use craft\base\Element;
 use craft\elements\db\ElementQuery;
 use craft\gql\ElementQueryConditionBuilder;
 use craft\helpers\Gql as GqlHelper;
-use craft\helpers\StringHelper;
-use craft\services\Gql;
 use GraphQL\Type\Definition\ResolveInfo;
 
 /**

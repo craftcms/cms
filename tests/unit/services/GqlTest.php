@@ -78,7 +78,7 @@ class GqlTest extends Unit
      */
     public function testRegisteringQuery()
     {
-        Event::on(Gql::class, Gql::EVENT_REGISTER_GQL_QUERIES, function (RegisterGqlQueriesEvent $event) {
+        Event::on(Gql::class, Gql::EVENT_REGISTER_GQL_QUERIES, function(RegisterGqlQueriesEvent $event) {
             $event->queries['mockQuery'] = [
                 'type' => [],
                 'args' => [],
@@ -95,7 +95,7 @@ class GqlTest extends Unit
      */
     public function testValidatingSchema()
     {
-        Event::on(Gql::class, Gql::EVENT_REGISTER_GQL_QUERIES, function (RegisterGqlQueriesEvent $event) {
+        Event::on(Gql::class, Gql::EVENT_REGISTER_GQL_QUERIES, function(RegisterGqlQueriesEvent $event) {
             $event->queries['mockQuery'] = [
                 'type' => 'no bueno'
             ];
@@ -126,14 +126,14 @@ class GqlTest extends Unit
         $gql = Craft::$app->getGql();
         $schema = $gql->getPublicSchema();
 
-        Event::on(Gql::class, Gql::EVENT_BEFORE_EXECUTE_GQL_QUERY, function (ExecuteGqlQueryEvent $event) {
+        Event::on(Gql::class, Gql::EVENT_BEFORE_EXECUTE_GQL_QUERY, function(ExecuteGqlQueryEvent $event) {
             $event->result = ['data' => 'override'];
         });
 
         $result = $gql->executeQuery($schema, '{ping}');
         $this->assertEquals(['data' => 'override'], $result);
 
-        Event::on(Gql::class, Gql::EVENT_AFTER_EXECUTE_GQL_QUERY, function (ExecuteGqlQueryEvent $event) {
+        Event::on(Gql::class, Gql::EVENT_AFTER_EXECUTE_GQL_QUERY, function(ExecuteGqlQueryEvent $event) {
             $event->result = ['data' => 'different override'];
         });
 
@@ -152,7 +152,9 @@ class GqlTest extends Unit
         $cacheKey = 'testKey';
 
         $gql = $this->make(Craft::$app->getGql(), [
-            'setCachedResult' => function ($key, $value) use (&$cache, $cacheKey) {$cache[$cacheKey] = $value; },
+            'setCachedResult' => function($key, $value) use (&$cache, $cacheKey) {
+                $cache[$cacheKey] = $value;
+            },
         ]);
 
         Craft::$app->getConfig()->getGeneral()->enableGraphQlCaching = true;
@@ -169,7 +171,7 @@ class GqlTest extends Unit
      */
     public function testRegisteringDirective()
     {
-        Event::on(Gql::class, Gql::EVENT_REGISTER_GQL_DIRECTIVES, function (RegisterGqlDirectivesEvent $event) {
+        Event::on(Gql::class, Gql::EVENT_REGISTER_GQL_DIRECTIVES, function(RegisterGqlDirectivesEvent $event) {
             $event->directives[] = MockDirective::class;
         });
 
@@ -182,7 +184,7 @@ class GqlTest extends Unit
      */
     public function testRegisteringType()
     {
-        Event::on(Gql::class, Gql::EVENT_REGISTER_GQL_TYPES, function (RegisterGqlTypesEvent $event) {
+        Event::on(Gql::class, Gql::EVENT_REGISTER_GQL_TYPES, function(RegisterGqlTypesEvent $event) {
             $event->types[] = MockType::class;
         });
 
@@ -208,7 +210,7 @@ class GqlTest extends Unit
         Craft::$app->getGql()->flushCaches();
 
         $this->assertFalse(GqlEntityRegistry::getEntity($typeName));
-        $this->tester->expectThrowable(GqlException::class, function () use ($typeName) {
+        $this->tester->expectThrowable(GqlException::class, function() use ($typeName) {
             TypeLoader::loadType($typeName);
         });
     }
@@ -295,6 +297,7 @@ class GqlTest extends Unit
 
     /**
      * Test all Gql Token operations.
+     *
      * @throws \yii\base\Exception
      */
     public function testTokenOperations()
@@ -323,7 +326,7 @@ class GqlTest extends Unit
         $this->assertNotEmpty($allSchemas);
 
         // Test public token doesn't exists
-        $this->tester->expectThrowable(InvalidArgumentException::class, function () use ($gql) {
+        $this->tester->expectThrowable(InvalidArgumentException::class, function() use ($gql) {
             $publicToken = $gql->getTokenByAccessToken(GqlToken::PUBLIC_TOKEN);
         });
 
@@ -339,6 +342,7 @@ class GqlTest extends Unit
 
     /**
      * Test all Gql Schema operations.
+     *
      * @throws \yii\base\Exception
      */
     public function testSchemaOperations()

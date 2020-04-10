@@ -7,20 +7,8 @@
 
 namespace craft\gql\base;
 
-use Craft;
-use craft\base\EagerLoadingFieldInterface;
-use craft\base\Field;
-use craft\base\GqlInlineFragmentFieldInterface;
-use craft\fields\Assets as AssetField;
-use craft\fields\BaseRelationField;
 use craft\gql\ElementQueryConditionBuilder;
-use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\helpers\StringHelper;
-use craft\services\Gql;
-use GraphQL\Language\AST\DirectiveNode;
-use GraphQL\Language\AST\FieldNode;
-use GraphQL\Language\AST\FragmentSpreadNode;
-use GraphQL\Language\AST\InlineFragmentNode;
 use GraphQL\Language\AST\Node;
 use GraphQL\Type\Definition\ResolveInfo;
 

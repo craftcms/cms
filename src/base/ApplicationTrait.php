@@ -346,13 +346,13 @@ trait ApplicationTrait
             // 1 or "more than 1" rows, and this is the fastest way to do it.
             // (https://stackoverflow.com/a/14916838/1688568)
             return $this->_isMultiSiteWithTrashed = (new Query())
-                ->from([
-                    'x' => (new Query)
-                        ->select([new Expression('1')])
-                        ->from([Table::SITES])
-                        ->limit(2)
-                ])
-                ->count() != 1;
+                    ->from([
+                        'x' => (new Query)
+                            ->select([new Expression('1')])
+                            ->from([Table::SITES])
+                            ->limit(2)
+                    ])
+                    ->count() != 1;
         }
 
         if (!$refresh && $this->_isMultiSite !== null) {

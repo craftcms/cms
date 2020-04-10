@@ -8,7 +8,6 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\AssetPreviewHandler;
 use craft\base\Element;
 use craft\base\Volume;
 use craft\elements\Asset;

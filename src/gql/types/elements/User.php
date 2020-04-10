@@ -8,8 +8,6 @@
 namespace craft\gql\types\elements;
 
 use craft\elements\User as UserElement;
-use craft\gql\base\ObjectType;
-use craft\gql\interfaces\Element as ElementInterface;
 use craft\gql\interfaces\elements\User as UserInterface;
 use craft\helpers\Json;
 use GraphQL\Type\Definition\ResolveInfo;

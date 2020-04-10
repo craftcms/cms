@@ -887,7 +887,7 @@ class Assets extends BaseRelationField
         // If we have resolved everything to a temporary user folder, fine
         if ($userFolder !== null) {
             $folderId = $userFolder->id;
-        // But in all other cases, make it the default upload location, too
+            // But in all other cases, make it the default upload location, too
         } else if (!$this->useSingleFolder) {
             $this->_defaultUploadLocation = $this->_getSourcePathByFolderId($folderId);
         }

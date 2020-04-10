@@ -35,7 +35,7 @@ class TableRowType implements GeneratorInterface
         $contentFields = [];
 
         foreach ($context->columns as $columnKey => $columnDefinition) {
-            switch ($columnDefinition['type']){
+            switch ($columnDefinition['type']) {
                 case 'date':
                 case 'time':
                     $cellType = DateTime::getType();

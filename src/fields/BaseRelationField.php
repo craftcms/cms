@@ -14,7 +14,6 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
 use craft\db\Query;
-use craft\db\QueryAbortedException;
 use craft\db\Table as DbTable;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
@@ -216,9 +215,9 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      */
     protected function defineRules(): array
     {
-         $rules = parent::defineRules();
-         $rules[] = [['limit'], 'number', 'integerOnly' => true];
-         return $rules;
+        $rules = parent::defineRules();
+        $rules[] = [['limit'], 'number', 'integerOnly' => true];
+        return $rules;
     }
 
     /**

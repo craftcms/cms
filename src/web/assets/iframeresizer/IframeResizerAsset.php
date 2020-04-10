@@ -11,6 +11,7 @@ use craft\web\AssetBundle;
 
 /**
  * Iframe Resizer asset bundle.
+ *
  * @since 3.5.0
  */
 class IframeResizerAsset extends AssetBundle

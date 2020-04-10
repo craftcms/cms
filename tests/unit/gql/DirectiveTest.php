@@ -79,7 +79,7 @@ class DirectiveTest extends Unit
             Craft::$app,
             'assets',
             [
-                'getAssetUrl' => function ($asset, $parameters, $generateNow) {
+                'getAssetUrl' => function($asset, $parameters, $generateNow) {
                     $transformed = is_array($parameters) ? implode('-', $parameters) : $parameters;
                     return $transformed . ($generateNow ? ($asset->filename . '-generateNow') : ($asset->filename . 'generateLater'));
                 }
@@ -215,13 +215,13 @@ class DirectiveTest extends Unit
      *
      * @param $className
      */
-    private function _registerDirective($className) {
+    private function _registerDirective($className)
+    {
         // Make sure the mock directive is available in the entity registry
         $directiveName = $className::name();
 
         if (!GqlEntityRegistry::getEntity($directiveName)) {
             GqlEntityRegistry::createEntity($directiveName, $className::create());
         }
-
     }
 }

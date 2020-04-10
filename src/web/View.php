@@ -25,7 +25,6 @@ use craft\web\twig\TemplateLoader;
 use JSMin\JSMin;
 use Minify_CSSmin;
 use Twig\Error\LoaderError as TwigLoaderError;
-use Twig\Error\RuntimeError;
 use Twig\Error\RuntimeError as TwigRuntimeError;
 use Twig\Error\SyntaxError as TwigSyntaxError;
 use Twig\Extension\CoreExtension;

@@ -14,12 +14,12 @@ use craft\elements\User;
 use craft\helpers\StringHelper;
 use craft\services\Users;
 use craft\test\TestCase;
+use DateInterval;
+use DateTime;
+use DateTimeZone;
 use UnitTester;
 use yii\base\Exception;
 use yii\validators\InlineValidator;
-use DateTime;
-use DateTimeZone;
-use DateInterval;
 
 /**
  * Unit tests for the User Element
@@ -78,7 +78,7 @@ class UserElementTest extends TestCase
     public function testGetAuthKey()
     {
         $this->tester->mockCraftMethods('session', [
-            'get' => function ($tokenParam) {
+            'get' => function($tokenParam) {
                 $this->assertSame(Craft::$app->getUser()->tokenParam, $tokenParam);
 
                 return 'TOKEN';
@@ -130,7 +130,7 @@ class UserElementTest extends TestCase
         );
         $this->assertFalse(
             $this->activeUser->validateAuthKey(
-                '["NOT_A_VALID_TOKEN",null,"'.$validUserAgent.'"]'
+                '["NOT_A_VALID_TOKEN",null,"' . $validUserAgent . '"]'
             )
         );
 
@@ -142,7 +142,7 @@ class UserElementTest extends TestCase
         ]);
         $this->assertTrue(
             $this->activeUser->validateAuthKey(
-                '["EXAMPLE_TOKEN",null,"'.$validUserAgent.'"]'
+                '["EXAMPLE_TOKEN",null,"' . $validUserAgent . '"]'
             )
         );
     }
@@ -210,7 +210,7 @@ class UserElementTest extends TestCase
 
         $this->activeUser->locked = true;
         $this->activeUser->lockoutDate = new DateTime('now', new DateTimeZone('UTC'));
-        Craft::$app->getConfig()->getGeneral()->cooldownDuration = (60*60*24*2)+10; // 2 days and 10 seconds
+        Craft::$app->getConfig()->getGeneral()->cooldownDuration = (60 * 60 * 24 * 2) + 10; // 2 days and 10 seconds
 
         $this->assertInstanceOf(DateInterval::class, $interval = $this->activeUser->getRemainingCooldownTime());
         $this->assertSame('2', (string)$interval->d);
@@ -228,13 +228,15 @@ class UserElementTest extends TestCase
             ->batchInsert(Table::SESSIONS, [
                 'userId',
                 'token'
-            ], [[
-                $this->activeUser->id,
-                StringHelper::randomString(32)
             ], [
-                $this->activeUser->id,
-                StringHelper::randomString(32)
-            ]]);
+                [
+                    $this->activeUser->id,
+                    StringHelper::randomString(32)
+                ], [
+                    $this->activeUser->id,
+                    StringHelper::randomString(32)
+                ]
+            ]);
 
         $this->activeUser->newPassword = 'random_password';
         $this->tester->saveElement($this->activeUser);

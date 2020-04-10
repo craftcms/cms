@@ -52,7 +52,7 @@ class DbCache extends YiiDbCache
         $this->gc();
 
         try {
-            $this->db->noCache(function (Connection $db) use ($key, $value, $duration) {
+            $this->db->noCache(function(Connection $db) use ($key, $value, $duration) {
                 $db->createCommand()
                     ->insert($this->cacheTable, [
                         'id' => $key,

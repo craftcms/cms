@@ -74,7 +74,7 @@ class Transform extends Directive
         $onAssetElementList = is_array($value) && !empty($value);
         $onApplicableAssetField = $source instanceof Asset && in_array($resolveInfo->fieldName, ['height', 'width', 'url']);
 
-        if (!($onAssetElement || $onAssetElementList || $onApplicableAssetField) || empty($arguments) ) {
+        if (!($onAssetElement || $onAssetElementList || $onApplicableAssetField) || empty($arguments)) {
             return $value;
         }
 
@@ -105,8 +105,7 @@ class Transform extends Directive
             return $value;
         }
 
-        switch ($resolveInfo->fieldName)
-        {
+        switch ($resolveInfo->fieldName) {
             case 'height':
                 return $source->getHeight($transform);
             case 'width':

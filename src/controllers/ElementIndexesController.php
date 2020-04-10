@@ -347,8 +347,8 @@ class ElementIndexesController extends BaseElementsController
     /**
      * Returns the exporter for the request.
      *
-     * @throws BadRequestHttpException
      * @return ElementExporterInterface
+     * @throws BadRequestHttpException
      */
     private function _exporter(): ElementExporterInterface
     {

@@ -11,13 +11,8 @@ use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
 use Craft;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
-use craft\helpers\StringHelper;
-use craft\models\GqlSchema;
 use craft\services\ProjectConfig;
 use craft\services\Sections;
-use crafttests\fixtures\EntryTypeFixture;
-use crafttests\fixtures\EntryWithFieldsFixture;
-use crafttests\fixtures\SectionsFixture;
 use UnitTester;
 use yii\base\NotSupportedException;
 
@@ -100,11 +95,11 @@ class ProjectConfigTest extends Unit
                     ]
                 ]
             ],
-            'get' => function ($path, $useYaml) use ($yaml) {
+            'get' => function($path, $useYaml) use ($yaml) {
                 return $yaml[$path];
             }
         ]);
-        
+
         // Mocking the project config killed all event listeners, though
         $projectConfig->init();
 

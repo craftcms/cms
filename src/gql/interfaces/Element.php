@@ -139,33 +139,33 @@ class Element extends InterfaceType
      */
     public static function getDraftFieldDefinitions(): array
     {
-       return [
-           'isDraft' => [
-               'name' => 'isDraft',
-               'type' => Type::boolean(),
-               'description' => 'Returns whether this is a draft.',
-           ],
-           'isRevision' => [
-               'name' => 'isRevision',
-               'type' => Type::boolean(),
-               'description' => 'Returns whether this is a revision.',
-           ],
-           'sourceId' => [
-               'name' => 'sourceId',
-               'type' => Type::int(),
-               'description' => 'Returns the element’s ID, or if it’s a draft/revision, its source element’s ID.',
-           ],
-           'sourceUid' => [
-               'name' => 'sourceUid',
-               'type' => Type::string(),
-               'description' => 'Returns the element’s UUID, or if it’s a draft/revision, its source element’s UUID.',
-           ],
-           'isUnsavedDraft' => [
-               'name' => 'isUnsavedDraft',
-               'type' => Type::boolean(),
-               'description' => 'Returns whether this is a draft.',
-           ],
-       ];
+        return [
+            'isDraft' => [
+                'name' => 'isDraft',
+                'type' => Type::boolean(),
+                'description' => 'Returns whether this is a draft.',
+            ],
+            'isRevision' => [
+                'name' => 'isRevision',
+                'type' => Type::boolean(),
+                'description' => 'Returns whether this is a revision.',
+            ],
+            'sourceId' => [
+                'name' => 'sourceId',
+                'type' => Type::int(),
+                'description' => 'Returns the element’s ID, or if it’s a draft/revision, its source element’s ID.',
+            ],
+            'sourceUid' => [
+                'name' => 'sourceUid',
+                'type' => Type::string(),
+                'description' => 'Returns the element’s UUID, or if it’s a draft/revision, its source element’s UUID.',
+            ],
+            'isUnsavedDraft' => [
+                'name' => 'isUnsavedDraft',
+                'type' => Type::boolean(),
+                'description' => 'Returns whether this is a draft.',
+            ],
+        ];
     }
 
     /**

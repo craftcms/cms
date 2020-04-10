@@ -14,20 +14,17 @@ use craft\db\Table;
 use craft\elements\Asset;
 use craft\errors\MigrationException;
 use craft\helpers\FileHelper;
-use craft\helpers\Path;
 use craft\helpers\Queue;
 use craft\queue\jobs\FindAndReplace;
 use craft\utilities\ClearCaches;
 use craft\utilities\Updates;
 use craft\web\assets\utilities\UtilitiesAsset;
 use craft\web\Controller;
-use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
-use ZipArchive;
 
 class UtilitiesController extends Controller
 {

@@ -1411,12 +1411,12 @@ class Request extends \yii\web\Request
             }
             $hasActionParam = $actionParam !== null;
             $hasSpecialPath = $checkSpecialPaths && in_array($this->_path, [
-                $loginPath,
-                $logoutPath,
-                $setPasswordPath,
-                $verifyEmailPath,
-                $updatePath,
-            ], true);
+                    $loginPath,
+                    $logoutPath,
+                    $setPasswordPath,
+                    $verifyEmailPath,
+                    $updatePath,
+                ], true);
 
             if ($hasTriggerMatch || $hasActionParam || $hasSpecialPath) {
                 $this->_isActionRequest = true;
