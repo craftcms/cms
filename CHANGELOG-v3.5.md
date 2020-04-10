@@ -38,6 +38,12 @@
 - Added `craft\gql\ElementQueryConditionBuilder`.
 - Added `craft\helpers\Assets::parseSrcsetSize()`.
 - Added `craft\helpers\Assets::scaledDimensions()`.
+- Added `craft\helpers\Db::batchInsert()`.
+- Added `craft\helpers\Db::delete()`.
+- Added `craft\helpers\Db::insert()`.
+- Added `craft\helpers\Db::replace()`.
+- Added `craft\helpers\Db::update()`.
+- Added `craft\helpers\Db::upsert()`.
 - Added `craft\helpers\FileHelper::addFilesToZip()`.
 - Added `craft\helpers\FileHelper::zip()`.
 - Added `craft\helpers\Html::explodeClass()`.
