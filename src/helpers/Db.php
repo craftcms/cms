@@ -15,6 +15,7 @@ use craft\db\Query;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\NotSupportedException;
+use yii\db\Exception as DbException;
 use yii\db\Schema;
 
 /**
@@ -422,7 +423,7 @@ class Db
      * `'='` will be assumed.
      *
      * Values can also be set to either `':empty:'` or `':notempty:'` if you want to search for empty or non-empty
-     * database values. (An “empty” value is either NULL or an empty string of text).
+     * database values. (An “empty” value is either `NULL` or an empty string of text).
      *
      * @param string $column The database column that the param is targeting.
      * @param string|int|array $value The param value(s).
@@ -674,15 +675,16 @@ class Db
     }
 
     /**
-     * Executes a DELETE command, but only if there are any rows to delete.
+     * Creates and executes a `DELETE` SQL statement, but only if there are any rows to delete, avoiding deadlock issues
+     * when deleting data from large tables.
      *
-     * @param string $table the table where the data will be deleted from.
-     * @param string|array $condition the condition that will be put in the WHERE part. Please
+     * @param string $table the table where the data will be deleted from
+     * @param string|array $condition the condition that will be put in the `WHERE` part. Please
      * refer to [[Query::where()]] on how to specify condition.
      * @param array $params the parameters to be bound to the command
-     * @param Connection|null $db
-     * @return int number of rows affected by the execution.
-     * @throws \yii\db\Exception execution failed
+     * @param Connection|null $db The database connection to use
+     * @return int number of rows affected by the execution
+     * @throws DbException execution failed
      * @since 3.0.12
      */
     public static function deleteIfExists(string $table, $condition = '', array $params = [], Connection $db = null): int
