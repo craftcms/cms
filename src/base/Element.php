@@ -477,6 +477,18 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
+     * Defines the sources that elements of this type may belong to.
+     *
+     * @param string|null $context The context ('index' or 'modal').
+     * @return array The sources.
+     * @see sources()
+     */
+    protected static function defineSources(string $context = null): array
+    {
+        return [];
+    }
+
+    /**
      * @inheritdoc
      */
     public static function actions(string $source): array
@@ -491,6 +503,19 @@ abstract class Element extends Component implements ElementInterface
         Event::trigger(static::class, self::EVENT_REGISTER_ACTIONS, $event);
 
         return $event->actions;
+    }
+
+    /**
+     * Defines the available element actions for a given source.
+     *
+     * @param string|null $source The selected source’s key, if any.
+     * @return array The available element actions.
+     * @see actions()
+     * @todo this shouldn't allow null in Craft 4
+     */
+    protected static function defineActions(string $source = null): array
+    {
+        return [];
     }
 
     /**
@@ -511,47 +536,6 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
-     * @inheritdoc
-     */
-    public static function searchableAttributes(): array
-    {
-        $attributes = static::defineSearchableAttributes();
-
-        // Give plugins a chance to modify them
-        $event = new RegisterElementSearchableAttributesEvent([
-            'attributes' => $attributes
-        ]);
-        Event::trigger(static::class, self::EVENT_REGISTER_SEARCHABLE_ATTRIBUTES, $event);
-
-        return $event->attributes;
-    }
-
-    /**
-     * Defines the sources that elements of this type may belong to.
-     *
-     * @param string|null $context The context ('index' or 'modal').
-     * @return array The sources.
-     * @see sources()
-     */
-    protected static function defineSources(string $context = null): array
-    {
-        return [];
-    }
-
-    /**
-     * Defines the available element actions for a given source.
-     *
-     * @param string|null $source The selected source’s key, if any.
-     * @return array The available element actions.
-     * @see actions()
-     * @todo this shouldn't allow null in Craft 4
-     */
-    protected static function defineActions(string $source = null): array
-    {
-        return [];
-    }
-
-    /**
      * Defines the available element exporters for a given source.
      *
      * @param string $source The selected source’s key
@@ -565,6 +549,22 @@ abstract class Element extends Component implements ElementInterface
             Raw::class,
             Expanded::class,
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function searchableAttributes(): array
+    {
+        $attributes = static::defineSearchableAttributes();
+
+        // Give plugins a chance to modify them
+        $event = new RegisterElementSearchableAttributesEvent([
+            'attributes' => $attributes
+        ]);
+        Event::trigger(static::class, self::EVENT_REGISTER_SEARCHABLE_ATTRIBUTES, $event);
+
+        return $event->attributes;
     }
 
     /**
@@ -637,6 +637,26 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
+     * Preps the element criteria for a given table attribute
+     *
+     * @param ElementQueryInterface $elementQuery
+     * @param string $attribute
+     */
+    protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute)
+    {
+        /** @var ElementQuery $elementQuery */
+        // Is this a custom field?
+        if (preg_match('/^field:(\d+)$/', $attribute, $matches)) {
+            $fieldId = $matches[1];
+            $field = Craft::$app->getFields()->getFieldById($fieldId);
+
+            if ($field) {
+                $field->modifyElementIndexQuery($elementQuery);
+            }
+        }
+    }
+
+    /**
      * @inheritdoc
      */
     public static function sortOptions(): array
@@ -660,39 +680,6 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
-     * @inheritdoc
-     */
-    public static function tableAttributes(): array
-    {
-        $tableAttributes = static::defineTableAttributes();
-
-        // Give plugins a chance to modify them
-        $event = new RegisterElementTableAttributesEvent([
-            'tableAttributes' => $tableAttributes
-        ]);
-        Event::trigger(static::class, self::EVENT_REGISTER_TABLE_ATTRIBUTES, $event);
-
-        return $event->tableAttributes;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function defaultTableAttributes(string $source): array
-    {
-        $tableAttributes = static::defineDefaultTableAttributes($source);
-
-        // Give plugins a chance to modify them
-        $event = new RegisterElementDefaultTableAttributesEvent([
-            'source' => $source,
-            'tableAttributes' => $tableAttributes
-        ]);
-        Event::trigger(static::class, self::EVENT_REGISTER_DEFAULT_TABLE_ATTRIBUTES, $event);
-
-        return $event->tableAttributes;
-    }
-
-    /**
      * Returns the sort options for the element type.
      *
      * @return array The attributes that elements can be sorted by
@@ -712,6 +699,22 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
+     * @inheritdoc
+     */
+    public static function tableAttributes(): array
+    {
+        $tableAttributes = static::defineTableAttributes();
+
+        // Give plugins a chance to modify them
+        $event = new RegisterElementTableAttributesEvent([
+            'tableAttributes' => $tableAttributes
+        ]);
+        Event::trigger(static::class, self::EVENT_REGISTER_TABLE_ATTRIBUTES, $event);
+
+        return $event->tableAttributes;
+    }
+
+    /**
      * Defines all of the available columns that can be shown in table views.
      *
      * @return array The table attributes.
@@ -720,6 +723,23 @@ abstract class Element extends Component implements ElementInterface
     protected static function defineTableAttributes(): array
     {
         return [];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function defaultTableAttributes(string $source): array
+    {
+        $tableAttributes = static::defineDefaultTableAttributes($source);
+
+        // Give plugins a chance to modify them
+        $event = new RegisterElementDefaultTableAttributesEvent([
+            'source' => $source,
+            'tableAttributes' => $tableAttributes
+        ]);
+        Event::trigger(static::class, self::EVENT_REGISTER_DEFAULT_TABLE_ATTRIBUTES, $event);
+
+        return $event->tableAttributes;
     }
 
     /**
@@ -921,26 +941,6 @@ abstract class Element extends Component implements ElementInterface
     {
         // Default to no scopes required
         return [];
-    }
-
-    /**
-     * Preps the element criteria for a given table attribute
-     *
-     * @param ElementQueryInterface $elementQuery
-     * @param string $attribute
-     */
-    protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute)
-    {
-        /** @var ElementQuery $elementQuery */
-        // Is this a custom field?
-        if (preg_match('/^field:(\d+)$/', $attribute, $matches)) {
-            $fieldId = $matches[1];
-            $field = Craft::$app->getFields()->getFieldById($fieldId);
-
-            if ($field) {
-                $field->modifyElementIndexQuery($elementQuery);
-            }
-        }
     }
 
     /**
@@ -1641,6 +1641,17 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
+     * Returns the route that should be used when the element’s URI is requested.
+     *
+     * @return mixed The route that the request should use, or null if no special action should be taken
+     * @see getRoute()
+     */
+    protected function route()
+    {
+        return null;
+    }
+
+    /**
      * @inheritdoc
      */
     public function getIsHomepage(): bool
@@ -1758,6 +1769,20 @@ abstract class Element extends Component implements ElementInterface
         }
 
         return $normalized;
+    }
+
+    /**
+     * Returns the additional locations that should be available for previewing the element, besides its primary [[getUrl()|URL]].
+     *
+     * Each target should be represented by a sub-array with `'label'` and `'url'` keys.
+     *
+     * @return array
+     * @see getPreviewTargets()
+     * @since 3.2.0
+     */
+    protected function previewTargets(): array
+    {
+        return [];
     }
 
     /**
@@ -2527,6 +2552,18 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
+     * Returns any attributes that should be included in the element’s DOM representation in the control panel.
+     *
+     * @param string $context The context that the element is being rendered in ('index', 'field', etc.)
+     * @return array
+     * @see getHtmlAttributes()
+     */
+    protected function htmlAttributes(string $context): array
+    {
+        return [];
+    }
+
+    /**
      * @inheritdoc
      */
     public function getTableAttributeHtml(string $attribute): string
@@ -2542,6 +2579,132 @@ abstract class Element extends Component implements ElementInterface
         }
 
         return $this->tableAttributeHtml($attribute);
+    }
+
+    /**
+     * Returns the HTML that should be shown for a given attribute in Table View.
+     *
+     * This method can be used to completely customize what actually shows up within the table’s body for a given
+     * attribute, rather than simply showing the attribute’s raw value.
+     *
+     * For example, if your elements have an `email` attribute that you want to wrap in a `mailto:` link, your
+     * getTableAttributesHtml() method could do this:
+     *
+     * ```php
+     * switch ($attribute) {
+     *     case 'email':
+     *         return $this->email ? Html::mailto(Html::encode($this->email)) : '';
+     *     // ...
+     * }
+     * return parent::tableAttributeHtml($attribute);
+     * ```
+     *
+     * ::: warning
+     * All untrusted text should be passed through [[Html::encode()]] to prevent XSS attacks.
+     * :::
+     *
+     * By default the following will be returned:
+     *
+     * - If the attribute name is `link` or `uri`, it will be linked to the front-end URL.
+     * - If the attribute is a custom field handle, it will pass the responsibility off to the field type.
+     * - If the attribute value is a [[DateTime]] object, the date will be formatted with a localized date format.
+     * - For anything else, it will output the attribute value as a string.
+     *
+     * @param string $attribute The attribute name.
+     * @return string The HTML that should be shown for a given attribute in Table View.
+     * @throws InvalidConfigException
+     * @see getTableAttributeHtml()
+     */
+    protected function tableAttributeHtml(string $attribute): string
+    {
+        switch ($attribute) {
+            case 'link':
+                $url = $this->getUrl();
+
+                if ($url !== null) {
+                    return Html::a('', $url, [
+                        'rel' => 'noopener',
+                        'target' => '_blank',
+                        'data-icon' => 'world',
+                        'title' => Craft::t('app', 'Visit webpage'),
+                    ]);
+                }
+
+                return '';
+
+            case 'uri':
+                $url = $this->getUrl();
+
+                if ($url !== null) {
+                    if ($this->getIsHomepage()) {
+                        $value = Html::tag('span', '', [
+                            'data-icon' => 'home',
+                            'title' => Craft::t('app', 'Homepage'),
+                        ]);
+                    } else {
+                        // Add some <wbr> tags in there so it doesn't all have to be on one line
+                        $find = ['/'];
+                        $replace = ['/<wbr>'];
+
+                        $wordSeparator = Craft::$app->getConfig()->getGeneral()->slugWordSeparator;
+
+                        if ($wordSeparator) {
+                            $find[] = $wordSeparator;
+                            $replace[] = $wordSeparator . '<wbr>';
+                        }
+
+                        $value = str_replace($find, $replace, $this->uri);
+                    }
+
+                    return Html::a(Html::tag('span', $value, ['dir' => 'ltr']), $url, [
+                        'href' => $url,
+                        'rel' => 'noopener',
+                        'target' => '_blank',
+                        'class' => 'go',
+                        'title' => Craft::t('app', 'Visit webpage'),
+                    ]);
+                }
+
+                return '';
+
+            default:
+                // Is this a custom field?
+                if (preg_match('/^field:(\d+)$/', $attribute, $matches)) {
+                    $fieldId = $matches[1];
+                    $field = Craft::$app->getFields()->getFieldById($fieldId);
+
+                    if ($field) {
+                        if ($field instanceof PreviewableFieldInterface) {
+                            // Was this field value eager-loaded?
+                            if ($field instanceof EagerLoadingFieldInterface && $this->hasEagerLoadedElements($field->handle)) {
+                                $value = $this->getEagerLoadedElements($field->handle);
+                            } else {
+                                // The field might not actually belong to this element
+                                try {
+                                    $value = $this->getFieldValue($field->handle);
+                                } catch (\Throwable $e) {
+                                    $value = $field->normalizeValue(null);
+                                }
+                            }
+
+                            return $field->getTableAttributeHtml($value, $this);
+                        }
+                    }
+
+                    return '';
+                }
+
+                $value = $this->$attribute;
+
+                if ($value instanceof DateTime) {
+                    $formatter = Craft::$app->getFormatter();
+                    return Html::tag('span', $formatter->asTimestamp($value, Locale::LENGTH_SHORT), [
+                        'title' => $formatter->asDatetime($value, Locale::LENGTH_SHORT)
+                    ]);
+                }
+
+                return Html::encode($value);
+        }
     }
 
     /**
@@ -2856,169 +3019,6 @@ abstract class Element extends Component implements ElementInterface
         }
 
         return $site;
-    }
-
-    /**
-     * Returns the HTML that should be shown for a given attribute in Table View.
-     *
-     * This method can be used to completely customize what actually shows up within the table’s body for a given
-     * attribute, rather than simply showing the attribute’s raw value.
-     *
-     * For example, if your elements have an `email` attribute that you want to wrap in a `mailto:` link, your
-     * getTableAttributesHtml() method could do this:
-     *
-     * ```php
-     * switch ($attribute) {
-     *     case 'email':
-     *         return $this->email ? Html::mailto(Html::encode($this->email)) : '';
-     *     // ...
-     * }
-     * return parent::tableAttributeHtml($attribute);
-     * ```
-     *
-     * ::: warning
-     * All untrusted text should be passed through [[Html::encode()]] to prevent XSS attacks.
-     * :::
-     *
-     * By default the following will be returned:
-     *
-     * - If the attribute name is `link` or `uri`, it will be linked to the front-end URL.
-     * - If the attribute is a custom field handle, it will pass the responsibility off to the field type.
-     * - If the attribute value is a [[DateTime]] object, the date will be formatted with a localized date format.
-     * - For anything else, it will output the attribute value as a string.
-     *
-     * @param string $attribute The attribute name.
-     * @return string The HTML that should be shown for a given attribute in Table View.
-     * @throws InvalidConfigException
-     * @see getTableAttributeHtml()
-     */
-    protected function tableAttributeHtml(string $attribute): string
-    {
-        switch ($attribute) {
-            case 'link':
-                $url = $this->getUrl();
-
-                if ($url !== null) {
-                    return Html::a('', $url, [
-                        'rel' => 'noopener',
-                        'target' => '_blank',
-                        'data-icon' => 'world',
-                        'title' => Craft::t('app', 'Visit webpage'),
-                    ]);
-                }
-
-                return '';
-
-            case 'uri':
-                $url = $this->getUrl();
-
-                if ($url !== null) {
-                    if ($this->getIsHomepage()) {
-                        $value = Html::tag('span', '', [
-                            'data-icon' => 'home',
-                            'title' => Craft::t('app', 'Homepage'),
-                        ]);
-                    } else {
-                        // Add some <wbr> tags in there so it doesn't all have to be on one line
-                        $find = ['/'];
-                        $replace = ['/<wbr>'];
-
-                        $wordSeparator = Craft::$app->getConfig()->getGeneral()->slugWordSeparator;
-
-                        if ($wordSeparator) {
-                            $find[] = $wordSeparator;
-                            $replace[] = $wordSeparator . '<wbr>';
-                        }
-
-                        $value = str_replace($find, $replace, $this->uri);
-                    }
-
-                    return Html::a(Html::tag('span', $value, ['dir' => 'ltr']), $url, [
-                        'href' => $url,
-                        'rel' => 'noopener',
-                        'target' => '_blank',
-                        'class' => 'go',
-                        'title' => Craft::t('app', 'Visit webpage'),
-                    ]);
-                }
-
-                return '';
-
-            default:
-                // Is this a custom field?
-                if (preg_match('/^field:(\d+)$/', $attribute, $matches)) {
-                    $fieldId = $matches[1];
-                    $field = Craft::$app->getFields()->getFieldById($fieldId);
-
-                    if ($field) {
-                        if ($field instanceof PreviewableFieldInterface) {
-                            // Was this field value eager-loaded?
-                            if ($field instanceof EagerLoadingFieldInterface && $this->hasEagerLoadedElements($field->handle)) {
-                                $value = $this->getEagerLoadedElements($field->handle);
-                            } else {
-                                // The field might not actually belong to this element
-                                try {
-                                    $value = $this->getFieldValue($field->handle);
-                                } catch (\Throwable $e) {
-                                    $value = $field->normalizeValue(null);
-                                }
-                            }
-
-                            return $field->getTableAttributeHtml($value, $this);
-                        }
-                    }
-
-                    return '';
-                }
-
-                $value = $this->$attribute;
-
-                if ($value instanceof DateTime) {
-                    $formatter = Craft::$app->getFormatter();
-                    return Html::tag('span', $formatter->asTimestamp($value, Locale::LENGTH_SHORT), [
-                        'title' => $formatter->asDatetime($value, Locale::LENGTH_SHORT)
-                    ]);
-                }
-
-                return Html::encode($value);
-        }
-    }
-
-    /**
-     * Returns the route that should be used when the element’s URI is requested.
-     *
-     * @return mixed The route that the request should use, or null if no special action should be taken
-     * @see getRoute()
-     */
-    protected function route()
-    {
-        return null;
-    }
-
-    /**
-     * Returns the additional locations that should be available for previewing the element, besides its primary [[getUrl()|URL]].
-     *
-     * Each target should be represented by a sub-array with `'label'` and `'url'` keys.
-     *
-     * @return array
-     * @see getPreviewTargets()
-     * @since 3.2.0
-     */
-    protected function previewTargets(): array
-    {
-        return [];
-    }
-
-    /**
-     * Returns any attributes that should be included in the element’s DOM representation in the control panel.
-     *
-     * @param string $context The context that the element is being rendered in ('index', 'field', etc.)
-     * @return array
-     * @see getHtmlAttributes()
-     */
-    protected function htmlAttributes(string $context): array
-    {
-        return [];
     }
 
     /**
