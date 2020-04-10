@@ -13,6 +13,8 @@ use craft\base\Volume;
 use craft\elements\Asset;
 use craft\gql\base\MutationResolver;
 use craft\helpers\Assets;
+use craft\helpers\FileHelper;
+use craft\helpers\UrlHelper;
 use GraphQL\Error\UserError;
 use GraphQL\Type\Definition\ResolveInfo;
 
@@ -114,14 +116,8 @@ class SaveAsset extends MutationResolver
         $filename = null;
 
         if (!empty($fileInformation['fileData'])) {
-            if (empty($fileInformation['filename'])) {
-                throw new UserError('Missing file name');
-            }
 
             $dataString = $fileInformation['fileData'];
-            $filename = Assets::prepareAssetName($fileInformation['filename']);
-            $extension = pathinfo($filename, PATHINFO_EXTENSION);
-
             $fileData = null;
 
             if (preg_match('/^data:(?<type>[a-z0-9]+\/[a-z0-9\+]+);base64,(?<data>.+)/i', $dataString, $matches)) {
@@ -130,6 +126,21 @@ class SaveAsset extends MutationResolver
             }
 
             if ($fileData) {
+                if (empty($fileInformation['filename'])) {
+                    $extensions = FileHelper::getExtensionsByMimeType($matches['type']);
+
+                    if (empty($extensions)) {
+                        throw new UserError('Invalid file data provided');
+                    } else {
+                        $extension = end($extensions);
+                    }
+
+                    $filename = 'Upload.' . $extension;
+                } else {
+                    $filename = Assets::prepareAssetName($fileInformation['filename']);
+                }
+
+                $extension = pathinfo($filename, PATHINFO_EXTENSION);
                 $tempPath = Assets::tempFilePath($extension);
                 file_put_contents($tempPath, $fileData);
             } else {
@@ -137,7 +148,13 @@ class SaveAsset extends MutationResolver
             }
         } else if (!empty($fileInformation['url'])) {
             $url = $fileInformation['url'];
-            $filename = Assets::prepareAssetName(pathinfo($url, PATHINFO_BASENAME));
+
+            if (empty($fileInformation['filename'])) {
+                $filename = Assets::prepareAssetName(pathinfo(UrlHelper::stripQueryString($url), PATHINFO_BASENAME));
+            } else {
+                $filename = Assets::prepareAssetName($fileInformation['filename']);
+            }
+
             $extension = pathinfo($filename, PATHINFO_EXTENSION);
 
             // Download the file
