@@ -16,7 +16,7 @@ use craft\base\FieldInterface;
 use craft\base\GqlInlineFragmentFieldInterface;
 use craft\base\GqlInlineFragmentInterface;
 use craft\db\Query;
-use craft\db\Table as TableName;
+use craft\db\Table as DbTable;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\MatrixBlockQuery;
@@ -286,7 +286,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                 if (is_numeric($key)) {
                     $info = (new Query())
                         ->select(['uid', 'fieldLayoutId'])
-                        ->from([TableName::MATRIXBLOCKTYPES])
+                        ->from([DbTable::MATRIXBLOCKTYPES])
                         ->where(['id' => $key])
                         ->one();
 
@@ -543,8 +543,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             $ns = $this->handle . '_' . StringHelper::randomString(5);
             $condition = [
                 'exists', (new Query())
-                    ->from(TableName::MATRIXBLOCKS . " matrixblocks_$ns")
-                    ->innerJoin(TableName::ELEMENTS . " elements_$ns", "[[elements_$ns.id]] = [[matrixblocks_$ns.id]]")
+                    ->from(DbTable::MATRIXBLOCKS . " matrixblocks_$ns")
+                    ->innerJoin(DbTable::ELEMENTS . " elements_$ns", "[[elements_$ns.id]] = [[matrixblocks_$ns.id]]")
                     ->where("[[matrixblocks_$ns.ownerId]] = [[elements.id]]")
                     ->andWhere([
                         "matrixblocks_$ns.fieldId" => $this->id,
@@ -800,7 +800,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         // Return any relation data on these elements, defined with this field
         $map = (new Query())
             ->select(['ownerId as source', 'id as target'])
-            ->from([TableName::MATRIXBLOCKS])
+            ->from([DbTable::MATRIXBLOCKS])
             ->where([
                 'fieldId' => $this->id,
                 'ownerId' => $sourceElementIds,
@@ -876,7 +876,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             if ($blockType->getIsNew()) {
                 $blockType->uid = StringHelper::UUID();
             } else if (!$blockType->uid) {
-                $blockType->uid = Db::uidById(TableName::MATRIXBLOCKTYPES, $blockType->id);
+                $blockType->uid = Db::uidById(DbTable::MATRIXBLOCKTYPES, $blockType->id);
             }
 
             foreach ($blockType->getFields() as $field) {

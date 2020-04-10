@@ -15,7 +15,7 @@ use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
-use craft\db\Table as TableName;
+use craft\db\Table as DbTable;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\ElementRelationParamParser;
@@ -612,7 +612,7 @@ JS;
         // Return any relation data on these elements, defined with this field
         $map = (new Query())
             ->select(['sourceId as source', 'targetId as target'])
-            ->from([TableName::RELATIONS])
+            ->from([DbTable::RELATIONS])
             ->where([
                 'and',
                 [
