@@ -116,7 +116,7 @@ class Matrix extends Component
     public function getAllBlockTypes(): array
     {
         $results = $this->_createBlockTypeQuery()
-            ->innerJoin(Table::FIELDS . ' f', '[[f.id]] = [[bt.fieldId]]')
+            ->innerJoin(['f' => Table::FIELDS], '[[f.id]] = [[bt.fieldId]]')
             ->where(['f.type' => MatrixField::class])
             ->all();
 

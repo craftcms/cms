@@ -1851,8 +1851,8 @@ class ProjectConfig extends Component
                 'sites.primary',
                 'siteGroups.uid AS siteGroup',
             ])
-            ->from(['{{%sites}} sites'])
-            ->innerJoin('{{%sitegroups}} siteGroups', '[[sites.groupId]] = [[siteGroups.id]]')
+            ->from(['sites' => Table::SITES])
+            ->innerJoin(['siteGroups' => Table::SITEGROUPS], '[[siteGroups.id]] = [[sites.groupId]]')
             ->where(['sites.dateDeleted' => null])
             ->andWhere(['siteGroups.dateDeleted' => null])
             ->all();
@@ -1891,8 +1891,8 @@ class ProjectConfig extends Component
                 'structures.uid AS structure',
                 'structures.maxLevels AS structureMaxLevels',
             ])
-            ->from(['{{%sections}} sections'])
-            ->leftJoin('{{%structures}} structures', '[[structures.id]] = [[sections.structureId]]')
+            ->from(['sections' => Table::SECTIONS])
+            ->leftJoin(['structures' => Table::STRUCTURES], '[[structures.id]] = [[sections.structureId]]')
             ->where(['sections.dateDeleted' => null])
             ->andWhere(['structures.dateDeleted' => null])
             ->all();
@@ -1929,9 +1929,9 @@ class ProjectConfig extends Component
                 'sites.uid AS siteUid',
                 'sections.uid AS sectionUid',
             ])
-            ->from(['{{%sections_sites}} sections_sites'])
-            ->innerJoin('{{%sites}} sites', '[[sites.id]] = [[sections_sites.siteId]]')
-            ->innerJoin('{{%sections}} sections', '[[sections.id]] = [[sections_sites.sectionId]]')
+            ->from(['sections_sites' => Table::SECTIONS_SITES])
+            ->innerJoin(['sites' => Table::SITES], '[[sites.id]] = [[sections_sites.siteId]]')
+            ->innerJoin(['sections' => Table::SECTIONS], '[[sections.id]] = [[sections_sites.sectionId]]')
             ->where(['sites.dateDeleted' => null])
             ->andWhere(['sections.dateDeleted' => null])
             ->all();
@@ -1959,8 +1959,8 @@ class ProjectConfig extends Component
                 'entrytypes.uid',
                 'sections.uid AS sectionUid',
             ])
-            ->from(['{{%entrytypes}} as entrytypes'])
-            ->innerJoin('{{%sections}} sections', '[[sections.id]] = [[entrytypes.sectionId]]')
+            ->from(['entrytypes' => Table::ENTRYTYPES])
+            ->innerJoin(['sections' => Table::SECTIONS], '[[sections.id]] = [[entrytypes.sectionId]]')
             ->where(['sections.dateDeleted' => null])
             ->andWhere(['entrytypes.dateDeleted' => null])
             ->all();
@@ -2035,8 +2035,8 @@ class ProjectConfig extends Component
                 'fields.uid',
                 'fieldGroups.uid AS fieldGroup',
             ])
-            ->from(['{{%fields}} fields'])
-            ->leftJoin('{{%fieldgroups}} fieldGroups', '[[fields.groupId]] = [[fieldGroups.id]]')
+            ->from(['fields' => Table::FIELDS])
+            ->leftJoin(['fieldGroups' => Table::FIELDGROUPS], '[[fieldGroups.id]] = [[fields.groupId]]')
             ->where(['fields.context' => 'global'])
             ->all();
 
@@ -2087,8 +2087,8 @@ class ProjectConfig extends Component
                 'bt.uid',
                 'f.uid AS field',
             ])
-            ->from(['{{%matrixblocktypes}} bt'])
-            ->innerJoin('{{%fields}} f', '[[bt.fieldId]] = [[f.id]]')
+            ->from(['bt' => Table::MATRIXBLOCKTYPES])
+            ->innerJoin(['f' => Table::FIELDS], '[[f.id]] = [[bt.fieldId]]')
             ->all();
 
         $layoutIds = [];
@@ -2123,8 +2123,8 @@ class ProjectConfig extends Component
                 'fields.uid',
                 'fieldGroups.uid AS fieldGroup',
             ])
-            ->from(['{{%fields}} fields'])
-            ->leftJoin('{{%fieldgroups}} fieldGroups', '[[fields.groupId]] = [[fieldGroups.id]]')
+            ->from(['fields' => Table::FIELDS])
+            ->leftJoin(['fieldGroups' => Table::FIELDGROUPS], '[[fieldGroups.id]] = [[fields.groupId]]')
             ->where(['like', 'fields.context', 'matrixBlockType:'])
             ->all();
 
@@ -2188,7 +2188,7 @@ class ProjectConfig extends Component
                 'volumes.sortOrder',
                 'volumes.uid',
             ])
-            ->from(['{{%volumes}} volumes'])
+            ->from(['volumes' => Table::VOLUMES])
             ->where(['volumes.dateDeleted' => null])
             ->all();
 
@@ -2295,8 +2295,8 @@ class ProjectConfig extends Component
                 'structures.uid AS structure',
                 'structures.maxLevels AS structureMaxLevels',
             ])
-            ->from(['{{%categorygroups}} groups'])
-            ->leftJoin('{{%structures}} structures', '[[structures.id]] = [[groups.structureId]]')
+            ->from(['groups' => Table::CATEGORYGROUPS])
+            ->leftJoin(['structures' => Table::STRUCTURES], '[[structures.id]] = [[groups.structureId]]')
             ->where(['groups.dateDeleted' => null])
             ->andWhere(['structures.dateDeleted' => null])
             ->all();
@@ -2342,9 +2342,9 @@ class ProjectConfig extends Component
                 'sites.uid AS siteUid',
                 'groups.uid AS groupUid',
             ])
-            ->from(['{{%categorygroups_sites}} groups_sites'])
-            ->innerJoin('{{%sites}} sites', '[[sites.id]] = [[groups_sites.siteId]]')
-            ->innerJoin('{{%categorygroups}} groups', '[[groups.id]] = [[groups_sites.groupId]]')
+            ->from(['groups_sites' => Table::CATEGORYGROUPS_SITES])
+            ->innerJoin(['sites' => Table::SITES], '[[sites.id]] = [[groups_sites.siteId]]')
+            ->innerJoin(['groups' => Table::CATEGORYGROUPS], '[[groups.id]] = [[groups_sites.groupId]]')
             ->where(['groups.dateDeleted' => null])
             ->andWhere(['sites.dateDeleted' => null])
             ->all();
@@ -2376,7 +2376,7 @@ class ProjectConfig extends Component
                 'groups.uid',
                 'groups.fieldLayoutId',
             ])
-            ->from(['{{%taggroups}} groups'])
+            ->from(['groups' => Table::TAGGROUPS])
             ->where(['groups.dateDeleted' => null])
             ->all();
 
@@ -2419,7 +2419,7 @@ class ProjectConfig extends Component
                 'sets.uid',
                 'sets.fieldLayoutId',
             ])
-            ->from(['{{%globalsets}} sets'])
+            ->from(['sets' => Table::GLOBALSETS])
             ->all();
 
         $setData = [];
@@ -2570,10 +2570,10 @@ class ProjectConfig extends Component
                 'tabs.uid AS tabUid',
                 'layouts.id AS layoutId',
             ])
-            ->from(['{{%fieldlayoutfields}} AS layoutFields'])
-            ->innerJoin('{{%fieldlayouttabs}} AS tabs', '[[layoutFields.tabId]] = [[tabs.id]]')
-            ->innerJoin('{{%fieldlayouts}} AS layouts', '[[layoutFields.layoutId]] = [[layouts.id]]')
-            ->innerJoin('{{%fields}} AS fields', '[[layoutFields.fieldId]] = [[fields.id]]')
+            ->from(['layoutFields' => Table::FIELDLAYOUTFIELDS])
+            ->innerJoin(['tabs' => Table::FIELDLAYOUTTABS], '[[tabs.id]] = [[layoutFields.tabId]]')
+            ->innerJoin(['layouts' => Table::FIELDLAYOUTS], '[[layouts.id]] = [[layoutFields.layoutId]]')
+            ->innerJoin(['fields' => Table::FIELDS], '[[fields.id]] = [[layoutFields.fieldId]]')
             ->where(['layouts.id' => $layoutIds])
             ->andWhere(['layouts.dateDeleted' => null])
             ->orderBy(['tabs.sortOrder' => SORT_ASC, 'layoutFields.sortOrder' => SORT_ASC])

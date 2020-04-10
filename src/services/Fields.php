@@ -684,8 +684,8 @@ class Fields extends Component
     public function getFieldsByElementType(string $elementType): array
     {
         $results = $this->_createFieldQuery()
-            ->innerJoin('{{%fieldlayoutfields}} flf', '[[flf.fieldId]] = [[fields.id]]')
-            ->innerJoin('{{%fieldlayouts}} fl', '[[fl.id]] = [[flf.layoutId]]')
+            ->innerJoin(['flf' => Table::FIELDLAYOUTFIELDS], '[[flf.fieldId]] = [[fields.id]]')
+            ->innerJoin(['fl' => Table::FIELDLAYOUTS], '[[fl.id]] = [[flf.layoutId]]')
             ->where([
                 'fl.type' => $elementType,
                 'fl.dateDeleted' => null,
@@ -1103,8 +1103,8 @@ class Fields extends Component
                 'flf.required',
                 'flf.sortOrder',
             ])
-            ->innerJoin('{{%fieldlayoutfields}} flf', '[[flf.fieldId]] = [[fields.id]]')
-            ->innerJoin('{{%fieldlayouttabs}} flt', '[[flt.id]] = [[flf.tabId]]')
+            ->innerJoin(['flf' => Table::FIELDLAYOUTFIELDS], '[[flf.fieldId]] = [[fields.id]]')
+            ->innerJoin(['flt' => Table::FIELDLAYOUTTABS], '[[flt.id]] = [[flf.tabId]]')
             ->where(['flf.layoutId' => $layoutId])
             ->orderBy(['flt.sortOrder' => SORT_ASC, 'flf.sortOrder' => SORT_ASC])
             ->all();
@@ -1615,7 +1615,7 @@ class Fields extends Component
                 'fields.settings',
                 'fields.uid'
             ])
-            ->from(['{{%fields}} fields'])
+            ->from(['fields' => Table::FIELDS])
             ->orderBy(['fields.name' => SORT_ASC, 'fields.handle' => SORT_ASC]);
 
         // todo: remove schema version condition after next beakpoint

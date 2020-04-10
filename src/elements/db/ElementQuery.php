@@ -1318,8 +1318,8 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         $this->query
             ->from(['subquery' => $this->subQuery])
-            ->innerJoin('{{%elements}} elements', '[[elements.id]] = [[subquery.elementsId]]')
-            ->innerJoin('{{%elements_sites}} elements_sites', '[[elements_sites.id]] = [[subquery.elementsSitesId]]');
+            ->innerJoin(['elements' => Table::ELEMENTS], '[[elements.id]] = [[subquery.elementsId]]')
+            ->innerJoin(['elements_sites' => Table::ELEMENTS_SITES], '[[elements_sites.id]] = [[subquery.elementsSitesId]]');
 
         $this->subQuery
             ->addSelect([
@@ -1327,7 +1327,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 'elementsSitesId' => 'elements_sites.id',
             ])
             ->from(['elements' => Table::ELEMENTS])
-            ->innerJoin('{{%elements_sites}} elements_sites', '[[elements_sites.elementId]] = [[elements.id]]')
+            ->innerJoin(['elements_sites' => Table::ELEMENTS_SITES], '[[elements_sites.elementId]] = [[elements.id]]')
             ->andWhere($this->where)
             ->offset($this->offset)
             ->limit($this->limit)
@@ -1986,7 +1986,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     protected function joinElementTable(string $table)
     {
-        $joinTable = "{{%{$table}}} {$table}";
+        $joinTable = [$table => "{{%$table}}"];
         $this->query->innerJoin($joinTable, "[[{$table}.id]] = [[subquery.elementsId]]");
         $this->subQuery->innerJoin($joinTable, "[[{$table}.id]] = [[elements.id]]");
     }
@@ -2226,12 +2226,12 @@ class ElementQuery extends Query implements ElementQueryInterface
             ]);
 
         if ($this->structureId) {
-            $this->query->innerJoin('{{%structureelements}} structureelements', [
+            $this->query->innerJoin(['structureelements' => Table::STRUCTUREELEMENTS], [
                 'and',
                 '[[structureelements.elementId]] = [[subquery.elementsId]]',
                 ['structureelements.structureId' => $this->structureId]
             ]);
-            $this->subQuery->innerJoin('{{%structureelements}} structureelements', [
+            $this->subQuery->innerJoin(['structureelements' => Table::STRUCTUREELEMENTS], [
                 'and',
                 '[[structureelements.elementId]] = [[elements.id]]',
                 ['structureelements.structureId' => $this->structureId]
@@ -2239,7 +2239,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         } else {
             $this->query
                 ->addSelect(['structureelements.structureId'])
-                ->leftJoin('{{%structureelements}} structureelements', [
+                ->leftJoin(['structureelements' => Table::STRUCTUREELEMENTS], [
                     'and',
                     '[[structureelements.elementId]] = [[subquery.elementsId]]',
                     '[[structureelements.structureId]] = [[subquery.structureId]]',
@@ -2254,7 +2254,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             }
             $this->subQuery
                 ->addSelect(['structureelements.structureId'])
-                ->leftJoin('{{%structureelements}} structureelements', [
+                ->leftJoin(['structureelements' => Table::STRUCTUREELEMENTS], [
                     'and',
                     '[[structureelements.elementId]] = [[elements.id]]',
                     ['exists', $existsQuery],
@@ -2396,9 +2396,9 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         if ($this->drafts) {
-            $this->subQuery->innerJoin(Table::DRAFTS . ' drafts', '[[drafts.id]] = [[elements.draftId]]');
+            $this->subQuery->innerJoin(['drafts' => Table::DRAFTS], '[[drafts.id]] = [[elements.draftId]]');
             $this->query
-                ->innerJoin(Table::DRAFTS . ' drafts', '[[drafts.id]] = [[elements.draftId]]')
+                ->innerJoin(['drafts' => Table::DRAFTS], '[[drafts.id]] = [[elements.draftId]]')
                 ->addSelect([
                     'elements.draftId',
                     'drafts.sourceId as draftSourceId',
@@ -2429,9 +2429,9 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         if ($this->revisions) {
-            $this->subQuery->innerJoin(Table::REVISIONS . ' revisions', '[[revisions.id]] = [[elements.revisionId]]');
+            $this->subQuery->innerJoin(['revisions' => Table::REVISIONS], '[[revisions.id]] = [[elements.revisionId]]');
             $this->query
-                ->innerJoin(Table::REVISIONS . ' revisions', '[[revisions.id]] = [[elements.revisionId]]')
+                ->innerJoin(['revisions' => Table::REVISIONS], '[[revisions.id]] = [[elements.revisionId]]')
                 ->addSelect([
                     'elements.revisionId',
                     'revisions.sourceId as revisionSourceId',

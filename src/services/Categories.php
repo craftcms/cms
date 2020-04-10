@@ -672,7 +672,7 @@ class Categories extends Component
         }
 
         // Nuke all the layout fields from the DB
-        Craft::$app->getDb()->createCommand()->delete('{{%fieldlayoutfields}}', ['fieldId' => $field->id])->execute();
+        Craft::$app->getDb()->createCommand()->delete(Table::FIELDLAYOUTFIELDS, ['fieldId' => $field->id])->execute();
 
         // Allow events again
         $projectConfig->muteEvents = false;
@@ -717,8 +717,8 @@ class Categories extends Component
         // Get the structure ID
         $structureId = (new Query())
             ->select(['categorygroups.structureId'])
-            ->from(['{{%categories}} categories'])
-            ->innerJoin('{{%categorygroups}} categorygroups', '[[categorygroups.id]] = [[categories.groupId]]')
+            ->from(['categories' => Table::CATEGORIES])
+            ->innerJoin(['categorygroups' => Table::CATEGORYGROUPS], '[[categorygroups.id]] = [[categories.groupId]]')
             ->where(['categories.id' => $categoryId])
             ->scalar();
 

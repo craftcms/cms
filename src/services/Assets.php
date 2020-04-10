@@ -810,8 +810,8 @@ class Assets extends Component
         // Get a list from DB as well
         $fileList = (new Query())
             ->select(['assets.filename'])
-            ->from(['{{%assets}} assets'])
-            ->innerJoin(['{{%elements}} elements'], '[[assets.id]] = [[elements.id]]')
+            ->from(['assets' => Table::ASSETS])
+            ->innerJoin(['elements' => Table::ELEMENTS], '[[elements.id]] = [[assets.id]]')
             ->where([
                 'assets.folderId' => $folderId,
                 'elements.dateDeleted' => null

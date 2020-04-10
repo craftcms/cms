@@ -543,8 +543,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             $ns = $this->handle . '_' . StringHelper::randomString(5);
             $condition = [
                 'exists', (new Query())
-                    ->from(DbTable::MATRIXBLOCKS . " matrixblocks_$ns")
-                    ->innerJoin(DbTable::ELEMENTS . " elements_$ns", "[[elements_$ns.id]] = [[matrixblocks_$ns.id]]")
+                    ->from(["matrixblocks_$ns" => DbTable::MATRIXBLOCKS])
+                    ->innerJoin(["elements_$ns" => DbTable::ELEMENTS], "[[elements_$ns.id]] = [[matrixblocks_$ns.id]]")
                     ->where("[[matrixblocks_$ns.ownerId]] = [[elements.id]]")
                     ->andWhere([
                         "matrixblocks_$ns.fieldId" => $this->id,

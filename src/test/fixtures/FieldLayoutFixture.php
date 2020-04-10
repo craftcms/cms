@@ -232,9 +232,8 @@ abstract class FieldLayoutFixture extends Fixture
         $link['layoutId'] = $fieldLayout->id;
 
         $executed = Craft::$app->getDb()->createCommand()
-            ->insert(Table::FIELDLAYOUTFIELDS,
-                $link
-            )->execute();
+            ->insert(Table::FIELDLAYOUTFIELDS, $link)
+            ->execute();
 
         if (!$executed) {
             throw new InvalidArgumentException("Unable to link field $field->handle to field layout $fieldLayout->type");

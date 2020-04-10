@@ -372,8 +372,8 @@ class Sections extends Component
                 'sections_sites.uriFormat',
                 'sections_sites.template',
             ])
-            ->from(['{{%sections_sites}} sections_sites'])
-            ->innerJoin('{{%sites}} sites', '[[sites.id]] = [[sections_sites.siteId]]')
+            ->from(['sections_sites' => Table::SECTIONS_SITES])
+            ->innerJoin(['sites' => Table::SITES], '[[sites.id]] = [[sections_sites.siteId]]')
             ->where(['sections_sites.sectionId' => $sectionId])
             ->orderBy(['sites.sortOrder' => SORT_ASC])
             ->all();
@@ -966,7 +966,9 @@ class Sections extends Component
         }
 
         // Nuke all the layout fields from the DB
-        Craft::$app->getDb()->createCommand()->delete('{{%fieldlayoutfields}}', ['fieldId' => $field->id])->execute();
+        Craft::$app->getDb()->createCommand()
+            ->delete(Table::FIELDLAYOUTFIELDS, ['fieldId' => $field->id])
+            ->execute();
 
         // Allow events again
         $projectConfig->muteEvents = false;
@@ -1487,8 +1489,8 @@ class Sections extends Component
                 'sections.uid',
                 'structures.maxLevels',
             ])
-            ->leftJoin('{{%structures}} structures', $joinCondition)
-            ->from(['{{%sections}} sections'])
+            ->leftJoin(['structures' => Table::STRUCTURES], $joinCondition)
+            ->from(['sections' => Table::SECTIONS])
             ->where($condition)
             ->orderBy(['name' => SORT_ASC]);
 

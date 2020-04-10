@@ -810,7 +810,7 @@ class EntryQuery extends ElementQuery
 
             if ($this->authorGroupId) {
                 $this->subQuery
-                    ->innerJoin('{{%usergroups_users}} usergroups_users', '[[usergroups_users.userId]] = [[entries.authorId]]')
+                    ->innerJoin(['usergroups_users' => Table::USERGROUPS_USERS], '[[usergroups_users.userId]] = [[entries.authorId]]')
                     ->andWhere(Db::parseParam('usergroups_users.groupId', $this->authorGroupId));
             }
         }
@@ -960,7 +960,7 @@ class EntryQuery extends ElementQuery
         $this->subQuery->andWhere($condition);
 
         if ($joinSections) {
-            $this->subQuery->innerJoin('{{%sections}} sections', '[[sections.id]] = [[entries.sectionId]]');
+            $this->subQuery->innerJoin(['sections' => Table::SECTIONS], '[[sections.id]] = [[entries.sectionId]]');
         }
     }
 }

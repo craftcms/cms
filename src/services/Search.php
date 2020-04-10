@@ -337,17 +337,20 @@ class Search extends Component
     public function deleteOrphanedIndexes()
     {
         $db = Craft::$app->getDb();
+        $searchIndexTable = Table::SEARCHINDEX;
+        $elementsTable = Table::ELEMENTS;
+
         if ($db->getIsMysql()) {
             $sql = <<<SQL
-DELETE s.* FROM {{%searchindex}} s
-LEFT JOIN {{%elements}} e ON e.id = s.elementId
+DELETE s.* FROM $searchIndexTable s
+LEFT JOIN $elementsTable e ON e.id = s.elementId
 WHERE e.id IS NULL
 SQL;
         } else {
             $sql = <<<SQL
-DELETE FROM {{%searchindex}} s
+DELETE FROM $searchIndexTable s
 WHERE NOT EXISTS (
-    SELECT * FROM {{%elements}}
+    SELECT * FROM $elementsTable
     WHERE id = s."elementId"
 )
 SQL;

@@ -1153,8 +1153,8 @@ class Sites extends Component
                     's.dateCreated',
                     's.dateUpdated',
                 ])
-                ->from(['{{%sites}} s'])
-                ->innerJoin('{{%sitegroups}} sg', '[[sg.id]] = [[s.groupId]]')
+                ->from(['s' => Table::SITES])
+                ->innerJoin(['sg' => Table::SITEGROUPS], '[[sg.id]] = [[s.groupId]]')
                 ->where(['s.dateDeleted' => null])
                 ->andWhere(['sg.dateDeleted' => null])
                 ->orderBy(['sg.name' => SORT_ASC, 's.sortOrder' => SORT_ASC])
@@ -1179,7 +1179,7 @@ class Sites extends Component
                         's.sortOrder',
                         's.uid',
                     ])
-                    ->from(['{{%sites}} s'])
+                    ->from(['s' => Table::SITES])
                     ->orderBy(['s.name' => SORT_ASC])
                     ->all();
             }

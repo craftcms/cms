@@ -512,7 +512,7 @@ class MatrixBlockQuery extends ElementQuery
 
         if (!$allowOwnerDrafts || !$allowOwnerRevisions) {
             // todo: we will need to expand on this when Matrix blocks can be nested.
-            $this->subQuery->innerJoin(Table::ELEMENTS . ' owners', '[[owners.id]] = [[matrixblocks.ownerId]]');
+            $this->subQuery->innerJoin(['owners' => Table::ELEMENTS], '[[owners.id]] = [[matrixblocks.ownerId]]');
 
             if (!$allowOwnerDrafts) {
                 $this->subQuery->andWhere(['owners.draftId' => null]);

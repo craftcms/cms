@@ -294,7 +294,7 @@ class DraftBehavior extends BaseRevisionBehavior
         $query = (new Query())
             ->select(['f.handle'])
             ->from(['f' => Table::FIELDS])
-            ->innerJoin(Table::CHANGEDFIELDS . ' cf', '[[cf.fieldId]] = [[f.id]]')
+            ->innerJoin(['cf' => Table::CHANGEDFIELDS], '[[cf.fieldId]] = [[f.id]]')
             ->where([
                 'cf.elementId' => $this->sourceId,
                 'cf.siteId' => $this->owner->siteId,
@@ -325,7 +325,7 @@ class DraftBehavior extends BaseRevisionBehavior
         return $this->_modifiedFields = array_flip((new Query())
             ->select(['f.handle'])
             ->from(['f' => Table::FIELDS])
-            ->innerJoin(Table::CHANGEDFIELDS . ' cf', '[[cf.fieldId]] = [[f.id]]')
+            ->innerJoin(['cf' => Table::CHANGEDFIELDS], '[[cf.fieldId]] = [[f.id]]')
             ->where([
                 'cf.elementId' => $this->owner->id,
                 'cf.siteId' => $this->owner->siteId,

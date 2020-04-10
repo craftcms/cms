@@ -175,8 +175,8 @@ class UserGroups extends Component
                 'g.handle',
                 'g.uid'
             ])
-            ->from(['{{%usergroups}} g'])
-            ->innerJoin('{{%usergroups_users}} gu', '[[gu.groupId]] = [[g.id]]')
+            ->from(['g' => Table::USERGROUPS])
+            ->innerJoin(['gu' => Table::USERGROUPS_USERS], '[[gu.groupId]] = [[g.id]]')
             ->where(['gu.userId' => $userId])
             ->all();
 

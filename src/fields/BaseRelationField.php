@@ -378,7 +378,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
                 ->fixedOrder();
         } else if ($value !== '' && $element && $element->id) {
             $query->innerJoin(
-                '{{%relations}} relations',
+                ['relations' => DbTable::RELATIONS],
                 [
                     'and',
                     '[[relations.targetId]] = [[elements.id]]',
@@ -446,7 +446,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             $paramHandle = ':fieldId' . StringHelper::randomString(8);
 
             $query->subQuery->andWhere(
-                "(select count([[{$alias}.id]]) from {{%relations}} {{{$alias}}} where [[{$alias}.sourceId]] = [[elements.id]] and [[{$alias}.fieldId]] = {$paramHandle}) {$operator} 0",
+                "(select count([[$alias.id]]) from " . DbTable::RELATIONS . " {{{$alias}}} where [[$alias.sourceId]] = [[elements.id]] and [[$alias.fieldId]] = $paramHandle) $operator 0",
                 [$paramHandle => $this->id]
             );
         } else {

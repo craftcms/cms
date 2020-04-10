@@ -366,8 +366,8 @@ class Elements extends Component
         // First get the element ID and type
         $query = (new Query())
             ->select(['elements.id', 'elements.type'])
-            ->from(['{{%elements}} elements'])
-            ->innerJoin('{{%elements_sites}} elements_sites', '[[elements_sites.elementId]] = [[elements.id]]')
+            ->from(['elements' => Table::ELEMENTS])
+            ->innerJoin(['elements_sites' => Table::ELEMENTS_SITES], '[[elements_sites.elementId]] = [[elements.id]]')
             ->where([
                 'elements_sites.siteId' => $siteId,
             ]);
@@ -2347,21 +2347,22 @@ class Elements extends Component
         ];
 
         $db = Craft::$app->getDb();
+        $elementsTable = Table::ELEMENTS;
 
         foreach (['draftId' => Table::DRAFTS, 'revisionId' => Table::REVISIONS] as $fk => $table) {
             if ($db->getIsMysql()) {
                 $sql = <<<SQL
-UPDATE {{%elements}} [[e]]
-INNER JOIN {$table} [[t]] ON [[t.id]] = [[e.{$fk}]]
+UPDATE $elementsTable [[e]]
+INNER JOIN $table [[t]] ON [[t.id]] = [[e.$fk]]
 SET [[e.dateDeleted]] = :dateDeleted
 WHERE [[t.sourceId]] = :sourceId
 SQL;
             } else {
                 $sql = <<<SQL
-UPDATE {{%elements}} [[e]]
+UPDATE $elementsTable [[e]]
 SET [[dateDeleted]] = :dateDeleted
-FROM {$table} [[t]]
-WHERE [[t.id]] = [[e.{$fk}]]
+FROM $table [[t]]
+WHERE [[t.id]] = [[e.$fk]]
 AND [[t.sourceId]] = :sourceId
 SQL;
             }

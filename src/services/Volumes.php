@@ -717,7 +717,9 @@ class Volumes extends Component
         }
 
         // Nuke all the layout fields from the DB
-        Craft::$app->getDb()->createCommand()->delete('{{%fieldlayoutfields}}', ['fieldId' => $field->id])->execute();
+        Craft::$app->getDb()->createCommand()
+            ->delete(Table::FIELDLAYOUTFIELDS, ['fieldId' => $field->id])
+            ->execute();
 
         // Allow events again
         $projectConfig->muteEvents = false;

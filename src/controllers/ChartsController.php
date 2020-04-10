@@ -9,6 +9,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\db\Query;
+use craft\db\Table;
 use craft\helpers\ChartHelper;
 use craft\helpers\DateTimeHelper;
 use craft\web\Controller;
@@ -53,10 +54,10 @@ class ChartsController extends Controller
 
         // Prep the query
         $query = (new Query())
-            ->from(['{{%users}} users']);
+            ->from(['users' => Table::USERS]);
 
         if ($userGroupId) {
-            $query->innerJoin('{{%usergroups_users}} usergroups_users', '[[usergroups_users.userId]] = [[users.id]]');
+            $query->innerJoin(['usergroups_users' => Table::USERGROUPS_USERS], '[[usergroups_users.userId]] = [[users.id]]');
             $query->where(['usergroups_users.groupId' => $userGroupId]);
         }
 

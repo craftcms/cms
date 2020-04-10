@@ -266,8 +266,8 @@ class m160804_110002_userphotos_to_assets extends Migration
 
             $assetExists = (new Query())
                 ->select(['assets.id'])
-                ->from(['{{%assets}} assets'])
-                ->innerJoin('{{%volumefolders}} volumefolders', '[[volumefolders.id]] = [[assets.folderId]]')
+                ->from(['assets' => Table::ASSETS])
+                ->innerJoin(['volumefolders' => Table::VOLUMEFOLDERS], '[[volumefolders.id]] = [[assets.folderId]]')
                 ->where([
                     'assets.folderId' => $folderId,
                     'filename' => $user['photo']

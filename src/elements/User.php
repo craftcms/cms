@@ -1400,7 +1400,7 @@ class User extends Element implements IdentityInterface
             // Get the entry IDs that belong to this user
             $entryQuery = (new Query())
                 ->select('e.id')
-                ->from('{{%entries}} e')
+                ->from(['e' => Table::ENTRIES])
                 ->where(['e.authorId' => $this->id]);
 
             // Should we transfer the content to a new user?
@@ -1434,7 +1434,7 @@ class User extends Element implements IdentityInterface
                     ->addSelect([
                         'siteId' => (new Query())
                             ->select('i18n.siteId')
-                            ->from('{{%elements_sites}} i18n')
+                            ->from(['i18n' => Table::ELEMENTS_SITES])
                             ->where('[[i18n.elementId]] = [[e.id]]')
                             ->limit(1)
                     ])

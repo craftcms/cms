@@ -37,7 +37,7 @@ class m191222_002848_peer_asset_permissions extends Migration
             $userIds = (new Query())
                 ->select(['upu.userId'])
                 ->from(['upu' => Table::USERPERMISSIONS_USERS])
-                ->innerJoin(Table::USERPERMISSIONS . ' up', '[[up.id]] = [[upu.permissionId]]')
+                ->innerJoin(['up' => Table::USERPERMISSIONS], '[[up.id]] = [[upu.permissionId]]')
                 ->where(['up.name' => $oldPermission])
                 ->column($this->db);
             if (!empty($userIds)) {

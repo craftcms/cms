@@ -240,7 +240,7 @@ class ConvertEntryRevisions extends BaseJob
         $lowestNum = (new Query())
             ->select(['min([[num]])'])
             ->from(['r' => Table::REVISIONS])
-            ->innerJoin(Table::ELEMENTS . ' e', '[[e.revisionId]] = [[r.id]]')
+            ->innerJoin(['e' => Table::ELEMENTS], '[[e.revisionId]] = [[r.id]]')
             ->where(['sourceId' => $entry->id])
             ->andWhere(['>=', 'e.dateCreated', $result['dateCreated']])
             ->scalar();

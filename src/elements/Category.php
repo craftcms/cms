@@ -605,7 +605,7 @@ class Category extends Element
         // Add the category back into its structure
         $parent = self::find()
             ->structureId($structureId)
-            ->innerJoin('{{%categories}} j', '[[j.parentId]] = [[elements.id]]')
+            ->innerJoin(['j' => Table::CATEGORIES], '[[j.parentId]] = [[elements.id]]')
             ->andWhere(['j.id' => $this->id])
             ->one();
 

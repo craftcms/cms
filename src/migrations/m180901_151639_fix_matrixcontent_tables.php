@@ -136,9 +136,9 @@ class m180901_151639_fix_matrixcontent_tables extends Migration
         // get all of the columns this field needs
         $subFields = (new Query())
             ->select(['f.handle', 'mbt.handle as blockTypeHandle'])
-            ->from(['{{%fields}} f'])
-            ->innerJoin('{{%fieldlayoutfields}} flf', '[[flf.fieldId]] = [[f.id]]')
-            ->innerJoin('{{%matrixblocktypes}} mbt', '[[mbt.fieldLayoutId]] = [[flf.layoutId]]')
+            ->from(['f' => Table::FIELDS])
+            ->innerJoin(['flf' => Table::FIELDLAYOUTFIELDS], '[[flf.fieldId]] = [[f.id]]')
+            ->innerJoin(['mbt' => Table::MATRIXBLOCKTYPES], '[[mbt.fieldLayoutId]] = [[flf.layoutId]]')
             ->where(['mbt.fieldId' => $fieldId])
             ->all();
 

@@ -1357,7 +1357,7 @@ EOD;
             // Add the entry back into its structure
             $parent = self::find()
                 ->structureId($section->structureId)
-                ->innerJoin('{{%entries}} j', '[[j.parentId]] = [[elements.id]]')
+                ->innerJoin(['j' => Table::ENTRIES], '[[j.parentId]] = [[elements.id]]')
                 ->andWhere(['j.id' => $this->id])
                 ->one();
 

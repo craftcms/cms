@@ -818,7 +818,7 @@ class AssetQuery extends ElementQuery
         }
 
         $this->joinElementTable('assets');
-        $this->query->innerJoin('{{%volumefolders}} volumeFolders', '[[assets.folderId]] = [[volumeFolders.id]]');
+        $this->query->innerJoin(['volumeFolders' => Table::VOLUMEFOLDERS], '[[volumeFolders.id]] = [[assets.folderId]]');
 
         $this->query->select([
             'assets.volumeId',

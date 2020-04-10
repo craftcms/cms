@@ -453,7 +453,7 @@ class Drafts extends Component
         $drafts = (new Query())
             ->select(['e.draftId', 'e.type'])
             ->from(['e' => Table::ELEMENTS])
-            ->innerJoin(Table::DRAFTS . ' d', '[[d.id]] = [[e.draftId]]')
+            ->innerJoin(['d' => Table::DRAFTS], '[[d.id]] = [[e.draftId]]')
             ->where(['d.sourceId' => null])
             ->andWhere(['<', 'e.dateCreated', Db::prepareDateForDb($pastTime)])
             ->all();
