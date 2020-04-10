@@ -16,6 +16,7 @@ use Twig\Markup;
  * ElementInterface defines the common interface to be implemented by element classes.
  * A class implementing this interface should also use [[ElementTrait]] and [[ContentTrait]].
  *
+ * @mixin ElementTrait
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */

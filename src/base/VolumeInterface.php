@@ -16,6 +16,7 @@ use craft\errors\VolumeObjectNotFoundException;
  * VolumeInterface defines the common interface to be implemented by volume classes.
  * A class implementing this interface should also use [[SavableComponentTrait]] and [[VolumeTrait]].
  *
+ * @mixin VolumeTrait
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
