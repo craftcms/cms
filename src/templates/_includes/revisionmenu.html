@@ -14,15 +14,20 @@
     .with(['draftCreator'])
     .all() : [] %}
 
-{% set revisions = element.find()
-    .revisionOf(element.sourceId)
-    .siteId(element.siteId)
-    .anyStatus()
-    .offset(1)
-    .limit(10)
-    .orderBy({dateCreated: SORT_DESC})
-    .with(['revisionCreator'])
-    .all() %}
+{% set maxRevisions = craft.app.config.general.maxRevisions %}
+{% if not maxRevisions or maxRevisions > 1 %}
+    {% set revisions = element.find()
+        .revisionOf(element.sourceId)
+        .siteId(element.siteId)
+        .anyStatus()
+        .offset(1)
+        .limit(maxRevisions ? min(maxRevisions - 1, 10) : 10)
+        .orderBy({dateCreated: SORT_DESC})
+        .with(['revisionCreator'])
+        .all() %}
+{% else %}
+    {% set revisions = [] %}
+{% endif %}
 
 {% set baseParams = craft.app.request.queryParams|withoutKey('draftId')|withoutKey('revisionId')|withoutKey('siteId')|withoutKey('fresh') %}
 {% if craft.app.config.general.pathParam %}

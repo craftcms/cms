@@ -17,6 +17,8 @@ use craft\events\RevisionEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
+use craft\helpers\Queue;
+use craft\queue\jobs\PruneRevisions;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
 use yii\db\Exception;
@@ -174,20 +176,12 @@ class Revisions extends Component
         $mutex->release($lockKey);
 
         // Prune any excess revisions
-        $maxRevisions = Craft::$app->getConfig()->getGeneral()->maxRevisions;
-        if ($maxRevisions > 0) {
-            // Don't count the current revision
-            $extraRevisions = $source::find()
-                ->revisionOf($source)
-                ->siteId($source->siteId)
-                ->anyStatus()
-                ->orderBy(['num' => SORT_DESC])
-                ->offset($maxRevisions)
-                ->all();
-
-            foreach ($extraRevisions as $extraRevision) {
-                $elementsService->deleteElement($extraRevision, true);
-            }
+        if (Craft::$app->getConfig()->getGeneral()->maxRevisions) {
+            Queue::push(new PruneRevisions([
+                'elementType' => get_class($source),
+                'sourceId' => $source->id,
+                'siteId' => $source->siteId,
+            ]), 2049);
         }
 
         return $revision;
