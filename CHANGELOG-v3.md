@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Improved Plugin Store performance.
+
 ### Fixed
 - Fixed a bug where the `app/get-plugin-license-info` action was not parsing license key environment variables.
 
