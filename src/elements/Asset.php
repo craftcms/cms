@@ -415,7 +415,7 @@ class Asset extends Element
             'size',
             'dateModified',
             'uploader',
-            'link'
+            'link',
         ];
     }
 
