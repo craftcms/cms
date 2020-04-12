@@ -954,6 +954,7 @@ ul.icons {
   appearance: none;
   outline: none;
   color: $textColor;
+  font-size: inherit;
   background-color: transparentize($inputColor, 0.75);
 
   &.chromeless {

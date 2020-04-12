@@ -418,7 +418,7 @@ body.ltr .buttons > .btn:not(.hidden) + .btn, body.ltr .buttons > .btn:not(.hidd
 body.rtl .buttons > .btn:not(.hidden) + .btn, body.rtl .buttons > .btn:not(.hidden) + .btngroup, body.rtl .buttons > .btngroup:not(.hidden) + .btn, body.rtl .buttons > .btngroup:not(.hidden) + .btngroup { margin-right: 5px; }
 .footer > .buttons { margin: 0; }
 
-.btn { display: inline-block; border-radius: 5px; padding: 7px 14px; border: none; text-align: center; white-space: nowrap; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; cursor: pointer; -webkit-box-sizing: border-box; box-sizing: border-box; -webkit-appearance: none; -moz-appearance: none; appearance: none; outline: none; color: #3f4d5a; background-color: rgba(96, 125, 159, 0.25); }
+.btn { display: inline-block; border-radius: 5px; padding: 7px 14px; border: none; text-align: center; white-space: nowrap; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; cursor: pointer; -webkit-box-sizing: border-box; box-sizing: border-box; -webkit-appearance: none; -moz-appearance: none; appearance: none; outline: none; color: #3f4d5a; font-size: inherit; background-color: rgba(96, 125, 159, 0.25); }
 .btn.chromeless { background-color: transparent; height: auto; padding: 0; }
 .btn.chromeless:hover, .btn.chromeless:active, .btn.chromeless:focus { background-color: transparent; }
 .btn.chromeless:hover, .btn.chromeless:active { text-decoration: underline; }
