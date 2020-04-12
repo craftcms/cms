@@ -7,6 +7,7 @@
 - Asset indexes now show the “Link” column by default. ([#5910](https://github.com/craftcms/cms/pull/5910))
 
 ### Fixed
+- Fixed a bug where users weren’t getting activated after verifying their email address, if a password was already set on their account. ([#5911](https://github.com/craftcms/cms/issues/5911))
 - Fixed a bug where the `app/get-plugin-license-info` action was not parsing license key environment variables.
 
 ## 3.4.15 - 2020-04-09
