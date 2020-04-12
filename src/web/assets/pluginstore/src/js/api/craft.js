@@ -135,6 +135,7 @@ export default {
                     },
                 })
                 .then((response) => {
+                    Craft.clearCachedApiHeaders()
                     resolve(response)
                 })
                 .catch((error) => {
@@ -158,6 +159,7 @@ export default {
                     }
                 })
                 .then((response) => {
+                    Craft.clearCachedApiHeaders()
                     resolve(response)
                 })
                 .catch((error) => {

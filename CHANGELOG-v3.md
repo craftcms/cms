@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Changed
+- Improved Plugin Store performance.
+- Asset indexes now show the “Link” column by default. ([#5910](https://github.com/craftcms/cms/pull/5910))
+
 ### Fixed
 - Fixed a bug where the `app/get-plugin-license-info` action was not parsing license key environment variables.
 
