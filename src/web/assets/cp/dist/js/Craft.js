@@ -10,7 +10,7 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-/*!   - 2020-04-12 */
+/*!   - 2020-04-13 */
 (function ($) {
   /** global: Craft */
 
@@ -19613,6 +19613,51 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     },
     createTextField: function createTextField(config) {
       return this.createField(this.createTextInput(config), config);
+    },
+    createCopyTextInput: function createCopyTextInput(config) {
+      var id = config.id || "copytext-".concat(Math.floor(Math.random() * 1000000000));
+      var buttonId = config.buttonId || "".concat(id, "-btn");
+      var $container = $('<div/>', {
+        'class': 'copytext'
+      });
+      var $input = this.createTextInput($.extend({}, config, {
+        readonly: true
+      })).appendTo($container);
+      var $btn = $('<button/>', {
+        type: 'button',
+        id: buttonId,
+        'class': 'btn',
+        'data-icon': 'clipboard',
+        title: Craft.t('app', 'Copy to clipboard')
+      }).appendTo($container);
+      $btn.on('click', function () {
+        $input[0].select();
+        document.execCommand('copy');
+        Craft.cp.displayNotice(Craft.t('app', 'Copied to clipboard.'));
+        $container.trigger('copy');
+      });
+      return $container;
+    },
+    createCopyTextField: function createCopyTextField(config) {
+      return this.createField(this.createCopyTextInput(config), config);
+    },
+    createCopyTextPrompt: function createCopyTextPrompt(config) {
+      var $container = $('<div/>', {
+        'class': 'modal fitted'
+      });
+      var $body = $('<div/>', {
+        'class': 'body'
+      }).appendTo($container);
+      this.createCopyTextField($.extend({
+        size: Math.min(Math.max(config.value.length, 50), 25)
+      }, config)).appendTo($body);
+      var modal = new Garnish.Modal($container, {
+        closeOtherModals: false
+      });
+      $container.on('copy', function () {
+        modal.hide();
+      });
+      return $container;
     },
     createTextarea: function createTextarea(config) {
       var $textarea = $('<textarea/>', {

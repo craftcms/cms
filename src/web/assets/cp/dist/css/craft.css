@@ -469,6 +469,12 @@ body.ltr .btngroup .btn:not(:last-child) { border-top-right-radius: 0; border-bo
 body.rtl .btngroup .btn:not(:first-child) { border-top-right-radius: 0; border-bottom-right-radius: 0; }
 body.rtl .btngroup .btn:not(:last-child) { border-top-left-radius: 0; border-bottom-left-radius: 0; }
 
+.copytext { position: relative; z-index: 1; display: -webkit-box; display: -ms-flexbox; display: flex; white-space: nowrap; -webkit-box-align: center; -ms-flex-align: center; align-items: center; }
+body.ltr .copytext .text { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+body.ltr .copytext .btn { border-top-left-radius: 0; border-bottom-left-radius: 0; }
+body.rtl .copytext .text { border-top-left-radius: 0; border-bottom-left-radius: 0; }
+body.rtl .copytext .btn { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+
 /* menu buttons */
 .menubtn { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
 .menubtn:after { content: 'downangle'; }

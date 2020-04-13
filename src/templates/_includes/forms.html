@@ -21,6 +21,11 @@
 {% endmacro %}
 
 
+{% macro copytext(config) %}
+    {% include "_includes/forms/copytext" with config only %}
+{% endmacro %}
+
+
 {% macro date(config) %}
     {% include "_includes/forms/date" with config only %}
 {% endmacro %}
@@ -122,6 +127,12 @@
         {% set input = forms.text(config) %}
     {% endif %}
     {{ forms.field(config, input) }}
+{% endmacro %}
+
+
+{% macro copytextField(config) %}
+    {% import _self as forms %}
+    {{ forms.field(config, forms.copytext(config)) }}
 {% endmacro %}
 
 

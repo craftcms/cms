@@ -58,6 +58,9 @@
 - Added `craft\web\Request::getAcceptsImage()`.
 - Added `craft\web\Request::getFullUri()`.
 - Added the `_includes/forms/password.html` control panel template.
+- Added the `_includes/forms/copytext.html` control panel template.
+- Added the `copytext` and `copytextField` macros to the `_includes/forms.html` control panel template.
+- Added the `Craft.ui.createCopyTextInput()`, `createCopyTextField()`, and `createCopyTextPrompt()` JavaScript methods.
 - Added the [iFrame Resizer](http://davidjbradshaw.github.io/iframe-resizer/) library.
 
 ### Changed
@@ -69,6 +72,7 @@
 - The preview frame header no longer hides the top 54px of the preview frame when it’s scrolled all the way to the top. ([#5547](https://github.com/craftcms/cms/issues/5547))
 - Modal backdrops no longer blur the page content. ([#5651](https://github.com/craftcms/cms/issues/5651))
 - Improved the styling of password inputs in the control panel.
+- Improved the UI for copying user activation URLs, asset reference tags, and GraphQL tokens’ authentication headers.
 - Improved the wording of the meta info displayed in entry revision menus. ([#5889](https://github.com/craftcms/cms/issues/5889))
 - Plain Text fields are now sortable in the control panel. ([#5819](https://github.com/craftcms/cms/issues/5819))
 - Extra entry revisions (per the `maxRevisions` config setting) are now pruned via a background job. ([#5902](https://github.com/craftcms/cms/issues/5902))  

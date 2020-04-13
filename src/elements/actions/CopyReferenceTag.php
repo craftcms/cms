@@ -50,7 +50,7 @@ class CopyReferenceTag extends ElementAction
 
         $refHandleJs = Json::encode($refHandle);
 
-        $js = <<<EOD
+        $js = <<<JS
 (function()
 {
     var trigger = new Craft.ElementActionTrigger({
@@ -58,15 +58,14 @@ class CopyReferenceTag extends ElementAction
         batch: false,
         activate: function(\$selectedItems)
         {
-            var message = Craft.t('app', {$prompt}, {
-                ctrl: (navigator.appVersion.indexOf('Mac') !== -1 ? '⌘' : 'Ctrl-')
+            Craft.ui.createCopyTextPrompt({
+                label: Craft.t('app', 'Copy the reference tag'),
+                value: '{'+{$refHandleJs}+':'+\$selectedItems.find('.element').data('id')+'}',
             });
-
-            prompt(message, '{'+{$refHandleJs}+':'+\$selectedItems.find('.element').data('id')+'}');
         }
     });
 })();
-EOD;
+JS;
 
         Craft::$app->getView()->registerJs($js);
     }

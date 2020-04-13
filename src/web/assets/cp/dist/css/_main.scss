@@ -1140,6 +1140,36 @@ ul.icons {
   }
 }
 
+.copytext {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  white-space: nowrap;
+  align-items: center;
+
+  body.ltr & {
+    .text {
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+    .btn {
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+  }
+
+  body.rtl & {
+    .text {
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+    .btn {
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+  }
+}
+
 /* menu buttons */
 .menubtn {
   user-select: none;

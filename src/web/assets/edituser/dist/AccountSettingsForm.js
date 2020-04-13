@@ -42,11 +42,10 @@
                     this.$actionSpinner.addClass('hidden');
 
                     if (textStatus === 'success') {
-                        var message = Craft.t('app', '{ctrl}C to copy.', {
-                            ctrl: (navigator.appVersion.indexOf('Mac') !== -1 ? '⌘' : 'Ctrl-')
+                        Craft.ui.createCopyTextPrompt({
+                            label: Craft.t('app', 'Copy the activation URL'),
+                            value: response.url,
                         });
-
-                        prompt(message, response.url);
                     }
                 }, this));
             },

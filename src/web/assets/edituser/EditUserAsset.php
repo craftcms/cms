@@ -49,6 +49,7 @@ class EditUserAsset extends AssetBundle
 
         if ($view instanceof View) {
             $view->registerTranslations('app', [
+                'Copy the activation URL',
                 'Please enter your current password.',
                 'Please enter your password.',
             ]);
