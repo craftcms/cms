@@ -234,7 +234,10 @@ class GlobalSet extends Element
     public function afterRestore()
     {
         // Restore the field layout too
-        if (!Craft::$app->getFields()->restoreLayoutById($this->fieldLayoutId)) {
+        if (
+            $this->fieldLayoutId &&
+            !Craft::$app->getFields()->restoreLayoutById($this->fieldLayoutId)
+        ) {
             Craft::warning("Global set {$this->id} restored, but its field layout ({$this->fieldLayoutId}) was not.");
         }
 

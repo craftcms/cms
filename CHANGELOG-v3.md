@@ -9,6 +9,7 @@
 
 ### Fixed
 - Fixed a bug where users weren’t getting activated after verifying their email address, if a password was already set on their account. ([#5911](https://github.com/craftcms/cms/issues/5911))
+- Fixed an error that could occur when syncing a `project.yaml` file that restored a soft-deleted global set. ([#5915](https://github.com/craftcms/cms/issues/5915))
 - Fixed a bug where the `app/get-plugin-license-info` action was not parsing license key environment variables.
 
 ## 3.4.15 - 2020-04-09
