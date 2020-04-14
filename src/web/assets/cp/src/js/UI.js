@@ -104,7 +104,7 @@ Craft.ui =
                 'class': 'body',
             }).appendTo($container);
             this.createCopyTextField($.extend({
-                size: Math.min(Math.max(config.value.length, 50), 25),
+                size: Math.max(Math.min(config.value.length, 50), 25),
             }, config)).appendTo($body);
             let modal = new Garnish.Modal($container, {
                 closeOtherModals: false,
