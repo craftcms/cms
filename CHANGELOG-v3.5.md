@@ -32,6 +32,7 @@
 - Added `craft\elements\actions\Delete::$hard`.
 - Added `craft\elements\Asset::getSrcset()`. ([#5774](https://github.com/craftcms/cms/issues/5774))
 - Added `craft\events\RegisterGqlMutationsEvent`.
+- Added `craft\events\RegisterGqlSchemaComponentsEvent`.
 - Added `craft\gql\arguments\mutations\Asset`.
 - Added `craft\gql\arguments\mutations\Draft`.
 - Added `craft\gql\arguments\mutations\Entry`.
@@ -79,6 +80,7 @@
 - Added `craft\helpers\MailerHelper::settingsReport()`.
 - Added `craft\helpers\Queue`.
 - Added `craft\models\Site::$enabled`.
+- Added `craft\services\Gql::getAllSchemaComponents()`.
 - Added `craft\web\AssetBundle\ContentWindowAsset`.
 - Added `craft\web\AssetBundle\IframeResizerAsset`.
 - Added `craft\web\Request::getAcceptsImage()`.
@@ -118,6 +120,8 @@
 ### Deprecated
 - Deprecated `craft\gql\base\Resolver::extractEagerLoadCondition()` in favor of the new `ElementQueryConditionBuilder` class.
 - Deprecated the `install/plugin` command. The new `plugin/install` command should be used instead.
+- Deprecated `craft\events\RegisterGqlPermissionsEvent` in favor of the new `craft\events\RegisterGqlSchemaComponentsEvent` event.
+- Deprecated `craft\services\Gql::getAllPermissions()` in favor of the new `craft\services\Gql::getAllSchemaComponents()` method.
 
 ### Removed
 - Removed the [Interactive Shell Extension for Yii 2](https://github.com/yiisoft/yii2-shell), as it’s now a dev dependency of the `craftcms/craft` project instead. ([#5783](https://github.com/craftcms/cms/issues/5783))
