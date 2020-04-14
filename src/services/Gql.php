@@ -20,6 +20,7 @@ use craft\events\RegisterGqlDirectivesEvent;
 use craft\events\RegisterGqlMutationsEvent;
 use craft\events\RegisterGqlPermissionsEvent;
 use craft\events\RegisterGqlQueriesEvent;
+use craft\events\RegisterGqlSchemaComponentsEvent;
 use craft\events\RegisterGqlTypesEvent;
 use craft\gql\base\Directive;
 use craft\gql\base\GeneratorInterface;
@@ -180,8 +181,15 @@ class Gql extends Component
     /**
      * @event RegisterGqlPermissionsEvent The event that is triggered when registering user permissions.
      * @since 3.4.0
+     * @deprecated in 3.5.0. use the `craft\src\services\Gql::EVENT_REGISTER_GQL_SCHEMA_COMPONENTS` event instead.
      */
     const EVENT_REGISTER_GQL_PERMISSIONS = 'registerGqlPermissions';
+
+    /**
+     * @event RegisterGqlSchemaComponentsEvent The event that is triggered when registering GraphQL schema components.
+     * @since 3.5.0
+     */
+    const EVENT_REGISTER_GQL_SCHEMA_COMPONENTS = 'registerGqlSchemaComponents';
 
     /**
      * @event DefineGqlValidationRulesEvent The event that is triggered when defining validation rules to be used.
@@ -529,44 +537,95 @@ class Gql extends Component
      * Returns all of the known GraphQL permissions, sorted by category.
      *
      * @return array
+     * @deprecated in 3.5.0. Use [[\craft\services\Gql::get()]] instead.
      */
     public function getAllPermissions(): array
     {
-        $permissions = [];
+        Craft::$app->getDeprecator()->log(__CLASS__ . '::getAllPermissions', __CLASS__ . '::getAllPermissions has been deprecated. Use \'getAllSchemaComponents\' instead.');
+        return $this->getAllSchemaComponents()['queries'];
+    }
 
+    /**
+     * Returns all of the known GraphQL schema components.
+     *
+     * @return array
+     * @since 3.5.0
+     */
+    public function getAllSchemaComponents(): array
+    {
+        $components = [];
+
+        // Query
+
+        $queries = [];
+        $mutations = [];
         // Entries
         // ---------------------------------------------------------------------
-        $permissions = array_merge($permissions, $this->_getSectionPermissions());
+        $components = $this->_getSectionSchemaComponents();
+        $label = Craft::t('app', 'Entries');
+        $queries[$label] = $components['query'] ?? [];
+        $mutations[$label] = $components['mutation'] ?? [];
 
         // Assets
         // ---------------------------------------------------------------------
-        $permissions = array_merge($permissions, $this->_getVolumePermissions());
+        $components = $this->_getVolumeSchemaComponents();
+        $label = Craft::t('app', 'Assets');
+        $queries[$label] = $components['query'] ?? [];
+        $mutations[$label] = $components['mutation'] ?? [];
 
         // Global Sets
         // ---------------------------------------------------------------------
-        $permissions = array_merge($permissions, $this->_getGlobalSetPermissions());
+        $components = $this->_getGlobalSetSchemaComponents();
+        $label = Craft::t('app', 'Global sets');
+        $queries[$label] = $components['query'] ?? [];
+        $mutations[$label] = $components['mutation'] ?? [];
 
         // Users
         // ---------------------------------------------------------------------
-        $permissions = array_merge($permissions, $this->_getUserPermissions());
+        $components = $this->_getUserSchemaComponents();
+        $label = Craft::t('app', 'Users');
+        $queries[$label] = $components['query'] ?? [];
+        $mutations[$label] = $components['mutation'] ?? [];
 
         // Categories
         // ---------------------------------------------------------------------
-        $permissions = array_merge($permissions, $this->_getCategoryPermissions());
+        $components = $this->_getCategorySchemaComponents();
+        $label = Craft::t('app', 'Categories');
+        $queries[$label] = $components['query'] ?? [];
+        $mutations[$label] = $components['mutation'] ?? [];
 
         // Tags
         // ---------------------------------------------------------------------
-        $permissions = array_merge($permissions, $this->_getTagPermissions());
+        $components = $this->_getTagSchemaComponents();
+        $label = Craft::t('app', 'Tags');
+        $queries[$label] = $components['query'] ?? [];
+        $mutations[$label] = $components['mutation'] ?? [];
 
         // Let plugins customize them and add new ones
         // ---------------------------------------------------------------------
 
-        $event = new RegisterGqlPermissionsEvent([
-            'permissions' => $permissions
-        ]);
-        $this->trigger(self::EVENT_REGISTER_GQL_PERMISSIONS, $event);
+        if ($this->hasEventHandlers(self::EVENT_REGISTER_GQL_PERMISSIONS)) {
+            $deprecatedEvent = new RegisterGqlPermissionsEvent([
+                'permissions' => $queries
+            ]);
 
-        return $event->permissions;
+            Craft::$app->getDeprecator()->log(__CLASS__ . '::getAllSchemaComponents', __CLASS__ . '::EVENT_REGISTER_GQL_PERMISSIONS event has been deprecated. Use the EVENT_REGISTER_GQL_SCHEMA_COMPONENTS event instead.');
+            $this->trigger(self::EVENT_REGISTER_GQL_PERMISSIONS, $deprecatedEvent);
+
+            $queries = $deprecatedEvent->permissions;
+        }
+
+        $event = new RegisterGqlSchemaComponentsEvent([
+            'queries' => $queries,
+            'mutations' => $mutations
+        ]);
+
+        $this->trigger(self::EVENT_REGISTER_GQL_SCHEMA_COMPONENTS, $event);
+
+        return [
+            'queries' => $event->queries,
+            'mutations' => $event->mutations
+        ];
     }
 
     /**
@@ -1129,10 +1188,8 @@ class Gql extends Component
      *
      * @return array
      */
-    private function _getSectionPermissions(): array
+    private function _getSectionSchemaComponents(): array
     {
-        $permissions = [];
-
         $sortedEntryTypes = [];
 
         foreach (Craft::$app->getSections()->getAllEntryTypes() as $entryType) {
@@ -1140,46 +1197,43 @@ class Gql extends Component
         }
 
         if (!empty($sortedEntryTypes)) {
-            $label = Craft::t('app', 'Entries');
-
-            $sectionPermissions = [];
+            $queryComponents = [];
+            $mutationComponents = [];
 
             foreach (Craft::$app->getSections()->getAllSections() as $section) {
-                $nested = ['label' => Craft::t('app', 'Section - {section}', ['section' => Craft::t('site', $section->name)])];
+                $query = ['label' => Craft::t('app', 'Section - {section}', ['section' => Craft::t('site', $section->name)])];
+                $mutate = ['label' => Craft::t('app', 'Section - {section}', ['section' => Craft::t('site', $section->name)])];
 
                 foreach ($sortedEntryTypes[$section->id] as $entryType) {
                     $suffix = 'entrytypes.' . $entryType->uid;
 
                     if ($section->type == Section::TYPE_SINGLE) {
-                        $permissionSet = [
-                            $suffix . ':save' => ['label' => Craft::t('app', 'Edit “{entryType}”', ['entryType' => Craft::t('site', $entryType->name)])]
-                        ];
+                        $mutate['nested'][$suffix . ':save'] = ['label' => Craft::t('app', 'Edit “{entryType}”', ['entryType' => Craft::t('site', $entryType->name)])];
                     } else {
-                        $permissionSet = [
-                            $suffix . ':edit' => [
-                                'label' => Craft::t('app', 'Edit entries with the “{entryType}” entry type', ['entryType' => Craft::t('site', $entryType->name)]),
-                                'nested' => [
-                                    $suffix . ':create' => ['label' => Craft::t('app', 'Create entries with the “{entryType}” entry type', ['entryType' => Craft::t('site', $entryType->name)])],
-                                    $suffix . ':save' => ['label' => Craft::t('app', 'Save entries with the “{entryType}” entry type', ['entryType' => Craft::t('site', $entryType->name)])],
-                                    $suffix . ':delete' => ['label' => Craft::t('app', 'Delete entries with the “{entryType}” entry type', ['entryType' => Craft::t('site', $entryType->name)])],
-                                ],
+                        $mutate['nested'][$suffix . ':edit'] = [
+                            'label' => Craft::t('app', 'Edit entries with the “{entryType}” entry type', ['entryType' => Craft::t('site', $entryType->name)]),
+                            'nested' => [
+                                $suffix . ':create' => ['label' => Craft::t('app', 'Create entries with the “{entryType}” entry type', ['entryType' => Craft::t('site', $entryType->name)])],
+                                $suffix . ':save' => ['label' => Craft::t('app', 'Save entries with the “{entryType}” entry type', ['entryType' => Craft::t('site', $entryType->name)])],
+                                $suffix . ':delete' => ['label' => Craft::t('app', 'Delete entries with the “{entryType}” entry type', ['entryType' => Craft::t('site', $entryType->name)])],
                             ],
                         ];
                     }
 
-                    $nested['nested'][$suffix . ':read'] = [
+                    $query['nested'][$suffix . ':read'] = [
                         'label' => Craft::t('app', 'View entries with the “{entryType}” entry type', ['entryType' => Craft::t('site', $entryType->name)]),
-                        'nested' => $permissionSet
                     ];
                 }
 
-                $sectionPermissions['sections.' . $section->uid . ':read'] = $nested;
+                $queryComponents['sections.' . $section->uid . ':read'] = $query;
+                $mutationComponents['sections.' . $section->uid . ':edit'] = $mutate;
             }
-
-            $permissions[$label] = $sectionPermissions;
         }
 
-        return $permissions;
+        return [
+            'query' => $queryComponents,
+            'mutation' => $mutationComponents,
+        ];
     }
 
     /**
@@ -1187,37 +1241,32 @@ class Gql extends Component
      *
      * @return array
      */
-    private function _getVolumePermissions(): array
+    private function _getVolumeSchemaComponents(): array
     {
-        $permissions = [];
+        $queryComponents = [];
+        $mutationComponents = [];
 
         $volumes = Craft::$app->getVolumes()->getAllVolumes();
 
         if (!empty($volumes)) {
-            $label = Craft::t('app', 'Assets');
-            $volumePermissions = [];
-
             foreach ($volumes as $volume) {
                 $suffix = 'volumes.' . $volume->uid;
-                $volumePermissions[$suffix . ':read'] = [
-                    'label' => Craft::t('app', 'View volume - {volume}', ['volume' => Craft::t('site', $volume->name)]),
+                $queryComponents[$suffix . ':read'] = ['label' => Craft::t('app', 'View volume - {volume}', ['volume' => Craft::t('site', $volume->name)])];
+                $mutationComponents[$suffix . ':edit'] = [
+                    'label' => Craft::t('app', 'Edit assets in the “{volume}” volume', ['volume' => Craft::t('site', $volume->name)]),
                     'nested' => [
-                        $suffix . ':edit' => [
-                            'label' => Craft::t('app', 'Edit assets in the “{volume}” volume', ['volume' => Craft::t('site', $volume->name)]),
-                            'nested' => [
-                                $suffix . ':create' => ['label' => Craft::t('app', 'Create assets in the “{volume}” volume', ['volume' => Craft::t('site', $volume->name)])],
-                                $suffix . ':save' => ['label' => Craft::t('app', 'Modify assets in the “{volume}” volume', ['volume' => Craft::t('site', $volume->name)])],
-                                $suffix . ':delete' => ['label' => Craft::t('app', 'Delete assets from the “{volume}” volume', ['volume' => Craft::t('site', $volume->name)])],
-                            ],
-                        ],
-                    ],
+                        $suffix . ':create' => ['label' => Craft::t('app', 'Create assets in the “{volume}” volume', ['volume' => Craft::t('site', $volume->name)])],
+                        $suffix . ':save' => ['label' => Craft::t('app', 'Modify assets in the “{volume}” volume', ['volume' => Craft::t('site', $volume->name)])],
+                        $suffix . ':delete' => ['label' => Craft::t('app', 'Delete assets from the “{volume}” volume', ['volume' => Craft::t('site', $volume->name)])],
+                    ]
                 ];
             }
-
-            $permissions[$label] = $volumePermissions;
         }
 
-        return $permissions;
+        return [
+            'query' => $queryComponents,
+            'mutation' => $mutationComponents,
+        ];
     }
 
     /**
@@ -1225,30 +1274,25 @@ class Gql extends Component
      *
      * @return array
      */
-    private function _getGlobalSetPermissions(): array
+    private function _getGlobalSetSchemaComponents(): array
     {
-        $permissions = [];
+        $queryComponents = [];
+        $mutationComponents = [];
 
         $globalSets = Craft::$app->getGlobals()->getAllSets();
 
         if (!empty($globalSets)) {
-            $label = Craft::t('app', 'Globals');
-            $globalSetPermissions = [];
-
             foreach ($globalSets as $globalSet) {
                 $suffix = 'globalsets.' . $globalSet->uid;
-                $globalSetPermissions[$suffix . ':read'] = [
-                    'label' => Craft::t('app', 'View global set - {globalSet}', ['globalSet' => Craft::t('site', $globalSet->name)]),
-                    'nested' => [
-                        $suffix . ':edit' => ['label' => Craft::t('app', 'Edit the “{globalSet}” global set.', ['globalSet' => Craft::t('site', $globalSet->name)])]
-                    ]
-                ];
+                $queryComponents[$suffix . ':read'] = ['label' => Craft::t('app', 'View global set - {globalSet}', ['globalSet' => Craft::t('site', $globalSet->name)])];
+                $mutationComponents[$suffix . ':edit'] = ['label' => Craft::t('app', 'Edit the “{globalSet}” global set.', ['globalSet' => Craft::t('site', $globalSet->name)])];
             }
-
-            $permissions[$label] = $globalSetPermissions;
         }
 
-        return $permissions;
+        return [
+            'query' => $queryComponents,
+            'mutation' => $mutationComponents,
+        ];
     }
 
     /**
@@ -1256,36 +1300,31 @@ class Gql extends Component
      *
      * @return array
      */
-    private function _getCategoryPermissions(): array
+    private function _getCategorySchemaComponents(): array
     {
-        $permissions = [];
+        $queryComponents = [];
+        $mutationComponents = [];
 
         $categoryGroups = Craft::$app->getCategories()->getAllGroups();
 
         if (!empty($categoryGroups)) {
-            $label = Craft::t('app', 'Categories');
-            $categoryPermissions = [];
-
             foreach ($categoryGroups as $categoryGroup) {
                 $suffix = 'categorygroups.' . $categoryGroup->uid;
-                $categoryPermissions[$suffix . ':read'] = [
-                    'label' => Craft::t('app', 'View category group - {categoryGroup}', ['categoryGroup' => Craft::t('site', $categoryGroup->name)]),
+                $queryComponents[$suffix . ':read'] = ['label' => Craft::t('app', 'View category group - {categoryGroup}', ['categoryGroup' => Craft::t('site', $categoryGroup->name)])];
+                $mutationComponents[$suffix . ':edit'] = [
+                    'label' => Craft::t('app', 'Edit categories in the “{categoryGroup}” category group', ['categoryGroup' => Craft::t('site', $categoryGroup->name)]),
                     'nested' => [
-                        $suffix . ':edit' => [
-                            'label' => Craft::t('app', 'Edit categories in the “{categoryGroup}” category group', ['categoryGroup' => Craft::t('site', $categoryGroup->name)]),
-                            'nested' => [
-                                $suffix .':save' => ['label' => Craft::t('app', 'Save categories in the “{categoryGroup}” category group', ['categoryGroup' => Craft::t('site', $categoryGroup->name)])],
-                                $suffix .':delete' => ['label' => Craft::t('app', 'Delete categories from the “{categoryGroup}” category group', ['categoryGroup' => Craft::t('site', $categoryGroup->name)])],
-                            ]
-                        ],
-                    ],
+                        $suffix .':save' => ['label' => Craft::t('app', 'Save categories in the “{categoryGroup}” category group', ['categoryGroup' => Craft::t('site', $categoryGroup->name)])],
+                        $suffix .':delete' => ['label' => Craft::t('app', 'Delete categories from the “{categoryGroup}” category group', ['categoryGroup' => Craft::t('site', $categoryGroup->name)])],
+                    ]
                 ];
             }
-
-            $permissions[$label] = $categoryPermissions;
         }
 
-        return $permissions;
+        return [
+            'query' => $queryComponents,
+            'mutation' => $mutationComponents,
+        ];
     }
 
     /**
@@ -1293,36 +1332,31 @@ class Gql extends Component
      *
      * @return array
      */
-    private function _getTagPermissions(): array
+    private function _getTagSchemaComponents(): array
     {
-        $permissions = [];
+        $queryComponents = [];
+        $mutationComponents = [];
 
         $tagGroups = Craft::$app->getTags()->getAllTagGroups();
 
         if (!empty($tagGroups)) {
-            $label = Craft::t('app', 'Tags');
-            $tagPermissions = [];
-
             foreach ($tagGroups as $tagGroup) {
                 $suffix = 'taggroups.' . $tagGroup->uid;
-                $tagPermissions[$suffix . ':read'] = [
-                    'label' => Craft::t('app', 'View tag group - {tagGroup}', ['tagGroup' => Craft::t('site', $tagGroup->name)]),
+                $queryComponents[$suffix . ':read'] = ['label' => Craft::t('app', 'View tag group - {tagGroup}', ['tagGroup' => Craft::t('site', $tagGroup->name)])];
+                $mutationComponents[$suffix . ':edit'] = [
+                    'label' => Craft::t('app', 'Edit tags in the “{tagGroup}” tag group', ['tagGroup' => Craft::t('site', $tagGroup->name)]),
                     'nested' => [
-                        $suffix . ':edit' => [
-                            'label' => Craft::t('app', 'Edit tags in the “{tagGroup}” tag group', ['tagGroup' => Craft::t('site', $tagGroup->name)]),
-                            'nested' => [
-                                $suffix .':save' => ['label' => Craft::t('app', 'Save tags in the “{tagGroup}” tag group', ['tagGroup' => Craft::t('site', $tagGroup->name)])],
-                                $suffix .':delete' => ['label' => Craft::t('app', 'Delete tags from the “{tagGroup}” tag group', ['tagGroup' => Craft::t('site', $tagGroup->name)])],
-                            ]
-                        ],
-                    ],
+                        $suffix .':save' => ['label' => Craft::t('app', 'Save tags in the “{tagGroup}” tag group', ['tagGroup' => Craft::t('site', $tagGroup->name)])],
+                        $suffix .':delete' => ['label' => Craft::t('app', 'Delete tags from the “{tagGroup}” tag group', ['tagGroup' => Craft::t('site', $tagGroup->name)])],
+                    ]
                 ];
             }
-
-            $permissions[$label] = $tagPermissions;
         }
 
-        return $permissions;
+        return [
+            'query' => $queryComponents,
+            'mutation' => $mutationComponents,
+        ];
     }
 
     /**
@@ -1330,24 +1364,21 @@ class Gql extends Component
      *
      * @return array
      */
-    private function _getUserPermissions(): array
+    private function _getUserSchemaComponents(): array
     {
-        $permissions = [];
-
+        $queryComponents = [];
         $userGroups = Craft::$app->getUserGroups()->getAllGroups();
 
-        $label = Craft::t('app', 'Users');
-
-        $userPermissions = ['usergroups.everyone:read' => ['label' => Craft::t('app', 'View all users')]];
+        $queryComponents['usergroups.everyone:read'] = ['label' => Craft::t('app', 'View all users')];
 
         foreach ($userGroups as $userGroup) {
             $suffix = 'usergroups.' . $userGroup->uid;
-            $userPermissions[$suffix . ':read'] = ['label' => Craft::t('app', 'View user group - {userGroup}', ['userGroup' => Craft::t('site', $userGroup->name)])];
+            $queryComponents[$suffix . ':read'] = ['label' => Craft::t('app', 'View user group - {userGroup}', ['userGroup' => Craft::t('site', $userGroup->name)])];
         }
 
-        $permissions[$label] = $userPermissions;
-
-        return $permissions;
+        return [
+            'query' => $queryComponents,
+        ];
     }
 
     /**
