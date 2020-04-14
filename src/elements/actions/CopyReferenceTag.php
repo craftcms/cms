@@ -40,7 +40,6 @@ class CopyReferenceTag extends ElementAction
     public function getTriggerHtml()
     {
         $type = Json::encode(static::class);
-        $prompt = Json::encode(Craft::t('app', '{ctrl}C to copy.'));
         /** @var string|ElementInterface $elementType */
         $elementType = $this->elementType;
 
