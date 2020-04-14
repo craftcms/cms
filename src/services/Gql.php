@@ -181,7 +181,7 @@ class Gql extends Component
     /**
      * @event RegisterGqlPermissionsEvent The event that is triggered when registering user permissions.
      * @since 3.4.0
-     * @deprecated in 3.5.0. use the `craft\src\services\Gql::EVENT_REGISTER_GQL_SCHEMA_COMPONENTS` event instead.
+     * @deprecated in 3.5.0. Use the [[EVENT_REGISTER_GQL_SCHEMA_COMPONENTS]] event instead.
      */
     const EVENT_REGISTER_GQL_PERMISSIONS = 'registerGqlPermissions';
 
@@ -541,7 +541,6 @@ class Gql extends Component
      */
     public function getAllPermissions(): array
     {
-        Craft::$app->getDeprecator()->log(__CLASS__ . '::getAllPermissions', __CLASS__ . '::getAllPermissions has been deprecated. Use \'getAllSchemaComponents\' instead.');
         return $this->getAllSchemaComponents()['queries'];
     }
 
@@ -553,12 +552,9 @@ class Gql extends Component
      */
     public function getAllSchemaComponents(): array
     {
-        $components = [];
-
-        // Query
-
         $queries = [];
         $mutations = [];
+
         // Entries
         // ---------------------------------------------------------------------
         $components = $this->_getSectionSchemaComponents();
@@ -609,7 +605,6 @@ class Gql extends Component
                 'permissions' => $queries
             ]);
 
-            Craft::$app->getDeprecator()->log(__CLASS__ . '::getAllSchemaComponents', __CLASS__ . '::EVENT_REGISTER_GQL_PERMISSIONS event has been deprecated. Use the EVENT_REGISTER_GQL_SCHEMA_COMPONENTS event instead.');
             $this->trigger(self::EVENT_REGISTER_GQL_PERMISSIONS, $deprecatedEvent);
 
             $queries = $deprecatedEvent->permissions;
