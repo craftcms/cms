@@ -2,18 +2,10 @@
 
 namespace myprojecttests;
 
-use Craft;
-use craft\elements\User;
 use FunctionalTester;
 
 class ExampleFunctionalCest
 {
-    // Public methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
-
     /**
      * @param FunctionalTester $I
      */

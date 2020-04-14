@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace crafttests\unit;
+namespace crafttests\unit\test;
 
 use Codeception\Test\Unit;
 use Craft;
@@ -23,16 +23,10 @@ use yii\base\NotSupportedException;
  */
 class FieldLayoutTest extends Unit
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var UnitTester
      */
     protected $tester;
-
-    // Public Methods
-    // =========================================================================
 
     public function _fixtures(): array
     {
@@ -43,16 +37,13 @@ class FieldLayoutTest extends Unit
         ];
     }
 
-    // Tests
-    // =========================================================================
-
     /**
      * @throws NotSupportedException
      */
     public function testFieldLayoutMatrix()
     {
         $tableNames = Craft::$app->getDb()->getSchema()->tableNames;
-        $matrixTableName = Craft::$app->getDb()->tablePrefix.'matrixcontent_matrixfirst';
+        $matrixTableName = Craft::$app->getDb()->tablePrefix . 'matrixcontent_matrixfirst';
 
         $this->assertContains($matrixTableName, $tableNames);
 
@@ -60,9 +51,9 @@ class FieldLayoutTest extends Unit
             ->select('*')->from($matrixTableName)->all();
 
         $this->assertCount(2, $matrixRows);
-        
+
         foreach ($matrixRows as $row) {
-            $this->assertSame('Some text',$row['field_aBlock_firstSubfield']);
+            $this->assertSame('Some text', $row['field_aBlock_firstSubfield']);
         }
     }
 }

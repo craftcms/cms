@@ -22,7 +22,7 @@ use yii\db\QueryInterface;
  * The default implementation of this interface is provided by [[ElementQuery]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, Countable, IteratorAggregate
 {
@@ -75,6 +75,16 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function asArray(bool $value = true);
 
     /**
+     * Causes the query to return matching {elements} as they are stored in the database, ignoring matching placeholder
+     * elements that were set by [[\craft\services\Elements::setPlaceholderElement()]].
+     *
+     * @param bool $value The property value (defaults to true)
+     * @return static self reference
+     * @since 3.2.9
+     */
+    public function ignorePlaceholders(bool $value = true);
+
+    /**
      * Narrows the query results to only drafts {elements}.
      *
      * ---
@@ -97,6 +107,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *
      * @param bool $value The property value (defaults to true)
      * @return static self reference
+     * @since 3.2.0
      */
     public function drafts(bool $value = true);
 
@@ -121,12 +132,13 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      * ```php
      * // Fetch a draft
      * ${elements-var} = {php-method}
-     *     ->draftIf(10)
+     *     ->draftId(10)
      *     ->all();
      * ```
      *
      * @param int|null $value The property value
      * @return static self reference
+     * @since 3.2.0
      */
     public function draftId(int $value = null);
 
@@ -158,6 +170,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *
      * @param int|ElementInterface|null $value The property value
      * @return static self reference
+     * @since 3.2.0
      */
     public function draftOf($value);
 
@@ -169,7 +182,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      * | Value | Fetches drafts…
      * | - | -
      * | `1` | created by the user with an ID of 1.
-     * | a [[User]] object | by the user represented by the object.
+     * | a [[User]] object | created by the user represented by the object.
      *
      * ---
      *
@@ -189,6 +202,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *
      * @param int|ElementInterface|null $value The property value
      * @return static self reference
+     * @since 3.2.0
      */
     public function draftCreator($value);
 
@@ -215,6 +229,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *
      * @param bool $value The property value (defaults to true)
      * @return static self reference
+     * @since 3.2.0
      */
     public function revisions(bool $value = true);
 
@@ -245,6 +260,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *
      * @param int|null $value The property value
      * @return static self reference
+     * @since 3.2.0
      */
     public function revisionId(int $value = null);
 
@@ -276,6 +292,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *
      * @param int|ElementInterface|null $value The property value
      * @return static self reference
+     * @since 3.2.0
      */
     public function revisionOf($value);
 
@@ -287,7 +304,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      * | Value | Fetches revisions…
      * | - | -
      * | `1` | created by the user with an ID of 1.
-     * | a [[User]] object | by the user represented by the object.
+     * | a [[User]] object | created by the user represented by the object.
      *
      * ---
      *
@@ -307,6 +324,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *
      * @param int|ElementInterface|null $value The property value
      * @return static self reference
+     * @since 3.2.0
      */
     public function revisionCreator($value);
 
@@ -445,7 +463,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *
      * ```twig
      * {# Fetch trashed {elements} #}
-     * {% set {elements-var} = {twig-function}
+     * {% set {elements-var} = {twig-method}
      *     .trashed()
      *     .all() %}
      * ```
@@ -459,6 +477,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *
      * @param bool|null $value The property value (defaults to true)
      * @return static self reference
+     * @since 3.1.0
      */
     public function trashed($value = true);
 
@@ -629,7 +648,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *
      * @param bool $value The property value (defaults to true)
      * @return static self reference
-     * @since 3.2
+     * @since 3.2.0
      */
     public function unique(bool $value = true);
 
@@ -664,7 +683,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *
      * @param array|null $value The property value
      * @return static self reference
-     * @since 3.2
+     * @since 3.2.0
      */
     public function preferSites(array $value = null);
 
@@ -737,7 +756,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      * | `'*Foo'` | with a title that ends with `Foo`.
      * | `'*Foo*'` | with a title that contains `Foo`.
      * | `'not *Foo*'` | with a title that doesn’t contain `Foo`.
-     * | `['*Foo*', '*Bar*'` | with a title that contains `Foo` or `Bar`.
+     * | `['*Foo*', '*Bar*']` | with a title that contains `Foo` or `Bar`.
      * | `['not', '*Foo*', '*Bar*']` | with a title that doesn’t contain `Foo` or `Bar`.
      *
      * ---
@@ -773,7 +792,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      * | `'*foo'` | with a slug that ends with `foo`.
      * | `'*foo*'` | with a slug that contains `foo`.
      * | `'not *foo*'` | with a slug that doesn’t contain `foo`.
-     * | `['*foo*', '*bar*'` | with a slug that contains `foo` or `bar`.
+     * | `['*foo*', '*bar*']` | with a slug that contains `foo` or `bar`.
      * | `['not', '*foo*', '*bar*']` | with a slug that doesn’t contain `foo` or `bar`.
      *
      * ---
@@ -815,7 +834,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      * | `'*foo'` | with a URI that ends with `foo`.
      * | `'*foo*'` | with a URI that contains `foo`.
      * | `'not *foo*'` | with a URI that doesn’t contain `foo`.
-     * | `['*foo*', '*bar*'` | with a URI that contains `foo` or `bar`.
+     * | `['*foo*', '*bar*']` | with a URI that contains `foo` or `bar`.
      * | `['not', '*foo*', '*bar*']` | with a URI that doesn’t contain `foo` or `bar`.
      *
      * ---
@@ -916,6 +935,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *
      * @param string|array|null $value The property value to append
      * @return self The query object itself
+     * @since 3.0.9
      */
     public function andWith($value);
 
@@ -992,6 +1012,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *
      * @param bool $value The property value
      * @return static self reference
+     * @since 3.0.4
      */
     public function hasDescendants(bool $value = true);
 
@@ -1322,6 +1343,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      * ```
      *
      * @return static self reference
+     * @since 3.0.17
      */
     public function anyStatus();
 

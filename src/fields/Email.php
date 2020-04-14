@@ -18,13 +18,10 @@ use yii\db\Schema;
  * Email represents an Email field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Email extends Field implements PreviewableFieldInterface
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -41,16 +38,10 @@ class Email extends Field implements PreviewableFieldInterface
         return 'string|null';
     }
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null The input’s placeholder text
      */
     public $placeholder;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -97,6 +88,7 @@ class Email extends Field implements PreviewableFieldInterface
     public function getElementValidationRules(): array
     {
         return [
+            ['trim'],
             ['email'],
         ];
     }

@@ -24,9 +24,6 @@ use yii\web\BadRequestHttpException;
  */
 class RequestTest extends TestCase
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var Request
      */
@@ -37,9 +34,6 @@ class RequestTest extends TestCase
      */
     public $tester;
 
-    // Public Methods
-    // =========================================================================
-
     public function _fixtures(): array
     {
         return [
@@ -48,9 +42,6 @@ class RequestTest extends TestCase
             ]
         ];
     }
-
-    // Tests
-    // =========================================================================
 
     /**
      * @dataProvider isMobileBrowserDataProvider
@@ -316,9 +307,6 @@ class RequestTest extends TestCase
         $this->assertTrue($this->getInaccessibleProperty($this->request, '_isSingleActionRequest'));
     }
 
-    // Data Providers
-    // =========================================================================
-
     /**
      * https://deviceatlas.com/blog/list-of-user-agent-strings
      *
@@ -422,9 +410,6 @@ class RequestTest extends TestCase
         ];
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -436,9 +421,6 @@ class RequestTest extends TestCase
             'cookieValidationKey' => 'lashdao8u09ud09u09231uoij098wqe'
         ]);
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * @return mixed

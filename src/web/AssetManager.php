@@ -10,31 +10,29 @@ namespace craft\web;
 use Craft;
 use craft\db\Table;
 use craft\errors\DbConnectException;
+use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use yii\db\Exception as DbException;
 
 /**
  * @inheritdoc
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class AssetManager extends \yii\web\AssetManager
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Returns the published path of a file/directory path.
      *
      * @param string $sourcePath directory or file path being published
      * @param bool $publish whether the directory or file should be published, if not already
      * @return string|false the published file or directory path, or false if $publish is false and the file or directory does not exist
+     * @todo remove this in Craft 4 (nothing is using $publish anymore)
      */
     public function getPublishedPath($sourcePath, bool $publish = false)
     {
         if ($publish === true) {
             list($path) = $this->publish($sourcePath);
-
             return $path;
         }
 
@@ -72,9 +70,6 @@ class AssetManager extends \yii\web\AssetManager
         return $url;
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -90,13 +85,11 @@ class AssetManager extends \yii\web\AssetManager
 
         // Store the hash for later
         try {
-            Craft::$app->getDb()->createCommand()
-                ->upsert(Table::RESOURCEPATHS, [
-                    'hash' => $hash,
-                ], [
-                    'path' => $alias,
-                ], [], false)
-                ->execute();
+            Db::upsert(Table::RESOURCEPATHS, [
+                'hash' => $hash,
+            ], [
+                'path' => $alias,
+            ], [], false);
         } catch (DbException $e) {
             // Craft is either not installed or not updated to 3.0.3+ yet
         } catch (DbConnectException $e) {

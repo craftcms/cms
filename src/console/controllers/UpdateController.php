@@ -9,6 +9,7 @@ namespace craft\console\controllers;
 
 use Composer\IO\BufferIO;
 use Craft;
+use craft\console\Controller;
 use craft\errors\InvalidPluginException;
 use craft\helpers\Console;
 use craft\helpers\FileHelper;
@@ -18,7 +19,6 @@ use craft\models\Updates;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 use yii\base\InvalidConfigException;
-use craft\console\Controller;
 use yii\console\ExitCode;
 
 /**
@@ -29,9 +29,6 @@ use yii\console\ExitCode;
  */
 class UpdateController extends Controller
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -56,9 +53,6 @@ class UpdateController extends Controller
      * @var string|null The path to the database backup
      */
     private $_backupPath;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -206,9 +200,6 @@ class UpdateController extends Controller
         $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
         return ExitCode::OK;
     }
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns whether updates are allowed.
@@ -423,7 +414,6 @@ class UpdateController extends Controller
         $io = new BufferIO();
 
         $composerService = Craft::$app->getComposer();
-        $composerService->disablePackagist = false;
 
         try {
             $composerService->install($requirements, $io);
@@ -462,7 +452,7 @@ class UpdateController extends Controller
 
         $this->stdout('Applying new migrations ... ', Console::FG_YELLOW);
 
-        $process = new Process([$script, 'migrate/all', '--no-content']);
+        $process = new Process([$script, 'migrate/all', '--no-backup', '--no-content']);
         try {
             $process->mustRun();
         } catch (ProcessFailedException $e) {

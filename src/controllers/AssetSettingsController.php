@@ -8,9 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\models\UserGroup;
 use craft\web\Controller;
-use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
 /**
@@ -18,13 +16,10 @@ use yii\web\Response;
  * Note that all actions in this controller require administrator access in order to execute.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.2
+ * @since 3.2.0
  */
 class AssetSettingsController extends Controller
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -53,9 +48,9 @@ class AssetSettingsController extends Controller
             if ($tempSubpath = trim(Craft::$app->getRequest()->getBodyParam('tempSubpath'), '/\\ ')) {
                 $settings['tempSubpath'] = str_replace('\\', '/', $tempSubpath);
             }
-            $projectConfig->set('assets', $settings);
+            $projectConfig->set('assets', $settings, 'Update Temporary Upload Volume settings.');
         } else {
-            $projectConfig->remove('assets');
+            $projectConfig->remove('assets', 'Update Temporary Upload Volume settings.');
         }
 
         Craft::$app->getSession()->setNotice(Craft::t('app', 'Asset settings saved.'));

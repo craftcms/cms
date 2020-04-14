@@ -8,10 +8,12 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
+use craft\db\Command;
+use craft\db\Query;
 use craft\db\Table;
 use craft\fields\BaseRelationField;
+use craft\helpers\Db;
 use yii\base\Component;
 
 /**
@@ -19,13 +21,10 @@ use yii\base\Component;
  * An instance of the Relations service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getRelations()|`Craft::$app->relations`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Relations extends Component
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Saves some relations for a field.
      *
@@ -36,75 +35,90 @@ class Relations extends Component
      */
     public function saveRelations(BaseRelationField $field, ElementInterface $source, array $targetIds)
     {
-        /** @var Element $source */
         if (!is_array($targetIds)) {
             $targetIds = [];
         }
 
-        // Prevent duplicate/empty target IDs.
-        $targetIds = array_unique(array_filter($targetIds));
+        // Get the unique, indexed target IDs, set to their 0-indexed sort orders
+        $targetIds = array_flip(array_values(array_unique(array_filter($targetIds))));
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        // Get the current relations
+        $oldRelationConditions = ['fieldId' => $field->id, 'sourceId' => $source->id];
 
-        try {
-            // Delete the existing relations
+        if ($field->localizeRelations) {
             $oldRelationConditions = [
                 'and',
-                [
-                    'fieldId' => $field->id,
-                    'sourceId' => $source->id,
-                ]
+                $oldRelationConditions,
+                ['or', ['sourceSiteId' => null], ['sourceSiteId' => $source->siteId]],
             ];
+        }
 
-            if ($field->localizeRelations) {
-                $oldRelationConditions[] = [
-                    'or',
-                    ['sourceSiteId' => null],
-                    ['sourceSiteId' => $source->siteId]
-                ];
-            }
+        $oldRelations = (new Query())
+            ->select(['id', 'sourceSiteId', 'targetId', 'sortOrder'])
+            ->from([Table::RELATIONS])
+            ->where($oldRelationConditions)
+            ->all();
 
-            Craft::$app->getDb()->createCommand()
-                ->delete(Table::RELATIONS, $oldRelationConditions)
-                ->execute();
+        /** @var Command[] $updateCommands */
+        $updateCommands = [];
+        $deleteIds = [];
 
-            // Add the new ones
-            if (!empty($targetIds)) {
-                $values = [];
+        $sourceSiteId = $field->localizeRelations ? $source->siteId : null;
+        $db = Craft::$app->getDb();
 
-                if ($field->localizeRelations) {
-                    $sourceSiteId = $source->siteId;
-                } else {
-                    $sourceSiteId = null;
+        foreach ($oldRelations as $relation) {
+            // Does this relation still exist?
+            if (isset($targetIds[$relation['targetId']])) {
+                // Anything to update?
+                $sortOrder = $targetIds[$relation['targetId']] + 1;
+                if ($relation['sourceSiteId'] != $sourceSiteId || $relation['sortOrder'] != $sortOrder) {
+                    $updateCommands[] = $db->createCommand()->update(Table::RELATIONS, [
+                        'sourceSiteId' => $sourceSiteId,
+                        'sortOrder' => $sortOrder,
+                    ], ['id' => $relation['id']]);
                 }
 
-                foreach ($targetIds as $sortOrder => $targetId) {
-                    $values[] = [
-                        $field->id,
-                        $source->id,
-                        $sourceSiteId,
-                        $targetId,
-                        $sortOrder + 1
-                    ];
+                // Avoid re-inserting it
+                unset($targetIds[$relation['targetId']]);
+            } else {
+                $deleteIds[] = $relation['id'];
+            }
+        }
+
+        if (!empty($updateCommands) || !empty($deleteIds) || !empty($targetIds)) {
+            $transaction = Craft::$app->getDb()->beginTransaction();
+            try {
+                foreach ($updateCommands as $command) {
+                    $command->execute();
                 }
 
-                $columns = [
-                    'fieldId',
-                    'sourceId',
-                    'sourceSiteId',
-                    'targetId',
-                    'sortOrder'
-                ];
-                Craft::$app->getDb()->createCommand()
-                    ->batchInsert(Table::RELATIONS, $columns, $values)
-                    ->execute();
+                // Add the new ones
+                if (!empty($targetIds)) {
+                    $values = [];
+                    foreach ($targetIds as $targetId => $sortOrder) {
+                        $values[] = [
+                            $field->id,
+                            $source->id,
+                            $sourceSiteId,
+                            $targetId,
+                            $sortOrder + 1,
+                        ];
+                    }
+                    Db::batchInsert(Table::RELATIONS, ['fieldId', 'sourceId', 'sourceSiteId', 'targetId', 'sortOrder'], $values);
+                }
+
+                if (!empty($deleteIds)) {
+                    Db::delete(Table::RELATIONS, [
+                        'id' => $deleteIds,
+                    ]);
+                }
+
+                $transaction->commit();
+            } catch (\Throwable $e) {
+                $transaction->rollBack();
+
+                throw $e;
             }
-
-            $transaction->commit();
-        } catch (\Throwable $e) {
-            $transaction->rollBack();
-
-            throw $e;
         }
     }
 }

@@ -19,9 +19,6 @@ use craft\test\Fixture;
  */
 class SectionSettingFixture extends Fixture
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -31,4 +28,9 @@ class SectionSettingFixture extends Fixture
      * @inheritdoc
      */
     public $modelClass = Section_SiteSettings::class;
+
+    /**
+     * @inheritdoc
+     */
+    public $depends = [SitesFixture::class];
 }

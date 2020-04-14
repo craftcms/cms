@@ -8,16 +8,17 @@
 namespace craft\fields;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\fields\data\ColorData;
+use craft\gql\types\generators\TableRowType as TableRowTypeGenerator;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Json;
 use craft\validators\ColorValidator;
 use craft\validators\UrlValidator;
 use craft\web\assets\tablesettings\TableSettingsAsset;
 use craft\web\assets\timepicker\TimepickerAsset;
+use GraphQL\Type\Definition\Type;
 use yii\db\Schema;
 use yii\validators\EmailValidator;
 
@@ -25,13 +26,10 @@ use yii\validators\EmailValidator;
  * Table represents a Table field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Table extends Field
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -47,9 +45,6 @@ class Table extends Field
     {
         return 'array|null';
     }
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var string|null Custom add row button label
@@ -87,9 +82,6 @@ class Table extends Field
      */
     public $columnType = Schema::TYPE_TEXT;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -105,6 +97,12 @@ class Table extends Field
             $this->columns = [];
         } else {
             foreach ($this->columns as $colId => &$column) {
+                // If the column doesn't specify a type, then it probably wasn't meant to be submitted
+                if (!isset($column['type'])) {
+                    unset($this->columns[$colId]);
+                    continue;
+                }
+
                 if ($column['type'] === 'select') {
                     if (!isset($column['options'])) {
                         $column['options'] = [];
@@ -142,9 +140,9 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['minRows'], 'compare', 'compareAttribute' => 'maxRows', 'operator' => '<=', 'type' => 'number', 'when' => [$this, 'hasMaxRows']];
         $rules[] = [['maxRows'], 'compare', 'compareAttribute' => 'minRows', 'operator' => '>=', 'type' => 'number', 'when' => [$this, 'hasMinRows']];
         $rules[] = [['minRows', 'maxRows'], 'integer', 'min' => 0];
@@ -340,12 +338,16 @@ class Table extends Field
      */
     public function validateTableData(ElementInterface $element)
     {
-        /** @var Element $element */
         $value = $element->getFieldValue($this->handle);
 
         if (!empty($value) && !empty($this->columns)) {
-            foreach ($value as $row) {
+            foreach ($value as &$row) {
                 foreach ($this->columns as $colId => $col) {
+                    if (is_string($row[$colId])) {
+                        // Trim the value before validating
+                        $row[$colId] = trim($row[$colId]);
+                    }
+
                     if (!$this->_validateCellValue($col['type'], $row[$colId], $error)) {
                         $element->addError($this->handle, $error);
                     }
@@ -412,8 +414,15 @@ class Table extends Field
         return $this->_getInputHtml($value, $element, true);
     }
 
-    // Private Methods
-    // =========================================================================
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public function getContentGqlType()
+    {
+        $typeArray = TableRowTypeGenerator::generateTypes($this);
+        return Type::listOf(array_pop($typeArray));
+    }
 
     /**
      * Normalizes a cell’s value.
@@ -500,7 +509,6 @@ class Table extends Field
      */
     private function _getInputHtml($value, ElementInterface $element = null, bool $static): string
     {
-        /** @var Element $element */
         if (empty($this->columns)) {
             return '';
         }

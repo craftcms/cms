@@ -24,19 +24,10 @@ use yii\base\NotSupportedException;
  */
 class PgsqlDbHelperTest extends Unit
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var UnitTester
      */
     protected $tester;
-
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
 
     /**
      * @dataProvider sqlTypesDataProvider
@@ -91,9 +82,6 @@ class PgsqlDbHelperTest extends Unit
         $this->assertSame($result, $textualCapacity);
     }
 
-    // Data Providers
-    // =========================================================================
-
     /**
      * @return array
      */
@@ -107,6 +95,24 @@ class PgsqlDbHelperTest extends Unit
                     ['!=', 'content_table', 'field_2']
                 ],
                 'content_table', ':empty:, field_2', '!='
+            ],
+            [
+                ['foo' => null], 'foo', ':empty:'
+            ],
+            [
+                ['foo' => null], 'foo', ':EMPTY:'
+            ],
+            [
+                ['not', ['foo' => null]], 'foo', ':notempty:'
+            ],
+            [
+                ['not', ['foo' => null]], 'foo', ':NOTEMPTY:'
+            ],
+            [
+                ['not', ['foo' => null]], 'foo', 'not :empty:'
+            ],
+            [
+                ['not', ['foo' => null]], 'foo', 'NOT :EMPTY:'
             ],
         ];
     }
@@ -156,9 +162,6 @@ class PgsqlDbHelperTest extends Unit
             [null, Schema::TYPE_TEXT],
         ];
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

@@ -7,8 +7,6 @@ use craft\db\Migration;
 use craft\db\Query;
 use craft\db\Table;
 use craft\helpers\Db;
-use craft\helpers\MigrationHelper;
-use craft\services\UserPermissions;
 
 /**
  * m190417_085010_add_image_editor_permissions migration.
@@ -54,7 +52,7 @@ class m190417_085010_add_image_editor_permissions extends Migration
                 $newPermissions = [];
                 foreach ($groupUids as $groupUid) {
                     $permissions = $projectConfig->get('users.groups.' . $groupUid . '.permissions');
-                    
+
                     // If user group permissions are defined
                     if ($permissions !== null) {
                         foreach ($volumeUids as $volumeUid) {
@@ -90,22 +88,21 @@ class m190417_085010_add_image_editor_permissions extends Migration
 
                 // Migrate the users
                 foreach ($volumeUids as $volumeUid) {
-
                     $savePermission = 'saveassetinvolume:' . $volumeUid;
                     $deletePermission = 'deletefilesandfoldersinvolume:' . $volumeUid;
 
                     // Get all the eligible users
                     $userIds = (new Query())
                         ->select(['users.id'])
-                        ->from([Table::USERS . ' AS users'])
-                        ->innerJoin(Table::USERPERMISSIONS_USERS . ' AS saveUserPermissions', '[[saveUserPermissions.userId]] = [[users.id]]')
-                        ->innerJoin(Table::USERPERMISSIONS . ' AS saveInVolume', [
+                        ->from(['users' => Table::USERS])
+                        ->innerJoin(['saveUserPermissions' => Table::USERPERMISSIONS_USERS], '[[saveUserPermissions.userId]] = [[users.id]]')
+                        ->innerJoin(['saveInVolume' => Table::USERPERMISSIONS], [
                             'and',
                             '[[saveInVolume.id]] = [[saveUserPermissions.permissionId]]',
                             ['saveInVolume.name' => $savePermission]
                         ])
-                        ->innerJoin(Table::USERPERMISSIONS_USERS . ' AS deleteUserPermissions', '[[deleteUserPermissions.userId]] = [[users.id]]')
-                        ->innerJoin(Table::USERPERMISSIONS . ' AS deleteInVolume', [
+                        ->innerJoin(['deleteUserPermissions' => Table::USERPERMISSIONS_USERS], '[[deleteUserPermissions.userId]] = [[users.id]]')
+                        ->innerJoin(['deleteInVolume' => Table::USERPERMISSIONS], [
                             'and',
                             '[[deleteInVolume.id]] = [[deleteUserPermissions.permissionId]]',
                             ['deleteInVolume.name' => $deletePermission]

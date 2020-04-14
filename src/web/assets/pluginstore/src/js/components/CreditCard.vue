@@ -24,7 +24,6 @@
     import Cleave from 'vue-cleave'
 
     export default {
-
         components: {
             Cleave,
         },
@@ -44,7 +43,6 @@
         },
 
         computed: {
-
             ...mapState({
                 stripePublicKey: state => state.cart.stripePublicKey,
             }),
@@ -58,11 +56,9 @@
                 const parts = this.exp.split('/')
                 return parts[1]
             }
-
         },
 
         methods: {
-
             save(cb, cbError) {
                 if (this.validates()) {
                     Stripe.setPublishableKey(this.stripePublicKey)
@@ -110,8 +106,6 @@
 
                 return !hasErrors
             }
-
         },
-
     }
 </script>

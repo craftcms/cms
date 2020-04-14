@@ -8,14 +8,13 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\db\ElementQuery;
 use craft\events\DeleteTemplateCachesEvent;
-use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
+use craft\helpers\Queue;
 use craft\helpers\StringHelper;
 use craft\queue\jobs\DeleteStaleTemplateCaches;
 use DateTime;
@@ -28,58 +27,44 @@ use yii\web\Response;
  * An instance of the Template Caches service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getTemplateCaches()|`Craft::$app->templateCaches`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class TemplateCaches extends Component
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event SectionEvent The event that is triggered before template caches are deleted.
+     * @since 3.0.2
      */
     const EVENT_BEFORE_DELETE_CACHES = 'beforeDeleteCaches';
 
     /**
      * @event SectionEvent The event that is triggered after template caches are deleted.
+     * @since 3.0.2
      */
     const EVENT_AFTER_DELETE_CACHES = 'afterDeleteCaches';
 
-    // Properties
-    // =========================================================================
-
     /**
-     * The current request's path, as it will be stored in the templatecaches table.
-     *
-     * @var string|null
+     * @var string|null The current request's path, as it will be stored in the templatecaches table.
      */
     private $_path;
 
     /**
-     * A list of element queries that were executed within the existing caches.
-     *
-     * @var array|null
+     * @var array|null A list of element queries that were executed within the existing caches.
      */
     private $_cachedQueries;
 
     /**
-     * A list of element IDs that are active within the existing caches.
-     *
-     * @var array|null
+     * @var array|null A list of element IDs that are active within the existing caches.
      */
     private $_cacheElementIds;
 
     /**
-     * Whether all caches have been deleted in this request.
-     *
-     * @var bool
+     * @var bool Whether all caches have been deleted in this request.
      */
     private $_deletedAllCaches = false;
 
     /**
-     * Whether all caches have been deleted, on a per-element type basis, in this request.
-     *
-     * @var bool|null
+     * @var bool|null Whether all caches have been deleted, on a per-element type basis, in this request.
      */
     private $_deletedCachesByElementType;
 
@@ -87,9 +72,6 @@ class TemplateCaches extends Component
      * @var int[]|null Index of element IDs to clear caches for in the Delete Stale Template Caches job
      */
     private $_deleteCachesIndex;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns a cached template by its key.
@@ -290,18 +272,13 @@ class TemplateCaches extends Component
         $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
-            Craft::$app->getDb()->createCommand()
-                ->insert(
-                    Table::TEMPLATECACHES,
-                    [
-                        'cacheKey' => $key,
-                        'siteId' => Craft::$app->getSites()->getCurrentSite()->id,
-                        'path' => $global ? null : $this->_getPath(),
-                        'expiryDate' => Db::prepareDateForDb($expiration),
-                        'body' => $body
-                    ],
-                    false)
-                ->execute();
+            Db::insert(Table::TEMPLATECACHES, [
+                'cacheKey' => $key,
+                'siteId' => Craft::$app->getSites()->getCurrentSite()->id,
+                'path' => $global ? null : $this->_getPath(),
+                'expiryDate' => Db::prepareDateForDb($expiration),
+                'body' => $body,
+            ], false);
 
             $cacheId = Craft::$app->getDb()->getLastInsertID(Table::TEMPLATECACHES);
 
@@ -317,13 +294,8 @@ class TemplateCaches extends Component
                     // We can no longer say we’ve deleted all template caches for this element type
                     unset($this->_deletedCachesByElementType[$query[0]]);
                 }
-                Craft::$app->getDb()->createCommand()
-                    ->batchInsert(Table::TEMPLATECACHEQUERIES, [
-                        'cacheId',
-                        'type',
-                        'query'
-                    ], $values, false)
-                    ->execute();
+
+                Db::batchInsert(Table::TEMPLATECACHEQUERIES, ['cacheId', 'type', 'query'], $values, false);
                 unset($this->_cachedQueries[$key]);
             }
 
@@ -335,14 +307,7 @@ class TemplateCaches extends Component
                     $values[] = [$cacheId, $elementId];
                 }
 
-                Craft::$app->getDb()->createCommand()
-                    ->batchInsert(
-                        Table::TEMPLATECACHEELEMENTS,
-                        ['cacheId', 'elementId'],
-                        $values,
-                        false)
-                    ->execute();
-
+                Db::batchInsert(Table::TEMPLATECACHEELEMENTS, ['cacheId', 'elementId'], $values, false);
                 unset($this->_cacheElementIds[$key]);
             }
 
@@ -380,9 +345,9 @@ class TemplateCaches extends Component
             ]));
         }
 
-        $affectedRows = Craft::$app->getDb()->createCommand()
-            ->delete(Table::TEMPLATECACHES, ['id' => $cacheId])
-            ->execute();
+        $affectedRows = Db::delete(Table::TEMPLATECACHES, [
+            'id' => $cacheId,
+        ]);
 
         // Fire an 'afterDeleteCaches' event
         if ($affectedRows && $this->hasEventHandlers(self::EVENT_AFTER_DELETE_CACHES)) {
@@ -440,7 +405,7 @@ class TemplateCaches extends Component
         $deleteQueryCaches = !isset($this->_deletedCachesByElementType[$elementType]);
         $elementIds = [];
 
-        /** @var Element[] $elements */
+        /** @var ElementInterface[] $elements */
         foreach ($elements as $element) {
             $elementIds[] = $element->id;
         }
@@ -499,7 +464,7 @@ class TemplateCaches extends Component
     {
         // It's possible this is already null
         if ($this->_deleteCachesIndex !== null) {
-            Craft::$app->getQueue()->push(new DeleteStaleTemplateCaches([
+            Queue::push(new DeleteStaleTemplateCaches([
                 'elementId' => array_keys($this->_deleteCachesIndex),
             ]));
 
@@ -573,7 +538,7 @@ class TemplateCaches extends Component
      * Deletes any expired caches.
      *
      * @return bool
-     * @deprecated in 3.2. Use [[deleteExpiredCaches()]] instead.
+     * @deprecated in 3.2.0. Use [[deleteExpiredCaches()]] instead.
      */
     public function deleteExpiredCachesIfOverdue(): bool
     {
@@ -600,9 +565,6 @@ class TemplateCaches extends Component
         $this->_deletedAllCaches = true;
         return $success;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns whether template caching is enabled, based on the 'enableTemplateCaching' config setting.
@@ -636,6 +598,9 @@ class TemplateCaches extends Component
         }
 
         $this->_path .= Craft::$app->getRequest()->getPathInfo();
+        if (Craft::$app->getDb()->getIsMysql()) {
+            $this->_path = StringHelper::encodeMb4($this->_path);
+        }
 
         if (($pageNum = Craft::$app->getRequest()->getPageNum()) != 1) {
             $this->_path .= '/' . Craft::$app->getConfig()->getGeneral()->getPageTrigger() . $pageNum;

@@ -8,8 +8,8 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
+use craft\web\assets\iframeresizer\ContentWindowAsset;
 use craft\web\Controller;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
@@ -19,22 +19,16 @@ use yii\web\ServerErrorHttpException;
  * Preview controller.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.2
+ * @since 3.2.0
  */
 class PreviewController extends Controller
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
     public $allowAnonymous = [
         'preview' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
     ];
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -85,8 +79,7 @@ class PreviewController extends Controller
             ]
         ];
 
-        $expiryDate = (new \DateTime())->add(new \DateInterval('P1D'));
-        $token = Craft::$app->getTokens()->createToken($route, null, $expiryDate);
+        $token = Craft::$app->getTokens()->createToken($route);
 
         if (!$token) {
             throw new ServerErrorHttpException(Craft::t('app', 'Could not create a preview token.'));
@@ -128,7 +121,6 @@ class PreviewController extends Controller
         $element = $query->one();
 
         if ($element) {
-            /** @var Element $element */
             $element->previewing = true;
             Craft::$app->getElements()->setPlaceholderElement($element);
         }
@@ -139,10 +131,14 @@ class PreviewController extends Controller
             ->set('Pragma', 'no-cache')
             ->set('Expires', '0');
 
+        // Register the iframe resizer script
+        Craft::$app->getView()->registerAssetBundle(ContentWindowAsset::class);
+
         // Re-route the request, this time ignoring the token
         $urlManager = Craft::$app->getUrlManager();
         $urlManager->checkToken = false;
         $urlManager->setRouteParams([], false);
+        $urlManager->setMatchedElement(null);
         return Craft::$app->handleRequest(Craft::$app->getRequest(), true);
     }
 }

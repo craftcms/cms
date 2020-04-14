@@ -23,9 +23,6 @@ use yii\base\ErrorException;
  */
 class PasswordValidatorTest extends Unit
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var UnitTester
      */
@@ -40,12 +37,6 @@ class PasswordValidatorTest extends Unit
      * @var ExampleModel
      */
     protected $model;
-
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
 
     /**
      * @dataProvider passwordValidationDataProvider
@@ -136,9 +127,6 @@ class PasswordValidatorTest extends Unit
         });
     }
 
-    // Data Providers
-    // =========================================================================
-
     /**
      * @return array
      */
@@ -196,9 +184,6 @@ class PasswordValidatorTest extends Unit
     }
 
 
-    // Required callback methods
-    // =========================================================================
-
     /**
      * @return string
      */
@@ -206,9 +191,6 @@ class PasswordValidatorTest extends Unit
     {
         return 'im a test';
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

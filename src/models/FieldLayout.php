@@ -8,7 +8,6 @@
 namespace craft\models;
 
 use Craft;
-use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\base\Model;
 
@@ -16,13 +15,10 @@ use craft\base\Model;
  * FieldLayout model class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class FieldLayout extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null ID
      */
@@ -48,15 +44,12 @@ class FieldLayout extends Model
      */
     private $_fields;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['id'], 'number', 'integerOnly' => true];
         return $rules;
     }
@@ -83,6 +76,7 @@ class FieldLayout extends Model
      * Return the field layout config or null if no fields configured.
      *
      * @return array|null
+     * @since 3.1.0
      */
     public function getConfig()
     {
@@ -94,7 +88,6 @@ class FieldLayout extends Model
                 'sortOrder' => (int)$tab->sortOrder,
             ];
 
-            /** @var Field $field */
             foreach ($tab->getFields() as $field) {
                 $tabData['fields'][$field->uid] = [
                     'required' => (bool)$field->required,
@@ -112,6 +105,7 @@ class FieldLayout extends Model
      *
      * @param array $config Config data to use.
      * @return self
+     * @since 3.1.0
      */
     public static function createFromConfig(array $config): self
     {
@@ -130,7 +124,6 @@ class FieldLayout extends Model
                     $layoutFields = [];
 
                     foreach ($tab['fields'] as $uid => $field) {
-                        /** @var Field $createdField */
                         $createdField = $fieldService->getFieldByUid($uid);
 
                         if ($createdField) {
@@ -181,7 +174,6 @@ class FieldLayout extends Model
         $ids = [];
 
         foreach ($this->getFields() as $field) {
-            /** @var Field $field */
             $ids[] = $field->id;
         }
 
@@ -192,12 +184,11 @@ class FieldLayout extends Model
      * Returns a field by its handle.
      *
      * @param string $handle The field handle.
-     * @return Field|FieldInterface|null
+     * @return FieldInterface|null
      */
     public function getFieldByHandle(string $handle)
     {
         foreach ($this->getFields() as $field) {
-            /** @var Field $field */
             if ($field->handle === $handle) {
                 return $field;
             }

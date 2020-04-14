@@ -16,9 +16,6 @@ namespace craft\test\mockclasses\components;
  */
 class ExtendedComponentExample extends ComponentExample
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @return string
      */

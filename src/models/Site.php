@@ -21,13 +21,10 @@ use yii\base\InvalidConfigException;
  * Site model class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Site extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null ID
      */
@@ -59,6 +56,12 @@ class Site extends Model
     public $primary = false;
 
     /**
+     * @var bool Enabled?
+     * @since 3.5.0
+     */
+    public $enabled = true;
+
+    /**
      * @var bool Has URLs
      */
     public $hasUrls = true;
@@ -88,13 +91,21 @@ class Site extends Model
      */
     public $uid;
 
-    // Public Methods
-    // =========================================================================
+    /**
+     * @var \DateTime Date created
+     */
+    public $dateCreated;
+
+    /**
+     * @var \DateTime Date updated
+     */
+    public $dateUpdated;
 
     /**
      * Returns the site’s base URL.
      *
      * @return string|null
+     * @since 3.1.0
      */
     public function getBaseUrl()
     {
@@ -110,14 +121,14 @@ class Site extends Model
      */
     public function behaviors()
     {
-        return [
-            'parser' => [
-                'class' => EnvAttributeParserBehavior::class,
-                'attributes' => [
-                    'baseUrl',
-                ],
-            ]
+        $behaviors = parent::behaviors();
+        $behaviors['parser'] = [
+            'class' => EnvAttributeParserBehavior::class,
+            'attributes' => [
+                'baseUrl',
+            ],
         ];
+        return $behaviors;
     }
 
     /**
@@ -136,9 +147,9 @@ class Site extends Model
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['groupId', 'name', 'handle', 'language'], 'required'];
         $rules[] = [['id', 'groupId'], 'number', 'integerOnly' => true];
         $rules[] = [['name', 'handle', 'baseUrl'], 'string', 'max' => 255];
@@ -149,6 +160,14 @@ class Site extends Model
         if (Craft::$app->getIsInstalled()) {
             $rules[] = [['name', 'handle'], UniqueValidator::class, 'targetClass' => SiteRecord::class];
         }
+
+        $rules[] = [
+            ['enabled'], function(string $attribute) {
+                if ($this->primary && !$this->enabled) {
+                    $this->addError($attribute, Craft::t('app', 'The primary site cannot be disabled.'));
+                }
+            }
+        ];
 
         return $rules;
     }

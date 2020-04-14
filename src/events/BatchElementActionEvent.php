@@ -8,8 +8,6 @@
 namespace craft\events;
 
 use craft\base\ElementInterface;
-use craft\elements\db\ElementQueryInterface;
-use yii\base\Event;
 
 /**
  * Batch element action event class.
@@ -19,9 +17,6 @@ use yii\base\Event;
  */
 class BatchElementActionEvent extends ElementQueryEvent
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var ElementInterface The element being processed
      */

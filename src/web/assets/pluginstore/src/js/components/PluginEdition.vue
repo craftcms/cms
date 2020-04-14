@@ -4,7 +4,6 @@
             <edition-badge v-if="plugin.editions.length > 1" :name="edition.name" block big></edition-badge>
             <div class="price">
                 <template v-if="!isPluginEditionFree(edition)">
-
                     <template v-if="licensedEdition && licensedEdition.handle !== edition.handle && licensedEdition.price > 0">
                         <del>{{edition.price|currency}}</del>
                         {{(edition.price - licensedEdition.price)|currency}}
@@ -45,7 +44,6 @@
     import EditionBadge from './EditionBadge'
 
     export default {
-
         props: ['plugin', 'edition'],
 
         components: {
@@ -55,7 +53,6 @@
         },
 
         computed: {
-
             ...mapState({
                 cart: state => state.cart.cart,
             }),
@@ -80,11 +77,9 @@
                     return null
                 }
                 
-                return this.getPluginEdition(this.plugin.handle, this.pluginLicenseInfo.licensedEdition)
+                return this.getPluginEdition(this.plugin, this.pluginLicenseInfo.licensedEdition)
             }
-
         },
-
     }
 </script>
 

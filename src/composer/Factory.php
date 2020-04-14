@@ -13,7 +13,7 @@ use Composer\Package\Archiver;
  * Composer Factory
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Factory extends \Composer\Factory
 {

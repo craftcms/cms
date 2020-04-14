@@ -13,26 +13,22 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
 use craft\errors\MigrationException;
+use craft\helpers\Db;
 use craft\helpers\FileHelper;
-use craft\helpers\Path;
+use craft\helpers\Queue;
 use craft\queue\jobs\FindAndReplace;
 use craft\utilities\ClearCaches;
 use craft\utilities\Updates;
 use craft\web\assets\utilities\UtilitiesAsset;
 use craft\web\Controller;
-use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
-use ZipArchive;
 
 class UtilitiesController extends Controller
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Index
      *
@@ -86,6 +82,8 @@ class UtilitiesController extends Controller
             'id' => $id,
             'displayName' => $class::displayName(),
             'contentHtml' => $class::contentHtml(),
+            'toolbarHtml' => $class::toolbarHtml(),
+            'footerHtml' => $class::footerHtml(),
             'utilities' => $this->_utilityInfo(),
         ]);
     }
@@ -165,7 +163,6 @@ class UtilitiesController extends Controller
 
         // Initial request
         if (!empty($params['start'])) {
-
             $sessionId = Craft::$app->getAssetIndexer()->getIndexingSessionId();
 
             $response = [
@@ -243,21 +240,15 @@ class UtilitiesController extends Controller
                 ->scalar();
 
             if (empty($sessionsInProgress)) {
-                Craft::$app->getDb()->createCommand()
-                    ->delete(Table::ASSETINDEXDATA)
-                    ->execute();
+                Db::delete(Table::ASSETINDEXDATA);
             } else {
-                Craft::$app->getDb()->createCommand()
-                    ->delete(
-                        Table::ASSETINDEXDATA,
-                        ['not', ['sessionId' => $sessionsInProgress]])
-                    ->execute();
+                Db::delete(Table::ASSETINDEXDATA, ['not', ['sessionId' => $sessionsInProgress]]);
             }
         } else if (!empty($params['finish'])) {
             if (!empty($params['deleteAsset']) && is_array($params['deleteAsset'])) {
-                Craft::$app->getDb()->createCommand()
-                    ->delete(Table::ASSETTRANSFORMINDEX, ['assetId' => $params['deleteAsset']])
-                    ->execute();
+                Db::delete(Table::ASSETTRANSFORMINDEX, [
+                    'assetId' => $params['deleteAsset'],
+                ]);
 
                 /** @var Asset[] $assets */
                 $assets = Asset::find()
@@ -337,8 +328,6 @@ class UtilitiesController extends Controller
     {
         $this->requirePermission('utility:db-backup');
 
-        $params = Craft::$app->getRequest()->getRequiredBodyParam('params');
-
         try {
             $backupPath = Craft::$app->getDb()->backup();
         } catch (\Throwable $e) {
@@ -349,56 +338,17 @@ class UtilitiesController extends Controller
             throw new Exception("Could not create backup: the backup file doesn't exist.");
         }
 
-        if (empty($params['downloadBackup'])) {
+        // Zip it up and delete the SQL file
+        $zipPath = FileHelper::zip($backupPath);
+        unlink($backupPath);
+
+        if (!Craft::$app->getRequest()->getBodyParam('downloadBackup')) {
             return $this->asJson(['success' => true]);
         }
 
-        $zipPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . pathinfo($backupPath, PATHINFO_FILENAME) . '.zip';
-
-        if (is_file($zipPath)) {
-            try {
-                FileHelper::unlink($zipPath);
-            } catch (ErrorException $e) {
-                Craft::warning("Unable to delete the file \"{$zipPath}\": " . $e->getMessage(), __METHOD__);
-            }
-        }
-
-        $zip = new ZipArchive();
-
-        if ($zip->open($zipPath, ZipArchive::CREATE) !== true) {
-            throw new Exception('Cannot create zip at ' . $zipPath);
-        }
-
-        $filename = pathinfo($backupPath, PATHINFO_BASENAME);
-        $zip->addFile($backupPath, $filename);
-        $zip->close();
-
-        return $this->asJson([
-            'backupFile' => pathinfo($filename, PATHINFO_FILENAME)
+        return Craft::$app->getResponse()->sendFile($zipPath, null, [
+            'mimeType' => 'application/zip',
         ]);
-    }
-
-    /**
-     * Returns a database backup zip file to the browser.
-     *
-     * @return Response
-     * @throws ForbiddenHttpException if the user doesn't have access to the DB Backup utility
-     * @throws NotFoundHttpException if the requested backup cannot be found
-     */
-    public function actionDownloadBackupFile(): Response
-    {
-        $this->requirePermission('utility:db-backup');
-
-        $filename = Craft::$app->getRequest()->getRequiredQueryParam('filename');
-        $filePath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $filename . '.zip';
-
-        if (!is_file($filePath) || !Path::ensurePathIsContained($filePath)) {
-            throw new NotFoundHttpException(Craft::t('app', 'Invalid backup name: {filename}', [
-                'filename' => $filename
-            ]));
-        }
-
-        return Craft::$app->getResponse()->sendFile($filePath);
     }
 
     /**
@@ -414,7 +364,7 @@ class UtilitiesController extends Controller
         $params = Craft::$app->getRequest()->getRequiredBodyParam('params');
 
         if (!empty($params['find']) && !empty($params['replace'])) {
-            Craft::$app->getQueue()->push(new FindAndReplace([
+            Queue::push(new FindAndReplace([
                 'find' => $params['find'],
                 'replace' => $params['replace'],
             ]));
@@ -446,9 +396,6 @@ class UtilitiesController extends Controller
 
         return $this->redirect('utilities/migrations');
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns info about all of the utilities.

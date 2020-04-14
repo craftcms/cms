@@ -23,6 +23,7 @@ use craft\elements\actions\View;
 use craft\elements\db\CategoryQuery;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\helpers\Db;
 use craft\helpers\UrlHelper;
 use craft\models\CategoryGroup;
 use craft\records\Category as CategoryRecord;
@@ -34,13 +35,10 @@ use yii\base\InvalidConfigException;
  *
  * @property CategoryGroup $group the category's group
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Category extends Element
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -52,9 +50,25 @@ class Category extends Element
     /**
      * @inheritdoc
      */
+    public static function lowerDisplayName(): string
+    {
+        return Craft::t('app', 'category');
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function pluralDisplayName(): string
     {
         return Craft::t('app', 'Categories');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function pluralLowerDisplayName(): string
+    {
+        return Craft::t('app', 'categories');
     }
 
     /**
@@ -112,6 +126,26 @@ class Category extends Element
     public static function find(): ElementQueryInterface
     {
         return new CategoryQuery(static::class);
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public static function gqlTypeNameByContext($context): string
+    {
+        /** @var CategoryGroup $context */
+        return $context->handle . '_Category';
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public static function gqlScopesByContext($context): array
+    {
+        /** @var CategoryGroup $context */
+        return ['categorygroups.' . $context->uid];
     }
 
     /**
@@ -214,11 +248,7 @@ class Category extends Element
             }
 
             // Delete
-            $actions[] = $elementsService->createAction([
-                'type' => Delete::class,
-                'confirmationMessage' => Craft::t('app', 'Are you sure you want to delete the selected categories?'),
-                'successMessage' => Craft::t('app', 'Categories deleted.'),
-            ]);
+            $actions[] = Delete::class;
         }
 
         // Restore
@@ -251,6 +281,11 @@ class Category extends Element
                 'orderBy' => 'elements.dateUpdated',
                 'attribute' => 'dateUpdated'
             ],
+            [
+                'label' => Craft::t('app', 'ID'),
+                'orderBy' => 'elements.id',
+                'attribute' => 'id',
+            ],
         ];
     }
 
@@ -280,9 +315,6 @@ class Category extends Element
         ];
     }
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null Group ID
      */
@@ -305,9 +337,6 @@ class Category extends Element
      */
     private $_hasNewParent;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -321,9 +350,9 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['groupId', 'newParentId'], 'number', 'integerOnly' => true];
         return $rules;
     }
@@ -458,6 +487,15 @@ class Category extends Element
         return $html;
     }
 
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public function getGqlTypeName(): string
+    {
+        return static::gqlTypeNameByContext($this->getGroup());
+    }
+
     // Events
     // -------------------------------------------------------------------------
 
@@ -551,9 +589,9 @@ class Category extends Element
             }
         }
 
-        Craft::$app->getDb()->createCommand()
-            ->update(Table::CATEGORIES, $data, ['id' => $this->id], [], false)
-            ->execute();
+        Db::update(Table::CATEGORIES, $data, [
+            'id' => $this->id,
+        ], [], false);
 
         return true;
     }
@@ -568,7 +606,7 @@ class Category extends Element
         // Add the category back into its structure
         $parent = self::find()
             ->structureId($structureId)
-            ->innerJoin('{{%categories}} j', '[[j.parentId]] = [[elements.id]]')
+            ->innerJoin(['j' => Table::CATEGORIES], '[[j.parentId]] = [[elements.id]]')
             ->andWhere(['j.id' => $this->id])
             ->one();
 
@@ -594,7 +632,9 @@ class Category extends Element
             // Make sure that each of the category's ancestors are related wherever the category is related
             $newRelationValues = [];
 
-            $ancestorIds = $this->getAncestors()->ids();
+            $ancestorIds = $this->getAncestors()
+                ->anyStatus()
+                ->ids();
 
             $sources = (new Query())
                 ->select(['fieldId', 'sourceId', 'sourceSiteId'])
@@ -627,20 +667,12 @@ class Category extends Element
             }
 
             if (!empty($newRelationValues)) {
-                Craft::$app->getDb()->createCommand()
-                    ->batchInsert(
-                        Table::RELATIONS,
-                        ['fieldId', 'sourceId', 'sourceSiteId', 'targetId'],
-                        $newRelationValues)
-                    ->execute();
+                Db::batchInsert(Table::RELATIONS, ['fieldId', 'sourceId', 'sourceSiteId', 'targetId'], $newRelationValues);
             }
         }
 
         parent::afterMoveInStructure($structureId);
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns whether the category has been assigned a new parent entry.

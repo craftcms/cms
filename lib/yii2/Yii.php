@@ -42,6 +42,7 @@ class Yii extends BaseYii
      *
      * @param string $path
      * @return string
+     * @since 3.0.3
      */
     public static function alias(string $path): string
     {

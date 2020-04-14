@@ -25,19 +25,10 @@ use yii\base\NotSupportedException;
  */
 class MysqlDbHelperTest extends Unit
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var UnitTester
      */
     protected $tester;
-
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
 
     /**
      * @dataProvider sqlTypesDataProvider
@@ -102,9 +93,6 @@ class MysqlDbHelperTest extends Unit
         $this->assertSame($result, $textualCapacity);
     }
 
-    // Data Providers
-    // =========================================================================
-
     /**
      * @return array
      */
@@ -145,6 +133,24 @@ class MysqlDbHelperTest extends Unit
                 ],
                 'content_table', ':empty:, field_2', '!='
             ],
+            [
+                ['or', ['foo' => null], ['foo' => '']], 'foo', ':empty:'
+            ],
+            [
+                ['or', ['foo' => null], ['foo' => '']], 'foo', ':EMPTY:'
+            ],
+            [
+                ['not', ['or', ['foo' => null], ['foo' => '']]], 'foo', ':notempty:'
+            ],
+            [
+                ['not', ['or', ['foo' => null], ['foo' => '']]], 'foo', ':NOTEMPTY:'
+            ],
+            [
+                ['not', ['or', ['foo' => null], ['foo' => '']]], 'foo', 'not :empty:'
+            ],
+            [
+                ['not', ['or', ['foo' => null], ['foo' => '']]], 'foo', 'NOT :EMPTY:'
+            ]
         ];
     }
 
@@ -169,9 +175,6 @@ class MysqlDbHelperTest extends Unit
 
         return $returnArray;
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

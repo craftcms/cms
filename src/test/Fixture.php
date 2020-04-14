@@ -21,16 +21,10 @@ use yii\test\ActiveFixture;
  */
 class Fixture extends ActiveFixture
 {
-    // Private properties
-    // =========================================================================
-
     /**
      * @var array
      */
     protected $ids = [];
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -77,8 +71,9 @@ class Fixture extends ActiveFixture
      */
     public function unload()
     {
+        $modelClass = $this->modelClass;
         foreach ($this->ids as $id) {
-            $arInstance = $this->modelClass::find()
+            $arInstance = $modelClass::find()
                 ->where(['id' => $id])
                 ->one();
 

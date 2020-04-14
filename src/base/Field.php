@@ -18,6 +18,7 @@ use craft\helpers\StringHelper;
 use craft\records\Field as FieldRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use GraphQL\Type\Definition\Type;
 use yii\base\Arrayable;
 use yii\base\ErrorHandler;
 use yii\db\Schema;
@@ -26,17 +27,11 @@ use yii\db\Schema;
  * Field is the base class for classes representing fields in terms of objects.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 abstract class Field extends SavableComponent implements FieldInterface
 {
-    // Traits
-    // =========================================================================
-
     use FieldTrait;
-
-    // Constants
-    // =========================================================================
 
     // Events
     // -------------------------------------------------------------------------
@@ -54,6 +49,7 @@ abstract class Field extends SavableComponent implements FieldInterface
 
     /**
      * @event FieldElementEvent The event that is triggered after the element is fully saved and propagated to other sites
+     * @since 3.2.0
      */
     const EVENT_AFTER_ELEMENT_PROPAGATE = 'afterElementPropagate';
 
@@ -71,11 +67,13 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @event FieldElementEvent The event that is triggered before the element is restored
      * You may set [[FieldElementEvent::isValid]] to `false` to prevent the element from getting restored.
+     * @since 3.1.0
      */
     const EVENT_BEFORE_ELEMENT_RESTORE = 'beforeElementRestore';
 
     /**
      * @event FieldElementEvent The event that is triggered after the element is restored
+     * @since 3.1.0
      */
     const EVENT_AFTER_ELEMENT_RESTORE = 'afterElementRestore';
 
@@ -87,9 +85,6 @@ abstract class Field extends SavableComponent implements FieldInterface
     const TRANSLATION_METHOD_SITE_GROUP = 'siteGroup';
     const TRANSLATION_METHOD_LANGUAGE = 'language';
     const TRANSLATION_METHOD_CUSTOM = 'custom';
-
-    // Static
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -127,18 +122,12 @@ abstract class Field extends SavableComponent implements FieldInterface
         return 'mixed';
     }
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var bool|null Whether the field is fresh.
      * @see isFresh()
      * @see setIsFresh()
      */
     private $_isFresh;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Use the translated field name as the string representation.
@@ -175,9 +164,9 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
 
         // Make sure the column name is under the databases maximum column length allowed.
         $maxHandleLength = Craft::$app->getDb()->getSchema()->maxObjectNameLength - strlen(Craft::$app->getContent()->fieldColumnPrefix);
@@ -216,6 +205,7 @@ abstract class Field extends SavableComponent implements FieldInterface
                 'enabledForSite',
                 'error',
                 'errors',
+                'errorSummary',
                 'fieldValue',
                 'fieldValues',
                 'id',
@@ -287,9 +277,29 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
+    public function getTranslationDescription(ElementInterface $element = null)
+    {
+        if (!$this->getIsTranslatable($element)) {
+            return null;
+        }
+
+        switch ($this->translationMethod) {
+            case self::TRANSLATION_METHOD_SITE:
+                return Craft::t('app', 'This field is translated for each site.');
+            case self::TRANSLATION_METHOD_SITE_GROUP:
+                return Craft::t('app', 'This field is translated for each site group.');
+            case self::TRANSLATION_METHOD_LANGUAGE:
+                return Craft::t('app', 'This field is translated for each language.');
+            default:
+                return null;
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getTranslationKey(ElementInterface $element): string
     {
-        /** @var Element $element */
         switch ($this->translationMethod) {
             case self::TRANSLATION_METHOD_NONE:
                 return '1';
@@ -317,11 +327,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function getInputHtml($value, ElementInterface $element = null): string
     {
-        return Html::encodeParams('<textarea name="{name}">{value}</textarea>',
-            [
-                'name' => $this->handle,
-                'value' => $value
-            ]);
+        return Html::textarea($this->handle, $value);
     }
 
     /**
@@ -389,7 +395,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     {
         $value = (string)$value;
 
-        return StringHelper::stripHtml($value);
+        return Html::encode(StringHelper::stripHtml($value));
     }
 
     /**
@@ -398,12 +404,13 @@ abstract class Field extends SavableComponent implements FieldInterface
      *
      * @return array
      * @see \craft\base\SortableFieldInterface::getSortOption()
+     * @since 3.2.0
      */
     public function getSortOption(): array
     {
         return [
             'label' => $this->name,
-            'orderBy' => ($this->columnPrefix ?: 'field_') . $this->handle,
+            'orderBy' => ($this->columnPrefix ?: 'field_') . $this->handle . ', elements.id',
             'attribute' => 'field:' . $this->id,
         ];
     }
@@ -443,9 +450,8 @@ abstract class Field extends SavableComponent implements FieldInterface
                 return false;
             }
 
-            $handle = $this->handle;
             /** @var ElementQuery $query */
-            $query->subQuery->andWhere(Db::parseParam('content.' . Craft::$app->getContent()->fieldColumnPrefix . $handle, $value));
+            $query->subQuery->andWhere(Db::parseParam('content.' . Craft::$app->getContent()->fieldColumnPrefix . $this->handle, $value));
         }
 
         return null;
@@ -475,6 +481,14 @@ abstract class Field extends SavableComponent implements FieldInterface
     public function getGroup()
     {
         return Craft::$app->getFields()->getGroupById($this->groupId);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getContentGqlType()
+    {
+        return Type::string();
     }
 
     // Events
@@ -590,8 +604,18 @@ abstract class Field extends SavableComponent implements FieldInterface
         }
     }
 
-    // Protected Methods
-    // =========================================================================
+    /**
+     * Returns an array that lists the scopes this custom field allows when eager-loading or false if eager-loading
+     * should not be allowed in the GraphQL context.
+     *
+     * @return array|false
+     * @since 3.3.0
+     */
+    public function getEagerLoadingGqlConditions()
+    {
+        // No restrictions
+        return [];
+    }
 
     /**
      * Returns the field’s param name on the request.

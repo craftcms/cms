@@ -19,13 +19,10 @@ use yii\db\Schema;
  * Url represents a URL field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Url extends Field implements PreviewableFieldInterface
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -42,9 +39,6 @@ class Url extends Field implements PreviewableFieldInterface
         return 'string|null';
     }
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null The input’s placeholder text
      */
@@ -55,15 +49,12 @@ class Url extends Field implements PreviewableFieldInterface
      */
     public $maxLength = 255;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['maxLength'], 'required'];
         $rules[] = [['maxLength'], 'number', 'integerOnly' => true, 'min' => 10];
         return $rules;
@@ -127,6 +118,7 @@ class Url extends Field implements PreviewableFieldInterface
     public function getElementValidationRules(): array
     {
         return [
+            ['trim'],
             [UrlValidator::class],
         ];
     }

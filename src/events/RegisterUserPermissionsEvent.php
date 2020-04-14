@@ -13,13 +13,10 @@ use yii\base\Event;
  * RegisterUserPermissionsEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class RegisterUserPermissionsEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var array List of registered user permissions.
      */

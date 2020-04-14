@@ -18,13 +18,10 @@ use yii\web\BadRequestHttpException;
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 abstract class BaseElementsController extends Controller
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Initializes the application component.
      *
@@ -32,13 +29,9 @@ abstract class BaseElementsController extends Controller
      */
     public function init()
     {
-        $this->requireAcceptsJson();
         $this->requireCpRequest();
         parent::init();
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * Returns the posted element type class.

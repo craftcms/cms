@@ -12,23 +12,22 @@ use craft\base\Element;
 use craft\db\Table;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\TagQuery;
+use craft\helpers\Db;
 use craft\models\TagGroup;
 use craft\records\Tag as TagRecord;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
+use yii\validators\InlineValidator;
 
 /**
  * Tag represents a tag element.
  *
  * @property TagGroup $group the tag's group
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Tag extends Element
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -40,9 +39,25 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
+    public static function lowerDisplayName(): string
+    {
+        return Craft::t('app', 'tag');
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function pluralDisplayName(): string
     {
         return Craft::t('app', 'Tags');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function pluralLowerDisplayName(): string
+    {
+        return Craft::t('app', 'tags');
     }
 
     /**
@@ -112,8 +127,25 @@ class Tag extends Element
         return $sources;
     }
 
-    // Properties
-    // =========================================================================
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public static function gqlTypeNameByContext($context): string
+    {
+        /** @var TagGroup $context */
+        return $context->handle . '_Tag';
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public static function gqlScopesByContext($context): array
+    {
+        /** @var TagGroup $context */
+        return ['taggroups.' . $context->uid];
+    }
 
     /**
      * @var int|null Group ID
@@ -125,9 +157,6 @@ class Tag extends Element
      * @see beforeDelete()
      */
     public $deletedWithGroup = false;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -142,11 +171,42 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['groupId'], 'number', 'integerOnly' => true];
+        $rules[] = [
+            ['title'],
+            'validateTitle',
+            'when' => function(): bool {
+                return !$this->hasErrors('groupId') && !$this->hasErrors('title');
+            },
+        ];
         return $rules;
+    }
+
+    /**
+     * Validates the tag title.
+     *
+     * @param string $attribute
+     * @param array|null $params
+     * @param InlineValidator $validator
+     * @since 3.4.12
+     */
+    public function validateTitle(string $attribute, array $params = null, InlineValidator $validator)
+    {
+        $query = static::find()
+            ->groupId($this->groupId)
+            ->siteId($this->siteId)
+            ->title(Db::escapeParam($this->title));
+
+        if ($this->id) {
+            $query->andWhere(['not', ['elements.id' => $this->id]]);
+        }
+
+        if ($query->exists()) {
+            $validator->addError($this, $attribute, Craft::t('yii', '{attribute} "{value}" has already been taken.'));
+        }
     }
 
     /**
@@ -182,6 +242,15 @@ class Tag extends Element
         }
 
         return $group;
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public function getGqlTypeName(): string
+    {
+        return static::gqlTypeNameByContext($this->getGroup());
     }
 
     // Indexes, etc.
@@ -250,11 +319,11 @@ class Tag extends Element
         }
 
         // Update the tag record
-        Craft::$app->getDb()->createCommand()
-            ->update(Table::TAGS, [
-                'deletedWithGroup' => $this->deletedWithGroup,
-            ], ['id' => $this->id], [], false)
-            ->execute();
+        Db::update(Table::TAGS, [
+            'deletedWithGroup' => $this->deletedWithGroup,
+        ], [
+            'id' => $this->id,
+        ], [], false);
 
         return true;
     }

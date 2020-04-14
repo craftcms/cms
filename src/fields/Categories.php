@@ -9,22 +9,26 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\db\Table as DbTable;
 use craft\elements\Category;
 use craft\elements\db\CategoryQuery;
+use craft\gql\arguments\elements\Category as CategoryArguments;
+use craft\gql\interfaces\elements\Category as CategoryInterface;
+use craft\gql\resolvers\elements\Category as CategoryResolver;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
 use craft\helpers\ElementHelper;
+use craft\helpers\Gql;
+use GraphQL\Type\Definition\Type;
 
 /**
  * Categories represents a Categories field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Categories extends BaseRelationField
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -56,9 +60,6 @@ class Categories extends BaseRelationField
     {
         return CategoryQuery::class;
     }
-
-    // Properties
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -94,9 +95,6 @@ class Categories extends BaseRelationField
      * @inheritdoc
      */
     protected $sortable = false;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -152,5 +150,37 @@ class Categories extends BaseRelationField
         $variables['branchLimit'] = $this->branchLimit;
 
         return $variables;
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public function getContentGqlType()
+    {
+        return [
+            'name' => $this->handle,
+            'type' => Type::listOf(CategoryInterface::getType()),
+            'args' => CategoryArguments::getArguments(),
+            'resolve' => CategoryResolver::class . '::resolve',
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public function getEagerLoadingGqlConditions()
+    {
+        $allowedEntities = Gql::extractAllowedEntitiesFromSchema();
+        $allowedCategoryUids = $allowedEntities['categorygroups'] ?? [];
+
+        if (empty($allowedCategoryUids)) {
+            return false;
+        }
+
+        $categoryIds = Db::idsByUids(DbTable::CATEGORYGROUPS, $allowedCategoryUids);
+
+        return ['groupId' => array_values($categoryIds)];
     }
 }

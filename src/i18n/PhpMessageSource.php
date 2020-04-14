@@ -14,20 +14,14 @@ use yii\base\Exception;
  * Class PhpMessageSource
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class PhpMessageSource extends \yii\i18n\PhpMessageSource
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var bool Whether the messages can be overridden by translations in the site’s translations folder
      */
     public $allowOverrides = false;
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -58,9 +52,6 @@ class PhpMessageSource extends \yii\i18n\PhpMessageSource
 
         return $messages;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns the override methods defined in the site’s translations folder.

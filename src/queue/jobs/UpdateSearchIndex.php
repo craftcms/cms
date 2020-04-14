@@ -8,7 +8,6 @@
 namespace craft\queue\jobs;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\queue\BaseJob;
 
@@ -16,7 +15,7 @@ use craft\queue\BaseJob;
  * UpdateSearchIndex job
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.2
+ * @since 3.2.0
  */
 class UpdateSearchIndex extends BaseJob
 {
@@ -31,28 +30,33 @@ class UpdateSearchIndex extends BaseJob
     public $elementId;
 
     /**
-     * @var int|string|null The site ID of the elements to update, or `'*'` to update all sites.
+     * @var int|string|null The site ID of the elements to update, or `'*'` to update all sites
      */
     public $siteId = '*';
+
+    /**
+     * @var string[]|null The field handles that should be indexed
+     * @since 3.4.0
+     */
+    public $fieldHandles;
 
     /**
      * @inheritdoc
      */
     public function execute($queue)
     {
-        /** @var Element $class */
         $class = $this->elementType;
         $elements = $class::find()
             ->id($this->elementId)
-            ->siteId('*')
+            ->siteId($this->siteId)
             ->anyStatus()
             ->all();
         $total = count($elements);
         $searchService = Craft::$app->getSearch();
 
         foreach ($elements as $i => $element) {
-            $this->setProgress($queue, $i + 1 / $total);
-            $searchService->indexElementAttributes($element);
+            $this->setProgress($queue, ($i + 1) / $total);
+            $searchService->indexElementAttributes($element, $this->fieldHandles);
         }
     }
 

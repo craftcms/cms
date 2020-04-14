@@ -12,13 +12,10 @@ namespace craft\base;
  * A class implementing this interface should also implement [[\yii\base\Arrayable]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 interface ComponentInterface
 {
-    // Static
-    // =========================================================================
-
     /**
      * Returns the display name of this class.
      *

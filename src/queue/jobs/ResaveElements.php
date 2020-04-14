@@ -19,13 +19,10 @@ use craft\services\Elements;
  * ResaveElements job
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class ResaveElements extends BaseJob
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|ElementInterface|null The element type that should be resaved
      */
@@ -36,8 +33,11 @@ class ResaveElements extends BaseJob
      */
     public $criteria;
 
-    // Public Methods
-    // =========================================================================
+    /**
+     * @var bool Whether to update the search indexes for the resaved elements.
+     * @since 3.4.2
+     */
+    public $updateSearchIndex = false;
 
     /**
      * @inheritdoc
@@ -62,12 +62,9 @@ class ResaveElements extends BaseJob
         };
 
         $elementsService->on(Elements::EVENT_BEFORE_RESAVE_ELEMENT, $callback);
-        $elementsService->resaveElements($query);
+        $elementsService->resaveElements($query, false, true, $this->updateSearchIndex);
         $elementsService->off(Elements::EVENT_BEFORE_RESAVE_ELEMENT, $callback);
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -79,12 +76,9 @@ class ResaveElements extends BaseJob
         /** @var ElementInterface $elementType */
         $elementType = $query->elementType;
         return Craft::t('app', 'Resaving {type}', [
-            'type' => mb_strtolower($elementType::pluralDisplayName()),
+            'type' => $elementType::pluralLowerDisplayName(),
         ]);
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns the element query based on the criteria.
@@ -93,7 +87,8 @@ class ResaveElements extends BaseJob
      */
     private function _query(): ElementQueryInterface
     {
-        $query = $this->elementType::find();
+        $elementType = $this->elementType;
+        $query = $elementType::find();
 
         if (!empty($this->criteria)) {
             Craft::configure($query, $this->criteria);

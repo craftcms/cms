@@ -9,22 +9,19 @@ namespace craft\validators;
 
 use Craft;
 use craft\db\Query;
+use craft\db\Table;
 use craft\models\Section_SiteSettings;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
-use yii\validators\Validator;
 
 /**
  * Will validate that the given attribute is a valid URI for a single section.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
-class SingleSectionUriValidator extends Validator
+class SingleSectionUriValidator extends UriFormatValidator
 {
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -33,6 +30,8 @@ class SingleSectionUriValidator extends Validator
         if (!($model instanceof Section_SiteSettings) || $attribute !== 'uriFormat') {
             throw new InvalidConfigException('Invalid use of SingleSectionUriValidator');
         }
+
+        parent::validateAttribute($model, $attribute);
 
         /** @var Section_SiteSettings $model */
         // Make sure it's a valid URI
@@ -44,10 +43,12 @@ class SingleSectionUriValidator extends Validator
 
         // Make sure no other elements are using this URI already
         $query = (new Query())
-            ->from(['{{%elements_sites}} elements_sites'])
-            ->innerJoin('{{%elements}} elements', '[[elements.id]] = [[elements_sites.elementId]]')
+            ->from(['elements_sites' => Table::ELEMENTS_SITES])
+            ->innerJoin(['elements' => Table::ELEMENTS], '[[elements.id]] = [[elements_sites.elementId]]')
             ->where([
                 'elements_sites.siteId' => $model->siteId,
+                'elements.draftId' => null,
+                'elements.revisionId' => null,
                 'elements.dateDeleted' => null,
             ]);
 
@@ -63,7 +64,7 @@ class SingleSectionUriValidator extends Validator
 
         if ($section->id) {
             $query
-                ->innerJoin('{{%entries}} entries', '[[entries.id]] = [[elements.id]]')
+                ->innerJoin(['entries' => Table::ENTRIES], '[[entries.id]] = [[elements.id]]')
                 ->andWhere(['not', ['entries.sectionId' => $section->id]]);
         }
 

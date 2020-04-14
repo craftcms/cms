@@ -16,13 +16,10 @@ use craft\fields\data\SingleOptionFieldData;
  * Dropdown represents a Dropdown field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Dropdown extends BaseOptionsField implements SortableFieldInterface
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -39,16 +36,10 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface
         return SingleOptionFieldData::class;
     }
 
-    // Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
     public $optgroups = true;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -61,9 +52,6 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface
             'options' => $this->translatedOptions(),
         ]);
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

@@ -4,43 +4,43 @@
 .message {
   position: relative;
   cursor: pointer;
+
+  &:hover {
+    @include padding-right(26px);
+
+    &:after {
+      position: absolute;
+      top: 18px;
+      @include right(15px);
+      @include icon;
+      content: 'edit';
+      color: $linkColor;
+    }
+  }
+
+  .subject {
+    padding-bottom: 15px;
+    border-bottom: 1px solid #dbdbdb;
+    margin-bottom: 15px;
+  }
+
+  .body {
+    font-size: 12px;
+    line-height: 16px;
+    font-family: Courier, monospace;
+    color: $mediumTextColor;
+  }
 }
 
-.message:hover {
-  @include padding-right(26px);
-}
-
-.message:hover:after {
-  position: absolute;
-  top: 18px;
-  @include right(15px);
-  @include icon;
-  content: 'edit';
-  color: $linkColor;
-}
-
-.message .subject {
-  padding-bottom: 15px;
-  border-bottom: 1px solid #dbdbdb;
-  margin-bottom: 15px;
-}
-
-.message .body {
-  font-size: 12px;
-  line-height: 16px;
-  font-family: Courier, monospace;
-  color: $mediumTextColor;
-}
-
-.modal.message-settings {
+.message-settings {
   width: 500px;
-}
 
-.modal.message-settings .header .right {
-  top: 12px;
-}
+  .header .right {
+    top: 12px;
+  }
 
-.modal.message-settings .body {
-  height: calc(100% - 136px);
-  overflow: auto;
+  .body {
+    height: calc(100% - 131px);
+    overflow: auto;
+  }
 }

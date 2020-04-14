@@ -12,6 +12,7 @@ use craft\base\Element;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\GlobalSetQuery;
+use craft\elements\GlobalSet as GlobalSetElement;
 use craft\helpers\UrlHelper;
 use craft\records\GlobalSet as GlobalSetRecord;
 use craft\validators\HandleValidator;
@@ -22,13 +23,10 @@ use craft\validators\UniqueValidator;
  *
  * @mixin FieldLayoutBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class GlobalSet extends Element
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -40,9 +38,25 @@ class GlobalSet extends Element
     /**
      * @inheritdoc
      */
+    public static function lowerDisplayName(): string
+    {
+        return Craft::t('app', 'global set');
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function pluralDisplayName(): string
     {
         return Craft::t('app', 'Global Sets');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function pluralLowerDisplayName(): string
+    {
+        return Craft::t('app', 'global sets');
     }
 
     /**
@@ -70,6 +84,14 @@ class GlobalSet extends Element
     }
 
     /**
+     * @return string|null
+     */
+    public function getRef()
+    {
+        return $this->handle;
+    }
+
+    /**
      * @inheritdoc
      * @return GlobalSetQuery The newly created [[GlobalSetQuery]] instance.
      */
@@ -78,8 +100,25 @@ class GlobalSet extends Element
         return new GlobalSetQuery(static::class);
     }
 
-    // Properties
-    // =========================================================================
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public static function gqlTypeNameByContext($context): string
+    {
+        /** @var GlobalSetElement $context */
+        return $context->handle . '_GlobalSet';
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public static function gqlScopesByContext($context): array
+    {
+        /** @var GlobalSetElement $context */
+        return ['globalsets.' . $context->uid];
+    }
 
     /**
      * @var string|null Name
@@ -90,9 +129,6 @@ class GlobalSet extends Element
      * @var string|null Handle
      */
     public $handle;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Use the global set's name as its string representation.
@@ -112,7 +148,7 @@ class GlobalSet extends Element
         $behaviors = parent::behaviors();
         $behaviors['fieldLayout'] = [
             'class' => FieldLayoutBehavior::class,
-            'elementType' => __CLASS__
+            'elementType' => __CLASS__,
         ];
         return $behaviors;
     }
@@ -120,9 +156,9 @@ class GlobalSet extends Element
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['fieldLayoutId'], 'number', 'integerOnly' => true];
         $rules[] = [['name', 'handle'], 'string', 'max' => 255];
         $rules[] = [['name', 'handle'], 'required'];
@@ -162,6 +198,15 @@ class GlobalSet extends Element
         }
 
         return UrlHelper::cpUrl('globals/' . $this->handle);
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public function getGqlTypeName(): string
+    {
+        return static::gqlTypeNameByContext($this);
     }
 
     // Events

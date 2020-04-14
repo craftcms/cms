@@ -13,13 +13,10 @@ use yii\base\Event;
  * RegisterPreviewTargetsEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.2
+ * @since 3.2.0
  */
 class RegisterPreviewTargetsEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var array The additional locations that should be available for previewing the element.
      */

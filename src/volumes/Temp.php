@@ -13,7 +13,7 @@ use Craft;
  * @license http://craftcms.com/license Craft License Agreement
  * @see http://craftcms.com
  * @package craft.app.volumes
- * @since 3.0
+ * @since 3.0.0
  */
 class Temp extends Local
 {
@@ -22,9 +22,6 @@ class Temp extends Local
      */
     public $hasUrls = false;
 
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -32,9 +29,6 @@ class Temp extends Local
     {
         return Craft::t('app', 'Temp Folder');
     }
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

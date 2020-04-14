@@ -16,20 +16,14 @@ use yii\i18n\MissingTranslationEvent;
  * Class Localization
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Localization
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var
      */
     private static $_translations;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Normalizes a language into the correct format (e.g. `en-US`).

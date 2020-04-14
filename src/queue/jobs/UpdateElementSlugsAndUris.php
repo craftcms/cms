@@ -8,7 +8,6 @@
 namespace craft\queue\jobs;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
@@ -20,13 +19,10 @@ use yii\queue\Queue;
  * UpdateElementSlugsAndUris job
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class UpdateElementSlugsAndUris extends BaseJob
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|int[]|null The ID(s) of the element(s) to update
      */
@@ -62,9 +58,6 @@ class UpdateElementSlugsAndUris extends BaseJob
      */
     private $_totalProcessed;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -79,9 +72,6 @@ class UpdateElementSlugsAndUris extends BaseJob
         $this->_processElements($queue, $query);
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -90,9 +80,6 @@ class UpdateElementSlugsAndUris extends BaseJob
         return Craft::t('app', 'Updating element slugs and URIs');
     }
 
-    // Private Methods
-    // =========================================================================
-
     /**
      * Creates an element query for the configured element type.
      *
@@ -100,7 +87,6 @@ class UpdateElementSlugsAndUris extends BaseJob
      */
     private function _createElementQuery(): ElementQueryInterface
     {
-        /** @var Element $class */
         $class = $this->elementType;
 
         return $class::find()

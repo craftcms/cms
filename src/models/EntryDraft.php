@@ -11,8 +11,8 @@ namespace craft\models;
  * Class EntryDraft model.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
- * @deprecated in 3.2
+ * @since 3.0.0
+ * @deprecated in 3.2.0
  */
 class EntryDraft extends BaseEntryRevisionModel
 {

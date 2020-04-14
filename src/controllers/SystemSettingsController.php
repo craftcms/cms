@@ -32,13 +32,10 @@ use yii\web\Response;
  * Note that all actions in this controller require administrator access in order to execute.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class SystemSettingsController extends Controller
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -114,9 +111,11 @@ class SystemSettingsController extends Controller
         $projectConfig = Craft::$app->getProjectConfig();
         $request = Craft::$app->getRequest();
 
-        $projectConfig->set('system.name', $request->getBodyParam('name'));
-        $projectConfig->set('system.live', (bool)$request->getBodyParam('live'));
-        $projectConfig->set('system.timeZone', $request->getBodyParam('timeZone'));
+        $systemSettings = $projectConfig->get('system');
+        $systemSettings['name'] = $request->getBodyParam('name');
+        $systemSettings['live'] = (bool)$request->getBodyParam('live');
+        $systemSettings['timeZone'] = $request->getBodyParam('timeZone');
+        $projectConfig->set('system', $systemSettings, 'Update system settings.');
 
         Craft::$app->getSession()->setNotice(Craft::t('app', 'General settings saved.'));
         return $this->redirectToPostedUrl();
@@ -219,7 +218,7 @@ class SystemSettingsController extends Controller
             return null;
         }
 
-        Craft::$app->getProjectConfig()->set('email', $settings->toArray());
+        Craft::$app->getProjectConfig()->set('email', $settings->toArray(), 'Update email settings.');
 
         Craft::$app->getSession()->setNotice(Craft::t('app', 'Email settings saved.'));
         return $this->redirectToPostedUrl();
@@ -240,33 +239,13 @@ class SystemSettingsController extends Controller
         $adapterIsValid = $adapter->validate();
 
         if ($settingsIsValid && $adapterIsValid) {
+            // Try to send the test email
             /** @var Mailer $mailer */
             $mailer = Craft::createObject(App::mailerConfig($settings));
-
-            // Compose the settings list as HTML
-            $settingsList = '';
-
-            foreach (['fromEmail', 'fromName', 'template'] as $name) {
-                if (!empty($settings->$name)) {
-                    $settingsList .= '- **' . $settings->getAttributeLabel($name) . ':** ' . $settings->$name . "\n";
-                }
-            }
-
-            $settingsList .= '- **' . Craft::t('app', 'Transport Type') . ':** ' . $adapter::displayName() . "\n";
-
-            $security = Craft::$app->getSecurity();
-
-            foreach ($adapter->settingsAttributes() as $name) {
-                if (!empty($adapter->$name)) {
-                    $label = $adapter->getAttributeLabel($name);
-                    $value = $security->redactIfSensitive($name, $adapter->$name);
-                    $settingsList .= "- **{$label}:** {$value}\n";
-                }
-            }
-
-            // Try to send the test email
             $message = $mailer
-                ->composeFromKey('test_email', ['settings' => $settingsList])
+                ->composeFromKey('test_email', [
+                    'settings' => MailerHelper::settingsReport($mailer, $adapter)
+                ])
                 ->setTo(Craft::$app->getUser()->getIdentity());
 
             if ($message->send()) {
@@ -347,9 +326,6 @@ class SystemSettingsController extends Controller
         ]);
     }
 
-    // Private Methods
-    // =========================================================================
-
     /**
      * Creates a MailSettings model, populated with post data.
      *
@@ -361,6 +337,7 @@ class SystemSettingsController extends Controller
         $settings = new MailSettings();
 
         $settings->fromEmail = $request->getBodyParam('fromEmail');
+        $settings->replyToEmail = $request->getBodyParam('replyToEmail') ?: null;
         $settings->fromName = $request->getBodyParam('fromName');
         $settings->template = $request->getBodyParam('template');
         $settings->transportType = $request->getBodyParam('transportType');

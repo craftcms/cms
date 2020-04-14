@@ -13,13 +13,10 @@ use craft\helpers\Image as ImageHelper;
  * Class Image variable.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Image
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null
      */
@@ -34,9 +31,6 @@ class Image
      * @var
      */
     protected $size;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Constructor

@@ -26,9 +26,6 @@ use UnitTester;
  */
 class DateTimeHelperTest extends Unit
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var UnitTester
      */
@@ -48,12 +45,6 @@ class DateTimeHelperTest extends Unit
      * @var DateTimeZone
      */
     protected $asiaTokyoTimezone;
-
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
 
     /**
      * @dataProvider constantsDataProvider
@@ -469,9 +460,6 @@ class DateTimeHelperTest extends Unit
         });
     }
 
-    // Data Providers
-    // =========================================================================
-
     /**
      * @return array
      */
@@ -563,7 +551,7 @@ class DateTimeHelperTest extends Unit
         return [
             ['+00:00', 'UTC'],
             ['+00:00', 'GMT'],
-            ['-04:00', 'America/New_York'],
+            ['-05:00', 'America/New_York'],
             ['+09:00', 'Asia/Tokyo'],
             ['+09:00', '+09:00'],
         ];
@@ -801,12 +789,7 @@ class DateTimeHelperTest extends Unit
     public function timezoneAbbreviationDataProvider(): array
     {
         return [
-            ['JST', 'Asia/Tokyo'],
-            ['GMT+0900', '+0900'],
-            ['-03', 'America/Buenos_Aires'],
             ['GMT', 'Etc/GMT+0'],
-            ['+1245', 'NZ-CHAT'],
-            ['EST', 'Jamaica']
         ];
     }
 
@@ -831,9 +814,6 @@ class DateTimeHelperTest extends Unit
             [false, false],
         ];
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

@@ -17,7 +17,12 @@
 
 
 {% macro password(config) %}
-    {% include "_includes/forms/text" with config|merge({ type: 'password' }) only %}
+    {% include "_includes/forms/password" with config only %}
+{% endmacro %}
+
+
+{% macro copytext(config) %}
+    {% include "_includes/forms/copytext" with config only %}
 {% endmacro %}
 
 
@@ -122,6 +127,12 @@
         {% set input = forms.text(config) %}
     {% endif %}
     {{ forms.field(config, input) }}
+{% endmacro %}
+
+
+{% macro copytextField(config) %}
+    {% import _self as forms %}
+    {{ forms.field(config, forms.copytext(config)) }}
 {% endmacro %}
 
 

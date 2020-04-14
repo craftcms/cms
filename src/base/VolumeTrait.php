@@ -11,13 +11,10 @@ namespace craft\base;
  * VolumeTrait
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 trait VolumeTrait
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null Name
      */

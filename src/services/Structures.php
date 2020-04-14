@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\Query;
 use craft\db\Table;
@@ -25,13 +24,10 @@ use yii\base\Exception;
  * An instance of the Structures service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getStructures()|`Craft::$app->structures`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Structures extends Component
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event MoveElementEvent The event that is triggered before an element is moved.
      */
@@ -42,11 +38,9 @@ class Structures extends Component
      */
     const EVENT_AFTER_MOVE_ELEMENT = 'afterMoveElement';
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var int The timeout to pass to [[\yii\mutex\Mutex::acquire()]] when acquiring a lock on the structure.
+     * @since 3.0.19
      */
     public $mutexTimeout = 0;
 
@@ -54,9 +48,6 @@ class Structures extends Component
      * @var
      */
     private $_rootElementRecordsByStructureId;
-
-    // Public Methods
-    // =========================================================================
 
     // Structure CRUD
     // -------------------------------------------------------------------------
@@ -323,9 +314,6 @@ class Structures extends Component
         return $this->_doIt($structureId, $element, $prevElementRecord, 'insertAfter', $mode);
     }
 
-    // Private Methods
-    // =========================================================================
-
     /**
      * Returns a structure element record from given structure and element IDs.
      *
@@ -335,7 +323,6 @@ class Structures extends Component
      */
     private function _getElementRecord(int $structureId, ElementInterface $element)
     {
-        /** @var Element $element */
         $elementId = $element->id;
 
         if ($elementId) {
@@ -397,7 +384,6 @@ class Structures extends Component
 
         $elementRecord = null;
 
-        /** @var Element $element */
         // Figure out what we're doing
         if ($mode !== 'insert') {
             // See if there's an existing structure element record

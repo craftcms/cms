@@ -8,7 +8,7 @@
 namespace craft\events;
 
 use craft\base\ElementInterface;
-use craft\elements\db\MatrixBlockQuery;
+use craft\elements\MatrixBlock;
 use craft\models\MatrixBlockType;
 use yii\base\Event;
 
@@ -20,9 +20,6 @@ use yii\base\Event;
  */
 class BlockTypesEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var MatrixBlockType[] The block types that will be available for the current field
      */
@@ -34,7 +31,7 @@ class BlockTypesEvent extends Event
     public $element;
 
     /**
-     * @var MatrixBlockQuery The current value of the field.
+     * @var MatrixBlock[] The current value of the field.
      */
     public $value;
 }

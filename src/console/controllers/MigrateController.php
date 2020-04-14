@@ -8,9 +8,10 @@
 namespace craft\console\controllers;
 
 use Craft;
-use craft\base\Plugin;
+use craft\base\PluginInterface;
 use craft\console\ControllerTrait;
 use craft\db\MigrationManager;
+use craft\errors\InvalidPluginException;
 use craft\errors\MigrateException;
 use craft\errors\MigrationException;
 use craft\helpers\ArrayHelper;
@@ -24,6 +25,7 @@ use yii\helpers\Console;
 
 /**
  * Manages Craft and plugin migrations.
+ *
  * A migration means a set of persistent changes to the application environment that is shared among different
  * developers. For example, in an application backed by a database, a migration may refer to a set of changes to
  * the database, such as creating a new table, adding a new table column.
@@ -40,17 +42,11 @@ use yii\helpers\Console;
  * ~~~
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class MigrateController extends BaseMigrateController
 {
-    // Traits
-    // =========================================================================
-
     use ControllerTrait;
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var string|null The type of migrations we're dealing with here. Can be 'app', 'plugin', or 'content'.
@@ -60,22 +56,25 @@ class MigrateController extends BaseMigrateController
     public $type = MigrationManager::TYPE_CONTENT;
 
     /**
-     * @var string|Plugin|null The handle of the plugin to use during migration operations, or the plugin itself
+     * @var string|PluginInterface|null The handle of the plugin to use during migration operations, or the plugin itself
      */
     public $plugin;
 
     /**
      * @var bool Exclude pending content migrations.
      */
-    public $noContent;
+    public $noContent = false;
+
+    /**
+     * @var bool Skip backing up the database.
+     * @since 3.4.3
+     */
+    public $noBackup = false;
 
     /**
      * @var MigrationManager|null The migration manager that will be used in this request
      */
     private $_migrator;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -113,6 +112,7 @@ class MigrateController extends BaseMigrateController
         $options[] = 'plugin';
 
         if ($actionID === 'all') {
+            $options[] = 'noBackup';
             $options[] = 'noContent';
         }
 
@@ -150,9 +150,14 @@ class MigrateController extends BaseMigrateController
                 $this->stderr('You must specify the plugin handle using the --plugin option.' . PHP_EOL, Console::FG_RED);
                 return false;
             }
-            if (($plugin = Craft::$app->getPlugins()->getPlugin($this->plugin)) === null) {
-                $this->stderr('Invalid plugin handle: ' . $this->plugin . PHP_EOL, Console::FG_RED);
-                return false;
+            $pluginsService = Craft::$app->getPlugins();
+            if (($plugin = $pluginsService->getPlugin($this->plugin)) === null) {
+                try {
+                    $plugin = $pluginsService->createPlugin($this->plugin);
+                } catch (InvalidPluginException $e) {
+                    $this->stderr('Invalid plugin handle: ' . $this->plugin . PHP_EOL, Console::FG_RED);
+                    return false;
+                }
             }
             $this->plugin = $plugin;
         }
@@ -235,20 +240,16 @@ class MigrateController extends BaseMigrateController
 
         // Anything to update?
         if (!empty($handles)) {
-
             // Enable maintenance mode
             Craft::$app->enableMaintenanceMode();
 
             // Backup the DB?
-            $backup = Craft::$app->getConfig()->getGeneral()->getBackupOnUpdate();
-            if ($backup) {
+            if (!$this->noBackup && Craft::$app->getConfig()->getGeneral()->getBackupOnUpdate()) {
                 try {
                     $backupPath = $db->backup();
                 } catch (\Throwable $e) {
                     Craft::$app->disableMaintenanceMode();
                     $this->stderr("Error backing up the database: {$e->getMessage()}" . PHP_EOL, Console::FG_RED);
-                    Craft::error("Error backing up the database: {$e->getMessage()}", __METHOD__);
-                    Craft::$app->getErrorHandler()->logException($e);
                     return ExitCode::UNSPECIFIED_ERROR;
                 }
             }
@@ -336,9 +337,6 @@ class MigrateController extends BaseMigrateController
 
         return $res;
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * Returns the migration manager that should be used for this request

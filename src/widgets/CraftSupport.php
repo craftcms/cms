@@ -8,7 +8,6 @@
 namespace craft\widgets;
 
 use Craft;
-use craft\base\Plugin;
 use craft\base\Widget;
 use craft\helpers\App;
 use craft\helpers\Json;
@@ -18,13 +17,10 @@ use craft\web\assets\craftsupport\CraftSupportAsset;
  * CraftSupport represents a Craft Support dashboard widget.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class CraftSupport extends Widget
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -58,8 +54,13 @@ class CraftSupport extends Widget
         return Craft::getAlias('@app/icons/buoey.svg');
     }
 
-    // Public Methods
-    // =========================================================================
+    /**
+     * @inheritdoc
+     */
+    public function getTitle(): string
+    {
+        return '';
+    }
 
     /**
      * @inheritdoc
@@ -76,7 +77,6 @@ class CraftSupport extends Widget
 
         $plugins = '';
         foreach (Craft::$app->getPlugins()->getAllPlugins() as $plugin) {
-            /** @var Plugin $plugin */
             $plugins .= "\n    - " . $plugin->name . ' ' . $plugin->getVersion();
         }
 

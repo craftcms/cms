@@ -86,7 +86,7 @@
                     }
                     else {
                         // Error
-                        var msg = Craft.t('An unknown error occurred.');
+                        var msg = Craft.t('A server error occurred.');
 
                         if (typeof(response) !== 'undefined' && response && typeof(response.error) !== 'undefined') {
                             msg = response.error;
@@ -95,7 +95,6 @@
                         this.$error.html(msg);
                         this.$error.removeClass('hidden');
                     }
-
                 }, this));
 
                 this.$widget.data('widget').on('destroy', $.proxy(this, 'destroy'));

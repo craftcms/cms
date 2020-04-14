@@ -18,16 +18,12 @@ use craft\base\Element;
  */
 class ExampleElement extends Element
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var
      */
     public $uriFormat;
 
-    // Public Methods
-    // =========================================================================
+    public $someField;
 
     /**
      * @inheritdoc

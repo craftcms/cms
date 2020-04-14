@@ -50,8 +50,8 @@
             </form>
             <form class="cs-support-form hidden" action="{{ actionUrl('dashboard/send-support-request') }}" method="post" target="{{ idPrefix }}-iframe" accept-charset="UTF-8" enctype="multipart/form-data">
                 {{ csrfInput() }}
-                <input type="hidden" name="widgetId" value="{{ widget.id }}">
-                <input class="cs-support-message" type="hidden" name="message" value="">
+                {{ hiddenInput('widgetId', widget.id) }}
+                {{ hiddenInput('message', '', {class: 'cs-support-message'}) }}
 
                 {% set email = currentUser.email %}
                 {% if email in ['support@pixelandtonic.com', 'support@craftcms.com'] %}
@@ -69,14 +69,14 @@
 
                 <div id="{{ idPrefix }}-support-more" class="cs-support-more hidden">
                     {{ forms.checkboxField({
-                        label: "Attach error logs?"|t('app'),
+                        label: 'Attach error logs'|t('app'),
                         name: 'attachLogs',
                         checked: true
                     }) }}
 
                     {% if showBackupOption %}
                         {{ forms.checkboxField({
-                            label: "Attach a database backup?"|t('app'),
+                            label: 'Attach a database backup'|t('app'),
                             name: 'attachDbBackup',
                             checked: true
                         }) }}
@@ -85,11 +85,11 @@
                     {{ forms.checkboxField({
                         name: 'attachTemplates',
                         checked: true,
-                        label: "Include your template files?"|t('app'),
+                        label: 'Include your template files'|t('app'),
                     }) }}
 
                     {{ forms.fileField({
-                        label: "Attach an additional file?"|t('app'),
+                        label: 'Attach an additional file'|t('app'),
                         class: 'cs-support-attachment',
                         name: 'attachAdditionalFile',
                     }) }}

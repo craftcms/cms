@@ -8,10 +8,10 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\Plugin;
 use craft\db\Table;
 use craft\errors\InvalidPluginException;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
 use craft\services\Plugins;
 use yii\base\NotSupportedException;
 use yii\web\Response;
@@ -20,21 +20,16 @@ use yii\web\Response;
  * ConfigSyncController handles the Project Config Sync workflow
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.1
+ * @since 3.1.0
+ * @internal
  */
 class ConfigSyncController extends BaseUpdaterController
 {
-    // Constants
-    // =========================================================================
-
     const ACTION_RETRY = 'retry';
     const ACTION_APPLY_YAML_CHANGES = 'apply-yaml-changes';
     const ACTION_REGENERATE_YAML = 'regenerate-yaml';
     const ACTION_UNINSTALL_PLUGIN = 'uninstall-plugin';
     const ACTION_INSTALL_PLUGIN = 'install-plugin';
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Re-kicks off the sync, after the user has had a chance to run `composer install`
@@ -87,9 +82,9 @@ class ConfigSyncController extends BaseUpdaterController
             Craft::warning('Could not uninstall plugin "' . $handle . '" that was removed from project.yaml: ' . $e->getMessage());
 
             // Just remove the row
-            Craft::$app->getDb()->createCommand()
-                ->delete(Table::PLUGINS, ['handle' => $handle])
-                ->execute();
+            Db::delete(Table::PLUGINS, [
+                'handle' => $handle,
+            ]);
         }
 
         return $this->sendNextAction($this->_nextApplyYamlAction());
@@ -126,9 +121,6 @@ class ConfigSyncController extends BaseUpdaterController
 
         return $this->sendNextAction($this->_nextApplyYamlAction());
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -180,7 +172,6 @@ class ConfigSyncController extends BaseUpdaterController
                     $plugin = null;
                 }
 
-                /** @var Plugin|null $plugin */
                 if (
                     !$plugin ||
                     $plugin->schemaVersion != $projectConfig->get(Plugins::CONFIG_PLUGINS_KEY . '.' . $handle . '.schemaVersion', true)

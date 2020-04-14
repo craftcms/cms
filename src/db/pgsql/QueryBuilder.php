@@ -8,14 +8,12 @@
 namespace craft\db\pgsql;
 
 use craft\db\Connection;
-use yii\db\ExpressionInterface;
-use yii\db\Query;
 
 /**
  * @inheritdoc
  * @property Connection $db Connection the DB connection that this command is associated with.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class QueryBuilder extends \yii\db\pgsql\QueryBuilder
 {

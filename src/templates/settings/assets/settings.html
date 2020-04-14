@@ -35,7 +35,7 @@
         <div class="flex-grow">
             {{ forms.text({
                 id: 'tempSubpath',
-                class: 'ltr' ~ (not (settings.tempVolumeUid ?? null) ? ' hidden'),
+                class: ['ltr', not (settings.tempVolumeUid ?? false) ? 'hidden']|filter,
                 name: 'tempSubpath',
                 value: settings.tempSubpath ?? null,
                 placeholder: 'path/to/subfolder'|t('app')
@@ -46,7 +46,7 @@
 
 {% block content %}
     <form id="settings-form" method="post" class="centered" accept-charset="UTF-8" data-saveshortcut>
-        <input type="hidden" name="action" value="asset-settings/save-asset-settings">
+        {{ actionInput('asset-settings/save-asset-settings') }}
         {{ csrfInput() }}
 
         {{ forms.field({

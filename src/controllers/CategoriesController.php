@@ -9,7 +9,6 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\Element;
-use craft\base\Field;
 use craft\elements\Category;
 use craft\errors\InvalidElementException;
 use craft\events\ElementEvent;
@@ -18,7 +17,6 @@ use craft\helpers\UrlHelper;
 use craft\models\CategoryGroup;
 use craft\models\CategoryGroup_SiteSettings;
 use craft\models\Site;
-use craft\web\assets\editcategory\EditCategoryAsset;
 use craft\web\Controller;
 use yii\base\Exception;
 use yii\web\BadRequestHttpException;
@@ -33,20 +31,14 @@ use yii\web\ServerErrorHttpException;
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class CategoriesController extends Controller
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event ElementEvent The event that is triggered when a category’s template is rendered for Live Preview.
      */
     const EVENT_PREVIEW_CATEGORY = 'previewCategory';
-
-    // Public Methods
-    // =========================================================================
 
     // Category Groups
     // -------------------------------------------------------------------------
@@ -161,7 +153,7 @@ class CategoriesController extends Controller
 
             if ($siteSettings->hasUrls = !empty($postedSettings['uriFormat'])) {
                 $siteSettings->uriFormat = $postedSettings['uriFormat'];
-                $siteSettings->template = $postedSettings['template'];
+                $siteSettings->template = $postedSettings['template'] ?? null;
             }
 
             $allSiteSettings[$site->id] = $siteSettings;
@@ -371,6 +363,8 @@ class CategoriesController extends Controller
             ];
         }
 
+        $variables['showPreviewBtn'] = false;
+
         // Enable Live Preview?
         if (!$request->isMobileBrowser(true) && Craft::$app->getCategories()->isGroupTemplateValid($variables['group'], $category->siteId)) {
             $this->getView()->registerJs('Craft.LivePreview.init(' . Json::encode([
@@ -385,7 +379,9 @@ class CategoriesController extends Controller
                     ]
                 ]) . ');');
 
-            $variables['showPreviewBtn'] = true;
+            if (!Craft::$app->getConfig()->getGeneral()->headlessMode) {
+                $variables['showPreviewBtn'] = true;
+            }
 
             // Should we show the Share button too?
             if ($category->id !== null) {
@@ -400,8 +396,6 @@ class CategoriesController extends Controller
                         ]);
                 }
             }
-        } else {
-            $variables['showPreviewBtn'] = false;
         }
 
         // Set the base CP edit URL
@@ -415,8 +409,6 @@ class CategoriesController extends Controller
         $variables['nextCategoryUrl'] = "categories/{$variables['group']->handle}/new{$siteSegment}";
 
         // Render the template!
-        $this->getView()->registerAssetBundle(EditCategoryAsset::class);
-
         return $this->renderTemplate('categories/_edit', $variables);
     }
 
@@ -643,9 +635,6 @@ class CategoriesController extends Controller
         return $this->_showCategory($category);
     }
 
-    // Private Methods
-    // =========================================================================
-
     /**
      * Preps category category variables.
      *
@@ -730,7 +719,6 @@ class CategoriesController extends Controller
 
             if ($variables['category']->hasErrors()) {
                 foreach ($tab->getFields() as $field) {
-                    /** @var Field $field */
                     if ($hasErrors = $variables['category']->hasErrors($field->handle . '.*')) {
                         break;
                     }
@@ -840,7 +828,7 @@ class CategoriesController extends Controller
             throw new ServerErrorHttpException('The category ' . $category->id . ' doesn’t have a URL for the site ' . $category->siteId . '.');
         }
 
-        $site = Craft::$app->getSites()->getSiteById($category->siteId);
+        $site = Craft::$app->getSites()->getSiteById($category->siteId, true);
 
         if (!$site) {
             throw new ServerErrorHttpException('Invalid site ID: ' . $category->siteId);

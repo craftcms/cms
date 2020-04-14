@@ -16,13 +16,19 @@ use Twig\Markup;
  * ElementInterface defines the common interface to be implemented by element classes.
  * A class implementing this interface should also use [[ElementTrait]] and [[ContentTrait]].
  *
+ * @mixin ElementTrait
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 interface ElementInterface extends ComponentInterface
 {
-    // Static
-    // =========================================================================
+    /**
+     * Returns the lowercase version of [[displayName()]].
+     *
+     * @return string
+     * @since 3.3.17
+     */
+    public static function lowerDisplayName(): string;
 
     /**
      * Returns the plural version of [[displayName()]].
@@ -33,6 +39,14 @@ interface ElementInterface extends ComponentInterface
     public static function pluralDisplayName(): string;
 
     /**
+     * Returns the plural, lowercase version of [[displayName()]].
+     *
+     * @return string
+     * @since 3.3.17
+     */
+    public static function pluralLowerDisplayName(): string;
+
+    /**
      * Returns the handle that should be used to refer to this element type from reference tags.
      *
      * @return string|null The reference handle, or null if the element type doesn’t support reference tags
@@ -40,7 +54,18 @@ interface ElementInterface extends ComponentInterface
     public static function refHandle();
 
     /**
-     * Returns whether elements of this type will be storing any data in the `content` table (tiles or custom fields).
+     * Returns whether Craft should keep track of attribute and custom field changes made to this element type,
+     * including when the last time they were changed, and who was logged-in at the time.
+     *
+     * @return bool Whether to track changes made to elements of this type.
+     * @see getDirtyAttributes()
+     * @see getDirtyFields()
+     * @since 3.4.0
+     */
+    public static function trackChanges(): bool;
+
+    /**
+     * Returns whether elements of this type will be storing any data in the `content` table (titles or custom fields).
      *
      * @return bool Whether elements of this type will be storing any data in the `content` table.
      */
@@ -219,6 +244,7 @@ interface ElementInterface extends ComponentInterface
      * Returns the source definitions that elements of this type may belong to.
      *
      * This defines what will show up in the source list on element indexes and element selector modals.
+     *
      * Each item in the array should be set to an array that has the following keys:
      * - **`key`** – The source’s key. This is the string that will be passed into the $source argument of [[actions()]],
      *   [[indexHtml()]], and [[defaultTableAttributes()]].
@@ -242,21 +268,49 @@ interface ElementInterface extends ComponentInterface
      * - **`nested`** – An array of sources that are nested within this one. Each nested source can have the same keys
      *   as top-level sources.
      *
+     * ::: tip
+     * Element types that extend [[\craft\base\Element]] should override [[\craft\base\Element::defineSources()]]
+     * instead of this method.
+     * :::
+     *
      * @param string|null $context The context ('index' or 'modal').
      * @return array The sources.
      */
     public static function sources(string $context = null): array;
 
     /**
-     * Returns the available element actions for a given source (if one is provided).
+     * Returns the available [element actions](https://docs.craftcms.com/v3/extend/element-action-types.html) for a
+     * given source.
      *
-     * The actions can either be represented by their class handle (e.g. 'SetStatus'), or by an
-     * [[ElementActionInterface]] instance.
+     * The actions can be represented by their fully qualified class name, a config array with the class name
+     * set to a `type` key, or by an instantiated element action object.
+     *
+     * ::: tip
+     * Element types that extend [[\craft\base\Element]] should override [[\craft\base\Element::defineActions()]]
+     * instead of this method.
+     * :::
      *
      * @param string $source The selected source’s key.
      * @return array The available element actions.
      */
     public static function actions(string $source): array;
+
+    /**
+     * Returns the available export options for a given source.
+     *
+     * The exporters can be represented by their fully qualified class name, a config array with the class name
+     * set to a `type` key, or by an instantiated element exporter object.
+     *
+     * ::: tip
+     * Element types that extend [[\craft\base\Element]] should override [[\craft\base\Element::defineExporters()]]
+     * instead of this method.
+     * :::
+     *
+     * @param string $source The selected source’s key.
+     * @return array The available element exporters.
+     * @since 3.4.0
+     */
+    public static function exporters(string $source): array;
 
     /**
      * Defines which element attributes should be searchable.
@@ -277,6 +331,11 @@ interface ElementInterface extends ComponentInterface
      *
      * There is no need for this method to worry about the ‘title’ or ‘slug’ attributes, or custom field handles;
      * those are indexed automatically.
+     *
+     * ::: tip
+     * Element types that extend [[\craft\base\Element]] should override
+     * [[\craft\base\Element::defineSearchableAttributes()]] instead of this method.
+     * :::
      *
      * @return string[] The element attributes that should be searchable
      */
@@ -373,8 +432,23 @@ interface ElementInterface extends ComponentInterface
      */
     public static function eagerLoadingMap(array $sourceElements, string $handle);
 
-    // Public Methods
-    // =========================================================================
+    /**
+     * Returns the GraphQL type name by an element's context.
+     *
+     * @param mixed $context The element's context, such as a Volume, Entry Type or Matrix Block Type.
+     * @return string
+     * @since 3.3.0
+     */
+    public static function gqlTypeNameByContext($context): string;
+
+    /**
+     * Returns the GraphQL scopes required by element's context.
+     *
+     * @param mixed $context The element's context, such as a Volume, Entry Type or Matrix Block Type.
+     * @return array
+     * @since 3.3.0
+     */
+    public static function gqlScopesByContext($context): array;
 
     /**
      * Returns the element’s ID.
@@ -389,7 +463,7 @@ interface ElementInterface extends ComponentInterface
      * Returns whether this is a draft.
      *
      * @return bool
-     * @since 3.2
+     * @since 3.2.0
      */
     public function getIsDraft(): bool;
 
@@ -397,7 +471,7 @@ interface ElementInterface extends ComponentInterface
      * Returns whether this is a revision.
      *
      * @return bool
-     * @since 3.2
+     * @since 3.2.0
      */
     public function getIsRevision(): bool;
 
@@ -405,7 +479,7 @@ interface ElementInterface extends ComponentInterface
      * Returns the element’s ID, or if it’s a draft/revision, its source element’s ID.
      *
      * @return int|null
-     * @since 3.2
+     * @since 3.2.0
      */
     public function getSourceId();
 
@@ -413,7 +487,7 @@ interface ElementInterface extends ComponentInterface
      * Returns the element’s UUID, or if it’s a draft/revision, its source element’s UUID.
      *
      * @return string
-     * @since 3.2
+     * @since 3.2.0
      */
     public function getSourceUid(): string;
 
@@ -421,7 +495,7 @@ interface ElementInterface extends ComponentInterface
      * Returns whether the element is an unsaved draft.
      *
      * @return bool
-     * @since 3.2
+     * @since 3.2.0
      */
     public function getIsUnsavedDraft(): bool;
 
@@ -464,9 +538,22 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the route that should be used when the element’s URI is requested.
      *
+     * ::: tip
+     * Element types that extend [[\craft\base\Element]] should override [[\craft\base\Element::route()]]
+     * instead of this method.
+     * :::
+     *
      * @return mixed The route that the request should use, or null if no special action should be taken
      */
     public function getRoute();
+
+    /**
+     * Returns whether this element represents the site homepage.
+     *
+     * @retern bool
+     * @since 3.3.6
+     */
+    public function getIsHomepage(): bool;
 
     /**
      * Returns the element’s full URL.
@@ -483,9 +570,10 @@ interface ElementInterface extends ComponentInterface
     public function getLink();
 
     /**
-     * Returns what the element should be called within the Control Panel.
+     * Returns what the element should be called within the control panel.
      *
      * @return string
+     * @since 3.2.0
      */
     public function getUiLabel(): string;
 
@@ -504,7 +592,7 @@ interface ElementInterface extends ComponentInterface
     public function getIsEditable(): bool;
 
     /**
-     * Returns the element’s CP edit URL.
+     * Returns the element’s edit URL in the control panel.
      *
      * @return string|null
      */
@@ -513,20 +601,60 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the additional locations that should be available for previewing the element, besides its primary [[getUrl()|URL]].
      *
-     * Each target should be represented by a sub-array with `'label'` and `'url'` keys.
+     * Each target should be represented by a sub-array with the following keys:
+     *
+     * - `label` – What the preview target will be called in the control panel.
+     * - `url` – The URL that the preview target should open.
+     * - `refresh` – Whether preview frames should be automatically refreshed when content changes (`true` by default).
+     *
+     * ::: tip
+     * Element types that extend [[\craft\base\Element]] should override [[\craft\base\Element::previewTargets()]]
+     * instead of this method.
+     * :::
      *
      * @return array
-     * @since 3.2
+     * @since 3.2.0
      */
     public function getPreviewTargets(): array;
 
     /**
+     * Returns the URL to the element’s icon, if there is one.
+     *
+     * @param int $size The width and height the icon should have
+     * @return string|null
+     * @since 3.5.0
+     */
+    public function getIconUrl(int $size);
+
+    /**
      * Returns the URL to the element’s thumbnail, if there is one.
      *
-     * @param int $size
+     * @param int $size The maximum width and height the thumbnail should have.
      * @return string|null
      */
     public function getThumbUrl(int $size);
+
+    /**
+     * Returns whether the element is enabled for the current site.
+     *
+     * This can also be set to an array of site ID/site-enabled mappings.
+     *
+     * @param int|null $siteId The ID of the site to return for. If `null`, the current site status will be returned.
+     * @return bool|null Whether the element is enabled for the given site. `null` will be returned if a `$siteId` was
+     * passed, but that site’s status wasn’t provided via [[setEnabledForSite()]].
+     * @since 3.4.0
+     */
+    public function getEnabledForSite(int $siteId = null);
+
+    /**
+     * Sets whether the element is enabled for the current site.
+     *
+     * This can also be set to an array of site ID/site-enabled mappings.
+     *
+     * @param bool|bool[] $enabledForSite
+     * @since 3.4.0
+     */
+    public function setEnabledForSite($enabledForSite);
 
     /**
      * Returns the element’s status.
@@ -703,6 +831,23 @@ interface ElementInterface extends ComponentInterface
     public function offsetExists($offset);
 
     /**
+     * Returns the status of a given attribute.
+     *
+     * @param string $attribute
+     * @return array|null
+     * @since 3.4.0
+     */
+    public function getAttributeStatus(string $attribute);
+
+    /**
+     * Returns a list of attribute names that have changed since the element was first loaded.
+     *
+     * @return string[]
+     * @since 3.4.0
+     */
+    public function getDirtyAttributes(): array;
+
+    /**
      * Returns the element’s normalized custom field values, indexed by their handles.
      *
      * @param string[]|null $fieldHandles The list of field handles whose values
@@ -744,6 +889,46 @@ interface ElementInterface extends ComponentInterface
      * @param mixed $value The value to set on the field
      */
     public function setFieldValue(string $fieldHandle, $value);
+
+    /**
+     * Returns the status of a given field.
+     *
+     * @param string $fieldHandle
+     * @return array|null
+     * @since 3.4.0
+     */
+    public function getFieldStatus(string $fieldHandle);
+
+    /**
+     * Returns whether a custom field value has changed since the element was first loaded.
+     *
+     * @param string $fieldHandle
+     * @return bool
+     * @since 3.4.0
+     */
+    public function isFieldDirty(string $fieldHandle): bool;
+
+    /**
+     * Returns a list of custom field handles that have changed since the element was first loaded.
+     *
+     * @return string[]
+     * @since 3.4.0
+     */
+    public function getDirtyFields(): array;
+
+    /**
+     * Marks all fields and attributes as dirty.
+     *
+     * @since 3.4.10
+     */
+    public function markAsDirty();
+
+    /**
+     * Resets the record of dirty attributes and fields.
+     *
+     * @since 3.4.0
+     */
+    public function markAsClean();
 
     /**
      * Sets the element’s custom field values, when the values have come from post data.
@@ -788,6 +973,48 @@ interface ElementInterface extends ComponentInterface
     public function getFieldContext(): string;
 
     /**
+     * Returns whether elements have been eager-loaded with a given handle.
+     *
+     * @param string $handle The handle of the eager-loaded elements
+     * @return bool Whether elements have been eager-loaded with the given handle
+     */
+    public function hasEagerLoadedElements(string $handle): bool;
+
+    /**
+     * Returns the eager-loaded elements for a given handle.
+     *
+     * @param string $handle The handle of the eager-loaded elements
+     * @return ElementInterface[]|null The eager-loaded elements, or null if they hadn't been eager-loaded
+     */
+    public function getEagerLoadedElements(string $handle);
+
+    /**
+     * Sets some eager-loaded elements on a given handle.
+     *
+     * @param string $handle The handle that was used to eager-load the elements
+     * @param ElementInterface[] $elements The eager-loaded elements
+     */
+    public function setEagerLoadedElements(string $handle, array $elements);
+
+    /**
+     * Returns the count of eager-loaded elements for a given handle.
+     *
+     * @param string $handle The handle of the eager-loaded elements
+     * @return int The eager-loaded element count
+     * @since 3.4.0
+     */
+    public function getEagerLoadedElementCount(string $handle): int;
+
+    /**
+     * Sets the count of eager-loaded elements for a given handle.
+     *
+     * @param string $handle The handle to load the elements with in the future
+     * @param int $count The eager-loaded element count
+     * @since 3.4.0
+     */
+    public function setEagerLoadedElementCount(string $handle, int $count);
+
+    /**
      * Returns whether the element’s content is "fresh" (unsaved and without validation errors).
      *
      * @return bool Whether the element’s content is fresh
@@ -798,6 +1025,7 @@ interface ElementInterface extends ComponentInterface
      * Sets the revision creator ID to be saved.
      *
      * @param int|null $creatorId
+     * @since 3.2.0
      */
     public function setRevisionCreatorId(int $creatorId = null);
 
@@ -805,6 +1033,7 @@ interface ElementInterface extends ComponentInterface
      * Sets the revision notes to be saved.
      *
      * @param string|null $notes
+     * @since 3.2.0
      */
     public function setRevisionNotes(string $notes = null);
 
@@ -812,6 +1041,7 @@ interface ElementInterface extends ComponentInterface
      * Returns the element’s current revision, if one exists.
      *
      * @return ElementInterface|null
+     * @since 3.2.0
      */
     public function getCurrentRevision();
 
@@ -819,7 +1049,12 @@ interface ElementInterface extends ComponentInterface
     // -------------------------------------------------------------------------
 
     /**
-     * Returns any attributes that should be included in the element’s DOM representation in the Control Panel.
+     * Returns any attributes that should be included in the element’s DOM representation in the control panel.
+     *
+     * ::: tip
+     * Element types that extend [[\craft\base\Element]] should override [[\craft\base\Element::htmlAttributes()]]
+     * instead of this method.
+     * :::
      *
      * @param string $context The context that the element is being rendered in ('index', 'field', etc.)
      * @return array
@@ -829,27 +1064,10 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the HTML that should be shown for a given attribute in Table View.
      *
-     * This method can be used to completely customize what actually shows up within the table’s body for a given
-     * attribute, rather than simply showing the attribute’s raw value.
-     * For example, if your elements have an “email” attribute that you want to wrap in a `mailto:` link, your
-     * getTableAttributesHtml() method could do this:
-     *
-     * ```php
-     * switch ($attribute) {
-     *     case 'email':
-     *         return $this->email ? '<a href="mailto:'.$this->email.'">'.$this->email.'</a>' : '';
-     *     // ...
-     * }
-     * return parent::getTableAttributeHtml($attribute);
-     * ```
-     *
-     * [[Element::getTableAttributeHtml()]] provides a couple handy attribute checks by default, so it is a good
-     * idea to let the parent method get called (as shown above). They are:
-     *
-     * - If the attribute name is ‘link’ or ‘uri’, it will be linked to the front-end URL.
-     * - If the attribute is a custom field handle, it will pass the responsibility off to the field class.
-     * - If the attribute value is a DateTime object, the date will be formatted with a localized date format.
-     * - For anything else, it will output the attribute value as a string.
+     * ::: tip
+     * Element types that extend [[\craft\base\Element]] should override [[\craft\base\Element::tableAttributeHtml()]]
+     * instead of this method.
+     * :::
      *
      * @param string $attribute The attribute name.
      * @return string The HTML that should be shown for a given attribute in Table View.
@@ -862,6 +1080,14 @@ interface ElementInterface extends ComponentInterface
      * @return string The HTML for the editor HUD
      */
     public function getEditorHtml(): string;
+
+    /**
+     * Returns the GraphQL type name for this element type.
+     *
+     * @return string
+     * @since 3.3.0
+     */
+    public function getGqlTypeName(): string;
 
     // Events
     // -------------------------------------------------------------------------
@@ -889,6 +1115,7 @@ interface ElementInterface extends ComponentInterface
      * :::
      *
      * @param bool $isNew Whether the element is brand new
+     * @since 3.2.0
      */
     public function afterPropagate(bool $isNew);
 
@@ -908,11 +1135,14 @@ interface ElementInterface extends ComponentInterface
      * Performs actions before an element is restored.
      *
      * @return bool Whether the element should be restored
+     * @since 3.1.0
      */
     public function beforeRestore(): bool;
 
     /**
      * Performs actions after an element is restored.
+     *
+     * @since 3.1.0
      */
     public function afterRestore();
 

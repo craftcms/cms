@@ -13,7 +13,7 @@ use craft\helpers\Console;
 use yii\console\ExitCode;
 
 /**
- * Creates a new database backup
+ * Restores a database from backup.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.1.29
@@ -26,7 +26,7 @@ class RestoreController extends Controller
     public $defaultAction = 'db';
 
     /**
-     * Restores a database backup
+     * Allows you to restore a database from a backup.
      *
      * @param string|null The path to the database backup file.
      * @return int

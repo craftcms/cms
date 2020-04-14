@@ -21,13 +21,10 @@ use craft\db\Table;
  * @property bool $enabled Enabled
  * @property bool $archived Archived
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Element extends ActiveRecord
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      * @return string

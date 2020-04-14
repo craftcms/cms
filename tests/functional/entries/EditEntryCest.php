@@ -20,9 +20,6 @@ use FunctionalTester;
  */
 class EditEntryCest
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var string
      */
@@ -32,9 +29,6 @@ class EditEntryCest
      * @var
      */
     public $currentUser;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @param FunctionalTester $I
@@ -49,15 +43,12 @@ class EditEntryCest
         $this->cpTrigger = Craft::$app->getConfig()->getGeneral()->cpTrigger;
     }
 
-    // Tests
-    // =========================================================================
-
     /**
      * @param FunctionalTester $I
      */
     public function seeSections(FunctionalTester $I)
     {
-        $I->amOnPage('/'.$this->cpTrigger.'/entries');
+        $I->amOnPage('/' . $this->cpTrigger . '/entries');
 
         $I->see('Craft CMS Test Section');
     }

@@ -12,13 +12,11 @@
         props: ['images'],
 
         methods: {
-
             zoomImage(key) {
                 this.$store.commit('app/updateScreenshotModalImages', this.images)
                 this.$store.commit('app/updateShowingScreenshotModal', true)
                 this.$store.commit('app/updateScreenshotModalImageKey', key)
             }
-
         }
     }
 </script>

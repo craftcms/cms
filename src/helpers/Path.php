@@ -11,13 +11,10 @@ namespace craft\helpers;
  * Class Path
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Path
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Ensures that a relative path never goes deeper than its root directory.
      *
@@ -29,7 +26,7 @@ class Path
         // Sanitize
         $path = StringHelper::convertToUtf8($path);
 
-        $segs = array_filter(preg_split('/[\\/\\\\]/', $path));
+        $segs = ArrayHelper::filterEmptyStringsFromArray(preg_split('/[\\/\\\\]/', $path));
         $level = 0;
 
         foreach ($segs as $seg) {

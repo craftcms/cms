@@ -15,10 +15,10 @@ coverage:
   notify:
     slack:
       default:
-        url: "https://hooks.slack.com/services/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"
+        url: secret:6khnlMrrqo73RkUvirgGG60/ormed+LWKvoeYGU72jUDSrPqOMR63KQsS3hzvGtOFWYNzYHkesvlagFb3aAijHGw2Md0jEbjWj/PfXV23XGB59tF9ktCdIoe9o05AKlWtGYKaguPRkbNqTk3yAaYXUQtV02KvUFm+RzAEcwuRv0=
         threshold: 1%
         only_pulls: false
-        branches: 3.2
+        branches: develop
         flags: null
         attachments: "sunburst, diff"
         paths: null
@@ -46,7 +46,6 @@ ignore:
   - "src/views"
   - "src/web/assets"
   - "bootstrap"
-  - "docs"
   - "lib"
   - "tests"
   - "vendor"

@@ -23,19 +23,10 @@ use yii\base\InvalidArgumentException;
  */
 class LocalizationHelperTest extends Unit
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var UnitTester
      */
     protected $tester;
-
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
 
     /**
      * @dataProvider languageNormalizationDataProvider
@@ -102,9 +93,6 @@ class LocalizationHelperTest extends Unit
     {
         $this->assertSame($result, Localization::findMissingTranslation($input));
     }
-
-    // Tests
-    // =========================================================================
 
     /**
      * @return array

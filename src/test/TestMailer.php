@@ -17,13 +17,10 @@ use yii\mail\MessageInterface;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.2
+ * @since 3.2.0
  */
 class TestMailer extends Mailer
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var string
      */
@@ -33,9 +30,6 @@ class TestMailer extends Mailer
      * @var Closure
      */
     public $callback;
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @param $message

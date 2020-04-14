@@ -12,19 +12,20 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
+use craft\elements\db\ElementQuery;
+use craft\elements\db\ElementQueryInterface;
+use craft\helpers\Db;
+use GraphQL\Type\Definition\Type;
 use yii\db\Schema;
 
 /**
  * Lightswitch represents a Lightswitch field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Lightswitch extends Field implements PreviewableFieldInterface, SortableFieldInterface
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -41,16 +42,10 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
         return 'bool';
     }
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var bool Whether the lightswitch should be enabled by default
      */
     public $default = false;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -115,5 +110,28 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
         }
 
         return (bool)$value;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function modifyElementsQuery(ElementQueryInterface $query, $value)
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $column = 'content.' . Craft::$app->getContent()->fieldColumnPrefix . $this->handle;
+        /** @var ElementQuery $query */
+        $query->subQuery->andWhere(Db::parseBooleanParam($column, $value, (bool)$this->default));
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getContentGqlType()
+    {
+        return Type::boolean();
     }
 }

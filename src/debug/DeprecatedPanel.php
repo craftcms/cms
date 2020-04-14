@@ -16,13 +16,10 @@ use yii\web\NotFoundHttpException;
  * Debugger panel that collects and displays deprecation warnings.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class DeprecatedPanel extends Panel
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      *
      */

@@ -21,22 +21,17 @@ use yii\db\ActiveQueryInterface;
  * @property string $handle Handle
  * @property string $language Language
  * @property bool $primary Primary
+ * @property bool $enabled Enabled
  * @property bool $hasUrls Has URLs
  * @property bool $baseUrl Base URL
  * @property int $sortOrder Sort order
  * @property SiteGroup $group Group
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Site extends ActiveRecord
 {
-    // Traits
-    // =========================================================================
-
     use SoftDeleteTrait;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

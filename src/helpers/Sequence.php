@@ -26,6 +26,7 @@ class Sequence
      * @param string $name The sequence name.
      * @param int|null $length The minimum string length that should be returned. (Numbers that are too short will be left-padded with `0`s.)
      * @return integer|string
+     * @since 3.0.32
      */
     public static function current(string $name, int $length = null)
     {
@@ -55,13 +56,16 @@ class Sequence
             $num = self::_next($name);
 
             if ($num === 1) {
-                Craft::$app->getDb()->createCommand()
-                    ->insert(Table::SEQUENCES, ['name' => $name, 'next' => $num + 1], false)
-                    ->execute();
+                Db::insert(Table::SEQUENCES, [
+                    'name' => $name,
+                    'next' => $num + 1,
+                ], false);
             } else {
-                Craft::$app->getDb()->createCommand()
-                    ->update(Table::SEQUENCES, ['next' => $num + 1], ['name' => $name], [], false)
-                    ->execute();
+                Db::update(Table::SEQUENCES, [
+                    'next' => $num + 1,
+                ], [
+                    'name' => $name,
+                ], [], false);
             }
         } catch (\Throwable $e) {
             $mutex->release($lockName);

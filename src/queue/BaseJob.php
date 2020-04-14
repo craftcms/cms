@@ -13,13 +13,10 @@ use yii\base\BaseObject;
  * Job is the base class for classes representing jobs in terms of objects.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 abstract class BaseJob extends BaseObject implements JobInterface
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null The configured job description
      */
@@ -34,9 +31,6 @@ abstract class BaseJob extends BaseObject implements JobInterface
      * @var string|null The current progress label
      */
     private $_progressLabel;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -56,9 +50,6 @@ abstract class BaseJob extends BaseObject implements JobInterface
     {
         return $this->description ?? $this->defaultDescription();
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * Returns a default description for [[getDescription()]].

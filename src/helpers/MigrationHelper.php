@@ -16,19 +16,17 @@ use craft\db\TableSchema;
  * Migration utility methods.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class MigrationHelper
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Returns whether a foreign key exists.
      *
      * @param string $tableName
      * @param string|string[] $columns
      * @return string|null The foreign key name, or null if it doesn't exist
+     * @since 3.0.27
      */
     public static function findForeignKey(string $tableName, $columns)
     {
@@ -215,7 +213,6 @@ class MigrationHelper
         // Restore foreign keys pointing to this table.
         foreach ($fks as $sourceTable => $fk) {
             foreach ($fk as $num => $row) {
-
                 // Skip if this FK is from *and* to this table
                 if ($sourceTable === $rawNewName && $row[0] === $rawNewName) {
                     continue;
@@ -240,7 +237,6 @@ class MigrationHelper
 
         // Restore this table's foreign keys
         foreach ($droppedForeignKeys as $sourceTableName => $fkInfo) {
-
             if ($sourceTableName === $rawOldName) {
                 $sourceTableName = $rawNewName;
             }
@@ -297,7 +293,6 @@ class MigrationHelper
 
         // Drop all the FKs because any one of them might be relying on an index we're about to drop
         foreach ($table->foreignKeys as $key => $fkInfo) {
-
             $columns = self::_getColumnsForFK($fkInfo, true);
 
             // Save something to restore later.
@@ -315,7 +310,6 @@ class MigrationHelper
         }
 
         foreach ($allOtherTableFks as $refTableName => $fkInfo) {
-
             // Figure out the reference columns.
             foreach ($fkInfo as $number => $fk) {
                 $columns = self::_getColumnsForFK($fk, true);
@@ -343,13 +337,11 @@ class MigrationHelper
                 $columns = [];
 
                 foreach ($fk as $count => $row) {
-
                     if ($count === 0) {
                         $refTableName = $fk[$count];
                     }
 
                     if ($count !== 0 && $count !== 'updateType' && $count !== 'deleteType') {
-
                         // Save the source column
                         $columns[] = $count;
 
@@ -596,7 +588,7 @@ class MigrationHelper
      *
      * @param string $tableName
      * @param Migration|null $migration
-     * @deprecated in 3.1
+     * @deprecated in 3.1.0
      */
     public static function dropAllUniqueIndexesOnTable(string $tableName, Migration $migration = null)
     {
@@ -617,7 +609,7 @@ class MigrationHelper
      * @param string|string[] $columns
      * @param bool $unique
      * @param Migration|null $migration
-     * @deprecated in 3.1. Use [[dropIndexIfExists()]] instead.
+     * @deprecated in 3.1.0. Use [[dropIndexIfExists()]] instead.
      */
     public static function dropIndex(string $tableName, $columns, bool $unique = false, Migration $migration = null)
     {
@@ -631,7 +623,7 @@ class MigrationHelper
      * @param string|string[] $columns
      * @param bool $unique
      * @param Migration|null $migration
-     * @deprecated in 3.1.
+     * @deprecated in 3.1.0
      */
     public static function restoreIndex(string $tableName, $columns, bool $unique = false, Migration $migration = null)
     {
@@ -648,15 +640,12 @@ class MigrationHelper
      * @param string $onUpdate
      * @param string $onDelete
      * @param Migration|null $migration
-     * @deprecated in 3.1
+     * @deprecated in 3.1.0
      */
     public static function restoreForeignKey(string $tableName, $columns, string $refTable, $refColumns, string $onUpdate, string $onDelete, Migration $migration = null)
     {
         self::_addForeignKey($tableName, $columns, $refTable, $refColumns, $onUpdate, $onDelete, $migration);
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Restores a foreign key.

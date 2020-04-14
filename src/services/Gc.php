@@ -8,11 +8,9 @@
 namespace craft\services;
 
 use Craft;
-use craft\db\Query;
 use craft\db\Table;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
-use DateInterval;
 use yii\base\Component;
 
 /**
@@ -20,7 +18,7 @@ use yii\base\Component;
  * An instance of the GC service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getGc()|`Craft::$app->gc`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.1
+ * @since 3.1.0
  */
 class Gc extends Component
 {
@@ -39,8 +37,8 @@ class Gc extends Component
 
     /**
      * @var bool whether [[hardDelete()]] should delete *all* soft-deleted rows,
-     * rather than just the ones that were deleted long enough ago to be ready for hard-deletion
-     * per the [[\craft\config\GeneralConfig::softDeleteDuration]] config setting.
+     * rather than just the ones that were deleted long enough ago to be ready
+     * for hard-deletion per the <config:softDeleteDuration> config setting.
      */
     public $deleteAllTrashed = false;
 
@@ -69,6 +67,8 @@ class Gc extends Component
             Table::TAGGROUPS,
             Table::VOLUMES,
         ]);
+
+        Craft::$app->getSearch()->deleteOrphanedIndexes();
 
         // Fire a 'run' event
         if ($this->hasEventHandlers(self::EVENT_RUN)) {
@@ -111,29 +111,8 @@ class Gc extends Component
             $tables = [$tables];
         }
 
-        $db = Craft::$app->getDb();
-
         foreach ($tables as $table) {
-            // If we are deleting elements, delete their search indexes too
-            if ($table === Table::ELEMENTS) {
-                $elementIds = (new Query())
-                    ->select(['id'])
-                    ->from([$table])
-                    ->where($condition)
-                    ->column();
-
-                if (empty($elementIds)) {
-                    continue;
-                }
-
-                Craft::$app->getDb()->createCommand()
-                    ->delete(Table::SEARCHINDEX, ['elementId' => $elementIds])
-                    ->execute();
-            }
-
-            $db->createCommand()
-                ->delete($table, $condition)
-                ->execute();
+            Db::delete($table, $condition);
         }
     }
 
@@ -142,12 +121,16 @@ class Gc extends Component
      */
     private function _deleteStaleSessions()
     {
-        $interval = new DateInterval('P3M');
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+
+        if ($generalConfig->purgeStaleUserSessionDuration === 0) {
+            return;
+        }
+
+        $interval = DateTimeHelper::secondsToInterval($generalConfig->purgeStaleUserSessionDuration);
         $expire = DateTimeHelper::currentUTCDateTime();
         $pastTime = $expire->sub($interval);
 
-        Craft::$app->getDb()->createCommand()
-            ->delete(Table::SESSIONS, ['<', 'dateUpdated', Db::prepareDateForDb($pastTime)])
-            ->execute();
+        Db::delete(Table::SESSIONS, ['<', 'dateUpdated', Db::prepareDateForDb($pastTime)]);
     }
 }

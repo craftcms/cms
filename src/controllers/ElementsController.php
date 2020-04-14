@@ -26,12 +26,23 @@ use yii\web\Response;
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class ElementsController extends BaseElementsController
 {
-    // Public Methods
-    // =========================================================================
+    /**
+     * @inheritdoc
+     */
+    public function beforeAction($action)
+    {
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
+
+        $this->requireAcceptsJson();
+
+        return true;
+    }
 
     /**
      * Renders and returns the body of an ElementSelectorModal.
@@ -40,11 +51,12 @@ class ElementsController extends BaseElementsController
      */
     public function actionGetModalBody(): Response
     {
-        $sourceKeys = Craft::$app->getRequest()->getParam('sources');
+        $request = Craft::$app->getRequest();
+        $sourceKeys = $request->getParam('sources');
         $elementType = $this->elementType();
         $context = $this->context();
 
-        $showSiteMenu = Craft::$app->getRequest()->getParam('showSiteMenu', 'auto');
+        $showSiteMenu = $request->getParam('showSiteMenu', 'auto');
 
         if ($showSiteMenu !== 'auto') {
             $showSiteMenu = (bool)$showSiteMenu;
@@ -66,6 +78,17 @@ class ElementsController extends BaseElementsController
                         $nextHeading = null;
                     }
                     $sources[] = $source;
+                    unset($sourceKeys[$source['key']]);
+                }
+            }
+
+            // Did we miss any source keys? (This could happen if some are nested)
+            if (!empty($sourceKeys)) {
+                foreach (array_keys($sourceKeys) as $key) {
+                    $source = ElementHelper::findSource($elementType, $key, $context);
+                    if ($source !== null) {
+                        $sources[$key] = $source;
+                    }
                 }
             }
         } else {
@@ -114,14 +137,14 @@ class ElementsController extends BaseElementsController
      */
     public function actionSaveElement(): Response
     {
-        /** @var Element $element */
         $element = $this->_getEditorElement();
 
         // Figure out where the data will be in POST
-        $namespace = Craft::$app->getRequest()->getRequiredBodyParam('namespace');
+        $request = Craft::$app->getRequest();
+        $namespace = $request->getRequiredBodyParam('namespace');
 
         // Configure the element
-        $params = Craft::$app->getRequest()->getBodyParam($namespace, []);
+        $params = $request->getBodyParam($namespace, []);
         ArrayHelper::remove($params, 'fields');
         Craft::configure($element, $params);
 
@@ -143,7 +166,7 @@ class ElementsController extends BaseElementsController
             ];
 
             // Should we be including table attributes too?
-            $sourceKey = Craft::$app->getRequest()->getBodyParam('includeTableAttributesForSource');
+            $sourceKey = $request->getBodyParam('includeTableAttributesForSource');
 
             if ($sourceKey) {
                 $attributes = Craft::$app->getElementIndexes()->getTableAttributes(get_class($element), $sourceKey);
@@ -212,21 +235,27 @@ class ElementsController extends BaseElementsController
      */
     public function actionGetElementHtml(): Response
     {
-        $elementId = Craft::$app->getRequest()->getRequiredBodyParam('elementId');
-        $siteId = Craft::$app->getRequest()->getBodyParam('siteId', null);
-        $size = Craft::$app->getRequest()->getBodyParam('size', null);
-        $viewMode = Craft::$app->getRequest()->getBodyParam('viewMode', null);
+        $request = Craft::$app->getRequest();
+        $elementId = $request->getRequiredBodyParam('elementId');
+        $siteId = $request->getBodyParam('siteId', null);
+        $size = $request->getBodyParam('size', null);
+        $viewMode = $request->getBodyParam('viewMode', null);
+        $context = $request->getBodyParam('context', 'field');
         $element = Craft::$app->getElements()->getElementById($elementId, null, $siteId);
 
         $view = $this->getView();
-        $html = $view->renderTemplate('_elements/element', compact('element', 'size', 'viewMode'));
-        $headHtml = $view->getHeadHtml();
+        $html = $view->renderTemplate('_elements/element', compact(
+            'element',
+            'size',
+            'viewMode',
+            'context'
+        ));
 
-        return $this->asJson(['html' => $html, 'headHtml' => $headHtml]);
+        return $this->asJson([
+            'html' => $html,
+            'headHtml' => $view->getHeadHtml(),
+        ]);
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns the element that is currently being edited.
@@ -266,13 +295,11 @@ class ElementsController extends BaseElementsController
         }
 
         // Instantiate the element
-        /** @var Element $element */
         $attributes = $request->getBodyParam('attributes', []);
         $element = $this->_getEditorElementInternal($elementId, $elementType, $siteId, $attributes);
 
         $site = Craft::$app->getSites()->getSiteById($siteId);
 
-        /** @var Element $element */
         // Make sure the user is allowed to edit this site
         $userSession = Craft::$app->getUser();
         if (Craft::$app->getIsMultiSite() && $elementType::isLocalized() && !$userSession->checkPermission('editSite:' . $site->uid)) {
@@ -333,7 +360,6 @@ class ElementsController extends BaseElementsController
      */
     private function _getEditorElementInternal(int $elementId = null, string $elementType, int $siteId, array $attributes): ElementInterface
     {
-        /** @var Element $element */
         if ($elementId !== null) {
             $element = Craft::$app->getElements()->getElementById($elementId, $elementType, $siteId);
 
@@ -361,7 +387,6 @@ class ElementsController extends BaseElementsController
      */
     private function _getEditorHtmlResponse(ElementInterface $element, bool $includeSites): Response
     {
-        /** @var Element $element */
         $siteIds = ElementHelper::editableSiteIdsForElement($element);
 
         if (empty($siteIds)) {
@@ -371,26 +396,23 @@ class ElementsController extends BaseElementsController
         $response = [];
 
         if ($includeSites) {
-            if (count($siteIds) > 1) {
-                $response['siteIds'] = [];
+            $response['sites'] = [];
 
-                foreach ($siteIds as $siteId) {
-                    $site = Craft::$app->getSites()->getSiteById($siteId);
+            foreach ($siteIds as $siteId) {
+                $site = Craft::$app->getSites()->getSiteById($siteId);
 
-                    $response['sites'][] = [
-                        'id' => $siteId,
-                        'name' => Craft::t('site', $site->name),
-                    ];
-                }
-            } else {
-                $response['sites'] = null;
+                $response['sites'][] = [
+                    'id' => $siteId,
+                    'name' => Craft::t('site', $site->name),
+                ];
             }
         }
 
         $response['siteId'] = $element->siteId;
 
+        $view = $this->getView();
         $namespace = 'editor_' . StringHelper::randomString(10);
-        $this->getView()->setNamespace($namespace);
+        $view->setNamespace($namespace);
 
         $response['html'] = '<input type="hidden" name="namespace" value="' . $namespace . '">';
 
@@ -403,12 +425,12 @@ class ElementsController extends BaseElementsController
         }
 
         $response['html'] .= '<div class="meta">' .
-            $this->getView()->namespaceInputs((string)$element->getEditorHtml()) .
+            $view->namespaceInputs((string)$element->getEditorHtml()) .
             '</div>';
 
-        $view = $this->getView();
         $response['headHtml'] = $view->getHeadHtml();
         $response['footHtml'] = $view->getBodyHtml();
+        $response['deltaNames'] = $view->getDeltaNames();
 
         return $this->asJson($response);
     }

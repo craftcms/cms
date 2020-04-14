@@ -16,13 +16,10 @@ use craft\elements\User;
  * UnsuspendUsers represents an Unsuspend Users element action.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class UnsuspendUsers extends ElementAction
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

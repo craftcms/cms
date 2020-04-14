@@ -9,7 +9,6 @@ namespace craft\web;
 
 use Craft;
 use craft\base\ApplicationTrait;
-use craft\base\Plugin;
 use craft\db\Query;
 use craft\db\Table;
 use craft\debug\DeprecatedPanel;
@@ -55,17 +54,11 @@ use yii\web\Response;
  * @method UrlManager getUrlManager()   Returns the URL manager for this application.
  * @method User getUser()         Returns the user component.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Application extends \yii\web\Application
 {
-    // Traits
-    // =========================================================================
-
     use ApplicationTrait;
-
-    // Constants
-    // =========================================================================
 
     /**
      * @event \yii\base\Event The event that is triggered after the application has been fully initialized
@@ -85,9 +78,6 @@ class Application extends \yii\web\Application
      * @event \craft\events\EditionChangeEvent The event that is triggered after the edition changes
      */
     const EVENT_AFTER_EDITION_CHANGE = 'afterEditionChange';
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Constructor.
@@ -171,12 +161,13 @@ class Application extends \yii\web\Application
 
         $headers = $this->getResponse()->getHeaders();
 
-        if ($request->getIsCpRequest()) {
-            // Prevent robots from indexing/following the page
-            // (see https://developers.google.com/webmasters/control-crawl-index/docs/robots_meta_tag)
+        // Tell bots not to index/follow CP and tokenized pages
+        if ($request->getIsCpRequest() || $request->getToken() !== null) {
             $headers->set('X-Robots-Tag', 'none');
+        }
 
-            // Prevent some possible XSS attack vectors
+        // Prevent some possible XSS attack vectors
+        if ($request->getIsCpRequest()) {
             $headers->set('X-Frame-Options', 'SAMEORIGIN');
             $headers->set('X-Content-Type-Options', 'nosniff');
         }
@@ -220,8 +211,9 @@ class Application extends \yii\web\Application
         $projectConfig = $this->getProjectConfig();
 
         // Make sure schema required by config files aligns with what we have.
-        if ($projectConfig->areChangesPending() && !$projectConfig->getAreConfigSchemaVersionsCompatible()) {
-            return $this->_handleIncompatibleConfig($request);
+        $issues = [];
+        if ($projectConfig->areChangesPending() && !$projectConfig->getAreConfigSchemaVersionsCompatible($issues)) {
+            return $this->_handleIncompatibleConfig($request, $issues);
         }
 
         // getIsCraftDbMigrationNeeded will return true if we're in the middle of a manual or auto-update for Craft itself.
@@ -263,7 +255,6 @@ class Application extends \yii\web\Application
             ($firstSeg = $request->getSegment(1)) !== null &&
             ($plugin = $this->getPlugins()->getPlugin($firstSeg)) !== null
         ) {
-            /** @var Plugin $plugin */
             $user = $this->getUser();
             if ($user->getIsGuest()) {
                 return $user->loginRequired();
@@ -331,7 +322,6 @@ class Application extends \yii\web\Application
 
         // Override where Yii should find its asset deps
         $libPath = Craft::getAlias('@lib');
-        Craft::setAlias('@bower/bootstrap/dist', $libPath . '/bootstrap');
         Craft::setAlias('@bower/jquery/dist', $libPath . '/jquery');
         Craft::setAlias('@bower/inputmask/dist', $libPath . '/inputmask');
         Craft::setAlias('@bower/punycode', $libPath . '/punycode');
@@ -355,17 +345,22 @@ class Application extends \yii\web\Application
         return $component;
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * Ensures that the resources folder exists and is writable.
      *
+     * @throws ErrorException
      * @throws InvalidConfigException
+     * @throws \yii\base\Exception
      */
     protected function ensureResourcePathExists()
     {
-        $resourceBasePath = Craft::getAlias($this->getConfig()->getGeneral()->resourceBasePath);
+        $generalConfig = $this->getConfig()->getGeneral();
+
+        if ($generalConfig->resourceBasePath === false) {
+            return;
+        }
+
+        $resourceBasePath = Craft::getAlias($generalConfig->resourceBasePath);
         @FileHelper::createDirectory($resourceBasePath);
 
         if (!is_dir($resourceBasePath) || !FileHelper::isWritable($resourceBasePath)) {
@@ -424,9 +419,6 @@ class Application extends \yii\web\Application
         $module->bootstrap($this);
     }
 
-    // Private Methods
-    // =========================================================================
-
     /**
      * Unregisters the Debug module's end body event.
      */
@@ -479,7 +471,7 @@ class Application extends \yii\web\Application
         if (!Path::ensurePathIsContained($filePath)) {
             throw new BadRequestHttpException('Invalid resource path: ' . $filePath);
         }
-        $publishedPath = $this->getAssetManager()->getPublishedPath(Craft::getAlias($sourcePath), true) . DIRECTORY_SEPARATOR . $filePath;
+        $publishedPath = $this->getAssetManager()->publish(Craft::getAlias($sourcePath))[0] . DIRECTORY_SEPARATOR . $filePath;
         if (!file_exists($publishedPath)) {
             throw new NotFoundHttpException($filePath . ' does not exist.');
         }
@@ -521,7 +513,7 @@ class Application extends \yii\web\Application
         }
 
         // Is this an installer action request?
-        if ($isCpRequest && $request->getIsActionRequest() && ($request->getSegment(1) !== 'login')) {
+        if ($isCpRequest && $request->getIsActionRequest() && ($request->getSegment(1) !== Request::CP_PATH_LOGIN)) {
             $actionSegs = $request->getActionSegments();
             if (isset($actionSegs[0]) && $actionSegs[0] === 'install') {
                 return $this->_processActionRequest($request);
@@ -535,7 +527,7 @@ class Application extends \yii\web\Application
             }
 
             // Redirect to the installer if Dev Mode is enabled
-            if (Craft::$app->getConfig()->getGeneral()->devMode) {
+            if (YII_DEBUG) {
                 $url = UrlHelper::url('install');
                 $this->getResponse()->redirect($url);
                 $this->end();
@@ -699,12 +691,13 @@ class Application extends \yii\web\Application
 
     /**
      * @param Request $request
+     * @param array $issues An array of schema incompatibility issues
      * @return Response
      * @throws HttpException
      * @throws ServiceUnavailableHttpException
      * @throws \yii\base\ExitException
      */
-    private function _handleIncompatibleConfig(Request $request): Response
+    private function _handleIncompatibleConfig(Request $request, array $issues): Response
     {
         $this->_unregisterDebugModule();
 
@@ -714,7 +707,7 @@ class Application extends \yii\web\Application
             (!$request->getIsActionRequest() || $request->getActionSegments() == ['users', 'login'])
         ) {
             // Show the manual update notification template
-            return $this->runAction('templates/incompatible-config-alert');
+            return $this->runAction('templates/incompatible-config-alert', ['issues' => $issues]);
         }
 
         // If an exception gets throw during the rendering of the 503 template, let

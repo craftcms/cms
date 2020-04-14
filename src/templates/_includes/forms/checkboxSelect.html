@@ -15,7 +15,7 @@
             {% include "_includes/forms/checkbox" with {
                 id:        (id is defined ? id : null),
                 class:     'all',
-                label:     '<b>' ~ allLabel ~ '</b>',
+                label:     raw("<b>#{allLabel}</b>"),
                 name:      (name is defined ? name : null),
                 value:     allValue,
                 checked:   allChecked,

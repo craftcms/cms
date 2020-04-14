@@ -11,25 +11,26 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
+use craft\elements\db\ElementQueryInterface;
 use craft\fields\data\MultiOptionsFieldData;
 use craft\fields\data\OptionData;
 use craft\fields\data\SingleOptionFieldData;
+use craft\gql\arguments\OptionField as OptionFieldArguments;
+use craft\gql\resolvers\OptionField as OptionFieldResolver;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\Json;
+use GraphQL\Type\Definition\Type;
 use yii\db\Schema;
 
 /**
  * BaseOptionsField is the base class for classes representing an options field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 abstract class BaseOptionsField extends Field implements PreviewableFieldInterface
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var array|null The available options
      */
@@ -44,9 +45,6 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
      * @var bool Whether the field should support optgroups
      */
     protected $optgroups = false;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -91,6 +89,63 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
         $attributes[] = 'options';
 
         return $attributes;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function defineRules(): array
+    {
+        $rules = parent::defineRules();
+        $rules[] = ['options', 'validateOptions'];
+        return $rules;
+    }
+
+    /**
+     * Validates the field options.
+     *
+     * @since 3.3.5
+     */
+    public function validateOptions()
+    {
+        $labels = [];
+        $values = [];
+        $hasDuplicateLabels = false;
+        $hasDuplicateValues = false;
+        $optgroup = '__root__';
+
+        foreach ($this->options as &$option) {
+            // Ignore optgroups
+            if (array_key_exists('optgroup', $option)) {
+                $optgroup = $option['optgroup'];
+                continue;
+            }
+
+            $label = (string)$option['label'];
+            $value = (string)$option['value'];
+            if (isset($labels[$optgroup][$label])) {
+                $option['label'] = [
+                    'value' => $label,
+                    'hasErrors' => true,
+                ];
+                $hasDuplicateLabels = true;
+            }
+            if (isset($values[$value])) {
+                $option['value'] = [
+                    'value' => $value,
+                    'hasErrors' => true,
+                ];
+                $hasDuplicateValues = true;
+            }
+            $labels[$optgroup][$label] = $values[$value] = true;
+        }
+
+        if ($hasDuplicateLabels) {
+            $this->addError('options', Craft::t('app', 'All option labels must be unique.'));
+        }
+        if ($hasDuplicateValues) {
+            $this->addError('options', Craft::t('app', 'All option values must be unique.'));
+        }
     }
 
     /**
@@ -173,6 +228,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
                     'addRowLabel' => Craft::t('app', 'Add an option'),
                     'cols' => $cols,
                     'rows' => $rows,
+                    'errors' => $this->getErrors('options'),
                 ]
             ]);
     }
@@ -250,6 +306,30 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
 
     /**
      * @inheritdoc
+     * @since 3.4.6
+     */
+    public function modifyElementsQuery(ElementQueryInterface $query, $value)
+    {
+        // foo => *"foo"*
+        if ($this->multi) {
+            if (is_string($value)) {
+                if (preg_match('/^(not\s+)?([^\*\[\]"]+)$/', $value, $match)) {
+                    $value = "{$match[1]}*\"{$match[2]}\"*";
+                }
+            } else if (is_array($value)) {
+                foreach ($value as &$v) {
+                    if (!in_array(strtolower($v), ['and', 'or', 'not']) && preg_match('/^(not\s+)?([^\*\[\]"]+)$/', $v, $match)) {
+                        $v = "{$match[1]}*\"{$match[2]}\"*";
+                    }
+                }
+            }
+        }
+
+        return parent::modifyElementsQuery($query, $value);
+    }
+
+    /**
+     * @inheritdoc
      */
     public function getElementValidationRules(): array
     {
@@ -259,7 +339,8 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
         if ($this->options) {
             foreach ($this->options as $option) {
                 if (!isset($option['optgroup'])) {
-                    $range[] = $option['value'];
+                    // Cast the option value to a string in case it is an integer
+                    $range[] = (string)$option['value'];
                 }
             }
         }
@@ -313,8 +394,19 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
         return $this->multi;
     }
 
-    // Protected Methods
-    // =========================================================================
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public function getContentGqlType()
+    {
+        return [
+            'name' => $this->handle,
+            'type' => $this->multi ? Type::listOf(Type::string()) : Type::string(),
+            'args' => OptionFieldArguments::getArguments(),
+            'resolve' => OptionFieldResolver::class . '::resolve'
+        ];
+    }
 
     /**
      * Returns the label for the Options setting.
@@ -336,7 +428,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             foreach ($this->options as $option) {
                 if (isset($option['optgroup'])) {
                     $translatedOptions[] = [
-                        'optgroup' => Craft::t('site',$option['optgroup']),
+                        'optgroup' => Craft::t('site', $option['optgroup']),
                     ];
                 } else {
                     $translatedOptions[] = [

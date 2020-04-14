@@ -12,6 +12,7 @@ use craft\base\BlockElementInterface;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\Query;
+use craft\db\Table;
 use craft\errors\OperationAbortedException;
 use yii\base\Exception;
 
@@ -19,12 +20,32 @@ use yii\base\Exception;
  * Class ElementHelper
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class ElementHelper
 {
-    // Public Methods
-    // =========================================================================
+    /**
+     * Generates a new temporary slug.
+     *
+     * @return string
+     * @since 3.2.2
+     */
+    public static function tempSlug(): string
+    {
+        return '__temp_' . StringHelper::randomString();
+    }
+
+    /**
+     * Returns whether the given slug is temporary.
+     *
+     * @param string $slug
+     * @return bool
+     * @since 3.2.2
+     */
+    public static function isTempSlug(string $slug): bool
+    {
+        return strpos($slug, '__temp_') === 0;
+    }
 
     /**
      * Creates a slug based on a given string.
@@ -35,19 +56,27 @@ class ElementHelper
     public static function createSlug(string $str): string
     {
         // Special case for the homepage
-        if ($str === '__home__') {
+        if ($str === Element::HOMEPAGE_URI) {
             return $str;
         }
 
         // Remove HTML tags
         $str = StringHelper::stripHtml($str);
 
-        // Convert to kebab case
-        $glue = Craft::$app->getConfig()->getGeneral()->slugWordSeparator;
-        $lower = !Craft::$app->getConfig()->getGeneral()->allowUppercaseInSlug;
-        $str = StringHelper::toKebabCase($str, $glue, $lower, false);
+        // Remove inner-word punctuation
+        $str = preg_replace('/[\'"‘’“”\[\]\(\)\{\}:]/u', '', $str);
 
-        return $str;
+        // Make it lowercase
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        if (!$generalConfig->allowUppercaseInSlug) {
+            $str = mb_strtolower($str);
+        }
+
+        // Get the "words". Split on anything that is not alphanumeric or allowed punctuation
+        // Reference: http://www.regular-expressions.info/unicode.html
+        $words = ArrayHelper::filterEmptyStringsFromArray(preg_split('/[^\p{L}\p{N}\p{M}\._\-]+/u', $str));
+
+        return implode($generalConfig->slugWordSeparator, $words);
     }
 
     /**
@@ -58,7 +87,6 @@ class ElementHelper
      */
     public static function setUniqueUri(ElementInterface $element)
     {
-        /** @var Element $element */
         $uriFormat = $element->getUriFormat();
 
         // No URL format, no URI.
@@ -142,7 +170,6 @@ class ElementHelper
      */
     private static function _renderUriFormat(string $uriFormat, ElementInterface $element): string
     {
-        /** @var Element $element */
         $variables = [];
 
         // If the URI format contains {id} but the element doesn't have one yet, preserve the {id} tag
@@ -167,10 +194,9 @@ class ElementHelper
      */
     private static function _isUniqueUri(string $testUri, ElementInterface $element): bool
     {
-        /** @var Element $element */
         $query = (new Query())
-            ->from(['{{%elements_sites}} elements_sites'])
-            ->innerJoin('{{%elements}} elements', '[[elements.id]] = [[elements_sites.elementId]]')
+            ->from(['elements_sites' => Table::ELEMENTS_SITES])
+            ->innerJoin(['elements' => Table::ELEMENTS], '[[elements.id]] = [[elements_sites.elementId]]')
             ->where([
                 'elements_sites.siteId' => $element->siteId,
                 'elements.draftId' => null,
@@ -190,9 +216,11 @@ class ElementHelper
         }
 
         if (($sourceId = $element->getSourceId()) !== null) {
-            $query->andWhere(['not', [
-                'elements.id' => $sourceId,
-            ]]);
+            $query->andWhere([
+                'not', [
+                    'elements.id' => $sourceId,
+                ]
+            ]);
         }
 
         return (int)$query->count() === 0;
@@ -295,6 +323,7 @@ class ElementHelper
      *
      * @param ElementInterface $element
      * @return ElementInterface
+     * @since 3.2.0
      */
     public static function rootElement(ElementInterface $element): ElementInterface
     {
@@ -309,12 +338,34 @@ class ElementHelper
      *
      * @param ElementInterface $element
      * @return bool
+     * @since 3.2.0
      */
     public static function isDraftOrRevision(ElementInterface $element): bool
     {
-        /** @var Element $root */
         $root = ElementHelper::rootElement($element);
         return $root->getIsDraft() || $root->getIsRevision();
+    }
+
+    /**
+     * Returns the element, or if it’s a draft/revision, the source element.
+     *
+     * @param ElementInterface $element
+     * @return ElementInterface
+     * @since 3.3.0
+     */
+    public static function sourceElement(ElementInterface $element): ElementInterface
+    {
+        $sourceId = $element->getSourceId();
+        if ($sourceId === $element->id) {
+            return $element;
+        }
+
+        return $element::find()
+            ->id($sourceId)
+            ->siteId($element->siteId)
+            ->anyStatus()
+            ->ignorePlaceholders()
+            ->one();
     }
 
     /**

@@ -15,13 +15,10 @@ use yii\validators\StringValidator;
  * Class UserPasswordValidator.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class UserPasswordValidator extends StringValidator
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var bool Whether the password must be different from the existing password.
      */
@@ -36,9 +33,6 @@ class UserPasswordValidator extends StringValidator
      * @var string|null User-defined error message used when the new password is the same as [[currentPassword]].
      */
     public $sameAsCurrent;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

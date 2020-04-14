@@ -2,9 +2,9 @@
 
 namespace craft\migrations;
 
-use Craft;
 use craft\db\Migration;
 use craft\db\Table;
+use craft\helpers\Queue;
 use craft\queue\jobs\ConvertEntryRevisions;
 
 /**
@@ -18,10 +18,11 @@ class m190312_152740_element_revisions extends Migration
     public function safeUp()
     {
         // drafts and revisions tables
+        $this->dropTableIfExists(Table::DRAFTS);
+        $this->dropTableIfExists(Table::REVISIONS);
         $this->createTable(Table::DRAFTS, [
             'id' => $this->primaryKey(),
             'sourceId' => $this->integer()->notNull(),
-            'revisionId' => $this->integer()->notNull(),
             'creatorId' => $this->integer()->notNull(),
             'name' => $this->string()->notNull(),
             'notes' => $this->text(),
@@ -33,11 +34,9 @@ class m190312_152740_element_revisions extends Migration
             'creatorId' => $this->integer()->notNull(),
             'num' => $this->integer()->notNull(),
             'notes' => $this->text(),
-            'snapshot' => $this->mediumText(),
         ]);
 
         $this->addForeignKey(null, Table::DRAFTS, ['creatorId'], Table::USERS, ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, Table::DRAFTS, ['revisionId'], Table::REVISIONS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::DRAFTS, ['sourceId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::REVISIONS, ['creatorId'], Table::USERS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::REVISIONS, ['sourceId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
@@ -51,6 +50,8 @@ class m190312_152740_element_revisions extends Migration
         $this->addForeignKey(null, Table::ELEMENTS, ['revisionId'], Table::REVISIONS, ['id'], 'CASCADE', null);
 
         // add error tables for old entry draft and version migration
+        $this->dropTableIfExists('{{%entryversionerrors}}');
+        $this->dropTableIfExists('{{%entrydrafterrors}}');
         $this->createTable('{{%entrydrafterrors}}', [
             'id' => $this->primaryKey(),
             'draftId' => $this->integer(),
@@ -65,7 +66,7 @@ class m190312_152740_element_revisions extends Migration
         $this->addForeignKey(null, '{{%entryversionerrors}}', ['versionId'], Table::ENTRYVERSIONS, ['id'], 'CASCADE');
 
         // Queue up a ConvertEntryRevisions job
-        Craft::$app->getQueue()->push(new ConvertEntryRevisions());
+        Queue::push(new ConvertEntryRevisions());
     }
 
     /**

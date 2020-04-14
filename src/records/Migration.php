@@ -21,13 +21,10 @@ use yii\db\ActiveQueryInterface;
  * @property \DateTime $applyTime Apply time
  * @property Plugin $plugin Plugin
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Migration extends ActiveRecord
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

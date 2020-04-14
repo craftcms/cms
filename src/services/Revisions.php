@@ -8,16 +8,17 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\behaviors\RevisionBehavior;
 use craft\db\Query;
 use craft\db\Table;
-use craft\elements\Entry;
 use craft\errors\InvalidElementException;
 use craft\events\RevisionEvent;
 use craft\helpers\ArrayHelper;
-use craft\helpers\Json;
+use craft\helpers\Db;
+use craft\helpers\ElementHelper;
+use craft\helpers\Queue;
+use craft\queue\jobs\PruneRevisions;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
 use yii\db\Exception;
@@ -27,13 +28,10 @@ use yii\db\Exception;
  * An instance of the Revisions service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getRevisions()|`Craft::$app->revisions`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.2
+ * @since 3.2.0
  */
 class Revisions extends Component
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event DraftEvent The event that is triggered before a revision is created.
      */
@@ -54,9 +52,6 @@ class Revisions extends Component
      */
     const EVENT_AFTER_REVERT_TO_REVISION = 'afterRevertToRevision';
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * Creates a new revision for the given element.
      *
@@ -73,12 +68,10 @@ class Revisions extends Component
     public function createRevision(ElementInterface $source, int $creatorId = null, string $notes = null, array $newAttributes = [], bool $force = false): ElementInterface
     {
         // Make sure the source isn't a draft or revision
-        /** @var Element $source */
         if ($source->getIsDraft() || $source->getIsRevision()) {
             throw new InvalidArgumentException('Cannot create a revision from another revision or draft.');
         }
 
-        /** @var Element $source */
         $lockKey = 'revision:' . $source->id;
         $mutex = Craft::$app->getMutex();
         if (!$mutex->acquire($lockKey)) {
@@ -99,7 +92,7 @@ class Revisions extends Component
 
             if (!$force && $lastRevisionNum) {
                 // Get the revision, if it exists for the source's site
-                /** @var Element|RevisionBehavior|null $lastRevision */
+                /** @var ElementInterface|RevisionBehavior|null $lastRevision */
                 $lastRevision = $source::find()
                     ->revisionOf($source)
                     ->siteId($source->siteId)
@@ -134,29 +127,19 @@ class Revisions extends Component
         $this->trigger(self::EVENT_BEFORE_CREATE_REVISION, $event);
         $notes = $event->revisionNotes;
 
-        // Create the source snapshot
-        $snapshot = ArrayHelper::toArray(array_merge(
-            $source->toArray([], [], false),
-            $source->getSerializedFieldValues()
-        ));
-
         $elementsService = Craft::$app->getElements();
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             // Create the revision row
-            $db = Craft::$app->getDb();
-            $db->createCommand()
-                ->insert(Table::REVISIONS, [
-                    'sourceId' => $source->id,
-                    'creatorId' => $creatorId,
-                    'num' => $num,
-                    'notes' => $notes,
-                    'snapshot' => Json::encode($snapshot),
-                ], false)
-                ->execute();
+            Db::insert(Table::REVISIONS, [
+                'sourceId' => $source->id,
+                'creatorId' => $creatorId,
+                'num' => $num,
+                'notes' => $notes,
+            ], false);
 
-            $newAttributes['revisionId'] = $db->getLastInsertID(Table::REVISIONS);
+            $newAttributes['revisionId'] = Craft::$app->getDb()->getLastInsertID(Table::REVISIONS);
             $newAttributes['behaviors']['revision'] = [
                 'class' => RevisionBehavior::class,
                 'sourceId' => $source->id,
@@ -170,7 +153,6 @@ class Revisions extends Component
             }
 
             // Duplicate the element
-            /** @var Element $revision */
             $revision = $elementsService->duplicateElement($source, $newAttributes);
 
             $transaction->commit();
@@ -194,20 +176,12 @@ class Revisions extends Component
         $mutex->release($lockKey);
 
         // Prune any excess revisions
-        $maxRevisions = Craft::$app->getConfig()->getGeneral()->maxRevisions;
-        if ($maxRevisions > 0) {
-            // Don't count the current revision
-            $extraRevisions = $source::find()
-                ->revisionOf($source)
-                ->siteId($source->siteId)
-                ->anyStatus()
-                ->orderBy(['num' => SORT_DESC])
-                ->offset($maxRevisions + 1)
-                ->all();
-
-            foreach ($extraRevisions as $revision) {
-                $elementsService->deleteElement($revision, true);
-            }
+        if (Craft::$app->getConfig()->getGeneral()->maxRevisions) {
+            Queue::push(new PruneRevisions([
+                'elementType' => get_class($source),
+                'sourceId' => $source->id,
+                'siteId' => $source->siteId,
+            ]), 2049);
         }
 
         return $revision;
@@ -224,9 +198,8 @@ class Revisions extends Component
      */
     public function revertToRevision(ElementInterface $revision, int $creatorId): ElementInterface
     {
-        /** @var Element|RevisionBehavior $revision */
-        /** @var Element $source */
-        $source = $revision->getSource();
+        /** @var ElementInterface|RevisionBehavior $revision */
+        $source = ElementHelper::sourceElement($revision);
 
         // Fire a 'beforeRevertToRevision' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_REVERT_TO_REVISION)) {

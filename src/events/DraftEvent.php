@@ -15,13 +15,10 @@ use yii\base\Event;
  * Draft event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.2
+ * @since 3.2.0
  */
 class DraftEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var ElementInterface|null The source element
      */

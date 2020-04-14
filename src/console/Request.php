@@ -13,17 +13,11 @@ use craft\base\RequestTrait;
 /**
  * @inheritdoc
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Request extends \yii\console\Request
 {
-    // Traits
-    // =========================================================================
-
     use RequestTrait;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -36,7 +30,7 @@ class Request extends \yii\console\Request
         if (Craft::getRootAlias('@webroot') === false) {
             // see if it's any of the usual suspects
             $dir = dirname($this->getScriptFile());
-            foreach (['web', 'public', 'public_html'] as $folder) {
+            foreach (['web', 'public', 'public_html', 'html'] as $folder) {
                 if (is_dir($dir . DIRECTORY_SEPARATOR . $folder)) {
                     $dir .= DIRECTORY_SEPARATOR . $folder;
                     break;
@@ -52,7 +46,7 @@ class Request extends \yii\console\Request
     }
 
     /**
-     * Returns whether the Control Panel was requested. (Narrator: It wasn't.)
+     * Returns whether the control panel was requested. (Narrator: It wasn't.)
      *
      * @return bool
      */
@@ -96,9 +90,20 @@ class Request extends \yii\console\Request
      * Returns whether the current request is solely an action request. (Narrator: It isn't.)
      *
      * @return bool
-     * @deprecated in 3.2
+     * @deprecated in 3.2.0
      */
     public function getIsSingleActionRequest(): bool
+    {
+        return false;
+    }
+
+    /**
+     * Returns whether this is an element preview request.
+     *
+     * @return bool
+     * @since 3.2.1
+     */
+    public function getIsPreview(): bool
     {
         return false;
     }
@@ -107,7 +112,7 @@ class Request extends \yii\console\Request
      * Returns whether this is a Live Preview request. (Narrator: It isn't.)
      *
      * @return bool Whether this is a Live Preview request.
-     * @deprecated in 3.2
+     * @deprecated in 3.2.0
      */
     public function getIsLivePreview(): bool
     {
@@ -118,6 +123,7 @@ class Request extends \yii\console\Request
      * Returns the token submitted with the request, if there is one.
      *
      * @return string|null The token, or `null` if there isn’t one.
+     * @since 3.2.0
      */
     public function getToken()
     {

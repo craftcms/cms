@@ -8,6 +8,8 @@ Craft.BaseElementEditor = Garnish.Base.extend(
         $element: null,
         elementId: null,
         siteId: null,
+        deltaNames: null,
+        initialData: null,
 
         $form: null,
         $fieldsContainer: null,
@@ -82,7 +84,7 @@ Craft.BaseElementEditor = Garnish.Base.extend(
         loadHud: function() {
             this.onBeginLoading();
             var data = this.getBaseData();
-            data.includeSites = this.settings.showSiteSwitcher;
+            data.includeSites = Craft.isMultiSite && this.settings.showSiteSwitcher;
             Craft.postActionRequest('elements/get-editor-html', data, $.proxy(this, 'showHud'));
         },
 
@@ -93,18 +95,23 @@ Craft.BaseElementEditor = Garnish.Base.extend(
                 var $hudContents = $();
 
                 if (response.sites) {
-                    var $header = $('<div class="hud-header"/>'),
-                        $siteSelectContainer = $('<div class="select"/>').appendTo($header);
+                    var $header = $('<div class="hud-header"/>');
 
-                    this.$siteSelect = $('<select/>').appendTo($siteSelectContainer);
-                    this.$siteSpinner = $('<div class="spinner hidden"/>').appendTo($header);
+                    if (response.sites.length === 1) {
+                        $('<h5/>', {text: response.sites[0].name}).appendTo($header);;
+                    } else {
+                        var $siteSelectContainer = $('<div class="select"/>').appendTo($header);
 
-                    for (var i = 0; i < response.sites.length; i++) {
-                        var siteInfo = response.sites[i];
-                        $('<option value="' + siteInfo.id + '"' + (siteInfo.id == response.siteId ? ' selected="selected"' : '') + '>' + siteInfo.name + '</option>').appendTo(this.$siteSelect);
+                        this.$siteSelect = $('<select/>').appendTo($siteSelectContainer);
+                        this.$siteSpinner = $('<div class="spinner hidden"/>').appendTo($header);
+
+                        for (var i = 0; i < response.sites.length; i++) {
+                            var siteInfo = response.sites[i];
+                            $('<option value="' + siteInfo.id + '"' + (siteInfo.id == response.siteId ? ' selected="selected"' : '') + '>' + siteInfo.name + '</option>').appendTo(this.$siteSelect);
+                        }
+
+                        this.addListener(this.$siteSelect, 'change', 'switchSite');
                     }
-
-                    this.addListener(this.$siteSelect, 'change', 'switchSite');
 
                     $hudContents = $hudContents.add($header);
                 }
@@ -136,6 +143,9 @@ Craft.BaseElementEditor = Garnish.Base.extend(
                     });
 
                     this.hud.$hud.data('elementEditor', this);
+
+                    // Disable browser input validation
+                    this.hud.$body.attr('novalidate', '');
 
                     this.hud.on('hide', $.proxy(function() {
                         delete this.hud;
@@ -189,6 +199,7 @@ Craft.BaseElementEditor = Garnish.Base.extend(
 
         updateForm: function(response) {
             this.siteId = response.siteId;
+            this.deltaNames = response.deltaNames;
 
             this.$fieldsContainer.html(response.html);
 
@@ -196,7 +207,6 @@ Craft.BaseElementEditor = Garnish.Base.extend(
             var $instructions = this.$fieldsContainer.find('> .meta > .field > .heading > .instructions');
 
             for (var i = 0; i < $instructions.length; i++) {
-
                 $instructions.eq(i)
                     .replaceWith($('<span/>', {
                         'class': 'info',
@@ -209,6 +219,7 @@ Craft.BaseElementEditor = Garnish.Base.extend(
                 Craft.appendHeadHtml(response.headHtml);
                 Craft.appendFootHtml(response.footHtml);
                 Craft.initUiElements(this.$fieldsContainer);
+                this.initialData = this.hud.$body.serialize();
             }, this));
         },
 
@@ -226,6 +237,8 @@ Craft.BaseElementEditor = Garnish.Base.extend(
             this.$spinner.removeClass('hidden');
 
             var data = $.param(this.getBaseData()) + '&' + this.hud.$body.serialize();
+            data = Craft.findDeltaData(this.initialData, data, this.deltaNames);
+
             Craft.postActionRequest('elements/save-element', data, $.proxy(function(response, textStatus) {
                 this.$spinner.addClass('hidden');
 
@@ -297,6 +310,9 @@ Craft.BaseElementEditor = Garnish.Base.extend(
             this.trigger('saveElement', {
                 response: response
             });
+
+            // There may be a new background job that needs to be run
+            Craft.cp.runQueue();
         },
 
         onCreateForm: function($form) {

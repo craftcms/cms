@@ -24,9 +24,6 @@ use yii\db\Exception;
  */
 class UserActionCest
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var string
      */
@@ -41,9 +38,6 @@ class UserActionCest
      * @var
      */
     public $currentUser;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @param FunctionalTester $I
@@ -71,9 +65,6 @@ class UserActionCest
             ->one();
     }
 
-    // Tests
-    // =========================================================================
-
     /**
      * @param FunctionalTester $I
      * @throws InvalidConfigException
@@ -81,7 +72,7 @@ class UserActionCest
      */
     public function seeUserImpersonation(FunctionalTester $I)
     {
-        $I->amOnPage('/'.$this->cpTrigger.'/users/'.$this->activeUser->id.'');
+        $I->amOnPage('/' . $this->cpTrigger . '/users/' . $this->activeUser->id . '');
 
         $I->see('Login as');
 

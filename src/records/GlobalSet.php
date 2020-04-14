@@ -24,13 +24,10 @@ use yii\db\ActiveQueryInterface;
  * @property Element $element Element
  * @property FieldLayout $fieldLayout Field layout
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class GlobalSet extends ActiveRecord
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      * @return string
@@ -51,10 +48,11 @@ class GlobalSet extends ActiveRecord
         $schemaVersion = Craft::$app->getInstalledSchemaVersion();
         if (version_compare($schemaVersion, '3.1.19', '>=')) {
             $query
-                ->where(['exists', (new Query())
-                    ->from([Table::ELEMENTS . ' e'])
-                    ->where('[[e.id]] = ' . static::tableName() . '.[[id]]')
-                    ->andWhere(['e.dateDeleted' => null])
+                ->where([
+                    'exists', (new Query())
+                        ->from(['e' => Table::ELEMENTS])
+                        ->where('[[e.id]] = ' . static::tableName() . '.[[id]]')
+                        ->andWhere(['e.dateDeleted' => null])
                 ]);
         }
 
@@ -74,10 +72,11 @@ class GlobalSet extends ActiveRecord
      */
     public static function findTrashed(): ActiveQuery
     {
-        return static::find()->where(['not exists', (new Query())
-            ->from([Table::ELEMENTS . ' e'])
-            ->where('[[e.id]] = ' . static::tableName() . '.[[id]]')
-            ->andWhere(['e.dateDeleted' => null])
+        return static::find()->where([
+            'not exists', (new Query())
+                ->from(['e' => Table::ELEMENTS])
+                ->where('[[e.id]] = ' . static::tableName() . '.[[id]]')
+                ->andWhere(['e.dateDeleted' => null])
         ]);
     }
 

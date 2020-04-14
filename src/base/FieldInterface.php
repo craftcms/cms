@@ -9,20 +9,19 @@ namespace craft\base;
 
 use craft\elements\db\ElementQueryInterface;
 use craft\records\FieldGroup;
+use GraphQL\Type\Definition\Type;
 use yii\validators\Validator;
 
 /**
  * FieldInterface defines the common interface to be implemented by field classes.
  * A class implementing this interface should also use [[SavableComponentTrait]] and [[FieldTrait]].
  *
+ * @mixin FieldTrait
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 interface FieldInterface extends SavableComponentInterface
 {
-    // Static
-    // =========================================================================
-
     /**
      * Returns whether this field has a column in the content table.
      *
@@ -47,7 +46,7 @@ interface FieldInterface extends SavableComponentInterface
     /**
      * Returns the PHPDoc type this field’s values will have.
      *
-     * It will be used by generated `ContentBehavior` and `ElementQueryBehavior` classes.
+     * It will be used by the generated `CustomFieldBehavior` class.
      *
      * If the values can be of more than one type, return multiple types separated by `|`s.
      *
@@ -59,11 +58,9 @@ interface FieldInterface extends SavableComponentInterface
      * ```
      *
      * @return string
+     * @since 3.2.0
      */
     public static function valueType(): string;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns the column type that this field should get within the content table.
@@ -88,6 +85,15 @@ interface FieldInterface extends SavableComponentInterface
      * @return bool
      */
     public function getIsTranslatable(ElementInterface $element = null): bool;
+
+    /**
+     * Returns the description of this field’s translation support.
+     *
+     * @param ElementInterface|null $element The element being edited
+     * @return string|null
+     * @since 3.4.0
+     */
+    public function getTranslationDescription(ElementInterface $element = null);
 
     /**
      * Returns the field’s translation key, based on a given element.
@@ -305,6 +311,7 @@ interface FieldInterface extends SavableComponentInterface
      * which contains a column for this field.
      *
      * @param ElementQueryInterface $query The element query
+     * @since 3.0.9
      */
     public function modifyElementIndexQuery(ElementQueryInterface $query);
 
@@ -321,6 +328,14 @@ interface FieldInterface extends SavableComponentInterface
      * @return FieldGroup|null
      */
     public function getGroup();
+
+    /**
+     * Returns the GraphQL type to be used for this field type.
+     *
+     * @return Type|array
+     * @since 3.3.0
+     */
+    public function getContentGqlType();
 
     // Events
     // -------------------------------------------------------------------------
@@ -347,6 +362,7 @@ interface FieldInterface extends SavableComponentInterface
      *
      * @param ElementInterface $element The element that was just saved and propagated
      * @param bool $isNew Whether the element is brand new
+     * @since 3.2.0
      */
     public function afterElementPropagate(ElementInterface $element, bool $isNew);
 
@@ -370,6 +386,7 @@ interface FieldInterface extends SavableComponentInterface
      *
      * @param ElementInterface $element The element that is about to be restored
      * @return bool Whether the element should be restored
+     * @since 3.1.0
      */
     public function beforeElementRestore(ElementInterface $element): bool;
 
@@ -377,6 +394,7 @@ interface FieldInterface extends SavableComponentInterface
      * Performs actions after the element has been restored.
      *
      * @param ElementInterface $element The element that was just restored
+     * @since 3.1.0
      */
     public function afterElementRestore(ElementInterface $element);
 }

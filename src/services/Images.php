@@ -27,43 +27,28 @@ use yii\base\Exception;
  * @property bool $isImagick Whether image manipulations will be performed using Imagick or not
  * @property array $supportedImageFormats A list of all supported image formats
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Images extends Component
 {
-    // Constants
-    // =========================================================================
-
     const DRIVER_GD = 'gd';
     const DRIVER_IMAGICK = 'imagick';
     const MINIMUM_IMAGICK_VERSION = '6.2.9';
 
-    // Properties
-    // =========================================================================
-
     /**
-     * Image formats that can be manipulated.
-     *
-     * @var array
+     * @var array Image formats that can be manipulated.
      */
     public $supportedImageFormats = ['jpg', 'jpeg', 'gif', 'png'];
 
     /**
-     * Image driver.
-     *
-     * @var string
+     * @var string Image driver.
      */
     private $_driver = '';
 
     /**
-     * Imagick version being used, if any.
-     *
-     * @var string|null
+     * @var string|null Imagick version being used, if any.
      */
     private $_imagickVersion;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Decide on the image driver being used.
@@ -147,7 +132,7 @@ class Images extends Component
         // Taken from Imagick\Imagine() constructor.
         // Imagick::getVersion() is static only since Imagick PECL extension 3.2.0b1, so instantiate it.
         /** @noinspection PhpStaticAsDynamicMethodCallInspection */
-        $versionString = (new \Imagick)::getVersion()['versionString'];
+        $versionString = \Imagick::getVersion()['versionString'];
         list($this->_imagickVersion) = sscanf($versionString, 'ImageMagick %s %04d-%02d-%02d %s %s');
 
         return $this->_imagickVersion;
@@ -161,6 +146,11 @@ class Images extends Component
     public function getCanUseImagick(): bool
     {
         if (!extension_loaded('imagick')) {
+            return false;
+        }
+
+        // https://github.com/craftcms/cms/issues/5435
+        if (empty(\Imagick::queryFormats())) {
             return false;
         }
 
@@ -203,9 +193,10 @@ class Images extends Component
     /**
      * Determines if there is enough memory to process this image.
      *
-     * The code was adapted from http://www.php.net/manual/en/function.imagecreatefromjpeg.php#64155. It will first
-     * attempt to do it with available memory. If that fails, Craft will bump the memory to amount defined by the
-     * [[\craft\config\GeneralConfig::phpMaxMemoryLimit|phpMaxMemoryLimit]] config setting, then try again.
+     * The code was adapted from http://www.php.net/manual/en/function.imagecreatefromjpeg.php#64155.
+     * It will first attempt to do it with available memory. If that fails,
+     * Craft will bump the memory to amount defined by the
+     * <config:phpMaxMemoryLimit> config setting, then try again.
      *
      * @param string $filePath The path to the image file.
      * @param bool $toTheMax If set to true, will set the PHP memory to the config setting phpMaxMemoryLimit.
@@ -386,6 +377,7 @@ class Images extends Component
 
         $image = new \Imagick($filePath);
         $image->setImageOrientation(\Imagick::ORIENTATION_UNDEFINED);
+        ImageHelper::cleanExifDataFromImagickImage($image);
         $image->writeImages($filePath, true);
 
         return true;

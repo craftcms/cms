@@ -7,7 +7,6 @@
 
 namespace craft\errors;
 
-use craft\base\Volume;
 use craft\base\VolumeInterface;
 use craft\models\AssetIndexData;
 use craft\models\VolumeFolder;
@@ -18,7 +17,7 @@ use yii\base\Exception;
  * MissingAssetException represents an exception caused by an asset record that doesn't exist.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.2
+ * @since 3.2.0
  */
 class MissingAssetException extends Exception
 {
@@ -28,7 +27,7 @@ class MissingAssetException extends Exception
     public $indexEntry;
 
     /**
-     * @var VolumeInterface|Volume
+     * @var VolumeInterface
      */
     public $volume;
 

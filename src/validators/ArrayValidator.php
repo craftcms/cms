@@ -14,13 +14,10 @@ use yii\validators\Validator;
  * Class ArrayValidator.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class ArrayValidator extends Validator
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @var int|array|null specifies the count limit of the value to be validated.
      *

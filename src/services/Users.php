@@ -8,8 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\Field;
-use craft\base\Volume;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
@@ -34,6 +32,7 @@ use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
 use craft\records\User as UserRecord;
+use craft\web\Request;
 use DateTime;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
@@ -44,13 +43,10 @@ use yii\db\Exception as DbException;
  * An instance of the Users service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getUsers()|`Craft::$app->users`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Users extends Component
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event UserEvent The event that is triggered before a user's email is verified.
      */
@@ -115,14 +111,14 @@ class Users extends Component
     const EVENT_AFTER_UNSUSPEND_USER = 'afterUnsuspendUser';
 
     /**
-     * @event AssignUserGroupEvent The event that is triggered before a user is assigned to some user groups.
+     * @event UserGroupsAssignEvent The event that is triggered before a user is assigned to some user groups.
      *
-     * You may set [[AssignUserGroupEvent::isValid]] to `false` to prevent the user from getting assigned to the groups.
+     * You may set [[UserGroupsAssignEvent::isValid]] to `false` to prevent the user from getting assigned to the groups.
      */
     const EVENT_BEFORE_ASSIGN_USER_TO_GROUPS = 'beforeAssignUserToGroups';
 
     /**
-     * @event AssignUserGroupEvent The event that is triggered after a user is assigned to some user groups.
+     * @event UserGroupsAssignEvent The event that is triggered after a user is assigned to some user groups.
      */
     const EVENT_AFTER_ASSIGN_USER_TO_GROUPS = 'afterAssignUserToGroups';
 
@@ -140,9 +136,6 @@ class Users extends Component
     const EVENT_AFTER_ASSIGN_USER_TO_DEFAULT_GROUP = 'afterAssignUserToDefaultGroup';
 
     const CONFIG_USERLAYOUT_KEY = 'users.fieldLayouts';
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns a user by their ID.
@@ -220,8 +213,8 @@ class Users extends Component
      * Returns whether a verification code is valid for the given user.
      *
      * This method first checks if the code has expired past the
-     * [[\craft\config\GeneralConfig::verificationCodeDuration|verificationCodeDuration]] config
-     * setting. If it is still valid, then, the checks the validity of the contents of the code.
+     * <config:verificationCodeDuration> config setting. If it is still valid,
+     * then, the checks the validity of the contents of the code.
      *
      * @param User $user The user to check the code for.
      * @param string $code The verification code to check for.
@@ -294,14 +287,11 @@ class Users extends Component
     {
         $preferences = $user->mergePreferences($preferences);
 
-        Craft::$app->getDb()->createCommand()
-            ->upsert(
-                Table::USERPREFERENCES,
-                ['userId' => $user->id],
-                ['preferences' => Json::encode($preferences)],
-                [],
-                false)
-            ->execute();
+        Db::upsert(Table::USERPREFERENCES, [
+            'userId' => $user->id,
+        ], [
+            'preferences' => Json::encode($preferences),
+        ], [], false);
     }
 
     /**
@@ -385,7 +375,8 @@ class Users extends Component
      */
     public function getEmailVerifyUrl(User $user): string
     {
-        return $this->_getUserUrl($user, 'verify-email');
+        $fePath = Craft::$app->getConfig()->getGeneral()->getVerifyEmailPath();
+        return $this->_getUserUrl($user, $fePath, Request::CP_PATH_VERIFY_EMAIL);
     }
 
     /**
@@ -396,7 +387,8 @@ class Users extends Component
      */
     public function getPasswordResetUrl(User $user): string
     {
-        return $this->_getUserUrl($user, 'set-password');
+        $fePath = Craft::$app->getConfig()->getGeneral()->getSetPasswordPath();
+        return $this->_getUserUrl($user, $fePath, Request::CP_PATH_SET_PASSWORD);
     }
 
     /**
@@ -434,7 +426,6 @@ class Users extends Component
             }
         }
 
-        /** @var Volume $volume */
         $assetsService = Craft::$app->getAssets();
 
         // If the photo exists, just replace the file.
@@ -619,12 +610,11 @@ class Users extends Component
 
         $userRecord = $this->_getUserRecordById($user->id);
         $userRecord->email = $user->unverifiedEmail;
+        $userRecord->unverifiedEmail = null;
 
         if (Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
             $userRecord->username = $user->unverifiedEmail;
         }
-
-        $userRecord->unverifiedEmail = null;
 
         if (!$userRecord->save()) {
             $user->addErrors($userRecord->getErrors());
@@ -786,19 +776,12 @@ class Users extends Component
      */
     public function shunMessageForUser(int $userId, string $message, DateTime $expiryDate = null): bool
     {
-        $affectedRows = Craft::$app->getDb()->createCommand()
-            ->upsert(
-                Table::SHUNNEDMESSAGES,
-                [
-                    'userId' => $userId,
-                    'message' => $message
-                ],
-                [
-                    'expiryDate' => Db::prepareDateForDb($expiryDate)
-                ])
-            ->execute();
-
-        return (bool)$affectedRows;
+        return (bool)Db::upsert(Table::SHUNNEDMESSAGES, [
+            'userId' => $userId,
+            'message' => $message,
+        ], [
+            'expiryDate' => Db::prepareDateForDb($expiryDate),
+        ]);
     }
 
     /**
@@ -810,16 +793,10 @@ class Users extends Component
      */
     public function unshunMessageForUser(int $userId, string $message): bool
     {
-        $affectedRows = Craft::$app->getDb()->createCommand()
-            ->delete(
-                Table::SHUNNEDMESSAGES,
-                [
-                    'userId' => $userId,
-                    'message' => $message
-                ])
-            ->execute();
-
-        return (bool)$affectedRows;
+        return (bool)Db::delete(Table::SHUNNEDMESSAGES, [
+            'userId' => $userId,
+            'message' => $message,
+        ]);
     }
 
     /**
@@ -864,12 +841,13 @@ class Users extends Component
     }
 
     /**
-     * Deletes any pending users that have shown zero sense of urgency and are just taking up space.
+     * Deletes any pending users that have shown zero sense of urgency and are
+     * just taking up space.
      *
-     * This method will check the
-     * [[\craft\config\GeneralConfig::purgePendingUsersDuration|purgePendingUsersDuration]] config
-     * setting, and if it is set to a valid duration, it will delete any user accounts that were created that duration
-     * ago, and have still not activated their account.
+     * This method will check the <config:purgePendingUsersDuration> config
+     * setting, and if it is set to a valid duration, it will delete any user
+     * accounts that were created that duration ago, and have still not
+     * activated their account.
      */
     public function purgeExpiredPendingUsers()
     {
@@ -883,22 +861,15 @@ class Users extends Component
         $expire = DateTimeHelper::currentUTCDateTime();
         $pastTime = $expire->sub($interval);
 
-        $userIds = (new Query())
-            ->select(['id'])
-            ->from([Table::USERS])
-            ->where([
-                'and',
-                ['pending' => true],
-                ['<', 'verificationCodeIssuedDate', Db::prepareDateForDb($pastTime)]
-            ])
-            ->column();
+        $query = User::find()
+            ->status('pending')
+            ->andWhere(['<', 'users.verificationCodeIssuedDate', Db::prepareDateForDb($pastTime)]);
 
         $elementsService = Craft::$app->getElements();
 
-        foreach ($userIds as $userId) {
-            $user = $this->getUserById($userId);
+        foreach ($query->each() as $user) {
             $elementsService->deleteElement($user);
-            Craft::info("Just deleted pending user {$user->username} ({$userId}), because they took too long to activate their account.", __METHOD__);
+            Craft::info("Just deleted pending user {$user->username} ({$user->id}), because they took too long to activate their account.", __METHOD__);
         }
     }
 
@@ -923,9 +894,9 @@ class Users extends Component
         }
 
         // Delete their existing groups
-        Craft::$app->getDb()->createCommand()
-            ->delete(Table::USERGROUPS_USERS, ['userId' => $userId])
-            ->execute();
+        Db::delete(Table::USERGROUPS_USERS, [
+            'userId' => $userId,
+        ]);
 
         if (!empty($groupIds)) {
             // Add the new ones
@@ -934,15 +905,7 @@ class Users extends Component
                 $values[] = [$groupId, $userId];
             }
 
-            Craft::$app->getDb()->createCommand()
-                ->batchInsert(
-                    Table::USERGROUPS_USERS,
-                    [
-                        'groupId',
-                        'userId'
-                    ],
-                    $values)
-                ->execute();
+            Db::batchInsert(Table::USERGROUPS_USERS, ['groupId', 'userId'], $values);
         }
 
         // Fire an 'afterAssignUserToGroups' event
@@ -1063,7 +1026,7 @@ class Users extends Component
         $fieldLayoutConfig = $layout->getConfig();
         $uid = StringHelper::UUID();
 
-        $projectConfig->set(self::CONFIG_USERLAYOUT_KEY, [$uid => $fieldLayoutConfig]);
+        $projectConfig->set(self::CONFIG_USERLAYOUT_KEY, [$uid => $fieldLayoutConfig], "Save the user field layout");
         return true;
     }
 
@@ -1073,7 +1036,7 @@ class Users extends Component
      * @param User $impersonator
      * @param User $impersonatee
      * @return bool
-     * @since 3.2
+     * @since 3.2.0
      */
     public function canImpersonate(User $impersonator, User $impersonatee): bool
     {
@@ -1113,7 +1076,6 @@ class Users extends Component
      */
     public function pruneDeletedField(FieldEvent $event)
     {
-        /** @var Field $field */
         $field = $event->field;
         $fieldUid = $field->uid;
 
@@ -1128,21 +1090,20 @@ class Users extends Component
             foreach ($fieldLayouts as $layoutUid => $layout) {
                 if (!empty($layout['tabs'])) {
                     foreach ($layout['tabs'] as $tabUid => $tab) {
-                        $projectConfig->remove(self::CONFIG_USERLAYOUT_KEY . '.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid);
+                        $projectConfig->remove(self::CONFIG_USERLAYOUT_KEY . '.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid, 'Prune deleted field');
                     }
                 }
             }
         }
 
         // Nuke all the layout fields from the DB
-        Craft::$app->getDb()->createCommand()->delete('{{%fieldlayoutfields}}', ['fieldId' => $field->id])->execute();
+        Db::delete(Table::FIELDLAYOUTFIELDS, [
+            'fieldId' => $field->id,
+        ]);
 
         // Allow events again
         $projectConfig->muteEvents = false;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Gets a user record by its ID.
@@ -1205,22 +1166,21 @@ class Users extends Component
     }
 
     /**
-     * Sets a new verification code on a user, and returns their new verification URL
+     * Sets a new verification code on a user, and returns a verification URL.
      *
      * @param User $user The user that should get the new Password Reset URL
-     * @param string $action The UsersController action that the URL should point to
-     * @return string The new Password Reset URL.
+     * @param string $fePath The path to use if we end up linking to the front end
+     * @param string $cpPath The path to use if we end up linking to the control panel
+     * @return string
      * @see getPasswordResetUrl()
      * @see getEmailVerifyUrl()
      */
-    private function _getUserUrl(User $user, string $action): string
+    private function _getUserUrl(User $user, string $fePath, string $cpPath): string
     {
         $userRecord = $this->_getUserRecordById($user->id);
         $unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
         $userRecord->save();
 
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
-        $path = $generalConfig->actionTrigger . '/users/' . $action;
         $params = [
             'code' => $unhashedVerificationCode,
             'id' => $user->uid
@@ -1228,22 +1188,17 @@ class Users extends Component
 
         $scheme = UrlHelper::getSchemeForTokenizedUrl();
 
-        if ($user->can('accessCp')) {
-            // Only use getCpUrl() if the base CP URL has been explicitly set,
-            // so UrlHelper won't use HTTP_HOST
-            if ($generalConfig->baseCpUrl) {
-                return UrlHelper::cpUrl($path, $params, $scheme);
-            }
-
-            $path = $generalConfig->cpTrigger . '/' . $path;
+        if (!$user->can('accessCp')) {
+            return UrlHelper::siteUrl($fePath, $params, $scheme);
         }
 
-        if (Craft::$app->getRequest()->getIsCpRequest()) {
-            $siteId = Craft::$app->getSites()->getPrimarySite()->id;
-        } else {
-            $siteId = Craft::$app->getSites()->getCurrentSite()->id;
+        // Only use cpUrl() if the base CP URL has been explicitly set,
+        // so UrlHelper won't use HTTP_HOST
+        if (Craft::$app->getConfig()->getGeneral()->baseCpUrl) {
+            return UrlHelper::cpUrl($cpPath, $params, $scheme);
         }
 
-        return UrlHelper::siteUrl($path, $params, $scheme, $siteId);
+        $path = UrlHelper::prependCpTrigger($cpPath);
+        return UrlHelper::siteUrl($path, $params, $scheme);
     }
 }

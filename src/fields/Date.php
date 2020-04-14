@@ -14,6 +14,7 @@ use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\gql\types\DateTime as DateTimeType;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\i18n\Locale;
@@ -24,13 +25,10 @@ use yii\db\Schema;
  * Date represents a Date/Time field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Date extends Field implements PreviewableFieldInterface, SortableFieldInterface
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -47,9 +45,6 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
         return DateTime::class . '|null';
     }
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var bool Whether a datepicker should be shown as part of the input
      */
@@ -64,9 +59,6 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
      * @var int The number of minutes that the timepicker options should increment by
      */
     public $minuteIncrement = 30;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -112,9 +104,9 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['showDate', 'showTime'], 'boolean'];
         $rules[] = [['minuteIncrement'], 'integer', 'min' => 1, 'max' => 60];
         return $rules;
@@ -242,9 +234,16 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     public function modifyElementsQuery(ElementQueryInterface $query, $value)
     {
         if ($value !== null) {
-            $handle = $this->handle;
             /** @var ElementQuery $query */
-            $query->subQuery->andWhere(Db::parseDateParam('content.' . Craft::$app->getContent()->fieldColumnPrefix . $handle, $value));
+            $query->subQuery->andWhere(Db::parseDateParam('content.' . Craft::$app->getContent()->fieldColumnPrefix . $this->handle, $value));
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getContentGqlType()
+    {
+        return DateTimeType::getType();
     }
 }

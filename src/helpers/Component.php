@@ -16,13 +16,10 @@ use yii\base\InvalidConfigException;
  * Component helper
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Component
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Returns whether a component class exists, is an instance of a given interface,
      * and doesn't belong to a disabled plugin.
@@ -33,6 +30,7 @@ class Component
      * @return bool
      * @throws InvalidConfigException if $config doesn’t contain a `type` value, or the type isn’s compatible with|null $instanceOf.
      * @throws MissingComponentException if the class specified by $config doesn’t exist, or belongs to an uninstalled plugin
+     * @since 3.2.0
      */
     public static function validateComponentClass(string $class, string $instanceOf = null, $throwException = false): bool
     {

@@ -9,8 +9,8 @@ namespace craft\test\mockclasses\components;
 
 
 use craft\base\Component;
-use yii\base\Event;
 use stdClass;
+use yii\base\Event;
 
 /**
  * Class EventTriggeringComponent.
@@ -21,9 +21,6 @@ use stdClass;
  */
 class EventTriggeringComponent extends Component
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Triggers an event.
      */
@@ -48,7 +45,4 @@ class EventTriggeringComponent extends Component
 
         $this->trigger('event', $event);
     }
-
-
-
 }

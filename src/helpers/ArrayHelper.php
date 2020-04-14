@@ -13,13 +13,10 @@ use Craft;
  * Class ArrayHelper
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class ArrayHelper extends \yii\helpers\ArrayHelper
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -47,14 +44,54 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
             }
 
             // Remove any empty elements and reset the keys
-            $object = array_merge(array_filter($object, function($value) {
-                return $value !== '';
-            }));
-
-            return $object;
+            return array_values(static::filterEmptyStringsFromArray($object));
         }
 
         return parent::toArray($object, $properties, $recursive);
+    }
+
+    /**
+     * Prepends values to an array.
+     *
+     * This should be used instead of `array_unshift($array, ...$values)` when `$values` could be an empty array,
+     * as PHP < 7.3 would throw an error in that case.
+     *
+     * ---
+     * ```php
+     * ArrayHelper::prepend($array, ...$values);
+     * ```
+     *
+     * @param array &$array the array to be prepended to
+     * @param mixed ...$values the values to prepend.
+     * @since 3.4.0
+     */
+    public static function prepend(array &$array, ...$values)
+    {
+        if (!empty($values)) {
+            array_unshift($array, ...$values);
+        }
+    }
+
+    /**
+     * Appends values to an array.
+     *
+     * This should be used instead of `array_push($array, ...$values)` when `$values` could be an empty array,
+     * as PHP < 7.3 would throw an error in that case.
+     *
+     * ---
+     * ```php
+     * ArrayHelper::append($array, ...$values);
+     * ```
+     *
+     * @param array &$array the array to be appended to
+     * @param mixed ...$values the values to append.
+     * @since 3.4.0
+     */
+    public static function append(array &$array, ...$values)
+    {
+        if (!empty($values)) {
+            array_push($array, ...$values);
+        }
     }
 
     /**
@@ -83,7 +120,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      * @param mixed $value the value that $key should be compared with
      * @param bool $strict whether a strict type comparison should be used when checking array element values against $value
      * @return array the filtered array
-     * @deprecated in 3.2. Use [[where()]] instead.
+     * @deprecated in 3.2.0. Use [[where()]] instead.
      */
     public static function filterByValue($array, $key, $value = true, bool $strict = false): array
     {
@@ -117,6 +154,62 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
     }
 
     /**
+     * Filters an array to only the values where a list of keys is set to given values.
+     * Array keys are preserved.
+     *
+     * This method is most useful when, given an array of elements, it is needed to filter
+     * them by multiple conditions.
+     *
+     * Below are some usage examples,
+     *
+     * ```php
+     * // Entries with certain entry types
+     * $filtered = \craft\helpers\ArrayHelper::whereMultiple($entries, ['typeId' => [2, 4]]);
+     *
+     * // Entries with multiple conditions
+     * $filtered = \craft\helpers\ArrayHelper::whereMultiple($entries, ['typeId' => 2, 'authorId' => [1, 2]);
+     *
+     * // Testing for an array value
+     * $filtered = \craft\helpers\ArrayHelper::whereMultiple($asset, ['focalPoint' => [['x' => 0.5, 'y' => 0.5]]]);
+     *
+     * ```
+     *
+     * @param array|\Traversable $array the array that needs to be indexed or grouped
+     * @param array $conditions An array of key/value pairs of allowed values. Values can be arrays to allow multiple values.
+     * @param bool $strict whether a strict type comparison should be used when checking array element values against $value
+     * @return array the filtered array
+     * @since 3.3.0
+     */
+    public static function whereMultiple($array, array $conditions, bool $strict = false): array
+    {
+        $result = [];
+
+        foreach ($array as $i => $element) {
+            foreach ($conditions as $key => $value) {
+                if (is_array($value) && !count($value)) {
+                    continue;
+                }
+
+                $elementValue = static::getValue($element, $key);
+
+                // Skip this element if there are multiple options and none of them match
+                if (is_array($value) && !in_array($elementValue, $value, $strict)) {
+                    continue 2;
+                }
+
+                if (!is_array($value) && (($strict && $elementValue !== $value) || (!$strict && $elementValue != $value))) {
+                    continue 2;
+                }
+            }
+
+            // If we haven't continue'd over this part, this is a good element.
+            $result[$i] = $element;
+        }
+
+        return $result;
+    }
+
+    /**
      * Returns the first value in a given array where a given key (the name of a
      * sub-array key or sub-object property) is set to a given value.
      *
@@ -125,6 +218,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      * @param mixed $value the value that $key should be compared with
      * @param bool $strict whether a strict type comparison should be used when checking array element values against $value
      * @return mixed the value, or null if it can't be found
+     * @since 3.1.0
      */
     public static function firstWhere($array, $key, $value = true, bool $strict = false)
     {
@@ -137,6 +231,30 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
         }
 
         return null;
+    }
+
+    /**
+     * Returns whether the given array contains any values where a given key (the name of a
+     * sub-array key or sub-object property) is set to a given value.
+     *
+     * @param array|\Traversable $array the array that the value will be searched for in
+     * @param string|\Closure $key the column name or anonymous function which must be set to $value
+     * @param mixed $value the value that $key should be compared with
+     * @param bool $strict whether a strict type comparison should be used when checking array element values against $value
+     * @return bool whether the value exists in the array
+     * @since 3.4.0
+     */
+    public static function contains($array, $key, $value = true, bool $strict = false): bool
+    {
+        foreach ($array as $i => $element) {
+            $elementValue = static::getValue($element, $key);
+            /** @noinspection TypeUnsafeComparisonInspection */
+            if (($strict && $elementValue === $value) || (!$strict && $elementValue == $value)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -201,6 +319,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      * @param array $array
      * @param string $key
      * @return array
+     * @since 3.0.9
      */
     public static function without(array $array, string $key): array
     {
@@ -225,11 +344,40 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      * Ensures an array is non-associative.
      *
      * @param array $array
+     * @since 3.1.17.1
      */
     public static function ensureNonAssociative(array &$array)
     {
         if (static::isAssociative($array, false)) {
             $array = array_values($array);
         }
+    }
+
+    /**
+     * Checks whether a numerically-indexed array's keys are in ascending order.
+     *
+     * @param array $array
+     * @return bool
+     * @since 3.4.0
+     */
+    public static function isOrdered(array $array): bool
+    {
+        $lastKey = null;
+        foreach (array_keys($array) as $key) {
+            if (is_string($key)) {
+                // Associative arrays don't have an order
+                return false;
+            }
+
+            if ($lastKey !== null) {
+                if ($key < $lastKey) {
+                    return false;
+                }
+            }
+
+            $lastKey = $key;
+        }
+
+        return true;
     }
 }

@@ -9,7 +9,6 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\Element;
-use craft\base\Field;
 use craft\elements\GlobalSet;
 use craft\web\Controller;
 use yii\web\ForbiddenHttpException;
@@ -22,13 +21,10 @@ use yii\web\Response;
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class GlobalsController extends Controller
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Index
      *
@@ -196,7 +192,6 @@ class GlobalsController extends Controller
 
             if ($globalSet->hasErrors()) {
                 foreach ($tab->getFields() as $field) {
-                    /** @var Field $field */
                     if ($hasErrors = $globalSet->hasErrors($field->handle . '.*')) {
                         break;
                     }

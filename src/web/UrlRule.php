@@ -14,13 +14,10 @@ use craft\helpers\StringHelper;
 /**
  * @inheritdoc
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class UrlRule extends \yii\web\UrlRule
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var array Pattern tokens that will be swapped out at runtime.
      */
@@ -30,9 +27,6 @@ class UrlRule extends \yii\web\UrlRule
      * @var array Parameters that should be passed to the controller.
      */
     public $params = [];
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Constructor.

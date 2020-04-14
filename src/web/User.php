@@ -24,19 +24,16 @@ use yii\web\Cookie;
 /**
  * The User component provides APIs for managing the user authentication status.
  *
- * An instance of the User component is globally accessible in Craft via [[\craft\base\ApplicationTrait::getUser()|`Craft::$app->user`]].
+ * An instance of the User component is globally accessible in Craft via [[\yii\web\Application::getUser()|`Craft::$app->user`]].
  *
  * @property bool $hasElevatedSession Whether the user currently has an elevated session
  * @property UserElement|null $identity The logged-in user.
  * @method UserElement|null getIdentity($autoRenew = true) Returns the logged-in user.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class User extends \yii\web\User
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string the session variable name used to store the user session token.
      */
@@ -52,9 +49,6 @@ class User extends \yii\web\User
      * @var string The session variable name used to store the value of the expiration timestamp of the elevated session state.
      */
     public $elevatedSessionTimeoutParam = '__elevated_timeout';
-
-    // Public Methods
-    // =========================================================================
 
     // Authentication
     // -------------------------------------------------------------------------
@@ -150,7 +144,7 @@ class User extends \yii\web\User
      * ```twig{5}
      * <form method="post" action="" accept-charset="UTF-8">
      *     {{ csrfInput() }}
-     *     <input type="hidden" name="action" value="users/login">
+     *     {{ actionInput('users/login') }}
      *
      *     {% set username = craft.app.user.rememberedUsername %}
      *     <input type="text" name="loginName" value="{{ username }}">
@@ -191,6 +185,21 @@ class User extends \yii\web\User
     public function getIsGuest()
     {
         return parent::getIsGuest();
+    }
+
+    /**
+     * Redirects the user browser away from a guest page.
+     *
+     * @return Response the redirection response
+     * @throws ForbiddenHttpException if the request doesn’t accept a redirect response
+     * @since 3.4.0
+     */
+    public function guestRequired()
+    {
+        if (!$this->checkRedirectAcceptable()) {
+            throw new ForbiddenHttpException(Craft::t('app', 'Guest Required'));
+        }
+        return Craft::$app->getResponse()->redirect($this->getReturnUrl());
     }
 
     /**
@@ -378,9 +387,6 @@ class User extends \yii\web\User
         $session->remove('enableDebugToolbarForCp');
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -445,17 +451,16 @@ class User extends \yii\web\User
      * Generates a new user session token.
      *
      * @param int $userId
+     * @since 3.1.1
      */
     public function generateToken(int $userId)
     {
         $token = Craft::$app->getSecurity()->generateRandomString(100);
 
-        Craft::$app->getDb()->createCommand()
-            ->insert(Table::SESSIONS, [
-                'userId' => $userId,
-                'token' => $token,
-            ])
-            ->execute();
+        Db::insert(Table::SESSIONS, [
+            'userId' => $userId,
+            'token' => $token,
+        ]);
 
         Craft::$app->getSession()->set($this->tokenParam, $token);
     }
@@ -482,13 +487,40 @@ class User extends \yii\web\User
             $this->authTimeout = null;
             $absoluteAuthTimeoutParam = $this->absoluteAuthTimeoutParam;
             $this->absoluteAuthTimeoutParam = $this->authTimeoutParam;
+            $autoRenewCookie = $this->autoRenewCookie;
+            $this->autoRenewCookie = false;
             parent::renewAuthStatus();
             $this->authTimeout = $this->absoluteAuthTimeout;
             $this->absoluteAuthTimeout = null;
             $this->absoluteAuthTimeoutParam = $absoluteAuthTimeoutParam;
+            $this->autoRenewCookie = $autoRenewCookie;
         } else {
             parent::renewAuthStatus();
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function beforeLogout($identity)
+    {
+        if (!parent::beforeLogout($identity)) {
+            return false;
+        }
+
+        $session = Craft::$app->getSession();
+
+        // Delete the session token in the database
+        $token = $session->get($this->tokenParam);
+        if ($token !== null) {
+            $session->remove($this->tokenParam);
+            Db::delete(Table::SESSIONS, [
+                'token' => $token,
+                'userId' => $identity->id,
+            ]);
+        }
+
+        return true;
     }
 
     /**
@@ -501,18 +533,6 @@ class User extends \yii\web\User
         $session = Craft::$app->getSession();
         $session->remove(UserElement::IMPERSONATE_KEY);
 
-        // Delete the session token
-        $token = $session->get($this->tokenParam);
-        if ($token !== null) {
-            $session->remove($this->tokenParam);
-            Craft::$app->getDb()->createCommand()
-                ->delete(Table::SESSIONS, [
-                    'token' => $token,
-                    'userId' => $identity->id,
-                ])
-                ->execute();
-        }
-
         $this->destroyDebugPreferencesInSession();
 
         if (Craft::$app->getConfig()->getGeneral()->enableCsrfProtection) {
@@ -522,9 +542,6 @@ class User extends \yii\web\User
 
         parent::afterLogout($identity);
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Validates that the request has a user agent and IP associated with it,
@@ -599,7 +616,6 @@ class User extends \yii\web\User
     /**
      * @param string $authError
      * @param UserElement $user
-     * @return null
      */
     private function _handleLoginFailure(string $authError = null, UserElement $user = null)
     {

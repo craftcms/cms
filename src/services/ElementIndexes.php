@@ -9,11 +9,11 @@ namespace craft\services;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\base\PreviewableFieldInterface;
 use craft\db\Query;
 use craft\db\Table;
+use craft\helpers\Db;
 use craft\helpers\Json;
 use yii\base\Component;
 
@@ -22,17 +22,11 @@ use yii\base\Component;
  * An instance of ElementIndexes service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getElementIndexes()|`Craft::$app->elementIndexes`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class ElementIndexes extends Component
 {
-    // Properties
-    // =========================================================================
-
     private $_indexSettings;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns the element index settings for a given element type.
@@ -125,20 +119,18 @@ class ElementIndexes extends Component
             }
         }
 
-        $affectedRows = Craft::$app->getDb()->createCommand()
-            ->upsert(
-                Table::ELEMENTINDEXSETTINGS,
-                ['type' => $elementType],
-                ['settings' => Json::encode($settings)])
-            ->execute();
+        $success = (bool)Db::upsert(Table::ELEMENTINDEXSETTINGS, [
+            'type' => $elementType,
+        ], [
+            'settings' => Json::encode($settings),
+        ]);
 
-        if ($affectedRows) {
-            $this->_indexSettings[$elementType] = $settings;
-
-            return true;
+        if (!$success) {
+            return false;
         }
 
-        return false;
+        $this->_indexSettings[$elementType] = $settings;
+        return true;
     }
 
     /**
@@ -219,7 +211,6 @@ class ElementIndexes extends Component
         if ($includeFields) {
             // Mix in custom fields
             foreach ($this->getAvailableTableFields($elementType) as $field) {
-                /** @var Field $field */
                 $attributes['field:' . $field->id] = ['label' => Craft::t('site', $field->name)];
             }
         }
@@ -293,9 +284,6 @@ class ElementIndexes extends Component
 
         return $availableFields;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Normalizes an element type’s source list.

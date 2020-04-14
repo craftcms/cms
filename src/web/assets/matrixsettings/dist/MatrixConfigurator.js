@@ -161,7 +161,7 @@
                 this.$nameField = $('<div class="field"/>').appendTo(this.$body);
                 this.$nameHeading = $('<div class="heading"/>').appendTo(this.$nameField);
                 this.$nameLabel = $('<label for="new-block-type-name">' + Craft.t('app', 'Name') + '</label>').appendTo(this.$nameHeading);
-                this.$nameInstructions = $('<div class="instructions"><p>' + Craft.t('app', 'What this block type will be called in the CP.') + '</p></div>').appendTo(this.$nameHeading);
+                this.$nameInstructions = $('<div class="instructions"><p>' + Craft.t('app', 'What this block type will be called in the control panel.') + '</p></div>').appendTo(this.$nameHeading);
                 this.$nameInputContainer = $('<div class="input"/>').appendTo(this.$nameField);
                 this.$nameInput = $('<input type="text" class="text fullwidth" id="new-block-type-name"/>').appendTo(this.$nameInputContainer);
                 this.$nameErrorList = $('<ul class="errors"/>').appendTo(this.$nameInputContainer).hide();
@@ -268,7 +268,6 @@
                     $errorList.hide();
                 }
             }
-
         });
 
 
@@ -441,7 +440,6 @@
                 this.configurator.blockTypes[this.id] = null;
                 delete this.configurator.blockTypes[this.id];
             }
-
         });
 
 
@@ -514,8 +512,8 @@
                 }
 
                 this.addListener(this.$item, 'click', 'select');
-                this.addListener(this.$nameInput, 'textchange', 'updateNameLabel');
-                this.addListener(this.$handleInput, 'textchange', 'updateHandleLabel');
+                this.addListener(this.$nameInput, 'input', 'updateNameLabel');
+                this.addListener(this.$handleInput, 'input', 'updateHandleLabel');
                 this.addListener(this.$requiredCheckbox, 'change', 'updateRequiredIcon');
                 this.addListener(this.$typeSelect, 'change', 'onTypeSelectChange');
                 this.addListener(this.$deleteBtn, 'click', 'confirmDelete');
@@ -658,7 +656,7 @@
                 }).appendTo($container);
 
                 Craft.ui.createCheckboxField({
-                    label: Craft.t('app', 'Use this field’s values as search keywords?'),
+                    label: Craft.t('app', 'Use this field’s values as search keywords'),
                     id: this.inputIdPrefix + '-searchable',
                     name: this.inputNamePrefix + '[searchable]',
                     checked: true,
@@ -738,6 +736,5 @@
                 this.blockType.fields[this.id] = null;
                 delete this.blockType.fields[this.id];
             }
-
         });
 })(jQuery);

@@ -18,9 +18,6 @@ use craft\test\fixtures\elements\UserFixture;
  */
 class UsersFixture extends UserFixture
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

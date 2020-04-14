@@ -3,12 +3,13 @@
 
 
 <form method="post" accept-charset="UTF-8">
-    <input type="hidden" name="fieldsLocation" value="{{ fieldNamespace }}">
+    {{ hiddenInput('fieldsLocation', fieldNamespace) }}
     {{ csrfInput() }}
 
     {% if section.type != 'single' and entryType.hasTitleField %}
         {{ forms.textField({
             label: entryType.titleLabel|t('app'),
+            altLabel: tag('code', {text: 'title'}),
             id: 'title',
             name: 'title',
             required: true,

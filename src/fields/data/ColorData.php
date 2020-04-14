@@ -24,20 +24,14 @@ use yii\base\BaseObject;
  * @property float $luma
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Top Shelf Craft <michael@michaelrog.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class ColorData extends BaseObject implements Serializable
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string The color’s hex value
      */
     private $_hex;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Constructor.

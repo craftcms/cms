@@ -11,7 +11,7 @@ namespace craft\errors;
  * Class AssetTransformException
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class AssetTransformException extends AssetException
 {

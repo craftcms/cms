@@ -17,27 +17,19 @@ use yii\web\Response as YiiResponse;
  * InstallController handles the plugin installation workflow.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
+ * @internal
  */
 class InstallController extends BaseUpdaterController
 {
-    // Constants
-    // =========================================================================
-
     const ACTION_CRAFT_INSTALL = 'craft-install';
     const ACTION_ENABLE = 'enable';
     const ACTION_MIGRATE = 'migrate';
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var string|null
      */
     private $_pluginRedirect;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -125,9 +117,6 @@ class InstallController extends BaseUpdaterController
     {
         return $this->runMigrations([$this->data['handle']]) ?? $this->sendFinished();
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

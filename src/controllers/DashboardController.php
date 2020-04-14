@@ -8,7 +8,6 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\Widget;
 use craft\base\WidgetInterface;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
@@ -36,13 +35,10 @@ use ZipArchive;
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class DashboardController extends Controller
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Dashboard index.
      *
@@ -90,7 +86,6 @@ class DashboardController extends Controller
 
         // Assemble the list of existing widgets
         $variables['widgets'] = [];
-        /** @var Widget[] $widgets */
         $widgets = $dashboardService->getAllWidgets();
         $allWidgetJs = '';
 
@@ -182,7 +177,6 @@ class DashboardController extends Controller
         $widgetId = $request->getRequiredBodyParam('widgetId');
 
         // Get the existing widget
-        /** @var Widget $widget */
         $widget = $dashboardService->getWidgetById($widgetId);
 
         if (!$widget) {
@@ -396,23 +390,11 @@ class DashboardController extends Controller
             // Logs
             if ($getHelpModel->attachLogs) {
                 $logPath = Craft::$app->getPath()->getLogPath();
-                if (is_dir($logPath)) {
-                    // Grab it all.
-                    try {
-                        $logFiles = FileHelper::findFiles($logPath, [
-                            'only' => ['*.log'],
-                            'except' => ['web-404s.log'],
-                            'recursive' => false
-                        ]);
-                    } catch (ErrorException $e) {
-                        Craft::warning("Unable to find log files in \"{$logPath}\": " . $e->getMessage(), __METHOD__);
-                        $logFiles = [];
-                    }
-
-                    foreach ($logFiles as $logFile) {
-                        $zip->addFile($logFile, 'logs/' . pathinfo($logFile, PATHINFO_BASENAME));
-                    }
-                }
+                FileHelper::addFilesToZip($zip, $logPath, 'logs', [
+                    'only' => ['*.log'],
+                    'except' => ['web-404s.log'],
+                    'recursive' => false
+                ]);
             }
 
             // DB backups
@@ -421,7 +403,7 @@ class DashboardController extends Controller
                 // for debugging.
                 try {
                     $backupPath = Craft::$app->getDb()->backup();
-                    $zip->addFile($backupPath, pathinfo($backupPath, PATHINFO_BASENAME));
+                    $zip->addFile($backupPath, basename($backupPath));
                 } catch (\Throwable $e) {
                     Craft::warning('Error adding database backup to support request: ' . $e->getMessage(), __METHOD__);
                     $getHelpModel->message .= "\n\n---\n\nError adding database backup: " . $e->getMessage();
@@ -431,13 +413,7 @@ class DashboardController extends Controller
             // Templates
             if ($getHelpModel->attachTemplates) {
                 $templatesPath = Craft::$app->getPath()->getSiteTemplatesPath();
-                if (is_dir($templatesPath)) {
-                    $templateFiles = FileHelper::findFiles($templatesPath);
-                    foreach ($templateFiles as $templateFile) {
-                        // Preserve the directory structure within the templates folder
-                        $zip->addFile($templateFile, 'templates' . str_replace(DIRECTORY_SEPARATOR, '/', substr($templateFile, strlen($templatesPath))));
-                    }
-                }
+                FileHelper::addFilesToZip($zip, $templatesPath, 'templates');
             }
 
             // Attachment?
@@ -495,9 +471,6 @@ class DashboardController extends Controller
         ]);
     }
 
-    // Private Methods
-    // =========================================================================
-
     /**
      * Returns the info about a widget required to display its body and settings in the Dashboard.
      *
@@ -506,7 +479,6 @@ class DashboardController extends Controller
      */
     private function _getWidgetInfo(WidgetInterface $widget)
     {
-        /** @var Widget $widget */
         $view = $this->getView();
         $namespace = $view->getNamespace();
 
@@ -537,6 +509,7 @@ class DashboardController extends Controller
             'type' => get_class($widget),
             'colspan' => $colspan,
             'title' => $widget->getTitle(),
+            'subtitle' => $widget->getSubtitle(),
             'name' => $widget->displayName(),
             'bodyHtml' => $widgetBodyHtml,
             'settingsHtml' => $settingsHtml,
@@ -596,7 +569,6 @@ class DashboardController extends Controller
      */
     private function _saveAndReturnWidget(WidgetInterface $widget): Response
     {
-        /** @var Widget $widget */
         $dashboardService = Craft::$app->getDashboard();
 
         if ($dashboardService->saveWidget($widget)) {

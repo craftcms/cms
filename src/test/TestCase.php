@@ -18,14 +18,10 @@ use ReflectionObject;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.2
+ * @since 3.2.0
  */
 class TestCase extends Unit
 {
-
-    // Public Methods
-    // =========================================================================
-
     /**
      * Returns a callback/Closure that checks whether the passed in object is an instance of the $class param
      *
@@ -38,9 +34,6 @@ class TestCase extends Unit
             $this->assertSame($class, get_class($object));
         };
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * Sets an inaccessible object property to a designated value.

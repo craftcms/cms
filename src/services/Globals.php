@@ -8,10 +8,10 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\Field;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\GlobalSet;
+use craft\errors\ElementNotFoundException;
 use craft\errors\GlobalSetNotFoundException;
 use craft\events\ConfigEvent;
 use craft\events\FieldEvent;
@@ -29,13 +29,10 @@ use yii\base\Component;
  * An instance of the Globals service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getGlobals()|`Craft::$app->globals`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Globals extends Component
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event GlobalSetEvent The event that is triggered before a global set is saved.
      */
@@ -47,9 +44,6 @@ class Globals extends Component
     const EVENT_AFTER_SAVE_GLOBAL_SET = 'afterSaveGlobalSet';
 
     const CONFIG_GLOBALSETS_KEY = 'globalSets';
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var
@@ -70,9 +64,6 @@ class Globals extends Component
      * @var
      */
     private $_globalSetsById;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns all of the global set IDs.
@@ -364,7 +355,7 @@ class Globals extends Component
         }
 
         $configPath = self::CONFIG_GLOBALSETS_KEY . '.' . $globalSet->uid;
-        $projectConfig->set($configPath, $configData);
+        $projectConfig->set($configPath, $configData, "Save global set “{$globalSet->handle}”");
 
         if ($isNewSet) {
             $globalSet->id = Db::idByUid(Table::GLOBALSETS, $globalSet->uid);
@@ -438,7 +429,10 @@ class Globals extends Component
             $element->name = $globalSetRecord->name;
             $element->handle = $globalSetRecord->handle;
             $element->fieldLayoutId = $globalSetRecord->fieldLayoutId;
-            $elementsService->saveElement($element, false);
+
+            if (!$elementsService->saveElement($element, false)) {
+                throw new ElementNotFoundException('Unable to save the element required for global set.');
+            }
 
             // Save the volume
             $globalSetRecord->id = $element->id;
@@ -484,7 +478,7 @@ class Globals extends Component
             return false;
         }
 
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_GLOBALSETS_KEY . '.' . $globalSet->uid);
+        Craft::$app->getProjectConfig()->remove(self::CONFIG_GLOBALSETS_KEY . '.' . $globalSet->uid, "Delete the “{$globalSet->handle}” global set");
         return true;
     }
 
@@ -532,7 +526,6 @@ class Globals extends Component
      */
     public function pruneDeletedField(FieldEvent $event)
     {
-        /** @var Field $field */
         $field = $event->field;
         $fieldUid = $field->uid;
 
@@ -549,7 +542,7 @@ class Globals extends Component
                     foreach ($globalSet['fieldLayouts'] as $layoutUid => $layout) {
                         if (!empty($layout['tabs'])) {
                             foreach ($layout['tabs'] as $tabUid => $tab) {
-                                $projectConfig->remove(self::CONFIG_GLOBALSETS_KEY . '.' . $globalSetUid . '.fieldLayouts.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid);
+                                $projectConfig->remove(self::CONFIG_GLOBALSETS_KEY . '.' . $globalSetUid . '.fieldLayouts.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid, 'Prune deleted field');
                             }
                         }
                     }
@@ -558,14 +551,13 @@ class Globals extends Component
         }
 
         // Nuke all the layout fields from the DB
-        Craft::$app->getDb()->createCommand()->delete('{{%fieldlayoutfields}}', ['fieldId' => $field->id])->execute();
+        Db::delete(Table::FIELDLAYOUTFIELDS, [
+            'fieldId' => $field->id,
+        ]);
 
         // Allow events again
         $projectConfig->muteEvents = false;
     }
-
-    // Private methods
-    // =========================================================================
 
     /**
      * Gets a global set's record by uid.
@@ -577,5 +569,4 @@ class Globals extends Component
     {
         return GlobalSetRecord::findOne(['uid' => $uid]) ?? new GlobalSetRecord();
     }
-
 }

@@ -10,7 +10,7 @@ namespace craft\test;
 use Codeception\Exception\ConfigurationException;
 use Codeception\Lib\Connector\Yii2;
 use Craft;
-use craft\base\Plugin;
+use craft\base\PluginInterface;
 use craft\errors\InvalidPluginException;
 use craft\web\View;
 use yii\base\Module;
@@ -22,20 +22,14 @@ use yii\web\Application;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.2
+ * @since 3.2.0
  */
 class CraftConnector extends Yii2
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var array|MessageInterface
      */
     protected $emails;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -47,6 +41,7 @@ class CraftConnector extends Yii2
 
     /**
      * We override to prevent a bug with the matching of user agent and session.
+     *
      * @param $user
      * @param bool $disableRequiredUserAgent
      * @throws ConfigurationException
@@ -96,8 +91,15 @@ class CraftConnector extends Yii2
             $moduleClass = get_class($module);
             $moduleId = $module->id;
 
-            if ($module instanceof Plugin) {
-                $module = Craft::$app->getPlugins()->createPlugin($moduleId);
+            if ($module instanceof PluginInterface) {
+                $plugins = Craft::$app->getPlugins();
+
+                // Follow the same error handling as Craft does natively.
+                if (($info = $plugins->getStoredPluginInfo($moduleId)) === null) {
+                    throw new InvalidPluginException($moduleId);
+                }
+
+                $module = $plugins->createPlugin($moduleId, $info);
             } else {
                 $module = new $moduleClass($moduleId, Craft::$app);
             }

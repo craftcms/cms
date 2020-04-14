@@ -14,28 +14,22 @@ use Twig\Error\LoaderError as TwigLoaderError;
 use Twig\Error\RuntimeError as TwigRuntimeError;
 use Twig\Error\SyntaxError as TwigSyntaxError;
 use Twig\Template;
-use yii\base\UserException;
 use yii\log\FileTarget;
 use yii\web\HttpException;
+use yii\web\NotFoundHttpException;
 
 /**
  * Class ErrorHandler
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class ErrorHandler extends \yii\web\ErrorHandler
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event ExceptionEvent The event that is triggered before handling an exception.
      */
     const EVENT_BEFORE_HANDLE_EXCEPTION = 'beforeHandleException';
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -120,16 +114,23 @@ class ErrorHandler extends \yii\web\ErrorHandler
             $file === __DIR__ . DIRECTORY_SEPARATOR . 'twig' . DIRECTORY_SEPARATOR . 'Template.php';
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
     protected function renderException($exception)
     {
-        // Treat UserExceptions like normal exceptions when Dev Mode is enabled
-        if (YII_DEBUG && $exception instanceof UserException) {
+        // Show a broken image for image requests
+        if (
+            $exception instanceof NotFoundHttpException &&
+            Craft::$app->has('request') &&
+            Craft::$app->getRequest()->getAcceptsImage() &&
+            Craft::$app->getConfig()->getGeneral()->brokenImagePath
+        ) {
+            $this->errorAction = 'app/broken-image';
+        }
+        // Show the full exception view for all exceptions when Dev Mode is enabled (don't skip `UserException`s)
+        // or if the user is an admin and has indicated they want to see it
+        else if ($this->_showExceptionView()) {
             $this->errorAction = null;
             $this->errorView = $this->exceptionView;
         }
@@ -159,5 +160,33 @@ class ErrorHandler extends \yii\web\ErrorHandler
         }
 
         return $url;
+    }
+
+    /**
+     * Returns whether the full exception view should be shown.
+     *
+     * @return bool
+     */
+    private function _showExceptionView(): bool
+    {
+        if (YII_DEBUG) {
+            return true;
+        }
+
+        $user = Craft::$app->getUser()->getIdentity();
+        return (
+            $user &&
+            $user->admin &&
+            $user->getPreference('showExceptionView')
+        );
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.4.10
+     */
+    protected function shouldRenderSimpleHtml()
+    {
+        return YII_ENV_TEST || (Craft::$app->has('request', true) && Craft::$app->request->getIsAjax());
     }
 }

@@ -13,13 +13,10 @@ use craft\elements\Asset;
  * Asset event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class AssetEvent extends CancelableEvent
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var Asset|null The asset model associated with the event.
      */

@@ -1,7 +1,7 @@
 {% import "_includes/forms" as forms %}
 
 <form id="find-replace" class="utility" method="post" accept-charset="UTF-8">
-    <input type="hidden" name="action" value="utilities/find-and-replace-perform-action">
+    {{ actionInput('utilities/find-and-replace-perform-action') }}
     {{ csrfInput() }}
 
     {{ forms.textField({

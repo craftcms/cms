@@ -8,7 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\Element;
+use craft\base\ElementInterface;
 use craft\models\Structure;
 use craft\web\Controller;
 use yii\web\ForbiddenHttpException;
@@ -21,30 +21,24 @@ use yii\web\Response;
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class StructuresController extends Controller
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var Structure|null
      */
     private $_structure;
 
     /**
-     * @var Element|null
+     * @var ElementInterface|null
      */
     private $_element;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Initializes the application component.
      *
-     * @throws ForbiddenHttpException if this is not a Control Panel request
+     * @throws ForbiddenHttpException if this is not a control panel request
      * @throws NotFoundHttpException if the requested element cannot be found
      */
     public function init()
@@ -54,9 +48,9 @@ class StructuresController extends Controller
 
         $request = Craft::$app->getRequest();
 
-        // This controller is only available to the Control Panel
+        // This controller is only available to the control panel
         if (!$request->getIsCpRequest()) {
-            throw new ForbiddenHttpException('Action only available from the Control Panel');
+            throw new ForbiddenHttpException('Action only available from the control panel');
         }
 
         $structureId = $request->getRequiredBodyParam('structureId');
@@ -76,7 +70,7 @@ class StructuresController extends Controller
             throw new NotFoundHttpException('Element not found');
         }
 
-        /** @var Element|string $elementType */
+        /** @var ElementInterface|string $elementType */
         $this->_element = $elementType::find()
             ->id($elementId)
             ->siteId($siteId)

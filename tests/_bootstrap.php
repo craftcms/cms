@@ -3,6 +3,7 @@
 use craft\test\TestSetup;
 
 ini_set('date.timezone', 'UTC');
+date_default_timezone_set('UTC');
 
 // Use the current installation of Craft
 define('CRAFT_STORAGE_PATH', __DIR__ . DIRECTORY_SEPARATOR . '_craft' . DIRECTORY_SEPARATOR . 'storage');

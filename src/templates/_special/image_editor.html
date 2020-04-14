@@ -6,37 +6,45 @@
 </div>
 <div class="views">
     <div class="rotate hidden" data-view="rotate" data-rotate="true">
-        <div class="rotate-buttons buttons">
+        <div class="rotate-buttons btngroup">
             <div class="rotate-left btn icon leftalign">{{ 'Rotate Left'|t('app') }}</div>
             <div class="rotate-right btn icon leftalign">{{ 'Rotate Right'|t('app') }}</div>
         </div>
-        <div class="flip-buttons buttons">
+        <div class="flip-buttons btngroup">
             <div class="flip-vertical btn icon leftalign">{{ 'Flip Vertical'|t('app') }}</div>
             <div class="flip-horizontal btn icon leftalign">{{ 'Flip Horizontal'|t('app') }}</div>
         </div>
-        <div class="buttons">
+        <div class="btngroup">
             <div class="focal-point btn icon leftalign">{{ 'Focal Point'|t('app') }}</div>
         </div>
     </div>
     <div class="crop hidden" data-view="crop" data-crop="true">
-        <div class="buttons">
+        <div class="btngroup">
             <div class="focal-point btn icon leftalign">{{ 'Focal Point'|t('app') }}</div>
-            <div class="constraint btn icon menubtn no-outline">{{ 'Unconstrained'|t('app') }}</div>
-            <div class="menu dark">
-                <ul>
-                    <li><a class="" data-constraint="none">{{ 'Unconstrained'|t('app') }}</a></li>
-                    <li><a class="" data-constraint="original">{{ 'Original'|t('app') }}</a></li>
-                    <li><a class="" data-constraint="1">{{ 'Square'|t('app') }}</a></li>
-                    <li><a class="" data-constraint="1.78">16:9</a></li>
-                    <li><a class="" data-constraint="0.8">8:10</a></li>
-                    <li><a class="" data-constraint="0.71">5:7</a></li>
-                    <li><a class="" data-constraint="1.3">4:3</a></li>
-                    <li><a class="" data-constraint="0.6">3:5</a></li>
-                    <li><a class="" data-constraint="1.5">3:2</a></li>
-                </ul>
-           </div>
         </div>
 
+        <div class="constraint-buttons-container">
+            <div class="btngroup constraint-buttons">
+                <div class="constraint" data-constraint="none">{{ 'Unconstrained'|t('app') }}</div>
+                <div class="constraint" data-constraint="original">{{ 'Original'|t('app') }}</div>
+                <div class="constraint" data-constraint="1">{{ 'Square'|t('app') }}</div>
+                <div class="constraint flip" data-constraint="1.78">16:9</div>
+                <div class="constraint flip" data-constraint="1.25">10:8</div>
+                <div class="constraint flip" data-constraint="1.4">7:5</div>
+                <div class="constraint flip" data-constraint="1.3">4:3</div>
+                <div class="constraint flip" data-constraint="1.67">5:3</div>
+                <div class="constraint flip" data-constraint="1.5">3:2</div>
+                <div class="constraint custom" data-constraint="custom">
+                    <span class="custom-label">{{ 'Custom'|t}}</span>
+                    <span class="custom-input hidden"><input type="text" class="custom-constraint-w" size="3" value="1"/> x <input type="text" class="custom-constraint-h" size="3" value="1"/></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="orientation">
+            <input type="radio" name="orientation" value="landscape" checked/>
+            <input type="radio" name="orientation" value="portrait"/>
+        </div>
     </div>
 </div>
 <div class="image-container">

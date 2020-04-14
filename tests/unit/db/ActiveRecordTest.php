@@ -29,19 +29,10 @@ use UnitTester;
  */
 class ActiveRecordTest extends Unit
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var UnitTester
      */
     public $tester;
-
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
 
     /**
      * Note this test is just here to verify that these are indeed craft\db\ActiveRecord classes.
@@ -78,7 +69,7 @@ class ActiveRecordTest extends Unit
 
         // Save it again. Ensure dateUpdated is the same, as nothing has changed.
         $session->save();
-        $this->assertSame($session->dateUpdated, $oldDate->format('Y-m-d H:i:s'));
+        $this->tester->assertEqualDates($this, $session->dateUpdated, $oldDate->format('Y-m-d H:i:s'), 1);
 
         // Save it again with a new value. Ensure dateUpdated is now current.
         $date = new DateTime('now', $dateTimeZone);
@@ -86,7 +77,7 @@ class ActiveRecordTest extends Unit
 
         $session->token = 'test2';
         $session->save();
-        $this->assertSame($session->dateUpdated, $date->format('Y-m-d H:i:s'));
+        $this->tester->assertEqualDates($this, $session->dateUpdated, $date->format('Y-m-d H:i:s'), 1);
     }
 
     /**
@@ -141,7 +132,7 @@ class ActiveRecordTest extends Unit
             ['{"name":"name"}', $jsonableClass],
             ['{"JsonArray":"SomeArray"}', $jsonableArray],
             ['Serialized data', $serializable],
-            [false, false],
+            ['', ''],
         ];
     }
 

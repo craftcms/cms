@@ -15,13 +15,10 @@ use craft\helpers\Json;
  * NewChild represents a New Child element action.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class NewChild extends ElementAction
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null The trigger label
      */
@@ -36,9 +33,6 @@ class NewChild extends ElementAction
      * @var string|null The URL that the user should be taken to after clicking on this element action
      */
     public $newChildUrl;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

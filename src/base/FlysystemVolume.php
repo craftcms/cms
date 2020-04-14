@@ -3,7 +3,7 @@
  * The base class for all asset Volumes. All Volume types must extend this class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 
 namespace craft\base;
@@ -24,9 +24,6 @@ use League\Flysystem\Filesystem;
  */
 abstract class FlysystemVolume extends Volume
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var bool Whether the Flysystem adapter expects folder names to have trailing slashes
      */
@@ -36,9 +33,6 @@ abstract class FlysystemVolume extends Volume
      * @var AdapterInterface|null The Flysystem adapter, created by [[createAdapter()]]
      */
     private $_adapter;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -282,9 +276,6 @@ abstract class FlysystemVolume extends Volume
             }
         }
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * Creates and returns a Flysystem adapter instance based on the stored settings.

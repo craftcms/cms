@@ -9,7 +9,6 @@ namespace craft\controllers;
 
 use Composer\IO\BufferIO;
 use Craft;
-use craft\base\Plugin;
 use craft\errors\MigrateException;
 use craft\errors\MigrationException;
 use craft\helpers\App;
@@ -27,13 +26,11 @@ use yii\web\Response;
  * BaseUpdaterController provides the base class for Craft/plugin installation/updating/removal.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
+ * @internal
  */
 abstract class BaseUpdaterController extends Controller
 {
-    // Constants
-    // =========================================================================
-
     const ACTION_PRECHECK = 'precheck';
     const ACTION_RECHECK_COMPOSER = 'recheck-composer';
     const ACTION_COMPOSER_INSTALL = 'composer-install';
@@ -43,9 +40,6 @@ abstract class BaseUpdaterController extends Controller
      */
     const ACTION_COMPOSER_OPTIMIZE = 'composer-optimize';
     const ACTION_FINISH = 'finish';
-
-    // Properties
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -57,12 +51,9 @@ abstract class BaseUpdaterController extends Controller
      */
     protected $data = [];
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
-     * @throws NotFoundHttpException if it's not a CP request
+     * @throws NotFoundHttpException if it's not a control panel request
      * @throws BadRequestHttpException if there's invalid data in the request
      */
     public function beforeAction($action)
@@ -267,9 +258,6 @@ abstract class BaseUpdaterController extends Controller
             'returnUrl' => $this->returnUrl(),
         ]);
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * Returns the page title
@@ -557,7 +545,6 @@ abstract class BaseUpdaterController extends Controller
             ];
 
             if ($ownerHandle !== 'craft' && ($plugin = Craft::$app->getPlugins()->getPlugin($ownerHandle)) !== null) {
-                /** @var Plugin $plugin */
                 $email = $plugin->developerEmail;
             }
             $email = $email ?? 'support@craftcms.com';
@@ -630,9 +617,6 @@ abstract class BaseUpdaterController extends Controller
 
         return [$success, $tempResponse, $errorDetails];
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns the hashed data for JS.

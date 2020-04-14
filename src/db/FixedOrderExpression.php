@@ -13,13 +13,10 @@ use yii\db\Expression;
  * FixedOrderExpression represents the SQL used to apply a fixed order to a DB result.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class FixedOrderExpression extends Expression
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string The column name that contains the values
      */
@@ -34,9 +31,6 @@ class FixedOrderExpression extends Expression
      * @var Connection The DB connection
      */
     public $db;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Constructor

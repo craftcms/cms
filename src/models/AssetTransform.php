@@ -19,13 +19,10 @@ use craft\validators\UniqueValidator;
  *
  * @property bool $isNamedTransform Whether this is a named transform
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class AssetTransform extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null ID
      */
@@ -86,9 +83,6 @@ class AssetTransform extends Model
      */
     public $uid;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -108,9 +102,9 @@ class AssetTransform extends Model
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['id', 'width', 'height', 'quality'], 'number', 'integerOnly' => true];
         $rules[] = [['dimensionChangeTime'], DateTimeValidator::class];
         $rules[] = [['handle'], 'string', 'max' => 255];

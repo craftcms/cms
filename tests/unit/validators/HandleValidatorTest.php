@@ -20,9 +20,6 @@ use craft\validators\HandleValidator;
  */
 class HandleValidatorTest extends Unit
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @var HandleValidator
      */
@@ -42,12 +39,6 @@ class HandleValidatorTest extends Unit
      * @var array
      */
     protected static $reservedWords = ['bird', 'is', 'the', 'word'];
-
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
 
     public function testStaticConstants()
     {
@@ -100,9 +91,6 @@ class HandleValidatorTest extends Unit
         }
     }
 
-    // Data Providers
-    // =========================================================================
-
     /**
      * @return array
      */
@@ -119,9 +107,6 @@ class HandleValidatorTest extends Unit
             [false, 'iam A Handle'],
         ];
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

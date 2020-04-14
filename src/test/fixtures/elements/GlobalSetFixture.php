@@ -20,13 +20,10 @@ use craft\records\GlobalSet as GlobalSetRecord;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Robuust digital | Bob Olde Hampsink <bob@robuust.digital>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since 3.2
+ * @since 3.2.0
  */
 abstract class GlobalSetFixture extends ElementFixture
 {
-    // Public properties
-    // =========================================================================
-
     /**
      * {@inheritdoc}
      */
@@ -38,28 +35,32 @@ abstract class GlobalSetFixture extends ElementFixture
     public $tableName = Table::GLOBALSETS;
 
     /**
+     * @var boolean
+     */
+    public $useActiveRecord = true;
+
+    /**
      * @inheritdoc
      */
     public function load()
     {
         parent::load();
 
-        // TODO: layouts?
-        foreach ($this->data as $alias => $data) {
-            $record = new GlobalSetRecord();
-            $record->id = $data['id'];
-            $record->name = $data['name'];
-            $record->handle = $data['handle'];
-            $record->uid = $data['uid'];
-            $record->save();
+        if ($this->useActiveRecord) {
+            // TODO: layouts?
+            foreach ($this->data as $alias => $data) {
+                $record = new GlobalSetRecord();
+                $record->id = $data['id'];
+                $record->name = $data['name'];
+                $record->handle = $data['handle'];
+                $record->uid = $data['uid'];
+                $record->save();
+            }
         }
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     protected function isPrimaryKey(string $key): bool
     {

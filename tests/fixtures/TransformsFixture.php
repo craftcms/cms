@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\fixtures;
+namespace crafttests\fixtures;
 
 use Craft;
 use craft\records\AssetTransform;
@@ -21,9 +21,6 @@ use craft\test\Fixture;
  */
 class TransformsFixture extends Fixture
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -33,9 +30,6 @@ class TransformsFixture extends Fixture
      * @inheritdoc
      */
     public $modelClass = AssetTransform::class;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

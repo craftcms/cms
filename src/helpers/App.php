@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
+use craft\behaviors\SessionBehavior;
 use craft\config\DbConfig;
 use craft\db\Command;
 use craft\db\Connection;
@@ -22,7 +23,9 @@ use craft\mail\transportadapters\Sendmail;
 use craft\models\MailSettings;
 use craft\services\ProjectConfig as ProjectConfigService;
 use craft\web\AssetManager;
+use craft\web\Request;
 use craft\web\Request as WebRequest;
+use craft\web\Response as WebResponse;
 use craft\web\Session;
 use craft\web\User as WebUser;
 use craft\web\View;
@@ -33,25 +36,20 @@ use yii\i18n\PhpMessageSource;
 use yii\log\Dispatcher;
 use yii\log\Logger;
 use yii\mutex\FileMutex;
+use yii\web\JsonParser;
 
 /**
  * App helper.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class App
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var bool
      */
     private static $_iconv;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns an array of all known Craft editions’ IDs.
@@ -68,6 +66,7 @@ class App
      *
      * @param int $edition An edition’s ID.
      * @return string The edition’s name.
+     * @since 3.1.0
      */
     public static function editionHandle(int $edition): string
     {
@@ -105,6 +104,7 @@ class App
      * @param string $handle An edition’s handle
      * @return int The edition’s ID
      * @throws InvalidArgumentException if $handle is invalid
+     * @since 3.1.0
      */
     public static function editionIdByHandle(string $handle): int
     {
@@ -185,6 +185,7 @@ class App
      *
      * @param string $var The PHP config setting to retrieve.
      * @return int|float The value normalized into bytes.
+     * @since 3.0.38
      */
     public static function phpConfigValueInBytes(string $var)
     {
@@ -210,6 +211,7 @@ class App
      * Tests whether ini_set() works.
      *
      * @return bool
+     * @since 3.0.40
      */
     public static function testIniSet(): bool
     {
@@ -272,8 +274,8 @@ class App
 
     /**
      * Sets PHP’s memory limit to the maximum specified by the
-     * [[\craft\config\GeneralConfig::phpMaxMemoryLimit|phpMaxMemoryLimit]] config setting, and gives
-     * the script an unlimited amount of time to execute.
+     * <config:phpMaxMemoryLimit> config setting, and gives the script an
+     * unlimited amount of time to execute.
      */
     public static function maxPowerCaptain()
     {
@@ -319,6 +321,8 @@ class App
      * Returns the backtrace as a string (omitting the final frame where this method was called).
      *
      * @param int $limit The max number of stack frames to be included (0 means no limit)
+     * @return string
+     * @since 3.0.13
      */
     public static function backtrace(int $limit = 0): string
     {
@@ -338,6 +342,17 @@ class App
         return $trace;
     }
 
+    /**
+     * Returns whether Craft is running on an environment with ephemeral storage.
+     *
+     * @return bool
+     * @since 3.4.0
+     */
+    public static function isEphemeral(): bool
+    {
+        return defined('CRAFT_EPHEMERAL') && CRAFT_EPHEMERAL === true;
+    }
+
     // App component configs
     // -------------------------------------------------------------------------
 
@@ -345,6 +360,7 @@ class App
      * Returns the `assetManager` component config for web requests.
      *
      * @return array
+     * @since 3.0.18
      */
     public static function assetManagerConfig(): array
     {
@@ -364,6 +380,7 @@ class App
      * Returns the `cache` component config.
      *
      * @return array
+     * @since 3.0.18
      */
     public static function cacheConfig(): array
     {
@@ -383,6 +400,7 @@ class App
      *
      * @param DbConfig|null $dbConfig The database config settings
      * @return array
+     * @since 3.0.18
      */
     public static function dbConfig(DbConfig $dbConfig = null): array
     {
@@ -390,7 +408,9 @@ class App
             $dbConfig = Craft::$app->getConfig()->getDb();
         }
 
-        if ($dbConfig->driver === DbConfig::DRIVER_MYSQL) {
+        $driver = $dbConfig->dsn ? Db::parseDsn($dbConfig->dsn, 'driver') : Connection::DRIVER_MYSQL;
+
+        if ($driver === Connection::DRIVER_MYSQL) {
             $schemaConfig = [
                 'class' => MysqlSchema::class,
             ];
@@ -403,17 +423,17 @@ class App
 
         return [
             'class' => Connection::class,
-            'driverName' => $dbConfig->driver,
+            'driverName' => $driver,
             'dsn' => $dbConfig->dsn,
             'username' => $dbConfig->user,
             'password' => $dbConfig->password,
             'charset' => $dbConfig->charset,
             'tablePrefix' => $dbConfig->tablePrefix,
             'schemaMap' => [
-                $dbConfig->driver => $schemaConfig,
+                $driver => $schemaConfig,
             ],
             'commandMap' => [
-                $dbConfig->driver => Command::class,
+                $driver => Command::class,
             ],
             'attributes' => $dbConfig->attributes,
             'enableSchemaCache' => !YII_DEBUG,
@@ -424,6 +444,7 @@ class App
      * Returns the system email settings.
      *
      * @return MailSettings
+     * @since 3.1.0
      */
     public static function mailSettings(): MailSettings
     {
@@ -436,6 +457,7 @@ class App
      *
      * @param MailSettings|null $settings The system mail settings
      * @return array
+     * @since 3.0.18
      */
     public static function mailerConfig(MailSettings $settings = null): array
     {
@@ -456,6 +478,7 @@ class App
             'from' => [
                 Craft::parseEnv($settings->fromEmail) => Craft::parseEnv($settings->fromName)
             ],
+            'replyTo' => Craft::parseEnv($settings->replyToEmail),
             'template' => Craft::parseEnv($settings->template),
             'transport' => $adapter->defineTransport(),
         ];
@@ -465,6 +488,7 @@ class App
      * Returns the `mutex` component config.
      *
      * @return array
+     * @since 3.0.18
      */
     public static function mutexConfig(): array
     {
@@ -481,6 +505,7 @@ class App
      * Returns the `log` component config.
      *
      * @return array|null
+     * @since 3.0.18
      */
     public static function logConfig()
     {
@@ -506,11 +531,12 @@ class App
             $target['logFile'] = '@storage/logs/console.log';
         } else {
             $target['logFile'] = '@storage/logs/web.log';
+        }
 
-            // Only log errors and warnings, unless Craft is running in Dev Mode or it's being installed/updated
-            if (!YII_DEBUG && Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
-                $target['levels'] = Logger::LEVEL_ERROR | Logger::LEVEL_WARNING;
-            }
+        // Only log errors and warnings, unless Craft is running in Dev Mode or it's being installed/updated
+        // (Explicitly check GeneralConfig::$devMode here, because YII_DEBUG is always `1` for console requests.)
+        if (!$generalConfig->devMode && Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
+            $target['levels'] = Logger::LEVEL_ERROR | Logger::LEVEL_WARNING;
         }
 
         return [
@@ -536,6 +562,7 @@ class App
      * Returns the `session` component config for web requests.
      *
      * @return array
+     * @since 3.0.18
      */
     public static function sessionConfig(): array
     {
@@ -543,6 +570,7 @@ class App
 
         return [
             'class' => Session::class,
+            'as session' => SessionBehavior::class,
             'flashParam' => $stateKeyPrefix . '__flash',
             'authAccessParam' => $stateKeyPrefix . '__auth_access',
             'name' => Craft::$app->getConfig()->getGeneral()->phpSessionName,
@@ -554,6 +582,7 @@ class App
      * Returns the `user` component config for web requests.
      *
      * @return array
+     * @since 3.0.18
      */
     public static function userConfig(): array
     {
@@ -564,7 +593,7 @@ class App
         if ($request->getIsConsoleRequest() || $request->getIsSiteRequest()) {
             $loginUrl = UrlHelper::siteUrl($generalConfig->getLoginPath());
         } else {
-            $loginUrl = UrlHelper::cpUrl('login');
+            $loginUrl = UrlHelper::cpUrl(Request::CP_PATH_LOGIN);
         }
 
         $stateKeyPrefix = md5('Craft.' . WebUser::class . '.' . Craft::$app->id);
@@ -590,6 +619,7 @@ class App
      * Returns the `view` component config.
      *
      * @return array
+     * @since 3.0.18
      */
     public static function viewConfig(): array
     {
@@ -612,6 +642,7 @@ class App
      * Returns the `request` component config for web requests.
      *
      * @return array
+     * @since 3.0.18
      */
     public static function webRequestConfig(): array
     {
@@ -624,6 +655,10 @@ class App
             'enableCsrfValidation' => $generalConfig->enableCsrfProtection,
             'enableCsrfCookie' => $generalConfig->enableCsrfCookie,
             'csrfParam' => $generalConfig->csrfTokenName,
+            'parsers' => [
+                'application/json' => JsonParser::class,
+            ],
+            'isCpRequest' => defined('CRAFT_CP') ? (bool)CRAFT_CP : null,
         ];
 
         if ($generalConfig->trustedHosts !== null) {
@@ -640,6 +675,30 @@ class App
 
         if ($generalConfig->secureProtocolHeaders !== null) {
             $config['secureProtocolHeaders'] = $generalConfig->secureProtocolHeaders;
+        }
+
+        return $config;
+    }
+
+    /**
+     * Returns the `response` component config for web requests.
+     *
+     * @return array
+     * @since 3.3.0
+     */
+    public static function webResponseConfig(): array
+    {
+        $config = [
+            'class' => WebResponse::class,
+        ];
+
+        // Default to JSON responses if running in headless mode
+        if (
+            Craft::$app->has('request', true) &&
+            Craft::$app->getRequest()->getIsSiteRequest() &&
+            Craft::$app->getConfig()->getGeneral()->headlessMode
+        ) {
+            $config['format'] = WebResponse::FORMAT_JSON;
         }
 
         return $config;

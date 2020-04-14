@@ -13,8 +13,8 @@ use craft\helpers\Db;
 use craft\services\Users;
 use craft\test\TestCase;
 use crafttests\fixtures\UserGroupsFixture;
-use UnitTester;
 use DateTime;
+use UnitTester;
 
 /**
  * Unit tests for the User::find() query.
@@ -25,9 +25,6 @@ use DateTime;
  */
 class UserQueryTest extends TestCase
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var UnitTester
      */
@@ -58,10 +55,7 @@ class UserQueryTest extends TestCase
      */
     protected $suspendedUser;
 
-    // Public Methods
-    // =========================================================================
-
-    public function _fixtures() : array
+    public function _fixtures(): array
     {
         return [
             'user-groups' => [
@@ -69,9 +63,6 @@ class UserQueryTest extends TestCase
             ]
         ];
     }
-
-    // Tests
-    // =========================================================================
 
     /**
      *
@@ -126,9 +117,9 @@ class UserQueryTest extends TestCase
     {
         $this->assertNull(
             User::find()
-            ->status(User::STATUS_LOCKED)
-            ->email('active@user.com')
-            ->one()
+                ->status(User::STATUS_LOCKED)
+                ->email('active@user.com')
+                ->one()
         );
     }
 
@@ -188,9 +179,6 @@ class UserQueryTest extends TestCase
 //
 //        $this->assertCount(2, $results);
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @param array $methodCalls

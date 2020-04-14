@@ -14,13 +14,10 @@ use yii\validators\Validator;
  * Will validate that the given attribute is a valid site ID.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class SiteIdValidator extends Validator
 {
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

@@ -20,7 +20,7 @@ use yii\db\Connection;
  * @method GlobalSet|array|null one($db = null)
  * @method GlobalSet|array|null nth(int $n, Connection $db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  * @supports-site-params
  * @replace {element} global set
  * @replace {elements} global sets
@@ -30,9 +30,6 @@ use yii\db\Connection;
  */
 class GlobalSetQuery extends ElementQuery
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -53,9 +50,6 @@ class GlobalSetQuery extends ElementQuery
      */
     public $handle;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * Sets the [[$editable]] property.
      *
@@ -74,7 +68,7 @@ class GlobalSetQuery extends ElementQuery
      *
      * Possible values include:
      *
-     * | Value | Fetches {elements}…
+     * | Value | Fetches global sets…
      * | - | -
      * | `'foo'` | with a handle of `foo`.
      * | `'not foo'` | not with a handle of `foo`.
@@ -84,14 +78,14 @@ class GlobalSetQuery extends ElementQuery
      * ---
      *
      * ```twig
-     * {# Fetch the {element} with a handle of 'foo' #}
+     * {# Fetch the global set with a handle of 'foo' #}
      * {% set {element-var} = {twig-method}
      *     .handle('foo')
      *     .one() %}
      * ```
      *
      * ```php
-     * // Fetch the {element} with a handle of 'foo'
+     * // Fetch the global set with a handle of 'foo'
      * ${element-var} = {php-method}
      *     ->handle('foo')
      *     ->one();
@@ -106,9 +100,6 @@ class GlobalSetQuery extends ElementQuery
         $this->handle = $value;
         return $this;
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -128,12 +119,23 @@ class GlobalSetQuery extends ElementQuery
         }
 
         $this->_applyEditableParam();
+        $this->_applyRefParam();
 
         return parent::beforePrepare();
     }
 
-    // Private Methods
-    // =========================================================================
+
+    /**
+     * Applies the 'ref' param to the query being prepared.
+     */
+    private function _applyRefParam()
+    {
+        if (!$this->ref) {
+            return;
+        }
+
+        $this->subQuery->andWhere(Db::parseParam('globalsets.handle', $this->ref));
+    }
 
     /**
      * Applies the 'editable' param to the query being prepared.

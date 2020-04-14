@@ -1,0 +1,171 @@
+@charset "UTF-8";
+@import "../../../../../lib/craftcms-sass/mixins";
+
+#graphiql {
+  width: 100%;
+  display: flex;
+  height: calc(100vh - #{60px + 14 + 24});
+  min-height: 500px;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  line-height: 20px;
+  color: $textColor;
+  -webkit-font-smoothing: subpixel-antialiased;
+
+  .graphiql-container .topBar,
+  .graphiql-container .docExplorerShow,
+  .graphiql-container .historyShow,
+  .graphiql-container .docExplorerWrap,
+  .graphiql-container .historyPaneWrap,
+  .graphiql-container .variable-editor-title,
+  .graphiql-container .footer,
+  .result-window .CodeMirror,
+  .graphiql-container .result-window .CodeMirror-gutters,
+  .graphiql-container .toolbar-button,
+  .graphiql-container .toolbar-button:active,
+  .graphiql-container .execute-button,
+  .graphiql-container .execute-button:active,
+  .graphiql-container .execute-options,
+  .graphiql-container .toolbar-menu-items,
+  .graphiql-container .toolbar-select-options,
+  .graphiql-container .execute-options > li.selected,
+  .graphiql-container .toolbar-menu-items > li.hover,
+  .graphiql-container .toolbar-menu-items > li:active,
+  .graphiql-container .toolbar-menu-items > li:hover,
+  .graphiql-container .toolbar-select-options > li.hover,
+  .graphiql-container .toolbar-select-options > li:active,
+  .graphiql-container .toolbar-select-options > li:hover,
+  .graphiql-container .history-contents > p:hover,
+  .graphiql-container .history-contents > p:active,
+  .CodeMirror-gutters{
+    background: none;
+    border: none;
+  }
+
+  .graphiql-container,
+  .graphiql-container .editorWrap {
+    overflow: visible;
+  }
+
+  .topBarWrap {
+    margin-bottom: 14px;
+
+    .topBar {
+      padding: 13px 0;
+
+      .title {
+        @include sans-serif-font;
+        font-size: 18px;
+        font-weight: bold;
+        line-height: 1.2;
+        color: $textColor;
+      }
+    }
+  }
+
+  .docExplorerShow {
+    @include margin-right(-24px);
+    @include padding-right(24px);
+  }
+
+  .queryWrap,
+  .docExplorerWrap {
+    @include pane;
+    border-radius: $largeBorderRadius;
+    overflow: hidden;
+  }
+
+  .queryWrap {
+    .CodeMirror-gutters {
+      background: $grey050;
+      box-shadow: inset -1px 0 0 $hairlineColor;
+    }
+
+    .CodeMirror-linenumber {
+      color: $lightTextColor;
+    }
+
+    .variable-editor {
+      height: 28px;
+
+      .variable-editor-title {
+        background: $grey050;
+        box-shadow: 0 -1px 0 $hairlineColor, 0 1px 0 $hairlineColor;
+        z-index: 4;
+        color: $lightTextColor;
+      }
+    }
+  }
+
+  .graphiql-container {
+    .toolbar {
+      margin-left: 16px;
+    }
+    .toolbar-menu {
+      &.toolbar-button {
+        display: inline-block;
+        background-color: $grey200;
+        border-radius: $largeBorderRadius;
+        padding: 7px 14px;
+        border: none;
+        text-align: center;
+        white-space: nowrap;
+        user-select: none;
+        cursor: pointer;
+        box-sizing: border-box;
+        appearance: none;
+        color: $textColor;
+        height: 34px;
+        max-width: 100%;
+        box-shadow: none;
+
+        &:focus,
+        &:hover {
+          background-color: darken($grey200, 5%);
+        }
+
+        svg {
+          margin-left: 5px;
+        }
+      }
+    }
+    .toolbar-menu-items {
+      min-width: 100%;
+      margin-top: 0;
+      @include menu-styles;
+
+      li {
+        @include menu-option-styles;
+        text-align: left;
+        padding-left: 24px;
+        max-width: unset;
+
+        &:hover {
+          @include menu-option-active-styles;
+        }
+
+        &.selected-schema {
+          cursor: default;
+          background: none;
+          &:before {
+            @include icon;
+            content: 'check';
+            @include floatleft;
+            @include margin(3px, 0, 0, -17px);
+            font-size: 14px;
+            color: $lightTextColor;
+          }
+          &:hover {
+            background-color: $white;
+          }
+        }
+      }
+    }
+
+    .execute-button {
+      background: linear-gradient(#fdfdfd, #CFD6DC);
+      border: 1px solid #CFD6DC;
+    }
+  }
+}

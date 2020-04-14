@@ -11,25 +11,22 @@ use Craft;
 use craft\errors\MissingComponentException;
 use craft\helpers\ConfigHelper;
 use craft\models\Url;
+use Laminas\Feed\Reader\Entry\EntryInterface;
+use Laminas\Feed\Reader\Exception\RuntimeException;
+use Laminas\Feed\Reader\Feed\FeedInterface;
+use Laminas\Feed\Reader\Reader;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
-use Zend\Feed\Reader\Entry\EntryInterface;
-use Zend\Feed\Reader\Exception\RuntimeException;
-use Zend\Feed\Reader\Feed\FeedInterface;
-use Zend\Feed\Reader\Reader;
 
 /**
  * The Feeds service provides APIs for fetching remote RSS and Atom feeds.
  * An instance of the Feeds service is globally accessible in Craft via [[\craft\web\Application::feeds|`Craft::$app->feeds`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Feeds extends Component
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Fetches and parses an RSS or Atom feed, and returns info about the feed and its items.
      *
@@ -78,10 +75,11 @@ class Feeds extends Component
      * ```
      *
      * @param string $url The feed’s URL.
-     * @param mixed|null $cacheDuration How long to cache the results. See [[Config::timeInSeconds()]] for possible values.
+     * @param mixed|null $cacheDuration How long to cache the results. See [[ConfigHelper::durationInSeconds()]] for possible values.
      * @return array The feed info
      * @throws MissingComponentException
      * @throws InvalidConfigException
+     * @since 3.0.37
      */
     public function getFeed(string $url, string $cacheDuration = null): array
     {
@@ -182,7 +180,7 @@ class Feeds extends Component
      * @param string $url The feed’s URL.
      * @param int|null $limit The maximum number of items to return. Default is 0 (no limit).
      * @param int|null $offset The number of items to skip. Defaults to 0.
-     * @param mixed|null $cacheDuration How long to cache the results. See [[Config::timeInSeconds()]] for possible values.
+     * @param mixed|null $cacheDuration How long to cache the results. See [[ConfigHelper::durationInSeconds()]] for possible values.
      * @return array The list of feed items.
      * @throws InvalidConfigException
      * @throws MissingComponentException
@@ -199,9 +197,6 @@ class Feeds extends Component
 
         return $items;
     }
-
-    // Private Methods
-    // =========================================================================\
 
     /**
      * Returns an array of a feed’s items.

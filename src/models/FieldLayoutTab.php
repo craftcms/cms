@@ -8,7 +8,7 @@
 namespace craft\models;
 
 use Craft;
-use craft\base\Field;
+use craft\base\ElementInterface;
 use craft\base\FieldInterface;
 use craft\base\Model;
 use craft\helpers\StringHelper;
@@ -18,13 +18,10 @@ use yii\base\InvalidConfigException;
  * FieldLayoutTab model class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class FieldLayoutTab extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null ID
      */
@@ -60,15 +57,12 @@ class FieldLayoutTab extends Model
      */
     private $_fields;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['id', 'layoutId'], 'number', 'integerOnly' => true];
         $rules[] = [['name'], 'string', 'max' => 255];
         $rules[] = [['sortOrder'], 'string', 'max' => 4];
@@ -123,7 +117,6 @@ class FieldLayoutTab extends Model
 
         if ($layout = $this->getLayout()) {
             foreach ($layout->getFields() as $field) {
-                /** @var Field $field */
                 if ($field->tabId == $this->id) {
                     $this->_fields[] = $field;
                 }
@@ -151,5 +144,27 @@ class FieldLayoutTab extends Model
     public function getHtmlId(): string
     {
         return 'tab-' . StringHelper::toKebabCase($this->name);
+    }
+
+    /**
+     * Returns whether the given element has any validation errors within the fields in this tab.
+     *
+     * @param ElementInterface $element
+     * @return bool
+     * @since 3.4.0
+     */
+    public function elementHasErrors(ElementInterface $element): bool
+    {
+        if (!$element->hasErrors()) {
+            return false;
+        }
+
+        foreach ($this->getFields() as $field) {
+            if ($element->hasErrors("{$field->handle}.*")) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

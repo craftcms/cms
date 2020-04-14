@@ -17,20 +17,14 @@ use yii\base\Exception;
  * CopyReferenceTag represents a Copy Reference Tag element action.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class CopyReferenceTag extends ElementAction
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null The element type associated with this action
      */
     public $elementType;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -56,7 +50,7 @@ class CopyReferenceTag extends ElementAction
 
         $refHandleJs = Json::encode($refHandle);
 
-        $js = <<<EOD
+        $js = <<<JS
 (function()
 {
     var trigger = new Craft.ElementActionTrigger({
@@ -64,15 +58,14 @@ class CopyReferenceTag extends ElementAction
         batch: false,
         activate: function(\$selectedItems)
         {
-            var message = Craft.t('app', {$prompt}, {
-                ctrl: (navigator.appVersion.indexOf('Mac') !== -1 ? '⌘' : 'Ctrl-')
+            Craft.ui.createCopyTextPrompt({
+                label: Craft.t('app', 'Copy the reference tag'),
+                value: '{'+{$refHandleJs}+':'+\$selectedItems.find('.element').data('id')+'}',
             });
-
-            prompt(message, '{'+{$refHandleJs}+':'+\$selectedItems.find('.element').data('id')+'}');
         }
     });
 })();
-EOD;
+JS;
 
         Craft::$app->getView()->registerJs($js);
     }

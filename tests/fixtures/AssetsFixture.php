@@ -19,9 +19,6 @@ use craft\test\fixtures\elements\AssetFixture;
  */
 class AssetsFixture extends AssetFixture
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

@@ -41,8 +41,8 @@ Craft.BaseInputGenerator = Garnish.Base.extend(
 
             this.listening = true;
 
-            this.addListener(this.$source, 'textchange', 'onSourceTextChange');
-            this.addListener(this.$target, 'textchange', 'onTargetTextChange');
+            this.addListener(this.$source, 'input', 'onSourceTextChange');
+            this.addListener(this.$target, 'input', 'onTargetTextChange');
             this.addListener(this.$form, 'submit', 'onFormSubmit');
         },
 
@@ -85,6 +85,10 @@ Craft.BaseInputGenerator = Garnish.Base.extend(
         },
 
         updateTarget: function() {
+            if (!this.$target.is(':visible')) {
+                return;
+            }
+
             var sourceVal = this.$source.val();
 
             if (typeof sourceVal === 'undefined') {

@@ -19,13 +19,10 @@ use yii\base\Component;
  * An instance of the Routes service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getRoutes()|`Craft::$app->routes`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Routes extends Component
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event RouteEvent The event that is triggered before a route is saved.
      */
@@ -47,16 +44,10 @@ class Routes extends Component
     const EVENT_AFTER_DELETE_ROUTE = 'afterDeleteRoute';
 
     const CONFIG_ROUTES_KEY = 'routes';
-
-    // Properties
-    // =========================================================================
     /**
      * @var array|null all the routes in project config for current site
      */
     private $_projectConfigRoutes;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns the routes defined in `config/routes.php`
@@ -100,10 +91,10 @@ class Routes extends Component
     }
 
     /**
-     * Returns the routes defined in the CP.
+     * Returns the routes defined in the control panel.
      *
      * @return array
-     * @deprecated in 3.1. Use [[\craft\services\Routes::getProjectConfigRoutes()]] instead.
+     * @deprecated in 3.1.0. Use [[\craft\services\Routes::getProjectConfigRoutes()]] instead.
      */
     public function getDbRoutes(): array
     {
@@ -118,6 +109,12 @@ class Routes extends Component
     public function getProjectConfigRoutes(): array
     {
         if ($this->_projectConfigRoutes !== null) {
+            return $this->_projectConfigRoutes;
+        }
+
+        $this->_projectConfigRoutes = [];
+
+        if (Craft::$app->getConfig()->getGeneral()->headlessMode) {
             return $this->_projectConfigRoutes;
         }
 
@@ -170,7 +167,7 @@ class Routes extends Component
 
         // Compile the URI parts into a regex pattern
         $uriPattern = '';
-        $uriParts = array_filter($uriParts);
+        $uriParts = ArrayHelper::filterEmptyStringsFromArray($uriParts);
         $subpatternNameCounts = [];
 
         foreach ($uriParts as $part) {
@@ -207,7 +204,7 @@ class Routes extends Component
             'siteUid' => $siteUid
         ];
 
-        $projectConfig->set(self::CONFIG_ROUTES_KEY . '.' . $routeUid, $configData);
+        $projectConfig->set(self::CONFIG_ROUTES_KEY . '.' . $routeUid, $configData, 'Save route');
 
         // Fire an 'afterSaveRoute' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_ROUTE)) {
@@ -224,8 +221,9 @@ class Routes extends Component
     /**
      * Deletes a route by its ID.
      *
-     * @param int $routeId
+     * @param string $routeUid
      * @return bool
+     * @since 3.1.0
      */
     public function deleteRouteByUid(string $routeUid): bool
     {
@@ -241,7 +239,7 @@ class Routes extends Component
                 ]));
             }
 
-            $route = Craft::$app->getProjectConfig()->remove(self::CONFIG_ROUTES_KEY . '.' . $routeUid);
+            $route = Craft::$app->getProjectConfig()->remove(self::CONFIG_ROUTES_KEY . '.' . $routeUid, "Delete route");
 
             // Fire an 'afterDeleteRoute' event
             if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_ROUTE)) {
@@ -268,7 +266,7 @@ class Routes extends Component
 
         foreach ($routes as $routeUid => $route) {
             if ($route['siteUid'] === $event->site->uid) {
-                $projectConfig->remove(self::CONFIG_ROUTES_KEY . '.' . $routeUid);
+                $projectConfig->remove(self::CONFIG_ROUTES_KEY . '.' . $routeUid, 'Remove routes that belong to a site being deleted');
             }
         }
     }
@@ -281,7 +279,7 @@ class Routes extends Component
     public function updateRouteOrder(array $routeUids)
     {
         foreach ($routeUids as $order => $routeUid) {
-            Craft::$app->getProjectConfig()->set(self::CONFIG_ROUTES_KEY . '.' . $routeUid . '.sortOrder', $order + 1);
+            Craft::$app->getProjectConfig()->set(self::CONFIG_ROUTES_KEY . '.' . $routeUid . '.sortOrder', $order + 1, 'Reorder routes');
         }
     }
 

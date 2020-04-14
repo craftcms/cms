@@ -13,13 +13,10 @@ use Twig\NodeVisitor\NodeVisitorInterface;
  * EventTagFinder adds “head”, “beginBody”, and “endBody” events to the template as it’s being compiled.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 abstract class BaseEventTagVisitor implements NodeVisitorInterface
 {
-    // Static
-    // =========================================================================
-
     /**
      * @var bool Whether the head() tag has been found/added
      */

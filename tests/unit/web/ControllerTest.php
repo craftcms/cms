@@ -30,9 +30,6 @@ use yii\web\BadRequestHttpException;
  */
 class ControllerTest extends Unit
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var UnitTester
      */
@@ -42,12 +39,6 @@ class ControllerTest extends Unit
      * @var TestController
      */
     private $controller;
-
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
 
     /**
      *
@@ -137,7 +128,7 @@ class ControllerTest extends Unit
         // What happens when we pass in a param.
         Craft::$app->getRequest()->setBodyParams(['redirect' => $redirect]);
         $default = $this->controller->redirectToPostedUrl();
-        $this->assertSame($baseUrl . '?' . http_build_query(['p' => 'craft/do/stuff']), $default->headers->get('Location'));
+        $this->assertSame($baseUrl . '?' . urldecode(http_build_query(['p' => 'craft/do/stuff'])), $default->headers->get('Location'));
     }
 
     /**
@@ -147,7 +138,7 @@ class ControllerTest extends Unit
     {
         $baseUrl = $this->_getBaseUrlForRedirect();
         $withDefault = $this->controller->redirectToPostedUrl(null, 'craft/do/stuff');
-        $this->assertSame($baseUrl . '?' . http_build_query(['p' => 'craft/do/stuff']), $withDefault->headers->get('Location'));
+        $this->assertSame($baseUrl . '?' . urldecode(http_build_query(['p' => 'craft/do/stuff'])), $withDefault->headers->get('Location'));
     }
 
     /**
@@ -186,7 +177,7 @@ class ControllerTest extends Unit
     public function testRedirect()
     {
         $this->assertSame(
-            $this->_getBaseUrlForRedirect() . '?' . http_build_query(['p' => 'do/stuff']),
+            $this->_getBaseUrlForRedirect() . '?' . urldecode(http_build_query(['p' => 'do/stuff'])),
             $this->controller->redirect('do/stuff')->headers->get('Location')
         );
 
@@ -209,9 +200,6 @@ class ControllerTest extends Unit
         );
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -221,9 +209,6 @@ class ControllerTest extends Unit
         $_SERVER['REQUEST_URI'] = 'https://craftcms.com/admin/dashboard';
         $this->controller = new TestController('test', Craft::$app);
     }
-
-    // Private Methods
-    // =========================================================================
 
     private function _determineUrlScheme(): string
     {

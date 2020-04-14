@@ -6,9 +6,9 @@
 
 
 {% block content %}
-        <input type="hidden" name="action" value="volumes/save-volume">
+        {{ actionInput('volumes/save-volume') }}
         {{ redirectInput('settings/assets') }}
-        {% if not isNewVolume %}<input type="hidden" name="volumeId" value="{{ volume.id }}">{% endif %}
+        {% if not isNewVolume %}{{ hiddenInput('volumeId', volume.id) }}{% endif %}
 
         <div id="assetvolume-settings">
             {{ forms.textField({
@@ -47,7 +47,7 @@
                     label: "Base URL"|t('app'),
                     instructions: "The base URL to the assets in this volume."|t('app'),
                     id: 'url',
-                    class: 'ltr volume-url',
+                    class: ['ltr', 'volume-url'],
                     name: 'url',
                     suggestEnvVars: true,
                     suggestAliases: true,
@@ -90,7 +90,7 @@
         <div id="assetvolume-fieldlayout" class="hidden">
             {% include "_includes/fieldlayoutdesigner" with {
                 fieldLayout: volume.getFieldLayout(),
-                customizableTabs: false,
+                customizableTabs: true,
                 tab: 'fieldlayout'
             } only %}
         </div>

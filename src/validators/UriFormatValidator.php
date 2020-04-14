@@ -15,22 +15,20 @@ use yii\validators\Validator;
  * Will validate that the given attribute is a valid URI format.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class UriFormatValidator extends Validator
 {
-    // Properties
-    // =========================================================================
-
     /**
-     * Whether we should ensure that "{slug}" is used within the URI format.
-     *
-     * @var bool
+     * @var bool Whether we should ensure that "{slug}" is used within the URI format.
      */
     public $requireSlug = false;
 
-    // Protected Methods
-    // =========================================================================
+    /**
+     * @var bool Whether to ensure that the URI format doesn’t begin with the actionTrigger or cpTrigger.
+     * @since 3.2.10
+     */
+    public $disallowTriggers = true;
 
     /**
      * @inheritdoc
@@ -48,6 +46,21 @@ class UriFormatValidator extends Validator
                 $this->addError($model, $attribute, Craft::t('app', '{attribute} must contain “{slug}”', [
                     'attribute' => $model->$attribute
                 ]));
+            }
+
+            if ($this->disallowTriggers) {
+                $generalConfig = Craft::$app->getConfig()->getGeneral();
+                $firstSeg = explode('/', $uriFormat, 2)[0];
+
+                if ($firstSeg === $generalConfig->actionTrigger) {
+                    $this->addError($model, $attribute, Craft::t('app', '{attribute} cannot start with the {setting} config setting.', [
+                        'setting' => 'actionTrigger',
+                    ]));
+                } else if ($generalConfig->cpTrigger && $firstSeg === $generalConfig->cpTrigger) {
+                    $this->addError($model, $attribute, Craft::t('app', '{attribute} cannot start with the {setting} config setting.', [
+                        'setting' => 'cpTrigger',
+                    ]));
+                }
             }
         }
     }

@@ -9,7 +9,6 @@ namespace craft\utilities;
 
 use Craft;
 use craft\base\Utility;
-use craft\base\Volume;
 use craft\helpers\Html;
 use craft\web\assets\assetindexes\AssetIndexesAsset;
 
@@ -17,13 +16,10 @@ use craft\web\assets\assetindexes\AssetIndexesAsset;
  * AssetIndexes represents a AssetIndexes dashboard widget.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class AssetIndexes extends Utility
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -53,7 +49,6 @@ class AssetIndexes extends Utility
      */
     public static function contentHtml(): string
     {
-        /** @var Volume[] $volumes */
         $volumes = Craft::$app->getVolumes()->getAllVolumes();
         $volumeOptions = [];
 

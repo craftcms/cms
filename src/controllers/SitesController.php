@@ -24,13 +24,10 @@ use yii\web\ServerErrorHttpException;
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class SitesController extends Controller
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -274,6 +271,7 @@ class SitesController extends Controller
         $site->handle = $request->getBodyParam('handle');
         $site->language = $request->getBodyParam('language');
         $site->primary = (bool)$request->getBodyParam('primary');
+        $site->enabled = $site->primary || (bool)$request->getBodyParam('enabled');
         $site->hasUrls = (bool)$request->getBodyParam('hasUrls');
         $site->baseUrl = $site->hasUrls ? $request->getBodyParam('baseUrl') : null;
 

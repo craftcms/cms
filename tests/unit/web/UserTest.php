@@ -25,9 +25,6 @@ use UnitTester;
  */
 class UserTest extends TestCase
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var UnitTester
      */
@@ -47,12 +44,6 @@ class UserTest extends TestCase
      * @var WebUser
      */
     public $user;
-
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
 
     /**
      *
@@ -155,11 +146,11 @@ class UserTest extends TestCase
         $this->user->setIdentity($this->userElement);
 
         $this->_sessionGetStub(time() + 50);
-        $this->assertSame(50, $this->user->getElevatedSessionTimeout());
+        $this->assertEqualsWithDelta(50, $this->user->getElevatedSessionTimeout(), 2.0);
 
         // If the session->get() return value is smaller than time 0 is returned
         $this->_sessionGetStub(time() - 50);
-        $this->assertSame(0, $this->user->getElevatedSessionTimeout());
+        $this->assertEqualsWithDelta(0, $this->user->getElevatedSessionTimeout(), 2.0);
     }
 
     /**
@@ -214,9 +205,6 @@ class UserTest extends TestCase
         $this->assertTrue($this->user->startElevatedSession($passwordHash));
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -227,9 +215,6 @@ class UserTest extends TestCase
         $this->config = Craft::$app->getConfig();
         $this->user = Craft::$app->getUser();
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Sets the Craft::$app->getSession(); to a stub where the get() method returns what you want.

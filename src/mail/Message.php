@@ -8,18 +8,16 @@
 namespace craft\mail;
 
 use craft\elements\User;
+use craft\helpers\MailerHelper;
 
 /**
  * Represents an email message.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Message extends \yii\swiftmailer\Message
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null The key of the message that should be loaded
      */
@@ -35,9 +33,6 @@ class Message extends \yii\swiftmailer\Message
      */
     public $language;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * Sets the message sender.
      *
@@ -49,9 +44,23 @@ class Message extends \yii\swiftmailer\Message
      */
     public function setFrom($from)
     {
-        $from = $this->_normalizeEmails($from);
-        parent::setFrom($from);
+        parent::setFrom(MailerHelper::normalizeEmails($from));
+        return $this;
+    }
 
+    /**
+     * Sets the Reply-To email.
+     *
+     * @param string|array|User|User[] $replyTo The Reply-To email address, or their
+     * user model(s). You may pass an array of addresses if this message is from
+     * multiple people. You may also specify Reply-To name in addition to email
+     * address using format: `[email => name]`.
+     * @return static self reference
+     * @since 3.4.0
+     */
+    public function setReplyTo($replyTo)
+    {
+        parent::setReplyTo(MailerHelper::normalizeEmails($replyTo));
         return $this;
     }
 
@@ -74,9 +83,7 @@ class Message extends \yii\swiftmailer\Message
             $this->variables['user'] = $to;
         }
 
-        $to = $this->_normalizeEmails($to);
-        parent::setTo($to);
-
+        parent::setTo(MailerHelper::normalizeEmails($to));
         return $this;
     }
 
@@ -91,9 +98,7 @@ class Message extends \yii\swiftmailer\Message
      */
     public function setCc($cc)
     {
-        $cc = $this->_normalizeEmails($cc);
-        parent::setCc($cc);
-
+        parent::setCc(MailerHelper::normalizeEmails($cc));
         return $this;
     }
 
@@ -108,45 +113,7 @@ class Message extends \yii\swiftmailer\Message
      */
     public function setBcc($bcc)
     {
-        $bcc = $this->_normalizeEmails($bcc);
-        parent::setBcc($bcc);
-
+        parent::setBcc(MailerHelper::normalizeEmails($bcc));
         return $this;
-    }
-
-    // Private Methods
-    // =========================================================================
-
-    /**
-     * @param string|array|User|User[]|null $emails
-     * @return string|array
-     */
-    private function _normalizeEmails($emails)
-    {
-        if (empty($emails)) {
-            return null;
-        }
-
-        if (!is_array($emails)) {
-            $emails = [$emails];
-        }
-
-        $normalized = [];
-
-        foreach ($emails as $key => $value) {
-            if ($value instanceof User) {
-                if (($name = $value->getFullName()) !== null) {
-                    $normalized[$value->email] = $name;
-                } else {
-                    $normalized[] = $value->email;
-                }
-            } else if (is_numeric($key)) {
-                $normalized[] = $value;
-            } else {
-                $normalized[$key] = $value;
-            }
-        }
-
-        return $normalized;
     }
 }
