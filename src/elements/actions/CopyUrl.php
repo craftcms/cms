@@ -12,12 +12,12 @@ use craft\base\ElementAction;
 use craft\helpers\Json;
 
 /**
- * CopyAssetUrl represents a Copy Asset URL element action.
+ * CopyUrl represents a Copy URL element action.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.2
+ * @since 3.5.0
  */
-class CopyAssetUrl extends ElementAction
+class CopyUrl extends ElementAction
 {
     // Public Methods
     // =========================================================================
@@ -36,9 +36,8 @@ class CopyAssetUrl extends ElementAction
     public function getTriggerHtml()
     {
         $type = Json::encode(static::class);
-        $prompt = Json::encode(Craft::t('app', '{ctrl}C to copy.'));
 
-        $js = <<<EOD
+        $js = <<<JS
 (function()
 {
     var trigger = new Craft.ElementActionTrigger({
@@ -46,19 +45,18 @@ class CopyAssetUrl extends ElementAction
         batch: false,
         validateSelection: function(\$selectedItems)
         {
-            return \$selectedItems.find('.element').data('url') != '';
+            return !!\$selectedItems.find('.element').data('url');
         },
         activate: function(\$selectedItems)
         {
-            var message = Craft.t('app', {$prompt}, {
-                ctrl: (navigator.appVersion.indexOf('Mac') !== -1 ? '⌘' : 'Ctrl-')
+            Craft.ui.createCopyTextPrompt({
+                label: Craft.t('app', 'Copy the URL'),
+                value: \$selectedItems.find('.element').data('url'),
             });
-
-            prompt(message, \$selectedItems.find('.element').data('url'));
         }
     });
 })();
-EOD;
+JS;
 
         Craft::$app->getView()->registerJs($js);
     }

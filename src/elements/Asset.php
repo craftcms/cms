@@ -13,7 +13,7 @@ use craft\base\LocalVolumeInterface;
 use craft\base\VolumeInterface;
 use craft\db\Query;
 use craft\db\Table;
-use craft\elements\actions\CopyAssetUrl;
+use craft\elements\actions\CopyUrl;
 use craft\elements\actions\CopyReferenceTag;
 use craft\elements\actions\DeleteAssets;
 use craft\elements\actions\DownloadAssetFile;
@@ -318,16 +318,16 @@ class Asset extends Element
                 $actions[] = ReplaceFile::class;
             }
 
+            // Copy URL
+            if ($volume->hasUrls) {
+                $actions[] = CopyUrl::class;
+            }
+
             // Copy Reference Tag
             $actions[] = [
                 'type' => CopyReferenceTag::class,
                 'elementType' => static::class,
             ];
-
-            // Copy URL
-            if ($volume->hasUrls) {
-                $actions[] = CopyAssetUrl::class;
-            }
 
             // Edit Image
             if ($userSession->checkPermission('editImagesInVolume:' . $volume->uid)) {

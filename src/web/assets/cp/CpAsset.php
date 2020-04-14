@@ -119,6 +119,7 @@ JS;
             'Continue',
             'Copied to clipboard.',
             'Copy the reference tag',
+            'Copy the URL',
             'Copy to clipboard',
             'Couldn’t delete “{name}”.',
             'Couldn’t save new order.',
