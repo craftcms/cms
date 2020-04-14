@@ -419,7 +419,6 @@ class FileHelper extends \yii\helpers\FileHelper
      */
     public static function removeFile(string $path): bool
     {
-        Craft::$app->getDeprecator()->log('craft\\helpers\\FileHelper::removeFile()', 'craft\\helpers\\FileHelper::removeFile() is deprecated. Use craft\\helpers\\FileHelper::unlink() instead.');
         return static::unlink($path);
     }
 

@@ -567,7 +567,6 @@ class UrlHelper
      */
     public static function urlWithProtocol(string $url, string $scheme): string
     {
-        Craft::$app->getDeprecator()->log('UrlHelper::urlWithProtocol()', 'UrlHelper::urlWithProtocol() is deprecated. Use urlWithScheme() instead.');
         return static::urlWithScheme($url, $scheme);
     }
 
@@ -581,7 +580,6 @@ class UrlHelper
      */
     public static function getProtocolForTokenizedUrl(): string
     {
-        Craft::$app->getDeprecator()->log('UrlHelper::getProtocolForTokenizedUrl()', 'UrlHelper::getProtocolForTokenizedUrl() is deprecated. Use getSchemeForTokenizedUrl() instead.');
         return static::getSchemeForTokenizedUrl();
     }
 
