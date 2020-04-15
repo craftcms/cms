@@ -113,14 +113,10 @@ Craft.CP = Garnish.Base.extend(
 
             // Does the primary form support the save shortcut?
             if (this.$primaryForm.length && Garnish.hasAttr(this.$primaryForm, 'data-saveshortcut')) {
-                this.addListener(Garnish.$doc, 'keydown', function(ev) {
-                    if (Garnish.isCtrlKeyPressed(ev) && ev.keyCode === Garnish.S_KEY) {
-                        ev.preventDefault();
-                        this.submitPrimaryForm();
-                    }
-
-                    return true;
-                });
+                Garnish.shortcutManager.registerShortcut({
+                    keyCode: Garnish.S_KEY,
+                    ctrl: true,
+                }, this.submitPrimaryForm.bind(this));
             }
 
             this.initTabs();

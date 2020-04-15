@@ -137,9 +137,11 @@ Craft.BaseElementEditor = Garnish.Base.extend(
                     this.hud = new Garnish.HUD(hudTrigger, $hudContents, {
                         bodyClass: 'body elementeditor',
                         closeOtherHUDs: false,
-                        onShow: $.proxy(this, 'onShowHud'),
-                        onHide: $.proxy(this, 'onHideHud'),
-                        onSubmit: $.proxy(this, 'saveElement')
+                        hideOnEsc: false,
+                        hideOnShadeClick: false,
+                        onShow: this.onShowHud.bind(this),
+                        onHide: this.onHideHud.bind(this),
+                        onSubmit: this.saveElement.bind(this),
                     });
 
                     this.hud.$hud.data('elementEditor', this);
@@ -258,6 +260,12 @@ Craft.BaseElementEditor = Garnish.Base.extend(
                             }
                         }
 
+                        if (this.settings.elementType && Craft.elementTypeNames[this.settings.elementType]) {
+                            Craft.cp.displayNotice(Craft.t('app', '{type} saved.', {
+                                type: Craft.elementTypeNames[this.settings.elementType][0],
+                            }));
+                        }
+
                         this.closeHud();
                         this.onSaveElement(response);
                     }
@@ -278,6 +286,10 @@ Craft.BaseElementEditor = Garnish.Base.extend(
         // -------------------------------------------------------------------------
 
         onShowHud: function() {
+            Garnish.shortcutManager.registerShortcut({
+                keyCode: Garnish.S_KEY,
+                ctrl: true,
+            }, this.saveElement.bind(this));
             this.settings.onShowHud();
             this.trigger('showHud');
         },

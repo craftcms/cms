@@ -1507,8 +1507,20 @@ $.extend(Craft,
          * @param {object} settings
          */
         createElementEditor: function(elementType, element, settings) {
-            var func;
+            // Param mapping
+            if (typeof settings === 'undefined' && $.isPlainObject(element)) {
+                // (settings)
+                settings = element;
+                element = null;
+            } else if (typeof settings !== 'object') {
+                settings = {};
+            }
 
+            if (!settings.elementType) {
+                settings.elementType = elementType;
+            }
+
+            var func;
             if (typeof this._elementEditorClasses[elementType] !== 'undefined') {
                 func = this._elementEditorClasses[elementType];
             } else {

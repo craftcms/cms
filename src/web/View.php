@@ -923,7 +923,12 @@ class View extends \yii\web\View
     public function registerCss($css, $options = [], $key = null)
     {
         if ($this->minifyCss) {
-            $css = Minify_CSSmin::minify($css);
+            // Sanity check to work around https://github.com/tubalmartin/YUI-CSS-compressor-PHP-port/issues/58
+            if (preg_match('/\{[^\}]*$/', $css, $matches, PREG_OFFSET_CAPTURE)) {
+                Craft::warning("Unable to minify CSS due to an unclosed CSS block at offset {$matches[0][1]}.", __METHOD__);
+            } else {
+                $css = Minify_CSSmin::minify($css);
+            }
         }
 
         parent::registerCss($css, $options, $key);
