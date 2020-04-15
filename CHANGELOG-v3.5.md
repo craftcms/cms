@@ -97,8 +97,8 @@
 - Control panel form input macros and templates that accept a `class` variable can now pass it as an array of class names.
 
 ### Deprecated
-- Deprecated `craft\gql\base\Resolver::extractEagerLoadCondition()` in favor of the new `ElementQueryConditionBuilder` class.
 - Deprecated the `install/plugin` command. The new `plugin/install` command should be used instead.
+- Deprecated `craft\gql\base\Resolver::extractEagerLoadCondition()` in favor of the new `ElementQueryConditionBuilder` class.
 
 ### Removed
 - Removed the [Interactive Shell Extension for Yii 2](https://github.com/yiisoft/yii2-shell), as it’s now a dev dependency of the `craftcms/craft` project instead. ([#5783](https://github.com/craftcms/cms/issues/5783))
