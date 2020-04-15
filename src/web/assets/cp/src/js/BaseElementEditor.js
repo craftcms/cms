@@ -168,6 +168,14 @@ Craft.BaseElementEditor = Garnish.Base.extend(
         },
 
         switchSite: function() {
+            if (
+                this.hud.$body.serialize() !== this.initialData &&
+                !confirm(Craft.t('app', 'Switching sites will lose unsaved changes. Are you sure you want to switch sites?'))
+            ) {
+                this.$siteSelect.val(this.siteId);
+                return;
+            }
+
             var newSiteId = this.$siteSelect.val();
 
             if (newSiteId == this.siteId) {

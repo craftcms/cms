@@ -2065,6 +2065,11 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       }
     },
     switchSite: function switchSite() {
+      if (this.hud.$body.serialize() !== this.initialData && !confirm(Craft.t('app', 'Switching sites will lose unsaved changes. Are you sure you want to switch sites?'))) {
+        this.$siteSelect.val(this.siteId);
+        return;
+      }
+
       var newSiteId = this.$siteSelect.val();
 
       if (newSiteId == this.siteId) {
