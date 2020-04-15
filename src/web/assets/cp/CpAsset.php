@@ -244,6 +244,7 @@ JS;
             '{first}-{last} of {total}',
             '{num, number} {num, plural, =1{Available Update} other{Available Updates}}',
             '{total, number} {total, plural, =1{{item}} other{{items}}}',
+            '{type} saved.',
             '“{name}” deleted.',
         ]);
     }

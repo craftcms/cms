@@ -10,7 +10,7 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-/*!   - 2020-04-12 */
+/*!   - 2020-04-14 */
 (function ($) {
   /** global: Craft */
 
@@ -1566,6 +1566,19 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
      * @param {object} settings
      */
     createElementEditor: function createElementEditor(elementType, element, settings) {
+      // Param mapping
+      if (typeof settings === 'undefined' && $.isPlainObject(element)) {
+        // (settings)
+        settings = element;
+        element = null;
+      } else if (_typeof(settings) !== 'object') {
+        settings = {};
+      }
+
+      if (!settings.elementType) {
+        settings.elementType = elementType;
+      }
+
       var func;
 
       if (typeof this._elementEditorClasses[elementType] !== 'undefined') {
@@ -2027,9 +2040,11 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           this.hud = new Garnish.HUD(hudTrigger, $hudContents, {
             bodyClass: 'body elementeditor',
             closeOtherHUDs: false,
-            onShow: $.proxy(this, 'onShowHud'),
-            onHide: $.proxy(this, 'onHideHud'),
-            onSubmit: $.proxy(this, 'saveElement')
+            hideOnEsc: false,
+            hideOnShadeClick: false,
+            onShow: this.onShowHud.bind(this),
+            onHide: this.onHideHud.bind(this),
+            onSubmit: this.saveElement.bind(this)
           });
           this.hud.$hud.data('elementEditor', this); // Disable browser input validation
 
@@ -2133,6 +2148,12 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
               }
             }
 
+            if (this.settings.elementType && Craft.elementTypeNames[this.settings.elementType]) {
+              Craft.cp.displayNotice(Craft.t('app', '{type} saved.', {
+                type: Craft.elementTypeNames[this.settings.elementType][0]
+              }));
+            }
+
             this.closeHud();
             this.onSaveElement(response);
           } else {
@@ -2149,6 +2170,10 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     // Events
     // -------------------------------------------------------------------------
     onShowHud: function onShowHud() {
+      Garnish.shortcutManager.registerShortcut({
+        keyCode: Garnish.S_KEY,
+        ctrl: true
+      }, this.saveElement.bind(this));
       this.settings.onShowHud();
       this.trigger('showHud');
     },
@@ -10391,7 +10416,6 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       }));
       Craft.createElementEditor(this.elementType, {
         hudTrigger: this.$newCategoryBtnGroup,
-        elementType: 'craft\\elements\\Category',
         siteId: this.siteId,
         attributes: {
           groupId: groupId
@@ -11232,14 +11256,10 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
 
       if (this.$primaryForm.length && Garnish.hasAttr(this.$primaryForm, 'data-saveshortcut')) {
-        this.addListener(Garnish.$doc, 'keydown', function (ev) {
-          if (Garnish.isCtrlKeyPressed(ev) && ev.keyCode === Garnish.S_KEY) {
-            ev.preventDefault();
-            this.submitPrimaryForm();
-          }
-
-          return true;
-        });
+        Garnish.shortcutManager.registerShortcut({
+          keyCode: Garnish.S_KEY,
+          ctrl: true
+        }, this.submitPrimaryForm.bind(this));
       }
 
       this.initTabs();
@@ -14760,7 +14780,6 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       }));
       Craft.createElementEditor(this.elementType, {
         hudTrigger: this.$newEntryBtnGroup,
-        elementType: 'craft\\elements\\Entry',
         siteId: this.siteId,
         attributes: {
           sectionId: sectionId,
