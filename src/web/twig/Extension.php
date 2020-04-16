@@ -52,6 +52,7 @@ use DateTime;
 use DateTimeInterface;
 use DateTimeZone;
 use enshrined\svgSanitize\Sanitizer;
+use Twig\Environment;
 use Twig\Environment as TwigEnvironment;
 use Twig\Error\RuntimeError;
 use Twig\Extension\AbstractExtension;
@@ -254,7 +255,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('translate', [$this, 'translateFilter']),
             new TwigFilter('t', [$this, 'translateFilter']),
             new TwigFilter('ucfirst', [$this, 'ucfirstFilter']),
-            new TwigFilter('ucwords', 'ucwords'),
+            new TwigFilter('ucwords', [$this, 'ucwordsFilter'], ['needs_environment' => true]),
             new TwigFilter('unique', 'array_unique'),
             new TwigFilter('unshift', [$this, 'unshiftFilter']),
             new TwigFilter('values', 'array_values'),
@@ -322,6 +323,22 @@ class Extension extends AbstractExtension implements GlobalsInterface
     public function ucfirstFilter($string): string
     {
         return StringHelper::upperCaseFirst((string)$string);
+    }
+
+    /**
+     * Uppercases the first character of each word in a string.
+     *
+     * @param Environment $env
+     * @param string $string
+     * @return string
+     */
+    public function ucwordsFilter(Environment $env, string $string): string
+    {
+        Craft::$app->getDeprecator()->log('ucwords', 'The |ucwords filter has been deprecated. Use |title instead.');
+        if (($charset = $env->getCharset()) !== null) {
+            return mb_convert_case($string, MB_CASE_TITLE, $charset);
+        }
+        return ucwords(strtolower($string));
     }
 
     /**

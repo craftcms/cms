@@ -110,6 +110,7 @@
 
 ### Deprecated
 - Deprecated the `install/plugin` command. The new `plugin/install` command should be used instead.
+- Deprecated the `|ucwords` Twig filter. Use the `|title` filter instead.
 - Deprecated `craft\gql\base\Resolver::extractEagerLoadCondition()` in favor of the new `ElementQueryConditionBuilder` class.
 - Deprecated `craft\web\View::formatInputId()`. `craft\helpers\Html::namespaceHtml()` should be used instead.
 
