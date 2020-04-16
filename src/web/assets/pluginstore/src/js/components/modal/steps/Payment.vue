@@ -236,7 +236,7 @@
                                     })
                                     .catch(checkoutResponse => {
                                         this.loading = false
-                                        this.error = checkoutResponse.data.error || checkoutResponse.statusText;
+                                        this.error = (checkoutResponse.data && checkoutResponse.data.error) || checkoutResponse.statusText;
                                     })
                             },
 
