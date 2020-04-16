@@ -66,6 +66,19 @@ class GeneralConfig extends BaseObject
      */
     public $allowAdminChanges = true;
     /**
+     * @var string[]|false|null The Ajax origins that should be allowed to access the GraphQL API, if enabled.
+     *
+     * If this is set to an array, then `graphql/api` requests will only include the current request’s
+     * [[\yii\web\Request::getOrigin()|origin]] in the `Access-Control-Allow-Origin` response header if
+     * it’s listed here.
+     *
+     * If this is set to `false`, then the `Access-Control-Allow-Origin` response header
+     * will never be sent.
+     *
+     * @since 3.5.0
+     */
+    public $allowedGraphqlOrigins;
+    /**
      * @var bool Whether Craft should allow system and plugin updates in the control panel, and plugin installation from the Plugin Store.
      *
      * This setting will automatically be disabled if <config:allowAdminChanges> is disabled.
