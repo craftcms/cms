@@ -12,6 +12,7 @@ use craft\base\Field;
 use craft\elements\GlobalSet as GlobalSetElement;
 use craft\gql\base\GeneratorInterface;
 use craft\gql\base\ObjectType;
+use craft\gql\base\SingleGeneratorInterface;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\GlobalSet as GlobalSetInterface;
 use craft\gql\TypeManager;
@@ -24,7 +25,7 @@ use craft\helpers\Gql as GqlHelper;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0
  */
-class GlobalSetType implements GeneratorInterface
+class GlobalSetType implements GeneratorInterface, SingleGeneratorInterface
 {
     /**
      * @inheritdoc

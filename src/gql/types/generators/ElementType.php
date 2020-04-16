@@ -10,6 +10,7 @@ namespace craft\gql\types\generators;
 use craft\base\Element as BaseElement;
 use craft\gql\base\GeneratorInterface;
 use craft\gql\base\ObjectType;
+use craft\gql\base\SingleGeneratorInterface;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\Element as ElementInterface;
 use craft\gql\TypeManager;
@@ -21,7 +22,7 @@ use craft\gql\types\elements\Element;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0
  */
-class ElementType implements GeneratorInterface
+class ElementType implements GeneratorInterface, SingleGeneratorInterface
 {
     /**
      * @inheritdoc

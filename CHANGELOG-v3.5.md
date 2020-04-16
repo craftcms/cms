@@ -46,8 +46,8 @@
 - Added `craft\gql\arguments\mutations\Entry`.
 - Added `craft\gql\arguments\mutations\Structure`.
 - Added `craft\gql\base\ElementMutationArguments`.
-- Added `craft\gql\base\GeneratorInterface::generateType()`.
 - Added `craft\gql\base\MutationArguments`.
+- Added `craft\gql\base\SingleGeneratorInterface`.
 - Added `craft\gql\base\StructureMutationTrait`.
 - Added `craft\gql\ElementQueryConditionBuilder`.
 - Added `craft\gql\Mutation`.

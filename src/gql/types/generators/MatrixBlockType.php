@@ -13,6 +13,7 @@ use craft\elements\MatrixBlock as MatrixBlockElement;
 use craft\fields\Matrix;
 use craft\gql\base\GeneratorInterface;
 use craft\gql\base\ObjectType;
+use craft\gql\base\SingleGeneratorInterface;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\MatrixBlock as MatrixBlockInterface;
 use craft\gql\TypeManager;
@@ -25,7 +26,7 @@ use craft\models\MatrixBlockType as MatrixBlockTypeModel;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0
  */
-class MatrixBlockType implements GeneratorInterface
+class MatrixBlockType implements GeneratorInterface, SingleGeneratorInterface
 {
     /**
      * @inheritdoc

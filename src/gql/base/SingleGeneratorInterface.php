@@ -9,18 +9,19 @@ namespace craft\gql\base;
 
 
 /**
- * Class GeneratorInterface
+ * Class SingleGeneratorInterface
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.3.0
+ * @since 3.5.0
  */
-interface GeneratorInterface
+interface SingleGeneratorInterface
 {
     /**
-     * Generate GraphQL types.
+     * Generate a single GraphQL type based on a context.
      *
      * @param mixed $context Context for generated types
-     * @return ObjectType[]
+     * @return mixed|null
+     * @since 3.5.0
      */
-    public static function generateTypes($context = null): array;
+    public static function generateType($context);
 }

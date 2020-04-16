@@ -12,6 +12,7 @@ use craft\base\Field;
 use craft\elements\Category as CategoryElement;
 use craft\gql\base\GeneratorInterface;
 use craft\gql\base\ObjectType;
+use craft\gql\base\SingleGeneratorInterface;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\Category as CategoryInterface;
 use craft\gql\TypeManager;
@@ -25,7 +26,7 @@ use craft\models\CategoryGroup;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0
  */
-class CategoryType implements GeneratorInterface
+class CategoryType implements GeneratorInterface, SingleGeneratorInterface
 {
     /**
      * @inheritdoc

@@ -10,6 +10,7 @@ namespace craft\gql\types\generators;
 use craft\fields\Table as TableField;
 use craft\gql\base\GeneratorInterface;
 use craft\gql\base\ObjectType;
+use craft\gql\base\SingleGeneratorInterface;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\TypeManager;
 use craft\gql\types\DateTime;
@@ -23,7 +24,7 @@ use GraphQL\Type\Definition\Type;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0
  */
-class TableRowType implements GeneratorInterface
+class TableRowType implements GeneratorInterface, SingleGeneratorInterface
 {
     /**
      * @inheritdoc

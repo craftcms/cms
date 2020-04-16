@@ -12,6 +12,7 @@ use craft\base\Field;
 use craft\elements\Tag as TagElement;
 use craft\gql\base\GeneratorInterface;
 use craft\gql\base\ObjectType;
+use craft\gql\base\SingleGeneratorInterface;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\Tag as TagInterface;
 use craft\gql\TypeManager;
@@ -25,7 +26,7 @@ use craft\models\TagGroup;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0
  */
-class TagType implements GeneratorInterface
+class TagType implements GeneratorInterface, SingleGeneratorInterface
 {
     /**
      * @inheritdoc

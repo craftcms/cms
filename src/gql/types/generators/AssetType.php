@@ -13,6 +13,7 @@ use craft\base\Volume;
 use craft\elements\Asset as AssetElement;
 use craft\gql\base\GeneratorInterface;
 use craft\gql\base\ObjectType;
+use craft\gql\base\SingleGeneratorInterface;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\gql\TypeManager;
@@ -25,7 +26,7 @@ use craft\helpers\Gql as GqlHelper;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0
  */
-class AssetType implements GeneratorInterface
+class AssetType implements GeneratorInterface, SingleGeneratorInterface
 {
     /**
      * @inheritdoc
