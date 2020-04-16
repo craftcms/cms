@@ -80,8 +80,8 @@ interface SavableComponentInterface extends ComponentInterface
      * ]);
      * ```
      *
-     * If you need to tie any JavaScript code to your settings, it’s important to know that any `name=` and `id=`
-     * attributes within the returned HTML will probably get [[\craft\web\View::namespaceInputs()|namespaced]],
+     * If you need to tie any JavaScript code to your settings, it’s important to know that any `name` and `id`
+     * attributes within the returned HTML will probably get [[\craft\helpers\Html::namespaceHtml()|namespaced]],
      * however your JavaScript code will be left untouched.
      * For example, if getSettingsHtml() returns the following HTML:
      *
@@ -101,33 +101,30 @@ interface SavableComponentInterface extends ComponentInterface
      * </script>
      * ```
      *
-     * As you can see, that JavaScript code will not be able to find the textarea, because the textarea’s `id=`
+     * As you can see, that JavaScript code will not be able to find the textarea, because the textarea’s `id`
      * attribute was changed from `foo` to `namespace-foo`.
      * Before you start adding `namespace-` to the beginning of your element ID selectors, keep in mind that the actual
      * namespace is going to change depending on the context. Often they are randomly generated. So it’s not quite
      * that simple.
      *
-     * Thankfully, [[\craft\web\View]] service provides a couple handy methods that can help you deal
-     * with this:
+     * Thankfully, Craft provides a couple handy methods that can help you deal with this:
      *
      * - [[\craft\web\View::namespaceInputId()]] will give you the namespaced version of a given ID.
      * - [[\craft\web\View::namespaceInputName()]] will give you the namespaced version of a given input name.
-     * - [[\craft\web\View::formatInputId()]] will format an input name to look more like an ID attribute value.
      *
      * So here’s what a getSettingsHtml() method that includes field-targeting JavaScript code might look like:
      *
      * ```php
      * public function getSettingsHtml()
      * {
-     *     // Come up with an ID value for 'foo'
-     *     $id = Craft::$app->getView()->formatInputId('foo');
-     *     // Figure out what that ID is going to be namespaced into
+     *     // Figure out what the ID is going to be namespaced into
+     *     $id = 'foo';
      *     $namespacedId = Craft::$app->view->namespaceInputId($id);
      *     // Render and return the input template
      *     return Craft::$app->view->renderTemplate('plugin-handle/_widget-settings', [
-     *         'id'           => $id,
+     *         'id' => $id,
      *         'namespacedId' => $namespacedId,
-     *         'widget'       => $this
+     *         'widget' => $this,
      *     ]);
      * }
      * ```

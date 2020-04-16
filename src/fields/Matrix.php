@@ -30,6 +30,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Gql as GqlHelper;
+use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\Queue;
 use craft\helpers\StringHelper;
@@ -613,7 +614,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         }
 
         $view = Craft::$app->getView();
-        $id = $view->formatInputId($this->handle);
+        $id = Html::id($this->handle);
 
         // Let plugins/modules override which block types should be available for this field
         $event = new BlockTypesEvent([

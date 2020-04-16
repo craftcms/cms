@@ -525,14 +525,9 @@ class ViewTest extends TestCase
     {
         return [
             ['', ''],
-            ['<input type="text" name="test">', '<input type="text" name="test">'],
-            ['namespace-<input type="text" name="test">', '<input type="text" name="test">', 'namespace'],
-            ['!@#$%^&*()_+{}:"<>?-<input type="text" name="test">', '<input type="text" name="test">', '!@#$%^&*()_+{}:"<>?'],
-            ['namespace-<input type="text" for="test3" id="test2"  name="test">', '<input type="text" for="test3" id="test2"  name="test">', 'namespace'],
-            ['namespace-<input im-not-html-tho="test2">', '<input im-not-html-tho="test2">', 'namespace'],
-            ['namespace-<input type="text" value="im the input" name="test">', '<input type="text" value="im the input" name="test">', 'namespace'],
-            ['namespace-<textarea id="test">Im the content</textarea>', '<textarea id="test">Im the content</textarea>', 'namespace'],
-            ['namespace-<not-html id="test"></not-html>', '<not-html id="test"></not-html>', 'namespace'],
+            ['foo-bar', 'bar', 'foo'],
+            ['foo-bar-baz', 'bar[baz]', 'foo'],
+            ['foo-bar-baz', 'baz', 'foo[bar]'],
         ];
     }
 

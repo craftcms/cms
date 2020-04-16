@@ -1391,41 +1391,30 @@ JS;
      * <input type="text" name="foo[bar][title]" id="foo-bar-title">
      * ```
      *
-     * @param string $html The template with the inputs.
+     * @param string $html The HTML code
      * @param string|null $namespace The namespace. Defaults to the [[getNamespace()|active namespace]].
-     * @param bool $otherAttributes Whether id=, for=, etc., should also be namespaced. Defaults to `true`.
-     * @return string The HTML with namespaced input names.
+     * @param bool $otherAttributes Whether `id`, `for`, and other attributes should be namespaced (in addition to `name`)
+     * @param bool $withClasses Whether class names should be namespaced as well (affects both `class` attributes and
+     * class name CSS selectors within `<style>` tags). This will only have an effect if `$otherAttributes` is `true`.
+     * @return string The HTML with namespaced attributes
      */
-    public function namespaceInputs(string $html, string $namespace = null, bool $otherAttributes = true): string
+    public function namespaceInputs(string $html, string $namespace = null, bool $otherAttributes = true, bool $withClasses = false): string
     {
         if ($html === '') {
-            return '';
+            return $html;
         }
 
         if ($namespace === null) {
             $namespace = $this->getNamespace();
-        }
-
-        if ($namespace !== null) {
-            // Protect the textarea content
-            $this->_textareaMarkers = [];
-            $html = preg_replace_callback('/(<textarea\b[^>]*>)(.*?)(<\/textarea>)/is',
-                [$this, '_createTextareaMarker'], $html);
-
-            // name= attributes
-            $html = preg_replace('/(?<![\w\-])(name=(\'|"))([^\'"\[\]]+)([^\'"]*)\2/i', '$1' . $namespace . '[$3]$4$2', $html);
-
-            // id= and for= attributes
-            if ($otherAttributes) {
-                $idNamespace = $this->formatInputId($namespace);
-                $html = preg_replace('/(?<![\w\-])((id|for|list|aria\-labelledby|data\-target|data\-reverse\-target|data\-target\-prefix)=(\'|")#?)([^\.\'"][^\'"]*)?\3/i', '$1' . $idNamespace . '-$4$3', $html);
+            // If there's no active namespace, we're done here
+            if ($namespace === null) {
+                return $html;
             }
-
-            // Bring back the textarea content
-            $html = str_replace(array_keys($this->_textareaMarkers), array_values($this->_textareaMarkers), $html);
         }
 
-        return $html;
+        return $otherAttributes
+            ? Html::namespaceHtml($html, $namespace, $withClasses)
+            : Html::namespaceInputs($html, $namespace);
     }
 
     /**
@@ -1440,15 +1429,18 @@ JS;
      */
     public function namespaceInputName(string $inputName, string $namespace = null): string
     {
+        if ($inputName === '') {
+            return $inputName;
+        }
+
         if ($namespace === null) {
             $namespace = $this->getNamespace();
+            if ($namespace === null) {
+                return $inputName;
+            }
         }
 
-        if ($namespace !== null) {
-            $inputName = preg_replace('/([^\'"\[\]]+)([^\'"]*)/', $namespace . '[$1]$2', $inputName);
-        }
-
-        return $inputName;
+        return Html::namespaceInputName($inputName, $namespace);
     }
 
     /**
@@ -1463,15 +1455,18 @@ JS;
      */
     public function namespaceInputId(string $inputId, string $namespace = null): string
     {
+        if ($inputId === '') {
+            return $inputId;
+        }
+
         if ($namespace === null) {
             $namespace = $this->getNamespace();
+            if ($namespace === null) {
+                return Html::id($inputId);
+            }
         }
 
-        if ($namespace !== null) {
-            $inputId = $this->formatInputId($namespace) . '-' . $inputId;
-        }
-
-        return $inputId;
+        return Html::namespaceId($inputId, $namespace);
     }
 
     /**
@@ -1485,10 +1480,15 @@ JS;
      *
      * @param string $inputName The input name.
      * @return string The input ID.
+     * @deprecated in 3.5.0. Use [[Html::id()]] instead.
      */
     public function formatInputId(string $inputName): string
     {
-        return rtrim(preg_replace('/[\[\]\\\]+/', '-', $inputName), '-');
+        if ($inputName === '') {
+            return $inputName;
+        }
+
+        return Html::id($inputName);
     }
 
     /**
@@ -1910,20 +1910,6 @@ JS;
         krsort($roots, SORT_STRING);
 
         return $this->_templateRoots[$which] = $roots;
-    }
-
-    /**
-     * Replaces textarea contents with a marker.
-     *
-     * @param array $matches
-     * @return string
-     */
-    private function _createTextareaMarker(array $matches): string
-    {
-        $marker = '{marker:' . StringHelper::randomString() . '}';
-        $this->_textareaMarkers[$marker] = $matches[2];
-
-        return $matches[1] . $marker . $matches[3];
     }
 
     private function _registeredJs($property, $names)

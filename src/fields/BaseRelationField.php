@@ -530,7 +530,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         }
 
         $view = Craft::$app->getView();
-        $id = $view->formatInputId($this->handle);
+        $id = Html::id($this->handle);
         $html = "<div id='{$id}' class='elementselect'><div class='elements'>";
 
         foreach ($value as $relatedElement) {
@@ -857,7 +857,7 @@ JS;
         return [
             'jsClass' => $this->inputJsClass,
             'elementType' => static::elementType(),
-            'id' => Craft::$app->getView()->formatInputId($this->handle),
+            'id' => Html::id($this->handle),
             'fieldId' => $this->id,
             'storageKey' => 'field.' . $this->id,
             'name' => $this->handle,

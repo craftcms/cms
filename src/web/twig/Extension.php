@@ -221,7 +221,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('filterByValue', [ArrayHelper::class, 'where']),
             new TwigFilter('group', [$this, 'groupFilter']),
             new TwigFilter('hash', [$security, 'hashData']),
-            new TwigFilter('id', [$this->view, 'formatInputId']),
+            new TwigFilter('id', [Html::class, 'id']),
             new TwigFilter('index', [ArrayHelper::class, 'index']),
             new TwigFilter('indexOf', [$this, 'indexOfFilter']),
             new TwigFilter('intersect', 'array_intersect'),
@@ -1138,33 +1138,9 @@ class Extension extends AbstractExtension implements GlobalsInterface
         $svg = preg_replace('/<\?xml.*?\?>/', '', $svg);
 
         // Namespace class names and IDs
-        if (
-            $namespace && (
-                strpos($svg, 'id=') !== false || strpos($svg, 'class=') !== false)
-        ) {
-            $ns = StringHelper::randomStringWithChars('abcdefghijklmnopqrstuvwxyz', 10) . '-';
-            $ids = [];
-            $classes = [];
-            $svg = preg_replace_callback('/\bid=([\'"])([^\'"]+)\\1/i', function($matches) use ($ns, &$ids) {
-                $ids[] = $matches[2];
-                return "id={$matches[1]}{$ns}{$matches[2]}{$matches[1]}";
-            }, $svg);
-            $svg = preg_replace_callback('/\bclass=([\'"])([^\'"]+)\\1/i', function($matches) use ($ns, &$classes) {
-                $newClasses = [];
-                foreach (preg_split('/\s+/', $matches[2]) as $c) {
-                    $classes[] = $c;
-                    $newClasses[] = $ns . $c;
-                }
-                return 'class=' . $matches[1] . implode(' ', $newClasses) . $matches[1];
-            }, $svg);
-            foreach ($ids as $id) {
-                $quotedId = preg_quote($id, '/');
-                $svg = preg_replace("/#{$quotedId}\b(?!\-)/", "#{$ns}{$id}", $svg);
-            }
-            foreach ($classes as $c) {
-                $quotedClass = preg_quote($c, '/');
-                $svg = preg_replace("/\.{$quotedClass}\b(?!\-)/", ".{$ns}{$c}", $svg);
-            }
+        if ($namespace) {
+            $ns = StringHelper::randomString(10);
+            $svg = Html::namespaceAttributes($svg, $ns, true);
         }
 
         if ($class !== null) {

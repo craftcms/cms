@@ -18,6 +18,7 @@ use craft\gql\interfaces\elements\Tag as TagInterface;
 use craft\gql\resolvers\elements\Tag as TagResolver;
 use craft\helpers\Db;
 use craft\helpers\Gql;
+use craft\helpers\Html;
 use craft\models\TagGroup;
 use GraphQL\Type\Definition\Type;
 
@@ -99,7 +100,7 @@ class Tags extends BaseRelationField
             return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Tags/input',
                 [
                     'elementType' => static::elementType(),
-                    'id' => Craft::$app->getView()->formatInputId($this->handle),
+                    'id' => Html::id($this->handle),
                     'name' => $this->handle,
                     'elements' => $value,
                     'tagGroupId' => $tagGroup->id,

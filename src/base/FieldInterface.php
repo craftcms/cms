@@ -128,8 +128,8 @@ interface FieldInterface extends SavableComponentInterface
      * ]);
      * ```
      *
-     * If you need to tie any JavaScript code to your input, it’s important to know that any `name=` and `id=`
-     * attributes within the returned HTML will probably get [[\craft\web\View::namespaceInputs()|namespaced]],
+     * If you need to tie any JavaScript code to your input, it’s important to know that any `name` and `id`
+     * attributes within the returned HTML will probably get [[\craft\helpers\Html::namespaceHtml()|namespaced]],
      * however your JavaScript code will be left untouched.
      * For example, if getInputHtml() returns the following HTML:
      *
@@ -149,33 +149,33 @@ interface FieldInterface extends SavableComponentInterface
      * </script>
      * ```
      *
-     * As you can see, that JavaScript code will not be able to find the textarea, because the textarea’s `id=`
+     * As you can see, that JavaScript code will not be able to find the textarea, because the textarea’s `id`
      * attribute was changed from `foo` to `namespace-foo`.
      * Before you start adding `namespace-` to the beginning of your element ID selectors, keep in mind that the actual
      * namespace is going to change depending on the context. Often they are randomly generated. So it’s not quite
      * that simple.
      *
-     * Thankfully, [[\craft\web\View]] provides a couple handy methods that can help you deal with this:
+     * Thankfully, Craft provides a couple handy methods that can help you deal with this:
      *
+     * - [[\craft\helpers\Html::id()]] will generate a valid element ID from an input name.
      * - [[\craft\web\View::namespaceInputId()]] will give you the namespaced version of a given ID.
      * - [[\craft\web\View::namespaceInputName()]] will give you the namespaced version of a given input name.
-     * - [[\craft\web\View::formatInputId()]] will format an input name to look more like an ID attribute value.
      *
      * So here’s what a getInputHtml() method that includes field-targeting JavaScript code might look like:
      *
      * ```php
      * public function getInputHtml($value, $element)
      * {
-     *     // Come up with an ID value based on $name
-     *     $id = Craft::$app->view->formatInputId($name);
+     *     // Generate a valid ID based on the input name
+     *     $id = craft\helpers\Html::id($name);
      *     // Figure out what that ID is going to be namespaced into
      *     $namespacedId = Craft::$app->view->namespaceInputId($id);
      *     // Render and return the input template
      *     return Craft::$app->view->renderTemplate('myplugin/_fieldinput', [
-     *         'name'         => $name,
-     *         'id'           => $id,
+     *         'name' => $name,
+     *         'id' => $id,
      *         'namespacedId' => $namespacedId,
-     *         'value'        => $value
+     *         'value' => $value,
      *     ]);
      * }
      * ```

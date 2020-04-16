@@ -13,6 +13,7 @@ use craft\base\Field;
 use craft\fields\data\ColorData;
 use craft\gql\types\generators\TableRowType as TableRowTypeGenerator;
 use craft\helpers\DateTimeHelper;
+use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\validators\ColorValidator;
 use craft\validators\UrlValidator;
@@ -547,11 +548,8 @@ class Table extends Field
             }
         }
 
-        $view = Craft::$app->getView();
-        $id = $view->formatInputId($this->handle);
-
-        return $view->renderTemplate('_includes/forms/editableTable', [
-            'id' => $id,
+        return Craft::$app->getView()->renderTemplate('_includes/forms/editableTable', [
+            'id' => Html::id($this->handle),
             'name' => $this->handle,
             'cols' => $this->columns,
             'rows' => $value,

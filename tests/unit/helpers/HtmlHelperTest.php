@@ -142,6 +142,66 @@ class HtmlHelperTest extends Unit
     }
 
     /**
+     * @dataProvider idDataProvider
+     *
+     * @param string $result
+     * @param string $id
+     */
+    public function testId(string $result, string $id)
+    {
+        $this->assertSame($result, Html::id($id));
+    }
+
+    /**
+     * @dataProvider namespaceInputNameDataProvider
+     *
+     * @param string $result
+     * @param string $name
+     * @param string $namespace
+     */
+    public function testNamespaceInputName(string $result, string $name, string $namespace)
+    {
+        $this->assertSame($result, Html::namespaceInputName($name, $namespace));
+    }
+
+    /**
+     * @dataProvider namespaceIdDataProvider
+     *
+     * @param string $result
+     * @param string $name
+     * @param string $namespace
+     */
+    public function testNamespaceId(string $result, string $name, string $namespace)
+    {
+        $this->assertSame($result, Html::namespaceId($name, $namespace));
+    }
+
+    /**
+     * @dataProvider namespaceInputsDataProvider
+     *
+     * @param string $result
+     * @param string $html
+     * @param string $namespace
+     */
+    public function testNamespaceInputs(string $result, string $html, string $namespace)
+    {
+        $this->assertSame($result, Html::namespaceInputs($html, $namespace));
+    }
+
+    /**
+     * @dataProvider namespaceAttributesDataProvider
+     *
+     * @param string $result
+     * @param string $html
+     * @param string $namespace
+     * @param bool $classNames
+     */
+    public function testNamespaceAttributes(string $result, string $html, string $namespace, bool $classNames)
+    {
+        $this->assertSame($result, Html::namespaceAttributes($html, $namespace, $classNames));
+    }
+
+    /**
      * @return array
      */
     public function htmlEncodingDataProvider(): array
@@ -267,6 +327,82 @@ class HtmlHelperTest extends Unit
             [['data-ng' => ['foo' => '1', 'bar' => '2']], ['data-ng-foo' => '1', 'data-ng-bar' => '2']],
             [['ng' => ['foo' => '1', 'bar' => '2']], ['ng-foo' => '1', 'ng-bar' => '2']],
             [['data' => ['foo' => true]], ['data-foo' => true]],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function idDataProvider(): array
+    {
+        return [
+            ['foo', '-foo-'],
+            ['foo-bar', 'foo--bar'],
+            ['foo-bar-baz', 'foo[bar][baz]'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function namespaceInputNameDataProvider(): array
+    {
+        return [
+            ['foo[bar]', 'bar', 'foo'],
+            ['foo[bar][baz]', 'bar[baz]', 'foo'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function namespaceIdDataProvider(): array
+    {
+        return [
+            ['foo-bar', 'bar', 'foo'],
+            ['foo-bar-baz', 'bar[baz]', 'foo'],
+            ['foo-bar-baz', 'baz', 'foo[bar]'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function namespaceInputsDataProvider(): array
+    {
+        return [
+            ['<input name="foo[bar]">', '<input name="bar">', 'foo'],
+            ['<input name="foo[bar][baz]">', '<input name="bar[baz]">', 'foo'],
+            ['<textarea name="foo[bar]"><input name="foo"></textarea>', '<textarea name="bar"><input name="foo"></textarea>', 'foo'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function namespaceAttributesDataProvider(): array
+    {
+        return [
+            ['<div id="foo-bar">', '<div id="bar">', 'foo', false],
+            ['<textarea><div id="foo"></textarea>', '<textarea><div id="foo"></textarea>', 'foo', false],
+            ['<div for="foo-bar">', '<div for="bar">', 'foo', false],
+            ['<div list="foo-bar">', '<div list="bar">', 'foo', false],
+            ['<div aria-labelledby="foo-bar">', '<div aria-labelledby="bar">', 'foo', false],
+            ['<div data-target="foo-bar">', '<div data-target="bar">', 'foo', false],
+            ['<div data-target="#foo-bar">', '<div data-target="#bar">', 'foo', false],
+            ['<div data-reverse-target="foo-bar">', '<div data-reverse-target="bar">', 'foo', false],
+            ['<div data-reverse-target="#foo-bar">', '<div data-reverse-target="#bar">', 'foo', false],
+            ['<div data-target-prefix="foo-bar">', '<div data-target-prefix="bar">', 'foo', false],
+            ['<div class="foo bar">', '<div class="foo bar">', 'foo', false],
+            ['<div class="foo-bar foo-baz">', '<div class="bar baz">', 'foo', true],
+            ['<div class="foo-bar-baz">', '<div class="bar-baz">', 'foo', true],
+            ['#foo', '#foo', 'foo', false],
+            ['.foo', '.foo', 'foo', false],
+            ['.foo', '.foo', 'foo', true],
+            ['<style>#foo-bar{}</style>', '<style>#bar{}</style>', 'foo', false],
+            ['<style>.foo{}</style>', '<style>.foo{}</style>', 'foo', false],
+            ['<style>.foo-bar{}</style>', '<style>.bar{}</style>', 'foo', true],
+            ['<style>.foo-bar{content: \'.baz\'}</style>', '<style>.bar{content: \'.baz\'}</style>', 'foo', true],
         ];
     }
 }
