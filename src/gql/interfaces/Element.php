@@ -164,6 +164,7 @@ class Element extends InterfaceType
                'name' => 'draftId',
                'type' => Type::int(),
                'description' => 'The ID of the draft to return (from the `drafts` table)',
+           ],
             'isUnsavedDraft' => [
                 'name' => 'isUnsavedDraft',
                 'type' => Type::boolean(),
