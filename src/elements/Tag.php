@@ -328,11 +328,11 @@ class Tag extends Element
         }
 
         // Update the tag record
-        Craft::$app->getDb()->createCommand()
-            ->update(Table::TAGS, [
-                'deletedWithGroup' => $this->deletedWithGroup,
-            ], ['id' => $this->id], [], false)
-            ->execute();
+        Db::update(Table::TAGS, [
+            'deletedWithGroup' => $this->deletedWithGroup,
+        ], [
+            'id' => $this->id,
+        ], [], false);
 
         return true;
     }

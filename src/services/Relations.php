@@ -8,12 +8,12 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\Command;
 use craft\db\Query;
 use craft\db\Table;
 use craft\fields\BaseRelationField;
+use craft\helpers\Db;
 use yii\base\Component;
 
 /**
@@ -35,7 +35,6 @@ class Relations extends Component
      */
     public function saveRelations(BaseRelationField $field, ElementInterface $source, array $targetIds)
     {
-        /** @var Element $source */
         if (!is_array($targetIds)) {
             $targetIds = [];
         }
@@ -105,15 +104,13 @@ class Relations extends Component
                             $sortOrder + 1,
                         ];
                     }
-                    $db->createCommand()
-                        ->batchInsert(Table::RELATIONS, ['fieldId', 'sourceId', 'sourceSiteId', 'targetId', 'sortOrder'], $values)
-                        ->execute();
+                    Db::batchInsert(Table::RELATIONS, ['fieldId', 'sourceId', 'sourceSiteId', 'targetId', 'sortOrder'], $values);
                 }
 
                 if (!empty($deleteIds)) {
-                    $db->createCommand()
-                        ->delete(Table::RELATIONS, ['id' => $deleteIds])
-                        ->execute();
+                    Db::delete(Table::RELATIONS, [
+                        'id' => $deleteIds,
+                    ]);
                 }
 
                 $transaction->commit();

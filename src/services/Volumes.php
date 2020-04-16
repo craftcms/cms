@@ -3,8 +3,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\Field;
-use craft\base\Volume;
 use craft\base\VolumeInterface;
 use craft\db\Query;
 use craft\db\Table;
@@ -152,7 +150,6 @@ class Volumes extends Component
     {
         $userSession = Craft::$app->getUser();
         return ArrayHelper::where($this->getAllVolumes(), function(VolumeInterface $volume) use ($userSession) {
-            /** @var Volume $volume */
             return $userSession->checkPermission('viewVolume:' . $volume->uid);
         });
     }
@@ -280,7 +277,6 @@ class Volumes extends Component
      */
     public function saveVolume(VolumeInterface $volume, bool $runValidation = true): bool
     {
-        /** @var Volume $volume */
         $isNewVolume = $volume->getIsNew();
 
         // Fire a 'beforeSaveVolume' event
@@ -425,7 +421,6 @@ class Volumes extends Component
         // Clear caches
         $this->_volumes = null;
 
-        /** @var Volume $volume */
         $volume = $this->getVolumeById($volumeRecord->id);
         $volume->afterSave($isNewVolume);
 
@@ -513,7 +508,6 @@ class Volumes extends Component
         }
 
         try {
-            /** @var Volume $volume */
             $volume = ComponentHelper::createComponent($config, VolumeInterface::class);
         } catch (UnknownPropertyException $e) {
             // Special case for Local volumes that are being converted to something else
@@ -549,7 +543,6 @@ class Volumes extends Component
      */
     public function ensureTopFolder(VolumeInterface $volume): int
     {
-        /** @var Volume $volume */
         $folder = VolumeFolder::findOne(
             [
                 'name' => $volume->name,
@@ -596,7 +589,6 @@ class Volumes extends Component
      */
     public function deleteVolume(VolumeInterface $volume): bool
     {
-        /** @var Volume $volume */
         // Fire a 'beforeDeleteVolume' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_VOLUME)) {
             $this->trigger(self::EVENT_BEFORE_DELETE_VOLUME, new VolumeEvent([
@@ -626,7 +618,6 @@ class Volumes extends Component
             return;
         }
 
-        /** @var Volume $volume */
         $volume = $this->getVolumeById($volumeRecord->id);
 
         // Fire a 'beforeApplyVolumeDelete' event
@@ -691,7 +682,6 @@ class Volumes extends Component
      */
     public function pruneDeletedField(FieldEvent $event)
     {
-        /** @var Field $field */
         $field = $event->field;
         $fieldUid = $field->uid;
 
@@ -717,7 +707,9 @@ class Volumes extends Component
         }
 
         // Nuke all the layout fields from the DB
-        Craft::$app->getDb()->createCommand()->delete('{{%fieldlayoutfields}}', ['fieldId' => $field->id])->execute();
+        Db::delete(Table::FIELDLAYOUTFIELDS, [
+            'fieldId' => $field->id,
+        ]);
 
         // Allow events again
         $projectConfig->muteEvents = false;

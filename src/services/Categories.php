@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\Field;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Category;
@@ -326,8 +325,7 @@ class Categories extends Component
         ProjectConfigHelper::ensureAllSitesProcessed();
         ProjectConfigHelper::ensureAllFieldsProcessed();
 
-        $db = Craft::$app->getDb();
-        $transaction = $db->beginTransaction();
+        $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
             $structureData = $data['structure'];
@@ -451,15 +449,12 @@ class Categories extends Component
                 if (!empty($siteData)) {
                     // Drop the old category URIs for any site settings that don't have URLs
                     if (!empty($sitesNowWithoutUrls)) {
-                        $db->createCommand()
-                            ->update(
-                                Table::ELEMENTS_SITES,
-                                ['uri' => null],
-                                [
-                                    'elementId' => $categoryIds,
-                                    'siteId' => $sitesNowWithoutUrls,
-                                ])
-                            ->execute();
+                        Db::update(Table::ELEMENTS_SITES, [
+                            'uri' => null,
+                        ], [
+                            'elementId' => $categoryIds,
+                            'siteId' => $sitesNowWithoutUrls,
+                        ]);
                     } else if (!empty($sitesWithNewUriFormats)) {
                         foreach ($categoryIds as $categoryId) {
                             App::maxPowerCaptain();
@@ -646,7 +641,6 @@ class Categories extends Component
      */
     public function pruneDeletedField(FieldEvent $event)
     {
-        /** @var Field $field */
         $field = $event->field;
         $fieldUid = $field->uid;
 
@@ -672,7 +666,9 @@ class Categories extends Component
         }
 
         // Nuke all the layout fields from the DB
-        Craft::$app->getDb()->createCommand()->delete('{{%fieldlayoutfields}}', ['fieldId' => $field->id])->execute();
+        Db::delete(Table::FIELDLAYOUTFIELDS, [
+            'fieldId' => $field->id,
+        ]);
 
         // Allow events again
         $projectConfig->muteEvents = false;
@@ -717,8 +713,8 @@ class Categories extends Component
         // Get the structure ID
         $structureId = (new Query())
             ->select(['categorygroups.structureId'])
-            ->from(['{{%categories}} categories'])
-            ->innerJoin('{{%categorygroups}} categorygroups', '[[categorygroups.id]] = [[categories.groupId]]')
+            ->from(['categories' => Table::CATEGORIES])
+            ->innerJoin(['categorygroups' => Table::CATEGORYGROUPS], '[[categorygroups.id]] = [[categories.groupId]]')
             ->where(['categories.id' => $categoryId])
             ->scalar();
 

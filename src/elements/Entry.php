@@ -9,6 +9,7 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
+use craft\behaviors\RevisionBehavior;
 use craft\controllers\ElementIndexesController;
 use craft\db\Query;
 use craft\db\Table;
@@ -25,6 +26,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
+use craft\helpers\Db;
 use craft\helpers\Html;
 use craft\helpers\UrlHelper;
 use craft\models\EntryType;
@@ -457,11 +459,13 @@ class Entry extends Element
             'uid' => ['label' => Craft::t('app', 'UID')],
             'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
             'dateUpdated' => ['label' => Craft::t('app', 'Date Updated')],
+            'revisionNotes' => ['label' => Craft::t('app', 'Revision Notes')],
+            'revisionCreator' => ['label' => Craft::t('app', 'Last Edited By')],
         ];
 
-        // Hide Author from Craft Solo
+        // Hide Author & Last Edited By from Craft Solo
         if (Craft::$app->getEdition() !== Craft::Pro) {
-            unset($attributes['author']);
+            unset($attributes['author'], $attributes['revisionCreator']);
         }
 
         return $attributes;
@@ -548,10 +552,18 @@ class Entry extends Element
      */
     protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute)
     {
-        if ($attribute === 'author') {
-            $elementQuery->andWith('author');
-        } else {
-            parent::prepElementQueryForTableAttribute($elementQuery, $attribute);
+        switch ($attribute) {
+            case 'author':
+                $elementQuery->andWith('author');
+                break;
+            case 'revisionNotes':
+                $elementQuery->andWith('currentRevision');
+                break;
+            case 'revisionCreator':
+                $elementQuery->andWith('currentRevision.revisionCreator');
+                break;
+            default:
+                parent::prepElementQueryForTableAttribute($elementQuery, $attribute);
         }
     }
 
@@ -633,7 +645,7 @@ class Entry extends Element
     public $deletedWithEntryType = false;
 
     /**
-     * @var User|null
+     * @var User|null|false
      */
     private $_author;
 
@@ -905,20 +917,18 @@ class Entry extends Element
      */
     public function getAuthor()
     {
-        if ($this->_author !== null) {
-            return $this->_author;
+        if ($this->_author === null) {
+            if ($this->authorId === null) {
+                return null;
+            }
+
+            if (($this->_author = Craft::$app->getUsers()->getUserById($this->authorId)) === null) {
+                // The author is probably soft-deleted. Just no author is set
+                $this->_author = false;
+            }
         }
 
-        if ($this->authorId === null) {
-            return null;
-        }
-
-        if (($this->_author = Craft::$app->getUsers()->getUserById($this->authorId)) === null) {
-            // The author is probably soft-deleted. Just no author is set
-            return null;
-        }
-
-        return $this->_author;
+        return $this->_author ?: null;
     }
 
     /**
@@ -1026,8 +1036,7 @@ class Entry extends Element
     public function setEagerLoadedElements(string $handle, array $elements)
     {
         if ($handle === 'author') {
-            $author = $elements[0] ?? null;
-            $this->setAuthor($author);
+            $this->_author = $elements[0] ?? false;
         } else {
             parent::setEagerLoadedElements($handle, $elements);
         }
@@ -1055,6 +1064,29 @@ class Entry extends Element
                 } catch (InvalidConfigException $e) {
                     return Craft::t('app', 'Unknown');
                 }
+
+            case 'revisionNotes':
+                /** @var Entry|null $revision */
+                /** @var RevisionBehavior|null $behavior */
+                if (
+                    ($revision = $this->getCurrentRevision()) === null ||
+                    ($behavior = $revision->getBehavior('revision')) === null
+                ) {
+                    return '';
+                }
+                return Html::encode($behavior->revisionNotes);
+
+            case 'revisionCreator':
+                /** @var Entry|null $revision */
+                /** @var RevisionBehavior|null $behavior */
+                if (
+                    ($revision = $this->getCurrentRevision()) === null ||
+                    ($behavior = $revision->getBehavior('revision')) === null ||
+                    ($creator = $behavior->getCreator()) === null
+                ) {
+                    return '';
+                }
+                return Craft::$app->getView()->renderTemplate('_elements/element', ['element' => $creator]);
         }
 
         return parent::tableAttributeHtml($attribute);
@@ -1316,9 +1348,9 @@ EOD;
             }
         }
 
-        Craft::$app->getDb()->createCommand()
-            ->update(Table::ENTRIES, $data, ['id' => $this->id], [], false)
-            ->execute();
+        Db::update(Table::ENTRIES, $data, [
+            'id' => $this->id,
+        ], [], false);
 
         return true;
     }
@@ -1333,7 +1365,7 @@ EOD;
             // Add the entry back into its structure
             $parent = self::find()
                 ->structureId($section->structureId)
-                ->innerJoin('{{%entries}} j', '[[j.parentId]] = [[elements.id]]')
+                ->innerJoin(['j' => Table::ENTRIES], '[[j.parentId]] = [[elements.id]]')
                 ->andWhere(['j.id' => $this->id])
                 ->one();
 

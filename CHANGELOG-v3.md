@@ -2,8 +2,25 @@
 
 ## Unreleased
 
+### Changed
+- Improved Plugin Store performance.
+- Asset indexes now show the “Link” column by default. ([#5910](https://github.com/craftcms/cms/pull/5910))
+- Element editors no longer close automatically when the <kbd>Esc</kbd> key is pressed or the shade is clicked on.
+- Element editors now support <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>S</kbd> save shortcuts.
+- When upgrading to Craft 3, sites now maintain the same UIDs as the Craft 2 locales they replace. ([#5914](https://github.com/craftcms/cms/issues/5914))
+- Updated Garnish to 0.1.35.
+
+### Fixed
+- Fixed a bug where users weren’t getting activated after verifying their email address, if a password was already set on their account. ([#5911](https://github.com/craftcms/cms/issues/5911))
+- Fixed an error that could occur when syncing a `project.yaml` file that restored a soft-deleted global set. ([#5915](https://github.com/craftcms/cms/issues/5915))
+- Fixed a bug where the `app/get-plugin-license-info` action was not parsing license key environment variables.
+- Fixed a bug where PHP would get itself into an infinite loop when minifying CSS with an unclosed block. ([#5912](https://github.com/craftcms/cms/issues/5912))
+- Fixed a bug where <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>S</kbd> save shortcuts would apply even if a modal or HUD was currently visible, potentially resulting in lost content changes. ([#5916](https://github.com/craftcms/cms/issues/5916))
+
+## 3.4.15 - 2020-04-09
+
 ### Added
-- Added the `url` field for categories when using the GraphQL API.
+- Categories now have a `url` field when queried via GraphQL.
 
 ### Changed
 - Entry revision menus now list drafts sorted by date updated in descending order, and show the drafts’ update timestamps. ([#5889](https://github.com/craftcms/cms/issues/5889))

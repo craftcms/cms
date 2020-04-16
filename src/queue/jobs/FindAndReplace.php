@@ -8,10 +8,10 @@
 namespace craft\queue\jobs;
 
 use Craft;
-use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\db\Table;
 use craft\fields\Matrix;
+use craft\helpers\Db;
 use craft\queue\BaseJob;
 use yii\base\Exception;
 
@@ -62,9 +62,7 @@ class FindAndReplace extends BaseJob
         foreach ($this->_textColumns as $i => list($table, $column)) {
             $this->setProgress($queue, $i / $totalTextColumns);
 
-            Craft::$app->getDb()->createCommand()
-                ->replace($table, $column, $this->find, $this->replace)
-                ->execute();
+            Db::replace($table, $column, $this->find, $this->replace);
         }
     }
 
@@ -88,7 +86,6 @@ class FindAndReplace extends BaseJob
      */
     private function _checkField(FieldInterface $field, string $table, string $fieldColumnPrefix)
     {
-        /** @var Field $field */
         if (!$field::hasContentColumn()) {
             return;
         }

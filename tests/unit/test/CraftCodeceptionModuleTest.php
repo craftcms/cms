@@ -7,20 +7,20 @@
 
 namespace crafttests\unit\test;
 
+use Codeception\Test\Unit;
 use Craft;
 use craft\elements\User;
 use craft\errors\ElementNotFoundException;
 use craft\errors\InvalidElementException;
 use craft\test\mockclasses\components\EventTriggeringComponent;
+use DateInterval;
+use DateTime;
+use DateTimeZone;
 use Exception;
 use stdClass;
 use Throwable;
 use UnitTester;
 use yii\base\Event;
-use Codeception\Test\Unit;
-use DateTime;
-use DateTimeZone;
-use DateInterval;
 
 /**
  * CraftCodeceptionModuleTest
@@ -59,7 +59,7 @@ class CraftCodeceptionModuleTest extends Unit
                     ]
                 ]
             ])
-            );
+        );
     }
 
     /**
@@ -183,7 +183,7 @@ class CraftCodeceptionModuleTest extends Unit
         });
 
         $dateTime = new DateTime('now', new DateTimeZone('UTC'));
-        $otherDateTime =  new DateTime('now', new DateTimeZone('UTC'));
+        $otherDateTime = new DateTime('now', new DateTimeZone('UTC'));
         $otherDateTime->add(new DateInterval('PT1S'));
         $this->tester->assertEqualDates(
             $this,

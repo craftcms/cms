@@ -8,11 +8,11 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\Plugin;
 use craft\base\PluginInterface;
 use craft\db\Table;
 use craft\errors\MigrateException;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\models\Updates as UpdatesModel;
 use yii\base\Component;
@@ -135,16 +135,12 @@ class Updates extends Component
      */
     public function setNewPluginInfo(PluginInterface $plugin): bool
     {
-        /** @var Plugin $plugin */
-        $affectedRows = Craft::$app->getDb()->createCommand()
-            ->update(
-                Table::PLUGINS,
-                [
-                    'version' => $plugin->getVersion(),
-                    'schemaVersion' => $plugin->schemaVersion
-                ],
-                ['handle' => $plugin->id])
-            ->execute();
+        $success = (bool)Db::update(Table::PLUGINS, [
+            'version' => $plugin->getVersion(),
+            'schemaVersion' => $plugin->schemaVersion,
+        ], [
+            'handle' => $plugin->id,
+        ]);
 
         // Only update the schema version if it's changed from what's in the file,
         // so we don't accidentally overwrite other pending changes
@@ -155,7 +151,7 @@ class Updates extends Component
             Craft::$app->getProjectConfig()->set($key, $plugin->schemaVersion, "Update plugin schema version for “{$plugin->handle}”");
         }
 
-        return (bool)$affectedRows;
+        return $success;
     }
 
     /**
@@ -177,7 +173,6 @@ class Updates extends Component
 
         $pluginsService = Craft::$app->getPlugins();
         foreach ($pluginsService->getAllPlugins() as $plugin) {
-            /** @var Plugin $plugin */
             if ($pluginsService->doesPluginRequireDatabaseUpdate($plugin)) {
                 $handles[] = $plugin->id;
             }
@@ -227,7 +222,6 @@ class Updates extends Component
                 } else if ($handle === 'content') {
                     Craft::$app->getContentMigrator()->up();
                 } else {
-                    /** @var Plugin $plugin */
                     $plugin = Craft::$app->getPlugins()->getPlugin($handle);
                     $name = $plugin->name;
                     $plugin->getMigrator()->up();

@@ -278,7 +278,7 @@ class CategoryQuery extends ElementQuery
         $this->subQuery->andWhere($condition);
 
         if ($joinCategoryGroups) {
-            $this->subQuery->innerJoin('{{%categorygroups}} categorygroups', '[[categorygroups.id]] = [[categories.groupId]]');
+            $this->subQuery->innerJoin(['categorygroups' => Table::CATEGORYGROUPS], '[[categorygroups.id]] = [[categories.groupId]]');
         }
     }
 }

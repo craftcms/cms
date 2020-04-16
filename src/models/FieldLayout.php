@@ -8,7 +8,6 @@
 namespace craft\models;
 
 use Craft;
-use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\base\Model;
 
@@ -89,7 +88,6 @@ class FieldLayout extends Model
                 'sortOrder' => (int)$tab->sortOrder,
             ];
 
-            /** @var Field $field */
             foreach ($tab->getFields() as $field) {
                 $tabData['fields'][$field->uid] = [
                     'required' => (bool)$field->required,
@@ -126,7 +124,6 @@ class FieldLayout extends Model
                     $layoutFields = [];
 
                     foreach ($tab['fields'] as $uid => $field) {
-                        /** @var Field $createdField */
                         $createdField = $fieldService->getFieldByUid($uid);
 
                         if ($createdField) {
@@ -177,7 +174,6 @@ class FieldLayout extends Model
         $ids = [];
 
         foreach ($this->getFields() as $field) {
-            /** @var Field $field */
             $ids[] = $field->id;
         }
 
@@ -188,12 +184,11 @@ class FieldLayout extends Model
      * Returns a field by its handle.
      *
      * @param string $handle The field handle.
-     * @return Field|FieldInterface|null
+     * @return FieldInterface|null
      */
     public function getFieldByHandle(string $handle)
     {
         foreach ($this->getFields() as $field) {
-            /** @var Field $field */
             if ($field->handle === $handle) {
                 return $field;
             }

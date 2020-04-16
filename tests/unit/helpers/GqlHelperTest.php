@@ -109,7 +109,9 @@ class GqlHelperTest extends Unit
      */
     public function testUnionTypes()
     {
-        $unionType = GqlHelper::getUnionType('someUnion', ['one', 'two'], function () {return 'one';});
+        $unionType = GqlHelper::getUnionType('someUnion', ['one', 'two'], function() {
+            return 'one';
+        });
         $this->assertInstanceOf(UnionType::class, $unionType);
     }
 
@@ -246,7 +248,7 @@ class GqlHelperTest extends Unit
                 [
                     'usergroups' => ['allUsers', 'otherGroup'],
                 ]
-            ],[
+            ], [
                 [
                     'usergroups.allUsers:read',
                     'usergroups.otherGroup:write',

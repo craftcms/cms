@@ -94,15 +94,15 @@ class m190417_085010_add_image_editor_permissions extends Migration
                     // Get all the eligible users
                     $userIds = (new Query())
                         ->select(['users.id'])
-                        ->from([Table::USERS . ' AS users'])
-                        ->innerJoin(Table::USERPERMISSIONS_USERS . ' AS saveUserPermissions', '[[saveUserPermissions.userId]] = [[users.id]]')
-                        ->innerJoin(Table::USERPERMISSIONS . ' AS saveInVolume', [
+                        ->from(['users' => Table::USERS])
+                        ->innerJoin(['saveUserPermissions' => Table::USERPERMISSIONS_USERS], '[[saveUserPermissions.userId]] = [[users.id]]')
+                        ->innerJoin(['saveInVolume' => Table::USERPERMISSIONS], [
                             'and',
                             '[[saveInVolume.id]] = [[saveUserPermissions.permissionId]]',
                             ['saveInVolume.name' => $savePermission]
                         ])
-                        ->innerJoin(Table::USERPERMISSIONS_USERS . ' AS deleteUserPermissions', '[[deleteUserPermissions.userId]] = [[users.id]]')
-                        ->innerJoin(Table::USERPERMISSIONS . ' AS deleteInVolume', [
+                        ->innerJoin(['deleteUserPermissions' => Table::USERPERMISSIONS_USERS], '[[deleteUserPermissions.userId]] = [[users.id]]')
+                        ->innerJoin(['deleteInVolume' => Table::USERPERMISSIONS], [
                             'and',
                             '[[deleteInVolume.id]] = [[deleteUserPermissions.permissionId]]',
                             ['deleteInVolume.name' => $deletePermission]

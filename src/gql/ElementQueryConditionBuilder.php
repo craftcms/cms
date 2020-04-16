@@ -9,7 +9,6 @@ namespace craft\gql;
 
 use Craft;
 use craft\base\EagerLoadingFieldInterface;
-use craft\base\Field;
 use craft\base\GqlInlineFragmentFieldInterface;
 use craft\fields\Assets as AssetField;
 use craft\fields\BaseRelationField;
@@ -50,7 +49,6 @@ class ElementQueryConditionBuilder
 
         // Cache all eager-loadable fields by context
         $allFields = Craft::$app->getFields()->getAllFields(false);
-        /** @var Field $field */
         foreach ($allFields as $field) {
             if ($field instanceof EagerLoadingFieldInterface) {
                 $this->_eagerLoadableFieldsByContext[$field->context][$field->handle] = $field;
@@ -121,7 +119,8 @@ class ElementQueryConditionBuilder
      * @param ArgumentNode[] $argumentNodes
      * @return array
      */
-    private function _extractArguments($argumentNodes) {
+    private function _extractArguments($argumentNodes)
+    {
         $arguments = [];
 
         foreach ($argumentNodes as $argumentNode) {
@@ -158,7 +157,8 @@ class ElementQueryConditionBuilder
      * @param Node $node
      * @return array
      */
-    private function _extractTransformDirectiveArguments(Node $node) {
+    private function _extractTransformDirectiveArguments(Node $node)
+    {
         $arguments = [];
         $directives = $node->directives ?? [];
 
@@ -173,6 +173,7 @@ class ElementQueryConditionBuilder
 
     /**
      * Prepare a list of transform arguments for return.
+     *
      * @param $arguments
      * @return array
      */
@@ -371,15 +372,15 @@ class ElementQueryConditionBuilder
                     // Get the Craft entity that correlates to the fragment
                     // Build the prefix, load the context and proceed in a recursive manner
                     $gqlFragmentEntity = $parentField->getGqlFragmentEntityByName($nodeName);
-                    $eagerLoadNodes = array_merge_recursive($eagerLoadNodes,  $this->_traverseAndExtractRules($subNode, $prefix . $gqlFragmentEntity->getEagerLoadingPrefix() . ':', $gqlFragmentEntity->getFieldContext(), $parentField));
+                    $eagerLoadNodes = array_merge_recursive($eagerLoadNodes, $this->_traverseAndExtractRules($subNode, $prefix . $gqlFragmentEntity->getEagerLoadingPrefix() . ':', $gqlFragmentEntity->getFieldContext(), $parentField));
                     // If we are not, just expand the fragment and traverse it as if on the same level in the query tree
                 } else {
-                    $eagerLoadNodes = array_merge_recursive($eagerLoadNodes,  $this->_traverseAndExtractRules($subNode, $prefix, $context, $parentField));
+                    $eagerLoadNodes = array_merge_recursive($eagerLoadNodes, $this->_traverseAndExtractRules($subNode, $prefix, $context, $parentField));
                 }
                 // Finally, if this is a named fragment, expand it and traverse it as if on the same level in the query tree
             } else if ($subNode instanceof FragmentSpreadNode) {
                 $fragmentDefinition = $this->_fragments[$nodeName];
-                $eagerLoadNodes = array_merge_recursive($eagerLoadNodes,  $this->_traverseAndExtractRules($fragmentDefinition, $prefix, $context, $parentField));
+                $eagerLoadNodes = array_merge_recursive($eagerLoadNodes, $this->_traverseAndExtractRules($fragmentDefinition, $prefix, $context, $parentField));
             }
         }
 

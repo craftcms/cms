@@ -6,6 +6,8 @@
 - Added the “Suspend by default” user registration setting. ([#5830](https://github.com/craftcms/cms/issues/5830))
 - Added the ability to disable sites on the front end. ([#3005](https://github.com/craftcms/cms/issues/3005))
 - Soft-deleted elements now have a “Delete permanently” element action. ([#4420](https://github.com/craftcms/cms/issues/4420))
+- Assets now have a “Copy URL” element action. ([#2944](https://github.com/craftcms/cms/issues/2944))
+- Entry indexes can now show “Revision Notes” and “Last Edited By” columns. ([#5907](https://github.com/craftcms/cms/issues/5907))
 - It’s now possible to set a custom route that handles Set Password requests. ([#5722](https://github.com/craftcms/cms/issues/5722))
 - Field labels now reveal their handles when the <kbd>Option</kbd>/<kbd>ALT</kbd> key is pressed. ([#5833](https://github.com/craftcms/cms/issues/5833))
 - Added the `brokenImagePath` config setting. ([#5877](https://github.com/craftcms/cms/issues/5877))
@@ -17,22 +19,28 @@
 - Added the `|push` Twig filter, which returns a new array with one or more items appended to it.
 - Added the `|unshift` Twig filter, which returns a new array with one or more items prepended to it.
 - Added the `raw()` Twig function, which wraps the given string in a `Twig\Markup` object to prevent it from getting HTML-encoded.
+- Added support for eager-loading elements’ current revisions, via `currentRevision`.
+- Added support for eager-loading drafts’ and revisions’ creators, via `draftCreator` and `revisionCreator`.
 - Added support for the `CRAFT_CP` PHP constant. ([#5122](https://github.com/craftcms/cms/issues/5122))
 - Added the `drafts`, `draftOf`, `draftId`, `draftCreator`, `revisions`, `revisionOf`, `revisionId` and `revisionCreator` arguments to element queries using GraphQL API. ([#5580](https://github.com/craftcms/cms/issues/5580)) 
 - Added the `isDraft`, `isRevision`, `sourceId`, `sourceUid`, and `isUnsavedDraft` fields to elements when using GraphPQL API. ([#5580](https://github.com/craftcms/cms/issues/5580))
 - Added the `assetCount`, `categoryCount`, `entryCount`, `tagCount`, and `userCount` queries for fetching the element counts to the GraphPQL API. ([#4847](https://github.com/craftcms/cms/issues/4847))
 - Added the `locale` argument to the `formatDateTime` GraphQL directive. ([#5593](https://github.com/craftcms/cms/issues/5593))
 - Added support for specifying a transform on assets’ `width` and `height` fields via GraphQL.
+- Added `craft\base\Element::EVENT_SET_EAGER_LOADED_ELEMENTS`.
 - Added `craft\base\ElementInterface::getIconUrl()`.
 - Added `craft\base\ElementInterface::gqlMutationNameByContext()`.
+- Added `craft\behaviors\BaseRevisionBehavior`.
 - Added `craft\base\FieldInterface::getContentGqlArgumentType()`.
 - Added `craft\config\GeneralConfig::getTestToEmailAddress()`.
 - Added `craft\console\controllers\MailerController::$to`.
 - Added `craft\controllers\AppController::actionBrokenImage()`.
+- Added `craft\elements\actions\CopyUrl`.
 - Added `craft\elements\actions\Delete::$hard`.
 - Added `craft\elements\Asset::getSrcset()`. ([#5774](https://github.com/craftcms/cms/issues/5774))
 - Added `craft\events\RegisterGqlMutationsEvent`.
 - Added `craft\events\RegisterGqlSchemaComponentsEvent`.
+- Added `craft\events\SetEagerLoadedElementsEvent`.
 - Added `craft\gql\arguments\mutations\Asset`.
 - Added `craft\gql\arguments\mutations\Draft`.
 - Added `craft\gql\arguments\mutations\Entry`.
@@ -66,6 +74,12 @@
 - Added `craft\gql\types\TableRow::prepareRowFieldDefinition()`.
 - Added `craft\helpers\Assets::parseSrcsetSize()`.
 - Added `craft\helpers\Assets::scaledDimensions()`.
+- Added `craft\helpers\Db::batchInsert()`.
+- Added `craft\helpers\Db::delete()`.
+- Added `craft\helpers\Db::insert()`.
+- Added `craft\helpers\Db::replace()`.
+- Added `craft\helpers\Db::update()`.
+- Added `craft\helpers\Db::upsert()`.
 - Added `craft\helpers\Gql::canMutateAssets()`.
 - Added `craft\helpers\Gql::canMutateCategories()`.
 - Added `craft\helpers\Gql::canMutateEntries()`.
@@ -81,11 +95,15 @@
 - Added `craft\helpers\Queue`.
 - Added `craft\models\Site::$enabled`.
 - Added `craft\services\Gql::getAllSchemaComponents()`.
+- Added `craft\queue\jobs\PruneRevisions`.
 - Added `craft\web\AssetBundle\ContentWindowAsset`.
 - Added `craft\web\AssetBundle\IframeResizerAsset`.
 - Added `craft\web\Request::getAcceptsImage()`.
 - Added `craft\web\Request::getFullUri()`.
 - Added the `_includes/forms/password.html` control panel template.
+- Added the `_includes/forms/copytext.html` control panel template.
+- Added the `copytext` and `copytextField` macros to the `_includes/forms.html` control panel template.
+- Added the `Craft.ui.createCopyTextInput()`, `createCopyTextField()`, and `createCopyTextPrompt()` JavaScript methods.
 - Added the [iFrame Resizer](http://davidjbradshaw.github.io/iframe-resizer/) library.
 
 ### Changed
@@ -96,9 +114,12 @@
 - Preview targets that aren’t directly rendered by Craft must now include `lib/iframe-resizer-cw/iframeResizer.contentWindow.js` in order to maintain scroll position across refreshes.
 - The preview frame header no longer hides the top 54px of the preview frame when it’s scrolled all the way to the top. ([#5547](https://github.com/craftcms/cms/issues/5547))
 - Modal backdrops no longer blur the page content. ([#5651](https://github.com/craftcms/cms/issues/5651))
+- Element editor HUDs now warn before switching to another site, if there are any unsaved content changes. ([#2512](https://github.com/craftcms/cms/issues/2512))
 - Improved the styling of password inputs in the control panel.
+- Improved the UI for copying user activation URLs, asset reference tags, and GraphQL tokens’ authentication headers.
 - Improved the wording of the meta info displayed in entry revision menus. ([#5889](https://github.com/craftcms/cms/issues/5889))
 - Plain Text fields are now sortable in the control panel. ([#5819](https://github.com/craftcms/cms/issues/5819))
+- Extra entry revisions (per the `maxRevisions` config setting) are now pruned via a background job. ([#5902](https://github.com/craftcms/cms/issues/5902))  
 - Database backups created by the Database Backup utility are now saved as zip files. ([#5822](https://github.com/craftcms/cms/issues/5822))
 - It’s now possible to specify aliases when eager-loading elements via the `with` param. ([#5793](https://github.com/craftcms/cms/issues/5793)) 
 - The `cpTrigger` config setting can now be set to `null`. ([#5122](https://github.com/craftcms/cms/issues/5122))

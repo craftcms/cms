@@ -23,6 +23,7 @@ use craft\elements\actions\View;
 use craft\elements\db\CategoryQuery;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\helpers\Db;
 use craft\helpers\UrlHelper;
 use craft\models\CategoryGroup;
 use craft\records\Category as CategoryRecord;
@@ -597,9 +598,9 @@ class Category extends Element
             }
         }
 
-        Craft::$app->getDb()->createCommand()
-            ->update(Table::CATEGORIES, $data, ['id' => $this->id], [], false)
-            ->execute();
+        Db::update(Table::CATEGORIES, $data, [
+            'id' => $this->id,
+        ], [], false);
 
         return true;
     }
@@ -614,7 +615,7 @@ class Category extends Element
         // Add the category back into its structure
         $parent = self::find()
             ->structureId($structureId)
-            ->innerJoin('{{%categories}} j', '[[j.parentId]] = [[elements.id]]')
+            ->innerJoin(['j' => Table::CATEGORIES], '[[j.parentId]] = [[elements.id]]')
             ->andWhere(['j.id' => $this->id])
             ->one();
 
@@ -675,12 +676,7 @@ class Category extends Element
             }
 
             if (!empty($newRelationValues)) {
-                Craft::$app->getDb()->createCommand()
-                    ->batchInsert(
-                        Table::RELATIONS,
-                        ['fieldId', 'sourceId', 'sourceSiteId', 'targetId'],
-                        $newRelationValues)
-                    ->execute();
+                Db::batchInsert(Table::RELATIONS, ['fieldId', 'sourceId', 'sourceSiteId', 'targetId'], $newRelationValues);
             }
         }
 

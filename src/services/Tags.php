@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\Field;
 use craft\db\Table;
 use craft\elements\Tag;
 use craft\errors\TagGroupNotFoundException;
@@ -406,7 +405,6 @@ class Tags extends Component
      */
     public function pruneDeletedField(FieldEvent $event)
     {
-        /** @var Field $field */
         $field = $event->field;
         $fieldUid = $field->uid;
 
@@ -432,7 +430,9 @@ class Tags extends Component
         }
 
         // Nuke all the layout fields from the DB
-        Craft::$app->getDb()->createCommand()->delete('{{%fieldlayoutfields}}', ['fieldId' => $field->id])->execute();
+        Db::delete(Table::FIELDLAYOUTFIELDS, [
+            'fieldId' => $field->id,
+        ]);
 
         // Allow events again
         $projectConfig->muteEvents = false;

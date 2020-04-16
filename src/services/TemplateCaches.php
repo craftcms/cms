@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\Query;
 use craft\db\Table;
@@ -273,18 +272,13 @@ class TemplateCaches extends Component
         $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
-            Craft::$app->getDb()->createCommand()
-                ->insert(
-                    Table::TEMPLATECACHES,
-                    [
-                        'cacheKey' => $key,
-                        'siteId' => Craft::$app->getSites()->getCurrentSite()->id,
-                        'path' => $global ? null : $this->_getPath(),
-                        'expiryDate' => Db::prepareDateForDb($expiration),
-                        'body' => $body
-                    ],
-                    false)
-                ->execute();
+            Db::insert(Table::TEMPLATECACHES, [
+                'cacheKey' => $key,
+                'siteId' => Craft::$app->getSites()->getCurrentSite()->id,
+                'path' => $global ? null : $this->_getPath(),
+                'expiryDate' => Db::prepareDateForDb($expiration),
+                'body' => $body,
+            ], false);
 
             $cacheId = Craft::$app->getDb()->getLastInsertID(Table::TEMPLATECACHES);
 
@@ -300,13 +294,8 @@ class TemplateCaches extends Component
                     // We can no longer say we’ve deleted all template caches for this element type
                     unset($this->_deletedCachesByElementType[$query[0]]);
                 }
-                Craft::$app->getDb()->createCommand()
-                    ->batchInsert(Table::TEMPLATECACHEQUERIES, [
-                        'cacheId',
-                        'type',
-                        'query'
-                    ], $values, false)
-                    ->execute();
+
+                Db::batchInsert(Table::TEMPLATECACHEQUERIES, ['cacheId', 'type', 'query'], $values, false);
                 unset($this->_cachedQueries[$key]);
             }
 
@@ -318,14 +307,7 @@ class TemplateCaches extends Component
                     $values[] = [$cacheId, $elementId];
                 }
 
-                Craft::$app->getDb()->createCommand()
-                    ->batchInsert(
-                        Table::TEMPLATECACHEELEMENTS,
-                        ['cacheId', 'elementId'],
-                        $values,
-                        false)
-                    ->execute();
-
+                Db::batchInsert(Table::TEMPLATECACHEELEMENTS, ['cacheId', 'elementId'], $values, false);
                 unset($this->_cacheElementIds[$key]);
             }
 
@@ -363,9 +345,9 @@ class TemplateCaches extends Component
             ]));
         }
 
-        $affectedRows = Craft::$app->getDb()->createCommand()
-            ->delete(Table::TEMPLATECACHES, ['id' => $cacheId])
-            ->execute();
+        $affectedRows = Db::delete(Table::TEMPLATECACHES, [
+            'id' => $cacheId,
+        ]);
 
         // Fire an 'afterDeleteCaches' event
         if ($affectedRows && $this->hasEventHandlers(self::EVENT_AFTER_DELETE_CACHES)) {
@@ -423,7 +405,7 @@ class TemplateCaches extends Component
         $deleteQueryCaches = !isset($this->_deletedCachesByElementType[$elementType]);
         $elementIds = [];
 
-        /** @var Element[] $elements */
+        /** @var ElementInterface[] $elements */
         foreach ($elements as $element) {
             $elementIds[] = $element->id;
         }

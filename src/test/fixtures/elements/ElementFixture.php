@@ -8,7 +8,6 @@
 namespace craft\test\fixtures\elements;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQuery;
 use craft\errors\InvalidElementException;
@@ -47,7 +46,7 @@ abstract class ElementFixture extends ActiveFixture
     {
         parent::init();
 
-        if (!($this->getElement() instanceof Element)) {
+        if (!($this->getElement() instanceof ElementInterface)) {
             throw new InvalidConfigException('"modelClass" must be an Element');
         }
 
@@ -80,7 +79,6 @@ abstract class ElementFixture extends ActiveFixture
         $this->data = [];
 
         foreach ($this->getData() as $alias => $data) {
-            /* @var Element $element */
             $element = $this->getElement($data) ?: new $this->modelClass;
 
             // If they want to add a date deleted. Store it but dont set that as an element property

@@ -12,6 +12,7 @@ use craft\base\BlockElementInterface;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\Query;
+use craft\db\Table;
 use craft\errors\OperationAbortedException;
 use yii\base\Exception;
 
@@ -86,7 +87,6 @@ class ElementHelper
      */
     public static function setUniqueUri(ElementInterface $element)
     {
-        /** @var Element $element */
         $uriFormat = $element->getUriFormat();
 
         // No URL format, no URI.
@@ -170,7 +170,6 @@ class ElementHelper
      */
     private static function _renderUriFormat(string $uriFormat, ElementInterface $element): string
     {
-        /** @var Element $element */
         $variables = [];
 
         // If the URI format contains {id} but the element doesn't have one yet, preserve the {id} tag
@@ -195,10 +194,9 @@ class ElementHelper
      */
     private static function _isUniqueUri(string $testUri, ElementInterface $element): bool
     {
-        /** @var Element $element */
         $query = (new Query())
-            ->from(['{{%elements_sites}} elements_sites'])
-            ->innerJoin('{{%elements}} elements', '[[elements.id]] = [[elements_sites.elementId]]')
+            ->from(['elements_sites' => Table::ELEMENTS_SITES])
+            ->innerJoin(['elements' => Table::ELEMENTS], '[[elements.id]] = [[elements_sites.elementId]]')
             ->where([
                 'elements_sites.siteId' => $element->siteId,
                 'elements.draftId' => null,
@@ -344,7 +342,6 @@ class ElementHelper
      */
     public static function isDraftOrRevision(ElementInterface $element): bool
     {
-        /** @var Element $root */
         $root = ElementHelper::rootElement($element);
         return $root->getIsDraft() || $root->getIsRevision();
     }
@@ -358,7 +355,6 @@ class ElementHelper
      */
     public static function sourceElement(ElementInterface $element): ElementInterface
     {
-        /** @var Element $element */
         $sourceId = $element->getSourceId();
         if ($sourceId === $element->id) {
             return $element;

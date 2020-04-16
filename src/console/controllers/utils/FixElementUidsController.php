@@ -12,6 +12,7 @@ use craft\console\Controller;
 use craft\db\Query;
 use craft\db\Table;
 use craft\helpers\Console;
+use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use yii\console\ExitCode;
 
@@ -50,7 +51,6 @@ class FixElementUidsController extends Controller
         }
 
         $this->stdout("Found {$total} elements with duplicate UIDs." . PHP_EOL);
-        $db = Craft::$app->getDb();
 
         foreach ($query->each() as $result) {
             if (!isset($uids[$result['uid']])) {
@@ -62,9 +62,11 @@ class FixElementUidsController extends Controller
             // Duplicate! Give this element a unique UID
             $newUid = StringHelper::UUID();
             $this->stdout("- Changing {$result['uid']} ({$result['id']}) to {$newUid} ... ");
-            $db->createCommand()
-                ->update(Table::ELEMENTS, ['uid' => $newUid], ['id' => $result['id']], [], false)
-                ->execute();
+            Db::update(Table::ELEMENTS, [
+                'uid' => $newUid,
+            ], [
+                'id' => $result['id'],
+            ], [], false);
             $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
         }
 

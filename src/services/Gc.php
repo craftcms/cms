@@ -111,12 +111,8 @@ class Gc extends Component
             $tables = [$tables];
         }
 
-        $db = Craft::$app->getDb();
-
         foreach ($tables as $table) {
-            $db->createCommand()
-                ->delete($table, $condition)
-                ->execute();
+            Db::delete($table, $condition);
         }
     }
 
@@ -135,8 +131,6 @@ class Gc extends Component
         $expire = DateTimeHelper::currentUTCDateTime();
         $pastTime = $expire->sub($interval);
 
-        Craft::$app->getDb()->createCommand()
-            ->delete(Table::SESSIONS, ['<', 'dateUpdated', Db::prepareDateForDb($pastTime)])
-            ->execute();
+        Db::delete(Table::SESSIONS, ['<', 'dateUpdated', Db::prepareDateForDb($pastTime)]);
     }
 }

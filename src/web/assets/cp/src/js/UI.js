@@ -62,6 +62,59 @@ Craft.ui =
             return this.createField(this.createTextInput(config), config);
         },
 
+        createCopyTextInput: function(config) {
+            let id = config.id || `copytext-${Math.floor(Math.random() * 1000000000)}`;
+            let buttonId = config.buttonId || `${id}-btn`;
+
+            let $container = $('<div/>', {
+                'class': 'copytext',
+            });
+
+            let $input = this.createTextInput($.extend({}, config, {
+                readonly: true,
+            })).appendTo($container);
+
+            let $btn = $('<button/>', {
+                type: 'button',
+                id: buttonId,
+                'class': 'btn',
+                'data-icon': 'clipboard',
+                title: Craft.t('app', 'Copy to clipboard'),
+            }).appendTo($container);
+
+            $btn.on('click', () => {
+                $input[0].select();
+                document.execCommand('copy');
+                Craft.cp.displayNotice(Craft.t('app', 'Copied to clipboard.'));
+                $container.trigger('copy');
+            });
+
+            return $container;
+        },
+
+        createCopyTextField: function(config) {
+            return this.createField(this.createCopyTextInput(config), config);
+        },
+
+        createCopyTextPrompt: function(config) {
+            let $container = $('<div/>', {
+                'class': 'modal fitted',
+            });
+            let $body = $('<div/>', {
+                'class': 'body',
+            }).appendTo($container);
+            this.createCopyTextField($.extend({
+                size: Math.max(Math.min(config.value.length, 50), 25),
+            }, config)).appendTo($body);
+            let modal = new Garnish.Modal($container, {
+                closeOtherModals: false,
+            });
+            $container.on('copy', () => {
+                modal.hide();
+            })
+            return $container;
+        },
+
         createTextarea: function(config) {
             var $textarea = $('<textarea/>', {
                 'class': 'text',
@@ -793,5 +846,5 @@ Craft.ui =
 
         getDisabledValue: function(disabled) {
             return (disabled ? 'disabled' : null);
-        }
+        },
     };

@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\Plugin;
 use craft\base\PluginInterface;
 use craft\db\MigrationManager;
 use craft\db\Query;
@@ -233,7 +232,6 @@ class Plugins extends Component
             if ($plugin !== null) {
                 // If we're not updating, check if the plugin's version number changed, but not its schema version.
                 if (!Craft::$app->getIsInMaintenanceMode() && $this->hasPluginVersionNumberChanged($plugin) && !$this->doesPluginRequireDatabaseUpdate($plugin)) {
-                    /** @var Plugin $plugin */
                     if (
                         $plugin->minVersionRequired &&
                         strpos($row['version'], 'dev-') !== 0 &&
@@ -248,12 +246,11 @@ class Plugins extends Component
                     }
 
                     // Update our record of the plugin's version number
-                    Craft::$app->getDb()->createCommand()
-                        ->update(
-                            Table::PLUGINS,
-                            ['version' => $plugin->getVersion()],
-                            ['id' => $row['id']])
-                        ->execute();
+                    Db::update(Table::PLUGINS, [
+                        'version' => $plugin->getVersion(),
+                    ], [
+                        'id' => $row['id'],
+                    ]);
                 }
 
                 $this->_registerPlugin($plugin);
@@ -311,7 +308,6 @@ class Plugins extends Component
         $this->loadPlugins();
 
         foreach ($this->_plugins as $plugin) {
-            /** @var Plugin $plugin */
             if ($plugin->packageName === $packageName) {
                 return $plugin;
             }
@@ -474,7 +470,6 @@ class Plugins extends Component
         $projectConfig = Craft::$app->getProjectConfig();
         $configKey = self::CONFIG_PLUGINS_KEY . '.' . $handle;
 
-        /** @var Plugin $plugin */
         $plugin = $this->createPlugin($handle);
 
         // Set the edition
@@ -505,9 +500,7 @@ class Plugins extends Component
                 'installDate' => Db::prepareDateForDb(new \DateTime()),
             ];
 
-            $db->createCommand()
-                ->insert(Table::PLUGINS, $info)
-                ->execute();
+            Db::insert(Table::PLUGINS, $info);
 
             $info['installDate'] = DateTimeHelper::toDateTime($info['installDate']);
             $info['id'] = $db->getLastInsertID(Table::PLUGINS);
@@ -519,9 +512,9 @@ class Plugins extends Component
 
                 if ($db->getIsMysql()) {
                     // Explicitly remove the plugins row just in case the transaction was implicitly committed
-                    $db->createCommand()
-                        ->delete(Table::PLUGINS, ['handle' => $handle])
-                        ->execute();
+                    Db::delete(Table::PLUGINS, [
+                        'handle' => $handle,
+                    ]);
                 }
 
                 return false;
@@ -603,9 +596,9 @@ class Plugins extends Component
             // Clean up the plugins and migrations tables
             $id = $this->getStoredPluginInfo($handle)['id'];
 
-            Craft::$app->getDb()->createCommand()
-                ->delete(Table::PLUGINS, ['id' => $id])
-                ->execute();
+            Db::delete(Table::PLUGINS, [
+                'id' => $id,
+            ]);
 
             $transaction->commit();
         } catch (\Throwable $e) {
@@ -665,7 +658,6 @@ class Plugins extends Component
         // If it's installed, update the instance and our locally stored info
         $plugin = $this->getPlugin($handle);
         if ($plugin !== null) {
-            /** @var Plugin $plugin */
             $plugin->edition = $edition;
         }
     }
@@ -679,7 +671,6 @@ class Plugins extends Component
      */
     public function savePluginSettings(PluginInterface $plugin, array $settings): bool
     {
-        /** @var Plugin $plugin */
         // Save the settings on the plugin
         $plugin->getSettings()->setAttributes($settings, false);
 
@@ -724,7 +715,6 @@ class Plugins extends Component
      */
     public function hasPluginVersionNumberChanged(PluginInterface $plugin): bool
     {
-        /** @var Plugin $plugin */
         $this->loadPlugins();
 
         if (($info = $this->getStoredPluginInfo($plugin->id)) === null) {
@@ -742,7 +732,6 @@ class Plugins extends Component
      */
     public function doesPluginRequireDatabaseUpdate(PluginInterface $plugin): bool
     {
-        /** @var Plugin $plugin */
         $this->loadPlugins();
 
         if (($info = $this->getStoredPluginInfo($plugin->id)) === null) {
@@ -901,7 +890,6 @@ class Plugins extends Component
         }
 
         // Create the plugin
-        /** @var Plugin $plugin */
         $plugin = Craft::createObject($config, [$handle, Craft::$app]);
         $this->_setPluginMigrator($plugin, $info['id'] ?? null);
         return $plugin;
@@ -947,7 +935,6 @@ class Plugins extends Component
         $pluginInfo = $this->_enabledPluginInfo[$handle] ?? $this->_disabledPluginInfo[$handle] ?? null;
 
         // Get the plugin if it's enabled
-        /** @var Plugin|null $plugin */
         $plugin = $this->getPlugin($handle);
 
         $info = array_merge([
@@ -1089,7 +1076,6 @@ class Plugins extends Component
     {
         // If it's installed, let the plugin say where it lives
         if (($plugin = $this->getPlugin($handle)) !== null) {
-            /** @var Plugin $plugin */
             $basePath = $plugin->getBasePath();
         } else {
             if (($basePath = $this->_composerPluginInfo[$handle]['basePath'] ?? false) !== false) {
@@ -1135,7 +1121,6 @@ class Plugins extends Component
             throw new InvalidPluginException($handle);
         }
 
-        /** @var Plugin $plugin */
         // Validate the license key
         $normalizedLicenseKey = $this->normalizePluginLicenseKey($licenseKey);
 
@@ -1211,13 +1196,12 @@ class Plugins extends Component
             throw new InvalidPluginException($handle);
         }
 
-        /** @var Plugin $plugin */
-        Craft::$app->getDb()->createCommand()
-            ->update(Table::PLUGINS, [
-                'licenseKeyStatus' => $licenseKeyStatus,
-                'licensedEdition' => $licensedEdition,
-            ], ['handle' => $handle])
-            ->execute();
+        Db::update(Table::PLUGINS, [
+            'licenseKeyStatus' => $licenseKeyStatus,
+            'licensedEdition' => $licensedEdition,
+        ], [
+            'handle' => $handle,
+        ]);
 
         // Update our cache of it
         if (isset($this->_enabledPluginInfo[$handle])) {
@@ -1277,7 +1261,6 @@ class Plugins extends Component
      */
     private function _registerPlugin(PluginInterface $plugin)
     {
-        /** @var Plugin $plugin */
         $this->_plugins[$plugin->id] = $plugin;
         Craft::$app->setModule($plugin->id, $plugin);
     }
@@ -1289,7 +1272,6 @@ class Plugins extends Component
      */
     private function _unregisterPlugin(PluginInterface $plugin)
     {
-        /** @var Plugin $plugin */
         unset($this->_plugins[$plugin->id]);
         Craft::$app->setModule($plugin->id, null);
     }
@@ -1304,7 +1286,6 @@ class Plugins extends Component
     {
         $ref = new \ReflectionClass($plugin);
         $ns = $ref->getNamespaceName();
-        /** @var Plugin $plugin */
         $plugin->set('migrator', [
             'class' => MigrationManager::class,
             'type' => MigrationManager::TYPE_PLUGIN,

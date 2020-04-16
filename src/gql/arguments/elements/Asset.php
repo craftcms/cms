@@ -26,7 +26,7 @@ class Asset extends ElementArguments
      */
     public static function getArguments(): array
     {
-        return array_merge(parent::getArguments(), self::getContentArguments(),  [
+        return array_merge(parent::getArguments(), self::getContentArguments(), [
             'volumeId' => [
                 'name' => 'volumeId',
                 'type' => Type::listOf(QueryArgument::getType()),

@@ -8,7 +8,6 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\Widget;
 use craft\base\WidgetInterface;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
@@ -87,7 +86,6 @@ class DashboardController extends Controller
 
         // Assemble the list of existing widgets
         $variables['widgets'] = [];
-        /** @var Widget[] $widgets */
         $widgets = $dashboardService->getAllWidgets();
         $allWidgetJs = '';
 
@@ -179,7 +177,6 @@ class DashboardController extends Controller
         $widgetId = $request->getRequiredBodyParam('widgetId');
 
         // Get the existing widget
-        /** @var Widget $widget */
         $widget = $dashboardService->getWidgetById($widgetId);
 
         if (!$widget) {
@@ -482,7 +479,6 @@ class DashboardController extends Controller
      */
     private function _getWidgetInfo(WidgetInterface $widget)
     {
-        /** @var Widget $widget */
         $view = $this->getView();
         $namespace = $view->getNamespace();
 
@@ -573,7 +569,6 @@ class DashboardController extends Controller
      */
     private function _saveAndReturnWidget(WidgetInterface $widget): Response
     {
-        /** @var Widget $widget */
         $dashboardService = Craft::$app->getDashboard();
 
         if ($dashboardService->saveWidget($widget)) {

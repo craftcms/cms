@@ -680,8 +680,8 @@ class UserQuery extends ElementQuery
             // Get the users that have that permission via a user group
             $permittedUserIdsViaGroups = (new Query())
                 ->select(['g_u.userId'])
-                ->from(['{{%usergroups_users}} g_u'])
-                ->innerJoin('{{%userpermissions_usergroups}} p_g', '[[p_g.groupId]] = [[g_u.groupId]]')
+                ->from(['g_u' => Table::USERGROUPS_USERS])
+                ->innerJoin(['p_g' => Table::USERPERMISSIONS_USERGROUPS], '[[p_g.groupId]] = [[g_u.groupId]]')
                 ->where(['p_g.permissionId' => $this->can])
                 ->column();
 

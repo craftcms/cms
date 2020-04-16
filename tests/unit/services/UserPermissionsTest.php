@@ -46,7 +46,7 @@ class UserPermissionsTest extends TestCase
      */
     protected $activeUser;
 
-    public function _fixtures() : array
+    public function _fixtures(): array
     {
         return [
             'user-groups' => [
@@ -125,9 +125,9 @@ class UserPermissionsTest extends TestCase
     }
 
     /**
-     * @todo Tests for _filterOrphanedPermissions - use codecov.io for this.
      * @throws YiiDbException
      * @throws WrongEditionException
+     * @todo Tests for _filterOrphanedPermissions - use codecov.io for this.
      */
     public function testDoesUserHavePermission()
     {

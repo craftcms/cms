@@ -8,9 +8,8 @@
 namespace craft\fields;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\base\Volume;
+use craft\base\VolumeInterface;
 use craft\db\Table as DbTable;
 use craft\elements\Asset;
 use craft\elements\db\AssetQuery;
@@ -308,7 +307,6 @@ class Assets extends BaseRelationField
         $filenames = [];
 
         // Get all the value's assets' filenames
-        /** @var Element $element */
         /** @var AssetQuery $value */
         $value = $element->getFieldValue($this->handle);
         foreach ($value->all() as $asset) {
@@ -340,7 +338,6 @@ class Assets extends BaseRelationField
      */
     public function validateFileSize(ElementInterface $element)
     {
-        /** @var Element $element */
         $maxSize = AssetsHelper::getMaxUploadSize();
 
         $filenames = [];
@@ -472,7 +469,6 @@ class Assets extends BaseRelationField
         };
 
         // Folder creation and file uploads have been handles for propagating elements already.
-        /** @var Element $element */
         if (!$element->propagating) {
             // Were there any uploaded files?
             $uploadedFiles = $this->_getUploadedFiles($element);
@@ -592,7 +588,6 @@ class Assets extends BaseRelationField
                 // Make sure they have permission to view the volume
                 // (Use singleUploadLocationSource here because the actual folder could belong to a temp volume)
                 $volumeId = $this->_volumeIdBySourceKey($this->singleUploadLocationSource);
-                /** @var Volume|null $volume */
                 $volume = $volumeId ? Craft::$app->getVolumes()->getVolumeById($volumeId) : null;
                 if (!$volume || !Craft::$app->getUser()->checkPermission("viewVolume:{$volume->uid}")) {
                     return [];
@@ -630,7 +625,6 @@ class Assets extends BaseRelationField
             foreach ($sources as $i => $source) {
                 if (strpos($source, 'folder:') === 0) {
                     $folder = $assetsService->getFolderByUid(explode(':', $source)[1]);
-                    /** @var Volume $volume */
                     $volume = $folder ? $folder->getVolume() : null;
                     if ($volume && $userService->checkPermission("viewVolume:{$volume->uid}")) {
                         $permittedSources[] = $source;
@@ -680,7 +674,6 @@ class Assets extends BaseRelationField
      */
     private function _getUploadedFiles(ElementInterface $element): array
     {
-        /** @var Element $element */
         $uploadedFiles = [];
 
         if (ElementHelper::rootElement($element)->getIsRevision()) {
@@ -851,7 +844,6 @@ class Assets extends BaseRelationField
         $userFolder = null;
         $folderId = null;
 
-        /** @var Element $element */
         if ($this->useSingleFolder) {
             $uploadVolume = $this->singleUploadLocationSource;
             $subpath = $this->singleUploadLocationSubpath;
@@ -899,7 +891,7 @@ class Assets extends BaseRelationField
         // If we have resolved everything to a temporary user folder, fine
         if ($userFolder !== null) {
             $folderId = $userFolder->id;
-        // But in all other cases, make it the default upload location, too
+            // But in all other cases, make it the default upload location, too
         } else if (!$this->useSingleFolder) {
             $this->_defaultUploadLocation = $this->_getSourcePathByFolderId($folderId);
         }
@@ -921,16 +913,14 @@ class Assets extends BaseRelationField
             return null;
         }
 
-        /** @var Volume|null $volume */
         $volume = Craft::$app->getVolumes()->getVolumeByUid($parts[1]);
-
         return $volume ? $volume->id : null;
     }
 
     /**
      * Returns the target upload volume for the field.
      *
-     * @return Volume|null
+     * @return VolumeInterface|null
      */
     private function _uploadVolume()
     {
@@ -961,7 +951,6 @@ class Assets extends BaseRelationField
 
             if ($folder) {
                 try {
-                    /** @var Volume $volume */
                     $volume = $folder->getVolume();
                     return 'volume:' . $volume->uid;
                 } catch (InvalidConfigException $e) {
@@ -983,7 +972,6 @@ class Assets extends BaseRelationField
     {
         if ($sourceKey && is_string($sourceKey) && strpos($sourceKey, 'volume:') === 0) {
             $parts = explode(':', $sourceKey);
-            /** @var Volume|null $volume */
             $volume = Craft::$app->getVolumes()->getVolumeByUid($parts[1]);
 
             if ($volume && $folder = Craft::$app->getAssets()->getRootFolderByVolumeId($volume->id)) {

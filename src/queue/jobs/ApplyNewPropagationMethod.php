@@ -8,11 +8,8 @@
 namespace craft\queue\jobs;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\elements\MatrixBlock;
 use craft\events\BatchElementActionEvent;
-use craft\fields\Matrix;
 use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
 use craft\queue\BaseJob;
@@ -81,7 +78,6 @@ class ApplyNewPropagationMethod extends BaseJob
                 }
 
                 // Load the element in any sites that it's about to be deleted for
-                /** @var Element $element */
                 $element = $e->element;
                 $otherSiteElements = $elementType::find()
                     ->id($element->id)
@@ -94,7 +90,6 @@ class ApplyNewPropagationMethod extends BaseJob
                 // Duplicate those blocks so their content can live on
                 while (!empty($otherSiteElements)) {
                     $otherSiteElement = array_pop($otherSiteElements);
-                    /** @var Element $newElement */
                     $newElement = $elementsService->duplicateElement($otherSiteElement);
                     // This may support more than just the site it was saved in
                     $newElementSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($newElement), 'siteId');

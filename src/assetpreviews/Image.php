@@ -10,7 +10,6 @@ namespace craft\assetpreviews;
 
 use Craft;
 use craft\base\AssetPreviewHandler;
-use craft\base\Volume;
 
 /**
  * Provides functionality to preview images.
@@ -25,7 +24,6 @@ class Image extends AssetPreviewHandler
      */
     public function getPreviewHtml(): string
     {
-        /** @var Volume $volume */
         $volume = $this->asset->getVolume();
 
         if ($volume->hasUrls) {

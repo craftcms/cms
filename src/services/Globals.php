@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\Field;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\GlobalSet;
@@ -381,7 +380,7 @@ class Globals extends Component
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            $globalSetRecord = $this->_getGlobalSetRecord($globalSetUid);
+            $globalSetRecord = $this->_getGlobalSetRecord($globalSetUid, true);
             $isNewSet = $globalSetRecord->getIsNewRecord();
 
             $globalSetRecord->name = $data['name'];
@@ -403,28 +402,28 @@ class Globals extends Component
             }
 
             // Make sure there's an element for it.
-            $setId = Db::idByUid(Table::GLOBALSETS, $globalSetUid);
-
+            $element = null;
             $elementsService = Craft::$app->getElements();
-
-            if (!$setId) {
-                $element = new GlobalSet();
-            } else {
+            if (!$globalSetRecord->getIsNewRecord()) {
                 $element = GlobalSet::find()
-                    ->id($setId)
+                    ->id($globalSetRecord->id)
                     ->trashed(null)
                     ->one();
 
                 // If it's trashed, attempt to restore it, otherwise create a new element
-                if ($element->trashed) {
+                if ($element && $element->trashed) {
                     $element->fieldLayoutId = $globalSetRecord->fieldLayoutId;
                     if (
                         !$elementsService->saveElement($element) ||
                         !$elementsService->restoreElement($element)
                     ) {
-                        $element = new GlobalSet();
+                        $element = null;
                     }
                 }
+            }
+
+            if (!$element) {
+                $element = new GlobalSet();
             }
 
             $element->name = $globalSetRecord->name;
@@ -527,7 +526,6 @@ class Globals extends Component
      */
     public function pruneDeletedField(FieldEvent $event)
     {
-        /** @var Field $field */
         $field = $event->field;
         $fieldUid = $field->uid;
 
@@ -553,7 +551,9 @@ class Globals extends Component
         }
 
         // Nuke all the layout fields from the DB
-        Craft::$app->getDb()->createCommand()->delete('{{%fieldlayoutfields}}', ['fieldId' => $field->id])->execute();
+        Db::delete(Table::FIELDLAYOUTFIELDS, [
+            'fieldId' => $field->id,
+        ]);
 
         // Allow events again
         $projectConfig->muteEvents = false;
@@ -563,10 +563,13 @@ class Globals extends Component
      * Gets a global set's record by uid.
      *
      * @param string $uid
+     * @param bool $withTrashed Whether to include trashed sections in search
      * @return GlobalSetRecord
      */
-    private function _getGlobalSetRecord(string $uid): GlobalSetRecord
+    private function _getGlobalSetRecord(string $uid, bool $withTrashed = false): GlobalSetRecord
     {
-        return GlobalSetRecord::findOne(['uid' => $uid]) ?? new GlobalSetRecord();
+        $query = $withTrashed ? GlobalSetRecord::findWithTrashed() : GlobalSetRecord::find();
+        $query->andWhere(['uid' => $uid]);
+        return $query->one() ?? new GlobalSetRecord();
     }
 }

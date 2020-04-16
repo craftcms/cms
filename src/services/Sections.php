@@ -9,7 +9,6 @@ namespace craft\services;
 
 use Craft;
 use craft\base\Element;
-use craft\base\Field;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Entry;
@@ -372,8 +371,8 @@ class Sections extends Component
                 'sections_sites.uriFormat',
                 'sections_sites.template',
             ])
-            ->from(['{{%sections_sites}} sections_sites'])
-            ->innerJoin('{{%sites}} sites', '[[sites.id]] = [[sections_sites.siteId]]')
+            ->from(['sections_sites' => Table::SECTIONS_SITES])
+            ->innerJoin(['sites' => Table::SITES], '[[sites.id]] = [[sections_sites.siteId]]')
             ->where(['sections_sites.sectionId' => $sectionId])
             ->orderBy(['sites.sortOrder' => SORT_ASC])
             ->all();
@@ -936,7 +935,6 @@ class Sections extends Component
      */
     public function pruneDeletedField(FieldEvent $event)
     {
-        /** @var Field $field */
         $field = $event->field;
         $fieldUid = $field->uid;
 
@@ -966,7 +964,9 @@ class Sections extends Component
         }
 
         // Nuke all the layout fields from the DB
-        Craft::$app->getDb()->createCommand()->delete('{{%fieldlayoutfields}}', ['fieldId' => $field->id])->execute();
+        Db::delete(Table::FIELDLAYOUTFIELDS, [
+            'fieldId' => $field->id,
+        ]);
 
         // Allow events again
         $projectConfig->muteEvents = false;
@@ -1487,8 +1487,8 @@ class Sections extends Component
                 'sections.uid',
                 'structures.maxLevels',
             ])
-            ->leftJoin('{{%structures}} structures', $joinCondition)
-            ->from(['{{%sections}} sections'])
+            ->leftJoin(['structures' => Table::STRUCTURES], $joinCondition)
+            ->from(['sections' => Table::SECTIONS])
             ->where($condition)
             ->orderBy(['name' => SORT_ASC]);
 

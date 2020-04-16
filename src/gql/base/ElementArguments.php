@@ -137,7 +137,8 @@ abstract class ElementArguments extends Arguments
      *
      * @return array
      */
-    public static function getDraftArguments(): array {
+    public static function getDraftArguments(): array
+    {
         return [
             'drafts' => [
                 'name' => 'drafts',

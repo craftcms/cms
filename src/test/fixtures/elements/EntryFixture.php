@@ -85,6 +85,7 @@ abstract class EntryFixture extends ElementFixture
 
         return $query->one();
     }
+
     /**
      * @inheritdoc
      */

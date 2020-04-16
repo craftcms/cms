@@ -7,7 +7,6 @@
 
 namespace craft\errors;
 
-use craft\base\Volume;
 use craft\base\VolumeInterface;
 use craft\models\AssetIndexData;
 use craft\models\VolumeFolder;
@@ -28,7 +27,7 @@ class MissingAssetException extends Exception
     public $indexEntry;
 
     /**
-     * @var VolumeInterface|Volume
+     * @var VolumeInterface
      */
     public $volume;
 

@@ -8,7 +8,6 @@
 namespace craft\fields;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\fields\data\ColorData;
@@ -342,7 +341,6 @@ class Table extends Field
      */
     public function validateTableData(ElementInterface $element)
     {
-        /** @var Element $element */
         $value = $element->getFieldValue($this->handle);
 
         if (!empty($value) && !empty($this->columns)) {
@@ -537,7 +535,6 @@ class Table extends Field
      */
     private function _getInputHtml($value, ElementInterface $element = null, bool $static): string
     {
-        /** @var Element $element */
         if (empty($this->columns)) {
             return '';
         }

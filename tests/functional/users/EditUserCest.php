@@ -49,7 +49,7 @@ class EditUserCest
      */
     public function testSaveUserFunctions(FunctionalTester $I)
     {
-        $I->amOnPage('/'.$this->cpTrigger.'/users/new');
+        $I->amOnPage('/' . $this->cpTrigger . '/users/new');
         $I->see('New User');
 
         $variables = [
@@ -70,7 +70,7 @@ class EditUserCest
         $user = $I->assertElementsExist(User::class, $variables, 1, true);
         $user = ArrayHelper::firstValue($user);
 
-        $I->amOnPage('/'.$this->cpTrigger.'/users/'.$user->id.'');
+        $I->amOnPage('/' . $this->cpTrigger . '/users/' . $user->id . '');
         $I->submitForm('#userform', []);
     }
 
@@ -79,7 +79,7 @@ class EditUserCest
      */
     public function testNewUserValidationError(FunctionalTester $I)
     {
-        $I->amOnPage('/'.$this->cpTrigger.'/users/new');
+        $I->amOnPage('/' . $this->cpTrigger . '/users/new');
         $I->see('New User');
 
         $I->submitForm('#userform', []);
@@ -101,7 +101,7 @@ class EditUserCest
      */
     public function testMyAccountPage(FunctionalTester $I)
     {
-        $I->amOnPage('/'.$this->cpTrigger.'/myaccount');
+        $I->amOnPage('/' . $this->cpTrigger . '/myaccount');
 
         $I->see('My account');
 
@@ -127,7 +127,7 @@ class EditUserCest
      */
     public function testCustomFieldValidation(FunctionalTester $I)
     {
-        $I->amOnPage('/'.$this->cpTrigger.'/myaccount');
+        $I->amOnPage('/' . $this->cpTrigger . '/myaccount');
 
         $I->see('My account');
 

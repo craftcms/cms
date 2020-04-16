@@ -12,8 +12,7 @@ use Codeception\Module\Yii2;
 use Codeception\PHPUnit\TestCase;
 use Codeception\Stub;
 use Codeception\TestInterface;
-use craft\base\Element;
-use craft\base\Field;
+use craft\base\ElementInterface;
 use craft\config\DbConfig;
 use craft\db\Connection;
 use craft\db\Query;
@@ -367,14 +366,14 @@ class Craft extends Yii2
     }
 
     /**
-     * @param Element $element
+     * @param ElementInterface $element
      * @param bool $failHard
      * @return bool
      * @throws ElementNotFoundException
      * @throws Throwable
      * @throws YiiBaseException
      */
-    public function saveElement(Element $element, bool $failHard = true): bool
+    public function saveElement(ElementInterface $element, bool $failHard = true): bool
     {
         if (!\Craft::$app->getElements()->saveElement($element)) {
             if ($failHard) {
@@ -527,7 +526,6 @@ class Craft extends Yii2
             return null;
         }
 
-        /** @var Field $field */
         $layoutId = (new Query())
             ->select(['layoutId'])
             ->from([Table::FIELDLAYOUTFIELDS])

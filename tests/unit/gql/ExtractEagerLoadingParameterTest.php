@@ -9,13 +9,10 @@ namespace craftunit\gql;
 
 use Codeception\Test\Unit;
 use Craft;
-use craft\elements\db\EntryQuery;
-use craft\elements\Entry;
 use craft\fields\Assets;
 use craft\fields\Entries;
 use craft\fields\Matrix;
 use craft\gql\ElementQueryConditionBuilder;
-use craft\gql\resolvers\elements\Entry as EntryResolver;
 use craft\models\MatrixBlockType;
 use crafttests\fixtures\GqlSchemasFixture;
 use GraphQL\Language\AST\DocumentNode;
@@ -205,13 +202,13 @@ GQL;
             'with' => [
                 [
                     'assetField', [
-                        'withTransforms' => [
-                            ['width' => 400, 'height' => 400],
-                            ['width' => 400],
-                            'whammy'
-                        ],
+                    'withTransforms' => [
+                        ['width' => 400, 'height' => 400],
+                        ['width' => 400],
+                        'whammy'
+                    ],
                     'volumeId' => [5, 7]
-                    ]
+                ]
                 ]
             ]
         ];
@@ -229,7 +226,8 @@ GQL;
             ],
             [
                 '{ entries { assetField { filename }}}',
-                ['with' => [['assetField', ['volumeId' => [5, 7]]]]
+                [
+                    'with' => [['assetField', ['volumeId' => [5, 7]]]]
                 ],
                 '[EntryInterface]',
             ],

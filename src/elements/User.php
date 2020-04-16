@@ -21,6 +21,7 @@ use craft\elements\db\UserQuery;
 use craft\events\AuthenticateUserEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
+use craft\helpers\Db;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
@@ -1370,11 +1371,9 @@ class User extends Element implements IdentityInterface
 
         if (!$isNew && $changePassword) {
             // Destroy all sessions for this user
-            Craft::$app->getDb()->createCommand()
-                ->delete(Table::SESSIONS, [
-                    'userId' => $this->id,
-                ])
-                ->execute();
+            Db::delete(Table::SESSIONS, [
+                'userId' => $this->id,
+            ]);
 
             // If this is for the current user, generate a new user session token for them
             if ($this->getIsCurrent()) {
@@ -1393,14 +1392,13 @@ class User extends Element implements IdentityInterface
         }
 
         // Do all this stuff within a transaction
-        $db = Craft::$app->getDb();
-        $transaction = $db->beginTransaction();
+        $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
             // Get the entry IDs that belong to this user
             $entryQuery = (new Query())
                 ->select('e.id')
-                ->from('{{%entries}} e')
+                ->from(['e' => Table::ENTRIES])
                 ->where(['e.authorId' => $this->id]);
 
             // Should we transfer the content to a new user?
@@ -1417,16 +1415,11 @@ class User extends Element implements IdentityInterface
                 ];
 
                 foreach ($userRefs as $table => $column) {
-                    $db->createCommand()
-                        ->update(
-                            $table,
-                            [
-                                $column => $this->inheritorOnDelete->id
-                            ],
-                            [
-                                $column => $this->id
-                            ], [], false)
-                        ->execute();
+                    Db::update($table, [
+                        $column => $this->inheritorOnDelete->id
+                    ], [
+                        $column => $this->id,
+                    ], [], false);
                 }
             } else {
                 // Get the entry IDs along with one of the sites they’re enabled in
@@ -1434,7 +1427,7 @@ class User extends Element implements IdentityInterface
                     ->addSelect([
                         'siteId' => (new Query())
                             ->select('i18n.siteId')
-                            ->from('{{%elements_sites}} i18n')
+                            ->from(['i18n' => Table::ELEMENTS_SITES])
                             ->where('[[i18n.elementId]] = [[e.id]]')
                             ->limit(1)
                     ])

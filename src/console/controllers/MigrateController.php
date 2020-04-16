@@ -8,7 +8,7 @@
 namespace craft\console\controllers;
 
 use Craft;
-use craft\base\Plugin;
+use craft\base\PluginInterface;
 use craft\console\ControllerTrait;
 use craft\db\MigrationManager;
 use craft\errors\InvalidPluginException;
@@ -56,7 +56,7 @@ class MigrateController extends BaseMigrateController
     public $type = MigrationManager::TYPE_CONTENT;
 
     /**
-     * @var string|Plugin|null The handle of the plugin to use during migration operations, or the plugin itself
+     * @var string|PluginInterface|null The handle of the plugin to use during migration operations, or the plugin itself
      */
     public $plugin;
 

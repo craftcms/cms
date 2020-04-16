@@ -11,6 +11,7 @@ use Craft;
 use craft\console\Controller;
 use craft\db\Table;
 use craft\helpers\Console;
+use craft\helpers\Db;
 use craft\services\Plugins;
 use yii\console\ExitCode;
 
@@ -106,12 +107,12 @@ class ProjectConfigController extends Controller
     public function actionRebuild(): int
     {
         $projectConfig = Craft::$app->getProjectConfig();
-        
+
         if (!file_exists(Craft::$app->getPath()->getProjectConfigFilePath())) {
             $this->stdout('No project.yaml file found. Generating one from internal config ... ', Console::FG_YELLOW);
             $projectConfig->regenerateYamlFromConfig();
         }
-        
+
         $this->stdout('Rebuilding the project config from the current state ... ', Console::FG_YELLOW);
 
         try {
@@ -152,9 +153,9 @@ class ProjectConfigController extends Controller
                 Craft::$app->getErrorHandler()->logException($e);
 
                 // Just remove the row
-                Craft::$app->getDb()->createCommand()
-                    ->delete(Table::PLUGINS, ['handle' => $handle])
-                    ->execute();
+                Db::delete(Table::PLUGINS, [
+                    'handle' => $handle,
+                ]);
             }
         }
     }

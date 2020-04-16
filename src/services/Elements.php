@@ -13,7 +13,6 @@ use craft\base\ElementAction;
 use craft\base\ElementActionInterface;
 use craft\base\ElementExporterInterface;
 use craft\base\ElementInterface;
-use craft\base\Field;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
 use craft\db\Query;
@@ -57,7 +56,6 @@ use yii\base\Behavior;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
-use yii\base\NotSupportedException;
 use yii\db\Exception as DbException;
 
 /**
@@ -310,7 +308,6 @@ class Elements extends Component
             return null;
         }
 
-        /** @var Element $elementType */
         /** @var ElementQuery $query */
         $query = $elementType::find();
         $query->id = $elementId;
@@ -366,8 +363,8 @@ class Elements extends Component
         // First get the element ID and type
         $query = (new Query())
             ->select(['elements.id', 'elements.type'])
-            ->from(['{{%elements}} elements'])
-            ->innerJoin('{{%elements_sites}} elements_sites', '[[elements_sites.elementId]] = [[elements.id]]')
+            ->from(['elements' => Table::ELEMENTS])
+            ->innerJoin(['elements_sites' => Table::ELEMENTS_SITES], '[[elements_sites.elementId]] = [[elements.id]]')
             ->where([
                 'elements_sites.siteId' => $siteId,
             ]);
@@ -527,7 +524,6 @@ class Elements extends Component
     public function saveElement(ElementInterface $element, bool $runValidation = true, bool $propagate = true, bool $updateSearchIndex = null): bool
     {
         // Force propagation for new elements
-        /** @var Element $element */
         $propagate = !$element->id || $propagate;
 
         return $this->_saveElementInternal($element, $runValidation, $propagate, $updateSearchIndex);
@@ -560,7 +556,6 @@ class Elements extends Component
             foreach ($query->each() as $element) {
                 $position++;
 
-                /** @var Element $element */
                 $element->setScenario(Element::SCENARIO_ESSENTIALS);
                 $element->resaving = true;
 
@@ -657,7 +652,6 @@ class Elements extends Component
             foreach ($query->each() as $element) {
                 $position++;
 
-                /** @var Element $element */
                 $element->setScenario(Element::SCENARIO_ESSENTIALS);
                 $elementSiteIds = $siteIds ?? ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($element), 'siteId');
                 /** @var ElementInterface|string $elementType */
@@ -679,7 +673,6 @@ class Elements extends Component
                     foreach ($elementSiteIds as $siteId) {
                         if ($siteId != $element->siteId) {
                             // Make sure the site element wasn't updated more recently than the main one
-                            /** @var Element $siteElement */
                             $siteElement = $this->getElementById($element->id, $elementType, $siteId);
                             if ($siteElement === null || $siteElement->dateUpdated < $element->dateUpdated) {
                                 $this->propagateElement($element, $siteId, $siteElement ?? false);
@@ -731,14 +724,12 @@ class Elements extends Component
     public function duplicateElement(ElementInterface $element, array $newAttributes = []): ElementInterface
     {
         // Make sure the element exists
-        /** @var Element $element */
         if (!$element->id) {
             throw new Exception('Attempting to duplicate an unsaved element.');
         }
 
         // Create our first clone for the $element's site
         $element->getFieldValues();
-        /** @var Element $mainClone */
         $mainClone = clone $element;
         $mainClone->id = null;
         $mainClone->uid = null;
@@ -812,7 +803,6 @@ class Elements extends Component
                     }
 
                     $siteElement->getFieldValues();
-                    /** @var Element $siteClone */
                     $siteClone = clone $siteElement;
                     $siteClone->duplicateOf = $siteElement;
                     $siteClone->propagating = true;
@@ -879,7 +869,6 @@ class Elements extends Component
      */
     public function updateElementSlugAndUri(ElementInterface $element, bool $updateOtherSites = true, bool $updateDescendants = true, bool $queue = false)
     {
-        /** @var Element $element */
         if ($queue) {
             Queue::push(new UpdateElementSlugsAndUris([
                 'elementId' => $element->id,
@@ -903,18 +892,13 @@ class Elements extends Component
             ]));
         }
 
-        Craft::$app->getDb()->createCommand()
-            ->update(
-                Table::ELEMENTS_SITES,
-                [
-                    'slug' => $element->slug,
-                    'uri' => $element->uri
-                ],
-                [
-                    'elementId' => $element->id,
-                    'siteId' => $element->siteId
-                ])
-            ->execute();
+        Db::update(Table::ELEMENTS_SITES, [
+            'slug' => $element->slug,
+            'uri' => $element->uri,
+        ], [
+            'elementId' => $element->id,
+            'siteId' => $element->siteId,
+        ]);
 
         // Fire a 'afterUpdateSlugAndUri' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_UPDATE_SLUG_AND_URI)) {
@@ -942,7 +926,6 @@ class Elements extends Component
      */
     public function updateElementSlugAndUriInOtherSites(ElementInterface $element)
     {
-        /** @var Element $element */
         foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
             if ($siteId == $element->siteId) {
                 continue;
@@ -968,7 +951,6 @@ class Elements extends Component
      */
     public function updateDescendantSlugsAndUris(ElementInterface $element, bool $updateOtherSites = true, bool $queue = false)
     {
-        /** @var Element $element */
         /** @var ElementQuery $query */
         $query = $element::find()
             ->descendantOf($element)
@@ -1043,10 +1025,7 @@ class Elements extends Component
      */
     public function mergeElements(ElementInterface $mergedElement, ElementInterface $prevailingElement): bool
     {
-        /** @var Element $mergedElement */
-        /** @var Element $prevailingElement */
-        $db = Craft::$app->getDb();
-        $transaction = $db->beginTransaction();
+        $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             // Update any relations that point to the merged element
             $relations = (new Query())
@@ -1068,16 +1047,11 @@ class Elements extends Component
                     ->exists();
 
                 if (!$persistingElementIsRelatedToo) {
-                    $db->createCommand()
-                        ->update(
-                            Table::RELATIONS,
-                            [
-                                'targetId' => $prevailingElement->id
-                            ],
-                            [
-                                'id' => $relation['id']
-                            ])
-                        ->execute();
+                    Db::update(Table::RELATIONS, [
+                        'targetId' => $prevailingElement->id,
+                    ], [
+                        'id' => $relation['id'],
+                    ]);
                 }
             }
 
@@ -1099,15 +1073,11 @@ class Elements extends Component
                     ->exists();
 
                 if (!$persistingElementIsInStructureToo) {
-                    $db->createCommand()
-                        ->update(Table::STRUCTUREELEMENTS,
-                            [
-                                'elementId' => $prevailingElement->id
-                            ],
-                            [
-                                'id' => $structureElement['id']
-                            ])
-                        ->execute();
+                    Db::update(Table::STRUCTUREELEMENTS, [
+                        'elementId' => $prevailingElement->id,
+                    ], [
+                        'id' => $structureElement['id'],
+                    ]);
                 }
             }
 
@@ -1206,7 +1176,6 @@ class Elements extends Component
      */
     public function deleteElement(ElementInterface $element, bool $hardDelete = false): bool
     {
-        /** @var Element $element */
         // Fire a 'beforeDeleteElement' event
         $event = new DeleteElementEvent([
             'element' => $element,
@@ -1240,12 +1209,12 @@ class Elements extends Component
             Craft::$app->getTemplateCaches()->deleteCachesByElementId($element->id, false);
 
             if ($element->hardDelete) {
-                $db->createCommand()
-                    ->delete(Table::ELEMENTS, ['id' => $element->id])
-                    ->execute();
-                $db->createCommand()
-                    ->delete(Table::SEARCHINDEX, ['elementId' => $element->id])
-                    ->execute();
+                Db::delete(Table::ELEMENTS, [
+                    'id' => $element->id,
+                ]);
+                Db::delete(Table::SEARCHINDEX, [
+                    'elementId' => $element->id,
+                ]);
             } else {
                 // Soft delete the elements table row
                 $db->createCommand()
@@ -1300,7 +1269,6 @@ class Elements extends Component
     {
         // Fire "before" events
         foreach ($elements as $element) {
-            /** @var Element $element */
             // Fire a 'beforeRestoreElement' event
             if ($this->hasEventHandlers(self::EVENT_BEFORE_RESTORE_ELEMENT)) {
                 $this->trigger(self::EVENT_BEFORE_RESTORE_ELEMENT, new ElementEvent([
@@ -1331,7 +1299,7 @@ class Elements extends Component
 
                 // Get the element in each supported site
                 $siteElements = [];
-                /** @var Element|string $class */
+                /** @var ElementInterface|string $class */
                 $class = get_class($element);
                 foreach ($supportedSites as $siteInfo) {
                     $siteId = $siteInfo['siteId'];
@@ -1567,7 +1535,7 @@ class Elements extends Component
 
         foreach ($allRefTagTokens as $siteId => $siteTokens) {
             foreach ($siteTokens as $elementType => $tokensByType) {
-                /** @var Element|string $elementType */
+                /** @var ElementInterface|string $elementType */
                 foreach ($tokensByType as $refType => $tokensByName) {
                     // Get the elements, indexed by their ref value
                     $refNames = array_keys($tokensByName);
@@ -1614,7 +1582,6 @@ class Elements extends Component
      */
     public function setPlaceholderElement(ElementInterface $element)
     {
-        /** @var Element $element */
         // Won't be able to do anything with this if it doesn't have an ID or site ID
         if (!$element->id || !$element->siteId) {
             throw new InvalidArgumentException('Placeholder element is missing an ID');
@@ -1665,7 +1632,6 @@ class Elements extends Component
     public function eagerLoadElements(string $elementType, array $elements, $with)
     {
         /** @var ElementInterface|string $elementType */
-        /** @var Element[] $elements */
         // Bail if there aren't even any elements
         if (empty($elements)) {
             return;
@@ -1814,7 +1780,6 @@ class Elements extends Component
 
                 // Tell the source elements about their eager-loaded elements
                 foreach ($elements as $sourceElement) {
-                    /** @var Element $sourceElement */
                     $targetElementIdsForSource = [];
                     $targetElementsForSource = [];
 
@@ -1909,13 +1874,11 @@ class Elements extends Component
      */
     private function _saveElementInternal(ElementInterface $element, bool $runValidation = true, bool $propagate = true, bool $updateSearchIndex = null): bool
     {
-        /** @var Element|DraftBehavior|RevisionBehavior $element */
+        /** @var ElementInterface|DraftBehavior|RevisionBehavior $element */
         $isNewElement = !$element->id;
 
         /** @var DraftBehavior|null $draftBehavior */
         $draftBehavior = $element->getIsDraft() ? $element->getBehavior('draft') : null;
-
-        $db = Craft::$app->getDb();
 
         // Are we tracking changes?
         // todo: remove the tableExists condition after the next breakpoint
@@ -1925,7 +1888,7 @@ class Elements extends Component
             $element::trackChanges() &&
             ($draftBehavior->trackChanges ?? true) &&
             !($draftBehavior->mergingChanges ?? false) &&
-            $db->tableExists(Table::CHANGEDATTRIBUTES)
+            Craft::$app->getDb()->tableExists(Table::CHANGEDATTRIBUTES)
         );
         $dirtyAttributes = [];
 
@@ -2214,33 +2177,29 @@ class Elements extends Component
             ArrayHelper::append($dirtyAttributes, ...$element->getDirtyAttributes());
 
             foreach ($dirtyAttributes as $attributeName) {
-                $db->createCommand()
-                    ->upsert(Table::CHANGEDATTRIBUTES, [
-                        'elementId' => $element->id,
-                        'siteId' => $element->siteId,
-                        'attribute' => $attributeName,
-                    ], [
-                        'dateUpdated' => $timestamp,
-                        'propagated' => $element->propagating,
-                        'userId' => $userId,
-                    ], [], false)
-                    ->execute();
+                Db::upsert(Table::CHANGEDATTRIBUTES, [
+                    'elementId' => $element->id,
+                    'siteId' => $element->siteId,
+                    'attribute' => $attributeName,
+                ], [
+                    'dateUpdated' => $timestamp,
+                    'propagated' => $element->propagating,
+                    'userId' => $userId,
+                ], [], false);
             }
 
             if (($fieldLayout = $element->getFieldLayout()) !== null) {
                 foreach ($element->getDirtyFields() as $fieldHandle) {
                     if (($field = $fieldLayout->getFieldByHandle($fieldHandle)) !== null) {
-                        $db->createCommand()
-                            ->upsert(Table::CHANGEDFIELDS, [
-                                'elementId' => $element->id,
-                                'siteId' => $element->siteId,
-                                'fieldId' => $field->id,
-                            ], [
-                                'dateUpdated' => $timestamp,
-                                'propagated' => $element->propagating,
-                                'userId' => $userId,
-                            ], [], false)
-                            ->execute();
+                        Db::upsert(Table::CHANGEDFIELDS, [
+                            'elementId' => $element->id,
+                            'siteId' => $element->siteId,
+                            'fieldId' => $field->id,
+                        ], [
+                            'dateUpdated' => $timestamp,
+                            'propagated' => $element->propagating,
+                            'userId' => $userId,
+                        ], [], false);
                     }
                 }
             }
@@ -2262,9 +2221,7 @@ class Elements extends Component
      */
     private function _propagateElement(ElementInterface $element, array $siteInfo, $siteElement = null)
     {
-        /** @var Element $element */
         // Try to fetch the element in this site
-        /** @var Element|null $siteElement */
         if ($siteElement === null && $element->id) {
             $siteElement = $this->getElementById($element->id, get_class($element), $siteInfo['siteId']);
         } else if (!$siteElement) {
@@ -2305,7 +2262,6 @@ class Elements extends Component
             } else if (($fieldLayout = $element->getFieldLayout()) !== null) {
                 // Only copy the non-translatable field values
                 foreach ($fieldLayout->getFields() as $field) {
-                    /** @var Field $field */
                     // Has this field changed, and does it produce the same translation key as it did for the master element?
                     if (
                         $element->isFieldDirty($field->handle) &&
@@ -2347,21 +2303,22 @@ class Elements extends Component
         ];
 
         $db = Craft::$app->getDb();
+        $elementsTable = Table::ELEMENTS;
 
         foreach (['draftId' => Table::DRAFTS, 'revisionId' => Table::REVISIONS] as $fk => $table) {
             if ($db->getIsMysql()) {
                 $sql = <<<SQL
-UPDATE {{%elements}} [[e]]
-INNER JOIN {$table} [[t]] ON [[t.id]] = [[e.{$fk}]]
+UPDATE $elementsTable [[e]]
+INNER JOIN $table [[t]] ON [[t.id]] = [[e.$fk]]
 SET [[e.dateDeleted]] = :dateDeleted
 WHERE [[t.sourceId]] = :sourceId
 SQL;
             } else {
                 $sql = <<<SQL
-UPDATE {{%elements}} [[e]]
+UPDATE $elementsTable [[e]]
 SET [[dateDeleted]] = :dateDeleted
-FROM {$table} [[t]]
-WHERE [[t.id]] = [[e.{$fk}]]
+FROM $table [[t]]
+WHERE [[t.id]] = [[e.$fk]]
 AND [[t.sourceId]] = :sourceId
 SQL;
             }
@@ -2380,7 +2337,7 @@ SQL;
      * @return string
      * @see parseRefs()
      */
-    private function _getRefTokenReplacement(ElementInterface $element = null, string  $attribute = null, string $fallback, string $fullMatch): string
+    private function _getRefTokenReplacement(ElementInterface $element = null, string $attribute = null, string $fallback, string $fullMatch): string
     {
         if ($element === null) {
             // Put the ref tag back

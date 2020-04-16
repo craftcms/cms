@@ -9,7 +9,7 @@ namespace crafttests\unit\behaviors;
 
 use Codeception\Test\Unit;
 use Craft;
-use craft\base\Field;
+use craft\base\FieldInterface;
 use craft\behaviors\CustomFieldBehavior;
 use craft\fields\PlainText;
 use InvalidArgumentException;
@@ -39,7 +39,7 @@ class CustomFieldBehaviorTest extends Unit
         // Make sure it exists
         new CustomFieldBehavior();
 
-        $this->assertInstanceOf(Field::class, Craft::$app->getFields()->getFieldByHandle($handle));
+        $this->assertInstanceOf(FieldInterface::class, Craft::$app->getFields()->getFieldByHandle($handle));
         $this->assertTrue(property_exists(CustomFieldBehavior::class, $handle));
         $this->assertArrayHasKey($handle, CustomFieldBehavior::$fieldHandles);
     }

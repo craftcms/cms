@@ -10,7 +10,7 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-/*!   - 2020-04-08 */
+/*!   - 2020-04-15 */
 (function ($) {
   /** global: Craft */
 
@@ -656,6 +656,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         axios.request(options).then(resolve)["catch"](reject);
       });
     },
+    _processedApiHeaders: false,
 
     /**
      * Sends a request to the Craftnet API.
@@ -669,31 +670,98 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       var _this3 = this;
 
       return new Promise(function (resolve, reject) {
-        options = options ? $.extend({}, options) : {}; // Get the latest headers
+        options = options ? $.extend({}, options) : {};
+        var cancelToken = options.cancelToken || null; // Get the latest headers
 
-        _this3.sendActionRequest('POST', 'app/api-headers', {
-          cancelToken: options.cancelToken || null
-        }).then(function (headerResponse) {
+        _this3.getApiHeaders(cancelToken).then(function (apiHeaders) {
           options.method = method;
           options.baseURL = Craft.baseApiUrl;
           options.url = uri;
-          options.headers = $.extend(headerResponse.data, options.headers || {});
+          options.headers = $.extend(apiHeaders, options.headers || {});
           options.params = $.extend(Craft.apiParams || {}, options.params || {}, {
             // Force Safari to not load from cache
             v: new Date().getTime()
           });
           axios.request(options).then(function (apiResponse) {
-            _this3.sendActionRequest('POST', 'app/process-api-response-headers', {
-              data: {
-                headers: apiResponse.headers
-              },
-              cancelToken: options.cancelToken || null
-            }).then(function () {
-              resolve(apiResponse.data);
-            })["catch"](reject);
+            // Send the API response back immediately
+            resolve(apiResponse.data);
+
+            if (!_this3._processedApiHeaders) {
+              _this3._processedApiHeaders = true;
+
+              _this3.sendActionRequest('POST', 'app/process-api-response-headers', {
+                data: {
+                  headers: apiResponse.headers
+                },
+                cancelToken: cancelToken
+              });
+            }
           })["catch"](reject);
         })["catch"](reject);
       });
+    },
+    _loadingApiHeaders: false,
+    _apiHeaders: null,
+    _apiHeaderWaitlist: [],
+
+    /**
+     * Returns the headers that should be sent with API requests.
+     *
+     * @param {Object|null} cancelToken
+     * @return {Promise}
+     */
+    getApiHeaders: function getApiHeaders(cancelToken) {
+      var _this4 = this;
+
+      return new Promise(function (resolve, reject) {
+        // Are the headers already cached?
+        if (_this4._apiHeaders) {
+          resolve(_this4._apiHeaders);
+          return;
+        } // Are we already loading them?
+
+
+        if (_this4._loadingApiHeaders) {
+          _this4._apiHeaderWaitlist.push([resolve, reject]);
+
+          return;
+        }
+
+        _this4._loadingApiHeaders = true;
+
+        _this4.sendActionRequest('POST', 'app/api-headers', {
+          cancelToken: cancelToken
+        }).then(function (response) {
+          _this4._apiHeaders = response.data;
+          _this4._loadingApiHeaders = false; // Was anything else waiting for them?
+
+          var item;
+
+          while (item = _this4._apiHeaderWaitlist.shift()) {
+            item[0](_this4._apiHeaders);
+          }
+
+          resolve(_this4._apiHeaders);
+        })["catch"](function (e) {
+          _this4._loadingApiHeaders = false; // Was anything else waiting for them?
+
+          var item;
+
+          while (item = _this4._apiHeaderWaitlist.shift()) {
+            item[1](e);
+          }
+
+          reject(e);
+        });
+      });
+    },
+
+    /**
+     * Clears the cached API headers.
+     */
+    clearCachedApiHeaders: function clearCachedApiHeaders() {
+      this._apiHeaders = null;
+      this._processedApiHeaders = false;
     },
 
     /**
@@ -705,7 +773,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
      * @return {Promise}
      */
     downloadFromUrl: function downloadFromUrl(method, url, body) {
-      var _this4 = this;
+      var _this5 = this;
 
       return new Promise(function (resolve, reject) {
         // h/t https://nehalist.io/downloading-files-from-post-requests/
@@ -743,7 +811,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           } else {
             reject();
           }
-        }.bind(_this4);
+        }.bind(_this5);
 
         request.send(body);
       });
@@ -1498,6 +1566,19 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
      * @param {object} settings
      */
     createElementEditor: function createElementEditor(elementType, element, settings) {
+      // Param mapping
+      if (typeof settings === 'undefined' && $.isPlainObject(element)) {
+        // (settings)
+        settings = element;
+        element = null;
+      } else if (_typeof(settings) !== 'object') {
+        settings = {};
+      }
+
+      if (!settings.elementType) {
+        settings.elementType = elementType;
+      }
+
       var func;
 
       if (typeof this._elementEditorClasses[elementType] !== 'undefined') {
@@ -1959,9 +2040,11 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           this.hud = new Garnish.HUD(hudTrigger, $hudContents, {
             bodyClass: 'body elementeditor',
             closeOtherHUDs: false,
-            onShow: $.proxy(this, 'onShowHud'),
-            onHide: $.proxy(this, 'onHideHud'),
-            onSubmit: $.proxy(this, 'saveElement')
+            hideOnEsc: false,
+            hideOnShadeClick: false,
+            onShow: this.onShowHud.bind(this),
+            onHide: this.onHideHud.bind(this),
+            onSubmit: this.saveElement.bind(this)
           });
           this.hud.$hud.data('elementEditor', this); // Disable browser input validation
 
@@ -1982,6 +2065,11 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       }
     },
     switchSite: function switchSite() {
+      if (this.hud.$body.serialize() !== this.initialData && !confirm(Craft.t('app', 'Switching sites will lose unsaved changes. Are you sure you want to switch sites?'))) {
+        this.$siteSelect.val(this.siteId);
+        return;
+      }
+
       var newSiteId = this.$siteSelect.val();
 
       if (newSiteId == this.siteId) {
@@ -2065,6 +2153,12 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
               }
             }
 
+            if (this.settings.elementType && Craft.elementTypeNames[this.settings.elementType]) {
+              Craft.cp.displayNotice(Craft.t('app', '{type} saved.', {
+                type: Craft.elementTypeNames[this.settings.elementType][0]
+              }));
+            }
+
             this.closeHud();
             this.onSaveElement(response);
           } else {
@@ -2081,6 +2175,10 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     // Events
     // -------------------------------------------------------------------------
     onShowHud: function onShowHud() {
+      Garnish.shortcutManager.registerShortcut({
+        keyCode: Garnish.S_KEY,
+        ctrl: true
+      }, this.saveElement.bind(this));
       this.settings.onShowHud();
       this.trigger('showHud');
     },
@@ -2392,7 +2490,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       return this._cancelToken.token;
     },
     _cancelRequests: function _cancelRequests() {
-      var _this5 = this;
+      var _this6 = this;
 
       if (this._cancelToken) {
         this._ignoreFailedRequest = true;
@@ -2400,7 +2498,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         this._cancelToken.cancel();
 
         Garnish.requestAnimationFrame(function () {
-          _this5._ignoreFailedRequest = false;
+          _this6._ignoreFailedRequest = false;
         });
       }
     },
@@ -2462,7 +2560,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       }
     },
     refreshSources: function refreshSources() {
-      var _this6 = this;
+      var _this7 = this;
 
       this.sourceSelect.removeAllItems();
       var params = {
@@ -2473,17 +2571,17 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       Craft.sendActionRequest('POST', this.settings.refreshSourcesAction, {
         data: params
       }).then(function (response) {
-        _this6.setIndexAvailable();
+        _this7.setIndexAvailable();
 
-        _this6.getSourceContainer().replaceWith(response.data.html);
+        _this7.getSourceContainer().replaceWith(response.data.html);
 
-        _this6.initSources();
+        _this7.initSources();
 
-        _this6.selectDefaultSource();
+        _this7.selectDefaultSource();
       })["catch"](function () {
-        _this6.setIndexAvailable();
+        _this7.setIndexAvailable();
 
-        if (!_this6._ignoreFailedRequest) {
+        if (!_this7._ignoreFailedRequest) {
           Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
         }
       });
@@ -2713,7 +2811,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       return params;
     },
     updateElements: function updateElements(preservePagination) {
-      var _this7 = this;
+      var _this8 = this;
 
       // Ignore if we're not fully initialized yet
       if (!this.initialized) {
@@ -2741,13 +2839,13 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         data: params,
         cancelToken: this._createCancelToken()
       }).then(function (response) {
-        _this7.setIndexAvailable();
+        _this8.setIndexAvailable();
 
-        _this7._updateView(params, response.data);
+        _this8._updateView(params, response.data);
       })["catch"](function () {
-        _this7.setIndexAvailable();
+        _this8.setIndexAvailable();
 
-        if (!_this7._ignoreFailedRequest) {
+        if (!_this8._ignoreFailedRequest) {
           Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
         }
       });
@@ -2780,7 +2878,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       this.showingActionTriggers = true;
     },
     submitAction: function submitAction(actionClass, actionParams) {
-      var _this8 = this;
+      var _this9 = this;
 
       // Make sure something's selected
       var selectedElementIds = this.view.getSelectedElementIds(),
@@ -2821,24 +2919,24 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         data: params,
         cancelToken: this._createCancelToken()
       }).then(function (response) {
-        _this8.setIndexAvailable();
+        _this9.setIndexAvailable();
 
         if (response.data.success) {
           // Update the count text too
-          _this8._resetCount();
+          _this9._resetCount();
 
-          _this8._updateView(viewParams, response.data);
+          _this9._updateView(viewParams, response.data);
 
           if (response.data.message) {
             Craft.cp.displayNotice(response.data.message);
           }
 
-          _this8.afterAction(action, params);
+          _this9.afterAction(action, params);
         } else {
           Craft.cp.displayError(response.data.message);
         }
       })["catch"](function () {
-        _this8.setIndexAvailable();
+        _this9.setIndexAvailable();
       });
     },
     afterAction: function afterAction(action, params) {
@@ -3565,7 +3663,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       return this.settings.context === 'index' && this.getSelectedSortAttribute() !== 'structure';
     },
     _updateView: function _updateView(params, response) {
-      var _this9 = this;
+      var _this10 = this;
 
       // Cleanup
       // -------------------------------------------------------------
@@ -3582,22 +3680,22 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         this.$countContainer.html('');
 
         this._countResults().then(function (total) {
-          _this9.$countSpinner.addClass('hidden');
+          _this10.$countSpinner.addClass('hidden');
 
-          var itemLabel = Craft.elementTypeNames[_this9.elementType] ? Craft.elementTypeNames[_this9.elementType][2] : 'element';
-          var itemsLabel = Craft.elementTypeNames[_this9.elementType] ? Craft.elementTypeNames[_this9.elementType][3] : 'elements';
+          var itemLabel = Craft.elementTypeNames[_this10.elementType] ? Craft.elementTypeNames[_this10.elementType][2] : 'element';
+          var itemsLabel = Craft.elementTypeNames[_this10.elementType] ? Craft.elementTypeNames[_this10.elementType][3] : 'elements';
 
-          if (!_this9._isViewPaginated()) {
+          if (!_this10._isViewPaginated()) {
             var countLabel = Craft.t('app', '{total, number} {total, plural, =1{{item}} other{{items}}}', {
               total: total,
               item: itemLabel,
               items: itemsLabel
             });
 
-            _this9.$countContainer.text(countLabel);
+            _this10.$countContainer.text(countLabel);
           } else {
-            var first = Math.min(_this9.settings.batchSize * (_this9.page - 1) + 1, total);
-            var last = Math.min(first + (_this9.settings.batchSize - 1), total);
+            var first = Math.min(_this10.settings.batchSize * (_this10.page - 1) + 1, total);
+            var last = Math.min(first + (_this10.settings.batchSize - 1), total);
 
             var _countLabel = Craft.t('app', '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}', {
               first: first,
@@ -3607,15 +3705,15 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
               items: itemsLabel
             });
 
-            var $paginationContainer = $('<div class="flex pagination"/>').appendTo(_this9.$countContainer);
-            var totalPages = Math.max(Math.ceil(total / _this9.settings.batchSize), 1);
+            var $paginationContainer = $('<div class="flex pagination"/>').appendTo(_this10.$countContainer);
+            var totalPages = Math.max(Math.ceil(total / _this10.settings.batchSize), 1);
             var $prevBtn = $('<div/>', {
-              'class': 'page-link' + (_this9.page > 1 ? '' : ' disabled'),
+              'class': 'page-link' + (_this10.page > 1 ? '' : ' disabled'),
               'data-icon': 'leftangle',
               title: Craft.t('app', 'Previous Page')
             }).appendTo($paginationContainer);
             var $nextBtn = $('<div/>', {
-              'class': 'page-link' + (_this9.page < totalPages ? '' : ' disabled'),
+              'class': 'page-link' + (_this10.page < totalPages ? '' : ' disabled'),
               'data-icon': 'rightangle',
               title: Craft.t('app', 'Next Page')
             }).appendTo($paginationContainer);
@@ -3624,8 +3722,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
               text: _countLabel
             }).appendTo($paginationContainer);
 
-            if (_this9.page > 1) {
-              _this9.addListener($prevBtn, 'click', function () {
+            if (_this10.page > 1) {
+              _this10.addListener($prevBtn, 'click', function () {
                 this.removeListener($prevBtn, 'click');
                 this.removeListener($nextBtn, 'click');
                 this.setPage(this.page - 1);
@@ -3633,8 +3731,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
               });
             }
 
-            if (_this9.page < totalPages) {
-              _this9.addListener($nextBtn, 'click', function () {
+            if (_this10.page < totalPages) {
+              _this10.addListener($nextBtn, 'click', function () {
                 this.removeListener($prevBtn, 'click');
                 this.removeListener($nextBtn, 'click');
                 this.setPage(this.page + 1);
@@ -3643,7 +3741,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
             }
           }
         })["catch"](function () {
-          _this9.$countSpinner.addClass('hidden');
+          _this10.$countSpinner.addClass('hidden');
         });
       } // Update the view with the new container + elements HTML
       // -------------------------------------------------------------
@@ -3730,28 +3828,28 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       this.onUpdateElements();
     },
     _countResults: function _countResults() {
-      var _this10 = this;
+      var _this11 = this;
 
       return new Promise(function (resolve, reject) {
-        if (_this10.totalResults !== null) {
-          resolve(_this10.totalResults);
+        if (_this11.totalResults !== null) {
+          resolve(_this11.totalResults);
         } else {
-          var params = _this10.getViewParams();
+          var params = _this11.getViewParams();
 
           delete params.criteria.offset;
           delete params.criteria.limit; // Make sure we've got an active result set ID
 
-          if (_this10.resultSet === null) {
-            _this10.resultSet = Math.floor(Math.random() * 100000000);
+          if (_this11.resultSet === null) {
+            _this11.resultSet = Math.floor(Math.random() * 100000000);
           }
 
-          params.resultSet = _this10.resultSet;
-          Craft.sendActionRequest('POST', _this10.settings.countElementsAction, {
+          params.resultSet = _this11.resultSet;
+          Craft.sendActionRequest('POST', _this11.settings.countElementsAction, {
             data: params,
-            cancelToken: _this10._createCancelToken()
+            cancelToken: _this11._createCancelToken()
           }).then(function (response) {
-            if (response.data.resultSet == _this10.resultSet) {
-              _this10.totalResults = response.data.count;
+            if (response.data.resultSet == _this11.resultSet) {
+              _this11.totalResults = response.data.count;
               resolve(response.data.count);
             } else {
               reject();
@@ -10323,7 +10421,6 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       }));
       Craft.createElementEditor(this.elementType, {
         hudTrigger: this.$newCategoryBtnGroup,
-        elementType: 'craft\\elements\\Category',
         siteId: this.siteId,
         attributes: {
           groupId: groupId
@@ -11164,14 +11261,10 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
 
       if (this.$primaryForm.length && Garnish.hasAttr(this.$primaryForm, 'data-saveshortcut')) {
-        this.addListener(Garnish.$doc, 'keydown', function (ev) {
-          if (Garnish.isCtrlKeyPressed(ev) && ev.keyCode === Garnish.S_KEY) {
-            ev.preventDefault();
-            this.submitPrimaryForm();
-          }
-
-          return true;
-        });
+        Garnish.shortcutManager.registerShortcut({
+          keyCode: Garnish.S_KEY,
+          ctrl: true
+        }, this.submitPrimaryForm.bind(this));
       }
 
       this.initTabs();
@@ -14712,7 +14805,6 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       }));
       Craft.createElementEditor(this.elementType, {
         hudTrigger: this.$newEntryBtnGroup,
-        elementType: 'craft\\elements\\Entry',
         siteId: this.siteId,
         attributes: {
           sectionId: sectionId,
@@ -17222,7 +17314,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       }
 
       this.draftEditor.getTokenizedPreviewUrl(target.url, 'x-craft-live-preview').then(function (url) {
-        var _this11 = this;
+        var _this12 = this;
 
         // Maintain the current scroll position?
         if (!resetScroll && this.iframeLoaded && this.$iframe) {
@@ -17253,9 +17345,9 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           // Allow iframe scrolling until we've successfully initialized the resizer
           scrolling: true,
           onInit: function onInit(iframe) {
-            _this11.iframeLoaded = true;
-            _this11.iframeHeight = null;
-            _this11.scrollTop = null;
+            _this12.iframeLoaded = true;
+            _this12.iframeHeight = null;
+            _this12.scrollTop = null;
             iframe.scrolling = 'no';
           }
         }, $iframe[0]);
@@ -19545,6 +19637,51 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     },
     createTextField: function createTextField(config) {
       return this.createField(this.createTextInput(config), config);
+    },
+    createCopyTextInput: function createCopyTextInput(config) {
+      var id = config.id || "copytext-".concat(Math.floor(Math.random() * 1000000000));
+      var buttonId = config.buttonId || "".concat(id, "-btn");
+      var $container = $('<div/>', {
+        'class': 'copytext'
+      });
+      var $input = this.createTextInput($.extend({}, config, {
+        readonly: true
+      })).appendTo($container);
+      var $btn = $('<button/>', {
+        type: 'button',
+        id: buttonId,
+        'class': 'btn',
+        'data-icon': 'clipboard',
+        title: Craft.t('app', 'Copy to clipboard')
+      }).appendTo($container);
+      $btn.on('click', function () {
+        $input[0].select();
+        document.execCommand('copy');
+        Craft.cp.displayNotice(Craft.t('app', 'Copied to clipboard.'));
+        $container.trigger('copy');
+      });
+      return $container;
+    },
+    createCopyTextField: function createCopyTextField(config) {
+      return this.createField(this.createCopyTextInput(config), config);
+    },
+    createCopyTextPrompt: function createCopyTextPrompt(config) {
+      var $container = $('<div/>', {
+        'class': 'modal fitted'
+      });
+      var $body = $('<div/>', {
+        'class': 'body'
+      }).appendTo($container);
+      this.createCopyTextField($.extend({
+        size: Math.max(Math.min(config.value.length, 50), 25)
+      }, config)).appendTo($body);
+      var modal = new Garnish.Modal($container, {
+        closeOtherModals: false
+      });
+      $container.on('copy', function () {
+        modal.hide();
+      });
+      return $container;
     },
     createTextarea: function createTextarea(config) {
       var $textarea = $('<textarea/>', {

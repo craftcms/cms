@@ -8,8 +8,6 @@
 namespace craft\gql\types\elements;
 
 use craft\elements\MatrixBlock as MatrixBlockElement;
-use craft\gql\base\ObjectType;
-use craft\gql\interfaces\Element as ElementInterface;
 use craft\gql\interfaces\elements\MatrixBlock as MatrixBlockInterface;
 use GraphQL\Type\Definition\ResolveInfo;
 

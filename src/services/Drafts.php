@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\behaviors\DraftBehavior;
 use craft\db\Query;
@@ -79,7 +78,6 @@ class Drafts extends Component
             return [];
         }
 
-        /** @var Element $element */
         $query = $element::find()
             ->draftOf($element)
             ->siteId($element->siteId)
@@ -107,7 +105,6 @@ class Drafts extends Component
     public function createDraft(ElementInterface $source, int $creatorId, string $name = null, string $notes = null, array $newAttributes = []): ElementInterface
     {
         // Make sure the source isn't a draft or revision
-        /** @var Element $source */
         if ($source->getIsDraft() || $source->getIsRevision()) {
             throw new InvalidArgumentException('Cannot create a draft from another draft or revision.');
         }
@@ -152,7 +149,6 @@ class Drafts extends Component
             ];
 
             // Duplicate the element
-            /** @var Element $draft */
             $draft = Craft::$app->getElements()->duplicateElement($source, $newAttributes);
 
             $transaction->commit();
@@ -194,7 +190,6 @@ class Drafts extends Component
         // Create the draft row
         $draftId = $this->_insertDraftRow(null, $creatorId, $name, $notes);
 
-        /** @var Element $element */
         $element->draftId = $draftId;
         $element->attachBehavior('draft', new DraftBehavior([
             'creatorId' => $creatorId,
@@ -214,7 +209,7 @@ class Drafts extends Component
      */
     public function mergeSourceChanges(ElementInterface $draft)
     {
-        /** @var Element|DraftBehavior $draft */
+        /** @var ElementInterface|DraftBehavior $draft */
         /** @var DraftBehavior $behavior */
         $behavior = $draft->getBehavior('draft');
 
@@ -227,7 +222,6 @@ class Drafts extends Component
             return;
         }
 
-        /** @var Element[] $sourceElements */
         $sourceElements = $draft::find()
             ->id($sourceId)
             ->siteId('*')
@@ -265,7 +259,7 @@ class Drafts extends Component
             $this->_mergeSourceChangesInternal($sourceElements[$draft->siteId], $draft);
 
             // Now the other sites
-            /** @var ElementInterface[]|Element[]|DraftBehavior[] $otherSiteDrafts */
+            /** @var ElementInterface[]|DraftBehavior[] $otherSiteDrafts */
             $otherSiteDrafts = $draft::find()
                 ->drafts()
                 ->id($draft->id)
@@ -310,7 +304,7 @@ class Drafts extends Component
      */
     private function _mergeSourceChangesInternal(ElementInterface $source, ElementInterface $draft)
     {
-        /** @var Element|DraftBehavior $draft */
+        /** @var ElementInterface|DraftBehavior $draft */
         /** @var DraftBehavior $behavior */
         $behavior = $draft->getBehavior('draft');
 
@@ -344,10 +338,9 @@ class Drafts extends Component
      */
     public function applyDraft(ElementInterface $draft): ElementInterface
     {
-        /** @var Element|DraftBehavior $draft */
+        /** @var ElementInterface|DraftBehavior $draft */
         /** @var DraftBehavior $behavior */
         $behavior = $draft->getBehavior('draft');
-        /** @var Element $source */
         $source = ElementHelper::sourceElement($draft);
 
         // Fire a 'beforeApplyDraft' event
@@ -453,13 +446,12 @@ class Drafts extends Component
         $drafts = (new Query())
             ->select(['e.draftId', 'e.type'])
             ->from(['e' => Table::ELEMENTS])
-            ->innerJoin(Table::DRAFTS . ' d', '[[d.id]] = [[e.draftId]]')
+            ->innerJoin(['d' => Table::DRAFTS], '[[d.id]] = [[e.draftId]]')
             ->where(['d.sourceId' => null])
             ->andWhere(['<', 'e.dateCreated', Db::prepareDateForDb($pastTime)])
             ->all();
 
         $elementsService = Craft::$app->getElements();
-        $db = Craft::$app->getDb();
 
         foreach ($drafts as $draftInfo) {
             /** @var ElementInterface|string $elementType */
@@ -476,9 +468,9 @@ class Drafts extends Component
                 // Perhaps the draft's row in the `entries` table was deleted manually or something.
                 // Just drop its row in the `drafts` table, and let that cascade to `elements` and whatever other tables
                 // still have rows for the draft.
-                $db->createCommand()
-                    ->delete(Table::DRAFTS, ['id' => $draftInfo['draftId']])
-                    ->execute();
+                Db::delete(Table::DRAFTS, [
+                    'id' => $draftInfo['draftId'],
+                ]);
             }
 
             Craft::info("Just deleted unsaved draft ID {$draftInfo['draftId']}", __METHOD__);
@@ -498,16 +490,13 @@ class Drafts extends Component
      */
     private function _insertDraftRow(int $sourceId = null, int $creatorId, string $name = null, string $notes = null, bool $trackChanges = false): int
     {
-        $db = Craft::$app->getDb();
-        $db->createCommand()
-            ->insert(Table::DRAFTS, [
-                'sourceId' => $sourceId,
-                'creatorId' => $creatorId,
-                'name' => $name,
-                'notes' => $notes,
-                'trackChanges' => $trackChanges,
-            ], false)
-            ->execute();
-        return $db->getLastInsertID(Table::DRAFTS);
+        Db::insert(Table::DRAFTS, [
+            'sourceId' => $sourceId,
+            'creatorId' => $creatorId,
+            'name' => $name,
+            'notes' => $notes,
+            'trackChanges' => $trackChanges,
+        ], false);
+        return Craft::$app->getDb()->getLastInsertID(Table::DRAFTS);
     }
 }

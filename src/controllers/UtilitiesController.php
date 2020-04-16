@@ -13,21 +13,19 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
 use craft\errors\MigrationException;
+use craft\helpers\Db;
 use craft\helpers\FileHelper;
-use craft\helpers\Path;
 use craft\helpers\Queue;
 use craft\queue\jobs\FindAndReplace;
 use craft\utilities\ClearCaches;
 use craft\utilities\Updates;
 use craft\web\assets\utilities\UtilitiesAsset;
 use craft\web\Controller;
-use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
-use ZipArchive;
 
 class UtilitiesController extends Controller
 {
@@ -242,21 +240,15 @@ class UtilitiesController extends Controller
                 ->scalar();
 
             if (empty($sessionsInProgress)) {
-                Craft::$app->getDb()->createCommand()
-                    ->delete(Table::ASSETINDEXDATA)
-                    ->execute();
+                Db::delete(Table::ASSETINDEXDATA);
             } else {
-                Craft::$app->getDb()->createCommand()
-                    ->delete(
-                        Table::ASSETINDEXDATA,
-                        ['not', ['sessionId' => $sessionsInProgress]])
-                    ->execute();
+                Db::delete(Table::ASSETINDEXDATA, ['not', ['sessionId' => $sessionsInProgress]]);
             }
         } else if (!empty($params['finish'])) {
             if (!empty($params['deleteAsset']) && is_array($params['deleteAsset'])) {
-                Craft::$app->getDb()->createCommand()
-                    ->delete(Table::ASSETTRANSFORMINDEX, ['assetId' => $params['deleteAsset']])
-                    ->execute();
+                Db::delete(Table::ASSETTRANSFORMINDEX, [
+                    'assetId' => $params['deleteAsset'],
+                ]);
 
                 /** @var Asset[] $assets */
                 $assets = Asset::find()

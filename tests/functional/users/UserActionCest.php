@@ -72,7 +72,7 @@ class UserActionCest
      */
     public function seeUserImpersonation(FunctionalTester $I)
     {
-        $I->amOnPage('/'.$this->cpTrigger.'/users/'.$this->activeUser->id.'');
+        $I->amOnPage('/' . $this->cpTrigger . '/users/' . $this->activeUser->id . '');
 
         $I->see('Login as');
 

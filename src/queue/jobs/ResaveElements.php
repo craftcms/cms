@@ -14,7 +14,6 @@ use craft\elements\db\ElementQueryInterface;
 use craft\events\BatchElementActionEvent;
 use craft\queue\BaseJob;
 use craft\services\Elements;
-use yii\db\Exception;
 
 /**
  * ResaveElements job

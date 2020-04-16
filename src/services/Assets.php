@@ -9,11 +9,10 @@ namespace craft\services;
 
 use Craft;
 use craft\assetpreviews\Image as ImagePreview;
-use craft\assetpreviews\Text;
 use craft\assetpreviews\Pdf;
+use craft\assetpreviews\Text;
 use craft\assetpreviews\Video;
 use craft\base\AssetPreviewHandlerInterface;
-use craft\base\Volume;
 use craft\base\VolumeInterface;
 use craft\db\Query;
 use craft\db\Table;
@@ -810,8 +809,8 @@ class Assets extends Component
         // Get a list from DB as well
         $fileList = (new Query())
             ->select(['assets.filename'])
-            ->from(['{{%assets}} assets'])
-            ->innerJoin(['{{%elements}} elements'], '[[assets.id]] = [[elements.id]]')
+            ->from(['assets' => Table::ASSETS])
+            ->innerJoin(['elements' => Table::ELEMENTS], '[[elements.id]] = [[assets.id]]')
             ->where([
                 'assets.folderId' => $folderId,
                 'elements.dateDeleted' => null
@@ -879,7 +878,6 @@ class Assets extends Component
      */
     public function ensureFolderByFullPathAndVolume(string $fullPath, VolumeInterface $volume, bool $justRecord = true): int
     {
-        /** @var Volume $volume */
         $parentId = Craft::$app->getVolumes()->ensureTopFolder($volume);
         $folderId = $parentId;
 
@@ -991,7 +989,6 @@ class Assets extends Component
             if (!$volume) {
                 throw new VolumeException(Craft::t('app', 'The volume set for temp asset storage is not valid.'));
             }
-            /** @var Volume $volume */
             $path = (isset($assetSettings['tempSubpath']) ? $assetSettings['tempSubpath'] . '/' : '') .
                 $folderName;
             $folderId = $this->ensureFolderByFullPathAndVolume($path, $volume, false);

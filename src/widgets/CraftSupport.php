@@ -8,7 +8,6 @@
 namespace craft\widgets;
 
 use Craft;
-use craft\base\Plugin;
 use craft\base\Widget;
 use craft\helpers\App;
 use craft\helpers\Json;
@@ -78,7 +77,6 @@ class CraftSupport extends Widget
 
         $plugins = '';
         foreach (Craft::$app->getPlugins()->getAllPlugins() as $plugin) {
-            /** @var Plugin $plugin */
             $plugins .= "\n    - " . $plugin->name . ' ' . $plugin->getVersion();
         }
 

@@ -120,7 +120,6 @@ class FieldsController extends Controller
 
         $missingFieldPlaceholder = null;
 
-        /** @var Field $field */
         if ($field === null && $fieldId !== null) {
             $field = $fieldsService->getFieldById($fieldId);
 

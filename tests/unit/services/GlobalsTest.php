@@ -50,6 +50,8 @@ class GlobalsTest extends Unit
 
         $this->tester->mockMethods(Craft::$app, 'elements', ['saveElement' => false]);
 
-        $this->tester->expectThrowable(ElementNotFoundException::class, function () use ($configEvent) { Craft::$app->getGlobals()->handleChangedGlobalSet($configEvent);});
+        $this->tester->expectThrowable(ElementNotFoundException::class, function() use ($configEvent) {
+            Craft::$app->getGlobals()->handleChangedGlobalSet($configEvent);
+        });
     }
 }

@@ -7,19 +7,14 @@
 
 namespace crafttests\unit\services;
 
-use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
 use Craft;
-use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
-use craft\models\GqlSchema;
 use craft\services\Fields;
-use craft\services\ProjectConfig;
 use craft\services\Sections;
 use crafttests\fixtures\EntryTypeFixture;
 use crafttests\fixtures\EntryWithFieldsFixture;
 use UnitTester;
-use yii\base\NotSupportedException;
 
 /**
  * Unit tests for ProjectConfig service.
@@ -28,7 +23,8 @@ use yii\base\NotSupportedException;
  * @since 3.3.16
  */
 class FixturesTest extends Unit
-{    /**
+{
+    /**
      * @var UnitTester
      */
     protected $tester;

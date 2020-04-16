@@ -335,16 +335,12 @@ class MigrationManager extends Component
     {
         $this->_validatePluginConfig();
 
-        Craft::$app->getDb()->createCommand()
-            ->insert(
-                $this->migrationTable,
-                [
-                    'type' => $this->type,
-                    'pluginId' => $this->pluginId,
-                    'name' => $name,
-                    'applyTime' => Db::prepareDateForDb(new \DateTime())
-                ])
-            ->execute();
+        Db::insert($this->migrationTable, [
+            'type' => $this->type,
+            'pluginId' => $this->pluginId,
+            'name' => $name,
+            'applyTime' => Db::prepareDateForDb(new \DateTime()),
+        ]);
     }
 
     /**
@@ -356,15 +352,11 @@ class MigrationManager extends Component
     {
         $this->_validatePluginConfig();
 
-        Craft::$app->getDb()->createCommand()
-            ->delete(
-                $this->migrationTable,
-                [
-                    'type' => $this->type,
-                    'pluginId' => $this->pluginId,
-                    'name' => $name
-                ])
-            ->execute();
+        Db::delete($this->migrationTable, [
+            'type' => $this->type,
+            'pluginId' => $this->pluginId,
+            'name' => $name,
+        ]);
     }
 
     /**
@@ -376,14 +368,10 @@ class MigrationManager extends Component
     {
         $this->_validatePluginConfig();
 
-        Craft::$app->getDb()->createCommand()
-            ->delete(
-                $this->migrationTable,
-                [
-                    'type' => $this->type,
-                    'pluginId' => $this->pluginId,
-                ])
-            ->execute();
+        Db::delete($this->migrationTable, [
+            'type' => $this->type,
+            'pluginId' => $this->pluginId,
+        ]);
     }
 
     /**

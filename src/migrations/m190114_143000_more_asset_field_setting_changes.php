@@ -35,8 +35,8 @@ class m190114_143000_more_asset_field_setting_changes extends Migration
 
         $this->_volumesByFolderUids = (new Query())
             ->select(['folders.uid folderUid', 'volumes.uid volumeUid'])
-            ->from(['{{%volumes}} volumes'])
-            ->innerJoin(['{{%volumefolders}} folders'], '[[volumes.id]] = [[folders.volumeId]]')
+            ->from(['volumes' => Table::VOLUMES])
+            ->innerJoin(['folders' => Table::VOLUMEFOLDERS], '[[folders.volumeId]] = [[volumes.id]]')
             ->pairs();
 
         $projectConfig = Craft::$app->getProjectConfig();

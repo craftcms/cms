@@ -21,7 +21,7 @@ class m160912_230520_require_entry_type_id extends Migration
         // Get all of the sections' primary entry type IDs
         $subQuery = (new Query())
             ->select(['et.id'])
-            ->from(['{{%entrytypes}} et'])
+            ->from(['et' => Table::ENTRYTYPES])
             ->where('[[et.sectionId]] = [[s.id]]')
             ->orderBy(['sortOrder' => SORT_ASC])
             ->limit(1);
@@ -31,7 +31,7 @@ class m160912_230520_require_entry_type_id extends Migration
                 'sectionId' => 's.id',
                 'typeId' => $subQuery
             ])
-            ->from(['{{%sections}} s'])
+            ->from(['s' => Table::SECTIONS])
             ->all($this->db);
 
         if (!empty($results)) {

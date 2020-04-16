@@ -8,7 +8,6 @@
 namespace craft\web;
 
 use Craft;
-use craft\base\Element;
 use craft\events\RegisterTemplateRootsEvent;
 use craft\events\TemplateEvent;
 use craft\helpers\ElementHelper;
@@ -25,7 +24,6 @@ use craft\web\twig\TemplateLoader;
 use JSMin\JSMin;
 use Minify_CSSmin;
 use Twig\Error\LoaderError as TwigLoaderError;
-use Twig\Error\RuntimeError;
 use Twig\Error\RuntimeError as TwigRuntimeError;
 use Twig\Error\SyntaxError as TwigSyntaxError;
 use Twig\Extension\CoreExtension;
@@ -925,7 +923,12 @@ class View extends \yii\web\View
     public function registerCss($css, $options = [], $key = null)
     {
         if ($this->minifyCss) {
-            $css = Minify_CSSmin::minify($css);
+            // Sanity check to work around https://github.com/tubalmartin/YUI-CSS-compressor-PHP-port/issues/58
+            if (preg_match('/\{[^\}]*$/', $css, $matches, PREG_OFFSET_CAPTURE)) {
+                Craft::warning("Unable to minify CSS due to an unclosed CSS block at offset {$matches[0][1]}.", __METHOD__);
+            } else {
+                $css = Minify_CSSmin::minify($css);
+            }
         }
 
         parent::registerCss($css, $options, $key);
@@ -1952,7 +1955,6 @@ JS;
             return null;
         }
 
-        /** @var Element $element */
         $element = $context['element'];
         $label = $element->getUiLabel();
 

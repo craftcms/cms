@@ -954,6 +954,7 @@ ul.icons {
   appearance: none;
   outline: none;
   color: $textColor;
+  font-size: inherit;
   background-color: transparentize($inputColor, 0.75);
 
   &.chromeless {
@@ -1135,6 +1136,36 @@ ul.icons {
         border-top-left-radius: 0;
         border-bottom-left-radius: 0;
       }
+    }
+  }
+}
+
+.copytext {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  white-space: nowrap;
+  align-items: center;
+
+  body.ltr & {
+    .text {
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+    .btn {
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+  }
+
+  body.rtl & {
+    .text {
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+    .btn {
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
     }
   }
 }

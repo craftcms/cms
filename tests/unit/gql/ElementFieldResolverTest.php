@@ -9,14 +9,12 @@ namespace craftunit\gql;
 
 use Codeception\Test\Unit;
 use Craft;
-use craft\base\Volume;
 use craft\elements\Asset as AssetElement;
 use craft\elements\Entry as EntryElement;
 use craft\elements\GlobalSet as GlobalSetElement;
 use craft\elements\MatrixBlock as MatrixBlockElement;
 use craft\elements\User as UserElement;
 use craft\errors\GqlException;
-use craft\fields\Matrix;
 use craft\gql\types\elements\Asset as AssetGqlType;
 use craft\gql\types\elements\Entry as EntryGqlType;
 use craft\gql\types\elements\GlobalSet as GlobalSetGqlType;
@@ -28,9 +26,7 @@ use craft\models\EntryType;
 use craft\models\GqlSchema;
 use craft\models\MatrixBlockType;
 use craft\models\Section;
-use craft\models\Site;
 use craft\models\UserGroup;
-use craft\models\VolumeFolder;
 use GraphQL\Type\Definition\ResolveInfo;
 
 class ElementFieldResolverTest extends Unit
@@ -46,12 +42,14 @@ class ElementFieldResolverTest extends Unit
         $this->tester->mockMethods(
             Craft::$app,
             'gql',
-            ['getActiveSchema' => $this->make(GqlSchema::class, [
-                'scope' => [
-                    'usergroups.group-1-uid:read',
-                    'usergroups.group-2-uid:read',
-                ]
-            ])]
+            [
+                'getActiveSchema' => $this->make(GqlSchema::class, [
+                    'scope' => [
+                        'usergroups.group-1-uid:read',
+                        'usergroups.group-2-uid:read',
+                    ]
+                ])
+            ]
         );
     }
 
@@ -76,14 +74,14 @@ class ElementFieldResolverTest extends Unit
         $mockElement = $this->make(
             EntryElement::class, [
                 'postDate' => new \DateTime(),
-                '__get' => function ($property) {
+                '__get' => function($property) {
                     // Assume fields 'plainTextField' and 'typeface'
                     return in_array($property, ['plainTextField', 'typeface'], false) ? 'ok' : $this->$property;
                 },
-                'getSection' => function () use ($sectionHandle) {
+                'getSection' => function() use ($sectionHandle) {
                     return $this->make(Section::class, ['handle' => $sectionHandle]);
                 },
-                'getType' => function () use ($typeHandle) {
+                'getType' => function() use ($typeHandle) {
                     return $this->make(EntryType::class, ['handle' => $typeHandle]);
                 }
             ]
@@ -105,7 +103,7 @@ class ElementFieldResolverTest extends Unit
     {
         $mockElement = $this->make(
             AssetElement::class, [
-                '__get' => function ($property) {
+                '__get' => function($property) {
                     // Assume a content field named 'plainTextField'
                     return in_array($property, ['imageDescription', 'volumeAndMass'], false) ? 'ok' : $this->$property;
                 }
@@ -128,7 +126,7 @@ class ElementFieldResolverTest extends Unit
     {
         $mockElement = $this->make(
             GlobalSetElement::class, [
-                '__get' => function ($property) {
+                '__get' => function($property) {
                     // Assume a content field named 'plainTextField'
                     return $property == 'plainTextField' ? 'ok' : $this->$property;
                 },
@@ -154,14 +152,14 @@ class ElementFieldResolverTest extends Unit
 
         $mockElement = $this->make(
             MatrixBlockElement::class, [
-                '__get' => function ($property) {
+                '__get' => function($property) {
                     // Assume a content field named 'plainTextField'
                     return $property == 'firstSubfield' ? 'ok' : $this->$property;
                 },
                 'fieldId' => 1000,
                 'ownerId' => 80,
                 'typeId' => 99,
-                'getType' => function () use ($typeHandle) {
+                'getType' => function() use ($typeHandle) {
                     return $this->make(MatrixBlockType::class, ['handle' => $typeHandle]);
                 }
             ]
@@ -183,18 +181,18 @@ class ElementFieldResolverTest extends Unit
     {
         $mockElement = $this->make(
             UserElement::class, [
-                '__get' => function ($property) {
+                '__get' => function($property) {
                     // Assume a content field named 'plainTextField'
                     return $property == 'shortBio' ? 'ok' : $this->$property;
                 },
                 'username' => 'admin',
-                'getPreferences' => function () {
+                'getPreferences' => function() {
                     return [
                         'aPreference' => 'value',
                         'timeZone' => 'Fiji'
                     ];
                 },
-                'getGroups' => function () {
+                'getGroups' => function() {
                     return [
                         new UserGroup(['uid' => 'group-1-uid', 'handle' => 'Group 1']),
                         new UserGroup(['uid' => 'group-2-uid', 'handle' => 'Group 2']),
@@ -217,7 +215,7 @@ class ElementFieldResolverTest extends Unit
     public function _runTest($element, string $gqlTypeClass, string $propertyName, $result)
     {
         $resolveInfo = $this->make(ResolveInfo::class, ['fieldName' => $propertyName]);
-        $resolve = function () use ($gqlTypeClass, $element, $resolveInfo) {
+        $resolve = function() use ($gqlTypeClass, $element, $resolveInfo) {
             return $this->make($gqlTypeClass)->resolveWithDirectives($element, [], null, $resolveInfo);
         };
 
@@ -235,8 +233,16 @@ class ElementFieldResolverTest extends Unit
     {
         return [
             // Entries
-            [EntryGqlType::class, 'sectionHandle', function ($source) { return $source->getSection()->handle;}],
-            [EntryGqlType::class, 'typeHandle', function ($source) { return $source->getType()->handle;}],
+            [
+                EntryGqlType::class, 'sectionHandle', function($source) {
+                return $source->getSection()->handle;
+            }
+            ],
+            [
+                EntryGqlType::class, 'typeHandle', function($source) {
+                return $source->getType()->handle;
+            }
+            ],
             [EntryGqlType::class, 'typeface', true],
             [EntryGqlType::class, 'missingProperty', false],
             [EntryGqlType::class, 'typeInvalid', false],
@@ -272,7 +278,11 @@ class ElementFieldResolverTest extends Unit
             [MatrixBlockGqlType::class, 'typeInvalid', false],
             [MatrixBlockGqlType::class, 'ownerId', true],
             [MatrixBlockGqlType::class, 'typeId', true],
-            [MatrixBlockGqlType::class, 'typeHandle', function ($source) { return $source->getType()->handle;}],
+            [
+                MatrixBlockGqlType::class, 'typeHandle', function($source) {
+                return $source->getType()->handle;
+            }
+            ],
         ];
     }
 
@@ -282,7 +292,11 @@ class ElementFieldResolverTest extends Unit
             [UserGqlType::class, 'missingProperty', false],
             [UserGqlType::class, 'shortBio', true],
             [UserGqlType::class, 'username', true],
-            [UserGqlType::class, 'preferences', function ($source) { return Json::encode($source->getPreferences());}],
+            [
+                UserGqlType::class, 'preferences', function($source) {
+                return Json::encode($source->getPreferences());
+            }
+            ],
         ];
     }
 }

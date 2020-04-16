@@ -9,8 +9,8 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\Element;
-use craft\base\Field;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\Entry;
 use craft\elements\User;
 use craft\errors\InvalidElementException;
@@ -540,8 +540,8 @@ class EntriesController extends BaseEntriesController
             // Get the structure ID
             $structureId = (new Query())
                 ->select(['sections.structureId'])
-                ->from(['{{%entries}} entries'])
-                ->innerJoin('{{%sections}} sections', '[[sections.id]] = [[entries.sectionId]]')
+                ->from(['entries' => Table::ENTRIES])
+                ->innerJoin(['sections' => Table::SECTIONS], '[[sections.id]] = [[entries.sectionId]]')
                 ->where(['entries.id' => $variables['entryId']])
                 ->scalar();
 
@@ -627,7 +627,6 @@ class EntriesController extends BaseEntriesController
 
             if ($variables['entry']->hasErrors()) {
                 foreach ($tab->getFields() as $field) {
-                    /** @var Field $field */
                     if ($hasErrors = $variables['entry']->hasErrors($field->handle . '.*')) {
                         break;
                     }

@@ -16,6 +16,7 @@ use Twig\Markup;
  * ElementInterface defines the common interface to be implemented by element classes.
  * A class implementing this interface should also use [[ElementTrait]] and [[ContentTrait]].
  *
+ * @mixin ElementTrait
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
@@ -999,7 +1000,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Sets some eager-loaded elements on a given handle.
      *
-     * @param string $handle The handle to load the elements with in the future
+     * @param string $handle The handle that was used to eager-load the elements
      * @param ElementInterface[] $elements The eager-loaded elements
      */
     public function setEagerLoadedElements(string $handle, array $elements);

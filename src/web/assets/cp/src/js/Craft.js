@@ -606,6 +606,8 @@ $.extend(Craft,
             });
         },
 
+        _processedApiHeaders: false,
+
         /**
          * Sends a request to the Craftnet API.
          * @param {string} method The request action to use ('GET' or 'POST')
@@ -617,31 +619,90 @@ $.extend(Craft,
         sendApiRequest: function(method, uri, options) {
             return new Promise((resolve, reject) => {
                 options = options ? $.extend({}, options) : {};
+                let cancelToken = options.cancelToken || null;
                 // Get the latest headers
-                this.sendActionRequest('POST', 'app/api-headers', {
-                    cancelToken: options.cancelToken || null,
-                }).then((headerResponse) => {
+                this.getApiHeaders(cancelToken).then(apiHeaders => {
                     options.method = method;
                     options.baseURL = Craft.baseApiUrl;
                     options.url = uri;
-                    options.headers = $.extend(headerResponse.data, options.headers || {});
+                    options.headers = $.extend(apiHeaders, options.headers || {});
                     options.params = $.extend(Craft.apiParams || {}, options.params || {}, {
                         // Force Safari to not load from cache
                         v: new Date().getTime(),
                     });
 
                     axios.request(options).then((apiResponse) => {
-                        this.sendActionRequest('POST', 'app/process-api-response-headers', {
-                            data: {
-                                headers: apiResponse.headers,
-                            },
-                            cancelToken: options.cancelToken || null,
-                        }).then(() => {
-                            resolve(apiResponse.data);
-                        }).catch(reject);
+                        // Send the API response back immediately
+                        resolve(apiResponse.data);
+
+                        if (!this._processedApiHeaders) {
+                            this._processedApiHeaders = true;
+                            this.sendActionRequest('POST', 'app/process-api-response-headers', {
+                                data: {
+                                    headers: apiResponse.headers,
+                                },
+                                cancelToken: cancelToken,
+                            });
+                        }
                     }).catch(reject);
                 }).catch(reject);
             });
+        },
+
+        _loadingApiHeaders: false,
+        _apiHeaders: null,
+        _apiHeaderWaitlist: [],
+
+        /**
+         * Returns the headers that should be sent with API requests.
+         *
+         * @param {Object|null} cancelToken
+         * @return {Promise}
+         */
+        getApiHeaders: function(cancelToken) {
+            return new Promise((resolve, reject) => {
+                // Are the headers already cached?
+                if (this._apiHeaders) {
+                    resolve(this._apiHeaders);
+                    return;
+                }
+
+                // Are we already loading them?
+                if (this._loadingApiHeaders) {
+                    this._apiHeaderWaitlist.push([resolve, reject]);
+                    return;
+                }
+
+                this._loadingApiHeaders = true;
+                this.sendActionRequest('POST', 'app/api-headers', {
+                    cancelToken: cancelToken,
+                }).then(response => {
+                    this._apiHeaders = response.data;
+                    this._loadingApiHeaders = false;
+                    // Was anything else waiting for them?
+                    let item;
+                    while (item = this._apiHeaderWaitlist.shift()) {
+                        item[0](this._apiHeaders);
+                    }
+                    resolve(this._apiHeaders);
+                }).catch(e => {
+                    this._loadingApiHeaders = false;
+                    // Was anything else waiting for them?
+                    let item;
+                    while (item = this._apiHeaderWaitlist.shift()) {
+                        item[1](e);
+                    }
+                    reject(e)
+                });
+            });
+        },
+
+        /**
+         * Clears the cached API headers.
+         */
+        clearCachedApiHeaders: function() {
+            this._apiHeaders = null;
+            this._processedApiHeaders = false;
         },
 
         /**
@@ -1446,8 +1507,20 @@ $.extend(Craft,
          * @param {object} settings
          */
         createElementEditor: function(elementType, element, settings) {
-            var func;
+            // Param mapping
+            if (typeof settings === 'undefined' && $.isPlainObject(element)) {
+                // (settings)
+                settings = element;
+                element = null;
+            } else if (typeof settings !== 'object') {
+                settings = {};
+            }
 
+            if (!settings.elementType) {
+                settings.elementType = elementType;
+            }
+
+            var func;
             if (typeof this._elementEditorClasses[elementType] !== 'undefined') {
                 func = this._elementEditorClasses[elementType];
             } else {

@@ -113,10 +113,15 @@ JS;
             'Buy {name}',
             'Cancel',
             'Choose a user',
+            'Switching sites will lose unsaved changes. Are you sure you want to switch sites?',
             'Choose which table columns should be visible for this source, and in which order.',
             'Close Preview',
             'Close',
             'Continue',
+            'Copied to clipboard.',
+            'Copy the reference tag',
+            'Copy the URL',
+            'Copy to clipboard',
             'Couldn’t delete “{name}”.',
             'Couldn’t save new order.',
             'Create',
@@ -248,6 +253,7 @@ JS;
             '{first}-{last} of {total}',
             '{num, number} {num, plural, =1{Available Update} other{Available Updates}}',
             '{total, number} {total, plural, =1{{item}} other{{items}}}',
+            '{type} saved.',
             '“{name}” deleted.',
         ]);
     }

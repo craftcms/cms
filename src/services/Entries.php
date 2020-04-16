@@ -9,6 +9,7 @@ namespace craft\services;
 
 use Craft;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\Entry;
 use yii\base\Component;
 
@@ -41,8 +42,8 @@ class Entries extends Component
         // Get the structure ID
         $structureId = (new Query())
             ->select(['sections.structureId'])
-            ->from(['{{%entries}} entries'])
-            ->innerJoin('{{%sections}} sections', '[[sections.id]] = [[entries.sectionId]]')
+            ->from(['entries' => Table::ENTRIES])
+            ->innerJoin(['sections' => Table::SECTIONS], '[[sections.id]] = [[entries.sectionId]]')
             ->where(['entries.id' => $entryId])
             ->scalar();
 

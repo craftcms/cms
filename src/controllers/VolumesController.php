@@ -8,7 +8,6 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\Volume;
 use craft\base\VolumeInterface;
 use craft\elements\Asset;
 use craft\helpers\ArrayHelper;
@@ -72,7 +71,6 @@ class VolumesController extends Controller
 
         $missingVolumePlaceholder = null;
 
-        /** @var Volume $volume */
         if ($volume === null) {
             if ($volumeId !== null) {
                 $volume = $volumes->getVolumeById($volumeId);
@@ -191,13 +189,11 @@ class VolumesController extends Controller
 
         // If this is an existing volume, populate with properties unchangeable by this action.
         if ($volumeId) {
-            /** @var Volume $savedVolume */
             $savedVolume = $volumes->getVolumeById($volumeId);
             $volumeData['uid'] = $savedVolume->uid;
             $volumeData['sortOrder'] = $savedVolume->sortOrder;
         }
 
-        /** @var Volume $volume */
         $volume = $volumes->createVolume($volumeData);
 
         // Set the field layout

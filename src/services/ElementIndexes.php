@@ -9,11 +9,11 @@ namespace craft\services;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\base\PreviewableFieldInterface;
 use craft\db\Query;
 use craft\db\Table;
+use craft\helpers\Db;
 use craft\helpers\Json;
 use yii\base\Component;
 
@@ -119,20 +119,18 @@ class ElementIndexes extends Component
             }
         }
 
-        $affectedRows = Craft::$app->getDb()->createCommand()
-            ->upsert(
-                Table::ELEMENTINDEXSETTINGS,
-                ['type' => $elementType],
-                ['settings' => Json::encode($settings)])
-            ->execute();
+        $success = (bool)Db::upsert(Table::ELEMENTINDEXSETTINGS, [
+            'type' => $elementType,
+        ], [
+            'settings' => Json::encode($settings),
+        ]);
 
-        if ($affectedRows) {
-            $this->_indexSettings[$elementType] = $settings;
-
-            return true;
+        if (!$success) {
+            return false;
         }
 
-        return false;
+        $this->_indexSettings[$elementType] = $settings;
+        return true;
     }
 
     /**
@@ -213,7 +211,6 @@ class ElementIndexes extends Component
         if ($includeFields) {
             // Mix in custom fields
             foreach ($this->getAvailableTableFields($elementType) as $field) {
-                /** @var Field $field */
                 $attributes['field:' . $field->id] = ['label' => Craft::t('site', $field->name)];
             }
         }

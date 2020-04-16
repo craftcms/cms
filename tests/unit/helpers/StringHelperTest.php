@@ -9,11 +9,9 @@ namespace crafttests\unit\helpers;
 
 use Codeception\Test\Unit;
 use craft\helpers\StringHelper;
-use craft\helpers\Stringy;
 use craft\test\mockclasses\ToString;
 use stdClass;
 use UnitTester;
-use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use function mb_strlen;
@@ -91,10 +89,10 @@ class StringHelperTest extends Unit
     public function testAppendRandomString()
     {
         $testArray = [
-            'abc'       => [1, 1],
-            'öäü'       => [10, 10],
-            ''          => [10, 0],
-            ' '         => [10, 10],
+            'abc' => [1, 1],
+            'öäü' => [10, 10],
+            '' => [10, 0],
+            ' ' => [10, 10],
             'κόσμε-öäü' => [10, 10],
         ];
 
@@ -370,12 +368,12 @@ class StringHelperTest extends Unit
     public function testExtractText()
     {
         $testArray = [
-            ''                                                                                                                       => '',
-            '<h1>test</h1>'                                                                                                          => '<h1>test</h1>',
-            'test'                                                                                                                   => 'test',
-            'A PHP string manipulation library with multibyte support. Compatible with PHP PHP 7+.'                                  => 'A PHP string manipulation library with multibyte…',
+            '' => '',
+            '<h1>test</h1>' => '<h1>test</h1>',
+            'test' => 'test',
+            'A PHP string manipulation library with multibyte support. Compatible with PHP PHP 7+.' => 'A PHP string manipulation library with multibyte…',
             'A PHP string manipulation library with multibyte support. κόσμε-öäü κόσμε-öäü κόσμε-öäü foobar Compatible with PHP 7+.' => 'A PHP string manipulation library with multibyte support. κόσμε-öäü…',
-            'A PHP string manipulation library with multibyte support. foobar Compatible with PHP 7+.'                               => 'A PHP string manipulation library with multibyte…',
+            'A PHP string manipulation library with multibyte support. foobar Compatible with PHP 7+.' => 'A PHP string manipulation library with multibyte…',
         ];
 
         foreach ($testArray as $testString => $testExpected) {
@@ -390,12 +388,12 @@ class StringHelperTest extends Unit
         // ----------------
 
         $testString = 'This is only a Fork of Stringy, take a look at the new features.';
-        $this->assertSame('…Fork of Stringy…', StringHelper::extractText($testString,'Stringy', 15), 'tested: ' . $testString);
+        $this->assertSame('…Fork of Stringy…', StringHelper::extractText($testString, 'Stringy', 15), 'tested: ' . $testString);
 
         // ----------------
 
         $testString = 'This is only a Fork of Stringy, take a look at the new features.';
-        $this->assertSame('…only a Fork of Stringy, take a…', StringHelper::extractText($testString,'Stringy'), 'tested: ' . $testString);
+        $this->assertSame('…only a Fork of Stringy, take a…', StringHelper::extractText($testString, 'Stringy'), 'tested: ' . $testString);
 
         // ----------------
 
@@ -405,21 +403,21 @@ class StringHelperTest extends Unit
         // ----------------
 
         $testString = 'This is only a Fork of Stringy, take a look at the new features.';
-        $this->assertSame('This…', StringHelper::extractText($testString,'', 0), 'tested: ' . $testString);
+        $this->assertSame('This…', StringHelper::extractText($testString, '', 0), 'tested: ' . $testString);
 
         // ----------------
 
         $testString = 'This is only a Fork of Stringy, take a look at the new features.';
-        $this->assertSame('…Stringy, take a look at the new features.', StringHelper::extractText($testString,'Stringy', 0), 'tested: ' . $testString);
+        $this->assertSame('…Stringy, take a look at the new features.', StringHelper::extractText($testString, 'Stringy', 0), 'tested: ' . $testString);
 
         // ----------------
 
         $testArray = [
             'Yes. The bird is flying in the wind. The fox is jumping in the garden when he is happy. But that is not the whole story.' => '…The fox is jumping in the <strong>garden</strong> when he is happy. But that…',
-            'The bird is flying in the wind. The fox is jumping in the garden when he is happy. But that is not the whole story.'      => '…The fox is jumping in the <strong>garden</strong> when he is happy. But that…',
-            'The fox is jumping in the garden when he is happy. But that is not the whole story.'                                      => '…is jumping in the <strong>garden</strong> when he is happy…',
-            'Yes. The fox is jumping in the garden when he is happy. But that is not the whole story.'                                 => '…fox is jumping in the <strong>garden</strong> when he is happy…',
-            'Yes. The fox is jumping in the garden when he is happy. But that is not the whole story of the garden story.'             => '…The fox is jumping in the <strong>garden</strong> when he is happy. But…',
+            'The bird is flying in the wind. The fox is jumping in the garden when he is happy. But that is not the whole story.' => '…The fox is jumping in the <strong>garden</strong> when he is happy. But that…',
+            'The fox is jumping in the garden when he is happy. But that is not the whole story.' => '…is jumping in the <strong>garden</strong> when he is happy…',
+            'Yes. The fox is jumping in the garden when he is happy. But that is not the whole story.' => '…fox is jumping in the <strong>garden</strong> when he is happy…',
+            'Yes. The fox is jumping in the garden when he is happy. But that is not the whole story of the garden story.' => '…The fox is jumping in the <strong>garden</strong> when he is happy. But…',
         ];
         $searchString = 'garden';
         foreach ($testArray as $testString => $testExpected) {
@@ -432,10 +430,10 @@ class StringHelperTest extends Unit
 
         $testArray = [
             'Yes. The bird is flying in the wind. The fox is jumping in the garden when he is happy. But that is not the whole story.' => '…flying in the wind. <strong>The fox is jumping in the garden</strong> when he…',
-            'The bird is flying in the wind. The fox is jumping in the garden when he is happy. But that is not the whole story.'      => '…in the wind. <strong>The fox is jumping in the garden</strong> when he is…',
-            'The fox is jumping in the garden when he is happy. But that is not the whole story.'                                      => '<strong>The fox is jumping in the garden</strong> when he is…',
-            'Yes. The fox is jumping in the garden when he is happy. But that is not the whole story.'                                 => 'Yes. <strong>The fox is jumping in the garden</strong> when he…',
-            'Yes. The fox is jumping in the garden when he is happy. But that is not the whole story of the garden story.'             => 'Yes. <strong>The fox is jumping in the garden</strong> when he is happy…',
+            'The bird is flying in the wind. The fox is jumping in the garden when he is happy. But that is not the whole story.' => '…in the wind. <strong>The fox is jumping in the garden</strong> when he is…',
+            'The fox is jumping in the garden when he is happy. But that is not the whole story.' => '<strong>The fox is jumping in the garden</strong> when he is…',
+            'Yes. The fox is jumping in the garden when he is happy. But that is not the whole story.' => 'Yes. <strong>The fox is jumping in the garden</strong> when he…',
+            'Yes. The fox is jumping in the garden when he is happy. But that is not the whole story of the garden story.' => 'Yes. <strong>The fox is jumping in the garden</strong> when he is happy…',
         ];
         $searchString = 'The fox is jumping in the garden';
         foreach ($testArray as $testString => $testExpected) {
@@ -641,16 +639,16 @@ class StringHelperTest extends Unit
     public function testIsHtml()
     {
         $testArray = [
-            ''                         => false,
-            '<h1>test</h1>'            => true,
-            'test'                     => false,
-            '<b>lall</b>'              => true,
+            '' => false,
+            '<h1>test</h1>' => true,
+            'test' => false,
+            '<b>lall</b>' => true,
             'öäü<strong>lall</strong>' => true,
-            ' <b>lall</b>'             => true,
-            '<b><b>lall</b>'           => true,
-            '</b>lall</b>'             => true,
-            '[b]lall[b]'               => false,
-            ' <test>κόσμε</test> '     => true,
+            ' <b>lall</b>' => true,
+            '<b><b>lall</b>' => true,
+            '</b>lall</b>' => true,
+            '[b]lall[b]' => false,
+            ' <test>κόσμε</test> ' => true,
         ];
 
         foreach ($testArray as $testString => $testResult) {
@@ -763,14 +761,14 @@ class StringHelperTest extends Unit
     public function testLineWrapAfterWord()
     {
         $testArray = [
-            ''                                                                                                      => "\n",
-            ' '                                                                                                     => ' ' . "\n",
-            'http:// moelleken.org'                                                                                 => 'http://' . "\n" . 'moelleken.org' . "\n",
-            'http://test.de'                                                                                        => 'http://test.de' . "\n",
-            'http://öäü.de'                                                                                         => 'http://öäü.de' . "\n",
-            'http://menadwork.com'                                                                                  => 'http://menadwork.com' . "\n",
-            'test.de'                                                                                               => 'test.de' . "\n",
-            'test'                                                                                                  => 'test' . "\n",
+            '' => "\n",
+            ' ' => ' ' . "\n",
+            'http:// moelleken.org' => 'http://' . "\n" . 'moelleken.org' . "\n",
+            'http://test.de' => 'http://test.de' . "\n",
+            'http://öäü.de' => 'http://öäü.de' . "\n",
+            'http://menadwork.com' => 'http://menadwork.com' . "\n",
+            'test.de' => 'test.de' . "\n",
+            'test' => 'test' . "\n",
             '0123456 789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789' => '0123456' . "\n" . '789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789' . "\n",
         ];
 
@@ -1204,10 +1202,10 @@ class StringHelperTest extends Unit
     public function testStripCssMediaQueries()
     {
         $testArray = [
-            'test lall '                                                                         => 'test lall ',
-            ''                                                                                   => '',
-            ' '                                                                                  => ' ',
-            'test @media (min-width:660px){ .des-cla #mv-tiles{width:480px} } test '             => 'test  test ',
+            'test lall ' => 'test lall ',
+            '' => '',
+            ' ' => ' ',
+            'test @media (min-width:660px){ .des-cla #mv-tiles{width:480px} } test ' => 'test  test ',
             'test @media only screen and (max-width: 950px) { .des-cla #mv-tiles{width:480px} }' => 'test ',
         ];
 
@@ -1223,16 +1221,16 @@ class StringHelperTest extends Unit
     public function testStripEmptyHtmlTags()
     {
         $testArray = [
-            ''                         => '',
-            '<h1>test</h1>'            => '<h1>test</h1>',
-            'foo<h1></h1>bar'          => 'foobar',
-            '<h1></h1> '               => ' ',
-            '</b></b>'                 => '</b></b>',
+            '' => '',
+            '<h1>test</h1>' => '<h1>test</h1>',
+            'foo<h1></h1>bar' => 'foobar',
+            '<h1></h1> ' => ' ',
+            '</b></b>' => '</b></b>',
             'öäü<strong>lall</strong>' => 'öäü<strong>lall</strong>',
-            ' b<b></b>'                => ' b',
-            '<b><b>lall</b>'           => '<b><b>lall</b>',
-            '</b>lall</b>'             => '</b>lall</b>',
-            '[b][/b]'                  => '[b][/b]',
+            ' b<b></b>' => ' b',
+            '<b><b>lall</b>' => '<b><b>lall</b>',
+            '</b>lall</b>' => '</b>lall</b>',
+            '[b][/b]' => '[b][/b]',
         ];
 
         foreach ($testArray as $testString => $testResult) {
@@ -1376,7 +1374,7 @@ class StringHelperTest extends Unit
         $actual = StringHelper::toBoolean($string);
         $this->assertSame($expected, $actual);
     }
-    
+
     /**
      * @dataProvider toCamelCaseDataProvider
      *
@@ -2412,7 +2410,7 @@ class StringHelperTest extends Unit
     {
         // One needle
         $singleNeedle = array_map(
-            static function ($array) {
+            static function($array) {
                 $array[2] = [$array[2]];
 
                 return $array;
@@ -4122,7 +4120,7 @@ class StringHelperTest extends Unit
             ["What Is AT&T's Problem?", "What is AT&T's problem?"],
             ['Apple Deal With AT&T Falls Through', 'Apple deal with AT&T falls through'],
             ['This v That', 'this v that'],
-            ['This vs That', 'this vs that', ],
+            ['This vs That', 'this vs that',],
             ['This v. That', 'this v. that'],
             ['This vs. That', 'this vs. that'],
             ["The SEC's Apple Probe: What You Need to Know", "The SEC's Apple probe: what you need to know"],
@@ -4152,7 +4150,7 @@ class StringHelperTest extends Unit
             ['This Is Trimming', '  this is trimming'],
             ['This Is Trimming', 'this is trimming  '],
             ['This Is Trimming', '  this is trimming  '],
-            ['If It’s All Caps, Fix It', 'IF IT’S ALL CAPS, FIX IT', ],
+            ['If It’s All Caps, Fix It', 'IF IT’S ALL CAPS, FIX IT',],
             ['What Could/Should Be Done About Slashes?', 'What could/should be done about slashes?'],
             [
                 'Never Touch Paths Like /var/run Before/After /boot',
@@ -4177,7 +4175,7 @@ class StringHelperTest extends Unit
             ['<', '<b><b>lall</b>', 'b', true],
             ['</', '</b>lall</b>', 'b', true],
             ['[', '[b][/b]', 'b', true],
-            ['', '[B][/B]',  'b', true],
+            ['', '[B][/B]', 'b', true],
             ['κόσμ', 'κόσμbε ¡-öäü', 'b', true],
             ['', '', 'b', false],
             ['', '<h1>test</h1>', 'b', false],

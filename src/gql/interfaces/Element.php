@@ -139,26 +139,35 @@ class Element extends InterfaceType
      */
     public static function getDraftFieldDefinitions(): array
     {
-       return [
-           'isDraft' => [
-               'name' => 'isDraft',
-               'type' => Type::boolean(),
-               'description' => 'Returns whether this is a draft.',
-           ],
-           'isRevision' => [
-               'name' => 'isRevision',
-               'type' => Type::boolean(),
-               'description' => 'Returns whether this is a revision.',
-           ],
-           'sourceId' => [
-               'name' => 'sourceId',
-               'type' => Type::int(),
-               'description' => 'Returns the element’s ID, or if it’s a draft/revision, its source element’s ID.',
-           ],
+        return [
+            'isDraft' => [
+                'name' => 'isDraft',
+                'type' => Type::boolean(),
+                'description' => 'Returns whether this is a draft.',
+            ],
+            'isRevision' => [
+                'name' => 'isRevision',
+                'type' => Type::boolean(),
+                'description' => 'Returns whether this is a revision.',
+            ],
+            'sourceId' => [
+                'name' => 'sourceId',
+                'type' => Type::int(),
+                'description' => 'Returns the element’s ID, or if it’s a draft/revision, its source element’s ID.',
+            ],
+            'sourceUid' => [
+                'name' => 'sourceUid',
+                'type' => Type::string(),
+                'description' => 'Returns the element’s UUID, or if it’s a draft/revision, its source element’s UUID.',
+            ],
            'draftId' => [
                'name' => 'draftId',
                'type' => Type::int(),
                'description' => 'The ID of the draft to return (from the `drafts` table)',
+            'isUnsavedDraft' => [
+                'name' => 'isUnsavedDraft',
+                'type' => Type::boolean(),
+                'description' => 'Returns whether this is a draft.',
             ],
            'sourceUid' => [
                'name' => 'sourceUid',
@@ -180,7 +189,7 @@ class Element extends InterfaceType
                'type' => Type::string(),
                'description' => 'The notes for the draft.',
            ]
-       ];
+        ];
     }
 
     /**

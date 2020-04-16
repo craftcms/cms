@@ -8,8 +8,6 @@
 namespace craft\gql\types\elements;
 
 use craft\elements\Category as CategoryElement;
-use craft\gql\base\ObjectType;
-use craft\gql\interfaces\Element as ElementInterface;
 use craft\gql\interfaces\elements\Category as CategoryInterface;
 use GraphQL\Type\Definition\ResolveInfo;
 

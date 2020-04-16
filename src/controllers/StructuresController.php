@@ -8,7 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\Element;
+use craft\base\ElementInterface;
 use craft\models\Structure;
 use craft\web\Controller;
 use yii\web\ForbiddenHttpException;
@@ -31,7 +31,7 @@ class StructuresController extends Controller
     private $_structure;
 
     /**
-     * @var Element|null
+     * @var ElementInterface|null
      */
     private $_element;
 
@@ -70,7 +70,7 @@ class StructuresController extends Controller
             throw new NotFoundHttpException('Element not found');
         }
 
-        /** @var Element|string $elementType */
+        /** @var ElementInterface|string $elementType */
         $this->_element = $elementType::find()
             ->id($elementId)
             ->siteId($siteId)

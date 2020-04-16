@@ -8,7 +8,6 @@
 namespace craft\elements\db;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
@@ -312,7 +311,6 @@ class MatrixBlockQuery extends ElementQuery
      */
     public function owner(ElementInterface $owner)
     {
-        /** @var Element $owner */
         $this->ownerId = $owner->id;
         $this->siteId = $owner->siteId;
         return $this;
@@ -512,7 +510,7 @@ class MatrixBlockQuery extends ElementQuery
 
         if (!$allowOwnerDrafts || !$allowOwnerRevisions) {
             // todo: we will need to expand on this when Matrix blocks can be nested.
-            $this->subQuery->innerJoin(Table::ELEMENTS . ' owners', '[[owners.id]] = [[matrixblocks.ownerId]]');
+            $this->subQuery->innerJoin(['owners' => Table::ELEMENTS], '[[owners.id]] = [[matrixblocks.ownerId]]');
 
             if (!$allowOwnerDrafts) {
                 $this->subQuery->andWhere(['owners.draftId' => null]);

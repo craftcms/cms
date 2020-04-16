@@ -5,8 +5,8 @@
  * @license https://craftcms.github.io/license/
  */
 
-use craft\fields\Number;
 use craft\fields\Matrix;
+use craft\fields\Number;
 use craft\fields\PlainText;
 use craft\fields\Table;
 

@@ -346,13 +346,13 @@ trait ApplicationTrait
             // 1 or "more than 1" rows, and this is the fastest way to do it.
             // (https://stackoverflow.com/a/14916838/1688568)
             return $this->_isMultiSiteWithTrashed = (new Query())
-                ->from([
-                    'x' => (new Query)
-                        ->select([new Expression('1')])
-                        ->from([Table::SITES])
-                        ->limit(2)
-                ])
-                ->count() != 1;
+                    ->from([
+                        'x' => (new Query)
+                            ->select([new Expression('1')])
+                            ->from([Table::SITES])
+                            ->limit(2)
+                    ])
+                    ->count() != 1;
         }
 
         if (!$refresh && $this->_isMultiSite !== null) {
@@ -737,13 +737,13 @@ trait ApplicationTrait
             ->exists();
 
         if ($infoRowExists) {
-            $this->getDb()->createCommand()
-                ->update(Table::INFO, $attributes, ['id' => 1])
-                ->execute();
+            Db::update(Table::INFO, $attributes, [
+                'id' => 1,
+            ]);
         } else {
-            $this->getDb()->createCommand()
-                ->insert(Table::INFO, $attributes + ['id' => 1])
-                ->execute();
+            Db::insert(Table::INFO, $attributes + [
+                'id' => 1,
+            ]);
         }
 
         $this->setIsInstalled();

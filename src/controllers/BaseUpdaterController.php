@@ -9,7 +9,6 @@ namespace craft\controllers;
 
 use Composer\IO\BufferIO;
 use Craft;
-use craft\base\Plugin;
 use craft\errors\MigrateException;
 use craft\errors\MigrationException;
 use craft\helpers\App;
@@ -546,7 +545,6 @@ abstract class BaseUpdaterController extends Controller
             ];
 
             if ($ownerHandle !== 'craft' && ($plugin = Craft::$app->getPlugins()->getPlugin($ownerHandle)) !== null) {
-                /** @var Plugin $plugin */
                 $email = $plugin->developerEmail;
             }
             $email = $email ?? 'support@craftcms.com';

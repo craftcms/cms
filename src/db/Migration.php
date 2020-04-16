@@ -192,7 +192,7 @@ abstract class Migration extends \yii\db\Migration
     // -------------------------------------------------------------------------
 
     /**
-     * Creates and executes an INSERT SQL statement.
+     * Creates and executes an `INSERT` SQL statement.
      *
      * The method will properly escape the column names, and bind the values to be inserted.
      *
@@ -212,7 +212,7 @@ abstract class Migration extends \yii\db\Migration
     }
 
     /**
-     * Creates and executes an batch INSERT SQL statement.
+     * Creates and executes a batch `INSERT` SQL statement.
      *
      * The method will properly escape the column names, and bind the values to be inserted.
      *
@@ -257,7 +257,7 @@ abstract class Migration extends \yii\db\Migration
     }
 
     /**
-     * Creates and executes an UPDATE SQL statement.
+     * Creates and executes an `UPDATE` SQL statement.
      *
      * The method will properly escape the column names and bind the values to be updated.
      *

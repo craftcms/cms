@@ -300,7 +300,6 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function getTranslationKey(ElementInterface $element): string
     {
-        /** @var Element $element */
         switch ($this->translationMethod) {
             case self::TRANSLATION_METHOD_NONE:
                 return '1';

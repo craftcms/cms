@@ -48,7 +48,7 @@ class EditEntryCest
      */
     public function seeSections(FunctionalTester $I)
     {
-        $I->amOnPage('/'.$this->cpTrigger.'/entries');
+        $I->amOnPage('/' . $this->cpTrigger . '/entries');
 
         $I->see('Craft CMS Test Section');
     }
