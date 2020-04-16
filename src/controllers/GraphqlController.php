@@ -75,7 +75,7 @@ class GraphqlController extends Controller
 
         // Add CORS headers
         $response->getHeaders()
-            ->add('Access-Control-Allow-Origin', $request->getOrigin())
+            ->add('Access-Control-Allow-Origin', '*')
             ->add('Access-Control-Allow-Credentials', 'true');
 
         if ($request->getIsOptions()) {
