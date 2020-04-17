@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\helpers\FileHelper::unlink()`, ensuring that it always returns `false` rather than throwing unexpected exceptions.
+
 ### Changed
 - Improved Plugin Store performance.
 - Asset indexes now show the “Link” column by default. ([#5910](https://github.com/craftcms/cms/pull/5910))

@@ -1249,13 +1249,8 @@ class UsersController extends Controller
                 'html' => $this->_renderPhotoTemplate($user),
             ]);
         } catch (\Throwable $exception) {
-            /** @noinspection UnSafeIsSetOverArrayInspection - FP */
             if (isset($fileLocation)) {
-                try {
-                    FileHelper::unlink($fileLocation);
-                } catch (\Throwable $e) {
-                    // Let it go
-                }
+                FileHelper::unlink($fileLocation);
             }
 
             Craft::error('There was an error uploading the photo: ' . $exception->getMessage(), __METHOD__);

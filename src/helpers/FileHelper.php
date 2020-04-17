@@ -425,6 +425,20 @@ class FileHelper extends \yii\helpers\FileHelper
     }
 
     /**
+     * @inheritdoc
+     * @since 3.4.16
+     */
+    public static function unlink($path)
+    {
+        // BaseFileHelper::unlink() doesn't seem to catch all possible exceptions
+        try {
+            return parent::unlink($path);
+        } catch (\Throwable $e) {
+            return false;
+        }
+    }
+
+    /**
      * Removes all of a directory’s contents recursively.
      *
      * @param string $dir the directory to be deleted recursively.
