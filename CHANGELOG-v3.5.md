@@ -33,6 +33,7 @@
 - Added `craft\base\ElementInterface::gqlMutationNameByContext()`.
 - Added `craft\behaviors\BaseRevisionBehavior`.
 - Added `craft\base\FieldInterface::getContentGqlMutationArgumentType()`.
+- Added `craft\base\FieldInterface::getContentGqlQueryArgumentType()`.
 - Added `craft\config\GeneralConfig::getTestToEmailAddress()`.
 - Added `craft\console\controllers\MailerController::$to`.
 - Added `craft\controllers\AppController::actionBrokenImage()`.

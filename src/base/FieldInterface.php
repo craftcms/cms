@@ -345,6 +345,14 @@ interface FieldInterface extends SavableComponentInterface
      */
     public function getContentGqlMutationArgumentType();
 
+    /**
+     * Returns the GraphQL type to be used as an argument in queries for this field type.
+     *
+     * @return Type|array
+     * @since 3.5.0
+     */
+    public function getContentGqlQueryArgumentType();
+
     // Events
     // -------------------------------------------------------------------------
 

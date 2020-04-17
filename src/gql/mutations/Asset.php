@@ -100,7 +100,7 @@ class Asset extends Mutation
 
         /** @var Field $contentField */
         foreach ($contentFields as $contentField) {
-            $contentFieldType = $contentField->getContentGqlArgumentType();
+            $contentFieldType = $contentField->getContentGqlMutationArgumentType();
             $assetMutationArguments[$contentField->handle] = $contentFieldType;
             $contentFieldHandles[$contentField->handle] = true;
 

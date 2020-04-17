@@ -88,7 +88,7 @@ class Category extends Mutation
 
         /** @var Field $contentField */
         foreach ($contentFields as $contentField) {
-            $contentFieldType = $contentField->getContentGqlArgumentType();
+            $contentFieldType = $contentField->getContentGqlMutationArgumentType();
             $mutationArguments[$contentField->handle] = $contentFieldType;
             $contentFieldHandles[$contentField->handle] = true;
 

@@ -11,6 +11,7 @@ use Craft;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\events\FieldElementEvent;
+use craft\gql\types\QueryArgument;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Html;
@@ -500,6 +501,17 @@ abstract class Field extends SavableComponent implements FieldInterface
             'name' => $this->handle,
             'type' => Type::string(),
             'description' => $this->instructions,
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getContentGqlQueryArgumentType()
+    {
+        return [
+            'name' => $this->handle,
+            'type' => Type::listOf(QueryArgument::getType())
         ];
     }
 

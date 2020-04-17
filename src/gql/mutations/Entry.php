@@ -138,7 +138,7 @@ class Entry extends Mutation
 
         /** @var Field $contentField */
         foreach ($contentFields as $contentField) {
-            $contentFieldType = $contentField->getContentGqlArgumentType();
+            $contentFieldType = $contentField->getContentGqlMutationArgumentType();
             $entryMutationArguments[$contentField->handle] = $contentFieldType;
             $draftMutationArguments[$contentField->handle] = $contentFieldType;
             $contentFieldHandles[$contentField->handle] = true;

@@ -1001,10 +1001,7 @@ class Gql extends Component
 
                 foreach ($context->getFields() as $contentField) {
                     if (!$contentField instanceof GqlInlineFragmentFieldInterface) {
-                        $contentArguments[$contentField->handle] = [
-                            'name' => $contentField->handle,
-                            'type' => Type::listOf(QueryArgument::getType()),
-                        ];
+                        $contentArguments[$contentField->handle] = $contentField->getContentGqlQueryArgumentType();
                     }
                 }
             }

@@ -62,8 +62,9 @@ class GlobalSet extends Mutation
         $valueNormalizers = [];
 
         foreach ($contentFields as $contentField) {
-            $contentFieldType = $contentField->getContentGqlArgumentType();
-            $mutationArguments[$contentField->handle] = $contentField->getContentGqlArgumentType();
+            $contentFieldType = $contentField->getContentGqlMutationArgumentType();
+
+            $mutationArguments[$contentField->handle] = $contentFieldType;
             $contentFieldHandles[$contentField->handle] = true;
 
             $configArray = is_array($contentFieldType) ? $contentFieldType : $contentFieldType->config;
