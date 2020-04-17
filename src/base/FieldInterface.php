@@ -343,7 +343,7 @@ interface FieldInterface extends SavableComponentInterface
      * @return Type|array
      * @since 3.5.0
      */
-    public function getContentGqlArgumentType();
+    public function getContentGqlMutationArgumentType();
 
     // Events
     // -------------------------------------------------------------------------

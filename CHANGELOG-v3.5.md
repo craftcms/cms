@@ -32,7 +32,7 @@
 - Added `craft\base\ElementInterface::getIconUrl()`.
 - Added `craft\base\ElementInterface::gqlMutationNameByContext()`.
 - Added `craft\behaviors\BaseRevisionBehavior`.
-- Added `craft\base\FieldInterface::getContentGqlArgumentType()`.
+- Added `craft\base\FieldInterface::getContentGqlMutationArgumentType()`.
 - Added `craft\config\GeneralConfig::getTestToEmailAddress()`.
 - Added `craft\console\controllers\MailerController::$to`.
 - Added `craft\controllers\AppController::actionBrokenImage()`.
