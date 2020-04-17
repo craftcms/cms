@@ -183,14 +183,7 @@ abstract class ElementFixture extends ActiveFixture
             }
 
             if ($this->isPrimaryKey($key)) {
-                if (is_array($value)) {
-                    $query = $query->relatedTo([
-                        'targetElement' => $value,
-                        'field' => $key,
-                    ]);
-                } else {
-                    $query = $query->$key(addcslashes($value, ','));
-                }
+                $query = $query->$key(addcslashes($value, ','));
             }
         }
 
