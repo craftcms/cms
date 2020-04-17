@@ -25,6 +25,7 @@
 - Fixed a bug where <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>S</kbd> save shortcuts would apply even if a modal or HUD was currently visible, potentially resulting in lost content changes. ([#5916](https://github.com/craftcms/cms/issues/5916))
 - Fixed an error that occurred when a user without permission to publish live entries attempted to create a new entry within an Entries field. ([#5917](https://github.com/craftcms/cms/issues/5917))
 - Fixed a JavaScript error that could occur when buying plugins.
+- Fixed a bug where `craft\services\Assets::getFolderTreeByFolderId()` would ignore children folders. ([#5939](https://github.com/craftcms/cms/issues/5939))
 
 ## 3.4.15 - 2020-04-09
 
