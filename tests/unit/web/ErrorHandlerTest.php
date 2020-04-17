@@ -11,6 +11,7 @@ use Codeception\Stub;
 use Craft;
 use craft\test\TestCase;
 use craft\web\ErrorHandler;
+use ErrorException;
 use Exception;
 use ReflectionException;
 use Throwable;
@@ -18,7 +19,6 @@ use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
 use UnitTester;
-use yii\base\ErrorException;
 use yii\web\HttpException;
 
 /**

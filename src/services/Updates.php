@@ -15,8 +15,8 @@ use craft\errors\MigrateException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\models\Updates as UpdatesModel;
+use ErrorException;
 use yii\base\Component;
-use yii\base\ErrorException;
 use yii\base\InvalidArgumentException;
 
 /**

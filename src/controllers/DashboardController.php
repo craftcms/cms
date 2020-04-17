@@ -23,7 +23,6 @@ use craft\web\UploadedFile;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\RequestOptions;
 use Symfony\Component\Yaml\Yaml;
-use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\web\BadRequestHttpException;
@@ -303,9 +302,7 @@ class DashboardController extends Controller
      * Creates a new support ticket for the CraftSupport widget.
      *
      * @return Response
-     * @throws ErrorException
      * @throws BadRequestHttpException
-     * @throws InvalidArgumentException
      */
     public function actionSendSupportRequest(): Response
     {
@@ -401,7 +398,7 @@ class DashboardController extends Controller
                             'except' => ['web-404s.log'],
                             'recursive' => false
                         ]);
-                    } catch (ErrorException $e) {
+                    } catch (InvalidArgumentException $e) {
                         Craft::warning("Unable to find log files in \"{$logPath}\": " . $e->getMessage(), __METHOD__);
                         $logFiles = [];
                     }

@@ -20,7 +20,6 @@ use craft\utilities\ClearCaches;
 use craft\utilities\Updates;
 use craft\web\assets\utilities\UtilitiesAsset;
 use craft\web\Controller;
-use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\web\ForbiddenHttpException;
@@ -351,12 +350,8 @@ class UtilitiesController extends Controller
 
         $zipPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . pathinfo($backupPath, PATHINFO_FILENAME) . '.zip';
 
-        if (is_file($zipPath)) {
-            try {
-                FileHelper::unlink($zipPath);
-            } catch (ErrorException $e) {
-                Craft::warning("Unable to delete the file \"{$zipPath}\": " . $e->getMessage(), __METHOD__);
-            }
+        if (is_file($zipPath) && !FileHelper::unlink($zipPath)) {
+            Craft::warning("Unable to delete the file \"{$zipPath}\": " . $e->getMessage(), __METHOD__);
         }
 
         $zip = new ZipArchive();

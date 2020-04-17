@@ -19,13 +19,13 @@ use craft\services\Users;
 use craft\test\EventItem;
 use craft\test\TestCase;
 use crafttests\fixtures\UserGroupsFixture;
-use UnitTester;
-use yii\base\ErrorException;
-use yii\base\Exception;
 use DateTime;
 use DateTimeZone;
-use Throwable;
+use ErrorException;
 use ReflectionException;
+use Throwable;
+use UnitTester;
+use yii\base\Exception;
 use yii\base\NotSupportedException;
 use yii\db\Exception as YiiDbException;
 use yii\web\ServerErrorHttpException;
@@ -69,7 +69,7 @@ class UsersTest extends TestCase
      */
     protected $suspendedUser;
 
-    public function _fixtures() : array
+    public function _fixtures(): array
     {
         return [
             'user-groups' => [
@@ -473,14 +473,14 @@ class UsersTest extends TestCase
         $this->users->sendActivationEmail($this->pendingUser);
         $this->testUsersEmailFunctions(
             'account_activation',
-            'set-password&code='.$string
+            'set-password&code=' . $string
         );
 
         $this->pendingUser->password = 'some_password';
         $this->users->sendActivationEmail($this->pendingUser);
         $this->testUsersEmailFunctions(
             'account_activation',
-            'verify-email&code='.$string
+            'verify-email&code=' . $string
         );
         $this->pendingUser->password = null;
 
@@ -488,14 +488,14 @@ class UsersTest extends TestCase
         $this->users->sendNewEmailVerifyEmail($this->pendingUser);
         $this->testUsersEmailFunctions(
             'verify_new_email',
-            'verify-email&code='.$string
+            'verify-email&code=' . $string
         );
 
         // Test password reset email
         $this->users->sendPasswordResetEmail($this->pendingUser);
         $this->testUsersEmailFunctions(
             'forgot_password',
-            'set-password&code='.$string
+            'set-password&code=' . $string
         );
     }
 
@@ -528,7 +528,7 @@ class UsersTest extends TestCase
      * @return int
      * @throws YiiDbException
      */
-    protected function updateUser(array $collumns, array $conditions) : int
+    protected function updateUser(array $collumns, array $conditions): int
     {
         // First. Set the correct conditions
         return Craft::$app->getDb()->createCommand()
