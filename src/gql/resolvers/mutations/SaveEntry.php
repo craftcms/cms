@@ -82,7 +82,7 @@ class SaveEntry extends MutationResolver
             $entry = new EntryElement();
         }
 
-        if ($entry->sectionId !== $section->id) {
+        if ($canIdentify && $entry->sectionId !== $section->id) {
             throw new Error('Impossible to change the section of an existing entry');
         }
 
