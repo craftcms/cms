@@ -139,12 +139,23 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
     /**
      * @inheritdoc
      */
-    public function getContentGqlArgumentType()
+    public function getContentGqlMutationArgumentType()
     {
         return [
             'name' => $this->handle,
             'type' => Type::boolean(),
             'description' => $this->instructions,
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getContentGqlQueryArgumentType()
+    {
+        return [
+            'name' => $this->handle,
+            'type' => Type::boolean(),
         ];
     }
 }
