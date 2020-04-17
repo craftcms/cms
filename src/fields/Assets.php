@@ -650,9 +650,8 @@ class Assets extends BaseRelationField
      */
     protected function inputSelectionCriteria(): array
     {
-        $criteria = [
-            'kind' => ($this->restrictFiles && !empty($this->allowedKinds)) ? $this->allowedKinds : [],
-        ];
+        $criteria = parent::inputSelectionCriteria();
+        $criteria['kind'] = ($this->restrictFiles && !empty($this->allowedKinds)) ? $this->allowedKinds : [];
 
         if ($this->showUnpermittedFiles) {
             $criteria['uploaderId'] = null;

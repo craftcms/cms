@@ -20,6 +20,7 @@ use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\ElementRelationParamParser;
 use craft\errors\SiteNotFoundException;
+use craft\events\ElementCriteriaEvent;
 use craft\events\ElementEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
@@ -40,6 +41,12 @@ use yii\base\NotSupportedException;
  */
 abstract class BaseRelationField extends Field implements PreviewableFieldInterface, EagerLoadingFieldInterface
 {
+    /**
+     * @event ElementCriteriaEvent The event that is triggered when defining the selection criteria for this field.
+     * @since 3.4.16
+     */
+    const EVENT_DEFINE_SELECTION_CRITERIA = 'defineSelectionCriteria';
+
     /**
      * @inheritdoc
      */
@@ -912,7 +919,10 @@ JS;
      */
     protected function inputSelectionCriteria(): array
     {
-        return [];
+        // Fire a defineSelectionCriteria event
+        $event = new ElementCriteriaEvent();
+        $this->trigger(self::EVENT_DEFINE_SELECTION_CRITERIA, $event);
+        return $event->criteria;
     }
 
     /**

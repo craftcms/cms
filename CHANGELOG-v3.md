@@ -3,6 +3,8 @@
 ## Unreleased
 
 ### Added
+- Added `craft\events\ElementCriteriaEvent`.
+- Added `craft\fields\BaseRelationField::EVENT_DEFINE_SELECTION_CRITERIA`. ([#4299](https://github.com/craftcms/cms/issues/4299))
 - Added `craft\helpers\FileHelper::unlink()`, ensuring that it always returns `false` rather than throwing unexpected exceptions.
 
 ### Changed
