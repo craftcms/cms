@@ -239,7 +239,9 @@ class GqlTest extends Unit
      */
     public function testPermissionListGenerated()
     {
-        $this->assertNotEmpty(Craft::$app->getGql()->getAllPermissions());
+        $this->assertNotEmpty(Craft::$app->getGql()->getAllSchemaComponents());
+        $this->assertArrayHasKey('queries', Craft::$app->getGql()->getAllSchemaComponents());
+        $this->assertArrayHasKey('mutations', Craft::$app->getGql()->getAllSchemaComponents());
     }
 
     /**

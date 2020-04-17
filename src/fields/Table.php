@@ -11,7 +11,9 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\fields\data\ColorData;
+use craft\gql\GqlEntityRegistry;
 use craft\gql\types\generators\TableRowType as TableRowTypeGenerator;
+use craft\gql\types\TableRow;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
@@ -19,6 +21,7 @@ use craft\validators\ColorValidator;
 use craft\validators\UrlValidator;
 use craft\web\assets\tablesettings\TableSettingsAsset;
 use craft\web\assets\timepicker\TimepickerAsset;
+use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
 use yii\db\Schema;
 use yii\validators\EmailValidator;
@@ -421,8 +424,31 @@ class Table extends Field
      */
     public function getContentGqlType()
     {
-        $typeArray = TableRowTypeGenerator::generateTypes($this);
-        return Type::listOf(array_pop($typeArray));
+        $type = TableRowTypeGenerator::generateType($this);
+        return Type::listOf($type);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getContentGqlArgumentType()
+    {
+        $typeName = $this->handle . '_TableRowInput';
+
+        if ($argumentType = GqlEntityRegistry::getEntity($typeName)) {
+            return $argumentType;
+        }
+
+        $contentFields = TableRow::prepareRowFieldDefinition($this->columns, $typeName, false);
+
+        $argumentType =  GqlEntityRegistry::createEntity($typeName, new InputObjectType([
+            'name' => $typeName,
+            'fields' => function() use ($contentFields) {
+                return $contentFields;
+            }
+        ]));
+
+        return Type::listOf($argumentType);
     }
 
     /**

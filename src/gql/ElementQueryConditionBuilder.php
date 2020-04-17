@@ -179,6 +179,10 @@ class ElementQueryConditionBuilder
      */
     private function _prepareTransformArguments($arguments)
     {
+        if (empty($arguments)) {
+            return [];
+        }
+
         // `handle` arguments are just strings on their own.
         if (!empty($arguments['handle'])) {
             $arguments += [$arguments['handle']];

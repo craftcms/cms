@@ -148,6 +148,15 @@ class Tag extends Element
     }
 
     /**
+     * @inheritdoc
+     */
+    public static function gqlMutationNameByContext($context): string
+    {
+        /** @var TagGroup $context */
+        return 'save_' . $context->handle . '_Tag';
+    }
+
+    /**
      * @var int|null Group ID
      */
     public $groupId;

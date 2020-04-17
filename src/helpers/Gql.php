@@ -87,6 +87,89 @@ class Gql
     }
 
     /**
+     * Return a list of all the actions the current schema is allowed for a given entity.
+     * 
+     * @param string $entity
+     * @return array
+     */
+    public static function extractEntityAllowedActions(string $entity): array {
+        try {
+            $permissions = (array)Craft::$app->getGql()->getActiveSchema()->scope;
+            $actions = [];
+
+            foreach (preg_grep('/^' . preg_quote($entity, '/') . '\:.*$/i', $permissions) as $scope) {
+                $parts = explode(':', $scope);
+                $actions[end($parts)] = true;
+            }
+
+            return array_keys($actions);
+        } catch (GqlException $exception) {
+            Craft::$app->getErrorHandler()->logException($exception);
+            return [];
+        }
+    }
+
+    /**
+     * Return true if active schema can mutate entries.
+     *
+     * @return bool
+     * @since 3.5.0
+     */
+    public static function canMutateEntries(): bool
+    {
+        $allowedEntities = self::extractAllowedEntitiesFromSchema('edit');
+        return isset($allowedEntities['entrytypes']);
+    }
+
+    /**
+     * Return true if active schema can mutate tags.
+     *
+     * @return bool
+     * @since 3.5.0
+     */
+    public static function canMutateTags(): bool
+    {
+        $allowedEntities = self::extractAllowedEntitiesFromSchema('edit');
+        return isset($allowedEntities['taggroups']);
+    }
+
+    /**
+     * Return true if active schema can mutate global sets.
+     *
+     * @return bool
+     * @since 3.5.0
+     */
+    public static function canMutateGlobalSets(): bool
+    {
+        $allowedEntities = self::extractAllowedEntitiesFromSchema('edit');
+        return isset($allowedEntities['globalsets']);
+    }
+
+    /**
+     * Return true if active schema can mutate categories.
+     *
+     * @return bool
+     * @since 3.5.0
+     */
+    public static function canMutateCategories(): bool
+    {
+        $allowedEntities = self::extractAllowedEntitiesFromSchema('edit');
+        return isset($allowedEntities['categorygroups']);
+    }
+
+    /**
+     * Return true if active schema can mutate assets.
+     *
+     * @return bool
+     * @since 3.5.0
+     */
+    public static function canMutateAssets(): bool
+    {
+        $allowedEntities = self::extractAllowedEntitiesFromSchema('edit');
+        return isset($allowedEntities['volumes']);
+    }
+
+    /**
      * Return true if active schema can query entries.
      *
      * @return bool
@@ -174,7 +257,7 @@ class Gql
      */
     public static function createFullAccessSchema(): GqlSchema
     {
-        $permissionGroups = Craft::$app->getGql()->getAllPermissions();
+        $permissionGroups = Craft::$app->getGql()->getAllSchemaComponents();
         $schema = new GqlSchema(['name' => 'Full Schema', 'uid' => '*']);
 
         // Fetch all nested permissions
@@ -188,7 +271,11 @@ class Gql
             }
         };
 
-        foreach ($permissionGroups as $permissionGroup) {
+        foreach ($permissionGroups['queries'] as $permissionGroup) {
+            $traverser($permissionGroup);
+        }
+
+        foreach ($permissionGroups['mutations'] as $permissionGroup) {
             $traverser($permissionGroup);
         }
 

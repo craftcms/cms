@@ -30,15 +30,49 @@
 - Added support for specifying a transform on assets’ `width` and `height` fields via GraphQL.
 - Added `craft\base\Element::EVENT_SET_EAGER_LOADED_ELEMENTS`.
 - Added `craft\base\ElementInterface::getIconUrl()`.
+- Added `craft\base\ElementInterface::gqlMutationNameByContext()`.
 - Added `craft\behaviors\BaseRevisionBehavior`.
+- Added `craft\base\FieldInterface::getContentGqlArgumentType()`.
 - Added `craft\config\GeneralConfig::getTestToEmailAddress()`.
 - Added `craft\console\controllers\MailerController::$to`.
 - Added `craft\controllers\AppController::actionBrokenImage()`.
 - Added `craft\elements\actions\CopyUrl`.
 - Added `craft\elements\actions\Delete::$hard`.
 - Added `craft\elements\Asset::getSrcset()`. ([#5774](https://github.com/craftcms/cms/issues/5774))
+- Added `craft\events\RegisterGqlMutationsEvent`.
+- Added `craft\events\RegisterGqlSchemaComponentsEvent`.
 - Added `craft\events\SetEagerLoadedElementsEvent`.
+- Added `craft\gql\arguments\mutations\Asset`.
+- Added `craft\gql\arguments\mutations\Draft`.
+- Added `craft\gql\arguments\mutations\Entry`.
+- Added `craft\gql\arguments\mutations\Structure`.
+- Added `craft\gql\base\ElementMutationArguments`.
+- Added `craft\gql\base\MutationArguments`.
+- Added `craft\gql\base\SingleGeneratorInterface`.
+- Added `craft\gql\base\StructureMutationTrait`.
 - Added `craft\gql\ElementQueryConditionBuilder`.
+- Added `craft\gql\Mutation`.
+- Added `craft\gql\mutations\Category`.
+- Added `craft\gql\mutations\Entry`.
+- Added `craft\gql\mutations\GlobalSet`.
+- Added `craft\gql\mutations\Ping`.
+- Added `craft\gql\mutations\Tag`.
+- Added `craft\gql\resolvers\mutations\CreateDraft`.
+- Added `craft\gql\resolvers\mutations\DeleteAsset`.
+- Added `craft\gql\resolvers\mutations\DeleteCategory`.
+- Added `craft\gql\resolvers\mutations\DeleteEntry`.
+- Added `craft\gql\resolvers\mutations\DeleteTag`.
+- Added `craft\gql\resolvers\mutations\PublishDraft`.
+- Added `craft\gql\resolvers\mutations\SaveAsset`.
+- Added `craft\gql\resolvers\mutations\SaveDraft`.
+- Added `craft\gql\resolvers\mutations\SaveCategory`.
+- Added `craft\gql\resolvers\mutations\SaveEntry`.
+- Added `craft\gql\resolvers\mutations\SaveGlobalSet`.
+- Added `craft\gql\resolvers\mutations\SaveTag`.
+- Added `craft\gql\types\input\File`.
+- Added `craft\gql\types\input\Matrix`.
+- Added `craft\gql\types\Mutation`.
+- Added `craft\gql\types\TableRow::prepareRowFieldDefinition()`.
 - Added `craft\helpers\Assets::parseSrcsetSize()`.
 - Added `craft\helpers\Assets::scaledDimensions()`.
 - Added `craft\helpers\Db::batchInsert()`.
@@ -47,6 +81,12 @@
 - Added `craft\helpers\Db::replace()`.
 - Added `craft\helpers\Db::update()`.
 - Added `craft\helpers\Db::upsert()`.
+- Added `craft\helpers\Gql::canMutateAssets()`.
+- Added `craft\helpers\Gql::canMutateCategories()`.
+- Added `craft\helpers\Gql::canMutateEntries()`.
+- Added `craft\helpers\Gql::canMutateGlobalSets()`.
+- Added `craft\helpers\Gql::canMutateTags()`.
+- Added `craft\helpers\Gql::extractEntityAllowedActions()`.
 - Added `craft\helpers\FileHelper::addFilesToZip()`.
 - Added `craft\helpers\FileHelper::zip()`.
 - Added `craft\helpers\Html::explodeClass()`.
@@ -61,6 +101,7 @@
 - Added `craft\helpers\MailerHelper::settingsReport()`.
 - Added `craft\helpers\Queue`.
 - Added `craft\models\Site::$enabled`.
+- Added `craft\services\Gql::getAllSchemaComponents()`.
 - Added `craft\queue\jobs\PruneRevisions`.
 - Added `craft\web\AssetBundle\ContentWindowAsset`.
 - Added `craft\web\AssetBundle\IframeResizerAsset`.
@@ -104,6 +145,7 @@
 - `craft\elements\Asset::getImg()` now has a `$sizes` argument. ([#5774](https://github.com/craftcms/cms/issues/5774))
 - `craft\helpers\StringHelper::randomString()` no longer includes capital letters or numbers by default.
 - `craft\i18n\Formatter::asTimestamp()` now has a `$withPreposition` argument.
+- `craft\services\Gql` now fires a `registerGqlMutations` event that allows for plugins to register their own GraphQL mutations.
 - `craft\services\Sites::getAllSiteIds()`, `getSiteByUid()`, `getAllSites()`, `getSitesByGroupId()`, `getSiteById()`, and `getSiteByHandle()` now have `$withDisabled` arguments.
 - Improved `data`/`aria` tag normalization via `craft\helpers\Html::parseTagAttributes()` and `normalizeTagAttributes()`.
 - Control panel form input macros and templates that accept a `class` variable can now pass it as an array of class names.
@@ -113,6 +155,8 @@
 - Deprecated the `|ucwords` Twig filter. Use the `|title` filter instead.
 - Deprecated `craft\gql\base\Resolver::extractEagerLoadCondition()` in favor of the new `ElementQueryConditionBuilder` class.
 - Deprecated `craft\web\View::formatInputId()`. `craft\helpers\Html::namespaceHtml()` should be used instead.
+- Deprecated `craft\events\RegisterGqlPermissionsEvent` in favor of the new `craft\events\RegisterGqlSchemaComponentsEvent` event.
+- Deprecated `craft\services\Gql::getAllPermissions()` in favor of the new `craft\services\Gql::getAllSchemaComponents()` method.
 
 ### Removed
 - Removed the [Interactive Shell Extension for Yii 2](https://github.com/yiisoft/yii2-shell), as it’s now a dev dependency of the `craftcms/craft` project instead. ([#5783](https://github.com/craftcms/cms/issues/5783))

@@ -126,6 +126,63 @@ class GqlHelperTest extends Unit
         $this->assertNotEmpty($schema->scope);
     }
 
+    /**
+     * Test if entity actions are extracted correctly
+     *
+     * @dataProvider actionExtractionDataProvider
+     */
+    public function testEntityActionExtraction($scope, $entity, $result)
+    {
+        $this->_setSchemaWithPermissions($scope);
+
+        $this->assertEquals($result, GqlHelper::extractEntityAllowedActions($entity));
+    }
+
+    public function actionExtractionDataProvider()
+    {
+        return [
+            [
+                [
+                    'entity-one:read',
+                    'entity-two:read',
+                    'entity-two:write',
+                    'entity-two:observe',
+                ],
+                'entity-one',
+                ['read'],
+            ],
+            [
+                [
+                    'entity-one:read',
+                    'entity-two:read',
+                    'entity-two:write',
+                    'entity-two:observe',
+                ],
+                'entity-two',
+                ['read', 'write', 'observe'],
+            ],            [
+                [
+                    'entity-one:read',
+                    'entity-two:read',
+                    'entity-two:read',
+                    'entity-two:observe',
+                ],
+                'entity-two',
+                ['read', 'observe'],
+            ],
+            [
+                [
+                    'entity-one:read',
+                    'entity-two:read',
+                    'entity-two:write',
+                    'entity-two:observe',
+                ],
+                'entity-three',
+                [],
+            ],
+        ];
+    }
+
     public function schemaPermissionDataProvider()
     {
         return [

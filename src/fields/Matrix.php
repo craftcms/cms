@@ -26,6 +26,7 @@ use craft\events\BlockTypesEvent;
 use craft\gql\arguments\elements\MatrixBlock as MatrixBlockArguments;
 use craft\gql\resolvers\elements\MatrixBlock as MatrixBlockResolver;
 use craft\gql\types\generators\MatrixBlockType as MatrixBlockTypeGenerator;
+use craft\gql\types\input\Matrix as MatrixInputType;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
@@ -832,6 +833,15 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             'resolve' => MatrixBlockResolver::class . '::resolve',
         ];
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function getContentGqlArgumentType()
+    {
+        return MatrixInputType::getType($this);
+    }
+
 
     /**
      * @inheritdoc

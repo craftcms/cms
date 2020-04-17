@@ -71,7 +71,7 @@ class Entry extends Structure
      */
     public static function getFieldDefinitions(): array
     {
-        return TypeManager::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), self::getConditionalFields(), [
+        return TypeManager::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), static::getDraftFieldDefinitions(), self::getConditionalFields(), [
             'sectionId' => [
                 'name' => 'sectionId',
                 'type' => Type::int(),

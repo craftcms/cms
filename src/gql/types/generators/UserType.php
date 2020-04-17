@@ -10,6 +10,8 @@ namespace craft\gql\types\generators;
 use Craft;
 use craft\elements\User as UserElement;
 use craft\gql\base\GeneratorInterface;
+use craft\gql\base\ObjectType;
+use craft\gql\base\SingleGeneratorInterface;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\User as UserInterface;
 use craft\gql\TypeManager;
@@ -21,16 +23,24 @@ use craft\gql\types\elements\User;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0
  */
-class UserType implements GeneratorInterface
+class UserType implements GeneratorInterface, SingleGeneratorInterface
 {
     /**
      * @inheritdoc
      */
     public static function generateTypes($context = null): array
     {
-        $gqlTypes = [];
-        $typeName = UserElement::gqlTypeNameByContext(null);
+        // Users have no context
+        $type = static::generateType($context);
+        return [$type->name => $type];
+    }
 
+    /**
+     * @inheritdoc
+     */
+    public static function generateType($context): ObjectType
+    {
+        $typeName = UserElement::gqlTypeNameByContext(null);
         $contentFields = Craft::$app->getFields()->getLayoutByType(UserElement::class)->getFields();
         $contentFieldGqlTypes = [];
 
@@ -40,15 +50,11 @@ class UserType implements GeneratorInterface
 
         $userFields = TypeManager::prepareFieldDefinitions(array_merge(UserInterface::getFieldDefinitions(), $contentFieldGqlTypes), $typeName);
 
-        // Generate a type for each entry type
-        $gqlTypes[$typeName] = GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new User([
+        return GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new User([
             'name' => $typeName,
             'fields' => function() use ($userFields) {
                 return $userFields;
             }
         ]));
-
-
-        return $gqlTypes;
     }
 }

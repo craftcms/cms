@@ -491,6 +491,18 @@ abstract class Field extends SavableComponent implements FieldInterface
         return Type::string();
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function getContentGqlArgumentType()
+    {
+        return [
+            'name' => $this->handle,
+            'type' => Type::string(),
+            'description' => $this->instructions,
+        ];
+    }
+
     // Events
     // -------------------------------------------------------------------------
 
