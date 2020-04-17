@@ -13,7 +13,7 @@ use DateInterval;
 use DateTime;
 use DateTimeImmutable;
 use DateTimeZone;
-use ErrorException;
+use yii\base\ErrorException;
 
 /**
  * Class DateTimeHelper

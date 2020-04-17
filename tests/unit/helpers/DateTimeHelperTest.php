@@ -16,6 +16,7 @@ use DateTime;
 use DateTimeZone;
 use Exception;
 use UnitTester;
+use yii\base\ErrorException;
 
 /**
  * Unit tests for the DateTime Helper class.

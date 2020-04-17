@@ -12,7 +12,7 @@ use craft\db\Connection;
 use craft\db\TableSchema;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
-use ErrorException;
+use yii\base\ErrorException;
 use yii\db\Exception;
 
 /**

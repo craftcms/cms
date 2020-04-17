@@ -20,9 +20,8 @@ use craft\helpers\FileHelper;
 use craft\helpers\Path;
 use craft\helpers\UrlHelper;
 use craft\queue\QueueLogBehavior;
-use ErrorException;
 use yii\base\Component;
-use yii\base\Exception;
+use yii\base\ErrorException;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidRouteException;
@@ -353,7 +352,7 @@ class Application extends \yii\web\Application
      *
      * @throws ErrorException
      * @throws InvalidConfigException
-     * @throws Exception
+     * @throws \yii\base\Exception
      */
     protected function ensureResourcePathExists()
     {

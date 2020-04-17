@@ -8,13 +8,12 @@
 namespace craft\helpers;
 
 use Craft;
-use ErrorException;
 use FilesystemIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
-use yii\base\ErrorException as YiiErrorException;
+use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 
@@ -86,7 +85,6 @@ class FileHelper extends \yii\helpers\FileHelper
 
     /**
      * @inheritdoc
-     * @throws ErrorException in case of failure
      */
     public static function removeDirectory($dir, $options = [])
     {
@@ -198,7 +196,7 @@ class FileHelper extends \yii\helpers\FileHelper
         }
 
         if (!($handle = opendir($dir))) {
-            throw new YiiErrorException("Unable to open the directory: $dir");
+            throw new ErrorException("Unable to open the directory: $dir");
         }
 
         // It's empty until we find a file
@@ -372,7 +370,7 @@ class FileHelper extends \yii\helpers\FileHelper
         }
 
         if (file_put_contents($file, $contents, $flags) === false) {
-            throw new YiiErrorException("Unable to write new contents to \"{$file}\".");
+            throw new ErrorException("Unable to write new contents to \"{$file}\".");
         }
 
         // Invalidate opcache
@@ -518,7 +516,7 @@ class FileHelper extends \yii\helpers\FileHelper
         }
 
         if (!($handle = opendir($dir))) {
-            throw new YiiErrorException("Unable to open the directory: {$dir}");
+            throw new ErrorException("Unable to open the directory: {$dir}");
         }
 
         while (($file = readdir($handle)) !== false) {

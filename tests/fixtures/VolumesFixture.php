@@ -13,7 +13,7 @@ use craft\helpers\Json;
 use craft\records\Volume;
 use craft\services\Volumes;
 use craft\test\Fixture;
-use ErrorException;
+use yii\base\ErrorException;
 use yii\base\Exception;
 
 /**

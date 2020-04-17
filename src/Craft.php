@@ -229,7 +229,7 @@ class Craft extends Yii
      * @param string $storedFieldVersion
      * @param bool $write
      * @param bool $load
-     * @throws ErrorException
+     * @throws \yii\base\ErrorException
      */
     private static function _generateCustomFieldBehavior(array $fieldHandles, string $filePath, string $storedFieldVersion, bool $write, bool $load)
     {

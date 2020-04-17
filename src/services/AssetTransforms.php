@@ -34,9 +34,9 @@ use craft\models\AssetTransform;
 use craft\models\AssetTransformIndex;
 use craft\records\AssetTransform as AssetTransformRecord;
 use DateTime;
-use ErrorException;
 use yii\base\Application;
 use yii\base\Component;
+use yii\base\ErrorException;
 use yii\base\InvalidArgumentException;
 
 /**

@@ -8,6 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\base\AssetPreviewHandler;
 use craft\base\Element;
 use craft\base\Volume;
 use craft\elements\Asset;
@@ -26,7 +27,7 @@ use craft\image\Raster;
 use craft\models\VolumeFolder;
 use craft\web\Controller;
 use craft\web\UploadedFile;
-use ErrorException;
+use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\base\NotSupportedException;
 use yii\web\BadRequestHttpException;
