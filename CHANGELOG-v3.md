@@ -7,6 +7,7 @@
 - Asset indexes now show the “Link” column by default. ([#5910](https://github.com/craftcms/cms/pull/5910))
 - Element editors no longer close automatically when the <kbd>Esc</kbd> key is pressed or the shade is clicked on.
 - Element editors now support <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>S</kbd> save shortcuts.
+- Static element views now show custom fields’ instructions. ([#5928](https://github.com/craftcms/cms/issues/5928))
 - When upgrading to Craft 3, sites now maintain the same UIDs as the Craft 2 locales they replace. ([#5914](https://github.com/craftcms/cms/issues/5914))
 - Craft now sets the `access-control-allow-origin` header to `*` rather than the incoming request’s origin, for `graphql/api` and `live-preview/preview` requests. ([#4830](https://github.com/craftcms/cms/issues/4830))
 - Updated Garnish to 0.1.36.
