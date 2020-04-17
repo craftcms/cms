@@ -2726,9 +2726,8 @@ abstract class Element extends Component implements ElementInterface
         $view = Craft::$app->getView();
 
         if ($fieldLayout) {
-            $originalNamespace = $view->getNamespace();
-            $namespace = $view->namespaceInputName('fields', $originalNamespace);
-            $view->setNamespace($namespace);
+            $namespace = $view->getNamespace();
+            $view->setNamespace($view->namespaceInputName('fields'));
             $view->setIsDeltaRegistrationActive(true);
 
             foreach ($fieldLayout->getFields() as $field) {
@@ -2739,10 +2738,10 @@ abstract class Element extends Component implements ElementInterface
                     'registerDeltas' => true,
                 ]);
 
-                $html .= $view->namespaceInputs($fieldHtml, 'fields');
+                $html .= Html::namespaceHtml($fieldHtml, 'fields');
             }
 
-            $view->setNamespace($originalNamespace);
+            $view->setNamespace($namespace);
             $view->setIsDeltaRegistrationActive(false);
 
             $html .= Html::hiddenInput('fieldLayoutId', $fieldLayout->id);

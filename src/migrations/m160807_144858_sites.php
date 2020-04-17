@@ -529,7 +529,7 @@ class m160807_144858_sites extends Migration
             $localeParts = array_filter(preg_split('/[^a-zA-Z0-9]/', $locale));
 
             // Prefix with a random string so there's no chance of a conflict with other locales
-            return StringHelper::randomStringWithChars('abcdefghijklmnopqrstuvwxyz', 7) . ($localeParts ? '_' . implode('_', $localeParts) : '');
+            return StringHelper::randomString(7) . ($localeParts ? '_' . implode('_', $localeParts) : '');
         }
 
         return $locale;

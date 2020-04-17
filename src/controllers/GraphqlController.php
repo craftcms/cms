@@ -9,8 +9,10 @@ namespace craft\controllers;
 
 use Craft;
 use craft\errors\GqlException;
+use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Gql as GqlHelper;
+use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\models\GqlSchema;
 use craft\models\GqlToken;
@@ -74,9 +76,23 @@ class GraphqlController extends Controller
         $response = Craft::$app->getResponse();
 
         // Add CORS headers
-        $response->getHeaders()
-            ->add('Access-Control-Allow-Origin', $request->getOrigin())
-            ->add('Access-Control-Allow-Credentials', 'true');
+        $headers = $response->getHeaders();
+        $headers->add('Access-Control-Allow-Credentials', 'true');
+
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        if (is_array($generalConfig->allowedGraphqlOrigins)) {
+            if (($origins = $request->getOrigin()) !== null) {
+                $origins = ArrayHelper::filterEmptyStringsFromArray(array_map('trim', explode(',', $origins)));
+                foreach ($origins as $origin) {
+                    if (in_array($origin, $generalConfig->allowedGraphqlOrigins)) {
+                        $headers->add('Access-Control-Allow-Origin', $origin);
+                        break;
+                    }
+                }
+            }
+        } else if ($generalConfig->allowedGraphqlOrigins !== false) {
+            $headers->add('Access-Control-Allow-Origin', '*');
+        }
 
         if ($request->getIsOptions()) {
             // This is just a preflight request, no need to run the actual query yet

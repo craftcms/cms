@@ -14808,7 +14808,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         siteId: this.siteId,
         attributes: {
           sectionId: sectionId,
-          typeId: section.entryTypes[0].id
+          typeId: section.entryTypes[0].id,
+          enabled: section.canPublish ? 1 : 0
         },
         onBeginLoading: $.proxy(function () {
           this.$newEntryBtn.addClass('loading');

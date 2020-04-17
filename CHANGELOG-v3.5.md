@@ -10,6 +10,7 @@
 - Entry indexes can now show “Revision Notes” and “Last Edited By” columns. ([#5907](https://github.com/craftcms/cms/issues/5907))
 - It’s now possible to set a custom route that handles Set Password requests. ([#5722](https://github.com/craftcms/cms/issues/5722))
 - Field labels now reveal their handles when the <kbd>Option</kbd>/<kbd>ALT</kbd> key is pressed. ([#5833](https://github.com/craftcms/cms/issues/5833))
+- Added the `allowedGraphqlOrigins` config setting. ([#5933](https://github.com/craftcms/cms/issues/5933))
 - Added the `brokenImagePath` config setting. ([#5877](https://github.com/craftcms/cms/issues/5877))
 - Added the `siteToken` config setting.
 - Added the `install/check` command. ([#5810](https://github.com/craftcms/cms/issues/5810))
@@ -90,6 +91,12 @@
 - Added `craft\helpers\FileHelper::zip()`.
 - Added `craft\helpers\Html::explodeClass()`.
 - Added `craft\helpers\Html::explodeStyle()`.
+- Added `craft\helpers\Html::id()`.
+- Added `craft\helpers\Html::namespaceAttributes()`.
+- Added `craft\helpers\Html::namespaceHtml()`.
+- Added `craft\helpers\Html::namespaceId()`.
+- Added `craft\helpers\Html::namespaceInputName()`.
+- Added `craft\helpers\Html::namespaceInputs()`.
 - Added `craft\helpers\MailerHelper::normalizeEmails()`.
 - Added `craft\helpers\MailerHelper::settingsReport()`.
 - Added `craft\helpers\Queue`.
@@ -127,11 +134,16 @@
 - If the `baseCpUrl` config setting is set, Craft will no longer treat any other base URLs as control panel requests, even if they contain the correct trigger segment. ([#5860](https://github.com/craftcms/cms/issues/5860))  
 - The `mailer/test` command now only supports testing the current email settings.
 - Reference tags can now provide a fallback value to be used if the reference can’t be resolved. ([#5589](https://github.com/craftcms/cms/issues/5589))
+- It’s no longer necessary to append the `|raw` filter after the `|namespace` filter.
+- The `|namespace` Twig filter now namespaces ID selectors within `<style>` tags. ([#5921](https://github.com/craftcms/cms/issues/5921))
+- The `|namespace` Twig filter now has a `withClasses` argument, which if set to `true` causes `class` attributes and class name CSS selectors within `<style>` tags to be namespaced. ([#5921](https://github.com/craftcms/cms/issues/5921))
+- The `{% namespace %}` Twig tag can now have a `withClasses` flag, which causes `class` attributes and class name CSS selectors within `<style>` tags to be namespaced. ([#5921](https://github.com/craftcms/cms/issues/5921))
 - The `withTransforms` asset query param can now include `srcset`-style sizes (e.g. `100w` or `2x`), following a normal transform definition.
 - The `QueryArgument` GraphQL type now also allows boolean values.
 - Improved transform eager-loading support when using GraphQL API.
 - `craft\db\ActiveRecord` now unsets any empty primary key values when saving new records, to avoid a SQL error on PostgreSQL. ([#5814](https://github.com/craftcms/cms/pull/5814))
 - `craft\elements\Asset::getImg()` now has a `$sizes` argument. ([#5774](https://github.com/craftcms/cms/issues/5774))
+- `craft\helpers\StringHelper::randomString()` no longer includes capital letters or numbers by default.
 - `craft\i18n\Formatter::asTimestamp()` now has a `$withPreposition` argument.
 - `craft\services\Gql` now fires a `registerGqlMutations` event that allows for plugins to register their own GraphQL mutations.
 - `craft\services\Sites::getAllSiteIds()`, `getSiteByUid()`, `getAllSites()`, `getSitesByGroupId()`, `getSiteById()`, and `getSiteByHandle()` now have `$withDisabled` arguments.
@@ -139,8 +151,10 @@
 - Control panel form input macros and templates that accept a `class` variable can now pass it as an array of class names.
 
 ### Deprecated
-- Deprecated `craft\gql\base\Resolver::extractEagerLoadCondition()` in favor of the new `ElementQueryConditionBuilder` class.
 - Deprecated the `install/plugin` command. The new `plugin/install` command should be used instead.
+- Deprecated the `|ucwords` Twig filter. Use the `|title` filter instead.
+- Deprecated `craft\gql\base\Resolver::extractEagerLoadCondition()` in favor of the new `ElementQueryConditionBuilder` class.
+- Deprecated `craft\web\View::formatInputId()`. `craft\helpers\Html::namespaceHtml()` should be used instead.
 - Deprecated `craft\events\RegisterGqlPermissionsEvent` in favor of the new `craft\events\RegisterGqlSchemaComponentsEvent` event.
 - Deprecated `craft\services\Gql::getAllPermissions()` in favor of the new `craft\services\Gql::getAllSchemaComponents()` method.
 
@@ -151,6 +165,7 @@
 ### Fixed
 - Fixed a bug where the `mailer/test` command wasn’t factoring in custom `mailer` configurations in its settings report. ([#5763](https://github.com/craftcms/cms/issues/5763))
 - Fixed a bug where some characters were getting double-encoded in Assets fields’ “Default Upload Location”/“Upload Location” setting. ([#5885](https://github.com/craftcms/cms/issues/5885))
+- Fixed a bug where the `svg()` Twig function wasn’t namespacing ID and class name CSS selectors that didn’t have any matching `id`/`class` attribute values. ([#5922](https://github.com/craftcms/cms/issues/5922)) 
 - Fixed a bug where `users/set-password` and `users/verify-email` requests weren’t responding with JSON when requested, if an invalid verification code was passed. ([#5210](https://github.com/craftcms/cms/issues/5210))
 
 ### Security

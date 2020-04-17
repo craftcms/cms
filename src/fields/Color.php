@@ -115,7 +115,7 @@ class Color extends Field implements PreviewableFieldInterface
     {
         /** @var ColorData|null $value */
         return Craft::$app->getView()->renderTemplate('_includes/forms/color', [
-            'id' => Craft::$app->getView()->formatInputId($this->handle),
+            'id' => Html::id($this->handle),
             'name' => $this->handle,
             'value' => $value ? $value->getHex() : null,
         ]);

@@ -17,6 +17,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\gql\types\DateTime as DateTimeType;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
+use craft\helpers\Html;
 use craft\i18n\Locale;
 use DateTime;
 use yii\db\Schema;
@@ -166,7 +167,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     public function getInputHtml($value, ElementInterface $element = null): string
     {
         $variables = [
-            'id' => Craft::$app->getView()->formatInputId($this->handle),
+            'id' => Html::id($this->handle),
             'name' => $this->handle,
             'value' => $value,
             'minuteIncrement' => $this->minuteIncrement

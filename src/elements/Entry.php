@@ -982,14 +982,33 @@ class Entry extends Element
      */
     public function getIsEditable(): bool
     {
-        return (
-            Craft::$app->getUser()->checkPermission('publishEntries:' . $this->getSection()->uid) && (
-                !$this->authorId ||
-                $this->authorId == Craft::$app->getUser()->getIdentity()->id ||
-                Craft::$app->getUser()->checkPermission('publishPeerEntries:' . $this->getSection()->uid) ||
-                $this->getSection()->type == Section::TYPE_SINGLE
-            )
-        );
+        $section = $this->getSection();
+        $userSession = Craft::$app->getUser();
+
+        // Cover the basics
+        if (
+            $section->type === Section::TYPE_SINGLE ||
+            !$userSession->checkPermission("editEntries:$section->uid") ||
+            ($this->enabled && !$userSession->checkPermission("publishEntries:$section->uid"))
+        ) {
+            return false;
+        }
+
+        // Is this a new entry?
+        if (!$this->id) {
+            return $userSession->checkPermission("createEntries:$section->uid");
+        }
+
+        // Is this their own entry?
+        if (!$this->authorId || $this->authorId == $userSession->getId()) {
+            return true;
+        }
+
+        if (!$this->enabled) {
+            return $userSession->checkPermission("editPeerEntries:$section->uid");
+        }
+
+        return $userSession->checkPermission("publishPeerEntries:$section->uid");
     }
 
     /**

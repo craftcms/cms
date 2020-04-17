@@ -880,7 +880,6 @@ class StringHelperTest extends Unit
      *
      * @param $valid
      * @param int $length
-     * @throws \Exception
      */
     public function testRandomStringWithChars($valid, int $length)
     {
