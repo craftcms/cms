@@ -23,6 +23,7 @@
 - Added support for eager-loading elements’ current revisions, via `currentRevision`.
 - Added support for eager-loading drafts’ and revisions’ creators, via `draftCreator` and `revisionCreator`.
 - Added support for the `CRAFT_CP` PHP constant. ([#5122](https://github.com/craftcms/cms/issues/5122))
+- Added support for GraphQL mutations. ([#4835](https://github.com/craftcms/cms/issues/4835))
 - Added the `drafts`, `draftOf`, `draftId`, `draftCreator`, `revisions`, `revisionOf`, `revisionId` and `revisionCreator` arguments to element queries using GraphQL API. ([#5580](https://github.com/craftcms/cms/issues/5580)) 
 - Added the `isDraft`, `isRevision`, `sourceId`, `sourceUid`, and `isUnsavedDraft` fields to elements when using GraphPQL API. ([#5580](https://github.com/craftcms/cms/issues/5580))
 - Added the `assetCount`, `categoryCount`, `entryCount`, `tagCount`, and `userCount` queries for fetching the element counts to the GraphPQL API. ([#4847](https://github.com/craftcms/cms/issues/4847))
