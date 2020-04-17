@@ -8,12 +8,13 @@
 namespace craft\helpers;
 
 use Craft;
+use ErrorException;
 use FilesystemIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
-use yii\base\ErrorException;
+use yii\base\ErrorException as YiiErrorException;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 
@@ -85,6 +86,7 @@ class FileHelper extends \yii\helpers\FileHelper
 
     /**
      * @inheritdoc
+     * @throws ErrorException in case of failure
      */
     public static function removeDirectory($dir, $options = [])
     {
@@ -196,7 +198,7 @@ class FileHelper extends \yii\helpers\FileHelper
         }
 
         if (!($handle = opendir($dir))) {
-            throw new ErrorException("Unable to open the directory: $dir");
+            throw new YiiErrorException("Unable to open the directory: $dir");
         }
 
         // It's empty until we find a file
@@ -332,6 +334,7 @@ class FileHelper extends \yii\helpers\FileHelper
      * - `lock`: bool, whether a file lock should be used. Defaults to the
      *   `useWriteFileLock` config setting.
      * @throws InvalidArgumentException if the parent directory doesn't exist and `options[createDirs]` is `false`
+     * @throws Exception if the parent directory can't be created
      * @throws ErrorException in case of failure
      */
     public static function writeToFile(string $file, string $contents, array $options = [])
@@ -369,7 +372,7 @@ class FileHelper extends \yii\helpers\FileHelper
         }
 
         if (file_put_contents($file, $contents, $flags) === false) {
-            throw new ErrorException("Unable to write new contents to \"{$file}\".");
+            throw new YiiErrorException("Unable to write new contents to \"{$file}\".");
         }
 
         // Invalidate opcache
@@ -389,6 +392,7 @@ class FileHelper extends \yii\helpers\FileHelper
      *   not exist. Defaults to `true`.
      * - `lock`: bool, whether a file lock should be used. Defaults to `false`.
      * @throws InvalidArgumentException if the parent directory doesn't exist and `options[createDirs]` is `false`
+     * @throws Exception if the parent directory can't be created
      * @throws ErrorException in case of failure
      * @since 3.4.0
      */
@@ -514,7 +518,7 @@ class FileHelper extends \yii\helpers\FileHelper
         }
 
         if (!($handle = opendir($dir))) {
-            throw new ErrorException("Unable to open the directory: {$dir}");
+            throw new YiiErrorException("Unable to open the directory: {$dir}");
         }
 
         while (($file = readdir($handle)) !== false) {

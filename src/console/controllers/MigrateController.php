@@ -16,7 +16,7 @@ use craft\errors\MigrateException;
 use craft\errors\MigrationException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
-use yii\base\ErrorException;
+use ErrorException;
 use yii\base\InvalidArgumentException;
 use yii\console\controllers\BaseMigrateController;
 use yii\console\Exception;

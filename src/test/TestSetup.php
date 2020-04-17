@@ -69,10 +69,11 @@ use craft\web\Response;
 use craft\web\Session;
 use craft\web\UploadedFile;
 use craft\web\User;
+use ErrorException;
 use PHPUnit\Framework\MockObject\MockObject;
 use Symfony\Component\Yaml\Yaml;
-use yii\base\ErrorException;
 use yii\base\Event;
+use yii\base\Exception as YiiException;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\db\Exception;
@@ -353,6 +354,7 @@ class TestSetup
 
     /**
      * @param string $projectConfigFile - Whether to override the file specified in codeception.yml with a custom file.
+     * @throws YiiException
      * @throws ErrorException
      */
     public static function setupProjectConfig(string $projectConfigFile = null)

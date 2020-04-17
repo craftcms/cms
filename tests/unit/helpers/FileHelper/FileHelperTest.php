@@ -9,8 +9,8 @@ namespace crafttests\unit\helpers\filehelper;
 
 use Codeception\Test\Unit;
 use craft\helpers\FileHelper;
+use ErrorException;
 use UnitTester;
-use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;

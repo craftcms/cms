@@ -11,8 +11,8 @@ use Codeception\Test\Unit;
 use Craft;
 use craft\test\mockclasses\models\ExampleModel;
 use craft\validators\UserPasswordValidator;
+use ErrorException;
 use UnitTester;
-use yii\base\ErrorException;
 
 /**
  * Class PasswordValidatorTest.

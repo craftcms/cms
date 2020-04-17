@@ -33,7 +33,6 @@ use ReflectionException;
 use Throwable;
 use Yii;
 use yii\base\Application;
-use yii\base\ErrorException as YiiBaseErrorException;
 use yii\base\Event;
 use yii\base\Exception as YiiBaseException;
 use yii\base\InvalidArgumentException;
@@ -136,7 +135,6 @@ class Craft extends Yii2
      * @throws InvalidConfigException
      * @throws ReflectionException
      * @throws Throwable
-     * @throws YiiBaseErrorException
      */
     public function _before(TestInterface $test)
     {
