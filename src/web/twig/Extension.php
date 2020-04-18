@@ -560,7 +560,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     }
 
     /**
-     * Prepends one or more items onto the end of an array.
+     * Prepends one or more items to the beginning of an array.
      *
      * @param array $array
      * @return array
