@@ -41,12 +41,12 @@ abstract class ElementArguments extends Arguments
             'site' => [
                 'name' => 'site',
                 'type' => Type::listOf(Type::string()),
-                'description' => 'Determines which site(s) the elements should be queried in. Defaults to the primary site.'
+                'description' => 'Determines which site(s) the elements should be queried in. Defaults to the current (requested) site.'
             ],
             'siteId' => [
                 'name' => 'siteId',
                 'type' => Type::string(),
-                'description' => 'Determines which site(s) the elements should be queried in. Defaults to the primary site.'
+                'description' => 'Determines which site(s) the elements should be queried in. Defaults to the current (requested) site.'
             ],
             'unique' => [
                 'name' => 'unique',
