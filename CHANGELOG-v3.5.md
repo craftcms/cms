@@ -1,5 +1,7 @@
 # Running Release Notes for Craft CMS 3.5
 
+> {warning} If you have the `baseCpUrl` config setting set, Craft 3.5 will **only** allow the control panel to be accessed from that URL.
+
 ### Added
 - Added the “Show rounded icons” user preference. ([#5518](https://github.com/craftcms/cms/issues/5518))
 - Added the “Use shapes to represent statuses” user preference. ([#3293](https://github.com/craftcms/cms/issues/3293))
