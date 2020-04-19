@@ -1491,7 +1491,7 @@ return [
     'Couldn’t save public schema settings.' => 'تنظیمات عمومی طرح ذخیره نشد.',
     'Asset saved.' => 'دارایی‌ها ذخیره شد.',
     'Whether to show volumes that the user doesn’t have permission to view.' => 'گزینه نمایش مخزن‌هایی که کاربران مجوز مشاهده آن را ندارند.',
-    'No Schemas exist yet to assign to this token.' => 'هیچ طرحی برای اختصاص دادن به این توکن وجود ندارد.',
+    'No schemas exist yet to assign to this token.' => 'No schemas exist yet to assign to this token.',
     'Blocks will be saved across all {language}-language sites.' => 'بلوک‌ها در سراسر همه سایت‌های {language}-زبان ذخیره می‌شوند.',
     'From {date}' => 'از {date}',
     'Edit images uploaded by other users' => 'ویرایش تصاویر بارگذاری‌شده به وسیله کاربرها',
