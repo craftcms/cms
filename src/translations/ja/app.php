@@ -1491,7 +1491,7 @@ return [
     'Couldn’t save public schema settings.' => '公開スキーマの設定を保存できませんでした。',
     'Asset saved.' => 'アセットを保存しました。',
     'Whether to show volumes that the user doesn’t have permission to view.' => 'ユーザーが表示権限を持たないボリュームを表示するかどうか。',
-    'No Schemas exist yet to assign to this token.' => 'このトークンに割り当てられるスキーマがまだありません。',
+    'No schemas exist yet to assign to this token.' => 'No schemas exist yet to assign to this token.',
     'Blocks will be saved across all {language}-language sites.' => 'ブロックはすべての「{language}」言語のサイトで保存されます。',
     'From {date}' => '{date}から',
     'Edit images uploaded by other users' => '他のユーザーがアップロードした画像を編集',
