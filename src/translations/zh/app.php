@@ -1491,7 +1491,7 @@ return [
     'Couldn’t save public schema settings.' => '无法保存公共架构设置。',
     'Asset saved.' => '已保存资产。',
     'Whether to show volumes that the user doesn’t have permission to view.' => '是否显示该用户没有权限查看的存储卷。',
-    'No Schemas exist yet to assign to this token.' => '尚没有架构可以分配至此令牌。',
+    'No schemas exist yet to assign to this token.' => '尚没有架构可以分配至此令牌。',
     'Blocks will be saved across all {language}-language sites.' => '将在所有{language}站点保存块。',
     'From {date}' => '自 {date} 开始',
     'Edit images uploaded by other users' => '编辑其他用户上传的图像',
