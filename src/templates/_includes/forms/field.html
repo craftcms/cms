@@ -75,13 +75,13 @@
     </div>
     {% if tip %}
         {{ tag('p', {
-            class: ['notice'],
+            class: ['notice', 'with-icon'],
             html: tip|md(inlineOnly=true)|replace('/&amp;(\\w+);/', '&$1;'),
         }) }}
     {% endif %}
     {% if warning %}
         {{ tag('p', {
-            class: 'warning',
+            class: ['warning', 'with-icon'],
             html: warning|md(inlineOnly=true)|replace('/&amp;(\\w+);/', '&$1;'),
         }) }}
     {% endif %}

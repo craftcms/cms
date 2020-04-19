@@ -211,13 +211,6 @@
 
         .expired {
           margin-top: 1em;
-
-          &:before {
-            @include margin(-2px, 2px, 0, 0);
-            @include icon;
-            width: 1em;
-            content: 'alert';
-          }
         }
       }
     }

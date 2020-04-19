@@ -251,17 +251,15 @@ class Assets extends BaseRelationField
         try {
             return parent::getInputHtml($value, $element);
         } catch (InvalidSubpathException $e) {
-            return '<p class="warning">' .
-                '<span data-icon="alert"></span> ' .
-                Craft::t('app', 'This field’s target subfolder path is invalid: {path}', [
-                    'path' => '<code>' . $this->singleUploadLocationSubpath . '</code>'
-                ]) .
-                '</p>';
+            return Html::tag('p', Craft::t('app', 'This field’s target subfolder path is invalid: {path}', [
+                'path' => '<code>' . $this->singleUploadLocationSubpath . '</code>'
+            ]), [
+                'class' => ['warning', 'with-icon'],
+            ]);
         } catch (InvalidVolumeException $e) {
-            return '<p class="warning">' .
-                '<span data-icon="alert"></span> ' .
-                $e->getMessage() .
-                '</p>';
+            return Html::tag('p', $e->getMessage(), [
+                'class' => ['warning', 'with-icon'],
+            ]);
         }
     }
 

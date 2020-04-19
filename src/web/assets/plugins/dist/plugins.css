@@ -41,9 +41,6 @@ body.rtl #plugins tbody .plugin-infos .details .plugin-id .version { margin-righ
 #plugins tbody .plugin-infos .details .license-key .pane input.text { font-weight: bold; font-size: 11px !important; padding: 3px 7px 1px; width: 19em; }
 #plugins tbody .plugin-infos .details .license-key .btn, #plugins tbody .plugin-infos .details .license-key .spinner { margin: 0; }
 #plugins tbody .plugin-infos .details .expired { margin-top: 1em; }
-#plugins tbody .plugin-infos .details .expired:before { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; opacity: 0.8; width: 1em; content: 'alert'; }
-body.ltr #plugins tbody .plugin-infos .details .expired:before { margin: -2px 2px 0 0 ; }
-body.rtl #plugins tbody .plugin-infos .details .expired:before { margin: -2px 0 0 2px ; }
 #plugins tbody:not(.collapsed) .plugin-infos .details { min-width: 150px; }
 
 /*# sourceMappingURL=plugins.css.map */

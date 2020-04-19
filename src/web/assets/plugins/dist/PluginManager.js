@@ -412,7 +412,7 @@
                 var $oldExpired = this.$row.find('.expired');
                 if (info.expired) {
                     var $newExpired = $('<p/>', {
-                        'class': 'warning expired',
+                        'class': 'warning with-icon expired',
                         html: Craft.t('app', 'This license has expired.') +
                             ' ' +
                             Craft.t('app', '<a>Renew now</a> for another year of updates.').replace('<a>', '<a href="' + info.renewalUrl + '" target="_blank">')
