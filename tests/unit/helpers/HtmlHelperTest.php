@@ -403,6 +403,7 @@ class HtmlHelperTest extends Unit
             ['<style>.foo{}</style>', '<style>.foo{}</style>', 'foo', false],
             ['<style>.foo-bar{}</style>', '<style>.bar{}</style>', 'foo', true],
             ['<style>.foo-bar{content: \'.baz\'}</style>', '<style>.bar{content: \'.baz\'}</style>', 'foo', true],
+            ['<linearGradient id="foo-bar"></linearGradient><path fill="url(#foo-bar)"></path>', '<linearGradient id="bar"></linearGradient><path fill="url(#bar)"></path>', 'foo', false],
         ];
     }
 }

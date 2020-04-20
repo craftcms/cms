@@ -601,6 +601,9 @@ class Html extends \yii\helpers\Html
         // normal HTML attributes
         $html = preg_replace('/(?<![\w\-])\b((id|for|list|aria\-labelledby|data\-target|data\-reverse\-target|data\-target\-prefix)=(\'|")#?)([^\.\'"][^\'"]*)?\3/i', "$1$namespace-$4$3", $html);
 
+        // ID references in url() calls
+        $html = preg_replace('/(?<=url\(#)[\w\-]+(?=\))/i', "$namespace-$0", $html);
+
         // class attributes
         if ($withClasses) {
             $html = preg_replace_callback('/(?<![\w\-])\bclass=(\'|")([^\'"]+)\\1/i', function($matches) use ($namespace) {
