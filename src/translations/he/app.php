@@ -1491,7 +1491,7 @@ return [
     'Couldn’t save public schema settings.' => 'לא ניתן לשמור הגדרות סכימה ציבורית.',
     'Asset saved.' => 'הנכס נשמר.',
     'Whether to show volumes that the user doesn’t have permission to view.' => 'האם להציג אמצעי אחסון שלמשתמש אין הרשאה לצפות בהם.',
-    'No Schemas exist yet to assign to this token.' => 'עדיין לא קיימות סכימות להקצאה לאסימון הזה.',
+    'No schemas exist yet to assign to this token.' => 'עדיין לא קיימות סכימות להקצאה לאסימון הזה.',
     'Blocks will be saved across all {language}-language sites.' => 'בלוקים יישמרו בכל אתרי השפה ה{language}.',
     'From {date}' => 'מ-{date}',
     'Edit images uploaded by other users' => 'ערוך תמונות שהועלו על ידי משתמשים אחרים',

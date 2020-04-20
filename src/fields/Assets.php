@@ -249,17 +249,15 @@ class Assets extends BaseRelationField
         try {
             return parent::getInputHtml($value, $element);
         } catch (InvalidSubpathException $e) {
-            return '<p class="warning">' .
-                '<span data-icon="alert"></span> ' .
-                Craft::t('app', 'This field’s target subfolder path is invalid: {path}', [
-                    'path' => '<code>' . $this->singleUploadLocationSubpath . '</code>'
-                ]) .
-                '</p>';
+            return Html::tag('p', Craft::t('app', 'This field’s target subfolder path is invalid: {path}', [
+                'path' => '<code>' . $this->singleUploadLocationSubpath . '</code>'
+            ]), [
+                'class' => ['warning', 'with-icon'],
+            ]);
         } catch (InvalidVolumeException $e) {
-            return '<p class="warning">' .
-                '<span data-icon="alert"></span> ' .
-                $e->getMessage() .
-                '</p>';
+            return Html::tag('p', $e->getMessage(), [
+                'class' => ['warning', 'with-icon'],
+            ]);
         }
     }
 
@@ -655,9 +653,8 @@ class Assets extends BaseRelationField
      */
     protected function inputSelectionCriteria(): array
     {
-        $criteria = [
-            'kind' => ($this->restrictFiles && !empty($this->allowedKinds)) ? $this->allowedKinds : [],
-        ];
+        $criteria = parent::inputSelectionCriteria();
+        $criteria['kind'] = ($this->restrictFiles && !empty($this->allowedKinds)) ? $this->allowedKinds : [];
 
         if ($this->showUnpermittedFiles) {
             $criteria['uploaderId'] = null;

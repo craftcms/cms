@@ -1492,7 +1492,7 @@ return [
     'Couldn’t save public schema settings.' => 'Не удалось сохранить настройки публичной схемы.',
     'Asset saved.' => 'Ресурс сохранен.',
     'Whether to show volumes that the user doesn’t have permission to view.' => 'Показывать ли тома, на просмотр которых у пользователя нет прав.',
-    'No Schemas exist yet to assign to this token.' => 'Пока не существует схем для присвоения данного токена.',
+    'No schemas exist yet to assign to this token.' => 'Пока не существует схем для присвоения данного токена.',
     'Blocks will be saved across all {language}-language sites.' => 'Блоки будут сохранены на всех сайтах для языка {language}.',
     'From {date}' => 'От {date}',
     'Edit images uploaded by other users' => 'Редактируйте изображения, загруженные другими пользователями',

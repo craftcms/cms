@@ -1491,7 +1491,7 @@ return [
     'Couldn’t save public schema settings.' => 'تعذر حفظ إعدادات المخطط العام.',
     'Asset saved.' => 'تم حفظ الأصول.',
     'Whether to show volumes that the user doesn’t have permission to view.' => 'ما إذا كان سيتم عرض وحدات التخزين التي لا يملك المستخدم إذنًا بعرضها.',
-    'No Schemas exist yet to assign to this token.' => 'لا توجد مخططات حتى الآن لتعيين هذا الرمز المميز.',
+    'No schemas exist yet to assign to this token.' => 'لا توجد مخططات حتى الآن لتعيين هذا الرمز المميز.',
     'Blocks will be saved across all {language}-language sites.' => 'سيتم حفظ الكتل في جميع مواقع اللغة {language}.',
     'From {date}' => 'من {date}',
     'Edit images uploaded by other users' => 'تحرير الصور التي تم تحميلها من قبل مستخدمين آخرين',

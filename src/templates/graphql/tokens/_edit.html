@@ -29,15 +29,24 @@
         required: true,
     }) }}
 
-    {{ forms.selectField({
+    {% set schemaInput = schemaOptions
+        ? forms.selectField({
+            name: 'schema',
+            id: 'schema',
+            options: schemaOptions,
+            value: token.schemaId,
+        })
+        : tag('p', {
+            class: ['warning', 'with-icon'],
+            text: 'No schemas exist yet to assign to this token.'|t('app'),
+        })
+    %}
+
+    {{ forms.field({
+        id: 'schema',
         label: 'GraphQL Schema',
         instructions: 'Choose which GraphQL schema this token has access to.',
-        name: 'schema',
-        id: 'schema',
-        options: schemaOptions,
-        value: token.schemaId,
-        warning: not schemaOptions|length ? 'No Schemas exist yet to assign to this token.'|t('app') : null
-    }) }}
+    }, schemaInput) }}
 
     <hr>
 

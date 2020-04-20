@@ -1,12 +1,18 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.4.16 - 2020-04-20
+
+### Added
+- Added `craft\events\ElementCriteriaEvent`.
+- Added `craft\fields\BaseRelationField::EVENT_DEFINE_SELECTION_CRITERIA`. ([#4299](https://github.com/craftcms/cms/issues/4299))
+- Added `craft\helpers\FileHelper::unlink()`, ensuring that it always returns `false` rather than throwing unexpected exceptions.
 
 ### Changed
 - Improved Plugin Store performance.
 - Asset indexes now show the “Link” column by default. ([#5910](https://github.com/craftcms/cms/pull/5910))
 - Element editors no longer close automatically when the <kbd>Esc</kbd> key is pressed or the shade is clicked on.
 - Element editors now support <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>S</kbd> save shortcuts.
+- Static element views now show custom fields’ instructions. ([#5928](https://github.com/craftcms/cms/issues/5928))
 - When upgrading to Craft 3, sites now maintain the same UIDs as the Craft 2 locales they replace. ([#5914](https://github.com/craftcms/cms/issues/5914))
 - Craft now sets the `access-control-allow-origin` header to `*` rather than the incoming request’s origin, for `graphql/api` and `live-preview/preview` requests. ([#4830](https://github.com/craftcms/cms/issues/4830))
 - Updated Garnish to 0.1.36.
@@ -18,7 +24,9 @@
 - Fixed a bug where PHP would get itself into an infinite loop when minifying CSS with an unclosed block. ([#5912](https://github.com/craftcms/cms/issues/5912))
 - Fixed a bug where <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>S</kbd> save shortcuts would apply even if a modal or HUD was currently visible, potentially resulting in lost content changes. ([#5916](https://github.com/craftcms/cms/issues/5916))
 - Fixed an error that occurred when a user without permission to publish live entries attempted to create a new entry within an Entries field. ([#5917](https://github.com/craftcms/cms/issues/5917))
-- Fixed a JavaScript error that could occur when buying plugins.
+- Fixed a bug where `craft\services\Assets::getFolderTreeByFolderId()` would ignore children folders. ([#5939](https://github.com/craftcms/cms/issues/5939))
+- Fixed a bug where it wasn’t clear when a GraphQL token didn’t have a selected schema, if its previous schema had been deleted. ([#5942](https://github.com/craftcms/cms/issues/5942))
+- Fixed a bug where the Plugin Store was not showing checkout errors.
 
 ## 3.4.15 - 2020-04-09
 

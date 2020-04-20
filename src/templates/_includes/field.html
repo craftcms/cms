@@ -5,7 +5,7 @@
 
 {% set value = (element ? element.getFieldValue(field.handle) : field.normalizeValue(null)) %}
 {% set errors = (element and not static ? element.getErrors(field.handle) : null) %}
-{% set instructions = (not static and field.instructions ? field.instructions|t('site') : null) %}
+{% set instructions = field.instructions ? field.instructions|t('site') %}
 {% set translatable = field.getIsTranslatable(element) %}
 {% set siteId = (translatable and (element.isLocalized() ?? true)) ? (siteId ?? element.siteId ?? craft.app.sites.currentSite.id) %}
 

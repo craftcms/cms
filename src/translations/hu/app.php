@@ -1489,7 +1489,7 @@ Amennyiben nem neked szól ez a levél, egyszerűen csak hagyd figyelmen kívül
     'Couldn’t save public schema settings.' => 'A nyilvános séma beállításainak mentése sikertelen volt.',
     'Asset saved.' => 'Tartalom mentve.',
     'Whether to show volumes that the user doesn’t have permission to view.' => 'Megjelenjenek-e a kötetek, amelyek megjelenítésére a felhasználónak nincs jogosultsága.',
-    'No Schemas exist yet to assign to this token.' => 'Még nem léteznek a tokenhez rendelhető sémák.',
+    'No schemas exist yet to assign to this token.' => 'Még nem léteznek a tokenhez rendelhető sémák.',
     'Blocks will be saved across all {language}-language sites.' => 'A blokkok el lesznek mentve az összes {language} nyelvű oldalra.',
     'From {date}' => '{date} naptól',
     'Edit images uploaded by other users' => 'Más felhasználók által feltöltött képek szerkesztése',

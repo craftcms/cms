@@ -36,7 +36,6 @@ use craft\records\AssetTransform as AssetTransformRecord;
 use DateTime;
 use yii\base\Application;
 use yii\base\Component;
-use yii\base\ErrorException;
 use yii\base\InvalidArgumentException;
 
 /**
@@ -952,10 +951,8 @@ class AssetTransforms extends Component
             if (!$volume instanceof LocalVolumeInterface) {
                 if (!is_file($imageSourcePath) || filesize($imageSourcePath) === 0) {
                     // Delete it just in case it's a 0-byter
-                    try {
-                        FileHelper::unlink($imageSourcePath);
-                    } catch (ErrorException $e) {
-                        Craft::warning("Unable to delete the file \"{$imageSourcePath}\": " . $e->getMessage(), __METHOD__);
+                    if (!FileHelper::unlink($imageSourcePath)) {
+                        Craft::warning("Unable to delete the file \"$imageSourcePath\".", __METHOD__);
                     }
 
                     $prefix = pathinfo($asset->filename, PATHINFO_FILENAME) . '.delimiter.';
@@ -980,10 +977,8 @@ class AssetTransforms extends Component
                     $volume->saveFileLocally($asset->getPath(), $tempFilePath);
 
                     if (!is_file($tempFilePath) || filesize($tempFilePath) === 0) {
-                        try {
-                            FileHelper::unlink($tempFilePath);
-                        } catch (ErrorException $e) {
-                            Craft::warning("Unable to delete the file \"{$tempFilePath}\": " . $e->getMessage(), __METHOD__);
+                        if (!FileHelper::unlink($tempFilePath)) {
+                            Craft::warning("Unable to delete the file \"$tempFilePath\".", __METHOD__);
                         }
                         throw new VolumeException(Craft::t('app', 'Tried to download the source file for image “{file}”, but it was 0 bytes long.',
                             ['file' => $asset->filename]));
@@ -993,10 +988,8 @@ class AssetTransforms extends Component
 
                     // Delete the leftover data.
                     $this->queueSourceForDeletingIfNecessary($imageSourcePath);
-                    try {
-                        FileHelper::unlink($tempFilePath);
-                    } catch (ErrorException $e) {
-                        Craft::warning("Unable to delete the file \"{$tempFilePath}\": " . $e->getMessage(), __METHOD__);
+                    if (!FileHelper::unlink($tempFilePath)) {
+                        Craft::warning("Unable to delete the file \"$tempFilePath\".", __METHOD__);
                     }
                 }
             }
@@ -1209,10 +1202,8 @@ class AssetTransforms extends Component
 
         $file = Craft::$app->getPath()->getAssetSourcesPath() . DIRECTORY_SEPARATOR . $asset->id . '.' . pathinfo($asset->filename, PATHINFO_EXTENSION);
 
-        try {
-            FileHelper::unlink($file);
-        } catch (ErrorException $e) {
-            Craft::warning("Unable to delete the file \"{$file}\": " . $e->getMessage(), __METHOD__);
+        if (!FileHelper::unlink($file)) {
+            Craft::warning("Unable to delete the file \"$file\".", __METHOD__);
         }
     }
 
@@ -1238,10 +1229,8 @@ class AssetTransforms extends Component
                 }
 
                 foreach ($files as $path) {
-                    try {
-                        FileHelper::unlink($path);
-                    } catch (ErrorException $e) {
-                        Craft::warning('Unable to delete asset thumbnails: ' . $e->getMessage(), __METHOD__);
+                    if (!FileHelper::unlink($path)) {
+                        Craft::warning("Unable to delete the asset thumbnail \"$path\".", __METHOD__);
                     }
                 }
             }

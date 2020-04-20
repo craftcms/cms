@@ -22,7 +22,6 @@ use craft\web\UploadedFile;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\RequestOptions;
 use Symfony\Component\Yaml\Yaml;
-use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\web\BadRequestHttpException;
@@ -300,9 +299,7 @@ class DashboardController extends Controller
      * Creates a new support ticket for the CraftSupport widget.
      *
      * @return Response
-     * @throws ErrorException
      * @throws BadRequestHttpException
-     * @throws InvalidArgumentException
      */
     public function actionSendSupportRequest(): Response
     {
