@@ -27,6 +27,7 @@
 - Fixed a JavaScript error that could occur when buying plugins.
 - Fixed a bug where `craft\services\Assets::getFolderTreeByFolderId()` would ignore children folders. ([#5939](https://github.com/craftcms/cms/issues/5939))
 - Fixed a bug where it wasn’t clear when a GraphQL token didn’t have a selected schema, if its previous schema had been deleted. ([#5942](https://github.com/craftcms/cms/issues/5942))
+- Fixed a bug where the Plugin Store was not showing checkout errors.
 
 ## 3.4.15 - 2020-04-09
 

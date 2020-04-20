@@ -234,9 +234,10 @@
                                                     })
                                             })
                                     })
-                                    .catch(checkoutResponse => {
+                                    .catch(checkoutError => {
                                         this.loading = false
-                                        this.error = (checkoutResponse.data && checkoutResponse.data.error) || checkoutResponse.statusText;
+                                        this.error = (checkoutError.response.data && checkoutError.response.data.message) || checkoutError.response.statusText
+                                        this.$root.displayError("An error occurred.")
                                     })
                             },
 
