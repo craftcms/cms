@@ -526,9 +526,9 @@ class UsersController extends Controller
 
         /** @var User $user */
         list($user) = $info;
-        $userIsPending = $user->getStatus() === User::STATUS_PENDING;
+        $usersService = Craft::$app->getUsers();
 
-        if (!Craft::$app->getUsers()->verifyEmailForUser($user)) {
+        if (!$usersService->verifyEmailForUser($user)) {
             return $this->renderTemplate('_special/emailtaken', [
                 'email' => $user->unverifiedEmail
             ]);
@@ -539,8 +539,12 @@ class UsersController extends Controller
             Craft::$app->getSession()->setNotice(Craft::t('app', 'Email verified'));
         }
 
-        // They were just activated, so treat this as an activation request
-        if ($userIsPending && ($response = $this->_onAfterActivateUser($user)) !== null) {
+        // If they're still pending, treat this as an activation request
+        if (
+            $user->pending &&
+            $usersService->activateUser($user) &&
+            ($response = $this->_onAfterActivateUser($user)) !== null
+        ) {
             return $response;
         }
 
@@ -1245,13 +1249,8 @@ class UsersController extends Controller
                 'html' => $this->_renderPhotoTemplate($user),
             ]);
         } catch (\Throwable $exception) {
-            /** @noinspection UnSafeIsSetOverArrayInspection - FP */
             if (isset($fileLocation)) {
-                try {
-                    FileHelper::unlink($fileLocation);
-                } catch (\Throwable $e) {
-                    // Let it go
-                }
+                FileHelper::unlink($fileLocation);
             }
 
             Craft::error('There was an error uploading the photo: ' . $exception->getMessage(), __METHOD__);

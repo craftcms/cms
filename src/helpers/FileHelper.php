@@ -332,6 +332,7 @@ class FileHelper extends \yii\helpers\FileHelper
      * - `lock`: bool, whether a file lock should be used. Defaults to the
      *   `useWriteFileLock` config setting.
      * @throws InvalidArgumentException if the parent directory doesn't exist and `options[createDirs]` is `false`
+     * @throws Exception if the parent directory can't be created
      * @throws ErrorException in case of failure
      */
     public static function writeToFile(string $file, string $contents, array $options = [])
@@ -389,6 +390,7 @@ class FileHelper extends \yii\helpers\FileHelper
      *   not exist. Defaults to `true`.
      * - `lock`: bool, whether a file lock should be used. Defaults to `false`.
      * @throws InvalidArgumentException if the parent directory doesn't exist and `options[createDirs]` is `false`
+     * @throws Exception if the parent directory can't be created
      * @throws ErrorException in case of failure
      * @since 3.4.0
      */
@@ -420,6 +422,20 @@ class FileHelper extends \yii\helpers\FileHelper
     {
         Craft::$app->getDeprecator()->log('craft\\helpers\\FileHelper::removeFile()', 'craft\\helpers\\FileHelper::removeFile() is deprecated. Use craft\\helpers\\FileHelper::unlink() instead.');
         return static::unlink($path);
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.4.16
+     */
+    public static function unlink($path)
+    {
+        // BaseFileHelper::unlink() doesn't seem to catch all possible exceptions
+        try {
+            return parent::unlink($path);
+        } catch (\Throwable $e) {
+            return false;
+        }
     }
 
     /**

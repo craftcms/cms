@@ -288,6 +288,12 @@ body.rtl th.right, body.rtl td.right { text-align: left; }
 
 .warning { color: #CB6E17 !important; }
 
+.with-icon.notice:before, .with-icon.warning:before { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; opacity: 0.8; width: 1em; }
+body.ltr .with-icon.notice:before, body.ltr .with-icon.warning:before { margin: -2px 2px 0 0 ; }
+body.rtl .with-icon.notice:before, body.rtl .with-icon.warning:before { margin: -2px 0 0 2px ; }
+.with-icon.notice:before { content: 'lightbulb'; }
+.with-icon.warning:before { content: 'alert'; }
+
 .error { color: #EF4E4E !important; }
 
 .icon.move { display: inline-block; }
@@ -1294,11 +1300,6 @@ body.rtl .field > .status-badge { right: -19px; }
 body.ltr .field > .heading > label > .site { margin-left: 7px; }
 body.rtl .field > .heading > label > .site { margin-right: 7px; }
 .field > .notice, .field > .warning { margin: 2px 0 0; }
-.field > .notice:before, .field > .warning:before { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; opacity: 0.8; width: 1em; }
-body.ltr .field > .notice:before, body.ltr .field > .warning:before { margin: -2px 2px 0 0 ; }
-body.rtl .field > .notice:before, body.rtl .field > .warning:before { margin: -2px 0 0 2px ; }
-.field > .notice.notice:before, .field > .warning.notice:before { content: 'lightbulb'; }
-.field > .notice.warning:before, .field > .warning.warning:before { content: 'alert'; }
 .field > .input { position: relative; }
 .field > .input:after { content: '.'; display: block; height: 0; clear: both; visibility: hidden; }
 

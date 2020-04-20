@@ -368,11 +368,13 @@ class Assets extends Component
      */
     public function getFolderTreeByFolderId(int $folderId): array
     {
-        if (($folder = $this->getFolderById($folderId)) === null) {
+        if (($parentFolder = $this->getFolderById($folderId)) === null) {
             return [];
         }
 
-        return $this->_getFolderTreeByFolders([$folder]);
+        $childFolders = $this->getAllDescendantFolders($parentFolder);
+
+        return $this->_getFolderTreeByFolders([$parentFolder] + $childFolders);
     }
 
     /**
@@ -468,7 +470,7 @@ class Assets extends Component
      * @param string $orderBy
      * @return array
      */
-    public function getAllDescendantFolders(VolumeFolder $parentFolder, string $orderBy = 'path'): array
+    public function  getAllDescendantFolders(VolumeFolder $parentFolder, string $orderBy = 'path'): array
     {
         /** @var $query Query */
         $query = $this->_createFolderQuery()

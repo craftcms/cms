@@ -12,6 +12,7 @@ use craft\db\Connection;
 use craft\db\TableSchema;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
+use yii\base\ErrorException;
 use yii\db\Exception;
 
 /**
@@ -135,8 +136,7 @@ class Schema extends \yii\db\mysql\Schema
      *
      * @param string[]|null The table names whose data should be excluded from the backup
      * @return string The command to execute
-     * @throws \yii\base\ErrorException
-     * @throws \yii\base\NotSupportedException
+     * @throws ErrorException
      */
     public function getDefaultBackupCommand(array $ignoreTables = null): string
     {
@@ -182,7 +182,7 @@ class Schema extends \yii\db\mysql\Schema
      * Returns the default database restore command to execute.
      *
      * @return string The command to execute
-     * @throws \yii\base\ErrorException
+     * @throws ErrorException
      */
     public function getDefaultRestoreCommand(): string
     {
@@ -298,7 +298,7 @@ SQL;
      * Creates a temporary my.cnf file based on the DB config settings.
      *
      * @return string The path to the my.cnf file
-     * @throws \yii\base\ErrorException
+     * @throws ErrorException
      */
     private function _createDumpConfigFile(): string
     {

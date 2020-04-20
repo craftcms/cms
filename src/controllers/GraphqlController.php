@@ -75,7 +75,7 @@ class GraphqlController extends Controller
 
         // Add CORS headers
         $response->getHeaders()
-            ->add('Access-Control-Allow-Origin', $request->getOrigin())
+            ->add('Access-Control-Allow-Origin', '*')
             ->add('Access-Control-Allow-Credentials', 'true');
 
         if ($request->getIsOptions()) {
@@ -309,6 +309,14 @@ class GraphqlController extends Controller
                     'value' => $schema->id
                 ];
             }
+        }
+
+        if ($token->id && !$token->schemaId && !empty($schemaOptions)) {
+            // Add a blank option to the top so it's clear no schema is currently selected
+            array_unshift($schemaOptions, [
+                'label' => '',
+                'value' => '',
+            ]);
         }
 
         return $this->renderTemplate('graphql/tokens/_edit', compact(

@@ -132,7 +132,7 @@
                 couponCodeLoading: false,
                 couponCodeSuccess: false,
                 couponCodeTimeout: false,
-                error: false,
+                error: null,
                 errors: {},
                 guestCardToken: null,
                 loading: false,
@@ -184,6 +184,7 @@
 
         methods: {
             checkout() {
+                this.error = null
                 this.errors = {}
                 this.loading = true
                 this.savePaymentMethod(
@@ -227,16 +228,17 @@
                                                                 this.$store.dispatch('cart/resetCart')
                                                                     .then(() => {
                                                                         this.loading = false
-                                                                        this.error = false
+                                                                        this.error = null
                                                                         this.$root.modalStep = 'thank-you'
                                                                     })
                                                             })
                                                     })
                                             })
                                     })
-                                    .catch(checkoutResponse => {
+                                    .catch(checkoutError => {
                                         this.loading = false
-                                        this.error = checkoutResponse.data.error || checkoutResponse.statusText;
+                                        this.error = (checkoutError.response.data && checkoutError.response.data.message) || checkoutError.response.statusText
+                                        this.$root.displayError("An error occurred.")
                                     })
                             },
 

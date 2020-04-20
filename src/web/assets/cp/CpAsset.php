@@ -244,6 +244,7 @@ JS;
             '{first}-{last} of {total}',
             '{num, number} {num, plural, =1{Available Update} other{Available Updates}}',
             '{total, number} {total, plural, =1{{item}} other{{items}}}',
+            '{type} saved.',
             '“{name}” deleted.',
         ]);
     }
@@ -374,7 +375,7 @@ JS;
         $sections = [];
 
         foreach (Craft::$app->getSections()->getEditableSections() as $section) {
-            if ($section->type !== Section::TYPE_SINGLE && $currentUser->can('createEntries:' . $section->uid)) {
+            if ($section->type !== Section::TYPE_SINGLE && $currentUser->can("createEntries:$section->uid")) {
                 $sections[] = [
                     'entryTypes' => $this->_entryTypes($section),
                     'handle' => $section->handle,
@@ -383,6 +384,7 @@ JS;
                     'sites' => $section->getSiteIds(),
                     'type' => $section->type,
                     'uid' => $section->uid,
+                    'canPublish' => $currentUser->can("publishEntries:$section->uid"),
                 ];
             }
         }

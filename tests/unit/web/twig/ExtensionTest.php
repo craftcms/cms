@@ -7,6 +7,7 @@
 
 namespace crafttests\unit\services;
 
+use ArrayObject;
 use Codeception\Test\Unit;
 use Craft;
 use craft\elements\User;
@@ -15,7 +16,6 @@ use crafttests\fixtures\GlobalSetFixture;
 use Twig\Error\LoaderError;
 use Twig\Error\SyntaxError;
 use UnitTester;
-use ArrayObject;
 use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
@@ -90,8 +90,8 @@ class ExtensionTest extends Unit
         Craft::$app->setEdition(Craft::Pro);
         Craft::$app->getView()->setTemplateMode(View::TEMPLATE_MODE_CP);
         $this->extensionRenderTest(
-            Craft::$app->getEdition().' | 0 | 1',
-            ''.Craft::$app->getEdition().' | '. Craft::Solo . ' | '. Craft::Pro
+            Craft::$app->getEdition() . ' | 0 | 1',
+            '' . Craft::$app->getEdition() . ' | ' . Craft::Solo . ' | ' . Craft::Pro
         );
     }
 
@@ -106,7 +106,6 @@ class ExtensionTest extends Unit
             '{{ systemName }} | {{ currentSite }} | {{ siteName }} | {{ siteUrl }}',
             ' |  |  | '
         );
-
     }
 
     /**
@@ -150,14 +149,14 @@ class ExtensionTest extends Unit
         Craft::$app->getConfig()->getGeneral()->enableCsrfProtection = true;
         $this->extensionRenderTest(
             '{{ csrfInput() }}',
-            '<input type="hidden" name="CRAFT_CSRF_TOKEN" value="'.Craft::$app->getRequest()->getCsrfToken().'">'
+            '<input type="hidden" name="CRAFT_CSRF_TOKEN" value="' . Craft::$app->getRequest()->getCsrfToken() . '">'
         );
 
         // Custom name - just to be sure.
         Craft::$app->getRequest()->csrfParam = 'HACKER_POOF';
         $this->extensionRenderTest(
             '{{ csrfInput() }}',
-            '<input type="hidden" name="HACKER_POOF" value="'.Craft::$app->getRequest()->getCsrfToken().'">'
+            '<input type="hidden" name="HACKER_POOF" value="' . Craft::$app->getRequest()->getCsrfToken() . '">'
         );
     }
 
@@ -171,12 +170,12 @@ class ExtensionTest extends Unit
     {
         $this->extensionRenderTest(
             '{{ redirectInput("A URL") }}',
-            '<input type="hidden" name="redirect" value="'.Craft::$app->getSecurity()->hashData('A URL').'">'
+            '<input type="hidden" name="redirect" value="' . Craft::$app->getSecurity()->hashData('A URL') . '">'
         );
 
         $this->extensionRenderTest(
             '{{ redirectInput("A URL WITH CHARS !@#$%^*()😋") }}',
-            '<input type="hidden" name="redirect" value="'.Craft::$app->getSecurity()->hashData('A URL WITH CHARS !@#$%^*()😋').'">'
+            '<input type="hidden" name="redirect" value="' . Craft::$app->getSecurity()->hashData('A URL WITH CHARS !@#$%^*()😋') . '">'
         );
     }
 

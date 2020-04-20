@@ -9,11 +9,9 @@ namespace crafttests\unit\helpers;
 
 use Codeception\Test\Unit;
 use craft\helpers\StringHelper;
-use craft\helpers\Stringy;
 use craft\test\mockclasses\ToString;
 use stdClass;
 use UnitTester;
-use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use function mb_strlen;
@@ -1376,7 +1374,7 @@ class StringHelperTest extends Unit
         $actual = StringHelper::toBoolean($string);
         $this->assertSame($expected, $actual);
     }
-    
+
     /**
      * @dataProvider toCamelCaseDataProvider
      *

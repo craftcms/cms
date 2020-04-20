@@ -1491,7 +1491,7 @@ return [
     'Couldn’t save public schema settings.' => '공개 스키마 설정을 저장할 수 없습니다.',
     'Asset saved.' => '에셋이 저장되었습니다.',
     'Whether to show volumes that the user doesn’t have permission to view.' => '사용자에게 보기 권한이 없는 볼륨을 표시할지 여부입니다.',
-    'No Schemas exist yet to assign to this token.' => '이 토큰에 할당할 스키마가 아직 없습니다.',
+    'No schemas exist yet to assign to this token.' => '이 토큰에 할당할 스키마가 아직 없습니다.',
     'Blocks will be saved across all {language}-language sites.' => '모든 {language} 언어 사이트에 블록이 저장됩니다.',
     'From {date}' => '{date}부터',
     'Edit images uploaded by other users' => '다른 사용자가 업로드한 이미지 편집',
