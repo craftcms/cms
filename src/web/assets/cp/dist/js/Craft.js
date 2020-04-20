@@ -10,7 +10,7 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-/*!   - 2020-04-15 */
+/*!   - 2020-04-20 */
 (function ($) {
   /** global: Craft */
 
@@ -694,7 +694,14 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
                   headers: apiResponse.headers
                 },
                 cancelToken: cancelToken
-              });
+              }); // If we just got a new license key, set it and then resolve the header waitlist
+
+
+              if (_this3._apiHeaders && _this3._apiHeaders['X-Craft-License'] === '__REQUEST__') {
+                _this3._apiHeaders['X-Craft-License'] = apiResponse.headers['x-craft-license'];
+
+                _this3._resolveHeaderWaitlist();
+              }
             }
           })["catch"](reject);
         })["catch"](reject);
@@ -714,16 +721,16 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       var _this4 = this;
 
       return new Promise(function (resolve, reject) {
-        // Are the headers already cached?
-        if (_this4._apiHeaders) {
-          resolve(_this4._apiHeaders);
-          return;
-        } // Are we already loading them?
-
-
+        // Are we already loading them?
         if (_this4._loadingApiHeaders) {
           _this4._apiHeaderWaitlist.push([resolve, reject]);
 
+          return;
+        } // Are the headers already cached?
+
+
+        if (_this4._apiHeaders) {
+          resolve(_this4._apiHeaders);
           return;
         }
 
@@ -732,28 +739,39 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         _this4.sendActionRequest('POST', 'app/api-headers', {
           cancelToken: cancelToken
         }).then(function (response) {
-          _this4._apiHeaders = response.data;
-          _this4._loadingApiHeaders = false; // Was anything else waiting for them?
-
-          var item;
-
-          while (item = _this4._apiHeaderWaitlist.shift()) {
-            item[0](_this4._apiHeaders);
+          // Make sure we even are waiting for these anymore
+          if (!_this4._loadingApiHeaders) {
+            reject(e);
+            return;
           }
 
-          resolve(_this4._apiHeaders);
+          _this4._apiHeaders = response.data;
+          resolve(_this4._apiHeaders); // If we are requesting a new Craft license, hold off on
+          // resolving other API requests until we have one
+
+          if (response.data['X-Craft-License'] !== '__REQUEST__') {
+            _this4._resolveHeaderWaitlist();
+          }
         })["catch"](function (e) {
-          _this4._loadingApiHeaders = false; // Was anything else waiting for them?
+          _this4._loadingApiHeaders = false;
+          reject(e); // Was anything else waiting for them?
 
           var item;
 
           while (item = _this4._apiHeaderWaitlist.shift()) {
             item[1](e);
           }
-
-          reject(e);
         });
       });
+    },
+    _resolveHeaderWaitlist: function _resolveHeaderWaitlist() {
+      this._loadingApiHeaders = false; // Was anything else waiting for them?
+
+      var item;
+
+      while (item = this._apiHeaderWaitlist.shift()) {
+        item[0](this._apiHeaders);
+      }
     },
 
     /**
@@ -762,6 +780,11 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     clearCachedApiHeaders: function clearCachedApiHeaders() {
       this._apiHeaders = null;
       this._processedApiHeaders = false;
+      this._loadingApiHeaders = false; // Reject anything in the header waitlist
+
+      while (item = this._apiHeaderWaitlist.shift()) {
+        item[1]();
+      }
     },
 
     /**
