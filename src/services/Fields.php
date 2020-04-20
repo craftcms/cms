@@ -817,6 +817,10 @@ class Fields extends Component
         $data = $event->newValue;
         $fieldUid = $event->tokenMatches[0];
 
+        if (!is_array($data)) {
+            return;
+        }
+
         $this->applyFieldSave($fieldUid, $data, 'global');
     }
 
