@@ -189,7 +189,7 @@ class Composer extends Component
             $contents = "<?php\n\nreturn [\n";
             sort($this->_composerClasses);
             foreach ($this->_composerClasses as $class) {
-                $contents .= "    '{$class}',\n";
+                $contents .= "    $class::class,\n";
             }
             $contents .= "];\n";
             FileHelper::writeToFile(dirname(__DIR__) . '/config/composer-classes.php', $contents);
