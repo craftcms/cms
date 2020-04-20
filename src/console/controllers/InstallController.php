@@ -184,7 +184,7 @@ class InstallController extends Controller
             $migrator->addMigrationHistory($name);
         }
 
-        $this->_ensureYamlFileExists();
+        Console::ensureProjectConfigFileExists();
 
         return ExitCode::OK;
     }
