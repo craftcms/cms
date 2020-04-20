@@ -11,26 +11,13 @@ use Craft;
 use craft\base\Field;
 use craft\base\Volume;
 use craft\elements\Asset as AssetElement;
-use craft\elements\Entry as EntryElement;
 use craft\gql\arguments\mutations\Asset as AssetMutationArguments;
-use craft\gql\arguments\mutations\Draft as DraftMutationArguments;
-use craft\gql\arguments\mutations\Entry as EntryMutationArguments;
-use craft\gql\arguments\mutations\Structure as StructureArguments;
 use craft\gql\base\Mutation;
-use craft\gql\resolvers\mutations\CreateDraft;
 use craft\gql\resolvers\mutations\DeleteAsset;
-use craft\gql\resolvers\mutations\DeleteEntry;
-use craft\gql\resolvers\mutations\PublishDraft;
 use craft\gql\resolvers\mutations\SaveAsset;
-use craft\gql\resolvers\mutations\SaveDraft;
-use craft\gql\resolvers\mutations\SaveEntry;
 use craft\gql\types\generators\AssetType;
-use craft\gql\types\generators\EntryType;
 use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
-use craft\helpers\StringHelper;
-use craft\models\EntryType as EntryTypeModel;
-use craft\models\Section;
 use GraphQL\Type\Definition\Type;
 
 /**

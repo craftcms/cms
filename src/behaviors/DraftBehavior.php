@@ -7,7 +7,6 @@
 
 namespace craft\behaviors;
 
-use Craft;
 use craft\base\Element;
 use craft\db\Query;
 use craft\db\Table;

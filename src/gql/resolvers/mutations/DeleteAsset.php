@@ -37,7 +37,7 @@ class DeleteAsset extends MutationResolver
 
         $volumeUid = Db::uidById(Table::VOLUMES, $asset->volumeId);
         $this->requireSchemaAction('volumes.' . $volumeUid, 'delete');
-        
+
         Craft::$app->getElements()->deleteElementById($assetId);
 
         return true;

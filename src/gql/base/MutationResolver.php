@@ -26,7 +26,7 @@ use GraphQL\Type\Definition\ResolveInfo;
 abstract class MutationResolver
 {
     private $_resolutionData = [];
-    
+
     protected $valueNormalizers = [];
 
     /**

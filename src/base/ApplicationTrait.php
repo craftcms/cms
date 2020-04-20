@@ -742,8 +742,8 @@ trait ApplicationTrait
             ]);
         } else {
             Db::insert(Table::INFO, $attributes + [
-                'id' => 1,
-            ]);
+                    'id' => 1,
+                ]);
         }
 
         $this->setIsInstalled();

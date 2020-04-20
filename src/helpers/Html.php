@@ -449,7 +449,7 @@ class Html extends \yii\helpers\Html
     /**
      * Normalizes an element ID into only alphanumeric characters, underscores, and dashes, or generates one at random.
      *
-     * @param string $id.
+     * @param string $id
      * @return string
      * @since 3.5.0
      */

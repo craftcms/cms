@@ -37,7 +37,7 @@ class DeleteEntry extends MutationResolver
 
         $entryTypeUid = Db::uidById(Table::ENTRYTYPES, $entry->typeId);
         $this->requireSchemaAction('entrytypes.' . $entryTypeUid, 'delete');
-        
+
         Craft::$app->getElements()->deleteElementById($entryId);
 
         return true;

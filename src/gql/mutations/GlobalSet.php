@@ -40,7 +40,6 @@ class GlobalSet extends Mutation
             if (Gql::canSchema($scope, 'edit')) {
                 $mutation = static::createSaveMutation($globalSet);
                 $mutationList[$mutation['name']] = $mutation;
-
             }
         }
 

@@ -8,7 +8,6 @@
 namespace craft\gql\arguments\mutations;
 
 use craft\gql\base\ElementMutationArguments;
-use craft\gql\types\DateTime;
 use craft\gql\types\input\File;
 use GraphQL\Type\Definition\Type;
 

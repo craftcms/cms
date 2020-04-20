@@ -12,7 +12,6 @@ use craft\errors\GqlException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Gql as GqlHelper;
-use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\models\GqlSchema;
 use craft\models\GqlToken;

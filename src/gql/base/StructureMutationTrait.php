@@ -51,7 +51,8 @@ trait StructureMutationTrait
      * @param $elementId
      * @return ElementInterface
      */
-    protected function getRelatedElement($elementId) {
+    protected function getRelatedElement($elementId)
+    {
         $relatedElement = Craft::$app->getElements()->getElementById($elementId);
 
         if (!$relatedElement) {

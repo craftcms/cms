@@ -11,7 +11,6 @@ use Craft;
 use craft\base\Element;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
-use craft\db\Connection;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Entry;

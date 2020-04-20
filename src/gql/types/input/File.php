@@ -23,7 +23,7 @@ class File extends InputObjectType
     {
         $typeName = 'FileInput';
 
-        return  GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new InputObjectType([
+        return GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new InputObjectType([
             'name' => $typeName,
             'fields' => [
                 'fileData' => [

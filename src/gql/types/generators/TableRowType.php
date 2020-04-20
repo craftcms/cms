@@ -12,11 +12,7 @@ use craft\gql\base\GeneratorInterface;
 use craft\gql\base\ObjectType;
 use craft\gql\base\SingleGeneratorInterface;
 use craft\gql\GqlEntityRegistry;
-use craft\gql\TypeManager;
-use craft\gql\types\DateTime;
-use craft\gql\types\Number;
 use craft\gql\types\TableRow;
-use GraphQL\Type\Definition\Type;
 
 /**
  * Class TableRowType

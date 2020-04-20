@@ -88,11 +88,12 @@ class Gql
 
     /**
      * Return a list of all the actions the current schema is allowed for a given entity.
-     * 
+     *
      * @param string $entity
      * @return array
      */
-    public static function extractEntityAllowedActions(string $entity): array {
+    public static function extractEntityAllowedActions(string $entity): array
+    {
         try {
             $permissions = (array)Craft::$app->getGql()->getActiveSchema()->scope;
             $actions = [];

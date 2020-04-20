@@ -19,7 +19,7 @@ use craft\gql\base\GqlTypeTrait;
 class Mutation
 {
     use GqlTypeTrait;
-    
+
     /**
      * @inheritdoc
      * @throws GqlException if class called incorrectly.

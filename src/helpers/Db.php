@@ -1033,6 +1033,7 @@ class Db
 
     /**
      * Returns the main application's DB connection.
+     *
      * @return Connection
      */
     private static function db(): Connection

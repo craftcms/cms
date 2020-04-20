@@ -75,4 +75,5 @@ class CategoryType implements GeneratorInterface, SingleGeneratorInterface
                 return $categoryGroupFields;
             }
         ]));
-    }}
+    }
+}

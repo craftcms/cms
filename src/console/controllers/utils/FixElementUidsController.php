@@ -7,7 +7,6 @@
 
 namespace craft\console\controllers\utils;
 
-use Craft;
 use craft\console\Controller;
 use craft\db\Query;
 use craft\db\Table;

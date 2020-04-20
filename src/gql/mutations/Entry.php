@@ -155,8 +155,6 @@ class Entry extends Mutation
             'contentFieldHandles' => $contentFieldHandles,
         ];
 
-
-
         $generatedType = EntryType::generateType($entryType);
 
         $mutations[] = [

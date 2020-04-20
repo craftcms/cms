@@ -10,7 +10,6 @@ namespace craft\gql\mutations;
 use Craft;
 use craft\base\Field;
 use craft\elements\Category as CategoryElement;
-use craft\gql\arguments\mutations\Category as CategoryMutationArguments;
 use craft\gql\arguments\mutations\Structure as StructureArguments;
 use craft\gql\base\ElementMutationArguments;
 use craft\gql\base\Mutation;
@@ -19,8 +18,8 @@ use craft\gql\resolvers\mutations\SaveCategory;
 use craft\gql\types\generators\CategoryType;
 use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
-use craft\models\EntryType as EntryTypeModel;
 use craft\models\CategoryGroup;
+use craft\models\EntryType as EntryTypeModel;
 use GraphQL\Type\Definition\Type;
 
 /**
