@@ -106,6 +106,8 @@
 - Added `craft\helpers\MailerHelper::settingsReport()`.
 - Added `craft\helpers\Queue`.
 - Added `craft\models\Site::$enabled`.
+- Added `craft\services\Composer::handleError()`.
+- Added `craft\services\Composer::run()`.
 - Added `craft\services\Gql::getAllSchemaComponents()`.
 - Added `craft\queue\jobs\PruneRevisions`.
 - Added `craft\web\AssetBundle\ContentWindowAsset`.
@@ -154,6 +156,7 @@
 - `craft\services\Sites::getAllSiteIds()`, `getSiteByUid()`, `getAllSites()`, `getSitesByGroupId()`, `getSiteById()`, and `getSiteByHandle()` now have `$withDisabled` arguments.
 - Improved `data`/`aria` tag normalization via `craft\helpers\Html::parseTagAttributes()` and `normalizeTagAttributes()`.
 - Control panel form input macros and templates that accept a `class` variable can now pass it as an array of class names.
+- Updated Composer to 1.10.5. ([#5925](https://github.com/craftcms/cms/pull/5925))
 
 ### Deprecated
 - Deprecated the `install/plugin` command. The new `plugin/install` command should be used instead.
