@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.4.16 - 2020-04-20
 
 ### Added
 - Added `craft\events\ElementCriteriaEvent`.
