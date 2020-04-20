@@ -9,8 +9,8 @@ namespace craft\console\controllers;
 
 use Craft;
 use craft\console\Controller;
+use craft\helpers\Console;
 use yii\console\ExitCode;
-use yii\helpers\Console;
 
 /**
  * Manage plugins
@@ -25,7 +25,7 @@ class PluginController extends Controller
      */
     public function beforeAction($action)
     {
-        $this->_ensureYamlFileExists();
+        Console::ensureProjectConfigFileExists();
         return parent::beforeAction($action);
     }
 
@@ -119,17 +119,5 @@ class PluginController extends Controller
         $time = sprintf('%.3f', microtime(true) - $start);
         $this->stdout("*** disabled {$handle} successfully (time: {$time}s)" . PHP_EOL . PHP_EOL, Console::FG_GREEN);
         return ExitCode::OK;
-    }
-
-    /**
-     * Ensures that the project
-     */
-    private function _ensureYamlFileExists()
-    {
-        if (Craft::$app->getConfig()->getGeneral()->useProjectConfigFile && !file_exists(Craft::$app->getPath()->getProjectConfigFilePath())) {
-            $this->stdout('Generating project.yaml file from internal config ... ', \craft\helpers\Console::FG_YELLOW);
-            Craft::$app->getProjectConfig()->regenerateYamlFromConfig();
-            $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
-        }
     }
 }

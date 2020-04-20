@@ -79,6 +79,7 @@
 - Added `craft\gql\types\TableRow::prepareRowFieldDefinition()`.
 - Added `craft\helpers\Assets::parseSrcsetSize()`.
 - Added `craft\helpers\Assets::scaledDimensions()`.
+- Added `craft\helpers\Console::ensureProjectConfigFileExists()`.
 - Added `craft\helpers\Db::batchInsert()`.
 - Added `craft\helpers\Db::delete()`.
 - Added `craft\helpers\Db::insert()`.
