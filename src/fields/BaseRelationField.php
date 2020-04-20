@@ -29,6 +29,7 @@ use craft\helpers\StringHelper;
 use craft\queue\jobs\LocalizeRelations;
 use craft\services\Elements;
 use craft\validators\ArrayValidator;
+use GraphQL\Type\Definition\Type;
 use yii\base\Event;
 use yii\base\NotSupportedException;
 
@@ -623,6 +624,18 @@ JS;
         return [
             'elementType' => static::elementType(),
             'map' => $map,
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getContentGqlMutationArgumentType()
+    {
+        return [
+            'name' => $this->handle,
+            'type' => Type::listOf(Type::int()),
+            'description' => $this->instructions,
         ];
     }
 
