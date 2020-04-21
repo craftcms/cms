@@ -15,6 +15,7 @@ use craft\elements\User;
 use craft\errors\GqlException;
 use craft\events\ExecuteGqlQueryEvent;
 use craft\events\RegisterGqlDirectivesEvent;
+use craft\events\RegisterGqlMutationsEvent;
 use craft\events\RegisterGqlQueriesEvent;
 use craft\events\RegisterGqlTypesEvent;
 use craft\gql\GqlEntityRegistry;
@@ -101,6 +102,23 @@ class GqlTest extends Unit
 
         $queries = Craft::$app->getGql()->getSchemaDef()->getQueryType()->getFields();
         $this->assertArrayHasKey('mockQuery', $queries);
+    }
+
+    /**
+     * Test adding custom mutations to schema
+     */
+    public function testRegisteringMutation()
+    {
+        Event::on(Gql::class, Gql::EVENT_REGISTER_GQL_MUTATIONS, function(RegisterGqlMutationsEvent $event) {
+            $event->mutations['mockMutation'] = [
+                'type' => [],
+                'args' => [],
+                'resolve' => []
+            ];
+        });
+
+        $queries = Craft::$app->getGql()->getSchemaDef()->getMutationType()->getFields();
+        $this->assertArrayHasKey('mockMutation', $queries);
     }
 
     /**
