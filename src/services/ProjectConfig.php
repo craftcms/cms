@@ -1742,7 +1742,6 @@ class ProjectConfig extends Component
 
         // See if we can get away with using the cached data
         $dependency = new DbQueryDependency([
-            'db' => Craft::$app->getDb(),
             'query' => $this->_createProjectConfigQuery()
                 ->select(['value'])
                 ->where(['path' => 'dateModified']),
