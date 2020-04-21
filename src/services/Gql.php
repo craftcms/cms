@@ -730,7 +730,7 @@ class Gql extends Component
         $isNewToken = !$token->id;
 
         if ($runValidation && !$token->validate()) {
-            Craft::info('Schema not saved due to validation error.', __METHOD__);
+            Craft::info('Token not saved due to validation error.', __METHOD__);
             return false;
         }
 
@@ -789,7 +789,7 @@ class Gql extends Component
         $isNewScope = !$schema->id;
 
         if ($runValidation && !$schema->validate()) {
-            Craft::info('Scope not saved due to validation error.', __METHOD__);
+            Craft::info('Schema not saved due to validation error.', __METHOD__);
             return false;
         }
 
