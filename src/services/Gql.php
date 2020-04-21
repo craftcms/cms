@@ -1187,9 +1187,10 @@ class Gql extends Component
             $sortedEntryTypes[$entryType->sectionId][] = $entryType;
         }
 
+        $queryComponents = [];
+        $mutationComponents = [];
+
         if (!empty($sortedEntryTypes)) {
-            $queryComponents = [];
-            $mutationComponents = [];
 
             foreach (Craft::$app->getSections()->getAllSections() as $section) {
                 $query = ['label' => Craft::t('app', 'Section - {section}', ['section' => Craft::t('site', $section->name)])];
