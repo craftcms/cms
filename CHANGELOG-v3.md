@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Changed
+- Craft now fully logs migration exceptions.
+
 ## 3.4.16 - 2020-04-20
 
 ### Added
