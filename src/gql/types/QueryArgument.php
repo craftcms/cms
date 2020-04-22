@@ -98,7 +98,7 @@ class QueryArgument extends ScalarType
             return (bool)$valueNode->value;
         }
 
-        // Intentionally without message, as all information already in wrapped Exception
+        // This message will be lost by the wrapping exception, but it feels good to provide one.
         throw new GqlException("QueryArgument must be either a string, an integer, or a boolean value.");
     }
 }
