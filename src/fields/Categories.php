@@ -166,17 +166,6 @@ class Categories extends BaseRelationField
         ];
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getContentGqlArgumentType()
-    {
-        return [
-            'name' => $this->handle,
-            'type' => Type::list(Type::int()),
-            'description' => $this->instructions,
-        ];
-    }
 
     /**
      * @inheritdoc

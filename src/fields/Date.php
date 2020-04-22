@@ -251,7 +251,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    public function getContentGqlArgumentType()
+    public function getContentGqlMutationArgumentType()
     {
         return [
             'name' => $this->handle,

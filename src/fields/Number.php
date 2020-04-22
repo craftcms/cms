@@ -237,7 +237,7 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
     /**
      * @inheritdoc
      */
-    public function getContentGqlArgumentType()
+    public function getContentGqlMutationArgumentType()
     {
         return [
             'name' => $this->handle,

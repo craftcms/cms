@@ -74,18 +74,6 @@ class Entries extends BaseRelationField
 
     /**
      * @inheritdoc
-     */
-    public function getContentGqlArgumentType()
-    {
-        return [
-            'name' => $this->handle,
-            'type' => Type::listOf(Type::int()),
-            'description' => $this->instructions,
-        ];
-    }
-
-    /**
-     * @inheritdoc
      * @since 3.3.0
      */
     public function getEagerLoadingGqlConditions()

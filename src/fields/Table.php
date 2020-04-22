@@ -431,7 +431,7 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    public function getContentGqlArgumentType()
+    public function getContentGqlMutationArgumentType()
     {
         $typeName = $this->handle . '_TableRowInput';
 

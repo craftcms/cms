@@ -413,7 +413,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     /**
      * @inheritdoc
      */
-    public function getContentGqlArgumentType()
+    public function getContentGqlMutationArgumentType()
     {
         $typeName = $this->handle . '_FieldEnum';
 
