@@ -74,7 +74,7 @@ class QueryArgument extends ScalarType
      */
     public function parseValue($value)
     {
-        if (!is_int($value) && !is_string($value)) {
+        if (!is_int($value) && !is_string($value) && !is_bool($value)) {
             throw new GqlException("QueryArgument must be either a string, an integer, or a boolean value.");
         }
 
