@@ -9,6 +9,7 @@ namespace craftunit\gql;
 
 use Codeception\Test\Unit;
 use Craft;
+use craft\elements\Asset;
 use craft\elements\Asset as AssetElement;
 use craft\elements\Entry as EntryElement;
 use craft\elements\GlobalSet as GlobalSetElement;
@@ -27,6 +28,7 @@ use craft\models\GqlSchema;
 use craft\models\MatrixBlockType;
 use craft\models\Section;
 use craft\models\UserGroup;
+use craft\services\Assets;
 use GraphQL\Type\Definition\ResolveInfo;
 
 class ElementFieldResolverTest extends Unit
@@ -38,7 +40,7 @@ class ElementFieldResolverTest extends Unit
 
     protected function _before()
     {
-        // Mock the GQL token for the volumes below
+        // Mock the GQL schema for the volumes below
         $this->tester->mockMethods(
             Craft::$app,
             'gql',
@@ -206,6 +208,33 @@ class ElementFieldResolverTest extends Unit
     }
 
     /**
+     * Test whether url transform properties are correctly passed on when transforming
+     *
+     * @param array $fieldArguments
+     * @param mixed $expectedArguments
+     * @param bool $generateNow
+     *
+     * @dataProvider assetTransformDataProvider
+     */
+    public function testAssetUrlTransform($fieldArguments, $expectedArguments, $generateNow = null)
+    {
+        $assetService = $this->make(Assets::class, [
+            'getAssetUrl' => function ($asset, $transformArguments, $generateImmediately) use ($fieldArguments, $expectedArguments, $generateNow) {
+                $this->assertEquals($expectedArguments, $transformArguments);
+
+                if (is_bool($generateNow)) {
+                    $this->assertSame($generateNow, $fieldArguments['immediately']);
+                }
+            }
+        ]);
+
+        Craft::$app->set('assets', $assetService);
+
+        $resolveInfo = $this->make(ResolveInfo::class, ['fieldName' => 'url']);
+        $this->make(AssetGqlType::class)->resolveWithDirectives(new Asset(), $fieldArguments, null, $resolveInfo);
+    }
+
+    /**
      * Run the test on an element for a type class with the property name.
      *
      * @param string $gqlTypeClass The Gql type class
@@ -299,4 +328,18 @@ class ElementFieldResolverTest extends Unit
             ],
         ];
     }
+
+    public function assetTransformDataProvider()
+    {
+        return [
+            [['width' => 200, 'height' => 200], ['width' => 200, 'height' => 200]],
+            [['width' => 200, 'height' => 200, 'immediately' => true], ['width' => 200, 'height' => 200], true],
+            [['width' => 200, 'height' => 200, 'immediately' => false], ['width' => 200, 'height' => 200], false],
+            [['width' => 200, 'height' => 200, 'handle' => 'testHandle'], 'testHandle'],
+            [['width' => 200, 'height' => 200, 'transform' => 'testHandle2'], 'testHandle2'],
+
+        ];
+    }
+
+
 }
