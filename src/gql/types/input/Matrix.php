@@ -49,7 +49,7 @@ class Matrix extends InputObjectType
             // Get the field input types
             foreach ($fields as $field) {
                 /** @var Field $field */
-                $blockTypeFields[$field->handle] = $field->getContentGqlArgumentType();
+                $blockTypeFields[$field->handle] = $field->getContentGqlMutationArgumentType();
             }
 
             $blockTypeGqlName = $context->handle . '_' . $blockType->handle . '_MatrixBlockInput';
