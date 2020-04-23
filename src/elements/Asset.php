@@ -1841,6 +1841,7 @@ class Asset extends Element
         $this->folderId = $folderId;
         $this->folderPath = $newFolder->path;
         $this->filename = $filename;
+        $this->_volume = $newVolume;
 
         // If there was a new file involved, update file data.
         if ($tempPath) {
