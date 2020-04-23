@@ -7,6 +7,7 @@
 
 ### Fixed
 - Fix a bug where Project Config would not rebuild GraphQL schemas correctly. ([#5961](https://github.com/craftcms/cms/issues/5961))
+- Fixed an error that would occur when uploading an asset, if its `getUrl()` was called before it was fully saved.
 
 ## 3.4.16 - 2020-04-20
 

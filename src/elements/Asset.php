@@ -936,7 +936,7 @@ class Asset extends Element
         /** @var Volume $volume */
         $volume = $this->getVolume();
 
-        if (!$volume->hasUrls) {
+        if (!$volume->hasUrls || !$this->folderId) {
             return null;
         }
 
