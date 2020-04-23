@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased (3.5.0)
+
+### Added
+- Added the `cpHeadTags` config setting, making it possible to give the control panel a custom favicon. ([#4003](https://github.com/craftcms/cms/issues/4003))
+
 ## 3.5.0-beta.1 - 2020-04-20
 
 > {warning} If you have the `baseCpUrl` config setting set, Craft 3.5 will **only** allow the control panel to be accessed from that URL.

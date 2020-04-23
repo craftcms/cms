@@ -185,6 +185,29 @@ class GeneralConfig extends BaseObject
      */
     public $cooldownDuration = 300;
     /**
+     * @var array List of additional HTML tags that should be included in the `<head>` of control panel pages.
+     *
+     * Each tag can be specified as an array of the tag name and its attributes.
+     *
+     * For example, you can give the control panel a custom favicon (etc.) like this:
+     *
+     * ```php
+     * 'cpHeadTags' => [
+     *     // Traditional favicon
+     *     ['link', ['rel' => 'icon', 'href' => '/icons/favicon.ico']],
+     *     // Scalable favicon for browsers that support them
+     *     ['link', ['rel' => 'icon', 'type' => 'image/svg+xml', 'sizes' => 'any', 'href' => '/icons/favicon.svg']],
+     *     // Touch icon for mobile devices
+     *     ['link', ['rel' => 'apple-touch-icon', 'sizes' => '180x180', 'href' => '/icons/touch-icon.svg']],
+     *     // Pinned tab icon for Safari
+     *     ['link', ['rel' => 'mask-icon', 'href' => '/icons/mask-icon.svg', 'color' => '#663399']],
+     * ],
+     * ```
+     *
+     * @since 3.5.0
+     */
+    public $cpHeadTags = [];
+    /**
      * @var string|null The URI segment Craft should look for when determining if the current request should route to the control panel rather than
      * the front-end website.
      *
