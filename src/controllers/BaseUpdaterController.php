@@ -526,6 +526,7 @@ abstract class BaseUpdaterController extends Controller
             }
 
             Craft::error($error, __METHOD__);
+            Craft::$app->getErrorHandler()->logException($e);
 
             $options = [];
 
