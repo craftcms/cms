@@ -1956,7 +1956,12 @@ abstract class Element extends Component implements ElementInterface
     {
         // Eager-loaded?
         if (($descendants = $this->getEagerLoadedElements('descendants')) !== null) {
-            return $descendants;
+            if ($dist === null) {
+                return $descendants;
+            }
+            return ArrayHelper::where($descendants, function(self $element) use ($dist) {
+                return $element->level <= $this->level + $dist;
+            });
         }
 
         return static::find()

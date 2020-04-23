@@ -339,7 +339,7 @@ class AssetsController extends Controller
             // In case of error, let user know about it.
             if (!$result) {
                 $errors = $asset->getFirstErrors();
-                return $this->asErrorJson(Craft::t('app', 'Failed to save the Asset:') . implode(";\n", $errors));
+                return $this->asErrorJson(Craft::t('app', 'Failed to save the asset:') . ' ' . implode(";\n", $errors));
             }
 
             if ($asset->conflictingFilename !== null) {
@@ -813,7 +813,7 @@ class AssetsController extends Controller
         $asset = Craft::$app->getAssets()->getAssetById($assetId);
 
         if (!$asset) {
-            throw new BadRequestHttpException(Craft::t('app', 'The Asset you’re trying to edit does not exist.'));
+            throw new BadRequestHttpException(Craft::t('app', 'The asset you’re trying to edit does not exist.'));
         }
 
         $focal = $asset->getHasFocalPoint() ? $asset->getFocalPoint() : null;

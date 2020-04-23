@@ -339,6 +339,7 @@ class ElementRelationParamParser extends BaseObject
                             ->innerJoin([$sourceMatrixElementsAlias => Table::ELEMENTS], "[[{$sourceMatrixElementsAlias}.id]] = [[{$sourceMatrixBlocksAlias}.id]]")
                             ->innerJoin([$matrixBlockTargetsAlias => Table::RELATIONS], "[[{$matrixBlockTargetsAlias}.sourceId]] = [[{$sourceMatrixBlocksAlias}.id]]")
                             ->where([
+                                "$sourceMatrixElementsAlias.enabled" => true,
                                 "$sourceMatrixElementsAlias.dateDeleted" => null,
                                 "$matrixBlockTargetsAlias.targetId" => $relElementIds,
                                 "$sourceMatrixBlocksAlias.fieldId" => $fieldModel->id

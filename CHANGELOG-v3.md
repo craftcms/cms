@@ -194,6 +194,12 @@
 ### Changed
 - Craft now fully logs migration exceptions.
 
+### Fixed
+- Fix a bug where Project Config would not rebuild GraphQL schemas correctly. ([#5961](https://github.com/craftcms/cms/issues/5961))
+- Fixed an error that would occur when uploading an asset, if its `getUrl()` method was called before it was fully saved.
+- Fixed a bug where the `relatedTo` element query param wasn’t filtering out relations that belonged to disabled Matrix blocks, if the relations were being fetched by the target element. ([#5951](https://github.com/craftcms/cms/issues/5951))
+- Fixed a bug where `craft\base\Element::getDescendants()` would return all descendants if they had been eager-loaded, even if the `$dist` argument was set.
+
 ## 3.4.16 - 2020-04-20
 
 ### Added
