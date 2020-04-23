@@ -123,6 +123,10 @@ class Extension extends AbstractExtension implements GlobalsInterface
                 'allowTagPair' => true,
                 'allowOptions' => true,
             ]),
+            new RegisterResourceTokenParser('html', 'registerHtml', [
+                'allowTagPair' => true,
+                'allowPosition' => true,
+            ]),
             new RegisterResourceTokenParser('js', 'registerJs', [
                 'allowTagPair' => true,
                 'allowPosition' => true,

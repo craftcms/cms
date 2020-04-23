@@ -220,6 +220,12 @@ class View extends \yii\web\View
     private $_scripts;
 
     /**
+     * @var array the registered generic HTML code blocks
+     * @see registerHtml()
+     */
+    private $_html;
+
+    /**
      * @var
      */
     private $_hooks;
@@ -1059,6 +1065,26 @@ class View extends \yii\web\View
     }
 
     /**
+     * Registers arbitrary HTML to be injected into the final page response.
+     *
+     * @param string $html the HTML code to be registered
+     * @param int $position the position at which the HTML code should be inserted in the page. Possible values are:
+     * - [[POS_HEAD]]: in the head section
+     * - [[POS_BEGIN]]: at the beginning of the body section
+     * - [[POS_END]]: at the end of the body section
+     * @param string $key the key that identifies the HTML code. If null, it will use a hash of the HTML as the key.
+     * If two HTML code blocks are registered with the same position and key, the latter will overwrite the former.
+     * @since 3.5.0
+     */
+    public function registerHtml(string $html, int $position = self::POS_END, string $key = null)
+    {
+        if ($key === null) {
+            $key = md5($html);
+        }
+        $this->_html[$position][$key] = $html;
+    }
+
+    /**
      * @inheritdoc
      */
     public function endBody()
@@ -1690,6 +1716,9 @@ JS;
         if (!empty($this->_scripts[self::POS_HEAD])) {
             $lines[] = implode("\n", $this->_scripts[self::POS_HEAD]);
         }
+        if (!empty($this->_html[self::POS_HEAD])) {
+            $lines[] = implode("\n", $this->_html[self::POS_HEAD]);
+        }
 
         $html = parent::renderHeadHtml();
 
@@ -1705,6 +1734,9 @@ JS;
         if (!empty($this->_scripts[self::POS_BEGIN])) {
             $lines[] = implode("\n", $this->_scripts[self::POS_BEGIN]);
         }
+        if (!empty($this->_html[self::POS_BEGIN])) {
+            $lines[] = implode("\n", $this->_html[self::POS_BEGIN]);
+        }
 
         $html = parent::renderBodyBeginHtml();
 
@@ -1719,6 +1751,9 @@ JS;
         $lines = [];
         if (!empty($this->_scripts[self::POS_END])) {
             $lines[] = implode("\n", $this->_scripts[self::POS_END]);
+        }
+        if (!empty($this->_html[self::POS_END])) {
+            $lines[] = implode("\n", $this->_html[self::POS_END]);
         }
 
         $html = parent::renderBodyEndHtml($ajaxMode);
