@@ -2518,6 +2518,7 @@ class ProjectConfig extends Component
             ->select([
                 'name',
                 'scope',
+                'isPublic',
                 'uid',
             ])
             ->from([Table::GQLSCHEMAS])
@@ -2526,10 +2527,11 @@ class ProjectConfig extends Component
 
         foreach ($scopeRows as &$row) {
             unset($row['uid']);
+            $row['isPublic'] = (bool) $row['isPublic'];
             $row['scope'] = Json::decodeIfJson($row['scope']);
         }
 
-        return ['scopes' => $scopeRows];
+        return ['schemas' => $scopeRows];
     }
 
     /**

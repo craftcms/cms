@@ -5,6 +5,9 @@
 ### Changed
 - Craft now fully logs migration exceptions.
 
+### Fixed
+- Fix a bug where Project Config would not rebuild GraphQL schemas correctly. ([#5961](https://github.com/craftcms/cms/issues/5961))
+
 ## 3.4.16 - 2020-04-20
 
 ### Added
