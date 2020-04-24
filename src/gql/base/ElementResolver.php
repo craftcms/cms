@@ -97,6 +97,7 @@ abstract class ElementResolver extends Resolver
 
         $conditions = (new ElementQueryConditionBuilder($resolveInfo))->extractQueryConditions();
 
+        // Todo make element resolver classes non-static in Craft 4.0
         foreach ($conditions as $method => $parameters) {
             if (method_exists($query, $method)) {
                 $query = $query->{$method}($parameters);
