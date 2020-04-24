@@ -119,7 +119,7 @@ Craft.BaseElementEditor = Garnish.Base.extend(
                 this.$form = $('<div/>');
                 this.$fieldsContainer = $('<div class="fields"/>').appendTo(this.$form);
 
-                this.updateForm(response);
+                this.updateForm(response, true);
 
                 this.onCreateForm(this.$form);
 
@@ -190,7 +190,7 @@ Craft.BaseElementEditor = Garnish.Base.extend(
 
             Craft.postActionRequest('elements/get-editor-html', data, $.proxy(function(response, textStatus) {
                 if (textStatus === 'success') {
-                    this.updateForm(response);
+                    this.updateForm(response, true);
                 }
 
                 if (callback) {
@@ -199,11 +199,13 @@ Craft.BaseElementEditor = Garnish.Base.extend(
             }, this));
         },
 
-        updateForm: function(response) {
+        updateForm: function(response, refreshInitialData) {
             this.siteId = response.siteId;
-            this.deltaNames = response.deltaNames;
-
             this.$fieldsContainer.html(response.html);
+
+            if (refreshInitialData) {
+                this.deltaNames = response.deltaNames;
+            }
 
             // Swap any instruction text with info icons
             var $instructions = this.$fieldsContainer.find('> .meta > .field > .heading > .instructions');
@@ -221,7 +223,10 @@ Craft.BaseElementEditor = Garnish.Base.extend(
                 Craft.appendHeadHtml(response.headHtml);
                 Craft.appendFootHtml(response.footHtml);
                 Craft.initUiElements(this.$fieldsContainer);
-                this.initialData = this.hud.$body.serialize();
+
+                if (refreshInitialData) {
+                    this.initialData = this.hud.$body.serialize();
+                }
             }, this));
         },
 
@@ -270,7 +275,7 @@ Craft.BaseElementEditor = Garnish.Base.extend(
                         this.onSaveElement(response);
                     }
                     else {
-                        this.updateForm(response);
+                        this.updateForm(response, false);
                         Garnish.shake(this.hud.$hud);
                     }
                 }
