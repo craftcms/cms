@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.4.17 - 2020-04-24
 
 ### Added
 - The control panel is now translated for Swiss German. ([#5957](https://github.com/craftcms/cms/issues/5957))
