@@ -835,6 +835,74 @@ abstract class Element extends Component implements ElementInterface
                     'map' => $map
                 ];
 
+            case 'ancestors':
+            case 'parent':
+                // Get the source element IDs
+                $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id');
+
+                // Get the structure data for these elements
+                $selectColumns = ['structureId', 'elementId', 'lft', 'rgt'];
+
+                if ($handle === 'parent') {
+                    $selectColumns[] = 'level';
+                }
+
+                $structureData = (new Query())
+                    ->select($selectColumns)
+                    ->from([Table::STRUCTUREELEMENTS])
+                    ->where(['elementId' => $sourceElementIds])
+                    ->all();
+
+                if (empty($structureData)) {
+                    return null;
+                }
+
+                $qb = Craft::$app->getDb()->getQueryBuilder();
+                $query = new Query();
+                $sourceSelectSql = '(CASE';
+                $condition = ['or'];
+
+                foreach ($structureData as $i => $elementStructureData) {
+                    $thisElementCondition = [
+                        'and',
+                        ['structureId' => $elementStructureData['structureId']],
+                        ['<', 'lft', $elementStructureData['lft']],
+                        ['>', 'rgt', $elementStructureData['rgt']],
+                    ];
+
+                    if ($handle === 'parent') {
+                        $thisElementCondition[] = ['level' => $elementStructureData['level'] - 1];
+                    }
+
+                    $condition[] = $thisElementCondition;
+                    $sourceSelectSql .= ' WHEN ' .
+                        $qb->buildCondition(
+                            [
+                                'and',
+                                ['structureId' => $elementStructureData['structureId']],
+                                ['<', 'lft', $elementStructureData['lft']],
+                                ['>', 'rgt', $elementStructureData['rgt']]
+                            ],
+                            $query->params) .
+                        " THEN :sourceId{$i}";
+                    $query->params[':sourceId' . $i] = $elementStructureData['elementId'];
+                }
+
+                $sourceSelectSql .= ' END) as source';
+
+                // Return any child elements
+                $map = $query
+                    ->select([$sourceSelectSql, 'elementId as target'])
+                    ->from([Table::STRUCTUREELEMENTS])
+                    ->where($condition)
+                    ->orderBy(['structureId' => SORT_ASC, 'lft' => SORT_ASC])
+                    ->all();
+
+                return [
+                    'elementType' => static::class,
+                    'map' => $map
+                ];
+
             case 'currentRevision':
                 // Get the source element IDs
                 $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id');
@@ -1911,12 +1979,16 @@ abstract class Element extends Component implements ElementInterface
     public function getParent()
     {
         if ($this->_parent === null) {
-            $this->_parent = $this->getAncestors(1)
-                ->anyStatus()
-                ->one();
+            $ancestors = $this->getAncestors(1);
 
-            if ($this->_parent === null) {
-                $this->_parent = false;
+            // Eager-loaded?
+            if (is_array($ancestors)) {
+                $this->_parent = reset($ancestors);
+            } else {
+                $this->_parent = $ancestors
+                        ->anyStatus()
+                        ->one()
+                    ?? false;
             }
         }
 
@@ -1942,6 +2014,16 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getAncestors(int $dist = null)
     {
+        // Eager-loaded?
+        if (($ancestors = $this->getEagerLoadedElements('ancestors')) !== null) {
+            if ($dist === null) {
+                return $ancestors;
+            }
+            return ArrayHelper::where($ancestors, function(self $element) use ($dist) {
+                return $element->level >= $this->level - $dist;
+            });
+        }
+
         return static::find()
             ->structureId($this->structureId)
             ->ancestorOf(ElementHelper::sourceElement($this))
@@ -2454,6 +2536,9 @@ abstract class Element extends Component implements ElementInterface
     public function setEagerLoadedElements(string $handle, array $elements)
     {
         switch ($handle) {
+            case 'parent':
+                $this->_parent = $elements[0] ?? false;
+                break;
             case 'currentRevision':
                 $this->_currentRevision = $elements[0] ?? false;
                 break;

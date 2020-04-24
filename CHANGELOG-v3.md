@@ -6,6 +6,9 @@
 - Added the `cpHeadTags` config setting, making it possible to give the control panel a custom favicon. ([#4003](https://github.com/craftcms/cms/issues/4003))
 - Added the `{% html %}` Twig tag, which makes it possible to register arbitrary HTML for inclusion in the `<head>`, beginning of `<body>`, or end of `<body>`. ([#5955](https://github.com/craftcms/cms/issues/5955))
 
+### Changed
+- It’s now possible to eager-load elements’ ancestors and parents. ([#1382](https://github.com/craftcms/cms/issues/1382))
+
 ## 3.5.0-beta.1 - 2020-04-20
 
 > {warning} If you have the `baseCpUrl` config setting set, Craft 3.5 will **only** allow the control panel to be accessed from that URL.
