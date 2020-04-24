@@ -1,5 +1,20 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.4.17 - 2020-04-24
+
+### Added
+- The control panel is now translated for Swiss German. ([#5957](https://github.com/craftcms/cms/issues/5957))
+
+### Changed
+- Craft now fully logs migration exceptions.
+
+### Fixed
+- Fix a bug where Project Config would not rebuild GraphQL schemas correctly. ([#5961](https://github.com/craftcms/cms/issues/5961))
+- Fixed an error that would occur when uploading an asset, if its `getUrl()` method was called before it was fully saved.
+- Fixed a bug where the `relatedTo` element query param wasn’t filtering out relations that belonged to disabled Matrix blocks, if the relations were being fetched by the target element. ([#5951](https://github.com/craftcms/cms/issues/5951))
+- Fixed a bug where `craft\base\Element::getDescendants()` would return all descendants if they had been eager-loaded, even if the `$dist` argument was set.
+- Fixed a bug where element editor HUDs could forget to submit content changes if a validation error occurred. ([#5966](https://github.com/craftcms/cms/issues/5966))
+
 ## 3.4.16 - 2020-04-20
 
 ### Added

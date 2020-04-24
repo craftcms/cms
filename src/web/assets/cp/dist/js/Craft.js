@@ -10,7 +10,7 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-/*!   - 2020-04-20 */
+/*!   - 2020-04-24 */
 (function ($) {
   /** global: Craft */
 
@@ -2049,7 +2049,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
         this.$form = $('<div/>');
         this.$fieldsContainer = $('<div class="fields"/>').appendTo(this.$form);
-        this.updateForm(response);
+        this.updateForm(response, true);
         this.onCreateForm(this.$form);
         var $footer = $('<div class="hud-footer"/>').appendTo(this.$form),
             $buttonsContainer = $('<div class="buttons right"/>').appendTo($footer);
@@ -2110,7 +2110,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       data = $.extend(this.getBaseData(), data);
       Craft.postActionRequest('elements/get-editor-html', data, $.proxy(function (response, textStatus) {
         if (textStatus === 'success') {
-          this.updateForm(response);
+          this.updateForm(response, true);
         }
 
         if (callback) {
@@ -2118,10 +2118,14 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         }
       }, this));
     },
-    updateForm: function updateForm(response) {
+    updateForm: function updateForm(response, refreshInitialData) {
       this.siteId = response.siteId;
-      this.deltaNames = response.deltaNames;
-      this.$fieldsContainer.html(response.html); // Swap any instruction text with info icons
+      this.$fieldsContainer.html(response.html);
+
+      if (refreshInitialData) {
+        this.deltaNames = response.deltaNames;
+      } // Swap any instruction text with info icons
+
 
       var $instructions = this.$fieldsContainer.find('> .meta > .field > .heading > .instructions');
 
@@ -2136,7 +2140,10 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         Craft.appendHeadHtml(response.headHtml);
         Craft.appendFootHtml(response.footHtml);
         Craft.initUiElements(this.$fieldsContainer);
-        this.initialData = this.hud.$body.serialize();
+
+        if (refreshInitialData) {
+          this.initialData = this.hud.$body.serialize();
+        }
       }, this));
     },
     saveElement: function saveElement() {
@@ -2180,7 +2187,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
             this.closeHud();
             this.onSaveElement(response);
           } else {
-            this.updateForm(response);
+            this.updateForm(response, false);
             Garnish.shake(this.hud.$hud);
           }
         }

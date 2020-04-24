@@ -389,7 +389,7 @@ class Application extends \yii\web\Application
             return;
         }
 
-        $svg = rawurlencode(file_get_contents(dirname(__DIR__) . '/icons/c.svg'));
+        $svg = rawurlencode(file_get_contents(dirname(__DIR__) . '/icons/c-debug.svg'));
         DebugModule::setYiiLogo("data:image/svg+xml;charset=utf-8,{$svg}");
 
         $this->setModule('debug', [
