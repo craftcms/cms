@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- The control panel is now translated for Swiss German. ([#5957](https://github.com/craftcms/cms/issues/5957))
+
 ### Changed
 - Craft now fully logs migration exceptions.
 
