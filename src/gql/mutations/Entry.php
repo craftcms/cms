@@ -108,7 +108,7 @@ class Entry extends Mutation
      * @return array
      * @throws \yii\base\InvalidConfigException
      */
-    protected static function createSaveMutations(EntryTypeModel $entryType, bool $createSaveDraftMutation): array
+    public static function createSaveMutations(EntryTypeModel $entryType, bool $createSaveDraftMutation): array
     {
         $mutations = [];
 

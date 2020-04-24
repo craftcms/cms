@@ -77,7 +77,7 @@ class Asset extends Mutation
      * @return array
      * @throws \yii\base\InvalidConfigException
      */
-    protected static function createSaveMutation(Volume $volume): array
+    public static function createSaveMutation(Volume $volume): array
     {
         $mutationName = AssetElement::gqlMutationNameByContext($volume);
         $contentFields = $volume->getFields();

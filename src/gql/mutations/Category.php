@@ -77,7 +77,7 @@ class Category extends Mutation
      * @return array
      * @throws \yii\base\InvalidConfigException
      */
-    protected static function createSaveMutation(CategoryGroup $categoryGroup): array
+    public static function createSaveMutation(CategoryGroup $categoryGroup): array
     {
         $mutationName = CategoryElement::gqlMutationNameByContext($categoryGroup);
         $contentFields = $categoryGroup->getFields();

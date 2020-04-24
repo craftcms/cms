@@ -76,7 +76,7 @@ class Tag extends Mutation
      * @return array
      * @throws \yii\base\InvalidConfigException
      */
-    protected static function createSaveMutation(TagGroup $tagGroup): array
+    public static function createSaveMutation(TagGroup $tagGroup): array
     {
         $mutationName = TagElement::gqlMutationNameByContext($tagGroup);
         $contentFields = $tagGroup->getFields();

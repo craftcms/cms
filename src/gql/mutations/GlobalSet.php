@@ -52,7 +52,7 @@ class GlobalSet extends Mutation
      * @param GlobalSetElement $globalSet
      * @return array
      */
-    protected static function createSaveMutation(GlobalSetElement $globalSet): array
+    public static function createSaveMutation(GlobalSetElement $globalSet): array
     {
         $mutationName = GlobalSetElement::gqlMutationNameByContext($globalSet);
         $contentFields = $globalSet->getFields();
