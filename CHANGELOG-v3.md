@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.4.17.1 - 2020-04-21
+
+### Fixed
+- Fixed a JavaScript error that occurred when attempting to save an asset from an element editor HUD. ([#5970](https://github.com/craftcms/cms/issues/5970))
+
 ## 3.4.17 - 2020-04-24
 
 ### Added

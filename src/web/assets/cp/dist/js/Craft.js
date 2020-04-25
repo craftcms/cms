@@ -10,7 +10,7 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-/*!   - 2020-04-24 */
+/*!   - 2020-04-25 */
 (function ($) {
   /** global: Craft */
 
@@ -2122,7 +2122,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       this.siteId = response.siteId;
       this.$fieldsContainer.html(response.html);
 
-      if (refreshInitialData) {
+      if (refreshInitialData !== false) {
         this.deltaNames = response.deltaNames;
       } // Swap any instruction text with info icons
 
@@ -5339,8 +5339,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
   Craft.AssetEditor = Craft.BaseElementEditor.extend({
     reloadIndex: false,
-    updateForm: function updateForm(response) {
-      this.base(response);
+    updateForm: function updateForm(response, refreshInitialData) {
+      this.base(response, refreshInitialData);
 
       if (this.$element.data('id')) {
         var $imageEditorTrigger = this.$fieldsContainer.find('> .meta > .preview-thumb-container.editable');
