@@ -203,7 +203,7 @@ Craft.BaseElementEditor = Garnish.Base.extend(
             this.siteId = response.siteId;
             this.$fieldsContainer.html(response.html);
 
-            if (refreshInitialData) {
+            if (refreshInitialData !== false) {
                 this.deltaNames = response.deltaNames;
             }
 
