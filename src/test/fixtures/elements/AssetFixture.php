@@ -48,12 +48,12 @@ abstract class AssetFixture extends ElementFixture
     protected $files = [];
 
     /**
-     * @var $string
+     * @var string
      */
     protected $sourceAssetPath;
 
     /**
-     * @var $string
+     * @var string
      */
     protected $destinationAssetPath;
 

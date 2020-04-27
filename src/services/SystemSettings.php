@@ -23,7 +23,8 @@ use yii\base\Component;
 class SystemSettings extends Component
 {
     /**
-     * @var
+     * @var array
+     * @deprecated in 3.1.0
      */
     public $defaults;
 

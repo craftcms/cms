@@ -19,10 +19,13 @@ use craft\base\Element;
 class ExampleElement extends Element
 {
     /**
-     * @var
+     * @var string|null
      */
     public $uriFormat;
 
+    /**
+     * @var mixed
+     */
     public $someField;
 
     /**

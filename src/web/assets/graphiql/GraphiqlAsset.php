@@ -18,16 +18,20 @@ use craft\web\assets\cp\CpAsset;
  */
 class GraphiqlAsset extends AssetBundle
 {
+    /** @inheritdoc */
     public $depends = [
         CpAsset::class,
     ];
 
+    /** @inheritdoc */
     public $sourcePath = __DIR__ . '/dist';
 
+    /** @inheritdoc */
     public $js = [
         'graphiql.js',
     ];
 
+    /** @inheritdoc */
     public $css = [
         'graphiql.css',
     ];

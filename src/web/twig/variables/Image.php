@@ -28,7 +28,7 @@ class Image
     protected $url;
 
     /**
-     * @var
+     * @var array|null
      */
     protected $size;
 
