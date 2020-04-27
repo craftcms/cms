@@ -19,6 +19,8 @@ interface BlockElementInterface
 {
     /**
      * Returns the owner element.
+     *
+     * @return ElementInterface
      */
     public function getOwner(): ElementInterface;
 }

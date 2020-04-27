@@ -53,6 +53,7 @@ class Color extends Field implements PreviewableFieldInterface
         return Schema::TYPE_STRING . '(7)';
     }
 
+    /** @inheritdoc */
     public function getSettingsHtml()
     {
         return Craft::$app->getView()->renderTemplateMacro('_includes/forms.html', 'colorField', [

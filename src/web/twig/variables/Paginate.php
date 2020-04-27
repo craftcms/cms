@@ -43,27 +43,27 @@ class Paginate extends BaseObject
     }
 
     /**
-     * @var
+     * @var int
      */
     public $first;
 
     /**
-     * @var
+     * @var int
      */
     public $last;
 
     /**
-     * @var
+     * @var int
      */
     public $total = 0;
 
     /**
-     * @var
+     * @var int
      */
     public $currentPage;
 
     /**
-     * @var
+     * @var int
      */
     public $totalPages = 0;
 
