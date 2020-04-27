@@ -79,39 +79,21 @@ class Tag extends Mutation
     public static function createSaveMutation(TagGroup $tagGroup): array
     {
         $mutationName = TagElement::gqlMutationNameByContext($tagGroup);
-        $contentFields = $tagGroup->getFields();
         $mutationArguments = ElementMutationArguments::getArguments();
-        $contentFieldHandles = [];
-        $valueNormalizers = [];
-
-        /** @var Field $contentField */
-        foreach ($contentFields as $contentField) {
-            $contentFieldType = $contentField->getContentGqlMutationArgumentType();
-            $mutationArguments[$contentField->handle] = $contentFieldType;
-            $contentFieldHandles[$contentField->handle] = true;
-
-            $configArray = is_array($contentFieldType) ? $contentFieldType : $contentFieldType->config;
-
-            if (is_array($configArray) && !empty($configArray['normalizeValue'])) {
-                $valueNormalizers[$contentField->handle] = $configArray['normalizeValue'];
-            }
-        }
-
-        $description = 'Save the “' . $tagGroup->name . '” tag.';
-
-        $resolverData = [
-            'tagGroup' => $tagGroup,
-            'contentFieldHandles' => $contentFieldHandles,
-        ];
-
         $generatedType = TagType::generateType($tagGroup);
+
+        $resolver = new SaveTag();
+        $resolver->setResolutionData('tagGroup', $tagGroup);
+        static::prepareResolver($resolver, $tagGroup->getFields());
+
+        $mutationArguments = array_merge($mutationArguments, $resolver->getResolutionData(Mutation::CONTENT_FIELD_KEY));
 
         return [
             'name' => $mutationName,
-            'description' => $description,
+            'description' => 'Save the “' . $tagGroup->name . '” tag.',
             'args' => $mutationArguments,
-            'resolve' => [new SaveTag($resolverData, $valueNormalizers), 'resolve'],
+            'resolve' => [$resolver, 'resolve'],
             'type' => $generatedType
-        ];;
+        ];
     }
 }

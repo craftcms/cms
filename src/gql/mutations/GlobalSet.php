@@ -55,37 +55,20 @@ class GlobalSet extends Mutation
     public static function createSaveMutation(GlobalSetElement $globalSet): array
     {
         $mutationName = GlobalSetElement::gqlMutationNameByContext($globalSet);
-        $contentFields = $globalSet->getFields();
-        $mutationArguments = [];
-        $contentFieldHandles = [];
-        $valueNormalizers = [];
+        $generatedType = GlobalSetType::generateType($globalSet);
 
-        foreach ($contentFields as $contentField) {
-            $contentFieldType = $contentField->getContentGqlMutationArgumentType();
+        $resolver = new SaveGlobalSet();
+        $resolver->setResolutionData('globalSet', $globalSet);
+        static::prepareResolver($resolver, $globalSet->getFields());
 
-            $mutationArguments[$contentField->handle] = $contentFieldType;
-            $contentFieldHandles[$contentField->handle] = true;
+        $mutationArguments = $resolver->getResolutionData(Mutation::CONTENT_FIELD_KEY);
 
-            $configArray = is_array($contentFieldType) ? $contentFieldType : $contentFieldType->config;
-
-            if (is_array($configArray) && !empty($configArray['normalizeValue'])) {
-                $valueNormalizers[$contentField->handle] = $configArray['normalizeValue'];
-            }
-
-            $resolverData = [
-                'globalSet' => $globalSet,
-                'contentFieldHandles' => $contentFieldHandles,
-            ];
-
-            $generatedType = GlobalSetType::generateType($globalSet);
-
-            return [
-                'name' => $mutationName,
-                'description' => 'Update the ”' . $globalSet . '“ global set.',
-                'args' => $mutationArguments,
-                'resolve' => [new SaveGlobalSet($resolverData, $valueNormalizers), 'resolve'],
-                'type' => $generatedType
-            ];
-        }
+        return [
+            'name' => $mutationName,
+            'description' => 'Update the ”' . $globalSet . '“ global set.',
+            'args' => $mutationArguments,
+            'resolve' => [$resolver, 'resolve'],
+            'type' => $generatedType
+        ];
     }
 }

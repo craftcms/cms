@@ -113,13 +113,22 @@ class Entry extends Mutation
         $mutations = [];
 
         $mutationName = EntryElement::gqlMutationNameByContext($entryType);
-        $contentFields = $entryType->getFields();
         $entryMutationArguments = EntryMutationArguments::getArguments();
         $draftMutationArguments = DraftMutationArguments::getArguments();
-        $contentFieldHandles = [];
-        $valueNormalizers = [];
+        $generatedType = EntryType::generateType($entryType);
 
         $section = $entryType->getSection();
+
+        $saveResolver = new SaveEntry();
+        $saveResolver->setResolutionData('entryType', $entryType);
+        $saveResolver->setResolutionData('section', $section);
+
+        $draftResolver = new SaveEntry();
+        $draftResolver->setResolutionData('entryType', $entryType);
+        $draftResolver->setResolutionData('section', $section);
+
+        static::prepareResolver($saveResolver, $entryType->getFields());
+        static::prepareResolver($draftResolver, $entryType->getFields());
 
         switch ($section->type) {
             case Section::TYPE_SINGLE:
@@ -136,32 +145,15 @@ class Entry extends Mutation
                 $draftDescription = 'Save a “' . $entryType->name . '” entry draft in the “' . $section->name . '” section.';
         }
 
-        /** @var Field $contentField */
-        foreach ($contentFields as $contentField) {
-            $contentFieldType = $contentField->getContentGqlMutationArgumentType();
-            $entryMutationArguments[$contentField->handle] = $contentFieldType;
-            $draftMutationArguments[$contentField->handle] = $contentFieldType;
-            $contentFieldHandles[$contentField->handle] = true;
+        $entryMutationArguments = array_merge($entryMutationArguments, $saveResolver->getResolutionData(Mutation::CONTENT_FIELD_KEY));
+        $draftMutationArguments = array_merge($draftMutationArguments, $draftResolver->getResolutionData(Mutation::CONTENT_FIELD_KEY));
 
-            $configArray = is_array($contentFieldType) ? $contentFieldType : $contentFieldType->config;
-            if (is_array($configArray) && !empty($configArray['normalizeValue'])) {
-                $valueNormalizers[$contentField->handle] = $configArray['normalizeValue'];
-            }
-        }
-
-        $resolverData = [
-            'section' => $section,
-            'entryType' => $entryType,
-            'contentFieldHandles' => $contentFieldHandles,
-        ];
-
-        $generatedType = EntryType::generateType($entryType);
 
         $mutations[] = [
             'name' => $mutationName,
             'description' => $description,
             'args' => $entryMutationArguments,
-            'resolve' => [new SaveEntry($resolverData, $valueNormalizers), 'resolve'],
+            'resolve' => [$saveResolver, 'resolve'],
             'type' => $generatedType
         ];
 
@@ -171,7 +163,7 @@ class Entry extends Mutation
                 'name' => StringHelper::replaceEnding($mutationName, '_Entry', '_Draft'),
                 'description' => $draftDescription,
                 'args' => $draftMutationArguments,
-                'resolve' => [new SaveDraft($resolverData, $valueNormalizers), 'resolve'],
+                'resolve' => [$draftResolver, 'resolve'],
                 'type' => $generatedType
             ];
         }

@@ -25,19 +25,52 @@ use GraphQL\Type\Definition\ResolveInfo;
  */
 abstract class MutationResolver
 {
-    private $_resolutionData = [];
-
-    protected $valueNormalizers = [];
+    /**
+     * @var array Data that might be useful during mutation resolution.
+     */
+    private $_resolutionData;
 
     /**
-     * Construct a mutation resolver and store the resolution data.
+     * @var callable[] Value normalizers stored by argument name
+     */
+    private $_valueNormalizers;
+
+    /**
+     * Construct a mutation resolver and store the resolution data as well as normalizers, if any provided.
      *
-     * @param array $data
+     * @param array $data Resolver data
+     * @param array $valueNormalizers Data normalizers
      */
     public function __construct(array $data = [], array $valueNormalizers = [])
     {
         $this->_resolutionData = $data;
-        $this->valueNormalizers = $valueNormalizers;
+        $this->_valueNormalizers = $valueNormalizers;
+    }
+
+    /**
+     * Set a piece of data to be used by the resolver when resolving.
+     *
+     * @param string $key
+     * @param $value
+     */
+    public function setResolutionData(string $key, $value)
+    {
+        $this->_resolutionData[$key] = $value;
+    }
+
+    /**
+     * Set a data normalizer for an argument to use for data normalization during resolving.
+     *
+     * @param string $argument
+     * @param callable $normalizer
+     */
+    public function setValueNormalizer(string $argument, callable $normalizer = null)
+    {
+        if ($normalizer === null) {
+            unset($this->_valueNormalizers[$argument]);
+        } else {
+            $this->_valueNormalizers[$argument] = $normalizer;
+        }
     }
 
     /**
@@ -45,15 +78,28 @@ abstract class MutationResolver
      *
      * @param string $key
      * @return mixed
-     * @throws GqlException
      */
-    protected function _getData(string $key)
+    public function getResolutionData(string $key)
     {
-        if (!isset($this->_resolutionData[$key])) {
-            throw new GqlException('Stored resolution data by key “' . $key . '” not found!');
+        return $this->_resolutionData[$key] ?? null;
+    }
+
+    /**
+     * Normalize a value according to stored normalizers.
+     *
+     * @param string $argument
+     * @param mixed $value
+     * @return mixed
+     */
+    protected function normalizeValue(string $argument, $value)
+    {
+        if (array_key_exists($argument, $this->_valueNormalizers)) {
+            $normalizer = $this->_valueNormalizers[$argument];
+
+            $value = $normalizer($value);
         }
 
-        return $this->_resolutionData[$key];
+        return $value;
     }
 
     /**
@@ -67,18 +113,11 @@ abstract class MutationResolver
     protected function populateElementWithData(Element $element, array $arguments): Element
     {
         /** @var array $contentFieldHandles */
-        $contentFieldHandles = $this->_getData('contentFieldHandles');
+        $contentFieldHandles = $this->getResolutionData('contentFieldHandles');
 
         foreach ($arguments as $argument => $value) {
             if (isset($contentFieldHandles[$argument])) {
-                if (array_key_exists($argument, $this->valueNormalizers)) {
-                    $normalizer = $this->valueNormalizers[$argument];
-
-                    if (is_callable($normalizer)) {
-                        $value = $normalizer($value);
-                    }
-                }
-
+                $value = $this->normalizeValue($argument, $value);
                 $element->setFieldValue($argument, $value);
             } else {
                 if (property_exists($element, $argument)) {

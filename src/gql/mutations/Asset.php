@@ -80,37 +80,21 @@ class Asset extends Mutation
     public static function createSaveMutation(Volume $volume): array
     {
         $mutationName = AssetElement::gqlMutationNameByContext($volume);
-        $contentFields = $volume->getFields();
-        $assetMutationArguments = AssetMutationArguments::getArguments();
-        $contentFieldHandles = [];
-        $valueNormalizers = [];
-
-        /** @var Field $contentField */
-        foreach ($contentFields as $contentField) {
-            $contentFieldType = $contentField->getContentGqlMutationArgumentType();
-            $assetMutationArguments[$contentField->handle] = $contentFieldType;
-            $contentFieldHandles[$contentField->handle] = true;
-
-            $configArray = is_array($contentFieldType) ? $contentFieldType : $contentFieldType->config;
-
-            if (is_array($configArray) && !empty($configArray['normalizeValue'])) {
-                $valueNormalizers[$contentField->handle] = $configArray['normalizeValue'];
-            }
-        }
-
-        $resolverData = [
-            'volume' => $volume,
-            'contentFieldHandles' => $contentFieldHandles,
-        ];
-
+        $mutationArguments = AssetMutationArguments::getArguments();
         $generatedType = AssetType::generateType($volume);
+
+        $resolver = new SaveAsset();
+        $resolver->setResolutionData('volume', $volume);
+        static::prepareResolver($resolver, $volume->getFields());
+
+        $mutationArguments = array_merge($mutationArguments, $resolver->getResolutionData(Mutation::CONTENT_FIELD_KEY));
 
         return [
             'name' => $mutationName,
             'description' => 'Save an asset.',
-            'args' => $assetMutationArguments,
-            'resolve' => [new SaveAsset($resolverData, $valueNormalizers), 'resolve'],
+            'args' => $mutationArguments,
+            'resolve' => [$resolver, 'resolve'],
             'type' => $generatedType
-        ];;
+        ];
     }
 }

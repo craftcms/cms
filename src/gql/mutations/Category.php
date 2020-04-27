@@ -80,38 +80,20 @@ class Category extends Mutation
     public static function createSaveMutation(CategoryGroup $categoryGroup): array
     {
         $mutationName = CategoryElement::gqlMutationNameByContext($categoryGroup);
-        $contentFields = $categoryGroup->getFields();
         $mutationArguments = array_merge(ElementMutationArguments::getArguments(), StructureArguments::getArguments());
-        $contentFieldHandles = [];
-        $valueNormalizers = [];
-
-        /** @var Field $contentField */
-        foreach ($contentFields as $contentField) {
-            $contentFieldType = $contentField->getContentGqlMutationArgumentType();
-            $mutationArguments[$contentField->handle] = $contentFieldType;
-            $contentFieldHandles[$contentField->handle] = true;
-
-            $configArray = is_array($contentFieldType) ? $contentFieldType : $contentFieldType->config;
-
-            if (is_array($configArray) && !empty($configArray['normalizeValue'])) {
-                $valueNormalizers[$contentField->handle] = $configArray['normalizeValue'];
-            }
-        }
-
-        $description = 'Save the “' . $categoryGroup->name . '” category.';
-
-        $resolverData = [
-            'categoryGroup' => $categoryGroup,
-            'contentFieldHandles' => $contentFieldHandles,
-        ];
-
         $generatedType = CategoryType::generateType($categoryGroup);
+
+        $resolver = new SaveCategory();
+        $resolver->setResolutionData('categoryGroup', $categoryGroup);
+        static::prepareResolver($resolver, $categoryGroup->getFields());
+
+        $mutationArguments = array_merge($mutationArguments, $resolver->getResolutionData(Mutation::CONTENT_FIELD_KEY));
 
         return [
             'name' => $mutationName,
-            'description' => $description,
+            'description' => 'Save the “' . $categoryGroup->name . '” category.',
             'args' => $mutationArguments,
-            'resolve' => [new SaveCategory($resolverData, $valueNormalizers), 'resolve'],
+            'resolve' => [$resolver, 'resolve'],
             'type' => $generatedType
         ];
     }

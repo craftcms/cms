@@ -17,10 +17,37 @@ abstract class Mutation
 {
     use GqlTypeTrait;
 
+    const CONTENT_FIELD_KEY = '_contentFields';
+
     /**
      * Returns the mutations defined by the class as an array.
      *
      * @return array
      */
     abstract public static function getMutations(): array;
+
+    /**
+     * Load content fields and value normalizers on the resolver, based on content fields.
+     *
+     * @param MutationResolver $resolver
+     * @param array $contentFields
+     * @return void
+     */
+    protected static function prepareResolver(MutationResolver $resolver, array $contentFields)
+    {
+        $fieldList = [];
+
+        foreach ($contentFields as $contentField) {
+            $contentFieldType = $contentField->getContentGqlMutationArgumentType();
+            $handle = $contentField->handle;
+            $fieldList[$handle] = $contentFieldType;
+            $configArray = is_array($contentFieldType) ? $contentFieldType : $contentFieldType->config;
+
+            if (is_array($configArray) && !empty($configArray['normalizeValue'])) {
+                $resolver->setValueNormalizer($handle, $configArray['normalizeValue']);
+            }
+        }
+
+        $resolver->setResolutionData(self::CONTENT_FIELD_KEY, $fieldList);
+    }
 }
