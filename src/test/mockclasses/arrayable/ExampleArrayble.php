@@ -22,12 +22,12 @@ class ExampleArrayble implements Arrayable
     use ArrayableTrait;
 
     /**
-     * @var
+     * @var string
      */
     public $exampleArrayableParam;
 
     /**
-     * @var
+     * @var string
      */
     public $extraField;
 

@@ -88,6 +88,8 @@ class Images extends Component
 
     /**
      * Returns the version of the image driver.
+     *
+     * @return string
      */
     public function getVersion(): string
     {
