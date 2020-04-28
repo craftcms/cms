@@ -51,7 +51,11 @@ class ProjectConfig extends Component
     // Array key to use if not using config files.
     const CONFIG_KEY = 'storedConfig';
 
-    // Filename for base config file
+    /**
+     * @var string Filename for base config file
+     * @since 3.1.0
+     * @deprecated in 3.5.0. Use [[filename]] instead.
+     */
     const CONFIG_FILENAME = 'project.yaml';
 
     /**
@@ -161,6 +165,12 @@ class ProjectConfig extends Component
      * @since 3.1.20
      */
     const EVENT_REBUILD = 'rebuild';
+
+    /**
+     * @var string The filename to save the project config as.
+     * @since 3.5.0
+     */
+    public $filename = 'project.yaml';
 
     /**
      * @var int The maximum number of project.yaml deltas to store in storage/config-backups/

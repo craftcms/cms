@@ -152,7 +152,7 @@ class Cp
             !FileHelper::isWritable(Craft::$app->getPath()->getProjectConfigFilePath())
         ) {
             $alerts[] = Craft::t('app', 'Your {file} file isn’t writable.', [
-                'file' => \craft\services\ProjectConfig::CONFIG_FILENAME,
+                'file' => Craft::$app->getProjectConfig()->filename,
             ]);
         }
 

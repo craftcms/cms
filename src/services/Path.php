@@ -70,7 +70,7 @@ class Path extends Component
      */
     public function getProjectConfigFilePath(): string
     {
-        return $this->getConfigPath() . DIRECTORY_SEPARATOR . ProjectConfig::CONFIG_FILENAME;
+        return $this->getConfigPath() . DIRECTORY_SEPARATOR . Craft::$app->getProjectConfig()->filename;
     }
 
     /**

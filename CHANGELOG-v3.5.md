@@ -107,6 +107,7 @@
 - Added `craft\services\Composer::run()`.
 - Added `craft\services\Elements::createElementQuery()`.
 - Added `craft\services\Gql::getAllSchemaComponents()`.
+- Added `craft\services\ProjectConfig::$filename`. ([#5982](https://github.com/craftcms/cms/issues/5982))
 - Added `craft\queue\jobs\PruneRevisions`.
 - Added `craft\web\AssetBundle\ContentWindowAsset`.
 - Added `craft\web\AssetBundle\IframeResizerAsset`.
@@ -164,6 +165,7 @@
 - Deprecated `craft\web\View::formatInputId()`. `craft\helpers\Html::namespaceHtml()` should be used instead.
 - Deprecated `craft\events\RegisterGqlPermissionsEvent` in favor of the new `craft\events\RegisterGqlSchemaComponentsEvent` event.
 - Deprecated `craft\services\Gql::getAllPermissions()` in favor of the new `craft\services\Gql::getAllSchemaComponents()` method.
+- Deprecated `craft\services\ProjectConfig::CONFIG_FILENAME`. `$filename` should be used instead.
 
 ### Removed
 - Removed the [Interactive Shell Extension for Yii 2](https://github.com/yiisoft/yii2-shell), as it’s now a dev dependency of the `craftcms/craft` project instead. ([#5783](https://github.com/craftcms/cms/issues/5783))

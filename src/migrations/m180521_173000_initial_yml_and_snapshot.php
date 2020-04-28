@@ -30,8 +30,8 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             $configFile = Craft::$app->getPath()->getProjectConfigFilePath();
             if (file_exists($configFile)) {
                 // Make a backup of the old config
-                $backupFile = pathinfo(ProjectConfig::CONFIG_FILENAME, PATHINFO_FILENAME) . date('-Ymh-His') . '.yaml';
-                echo "    > renaming project.yaml to {$backupFile} and moving to config backup folder ... ";
+                $backupFile = pathinfo($projectConfig->filename, PATHINFO_FILENAME) . date('-Ymh-His') . '.yaml';
+                echo "    > renaming $projectConfig->filename to $backupFile and moving to config backup folder ... ";
                 rename($configFile, Craft::$app->getPath()->getConfigBackupPath() . '/' . $backupFile);
 
                 // Forget everything we knew about the old config

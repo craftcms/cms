@@ -51,7 +51,7 @@ class ProjectConfigController extends Controller
 
         $issues = [];
         if (!$projectConfig->getAreConfigSchemaVersionsCompatible($issues)) {
-            $this->stderr('Your `project.yaml` file was created for different versions of Craft and/or plugins than what’s currently installed.' . PHP_EOL . PHP_EOL, Console::FG_YELLOW);
+            $this->stderr("Your $projectConfig->filename file was created for different versions of Craft and/or plugins than what’s currently installed." . PHP_EOL . PHP_EOL, Console::FG_YELLOW);
 
             foreach ($issues as $issue) {
                 $this->stderr($issue['cause'], Console::FG_RED);
@@ -68,7 +68,7 @@ class ProjectConfigController extends Controller
 
         // Do we need to create a new config file?
         if (!file_exists(Craft::$app->getPath()->getProjectConfigFilePath())) {
-            $this->stdout('No project.yaml file found. Generating one from internal config ... ', Console::FG_YELLOW);
+            $this->stdout("No $projectConfig->filename file found. Generating one from internal config ... ", Console::FG_YELLOW);
             $projectConfig->regenerateYamlFromConfig();
         } else {
             // Any plugins need to be installed/uninstalled?
@@ -81,7 +81,7 @@ class ProjectConfigController extends Controller
                 return ExitCode::UNSPECIFIED_ERROR;
             }
 
-            $this->stdout('Applying changes from project.yaml ... ', Console::FG_YELLOW);
+            $this->stdout("Applying changes from $projectConfig->filename ... ", Console::FG_YELLOW);
             try {
                 $forceUpdate = $projectConfig->forceUpdate;
                 $projectConfig->forceUpdate = $this->force;
@@ -109,7 +109,7 @@ class ProjectConfigController extends Controller
         $projectConfig = Craft::$app->getProjectConfig();
 
         if (!file_exists(Craft::$app->getPath()->getProjectConfigFilePath())) {
-            $this->stdout('No project.yaml file found. Generating one from internal config ... ', Console::FG_YELLOW);
+            $this->stdout("No $projectConfig->filename file found. Generating one from internal config ... ", Console::FG_YELLOW);
             $projectConfig->regenerateYamlFromConfig();
         }
 
