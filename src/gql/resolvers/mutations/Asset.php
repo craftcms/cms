@@ -10,37 +10,53 @@ namespace craft\gql\resolvers\mutations;
 use Craft;
 use craft\base\Element;
 use craft\base\Volume;
-use craft\elements\Asset;
+use craft\db\Table;
+use craft\elements\Asset as AssetElement;
 use craft\gql\base\ElementMutationResolver;
 use craft\helpers\Assets;
+use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\UrlHelper;
+use GraphQL\Error\Error;
 use GraphQL\Error\UserError;
 use GraphQL\Type\Definition\ResolveInfo;
 
 /**
- * Class SaveAsset
+ * Class Asset
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0
  */
-class SaveAsset extends ElementMutationResolver
+class Asset extends ElementMutationResolver
 {
     /**
-     * @inheritdoc
+     * Save an asset using the passed arguments.
+     *
+     * @param $source
+     * @param array $arguments
+     * @param $context
+     * @param ResolveInfo $resolveInfo
+     * @return mixed
+     * @throws \Throwable if reasons.
      */
-    public function resolve($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    public function saveAsset($source, array $arguments, $context, ResolveInfo $resolveInfo)
     {
         /** @var Volume $volume */
-        $volume = $this->_getData('volume');
+        $volume = $this->getResolutionData('volume');
         $canIdentify = !empty($arguments['id']) || !empty($arguments['uid']);
+        $elementService = Craft::$app->getElements();
 
         if ($canIdentify) {
             $this->requireSchemaAction('volumes.' . $volume->uid, 'save');
+
             if (!empty($arguments['uid'])) {
-                $asset = Asset::findOne(['uid' => $arguments['uid']]);
+                $asset = $elementService->createElementQuery(AssetElement::class)->uid($arguments['uid'])->one();
             } else {
-                $asset = Asset::findOne($arguments['id']);
+                $asset = $elementService->getElementById($arguments['id'], AssetElement::class);
+            }
+
+            if (!$asset) {
+                throw new Error('No such asset exists');
             }
         } else {
             $this->requireSchemaAction('volumes.' . $volume->uid, 'create');
@@ -53,9 +69,12 @@ class SaveAsset extends ElementMutationResolver
                 throw new UserError('Impossible to create an asset without providing a folder');
             }
 
-            $asset = new Asset(['volumeId' => $volume->id, 'newFolderId' => $arguments['newFolderId']]);
+            $asset = $elementService->createElement([
+                'type' => AssetElement::class,
+                'volumeId' => $volume->id,
+                'newFolderId' => $arguments['newFolderId']
+            ]);
         }
-
 
         if (!empty($arguments['newFolderId'])) {
             $folder = Craft::$app->getAssets()->getFolderById($arguments['newFolderId']);
@@ -69,15 +88,41 @@ class SaveAsset extends ElementMutationResolver
             }
         }
 
-        // Implement file operations.
-
         $asset = $this->populateElementWithData($asset, $arguments);
 
         $this->saveElement($asset);
 
-        return Asset::find()->anyStatus()->id($asset->id)->one();
+        return $elementService->getElementById($asset->id, AssetElement::class);
     }
 
+    /**
+     * Delete an asset identified by the arguments.
+     *
+     * @param $source
+     * @param array $arguments
+     * @param $context
+     * @param ResolveInfo $resolveInfo
+     * @return mixed
+     * @throws \Throwable if reasons.
+     */
+    public function deleteAsset($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    {
+        $assetId = $arguments['id'];
+
+        $elementService = Craft::$app->getElements();
+        $asset = $elementService->getElementById($assetId, AssetElement::class);
+
+        if (!$asset) {
+            return true;
+        }
+
+        $volumeUid = Db::uidById(Table::VOLUMES, $asset->volumeId);
+        $this->requireSchemaAction('volumes.' . $volumeUid, 'delete');
+
+        $elementService->deleteElementById($assetId);
+
+        return true;
+    }
     /**
      * @inheritDoc
      */
@@ -88,14 +133,14 @@ class SaveAsset extends ElementMutationResolver
             unset($arguments['_file']);
         }
 
-        /** @var Asset $asset */
+        /** @var AssetElement $asset */
         $asset = parent::populateElementWithData($asset, $arguments);
 
         if (!empty($fileInformation) && $this->_handleUpload($asset, $fileInformation)) {
             if ($asset->id) {
-                $asset->setScenario(Asset::SCENARIO_REPLACE);
+                $asset->setScenario(AssetElement::SCENARIO_REPLACE);
             } else {
-                $asset->setScenario(Asset::SCENARIO_CREATE);
+                $asset->setScenario(AssetElement::SCENARIO_CREATE);
             }
         }
 
@@ -105,7 +150,7 @@ class SaveAsset extends ElementMutationResolver
     /**
      * Handle file upload.
      *
-     * @param Asset $asset
+     * @param AssetElement $asset
      * @param $fileInformation
      * @return boolean
      * @throws \yii\base\Exception

@@ -7,7 +7,7 @@
 
 namespace craft\gql\resolvers\mutations;
 
-use craft\elements\GlobalSet;
+use Craft;
 use craft\gql\base\ElementMutationResolver;
 use GraphQL\Type\Definition\ResolveInfo;
 
@@ -17,15 +17,22 @@ use GraphQL\Type\Definition\ResolveInfo;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0
  */
-class SaveGlobalSet extends ElementMutationResolver
+class GlobalSet extends ElementMutationResolver
 {
 
     /**
-     * @inheritdoc
+     * Save the global set identified by resolver data.
+     *
+     * @param $source
+     * @param array $arguments
+     * @param $context
+     * @param ResolveInfo $resolveInfo
+     * @return mixed
+     * @throws \Throwable if reasons.
      */
-    public function resolve($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    public function saveGlobalSet($source, array $arguments, $context, ResolveInfo $resolveInfo)
     {
-        $globalSet = $this->_getData('globalSet');
+        $globalSet = $this->getResolutionData('globalSet');
 
         $this->requireSchemaAction('globalsets.' . $globalSet->uid, 'edit');
 
@@ -33,6 +40,6 @@ class SaveGlobalSet extends ElementMutationResolver
 
         $this->saveElement($globalSet);
 
-        return GlobalSet::find()->anyStatus()->id($globalSet->id)->one();
+        return Craft::$app->getGlobals()->getSetById($globalSet->id);
     }
 }

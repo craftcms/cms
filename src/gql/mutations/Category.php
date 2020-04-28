@@ -8,13 +8,11 @@
 namespace craft\gql\mutations;
 
 use Craft;
-use craft\base\Field;
 use craft\elements\Category as CategoryElement;
 use craft\gql\arguments\mutations\Structure as StructureArguments;
 use craft\gql\base\ElementMutationArguments;
 use craft\gql\base\Mutation;
-use craft\gql\resolvers\mutations\DeleteCategory;
-use craft\gql\resolvers\mutations\SaveCategory;
+use craft\gql\resolvers\mutations\Category as CategoryResolver;
 use craft\gql\types\generators\CategoryType;
 use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
@@ -61,7 +59,7 @@ class Category extends Mutation
             $mutationList['deleteCategory'] = [
                 'name' => 'deleteCategory',
                 'args' => ['id' => Type::nonNull(Type::int())],
-                'resolve' => [new DeleteCategory(), 'resolve'],
+                'resolve' => [new CategoryResolver(), 'deleteCategory'],
                 'description' => 'Delete a category.',
                 'type' => Type::boolean()
             ];
@@ -83,7 +81,7 @@ class Category extends Mutation
         $mutationArguments = array_merge(ElementMutationArguments::getArguments(), StructureArguments::getArguments());
         $generatedType = CategoryType::generateType($categoryGroup);
 
-        $resolver = new SaveCategory();
+        $resolver = new CategoryResolver();
         $resolver->setResolutionData('categoryGroup', $categoryGroup);
         static::prepareResolver($resolver, $categoryGroup->getFields());
 
@@ -93,7 +91,7 @@ class Category extends Mutation
             'name' => $mutationName,
             'description' => 'Save the “' . $categoryGroup->name . '” category.',
             'args' => $mutationArguments,
-            'resolve' => [$resolver, 'resolve'],
+            'resolve' => [$resolver, 'saveCategory'],
             'type' => $generatedType
         ];
     }

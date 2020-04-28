@@ -12,10 +12,7 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\elements\Entry as EntryElement;
 use craft\errors\GqlException;
-use craft\helpers\Gql;
-use GraphQL\Error\Error;
 use GraphQL\Error\UserError;
-use GraphQL\Type\Definition\ResolveInfo;
 
 /**
  * Class MutationResolver

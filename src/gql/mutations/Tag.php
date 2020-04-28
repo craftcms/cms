@@ -8,12 +8,11 @@
 namespace craft\gql\mutations;
 
 use Craft;
-use craft\base\Field;
 use craft\elements\Tag as TagElement;
 use craft\gql\base\ElementMutationArguments;
 use craft\gql\base\Mutation;
 use craft\gql\resolvers\mutations\DeleteTag;
-use craft\gql\resolvers\mutations\SaveTag;
+use craft\gql\resolvers\mutations\Tag as TagResolver;
 use craft\gql\types\generators\TagType;
 use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
@@ -60,7 +59,7 @@ class Tag extends Mutation
             $mutationList['deleteTag'] = [
                 'name' => 'deleteTag',
                 'args' => ['id' => Type::nonNull(Type::int())],
-                'resolve' => [new DeleteTag(), 'resolve'],
+                'resolve' => [new TagResolver(), 'deleteTag'],
                 'description' => 'Delete a tag.',
                 'type' => Type::boolean()
             ];
@@ -82,7 +81,7 @@ class Tag extends Mutation
         $mutationArguments = ElementMutationArguments::getArguments();
         $generatedType = TagType::generateType($tagGroup);
 
-        $resolver = new SaveTag();
+        $resolver = new TagResolver();
         $resolver->setResolutionData('tagGroup', $tagGroup);
         static::prepareResolver($resolver, $tagGroup->getFields());
 
@@ -92,7 +91,7 @@ class Tag extends Mutation
             'name' => $mutationName,
             'description' => 'Save the “' . $tagGroup->name . '” tag.',
             'args' => $mutationArguments,
-            'resolve' => [$resolver, 'resolve'],
+            'resolve' => [$resolver, 'saveTag'],
             'type' => $generatedType
         ];
     }

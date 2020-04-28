@@ -8,17 +8,12 @@
 namespace craft\gql\mutations;
 
 use Craft;
-use craft\base\Field;
 use craft\elements\Entry as EntryElement;
 use craft\gql\arguments\mutations\Draft as DraftMutationArguments;
 use craft\gql\arguments\mutations\Entry as EntryMutationArguments;
 use craft\gql\arguments\mutations\Structure as StructureArguments;
 use craft\gql\base\Mutation;
-use craft\gql\resolvers\mutations\CreateDraft;
-use craft\gql\resolvers\mutations\DeleteEntry;
-use craft\gql\resolvers\mutations\PublishDraft;
-use craft\gql\resolvers\mutations\SaveDraft;
-use craft\gql\resolvers\mutations\SaveEntry;
+use craft\gql\resolvers\mutations\Entry as EntryMutationResolver;
 use craft\gql\types\generators\EntryType;
 use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
@@ -70,32 +65,36 @@ class Entry extends Mutation
             }
         }
 
-        if ($createDeleteMutation) {
-            $mutationList['deleteEntry'] = [
-                'name' => 'deleteEntry',
-                'args' => ['id' => Type::nonNull(Type::int())],
-                'resolve' => [new DeleteEntry(), 'resolve'],
-                'description' => 'Delete an entry.',
-                'type' => Type::boolean()
-            ];
-        }
+        if ($createDeleteMutation || $createDraftMutations) {
+            $resolver = new EntryMutationResolver();
 
-        if ($createDraftMutations) {
-            $mutationList['createDraft'] = [
-                'name' => 'createDraft',
-                'args' => ['id' => Type::nonNull(Type::int())],
-                'resolve' => [new CreateDraft(), 'resolve'],
-                'description' => 'Create a draft for an entry and return the draft ID.',
-                'type' => Type::id()
-            ];
+            if ($createDeleteMutation) {
+                $mutationList['deleteEntry'] = [
+                    'name' => 'deleteEntry',
+                    'args' => ['id' => Type::nonNull(Type::int())],
+                    'resolve' => [$resolver, 'deleteEntry'],
+                    'description' => 'Delete an entry.',
+                    'type' => Type::boolean()
+                ];
+            }
 
-            $mutationList['publishDraft'] = [
-                'name' => 'publishDraft',
-                'args' => ['id' => Type::nonNull(Type::int())],
-                'resolve' => [new PublishDraft(), 'resolve'],
-                'description' => 'Publish a draft for the entry and return the entry ID.',
-                'type' => Type::id()
-            ];
+            if ($createDraftMutations) {
+                $mutationList['createDraft'] = [
+                    'name' => 'createDraft',
+                    'args' => ['id' => Type::nonNull(Type::int())],
+                    'resolve' => [$resolver, 'createDraft'],
+                    'description' => 'Create a draft for an entry and return the draft ID.',
+                    'type' => Type::id()
+                ];
+
+                $mutationList['publishDraft'] = [
+                    'name' => 'publishDraft',
+                    'args' => ['id' => Type::nonNull(Type::int())],
+                    'resolve' => [$resolver, 'publishDraft'],
+                    'description' => 'Publish a draft for the entry and return the entry ID.',
+                    'type' => Type::id()
+                ];
+            }
         }
 
         return $mutationList;
@@ -119,16 +118,11 @@ class Entry extends Mutation
 
         $section = $entryType->getSection();
 
-        $saveResolver = new SaveEntry();
-        $saveResolver->setResolutionData('entryType', $entryType);
-        $saveResolver->setResolutionData('section', $section);
+        $resolver = new EntryMutationResolver();
+        $resolver->setResolutionData('entryType', $entryType);
+        $resolver->setResolutionData('section', $section);
 
-        $draftResolver = new SaveEntry();
-        $draftResolver->setResolutionData('entryType', $entryType);
-        $draftResolver->setResolutionData('section', $section);
-
-        static::prepareResolver($saveResolver, $entryType->getFields());
-        static::prepareResolver($draftResolver, $entryType->getFields());
+        static::prepareResolver($resolver, $entryType->getFields());
 
         switch ($section->type) {
             case Section::TYPE_SINGLE:
@@ -145,15 +139,16 @@ class Entry extends Mutation
                 $draftDescription = 'Save a “' . $entryType->name . '” entry draft in the “' . $section->name . '” section.';
         }
 
-        $entryMutationArguments = array_merge($entryMutationArguments, $saveResolver->getResolutionData(Mutation::CONTENT_FIELD_KEY));
-        $draftMutationArguments = array_merge($draftMutationArguments, $draftResolver->getResolutionData(Mutation::CONTENT_FIELD_KEY));
+        $contentFields = $resolver->getResolutionData(Mutation::CONTENT_FIELD_KEY);
+        $entryMutationArguments = array_merge($entryMutationArguments, $contentFields);
+        $draftMutationArguments = array_merge($draftMutationArguments, $contentFields);
 
 
         $mutations[] = [
             'name' => $mutationName,
             'description' => $description,
             'args' => $entryMutationArguments,
-            'resolve' => [$saveResolver, 'resolve'],
+            'resolve' => [$resolver, 'saveEntry'],
             'type' => $generatedType
         ];
 
@@ -163,7 +158,7 @@ class Entry extends Mutation
                 'name' => StringHelper::replaceEnding($mutationName, '_Entry', '_Draft'),
                 'description' => $draftDescription,
                 'args' => $draftMutationArguments,
-                'resolve' => [$draftResolver, 'resolve'],
+                'resolve' => [$resolver, 'saveEntry'],
                 'type' => $generatedType
             ];
         }

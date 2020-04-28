@@ -9,7 +9,6 @@ namespace craft\gql\base;
 
 use craft\helpers\Gql;
 use GraphQL\Error\Error;
-use GraphQL\Type\Definition\ResolveInfo;
 
 /**
  * Class MutationResolver
@@ -40,18 +39,6 @@ abstract class MutationResolver
         $this->_resolutionData = $data;
         $this->_valueNormalizers = $valueNormalizers;
     }
-
-    /**
-     * Resolve a mutation field by source, arguments, context and resolution information.
-     *
-     * @param $source
-     * @param array $arguments
-     * @param $context
-     * @param ResolveInfo $resolveInfo
-     * @return mixed
-     * @throws \Throwable if reasons.
-     */
-    abstract public function resolve($source, array $arguments, $context, ResolveInfo $resolveInfo);
 
     /**
      * Set a piece of data to be used by the resolver when resolving.

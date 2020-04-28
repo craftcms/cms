@@ -10,7 +10,7 @@ namespace craft\gql\mutations;
 use Craft;
 use craft\elements\GlobalSet as GlobalSetElement;
 use craft\gql\base\Mutation;
-use craft\gql\resolvers\mutations\SaveGlobalSet;
+use craft\gql\resolvers\mutations\GlobalSet as GlobalSetResolver;
 use craft\gql\types\generators\GlobalSetType;
 use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
@@ -57,7 +57,7 @@ class GlobalSet extends Mutation
         $mutationName = GlobalSetElement::gqlMutationNameByContext($globalSet);
         $generatedType = GlobalSetType::generateType($globalSet);
 
-        $resolver = new SaveGlobalSet();
+        $resolver = new GlobalSetResolver();
         $resolver->setResolutionData('globalSet', $globalSet);
         static::prepareResolver($resolver, $globalSet->getFields());
 
@@ -67,7 +67,7 @@ class GlobalSet extends Mutation
             'name' => $mutationName,
             'description' => 'Update the ”' . $globalSet . '“ global set.',
             'args' => $mutationArguments,
-            'resolve' => [$resolver, 'resolve'],
+            'resolve' => [$resolver, 'saveGlobalSet'],
             'type' => $generatedType
         ];
     }

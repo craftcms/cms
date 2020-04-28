@@ -8,13 +8,11 @@
 namespace craft\gql\mutations;
 
 use Craft;
-use craft\base\Field;
 use craft\base\Volume;
 use craft\elements\Asset as AssetElement;
 use craft\gql\arguments\mutations\Asset as AssetMutationArguments;
 use craft\gql\base\Mutation;
-use craft\gql\resolvers\mutations\DeleteAsset;
-use craft\gql\resolvers\mutations\SaveAsset;
+use craft\gql\resolvers\mutations\Asset as AssetResolver;
 use craft\gql\types\generators\AssetType;
 use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
@@ -61,7 +59,7 @@ class Asset extends Mutation
             $mutationList['deleteAsset'] = [
                 'name' => 'deleteAsset',
                 'args' => ['id' => Type::nonNull(Type::int())],
-                'resolve' => [new DeleteAsset(), 'resolve'],
+                'resolve' => [new AssetResolver(), 'deleteAsset'],
                 'description' => 'Delete an asset.',
                 'type' => Type::boolean()
             ];
@@ -83,7 +81,7 @@ class Asset extends Mutation
         $mutationArguments = AssetMutationArguments::getArguments();
         $generatedType = AssetType::generateType($volume);
 
-        $resolver = new SaveAsset();
+        $resolver = new AssetResolver();
         $resolver->setResolutionData('volume', $volume);
         static::prepareResolver($resolver, $volume->getFields());
 
@@ -93,7 +91,7 @@ class Asset extends Mutation
             'name' => $mutationName,
             'description' => 'Save an asset.',
             'args' => $mutationArguments,
-            'resolve' => [$resolver, 'resolve'],
+            'resolve' => [$resolver, 'saveAsset'],
             'type' => $generatedType
         ];
     }

@@ -6,9 +6,28 @@
 - Added the `cpHeadTags` config setting, making it possible to give the control panel a custom favicon. ([#4003](https://github.com/craftcms/cms/issues/4003))
 - Added the `{% html %}` Twig tag, which makes it possible to register arbitrary HTML for inclusion in the `<head>`, beginning of `<body>`, or end of `<body>`. ([#5955](https://github.com/craftcms/cms/issues/5955))
 - Added `craft\gql\base\ElementMutationResolver`.
+- Added `craft\gql\resolvers\mutations\Asset`.
+- Added `craft\gql\resolvers\mutations\Category`.
+- Added `craft\gql\resolvers\mutations\Entry`.
+- Added `craft\gql\resolvers\mutations\GlobalSet`.
+- Added `craft\gql\resolvers\mutations\Tag`.
 
 ### Changed
 - It’s now possible to eager-load elements’ ancestors and parents. ([#1382](https://github.com/craftcms/cms/issues/1382))
+
+### Removed
+- Removed `craft\gql\resolvers\mutations\CreateDraft`.
+- Removed `craft\gql\resolvers\mutations\DeleteAsset`.
+- Removed `craft\gql\resolvers\mutations\DeleteCategory`.
+- Removed `craft\gql\resolvers\mutations\DeleteEntry`.
+- Removed `craft\gql\resolvers\mutations\DeleteTag`.
+- Removed `craft\gql\resolvers\mutations\PublishDraft`.
+- Removed `craft\gql\resolvers\mutations\SaveAsset`.
+- Removed `craft\gql\resolvers\mutations\SaveDraft`.
+- Removed `craft\gql\resolvers\mutations\SaveCategory`.
+- Removed `craft\gql\resolvers\mutations\SaveEntry`.
+- Removed `craft\gql\resolvers\mutations\SaveGlobalSet`.
+- Removed `craft\gql\resolvers\mutations\SaveTag`.
 
 ## 3.5.0-beta.1 - 2020-04-20
 
