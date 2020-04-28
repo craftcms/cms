@@ -19,7 +19,6 @@ use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\Category;
-use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\Entry;
 use craft\elements\GlobalSet;
@@ -307,7 +306,6 @@ class Elements extends Component
             return null;
         }
 
-        /** @var ElementQuery $query */
         $query = $elementType::find();
         $query->id = $elementId;
         $query->siteId = $siteId;
@@ -551,7 +549,6 @@ class Elements extends Component
         $position = 0;
 
         try {
-            /** @var ElementQuery $query */
             foreach ($query->each() as $element) {
                 $position++;
 
@@ -647,7 +644,6 @@ class Elements extends Component
         $position = 0;
 
         try {
-            /** @var ElementQuery $query */
             foreach ($query->each() as $element) {
                 $position++;
 
@@ -950,7 +946,6 @@ class Elements extends Component
      */
     public function updateDescendantSlugsAndUris(ElementInterface $element, bool $updateOtherSites = true, bool $queue = false)
     {
-        /** @var ElementQuery $query */
         $query = $element::find()
             ->descendantOf($element)
             ->descendantDist(1)
@@ -1724,7 +1719,6 @@ class Elements extends Component
                 // Get the target elements
                 /** @var ElementInterface|string $targetElementType */
                 $targetElementType = $map['elementType'];
-                /** @var ElementQuery $query */
                 $query = $targetElementType::find();
 
                 // Default to no order, offset, or limit, but allow the element type/path criteria to override

@@ -10,6 +10,7 @@ namespace craft\elements\db;
 use ArrayAccess;
 use Countable;
 use craft\base\ElementInterface;
+use craft\db\Query;
 use craft\models\Site;
 use craft\search\SearchQuery;
 use IteratorAggregate;
@@ -21,6 +22,7 @@ use yii\db\QueryInterface;
  * ElementQueryInterface defines the common interface to be implemented by element query classes.
  * The default implementation of this interface is provided by [[ElementQuery]].
  *
+ * @mixin Query
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
