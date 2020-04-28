@@ -622,9 +622,9 @@ class Elements extends Component
      * Propagates all elements that match a given element query to another site(s).
      *
      * @param ElementQueryInterface $query The element query to fetch elements with
+     * @param int|int[]|null $siteIds The site ID(s) that the elements should be propagated to. If null, elements will be
      * @param bool $continueOnError Whether to continue going if an error occurs
      * @throws \Throwable if reasons
-     * @var int|int[]|null The site ID(s) that the elements should be propagated to. If null, elements will be
      * propagated to all supported sites, except the one they were queried in.
      * @since 3.2.0
      */

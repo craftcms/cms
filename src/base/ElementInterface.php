@@ -559,7 +559,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns whether this element represents the site homepage.
      *
-     * @retern bool
+     * @return bool
      * @since 3.3.6
      */
     public function getIsHomepage(): bool;

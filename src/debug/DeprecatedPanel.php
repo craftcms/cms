@@ -20,17 +20,13 @@ use yii\web\NotFoundHttpException;
  */
 class DeprecatedPanel extends Panel
 {
-    /**
-     *
-     */
+    /** @inheritdoc */
     public function getName()
     {
         return 'Deprecated';
     }
 
-    /**
-     *
-     */
+    /** @inheritdoc */
     public function getSummary()
     {
         return Craft::$app->getView()->render('@app/views/debug/deprecated/summary', [
@@ -39,6 +35,7 @@ class DeprecatedPanel extends Panel
     }
 
     /**
+     * @inheritdoc
      * @throws NotFoundHttpException if a `trace` parameter is in the query string, but its value isn’t a valid deprecation warning’s ID
      */
     public function getDetail()

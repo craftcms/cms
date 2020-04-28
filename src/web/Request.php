@@ -61,7 +61,7 @@ class Request extends \yii\web\Request
     ];
 
     /**
-     * @param int The highest page number that Craft should accept.
+     * @var int The highest page number that Craft should accept.
      * @since 3.1.14
      */
     public $maxPageNum = 100000;
