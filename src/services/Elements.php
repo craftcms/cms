@@ -9,7 +9,6 @@ namespace craft\services;
 
 use Craft;
 use craft\base\Element;
-use craft\base\ElementAction;
 use craft\base\ElementActionInterface;
 use craft\base\ElementExporterInterface;
 use craft\base\ElementInterface;
@@ -1411,10 +1410,7 @@ class Elements extends Component
      */
     public function createAction($config): ElementActionInterface
     {
-        /** @var ElementAction $action */
-        $action = ComponentHelper::createComponent($config, ElementActionInterface::class);
-
-        return $action;
+        return ComponentHelper::createComponent($config, ElementActionInterface::class);
     }
 
     /**
