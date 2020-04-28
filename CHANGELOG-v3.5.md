@@ -112,6 +112,7 @@
 - Added `craft\models\Site::$enabled`.
 - Added `craft\services\Composer::handleError()`.
 - Added `craft\services\Composer::run()`.
+- Added `craft\services\Elements::createElementQuery()`.
 - Added `craft\services\Gql::getAllSchemaComponents()`.
 - Added `craft\queue\jobs\PruneRevisions`.
 - Added `craft\web\AssetBundle\ContentWindowAsset`.

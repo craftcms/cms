@@ -270,6 +270,23 @@ class Elements extends Component
         return ComponentHelper::createComponent($config, ElementInterface::class);
     }
 
+    /**
+     * Creates an element query for a given element type.
+     *
+     * @param string $elementType The element class
+     * @return ElementQueryInterface The element query
+     * @throws InvalidArgumentException if $elementType is not a valid element
+     * @since 3.5.0
+     */
+    public function createElementQuery(string $elementType): ElementQueryInterface
+    {
+        if (!is_subclass_of($elementType, ElementInterface::class)) {
+            throw new InvalidArgumentException("$elementType is not a valid element.");
+        }
+
+        return $elementType::find();
+    }
+
     // Finding Elements
     // -------------------------------------------------------------------------
 
@@ -306,7 +323,7 @@ class Elements extends Component
             return null;
         }
 
-        $query = $elementType::find();
+        $query = $this->createElementQuery($elementType);
         $query->id = $elementId;
         $query->siteId = $siteId;
         $query->anyStatus();
@@ -649,7 +666,6 @@ class Elements extends Component
 
                 $element->setScenario(Element::SCENARIO_ESSENTIALS);
                 $elementSiteIds = $siteIds ?? ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($element), 'siteId');
-                /** @var ElementInterface|string $elementType */
                 $elementType = get_class($element);
 
                 // Fire a 'beforePropagateElement' event
@@ -779,7 +795,7 @@ class Elements extends Component
             // Propagate it
             foreach ($supportedSites as $siteInfo) {
                 if ($siteInfo['siteId'] != $mainClone->siteId) {
-                    $siteQuery = $element::find()
+                    $siteQuery = $this->createElementQuery(get_class($element))
                         ->id($element->id ?: false)
                         ->siteId($siteInfo['siteId'])
                         ->anyStatus();
@@ -926,7 +942,7 @@ class Elements extends Component
                 continue;
             }
 
-            $elementInOtherSite = $element::find()
+            $elementInOtherSite = $this->createElementQuery(get_class($element))
                 ->id($element->id)
                 ->siteId($siteId)
                 ->one();
@@ -946,7 +962,7 @@ class Elements extends Component
      */
     public function updateDescendantSlugsAndUris(ElementInterface $element, bool $updateOtherSites = true, bool $queue = false)
     {
-        $query = $element::find()
+        $query = $this->createElementQuery(get_class($element))
             ->descendantOf($element)
             ->descendantDist(1)
             ->anyStatus()
@@ -1293,12 +1309,11 @@ class Elements extends Component
 
                 // Get the element in each supported site
                 $siteElements = [];
-                /** @var ElementInterface|string $class */
                 $class = get_class($element);
                 foreach ($supportedSites as $siteInfo) {
                     $siteId = $siteInfo['siteId'];
                     if ($siteId != $element->siteId) {
-                        $siteElement = $class::find()
+                        $siteElement = $this->createElementQuery($class)
                             ->id($element->id)
                             ->siteId($siteId)
                             ->anyStatus()
@@ -1526,11 +1541,10 @@ class Elements extends Component
 
         foreach ($allRefTagTokens as $siteId => $siteTokens) {
             foreach ($siteTokens as $elementType => $tokensByType) {
-                /** @var ElementInterface|string $elementType */
                 foreach ($tokensByType as $refType => $tokensByName) {
                     // Get the elements, indexed by their ref value
                     $refNames = array_keys($tokensByName);
-                    $elementQuery = $elementType::find()
+                    $elementQuery = $this->createElementQuery($elementType)
                         ->siteId($siteId)
                         ->anyStatus();
 
@@ -1698,13 +1712,12 @@ class Elements extends Component
                 continue;
             }
 
-            $targetElementType = null;
             $targetElementIdsBySourceIds = null;
             $query = null;
             $offset = 0;
             $limit = null;
 
-            if ($map && !empty($map['map'])) {
+            if (!empty($map['map'])) {
                 // Loop through the map to find:
                 // - unique target element IDs
                 // - target element IDs indexed by source element IDs
@@ -1717,9 +1730,7 @@ class Elements extends Component
                 }
 
                 // Get the target elements
-                /** @var ElementInterface|string $targetElementType */
-                $targetElementType = $map['elementType'];
-                $query = $targetElementType::find();
+                $this->createElementQuery($map['elementType']);
 
                 // Default to no order, offset, or limit, but allow the element type/path criteria to override
                 $query->orderBy = null;
@@ -1814,9 +1825,8 @@ class Elements extends Component
                 }
 
                 // Now eager-load any sub paths
-                if ($targetElementType && !empty($subWith)) {
-                    /** @var ElementInterface|string $targetElementType */
-                    $this->eagerLoadElements($targetElementType, $targetElements, $subWith);
+                if (!empty($map['map']) && !empty($subWith)) {
+                    $this->eagerLoadElements($map['elementType'], $targetElements, $subWith);
                 }
             }
         }
