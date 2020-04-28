@@ -10,7 +10,7 @@ namespace craft\gql\resolvers\mutations;
 use Craft;
 use craft\db\Table;
 use craft\elements\Asset;
-use craft\gql\base\MutationResolver;
+use craft\gql\base\ElementMutationResolver;
 use craft\helpers\Db;
 use GraphQL\Type\Definition\ResolveInfo;
 
@@ -20,7 +20,7 @@ use GraphQL\Type\Definition\ResolveInfo;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0
  */
-class DeleteAsset extends MutationResolver
+class DeleteAsset extends ElementMutationResolver
 {
     /**
      * @inheritdoc

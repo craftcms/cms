@@ -12,7 +12,7 @@ use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
 use craft\elements\Entry as EntryElement;
 use craft\errors\GqlException;
-use craft\gql\base\MutationResolver;
+use craft\gql\base\ElementMutationResolver;
 use craft\gql\base\StructureMutationTrait;
 use craft\models\EntryType;
 use craft\models\Section;
@@ -25,7 +25,7 @@ use GraphQL\Type\Definition\ResolveInfo;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0
  */
-class SaveEntry extends MutationResolver
+class SaveEntry extends ElementMutationResolver
 {
     use StructureMutationTrait;
 

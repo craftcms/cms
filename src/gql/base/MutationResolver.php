@@ -7,14 +7,8 @@
 
 namespace craft\gql\base;
 
-use Craft;
-use craft\base\Element;
-use craft\base\ElementInterface;
-use craft\elements\Entry as EntryElement;
-use craft\errors\GqlException;
 use craft\helpers\Gql;
 use GraphQL\Error\Error;
-use GraphQL\Error\UserError;
 use GraphQL\Type\Definition\ResolveInfo;
 
 /**
@@ -46,6 +40,18 @@ abstract class MutationResolver
         $this->_resolutionData = $data;
         $this->_valueNormalizers = $valueNormalizers;
     }
+
+    /**
+     * Resolve a mutation field by source, arguments, context and resolution information.
+     *
+     * @param $source
+     * @param array $arguments
+     * @param $context
+     * @param ResolveInfo $resolveInfo
+     * @return mixed
+     * @throws \Throwable if reasons.
+     */
+    abstract public function resolve($source, array $arguments, $context, ResolveInfo $resolveInfo);
 
     /**
      * Set a piece of data to be used by the resolver when resolving.
@@ -103,45 +109,6 @@ abstract class MutationResolver
     }
 
     /**
-     * Populate the element with submitted data.
-     *
-     * @param Element $element
-     * @param array $arguments
-     * @return EntryElement
-     * @throws GqlException if data not found.
-     */
-    protected function populateElementWithData(Element $element, array $arguments): Element
-    {
-        /** @var array $contentFieldHandles */
-        $contentFieldHandles = $this->getResolutionData('contentFieldHandles');
-
-        foreach ($arguments as $argument => $value) {
-            if (isset($contentFieldHandles[$argument])) {
-                $value = $this->normalizeValue($argument, $value);
-                $element->setFieldValue($argument, $value);
-            } else {
-                if (property_exists($element, $argument)) {
-                    $element->{$argument} = $value;
-                }
-            }
-        }
-
-        return $element;
-    }
-
-    /**
-     * Resolve a mutation field by source, arguments, context and resolution information.
-     *
-     * @param $source
-     * @param array $arguments
-     * @param $context
-     * @param ResolveInfo $resolveInfo
-     * @return mixed
-     * @throws \Throwable if reasons.
-     */
-    abstract public function resolve($source, array $arguments, $context, ResolveInfo $resolveInfo);
-
-    /**
      * Check if schema can perform the action on a scope and throw an Exception if not.
      *
      * @param string $scope
@@ -153,32 +120,6 @@ abstract class MutationResolver
     {
         if (!Gql::canSchema($scope, $action)) {
             throw new Error('Unable to perform the action.');
-        }
-    }
-
-    /**
-     * Save an element.
-     *
-     * @param ElementInterface $element
-     * @throws UserError if validation errors.
-     */
-    protected function saveElement(ElementInterface $element)
-    {
-        /** @var Element $element */
-        if ($element->enabled && $element->getScenario() == Element::SCENARIO_DEFAULT) {
-            $element->setScenario(Element::SCENARIO_LIVE);
-        }
-
-        Craft::$app->getElements()->saveElement($element);
-
-        if ($element->hasErrors()) {
-            $validationErrors = [];
-
-            foreach ($element->getFirstErrors() as $attribute => $errorMessage) {
-                $validationErrors[] = $errorMessage;
-            }
-
-            throw new UserError(implode("\n", $validationErrors));
         }
     }
 }

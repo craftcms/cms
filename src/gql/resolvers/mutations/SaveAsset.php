@@ -11,7 +11,7 @@ use Craft;
 use craft\base\Element;
 use craft\base\Volume;
 use craft\elements\Asset;
-use craft\gql\base\MutationResolver;
+use craft\gql\base\ElementMutationResolver;
 use craft\helpers\Assets;
 use craft\helpers\FileHelper;
 use craft\helpers\UrlHelper;
@@ -24,7 +24,7 @@ use GraphQL\Type\Definition\ResolveInfo;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0
  */
-class SaveAsset extends MutationResolver
+class SaveAsset extends ElementMutationResolver
 {
     /**
      * @inheritdoc

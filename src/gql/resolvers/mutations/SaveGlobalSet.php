@@ -8,7 +8,7 @@
 namespace craft\gql\resolvers\mutations;
 
 use craft\elements\GlobalSet;
-use craft\gql\base\MutationResolver;
+use craft\gql\base\ElementMutationResolver;
 use GraphQL\Type\Definition\ResolveInfo;
 
 /**
@@ -17,7 +17,7 @@ use GraphQL\Type\Definition\ResolveInfo;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0
  */
-class SaveGlobalSet extends MutationResolver
+class SaveGlobalSet extends ElementMutationResolver
 {
 
     /**

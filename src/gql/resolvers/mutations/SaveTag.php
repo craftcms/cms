@@ -8,7 +8,7 @@
 namespace craft\gql\resolvers\mutations;
 
 use craft\elements\Tag;
-use craft\gql\base\MutationResolver;
+use craft\gql\base\ElementMutationResolver;
 use craft\models\TagGroup;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ResolveInfo;
@@ -19,7 +19,7 @@ use GraphQL\Type\Definition\ResolveInfo;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0
  */
-class SaveTag extends MutationResolver
+class SaveTag extends ElementMutationResolver
 {
     /**
      * @inheritdoc

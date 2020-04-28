@@ -10,7 +10,7 @@ namespace craft\gql\resolvers\mutations;
 use Craft;
 use craft\db\Table;
 use craft\elements\Entry;
-use craft\gql\base\MutationResolver;
+use craft\gql\base\ElementMutationResolver;
 use craft\helpers\Db;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ResolveInfo;
@@ -21,7 +21,7 @@ use GraphQL\Type\Definition\ResolveInfo;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0
  */
-class CreateDraft extends MutationResolver
+class CreateDraft extends ElementMutationResolver
 {
     /**
      * @inheritdoc

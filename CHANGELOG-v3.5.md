@@ -53,6 +53,7 @@
 - Added `craft\gql\arguments\mutations\Entry`.
 - Added `craft\gql\arguments\mutations\Structure`.
 - Added `craft\gql\base\ElementMutationArguments`.
+- Added `craft\gql\base\ElementMutationResolver`.
 - Added `craft\gql\base\MutationArguments`.
 - Added `craft\gql\base\MutationResolver`.
 - Added `craft\gql\base\SingleGeneratorInterface`.

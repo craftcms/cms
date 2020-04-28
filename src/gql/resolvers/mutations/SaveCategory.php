@@ -8,7 +8,7 @@
 namespace craft\gql\resolvers\mutations;
 
 use craft\elements\Category;
-use craft\gql\base\MutationResolver;
+use craft\gql\base\ElementMutationResolver;
 use craft\gql\base\StructureMutationTrait;
 use craft\models\CategoryGroup;
 use GraphQL\Error\Error;
@@ -20,7 +20,7 @@ use GraphQL\Type\Definition\ResolveInfo;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0
  */
-class SaveCategory extends MutationResolver
+class SaveCategory extends ElementMutationResolver
 {
     use StructureMutationTrait;
 
