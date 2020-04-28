@@ -11,6 +11,7 @@
 - Added `craft\gql\resolvers\mutations\Entry`.
 - Added `craft\gql\resolvers\mutations\GlobalSet`.
 - Added `craft\gql\resolvers\mutations\Tag`.
+- Added `craft\services\Elements::createElementQuery()`.
 
 ### Changed
 - It’s now possible to eager-load elements’ ancestors and parents. ([#1382](https://github.com/craftcms/cms/issues/1382))
