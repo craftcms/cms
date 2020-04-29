@@ -605,32 +605,31 @@ JS;
      */
     public function getEagerLoadingMap(array $sourceElements)
     {
-        /** @var Element|null $firstElement */
-        $firstElement = $sourceElements[0] ?? null;
-
         // Get the source element IDs
-        $sourceElementIds = [];
+        $sourceElementIdsBySiteId = [];
 
-        foreach ($sourceElements as $sourceElement) {
-            $sourceElementIds[] = $sourceElement->id;
+        foreach ($sourceElements as $element) {
+            $sourceElementIdsBySiteId[$element->siteId][] = $element->id;
+        }
+
+        $condition = [
+            'and',
+            ['fieldId' => $this->id],
+        ];
+
+        foreach ($sourceElementIdsBySiteId as $siteId => $elementIds) {
+            $condition[] = [
+                'and',
+                ['sourceId' => $elementIds],
+                ['or', ['sourceSiteId' => $siteId], ['sourceSiteId' => null]],
+            ];
         }
 
         // Return any relation data on these elements, defined with this field
         $map = (new Query())
             ->select(['sourceId as source', 'targetId as target'])
             ->from([TableName::RELATIONS])
-            ->where([
-                'and',
-                [
-                    'fieldId' => $this->id,
-                    'sourceId' => $sourceElementIds,
-                ],
-                [
-                    'or',
-                    ['sourceSiteId' => $firstElement ? $firstElement->siteId : null],
-                    ['sourceSiteId' => null]
-                ]
-            ])
+            ->where($condition)
             ->orderBy(['sortOrder' => SORT_ASC])
             ->all();
 
