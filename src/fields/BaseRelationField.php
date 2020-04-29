@@ -481,12 +481,16 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      */
     public function modifyElementIndexQuery(ElementQueryInterface $query)
     {
-        $query->andWith([
-            $this->handle, [
-                'status' => null,
-                'enabledForSite' => false,
-            ]
-        ]);
+        $criteria = [
+            'status' => null,
+            'enabledForSite' => false,
+        ];
+
+        if (!$this->targetSiteId) {
+            $criteria['siteId'] = '*';
+        }
+
+        $query->andWith([$this->handle, $criteria]);
     }
 
     /**
