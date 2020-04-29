@@ -136,7 +136,7 @@ class Asset extends ElementMutationResolver
         /** @var AssetElement $asset */
         $asset = parent::populateElementWithData($asset, $arguments);
 
-        if (!empty($fileInformation) && $this->_handleUpload($asset, $fileInformation)) {
+        if (!empty($fileInformation) && $this->handleUpload($asset, $fileInformation)) {
             if ($asset->id) {
                 $asset->setScenario(AssetElement::SCENARIO_REPLACE);
             } else {
@@ -151,11 +151,11 @@ class Asset extends ElementMutationResolver
      * Handle file upload.
      *
      * @param AssetElement $asset
-     * @param $fileInformation
+     * @param array $fileInformation
      * @return boolean
      * @throws \yii\base\Exception
      */
-    private function _handleUpload(Asset $asset, $fileInformation): bool
+    protected function handleUpload(Asset $asset, array $fileInformation): bool
     {
         $tempPath = null;
         $filename = null;
