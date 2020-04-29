@@ -633,9 +633,21 @@ JS;
             ->orderBy(['sortOrder' => SORT_ASC])
             ->all();
 
+        $criteria = [];
+
+        // Is a single target site selected?
+        if ($this->targetSiteId && Craft::$app->getIsMultiSite()) {
+            try {
+                $criteria['siteId'] = Craft::$app->getSites()->getSiteByUid($this->targetSiteId)->id;
+            } catch (SiteNotFoundException $exception) {
+                Craft::warning($exception->getMessage(), __METHOD__);
+            }
+        }
+
         return [
             'elementType' => static::elementType(),
             'map' => $map,
+            'criteria' => $criteria,
         ];
     }
 
