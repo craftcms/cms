@@ -17,8 +17,6 @@ abstract class Mutation
 {
     use GqlTypeTrait;
 
-    const CONTENT_FIELD_KEY = '_contentFields';
-
     /**
      * Returns the mutations defined by the class as an array.
      *
@@ -48,6 +46,6 @@ abstract class Mutation
             }
         }
 
-        $resolver->setResolutionData(self::CONTENT_FIELD_KEY, $fieldList);
+        $resolver->setResolutionData(ElementMutationResolver::CONTENT_FIELD_KEY, $fieldList);
     }
 }

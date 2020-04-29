@@ -11,6 +11,7 @@ use Craft;
 use craft\elements\Category as CategoryElement;
 use craft\gql\arguments\mutations\Structure as StructureArguments;
 use craft\gql\base\ElementMutationArguments;
+use craft\gql\base\ElementMutationResolver;
 use craft\gql\base\Mutation;
 use craft\gql\resolvers\mutations\Category as CategoryResolver;
 use craft\gql\types\generators\CategoryType;
@@ -85,7 +86,7 @@ class Category extends Mutation
         $resolver->setResolutionData('categoryGroup', $categoryGroup);
         static::prepareResolver($resolver, $categoryGroup->getFields());
 
-        $mutationArguments = array_merge($mutationArguments, $resolver->getResolutionData(Mutation::CONTENT_FIELD_KEY));
+        $mutationArguments = array_merge($mutationArguments, $resolver->getResolutionData(ElementMutationResolver::CONTENT_FIELD_KEY));
 
         return [
             'name' => $mutationName,

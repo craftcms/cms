@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Volume;
 use craft\elements\Asset as AssetElement;
 use craft\gql\arguments\mutations\Asset as AssetMutationArguments;
+use craft\gql\base\ElementMutationResolver;
 use craft\gql\base\Mutation;
 use craft\gql\resolvers\mutations\Asset as AssetResolver;
 use craft\gql\types\generators\AssetType;
@@ -85,7 +86,7 @@ class Asset extends Mutation
         $resolver->setResolutionData('volume', $volume);
         static::prepareResolver($resolver, $volume->getFields());
 
-        $mutationArguments = array_merge($mutationArguments, $resolver->getResolutionData(Mutation::CONTENT_FIELD_KEY));
+        $mutationArguments = array_merge($mutationArguments, $resolver->getResolutionData(ElementMutationResolver::CONTENT_FIELD_KEY));
 
         return [
             'name' => $mutationName,

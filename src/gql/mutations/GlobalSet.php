@@ -9,6 +9,7 @@ namespace craft\gql\mutations;
 
 use Craft;
 use craft\elements\GlobalSet as GlobalSetElement;
+use craft\gql\base\ElementMutationResolver;
 use craft\gql\base\Mutation;
 use craft\gql\resolvers\mutations\GlobalSet as GlobalSetResolver;
 use craft\gql\types\generators\GlobalSetType;
@@ -61,7 +62,7 @@ class GlobalSet extends Mutation
         $resolver->setResolutionData('globalSet', $globalSet);
         static::prepareResolver($resolver, $globalSet->getFields());
 
-        $mutationArguments = $resolver->getResolutionData(Mutation::CONTENT_FIELD_KEY);
+        $mutationArguments = $resolver->getResolutionData(ElementMutationResolver::CONTENT_FIELD_KEY);
 
         return [
             'name' => $mutationName,

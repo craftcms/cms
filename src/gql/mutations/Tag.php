@@ -10,6 +10,7 @@ namespace craft\gql\mutations;
 use Craft;
 use craft\elements\Tag as TagElement;
 use craft\gql\base\ElementMutationArguments;
+use craft\gql\base\ElementMutationResolver;
 use craft\gql\base\Mutation;
 use craft\gql\resolvers\mutations\DeleteTag;
 use craft\gql\resolvers\mutations\Tag as TagResolver;
@@ -85,7 +86,7 @@ class Tag extends Mutation
         $resolver->setResolutionData('tagGroup', $tagGroup);
         static::prepareResolver($resolver, $tagGroup->getFields());
 
-        $mutationArguments = array_merge($mutationArguments, $resolver->getResolutionData(Mutation::CONTENT_FIELD_KEY));
+        $mutationArguments = array_merge($mutationArguments, $resolver->getResolutionData(ElementMutationResolver::CONTENT_FIELD_KEY));
 
         return [
             'name' => $mutationName,

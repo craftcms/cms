@@ -23,6 +23,11 @@ use GraphQL\Error\UserError;
 abstract class ElementMutationResolver extends MutationResolver
 {
     /**
+     * Constant used to reference content fields in resolution data storage.
+     */
+    const CONTENT_FIELD_KEY = '_contentFields';
+
+    /**
      * Populate the element with submitted data.
      *
      * @param Element $element

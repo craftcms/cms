@@ -12,6 +12,7 @@ use craft\elements\Entry as EntryElement;
 use craft\gql\arguments\mutations\Draft as DraftMutationArguments;
 use craft\gql\arguments\mutations\Entry as EntryMutationArguments;
 use craft\gql\arguments\mutations\Structure as StructureArguments;
+use craft\gql\base\ElementMutationResolver;
 use craft\gql\base\Mutation;
 use craft\gql\resolvers\mutations\Entry as EntryMutationResolver;
 use craft\gql\types\generators\EntryType;
@@ -139,7 +140,7 @@ class Entry extends Mutation
                 $draftDescription = 'Save a “' . $entryType->name . '” entry draft in the “' . $section->name . '” section.';
         }
 
-        $contentFields = $resolver->getResolutionData(Mutation::CONTENT_FIELD_KEY);
+        $contentFields = $resolver->getResolutionData(ElementMutationResolver::CONTENT_FIELD_KEY);
         $entryMutationArguments = array_merge($entryMutationArguments, $contentFields);
         $draftMutationArguments = array_merge($draftMutationArguments, $contentFields);
 
