@@ -506,9 +506,10 @@ class Sites extends Component
         }
 
         $this->_editableSiteIds = [];
+        $userSession = Craft::$app->getUser();
 
         foreach ($this->getAllSites() as $site) {
-            if (Craft::$app->getUser()->checkPermission('editSite:' . $site->uid)) {
+            if ($userSession->checkPermission("editSite:$site->uid")) {
                 $this->_editableSiteIds[] = $site->id;
             }
         }
