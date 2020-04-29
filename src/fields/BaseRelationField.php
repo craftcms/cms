@@ -750,7 +750,7 @@ JS;
             return null;
         }
 
-        $type = $class::lowerDisplayName();
+        $type = $class::pluralLowerDisplayName();
         $showTargetSite = !empty($this->targetSiteId);
 
         $html = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'checkboxField',
