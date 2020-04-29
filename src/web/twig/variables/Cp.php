@@ -459,9 +459,13 @@ class Cp extends Component
         $files = [];
         $pathLengths = [];
 
+        $excludes = ['node_modules/'];
+
         foreach ($iterator as $file) {
             /** @var \SplFileInfo $file */
-            if (!$file->isDir() && $file->getFilename()[0] !== '.') {
+            if ($file->isDir()) continue;
+
+            if ($file->getFilename()[0] !== '.' && !StringHelper::containsAny($file->getPath(), $excludes)) {
                 $files[] = $file;
                 $pathLengths[] = strlen($file->getRealPath());
             }
