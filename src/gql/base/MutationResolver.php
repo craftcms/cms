@@ -70,7 +70,7 @@ abstract class MutationResolver
      * Return stored resolution data.
      *
      * @param string $key
-     * @return mixed
+     * @return mixed|null
      */
     public function getResolutionData(string $key)
     {
