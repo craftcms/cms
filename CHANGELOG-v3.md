@@ -6,6 +6,7 @@
 - Fixed a bug where relational fields wouldn’t eager load some relations if the field was set to manage relations on a per-site basis, and the source elements were from a variety of sites.
 - Fixed a bug where relational fields wouldn’t eager load cross-site relations even if a target site had been selected in the field settings. ([#5995](https://github.com/craftcms/cms/issues/5995))
 - Fixed a bug where relational fields weren’t showing cross-site relations in element indexes.
+- Fixed a bug where Assets fields weren’t showing custom asset sources. ([#5983](https://github.com/craftcms/cms/issues/5983))
 
 ## 3.4.17.1 - 2020-04-25
 
