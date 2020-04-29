@@ -1730,7 +1730,7 @@ class Elements extends Component
                 }
 
                 // Get the target elements
-                $this->createElementQuery($map['elementType']);
+                $query = $this->createElementQuery($map['elementType']);
 
                 // Default to no order, offset, or limit, but allow the element type/path criteria to override
                 $query->orderBy = null;
