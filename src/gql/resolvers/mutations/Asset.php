@@ -155,7 +155,7 @@ class Asset extends ElementMutationResolver
      * @return boolean
      * @throws \yii\base\Exception
      */
-    protected function handleUpload(Asset $asset, array $fileInformation): bool
+    protected function handleUpload(AssetElement $asset, array $fileInformation): bool
     {
         $tempPath = null;
         $filename = null;
