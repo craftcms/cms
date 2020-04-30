@@ -20,6 +20,7 @@ use craft\helpers\UrlHelper;
 use GraphQL\Error\Error;
 use GraphQL\Error\UserError;
 use GraphQL\Type\Definition\ResolveInfo;
+use GuzzleHttp\Client;
 
 /**
  * Class Asset
@@ -179,7 +180,7 @@ class Asset extends ElementMutationResolver
                     }
 
                     $extension = reset($extensions);
-                    
+
                     // Manually correct for some types.
                     switch ($extension) {
                         case 'svgz':
@@ -213,7 +214,7 @@ class Asset extends ElementMutationResolver
 
             // Download the file
             $tempPath = AssetsHelper::tempFilePath($extension);
-            Craft::createGuzzleClient()->request('GET', $url, ['sink' => $tempPath]);
+            $this->createGuzzleClient()->request('GET', $url, ['sink' => $tempPath]);
         }
 
         if (!$tempPath || !$filename) {
@@ -226,4 +227,15 @@ class Asset extends ElementMutationResolver
 
         return true;
     }
+
+    /**
+     * Create the guzzle client.
+     *
+     * @return Client
+     */
+    protected function createGuzzleClient(): Client
+    {
+        return Craft::createGuzzleClient();
+    }
+
 }
