@@ -13,13 +13,14 @@ use craft\base\Volume;
 use craft\db\Table;
 use craft\elements\Asset as AssetElement;
 use craft\gql\base\ElementMutationResolver;
-use craft\helpers\Assets;
+use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\UrlHelper;
 use GraphQL\Error\Error;
 use GraphQL\Error\UserError;
 use GraphQL\Type\Definition\ResolveInfo;
+use GuzzleHttp\Client;
 
 /**
  * Class Asset
@@ -155,7 +156,7 @@ class Asset extends ElementMutationResolver
      * @return boolean
      * @throws \yii\base\Exception
      */
-    protected function handleUpload(Asset $asset, array $fileInformation): bool
+    protected function handleUpload(AssetElement $asset, array $fileInformation): bool
     {
         $tempPath = null;
         $filename = null;
@@ -176,17 +177,26 @@ class Asset extends ElementMutationResolver
 
                     if (empty($extensions)) {
                         throw new UserError('Invalid file data provided');
-                    } else {
-                        $extension = end($extensions);
+                    }
+
+                    $extension = reset($extensions);
+
+                    // Manually correct for some types.
+                    switch ($extension) {
+                        case 'svgz':
+                            $extension = 'svg';
+                            break;
+                        case 'jpe':
+                            $extension = 'jpg';
                     }
 
                     $filename = 'Upload.' . $extension;
                 } else {
-                    $filename = Assets::prepareAssetName($fileInformation['filename']);
+                    $filename = AssetsHelper::prepareAssetName($fileInformation['filename']);
                 }
 
                 $extension = pathinfo($filename, PATHINFO_EXTENSION);
-                $tempPath = Assets::tempFilePath($extension);
+                $tempPath = AssetsHelper::tempFilePath($extension);
                 file_put_contents($tempPath, $fileData);
             } else {
                 throw new UserError('Invalid file data provided');
@@ -195,16 +205,16 @@ class Asset extends ElementMutationResolver
             $url = $fileInformation['url'];
 
             if (empty($fileInformation['filename'])) {
-                $filename = Assets::prepareAssetName(pathinfo(UrlHelper::stripQueryString($url), PATHINFO_BASENAME));
+                $filename = AssetsHelper::prepareAssetName(pathinfo(UrlHelper::stripQueryString($url), PATHINFO_BASENAME));
             } else {
-                $filename = Assets::prepareAssetName($fileInformation['filename']);
+                $filename = AssetsHelper::prepareAssetName($fileInformation['filename']);
             }
 
             $extension = pathinfo($filename, PATHINFO_EXTENSION);
 
             // Download the file
-            $tempPath = Assets::tempFilePath($extension);
-            Craft::createGuzzleClient()->request('GET', $url, ['sink' => $tempPath]);
+            $tempPath = AssetsHelper::tempFilePath($extension);
+            $this->createGuzzleClient()->request('GET', $url, ['sink' => $tempPath]);
         }
 
         if (!$tempPath || !$filename) {
@@ -217,4 +227,15 @@ class Asset extends ElementMutationResolver
 
         return true;
     }
+
+    /**
+     * Create the guzzle client.
+     *
+     * @return Client
+     */
+    protected function createGuzzleClient(): Client
+    {
+        return Craft::createGuzzleClient();
+    }
+
 }
