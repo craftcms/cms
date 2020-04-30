@@ -41,7 +41,7 @@
     "gulp-sourcemaps": "^2.6.5",
     "gulp-uglify": "^3.0.1",
     "inputmask": "~3.2.2 || ~3.3.5",
-    "jquery": "^3.4.1",
+    "jquery": "^3.5.0",
     "jquery.payment": "^3.0.0",
     "picturefill": "^3.0.3",
     "punycode": "1.3.*",
