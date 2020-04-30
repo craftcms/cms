@@ -239,6 +239,9 @@ class MigrationManager extends Component
         }
         $time = microtime(true) - $start;
 
+        // Clear the schema cache
+        Craft::$app->getDb()->getSchema()->refresh();
+
         $log = ($success ? 'Applied ' : 'Failed to apply ') . $migrationName . ' (time: ' . sprintf('%.3f', $time) . 's).';
         if (!$isConsoleRequest) {
             $output = ob_get_clean();
@@ -292,6 +295,9 @@ class MigrationManager extends Component
             $success = false;
         }
         $time = microtime(true) - $start;
+
+        // Clear the schema cache
+        Craft::$app->getDb()->getSchema()->refresh();
 
         $log = ($success ? 'Reverted ' : 'Failed to revert ') . $migrationName . ' (time: ' . sprintf('%.3f', $time) . 's).';
         if (!$isConsoleRequest) {
