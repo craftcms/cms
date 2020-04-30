@@ -176,8 +176,17 @@ class Asset extends ElementMutationResolver
 
                     if (empty($extensions)) {
                         throw new UserError('Invalid file data provided');
-                    } else {
-                        $extension = end($extensions);
+                    }
+
+                    $extension = reset($extensions);
+                    
+                    // Manually correct for some types.
+                    switch ($extension) {
+                        case 'svgz':
+                            $extension = 'svg';
+                            break;
+                        case 'jpe':
+                            $extension = 'jpg';
                     }
 
                     $filename = 'Upload.' . $extension;
