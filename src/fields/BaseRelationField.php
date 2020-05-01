@@ -477,12 +477,16 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      */
     public function modifyElementIndexQuery(ElementQueryInterface $query)
     {
-        $query->andWith([
-            $this->handle, [
-                'status' => null,
-                'enabledForSite' => false,
-            ]
-        ]);
+        $criteria = [
+            'status' => null,
+            'enabledForSite' => false,
+        ];
+
+        if (!$this->targetSiteId) {
+            $criteria['siteId'] = '*';
+        }
+
+        $query->andWith([$this->handle, $criteria]);
     }
 
     /**
@@ -600,37 +604,49 @@ JS;
      */
     public function getEagerLoadingMap(array $sourceElements)
     {
-        $firstElement = $sourceElements[0] ?? null;
-
         // Get the source element IDs
-        $sourceElementIds = [];
+        $sourceElementIdsBySiteId = [];
 
-        foreach ($sourceElements as $sourceElement) {
-            $sourceElementIds[] = $sourceElement->id;
+        foreach ($sourceElements as $element) {
+            $sourceElementIdsBySiteId[$element->siteId][] = $element->id;
+        }
+
+        $condition = [
+            'and',
+            ['fieldId' => $this->id],
+        ];
+
+        foreach ($sourceElementIdsBySiteId as $siteId => $elementIds) {
+            $condition[] = [
+                'and',
+                ['sourceId' => $elementIds],
+                ['or', ['sourceSiteId' => $siteId], ['sourceSiteId' => null]],
+            ];
         }
 
         // Return any relation data on these elements, defined with this field
         $map = (new Query())
             ->select(['sourceId as source', 'targetId as target'])
             ->from([DbTable::RELATIONS])
-            ->where([
-                'and',
-                [
-                    'fieldId' => $this->id,
-                    'sourceId' => $sourceElementIds,
-                ],
-                [
-                    'or',
-                    ['sourceSiteId' => $firstElement ? $firstElement->siteId : null],
-                    ['sourceSiteId' => null]
-                ]
-            ])
+            ->where($condition)
             ->orderBy(['sortOrder' => SORT_ASC])
             ->all();
+
+        $criteria = [];
+
+        // Is a single target site selected?
+        if ($this->targetSiteId && Craft::$app->getIsMultiSite()) {
+            try {
+                $criteria['siteId'] = Craft::$app->getSites()->getSiteByUid($this->targetSiteId)->id;
+            } catch (SiteNotFoundException $exception) {
+                Craft::warning($exception->getMessage(), __METHOD__);
+            }
+        }
 
         return [
             'elementType' => static::elementType(),
             'map' => $map,
+            'criteria' => $criteria,
         ];
     }
 
@@ -753,7 +769,7 @@ JS;
             return null;
         }
 
-        $type = $class::lowerDisplayName();
+        $type = $class::pluralLowerDisplayName();
         $showTargetSite = !empty($this->targetSiteId);
 
         $html = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'checkboxField',
