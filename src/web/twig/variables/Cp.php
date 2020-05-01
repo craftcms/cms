@@ -454,7 +454,17 @@ class Cp extends Component
             return [];
         }
 
-        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($root));
+        $directory = new \RecursiveDirectoryIterator($root);
+
+        $filter = new \RecursiveCallbackFilterIterator($directory, function($current) {
+            // Skip hidden files and directories, as well as node_modules/ folders
+            if ($current->getFilename()[0] === '.' || $current->getFilename() === 'node_modules') {
+                return false;
+            }
+            return true;
+        });
+
+        $iterator = new \RecursiveIteratorIterator($filter);
         /** @var \SplFileInfo[] $files */
         $files = [];
         $pathLengths = [];
