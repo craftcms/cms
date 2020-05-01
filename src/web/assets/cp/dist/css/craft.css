@@ -996,15 +996,23 @@ body.rtl .missing-component .install-plugin .icon { right: 0; }
 .meta > .field, .meta > .data { display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-pack: justify; -ms-flex-pack: justify; justify-content: space-between; -webkit-box-align: center; -ms-flex-align: center; align-items: center; -ms-flex-wrap: wrap; flex-wrap: wrap; margin: 0 !important; padding: 0 24px; -webkit-transition: padding-left linear 100ms, padding-right linear 100ms; transition: padding-left linear 100ms, padding-right linear 100ms; }
 body.ltr .meta > .field.nested, body.ltr .meta > .data.nested { padding-left: 38px; }
 body.rtl .meta > .field.nested, body.rtl .meta > .data.nested { padding-right: 38px; }
-.meta > .field > .heading, .meta > .data > .heading { -webkit-box-flex: 0; -ms-flex: 0 0 105px; flex: 0 0 105px; margin-top: 0; margin-bottom: 0; line-height: 18px; }
+.meta > .field.add, .meta > .data.add { background-color: #ebf2fa; }
+.meta > .field.add:before, .meta > .data.add:before { position: absolute; width: 31px; font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; opacity: 0.8; content: 'plus'; color: #9aa5b1; }
+body.ltr .meta > .field.add:before, body.ltr .meta > .data.add:before { left: 0; }
+body.rtl .meta > .field.add:before, body.rtl .meta > .data.add:before { right: 0; }
+body.ltr .meta > .field.add:before, body.ltr .meta > .data.add:before { text-align: right; }
+body.rtl .meta > .field.add:before, body.rtl .meta > .data.add:before { text-align: left; }
+.meta > .field > .heading, .meta > .data > .heading { -webkit-box-flex: 0; -ms-flex: 0 0 105px; flex: 0 0 105px; line-height: 18px; }
+body.ltr .meta > .field > .heading, body.ltr .meta > .data > .heading { margin: 0 7px 0 0 ; }
+body.rtl .meta > .field > .heading, body.rtl .meta > .data > .heading { margin: 0 0 0 7px ; }
 .meta > .field.lightswitch-field > .heading, .meta > .data.lightswitch-field > .heading { -webkit-box-flex: 1; -ms-flex: 1; flex: 1; }
 .meta > .field > .input .flex, .meta > .data > .input .flex { -ms-flex-wrap: nowrap; flex-wrap: nowrap; }
 .meta > .field > .input .flex > *, .meta > .data > .input .flex > * { margin-bottom: 0; }
 .meta > .field > .heading { padding: 14px 0; }
 .meta > .data > .heading { padding: 7px 0; }
 .meta > .field > .heading > label, .meta > .data > .heading { color: #7b8793; }
-.meta > .field > .input, .meta > .data > .value { padding: 7px 0; width: calc(100% - 112px); }
-.meta > .field.lightswitch-field > .input { width: auto; }
+.meta > .field > .input, .meta > .data > .value { -webkit-box-flex: 1; -ms-flex: 1; flex: 1; padding: 7px 0; }
+.meta > .field.lightswitch-field > .input { -webkit-box-flex: 0; -ms-flex: 0; flex: 0; }
 .meta > .field.has-errors { margin: 0 -1px !important; border: 1px solid #EF4E4E !important; }
 .meta > .field.has-errors:first-child { border-top-left-radius: 5px; border-top-right-radius: 5px; }
 .meta > .field.has-errors:last-child { border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; }
@@ -2011,6 +2019,8 @@ body.rtl #details { padding-right: 14px; }
 #details .meta.warning .btn:hover, #details .meta.warning .btn:focus { background-color: #f8d02e; }
 #details .meta.warning .btn:active { background-color: #f8ca15; }
 #details .meta > .field, #details .meta > .data { margin: 0 -24px !important; }
+#details .meta > .field:first-child, #details .meta > .data:first-child { border-top-left-radius: 5px; border-top-right-radius: 5px; }
+#details .meta > .field:last-child, #details .meta > .data:last-child { border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; }
 #details .meta > .field > .heading > label, #details .meta > .field > .heading, #details .meta > .data > .heading > label, #details .meta > .data > .heading { color: #515f6c; }
 #details .meta > .field.has-errors { margin: 0 -24px !important; padding: 0 24px; }
 #details .meta > .field .status-badge { top: calc(50% - 8px); }

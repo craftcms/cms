@@ -519,7 +519,12 @@ interface ElementInterface extends ComponentInterface
      * Returns the sites this element is associated with.
      *
      * The function can either return an array of site IDs, or an array of sub-arrays,
-     * each with the keys `siteId` (int) and `enabledByDefault` (boolean).
+     * each with the following keys:
+     *
+     * - `siteId` (integer) - The site ID
+     * - `propagate` (boolean) – Whether the element should be propagated to this site on save (`true` by default)
+     * - `enabledByDefault` (boolean) – Whether the element should be enabled in this site by default
+     *   (`true` by default)
      *
      * @return int[]|array
      */

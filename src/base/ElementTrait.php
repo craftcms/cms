@@ -45,6 +45,12 @@ trait ElementTrait
     public $uid;
 
     /**
+     * @var int|null The ID of the element’s record in the `elements_sites` table
+     * @since 3.5.0
+     */
+    public $elementSiteId;
+
+    /**
      * @var int|null The element’s field layout ID
      */
     public $fieldLayoutId;

@@ -230,11 +230,6 @@ class Drafts extends Component
             ->indexBy('siteId')
             ->all();
 
-        // Make sure a source element exists for the draft's current site ID
-        if (!isset($sourceElements[$draft->siteId])) {
-            throw new Exception('Attempting to merge source changes for a draft in an unsupported site.');
-        }
-
         // Make sure the draft actually supports its own site ID
         $supportedSites = ElementHelper::supportedSitesForElement($draft);
         $supportedSiteIds = ArrayHelper::getColumn($supportedSites, 'siteId');
@@ -245,7 +240,7 @@ class Drafts extends Component
         // Fire a 'beforeMergeSource' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_MERGE_SOURCE_CHANGES)) {
             $this->trigger(self::EVENT_BEFORE_MERGE_SOURCE_CHANGES, new DraftEvent([
-                'source' => $sourceElements[$draft->siteId],
+                'source' => $sourceElements[$draft->siteId] ?? reset($sourceElements),
                 'creatorId' => $behavior->creatorId,
                 'draftName' => $behavior->draftName,
                 'draftNotes' => $behavior->draftNotes,
@@ -256,7 +251,9 @@ class Drafts extends Component
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             // Start with $draft's site
-            $this->_mergeSourceChangesInternal($sourceElements[$draft->siteId], $draft);
+            if (isset($sourceElements[$draft->siteId])) {
+                $this->_mergeSourceChangesInternal($sourceElements[$draft->siteId], $draft);
+            }
 
             // Now the other sites
             /** @var ElementInterface[]|DraftBehavior[] $otherSiteDrafts */
@@ -287,7 +284,7 @@ class Drafts extends Component
         // Fire an 'afterMergeSource' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_MERGE_SOURCE_CHANGES)) {
             $this->trigger(self::EVENT_AFTER_MERGE_SOURCE_CHANGES, new DraftEvent([
-                'source' => $sourceElements[$draft->siteId],
+                'source' => $sourceElements[$draft->siteId] ?? reset($sourceElements),
                 'creatorId' => $behavior->creatorId,
                 'draftName' => $behavior->draftName,
                 'draftNotes' => $behavior->draftNotes,
@@ -342,6 +339,29 @@ class Drafts extends Component
         /** @var DraftBehavior $behavior */
         $behavior = $draft->getBehavior('draft');
         $source = ElementHelper::sourceElement($draft);
+
+        // If there is no source element for the same site, find a different site to do this from
+        if ($source === null) {
+            $draftSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($draft), 'siteId');
+            $source = $draft::find()
+                ->id($draft->getSourceId())
+                ->siteId($draftSiteIds)
+                ->unique()
+                ->anyStatus()
+                ->one();
+            if ($source === null) {
+                throw new Exception('Could not find a source element for the draft in any of its supported sites.');
+            }
+            $draft = $draft::find()
+                ->drafts()
+                ->id($draft->id)
+                ->siteId($source->siteId)
+                ->anyStatus()
+                ->one();
+            if ($draft === null) {
+                throw new Exception("Could not load the draft for site ID $source->siteId");
+            }
+        }
 
         // Fire a 'beforeApplyDraft' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_APPLY_DRAFT)) {

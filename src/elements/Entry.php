@@ -728,25 +728,59 @@ class Entry extends Element
         $allSites = ArrayHelper::index(Craft::$app->getSites()->getAllSites(), 'id');
         $sites = [];
 
+        // If the section is leaving it up to entries to decide which sites to be propagated to,
+        // figure out which sites the entry is currently saved in
+        if (
+            $this->id &&
+            $section->propagationMethod === Section::PROPAGATION_METHOD_CUSTOM
+        ) {
+            $currentSiteQuery = static::find()
+                ->id($this->id)
+                ->anyStatus()
+                ->siteId('*')
+                ->select('elements_sites.siteId')
+                ->indexBy('elements_sites.siteId');
+            if ($this->getIsDraft()) {
+                $currentSiteQuery->drafts();
+            } else if ($this->getIsRevision()) {
+                $currentSiteQuery->revisions();
+            }
+            $currentSites = $currentSiteQuery->column();
+        }
+
         foreach ($section->getSiteSettings() as $siteSettings) {
             switch ($section->propagationMethod) {
                 case Section::PROPAGATION_METHOD_NONE:
                     $include = $siteSettings->siteId == $this->siteId;
+                    $propagate = true;
                     break;
                 case Section::PROPAGATION_METHOD_SITE_GROUP:
                     $include = $allSites[$siteSettings->siteId]->groupId == $allSites[$this->siteId]->groupId;
+                    $propagate = true;
                     break;
                 case Section::PROPAGATION_METHOD_LANGUAGE:
                     $include = $allSites[$siteSettings->siteId]->language == $allSites[$this->siteId]->language;
+                    $propagate = true;
+                    break;
+                case Section::PROPAGATION_METHOD_CUSTOM:
+                    $include = true;
+                    // Only actually propagate to this site if it's the current site, or the entry has been assigned
+                    // a status for this site, or the entry already exists for this site
+                    $propagate = (
+                        $siteSettings->siteId == $this->siteId ||
+                        $this->getEnabledForSite($siteSettings->siteId) !== null ||
+                        isset($currentSites[$siteSettings->siteId])
+                    );
                     break;
                 default:
-                    $include = true;
+                    $include = $propagate = true;
                     break;
             }
 
             if ($include) {
                 $sites[] = [
                     'siteId' => $siteSettings->siteId,
+                    'propagate' => $propagate,
                     'enabledByDefault' => $siteSettings->enabledByDefault
                 ];
             }
@@ -1247,7 +1281,9 @@ EOD;
         // Has the entry been assigned to a new parent?
         if ($this->_hasNewParent()) {
             if ($this->newParentId) {
-                $parentEntry = Craft::$app->getEntries()->getEntryById($this->newParentId, $this->siteId);
+                $parentEntry = Craft::$app->getEntries()->getEntryById($this->newParentId, '*', [
+                    'preferSites' => [$this->siteId],
+                ]);
 
                 if (!$parentEntry) {
                     throw new Exception('Invalid entry ID: ' . $this->newParentId);

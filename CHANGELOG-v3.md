@@ -3,21 +3,26 @@
 ## Unreleased (3.5.0)
 
 ### Added
+- Sections now have a new Propagation Method option, which gives entries control over which sites they should be saved to. ([#5988](https://github.com/craftcms/cms/issues/5988))
 - Added the `cpHeadTags` config setting, making it possible to give the control panel a custom favicon. ([#4003](https://github.com/craftcms/cms/issues/4003))
 - Added the `{% html %}` Twig tag, which makes it possible to register arbitrary HTML for inclusion in the `<head>`, beginning of `<body>`, or end of `<body>`. ([#5955](https://github.com/craftcms/cms/issues/5955))
 - Added the `|diff` Twig filter.
 - Added the `|where` Twig filter.
+- Added `craft\base\ElementTrait::$elementSiteId`.
+- Added `craft\controllers\BaseEntriesController::enforceSitePermissions()`.
 - Added `craft\gql\base\ElementMutationResolver`.
 - Added `craft\gql\resolvers\mutations\Asset`.
 - Added `craft\gql\resolvers\mutations\Category`.
 - Added `craft\gql\resolvers\mutations\Entry`.
 - Added `craft\gql\resolvers\mutations\GlobalSet`.
 - Added `craft\gql\resolvers\mutations\Tag`.
+- Added `craft\models\Section::PROPAGATION_METHOD_CUSTOM`.
 - Added `craft\services\Elements::createElementQuery()`.
 - Added `craft\services\ProjectConfig::$filename`. ([#5982](https://github.com/craftcms/cms/issues/5982))
 
 ### Changed
 - It’s now possible to eager-load elements’ ancestors and parents. ([#1382](https://github.com/craftcms/cms/issues/1382))
+- `craft\helpers\ElementHelper::supportedSitesForElement()` now has a `$withUnpropagatedSites` argument.
 
 ### Deprecated
 - Deprecated the `|filterByValue` Twig filter. `|where` should be used instead.

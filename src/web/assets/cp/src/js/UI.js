@@ -165,14 +165,38 @@ Craft.ui =
                 'data-target-prefix': config.targetPrefix
             }).appendTo($container);
 
+            // Normalize the options into an array
+            if ($.isPlainObject(config.options)) {
+                let options = [];
+                for (var key in config.options) {
+                    if (!config.options.hasOwnProperty(key)) {
+                        continue;
+                    }
+                    let option = config.options[key];
+                    if ($.isPlainObject(option)) {
+                        if (typeof option.optgroup !== 'undefined') {
+                            options.push(option);
+                        } else {
+                            options.push({
+                                label: option.label,
+                                value: typeof option.value !== 'undefined' ? option.value : key,
+                                disabled: typeof option.disabled !== 'undefined' ? option.disabled : false,
+                            });
+                        }
+                    } else {
+                        options.push({
+                            label: option,
+                            value: key,
+                        })
+                    }
+                }
+                config.options = options;
+            }
+
             var $optgroup = null;
 
-            for (var key in config.options) {
-                if (!config.options.hasOwnProperty(key)) {
-                    continue;
-                }
-
-                var option = config.options[key];
+            for (let i = 0; i < config.options.length; i++) {
+                let option = config.options[i];
 
                 // Starting a new <optgroup>?
                 if (typeof option.optgroup !== 'undefined') {
@@ -180,15 +204,11 @@ Craft.ui =
                         'label': option.label
                     }).appendTo($select);
                 } else {
-                    var optionLabel = (typeof option.label !== 'undefined' ? option.label : option),
-                        optionValue = (typeof option.value !== 'undefined' ? option.value : key),
-                        optionDisabled = (typeof option.disabled !== 'undefined' ? option.disabled : false);
-
                     $('<option/>', {
-                        'value': optionValue,
-                        'selected': (optionValue == config.value),
-                        'disabled': optionDisabled,
-                        'html': optionLabel
+                        'value': option.value,
+                        'selected': (option.value == config.value),
+                        'disabled': typeof option.disabled !== 'undefined' ? option.disabled : false,
+                        'html':  option.label
                     }).appendTo($optgroup || $select);
                 }
             }

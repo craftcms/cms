@@ -744,6 +744,7 @@ class Elements extends Component
         $mainClone = clone $element;
         $mainClone->id = null;
         $mainClone->uid = null;
+        $mainClone->elementSiteId = null;
         $mainClone->contentId = null;
         $mainClone->dateCreated = null;
         $mainClone->duplicateOf = $element;
@@ -761,7 +762,7 @@ class Elements extends Component
         }
 
         // Make sure the element actually supports its own site ID
-        $supportedSites = ElementHelper::supportedSitesForElement($mainClone);
+        $supportedSites = ElementHelper::supportedSitesForElement($element);
         $supportedSiteIds = ArrayHelper::getColumn($supportedSites, 'siteId');
         if (!in_array($mainClone->siteId, $supportedSiteIds, false)) {
             throw new Exception('Attempting to duplicate an element in an unsupported site.');
@@ -820,6 +821,7 @@ class Elements extends Component
                     $siteClone->id = $mainClone->id;
                     $siteClone->uid = $mainClone->uid;
                     $siteClone->enabled = $mainClone->enabled;
+                    $siteClone->elementSiteId = null;
                     $siteClone->contentId = null;
                     $siteClone->dateCreated = null;
 
@@ -1884,6 +1886,7 @@ class Elements extends Component
         // todo: remove the tableExists condition after the next breakpoint
         $trackChanges = (
             !$isNewElement &&
+            $element->elementSiteId &&
             $element->duplicateOf === null &&
             $element::trackChanges() &&
             ($draftBehavior->trackChanges ?? true) &&
@@ -2044,7 +2047,7 @@ class Elements extends Component
                 ]);
             }
 
-            if (empty($siteSettingsRecord)) {
+            if ($isNewSiteElement = empty($siteSettingsRecord)) {
                 // First time we've saved the element for this site
                 $siteSettingsRecord = new Element_SiteSettingsRecord();
                 $siteSettingsRecord->elementId = $element->id;
@@ -2061,7 +2064,7 @@ class Elements extends Component
             }
 
             // Update our list of dirty attributes
-            if ($trackChanges && !$siteSettingsRecord->getIsNewRecord()) {
+            if ($trackChanges && !$isNewSiteElement) {
                 ArrayHelper::append($dirtyAttributes, ...array_keys($siteSettingsRecord->getDirtyAttributes([
                     'slug',
                     'uri',
@@ -2074,6 +2077,8 @@ class Elements extends Component
             if (!$siteSettingsRecord->save(false)) {
                 throw new Exception('Couldn’t save elements’ site settings record.');
             }
+
+            $element->elementSiteId = $siteSettingsRecord->id;
 
             // Save the content
             if ($element::hasContent()) {
@@ -2232,6 +2237,7 @@ class Elements extends Component
         if ($isNewSiteForElement = ($siteElement === null)) {
             $siteElement = clone $element;
             $siteElement->siteId = $siteInfo['siteId'];
+            $siteElement->elementSiteId = null;
             $siteElement->contentId = null;
             $siteElement->enabledForSite = $siteInfo['enabledByDefault'];
 

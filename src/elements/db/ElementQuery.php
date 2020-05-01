@@ -2468,7 +2468,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             throw new QueryAbortedException();
         }
 
-        return $this->$property = ElementHelper::sourceElement($this->$property);
+        return $this->$property = ElementHelper::sourceElement($this->$property, true);
     }
 
     /**
@@ -2641,6 +2641,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 'elements.archived' => 'elements.archived',
                 'elements.dateCreated' => 'elements.dateCreated',
                 'elements.dateUpdated' => 'elements.dateUpdated',
+                'elementSiteId' => 'elements_sites.id',
                 'elements_sites.slug' => 'elements_sites.slug',
                 'elements_sites.siteId' => 'elements_sites.siteId',
                 'elements_sites.uri' => 'elements_sites.uri',

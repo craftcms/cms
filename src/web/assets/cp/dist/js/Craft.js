@@ -10,7 +10,7 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-/*!   - 2020-04-28 */
+/*!   - 2020-05-01 */
 (function ($) {
   /** global: Craft */
 
@@ -2432,7 +2432,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
             }
           }
         }
-      } else if (this.settings.criteria && this.settings.criteria.siteId) {
+      } else if (this.settings.criteria && this.settings.criteria.siteId && this.settings.criteria.siteId !== '*') {
         this._setSite(this.settings.criteria.siteId);
       } else {
         this._setSite(Craft.siteId);
@@ -12797,6 +12797,11 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     $nameTextInput: null,
     $notesTextInput: null,
     $saveMetaBtn: null,
+    $siteStatusPane: null,
+    $globalLightswitch: null,
+    $siteLightswitches: null,
+    $addlSiteField: null,
+    newSites: null,
     lastSerializedValue: null,
     listeningForChanges: false,
     timeout: null,
@@ -12928,6 +12933,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       });
     },
     expandSiteStatuses: function expandSiteStatuses() {
+      var _this12 = this;
+
       this.removeListener(this.$expandSiteStatusesBtn, 'click');
       this.$expandSiteStatusesBtn.velocity({
         opacity: 0
@@ -12935,112 +12942,194 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         this.$expandSiteStatusesBtn.remove();
       }.bind(this));
       var $enabledForSiteField = $("#enabledForSite-".concat(this.settings.siteId, "-field"));
-      var $siteStatusPane = $enabledForSiteField.parent();
-      var $newFields = $();
-
-      if (!this.settings.revisionId) {
-        $enabledForSiteField.addClass('nested');
-        var $globalField = Craft.ui.createLightswitchField({
-          id: 'enabled',
-          label: Craft.t('app', 'Enabled everywhere'),
-          name: 'enabled'
-        }).insertBefore($enabledForSiteField);
-        $globalField.find('label').css('font-weight', 'bold');
-        $newFields = $newFields.add($globalField);
-        var $globalLightswitch = $globalField.find('.lightswitch'); // Figure out what the "Enabled everywhere" lightswitch would have been set to when the page first loaded
-
-        var originalEnabledValue = this.settings.enabled && !Craft.inArray(false, this.settings.siteStatuses) ? '1' : this.settings.enabledForSite ? '-' : '';
-        var originalSerializedStatus = encodeURIComponent("enabledForSite[".concat(this.settings.siteId, "]")) + '=' + (this.settings.enabledForSite ? '1' : '');
-        var serializedStatuses = "enabled=".concat(originalEnabledValue, "&").concat(originalSerializedStatus);
-      }
-
-      var site, $siteField, $siteLightswitch;
-      var $siteFields = $().add($enabledForSiteField);
-      var $siteLightswitches = $enabledForSiteField.find('.lightswitch');
-
-      for (var i = 0; i < Craft.sites.length; i++) {
-        site = Craft.sites[i];
-
-        if (site.id != this.settings.siteId && this.settings.siteStatuses.hasOwnProperty(site.id)) {
-          $siteField = Craft.ui.createLightswitchField({
-            id: "enabledForSite-".concat(site.id),
-            label: Craft.t('app', 'Enabled for {site}', {
-              site: site.name
-            }),
-            name: "enabledForSite[".concat(site.id, "]"),
-            on: this.settings.siteStatuses[site.id],
-            disabled: !!this.settings.revisionId
-          });
-
-          if (!this.settings.revisionId) {
-            $siteField.addClass('nested');
-          }
-
-          $siteField.appendTo($siteStatusPane);
-          $siteFields = $siteFields.add($siteField);
-          $newFields = $newFields.add($siteField);
-          $siteLightswitch = $siteField.find('.lightswitch');
-          $siteLightswitches = $siteLightswitches.add($siteLightswitch);
-          serializedStatuses += '&' + encodeURIComponent("enabledForSite[".concat(site.id, "]")) + '=' + $siteLightswitch.data('lightswitch').$input.val();
-        }
-      }
+      this.$siteStatusPane = $enabledForSiteField.parent(); // If this is a revision, just show the site statuses statically and be done
 
       if (this.settings.revisionId) {
+        for (var _i3 = 0; _i3 < Craft.sites.length; _i3++) {
+          var site = Craft.sites[_i3];
+
+          if (site.id == this.settings.siteId) {
+            continue;
+          }
+
+          if (this.settings.siteStatuses.hasOwnProperty(site.id)) {
+            this._createSiteStatusField(site);
+          }
+        }
+
         return;
       }
 
-      Craft.cp.$primaryForm.data('initialSerializedValue', Craft.cp.$primaryForm.data('initialSerializedValue').replace(originalSerializedStatus, serializedStatuses));
-      $newFields.each(function () {
-        var $field = $(this);
-        var height = $field.height();
-        $field.css('overflow', 'hidden').height(0).velocity({
-          height: height
-        }, 'fast', function () {
-          $field.css({
-            overflow: '',
-            height: ''
-          });
-        });
-      });
-      $globalLightswitch.on('change', function () {
-        var enabled = $globalLightswitch.data('lightswitch').on;
-        $siteLightswitches.each(function () {
-          if (enabled) {
-            $(this).data('lightswitch').turnOn(true);
-          } else {
-            $(this).data('lightswitch').turnOff(true);
-          }
-        });
-      });
+      $enabledForSiteField.addClass('nested');
+      var $globalField = Craft.ui.createLightswitchField({
+        id: 'enabled',
+        label: Craft.t('app', 'Enabled everywhere'),
+        name: 'enabled'
+      }).insertBefore($enabledForSiteField);
+      $globalField.find('label').css('font-weight', 'bold');
+      this.$globalLightswitch = $globalField.find('.lightswitch');
 
-      var updateGlobalStatus = function updateGlobalStatus() {
-        var allEnabled = true,
-            allDisabled = true;
-        $siteLightswitches.each(function () {
-          var enabled = $(this).data('lightswitch').on;
+      if (!this.settings.revisionId) {
+        this._showField($globalField);
+      } // Figure out what the "Enabled everywhere" lightswitch would have been set to when the page first loaded
 
-          if (enabled) {
-            allDisabled = false;
-          } else {
-            allEnabled = false;
-          }
 
-          if (!allEnabled && !allDisabled) {
-            return false;
-          }
-        });
+      var originalEnabledValue = this.settings.enabled && !Craft.inArray(false, this.settings.siteStatuses) ? '1' : this.settings.enabledForSite ? '-' : '';
+      var originalSerializedStatus = encodeURIComponent("enabledForSite[".concat(this.settings.siteId, "]")) + '=' + (this.settings.enabledForSite ? '1' : '');
+      this.$siteLightswitches = $enabledForSiteField.find('.lightswitch').on('change', this._updateGlobalStatus.bind(this));
+      var addlSiteOptions = [];
 
-        if (allEnabled) {
-          $globalLightswitch.data('lightswitch').turnOn(true);
-        } else if (allDisabled) {
-          $globalLightswitch.data('lightswitch').turnOff(true);
-        } else {
-          $globalLightswitch.data('lightswitch').turnIndeterminate(true);
+      for (var _i4 = 0; _i4 < Craft.sites.length; _i4++) {
+        var _site = Craft.sites[_i4];
+
+        if (_site.id == this.settings.siteId) {
+          continue;
         }
-      };
 
-      updateGlobalStatus();
-      $siteLightswitches.on('change', updateGlobalStatus);
+        if (this.settings.siteStatuses.hasOwnProperty(_site.id)) {
+          this._createSiteStatusField(_site);
+        } else if (Craft.inArray(_site.id, this.settings.addlSiteIds)) {
+          addlSiteOptions.push({
+            label: _site.name,
+            value: _site.id
+          });
+        }
+      }
+
+      var serializedStatuses = "enabled=".concat(originalEnabledValue);
+
+      for (var _i5 = 0; _i5 < this.$siteLightswitches.length; _i5++) {
+        var $input = this.$siteLightswitches.eq(_i5).data('lightswitch').$input;
+        serializedStatuses += '&' + encodeURIComponent($input.attr('name')) + '=' + $input.val();
+      }
+
+      Craft.cp.$primaryForm.data('initialSerializedValue', Craft.cp.$primaryForm.data('initialSerializedValue').replace(originalSerializedStatus, serializedStatuses)); // Are there additional sites that can be added?
+
+      if (this.settings.addlSiteIds && this.settings.addlSiteIds.length) {
+        addlSiteOptions.unshift({
+          label: Craft.t('app', 'Add a site…')
+        });
+        var $addlSiteSelectContainer = Craft.ui.createSelect({
+          options: addlSiteOptions
+        }).addClass('fullwidth');
+        this.$addlSiteField = Craft.ui.createField($addlSiteSelectContainer, {}).addClass('nested add').appendTo(this.$siteStatusPane);
+        var $addlSiteSelect = $addlSiteSelectContainer.find('select');
+        $addlSiteSelect.on('change', function () {
+          var siteId = $addlSiteSelect.val();
+          var site;
+
+          for (var _i6 = 0; _i6 < Craft.sites.length; _i6++) {
+            if (Craft.sites[_i6].id == siteId) {
+              site = Craft.sites[_i6];
+              break;
+            }
+          }
+
+          if (site) {
+            _this12._createSiteStatusField(site);
+
+            $addlSiteSelect.val('').find("option[value=\"".concat(siteId, "\"]")).remove();
+
+            if (_this12.newSites === null) {
+              _this12.newSites = [];
+            }
+
+            _this12.newSites.push(siteId); // Was that the last site?
+
+
+            if ($addlSiteSelect.find('option').length === 1) {
+              _this12._removeField(_this12.$addlSiteField);
+            }
+          }
+        });
+
+        this._showField(this.$addlSiteField);
+      }
+
+      this.$globalLightswitch.on('change', this._updateSiteStatuses.bind(this));
+
+      this._updateGlobalStatus();
+    },
+    _showField: function _showField($field) {
+      var height = $field.height();
+      $field.css('overflow', 'hidden').height(0).velocity({
+        height: height
+      }, 'fast', function () {
+        $field.css({
+          overflow: '',
+          height: ''
+        });
+      });
+    },
+    _removeField: function _removeField($field) {
+      var height = $field.height();
+      $field.css('overflow', 'hidden').velocity({
+        height: 0
+      }, 'fast', function () {
+        $field.remove();
+      });
+    },
+    _updateGlobalStatus: function _updateGlobalStatus() {
+      var allEnabled = true,
+          allDisabled = true;
+      this.$siteLightswitches.each(function () {
+        var enabled = $(this).data('lightswitch').on;
+
+        if (enabled) {
+          allDisabled = false;
+        } else {
+          allEnabled = false;
+        }
+
+        if (!allEnabled && !allDisabled) {
+          return false;
+        }
+      });
+
+      if (allEnabled) {
+        this.$globalLightswitch.data('lightswitch').turnOn(true);
+      } else if (allDisabled) {
+        this.$globalLightswitch.data('lightswitch').turnOff(true);
+      } else {
+        this.$globalLightswitch.data('lightswitch').turnIndeterminate(true);
+      }
+    },
+    _updateSiteStatuses: function _updateSiteStatuses() {
+      var enabled = this.$globalLightswitch.data('lightswitch').on;
+      this.$siteLightswitches.each(function () {
+        if (enabled) {
+          $(this).data('lightswitch').turnOn(true);
+        } else {
+          $(this).data('lightswitch').turnOff(true);
+        }
+      });
+    },
+    _createSiteStatusField: function _createSiteStatusField(site) {
+      var $field = Craft.ui.createLightswitchField({
+        id: "enabledForSite-".concat(site.id),
+        label: Craft.t('app', 'Enabled for {site}', {
+          site: site.name
+        }),
+        name: "enabledForSite[".concat(site.id, "]"),
+        on: typeof this.settings.siteStatuses[site.id] !== 'undefined' ? this.settings.siteStatuses[site.id] : true,
+        disabled: !!this.settings.revisionId
+      });
+
+      if (this.$addlSiteField) {
+        $field.insertBefore(this.$addlSiteField);
+      } else {
+        $field.appendTo(this.$siteStatusPane);
+      }
+
+      if (!this.settings.revisionId) {
+        $field.addClass('nested');
+        var $lightswitch = $field.find('.lightswitch').on('change', this._updateGlobalStatus.bind(this));
+        this.$siteLightswitches = this.$siteLightswitches.add($lightswitch);
+      }
+
+      this._showField($field);
+
+      return $field;
     },
     showStatusHud: function showStatusHud(target) {
       var bodyHtml;
@@ -13290,7 +13379,28 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           this.$revisionLabel.text(response.draftName);
           this.settings.draftName = response.draftName;
           this.settings.draftNotes = response.draftNotes;
-          var revisionMenu = this.$revisionBtn.data('menubtn') ? this.$revisionBtn.data('menubtn').menu : null; // Did we just create a draft?
+          var revisionMenu = this.$revisionBtn.data('menubtn') ? this.$revisionBtn.data('menubtn').menu : null; // Did we just add a site?
+
+          if (this.newSites) {
+            // Do we need to create the revision menu?
+            if (!revisionMenu) {
+              this.$revisionBtn.removeClass('disabled').addClass('menubtn');
+              new Garnish.MenuBtn(this.$revisionBtn);
+              revisionMenu = this.$revisionBtn.data('menubtn').menu;
+              revisionMenu.$container.removeClass('hidden');
+            }
+
+            for (var _i7 = 0; _i7 < this.newSites.length; _i7++) {
+              var $option = revisionMenu.$options.filter("[data-site-id=".concat(this.newSites[_i7], "]"));
+              $option.find('.status').removeClass('disabled').addClass('enabled');
+              var $li = $option.parent().removeClass('hidden');
+              $li.closest('.site-group').removeClass('hidden');
+            }
+
+            revisionMenu.$container.find('.revision-hr').removeClass('hidden');
+            this.newSites = null;
+          } // Did we just create a draft?
+
 
           var draftCreated = !this.settings.draftId;
 
@@ -13607,6 +13717,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       siteId: null,
       isLive: false,
       siteStatuses: null,
+      addlSiteIds: [],
       enabledGlobally: null,
       cpEditUrl: null,
       draftId: null,
@@ -17345,7 +17456,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       }
 
       this.draftEditor.getTokenizedPreviewUrl(target.url, 'x-craft-live-preview').then(function (url) {
-        var _this12 = this;
+        var _this13 = this;
 
         // Maintain the current scroll position?
         if (!resetScroll && this.iframeLoaded && this.$iframe) {
@@ -17376,9 +17487,9 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           // Allow iframe scrolling until we've successfully initialized the resizer
           scrolling: true,
           onInit: function onInit(iframe) {
-            _this12.iframeLoaded = true;
-            _this12.iframeHeight = null;
-            _this12.scrollTop = null;
+            _this13.iframeLoaded = true;
+            _this13.iframeHeight = null;
+            _this13.scrollTop = null;
             iframe.scrolling = 'no';
           }
         }, $iframe[0]);
@@ -19760,29 +19871,54 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         'autofocus': config.autofocus && Garnish.isMobileBrowser(true),
         'disabled': config.disabled,
         'data-target-prefix': config.targetPrefix
-      }).appendTo($container);
-      var $optgroup = null;
+      }).appendTo($container); // Normalize the options into an array
 
-      for (var key in config.options) {
-        if (!config.options.hasOwnProperty(key)) {
-          continue;
+      if ($.isPlainObject(config.options)) {
+        var options = [];
+
+        for (var key in config.options) {
+          if (!config.options.hasOwnProperty(key)) {
+            continue;
+          }
+
+          var option = config.options[key];
+
+          if ($.isPlainObject(option)) {
+            if (typeof option.optgroup !== 'undefined') {
+              options.push(option);
+            } else {
+              options.push({
+                label: option.label,
+                value: typeof option.value !== 'undefined' ? option.value : key,
+                disabled: typeof option.disabled !== 'undefined' ? option.disabled : false
+              });
+            }
+          } else {
+            options.push({
+              label: option,
+              value: key
+            });
+          }
         }
 
-        var option = config.options[key]; // Starting a new <optgroup>?
+        config.options = options;
+      }
 
-        if (typeof option.optgroup !== 'undefined') {
+      var $optgroup = null;
+
+      for (var _i8 = 0; _i8 < config.options.length; _i8++) {
+        var _option = config.options[_i8]; // Starting a new <optgroup>?
+
+        if (typeof _option.optgroup !== 'undefined') {
           $optgroup = $('<optgroup/>', {
-            'label': option.label
+            'label': _option.label
           }).appendTo($select);
         } else {
-          var optionLabel = typeof option.label !== 'undefined' ? option.label : option,
-              optionValue = typeof option.value !== 'undefined' ? option.value : key,
-              optionDisabled = typeof option.disabled !== 'undefined' ? option.disabled : false;
           $('<option/>', {
-            'value': optionValue,
-            'selected': optionValue == config.value,
-            'disabled': optionDisabled,
-            'html': optionLabel
+            'value': _option.value,
+            'selected': _option.value == config.value,
+            'disabled': typeof _option.disabled !== 'undefined' ? _option.disabled : false,
+            'html': _option.label
           }).appendTo($optgroup || $select);
         }
       }

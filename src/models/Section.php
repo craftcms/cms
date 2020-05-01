@@ -37,6 +37,10 @@ class Section extends Model
     const PROPAGATION_METHOD_SITE_GROUP = 'siteGroup';
     const PROPAGATION_METHOD_LANGUAGE = 'language';
     const PROPAGATION_METHOD_ALL = 'all';
+    /**
+     * @since 3.5.0
+     */
+    const PROPAGATION_METHOD_CUSTOM = 'custom';
 
     /**
      * @var int|null ID
@@ -168,7 +172,8 @@ class Section extends Model
                 self::PROPAGATION_METHOD_NONE,
                 self::PROPAGATION_METHOD_SITE_GROUP,
                 self::PROPAGATION_METHOD_LANGUAGE,
-                self::PROPAGATION_METHOD_ALL
+                self::PROPAGATION_METHOD_ALL,
+                self::PROPAGATION_METHOD_CUSTOM,
             ]
         ];
         $rules[] = [['name', 'handle'], UniqueValidator::class, 'targetClass' => SectionRecord::class];

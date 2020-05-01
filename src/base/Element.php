@@ -2636,7 +2636,7 @@ abstract class Element extends Component implements ElementInterface
         }
 
         if ($this->_currentRevision === null) {
-            $source = ElementHelper::sourceElement($this);
+            $source = ElementHelper::sourceElement($this, true);
             $this->_currentRevision = static::find()
                 ->revisionOf($source->id)
                 ->dateCreated($source->dateUpdated)
