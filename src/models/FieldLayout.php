@@ -16,13 +16,10 @@ use craft\base\Model;
  * FieldLayout model class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class FieldLayout extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null ID
      */
@@ -48,15 +45,12 @@ class FieldLayout extends Model
      */
     private $_fields;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['id'], 'number', 'integerOnly' => true];
         return $rules;
     }
@@ -83,6 +77,7 @@ class FieldLayout extends Model
      * Return the field layout config or null if no fields configured.
      *
      * @return array|null
+     * @since 3.1.0
      */
     public function getConfig()
     {
@@ -91,14 +86,14 @@ class FieldLayout extends Model
         foreach ($this->getTabs() as $tab) {
             $tabData = [
                 'name' => $tab->name,
-                'sortOrder' => $tab->sortOrder,
+                'sortOrder' => (int)$tab->sortOrder,
             ];
 
             /** @var Field $field */
             foreach ($tab->getFields() as $field) {
                 $tabData['fields'][$field->uid] = [
-                    'required' => $field->required,
-                    'sortOrder' => $field->sortOrder
+                    'required' => (bool)$field->required,
+                    'sortOrder' => (int)$field->sortOrder
                 ];
             }
             $output['tabs'][] = $tabData;
@@ -112,6 +107,7 @@ class FieldLayout extends Model
      *
      * @param array $config Config data to use.
      * @return self
+     * @since 3.1.0
      */
     public static function createFromConfig(array $config): self
     {

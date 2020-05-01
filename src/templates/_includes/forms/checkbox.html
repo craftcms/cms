@@ -11,7 +11,7 @@
 {% set label = (label is defined ? label) %}
 
 {% if name is defined and (name|length < 3 or name|slice(-2) != '[]') %}
-    <input type="hidden" name="{{ name }}" value="">
+    {{ hiddenInput(name, '') }}
 {% endif %}
 
 <input type="checkbox" value="{{ value }}" class="{{ class }}"
@@ -24,6 +24,11 @@
     {%- if reverseToggle is defined %} data-reverse-target="{{ reverseToggle }}"{% endif %}
     {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
 
-<label for="{{ id }}">{{ label|raw }}</label>
+<label for="{{ id }}">
+    {{ label|raw }}
+    {% if info ?? null %}
+        <span class="info">{{ info|md|raw }}</span>
+    {% endif %}
+</label>
 
 {% endspaceless -%}

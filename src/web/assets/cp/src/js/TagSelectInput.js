@@ -43,7 +43,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
             this.$addTagInput = this.$container.children('.add').children('.text');
             this.$spinner = this.$addTagInput.next();
 
-            this.addListener(this.$addTagInput, 'textchange', $.proxy(function() {
+            this.addListener(this.$addTagInput, 'input', $.proxy(function() {
                 if (this.searchTimeout) {
                     clearTimeout(this.searchTimeout);
                 }
@@ -161,7 +161,6 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 
                         this.searchMenu.show();
                     }
-
                 }, this));
             }
             else {
@@ -243,7 +242,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 
                         if (textStatus === 'success') {
                             // Some sort of validation error that still resulted in  a 200 response. Shouldn't be possible though.
-                            Craft.cp.displayError(Craft.t('app', 'An unknown error occurred.'));
+                            Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
                         }
                     }
                 }, this));

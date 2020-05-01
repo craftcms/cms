@@ -20,13 +20,10 @@ Craft::$app->requireEdition(Craft::Pro);
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class SystemMessagesController extends Controller
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -34,6 +31,8 @@ class SystemMessagesController extends Controller
     {
         // Make sure they have access to the System Messages utility
         $this->requirePermission('utility:system-messages');
+
+        parent::init();
     }
 
     /**

@@ -1,31 +1,33 @@
 <template>
     <div class="ps-container">
-        <div class="developer-card tw-flex border-b border-solid border-grey-light pb-6 items-center">
-            <div class="avatar inline-block overflow-hidden rounded-full bg-grey mr-6 no-line-height">
-                <template v-if="!loading && developer">
-                    <img :src="developer.photoUrl" width="120" height="120" />
+        <template v-if="!loading">
+            <plugin-index
+                    action="pluginStore/getPluginsByDeveloperId"
+                    :requestData="requestData"
+                    :plugins="plugins"
+            >
+                <template v-slot:header>
+                    <div v-if="developer" class="developer-card tw-flex pb-2 items-center">
+                        <div class="avatar inline-block overflow-hidden rounded-full bg-grey mr-6 no-line-height">
+                            <img :src="developer.photoUrl" width="120" height="120" />
+                        </div>
+
+                        <div class="flex-1">
+                            <h1 class="text-lg font-bold mb-2">{{developer.developerName}}</h1>
+
+                            <p class="mb-1" v-if="developer.location">{{ developer.location }}</p>
+
+                            <ul v-if="developer.developerUrl">
+                                <li class="mr-4 inline-block"><btn :href="developer.developerUrl" block>{{ "Website"|t('app') }}</btn></li>
+                            </ul>
+                        </div>
+                    </div>
                 </template>
-            </div>
-
-            <div class="flex-1">
-                <template v-if="loading || !developer">
-                    <spinner class="mt-8"></spinner>
-                </template>
-                <template v-else>
-                    <h1>{{developer.developerName}}</h1>
-
-                    <ul>
-                        <li>{{ developer.location }}</li>
-                    </ul>
-
-                    <ul>
-                        <li class="mr-4 inline-block"><btn :href="developer.developerUrl" block>{{ "Website"|t('app') }}</btn></li>
-                    </ul>
-                </template>
-            </div>
-        </div>
-
-        <plugin-index :plugins="plugins"></plugin-index>
+            </plugin-index>
+        </template>
+        <template v-else>
+            <spinner></spinner>
+        </template>
     </div>
 </template>
 
@@ -36,8 +38,7 @@
     export default {
         data() {
             return {
-                plugins: [],
-                loading: false,
+                loading: true,
             }
         },
 
@@ -48,21 +49,25 @@
         computed: {
             ...mapState({
                 developer: state => state.pluginStore.developer,
+                plugins: state => state.pluginStore.plugins,
             }),
+
+            requestData() {
+                return {
+                    developerId: this.$route.params.id,
+                }
+            },
         },
 
         mounted() {
             const developerId = this.$route.params.id
-            this.loading = true
-            this.plugins = this.$store.getters['pluginStore/getPluginsByDeveloperId'](developerId)
 
+            // load developer details
             this.$store.dispatch('pluginStore/getDeveloper', developerId)
                 .then(() => {
-                    this.$root.loading = false
                     this.loading = false
                 })
                 .catch(() => {
-                    this.$root.loading = false
                     this.loading = false
                 })
         },

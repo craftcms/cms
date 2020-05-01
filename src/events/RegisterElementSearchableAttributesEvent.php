@@ -13,13 +13,10 @@ use yii\base\Event;
  * RegisterElementSearchableAttributesEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class RegisterElementSearchableAttributesEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var array List of registered searchable attributes for the element type.
      */

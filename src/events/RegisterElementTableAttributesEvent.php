@@ -13,13 +13,10 @@ use yii\base\Event;
  * RegisterElementTableAttributesEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class RegisterElementTableAttributesEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var array List of registered table attributes for the element type.
      */

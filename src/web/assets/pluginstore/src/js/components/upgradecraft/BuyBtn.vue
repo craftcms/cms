@@ -38,9 +38,9 @@
 
         computed: {
             ...mapState({
-                licensedEdition: state => state.craft.licensedEdition,
                 canTestEditions: state => state.craft.canTestEditions,
                 CraftEdition: state => state.craft.CraftEdition,
+                licensedEdition: state => state.craft.licensedEdition,
             }),
 
             ...mapGetters({
@@ -51,8 +51,8 @@
         methods: {
             ...mapActions({
                 addToCart: 'cart/addToCart',
-                tryEdition: 'craft/tryEdition',
                 getCraftData: 'craft/getCraftData',
+                tryEdition: 'craft/tryEdition',
             }),
 
             buyCraft(edition) {

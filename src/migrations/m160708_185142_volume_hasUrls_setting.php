@@ -12,9 +12,6 @@ use craft\helpers\Json;
  */
 class m160708_185142_volume_hasUrls_setting extends Migration
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

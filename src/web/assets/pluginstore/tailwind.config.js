@@ -130,7 +130,6 @@ let colors = {
 }
 
 module.exports = {
-
     /*
     |-----------------------------------------------------------------------------
     | Colors                                  https://tailwindcss.com/docs/colors
@@ -875,5 +874,4 @@ module.exports = {
         important: false,
         separator: ':',
     },
-
 }

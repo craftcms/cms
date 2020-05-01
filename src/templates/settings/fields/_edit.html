@@ -3,12 +3,11 @@
 
 {% import "_includes/forms" as forms %}
 
-
 {% block content %}
-    <input type="hidden" name="action" value="fields/save-field">
+    {{ actionInput('fields/save-field') }}
     {{ redirectInput('settings/fields/{groupId}') }}
     {% if fieldId is defined and fieldId %}
-        <input type="hidden" name="fieldId" value="{{ fieldId }}">
+        {{ hiddenInput('fieldId', fieldId) }}
     {% endif %}
 
     {{ forms.selectField({
@@ -23,7 +22,7 @@
 
     {{ forms.textField({
         label: "Name"|t('app'),
-        instructions: "What this field will be called in the CP."|t('app'),
+        instructions: "What this field will be called in the control panel."|t('app'),
         id: 'name',
         name: 'name',
         value: field.name,
@@ -146,7 +145,7 @@
             $container.find('select').html(
                 ($.inArray('none', Craft.supportedTranslationMethods[type]) != -1 ? '<option value="none">{{ "Not translatable"|t('app')|e('js') }}</option>' : '') +
                 ($.inArray('site', Craft.supportedTranslationMethods[type]) != -1 ? '<option value="site">{{ "Translate for each site"|t('app')|e('js') }}</option>' : '') +
-                ($.inArray('siteGroup', Craft.supportedTranslationMethods[type]) != -1 ? '<option value="site">{{ "Translate for each site group"|t('app')|e('js') }}</option>' : '') +
+                ($.inArray('siteGroup', Craft.supportedTranslationMethods[type]) != -1 ? '<option value="siteGroup">{{ "Translate for each site group"|t('app')|e('js') }}</option>' : '') +
                 ($.inArray('language', Craft.supportedTranslationMethods[type]) != -1 ? '<option value="language">{{ "Translate for each language"|t('app')|e('js') }}</option>' : '') +
                 ($.inArray('custom', Craft.supportedTranslationMethods[type]) != -1 ? '<option value="custom">{{ "Custom…"|t('app')|e('js') }}</option>' : '')
             );

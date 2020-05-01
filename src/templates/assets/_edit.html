@@ -1,0 +1,223 @@
+{% extends "_layouts/element" %}
+{% import "_includes/forms" as forms %}
+
+{% set canUpdateSource = canEdit %}
+{% set saveSourceAction = 'assets/save-asset' %}
+
+{% hook "cp.assets.edit" %}
+
+{% block actionButton %}
+    <div class="btngroup">
+        {% if assetUrl %}
+            <a class="btn" href="{{ assetUrl }}" target="_blank" data-icon="preview">{{ 'View'|t('app') }}</a>
+        {% endif %}
+        <div id="download-btn" class="btn" role="button" data-icon="download">{{ 'Download'|t('app') }}</div>
+    </div>
+
+    {% if canReplaceFile %}
+        <div id="replace-btn" class="btn" role="button" data-icon="upload">{{ 'Replace file'|t('app') }}</div>
+    {% endif %}
+
+    {{ parent() }}
+{% endblock %}
+
+{% block content %}
+    {{ hiddenInput('assetId', element.id) }}
+
+    {{ forms.textField({
+        label: 'Title'|t('app'),
+        siteId: element.siteId,
+        translationDescription: 'This field is translated for each site.'|t('app'),
+        id: 'title',
+        name: 'title',
+        value: element.title,
+        errors: canEdit and element.getErrors('title'),
+        first: true,
+        autofocus: true,
+        required: canEdit,
+        disabled: not canEdit,
+        maxlength: 255
+    }) }}
+
+    {{ parent() }}
+
+    {# Give plugins a chance to add other things here #}
+    {% hook 'cp.assets.edit.content' %}
+{% endblock %}
+
+{% block details %}
+    {{ previewHtml|raw }}
+    {{ parent() }}
+    {# Give plugins a chance to add other things here #}
+    {% hook "cp.assets.edit.details" %}
+{% endblock %}
+
+{% block settings %}
+    {{ forms.textField({
+        label: 'Filename'|t('app'),
+        id: 'filename',
+        name: 'filename',
+        value: element.filename,
+        errors: element.getErrors('newLocation'),
+    }) }}
+    {# Give plugins a chance to add other things here #}
+    {% hook "cp.assets.edit.settings" %}
+{% endblock %}
+
+{% block meta %}
+    <div class="data">
+        <h5 class="heading">{{ 'Location'|t('app') }}</h5>
+        <div class="value">
+            {{ volume.name|t('site') }}
+            {% if element.folderPath %}
+                → {{ element.folderPath|trim('/')|replace('/', ' → ') }}
+            {% endif %}
+        </div>
+    </div>
+
+    {% if formattedSize %}
+        <div class="data">
+            <h5 class="heading">{{ 'File size'|t('app') }}</h5>
+            {{ tag('div', {
+                id: 'file-size-value',
+                class: 'value',
+                text: formattedSize,
+                title: formattedSizeInBytes,
+            }) }}
+        </div>
+    {% endif %}
+
+    {{ parent() }}
+
+    {% set uploader = element.getUploader() %}
+    {% if uploader %}
+        <div class="data">
+            <h5 class="heading">{{ 'Uploaded by'|t('app') }}</h5>
+            <div class="value" id="uploader-element">
+                {% include '_elements/element' with {
+                    element: uploader,
+                } %}
+            </div>
+            {% js %}
+                new Craft.ElementThumbLoader().load($('#uploader-element'));
+            {% endjs %}
+        </div>
+    {% endif %}
+
+    {% if dimensions %}
+        <div class="data">
+            <h5 class="heading">{{ 'Dimensions'|t('app') }}</h5>
+            <div id="dimensions-value" class="value">{{ dimensions }}</div>
+        </div>
+    {% endif %}
+
+    {# Give plugins a chance to add other things here #}
+    {% hook "cp.assets.edit.meta" %}
+{% endblock %}
+
+{% js on ready %}
+    var assetId = {{ element.id|json_encode|raw }};
+    var $previewThumbContainer = $('#preview-thumb-container');
+
+    function updatePreviewThumb() {
+        $previewThumbContainer.addClass('loading');
+        Craft.postActionRequest('assets/preview-thumb', {
+            assetId: assetId,
+            width: 350,
+            height: 190
+        }, function(response, textStatus) {
+            $previewThumbContainer.removeClass('loading');
+            if (textStatus === 'success') {
+                $previewThumbContainer.find('img').replaceWith(response.img);
+            }
+        });
+    }
+
+    $('#download-btn').on('click', function() {
+        var $form = Craft.createForm().appendTo(Garnish.$bod);
+        $(Craft.getCsrfInput()).appendTo($form);
+        $('<input/>', {
+            type: 'hidden',
+            name: 'action',
+            value: 'assets/download-asset'
+        }).appendTo($form);
+        $('<input/>', {
+            type: 'hidden',
+            name: 'assetId',
+            value: assetId
+        }).appendTo($form);
+        $('<input/>', {
+            type: 'submit',
+            value: 'Submit',
+        }).appendTo($form);
+        $form.submit();
+        $form.remove();
+    });
+
+    $('#replace-btn').on('click', function() {
+        var $fileInput = $('<input type="file" name="replaceFile" class="replaceFile hidden"/>')
+            .appendTo(Garnish.$bod);
+        var uploader = new Craft.Uploader($fileInput, {
+            url: Craft.getActionUrl('assets/replace-file'),
+            dropZone: null,
+            fileInput: $fileInput,
+            paramName: 'replaceFile',
+            events: {
+                fileuploadstart: function() {
+                    $previewThumbContainer.addClass('loading');
+                },
+                fileuploaddone: function(event, data) {
+                    if (data.result.error) {
+                        $previewThumbContainer.removeClass('loading');
+                        alert(data.result.error);
+                    } else {
+                        $('#filename').val(data.result.filename);
+                        $('#file-size-value')
+                            .text(data.result.formattedSize)
+                            .attr('title', data.result.formattedSizeInBytes);
+                        var $dimensionsVal = $('#dimensions-value');
+                        if (data.result.dimensions) {
+                            if (!$dimensionsVal.length) {
+                                $('<div class="data">' +
+                                    '<div class="heading">' + {{ 'Dimensions'|t('app')|json_encode|raw }} + '</div>' +
+                                    '<div id="dimensions-value" class="value"></div>' +
+                                    '</div>').appendTo($('#meta-details'));
+                                $dimensionsVal = $('#dimensions-value');
+                            }
+                            $dimensionsVal.text(data.result.dimensions);
+                        } else if ($dimensionsVal.length) {
+                            $dimensionsVal.parent().remove();
+                        }
+                        updatePreviewThumb();
+                        Craft.cp.runQueue();
+                    }
+                }
+            }
+        });
+        uploader.setParams({
+            assetId: assetId
+        });
+        $fileInput.click();
+    });
+
+    $('#edit-btn').on('click', function() {
+        new Craft.AssetImageEditor(assetId, {
+            onSave: function () {
+                updatePreviewThumb();
+            },
+            allowDegreeFractions: Craft.isImagick
+        });
+    });
+
+    var settings = {};
+
+    {% if dimensions %}
+        {% set previewDimensions = dimensions|split('×') %}
+        settings.startingWidth = {{ previewDimensions[0] }};
+        settings.startingHeight = {{ previewDimensions[1] }};
+    {% endif %}
+
+    $('#preview-btn').on('click', function() {
+        new Craft.PreviewFileModal(assetId, null, settings);
+    });
+{% endjs %}

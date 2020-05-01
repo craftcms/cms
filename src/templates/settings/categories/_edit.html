@@ -4,18 +4,20 @@
 
 {% import "_includes/forms" as forms %}
 
+{% set headlessMode = craft.app.config.general.headlessMode %}
+
 
 {% block content %}
-    <input type="hidden" name="action" value="categories/save-group">
+    {{ actionInput('categories/save-group') }}
     {{ redirectInput('settings/categories') }}
 
-    {% if categoryGroup.id %}<input type="hidden" name="groupId" value="{{ categoryGroup.id }}">{% endif %}
+    {% if categoryGroup.id %}{{ hiddenInput('groupId', categoryGroup.id) }}{% endif %}
 
     <div id="categorygroup-settings">
         {{ forms.textField({
             first: true,
             label: "Name"|t('app'),
-            instructions: "What this category group will be called in the CP."|t('app'),
+            instructions: "What this category group will be called in the control panel."|t('app'),
             id: 'name',
             name: 'name',
             value: categoryGroup.name,
@@ -61,12 +63,12 @@
             {% endif %}
             {% set siteRows = siteRows|merge({
                 (site.handle): {
-                    heading: site.name|t('site'),
+                    heading: site.name|t('site')|e,
                     uriFormat: {
                         value: siteSettings.uriFormat ?? null,
                         hasErrors: siteSettings.hasErrors('uriFormat') ?? false
                     },
-                    template: {
+                    template: not headlessMode ? {
                         value: siteSettings.template ?? null,
                         hasErrors: siteSettings.hasErrors('template') ?? false,
                     }
@@ -92,13 +94,13 @@
                     placeholder: "Leave blank if categories don’t have URLs"|t('app'),
                     code: true
                 },
-                template: {
+                template: not headlessMode ? {
                     type: 'template',
                     heading: "Template"|t('app'),
                     info: "Which template should be loaded when a category’s URL is requested."|t('app'),
                     code: true
                 },
-            },
+            }|filter,
             rows: siteRows,
             staticRows: true,
             errors: siteErrors|unique

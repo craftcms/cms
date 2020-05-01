@@ -42,6 +42,7 @@ class Yii extends BaseYii
      *
      * @param string $path
      * @return string
+     * @since 3.0.3
      */
     public static function alias(string $path): string
     {
@@ -57,8 +58,8 @@ class Yii extends BaseYii
 
         $path = FileHelper::normalizePath($path);
         foreach (self::$_aliasPaths as $alias => $aliasPath) {
-            if (strpos($path . '/', $aliasPath . '/') === 0) {
-                return $alias . substr($path, strlen($aliasPath));
+            if (strpos($path . DIRECTORY_SEPARATOR, $aliasPath . DIRECTORY_SEPARATOR) === 0) {
+                return $alias . str_replace('\\', '/', substr($path, strlen($aliasPath)));
             }
         }
         return $path;

@@ -50,8 +50,8 @@
             </form>
             <form class="cs-support-form hidden" action="{{ actionUrl('dashboard/send-support-request') }}" method="post" target="{{ idPrefix }}-iframe" accept-charset="UTF-8" enctype="multipart/form-data">
                 {{ csrfInput() }}
-                <input type="hidden" name="widgetId" value="{{ widget.id }}">
-                <input class="cs-support-message" type="hidden" name="message" value="">
+                {{ hiddenInput('widgetId', widget.id) }}
+                {{ hiddenInput('message', '', {class: 'cs-support-message'}) }}
 
                 {% set email = currentUser.email %}
                 {% if email in ['support@pixelandtonic.com', 'support@craftcms.com'] %}

@@ -13,13 +13,10 @@ use craft\models\AssetTransformIndex;
  * Asset transform image event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class AssetTransformImageEvent extends AssetEvent
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var AssetTransformIndex Asset transform index that is being generated.
      */

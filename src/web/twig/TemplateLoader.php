@@ -17,22 +17,16 @@ use Twig\Source;
  * Loads Craft templates into Twig.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 /** @noinspection PhpDeprecationInspection */
 
 class TemplateLoader implements LoaderInterface, ExistsLoaderInterface
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var View|null
      */
     protected $view;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Constructor
@@ -103,9 +97,6 @@ class TemplateLoader implements LoaderInterface, ExistsLoaderInterface
 
         return false;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns the path to a given template, or throws a TemplateLoaderException.

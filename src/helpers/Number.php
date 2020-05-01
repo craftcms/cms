@@ -13,13 +13,10 @@ use Craft;
  * Class Number
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Number
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Returns the "word" version of a number
      *

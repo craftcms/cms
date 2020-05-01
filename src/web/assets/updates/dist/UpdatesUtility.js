@@ -7,8 +7,7 @@
             totalAvailableUpdates: 0,
             criticalUpdateAvailable: false,
             allowUpdates: null,
-            showUpdateAllBtn: true,
-            updates: null,
+            installableUpdates: null,
 
             init: function() {
                 this.$body = $('#content');
@@ -16,78 +15,61 @@
                 var $graphic = $('#graphic'),
                     $status = $('#status');
 
-                this.updates = [];
+                this.installableUpdates = [];
 
                 var data = {
                     forceRefresh: true,
                     includeDetails: true
                 };
 
-                Craft.postActionRequest('app/check-for-updates', data, $.proxy(function(response, textStatus) {
-                    if (textStatus !== 'success' || response.error) {
-                        var error = Craft.t('app', 'An unknown error occurred.');
+                Craft.cp.checkForUpdates(true, true, function(info) {
+                    this.allowUpdates = info.allowUpdates;
 
-                        if (response.errors && response.errors.length) {
-                            error = response.errors[0];
-                        }
-                        else if (response.error) {
-                            error = response.error;
-                        }
-
-                        $graphic.addClass('error');
-                        $status.text(error);
+                    // Craft CMS update?
+                    if (info.updates.cms) {
+                        this.processUpdate(info.updates.cms, false);
                     }
-                    else {
-                        this.allowUpdates = response.allowUpdates;
 
-                        // Craft CMS update?
-                        if (response.updates.cms) {
-                            this.processUpdate(response.updates.cms, false);
-                        }
-
-                        // Plugin updates?
-                        if (response.updates.plugins && response.updates.plugins.length) {
-                            for (var i = 0; i < response.updates.plugins.length; i++) {
-                                this.processUpdate(response.updates.plugins[i], true);
-                            }
-                        }
-
-                        if (this.totalAvailableUpdates) {
-                            $graphic.remove();
-                            $status.remove();
-
-                            // Add the page title
-                            var headingText;
-
-                            if (this.totalAvailableUpdates === 1) {
-                                headingText = Craft.t('app', '1 Available Update');
-                            }
-                            else {
-                                headingText = Craft.t('app', '{num} Available Updates', {num: this.totalAvailableUpdates});
-                            }
-
-                            $('#page-title').find('h1').text(headingText);
-
-                            if (this.allowUpdates && this.showUpdateAllBtn && this.updates.length > 1) {
-                                this.createUpdateForm(Craft.t('app', 'Update all'), this.updates)
-                                    .insertAfter($('#header').children('h1'));
-                            }
-                        } else {
-                            $graphic.addClass('success');
-                            $status.text(Craft.t('app', 'You’re all up-to-date!'));
+                    // Plugin updates?
+                    if (info.updates.plugins && info.updates.plugins.length) {
+                        for (var i = 0; i < info.updates.plugins.length; i++) {
+                            this.processUpdate(info.updates.plugins[i], true);
                         }
                     }
-                }, this));
+
+                    if (this.totalAvailableUpdates) {
+                        $graphic.remove();
+                        $status.remove();
+
+                        // Add the page title
+                        var headingText = Craft.t('app', '{num, number} {num, plural, =1{Available Update} other{Available Updates}}', {
+                            num: this.totalAvailableUpdates,
+                        });
+
+                        $('#header h1').text(headingText);
+
+                        if (this.allowUpdates && this.installableUpdates.length > 1) {
+                            this.createUpdateForm(Craft.t('app', 'Update all'), this.installableUpdates)
+                                .insertAfter($('#header > .flex:last'));
+                        }
+                    } else {
+                        $graphic.addClass('success');
+                        $status.text(Craft.t('app', 'You’re all up-to-date!'));
+                    }
+                }.bind(this));
             },
 
             processUpdate: function(updateInfo, isPlugin) {
-                if (!updateInfo.releases.length && updateInfo.status !== 'expired') {
+                if (!updateInfo.releases.length) {
                     return;
                 }
 
                 this.totalAvailableUpdates++;
 
-                this.updates.push(new Update(this, updateInfo, isPlugin));
+                var update = new Update(this, updateInfo, isPlugin);
+                if (update.installable) {
+                    this.installableUpdates.push(update);
+                }
             },
 
             createUpdateForm: function(label, updates)
@@ -136,6 +118,7 @@
         {
             updateInfo: null,
             isPlugin: null,
+            installable: true,
 
             $container: null,
             $header: null,
@@ -162,7 +145,7 @@
                     $('<blockquote class="note ineligible"><p>'+this.updateInfo.statusText+'</p></blockquote>').insertBefore(this.$releaseContainer);
 
                     if (this.updateInfo.status === 'expired' || this.updateInfo.latestVersion === null) {
-                        this.updatesPage.showUpdateAllBtn = false;
+                        this.installable = false;
                     }
                 }
             },

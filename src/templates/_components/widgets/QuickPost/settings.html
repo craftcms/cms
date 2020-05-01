@@ -28,7 +28,7 @@
             {% endfor %}
 
             {% if entryTypeOptions|length == 1 %}
-                <input type="hidden" name="sections[{{ section.id }}][entryType]" value="{{ widget.entryType }}" />
+                {{ hiddenInput("sections[#{section.id}][entryType]", widget.entryType) }}
             {% else %}
                 {{ forms.selectField({
                     label: "Entry Type"|t('app'),

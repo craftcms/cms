@@ -13,13 +13,10 @@ use craft\elements\User;
  * Represents an email message.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Message extends \yii\swiftmailer\Message
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null The key of the message that should be loaded
      */
@@ -35,9 +32,6 @@ class Message extends \yii\swiftmailer\Message
      */
     public $language;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * Sets the message sender.
      *
@@ -51,6 +45,24 @@ class Message extends \yii\swiftmailer\Message
     {
         $from = $this->_normalizeEmails($from);
         parent::setFrom($from);
+
+        return $this;
+    }
+
+    /**
+     * Sets the Reply-To email.
+     *
+     * @param string|array|User|User[] $replyTo The Reply-To email address, or their
+     * user model(s). You may pass an array of addresses if this message is from
+     * multiple people. You may also specify Reply-To name in addition to email
+     * address using format: `[email => name]`.
+     * @return static self reference
+     * @since 3.4.0
+     */
+    public function setReplyTo($replyTo)
+    {
+        $replyTo = $this->_normalizeEmails($replyTo);
+        parent::setReplyTo($replyTo);
 
         return $this;
     }
@@ -100,7 +112,7 @@ class Message extends \yii\swiftmailer\Message
     /**
      * Sets the BCC (hidden copy receiver) addresses of this message.
      *
-     * @param string|array|User|User[] $bcc The hidden copied receiver’ email address, or their user model(s).
+     * @param string|array|User|User[] $bcc The hidden copied receiver’s email address, or their user model(s).
      * You may pass an array of addresses if multiple recipients should receive this message.
      * You may also specify receiver name in addition to email address using format:
      * `[email => name]`.
@@ -113,9 +125,6 @@ class Message extends \yii\swiftmailer\Message
 
         return $this;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * @param string|array|User|User[]|null $emails

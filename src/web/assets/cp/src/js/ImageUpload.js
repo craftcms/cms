@@ -58,7 +58,6 @@ Craft.ImageUpload = Garnish.Base.extend(
                     }, this));
                 }
             }, this));
-
         },
 
         refreshImage: function(response) {

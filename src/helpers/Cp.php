@@ -17,20 +17,14 @@ use yii\base\Event;
  * Class Cp
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Cp
 {
-    // Constants
-    // =========================================================================
-
     /**
-     * @event RegisterCpAlertsEvent The event that is triggered when registering CP alerts.
+     * @event RegisterCpAlertsEvent The event that is triggered when registering control panel alerts.
      */
     const EVENT_REGISTER_ALERTS = 'registerAlerts';
-
-    // Static
-    // =========================================================================
 
     /**
      * @param string|null $path
@@ -41,6 +35,7 @@ class Cp
     {
         $alerts = [];
         $user = Craft::$app->getUser()->getIdentity();
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
 
         if (!$user) {
             return $alerts;
@@ -61,11 +56,21 @@ class Cp
                 if ($licenseKeyStatus === LicenseKeyStatus::Invalid) {
                     $alerts[] = Craft::t('app', 'Your Craft license key is invalid.');
                 } else if (Craft::$app->getHasWrongEdition()) {
-                    $alerts[] = Craft::t('app', 'You’re running Craft {edition} with a Craft {licensedEdition} license.', [
+                    $message = Craft::t('app', 'You’re running Craft {edition} with a Craft {licensedEdition} license.', [
                             'edition' => Craft::$app->getEditionName(),
                             'licensedEdition' => Craft::$app->getLicensedEditionName()
-                        ]) .
-                        ' <a class="go" href="' . UrlHelper::url('plugin-store/upgrade-craft') . '">' . Craft::t('app', 'Resolve') . '</a>';
+                        ]) . ' ';
+                    if ($user->admin) {
+                        if ($generalConfig->allowAdminChanges) {
+                            $message .= '<a class="go" href="' . UrlHelper::url('plugin-store/upgrade-craft') . '">' . Craft::t('app', 'Resolve') . '</a>';
+                        } else {
+                            $message .= Craft::t('app', 'Please fix on an environment where administrative changes are allowed.');
+                        }
+                    } else {
+                        $message .= Craft::t('app', 'Please notify one of your site’s admins.');
+                    }
+
+                    $alerts[] = $message;
                 }
             }
 
@@ -126,8 +131,8 @@ class Cp
                         ]);
                     }
                     $message .= ' ';
-                    if (Craft::$app->getUser()->getIsAdmin()) {
-                        if (Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
+                    if ($user->admin) {
+                        if ($generalConfig->allowAdminChanges) {
                             $message .= '<a class="go" href="' . UrlHelper::cpUrl('settings/plugins') . '">' . Craft::t('app', 'Resolve') . '</a>';
                         } else {
                             $message .= Craft::t('app', 'Please fix on an environment where administrative changes are allowed.');
@@ -139,6 +144,18 @@ class Cp
                     $alerts[] = $message;
                 }
             }
+        }
+
+        // Display a warning if admin changes are allowed, and project.yaml is being used but not writable
+        if (
+            $user->admin &&
+            $generalConfig->allowAdminChanges &&
+            $generalConfig->useProjectConfigFile &&
+            !FileHelper::isWritable(Craft::$app->getPath()->getProjectConfigFilePath())
+        ) {
+            $alerts[] = Craft::t('app', 'Your {file} file isn’t writable.', [
+                'file' => \craft\services\ProjectConfig::CONFIG_FILENAME,
+            ]);
         }
 
         // Give plugins a chance to add their own alerts

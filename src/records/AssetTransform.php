@@ -25,13 +25,10 @@ use craft\db\Table;
  * @property int $quality Quality
  * @property \DateTime $dimensionChangeTime Dimension change time
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class AssetTransform extends ActiveRecord
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      * @return string

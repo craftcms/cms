@@ -11,7 +11,7 @@ namespace craft\db;
  * This class provides constants for defining Craft’s database table names.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.1
+ * @since 3.1.0
  */
 abstract class Table
 {
@@ -19,21 +19,33 @@ abstract class Table
     const ASSETS = '{{%assets}}';
     const ASSETTRANSFORMINDEX = '{{%assettransformindex}}';
     const ASSETTRANSFORMS = '{{%assettransforms}}';
+    /** @since 3.4.14 */
+    const CACHE = '{{%cache}}';
     const CATEGORIES = '{{%categories}}';
     const CATEGORYGROUPS = '{{%categorygroups}}';
     const CATEGORYGROUPS_SITES = '{{%categorygroups_sites}}';
+    /** @since 3.4.0 */
+    const CHANGEDATTRIBUTES = '{{%changedattributes}}';
+    /** @since 3.4.0 */
+    const CHANGEDFIELDS = '{{%changedfields}}';
     const CONTENT = '{{%content}}';
     const CRAFTIDTOKENS = '{{%craftidtokens}}';
     const DEPRECATIONERRORS = '{{%deprecationerrors}}';
+    /** @since 3.2.0 */
+    const DRAFTS = '{{%drafts}}';
     const ELEMENTINDEXSETTINGS = '{{%elementindexsettings}}';
     const ELEMENTS = '{{%elements}}';
     const ELEMENTS_SITES = '{{%elements_sites}}';
     const RESOURCEPATHS = '{{%resourcepaths}}';
+    /** @since 3.2.0 */
+    const REVISIONS = '{{%revisions}}';
     const SEQUENCES = '{{%sequences}}';
     const SYSTEMMESSAGES = '{{%systemmessages}}';
     const ENTRIES = '{{%entries}}';
+    /** @deprecated in 3.2.0 */
     const ENTRYDRAFTS = '{{%entrydrafts}}';
     const ENTRYTYPES = '{{%entrytypes}}';
+    /** @deprecated in 3.2.0 */
     const ENTRYVERSIONS = '{{%entryversions}}';
     const FIELDGROUPS = '{{%fieldgroups}}';
     const FIELDLAYOUTFIELDS = '{{%fieldlayoutfields}}';
@@ -41,11 +53,19 @@ abstract class Table
     const FIELDLAYOUTTABS = '{{%fieldlayouttabs}}';
     const FIELDS = '{{%fields}}';
     const GLOBALSETS = '{{%globalsets}}';
+    /** @since 3.3.0 */
+    const GQLSCHEMAS = '{{%gqlschemas}}';
+    /** @since 3.4.0 */
+    const GQLTOKENS = '{{%gqltokens}}';
     const INFO = '{{%info}}';
     const MATRIXBLOCKS = '{{%matrixblocks}}';
     const MATRIXBLOCKTYPES = '{{%matrixblocktypes}}';
     const MIGRATIONS = '{{%migrations}}';
+    /** @since 3.4.0 */
+    const PHPSESSIONS = '{{%phpsessions}}';
     const PLUGINS = '{{%plugins}}';
+    /** @since 3.4.0 */
+    const PROJECTCONFIG = '{{%projectconfig}}';
     const QUEUE = '{{%queue}}';
     const RELATIONS = '{{%relations}}';
     const SECTIONS = '{{%sections}}';

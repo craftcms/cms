@@ -10,7 +10,7 @@ namespace craft\db;
 use craft\helpers\ArrayHelper;
 use yii\base\BaseObject;
 use yii\db\Connection as YiiConnection;
-use yii\db\Query;
+use yii\db\Query as YiiQuery;
 use yii\db\QueryInterface;
 use yii\di\Instance;
 
@@ -26,7 +26,7 @@ use yii\di\Instance;
  *     'currentPage' => \Craft::$app->request->pageNum,
  * ]);
  *
- * $pageResults = $paginator->getResults();
+ * $pageResults = $paginator->getPageResults();
  * ```
  * ```twig
  * {% set paginator = create('craft\\db\\Paginator', [query, {
@@ -34,7 +34,7 @@ use yii\di\Instance;
  *     currentPage: craft.app.request.pageNum,
  * }]) %}
  *
- * {% set pageResults = paginator.getResults() %}
+ * {% set pageResults = paginator.getPageResults() %}
  * ```
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -46,10 +46,10 @@ use yii\di\Instance;
 class Paginator extends BaseObject
 {
     /**
-     * @var YiiConnection The DB connection to be used with the query.
-     * If null, the `db` application component will be used.
+     * @var YiiConnection|null The DB connection to be used with the query.
+     * If null, the query will choose the connection to use.
      */
-    public $db = 'db';
+    public $db;
 
     /**
      * @var int The number of results to include for each page
@@ -57,7 +57,7 @@ class Paginator extends BaseObject
     public $pageSize = 100;
 
     /**
-     * @var QueryInterface|Query The query being paginated
+     * @var QueryInterface|YiiQuery The query being paginated
      */
     protected $query;
 
@@ -109,8 +109,10 @@ class Paginator extends BaseObject
     {
         parent::init();
 
-        // Make sure that $db is a Connection instance
-        $this->db = Instance::ensure($this->db, YiiConnection::class);
+        if ($this->db !== null) {
+            // Make sure that $db is a Connection instance
+            $this->db = Instance::ensure($this->db, YiiConnection::class);
+        }
     }
 
     /**
@@ -188,7 +190,7 @@ class Paginator extends BaseObject
             return $this->_pageResults;
         }
 
-        $pageOffset =  ($this->query->offset ?? 0) + $this->getPageOffset();
+        $pageOffset = ($this->query->offset ?? 0) + $this->getPageOffset();
 
         // Have we reached the last page, and would the default page size bleed past the total results?
         if ($this->pageSize * $this->currentPage > $this->getTotalResults()) {
@@ -219,6 +221,7 @@ class Paginator extends BaseObject
      * Sets the results for the current page.
      *
      * @param array
+     * @since 3.1.22
      */
     public function setPageResults(array $pageResults)
     {

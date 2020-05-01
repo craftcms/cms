@@ -7,26 +7,40 @@
 
 namespace craft\events;
 
+use craft\base\ElementInterface;
+use craft\behaviors\DraftBehavior;
 use yii\base\Event;
 
 /**
  * Draft event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.2.0
  */
 class DraftEvent extends Event
 {
-    // Properties
-    // =========================================================================
+    /**
+     * @var ElementInterface|null The source element
+     */
+    public $source;
 
     /**
-     * @var \craft\models\EntryDraft|null The draft model associated with the event.
+     * @var int The creator ID
+     */
+    public $creatorId;
+
+    /**
+     * @var string|null The draft name
+     */
+    public $draftName;
+
+    /**
+     * @var string|null The draft notes
+     */
+    public $draftNotes;
+
+    /**
+     * @var ElementInterface|DraftBehavior|null The draft associated with the event (if it exists yet)
      */
     public $draft;
-
-    /**
-     * @var bool Whether the draft is brand new
-     */
-    public $isNew = false;
 }

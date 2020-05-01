@@ -9,18 +9,17 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\base\SortableFieldInterface;
+use craft\fields\data\SingleOptionFieldData;
 
 /**
  * Dropdown represents a Dropdown field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
-class Dropdown extends BaseOptionsField
+class Dropdown extends BaseOptionsField implements SortableFieldInterface
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -29,8 +28,18 @@ class Dropdown extends BaseOptionsField
         return Craft::t('app', 'Dropdown');
     }
 
-    // Public Methods
-    // =========================================================================
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return SingleOptionFieldData::class;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public $optgroups = true;
 
     /**
      * @inheritdoc
@@ -43,9 +52,6 @@ class Dropdown extends BaseOptionsField
             'options' => $this->translatedOptions(),
         ]);
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

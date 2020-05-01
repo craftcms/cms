@@ -5,7 +5,7 @@
         {% if craft.rebrand.isImageUploaded(imageType) -%}
             {% set image = craft.rebrand.getImageVariable(imageType) %}
             {% if image.width > 0 and image.height > 0 %}
-                 style="background-image: url('{{ image.url }}'); width: {{ image.width }}px; height: {{ image.height }}px;"
+                 style="background-image: url('{{ image.url|e('css') }}'); width: {{ image.width }}px; height: {{ image.height }}px;"
                  data-url="{{ image.url }}"
              {% endif %}
         {%- endif %}>

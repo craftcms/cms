@@ -13,13 +13,10 @@ use craft\base\Model;
  * Stores the info for an update release.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class UpdateRelease extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string Version
      */
@@ -39,9 +36,6 @@ class UpdateRelease extends Model
      * @var string|null Notes
      */
     public $notes;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

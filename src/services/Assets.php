@@ -8,7 +8,13 @@
 namespace craft\services;
 
 use Craft;
+use craft\assetpreviews\Image as ImagePreview;
+use craft\assetpreviews\Text;
+use craft\assetpreviews\Pdf;
+use craft\assetpreviews\Video;
+use craft\base\AssetPreviewHandlerInterface;
 use craft\base\Volume;
+use craft\base\VolumeInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
@@ -21,6 +27,7 @@ use craft\errors\ImageException;
 use craft\errors\VolumeException;
 use craft\errors\VolumeObjectExistsException;
 use craft\errors\VolumeObjectNotFoundException;
+use craft\events\AssetPreviewEvent;
 use craft\events\AssetThumbEvent;
 use craft\events\GetAssetThumbUrlEvent;
 use craft\events\GetAssetUrlEvent;
@@ -48,13 +55,10 @@ use yii\base\NotSupportedException;
  * An instance of the Assets service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getAssets()|`Craft::$app->assets`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Assets extends Component
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event AssetEvent The event that is triggered before an asset is replaced.
      */
@@ -81,8 +85,11 @@ class Assets extends Component
      */
     const EVENT_GET_THUMB_PATH = 'getThumbPath';
 
-    // Properties
-    // =========================================================================
+    /**
+     * @event AssetPreviewEvent The event that is triggered when determining the preview handler for an asset.
+     * @since 3.4.0
+     */
+    const EVENT_REGISTER_PREVIEW_HANDLER = 'registerPreviewHandler';
 
     /**
      * @var
@@ -99,9 +106,6 @@ class Assets extends Component
      */
     private $_queuedGeneratePendingTransformsJob = false;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * Returns a file by its ID.
      *
@@ -111,10 +115,8 @@ class Assets extends Component
      */
     public function getAssetById(int $assetId, int $siteId = null)
     {
-        /** @var Asset|null $asset */
-        $asset = Craft::$app->getElements()->getElementById($assetId, Asset::class, $siteId);
-
-        return $asset;
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return Craft::$app->getElements()->getElementById($assetId, Asset::class, $siteId);
     }
 
     /**
@@ -152,16 +154,19 @@ class Assets extends Component
     {
         // Fire a 'beforeReplaceFile' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_REPLACE_ASSET)) {
-            $this->trigger(self::EVENT_BEFORE_REPLACE_ASSET, new ReplaceAssetEvent([
+            $event = new ReplaceAssetEvent([
                 'asset' => $asset,
                 'replaceWith' => $pathOnServer,
                 'filename' => $filename
-            ]));
+            ]);
+            $this->trigger(self::EVENT_BEFORE_REPLACE_ASSET, $event);
+            $filename = $event->filename;
         }
 
         $asset->tempFilePath = $pathOnServer;
         $asset->newFilename = $filename;
         $asset->avoidFilenameConflicts = true;
+        $asset->uploaderId = Craft::$app->getUser()->getId();
         $asset->setScenario(Asset::SCENARIO_REPLACE);
 
         Craft::$app->getElements()->saveElement($asset);
@@ -241,11 +246,11 @@ class Assets extends Component
      *
      * @param int $folderId
      * @param string $newName
-     * @throws AssetConflictException If a folder already exists with such name in Assets Index
+     * @return string The new folder name after cleaning it.
      * @throws AssetLogicException If the folder to be renamed can't be found or trying to rename the top folder.
      * @throws VolumeObjectExistsException If a folder already exists with such name in the Volume, but not in Index
      * @throws VolumeObjectNotFoundException If the folder to be renamed can't be found in the Volume.
-     * @return string The new folder name after cleaning it.
+     * @throws AssetConflictException If a folder already exists with such name in Assets Index
      */
     public function renameFolderById(int $folderId, string $newName): string
     {
@@ -363,11 +368,13 @@ class Assets extends Component
      */
     public function getFolderTreeByFolderId(int $folderId): array
     {
-        if (($folder = $this->getFolderById($folderId)) === null) {
+        if (($parentFolder = $this->getFolderById($folderId)) === null) {
             return [];
         }
 
-        return $this->_getFolderTreeByFolders([$folder]);
+        $childFolders = $this->getAllDescendantFolders($parentFolder);
+
+        return $this->_getFolderTreeByFolders([$parentFolder] + $childFolders);
     }
 
     /**
@@ -463,7 +470,7 @@ class Assets extends Component
      * @param string $orderBy
      * @return array
      */
-    public function getAllDescendantFolders(VolumeFolder $parentFolder, string $orderBy = 'path'): array
+    public function  getAllDescendantFolders(VolumeFolder $parentFolder, string $orderBy = 'path'): array
     {
         /** @var $query Query */
         $query = $this->_createFolderQuery()
@@ -613,7 +620,7 @@ class Assets extends Component
     }
 
     /**
-     * Returns the CP thumbnail URL for a given asset.
+     * Returns the control panel thumbnail URL for a given asset.
      *
      * @param Asset $asset asset to return a thumb for
      * @param int $width width of the returned thumb
@@ -657,7 +664,7 @@ class Assets extends Component
     }
 
     /**
-     * Returns the CP thumbnail path for a given asset.
+     * Returns the control panel thumbnail path for a given asset.
      *
      * @param Asset $asset asset to return a thumb for
      * @param int $width width of the returned thumb
@@ -717,13 +724,14 @@ class Assets extends Component
 
             // hail Mary
             try {
-                $image = Craft::$app->getImages()->loadImage($imageSource, false, $svgSize)
-                    ->scaleToFit($width, $height);
+                $image = Craft::$app->getImages()->loadImage($imageSource, false, $svgSize);
 
+                // Prevent resize of all layers
                 if ($image instanceof Raster) {
                     $image->disableAnimation();
                 }
 
+                $image->scaleAndCrop($width, $height);
                 $image->saveAs($path);
             } catch (ImageException $exception) {
                 Craft::warning($exception->getMessage());
@@ -754,17 +762,17 @@ class Assets extends Component
 
         $extLength = strlen($ext);
         if ($extLength <= 3) {
-            $textSize = '26';
+            $textSize = '20';
         } else if ($extLength === 4) {
-            $textSize = '22';
+            $textSize = '17';
         } else {
             if ($extLength > 5) {
                 $ext = substr($ext, 0, 4) . '…';
             }
-            $textSize = '18';
+            $textSize = '14';
         }
 
-        $textNode = "<text x=\"50\" y=\"73\" text-anchor=\"middle\" font-family=\"sans-serif\" fill=\"#8F98A3\" font-size=\"{$textSize}\">" . strtoupper($ext) . '</text>';
+        $textNode = "<text x=\"50\" y=\"73\" text-anchor=\"middle\" font-family=\"sans-serif\" fill=\"#9aa5b1\" font-size=\"{$textSize}\">" . strtoupper($ext) . '</text>';
         $svg = str_replace('<!-- EXT -->', $textNode, $svg);
 
         FileHelper::writeToFile($path, $svg);
@@ -865,13 +873,14 @@ class Assets extends Component
      * Ensure a folder entry exists in the DB for the full path and return it's id. Depending on the use, it's possible to also ensure a physical folder exists.
      *
      * @param string $fullPath The path to ensure the folder exists at.
-     * @param Volume $volume
+     * @param VolumeInterface $volume
      * @param bool $justRecord If set to false, will also make sure the physical folder exists on Volume.
      * @return int
      * @throws VolumeException If the volume cannot be found.
      */
-    public function ensureFolderByFullPathAndVolume(string $fullPath, Volume $volume, bool $justRecord = true): int
+    public function ensureFolderByFullPathAndVolume(string $fullPath, VolumeInterface $volume, bool $justRecord = true): int
     {
+        /** @var Volume $volume */
         $parentId = Craft::$app->getVolumes()->ensureTopFolder($volume);
         $folderId = $parentId;
 
@@ -945,20 +954,54 @@ class Assets extends Component
      * Return the current user's temporary upload folder.
      *
      * @return VolumeFolder
+     * @deprecated in 3.2.0. Use [[getUserTemporaryUploadFolder()]] instead.
      */
     public function getCurrentUserTemporaryUploadFolder()
     {
-        return $this->getUserTemporaryUploadFolder(Craft::$app->getUser()->getIdentity());
+        return $this->getUserTemporaryUploadFolder();
     }
 
     /**
-     * Get the user's temporary upload folder.
+     * Returns the given user's temporary upload folder.
      *
-     * @param User|null $userModel
+     * If no user is provided, the currently-logged in user will be used (if there is one), or a folder named after
+     * the current session ID.
+     *
+     * @param User|null $user
      * @return VolumeFolder
+     * @throws VolumeException
      */
-    public function getUserTemporaryUploadFolder(User $userModel = null)
+    public function getUserTemporaryUploadFolder(User $user = null)
     {
+        if ($user === null) {
+            // Default to the logged-in user, if there is one
+            $user = Craft::$app->getUser()->getIdentity();
+        }
+
+        if ($user) {
+            $folderName = 'user_' . $user->id;
+        } else {
+            // A little obfuscation never hurt anyone
+            $folderName = 'user_' . sha1(Craft::$app->getSession()->id);
+        }
+
+        // Is there a designated temp uploads volume?
+        $assetSettings = Craft::$app->getProjectConfig()->get('assets');
+        if (isset($assetSettings['tempVolumeUid'])) {
+            $volume = Craft::$app->getVolumes()->getVolumeByUid($assetSettings['tempVolumeUid']);
+            if (!$volume) {
+                throw new VolumeException(Craft::t('app', 'The volume set for temp asset storage is not valid.'));
+            }
+            /** @var Volume $volume */
+            $path = (isset($assetSettings['tempSubpath']) ? $assetSettings['tempSubpath'] . '/' : '') .
+                $folderName;
+            $folderId = $this->ensureFolderByFullPathAndVolume($path, $volume, false);
+            return $this->findFolder([
+                'volumeId' => $volume->id,
+                'id' => $folderId,
+            ]);
+        }
+
         $volumeTopFolder = $this->findFolder([
             'volumeId' => ':empty:',
             'parentId' => ':empty:'
@@ -970,13 +1013,6 @@ class Assets extends Component
             $tempVolume = new Temp();
             $volumeTopFolder->name = $tempVolume->name;
             $this->storeFolderRecord($volumeTopFolder);
-        }
-
-        if ($userModel) {
-            $folderName = 'user_' . $userModel->id;
-        } else {
-            // A little obfuscation never hurt anyone
-            $folderName = 'user_' . sha1(Craft::$app->getSession()->id);
         }
 
         $folder = $this->findFolder([
@@ -994,14 +1030,46 @@ class Assets extends Component
 
         FileHelper::createDirectory(Craft::$app->getPath()->getTempAssetUploadsPath() . DIRECTORY_SEPARATOR . $folderName);
 
-        /**
-         * @var VolumeFolder $folder ;
-         */
         return $folder;
     }
 
-    // Private Methods
-    // =========================================================================
+    /**
+     * Returns the asset preview handler for a given asset, or `null` if the asset is not previewable.
+     *
+     * @param Asset $asset
+     * @return AssetPreviewHandlerInterface|null
+     * @since 3.4.0
+     */
+    public function getAssetPreviewHandler(Asset $asset)
+    {
+        // Give plugins a chance to register their own preview handlers
+        if ($this->hasEventHandlers(self::EVENT_REGISTER_PREVIEW_HANDLER)) {
+            $event = new AssetPreviewEvent(['asset' => $asset]);
+            $this->trigger(self::EVENT_REGISTER_PREVIEW_HANDLER, $event);
+            if ($event->previewHandler instanceof AssetPreviewHandlerInterface) {
+                return $event->previewHandler;
+            }
+        }
+
+        // These are our default preview handlers if one is not supplied
+        switch ($asset->kind) {
+            case Asset::KIND_IMAGE:
+                return new ImagePreview($asset);
+            case Asset::KIND_PDF:
+                return new Pdf($asset);
+            case Asset::KIND_VIDEO:
+                return new Video($asset);
+            case Asset::KIND_HTML:
+            case Asset::KIND_JAVASCRIPT:
+            case Asset::KIND_JSON:
+            case Asset::KIND_PHP:
+            case Asset::KIND_TEXT:
+            case Asset::KIND_XML:
+                return new Text($asset);
+        }
+
+        return null;
+    }
 
     /**
      * Returns a DbCommand object prepped for retrieving assets.

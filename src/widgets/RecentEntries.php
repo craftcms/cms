@@ -18,13 +18,10 @@ use craft\web\assets\recententries\RecentEntriesAsset;
  * RecentEntries represents a Recent Entries dashboard widget.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class RecentEntries extends Widget
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -36,13 +33,10 @@ class RecentEntries extends Widget
     /**
      * @inheritdoc
      */
-    public static function iconPath()
+    public static function icon()
     {
         return Craft::getAlias('@app/icons/clock.svg');
     }
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var string|int[] The section IDs that the widget should pull entries from
@@ -50,17 +44,14 @@ class RecentEntries extends Widget
     public $section = '*';
 
     /**
-     * string The site ID that the widget should pull entries from
+     * @var string The site ID that the widget should pull entries from
      */
     public $siteId;
 
     /**
-     * int The total number of entries that the widget should show
+     * @var int The total number of entries that the widget should show
      */
     public $limit = 10;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -77,9 +68,9 @@ class RecentEntries extends Widget
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['siteId', 'limit'], 'number', 'integerOnly' => true];
         return $rules;
     }
@@ -156,9 +147,6 @@ class RecentEntries extends Widget
                 'entries' => $entries
             ]);
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns the recent entries, based on the widget settings and user permissions.

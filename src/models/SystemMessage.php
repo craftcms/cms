@@ -13,13 +13,10 @@ use craft\base\Model;
  * SystemMessage represents a system email message.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class SystemMessage extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null Unique key for the message
      */

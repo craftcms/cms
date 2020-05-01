@@ -29,8 +29,8 @@
                 <div class="fld-field{% if field.required %} fld-required{% endif %}" data-id="{{ field.id }}">
                     <a class="settings icon" title="{{ 'Edit'|t('app') }}"></a>
                     <span title="{{ field.handle }}">{{ field.name|t('site') }}</span>
-                    <input class="id-input" type="hidden" name="fieldLayout[{{ tabName|e('url') }}][]" value="{{ field.id }}">
-                    {% if field.required %}<input class="required-input" type="hidden" name="requiredFields[]" value="{{ field.id }}">{% endif %}
+                    {{ hiddenInput("fieldLayout[#{tabName|e('url')}][]", field.id, {class: 'id-input'}) }}
+                    {% if field.required %}{{ hiddenInput('requiredFields[]', field.id, {class: 'required-input'}) }}{% endif %}
                 </div>
             {% endfor %}
         </div>
@@ -41,7 +41,7 @@
 
 <div id="fieldlayoutform" class="fieldlayoutform">
     {% if fieldLayout and fieldLayout.id %}
-        <input type="hidden" name="fieldLayoutId" value="{{ fieldLayout.id }}">
+        {{ hiddenInput('fieldLayoutId', fieldLayout.id) }}
     {% endif %}
 
     <h2 class="first">{{ "Design your field layout"|t('app') }}</h2>

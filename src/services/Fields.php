@@ -10,8 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\base\Field;
 use craft\base\FieldInterface;
-use craft\behaviors\ContentBehavior;
-use craft\behaviors\ElementQueryBehavior;
+use craft\behaviors\CustomFieldBehavior;
 use craft\db\Query;
 use craft\db\Table;
 use craft\errors\FieldNotFoundException;
@@ -44,6 +43,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\Db;
 use craft\helpers\Json;
+use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\models\FieldGroup;
 use craft\models\FieldLayout;
@@ -61,13 +61,10 @@ use yii\base\Exception;
  * An instance of the Fields service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getFields()|`Craft::$app->fields`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Fields extends Component
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event RegisterComponentTypesEvent The event that is triggered when registering field types.
      *
@@ -102,6 +99,7 @@ class Fields extends Component
 
     /**
      * @event FieldGroupEvent The event that is triggered before a field group delete is applied to the database.
+     * @since 3.1.0
      */
     const EVENT_BEFORE_APPLY_GROUP_DELETE = 'beforeApplyGroupDelete';
 
@@ -132,6 +130,7 @@ class Fields extends Component
 
     /**
      * @event FieldEvent The event that is triggered before a field delete is applied to the database.
+     * @since 3.1.0
      */
     const EVENT_BEFORE_APPLY_FIELD_DELETE = 'beforeApplyFieldDelete';
 
@@ -162,9 +161,6 @@ class Fields extends Component
 
     const CONFIG_FIELDGROUP_KEY = 'fieldGroups';
     const CONFIG_FIELDS_KEY = 'fields';
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var string
@@ -202,9 +198,6 @@ class Fields extends Component
      */
     private $_savingFields = [];
 
-    // Public Methods
-    // =========================================================================
-
     // Groups
     // -------------------------------------------------------------------------
 
@@ -238,6 +231,18 @@ class Fields extends Component
     public function getGroupById(int $groupId)
     {
         return ArrayHelper::firstWhere($this->getAllGroups(), 'id', $groupId);
+    }
+
+    /**
+     * Returns a field group by its UID.
+     *
+     * @param string $groupUid The field group’s UID
+     * @return FieldGroup|null The field group, or null if it doesn’t exist
+     * @since 3.3.0
+     */
+    public function getGroupByUid(string $groupUid)
+    {
+        return ArrayHelper::firstWhere($this->getAllGroups(), 'uid', $groupUid);
     }
 
     /**
@@ -276,7 +281,7 @@ class Fields extends Component
             $group->uid = Db::uidById(Table::FIELDGROUPS, $group->id);
         }
 
-        $projectConfig->set(self::CONFIG_FIELDGROUP_KEY . '.' . $group->uid, $configData);
+        $projectConfig->set(self::CONFIG_FIELDGROUP_KEY . '.' . $group->uid, $configData, "Save field group “{$group->name}”");
 
         if ($isNewGroup) {
             $group->id = Db::idByUid(Table::FIELDGROUPS, $group->uid);
@@ -413,7 +418,7 @@ class Fields extends Component
             $this->deleteField($field);
         }
 
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_FIELDGROUP_KEY . '.' . $group->uid);
+        Craft::$app->getProjectConfig()->remove(self::CONFIG_FIELDGROUP_KEY . '.' . $group->uid, "Delete the “{$group->name}” field group");
         return true;
     }
 
@@ -583,10 +588,10 @@ class Fields extends Component
         }
 
         if (is_string($context)) {
-            return ArrayHelper::filterByValue($this->_fields, 'context', $context, true);
+            return ArrayHelper::where($this->_fields, 'context', $context, true);
         }
 
-        return ArrayHelper::filterByValue($this->_fields, function(FieldInterface $field) use ($context) {
+        return ArrayHelper::where($this->_fields, function(FieldInterface $field) use ($context) {
             /** @var Field $field */
             return in_array($field->context, $context, true);
         });
@@ -599,7 +604,7 @@ class Fields extends Component
      */
     public function getFieldsWithContent(): array
     {
-        return ArrayHelper::filterByValue($this->getAllFields(), function(FieldInterface $field) {
+        return ArrayHelper::where($this->getAllFields(), function(FieldInterface $field) {
             return $field::hasContentColumn();
         });
     }
@@ -656,7 +661,7 @@ class Fields extends Component
      */
     public function doesFieldWithHandleExist(string $handle, string $context = null): bool
     {
-        return ArrayHelper::firstWhere($this->getAllFields($context), 'handle', $handle, true) !== null;
+        return ArrayHelper::contains($this->getAllFields($context), 'handle', $handle, true);
     }
 
     /**
@@ -667,7 +672,7 @@ class Fields extends Component
      */
     public function getFieldsByGroupId(int $groupId): array
     {
-        return ArrayHelper::filterByValue($this->getAllFields(false), 'groupId', $groupId);
+        return ArrayHelper::where($this->getAllFields(false), 'groupId', $groupId);
     }
 
     /**
@@ -685,6 +690,7 @@ class Fields extends Component
                 'fl.type' => $elementType,
                 'fl.dateDeleted' => null,
             ])
+            ->groupBy(['fields.id'])
             ->all();
 
         $fields = [];
@@ -701,19 +707,19 @@ class Fields extends Component
      *
      * @param FieldInterface $field
      * @return array
+     * @since 3.1.0
      */
     public function createFieldConfig(FieldInterface $field): array
     {
-        /** @var Field $field */
         $config = [
             'name' => $field->name,
             'handle' => $field->handle,
             'instructions' => $field->instructions,
-            'searchable' => $field->searchable,
+            'searchable' => (bool)$field->searchable,
             'translationMethod' => $field->translationMethod,
             'translationKeyFormat' => $field->translationKeyFormat,
             'type' => get_class($field),
-            'settings' => $field->getSettings(),
+            'settings' => ProjectConfigHelper::packAssociativeArrays($field->getSettings()),
             'contentColumnType' => $field->getContentColumnType(),
         ];
 
@@ -762,7 +768,7 @@ class Fields extends Component
         // Only store field data in the project config for global context
         if ($field->context === 'global') {
             $configPath = self::CONFIG_FIELDS_KEY . '.' . $field->uid;
-            Craft::$app->getProjectConfig()->set($configPath, $configData);
+            Craft::$app->getProjectConfig()->set($configPath, $configData, "Save field “{$field->handle}”");
         } else {
             // Otherwise just save it to the DB
             $this->applyFieldSave($field->uid, $configData, $field->context);
@@ -779,6 +785,7 @@ class Fields extends Component
      * Preps a field to be saved.
      *
      * @param FieldInterface $field
+     * @since 3.1.2
      */
     public function prepFieldForSave(FieldInterface $field)
     {
@@ -858,7 +865,7 @@ class Fields extends Component
         }
 
         if ($field->context === 'global') {
-            Craft::$app->getProjectConfig()->remove(self::CONFIG_FIELDS_KEY . '.' . $field->uid);
+            Craft::$app->getProjectConfig()->remove(self::CONFIG_FIELDS_KEY . '.' . $field->uid, "Delete the “{$field->handle}” field");
         } else {
             $this->applyFieldDelete($field->uid);
         }
@@ -887,6 +894,7 @@ class Fields extends Component
      *
      * @param $fieldUid
      * @throws \Throwable if database error
+     * @since 3.1.0
      */
     public function applyFieldDelete($fieldUid)
     {
@@ -957,6 +965,8 @@ class Fields extends Component
      *
      * This should be called whenever a field is updated or deleted directly in
      * the database, rather than going through this service.
+     *
+     * @since 3.0.20
      */
     public function refreshFields()
     {
@@ -1039,6 +1049,22 @@ class Fields extends Component
     }
 
     /**
+     * Returns the field IDs for a given layout ID.
+     *
+     * @param int $layoutId The field layout ID
+     * @return int[]
+     * @since 3.1.24
+     */
+    public function getFieldIdsByLayoutId(int $layoutId): array
+    {
+        return (new Query())
+            ->select(['fieldId'])
+            ->from([Table::FIELDLAYOUTFIELDS])
+            ->where(['layoutId' => $layoutId])
+            ->column();
+    }
+
+    /**
      * Returns the field IDs grouped by layout IDs, for a given set of layout IDs.
      *
      * @param int[] $layoutIds The field layout IDs
@@ -1047,15 +1073,14 @@ class Fields extends Component
     public function getFieldIdsByLayoutIds(array $layoutIds): array
     {
         $results = (new Query())
-            ->select(['flf.layoutId', 'fields.id'])
-            ->from(['{{%fields}} fields'])
-            ->innerJoin('{{%fieldlayoutfields}} flf', '[[flf.fieldId]] = [[fields.id]]')
-            ->where(['flf.layoutId' => $layoutIds])
+            ->select(['layoutId', 'fieldId'])
+            ->from([Table::FIELDLAYOUTFIELDS])
+            ->where(['layoutId' => $layoutIds])
             ->all();
 
         $fieldIdsByLayoutId = [];
         foreach ($results as $result) {
-            $fieldIdsByLayoutId[$result['layoutId']][] = $result['id'];
+            $fieldIdsByLayoutId[$result['layoutId']][] = $result['fieldId'];
         }
 
         return $fieldIdsByLayoutId;
@@ -1370,6 +1395,7 @@ class Fields extends Component
      *
      * @param int $id The field layout’s ID
      * @return bool Whether the layout was restored successfully
+     * @since 3.1.0
      */
     public function restoreLayoutById(int $id): bool
     {
@@ -1381,19 +1407,18 @@ class Fields extends Component
     }
 
     /**
-     * Sets a new field version, so the ContentBehavior and ElementQueryBehavior classes
+     * Sets a new field version, so the CustomFieldBehavior class
      * will get regenerated on the next request.
      */
     public function updateFieldVersion()
     {
-        // Make sure that ContentBehavior and ElementQueryBehavior have already been loaded,
+        // Make sure that CustomFieldBehavior has already been loaded,
         // so the field version change won't be detected until the next request
-        class_exists(ContentBehavior::class);
-        class_exists(ElementQueryBehavior::class);
+        class_exists(CustomFieldBehavior::class);
 
         $info = Craft::$app->getInfo();
         $info->fieldVersion = StringHelper::randomString(12);
-        Craft::$app->saveInfo($info);
+        Craft::$app->saveInfo($info, ['fieldVersion']);
     }
 
     /**
@@ -1402,6 +1427,7 @@ class Fields extends Component
      * @param string $fieldUid
      * @param array $data
      * @param string $context
+     * @since 3.1.0
      */
     public function applyFieldSave(string $fieldUid, array $data, string $context)
     {
@@ -1437,6 +1463,11 @@ class Fields extends Component
 
                 // Are we dealing with an existing column?
                 if ($db->columnExists($contentTable, $oldColumnName)) {
+                    // Alter it first, in case that results in an error due to incompatible column data
+                    $db->createCommand()
+                        ->alterColumn($contentTable, $oldColumnName, $columnType)
+                        ->execute();
+
                     // Name change?
                     if ($oldColumnName !== $newColumnName) {
                         // Does the new column already exist?
@@ -1452,11 +1483,6 @@ class Fields extends Component
                             ->renameColumn($contentTable, $oldColumnName, $newColumnName)
                             ->execute();
                     }
-
-                    // Alter it
-                    $db->createCommand()
-                        ->alterColumn($contentTable, $newColumnName, $columnType)
-                        ->execute();
                 } else {
                     // Does the new column already exist?
                     if ($db->columnExists($contentTable, $newColumnName)) {
@@ -1489,6 +1515,10 @@ class Fields extends Component
                 $data['translationKeyFormat'] = null;
             }
 
+            if (!empty($data['settings']) && is_array($data['settings'])) {
+                $data['settings'] = ProjectConfigHelper::unpackAssociativeArrays($data['settings']);
+            }
+
             $fieldRecord->uid = $fieldUid;
             $fieldRecord->groupId = $groupRecord->id;
             $fieldRecord->name = $data['name'];
@@ -1513,11 +1543,8 @@ class Fields extends Component
         // Clear caches
         $this->refreshFields();
 
-        // Update the field version
-        $this->updateFieldVersion();
-
-        // Tell the current ContentBehavior class about the field
-        ContentBehavior::$fieldHandles[$fieldRecord->handle] = true;
+        // Tell the current CustomFieldBehavior class about the field
+        CustomFieldBehavior::$fieldHandles[$fieldRecord->handle] = true;
 
         // For CP save requests, make sure we have all the custom data already saved on the object.
         /** @var Field $field */
@@ -1547,9 +1574,6 @@ class Fields extends Component
             ]));
         }
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns a Query object prepped for retrieving groups.
@@ -1595,7 +1619,7 @@ class Fields extends Component
             ->orderBy(['fields.name' => SORT_ASC, 'fields.handle' => SORT_ASC]);
 
         // todo: remove schema version condition after next beakpoint
-        $schemaVersion = Craft::$app->getProjectConfig()->get('system.schemaVersion');
+        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
         if (version_compare($schemaVersion, '3.1.0', '>=')) {
             $query->addSelect(['fields.searchable']);
         }
@@ -1619,7 +1643,7 @@ class Fields extends Component
             ->from([Table::FIELDLAYOUTS]);
 
         // todo: remove schema version condition after next beakpoint
-        $schemaVersion = Craft::$app->getProjectConfig()->get('system.schemaVersion');
+        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
         if (version_compare($schemaVersion, '3.1.0', '>=')) {
             $query->where(['dateDeleted' => null]);
         }

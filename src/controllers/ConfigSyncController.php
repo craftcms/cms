@@ -20,21 +20,16 @@ use yii\web\Response;
  * ConfigSyncController handles the Project Config Sync workflow
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.1
+ * @since 3.1.0
+ * @internal
  */
 class ConfigSyncController extends BaseUpdaterController
 {
-    // Constants
-    // =========================================================================
-
     const ACTION_RETRY = 'retry';
     const ACTION_APPLY_YAML_CHANGES = 'apply-yaml-changes';
     const ACTION_REGENERATE_YAML = 'regenerate-yaml';
     const ACTION_UNINSTALL_PLUGIN = 'uninstall-plugin';
     const ACTION_INSTALL_PLUGIN = 'install-plugin';
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Re-kicks off the sync, after the user has had a chance to run `composer install`
@@ -126,9 +121,6 @@ class ConfigSyncController extends BaseUpdaterController
 
         return $this->sendNextAction($this->_nextApplyYamlAction());
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

@@ -8,6 +8,8 @@ Craft.BaseElementEditor = Garnish.Base.extend(
         $element: null,
         elementId: null,
         siteId: null,
+        deltaNames: null,
+        initialData: null,
 
         $form: null,
         $fieldsContainer: null,
@@ -72,13 +74,17 @@ Craft.BaseElementEditor = Garnish.Base.extend(
                 data.attributes = this.settings.attributes;
             }
 
+            if (this.settings.prevalidate) {
+                data.prevalidate = 1;
+            }
+
             return data;
         },
 
         loadHud: function() {
             this.onBeginLoading();
             var data = this.getBaseData();
-            data.includeSites = this.settings.showSiteSwitcher;
+            data.includeSites = Craft.isMultiSite && this.settings.showSiteSwitcher;
             Craft.postActionRequest('elements/get-editor-html', data, $.proxy(this, 'showHud'));
         },
 
@@ -89,18 +95,23 @@ Craft.BaseElementEditor = Garnish.Base.extend(
                 var $hudContents = $();
 
                 if (response.sites) {
-                    var $header = $('<div class="hud-header"/>'),
-                        $siteSelectContainer = $('<div class="select"/>').appendTo($header);
+                    var $header = $('<div class="hud-header"/>');
 
-                    this.$siteSelect = $('<select/>').appendTo($siteSelectContainer);
-                    this.$siteSpinner = $('<div class="spinner hidden"/>').appendTo($header);
+                    if (response.sites.length === 1) {
+                        $('<h5/>', {text: response.sites[0].name}).appendTo($header);;
+                    } else {
+                        var $siteSelectContainer = $('<div class="select"/>').appendTo($header);
 
-                    for (var i = 0; i < response.sites.length; i++) {
-                        var siteInfo = response.sites[i];
-                        $('<option value="' + siteInfo.id + '"' + (siteInfo.id == response.siteId ? ' selected="selected"' : '') + '>' + siteInfo.name + '</option>').appendTo(this.$siteSelect);
+                        this.$siteSelect = $('<select/>').appendTo($siteSelectContainer);
+                        this.$siteSpinner = $('<div class="spinner hidden"/>').appendTo($header);
+
+                        for (var i = 0; i < response.sites.length; i++) {
+                            var siteInfo = response.sites[i];
+                            $('<option value="' + siteInfo.id + '"' + (siteInfo.id == response.siteId ? ' selected="selected"' : '') + '>' + siteInfo.name + '</option>').appendTo(this.$siteSelect);
+                        }
+
+                        this.addListener(this.$siteSelect, 'change', 'switchSite');
                     }
-
-                    this.addListener(this.$siteSelect, 'change', 'switchSite');
 
                     $hudContents = $hudContents.add($header);
                 }
@@ -108,7 +119,7 @@ Craft.BaseElementEditor = Garnish.Base.extend(
                 this.$form = $('<div/>');
                 this.$fieldsContainer = $('<div class="fields"/>').appendTo(this.$form);
 
-                this.updateForm(response);
+                this.updateForm(response, true);
 
                 this.onCreateForm(this.$form);
 
@@ -126,12 +137,17 @@ Craft.BaseElementEditor = Garnish.Base.extend(
                     this.hud = new Garnish.HUD(hudTrigger, $hudContents, {
                         bodyClass: 'body elementeditor',
                         closeOtherHUDs: false,
-                        onShow: $.proxy(this, 'onShowHud'),
-                        onHide: $.proxy(this, 'onHideHud'),
-                        onSubmit: $.proxy(this, 'saveElement')
+                        hideOnEsc: false,
+                        hideOnShadeClick: false,
+                        onShow: this.onShowHud.bind(this),
+                        onHide: this.onHideHud.bind(this),
+                        onSubmit: this.saveElement.bind(this),
                     });
 
                     this.hud.$hud.data('elementEditor', this);
+
+                    // Disable browser input validation
+                    this.hud.$body.attr('novalidate', '');
 
                     this.hud.on('hide', $.proxy(function() {
                         delete this.hud;
@@ -174,7 +190,7 @@ Craft.BaseElementEditor = Garnish.Base.extend(
 
             Craft.postActionRequest('elements/get-editor-html', data, $.proxy(function(response, textStatus) {
                 if (textStatus === 'success') {
-                    this.updateForm(response);
+                    this.updateForm(response, true);
                 }
 
                 if (callback) {
@@ -183,16 +199,18 @@ Craft.BaseElementEditor = Garnish.Base.extend(
             }, this));
         },
 
-        updateForm: function(response) {
+        updateForm: function(response, refreshInitialData) {
             this.siteId = response.siteId;
-
             this.$fieldsContainer.html(response.html);
+
+            if (refreshInitialData !== false) {
+                this.deltaNames = response.deltaNames;
+            }
 
             // Swap any instruction text with info icons
             var $instructions = this.$fieldsContainer.find('> .meta > .field > .heading > .instructions');
 
             for (var i = 0; i < $instructions.length; i++) {
-
                 $instructions.eq(i)
                     .replaceWith($('<span/>', {
                         'class': 'info',
@@ -205,6 +223,10 @@ Craft.BaseElementEditor = Garnish.Base.extend(
                 Craft.appendHeadHtml(response.headHtml);
                 Craft.appendFootHtml(response.footHtml);
                 Craft.initUiElements(this.$fieldsContainer);
+
+                if (refreshInitialData) {
+                    this.initialData = this.hud.$body.serialize();
+                }
             }, this));
         },
 
@@ -222,6 +244,8 @@ Craft.BaseElementEditor = Garnish.Base.extend(
             this.$spinner.removeClass('hidden');
 
             var data = $.param(this.getBaseData()) + '&' + this.hud.$body.serialize();
+            data = Craft.findDeltaData(this.initialData, data, this.deltaNames);
+
             Craft.postActionRequest('elements/save-element', data, $.proxy(function(response, textStatus) {
                 this.$spinner.addClass('hidden');
 
@@ -241,11 +265,17 @@ Craft.BaseElementEditor = Garnish.Base.extend(
                             }
                         }
 
+                        if (this.settings.elementType && Craft.elementTypeNames[this.settings.elementType]) {
+                            Craft.cp.displayNotice(Craft.t('app', '{type} saved.', {
+                                type: Craft.elementTypeNames[this.settings.elementType][0],
+                            }));
+                        }
+
                         this.closeHud();
                         this.onSaveElement(response);
                     }
                     else {
-                        this.updateForm(response);
+                        this.updateForm(response, false);
                         Garnish.shake(this.hud.$hud);
                     }
                 }
@@ -261,6 +291,10 @@ Craft.BaseElementEditor = Garnish.Base.extend(
         // -------------------------------------------------------------------------
 
         onShowHud: function() {
+            Garnish.shortcutManager.registerShortcut({
+                keyCode: Garnish.S_KEY,
+                ctrl: true,
+            }, this.saveElement.bind(this));
             this.settings.onShowHud();
             this.trigger('showHud');
         },
@@ -293,6 +327,9 @@ Craft.BaseElementEditor = Garnish.Base.extend(
             this.trigger('saveElement', {
                 response: response
             });
+
+            // There may be a new background job that needs to be run
+            Craft.cp.runQueue();
         },
 
         onCreateForm: function($form) {
@@ -308,6 +345,7 @@ Craft.BaseElementEditor = Garnish.Base.extend(
             siteId: null,
             attributes: null,
             params: null,
+            prevalidate: false,
             elementIndex: null,
 
             onShowHud: $.noop,

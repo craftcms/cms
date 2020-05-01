@@ -65,7 +65,6 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend(
                     this.$saveBtn.removeClass('disabled');
                     this.buildModal(response);
                 }
-
             }, this));
 
             this.addListener(this.$newHeadingBtn, 'click', 'handleNewHeadingBtnClick');
@@ -207,7 +206,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend(
                     this.hide();
                 }
                 else {
-                    var error = (textStatus === 'success' && response.error ? response.error : Craft.t('app', 'An unknown error occurred.'));
+                    var error = (textStatus === 'success' && response.error ? response.error : Craft.t('app', 'A server error occurred.'));
                     Craft.cp.displayError(error);
                 }
             }, this));
@@ -415,7 +414,7 @@ Craft.CustomizeSourcesModal.Heading = Craft.CustomizeSourcesModal.BaseSource.ext
 
             this.$deleteBtn = $('<a class="error delete"/>').text(Craft.t('app', 'Delete heading'));
 
-            this.addListener(this.$labelInput, 'textchange', 'handleLabelInputChange');
+            this.addListener(this.$labelInput, 'input', 'handleLabelInputChange');
             this.addListener(this.$deleteBtn, 'click', 'deleteHeading');
 
             return $([

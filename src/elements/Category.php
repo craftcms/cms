@@ -34,19 +34,40 @@ use yii\base\InvalidConfigException;
  *
  * @property CategoryGroup $group the category's group
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Category extends Element
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
     public static function displayName(): string
     {
         return Craft::t('app', 'Category');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function lowerDisplayName(): string
+    {
+        return Craft::t('app', 'category');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function pluralDisplayName(): string
+    {
+        return Craft::t('app', 'Categories');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function pluralLowerDisplayName(): string
+    {
+        return Craft::t('app', 'categories');
     }
 
     /**
@@ -104,6 +125,26 @@ class Category extends Element
     public static function find(): ElementQueryInterface
     {
         return new CategoryQuery(static::class);
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public static function gqlTypeNameByContext($context): string
+    {
+        /** @var CategoryGroup $context */
+        return $context->handle . '_Category';
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public static function gqlScopesByContext($context): array
+    {
+        /** @var CategoryGroup $context */
+        return ['categorygroups.' . $context->uid];
     }
 
     /**
@@ -243,6 +284,11 @@ class Category extends Element
                 'orderBy' => 'elements.dateUpdated',
                 'attribute' => 'dateUpdated'
             ],
+            [
+                'label' => Craft::t('app', 'ID'),
+                'orderBy' => 'elements.id',
+                'attribute' => 'id',
+            ],
         ];
     }
 
@@ -256,6 +302,7 @@ class Category extends Element
             'uri' => ['label' => Craft::t('app', 'URI')],
             'link' => ['label' => Craft::t('app', 'Link'), 'icon' => 'world'],
             'id' => ['label' => Craft::t('app', 'ID')],
+            'uid' => ['label' => Craft::t('app', 'UID')],
             'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
             'dateUpdated' => ['label' => Craft::t('app', 'Date Updated')],
         ];
@@ -270,9 +317,6 @@ class Category extends Element
             'link',
         ];
     }
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var int|null Group ID
@@ -296,9 +340,6 @@ class Category extends Element
      */
     private $_hasNewParent;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -312,9 +353,9 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['groupId', 'newParentId'], 'number', 'integerOnly' => true];
         return $rules;
     }
@@ -449,6 +490,15 @@ class Category extends Element
         return $html;
     }
 
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public function getGqlTypeName(): string
+    {
+        return static::gqlTypeNameByContext($this->getGroup());
+    }
+
     // Events
     // -------------------------------------------------------------------------
 
@@ -484,32 +534,34 @@ class Category extends Element
      */
     public function afterSave(bool $isNew)
     {
-        // Get the category record
-        if (!$isNew) {
-            $record = CategoryRecord::findOne($this->id);
+        if (!$this->propagating) {
+            // Get the category record
+            if (!$isNew) {
+                $record = CategoryRecord::findOne($this->id);
 
-            if (!$record) {
-                throw new Exception('Invalid category ID: ' . $this->id);
-            }
-        } else {
-            $record = new CategoryRecord();
-            $record->id = $this->id;
-        }
-
-        $record->groupId = $this->groupId;
-        $record->save(false);
-
-        // Has the parent changed?
-        if ($this->_hasNewParent()) {
-            if (!$this->newParentId) {
-                Craft::$app->getStructures()->appendToRoot($this->structureId, $this);
+                if (!$record) {
+                    throw new Exception('Invalid category ID: ' . $this->id);
+                }
             } else {
-                Craft::$app->getStructures()->append($this->structureId, $this, $this->getParent());
+                $record = new CategoryRecord();
+                $record->id = (int)$this->id;
             }
-        }
 
-        // Update the category's descendants, who may be using this category's URI in their own URIs
-        Craft::$app->getElements()->updateDescendantSlugsAndUris($this, true, true);
+            $record->groupId = (int)$this->groupId;
+            $record->save(false);
+
+            // Has the parent changed?
+            if ($this->_hasNewParent()) {
+                if (!$this->newParentId) {
+                    Craft::$app->getStructures()->appendToRoot($this->structureId, $this);
+                } else {
+                    Craft::$app->getStructures()->append($this->structureId, $this, $this->getParent());
+                }
+            }
+
+            // Update the category's descendants, who may be using this category's URI in their own URIs
+            Craft::$app->getElements()->updateDescendantSlugsAndUris($this, true, true);
+        }
 
         parent::afterSave($isNew);
     }
@@ -583,7 +635,9 @@ class Category extends Element
             // Make sure that each of the category's ancestors are related wherever the category is related
             $newRelationValues = [];
 
-            $ancestorIds = $this->getAncestors()->ids();
+            $ancestorIds = $this->getAncestors()
+                ->anyStatus()
+                ->ids();
 
             $sources = (new Query())
                 ->select(['fieldId', 'sourceId', 'sourceSiteId'])
@@ -627,9 +681,6 @@ class Category extends Element
 
         parent::afterMoveInStructure($structureId);
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns whether the category has been assigned a new parent entry.

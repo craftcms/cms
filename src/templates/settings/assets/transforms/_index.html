@@ -1,53 +1,59 @@
 {% extends "settings/assets/_layout" %}
 {% set selectedNavItem = 'transforms' %}
 
+{% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
+
+{% do view.registerTranslations('app', [
+    "Name",
+    "Handle",
+    "Mode",
+    "Dimensions",
+    "Interlace",
+    "Format",
+    "No image transforms exist yet.",
+]) %}
 
 {% block content %}
-<p id="notransforms"{% if transforms|length %} class="hidden"{% endif %}>
-    {{ "No image transforms exist yet."|t('app') }}
-</p>
+    <div id="transforms-vue-admin-table"></div>
 
-{% if transforms|length %}
-    <table id="transforms" class="data fullwidth collapsible">
-        <thead>
-            <th scope="col">{{ "Name"|t('app') }}</th>
-            <th scope="col">{{ "Handle"|t('app') }}</th>
-            <th scope="col">{{ "Mode"|t('app') }}</th>
-            <th scope="col">{{ "Dimensions"|t('app') }}</th>
-            <th scope="col">{{ "Interlace"|t('app') }}</th>
-            <th scope="col">{{ "Format"|t('app') }}</th>
-            <td class="thin"></td>
-        </thead>
-        <tbody>
-        {% for transform in transforms %}
-            <tr data-id="{{ transform.id }}" data-name="{{ transform.name|t('site') }}">
-                <th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('settings/assets/transforms/' ~ transform.handle) }}">{{ transform.name|t('site') }}</a></th>
-                <td data-title="{{ 'Handle'|t('app') }}"><code>{{ transform.handle }}</code></td>
-                <td data-title="{{ 'Mode'|t('app') }}">
-                    {% if transform.mode %}
-                        {{ modes[transform.mode] }}
-                    {%  endif %}
-                </td>
-                <td data-title="{{ 'Dimensions'|t('app') }}">{{ transform.width ? transform.width : 'Auto'|t('app') }} &times; {{ transform.height ? transform.height : 'Auto'|t('app') }}</td>
-                <td data-title="{{ 'Interlace'|t('app') }}">{{ transform.interlace ? transform.interlace|capitalize : 'None'|t('app') }}</td>
-                <td data-title="{{ 'Format'|t('app') }}">{{ transform.format ? transform.format|capitalize : 'Auto'|t('app') }}</td>
-                <td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-{% endif %}
-
-<div class="buttons">
-    <a class="btn submit add icon" href="{{ url('settings/assets/transforms/new') }}">{{ "New image transform"|t('app') }}</a>
-</div>
+    <div class="buttons">
+        <a class="btn submit add icon" href="{{ url('settings/assets/transforms/new') }}">{{ "New image transform"|t('app') }}</a>
+    </div>
 {% endblock %}
 
+{% set tableData = [] %}
+{% for transform in transforms %}
+    {% if transform.mode %}
+        {% set mode = modes[transform.mode] %}
+    {%  endif %}
+
+    {% set tableData = tableData|merge([{
+        id: transform.id,
+        title: transform.name|t('site'),
+        url: url('settings/assets/transforms/' ~ transform.handle),
+        handle: transform.handle,
+        mode: mode ?? null,
+        dimensions: (transform.width ? transform.width : 'Auto'|t('app')|e) ~ " × " ~ (transform.height ? transform.height : 'Auto'|t('app')|e),
+        interlace: transform.interlace ? transform.interlace|capitalize : 'None'|t('app')|e,
+        format: transform.format ? transform.format|capitalize : 'Auto'|t('app')|e,
+    }]) %}
+{% endfor %}
+
 {% js %}
-    new Craft.AdminTable({
-        tableSelector: '#transforms',
-        noItemsSelector: '#notransforms',
-        sortable: false,
-        deleteAction: 'asset-transforms/delete-transform'
+var columns = [
+    { name: '__slot:title', title: Craft.t('app', 'Name') },
+    { name: '__slot:handle', title: Craft.t('app', 'Handle') },
+    { name: 'mode', title: Craft.t('app', 'Mode'), },
+    { name: 'dimensions', title: Craft.t('app', 'Dimensions'), },
+    { name: 'interlace', title: Craft.t('app', 'Interlace'), },
+    { name: 'format', title: Craft.t('app', 'Format'), }
+];
+
+new Craft.VueAdminTable({
+    columns: columns,
+    container: '#transforms-vue-admin-table',
+    deleteAction: 'asset-transforms/delete-transform',
+    emptyMessage: Craft.t('app', 'No image transforms exist yet.'),
+    tableData: {{ tableData|json_encode|raw }},
     });
 {% endjs %}

@@ -1,16 +1,21 @@
 <nav id="tabs">
     <ul>
-        {% for tabId, tab in tabs %}
-            {% if tab %}
-                {% set tabIsSelected = ((selectedTab is not defined and loop.first) or (selectedTab is defined and selectedTab == tabId)) -%}
-                {% set class = tab.class ?? '' -%}
-                <li>
-                    <a id="tab-{{ tabId }}" class="tab{% if tabIsSelected %} sel{% endif %} {{ class }}" href="{{ tab.url }}" title="{{ tab.label }}">
-                        {{ tab.label }}
-                        {% if class == 'error' %}<span data-icon="alert"></span>{% endif %}
-                    </a>
-                </li>
-            {% endif %}
+        {% for tabId, tab in tabs|filter %}
+            {% set tabIsSelected = ((selectedTab is not defined and loop.first) or (selectedTab is defined and selectedTab == tabId)) -%}
+            {% set class = tab.class ?? '' -%}
+            <li data-id="{{ tabId }}">
+                {{ tag('a', {
+                    id: "tab-#{tabId}",
+                    class: ['tab', tabIsSelected ? 'sel', class]|filter,
+                    href: tab.url,
+                    title: tab.label,
+                    html: tab.label|e ~ (class == 'error' ? ' <span data-icon="alert"></span>'),
+                }) }}
+            </li>
         {% endfor %}
     </ul>
+    <a id="overflow-tab-btn" data-icon="ellipsis" class="btn menubtn hidden" role="button"></a>
+    <div id="overflow-tab-menu" class="menu">
+        <ul role="listbox"></ul>
+    </div>
 </nav>

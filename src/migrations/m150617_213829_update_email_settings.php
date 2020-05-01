@@ -14,9 +14,6 @@ use craft\mail\transportadapters\Smtp;
  */
 class m150617_213829_update_email_settings extends Migration
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

@@ -14,18 +14,17 @@ use craft\db\Table;
  * Element record class.
  *
  * @property int $id ID
+ * @property int|null $draftId Draft ID
+ * @property int|null $revisionId Revision ID
  * @property int $fieldLayoutId ID
  * @property string $type Type
  * @property bool $enabled Enabled
  * @property bool $archived Archived
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Element extends ActiveRecord
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      * @return string

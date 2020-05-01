@@ -13,13 +13,10 @@ use DateTime;
  * SavableComponentTrait implements the common methods and properties for savable component classes.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 trait SavableComponentTrait
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|string|null The component’s ID (could be a temporary one: "new:X")
      */

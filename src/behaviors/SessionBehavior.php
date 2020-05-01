@@ -18,13 +18,10 @@ use yii\web\AssetBundle;
  *
  * @property Session $owner
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class SessionBehavior extends Behavior
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null The session variable name used to store the authorization keys for the current session.
      * @see authorize()
@@ -42,9 +39,6 @@ class SessionBehavior extends Behavior
      * @var string the name of the flash key that stores JS data
      */
     public $jsFlashKey = '__js';
-
-    // Public Methods
-    // =========================================================================
 
     // Flash Data
     // -------------------------------------------------------------------------

@@ -13,17 +13,11 @@ use Craft;
  * Widget is the base class for classes representing dashboard widgets in terms of objects.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 abstract class Widget extends SavableComponent implements WidgetInterface
 {
-    // Traits
-    // =========================================================================
-
     use WidgetTrait;
-
-    // Static
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -46,7 +40,7 @@ abstract class Widget extends SavableComponent implements WidgetInterface
     /**
      * @inheritdoc
      */
-    public static function iconPath()
+    public static function icon()
     {
         return null;
     }
@@ -59,15 +53,23 @@ abstract class Widget extends SavableComponent implements WidgetInterface
         return null;
     }
 
-    // Public Methods
-    // =========================================================================
+    /**
+     * Returns the path to the widget’s SVG icon.
+     *
+     * @return string|null
+     * @deprecated in 3.2.0. Use [[icon()]] instead.
+     */
+    public static function iconPath()
+    {
+        return null;
+    }
 
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
 
         // Only validate the ID if it's not a new widget
         if (!$this->getIsNew()) {
@@ -84,6 +86,14 @@ abstract class Widget extends SavableComponent implements WidgetInterface
     {
         // Default to the widget's display name
         return static::displayName();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSubtitle()
+    {
+        return null;
     }
 
     /**

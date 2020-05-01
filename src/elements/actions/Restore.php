@@ -15,13 +15,10 @@ use craft\elements\db\ElementQueryInterface;
  * Restore represents a Restore element action.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.1
+ * @since 3.1.0
  */
 class Restore extends ElementAction
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null The message that should be shown after the elements get restored
      */
@@ -36,9 +33,6 @@ class Restore extends ElementAction
      * @var string|null The message that should be shown if no elements get restored
      */
     public $failMessage;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

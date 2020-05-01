@@ -4,7 +4,6 @@
  * File Manager.
  */
 Craft.PromptHandler = Garnish.Base.extend({
-
     modal: null,
     $modalContainerDiv: null,
     $prompt: null,
@@ -155,7 +154,6 @@ Craft.PromptHandler = Garnish.Base.extend({
         this.modal.show();
         this.modal.removeListener(Garnish.Modal.$shade, 'click');
         this.addListener(Garnish.Modal.$shade, 'click', '_cancelPrompt');
-
     },
 
     /**

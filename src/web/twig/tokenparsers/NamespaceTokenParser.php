@@ -16,13 +16,10 @@ use Twig\TokenParser\AbstractTokenParser;
  * Class NamespaceTokenParser
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class NamespaceTokenParser extends AbstractTokenParser
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

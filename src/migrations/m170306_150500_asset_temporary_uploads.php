@@ -18,7 +18,6 @@ class m170306_150500_asset_temporary_uploads extends Migration
      */
     public function safeUp()
     {
-
         $folderId = Craft::$app->getDb()->quoteColumnName('assets.folderId');
         $volumeFoldersId = Craft::$app->getDb()->quoteColumnName('volumeFolders.id');
 

@@ -27,7 +27,7 @@
 }
 
 .cp-chart .ticks-axis g.tick text {
-  fill: #000;
+  fill: $black;
   font-size: 11px;
 }
 
@@ -54,10 +54,10 @@
 .tooltip {
   border-radius: 3px;
   padding: 7px 10px;
-  background: rgba(250, 250, 250, 0.9);
+  background: transparentize($white, 0.1);
   position: absolute;
   z-index: 1000000;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, .25);
+  @include shadow;
   user-select: none;
   pointer-events: none;
 }

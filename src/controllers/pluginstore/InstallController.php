@@ -9,6 +9,7 @@ namespace craft\controllers\pluginstore;
 
 use Craft;
 use craft\controllers\BaseUpdaterController;
+use craft\web\Response;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response as YiiResponse;
 
@@ -16,27 +17,19 @@ use yii\web\Response as YiiResponse;
  * InstallController handles the plugin installation workflow.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
+ * @internal
  */
 class InstallController extends BaseUpdaterController
 {
-    // Constants
-    // =========================================================================
-
     const ACTION_CRAFT_INSTALL = 'craft-install';
     const ACTION_ENABLE = 'enable';
     const ACTION_MIGRATE = 'migrate';
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var string|null
      */
     private $_pluginRedirect;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -67,12 +60,12 @@ class InstallController extends BaseUpdaterController
      */
     public function actionCraftInstall(): YiiResponse
     {
+        /** @var Response $tempResponse */
         list($success, $tempResponse, $errorDetails) = $this->installPlugin($this->data['handle'], $this->data['edition']);
 
         if (!$success) {
             $info = Craft::$app->getPlugins()->getComposerPluginInfo($this->data['handle']);
             $pluginName = $info['name'] ?? $this->data['packageName'];
-            $email = $info['developerEmail'] ?? 'support@craftcms.com';
 
             return $this->send([
                 'error' => Craft::t('app', '{name} has been added, but an error occurred when installing it.', ['name' => $pluginName]),
@@ -124,9 +117,6 @@ class InstallController extends BaseUpdaterController
     {
         return $this->runMigrations([$this->data['handle']]) ?? $this->sendFinished();
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

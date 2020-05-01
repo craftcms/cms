@@ -21,7 +21,6 @@ use craft\mail\transportadapters\TransportAdapterInterface;
 use craft\models\MailSettings;
 use craft\web\assets\generalsettings\GeneralSettingsAsset;
 use craft\web\Controller;
-use craft\web\twig\TemplateLoaderException;
 use DateTime;
 use yii\base\Exception;
 use yii\web\NotFoundHttpException;
@@ -33,13 +32,10 @@ use yii\web\Response;
  * Note that all actions in this controller require administrator access in order to execute.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class SystemSettingsController extends Controller
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -47,6 +43,8 @@ class SystemSettingsController extends Controller
     {
         // All system setting actions require an admin
         $this->requireAdmin();
+
+        parent::init();
     }
 
     /**
@@ -113,9 +111,11 @@ class SystemSettingsController extends Controller
         $projectConfig = Craft::$app->getProjectConfig();
         $request = Craft::$app->getRequest();
 
-        $projectConfig->set('system.name', $request->getBodyParam('name'));
-        $projectConfig->set('system.live', (bool)$request->getBodyParam('live'));
-        $projectConfig->set('system.timeZone', $request->getBodyParam('timeZone'));
+        $systemSettings = $projectConfig->get('system');
+        $systemSettings['name'] = $request->getBodyParam('name');
+        $systemSettings['live'] = (bool)$request->getBodyParam('live');
+        $systemSettings['timeZone'] = $request->getBodyParam('timeZone');
+        $projectConfig->set('system', $systemSettings, 'Update system settings.');
 
         Craft::$app->getSession()->setNotice(Craft::t('app', 'General settings saved.'));
         return $this->redirectToPostedUrl();
@@ -218,7 +218,7 @@ class SystemSettingsController extends Controller
             return null;
         }
 
-        Craft::$app->getProjectConfig()->set('email', $settings->toArray());
+        Craft::$app->getProjectConfig()->set('email', $settings->toArray(), 'Update email settings.');
 
         Craft::$app->getSession()->setNotice(Craft::t('app', 'Email settings saved.'));
         return $this->redirectToPostedUrl();
@@ -346,9 +346,6 @@ class SystemSettingsController extends Controller
         ]);
     }
 
-    // Private Methods
-    // =========================================================================
-
     /**
      * Creates a MailSettings model, populated with post data.
      *
@@ -360,6 +357,7 @@ class SystemSettingsController extends Controller
         $settings = new MailSettings();
 
         $settings->fromEmail = $request->getBodyParam('fromEmail');
+        $settings->replyToEmail = $request->getBodyParam('replyToEmail') ?: null;
         $settings->fromName = $request->getBodyParam('fromName');
         $settings->template = $request->getBodyParam('template');
         $settings->transportType = $request->getBodyParam('transportType');

@@ -25,17 +25,11 @@ use yii\db\ActiveQueryInterface;
  * @property CategoryGroup_SiteSettings[] $siteSettings Site settings
  * @property Category[] $categories Categories
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class CategoryGroup extends ActiveRecord
 {
-    // Traits
-    // =========================================================================
-
     use SoftDeleteTrait;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

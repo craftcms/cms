@@ -86,7 +86,7 @@
                     <p v-if="error" class="error">{{ error }}</p>
 
                     <div class="mb-4">
-                        <btn kind="primary" type="submit" :loading="loading" :disabled="loading">{{ "Pay {price}"|t('app', { price: $options.filters.currency(staticCartTotal) }) }}</btn>
+                        <btn kind="primary" type="submit" :loading="loading" :disabled="loading || couponCodeLoading">{{ "Pay {price}"|t('app', { price: $options.filters.currency(staticCartTotal) }) }}</btn>
                     </div>
 
                     <p>
@@ -100,29 +100,17 @@
 
 <script>
     import {mapState} from 'vuex'
-    import Step from '../Step'
     import CreditCard from '../../CreditCard'
+    import Step from '../Step'
 
     export default {
         components: {
-            Step,
             CreditCard,
+            Step,
         },
 
         data() {
             return {
-                error: false,
-                loading: false,
-                paymentMode: 'newCard',
-                cardToken: null,
-                guestCardToken: null,
-                replaceCard: false,
-                couponCode: '',
-                couponCodeLoading: false,
-                couponCodeSuccess: false,
-                couponCodeError: false,
-                couponCodeTimeout: false,
-
                 billingInfo: {
                     firstName: '',
                     lastName: '',
@@ -135,15 +123,22 @@
                     city: '',
                     zipCode: '',
                 },
-
                 billingInfoErrors: {
                     businessTaxId: false,
                 },
-
+                cardToken: null,
+                couponCode: '',
+                couponCodeError: false,
+                couponCodeLoading: false,
+                couponCodeSuccess: false,
+                couponCodeTimeout: false,
+                error: null,
                 errors: {},
-
+                guestCardToken: null,
+                loading: false,
+                paymentMode: 'newCard',
+                replaceCard: false,
                 stateOptions: [],
-
                 staticCartTotal: 0,
             }
         },
@@ -151,26 +146,11 @@
         computed: {
             ...mapState({
                 cart: state => state.cart.cart,
-                poweredByStripe: state => state.craft.poweredByStripe,
-                craftId: state => state.craft.craftId,
                 countries: state => state.craft.countries,
+                craftId: state => state.craft.craftId,
+                poweredByStripe: state => state.craft.poweredByStripe,
                 states: state => state.craft.states,
             }),
-
-            countryOptions() {
-                let options = []
-
-                for (let iso in this.countries) {
-                    if (this.countries.hasOwnProperty(iso)) {
-                        options.push({
-                            label: this.countries[iso].name,
-                            value: iso,
-                        })
-                    }
-                }
-
-                return options
-            },
 
             billingCountryName() {
                 const iso = this.billingInfo.country
@@ -184,68 +164,27 @@
                 }
 
                 return this.countries[iso].name
-            }
+            },
+
+            countryOptions() {
+                let options = []
+
+                for (let iso in this.countries) {
+                    if (Object.prototype.hasOwnProperty.call(this.countries, iso)) {
+                        options.push({
+                            label: this.countries[iso].name,
+                            value: iso,
+                        })
+                    }
+                }
+
+                return options
+            },
         },
 
         methods: {
-            savePaymentMethod(cb, cbError) {
-                if (this.cart.totalPrice > 0) {
-                    if (this.craftId) {
-                        if (this.paymentMode === 'newCard') {
-                            // Save new card
-                            if (!this.cardToken) {
-                                this.$refs.newCard.save(response => {
-                                    this.cardToken = response
-                                    cb()
-                                }, () => {
-                                    cbError()
-                                })
-                            } else {
-                                cb()
-                            }
-                        } else {
-                            cb()
-                        }
-                    } else {
-                        // Save guest card
-                        this.$refs.guestCard.save(response => {
-                            this.guestCardToken = response
-                            cb()
-                        }, () => {
-                            cbError()
-                        })
-                    }
-                } else {
-                    cb()
-                }
-            },
-
-            saveBillingInfo(cb, cbError) {
-                let cartData = {
-                    billingAddress: {
-                        firstName: this.billingInfo.firstName,
-                        lastName: this.billingInfo.lastName,
-                        businessName: this.billingInfo.businessName,
-                        businessTaxId: this.billingInfo.businessTaxId,
-                        address1: this.billingInfo.address1,
-                        address2: this.billingInfo.address2,
-                        country: this.billingInfo.country,
-                        state: this.billingInfo.state,
-                        city: this.billingInfo.city,
-                        zipCode: this.billingInfo.zipCode,
-                    },
-                }
-
-                this.$store.dispatch('cart/saveCart', cartData)
-                    .then(response => {
-                        cb(response)
-                    })
-                    .catch(response => {
-                        cbError(response)
-                    })
-            },
-
             checkout() {
+                this.error = null
                 this.errors = {}
                 this.loading = true
                 this.savePaymentMethod(
@@ -289,23 +228,24 @@
                                                                 this.$store.dispatch('cart/resetCart')
                                                                     .then(() => {
                                                                         this.loading = false
-                                                                        this.error = false
+                                                                        this.error = null
                                                                         this.$root.modalStep = 'thank-you'
                                                                     })
                                                             })
                                                     })
                                             })
                                     })
-                                    .catch(checkoutResponse => {
+                                    .catch(checkoutError => {
                                         this.loading = false
-                                        this.error = checkoutResponse.data.error || checkoutResponse.statusText;
+                                        this.error = (checkoutError.response.data && checkoutError.response.data.message) || checkoutError.response.statusText
+                                        this.$root.displayError("An error occurred.")
                                     })
                             },
 
                             // error
-                            (response) => {
-                                if (response.data.errors) {
-                                    response.data.errors.forEach(error => {
+                            (error) => {
+                                if (error.response && error.response.data.errors) {
+                                    error.response.data.errors.forEach(error => {
                                         this.errors[error.param] = [error.message]
                                     })
                                 }
@@ -319,6 +259,33 @@
                         this.loading = false
                         this.$root.displayError("Couldn’t save payment method.")
                     })
+            },
+
+            couponCodeChange(value) {
+                clearTimeout(this.couponCodeTimeout)
+                this.couponCodeSuccess = false
+                this.couponCodeError = false
+
+                this.couponCodeTimeout = setTimeout(function() {
+                    this.couponCodeLoading = true
+
+                    const data = {
+                        couponCode: (value ? value : null),
+                    }
+
+                    this.$store.dispatch('cart/saveCart', data)
+                        .then(() => {
+                            this.couponCodeSuccess = true
+                            this.couponCodeError = false
+                            this.staticCartTotal = this.cart.totalPrice
+                            this.couponCodeLoading = false
+                        })
+                        .catch(() => {
+                            this.couponCodeError = true
+                            this.staticCartTotal = this.cart.totalPrice
+                            this.couponCodeLoading = false
+                        })
+                }.bind(this), 500)
             },
 
             onCountryChange(iso) {
@@ -347,32 +314,62 @@
                 this.stateOptions = options
             },
 
-            couponCodeChange(value) {
-                clearTimeout(this.couponCodeTimeout)
-                this.couponCodeSuccess = false
-                this.couponCodeError = false
+            saveBillingInfo(cb, cbError) {
+                let cartData = {
+                    billingAddress: {
+                        firstName: this.billingInfo.firstName,
+                        lastName: this.billingInfo.lastName,
+                        businessName: this.billingInfo.businessName,
+                        businessTaxId: this.billingInfo.businessTaxId,
+                        address1: this.billingInfo.address1,
+                        address2: this.billingInfo.address2,
+                        country: this.billingInfo.country,
+                        state: this.billingInfo.state,
+                        city: this.billingInfo.city,
+                        zipCode: this.billingInfo.zipCode,
+                    },
+                }
 
-                this.couponCodeTimeout = setTimeout(function() {
-                    this.couponCodeLoading = true
+                this.$store.dispatch('cart/saveCart', cartData)
+                    .then(responseData => {
+                        cb(responseData)
+                    })
+                    .catch(error => {
+                        cbError(error)
+                    })
+            },
 
-                    const data = {
-                        couponCode: (value ? value : null),
+            savePaymentMethod(cb, cbError) {
+                if (this.cart.totalPrice > 0) {
+                    if (this.craftId) {
+                        if (this.paymentMode === 'newCard') {
+                            // Save new card
+                            if (!this.cardToken) {
+                                this.$refs.newCard.save(response => {
+                                    this.cardToken = response
+                                    cb()
+                                }, () => {
+                                    cbError()
+                                })
+                            } else {
+                                cb()
+                            }
+                        } else {
+                            cb()
+                        }
+                    } else {
+                        // Save guest card
+                        this.$refs.guestCard.save(response => {
+                            this.guestCardToken = response
+                            cb()
+                        }, () => {
+                            cbError()
+                        })
                     }
-
-                    this.$store.dispatch('cart/saveCart', data)
-                        .then(() => {
-                            this.couponCodeSuccess = true
-                            this.couponCodeError = false
-                            this.staticCartTotal = this.cart.totalPrice
-                            this.couponCodeLoading = false
-                        })
-                        .catch(() => {
-                            this.couponCodeError = true
-                            this.staticCartTotal = this.cart.totalPrice
-                            this.couponCodeLoading = false
-                        })
-                }.bind(this), 500)
-            }
+                } else {
+                    cb()
+                }
+            },
         },
 
         mounted() {
@@ -398,7 +395,6 @@
 
 <style lang="scss">
     .payment {
-
         .field {
             margin-top: 0.75rem !important;
             margin-bottom: 0 !important;

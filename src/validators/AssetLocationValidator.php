@@ -19,13 +19,10 @@ use yii\validators\Validator;
  * Class AssetLocationValidator.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class AssetLocationValidator extends Validator
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string The folder ID attribute on the model
      */
@@ -70,9 +67,6 @@ class AssetLocationValidator extends Validator
      * @var bool Whether Asset should avoid filename conflicts when saved.
      */
     public $avoidFilenameConflicts;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

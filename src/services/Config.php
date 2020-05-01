@@ -28,18 +28,12 @@ use yii\base\InvalidConfigException;
  * @property DbConfig $db the DB config settings
  * @property GeneralConfig $general the general config settings
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Config extends Component
 {
-    // Constants
-    // =========================================================================
-
     const CATEGORY_DB = 'db';
     const CATEGORY_GENERAL = 'general';
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var string|null The environment ID Craft is currently running in.
@@ -75,9 +69,6 @@ class Config extends Component
      * @var bool|null
      */
     private $_dotEnvPath;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns all of the config settings for a given category.

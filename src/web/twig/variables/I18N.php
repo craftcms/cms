@@ -14,14 +14,11 @@ use craft\i18n\Locale;
  * Localization functions.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
- * @deprecated in 3.0
+ * @since 3.0.0
+ * @deprecated in 3.0.0
  */
 class I18N
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Gets all known languages.
      *

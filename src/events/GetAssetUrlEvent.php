@@ -15,13 +15,10 @@ use yii\base\Event;
  * Get Asset url event class
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class GetAssetUrlEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var AssetTransform|string|array|null Asset transform index that is being generated (if any)
      */

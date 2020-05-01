@@ -11,13 +11,10 @@ namespace craft\events;
  * Delete element event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.1.0
  */
 class DeleteElementEvent extends ElementEvent
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var bool Whether to immediately hard-delete the element, rather than soft-deleting it
      */

@@ -23,9 +23,6 @@ use yii\db\Expression;
  */
 class m160807_144858_sites extends Migration
 {
-    // Static
-    // =========================================================================
-
     /**
      * @var array The site FK columns ([table, column, not null?, locale column])
      */
@@ -43,16 +40,10 @@ class m160807_144858_sites extends Migration
         [Table::TEMPLATECACHES, 'siteId', true, 'locale'],
     ];
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null The CASE SQL used to set site column values
      */
     protected $caseSql;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -91,18 +82,19 @@ class m160807_144858_sites extends Migration
             ->one($this->db);
 
         $locales = (new Query())
-            ->select(['locale'])
+            ->select(['uid', 'locale'])
             ->from(['{{%locales}}'])
             ->orderBy(['sortOrder' => SORT_ASC])
-            ->column($this->db);
+            ->pairs($this->db);
 
         $siteIdsByLocale = [];
         $this->caseSql = 'case';
         $languageCaseSql = 'case';
         $localePermissions = [];
         $permissionsCaseSql = 'case';
+        $sortOrder = 0;
 
-        foreach ($locales as $i => $locale) {
+        foreach ($locales as $uid => $locale) {
             $siteHandle = $this->locale2handle($locale);
             $language = $this->locale2language($locale);
 
@@ -112,7 +104,8 @@ class m160807_144858_sites extends Migration
                 'language' => $language,
                 'hasUrls' => 1,
                 'baseUrl' => $siteInfo['siteUrl'],
-                'sortOrder' => $i + 1,
+                'sortOrder' => ++$sortOrder,
+                'uid' => $uid,
             ]);
 
             $siteId = $this->db->getLastInsertID();
@@ -407,7 +400,6 @@ class m160807_144858_sites extends Migration
             ->all($this->db);
 
         foreach ($fields as $field) {
-
             if ($field['settings'] === null) {
                 echo 'Field ' . $field['id'] . ' (' . $field['type'] . ') settings were null' . "\n";
                 $settings = [];
@@ -422,7 +414,7 @@ class m160807_144858_sites extends Migration
             $localized = ($field['translationMethod'] === 'site');
 
             if ($field['type'] === 'craft\fields\Matrix') {
-                $settings['localizeBlocks'] = $localized;
+                $settings['propagationMethod'] = $localized ? 'none' : 'all';
             } else {
                 // Exception: Cannot use a scalar value as an array
                 $settings['localizeRelations'] = $localized;
@@ -494,9 +486,6 @@ class m160807_144858_sites extends Migration
             $this->update(Table::WIDGETS, ['settings' => Json::encode($settings)], ['id' => $result['id']]);
         }
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * Creates a new siteId column and migrates the locale data over

@@ -1,4 +1,4 @@
-{% set volumeUid = craft.app.getSystemSettings.getSetting('users', 'photoVolumeUid') %}
+{% set volumeUid = craft.app.projectConfig.get('users.photoVolumeUid') %}
 {% if volumeUid %}
     <div class="user-photo" data-user="{{ user.id }}">
         <div id="current-photo">

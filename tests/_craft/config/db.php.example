@@ -9,19 +9,19 @@
 
 return [
 
-	// The database server name or IP address. Usually this is 'localhost' or '127.0.0.1'.
-	'server' => 'localhost',
+    // The database server name or IP address. Usually this is 'localhost' or '127.0.0.1'.
+    'server' => 'localhost',
 
-	// The database username to connect with.
-	'user' => 'user',
+    // The database username to connect with.
+    'user' => 'user',
 
-	// The database password to connect with.
-	'password' => 'password',
+    // The database password to connect with.
+    'password' => 'password',
 
-	// The name of the database to select.
-	'database' => 'craft3test',
+    // The name of the database to select.
+    'database' => 'craft3test',
 
-	// The prefix to use when naming tables. This can be no more than 5 characters.
-	'tablePrefix' => 'craft',
+    // The prefix to use when naming tables. This can be no more than 5 characters.
+    'tablePrefix' => 'craft',
 
 ];

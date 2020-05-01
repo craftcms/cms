@@ -15,14 +15,11 @@ use yii\base\InvalidArgumentException;
  * Class Config variable.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
- * @deprecated in 3.0
+ * @since 3.0.0
+ * @deprecated in 3.0.0
  */
 class Config
 {
-    // Public Methods
-    // =========================================================================
-
     /** @noinspection MagicMethodsValidityInspection */
     /**
      * Returns whether a config item exists.

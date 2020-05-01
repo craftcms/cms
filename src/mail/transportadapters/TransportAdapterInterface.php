@@ -13,13 +13,10 @@ use craft\base\SavableComponentInterface;
  * TransportAdapterInterface defines the common interface to be implemented by SwiftMailer transport adapter classes.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 interface TransportAdapterInterface extends SavableComponentInterface
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Returns the config array or \Swift_Transport object that should be passed to [[\craft\mail\Mailer::setTransport()]].
      *

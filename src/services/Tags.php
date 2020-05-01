@@ -29,13 +29,10 @@ use yii\base\Component;
  * An instance of the Tags service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getTags()|`Craft::$app->tags`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Tags extends Component
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event TagGroupEvent The event that is triggered before a tag group is saved.
      */
@@ -53,6 +50,7 @@ class Tags extends Component
 
     /**
      * @event TagGroupEvent The event that is triggered before a tag group delete is applied to the database.
+     * @since 3.1.0
      */
     const EVENT_BEFORE_APPLY_GROUP_DELETE = 'beforeApplyGroupDelete';
 
@@ -63,16 +61,10 @@ class Tags extends Component
 
     const CONFIG_TAGGROUP_KEY = 'tagGroups';
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var TagGroup[]
      */
     private $_tagGroups;
-
-    // Public Methods
-    // =========================================================================
 
     // Tag groups
     // -------------------------------------------------------------------------
@@ -215,7 +207,7 @@ class Tags extends Component
         }
 
         $configPath = self::CONFIG_TAGGROUP_KEY . '.' . $tagGroup->uid;
-        $projectConfig->set($configPath, $configData);
+        $projectConfig->set($configPath, $configData, "Save the “{$tagGroup->handle}” tag group");
 
         if ($isNewTagGroup) {
             $tagGroup->id = Db::idByUid(Table::TAGGROUPS, $tagGroup->uid);
@@ -301,6 +293,7 @@ class Tags extends Component
      * @param int $groupId The tag group's ID
      * @return bool Whether the tag group was deleted successfully
      * @throws \Throwable if reasons
+     * @since 3.0.12
      */
     public function deleteTagGroupById(int $groupId): bool
     {
@@ -337,7 +330,7 @@ class Tags extends Component
             ]));
         }
 
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_TAGGROUP_KEY . '.' . $tagGroup->uid);
+        Craft::$app->getProjectConfig()->remove(self::CONFIG_TAGGROUP_KEY . '.' . $tagGroup->uid, "Delete the “{$tagGroup->handle}” tag group");
         return true;
     }
 
@@ -430,7 +423,7 @@ class Tags extends Component
                     foreach ($tagGroup['fieldLayouts'] as $layoutUid => $layout) {
                         if (!empty($layout['tabs'])) {
                             foreach ($layout['tabs'] as $tabUid => $tab) {
-                                $projectConfig->remove(self::CONFIG_TAGGROUP_KEY . '.' . $tagGroupUid . '.fieldLayouts.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid);
+                                $projectConfig->remove(self::CONFIG_TAGGROUP_KEY . '.' . $tagGroupUid . '.fieldLayouts.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid, 'Prune deleted field');
                             }
                         }
                     }
@@ -460,9 +453,6 @@ class Tags extends Component
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getElements()->getElementById($tagId, Tag::class, $siteId);
     }
-
-    // Private methods
-    // =========================================================================
 
     /**
      * Gets a tag group's record by uid.

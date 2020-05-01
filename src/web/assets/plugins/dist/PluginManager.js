@@ -4,19 +4,42 @@
     Craft.PluginManager = Garnish.Base.extend(
         {
             init: function() {
-                Craft.postActionRequest('app/get-plugin-license-info', $.proxy(function(response, textStatus) {
-                    if (textStatus === 'success') {
+                this.getPluginLicenseInfo()
+                    .then(function(response) {
                         for (var handle in response) {
                             if (response.hasOwnProperty(handle)) {
                                 if (!response[handle].isComposerInstalled) {
                                     this.addUninstalledPluginRow(handle, response[handle]);
                                 } else {
-                                    (new Plugin($('#plugin-' + handle))).update(response[handle], handle);
+                                    (new Plugin(this, $('#plugin-' + handle))).update(response[handle]);
                                 }
                             }
                         }
-                    }
-                }, this));
+                    }.bind(this));
+            },
+
+            getPluginLicenseInfo: function() {
+                return new Promise(function(resolve, reject) {
+                    Craft.sendApiRequest('GET', 'cms-licenses', {
+                            params: {
+                                include: 'plugins',
+                            },
+                        })
+                        .then(function(response) {
+                            Craft.postActionRequest('app/get-plugin-license-info', {
+                                pluginLicenses: response.license.pluginLicenses || [],
+                            }, function(response, textStatus) {
+                                if (textStatus === 'success') {
+                                    resolve(response);
+                                } else {
+                                    reject();
+                                }
+                            }, {
+                                contentType: 'json'
+                            });
+                        })
+                        .catch(reject);
+                });
             },
 
             addUninstalledPluginRow: function(handle, info) {
@@ -30,7 +53,11 @@
                     $('#no-plugins').replaceWith($table);
                 }
 
-                var $row = $('<tr/>')
+                var $row = $('<tr/>', {
+                        data: {
+                            handle: handle,
+                        }
+                    })
                     .appendTo($table.children('tbody'))
                     .append(
                         $('<th/>')
@@ -130,6 +157,13 @@
                                     .append(
                                         $('<input/>', {
                                             type: 'hidden',
+                                            name: 'edition',
+                                            value: info.licensedEdition
+                                        })
+                                    )
+                                    .append(
+                                        $('<input/>', {
+                                            type: 'hidden',
                                             name: 'version',
                                             value: info.latestVersion
                                         })
@@ -185,8 +219,11 @@
             }
         }, {
             normalizeUserKey: function(key) {
-                if (typeof key !== 'string') {
+                if (typeof key !== 'string' || key === '') {
                     return '';
+                }
+                if (key[0] === '$') {
+                    return key;
                 }
                 return key.replace(/.{4}/g, '$&-').substr(0, 29).toUpperCase();
             }
@@ -195,6 +232,7 @@
 
     var Plugin = Garnish.Base.extend(
         {
+            manager: null,
             $row: null,
             $details: null,
             $keyContainer: null,
@@ -204,7 +242,8 @@
             handle: null,
             updateTimeout: null,
 
-            init: function($row) {
+            init: function(manager, $row) {
+                this.manager = manager;
                 this.$row = $row;
                 this.$details = this.$row.find('.details');
                 this.$keyContainer = $row.find('.license-key')
@@ -213,7 +252,7 @@
                 this.$spinner = $row.find('.spinner');
                 this.handle = this.$row.data('handle');
                 this.addListener(this.$keyInput, 'focus', 'onKeyFocus')
-                this.addListener(this.$keyInput, 'textchange', 'onKeyChange');
+                this.addListener(this.$keyInput, 'input', 'onKeyChange');
             },
 
             getKey: function() {
@@ -229,27 +268,28 @@
                     clearTimeout(this.updateTimeout);
                 }
                 var key = this.getKey();
-                if (key.length === 0 || key.length === 24) {
+                if (key.length === 0 || key.length === 24 || (key.length > 1 && key[0] === '$')) {
                     // normalize
                     var userKey = Craft.PluginManager.normalizeUserKey(key);
-                    this.$keyInput
-                        .val(userKey)
-                        .data('garnish-textchange-value', userKey);
+                    this.$keyInput.val(userKey);
                     this.updateTimeout = setTimeout($.proxy(this, 'updateLicenseStatus'), 100);
                 }
             },
 
             updateLicenseStatus: function() {
                 this.$spinner.removeClass('hidden');
-                Craft.postActionRequest('app/update-plugin-license', {handle: this.handle, key: this.getKey()}, $.proxy(function(response, textStatus) {
-                    this.$spinner.addClass('hidden');
+                Craft.postActionRequest('app/update-plugin-license', {handle: this.handle, key: this.getKey()}, function(response, textStatus) {
                     if (textStatus === 'success') {
-                        this.update(response);
+                        this.manager.getPluginLicenseInfo()
+                            .then(function(response) {
+                                this.$spinner.addClass('hidden');
+                                this.update(response[this.handle]);
+                            }.bind(this));
                     }
-                }, this))
+                }.bind(this))
             },
 
-            update: function(info, handle) {
+            update: function(info) {
                 // update the status icon
                 var $oldIcon = this.$row.find('.license-key-status');
                 if (info.licenseKeyStatus == 'valid' || info.licenseIssues.length) {
@@ -267,7 +307,7 @@
                 var $oldEdition = this.$row.find('.edition');
                 if (info.hasMultipleEditions || info.isTrial) {
                     var $newEdition = info.upgradeAvailable
-                        ? $('<a/>', {href: Craft.getUrl('plugin-store/' + handle), 'class': 'edition'})
+                        ? $('<a/>', {href: Craft.getUrl('plugin-store/' + this.handle), 'class': 'edition'})
                         : $('<div/>', {'class': 'edition'});
                     if (info.hasMultipleEditions) {
                         $('<div/>', {'class': 'edition-name', text: info.edition}).appendTo($newEdition);
@@ -346,7 +386,7 @@
                                     $('<input/>', {
                                         type: 'hidden',
                                         name: 'pluginHandle',
-                                        value: handle
+                                        value: this.handle
                                     })
                                 )
                                 .append(
@@ -372,7 +412,7 @@
                 var $oldExpired = this.$row.find('.expired');
                 if (info.expired) {
                     var $newExpired = $('<p/>', {
-                        'class': 'warning expired',
+                        'class': 'warning with-icon expired',
                         html: Craft.t('app', 'This license has expired.') +
                             ' ' +
                             Craft.t('app', '<a>Renew now</a> for another year of updates.').replace('<a>', '<a href="' + info.renewalUrl + '" target="_blank">')

@@ -16,24 +16,17 @@ use yii\web\NotFoundHttpException;
  * Debugger panel that collects and displays deprecation warnings.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class DeprecatedPanel extends Panel
 {
-    // Public Methods
-    // =========================================================================
-
-    /**
-     *
-     */
+    /** @inheritdoc */
     public function getName()
     {
         return 'Deprecated';
     }
 
-    /**
-     *
-     */
+    /** @inheritdoc */
     public function getSummary()
     {
         return Craft::$app->getView()->render('@app/views/debug/deprecated/summary', [
@@ -42,6 +35,7 @@ class DeprecatedPanel extends Panel
     }
 
     /**
+     * @inheritdoc
      * @throws NotFoundHttpException if a `trace` parameter is in the query string, but its value isn’t a valid deprecation warning’s ID
      */
     public function getDetail()

@@ -16,13 +16,10 @@ use yii\base\Arrayable;
  * MissingComponentTrait implements the common methods and properties for classes implementing [[MissingComponentInterface]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 trait MissingComponentTrait
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|Component|null The expected component class name.
      */
@@ -37,9 +34,6 @@ trait MissingComponentTrait
      * @var mixed The custom settings associated with the component, if it is savable
      */
     public $settings;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Creates a new component of a given type based on this one’s properties.
@@ -57,13 +51,11 @@ trait MissingComponentTrait
         return ComponentHelper::createComponent($config);
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * Displays an error message (and possibly a plugin install button) in place of the normal component UI.
      *
      * @return string
+     * @since 3.0.6
      */
     public function getPlaceholderHtml(): string
     {

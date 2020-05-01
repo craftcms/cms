@@ -14,21 +14,11 @@ use craft\web\AssetBundle;
  */
 class VueAsset extends AssetBundle
 {
-    /**
-     * @inheritdoc
-     */
-    public function init()
-    {
-        $this->sourcePath = '@lib';
+    /** @inheritdoc */
+    public $sourcePath = '@lib/vue';
 
-        $this->js = [
-            'vue/vue' . $this->dotJs(),
-            'vue-router/vue-router.js',
-            'vuex/vuex.js',
-            'axios/axios.js',
-            'vue-autosuggest/vue-autosuggest.js',
-        ];
-
-        parent::init();
-    }
+    /** @inheritdoc */
+    public $js = [
+        'vue.js',
+    ];
 }
