@@ -27,6 +27,7 @@
 
 ### Deprecated
 - Deprecated the `|filterByValue` Twig filter. `|where` should be used instead.
+- Deprecated `craft\helpers\Stringy`.
 - Deprecated `craft\services\ProjectConfig::CONFIG_FILENAME`. `$filename` should be used instead.
 
 ### Removed
