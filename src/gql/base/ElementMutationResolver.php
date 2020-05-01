@@ -37,13 +37,8 @@ abstract class ElementMutationResolver extends MutationResolver
      */
     protected function populateElementWithData(Element $element, array $arguments): Element
     {
-        /** @var array $contentFields */
-        $contentFields = $this->getResolutionData(self::CONTENT_FIELD_KEY);
-
-        if (empty($contentFields)) {
-            return $element;
-        }
-
+        $contentFields = $this->getResolutionData(self::CONTENT_FIELD_KEY) ?? [];
+        
         foreach ($arguments as $argument => $value) {
             if (isset($contentFields[$argument])) {
                 $value = $this->normalizeValue($argument, $value);

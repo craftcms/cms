@@ -110,23 +110,13 @@ class GeneralMutationResolverTest extends TestCase
     /**
      * Test whether populating an element with data behaves as expected.
      *
+     * @param $contentFields
+     * @param $arguments
      * @throws \ReflectionException
+     * @dataProvider populatingElementWithDataProvider
      */
-    public function testPopulatingElementWithData()
+    public function testPopulatingElementWithData($contentFields, $arguments)
     {
-        // Set up for the test
-        $contentFields = [
-            'someField' => Type::string(),
-            'otherField' => Type::string(),
-        ];
-        $testValue = StringHelper::UUID();
-
-        $arguments = [
-            'someField' => $testValue,
-            'otherField' => $testValue,
-            'title' => $testValue
-        ];
-
         $entry = $this->make(Entry::class, [
             'setFieldValue' => Expected::exactly(count($contentFields))
         ]);
@@ -134,7 +124,35 @@ class GeneralMutationResolverTest extends TestCase
         $this->resolver->setResolutionData(ElementMutationResolver::CONTENT_FIELD_KEY, $contentFields);
 
         $this->invokeMethod($this->resolver, 'populateElementWithData', [$entry, $arguments]);
-        $this->assertSame($testValue, $entry->title);
+
+        foreach ($arguments as $argument => $value) {
+            if (!array_key_exists($argument, $contentFields)) {
+                $this->assertSame($value, $entry->{$argument});
+            }
+        }
+    }
+
+    public function populatingElementWithDataProvider()
+    {
+        return [
+            [
+                [
+                    'someField' => Type::string(),
+                    'otherField' => Type::string(),
+                ],
+                [
+                    'someField' => StringHelper::UUID(),
+                    'otherField' => StringHelper::UUID(),
+                    'title' => StringHelper::UUID()
+                ]
+            ],
+            [
+                [],
+                [
+                    'title' => StringHelper::UUID()
+                ]
+            ],
+        ];
     }
 
     /**
