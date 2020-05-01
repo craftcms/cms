@@ -15,7 +15,7 @@ use UnitTester;
  * Unit tests for the Stringy helper class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.5.0
+ * @since 3.4.18
  */
 class StringHelperTest extends Unit
 {
