@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Template autosuggest fields no longer suggest files within `node_modules/` folders. ([#4122](https://github.com/craftcms/cms/pull/4122))
+
 ### Fixed
 - Fixed a bug where relational fields wouldn’t eager load some relations if the field was set to manage relations on a per-site basis, and the source elements were from a variety of sites.
 - Fixed a bug where relational fields wouldn’t eager load cross-site relations even if a target site had been selected in the field settings. ([#5995](https://github.com/craftcms/cms/issues/5995))
