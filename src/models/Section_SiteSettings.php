@@ -63,6 +63,22 @@ class Section_SiteSettings extends Model
     private $_section;
 
     /**
+     * @inheritdoc
+     * @since 3.5.0
+     */
+    public function init()
+    {
+        // Typecast DB values
+        $this->id = (int)$this->id ?: null;
+        $this->sectionId = (int)$this->sectionId ?: null;
+        $this->siteId = (int)$this->siteId ?: null;
+        $this->enabledByDefault = (bool)$this->enabledByDefault;
+        $this->hasUrls = (bool)$this->hasUrls;
+
+        parent::init();
+    }
+
+    /**
      * Returns the section.
      *
      * @return Section

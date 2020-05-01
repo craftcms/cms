@@ -102,6 +102,23 @@ class Site extends Model
     public $dateUpdated;
 
     /**
+     * @inheritdoc
+     * @since 3.5.0
+     */
+    public function init()
+    {
+        // Typecast DB values
+        $this->id = (int)$this->id ?: null;
+        $this->groupId = (int)$this->groupId ?: null;
+        $this->primary = (bool)$this->primary;
+        $this->enabled = (bool)$this->enabled;
+        $this->hasUrls = (bool)$this->hasUrls;
+        $this->sortOrder = (int)$this->sortOrder;
+
+        parent::init();
+    }
+
+    /**
      * Returns the site’s base URL.
      *
      * @return string|null
