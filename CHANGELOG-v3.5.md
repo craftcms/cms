@@ -23,6 +23,7 @@
 - Added the `|explodeStyle` Twig filter, which converts CSS styles into an array of property/value pairs.
 - Added the `|push` Twig filter, which returns a new array with one or more items appended to it.
 - Added the `|unshift` Twig filter, which returns a new array with one or more items prepended to it.
+- Added the `|where` Twig filter.
 - Added the `raw()` Twig function, which wraps the given string in a `Twig\Markup` object to prevent it from getting HTML-encoded.
 - Added support for eager-loading elements’ current revisions, via `currentRevision`.
 - Added support for eager-loading drafts’ and revisions’ creators, via `draftCreator` and `revisionCreator`.
@@ -160,6 +161,7 @@
 
 ### Deprecated
 - Deprecated the `install/plugin` command. `plugin/install` should be used instead.
+- Deprecated the `|filterByValue` Twig filter. `|where` should be used instead.
 - Deprecated the `|ucwords` Twig filter. `|title` should be used instead.
 - Deprecated `craft\gql\base\Resolver::extractEagerLoadCondition()`. `ElementQueryConditionBuilder` should be used instead.
 - Deprecated `craft\web\View::formatInputId()`. `craft\helpers\Html::namespaceHtml()` should be used instead.

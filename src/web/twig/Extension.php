@@ -223,7 +223,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('explodeStyle', [Html::class, 'explodeStyle']),
             new TwigFilter('filesize', [$formatter, 'asShortSize']),
             new TwigFilter('filter', [$this, 'filterFilter']),
-            new TwigFilter('filterByValue', [ArrayHelper::class, 'where']),
+            new TwigFilter('filterByValue', [ArrayHelper::class, 'where'], ['deprecated' => '3.5.0', 'alternative' => 'where']),
             new TwigFilter('group', [$this, 'groupFilter']),
             new TwigFilter('hash', [$security, 'hashData']),
             new TwigFilter('id', [Html::class, 'id']),
@@ -263,6 +263,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('unique', 'array_unique'),
             new TwigFilter('unshift', [$this, 'unshiftFilter']),
             new TwigFilter('values', 'array_values'),
+            new TwigFilter('where', [ArrayHelper::class, 'where']),
             new TwigFilter('without', [$this, 'withoutFilter']),
             new TwigFilter('withoutKey', [$this, 'withoutKeyFilter']),
         ];
