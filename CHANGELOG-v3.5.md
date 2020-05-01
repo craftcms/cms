@@ -159,12 +159,12 @@
 - Updated Composer to 1.10.5. ([#5925](https://github.com/craftcms/cms/pull/5925))
 
 ### Deprecated
-- Deprecated the `install/plugin` command. The new `plugin/install` command should be used instead.
-- Deprecated the `|ucwords` Twig filter. Use the `|title` filter instead.
-- Deprecated `craft\gql\base\Resolver::extractEagerLoadCondition()` in favor of the new `ElementQueryConditionBuilder` class.
+- Deprecated the `install/plugin` command. `plugin/install` should be used instead.
+- Deprecated the `|ucwords` Twig filter. `|title` should be used instead.
+- Deprecated `craft\gql\base\Resolver::extractEagerLoadCondition()`. `ElementQueryConditionBuilder` should be used instead.
 - Deprecated `craft\web\View::formatInputId()`. `craft\helpers\Html::namespaceHtml()` should be used instead.
-- Deprecated `craft\events\RegisterGqlPermissionsEvent` in favor of the new `craft\events\RegisterGqlSchemaComponentsEvent` event.
-- Deprecated `craft\services\Gql::getAllPermissions()` in favor of the new `craft\services\Gql::getAllSchemaComponents()` method.
+- Deprecated `craft\events\RegisterGqlPermissionsEvent`. `craft\events\RegisterGqlSchemaComponentsEvent` should be used instead.
+- Deprecated `craft\services\Gql::getAllPermissions()`. `craft\services\Gql::getAllSchemaComponents()` should be used instead.
 - Deprecated `craft\services\ProjectConfig::CONFIG_FILENAME`. `$filename` should be used instead.
 
 ### Removed
