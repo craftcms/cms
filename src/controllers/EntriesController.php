@@ -130,7 +130,7 @@ class EntriesController extends BaseEntriesController
                 ->descendantOf($entry)
                 ->anyStatus()
                 ->ids();
-            $excludeIds[] = $entry->id;
+            $excludeIds[] = $entry->getSourceId();
 
             $variables['parentOptionCriteria'] = [
                 'siteId' => $site->id,
