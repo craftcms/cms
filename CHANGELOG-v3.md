@@ -5,6 +5,7 @@
 ### Added
 - Added the `cpHeadTags` config setting, making it possible to give the control panel a custom favicon. ([#4003](https://github.com/craftcms/cms/issues/4003))
 - Added the `{% html %}` Twig tag, which makes it possible to register arbitrary HTML for inclusion in the `<head>`, beginning of `<body>`, or end of `<body>`. ([#5955](https://github.com/craftcms/cms/issues/5955))
+- Added the `|diff` Twig filter.
 - Added the `|where` Twig filter.
 - Added `craft\gql\base\ElementMutationResolver`.
 - Added `craft\gql\resolvers\mutations\Asset`.
