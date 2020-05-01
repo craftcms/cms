@@ -1382,7 +1382,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
       for (var i = 0; i < str.length; i++) {
         _char = str.charAt(i);
-        asciiStr += (charMap || Craft.asciiCharMap)[_char] || _char;
+        asciiStr += typeof (charMap || Craft.asciiCharMap)[_char] === 'string' ? (charMap || Craft.asciiCharMap)[_char] : _char;
       }
 
       return asciiStr;

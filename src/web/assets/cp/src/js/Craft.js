@@ -1321,7 +1321,7 @@ $.extend(Craft,
 
             for (var i = 0; i < str.length; i++) {
                 char = str.charAt(i);
-                asciiStr += (charMap || Craft.asciiCharMap)[char] || char;
+                asciiStr += typeof (charMap || Craft.asciiCharMap)[char] === 'string' ? (charMap || Craft.asciiCharMap)[char] : char;
             }
 
             return asciiStr;
