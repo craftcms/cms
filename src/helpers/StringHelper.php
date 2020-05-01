@@ -9,6 +9,7 @@ namespace craft\helpers;
 
 use Craft;
 use Stringy\Stringy as BaseStringy;
+use voku\helper\ASCII;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 
@@ -140,15 +141,13 @@ class StringHelper extends \yii\helpers\StringHelper
 
         // Include language specific replacements (unless the ASCII chars have custom mappings)
         if ($language !== null) {
-            $langSpecific = Stringy::getLangSpecificCharsArray($language);
-            if (!empty($langSpecific)) {
-                $generalConfig = Craft::$app->getConfig()->getGeneral();
-                $customChars = !empty($generalConfig->customAsciiCharMappings) ? call_user_func_array('array_merge', $generalConfig->customAsciiCharMappings) : [];
-                $customChars = array_flip($customChars);
-                foreach ($langSpecific[0] as $i => $char) {
-                    if (!isset($customChars[$char])) {
-                        $flatMap[$char] = $langSpecific[1][$i];
-                    }
+            $langSpecific = ASCII::charsArrayWithOneLanguage($language);
+            $generalConfig = Craft::$app->getConfig()->getGeneral();
+            $customChars = !empty($generalConfig->customAsciiCharMappings) ? call_user_func_array('array_merge', $generalConfig->customAsciiCharMappings) : [];
+            $customChars = array_flip($customChars);
+            foreach ($langSpecific['orig'] as $i => $char) {
+                if (!isset($customChars[$char])) {
+                    $flatMap[$char] = $langSpecific['replace'][$i];
                 }
             }
         }
@@ -1089,7 +1088,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function removeHtml(string $str, string $allowableTags = null): string
     {
-        return (string)BaseStringy::create($str)->removeHtml($allowableTags);
+        return (string)BaseStringy::create($str)->removeHtml($allowableTags ?? '');
     }
 
     /**
