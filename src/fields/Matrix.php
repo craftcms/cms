@@ -182,6 +182,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                 self::PROPAGATION_METHOD_ALL
             ]
         ];
+        $rules[] = [['blockTypes'], ArrayValidator::class, 'min' => 1, 'skipOnEmpty' => false];
         $rules[] = [['minBlocks', 'maxBlocks'], 'integer', 'min' => 0];
         return $rules;
     }
