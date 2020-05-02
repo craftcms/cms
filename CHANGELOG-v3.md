@@ -5,6 +5,7 @@
 ### Changed
 - Template autosuggest fields no longer suggest files within `node_modules/` folders. ([#4122](https://github.com/craftcms/cms/pull/4122))
 - Matrix fields now ensure that they have at least one block type on validation. ([#5996](https://github.com/craftcms/cms/issues/5996))
+- Number fields’ Default Value, Min Value, and Max Value settings now support localized number formats. ([#6006](https://github.com/craftcms/cms/issues/6006))
 
 ### Fixed
 - Fixed a bug where relational fields wouldn’t eager load some relations if the field was set to manage relations on a per-site basis, and the source elements were from a variety of sites.
@@ -14,6 +15,7 @@
 - Fixed a bug where Craft wasn’t clearing the database schema cache after migrations were run.
 - Fixed a bug where Structure entry drafts were including the current entry in the Parent selection options.
 - Fixed a bug where users’ emails could be overridden by a previously-entered, unverified email, if an admin overwrote their email after it was set. ([#6001](https://github.com/craftcms/cms/issues/6001))
+- Fixed a bug where Number fields weren’t ensuring that their Default Value setting was a number. ([#6006](https://github.com/craftcms/cms/issues/6006))
 
 ## 3.4.17.1 - 2020-04-25
 

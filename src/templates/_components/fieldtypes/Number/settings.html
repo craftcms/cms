@@ -1,9 +1,13 @@
 {% import "_includes/forms" as forms %}
 
+{{ hiddenInput('defaultValue[locale]', craft.app.language) }}
+{{ hiddenInput('min[locale]', craft.app.language) }}
+{{ hiddenInput('max[locale]', craft.app.language) }}
+
 {{ forms.textField({
     label: "Default Value"|t('app'),
     id: 'defaultValue',
-    name: 'defaultValue',
+    name: 'defaultValue[value]',
     value: field.defaultValue,
     size: 5,
     errors: field.getErrors('defaultValue')
@@ -12,7 +16,7 @@
 {{ forms.textField({
     label: "Min Value"|t('app'),
     id: 'min',
-    name: 'min',
+    name: 'min[value]',
     value: field.min,
     size: 5,
     errors: field.getErrors('min')
@@ -21,7 +25,7 @@
 {{ forms.textField({
     label: "Max Value"|t('app'),
     id: 'max',
-    name: 'max',
+    name: 'max[value]',
     value: field.max,
     size: 5,
     errors: field.getErrors('max')
