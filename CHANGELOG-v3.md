@@ -13,6 +13,7 @@
 - Fixed a bug where Assets fields weren’t showing custom asset sources. ([#5983](https://github.com/craftcms/cms/issues/5983))
 - Fixed a bug where Craft wasn’t clearing the database schema cache after migrations were run.
 - Fixed a bug where Structure entry drafts were including the current entry in the Parent selection options.
+- Fixed a bug where users’ emails could be overridden by a previously-entered, unverified email, if an admin overwrote their email after it was set. ([#6001](https://github.com/craftcms/cms/issues/6001))
 
 ## 3.4.17.1 - 2020-04-25
 

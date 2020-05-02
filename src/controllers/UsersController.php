@@ -990,6 +990,10 @@ class UsersController extends Controller
 
                 if ($sendVerificationEmail) {
                     $user->unverifiedEmail = $newEmail;
+                } else {
+                    // Clear out the unverified email if there is one,
+                    // so it doesn't overwrite the new email later on
+                    $user->unverifiedEmail = null;
                 }
 
                 if (!$sendVerificationEmail || $isNewUser) {
