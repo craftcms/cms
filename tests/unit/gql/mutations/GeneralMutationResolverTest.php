@@ -132,6 +132,41 @@ class GeneralMutationResolverTest extends TestCase
         }
     }
 
+    /**
+     * Tests whether immutable attributes are immutable indeed.
+     *
+     * @throws \ReflectionException
+     */
+    public function testImmutableAttributes()
+    {
+        $testId = random_int(1, 9999);
+        $testUid = StringHelper::UUID();
+        $testTitle = StringHelper::UUID();
+
+        $entry = $this->make(Entry::class, [
+            'id' => $testId,
+            'uid' => $testUid,
+            'title' => $testTitle
+        ]);
+
+        $arguments = [
+            'id' => random_int(1, 9999),
+            'uid' => StringHelper::UUID(),
+            'title' => StringHelper::UUID()
+        ];
+
+        $this->setInaccessibleProperty($this->resolver, 'immutableAttributes', ['id', 'uid', 'title']);
+        $this->invokeMethod($this->resolver, 'populateElementWithData', [$entry, $arguments]);
+
+        $this->assertSame($entry->id, $testId);
+        $this->assertSame($entry->uid, $testUid);
+        $this->assertSame($entry->title, $testTitle);
+
+        $this->assertNotSame($entry->id, $arguments['id']);
+        $this->assertNotSame($entry->uid, $arguments['uid']);
+        $this->assertNotSame($entry->title, $arguments['title']);
+    }
+
     public function populatingElementWithDataProvider()
     {
         return [

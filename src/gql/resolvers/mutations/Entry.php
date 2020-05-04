@@ -30,6 +30,9 @@ class Entry extends ElementMutationResolver
 {
     use StructureMutationTrait;
 
+    /** @inheritdoc */
+    protected $immutableAttributes = ['id', 'uid', 'draftId'];
+
     /**
      * Save an entry or draft using the passed arguments.
      *
@@ -44,8 +47,6 @@ class Entry extends ElementMutationResolver
     {
         $entry = $this->getEntryElement($arguments);
 
-        // Prevent modification of immutable attributes and populate with passed data
-        unset ($arguments['id'], $arguments['uid'], $arguments['draftId']);
         $entry = $this->populateElementWithData($entry, $arguments);
 
         $this->saveElement($entry);

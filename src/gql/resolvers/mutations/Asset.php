@@ -30,6 +30,9 @@ use GuzzleHttp\Client;
  */
 class Asset extends ElementMutationResolver
 {
+    /** @inheritdoc */
+    protected $immutableAttributes = ['id', 'uid', 'volumeId', 'folderId'];
+
     /**
      * Save an asset using the passed arguments.
      *

@@ -24,6 +24,9 @@ use GraphQL\Type\Definition\ResolveInfo;
  */
 class Tag extends ElementMutationResolver
 {
+    /** @inheritdoc */
+    protected $immutableAttributes = ['id', 'uid', 'groupId'];
+
     /**
      * Save a tag using the passed arguments.
      *

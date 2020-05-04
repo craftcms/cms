@@ -28,6 +28,12 @@ abstract class ElementMutationResolver extends MutationResolver
     const CONTENT_FIELD_KEY = '_contentFields';
 
     /**
+     * A list of attributes that are unchangeable by mutations.
+     * @var string[]
+     */
+    protected $immutableAttributes = ['id', 'uid'];
+
+    /**
      * Populate the element with submitted data.
      *
      * @param Element $element
@@ -38,7 +44,11 @@ abstract class ElementMutationResolver extends MutationResolver
     protected function populateElementWithData(Element $element, array $arguments): Element
     {
         $contentFields = $this->getResolutionData(self::CONTENT_FIELD_KEY) ?? [];
-        
+
+        foreach ($this->immutableAttributes as $attribute) {
+            unset($arguments[$attribute]);
+        }
+
         foreach ($arguments as $argument => $value) {
             if (isset($contentFields[$argument])) {
                 $value = $this->normalizeValue($argument, $value);

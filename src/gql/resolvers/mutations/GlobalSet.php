@@ -20,6 +20,9 @@ use GraphQL\Type\Definition\ResolveInfo;
 class GlobalSet extends ElementMutationResolver
 {
 
+    /** @inheritdoc */
+    protected $immutableAttributes = ['id', 'uid'];
+
     /**
      * Save the global set identified by resolver data.
      *
