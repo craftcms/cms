@@ -101,7 +101,7 @@
                                 :fail-message="deleteFailMessage"
                                 :action-url="deleteAction"
                                 :disabled="!canDelete"
-                                v-on:reload="remove(props.rowIndex)"
+                                v-on:reload="remove(props.rowIndex, props.rowData.id)"
                                 v-if="props.rowData._showDelete == undefined || props.rowData._showDelete == true"
                             ></admin-table-delete-button>
                         </template>
@@ -367,7 +367,7 @@
                 this.$refs.vuetable.reload();
             },
 
-            remove(index) {
+            remove(index, id) {
               this.isLoading = true;
 
               if (this.apiUrl) {
@@ -375,6 +375,7 @@
                   this.$refs.vuetable.reload();
               } else {
                   Vue.delete(this.$refs.vuetable.tableData, index);
+                  this.removeCheck(id);
                   this.$refs.vuetable.refresh();
               }
 
