@@ -22,6 +22,7 @@
 - Fixed a bug where checkboxes’ state persisted after an admin table row was deleted. ([#6018](https://github.com/craftcms/cms/issues/6018))
 - Fixed a bug where the `autoLoginAfterAccountActivation` and `activateAccountSuccessPath` config settings weren’t being respected after users verified their email. ([#5980](https://github.com/craftcms/cms/issues/5980))
 - Fixed a bug where the “Preview file” asset action wasn’t available if any other elements were being displayed in the table row (e.g. the file’s uploader or any relations). ([#6012](https://github.com/craftcms/cms/issues/6012))
+- Fixed a bug where `update` commands could time out when running migrations or reverting Composer changes. ([#6021](https://github.com/craftcms/cms/pull/6021))
 
 ## 3.4.17.1 - 2020-04-25
 
