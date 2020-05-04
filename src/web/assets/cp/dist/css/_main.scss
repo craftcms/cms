@@ -2860,10 +2860,23 @@ ul.tree,
       @include padding-left(38px);
     }
 
+    &.add {
+      background-color: darken($grey050, 2%);
+
+      &:before {
+        position: absolute;
+        @include left(0);
+        width: 31px;
+        @include alignright;
+        @include icon;
+        content: 'plus';
+        color: $lightTextColor;
+      }
+    }
+
     & > .heading {
       flex: 0 0 105px;
-      margin-top: 0;
-      margin-bottom: 0;
+      @include margin(0, 7px, 0, 0);
       line-height: 18px;
     }
 
@@ -2897,12 +2910,12 @@ ul.tree,
 
   & > .field > .input,
   & > .data > .value {
+    flex: 1;
     padding: 7px 0;
-    width: calc(100% - 112px);
   }
 
   & > .field.lightswitch-field > .input {
-    width: auto;
+    flex: 0;
   }
 
   & > .field {

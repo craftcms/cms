@@ -26,14 +26,17 @@
 {% extends '_layouts/cp' %}
 {% import '_includes/forms' as forms %}
 
-{% set supportedSiteIds = (craft.app.isMultiSite ? element.getSupportedSites() : [element.siteId])|column(s => s.siteId ?? s) %}
-{% set editableSiteIds = supportedSiteIds|intersect(craft.app.sites.getEditableSiteIds()) %}
-{% set isMultiSiteElement = craft.app.isMultiSite and supportedSiteIds|length > 1 %}
-{% set canEditMultipleSites = isMultiSiteElement and editableSiteIds|length > 1 %}
 {% set isDraft = element.getIsDraft() %}
-{% set isUnsavedDraft = element.getIsUnsavedDraft() %}
 {% set isRevision = element.getIsRevision() %}
 {% set isCurrent = not isDraft and not isRevision %}
+{% set allSites = craft.app.isMultiSite ? element.getSupportedSites() : [element.siteId] %}
+{% set allEditableSiteIds = craft.app.sites.getEditableSiteIds() %}
+{% set propSiteIds = allSites|where(s => s.propagate ?? true)|column(s => s.siteId ?? s) %}
+{% set propEditableSiteIds = propSiteIds|intersect(allEditableSiteIds) %}
+{% set isMultiSiteElement = craft.app.isMultiSite and allSites|length > 1 %}
+{% set addlEditableSiteIds = allSites|column(s => s.siteId ?? s)|diff(propSiteIds)|intersect(allEditableSiteIds) %}
+{% set canEditMultipleSites = isMultiSiteElement and (propEditableSiteIds|length > 1 or addlEditableSiteIds|length) %}
+{% set isUnsavedDraft = element.getIsUnsavedDraft() %}
 
 {% set previewTargets = element.getPreviewTargets() %}
 {% set enablePreview = previewTargets and not craft.app.request.isMobileBrowser(true) %}
@@ -123,6 +126,7 @@
 {% block contextMenu %}
     {% if isMultiSiteElement or saveDraftAction or element.find().revisionOf(element).exists() %}
         {% include "_includes/revisionmenu" with {
+            supportedSiteIds: propSiteIds,
             canHaveDrafts: saveDraftAction is not empty,
         } %}
     {% endif %}
@@ -334,7 +338,7 @@
     {% set siteStatusesQuery = element.find()
         .select(['elements_sites.siteId', 'elements_sites.enabled'])
         .id(element.id)
-        .siteId(editableSiteIds)
+        .siteId(propEditableSiteIds)
         .anyStatus()
         .asArray() %}
     {% if isDraft %}
@@ -346,10 +350,10 @@
         .pairs()|map(s => s ? true : false) %}
 {% elseif canEditMultipleSites %}
     {% set siteStatusValues = {} %}
-    {% for siteId in editableSiteIds %}
+    {% for siteId in propEditableSiteIds %}
         {% set siteStatusValues = siteStatusValues|merge([false]) %}
     {% endfor %}
-    {% set siteStatuses = combine(editableSiteIds, siteStatusValues) %}
+    {% set siteStatuses = combine(propEditableSiteIds, siteStatusValues) %}
 {% else %}
     {% set siteStatuses = {
         ("#{element.siteId}"): element.enabled ? true : false
@@ -364,6 +368,7 @@
     siteToken: not element.getSite().enabled ? element.siteId|hash,
     isUnsavedDraft: isUnsavedDraft,
     siteStatuses: siteStatuses,
+    addlSiteIds: addlEditableSiteIds|values,
     enabled: element.enabled ? true : false,
     enabledForSite: element.enabled and element.enabledForSite,
     isLive: isCurrent and element.enabled and element.enabledForSite and element.getRoute(),

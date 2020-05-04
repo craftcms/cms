@@ -12,6 +12,7 @@ use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
 use craft\elements\Entry;
 use craft\models\Section;
+use craft\models\Site;
 use craft\web\Controller;
 use yii\web\ForbiddenHttpException;
 
@@ -49,19 +50,29 @@ abstract class BaseEntriesController extends Controller
     }
 
     /**
+     * Enforces edit site permissions.
+     *
+     * @param Site $site
+     * @throws ForbiddenHttpException
+     * @since 3.5.0
+     */
+    protected function enforceSitePermission(Site $site)
+    {
+        if (Craft::$app->getIsMultiSite()) {
+            $this->requirePermission('editSite:' . $site->uid);
+        }
+    }
+
+    /**
      * Enforces all Edit Entry permissions.
      *
      * @param Entry $entry
      * @param bool $duplicate
+     * @throws ForbiddenHttpException
      */
     protected function enforceEditEntryPermissions(Entry $entry, bool $duplicate = false)
     {
         $permissionSuffix = ':' . $entry->getSection()->uid;
-
-        if (Craft::$app->getIsMultiSite()) {
-            // Make sure they have access to this site
-            $this->requirePermission('editSite:' . $entry->getSite()->uid);
-        }
 
         // Make sure the user is allowed to edit entries in this section
         $this->requirePermission('editEntries' . $permissionSuffix);

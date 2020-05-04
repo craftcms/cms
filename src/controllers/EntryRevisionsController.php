@@ -43,6 +43,7 @@ class EntryRevisionsController extends BaseEntriesController
      * @param string|null $site The site handle, if specified.
      * @return Response
      * @throws BadRequestHttpException
+     * @throws ForbiddenHttpException
      */
     public function actionCreateDraft(string $section, string $site = null): Response
     {
@@ -117,6 +118,7 @@ class EntryRevisionsController extends BaseEntriesController
         }
 
         // Make sure the user is allowed to create this entry
+        $this->enforceSitePermission($entry->getSite());
         $this->enforceEditEntryPermissions($entry);
 
         // Save it and redirect to its edit page
@@ -136,6 +138,7 @@ class EntryRevisionsController extends BaseEntriesController
      *
      * @return Response|null
      * @throws NotFoundHttpException if the requested entry draft cannot be found
+     * @throws ForbiddenHttpException
      */
     public function actionSaveDraft()
     {
@@ -155,6 +158,7 @@ class EntryRevisionsController extends BaseEntriesController
             $entry->siteId = $siteId;
             $entry->sectionId = $request->getBodyParam('sectionId');
             $this->_setDraftAttributesFromPost($entry);
+            $this->enforceSitePermission($entry->getSite());
             $this->enforceEditEntryPermissions($entry);
             $entry->setFieldValuesFromRequest($fieldsLocation);
             $entry->updateTitle();
@@ -186,6 +190,7 @@ class EntryRevisionsController extends BaseEntriesController
                 if (!$draft) {
                     throw new NotFoundHttpException('Entry draft not found');
                 }
+                $this->enforceSitePermission($draft->getSite());
                 $this->enforceEditEntryPermissions($draft);
 
                 // Draft meta
@@ -201,6 +206,7 @@ class EntryRevisionsController extends BaseEntriesController
                 if (!$entry) {
                     throw new NotFoundHttpException('Entry not found');
                 }
+                $this->enforceSitePermission($entry->getSite());
                 $this->enforceEditEntryPermissions($entry);
 
                 // Create the draft in a transaction so we can undo it if something goes wrong
@@ -336,7 +342,8 @@ class EntryRevisionsController extends BaseEntriesController
 
         // Permission enforcement
         /** @var Entry|null $entry */
-        $entry = ElementHelper::sourceElement($draft);
+        $this->enforceSitePermission($draft->getSite());
+        $entry = ElementHelper::sourceElement($draft, true);
         $this->enforceEditEntryPermissions($entry);
         $section = $entry->getSection();
 
@@ -416,6 +423,7 @@ class EntryRevisionsController extends BaseEntriesController
      * @return Response|null
      * @throws NotFoundHttpException if the requested entry version cannot be found
      * @throws ServerErrorHttpException if the entry version is missing its entry
+     * @throws ForbiddenHttpException
      */
     public function actionRevertEntryToVersion()
     {
@@ -437,6 +445,7 @@ class EntryRevisionsController extends BaseEntriesController
         /** @var Entry $entry */
         $entry = ElementHelper::sourceElement($revision);
 
+        $this->enforceSitePermission($entry->getSite());
         $this->enforceEditEntryPermissions($entry);
         $userId = Craft::$app->getUser()->getId();
 

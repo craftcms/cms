@@ -282,7 +282,7 @@ class DraftBehavior extends BaseRevisionBehavior
      */
     private function _outdatedFields(): array
     {
-        if (!$this->sourceId || !$this->trackChanges) {
+        if ($this->source() === null || !$this->trackChanges) {
             return [];
         }
 

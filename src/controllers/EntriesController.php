@@ -52,6 +52,7 @@ class EntriesController extends BaseEntriesController
      * @param Entry|null $entry The entry being edited, if there were any validation errors.
      * @return Response
      * @throws NotFoundHttpException if the requested site handle is invalid
+     * @throws ForbiddenHttpException
      */
     public function actionEditEntry(string $section, int $entryId = null, int $draftId = null, int $revisionId = null, string $site = null, Entry $entry = null): Response
     {
@@ -86,6 +87,7 @@ class EntriesController extends BaseEntriesController
         $section = $variables['section'];
 
         // Make sure they have permission to edit this entry
+        $this->enforceSitePermission($entry->getSite());
         $this->enforceEditEntryPermissions($entry);
 
         $currentUser = Craft::$app->getUser()->getIdentity();
@@ -133,7 +135,9 @@ class EntriesController extends BaseEntriesController
             $excludeIds[] = $entry->getSourceId();
 
             $variables['parentOptionCriteria'] = [
-                'siteId' => $site->id,
+                'siteId' => '*',
+                'preferSites' => [$site->id],
+                'unique' => true,
                 'sectionId' => $section->id,
                 'status' => null,
                 'enabledForSite' => false,
@@ -252,6 +256,7 @@ class EntriesController extends BaseEntriesController
      * Switches between two entry types.
      *
      * @return Response
+     * @throws ForbiddenHttpException
      */
     public function actionSwitchEntryType(): Response
     {
@@ -259,6 +264,7 @@ class EntriesController extends BaseEntriesController
         $this->requireAcceptsJson();
 
         $entry = $this->_getEntryModel();
+        $this->enforceSitePermission($entry->getSite());
         $this->enforceEditEntryPermissions($entry);
         $this->_populateEntryModel($entry);
 
@@ -292,6 +298,7 @@ class EntriesController extends BaseEntriesController
      * @param bool $duplicate Whether the entry should be duplicated
      * @return Response|null
      * @throws ServerErrorHttpException if reasons
+     * @throws ForbiddenHttpException
      */
     public function actionSaveEntry(bool $duplicate = false)
     {
@@ -301,6 +308,7 @@ class EntriesController extends BaseEntriesController
         $request = Craft::$app->getRequest();
 
         // Permission enforcement
+        $this->enforceSitePermission($entry->getSite());
         $this->enforceEditEntryPermissions($entry, $duplicate);
         $currentUser = Craft::$app->getUser()->getIdentity();
 
@@ -569,11 +577,18 @@ class EntriesController extends BaseEntriesController
             }
 
             if (!$variables['entry']) {
-                // If they're just accessing an invalid draft/revision ID, redirect them to the source
-                if (!empty($variables['draftId']) || !empty($variables['revisionId'])) {
+                // If they're attempting to access adraft/revision, or if the entry may be available in another
+                // site, try to redirect them
+                if (
+                    count($siteIds) > 1 ||
+                    !empty($variables['draftId']) ||
+                    !empty($variables['revisionId'])
+                ) {
                     $sourceEntry = Entry::find()
                         ->id($variables['entryId'])
-                        ->siteId($site->id)
+                        ->siteId($siteIds)
+                        ->preferSites([$site->id])
+                        ->unique()
                         ->anyStatus()
                         ->one();
                     if ($sourceEntry) {

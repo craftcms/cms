@@ -240,13 +240,14 @@ class ElementHelper
     /**
      * Returns a list of sites that a given element supports.
      *
-     * Each site is represented as an array with 'siteId' and 'enabledByDefault' keys.
+     * Each site is represented as an array with `siteId`, `propagate`, and `enabledByDefault` keys.
      *
-     * @param ElementInterface $element
+     * @param ElementInterface $element The element to return supported site info for
+     * @param bool $withUnpropagatedSites Whether to include sites the element is currently not being propagated to
      * @return array
      * @throws Exception if any of the element's supported sites are invalid
      */
-    public static function supportedSitesForElement(ElementInterface $element): array
+    public static function supportedSitesForElement(ElementInterface $element, $withUnpropagatedSites = false): array
     {
         $sites = [];
         $siteUidMap = ArrayHelper::map(Craft::$app->getSites()->getAllSites(), 'id', 'uid');
@@ -262,9 +263,14 @@ class ElementHelper
 
             $site['siteUid'] = $siteUidMap[$site['siteId']];
 
-            $sites[] = array_merge([
+            $site = array_merge([
+                'propagate' => true,
                 'enabledByDefault' => true,
             ], $site);
+
+            if ($withUnpropagatedSites || $site['propagate']) {
+                $sites[] = $site;
+            }
         }
 
         return $sites;
@@ -349,11 +355,12 @@ class ElementHelper
     /**
      * Returns the element, or if it’s a draft/revision, the source element.
      *
-     * @param ElementInterface $element
-     * @return ElementInterface
+     * @param ElementInterface $element The source/draft/revision element
+     * @param bool $anySite Whether the source element can be retrieved in any site
+     * @return ElementInterface|null
      * @since 3.3.0
      */
-    public static function sourceElement(ElementInterface $element): ElementInterface
+    public static function sourceElement(ElementInterface $element, bool $anySite = false)
     {
         $sourceId = $element->getSourceId();
         if ($sourceId === $element->id) {
@@ -362,7 +369,9 @@ class ElementHelper
 
         return $element::find()
             ->id($sourceId)
-            ->siteId($element->siteId)
+            ->siteId($anySite ? '*' : $element->siteId)
+            ->preferSites([$element->siteId])
+            ->unique()
             ->anyStatus()
             ->ignorePlaceholders()
             ->one();

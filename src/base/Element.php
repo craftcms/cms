@@ -1289,6 +1289,24 @@ abstract class Element extends Component implements ElementInterface
      */
     public function init()
     {
+        // Typecast DB values
+        $this->id = (int)$this->id ?: null;
+        $this->draftId = (int)$this->draftId ?: null;
+        $this->revisionId = (int)$this->revisionId ?: null;
+        $this->elementSiteId = (int)$this->elementSiteId ?: null;
+        $this->fieldLayoutId = (int)$this->fieldLayoutId ?: null;
+        $this->structureId = (int)$this->structureId ?: null;
+        $this->contentId = (int)$this->contentId ?: null;
+        $this->enabled = (bool)$this->enabled;
+        $this->archived = (bool)$this->archived;
+        $this->siteId = (int)$this->siteId ?: null;
+        $this->root = (int)$this->root ?: null;
+        $this->lft = (int)$this->lft ?: null;
+        $this->rgt = (int)$this->rgt ?: null;
+        $this->level = (int)$this->level ?: null;
+        $this->searchScore = (int)$this->searchScore ?: null;
+        $this->trashed = (bool)$this->trashed;
+
         parent::init();
 
         if ($this->siteId === null && Craft::$app->getIsInstalled()) {
@@ -2618,7 +2636,7 @@ abstract class Element extends Component implements ElementInterface
         }
 
         if ($this->_currentRevision === null) {
-            $source = ElementHelper::sourceElement($this);
+            $source = ElementHelper::sourceElement($this, true);
             $this->_currentRevision = static::find()
                 ->revisionOf($source->id)
                 ->dateCreated($source->dateUpdated)

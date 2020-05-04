@@ -1010,6 +1010,16 @@ $toolbarIconColor: darken($inputColor, 10%);
     & > .data {
       margin: 0 -24px !important;
 
+      &:first-child {
+        border-top-left-radius: $largeBorderRadius;
+        border-top-right-radius: $largeBorderRadius;
+      }
+
+      &:last-child {
+        border-bottom-left-radius: $largeBorderRadius;
+        border-bottom-right-radius: $largeBorderRadius;
+      }
+
       & > .heading > label,
       & > .heading {
         color: $grey600;

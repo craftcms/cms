@@ -10,6 +10,7 @@
 - Soft-deleted elements now have a “Delete permanently” element action. ([#4420](https://github.com/craftcms/cms/issues/4420))
 - Assets now have a “Copy URL” element action. ([#2944](https://github.com/craftcms/cms/issues/2944))
 - Entry indexes can now show “Revision Notes” and “Last Edited By” columns. ([#5907](https://github.com/craftcms/cms/issues/5907))
+- Sections now have a new Propagation Method option, which gives entries control over which sites they should be saved to. ([#5988](https://github.com/craftcms/cms/issues/5988))
 - It’s now possible to set a custom route that handles Set Password requests. ([#5722](https://github.com/craftcms/cms/issues/5722))
 - Field labels now reveal their handles when the <kbd>Option</kbd>/<kbd>ALT</kbd> key is pressed. ([#5833](https://github.com/craftcms/cms/issues/5833))
 - Added the `allowedGraphqlOrigins` config setting. ([#5933](https://github.com/craftcms/cms/issues/5933))
@@ -19,10 +20,12 @@
 - Added the `install/check` command. ([#5810](https://github.com/craftcms/cms/issues/5810))
 - Added the `plugin/install`, `plugin/uninstall`, `plugin/enable`, and `plugin/disable` commands. ([#5817](https://github.com/craftcms/cms/issues/5817))
 - Added the `{% html %}` Twig tag, which makes it possible to register arbitrary HTML for inclusion in the `<head>`, beginning of `<body>`, or end of `<body>`. ([#5955](https://github.com/craftcms/cms/issues/5955))
+- Added the `|diff` Twig filter.
 - Added the `|explodeClass` Twig filter, which converts class names into an array.
 - Added the `|explodeStyle` Twig filter, which converts CSS styles into an array of property/value pairs.
 - Added the `|push` Twig filter, which returns a new array with one or more items appended to it.
 - Added the `|unshift` Twig filter, which returns a new array with one or more items prepended to it.
+- Added the `|where` Twig filter.
 - Added the `raw()` Twig function, which wraps the given string in a `Twig\Markup` object to prevent it from getting HTML-encoded.
 - Added support for eager-loading elements’ current revisions, via `currentRevision`.
 - Added support for eager-loading drafts’ and revisions’ creators, via `draftCreator` and `revisionCreator`.
@@ -36,12 +39,14 @@
 - Added `craft\base\Element::EVENT_SET_EAGER_LOADED_ELEMENTS`.
 - Added `craft\base\ElementInterface::getIconUrl()`.
 - Added `craft\base\ElementInterface::gqlMutationNameByContext()`.
+- Added `craft\base\ElementTrait::$elementSiteId`.
 - Added `craft\behaviors\BaseRevisionBehavior`.
 - Added `craft\base\FieldInterface::getContentGqlMutationArgumentType()`.
 - Added `craft\base\FieldInterface::getContentGqlQueryArgumentType()`.
 - Added `craft\config\GeneralConfig::getTestToEmailAddress()`.
 - Added `craft\console\controllers\MailerController::$to`.
 - Added `craft\controllers\AppController::actionBrokenImage()`.
+- Added `craft\controllers\BaseEntriesController::enforceSitePermissions()`.
 - Added `craft\elements\actions\CopyUrl`.
 - Added `craft\elements\actions\Delete::$hard`.
 - Added `craft\elements\Asset::getSrcset()`. ([#5774](https://github.com/craftcms/cms/issues/5774))
@@ -102,6 +107,7 @@
 - Added `craft\helpers\MailerHelper::normalizeEmails()`.
 - Added `craft\helpers\MailerHelper::settingsReport()`.
 - Added `craft\helpers\Queue`.
+- Added `craft\models\Section::PROPAGATION_METHOD_CUSTOM`.
 - Added `craft\models\Site::$enabled`.
 - Added `craft\services\Composer::handleError()`.
 - Added `craft\services\Composer::run()`.
@@ -150,6 +156,7 @@
 - Improved transform eager-loading support when using GraphQL API.
 - `craft\db\ActiveRecord` now unsets any empty primary key values when saving new records, to avoid a SQL error on PostgreSQL. ([#5814](https://github.com/craftcms/cms/pull/5814))
 - `craft\elements\Asset::getImg()` now has a `$sizes` argument. ([#5774](https://github.com/craftcms/cms/issues/5774))
+- `craft\helpers\ElementHelper::supportedSitesForElement()` now has a `$withUnpropagatedSites` argument.
 - `craft\helpers\StringHelper::randomString()` no longer includes capital letters or numbers by default.
 - `craft\i18n\Formatter::asTimestamp()` now has a `$withPreposition` argument.
 - `craft\services\Gql` now fires a `registerGqlMutations` event that allows for plugins to register their own GraphQL mutations.
@@ -157,14 +164,17 @@
 - Improved `data`/`aria` tag normalization via `craft\helpers\Html::parseTagAttributes()` and `normalizeTagAttributes()`.
 - Control panel form input macros and templates that accept a `class` variable can now pass it as an array of class names.
 - Updated Composer to 1.10.5. ([#5925](https://github.com/craftcms/cms/pull/5925))
+- Updated voku/stringy to ^6.2.2. ([#5989](https://github.com/craftcms/cms/issues/5989))
 
 ### Deprecated
-- Deprecated the `install/plugin` command. The new `plugin/install` command should be used instead.
-- Deprecated the `|ucwords` Twig filter. Use the `|title` filter instead.
-- Deprecated `craft\gql\base\Resolver::extractEagerLoadCondition()` in favor of the new `ElementQueryConditionBuilder` class.
+- Deprecated the `install/plugin` command. `plugin/install` should be used instead.
+- Deprecated the `|filterByValue` Twig filter. `|where` should be used instead.
+- Deprecated the `|ucwords` Twig filter. `|title` should be used instead.
+- Deprecated `craft\gql\base\Resolver::extractEagerLoadCondition()`. `ElementQueryConditionBuilder` should be used instead.
+- Deprecated `craft\helpers\Stringy`.
 - Deprecated `craft\web\View::formatInputId()`. `craft\helpers\Html::namespaceHtml()` should be used instead.
-- Deprecated `craft\events\RegisterGqlPermissionsEvent` in favor of the new `craft\events\RegisterGqlSchemaComponentsEvent` event.
-- Deprecated `craft\services\Gql::getAllPermissions()` in favor of the new `craft\services\Gql::getAllSchemaComponents()` method.
+- Deprecated `craft\events\RegisterGqlPermissionsEvent`. `craft\events\RegisterGqlSchemaComponentsEvent` should be used instead.
+- Deprecated `craft\services\Gql::getAllPermissions()`. `craft\services\Gql::getAllSchemaComponents()` should be used instead.
 - Deprecated `craft\services\ProjectConfig::CONFIG_FILENAME`. `$filename` should be used instead.
 
 ### Removed
