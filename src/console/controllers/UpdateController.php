@@ -453,6 +453,7 @@ class UpdateController extends Controller
         $this->stdout('Applying new migrations ... ', Console::FG_YELLOW);
 
         $process = new Process([$script, 'migrate/all', '--no-backup', '--no-content']);
+        $process->setTimeout(null);
         try {
             $process->mustRun();
         } catch (ProcessFailedException $e) {
