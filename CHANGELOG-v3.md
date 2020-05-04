@@ -17,6 +17,7 @@
 - Fixed a bug where users’ emails could be overridden by a previously-entered, unverified email, if an admin overwrote their email after it was set. ([#6001](https://github.com/craftcms/cms/issues/6001))
 - Fixed a bug where Number fields weren’t ensuring that their Default Value setting was a number. ([#6006](https://github.com/craftcms/cms/issues/6006))
 - Fixed a bug where checkboxes’ state persisted after an admin table row was deleted. ([#6018](https://github.com/craftcms/cms/issues/6018))
+- Fixed a bug where the `autoLoginAfterAccountActivation` and `activateAccountSuccessPath` config settings weren’t being respected after users verified their email. ([#5980](https://github.com/craftcms/cms/issues/5980))
 
 ## 3.4.17.1 - 2020-04-25
 

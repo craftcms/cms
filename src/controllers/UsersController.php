@@ -526,12 +526,19 @@ class UsersController extends Controller
 
         /** @var User $user */
         list($user) = $info;
+        $pending = $user->pending;
         $usersService = Craft::$app->getUsers();
 
-        if (!$usersService->verifyEmailForUser($user)) {
-            return $this->renderTemplate('_special/emailtaken', [
-                'email' => $user->unverifiedEmail
-            ]);
+        // Do they have an unverified email?
+        if ($user->unverifiedEmail) {
+            if (!$usersService->verifyEmailForUser($user)) {
+                return $this->renderTemplate('_special/emailtaken', [
+                    'email' => $user->unverifiedEmail
+                ]);
+            }
+        } else if ($pending) {
+            // No unverified email so just get on with activating their account
+            $usersService->activateUser($user);
         }
 
         // If they're logged in, give them a success notice
@@ -539,12 +546,8 @@ class UsersController extends Controller
             Craft::$app->getSession()->setNotice(Craft::t('app', 'Email verified'));
         }
 
-        // If they're still pending, treat this as an activation request
-        if (
-            $user->pending &&
-            $usersService->activateUser($user) &&
-            ($response = $this->_onAfterActivateUser($user)) !== null
-        ) {
+        // Were they just activated?
+        if ($pending && ($response = $this->_onAfterActivateUser($user)) !== null) {
             return $response;
         }
 
