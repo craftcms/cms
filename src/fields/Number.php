@@ -78,6 +78,22 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
 
     /**
      * @inheritdoc
+     * @since 3.5.0
+     */
+    public function __construct($config = [])
+    {
+        // Normalize number settings
+        foreach (['defaultValue', 'min', 'max'] as $name) {
+            if (isset($config[$name]) && is_array($config[$name])) {
+                $config[$name] = Localization::normalizeNumber($config[$name]['value'], $config[$name]['locale']);
+            }
+        }
+
+        parent::__construct($config);
+    }
+
+    /**
+     * @inheritdoc
      */
     public function init()
     {
@@ -115,7 +131,7 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
-        $rules[] = [['min', 'max'], 'number'];
+        $rules[] = [['defaultValue', 'min', 'max'], 'number'];
         $rules[] = [['decimals', 'size'], 'integer'];
         $rules[] = [
             ['max'],
@@ -125,7 +141,7 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
         ];
 
         if (!$this->decimals) {
-            $rules[] = [['min', 'max'], 'integer'];
+            $rules[] = [['defaultValue', 'min', 'max'], 'integer'];
         }
 
         return $rules;

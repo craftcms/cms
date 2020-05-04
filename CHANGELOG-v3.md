@@ -229,6 +229,14 @@
 
 ## Unreleased (3.4.x)
 
+### Changed
+- Template autosuggest fields no longer suggest files within `node_modules/` folders. ([#4122](https://github.com/craftcms/cms/pull/4122))
+- Matrix fields now ensure that they have at least one block type on validation. ([#5996](https://github.com/craftcms/cms/issues/5996))
+- Number fields’ Default Value, Min Value, and Max Value settings now support localized number formats. ([#6006](https://github.com/craftcms/cms/issues/6006))
+- Element select inputs’ `selectElements` events now contain references to the newly created element, rather than the one in the element selector modal.
+- Updated Yii to 2.0.35.
+- Updated jQuery to 3.5.0.
+
 ### Fixed
 - Fixed a bug where relational fields wouldn’t eager load some relations if the field was set to manage relations on a per-site basis, and the source elements were from a variety of sites.
 - Fixed a bug where relational fields wouldn’t eager load cross-site relations even if a target site had been selected in the field settings. ([#5995](https://github.com/craftcms/cms/issues/5995))
@@ -236,6 +244,10 @@
 - Fixed a bug where Assets fields weren’t showing custom asset sources. ([#5983](https://github.com/craftcms/cms/issues/5983))
 - Fixed a bug where Craft wasn’t clearing the database schema cache after migrations were run.
 - Fixed a bug where Structure entry drafts were including the current entry in the Parent selection options.
+- Fixed a bug where users’ emails could be overridden by a previously-entered, unverified email, if an admin overwrote their email after it was set. ([#6001](https://github.com/craftcms/cms/issues/6001))
+- Fixed a bug where Number fields weren’t ensuring that their Default Value setting was a number. ([#6006](https://github.com/craftcms/cms/issues/6006))
+- Fixed a bug where checkboxes’ state persisted after an admin table row was deleted. ([#6018](https://github.com/craftcms/cms/issues/6018))
+- Fixed a bug where the `autoLoginAfterAccountActivation` and `activateAccountSuccessPath` config settings weren’t being respected after users verified their email. ([#5980](https://github.com/craftcms/cms/issues/5980))
 
 ## 3.4.17.1 - 2020-04-25
 

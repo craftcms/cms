@@ -10,7 +10,7 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-/*!   - 2020-05-01 */
+/*!   - 2020-05-04 */
 (function ($) {
   /** global: Craft */
 
@@ -4734,12 +4734,14 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       this.updateDisabledElementsInModal();
     },
     selectElements: function selectElements(elements) {
-      for (var i = 0; i < elements.length; i++) {
-        var elementInfo = elements[i],
+      for (var _i3 = 0; _i3 < elements.length; _i3++) {
+        var elementInfo = elements[_i3],
             $element = this.createNewElement(elementInfo);
         this.appendElement($element);
         this.addElements($element);
-        this.animateElementIntoPlace(elementInfo.$element, $element);
+        this.animateElementIntoPlace(elementInfo.$element, $element); // Override the element reference with the new one
+
+        elementInfo.$element = $element;
       }
 
       this.onSelectElements(elements);
@@ -12945,8 +12947,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       this.$siteStatusPane = $enabledForSiteField.parent(); // If this is a revision, just show the site statuses statically and be done
 
       if (this.settings.revisionId) {
-        for (var _i3 = 0; _i3 < Craft.sites.length; _i3++) {
-          var site = Craft.sites[_i3];
+        for (var _i4 = 0; _i4 < Craft.sites.length; _i4++) {
+          var site = Craft.sites[_i4];
 
           if (site.id == this.settings.siteId) {
             continue;
@@ -12979,8 +12981,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       this.$siteLightswitches = $enabledForSiteField.find('.lightswitch').on('change', this._updateGlobalStatus.bind(this));
       var addlSiteOptions = [];
 
-      for (var _i4 = 0; _i4 < Craft.sites.length; _i4++) {
-        var _site = Craft.sites[_i4];
+      for (var _i5 = 0; _i5 < Craft.sites.length; _i5++) {
+        var _site = Craft.sites[_i5];
 
         if (_site.id == this.settings.siteId) {
           continue;
@@ -12998,8 +13000,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
       var serializedStatuses = "enabled=".concat(originalEnabledValue);
 
-      for (var _i5 = 0; _i5 < this.$siteLightswitches.length; _i5++) {
-        var $input = this.$siteLightswitches.eq(_i5).data('lightswitch').$input;
+      for (var _i6 = 0; _i6 < this.$siteLightswitches.length; _i6++) {
+        var $input = this.$siteLightswitches.eq(_i6).data('lightswitch').$input;
         serializedStatuses += '&' + encodeURIComponent($input.attr('name')) + '=' + $input.val();
       }
 
@@ -13018,9 +13020,9 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           var siteId = $addlSiteSelect.val();
           var site;
 
-          for (var _i6 = 0; _i6 < Craft.sites.length; _i6++) {
-            if (Craft.sites[_i6].id == siteId) {
-              site = Craft.sites[_i6];
+          for (var _i7 = 0; _i7 < Craft.sites.length; _i7++) {
+            if (Craft.sites[_i7].id == siteId) {
+              site = Craft.sites[_i7];
               break;
             }
           }
@@ -13390,8 +13392,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
               revisionMenu.$container.removeClass('hidden');
             }
 
-            for (var _i7 = 0; _i7 < this.newSites.length; _i7++) {
-              var $option = revisionMenu.$options.filter("[data-site-id=".concat(this.newSites[_i7], "]"));
+            for (var _i8 = 0; _i8 < this.newSites.length; _i8++) {
+              var $option = revisionMenu.$options.filter("[data-site-id=".concat(this.newSites[_i8], "]"));
               $option.find('.status').removeClass('disabled').addClass('enabled');
               var $li = $option.parent().removeClass('hidden');
               $li.closest('.site-group').removeClass('hidden');
@@ -19906,8 +19908,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
       var $optgroup = null;
 
-      for (var _i8 = 0; _i8 < config.options.length; _i8++) {
-        var _option = config.options[_i8]; // Starting a new <optgroup>?
+      for (var _i9 = 0; _i9 < config.options.length; _i9++) {
+        var _option = config.options[_i9]; // Starting a new <optgroup>?
 
         if (typeof _option.optgroup !== 'undefined') {
           $optgroup = $('<optgroup/>', {
