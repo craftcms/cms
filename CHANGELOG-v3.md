@@ -6,6 +6,7 @@
 - Template autosuggest fields no longer suggest files within `node_modules/` folders. ([#4122](https://github.com/craftcms/cms/pull/4122))
 - Matrix fields now ensure that they have at least one block type on validation. ([#5996](https://github.com/craftcms/cms/issues/5996))
 - Number fields’ Default Value, Min Value, and Max Value settings now support localized number formats. ([#6006](https://github.com/craftcms/cms/issues/6006))
+- Element select inputs’ `selectElements` events now contain references to the newly created element, rather than the one in the element selector modal.
 
 ### Fixed
 - Fixed a bug where relational fields wouldn’t eager load some relations if the field was set to manage relations on a per-site basis, and the source elements were from a variety of sites.

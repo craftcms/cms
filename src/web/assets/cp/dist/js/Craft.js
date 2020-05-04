@@ -10,7 +10,7 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-/*!   - 2020-04-25 */
+/*!   - 2020-05-04 */
 (function ($) {
   /** global: Craft */
 
@@ -4729,12 +4729,14 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       this.updateDisabledElementsInModal();
     },
     selectElements: function selectElements(elements) {
-      for (var i = 0; i < elements.length; i++) {
-        var elementInfo = elements[i],
+      for (var _i3 = 0; _i3 < elements.length; _i3++) {
+        var elementInfo = elements[_i3],
             $element = this.createNewElement(elementInfo);
         this.appendElement($element);
         this.addElements($element);
-        this.animateElementIntoPlace(elementInfo.$element, $element);
+        this.animateElementIntoPlace(elementInfo.$element, $element); // Override the element reference with the new one
+
+        elementInfo.$element = $element;
       }
 
       this.onSelectElements(elements);
