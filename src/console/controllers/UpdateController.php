@@ -544,6 +544,7 @@ class UpdateController extends Controller
         $this->stdout('Reverting Composer changes ... ', Console::FG_YELLOW);
 
         $process = new Process([$script, 'update/composer-install']);
+        $process->setTimeout(null);
         try {
             $process->mustRun();
         } catch (ProcessFailedException $e) {
