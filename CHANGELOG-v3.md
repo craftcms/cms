@@ -10,6 +10,7 @@
 - Matrix fields now ensure that they have at least one block type on validation. ([#5996](https://github.com/craftcms/cms/issues/5996))
 - Number fields’ Default Value, Min Value, and Max Value settings now support localized number formats. ([#6006](https://github.com/craftcms/cms/issues/6006))
 - Element select inputs’ `selectElements` events now contain references to the newly created element, rather than the one in the element selector modal.
+- Users are now redirected back to the Assets index page after saving an asset from its edit page.
 - Updated Yii to 2.0.35.
 - Updated jQuery to 3.5.0.
 
