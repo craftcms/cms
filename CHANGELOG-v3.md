@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.4.18 - 2020-05-05
 
 ### Added
 - Added the “Delete asset” option to the Save menu on Edit Asset pages. ([#6020](https://github.com/craftcms/cms/issues/6020))
