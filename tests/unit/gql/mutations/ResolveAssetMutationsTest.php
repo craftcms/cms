@@ -40,7 +40,7 @@ class ResolveAssetMutationsTest extends TestCase
      * @param $exception
      * @param bool $wrongVolume whether saving an asset in the wrong volume should be attempted
      * @throws \Exception
-     * @dataProvider testSaveAssetDataProvider
+     * @dataProvider saveAssetDataProvider
      */
     public function testSaveAsset($arguments = [], $exception = '', $wrongVolume = false)
     {
@@ -55,7 +55,7 @@ class ResolveAssetMutationsTest extends TestCase
         $canIdentify = !empty($arguments['id']) || !empty($arguments['uid']);
 
         $this->tester->mockCraftMethods('elements', [
-            'getElementById' => $asset,
+            'getElementById' => !empty($arguments['id']) && $arguments['id'] < 0 ? null : $asset,
             'createElementQuery' => (new MockElementQuery())->setReturnValues([$asset]),
             'createElement' => function(array $config) {
                 unset($config['type']);
@@ -325,11 +325,15 @@ class ResolveAssetMutationsTest extends TestCase
         ];
     }
 
-    public function testSaveAssetDataProvider()
+    public function saveAssetDataProvider()
     {
         return [
             [
                 ['id' => 7],
+            ],
+            [
+                ['id' => -7],
+                'No such asset exists',
             ],
             [
                 ['title' => 'someAsset'],
