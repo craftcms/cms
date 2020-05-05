@@ -33,6 +33,7 @@ use craft\events\RegisterElementSourcesEvent;
 use craft\events\RegisterElementTableAttributesEvent;
 use craft\events\RegisterPreviewTargetsEvent;
 use craft\events\SetEagerLoadedElementsEvent;
+use craft\events\RenderElementsEvent;
 use craft\events\SetElementRouteEvent;
 use craft\events\SetElementTableAttributeHtmlEvent;
 use craft\fieldlayoutelements\BaseField;
@@ -236,6 +237,11 @@ abstract class Element extends Component implements ElementInterface
      * @event RegisterElementHtmlAttributesEvent The event that is triggered when registering the HTML attributes that should be included in the element’s DOM representation in the control panel.
      */
     const EVENT_REGISTER_HTML_ATTRIBUTES = 'registerHtmlAttributes';
+
+    /**
+     * @event RenderElementsEvent The event that is triggered when rendering elements
+     */
+    const EVENT_RENDER_ELEMENTS = 'renderElements';
 
     /**
      * @event SetElementRouteEvent The event that is triggered when defining the route that should be used when this element’s URL is requested
@@ -691,17 +697,19 @@ abstract class Element extends Component implements ElementInterface
      */
     public static function indexHtml(ElementQueryInterface $elementQuery, array $disabledElementIds = null, array $viewState, string $sourceKey = null, string $context = null, bool $includeContainer, bool $showCheckboxes): string
     {
+        $source = ElementHelper::findSource(static::class, $sourceKey, $context);
+
         $variables = [
             'viewMode' => $viewState['mode'],
             'context' => $context,
             'disabledElementIds' => $disabledElementIds,
             'collapsedElementIds' => Craft::$app->getRequest()->getParam('collapsedElementIds'),
             'showCheckboxes' => $showCheckboxes,
+            'source' => $source
         ];
 
         // Special case for sorting by structure
         if (isset($viewState['order']) && $viewState['order'] === 'structure') {
-            $source = ElementHelper::findSource(static::class, $sourceKey, $context);
 
             if (isset($source['structureId'])) {
                 $elementQuery->orderBy(['lft' => SORT_ASC]);
@@ -738,7 +746,14 @@ abstract class Element extends Component implements ElementInterface
 
         $template = '_elements/' . $viewState['mode'] . 'view/' . ($includeContainer ? 'container' : 'elements');
 
-        return Craft::$app->getView()->renderTemplate($template, $variables);
+        // Give plugins a chance to modify the element rendering
+        $event = new RenderElementsEvent([
+            'variables' => $variables,
+            'template' => $template
+        ]);
+        Event::trigger(static::class, self::EVENT_RENDER_ELEMENTS, $event);
+
+        return Craft::$app->getView()->renderTemplate($event->template, $event->variables);
     }
 
     /**
