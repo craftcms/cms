@@ -888,8 +888,8 @@ class View extends \yii\web\View
             foreach ($roots as $templateRoot => $basePaths) {
                 /** @var string[] $basePaths */
                 $templateRootLen = strlen($templateRoot);
-                if (strncasecmp($templateRoot . '/', $name . '/', $templateRootLen + 1) === 0) {
-                    $subName = strlen($name) === $templateRootLen ? '' : substr($name, $templateRootLen + 1);
+                if ($templateRoot === '' || strncasecmp($templateRoot . '/', $name . '/', $templateRootLen + 1) === 0) {
+                    $subName = $templateRoot === '' ? $name : (strlen($name) === $templateRootLen ? '' : substr($name, $templateRootLen + 1));
                     foreach ($basePaths as $basePath) {
                         if (($path = $this->_resolveTemplate($basePath, $subName)) !== null) {
                             return $this->_templatePaths[$key] = $path;
@@ -1938,7 +1938,10 @@ JS;
 
         foreach ($event->roots as $templatePath => $dir) {
             $templatePath = strtolower(trim($templatePath, '/'));
-            $roots[$templatePath][] = $dir;
+            if (!isset($roots[$templatePath])) {
+                $roots[$templatePath] = [];
+            }
+            array_push($roots[$templatePath], ...(array)$dir);
         }
 
         // Longest (most specific) first
