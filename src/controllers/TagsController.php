@@ -240,7 +240,6 @@ class TagsController extends Controller
      */
     public function actionCreateTag(): Response
     {
-        $this->requireLogin();
         $this->requireAcceptsJson();
 
         $groupId = Craft::$app->getRequest()->getRequiredBodyParam('groupId');

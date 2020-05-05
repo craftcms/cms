@@ -176,7 +176,6 @@ class UsersController extends Controller
      */
     public function actionImpersonate()
     {
-        $this->requireLogin();
         $this->requirePostRequest();
 
         $userSession = Craft::$app->getUser();
@@ -1227,7 +1226,6 @@ class UsersController extends Controller
     public function actionUploadUserPhoto()
     {
         $this->requireAcceptsJson();
-        $this->requireLogin();
 
         $userId = Craft::$app->getRequest()->getRequiredBodyParam('userId');
 
@@ -1277,7 +1275,6 @@ class UsersController extends Controller
     public function actionDeleteUserPhoto(): Response
     {
         $this->requireAcceptsJson();
-        $this->requireLogin();
 
         $userId = Craft::$app->getRequest()->getRequiredBodyParam('userId');
 
@@ -1352,7 +1349,6 @@ class UsersController extends Controller
     public function actionUnlockUser(): Response
     {
         $this->requirePostRequest();
-        $this->requireLogin();
         $this->requirePermission('moderateUsers');
 
         $userId = Craft::$app->getRequest()->getRequiredBodyParam('userId');
@@ -1392,7 +1388,6 @@ class UsersController extends Controller
     public function actionSuspendUser()
     {
         $this->requirePostRequest();
-        $this->requireLogin();
         $this->requirePermission('moderateUsers');
 
         $userId = Craft::$app->getRequest()->getRequiredBodyParam('userId');
@@ -1429,7 +1424,6 @@ class UsersController extends Controller
     public function actionUserContentSummary(): Response
     {
         $this->requirePostRequest();
-        $this->requireLogin();
 
         $userIds = Craft::$app->getRequest()->getRequiredBodyParam('userId');
 
@@ -1467,7 +1461,6 @@ class UsersController extends Controller
     public function actionDeleteUser()
     {
         $this->requirePostRequest();
-        $this->requireLogin();
 
         $request = Craft::$app->getRequest();
         $userId = $request->getRequiredBodyParam('userId');
@@ -1526,7 +1519,6 @@ class UsersController extends Controller
     public function actionUnsuspendUser()
     {
         $this->requirePostRequest();
-        $this->requireLogin();
         $this->requirePermission('moderateUsers');
 
         $userId = Craft::$app->getRequest()->getRequiredBodyParam('userId');

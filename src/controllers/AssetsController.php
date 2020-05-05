@@ -476,7 +476,6 @@ class AssetsController extends Controller
      */
     public function actionCreateFolder(): Response
     {
-        $this->requireLogin();
         $this->requireAcceptsJson();
         $request = Craft::$app->getRequest();
         $parentId = $request->getRequiredBodyParam('parentId');
@@ -523,7 +522,6 @@ class AssetsController extends Controller
      */
     public function actionDeleteFolder(): Response
     {
-        $this->requireLogin();
         $this->requireAcceptsJson();
         $folderId = Craft::$app->getRequest()->getRequiredBodyParam('folderId');
 
@@ -553,7 +551,6 @@ class AssetsController extends Controller
      */
     public function actionDeleteAsset(): Response
     {
-        $this->requireLogin();
         $this->requireAcceptsJson();
         $assets = Craft::$app->getAssets();
 
@@ -585,7 +582,6 @@ class AssetsController extends Controller
      */
     public function actionRenameFolder(): Response
     {
-        $this->requireLogin();
         $this->requireAcceptsJson();
 
         $request = Craft::$app->getRequest();
@@ -621,7 +617,6 @@ class AssetsController extends Controller
      */
     public function actionMoveAsset(): Response
     {
-        $this->requireLogin();
         $this->requireAcceptsJson();
 
         $request = Craft::$app->getRequest();
@@ -694,8 +689,6 @@ class AssetsController extends Controller
      */
     public function actionMoveFolder(): Response
     {
-        $this->requireLogin();
-
         $request = Craft::$app->getRequest();
         $folderBeingMovedId = $request->getRequiredBodyParam('folderId');
         $newParentFolderId = $request->getRequiredBodyParam('parentId');
@@ -858,7 +851,6 @@ class AssetsController extends Controller
      */
     public function actionSaveImage(): Response
     {
-        $this->requireLogin();
         $this->requireAcceptsJson();
 
         $assets = Craft::$app->getAssets();
@@ -1021,7 +1013,6 @@ class AssetsController extends Controller
      */
     public function actionDownloadAsset(): Response
     {
-        $this->requireLogin();
         $this->requirePostRequest();
 
         $assetIds = Craft::$app->getRequest()->getRequiredBodyParam('assetId');
@@ -1162,7 +1153,6 @@ class AssetsController extends Controller
      */
     public function actionPreviewFile(): Response
     {
-        $this->requireLogin();
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
