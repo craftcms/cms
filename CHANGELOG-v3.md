@@ -19,6 +19,7 @@
 - Added `craft\models\Section::PROPAGATION_METHOD_CUSTOM`.
 - Added `craft\services\Elements::createElementQuery()`.
 - Added `craft\services\ProjectConfig::$filename`. ([#5982](https://github.com/craftcms/cms/issues/5982))
+- Added `craft\test\mockclasses\elements\MockElementQuery`.
 
 ### Changed
 - It’s now possible to eager-load elements’ ancestors and parents. ([#1382](https://github.com/craftcms/cms/issues/1382))

@@ -115,6 +115,7 @@
 - Added `craft\services\Gql::getAllSchemaComponents()`.
 - Added `craft\services\ProjectConfig::$filename`. ([#5982](https://github.com/craftcms/cms/issues/5982))
 - Added `craft\queue\jobs\PruneRevisions`.
+- Added `craft\test\mockclasses\elements\MockElementQuery`.
 - Added `craft\web\AssetBundle\ContentWindowAsset`.
 - Added `craft\web\AssetBundle\IframeResizerAsset`.
 - Added `craft\web\Request::getAcceptsImage()`.

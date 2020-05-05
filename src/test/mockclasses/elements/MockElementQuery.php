@@ -7,8 +7,6 @@
 
 namespace craft\test\mockclasses\elements;
 
-use craft\base\Element;
-
 /**
  * MockElementQuery is used to mimic element query and help mocking element query results.
  *
