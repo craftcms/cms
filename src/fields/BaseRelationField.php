@@ -32,6 +32,7 @@ use craft\queue\jobs\LocalizeRelations;
 use craft\services\Elements;
 use craft\validators\ArrayValidator;
 use yii\base\Event;
+use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 
 /**
@@ -896,8 +897,12 @@ JS;
             if ($element instanceof BlockElementInterface) {
                 $el = $element;
                 do {
-                    $el = $el->getOwner();
-                    $disabledElementIds[] = $el->getSourceId();
+                    try {
+                        $el = $el->getOwner();
+                        $disabledElementIds[] = $el->getSourceId();
+                    } catch (InvalidConfigException $e) {
+                        break;
+                    }
                 } while ($el instanceof BlockElementInterface);
             }
         }
