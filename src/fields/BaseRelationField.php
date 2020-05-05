@@ -8,6 +8,7 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\BlockElementInterface;
 use craft\base\EagerLoadingFieldInterface;
 use craft\base\Element;
 use craft\base\ElementInterface;
@@ -887,6 +888,20 @@ JS;
             $selectionCriteria['siteId'] = $this->targetSiteId($element);
         }
 
+        $disabledElementIds = [];
+        if ($element) {
+            if ($element->id) {
+                $disabledElementIds[] = $element->getSourceId();
+            }
+            if ($element instanceof BlockElementInterface) {
+                $el = $element;
+                do {
+                    $el = $el->getOwner();
+                    $disabledElementIds[] = $el->getSourceId();
+                } while ($el instanceof BlockElementInterface);
+            }
+        }
+
         return [
             'jsClass' => $this->inputJsClass,
             'elementType' => static::elementType(),
@@ -899,6 +914,7 @@ JS;
             'criteria' => $selectionCriteria,
             'showSiteMenu' => $this->targetSiteId ? false : 'auto',
             'sourceElementId' => !empty($element->id) ? $element->id : null,
+            'disabledElementIds' => $disabledElementIds,
             'limit' => $this->allowLimit ? $this->limit : null,
             'viewMode' => $this->viewMode(),
             'selectionLabel' => $this->selectionLabel ? Craft::t('site', $this->selectionLabel) : static::defaultSelectionLabel(),

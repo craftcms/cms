@@ -335,6 +335,10 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
                 ids.push(this.settings.sourceElementId);
             }
 
+            if (this.settings.disabledElementIds) {
+                ids.push(...this.settings.disabledElementIds);
+            }
+
             return ids;
         },
 
@@ -451,6 +455,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
             sources: null,
             criteria: {},
             sourceElementId: null,
+            disabledElementIds: null,
             viewMode: 'list',
             limit: null,
             showSiteMenu: false,
