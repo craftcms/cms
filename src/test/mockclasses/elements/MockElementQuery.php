@@ -7,13 +7,15 @@
 
 namespace craft\test\mockclasses\elements;
 
+use craft\elements\db\ElementQuery;
+
 /**
  * MockElementQuery is used to mimic element query and help mocking element query results.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.5
  */
-class MockElementQuery
+class MockElementQuery extends ElementQuery
 {
     /**
      * The "elements" to return when invoking `one()` or `all()`
@@ -29,23 +31,22 @@ class MockElementQuery
 
     /**
      * MockElementQuery constructor.
-     *
-     * @param array $returnValues
      */
-    public function __construct($returnValues = [])
+    public function __construct()
     {
-        if (!empty($returnValues)) {
-            $this->returnValues = $returnValues;
-        }
+        parent::__construct('MockElement', []);
     }
 
     /**
      * Set the return values.
      *
      * @param array $values
+     * @return static
      */
     public function setReturnValues(array $values = []) {
         $this->returnValues = $values;
+
+        return $this;
     }
 
     /**
@@ -96,7 +97,7 @@ class MockElementQuery
      *
      * @return array
      */
-    public function all(): array {
+    public function all($db = null): array {
         return $this->returnValues;
     }
 
@@ -105,7 +106,7 @@ class MockElementQuery
      *
      * @return mixed|null
      */
-    public function one() {
+    public function one($db = null) {
         return !empty($this->returnValues) ? reset($this->returnValues) : null;
     }
 }
