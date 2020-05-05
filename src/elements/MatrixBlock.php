@@ -286,10 +286,7 @@ class MatrixBlock extends Element implements BlockElementInterface
         return $blockType;
     }
 
-    /**
-     * @inheritdoc
-     * @throws InvalidConfigException
-     */
+    /** @inheritdoc */
     public function getOwner(): ElementInterface
     {
         if ($this->_owner === null) {

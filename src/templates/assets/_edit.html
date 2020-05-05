@@ -1,8 +1,10 @@
 {% extends "_layouts/element" %}
 {% import "_includes/forms" as forms %}
 
+{% set redirectUrl = "assets/#{volume.handle}" %}
 {% set canUpdateSource = canEdit %}
 {% set saveSourceAction = 'assets/save-asset' %}
+{% set deleteSourceAction = 'assets/delete-asset' %}
 
 {% hook "cp.assets.edit" %}
 

@@ -7,6 +7,8 @@
 
 namespace craft\base;
 
+use yii\base\InvalidConfigException;
+
 /**
  * BlockElementInterface defines the common interface to be implemented by “block element” classes.
  *
@@ -21,6 +23,7 @@ interface BlockElementInterface
      * Returns the owner element.
      *
      * @return ElementInterface
+     * @throws InvalidConfigException if the element is unable to determine its owner
      */
     public function getOwner(): ElementInterface;
 }
