@@ -449,14 +449,30 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         }
 
         if ($value === ':notempty:' || $value === ':empty:') {
-            $alias = 'relations_' . $this->handle;
-            $operator = ($value === ':notempty:' ? '!=' : '=');
-            $paramHandle = ':fieldId' . StringHelper::randomString(8);
+            $ns = $this->handle . '_' . StringHelper::randomString(5);
+            $condition = [
+                'exists', (new Query())
+                    ->from(["relations_$ns" => TableName::RELATIONS])
+                    ->innerJoin(["elements_$ns" => TableName::ELEMENTS], "[[elements_$ns.id]] = [[relations_$ns.targetId]]")
+                    ->leftJoin(["elements_sites_$ns" => TableName::ELEMENTS_SITES], [
+                        'and',
+                        "[[elements_sites_$ns.elementId]] = [[elements_$ns.id]]",
+                        ["elements_sites_$ns.siteId" => $query->siteId],
+                    ])
+                    ->where("[[relations_$ns.sourceId]] = [[elements.id]]")
+                    ->andWhere([
+                        "relations_$ns.fieldId" => $this->id,
+                        "elements_$ns.enabled" => true,
+                        "elements_$ns.dateDeleted" => null,
+                    ])
+                    ->andWhere(['not', ["elements_sites_$ns.enabled" => false]])
+            ];
 
-            $query->subQuery->andWhere(
-                "(select count([[{$alias}.id]]) from {{%relations}} {{{$alias}}} where [[{$alias}.sourceId]] = [[elements.id]] and [[{$alias}.fieldId]] = {$paramHandle}) {$operator} 0",
-                [$paramHandle => $this->id]
-            );
+            if ($value === ':notempty:') {
+                $query->subQuery->andWhere($condition);
+            } else {
+                $query->subQuery->andWhere(['not', $condition]);
+            }
         } else {
             $parser = new ElementRelationParamParser([
                 'fields' => [
