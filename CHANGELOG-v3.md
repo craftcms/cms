@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Added the “Delete asset” option to the Save menu on Edit Asset pages. ([#6020](https://github.com/craftcms/cms/issues/6020))
 - Added `craft\helpers\App::env()`. ([#5893](https://github.com/craftcms/cms/pull/5893))
 
 ### Changed

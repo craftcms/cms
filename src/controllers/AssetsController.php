@@ -151,6 +151,15 @@ class AssetsController extends Controller
             ($userSession->getId() == $asset->uploaderId || $userSession->checkPermission("replacePeerFilesInVolume:{$volume->uid}"))
         );
 
+        // See if the user is allowed to delete the asset
+        try {
+            $this->requireVolumePermissionByAsset('deleteFilesAndFoldersInVolume', $asset);
+            $this->requirePeerVolumePermissionByAsset('deletePeerFilesInVolume', $asset);
+            $canDelete = true;
+        } catch (ForbiddenHttpException $e) {
+            $canDelete = false;
+        }
+
         if (in_array($asset->kind, [Asset::KIND_IMAGE, Asset::KIND_PDF, Asset::KIND_TEXT])) {
             $assetUrl = $asset->getUrl();
         } else {
@@ -169,6 +178,7 @@ class AssetsController extends Controller
             'dimensions' => $asset->getDimensions(),
             'canReplaceFile' => $canReplaceFile,
             'canEdit' => $asset->getIsEditable(),
+            'canDeleteSource' => $canDelete,
         ]);
     }
 
@@ -546,19 +556,21 @@ class AssetsController extends Controller
     /**
      * Delete an Asset.
      *
-     * @return Response
+     * @return Response|null
      * @throws BadRequestHttpException if the folder cannot be found
+     * @throws ForbiddenHttpException
+     * @throws AssetException
      */
-    public function actionDeleteAsset(): Response
+    public function actionDeleteAsset()
     {
-        $this->requireAcceptsJson();
-        $assets = Craft::$app->getAssets();
+        $this->requirePostRequest();
 
-        $assetId = Craft::$app->getRequest()->getRequiredBodyParam('assetId');
-        $asset = $assets->getAssetById($assetId);
+        $request = Craft::$app->getRequest();
+        $assetId = $request->getRequiredBodyParam('assetId');
+        $asset = Craft::$app->getAssets()->getAssetById($assetId);
 
         if (!$asset) {
-            throw new BadRequestHttpException('The asset cannot be found');
+            throw new BadRequestHttpException("Invalid asset ID: $assetId");
         }
 
         // Check if it's possible to delete objects in the target Volume.
@@ -566,12 +578,36 @@ class AssetsController extends Controller
         $this->requirePeerVolumePermissionByAsset('deletePeerFilesInVolume', $asset);
 
         try {
-            Craft::$app->getElements()->deleteElement($asset);
-        } catch (AssetException $exception) {
-            return $this->asErrorJson($exception->getMessage());
+            $success = Craft::$app->getElements()->deleteElement($asset);
+        } catch (AssetException $e) {
+            if ($request->getAcceptsJson()) {
+                return $this->asErrorJson($e->getMessage());
+            }
+            throw $e;
         }
 
-        return $this->asJson(['success' => true]);
+        if (!$success) {
+            if ($request->getAcceptsJson()) {
+                return $this->asJson(['success' => false]);
+            }
+
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t delete asset.'));
+
+            // Send the entry back to the template
+            Craft::$app->getUrlManager()->setRouteParams([
+                'asset' => $asset
+            ]);
+
+            return null;
+        }
+
+        if ($request->getAcceptsJson()) {
+            return $this->asJson(['success' => true]);
+        }
+
+        Craft::$app->getSession()->setNotice(Craft::t('app', 'Asset deleted.'));
+
+        return $this->redirectToPostedUrl($asset);
     }
 
     /**
