@@ -182,6 +182,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                 self::PROPAGATION_METHOD_ALL
             ]
         ];
+        $rules[] = [['blockTypes'], ArrayValidator::class, 'min' => 1, 'skipOnEmpty' => false];
         $rules[] = [['minBlocks', 'maxBlocks'], 'integer', 'min' => 0];
         return $rules;
     }
@@ -547,6 +548,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                     ->where("[[matrixblocks_$ns.ownerId]] = [[elements.id]]")
                     ->andWhere([
                         "matrixblocks_$ns.fieldId" => $this->id,
+                        "elements_$ns.enabled" => true,
                         "elements_$ns.dateDeleted" => null,
                     ])
             ];

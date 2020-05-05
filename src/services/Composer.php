@@ -339,12 +339,12 @@ class Composer extends Component
      */
     protected function _ensureHomeVar()
     {
-        if (getenv('COMPOSER_HOME') !== false) {
+        if (App::env('COMPOSER_HOME') !== false) {
             return;
         }
 
         $alt = Platform::isWindows() ? 'APPDATA' : 'HOME';
-        if (getenv($alt) !== false) {
+        if (App::env($alt) !== false) {
             return;
         }
 

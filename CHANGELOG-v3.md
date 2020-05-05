@@ -1,5 +1,35 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.4.18 - 2020-05-05
+
+### Added
+- Added the “Delete asset” option to the Save menu on Edit Asset pages. ([#6020](https://github.com/craftcms/cms/issues/6020))
+- Added `craft\helpers\App::env()`. ([#5893](https://github.com/craftcms/cms/pull/5893))
+
+### Changed
+- Template autosuggest fields no longer suggest files within `node_modules/` folders. ([#4122](https://github.com/craftcms/cms/pull/4122))
+- Matrix fields now ensure that they have at least one block type on validation. ([#5996](https://github.com/craftcms/cms/issues/5996))
+- Number fields’ Default Value, Min Value, and Max Value settings now support localized number formats. ([#6006](https://github.com/craftcms/cms/issues/6006))
+- Element select inputs’ `selectElements` events now contain references to the newly created element, rather than the one in the element selector modal.
+- Users are now redirected back to the Assets index page after saving an asset from its edit page.
+- Updated Yii to 2.0.35.
+- Updated jQuery to 3.5.0.
+
+### Fixed
+- Fixed a bug where relational fields wouldn’t eager load some relations if the field was set to manage relations on a per-site basis, and the source elements were from a variety of sites.
+- Fixed a bug where relational fields wouldn’t eager load cross-site relations even if a target site had been selected in the field settings. ([#5995](https://github.com/craftcms/cms/issues/5995))
+- Fixed a bug where relational fields weren’t showing cross-site relations in element indexes.
+- Fixed a bug where Assets fields weren’t showing custom asset sources. ([#5983](https://github.com/craftcms/cms/issues/5983))
+- Fixed a bug where Craft wasn’t clearing the database schema cache after migrations were run.
+- Fixed a bug where Structure entry drafts were including the current entry in the Parent selection options.
+- Fixed a bug where users’ emails could be overridden by a previously-entered, unverified email, if an admin overwrote their email after it was set. ([#6001](https://github.com/craftcms/cms/issues/6001))
+- Fixed a bug where Number fields weren’t ensuring that their Default Value setting was a number. ([#6006](https://github.com/craftcms/cms/issues/6006))
+- Fixed a bug where checkboxes’ state persisted after an admin table row was deleted. ([#6018](https://github.com/craftcms/cms/issues/6018))
+- Fixed a bug where the `autoLoginAfterAccountActivation` and `activateAccountSuccessPath` config settings weren’t being respected after users verified their email. ([#5980](https://github.com/craftcms/cms/issues/5980))
+- Fixed a bug where the “Preview file” asset action wasn’t available if any other elements were being displayed in the table row (e.g. the file’s uploader or any relations). ([#6012](https://github.com/craftcms/cms/issues/6012))
+- Fixed a bug where `update` commands could time out when running migrations or reverting Composer changes. ([#6021](https://github.com/craftcms/cms/pull/6021))
+- Fixed a bug where source/owner elements could be selectable in relational fields. ([#6016](https://github.com/craftcms/cms/issues/6016))
+
 ## 3.4.17.1 - 2020-04-25
 
 ### Fixed
@@ -249,6 +279,7 @@
 - Element URIs are now longer required to be unique for disabled elements.
 - Duplicated elements are now automatically saved as disabled, if a unique URI cannot be generated for them. ([#5510](https://github.com/craftcms/cms/issues/5510))
 - It’s now possible to query for elements by their Checkboxes/Multi-select field values using a simplified query param syntax. ([#5639](https://github.com/craftcms/cms/issues/5639))
+- Environment variable autosuggestions in the control panel are now based on `$_SERVER` rather than `$_ENV`.
 - The `_includes/forms/text.html` template now supports an `inputAttributes` variable.
 - `craft\base\ApplicationTrait::getIsMultiSite()` now has a `$withTrashed` argument.
 
@@ -333,6 +364,8 @@
 - Fixed a bug where element exporting would redirect the browser window if the export request didn’t immediately return the export data. ([#5558](https://github.com/craftcms/cms/issues/5558))
 - Fixed a “Division by zero” error that occurred if an image transform didn’t specify a width or a height. ([#5590](https://github.com/craftcms/cms/issues/5590))
 - Fixed a bug where elements weren’t always retaining their positions in element indexes between pages.
+- Fixed a bug where relational fields weren’t ignoring disabled and soft-deleted elements when `:empty:` or `:notempty:` were passed to their element query params. ([#6026](https://github.com/craftcms/cms/issues/6026))
+- Fixed a bug where Matrix fields weren’t ignoring disabled blocks when `:empty:` or `:notempty:` were passed to their element query params. ([#6026](https://github.com/craftcms/cms/issues/6026))
 
 ## 3.4.3 - 2020-02-03
 

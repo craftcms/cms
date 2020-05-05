@@ -57,9 +57,7 @@ class PreviewAsset extends ElementAction
         batch: false,
         validateSelection: function(\$selectedItems)
         {
-            var \$element = \$selectedItems.find('.element');
-
-            return \$element.length === 1;
+            return \$selectedItems.length === 1;
         },
         activate: function(\$selectedItems)
         {

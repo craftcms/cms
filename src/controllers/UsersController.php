@@ -176,7 +176,6 @@ class UsersController extends Controller
      */
     public function actionImpersonate()
     {
-        $this->requireLogin();
         $this->requirePostRequest();
 
         $userSession = Craft::$app->getUser();
@@ -526,12 +525,19 @@ class UsersController extends Controller
 
         /** @var User $user */
         list($user) = $info;
+        $pending = $user->pending;
         $usersService = Craft::$app->getUsers();
 
-        if (!$usersService->verifyEmailForUser($user)) {
-            return $this->renderTemplate('_special/emailtaken', [
-                'email' => $user->unverifiedEmail
-            ]);
+        // Do they have an unverified email?
+        if ($user->unverifiedEmail) {
+            if (!$usersService->verifyEmailForUser($user)) {
+                return $this->renderTemplate('_special/emailtaken', [
+                    'email' => $user->unverifiedEmail
+                ]);
+            }
+        } else if ($pending) {
+            // No unverified email so just get on with activating their account
+            $usersService->activateUser($user);
         }
 
         // If they're logged in, give them a success notice
@@ -539,12 +545,8 @@ class UsersController extends Controller
             Craft::$app->getSession()->setNotice(Craft::t('app', 'Email verified'));
         }
 
-        // If they're still pending, treat this as an activation request
-        if (
-            $user->pending &&
-            $usersService->activateUser($user) &&
-            ($response = $this->_onAfterActivateUser($user)) !== null
-        ) {
+        // Were they just activated?
+        if ($pending && ($response = $this->_onAfterActivateUser($user)) !== null) {
             return $response;
         }
 
@@ -990,6 +992,10 @@ class UsersController extends Controller
 
                 if ($sendVerificationEmail) {
                     $user->unverifiedEmail = $newEmail;
+                } else {
+                    // Clear out the unverified email if there is one,
+                    // so it doesn't overwrite the new email later on
+                    $user->unverifiedEmail = null;
                 }
 
                 if (!$sendVerificationEmail || $isNewUser) {
@@ -1220,7 +1226,6 @@ class UsersController extends Controller
     public function actionUploadUserPhoto()
     {
         $this->requireAcceptsJson();
-        $this->requireLogin();
 
         $userId = Craft::$app->getRequest()->getRequiredBodyParam('userId');
 
@@ -1270,7 +1275,6 @@ class UsersController extends Controller
     public function actionDeleteUserPhoto(): Response
     {
         $this->requireAcceptsJson();
-        $this->requireLogin();
 
         $userId = Craft::$app->getRequest()->getRequiredBodyParam('userId');
 
@@ -1345,7 +1349,6 @@ class UsersController extends Controller
     public function actionUnlockUser(): Response
     {
         $this->requirePostRequest();
-        $this->requireLogin();
         $this->requirePermission('moderateUsers');
 
         $userId = Craft::$app->getRequest()->getRequiredBodyParam('userId');
@@ -1385,7 +1388,6 @@ class UsersController extends Controller
     public function actionSuspendUser()
     {
         $this->requirePostRequest();
-        $this->requireLogin();
         $this->requirePermission('moderateUsers');
 
         $userId = Craft::$app->getRequest()->getRequiredBodyParam('userId');
@@ -1422,7 +1424,6 @@ class UsersController extends Controller
     public function actionUserContentSummary(): Response
     {
         $this->requirePostRequest();
-        $this->requireLogin();
 
         $userIds = Craft::$app->getRequest()->getRequiredBodyParam('userId');
 
@@ -1460,7 +1461,6 @@ class UsersController extends Controller
     public function actionDeleteUser()
     {
         $this->requirePostRequest();
-        $this->requireLogin();
 
         $request = Craft::$app->getRequest();
         $userId = $request->getRequiredBodyParam('userId');
@@ -1519,7 +1519,6 @@ class UsersController extends Controller
     public function actionUnsuspendUser()
     {
         $this->requirePostRequest();
-        $this->requireLogin();
         $this->requirePermission('moderateUsers');
 
         $userId = Craft::$app->getRequest()->getRequiredBodyParam('userId');

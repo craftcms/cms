@@ -177,7 +177,8 @@
     {{ forms.field({
         label: "Configuration"|t('app'),
         instructions: "Define the types of blocks that can be created within this Matrix field, as well as the fields each block type is made up of."|t('app'),
-        name: 'config'
+        name: 'config',
+        errors: matrixField.getErrors('blockTypes'),
     }, blockTypeInput) }}
 </div>
 

@@ -1,16 +1,20 @@
 "use strict";
 
-function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
 
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 
-function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 
-function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
+function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter); }
+
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-/*!   - 2020-04-25 */
+/*!   - 2020-05-04 */
 (function ($) {
   /** global: Craft */
 
@@ -4713,6 +4717,10 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         ids.push(this.settings.sourceElementId);
       }
 
+      if (this.settings.disabledElementIds) {
+        ids.push.apply(ids, _toConsumableArray(this.settings.disabledElementIds));
+      }
+
       return ids;
     },
     onModalSelect: function onModalSelect(elements) {
@@ -4729,12 +4737,14 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       this.updateDisabledElementsInModal();
     },
     selectElements: function selectElements(elements) {
-      for (var i = 0; i < elements.length; i++) {
-        var elementInfo = elements[i],
+      for (var _i3 = 0; _i3 < elements.length; _i3++) {
+        var elementInfo = elements[_i3],
             $element = this.createNewElement(elementInfo);
         this.appendElement($element);
         this.addElements($element);
-        this.animateElementIntoPlace(elementInfo.$element, $element);
+        this.animateElementIntoPlace(elementInfo.$element, $element); // Override the element reference with the new one
+
+        elementInfo.$element = $element;
       }
 
       this.onSelectElements(elements);
@@ -4809,6 +4819,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       sources: null,
       criteria: {},
       sourceElementId: null,
+      disabledElementIds: null,
       viewMode: 'list',
       limit: null,
       showSiteMenu: false,
