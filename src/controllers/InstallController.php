@@ -333,7 +333,7 @@ class InstallController extends Controller
         $tempValues = [];
 
         foreach ($vars as $setting => $var) {
-            $realValues[$setting] = getenv($var);
+            $realValues[$setting] = App::env($var);
             $tempValues[$setting] = StringHelper::randomString();
             putenv("{$var}={$tempValues[$setting]}");
         }

@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\helpers\App::env()`. ([#5893](https://github.com/craftcms/cms/pull/5893))
+
 ### Changed
 - Template autosuggest fields no longer suggest files within `node_modules/` folders. ([#4122](https://github.com/craftcms/cms/pull/4122))
 - Matrix fields now ensure that they have at least one block type on validation. ([#5996](https://github.com/craftcms/cms/issues/5996))

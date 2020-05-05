@@ -12,6 +12,7 @@ use craft\base\Plugin;
 use craft\base\UtilityInterface;
 use craft\events\RegisterCpNavItemsEvent;
 use craft\events\RegisterCpSettingsEvent;
+use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp as CpHelper;
 use craft\helpers\StringHelper;
@@ -387,7 +388,7 @@ class Cp extends Component
         foreach (array_keys($_ENV) as $var) {
             $envSuggestions[] = [
                 'name' => '$' . $var,
-                'hint' => $security->redactIfSensitive($var, Craft::getAlias(getenv($var), false))
+                'hint' => $security->redactIfSensitive($var, Craft::getAlias(App::env($var), false))
             ];
         }
         ArrayHelper::multisort($envSuggestions, 'name');

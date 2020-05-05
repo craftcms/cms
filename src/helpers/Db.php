@@ -825,7 +825,7 @@ class Db
      * This can be used from `config/db.php`:
      * ---
      * ```php
-     * $url = getenv('DB_URL');
+     * $url = craft\helpers\App::env('DB_URL');
      * return craft\helpers\Db::url2config($url);
      * ```
      *
