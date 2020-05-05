@@ -385,11 +385,13 @@ class Cp extends Component
         $security = Craft::$app->getSecurity();
 
         $envSuggestions = [];
-        foreach (array_keys($_ENV) as $var) {
-            $envSuggestions[] = [
-                'name' => '$' . $var,
-                'hint' => $security->redactIfSensitive($var, Craft::getAlias(App::env($var), false))
-            ];
+        foreach (array_keys($_SERVER) as $var) {
+            if (is_string($var) && is_string($env = App::env($var))) {
+                $envSuggestions[] = [
+                    'name' => '$' . $var,
+                    'hint' => $security->redactIfSensitive($var, Craft::getAlias($env, false))
+                ];
+            }
         }
         ArrayHelper::multisort($envSuggestions, 'name');
         $suggestions[] = [
