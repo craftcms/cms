@@ -434,7 +434,7 @@ class EntriesController extends BaseEntriesController
      * Deletes an entry.
      *
      * @return Response|null
-     * @throws NotFoundHttpException if the requested entry cannot be found
+     * @throws BadRequestHttpException if the requested entry cannot be found
      */
     public function actionDeleteEntry()
     {
@@ -446,7 +446,7 @@ class EntriesController extends BaseEntriesController
         $entry = Craft::$app->getEntries()->getEntryById($entryId, $siteId);
 
         if (!$entry) {
-            throw new NotFoundHttpException('Entry not found');
+            throw new BadRequestHttpException("Invalid entry ID: $entryId");
         }
 
         $currentUser = Craft::$app->getUser()->getIdentity();
