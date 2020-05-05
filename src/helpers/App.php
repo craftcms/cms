@@ -52,7 +52,7 @@ class App
     private static $_iconv;
 
     /**
-     * Returns an environment variable, checking for it in `$_ENV` and calling `getenv()` as a fallback.
+     * Returns an environment variable, checking for it in `$_SERVER` and calling `getenv()` as a fallback.
      *
      * @param string $name The environment variable name
      * @return string|array|false The environment variable value
@@ -60,7 +60,7 @@ class App
      */
     public static function env(string $name)
     {
-        return $_ENV[$name] ?? getenv($name);
+        return $_SERVER[$name] ?? getenv($name);
     }
 
     /**
