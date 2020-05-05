@@ -44,7 +44,7 @@ class Category extends ElementMutationResolver
     {
         /** @var CategoryGroup $categoryGroup */
         $categoryGroup = $this->getResolutionData('categoryGroup');
-        $canIdentify = !empty($arguments['id'] || !empty($arguments['uid']));
+        $canIdentify = !empty($arguments['id']) || !empty($arguments['uid']);
         $elementService = Craft::$app->getElements();
 
         if ($canIdentify) {

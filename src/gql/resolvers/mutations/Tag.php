@@ -41,7 +41,7 @@ class Tag extends ElementMutationResolver
     {
         /** @var TagGroup $tagGroup */
         $tagGroup = $this->getResolutionData('tagGroup');
-        $canIdentify = !empty($arguments['id'] || !empty($arguments['uid']));
+        $canIdentify = !empty($arguments['id']) || !empty($arguments['uid']);
         $elementService = Craft::$app->getElements();
 
         if ($canIdentify) {
