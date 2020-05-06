@@ -9,12 +9,8 @@ namespace craftunit\gql\mutations;
 
 use Codeception\Stub\Expected;
 use craft\elements\Category;
-use craft\elements\GlobalSet;
 use craft\gql\resolvers\mutations\Category as CategoryResolver;
-use craft\gql\resolvers\mutations\GlobalSet as GlobalSetResolver;
-use craft\helpers\StringHelper;
 use craft\test\TestCase;
-use GraphQL\Type\Definition\ResolveInfo;
 
 class StructureOperationMutationTest extends TestCase
 {
