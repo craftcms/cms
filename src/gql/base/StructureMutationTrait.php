@@ -10,6 +10,7 @@ namespace craft\gql\base;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
+use GraphQL\Error\Error;
 
 /**
  * Trait StructureMutationTrait
