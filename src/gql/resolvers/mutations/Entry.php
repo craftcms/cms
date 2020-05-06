@@ -202,7 +202,6 @@ class Entry extends ElementMutationResolver
      * @param EntryQuery $entryQuery
      * @param array $arguments
      * @return EntryQuery
-     * @throws GqlException if data not found.
      */
     protected function identifyEntry(EntryQuery $entryQuery, array $arguments): EntryQuery
     {
