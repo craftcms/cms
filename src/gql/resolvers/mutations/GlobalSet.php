@@ -37,7 +37,7 @@ class GlobalSet extends ElementMutationResolver
 
         $globalSet = $this->populateElementWithData($globalSet, $arguments);
 
-        $this->saveElement($globalSet);
+        $globalSet = $this->saveElement($globalSet);
 
         return Craft::$app->getGlobals()->getSetById($globalSet->id);
     }

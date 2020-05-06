@@ -69,7 +69,7 @@ class Category extends ElementMutationResolver
 
         $category = $this->populateElementWithData($category, $arguments);
 
-        $this->saveElement($category);
+        $category = $this->saveElement($category);
 
         $this->performStructureOperations($category, $arguments);
 

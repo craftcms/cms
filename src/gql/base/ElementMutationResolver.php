@@ -69,7 +69,7 @@ abstract class ElementMutationResolver extends MutationResolver
      * @param ElementInterface $element
      * @throws UserError if validation errors.
      */
-    protected function saveElement(ElementInterface $element)
+    protected function saveElement(ElementInterface $element): ElementInterface
     {
         /** @var Element $element */
         if ($element->enabled && $element->getScenario() == Element::SCENARIO_DEFAULT) {
@@ -87,5 +87,7 @@ abstract class ElementMutationResolver extends MutationResolver
 
             throw new UserError(implode("\n", $validationErrors));
         }
+
+        return $element;
     }
 }

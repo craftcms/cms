@@ -94,7 +94,7 @@ class Asset extends ElementMutationResolver
 
         $asset = $this->populateElementWithData($asset, $arguments);
 
-        $this->saveElement($asset);
+        $asset = $this->saveElement($asset);
 
         return $elementService->getElementById($asset->id, AssetElement::class);
     }

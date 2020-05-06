@@ -49,7 +49,7 @@ class Entry extends ElementMutationResolver
 
         $entry = $this->populateElementWithData($entry, $arguments);
 
-        $this->saveElement($entry);
+        $entry = $this->saveElement($entry);
         $this->performStructureOperations($entry, $arguments);
 
         return Craft::$app->getElements()->createElementQuery(EntryElement::class)->anyStatus()->id($entry->id)->one();
