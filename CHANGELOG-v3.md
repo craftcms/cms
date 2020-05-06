@@ -29,6 +29,8 @@
 - Fixed a bug where the “Preview file” asset action wasn’t available if any other elements were being displayed in the table row (e.g. the file’s uploader or any relations). ([#6012](https://github.com/craftcms/cms/issues/6012))
 - Fixed a bug where `update` commands could time out when running migrations or reverting Composer changes. ([#6021](https://github.com/craftcms/cms/pull/6021))
 - Fixed a bug where source/owner elements could be selectable in relational fields. ([#6016](https://github.com/craftcms/cms/issues/6016))
+- Fixed a bug where relational fields weren’t ignoring disabled and soft-deleted elements when `:empty:` or `:notempty:` were passed to their element query params. ([#6026](https://github.com/craftcms/cms/issues/6026))
+- Fixed a bug where Matrix fields weren’t ignoring disabled blocks when `:empty:` or `:notempty:` were passed to their element query params. ([#6026](https://github.com/craftcms/cms/issues/6026))
 
 ## 3.4.17.1 - 2020-04-25
 
@@ -364,8 +366,6 @@
 - Fixed a bug where element exporting would redirect the browser window if the export request didn’t immediately return the export data. ([#5558](https://github.com/craftcms/cms/issues/5558))
 - Fixed a “Division by zero” error that occurred if an image transform didn’t specify a width or a height. ([#5590](https://github.com/craftcms/cms/issues/5590))
 - Fixed a bug where elements weren’t always retaining their positions in element indexes between pages.
-- Fixed a bug where relational fields weren’t ignoring disabled and soft-deleted elements when `:empty:` or `:notempty:` were passed to their element query params. ([#6026](https://github.com/craftcms/cms/issues/6026))
-- Fixed a bug where Matrix fields weren’t ignoring disabled blocks when `:empty:` or `:notempty:` were passed to their element query params. ([#6026](https://github.com/craftcms/cms/issues/6026))
 
 ## 3.4.3 - 2020-02-03
 
