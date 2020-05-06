@@ -92,8 +92,8 @@ class ResolveAssetMutationsTest extends TestCase
             ),
             'handleUpload' => true,
             'saveElement' => function($assetToSave) use ($assetId) {
-                // Pretend we saved it
                 $assetToSave->id = $assetToSave->id ?? $assetId;
+                return $assetToSave;
             },
         ]);
 
@@ -358,6 +358,9 @@ class ResolveAssetMutationsTest extends TestCase
             ],
             [
                 ['id' => 7, 'newFolderId' => 7],
+            ],
+            [
+                ['title' => 'someAsset', '_file' => ['something'], 'newFolderId' => 5],
             ]
         ];
     }
