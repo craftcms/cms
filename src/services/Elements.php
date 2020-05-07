@@ -128,7 +128,7 @@ class Elements extends Component
      * use craft\services\Elements;
      *
      * Craft::$app->elements->on(Elements::EVENT_BEFORE_SAVE_ELEMENT, function(ElementEvent $e) {
-     *     if (ElementHelper::isDraftOrRevision($e->element) {
+     *     if (ElementHelper::isDraftOrRevision($e->element)) {
      *         return;
      *     }
      *
@@ -150,7 +150,7 @@ class Elements extends Component
      * use craft\services\Elements;
      *
      * Craft::$app->elements->on(Elements::EVENT_AFTER_SAVE_ELEMENT, function(ElementEvent $e) {
-     *     if (ElementHelper::isDraftOrRevision($e->element) {
+     *     if (ElementHelper::isDraftOrRevision($e->element)) {
      *         return;
      *     }
      *
