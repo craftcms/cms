@@ -132,7 +132,7 @@ class Entry extends ElementMutationResolver
             throw new Error('Unable to perform the action.');
         }
 
-        $entryTypeUid = Db::uidById(Table::ENTRYTYPES, $entry->typeId);
+        $entryTypeUid = Db::uidById(Table::ENTRYTYPES, $draft->typeId);
         $this->requireSchemaAction('entrytypes.' . $entryTypeUid, 'save');
 
         /** @var Entry $draft */
