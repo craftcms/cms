@@ -218,6 +218,9 @@ class Entry extends ElementMutationResolver
             $entryQuery->uid($arguments['uid']);
         } else if (!empty($arguments['id'])) {
             $entryQuery->id($arguments['id']);
+        } else {
+            // Unable to identify, make sure nothing is returned.
+            $entryQuery->id(-1);
         }
 
         return $entryQuery;
