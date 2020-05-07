@@ -70,7 +70,7 @@ class Entry extends ElementMutationResolver
         $entryId = $arguments['id'];
 
         $elementService = Craft::$app->getElements();
-        $entry = $elementService->getElementById($entryId);
+        $entry = $elementService->getElementById($entryId, EntryElement::class);
 
         if (!$entry) {
             return true;
