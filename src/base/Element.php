@@ -202,6 +202,9 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @event SetElementRouteEvent The event that is triggered when defining the route that should be used when this element’s URL is requested
      *
+     * Set [[Event::$handled]] to `true` to explicitly tell the element that a route has been set (even if you’re
+     * setting it to `null`).
+     *
      * ```php
      * Event::on(craft\elements\Entry::class, craft\base\Element::EVENT_SET_ROUTE, function(craft\events\SetElementRouteEvent $e) {
      *     // @var craft\elements\Entry $entry
@@ -209,6 +212,10 @@ abstract class Element extends Component implements ElementInterface
      *
      *     if ($entry->uri === 'pricing') {
      *         $e->route = 'module/pricing/index';
+     *
+     *         // Explicitly tell the element that a route has been set,
+     *         // and prevent other event handlers from running, and tell
+     *         $e->handled = true;
      *     }
      * });
      * ```
@@ -1724,11 +1731,14 @@ abstract class Element extends Component implements ElementInterface
     public function getRoute()
     {
         // Give plugins a chance to set this
-        $event = new SetElementRouteEvent();
-        $this->trigger(self::EVENT_SET_ROUTE, $event);
+        if ($this->hasEventHandlers(self::EVENT_SET_ROUTE)) {
+            $event = new SetElementRouteEvent();
+            $this->trigger(self::EVENT_SET_ROUTE, $event);
 
-        if ($event->route !== null) {
-            return $event->route;
+            // todo: stop checking if $event->route !== null in v4
+            if ($event->handled || $event->route !== null) {
+                return $event->route ?: null;
+            }
         }
 
         return $this->route();
