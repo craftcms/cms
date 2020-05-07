@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Security
+- Fixed a bug where database connection details were getting cached.
+
 ## 3.4.18 - 2020-05-05
 
 ### Added
