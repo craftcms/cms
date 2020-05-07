@@ -272,6 +272,10 @@ class ResaveController extends Controller
             return ExitCode::OK;
         }
 
+        if ($query->limit) {
+            $count = min($count, (int)$query->limit);
+        }
+
         $elementsText = $count === 1 ? $elementType::lowerDisplayName() : $elementType::pluralLowerDisplayName();
         $this->stdout("Resaving {$count} {$elementsText} ..." . PHP_EOL, Console::FG_YELLOW);
 

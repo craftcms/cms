@@ -51,6 +51,9 @@ class ResaveElements extends BaseJob
         /** @var ElementQuery $query */
         $query = $this->_query();
         $total = $query->count();
+        if ($query->limit) {
+            $total = min($total, $query->limit);
+        }
         $elementsService = Craft::$app->getElements();
 
         $callback = function(BatchElementActionEvent $e) use ($queue, $query, $total) {
