@@ -114,7 +114,7 @@ class SectionsController extends Controller
             ],
         ];
 
-        Craft::$app->getView()->registerAssetBundle(EditSectionAsset::class);
+        $this->getView()->registerAssetBundle(EditSectionAsset::class);
 
         return $this->renderTemplate('settings/sections/_edit', $variables);
     }

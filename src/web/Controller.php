@@ -217,11 +217,12 @@ abstract class Controller extends \yii\web\Controller
     {
         $response = Craft::$app->getResponse();
         $headers = $response->getHeaders();
+        $view = $this->getView();
 
         // Set the MIME type for the request based on the matched template's file extension (unless the
         // Content-Type header was already set, perhaps by the template via the {% header %} tag)
         if (!$headers->has('content-type')) {
-            $templateFile = Craft::$app->getView()->resolveTemplate($template);
+            $templateFile = $view->resolveTemplate($template);
             $extension = pathinfo($templateFile, PATHINFO_EXTENSION) ?: 'html';
 
             if (($mimeType = FileHelper::getMimeTypeByExtension('.' . $extension)) === null) {
@@ -232,7 +233,7 @@ abstract class Controller extends \yii\web\Controller
         }
 
         // Render and return the template
-        $response->data = $this->getView()->renderPageTemplate($template, $variables, $templateMode);
+        $response->data = $view->renderPageTemplate($template, $variables, $templateMode);
 
         // Prevent a response formatter from overriding the content-type header
         $response->format = YiiResponse::FORMAT_RAW;
@@ -412,7 +413,7 @@ abstract class Controller extends \yii\web\Controller
                 $url = Craft::$app->getRequest()->getPathInfo();
             }
         } else if ($object) {
-            $url = Craft::$app->getView()->renderObjectTemplate($url, $object);
+            $url = $this->getView()->renderObjectTemplate($url, $object);
         }
 
         return $this->redirect($url);
