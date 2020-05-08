@@ -536,7 +536,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function getSearchKeywords($value, ElementInterface $element): string
+    protected function searchKeywords($value, ElementInterface $element): string
     {
         /** @var ElementQuery $value */
         $titles = [];
@@ -545,7 +545,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             $titles[] = (string)$relatedElement;
         }
 
-        return parent::getSearchKeywords($titles, $element);
+        return parent::searchKeywords($titles, $element);
     }
 
     /**

@@ -197,7 +197,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    public function getSearchKeywords($value, ElementInterface $element): string
+    protected function searchKeywords($value, ElementInterface $element): string
     {
         return '';
     }

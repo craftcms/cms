@@ -737,12 +737,11 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     /**
      * @inheritdoc
      */
-    public function getSearchKeywords($value, ElementInterface $element): string
+    protected function searchKeywords($value, ElementInterface $element): string
     {
         /** @var MatrixBlockQuery $value */
         /** @var MatrixBlock $block */
         $keywords = [];
-        $contentService = Craft::$app->getContent();
 
         foreach ($value->all() as $block) {
             $fields = Craft::$app->getFields()->getAllFields($block->getFieldContext());
@@ -754,7 +753,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             }
         }
 
-        return parent::getSearchKeywords($keywords, $element);
+        return parent::searchKeywords($keywords, $element);
     }
 
     /**

@@ -222,7 +222,7 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
     /**
      * @inheritdoc
      */
-    public function getSearchKeywords($value, ElementInterface $element): string
+    protected function searchKeywords($value, ElementInterface $element): string
     {
         $value = (string)$value;
         $value = LitEmoji::unicodeToShortcode($value);
