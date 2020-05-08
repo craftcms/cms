@@ -5,6 +5,9 @@
 ### Added
 - Added `craft\fields\BaseRelationField::inputSiteId()`.
 
+### Changed
+- Updated jQuery to 3.5.1. ([#6039](https://github.com/craftcms/cms/issues/6039))
+
 ### Fixed
 - Fixed a 403 error that occurred when a user double-clicked on an asset immediately after selecting it in an Assets field, if they didn’t have access to the primary site. ([#5949](https://github.com/craftcms/cms/issues/5949))
 - Fixed a bug where `resave/*` commands’ output didn’t take the limit into account. ([#6036](https://github.com/craftcms/cms/issues/6036))
