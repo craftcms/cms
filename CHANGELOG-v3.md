@@ -13,6 +13,9 @@
 ### Changed
 - `craft\base\Element::getRoute()` now returns the route defined by `craft\events\SetElementRouteEvent::$route` even if it’s null, as long as `SetElementRouteEvent::$handled` is set to `true`.
 
+### Fixed
+- Fixed a potential CORS issue when previewing a live entry, if its URL was on a different domain than the control panel.
+
 ## 3.5.0-beta.2 - 2020-05-05
 
 ### Added

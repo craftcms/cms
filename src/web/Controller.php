@@ -11,6 +11,7 @@ use Craft;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
+use craft\web\assets\iframeresizer\ContentWindowAsset;
 use GuzzleHttp\Exception\ClientException;
 use yii\base\Action;
 use yii\base\InvalidArgumentException;
@@ -230,6 +231,11 @@ abstract class Controller extends \yii\web\Controller
             }
 
             $headers->set('content-type', $mimeType . '; charset=' . $response->charset);
+        }
+
+        // If this is a preview request, register the iframe resizer script
+        if (Craft::$app->getRequest()->getIsPreview()) {
+            $view->registerAssetBundle(ContentWindowAsset::class);
         }
 
         // Render and return the template

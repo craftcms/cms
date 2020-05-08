@@ -9,7 +9,6 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\web\assets\iframeresizer\ContentWindowAsset;
 use craft\web\Controller;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
@@ -130,9 +129,6 @@ class PreviewController extends Controller
             ->set('Cache-Control', 'no-cache, no-store, must-revalidate')
             ->set('Pragma', 'no-cache')
             ->set('Expires', '0');
-
-        // Register the iframe resizer script
-        Craft::$app->getView()->registerAssetBundle(ContentWindowAsset::class);
 
         // Re-route the request, this time ignoring the token
         $urlManager = Craft::$app->getUrlManager();
