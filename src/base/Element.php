@@ -18,6 +18,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\elements\exporters\Expanded;
 use craft\elements\exporters\Raw;
 use craft\elements\User;
+use craft\events\DefineAttributeKeywordsEvent;
 use craft\events\DefineEagerLoadingMapEvent;
 use craft\events\ElementStructureEvent;
 use craft\events\ModelEvent;
@@ -221,6 +222,34 @@ abstract class Element extends Component implements ElementInterface
      * ```
      */
     const EVENT_SET_ROUTE = 'setRoute';
+
+    /**
+     * @event DefineAttributeKeywordsEvent The event that is triggered when defining the search keywords for an
+     * element attribute.
+     *
+     * Note that you _must_ set [[Event::$handled]] to `true` if you want the element to accept your custom
+     * [[DefineAttributeKeywordsEvent::$keywords|$keywords]] value.
+     *
+     * ```php
+     * Event::on(
+     *     craft\elements\Entry::class,
+     *     craft\base\Element::EVENT_DEFINE_KEYWORDS,
+     *     function(craft\events\DefineAttributeKeywordsEvent $e
+     * ) {
+     *     // @var craft\elements\Entry $entry
+     *     $entry = $e->sender;
+     *
+     *     // Prevent entry titles in the Parts section from getting search keywords
+     *     if ($entry->section->handle === 'parts' && $e->attribute === 'title') {
+     *         $e->keywords = '';
+     *         $e->handled = true;
+     *     }
+     * });
+     * ```
+     *
+     * @since 3.5.0
+     */
+    const EVENT_DEFINE_KEYWORDS = 'defineKeywords';
 
     /**
      * @event ModelEvent The event that is triggered before the element is saved
@@ -1721,6 +1750,28 @@ abstract class Element extends Component implements ElementInterface
      * @inheritdoc
      */
     public function getSearchKeywords(string $attribute): string
+    {
+        // Give plugins/modules a chance to define custom keywords
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_KEYWORDS)) {
+            $event = new DefineAttributeKeywordsEvent([
+                'attribute' => $attribute,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_KEYWORDS, $event);
+            if ($event->handled) {
+                return $event->keywords ?? '';
+            }
+        }
+        return $this->searchKeywords($attribute);
+    }
+
+    /**
+     * Returns the search keywords for a given search attribute.
+     *
+     * @param string $attribute
+     * @return string
+     * @since 3.5.0
+     */
+    protected function searchKeywords(string $attribute): string
     {
         return StringHelper::toString($this->$attribute);
     }

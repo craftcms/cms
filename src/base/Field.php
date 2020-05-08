@@ -10,6 +10,7 @@ namespace craft\base;
 use Craft;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\events\DefineFieldKeywordsEvent;
 use craft\events\FieldElementEvent;
 use craft\gql\types\QueryArgument;
 use craft\helpers\DateTimeHelper;
@@ -77,6 +78,34 @@ abstract class Field extends SavableComponent implements FieldInterface
      * @since 3.1.0
      */
     const EVENT_AFTER_ELEMENT_RESTORE = 'afterElementRestore';
+
+    /**
+     * @event DefineFieldKeywordsEvent The event that is triggered when defining the field’s search keywords for an
+     * element.
+     *
+     * Note that you _must_ set [[Event::$handled]] to `true` if you want the field to accept your custom
+     * [[DefineFieldKeywordsEvent::$keywords|$keywords]] value.
+     *
+     * ```php
+     * Event::on(
+     *     craft\fields\Lightswitch::class,
+     *     craft\base\Field::EVENT_DEFINE_KEYWORDS,
+     *     function(craft\events\DefineFieldKeywordsEvent $e
+     * ) {
+     *     // @var craft\fields\Lightswitch $field
+     *     $field = $e->sender;
+     *
+     *     if ($field->handle === 'fooOrBar') {
+     *         // Override the keywords depending on whether the lightswitch is enabled or not
+     *         $e->keywords = $e->value ? 'foo' : 'bar';
+     *         $e->handled = true;
+     *     }
+     * });
+     * ```
+     *
+     * @since 3.5.0
+     */
+    const EVENT_DEFINE_KEYWORDS = 'defineKeywords';
 
     // Translation methods
     // -------------------------------------------------------------------------
@@ -381,6 +410,33 @@ abstract class Field extends SavableComponent implements FieldInterface
      * @inheritdoc
      */
     public function getSearchKeywords($value, ElementInterface $element): string
+    {
+        // Give plugins/modules a chance to define custom keywords
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_KEYWORDS)) {
+            $event = new DefineFieldKeywordsEvent([
+                'value' => $value,
+                'element' => $element,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_KEYWORDS, $event);
+            if ($event->handled) {
+                return $event->keywords;
+            }
+        }
+        return $this->searchKeywords($value, $element);
+    }
+
+    /**
+     * Returns the search keywords that should be associated with this field.
+     *
+     * The keywords can be separated by commas and/or whitespace; it doesn’t really matter. [[\craft\services\Search]]
+     * will be able to find the individual keywords in whatever string is returned, and normalize them for you.
+     *
+     * @param mixed $value The field’s value
+     * @param ElementInterface $element The element the field is associated with, if there is one
+     * @return string A string of search keywords.
+     * @since 3.5.0
+     */
+    protected function searchKeywords($value, ElementInterface $element): string
     {
         return StringHelper::toString($value, ' ');
     }

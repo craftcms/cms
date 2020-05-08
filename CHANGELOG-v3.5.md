@@ -40,9 +40,9 @@
 - Added `craft\base\ElementInterface::getIconUrl()`.
 - Added `craft\base\ElementInterface::gqlMutationNameByContext()`.
 - Added `craft\base\ElementTrait::$elementSiteId`.
-- Added `craft\behaviors\BaseRevisionBehavior`.
 - Added `craft\base\FieldInterface::getContentGqlMutationArgumentType()`.
 - Added `craft\base\FieldInterface::getContentGqlQueryArgumentType()`.
+- Added `craft\behaviors\BaseRevisionBehavior`.
 - Added `craft\config\GeneralConfig::getTestToEmailAddress()`.
 - Added `craft\console\controllers\MailerController::$to`.
 - Added `craft\controllers\AppController::actionBrokenImage()`.
