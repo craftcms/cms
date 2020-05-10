@@ -10,7 +10,7 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-/*!   - 2020-05-05 */
+/*!   - 2020-05-10 */
 (function ($) {
   /** global: Craft */
 
@@ -15589,14 +15589,12 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       return selector;
     },
     getType: function getType() {
-      if (this.$toggle.prop('nodeName') === 'INPUT' && this.$toggle.attr('type').toLowerCase() === 'checkbox') {
+      if (this.$toggle.prop('nodeName') === 'INPUT' && this.$toggle.attr('type') === 'checkbox' || this.$toggle.attr('role') === 'checkbox' || this.$toggle.attr('role') === 'switch') {
         return 'checkbox';
       } else if (this.$toggle.prop('nodeName') === 'SELECT') {
         return 'select';
       } else if (this.$toggle.prop('nodeName') === 'A') {
         return 'link';
-      } else if (this.$toggle.prop('nodeName') === 'DIV' && this.$toggle.hasClass('lightswitch')) {
-        return 'lightswitch';
       }
     },
     findTargets: function findTargets() {
@@ -15614,12 +15612,16 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       }
     },
     getToggleVal: function getToggleVal() {
-      if (this.type === 'lightswitch') {
-        return this.$toggle.children('input').val();
-      } else {
-        var postVal = Garnish.getInputPostVal(this.$toggle);
-        return postVal === null ? null : postVal.replace(/[\[\]\\\/]+/g, '-');
+      if (this.type === 'checkbox') {
+        if (typeof this.$toggle.prop('checked') !== 'undefined') {
+          return this.$toggle.prop('checked');
+        }
+
+        return this.$toggle.attr('aria-checked') === 'true';
       }
+
+      var postVal = Garnish.getInputPostVal(this.$toggle);
+      return postVal === null ? null : postVal.replace(/[\[\]\\\/]+/g, '-');
     },
     onToggleChange: function onToggleChange() {
       if (this.type === 'select') {
@@ -16427,10 +16429,6 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
       this.on = this.$outerContainer.hasClass('on');
       this.indeterminate = this.$outerContainer.hasClass('indeterminate');
-      this.$outerContainer.attr({
-        role: 'checkbox',
-        'aria-checked': this.on ? 'true' : this.indeterminate ? 'mixed' : 'false'
-      });
       this.addListener(this.$outerContainer, 'mousedown', '_onMouseDown');
       this.addListener(this.$outerContainer, 'keydown', '_onKeyDown');
       this.dragger = new Garnish.BaseDrag(this.$outerContainer, {
@@ -20058,6 +20056,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         'data-value': value,
         'data-indeterminate-value': indeterminateValue,
         id: config.id,
+        role: 'switch',
+        'aria-checked': config.on ? 'true' : config.indeterminate ? 'mixed' : 'false',
         'aria-labelledby': config.labelId,
         'data-target': config.toggle,
         'data-reverse-target': config.reverseToggle

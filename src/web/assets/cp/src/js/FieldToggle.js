@@ -54,7 +54,11 @@ Craft.FieldToggle = Garnish.Base.extend(
         },
 
         getType: function() {
-            if (this.$toggle.prop('nodeName') === 'INPUT' && this.$toggle.attr('type').toLowerCase() === 'checkbox') {
+            if (
+                (this.$toggle.prop('nodeName') === 'INPUT' && this.$toggle.attr('type') === 'checkbox') ||
+                this.$toggle.attr('role') === 'checkbox' ||
+                this.$toggle.attr('role') === 'switch'
+            ) {
                 return 'checkbox';
             }
             else if (this.$toggle.prop('nodeName') === 'SELECT') {
@@ -62,9 +66,6 @@ Craft.FieldToggle = Garnish.Base.extend(
             }
             else if (this.$toggle.prop('nodeName') === 'A') {
                 return 'link';
-            }
-            else if (this.$toggle.prop('nodeName') === 'DIV' && this.$toggle.hasClass('lightswitch')) {
-                return 'lightswitch';
             }
         },
 
@@ -85,13 +86,15 @@ Craft.FieldToggle = Garnish.Base.extend(
         },
 
         getToggleVal: function() {
-            if (this.type === 'lightswitch') {
-                return this.$toggle.children('input').val();
+            if (this.type === 'checkbox') {
+                if (typeof this.$toggle.prop('checked') !== 'undefined') {
+                    return this.$toggle.prop('checked');
+                }
+                return this.$toggle.attr('aria-checked') === 'true';
             }
-            else {
-                var postVal = Garnish.getInputPostVal(this.$toggle);
-                return postVal === null ? null : postVal.replace(/[\[\]\\\/]+/g, '-');
-            }
+
+            let postVal = Garnish.getInputPostVal(this.$toggle);
+            return postVal === null ? null : postVal.replace(/[\[\]\\\/]+/g, '-');
         },
 
         onToggleChange: function() {

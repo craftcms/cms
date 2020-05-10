@@ -42,11 +42,6 @@ Craft.LightSwitch = Garnish.Base.extend(
             this.on = this.$outerContainer.hasClass('on');
             this.indeterminate = this.$outerContainer.hasClass('indeterminate');
 
-            this.$outerContainer.attr({
-                role: 'checkbox',
-                'aria-checked': this.on ? 'true' : (this.indeterminate ? 'mixed' : 'false'),
-            });
-
             this.addListener(this.$outerContainer, 'mousedown', '_onMouseDown');
             this.addListener(this.$outerContainer, 'keydown', '_onKeyDown');
 

@@ -363,6 +363,8 @@ Craft.ui =
                 'data-value': value,
                 'data-indeterminate-value': indeterminateValue,
                 id: config.id,
+                role: 'switch',
+                'aria-checked': config.on ? 'true' : (config.indeterminate ? 'mixed' : 'false'),
                 'aria-labelledby': config.labelId,
                 'data-target': config.toggle,
                 'data-reverse-target': config.reverseToggle
