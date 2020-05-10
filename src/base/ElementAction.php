@@ -15,7 +15,7 @@ use craft\elements\db\ElementQueryInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-abstract class ElementAction extends SavableComponent implements ElementActionInterface
+abstract class ElementAction extends ConfigurableComponent implements ElementActionInterface
 {
     /**
      * @inheritdoc

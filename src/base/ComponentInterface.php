@@ -9,8 +9,10 @@ namespace craft\base;
 
 /**
  * ComponentInterface defines the common interface to be implemented by Craft component classes.
- * A class implementing this interface should also implement [[\yii\base\Arrayable]].
  *
+ * A class implementing this interface should extend [[Model]].
+ *
+ * @mixin Model
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
