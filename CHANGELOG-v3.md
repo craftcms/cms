@@ -13,6 +13,7 @@
 - Added `craft\events\DefineFieldKeywordsEvent`.
 
 ### Changed
+- Lightswitch inputs can now have labels, like checkboxes.
 - `craft\base\Element::getRoute()` now returns the route defined by `craft\events\SetElementRouteEvent::$route` even if it’s null, as long as `SetElementRouteEvent::$handled` is set to `true`.
 
 ### Fixed

@@ -1385,6 +1385,14 @@ div.btn.submit input {
 }
 
 /* lightswitch */
+.lightswitch-outer-container {
+  display: flex;
+
+  label {
+    @include margin-left(7px);
+  }
+}
+
 .lightswitch {
   position: relative;
   border: none !important;
