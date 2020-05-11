@@ -1871,6 +1871,7 @@ JS;
         if (YII_DEBUG) {
             $this->_twigOptions['debug'] = true;
             $this->_twigOptions['strict_variables'] = true;
+            $this->_twigOptions['cache'] = false;
         }
 
         return $this->_twigOptions;
