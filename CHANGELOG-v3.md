@@ -13,6 +13,7 @@
 - Fixed a bug where `resave/*` commands’ output didn’t take the limit into account. ([#6036](https://github.com/craftcms/cms/issues/6036))
 - Fixed an error that could occur when processing project config changes that included deleted user groups. ([#6011](https://github.com/craftcms/cms/issues/6011))
 - Fixed a bug where Date/Time fields weren’t taking their “Show date”/“Show time” settings into account when displaying their values in element indexes. ([#6038](https://github.com/craftcms/cms/issues/6038))
+- Fixed a PHP error that occurred when requesting the GraphQL API with a token that didn’t have a schema assigned to it. ([#6043](https://github.com/craftcms/cms/issues/6043))
 
 ### Security
 - Fixed a bug where database connection details were getting cached.
