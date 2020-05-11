@@ -2006,6 +2006,18 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @inheritdoc
+     * @since 3.5.0
+     */
+    public function getLocalized(): ElementQueryInterface
+    {
+        return static::find()
+            ->id($this->id ?: false)
+            ->structureId($this->structureId)
+            ->siteId(['not', $this->siteId]);
+    }
+
+    /**
+     * @inheritdoc
      */
     public function getNext($criteria = false)
     {
