@@ -6,6 +6,7 @@
             $form: null,
             $loginNameInput: null,
             $passwordFields: null,
+            $passwordField: null,
             $passwordInput: null,
             $forgotPasswordLink: null,
             $rememberMeCheckbox: null,
@@ -22,6 +23,7 @@
                 this.$form = $('#login-form');
                 this.$loginNameInput = $('#loginName');
                 this.$passwordFields = $('#password-fields');
+                this.$passwordField = $('#password-field');
                 this.$passwordInput = $('#password');
                 this.$forgotPasswordLink = $('#forgot-password');
                 this.$sslIcon = $('#ssl-icon');
@@ -190,7 +192,7 @@
                 }
 
                 this.$form.addClass('reset-password');
-                this.$passwordInput.remove();
+                this.$passwordField.remove();
                 this.$passwordFields.remove();
                 this.$submitBtn.addClass('reset-password');
                 this.$submitBtn.attr('value', Craft.t('app', 'Reset Password'));
