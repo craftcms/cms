@@ -17,7 +17,7 @@
 - Fixed a bug where Single sections’ entry type handles weren’t getting updated if both the section name and handle changed at the same time. ([#6044](https://github.com/craftcms/cms/issues/6044))
 
 ### Security
-- Fixed a bug where database connection details were getting cached.
+- Fixed a bug where database connection details were getting cached. ([#6047](https://github.com/craftcms/cms/issues/6047))
 
 ## 3.4.18 - 2020-05-05
 
