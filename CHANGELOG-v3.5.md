@@ -160,6 +160,7 @@
 - The `|namespace` Twig filter now namespaces ID selectors within `<style>` tags. ([#5921](https://github.com/craftcms/cms/issues/5921))
 - The `|namespace` Twig filter now has a `withClasses` argument, which if set to `true` causes `class` attributes and class name CSS selectors within `<style>` tags to be namespaced. ([#5921](https://github.com/craftcms/cms/issues/5921))
 - The `{% namespace %}` Twig tag can now have a `withClasses` flag, which causes `class` attributes and class name CSS selectors within `<style>` tags to be namespaced. ([#5921](https://github.com/craftcms/cms/issues/5921))
+- Element queries’ `siteId` params can now be set to an array that begins with `'not'` to exclude specific site IDs.
 - The `withTransforms` asset query param can now include `srcset`-style sizes (e.g. `100w` or `2x`), following a normal transform definition.
 - The `QueryArgument` GraphQL type now also allows boolean values.
 - Improved transform eager-loading support when using GraphQL API.

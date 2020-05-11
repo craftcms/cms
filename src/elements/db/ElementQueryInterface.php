@@ -603,6 +603,15 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *
      * The current site will be used by default.
      *
+     * Possible values include:
+     *
+     * | Value | Fetches {elements}…
+     * | - | -
+     * | `1` | from the site with an ID of `1`.
+     * | `[1, 2]` | from a site with an ID of `1` or `2`.
+     * | `['not', 1, 2]` | not in a site with an ID of `1` or `2`.
+     * | `'*'` | from any site.
+     *
      * ---
      *
      * ```twig

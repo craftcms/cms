@@ -961,7 +961,18 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function siteId($value)
     {
-        $this->siteId = $value;
+        if (is_array($value) && strtolower(reset($value)) === 'not') {
+            array_shift($value);
+            $this->siteId = [];
+            foreach (Craft::$app->getSites()->getAllSites() as $site) {
+                if (!in_array($site->id, $value, false)) {
+                    $this->siteId[] = $site->id;
+                }
+            }
+        } else {
+            $this->siteId = $value;
+        }
+
         return $this;
     }
 
