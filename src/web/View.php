@@ -680,8 +680,23 @@ class View extends \yii\web\View
      */
     public function normalizeObjectTemplate(string $template): string
     {
-        // Tokenize objects (call preg_replace_callback() multiple times in case there are nested objects)
         $tokens = [];
+
+        // Tokenize {% verbatim %} tags
+        $template = preg_replace_callback('/\{%-?\s*verbatim\s*-?%\}.*?{%-?\s*endverbatim\s*-?%\}/s', function(array $matches) use (&$tokens) {
+            $token = 'tok_' . StringHelper::randomString(10);
+            $tokens[$token] = $matches[0];
+            return $token;
+        }, $template);
+
+        // Tokenize inline code and code blocks
+        $template = preg_replace_callback('/(?<!`)(`|`{3,})(?!`).*?(?<!`)\1(?!`)/s', function(array $matches) use (&$tokens) {
+            $token = 'tok_' . StringHelper::randomString(10);
+            $tokens[$token] = '{% verbatim %}' . $matches[0] . '{% endverbatim %}';
+            return $token;
+        }, $template);
+
+        // Tokenize objects (call preg_replace_callback() multiple times in case there are nested objects)
         while (true) {
             $template = preg_replace_callback('/\{\s*([\'"]?)\w+\1\s*:[^\{]+?\}/', function(array $matches) use (&$tokens) {
                 $token = 'tok_' . StringHelper::randomString(10);

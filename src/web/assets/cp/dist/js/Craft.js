@@ -10,12 +10,20 @@ function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-/*!   - 2020-05-10 */
+/*!   - 2020-05-12 */
 (function ($) {
   /** global: Craft */
 
   /** global: Garnish */
-  // Set all the standard Craft.* stuff
+  // Use old jQuery prefilter behavior
+  // see https://jquery.com/upgrade-guide/3.5/
+  var rxhtmlTag = /<(?!area|br|col|embed|hr|img|input|link|meta|param)(([a-z][^\/\0>\x20\t\r\n\f]*)[^>]*)\/>/gi;
+
+  jQuery.htmlPrefilter = function (html) {
+    return html.replace(rxhtmlTag, "<$1></$2>");
+  }; // Set all the standard Craft.* stuff
+
+
   $.extend(Craft, {
     navHeight: 48,
 

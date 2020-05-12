@@ -69,6 +69,8 @@ class InstallController extends Controller
             return $response;
         }
 
+        $isNitro = App::isNitro();
+
         // Can we establish a DB connection?
         try {
             Craft::$app->getDb()->open();
@@ -99,6 +101,7 @@ class InstallController extends Controller
         $worldIcon = file_get_contents($iconsPath . DIRECTORY_SEPARATOR . 'world.svg');
 
         return $this->renderTemplate('_special/install', compact(
+            'isNitro',
             'showDbScreen',
             'license',
             'defaultSystemName',
@@ -371,7 +374,7 @@ class InstallController extends Controller
         $request = Craft::$app->getRequest();
 
         $driver = $request->getRequiredBodyParam("{$prefix}driver");
-        $server = $request->getBodyParam("{$prefix}server") ?: 'localhost';
+        $server = $request->getBodyParam("{$prefix}server") ?: '127.0.0.1';
         $database = $request->getBodyParam("{$prefix}database");
         $port = $request->getBodyParam("{$prefix}port");
         if ($port === null || $port === '') {

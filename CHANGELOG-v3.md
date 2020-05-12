@@ -255,6 +255,36 @@
 ### Security
 - The `_includes/forms/checkbox.html`, `checkboxGroup.html`, and `checkboxSelect.html` control panel templates now HTML-encode checkbox labels by default, preventing possible XSS vulnerabilities. If HTML code was desired, it must be passed through the new `raw()` function first.
 
+## 3.4.19 - 2020-05-12
+
+### Added
+- Added `craft\fields\BaseRelationField::inputSiteId()`.
+- Added `craft\helpers\App::isNitro()`.
+
+### Changed
+- The web-based installer now defaults the database server to `127.0.0.1` instead of `localhost`.
+- The web-based installer and `setup` command now skip asking for the database server name/IP, username, and password, if they are able to detect that Craft is running within Nitro.
+- `craft\web\View::renderObjectTemplate()` now injects `{% verbatim %}` tags around inline code and code blocks, preventing their contents from being parsed by Twig.
+- Updated jQuery to 3.5.1. ([#6039](https://github.com/craftcms/cms/issues/6039))
+
+### Fixed
+- Fixed a 403 error that occurred when a user double-clicked on an asset immediately after selecting it in an Assets field, if they didn’t have access to the primary site. ([#5949](https://github.com/craftcms/cms/issues/5949))
+- Fixed a bug where `resave/*` commands’ output didn’t take the limit into account. ([#6036](https://github.com/craftcms/cms/issues/6036))
+- Fixed an error that could occur when processing project config changes that included deleted user groups. ([#6011](https://github.com/craftcms/cms/issues/6011))
+- Fixed a bug where Date/Time fields weren’t taking their “Show date”/“Show time” settings into account when displaying their values in element indexes. ([#6038](https://github.com/craftcms/cms/issues/6038))
+- Fixed a PHP error that occurred when requesting the GraphQL API with a token that didn’t have a schema assigned to it. ([#6043](https://github.com/craftcms/cms/issues/6043))
+- Fixed a bug where Single sections’ entry type handles weren’t getting updated if both the section name and handle changed at the same time. ([#6044](https://github.com/craftcms/cms/issues/6044))
+- Fixed a bug where updating a transform would not bust the generated transform caches on volumes with the `expires` setting set.
+- Fixed a bug where it wasn’t possible to create new Dashboard widgets that had settings.
+- Fixed a bug where relational fields weren’t always showing related elements in the selected site on element indexes. ([#6052](https://github.com/craftcms/cms/issues/6052))
+- Fixed various UI bugs related to breaking changes in jQuery 3.5. ([#6049](https://github.com/craftcms/cms/issues/6049), [#6053](https://github.com/craftcms/cms/issues/6053))
+- Fixed a bug where disabled multi-site entries would become enabled if they became single-site entries per a change to their section’s Propagation Method setting. ([#6054](https://github.com/craftcms/cms/issues/6054))
+- Fixed a bug where it wasn’t possible to double-click on Single entries to edit them. ([#6058](https://github.com/craftcms/cms/issues/6058))
+- Fixed a bug where querying for disabled elements wouldn’t include elements that were disabled for the current site.
+
+### Security
+- Fixed a bug where database connection details were getting cached. ([#6047](https://github.com/craftcms/cms/issues/6047))
+
 ## 3.4.18 - 2020-05-05
 
 ### Added
@@ -284,6 +314,8 @@
 - Fixed a bug where the “Preview file” asset action wasn’t available if any other elements were being displayed in the table row (e.g. the file’s uploader or any relations). ([#6012](https://github.com/craftcms/cms/issues/6012))
 - Fixed a bug where `update` commands could time out when running migrations or reverting Composer changes. ([#6021](https://github.com/craftcms/cms/pull/6021))
 - Fixed a bug where source/owner elements could be selectable in relational fields. ([#6016](https://github.com/craftcms/cms/issues/6016))
+- Fixed a bug where relational fields weren’t ignoring disabled and soft-deleted elements when `:empty:` or `:notempty:` were passed to their element query params. ([#6026](https://github.com/craftcms/cms/issues/6026))
+- Fixed a bug where Matrix fields weren’t ignoring disabled blocks when `:empty:` or `:notempty:` were passed to their element query params. ([#6026](https://github.com/craftcms/cms/issues/6026))
 
 ## 3.4.17.1 - 2020-04-25
 
@@ -619,8 +651,6 @@
 - Fixed a bug where element exporting would redirect the browser window if the export request didn’t immediately return the export data. ([#5558](https://github.com/craftcms/cms/issues/5558))
 - Fixed a “Division by zero” error that occurred if an image transform didn’t specify a width or a height. ([#5590](https://github.com/craftcms/cms/issues/5590))
 - Fixed a bug where elements weren’t always retaining their positions in element indexes between pages.
-- Fixed a bug where relational fields weren’t ignoring disabled and soft-deleted elements when `:empty:` or `:notempty:` were passed to their element query params. ([#6026](https://github.com/craftcms/cms/issues/6026))
-- Fixed a bug where Matrix fields weren’t ignoring disabled blocks when `:empty:` or `:notempty:` were passed to their element query params. ([#6026](https://github.com/craftcms/cms/issues/6026))
 
 ## 3.4.3 - 2020-02-03
 

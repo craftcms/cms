@@ -52,34 +52,83 @@
                     settingsHtml = this.getTypeInfo(type, 'settingsHtml', '').replace(/__NAMESPACE__/g, settingsNamespace),
                     settingsJs = this.getTypeInfo(type, 'settingsJs', '').replace(/__NAMESPACE__/g, settingsNamespace),
                     $gridItem = $('<div class="item" data-colspan="1" style="display: block">'),
-                    $container = $(
-                        '<div class="widget new loading-new scaleout ' + type.toLowerCase() + '" data-type="' + type + '">' +
-                        '<div class="front">' +
-                        '<div class="pane">' +
-                        '<div class="spinner body-loading"/>' +
-                        '<div class="widget-heading">' +
-                        '<h2/>' +
-                        '<h5/>' +
-                        '</div>' +
-                        '<div class="body"/>' +
-                        '<div class="settings icon hidden"/>' +
-                        '</div>' +
-                        '</div>' +
-                        '<div class="back">' +
-                        '<form class="pane">' +
-                        '<input type="hidden" name="type" value="' + type + '"/>' +
-                        '<input type="hidden" name="settingsNamespace" value="' + settingsNamespace + '"/>' +
-                        '<h2>' + Craft.t('app', '{type} Settings', {type: Craft.escapeHtml($option.data('name'))}) + '</h2>' +
-                        '<div class="settings"/>' +
-                        '<hr/>' +
-                        '<div class="buttons clearafter">' +
-                        '<input type="submit" class="btn submit" value="' + Craft.t('app', 'Save') + '"/>' +
-                        '<div class="btn" role="button">' + Craft.t('app', 'Cancel') + '</div>' +
-                        '<div class="spinner hidden"/>' +
-                        '</div>' +
-                        '</form>' +
-                        '</div>' +
-                        '</div>').appendTo($gridItem);
+                    $container = $('<div/>', {
+                      'class': 'widget new loading-new scaleout',
+                      'data-type': type,
+                    })
+                      .addClass(type.toLowerCase())
+                      .append(
+                        $('<div/>', {'class': 'front'})
+                          .append(
+                            $('<div/>', {'class': 'pane'})
+                              .append(
+                                $('<div/>', {'class': 'spinner body-loading'})
+                              )
+                              .append(
+                                $('<div/>', {'class': 'widget-heading'})
+                                  .append('<h2/>')
+                                  .append('<h5/>')
+                              )
+                              .append(
+                                $('<div/>', {'class': 'body'})
+                              )
+                              .append(
+                                $('<div/>', {'class': 'settings icon hidden'})
+                              )
+                          )
+                      )
+                      .append(
+                        $('<div/>', {'class': 'back'})
+                          .append(
+                            $('<form/>', {'class': 'pane'})
+                              .append(
+                                $('<input/>', {
+                                  type: 'hidden',
+                                  name: 'type',
+                                  value: type,
+                                })
+                              )
+                              .append(
+                                $('<input/>', {
+                                  type: 'hidden',
+                                  name: 'settingsNamespace',
+                                  value: settingsNamespace,
+                                })
+                              )
+                              .append(
+                                $('<h2/>', {
+                                  text: Craft.t('app', '{type} Settings', {
+                                    type: $option.data('name')
+                                  }),
+                                })
+                              )
+                              .append(
+                                $('<div/>', {'class': 'settings'})
+                              )
+                              .append('<hr/>')
+                              .append(
+                                $('<div/>', {'class': 'buttons clearafter'})
+                                  .append(
+                                    $('<input/>', {
+                                      type: 'submit',
+                                      'class': 'btn submit',
+                                      value: Craft.t('app', 'Save'),
+                                    })
+                                  )
+                                  .append(
+                                    $('<div/>', {
+                                      'class': 'btn',
+                                      role: 'button',
+                                      text: Craft.t('app', 'Cancel')
+                                    })
+                                  )
+                                  .append(
+                                    $('<div/>', {'class': 'spinner hidden'})
+                                  )
+                              )
+                          )
+                      )
+                      .appendTo($gridItem);
 
                 if (settingsHtml) {
                     $container.addClass('flipped');
