@@ -506,6 +506,8 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
 
         if (!$this->targetSiteId) {
             $criteria['siteId'] = '*';
+            $criteria['unique'] = true;
+            $criteria['preferSites'] = [$query->siteId];
         }
 
         $query->andWith([$this->handle, $criteria]);
@@ -901,9 +903,7 @@ JS;
 
         $selectionCriteria = $this->inputSelectionCriteria();
         $selectionCriteria['enabledForSite'] = null;
-        if ($this->targetSiteId) {
-            $selectionCriteria['siteId'] = $this->targetSiteId($element);
-        }
+        $selectionCriteria['siteId'] = $this->inputSiteId($element);
 
         $disabledElementIds = [];
         if ($element) {
@@ -975,6 +975,21 @@ JS;
         $event = new ElementCriteriaEvent();
         $this->trigger(self::EVENT_DEFINE_SELECTION_CRITERIA, $event);
         return $event->criteria;
+    }
+
+    /**
+     * Returns the site ID that the input should select elements from.
+     *
+     * @param ElementInterface|null $element
+     * @return int|null
+     * @since 3.4.19
+     */
+    protected function inputSiteId(ElementInterface $element = null)
+    {
+        if ($this->targetSiteId) {
+            return $this->targetSiteId($element);
+        }
+        return null;
     }
 
     /**
