@@ -1971,7 +1971,11 @@ class ElementQuery extends Query implements ElementQueryInterface
             case Element::STATUS_ENABLED:
                 return ['elements.enabled' => true];
             case Element::STATUS_DISABLED:
-                return ['elements.enabled' => false];
+                return [
+                    'or',
+                    ['elements.enabled' => false],
+                    ['elements_sites.enabled' => false],
+                ];
             case Element::STATUS_ARCHIVED:
                 return ['elements.archived' => true];
             default:
