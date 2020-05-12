@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.4.19 - 2020-05-12
 
 ### Added
 - Added `craft\fields\BaseRelationField::inputSiteId()`.
