@@ -122,6 +122,7 @@
 - Added `craft\services\Composer::run()`.
 - Added `craft\services\Elements::createElementQuery()`.
 - Added `craft\services\Gql::getAllSchemaComponents()`.
+- Added `craft\services\Images::getSupportsWebP()`. ([#5853](https://github.com/craftcms/cms/issues/5853))
 - Added `craft\services\ProjectConfig::$filename`. ([#5982](https://github.com/craftcms/cms/issues/5982))
 - Added `craft\queue\jobs\PruneRevisions`.
 - Added `craft\test\mockclasses\elements\MockElementQuery`.

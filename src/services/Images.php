@@ -16,6 +16,7 @@ use craft\helpers\Image as ImageHelper;
 use craft\image\Raster;
 use craft\image\Svg;
 use enshrined\svgSanitize\Sanitizer;
+use Imagine\Imagick\Imagick;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -162,6 +163,16 @@ class Images extends Component
         }
 
         return true;
+    }
+
+    /**
+     * Returns whether the WebP image format is supported.
+     *
+     * @return bool
+     */
+    public function getSupportsWebP(): bool
+    {
+        return $this->getCanUseImagick() ? !empty(Imagick::queryFormats('WEBP')) : function_exists('imagewebp');
     }
 
     /**
