@@ -9,6 +9,7 @@
 ### Changed
 - The web-based installer now defaults the database server to `127.0.0.1` instead of `localhost`.
 - The web-based installer and `setup` command now skip asking for the database server name/IP, username, and password, if they are able to detect that Craft is running within Nitro.
+- `craft\web\View::renderObjectTemplate()` now injects `{% verbatim %}` tags around inline code and code blocks, preventing their contents from being parsed by Twig.
 - Updated jQuery to 3.5.1. ([#6039](https://github.com/craftcms/cms/issues/6039))
 
 ### Fixed
