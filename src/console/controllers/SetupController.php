@@ -225,15 +225,21 @@ EOD;
 
         userCredentials:
 
-        // user
-        $this->user = $this->prompt('Database username:', [
-            'default' => $this->user ?: null,
-        ]);
+        // Is this Nitro?
+        if (App::env('CRAFT_NITRO') === '1') {
+            $this->user = 'nitro';
+            $this->password = 'nitro';
+        } else {
+            // user
+            $this->user = $this->prompt('Database username:', [
+                'default' => $this->user ?: null,
+            ]);
 
-        // password
-        if ($this->interactive) {
-            $this->stdout('Database password: ');
-            $this->password = CliPrompt::hiddenPrompt(true);
+            // password
+            if ($this->interactive) {
+                $this->stdout('Database password: ');
+                $this->password = CliPrompt::hiddenPrompt(true);
+            }
         }
 
         if ($badUserCredentials) {

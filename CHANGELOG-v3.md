@@ -6,6 +6,7 @@
 - Added `craft\fields\BaseRelationField::inputSiteId()`.
 
 ### Changed
+- The `setup` command now skips asking for the database username and password, if it’s able to detect that Craft is running within Nitro.
 - Updated jQuery to 3.5.1. ([#6039](https://github.com/craftcms/cms/issues/6039))
 
 ### Fixed
