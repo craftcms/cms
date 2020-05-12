@@ -371,7 +371,7 @@ class InstallController extends Controller
         $request = Craft::$app->getRequest();
 
         $driver = $request->getRequiredBodyParam("{$prefix}driver");
-        $server = $request->getBodyParam("{$prefix}server") ?: 'localhost';
+        $server = $request->getBodyParam("{$prefix}server") ?: '127.0.0.1';
         $database = $request->getBodyParam("{$prefix}database");
         $port = $request->getBodyParam("{$prefix}port");
         if ($port === null || $port === '') {

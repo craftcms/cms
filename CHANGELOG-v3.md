@@ -6,6 +6,7 @@
 - Added `craft\fields\BaseRelationField::inputSiteId()`.
 
 ### Changed
+- The web-based installer now defaults the database server to `127.0.0.1` instead of `localhost`.
 - The `setup` command now skips asking for the database server name/IP, username, and password, if it’s able to detect that Craft is running within Nitro.
 - Updated jQuery to 3.5.1. ([#6039](https://github.com/craftcms/cms/issues/6039))
 
