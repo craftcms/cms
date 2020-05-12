@@ -17497,6 +17497,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
 
         iFrameResize({
+          checkOrigin: false,
           // Allow iframe scrolling until we've successfully initialized the resizer
           scrolling: true,
           onInit: function onInit(iframe) {
