@@ -185,7 +185,7 @@ EOD;
     {
         $firstTime = true;
         $badUserCredentials = false;
-        $isNitro = App::env('CRAFT_NITRO') === '1';
+        $isNitro = App::isNitro();
 
         top:
 
