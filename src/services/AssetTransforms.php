@@ -846,8 +846,7 @@ class AssetTransforms extends Component
 
         $asset = Craft::$app->getAssets()->getAssetById($transformIndexModel->assetId);
 
-        return $this->getUrlForTransformByAssetAndTransformIndex($asset,
-            $transformIndexModel);
+        return $this->getUrlForTransformByAssetAndTransformIndex($asset, $transformIndexModel);
     }
 
     /**

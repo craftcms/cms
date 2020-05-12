@@ -63,6 +63,7 @@ class Assets
         $extension = strpos($extension, '.') !== false ? pathinfo($extension, PATHINFO_EXTENSION) : $extension;
         $filename = uniqid('assets', true) . '.' . $extension;
         $path = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $filename;
+
         if (($handle = fopen($path, 'wb')) === false) {
             throw new Exception('Could not create temp file: ' . $path);
         }
