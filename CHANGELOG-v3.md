@@ -18,6 +18,7 @@
 - Fixed a bug where Date/Time fields weren’t taking their “Show date”/“Show time” settings into account when displaying their values in element indexes. ([#6038](https://github.com/craftcms/cms/issues/6038))
 - Fixed a PHP error that occurred when requesting the GraphQL API with a token that didn’t have a schema assigned to it. ([#6043](https://github.com/craftcms/cms/issues/6043))
 - Fixed a bug where Single sections’ entry type handles weren’t getting updated if both the section name and handle changed at the same time. ([#6044](https://github.com/craftcms/cms/issues/6044))
+- Fixed a bug where updating a transform would not bust the generated transform caches on volumes with the `expires` setting set.
 
 ### Security
 - Fixed a bug where database connection details were getting cached. ([#6047](https://github.com/craftcms/cms/issues/6047))

@@ -15,6 +15,7 @@ use craft\elements\Asset;
 use craft\enums\PeriodType;
 use craft\events\RegisterAssetFileKindsEvent;
 use craft\events\SetAssetFilenameEvent;
+use craft\models\AssetTransformIndex;
 use craft\models\VolumeFolder;
 use yii\base\Event;
 use yii\base\Exception;
@@ -78,13 +79,14 @@ class Assets
      * @param VolumeInterface $volume
      * @param Asset $asset
      * @param string $uri Asset URI to use. Defaults to the filename.
+     * @param AssetTransformIndex|null $transformIndex Transform index, for which the URL is being generated, if any
      * @return string
      */
-    public static function generateUrl(VolumeInterface $volume, Asset $asset, $uri = null): string
+    public static function generateUrl(VolumeInterface $volume, Asset $asset, string $uri = null, AssetTransformIndex $transformIndex = null): string
     {
         $baseUrl = $volume->getRootUrl();
         $folderPath = $asset->getFolder()->path;
-        $appendix = static::urlAppendix($volume, $asset);
+        $appendix = static::urlAppendix($volume, $asset, $transformIndex);
 
         return $baseUrl . $folderPath . ($uri ?? $asset->filename) . $appendix;
     }
@@ -94,9 +96,10 @@ class Assets
      *
      * @param VolumeInterface $volume
      * @param Asset $file
+     * @param AssetTransformIndex|null $transformIndex Transform index, for which the URL is being generated, if any
      * @return string
      */
-    public static function urlAppendix(VolumeInterface $volume, Asset $file): string
+    public static function urlAppendix(VolumeInterface $volume, Asset $file, AssetTransformIndex $transformIndex = null): string
     {
         $appendix = '';
 
@@ -104,6 +107,10 @@ class Assets
         if (!empty($volume->expires) && DateTimeHelper::isValidIntervalString($volume->expires) && $file->dateModified) {
             $focalAppendix = $file->getHasFocalPoint() ? urlencode($file->getFocalPoint(true)) : 'none';
             $appendix = '?mtime=' . $file->dateModified->format('YmdHis') . '&focal=' . $focalAppendix;
+
+            if ($transformIndex) {
+                $appendix .= '&tmtime=' . $transformIndex->dateUpdated->format('YmdHis');
+            }
         }
 
         return $appendix;
