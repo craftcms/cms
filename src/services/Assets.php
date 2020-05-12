@@ -13,6 +13,7 @@ use craft\assetpreviews\Pdf;
 use craft\assetpreviews\Text;
 use craft\assetpreviews\Video;
 use craft\base\AssetPreviewHandlerInterface;
+use craft\base\LocalVolumeInterface;
 use craft\base\VolumeInterface;
 use craft\db\Query;
 use craft\db\Table;
@@ -592,7 +593,15 @@ class Assets extends Component
 
         // Does the file actually exist?
         if ($index->fileExists) {
-            return $assetTransforms->getUrlForTransformByAssetAndTransformIndex($asset, $index);
+            // For local volumes, really make sure
+            $volume = $asset->getVolume();
+            $transformPath = $asset->getFolder()->path . $assetTransforms->getTransformSubpath($asset, $index);
+
+            if ($volume instanceof LocalVolumeInterface && !$volume->fileExists($transformPath)) {
+                $index->fileExists = false;
+            } else {
+                return $assetTransforms->getUrlForTransformByAssetAndTransformIndex($asset, $index);
+            }
         }
 
         if ($generateNow === null) {

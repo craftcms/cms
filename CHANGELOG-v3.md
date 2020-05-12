@@ -13,6 +13,7 @@
 - Added `craft\events\DefineFieldKeywordsEvent`.
 - Added `craft\services\AssetTransforms::extendTransform()`. ([#5853](https://github.com/craftcms/cms/issues/5853))
 - Added `craft\services\Images::getSupportsWebP()`. ([#5853](https://github.com/craftcms/cms/issues/5853))
+- Craft will now regenerate missing transforms on local Volumes. ([#5956](https://github.com/craftcms/cms/issues/5956))
 
 ### Changed
 - Element queries’ `siteId` params can now be set to an array that begins with `'not'` to exclude specific site IDs.

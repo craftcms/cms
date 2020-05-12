@@ -135,6 +135,7 @@
 - Added the `copytext` and `copytextField` macros to the `_includes/forms.html` control panel template.
 - Added the `Craft.ui.createCopyTextInput()`, `createCopyTextField()`, and `createCopyTextPrompt()` JavaScript methods.
 - Added the [iFrame Resizer](http://davidjbradshaw.github.io/iframe-resizer/) library.
+- Craft will now regenerate missing transforms on local Volumes. ([#5956](https://github.com/craftcms/cms/issues/5956))
 
 ### Changed
 - User registration forms in the control panel now give users the option to send an activation email, even if email verification isn’t required. ([#5836](https://github.com/craftcms/cms/issues/5836))
