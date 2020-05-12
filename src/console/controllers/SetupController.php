@@ -185,6 +185,7 @@ EOD;
     {
         $firstTime = true;
         $badUserCredentials = false;
+        $isNitro = App::env('CRAFT_NITRO') === '1';
 
         top:
 
@@ -202,11 +203,15 @@ EOD;
         }
 
         // server
-        $this->server = $this->prompt('Database server name or IP address:', [
-            'required' => true,
-            'default' => $this->server ?: '127.0.0.1',
-        ]);
-        $this->server = strtolower($this->server);
+        if ($isNitro) {
+            $this->server = '127.0.0.1';
+        } else {
+            $this->server = $this->prompt('Database server name or IP address:', [
+                'required' => true,
+                'default' => $this->server ?: '127.0.0.1',
+            ]);
+            $this->server = strtolower($this->server);
+        }
 
         // port
         if ($firstTime) {
@@ -225,17 +230,15 @@ EOD;
 
         userCredentials:
 
-        // Is this Nitro?
-        if (App::env('CRAFT_NITRO') === '1') {
+        // user & password
+        if ($isNitro) {
             $this->user = 'nitro';
             $this->password = 'nitro';
         } else {
-            // user
             $this->user = $this->prompt('Database username:', [
                 'default' => $this->user ?: null,
             ]);
 
-            // password
             if ($this->interactive) {
                 $this->stdout('Database password: ');
                 $this->password = CliPrompt::hiddenPrompt(true);
