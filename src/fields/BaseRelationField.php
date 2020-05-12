@@ -506,6 +506,8 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
 
         if (!$this->targetSiteId) {
             $criteria['siteId'] = '*';
+            $criteria['unique'] = true;
+            $criteria['preferSites'] = [$query->siteId];
         }
 
         $query->andWith([$this->handle, $criteria]);

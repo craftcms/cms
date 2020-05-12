@@ -21,6 +21,7 @@
 - Fixed a bug where Single sections’ entry type handles weren’t getting updated if both the section name and handle changed at the same time. ([#6044](https://github.com/craftcms/cms/issues/6044))
 - Fixed a bug where updating a transform would not bust the generated transform caches on volumes with the `expires` setting set.
 - Fixed a bug where it wasn’t possible to create new Dashboard widgets that had settings. ([#6049](https://github.com/craftcms/cms/issues/6049))
+- Fixed a bug where relational fields weren’t always showing related elements in the selected site on element indexes. ([#6052](https://github.com/craftcms/cms/issues/6052))
 
 ### Security
 - Fixed a bug where database connection details were getting cached. ([#6047](https://github.com/craftcms/cms/issues/6047))
