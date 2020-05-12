@@ -11,11 +11,13 @@
 - Added `craft\base\Field::searchKeywords()`.
 - Added `craft\events\DefineAttributeKeywordsEvent`.
 - Added `craft\events\DefineFieldKeywordsEvent`.
+- Added `craft\services\AssetTransforms::extendTransform()`. ([#5853](https://github.com/craftcms/cms/issues/5853))
 
 ### Changed
 - Element queries’ `siteId` params can now be set to an array that begins with `'not'` to exclude specific site IDs.
 - Lightswitch inputs can now have labels, like checkboxes.
 - `craft\base\Element::getRoute()` now returns the route defined by `craft\events\SetElementRouteEvent::$route` even if it’s null, as long as `SetElementRouteEvent::$handled` is set to `true`.
+- `craft\elements\Asset::getUrl()` now has a `$transformOverrideParameters` parameter. ([#5853](https://github.com/craftcms/cms/issues/5853))
 
 ### Fixed
 - Fixed a potential CORS issue when previewing a live entry, if its URL was on a different domain than the control panel.

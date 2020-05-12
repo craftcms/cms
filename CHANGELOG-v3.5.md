@@ -117,6 +117,7 @@
 - Added `craft\helpers\Queue`.
 - Added `craft\models\Section::PROPAGATION_METHOD_CUSTOM`.
 - Added `craft\models\Site::$enabled`.
+- Added `craft\services\AssetTransforms::extendTransform()`. ([#5853](https://github.com/craftcms/cms/issues/5853))
 - Added `craft\services\Composer::handleError()`.
 - Added `craft\services\Composer::run()`.
 - Added `craft\services\Elements::createElementQuery()`.
@@ -179,6 +180,7 @@
 - Control panel form input macros and templates that accept a `class` variable can now pass it as an array of class names.
 - Updated Composer to 1.10.5. ([#5925](https://github.com/craftcms/cms/pull/5925))
 - Updated voku/stringy to ^6.2.2. ([#5989](https://github.com/craftcms/cms/issues/5989))
+- `craft\elements\Asset::getUrl()` now has a `$transformOverrideParameters` parameter. ([#5853](https://github.com/craftcms/cms/issues/5853))
 
 ### Deprecated
 - Deprecated the `install/plugin` command. `plugin/install` should be used instead.

@@ -1020,9 +1020,11 @@ class Asset extends Element
      * Returns the element’s full URL.
      *
      * @param string|array|null $transform The transform that should be applied, if any. Can either be the handle of a named transform, or an array that defines the transform settings.
+     * @param array|null $transformOverrideParameters
      * @return string|null
+     * @throws InvalidConfigException
      */
-    public function getUrl($transform = null)
+    public function getUrl($transform = null, array $transformOverrideParameters = null)
     {
         $volume = $this->getVolume();
 
@@ -1044,6 +1046,12 @@ class Asset extends Element
             if (isset($transform['height'])) {
                 $transform['height'] = round($transform['height']);
             }
+        }
+
+        if ($transform && !empty($transformOverrideParameters)) {
+            $assetTransforms = Craft::$app->getAssetTransforms();
+            $transform = $assetTransforms->normalizeTransform($transform);
+            $transform = $assetTransforms->extendTransform($transform, $transformOverrideParameters);
         }
 
         if ($transform === null && $this->_transform !== null) {

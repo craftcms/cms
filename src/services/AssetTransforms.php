@@ -802,6 +802,51 @@ class AssetTransforms extends Component
     }
 
     /**
+     * Extend a transform by taking an existing transform and overriding its parameters.
+     *
+     * @param AssetTransform $transform
+     * @param array $parameters
+     * @return AssetTransform
+     */
+    public function extendTransform(AssetTransform $transform, array $parameters): AssetTransform
+    {
+        if (!empty($parameters)) {
+            // Don't change the same transform
+            $transform = clone $transform;
+
+            $whiteList = [
+                'width',
+                'height',
+                'format',
+                'mode',
+                'position',
+                'quality',
+                'interlace',
+            ];
+
+            $nullables = [
+                'id',
+                'name',
+                'handle',
+                'uid',
+                'dimensionChangeTime',
+            ];
+
+            foreach ($parameters as $parameter => $value) {
+                if (in_array($parameter, $whiteList, true)) {
+                    $transform->{$parameter} = $value;
+                }
+            }
+
+            foreach ($nullables as $nullable) {
+                $transform->{$nullable} = null;
+            }
+        }
+
+        return $transform;
+    }
+
+    /**
      * Store a transform index data by it's model.
      *
      * @param AssetTransformIndex $index
