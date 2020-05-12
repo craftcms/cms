@@ -972,11 +972,14 @@ class Entry extends Element
 
         // Cover the basics
         if (
-            $section->type === Section::TYPE_SINGLE ||
             !$userSession->checkPermission("editEntries:$section->uid") ||
             ($this->enabled && !$userSession->checkPermission("publishEntries:$section->uid"))
         ) {
             return false;
+        }
+
+        if ($section->type === Section::TYPE_SINGLE) {
+            return true;
         }
 
         // Is this a new entry?
