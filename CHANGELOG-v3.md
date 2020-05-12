@@ -23,6 +23,7 @@
 - Fixed a bug where it wasn’t possible to create new Dashboard widgets that had settings.
 - Fixed a bug where relational fields weren’t always showing related elements in the selected site on element indexes. ([#6052](https://github.com/craftcms/cms/issues/6052))
 - Fixed various UI bugs related to breaking changes in jQuery 3.5. ([#6049](https://github.com/craftcms/cms/issues/6049), [#6053](https://github.com/craftcms/cms/issues/6053))
+- Fixed a bug where disabled multi-site entries would become enabled if they became single-site entries per a change to their section’s Propagation Method setting. ([#6054](https://github.com/craftcms/cms/issues/6054))
 
 ### Security
 - Fixed a bug where database connection details were getting cached. ([#6047](https://github.com/craftcms/cms/issues/6047))
