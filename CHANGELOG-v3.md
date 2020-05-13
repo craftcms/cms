@@ -1,5 +1,14 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.4.19.1 - 2020-05-13
+
+### Changed
+- Entries no longer apply their dynamic titles if the result of the Title Format is an empty string. ([#6051](https://github.com/craftcms/cms/issues/6051))
+
+### Fixed
+- Fixed a bug where the site selector wasn’t working when adding related elements to a relational field.
+- Fixed an error that colud occur when adding related elements to a relational field.
+
 ## 3.4.19 - 2020-05-12
 
 ### Added
