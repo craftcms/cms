@@ -1152,7 +1152,10 @@ EOD;
             // Set Craft to the entry's site's language, in case the title format has any static translations
             $language = Craft::$app->language;
             Craft::$app->language = $this->getSite()->language;
-            $this->title = Craft::$app->getView()->renderObjectTemplate($entryType->titleFormat, $this);
+            $title = Craft::$app->getView()->renderObjectTemplate($entryType->titleFormat, $this);
+            if ($title !== '') {
+                $this->title = $title;
+            }
             Craft::$app->language = $language;
         }
     }

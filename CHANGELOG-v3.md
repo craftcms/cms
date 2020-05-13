@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Changed
+- Entries no longer apply their dynamic titles if the result of the Title Format is an empty string. ([#6051](https://github.com/craftcms/cms/issues/6051))
+
 ## 3.4.19 - 2020-05-12
 
 ### Added
