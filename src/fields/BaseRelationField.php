@@ -503,7 +503,10 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         if (!$this->targetSiteId) {
             $criteria['siteId'] = '*';
             $criteria['unique'] = true;
-            $criteria['preferSites'] = [$query->siteId];
+            // Just to be safe...
+            if (is_numeric($query->siteId)) {
+                $criteria['preferSites'] = [$query->siteId];
+            }
         }
 
         $query->andWith([$this->handle, $criteria]);
@@ -906,7 +909,9 @@ JS;
 
         $selectionCriteria = $this->inputSelectionCriteria();
         $selectionCriteria['enabledForSite'] = null;
-        $selectionCriteria['siteId'] = $this->inputSiteId($element);
+        if (($siteId = $this->inputSiteId($element)) !== null) {
+            $selectionCriteria['siteId'] = $siteId;
+        }
 
         $disabledElementIds = [];
         if ($element) {
