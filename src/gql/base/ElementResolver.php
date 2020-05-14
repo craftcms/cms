@@ -7,7 +7,9 @@
 
 namespace craft\gql\base;
 
+use Craft;
 use craft\base\ElementInterface;
+use craft\base\GqlInlineFragmentFieldInterface;
 use craft\elements\db\ElementQuery;
 use craft\gql\ElementQueryConditionBuilder;
 use craft\helpers\Gql as GqlHelper;
@@ -93,11 +95,25 @@ abstract class ElementResolver extends Resolver
             return $query;
         }
 
-        /** @var ElementQuery $query */
+        $parentField = null;
 
-        $conditions = (new ElementQueryConditionBuilder($resolveInfo))->extractQueryConditions();
+        // This will happen if something is either dynamically added or is inside an block element that didn't support eager-loading
+        // and broke the eager-loading chain. In this case Craft has to provide the relevant context so the condition builder knows where it's at.
+        if ($source instanceof ElementInterface) {
+            $context = $source->getFieldContext();
+
+            if ($context !== 'global') {
+                $field = Craft::$app->getFields()->getFieldByHandle($fieldName, $context);
+                if ($field instanceof GqlInlineFragmentFieldInterface) {
+                    $parentField = $field;
+                }
+            }
+        }
+
+        $conditions = (new ElementQueryConditionBuilder($resolveInfo))->extractQueryConditions($parentField);
 
         // Todo make element resolver classes non-static in Craft 4.0
+        /** @var ElementQuery $query */
         foreach ($conditions as $method => $parameters) {
             if (method_exists($query, $method)) {
                 $query = $query->{$method}($parameters);
