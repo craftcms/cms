@@ -9,7 +9,7 @@ namespace craft\gql;
 
 use Craft;
 use craft\base\EagerLoadingFieldInterface;
-use craft\base\Field;
+use craft\base\FieldInterface;
 use craft\base\GqlInlineFragmentFieldInterface;
 use craft\fields\Assets as AssetField;
 use craft\fields\BaseRelationField;
@@ -61,10 +61,10 @@ class ElementQueryConditionBuilder
      * Extract the query conditions based on the resolve information passed in the constructor.
      * Returns an array of [methodName => parameters] to be called on the element query.
      *
-     * @param Field $startingParentField the starting parent field for the extraction, if any
+     * @param FieldInterface $startingParentField the starting parent field for the extraction, if any
      * @return array
      */
-    public function extractQueryConditions(Field $startingParentField = null)
+    public function extractQueryConditions(FieldInterface $startingParentField = null)
     {
         $startingNode = $this->_resolveInfo->fieldNodes[0];
         $extractedConditions = [];
@@ -221,10 +221,10 @@ class ElementQueryConditionBuilder
      * @param Node $parentNode the parent node being traversed.
      * @param string $prefix the current eager loading prefix to use
      * @param string $context the context in which to search fields
-     * @param Field $parentField the current parent field, that we are in.
+     * @param FieldInterface $parentField the current parent field, that we are in.
      * @return array
      */
-    private function _traverseAndExtractRules(Node $parentNode, $prefix = '', $context = 'global', Field $parentField = null): array
+    private function _traverseAndExtractRules(Node $parentNode, $prefix = '', $context = 'global', FieldInterface $parentField = null): array
     {
         $eagerLoadNodes = [];
         $subNodes = $parentNode->selectionSet->selections ?? [];
