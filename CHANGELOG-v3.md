@@ -7,7 +7,7 @@
 
 ### Fixed
 - Fixed a bug where the site selector wasn’t working when adding related elements to a relational field.
-- Fixed an error that colud occur when adding related elements to a relational field.
+- Fixed an error that could occur when adding related elements to a relational field.
 
 ## 3.4.19 - 2020-05-12
 
