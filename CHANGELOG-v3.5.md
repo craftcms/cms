@@ -176,6 +176,7 @@
 - `craft\helpers\ElementHelper::supportedSitesForElement()` now has a `$withUnpropagatedSites` argument.
 - `craft\helpers\StringHelper::randomString()` no longer includes capital letters or numbers by default.
 - `craft\i18n\Formatter::asTimestamp()` now has a `$withPreposition` argument.
+- `craft\services\Fields::getFieldByHandle()` now has an optional `$context` argument.
 - `craft\services\Gql` now fires a `registerGqlMutations` event that allows for plugins to register their own GraphQL mutations.
 - `craft\services\Sites::getAllSiteIds()`, `getSiteByUid()`, `getAllSites()`, `getSitesByGroupId()`, `getSiteById()`, and `getSiteByHandle()` now have `$withDisabled` arguments.
 - Improved `data`/`aria` tag normalization via `craft\helpers\Html::parseTagAttributes()` and `normalizeTagAttributes()`.
