@@ -5,6 +5,9 @@
 ### Changed
 - `craft\web\View::renderObjectTemplate()` now supports wrapping function calls in single curly brace delimiters (e.g. `{clone(variable)}`).
 
+### Fixed
+- Fixed a bug where custom field names weren’t getting translated in element index sort menus. ([#6073](https://github.com/craftcms/cms/issues/6073))
+
 ## 3.4.19.1 - 2020-05-13
 
 ### Changed
