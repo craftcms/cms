@@ -284,7 +284,7 @@ class m160804_110002_userphotos_to_assets extends Migration
                     $elementI18nData = [
                         'elementId' => $elementId,
                         'locale' => $locale,
-                        'slug' => ElementHelper::createSlug($user['photo']),
+                        'slug' => ElementHelper::generateSlug($user['photo']),
                         'uri' => null,
                         'enabled' => 1
                     ];

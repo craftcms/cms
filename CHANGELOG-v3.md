@@ -11,6 +11,8 @@
 - Added `craft\base\Field::searchKeywords()`.
 - Added `craft\events\DefineAttributeKeywordsEvent`.
 - Added `craft\events\DefineFieldKeywordsEvent`.
+- Added `craft\helpers\ElementHelper::generateSlug()`.
+- Added `craft\helpers\ElementHelper::normalizeSlug()`.
 - Added `craft\services\AssetTransforms::extendTransform()`. ([#5853](https://github.com/craftcms/cms/issues/5853))
 - Added `craft\services\Images::getSupportsWebP()`. ([#5853](https://github.com/craftcms/cms/issues/5853))
 - Craft will now regenerate missing transforms on local Volumes. ([#5956](https://github.com/craftcms/cms/issues/5956))
@@ -21,6 +23,9 @@
 - `craft\base\Element::getRoute()` now returns the route defined by `craft\events\SetElementRouteEvent::$route` even if it’s null, as long as `SetElementRouteEvent::$handled` is set to `true`.
 - `craft\elements\Asset::getUrl()` now has a `$transformOverrideParameters` parameter. ([#5853](https://github.com/craftcms/cms/issues/5853))
 - `craft\services\Fields::getFieldByHandle()` now has an optional `$context` argument.
+
+### Deprecated
+- Deprecated `craft\helpers\ElementHelper::createSlug()`. `normalizeSlug()` should be used instead.
 
 ### Fixed
 - Fixed a potential CORS issue when previewing a live entry, if its URL was on a different domain than the control panel.

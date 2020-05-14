@@ -48,33 +48,74 @@ class ElementHelper
     }
 
     /**
+     * Generates a new slug based on a given string.
+     *
+     * This is different from [[normalizeSlug()]] in two ways:
+     *
+     * - Periods and underscores will be converted to dashes, whereas [[normalizeSlug()]] will leave those in-tact.
+     * - The string may be converted to ASCII.
+     *
+     * @param string $str The string
+     * @param bool|null $ascii Whether the slug should be converted to ASCII. If null, it will depend on
+     * the <config:limitAutoSlugsToAscii> config setting value.
+     * @param string|null $language The language to pull ASCII character mappings for, if needed
+     * @return string
+     * @since 3.5.0
+     */
+    public static function generateSlug(string $str, bool $ascii = null, string $language = null): string
+    {
+        // Replace periods, underscores, and hyphens with spaces so they get separated with the slugWordSeparator
+        // to mimic the default JavaScript-based slug generation.
+        $slug = str_replace(['.', '_', '-'], ' ', $str);
+
+        if ($ascii ?? Craft::$app->getConfig()->getGeneral()->limitAutoSlugsToAscii) {
+            $slug = StringHelper::toAscii($slug, $language);
+        }
+
+        return static::normalizeSlug($slug);
+    }
+
+    /**
      * Creates a slug based on a given string.
      *
      * @param string $str
      * @return string
+     * @deprecated in 3.5.0. Use [[normalizeSlug()]] instead.
      */
     public static function createSlug(string $str): string
     {
+        return static::normalizeSlug($str);
+    }
+
+    /**
+     * Normalizes a slug.
+     *
+     * @param string $slug
+     * @return string
+     * @since 3.5.0
+     */
+    public static function normalizeSlug(string $slug): string
+    {
         // Special case for the homepage
-        if ($str === Element::HOMEPAGE_URI) {
-            return $str;
+        if ($slug === Element::HOMEPAGE_URI) {
+            return $slug;
         }
 
         // Remove HTML tags
-        $str = StringHelper::stripHtml($str);
+        $slug = StringHelper::stripHtml($slug);
 
         // Remove inner-word punctuation
-        $str = preg_replace('/[\'"‘’“”\[\]\(\)\{\}:]/u', '', $str);
+        $slug = preg_replace('/[\'"‘’“”\[\]\(\)\{\}:]/u', '', $slug);
 
         // Make it lowercase
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         if (!$generalConfig->allowUppercaseInSlug) {
-            $str = mb_strtolower($str);
+            $slug = mb_strtolower($slug);
         }
 
         // Get the "words". Split on anything that is not alphanumeric or allowed punctuation
         // Reference: http://www.regular-expressions.info/unicode.html
-        $words = ArrayHelper::filterEmptyStringsFromArray(preg_split('/[^\p{L}\p{N}\p{M}\._\-]+/u', $str));
+        $words = ArrayHelper::filterEmptyStringsFromArray(preg_split('/[^\p{L}\p{N}\p{M}\._\-]+/u', $slug));
 
         return implode($generalConfig->slugWordSeparator, $words);
     }

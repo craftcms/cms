@@ -96,6 +96,8 @@
 - Added `craft\helpers\Db::replace()`.
 - Added `craft\helpers\Db::update()`.
 - Added `craft\helpers\Db::upsert()`.
+- Added `craft\helpers\ElementHelper::generateSlug()`.
+- Added `craft\helpers\ElementHelper::normalizeSlug()`.
 - Added `craft\helpers\Gql::canMutateAssets()`.
 - Added `craft\helpers\Gql::canMutateCategories()`.
 - Added `craft\helpers\Gql::canMutateEntries()`.
@@ -190,6 +192,7 @@
 - Deprecated the `|filterByValue` Twig filter. `|where` should be used instead.
 - Deprecated the `|ucwords` Twig filter. `|title` should be used instead.
 - Deprecated `craft\gql\base\Resolver::extractEagerLoadCondition()`. `ElementQueryConditionBuilder` should be used instead.
+- Deprecated `craft\helpers\ElementHelper::createSlug()`. `normalizeSlug()` should be used instead.
 - Deprecated `craft\helpers\Stringy`.
 - Deprecated `craft\web\View::formatInputId()`. `craft\helpers\Html::namespaceHtml()` should be used instead.
 - Deprecated `craft\events\RegisterGqlPermissionsEvent`. `craft\events\RegisterGqlSchemaComponentsEvent` should be used instead.
