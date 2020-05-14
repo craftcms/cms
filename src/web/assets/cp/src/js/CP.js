@@ -874,6 +874,32 @@ Craft.CP = Garnish.Base.extend(
                     delete this.jobProgressIcon;
                 }
             }
+        },
+
+        /**
+         * Returns the active site for the control panel
+         *
+         * @return {number}
+         */
+        getSiteId: function() {
+            // If the old BaseElementIndex.siteId value is in localStorage, go aheand and remove & return that
+            let siteId = Craft.getLocalStorage('BaseElementIndex.siteId');
+            if (typeof siteId !== 'undefined') {
+                Craft.removeLocalStorage('BaseElementIndex.siteId');
+                this.setSiteId(siteId);
+                return siteId;
+            }
+            return Craft.getCookie('siteId');
+        },
+
+        /**
+         * Sets the active site for the control panel
+         * @param {number} siteId
+         */
+        setSiteId: function(siteId) {
+            Craft.setCookie('siteId', siteId, {
+                maxAge: 31536000 // 1 year
+            });
         }
     },
     {

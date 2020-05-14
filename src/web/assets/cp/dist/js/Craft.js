@@ -1,16 +1,20 @@
 "use strict";
 
-function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
 
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 
-function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 
-function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
+function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter); }
+
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-/*!   - 2020-05-12 */
+/*!   - 2020-05-14 */
 (function ($) {
   /** global: Craft */
 
@@ -1656,6 +1660,72 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     },
 
     /**
+     * Removes a value from localStorage.
+     * @param key
+     */
+    removeLocalStorage: function removeLocalStorage(key) {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.removeItem("Craft-".concat(Craft.systemUid, ".").concat(key));
+      }
+    },
+
+    /**
+     * Returns a cookie value, if it exists, otherwise returns `false`
+     * @return {(string|boolean)}
+     */
+    getCookie: function getCookie(name) {
+      // Adapted from https://developer.mozilla.org/en-US/docs/Web/API/Document/cookie
+      return document.cookie.replace(new RegExp("(?:(?:^|.*;\\s*)Craft-".concat(Craft.systemUid, ":").concat(name, "\\s*\\=\\s*([^;]*).*$)|^.*$")), "$1");
+    },
+
+    /**
+     * Sets a cookie value.
+     * @param {string} name
+     * @param {string} value
+     * @param {Object} [options]
+     * @param {string} [options.path] The cookie path.
+     * @param {string} [options.domain] The cookie domain. Defaults to the `defaultCookieDomain` config setting.
+     * @param {number} [options.maxAge] The max age of the cookie (in seconds)
+     * @param {Date} [options.expires] The expiry date of the cookie. Defaults to none (session-based cookie).
+     * @param {boolean} [options.secure] Whether this is a secure cookie. Defaults to the `useSecureCookies`
+     * config setting.
+     * @param {string} [options.sameSite] The SameSite value (`lax` or `strict`). Defaults to the
+     * `sameSiteCookieValue` config setting.
+     */
+    setCookie: function setCookie(name, value, options) {
+      options = $.extend({}, this.defaultCookieOptions, options);
+      var cookie = "Craft-".concat(Craft.systemUid, ":").concat(name, "=").concat(encodeURIComponent(value));
+
+      if (options.path) {
+        cookie += ";path=".concat(options.path);
+      }
+
+      if (options.domain) {
+        cookie += ";domain=".concat(options.domain);
+      }
+
+      if (options.maxAge) {
+        cookie += ";max-age-in-seconds=".concat(options.maxAge);
+      } else if (options.expires) {
+        cookie += ";expires=".concat(options.expires.toUTCString());
+      }
+
+      if (options.secure) {
+        cookie += ';secure';
+      }
+
+      document.cookie = cookie;
+    },
+
+    /**
+     * Removes a cookie
+     * @param {string} name
+     */
+    removeCookie: function removeCookie(name) {
+      this.setCookie(name, '', new Date('1970-01-01T00:00:00'));
+    },
+
+    /**
      * Returns element information from it's HTML.
      *
      * @param element
@@ -2428,7 +2498,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
         if (this.siteId) {
           // Should we be using a different default site?
-          var defaultSiteId = this.settings.defaultSiteId || Craft.getLocalStorage('BaseElementIndex.siteId');
+          var defaultSiteId = this.settings.defaultSiteId || Craft.cp.getSiteId();
 
           if (defaultSiteId && defaultSiteId != this.siteId) {
             // Is that one available here?
@@ -3581,7 +3651,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
       if (this.initialized) {
         // Remember this site for later
-        Craft.setLocalStorage('BaseElementIndex.siteId', siteId); // Update the elements
+        Craft.cp.setSiteId(siteId); // Update the elements
 
         this.updateElements();
       }
@@ -12023,6 +12093,35 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           delete this.jobProgressIcon;
         }
       }
+    },
+
+    /**
+     * Returns the active site for the control panel
+     *
+     * @return {number}
+     */
+    getSiteId: function getSiteId() {
+      // If the old BaseElementIndex.siteId value is in localStorage, go aheand and remove & return that
+      var siteId = Craft.getLocalStorage('BaseElementIndex.siteId');
+
+      if (typeof siteId !== 'undefined') {
+        Craft.removeLocalStorage('BaseElementIndex.siteId');
+        this.setSiteId(siteId);
+        return siteId;
+      }
+
+      return Craft.getCookie('siteId');
+    },
+
+    /**
+     * Sets the active site for the control panel
+     * @param {number} siteId
+     */
+    setSiteId: function setSiteId(siteId) {
+      Craft.setCookie('siteId', siteId, {
+        maxAge: 31536000 // 1 year
+
+      });
     }
   }, {
     //maxWidth: 1051, //1024,

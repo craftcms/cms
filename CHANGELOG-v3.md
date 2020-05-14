@@ -15,8 +15,14 @@
 - Added `craft\helpers\ElementHelper::normalizeSlug()`.
 - Added `craft\services\AssetTransforms::extendTransform()`. ([#5853](https://github.com/craftcms/cms/issues/5853))
 - Added `craft\services\Images::getSupportsWebP()`. ([#5853](https://github.com/craftcms/cms/issues/5853))
+- Added `craft\web\Request::getRawCookies()`.
+- Added `craft\web\Request::loadRawCookies()`.
+- Added `craft\web\Response::getRawCookies()`.
+- Added the `Craft.removeLocalStorage()`, `getCookie()`, `setCookie()`, and `removeCookie()` JavaScript methods.
+- Added the `Craft.cp.getSiteId()` and `setSiteId()` JavaScript methods.
 
 ### Changed
+- Craft now remembers the selected site across global sets and element indexes. ([#2779](https://github.com/craftcms/cms/issues/2779))
 - Craft will now regenerate missing transforms on local volumes. ([#5956](https://github.com/craftcms/cms/issues/5956))
 - Element queries’ `siteId` params can now be set to an array that begins with `'not'` to exclude specific site IDs.
 - It’s now possible to pass `type`, `status`, `title`, `slug`, `postDate`, `expiryDate`, and custom field query string params to the new entry URL, to set the default entry values (e.g. `/admin/entries/locations/new?phone=555-0123`).
