@@ -410,7 +410,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     public function getSortOption(): array
     {
         return [
-            'label' => $this->name,
+            'label' => Craft::t('site', $this->name),
             'orderBy' => ($this->columnPrefix ?: 'field_') . $this->handle . ', elements.id',
             'attribute' => 'field:' . $this->id,
         ];
