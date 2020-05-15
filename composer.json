@@ -57,14 +57,15 @@
     "laminas/laminas-feed": "^2.12.0"
   },
   "require-dev": {
-    "codeception/codeception": "^3.1.0",
-    "codeception/mockery-module": "^0.3",
-    "codeception/phpunit-wrapper": "^7.7",
-    "codeception/specify": "^0.4",
-    "codeception/verify": "^1.0",
+    "codeception/codeception": "^4.0.0",
     "vlucas/phpdotenv": "^3.0",
     "league/factory-muffin": "^3.0",
-    "fzaninotto/faker": "^1.8"
+    "fzaninotto/faker": "^1.8",
+    "codeception/module-phpbrowser": "^1.0.0",
+    "codeception/module-asserts": "^1.0.0",
+    "codeception/module-rest": "^1.0.0",
+    "codeception/module-datafactory": "^1.0.0",
+    "codeception/module-yii2": "^1.0.0"
   },
   "provide": {
     "bower-asset/inputmask": "~3.2.2 | ~3.3.5",

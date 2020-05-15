@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Changed
+- Updated Codeception to 4.1.4.
+
 ## 3.4.19.1 - 2020-05-13
 
 ### Changed
