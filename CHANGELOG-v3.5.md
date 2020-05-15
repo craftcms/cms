@@ -148,6 +148,7 @@
 - Activation emails are now sent automatically on public registration if the `deferPublicRegistrationPassword` config setting is enabled, even if email verification isn’t required. ([#5836](https://github.com/craftcms/cms/issues/5836))
 - Large asset thumbnails now use the same aspect ratio as the source image. ([#5515](https://github.com/craftcms/cms/issues/5515))
 - Craft now remembers the selected site across global sets and element indexes. ([#2779](https://github.com/craftcms/cms/issues/2779))
+- The default account activation and password reset emails now reference the system name rather than the current site name. ([#6089](https://github.com/craftcms/cms/pull/6089))
 - Craft will now regenerate missing transforms on local volumes. ([#5956](https://github.com/craftcms/cms/issues/5956))
 - Preview frames now maintain their scroll position across refreshes, even for cross-origin preview targets.
 - Preview targets that aren’t directly rendered by Craft must now include `lib/iframe-resizer-cw/iframeResizer.contentWindow.js` in order to maintain scroll position across refreshes.

@@ -23,6 +23,7 @@
 
 ### Changed
 - Craft now remembers the selected site across global sets and element indexes. ([#2779](https://github.com/craftcms/cms/issues/2779))
+- The default account activation and password reset emails now reference the system name rather than the current site name. ([#6089](https://github.com/craftcms/cms/pull/6089))
 - Craft will now regenerate missing transforms on local volumes. ([#5956](https://github.com/craftcms/cms/issues/5956))
 - Element queries’ `siteId` params can now be set to an array that begins with `'not'` to exclude specific site IDs.
 - It’s now possible to pass `type`, `status`, `title`, `slug`, `postDate`, `expiryDate`, and custom field query string params to the new entry URL, to set the default entry values (e.g. `/admin/entries/locations/new?phone=555-0123`).
