@@ -680,9 +680,9 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the same element in other locales.
      *
-     * @return ElementQueryInterface[]
+     * @return ElementQueryInterface[]|ElementInterface[]
      */
-    public function getLocalized(): ElementQueryInterface;
+    public function getLocalized();
 
     /**
      * Returns the next element relative to this one, from a given set of criteria.

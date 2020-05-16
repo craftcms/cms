@@ -939,6 +939,34 @@ abstract class Element extends Component implements ElementInterface
                     'map' => $map
                 ];
 
+            case 'localized':
+                $sourceSiteId = $sourceElements[0]->siteId;
+                $otherSiteIds = [];
+                foreach (Craft::$app->getSites()->getAllSites() as $site) {
+                    if ($site->id != $sourceSiteId) {
+                        $otherSiteIds[] = $site->id;
+                    }
+                }
+
+                // Map the source elements to themselves
+                $map = [];
+                if (!empty($otherSiteIds)) {
+                    foreach ($sourceElements as $element) {
+                        $map[] = [
+                            'source' => $element->id,
+                            'target' => $element->id,
+                        ];
+                    }
+                }
+
+                return [
+                    'elementType' => static::class,
+                    'map' => $map,
+                    'criteria' => [
+                        'siteId' => $otherSiteIds,
+                    ]
+                ];
+
             case 'currentRevision':
                 // Get the source element IDs
                 $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id');
@@ -2008,8 +2036,13 @@ abstract class Element extends Component implements ElementInterface
      * @inheritdoc
      * @since 3.5.0
      */
-    public function getLocalized(): ElementQueryInterface
+    public function getLocalized()
     {
+        // Eager-loaded?
+        if (($localized = $this->getEagerLoadedElements('localized')) !== null) {
+            return $localized;
+        }
+
         return static::find()
             ->id($this->id ?: false)
             ->structureId($this->structureId)
