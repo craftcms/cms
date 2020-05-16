@@ -295,6 +295,7 @@ JS;
             'canAccessQueueManager' => $userSession->checkPermission('utility:queue-manager'),
             'cpTrigger' => $generalConfig->cpTrigger,
             'datepickerOptions' => $this->_datepickerOptions($locale, $currentUser, $generalConfig),
+            'defaultCookieOptions' => $this->_defaultCookieOptions(),
             'defaultIndexCriteria' => ['enabledForSite' => null],
             'deltaNames' => $view->getDeltaNames(),
             'editableCategoryGroups' => $upToDate ? $this->_editableCategoryGroups() : [],
@@ -361,6 +362,17 @@ JS;
             'monthNamesShort' => $locale->getMonthNames(Locale::LENGTH_ABBREVIATED),
             'nextText' => Craft::t('app', 'Next'),
             'prevText' => Craft::t('app', 'Prev'),
+        ];
+    }
+
+    private function _defaultCookieOptions(): array
+    {
+        $config = Craft::cookieConfig();
+        return [
+            'path' => $config['path'] ?? '/',
+            'domain' => $config['domain'] ?? null,
+            'secure' => $config['secure'] ?? false,
+            'sameSite' => $config['sameSite'] ?? 'strict',
         ];
     }
 

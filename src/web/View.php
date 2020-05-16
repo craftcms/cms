@@ -680,8 +680,23 @@ class View extends \yii\web\View
      */
     public function normalizeObjectTemplate(string $template): string
     {
-        // Tokenize objects (call preg_replace_callback() multiple times in case there are nested objects)
         $tokens = [];
+
+        // Tokenize {% verbatim %} tags
+        $template = preg_replace_callback('/\{%-?\s*verbatim\s*-?%\}.*?{%-?\s*endverbatim\s*-?%\}/s', function(array $matches) use (&$tokens) {
+            $token = 'tok_' . StringHelper::randomString(10);
+            $tokens[$token] = $matches[0];
+            return $token;
+        }, $template);
+
+        // Tokenize inline code and code blocks
+        $template = preg_replace_callback('/(?<!`)(`|`{3,})(?!`).*?(?<!`)\1(?!`)/s', function(array $matches) use (&$tokens) {
+            $token = 'tok_' . StringHelper::randomString(10);
+            $tokens[$token] = '{% verbatim %}' . $matches[0] . '{% endverbatim %}';
+            return $token;
+        }, $template);
+
+        // Tokenize objects (call preg_replace_callback() multiple times in case there are nested objects)
         while (true) {
             $template = preg_replace_callback('/\{\s*([\'"]?)\w+\1\s*:[^\{]+?\}/', function(array $matches) use (&$tokens) {
                 $token = 'tok_' . StringHelper::randomString(10);
@@ -694,7 +709,15 @@ class View extends \yii\web\View
         }
 
         // Swap out the remaining {xyz} tags with {{object.xyz}}
-        $template = preg_replace('/(?<!\{)\{\s*(\w+)([^\{]*?)\}/', '{{ (_variables.$1 ?? object.$1)$2|raw }}', $template);
+        $template = preg_replace_callback('/(?<!\{)\{\s*(\w+)([^\{]*?)\}/', function(array $match) {
+            // Is this a function call like `clone()`?
+            if (!empty($match[2]) && $match[2][0] === '(') {
+                $replace = $match[1] . $match[2];
+            } else {
+                $replace = "(_variables.$match[1] ?? object.$match[1])$match[2]";
+            }
+            return "{{ $replace|raw }}";
+        }, $template);
 
         // Bring the objects back
         foreach (array_reverse($tokens) as $token => $value) {

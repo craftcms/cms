@@ -628,7 +628,7 @@ class Fields extends Component
     }
 
     /**
-     * Returns a field by its handle.
+     * Returns a field by its handle and optional context.
      *
      * ---
      *
@@ -641,11 +641,13 @@ class Fields extends Component
      * ```
      *
      * @param string $handle The field’s handle
+     * @param string|string[]|false|null $context The field context(s) to fetch fields from. Defaults to {@link ContentService::$fieldContext}.
+     * Set to `false` to get all fields regardless of context.
      * @return FieldInterface|null The field, or null if it doesn’t exist
      */
-    public function getFieldByHandle(string $handle)
+    public function getFieldByHandle(string $handle, $context = null)
     {
-        return ArrayHelper::firstWhere($this->getAllFields(), 'handle', $handle, true);
+        return ArrayHelper::firstWhere($this->getAllFields($context), 'handle', $handle, true);
     }
 
     /**

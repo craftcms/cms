@@ -140,14 +140,14 @@ class GqlToken extends Model
     }
 
     /**
-     * Returns whether the token is enabled and hasn't expired.
+     * Returns whether the token is enabled, hasn't expired, and has a schema assigned to it.
      *
      * @return bool
      * @since 3.4.13
      */
     public function getIsValid(): bool
     {
-        return $this->enabled && !$this->getIsExpired();
+        return $this->enabled && !$this->getIsExpired() && $this->getSchema() !== null;
     }
 
     /**

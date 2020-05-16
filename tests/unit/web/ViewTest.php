@@ -395,7 +395,14 @@ class ViewTest extends TestCase
             ['{{ (_variables.foo ?? object.foo).fn({bar: baz})|raw }}', '{foo.fn({bar: baz})}'],
             ['{{ (_variables.foo ?? object.foo).fn({bar: {baz: 1}})|raw }}', '{foo.fn({bar: {baz: 1}})}'],
             ['{{ (_variables.foo ?? object.foo).fn(\'bar:baz\')|raw }}', '{foo.fn(\'bar:baz\')}'],
-            ['{{ (_variables.foo ?? object.foo).fn({\'bar\': baz})|raw }}', '{foo.fn({\'bar\': baz})}']
+            ['{{ (_variables.foo ?? object.foo).fn({\'bar\': baz})|raw }}', '{foo.fn({\'bar\': baz})}'],
+            ['{% verbatim %}`{foo}`{% endverbatim %}', '`{foo}`'],
+            ["{% verbatim %}`{foo}\n{bar}`{% endverbatim %}", "`{foo}\n{bar}`"],
+            ["{% verbatim %}```\n{% exit %}\n```{% endverbatim %}", "```\n{% exit %}\n```"],
+            ["{% verbatim %}````\n{% exit %}\n````{% endverbatim %}", "````\n{% exit %}\n````"],
+            ["{% verbatim %}\n{foo}\n{% endverbatim %}", "{% verbatim %}\n{foo}\n{% endverbatim %}"],
+            ["{%- verbatim -%}\n{foo}\n{%- endverbatim -%}", "{%- verbatim -%}\n{foo}\n{%- endverbatim -%}"],
+            ['{{ clone(productCategory).level(1).one().slug|raw }}', '{clone(productCategory).level(1).one().slug}'],
         ];
     }
 

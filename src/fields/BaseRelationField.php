@@ -502,6 +502,11 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
 
         if (!$this->targetSiteId) {
             $criteria['siteId'] = '*';
+            $criteria['unique'] = true;
+            // Just to be safe...
+            if (is_numeric($query->siteId)) {
+                $criteria['preferSites'] = [$query->siteId];
+            }
         }
 
         $query->andWith([$this->handle, $criteria]);
@@ -622,31 +627,27 @@ JS;
      */
     public function getEagerLoadingMap(array $sourceElements)
     {
+        $sourceSiteId = $sourceElements[0]->siteId;
+
         // Get the source element IDs
-        $sourceElementIdsBySiteId = [];
-
-        foreach ($sourceElements as $element) {
-            $sourceElementIdsBySiteId[$element->siteId][] = $element->id;
-        }
-
-        $condition = [
-            'and',
-            ['fieldId' => $this->id],
-        ];
-
-        foreach ($sourceElementIdsBySiteId as $siteId => $elementIds) {
-            $condition[] = [
-                'and',
-                ['sourceId' => $elementIds],
-                ['or', ['sourceSiteId' => $siteId], ['sourceSiteId' => null]],
-            ];
-        }
+        $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id', false);
 
         // Return any relation data on these elements, defined with this field
         $map = (new Query())
             ->select(['sourceId as source', 'targetId as target'])
             ->from([DbTable::RELATIONS])
-            ->where($condition)
+            ->where([
+                'and',
+                [
+                    'fieldId' => $this->id,
+                    'sourceId' => $sourceElementIds,
+                ],
+                [
+                    'or',
+                    ['sourceSiteId' => $sourceSiteId],
+                    ['sourceSiteId' => null]
+                ]
+            ])
             ->orderBy(['sortOrder' => SORT_ASC])
             ->all();
 
@@ -904,8 +905,8 @@ JS;
 
         $selectionCriteria = $this->inputSelectionCriteria();
         $selectionCriteria['enabledForSite'] = null;
-        if ($this->targetSiteId) {
-            $selectionCriteria['siteId'] = $this->targetSiteId($element);
+        if (($siteId = $this->inputSiteId($element)) !== null) {
+            $selectionCriteria['siteId'] = $siteId;
         }
 
         $disabledElementIds = [];
@@ -978,6 +979,21 @@ JS;
         $event = new ElementCriteriaEvent();
         $this->trigger(self::EVENT_DEFINE_SELECTION_CRITERIA, $event);
         return $event->criteria;
+    }
+
+    /**
+     * Returns the site ID that the input should select elements from.
+     *
+     * @param ElementInterface|null $element
+     * @return int|null
+     * @since 3.4.19
+     */
+    protected function inputSiteId(ElementInterface $element = null)
+    {
+        if ($this->targetSiteId) {
+            return $this->targetSiteId($element);
+        }
+        return null;
     }
 
     /**

@@ -345,6 +345,7 @@ Craft.Preview = Garnish.Base.extend(
 
                 // Keep the iframe height consistent with its content
                 iFrameResize({
+                    checkOrigin: false,
                     // Allow iframe scrolling until we've successfully initialized the resizer
                     scrolling: true,
                     onInit: iframe => {

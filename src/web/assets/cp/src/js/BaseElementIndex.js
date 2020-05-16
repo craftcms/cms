@@ -175,7 +175,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
                 if (this.siteId) {
                     // Should we be using a different default site?
-                    var defaultSiteId = this.settings.defaultSiteId || Craft.getLocalStorage('BaseElementIndex.siteId');
+                    var defaultSiteId = this.settings.defaultSiteId || Craft.cp.getSiteId();
 
                     if (defaultSiteId && defaultSiteId != this.siteId) {
                         // Is that one available here?
@@ -1422,7 +1422,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             if (this.initialized) {
                 // Remember this site for later
-                Craft.setLocalStorage('BaseElementIndex.siteId', siteId);
+                Craft.cp.setSiteId(siteId);
 
                 // Update the elements
                 this.updateElements();

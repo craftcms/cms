@@ -1021,11 +1021,14 @@ class Entry extends Element
 
         // Cover the basics
         if (
-            $section->type === Section::TYPE_SINGLE ||
             !$userSession->checkPermission("editEntries:$section->uid") ||
             ($this->enabled && !$userSession->checkPermission("publishEntries:$section->uid"))
         ) {
             return false;
+        }
+
+        if ($section->type === Section::TYPE_SINGLE) {
+            return true;
         }
 
         // Is this a new entry?
@@ -1221,7 +1224,10 @@ EOD;
             // Set Craft to the entry's site's language, in case the title format has any static translations
             $language = Craft::$app->language;
             Craft::$app->language = $this->getSite()->language;
-            $this->title = Craft::$app->getView()->renderObjectTemplate($entryType->titleFormat, $this);
+            $title = Craft::$app->getView()->renderObjectTemplate($entryType->titleFormat, $this);
+            if ($title !== '') {
+                $this->title = $title;
+            }
             Craft::$app->language = $language;
         }
     }

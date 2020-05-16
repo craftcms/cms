@@ -10,7 +10,9 @@ namespace craft\controllers;
 use Craft;
 use craft\base\Element;
 use craft\elements\GlobalSet;
+use craft\helpers\UrlHelper;
 use craft\web\Controller;
+use yii\web\Cookie;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -129,29 +131,51 @@ class GlobalsController extends Controller
                 throw new ForbiddenHttpException('User not permitted to edit content in any sites');
             }
 
-            // Editing a specific site?
-            if ($siteHandle !== null) {
-                $site = Craft::$app->getSites()->getSiteByHandle($siteHandle);
+            $siteCookieName = 'Craft-' . Craft::$app->getSystemUid() . ':siteId';
 
-                if (!$site) {
-                    throw new NotFoundHttpException('Invalid site handle: ' . $siteHandle);
-                }
-
-                // Make sure the user has permission to edit that site
-                if (!in_array($site->id, $editableSiteIds, false)) {
-                    throw new ForbiddenHttpException('User not permitted to edit content in this site');
-                }
-            } else {
-                // Are they allowed to edit the current site?
-                /** @noinspection PhpUnhandledExceptionInspection */
-                $currentSite = Craft::$app->getSites()->getCurrentSite();
-                if (in_array($currentSite->id, $editableSiteIds, false)) {
-                    $site = $currentSite;
+            // Make sure a specific site was requested
+            if ($siteHandle === null) {
+                // See if they have a cookie for it
+                $siteId = Craft::$app->getRequest()->getRawCookies()->getValue($siteCookieName);
+                if ($siteId && in_array($siteId, $editableSiteIds, false)) {
+                    $site = Craft::$app->getSites()->getSiteById($siteId);
                 } else {
-                    // Just use the first site they are allowed to edit
-                    $site = Craft::$app->getSites()->getSiteById($editableSiteIds[0]);
+                    // Are they allowed to edit the current site?
+                    /** @noinspection PhpUnhandledExceptionInspection */
+                    $currentSite = Craft::$app->getSites()->getCurrentSite();
+                    if (in_array($currentSite->id, $editableSiteIds, false)) {
+                        $site = $currentSite;
+                    } else {
+                        // Just use the first site they are allowed to edit
+                        $site = Craft::$app->getSites()->getSiteById($editableSiteIds[0]);
+                    }
                 }
+
+                // Redirect to the site-specific URL
+                return $this->redirect(UrlHelper::cpUrl("globals/$site->handle/$globalSetHandle"));
             }
+
+            $site = Craft::$app->getSites()->getSiteByHandle($siteHandle);
+
+            if (!$site) {
+                throw new NotFoundHttpException('Invalid site handle: ' . $siteHandle);
+            }
+
+            // Make sure the user has permission to edit that site
+            if (!in_array($site->id, $editableSiteIds, false)) {
+                throw new ForbiddenHttpException('User not permitted to edit content in this site');
+            }
+
+            // Set the siteId cookie
+            /** @var Cookie $cookie */
+            $cookie = Craft::createObject(Craft::cookieConfig([
+                'class' => Cookie::class,
+                'name' => $siteCookieName,
+                'value' => $site->id,
+                'httpOnly' => false,
+                'expire' => (new \DateTime('+1 year'))->getTimestamp(),
+            ]));
+            Craft::$app->getResponse()->getRawCookies()->add($cookie);
         } else {
             /** @noinspection PhpUnhandledExceptionInspection */
             $site = Craft::$app->getSites()->getPrimarySite();

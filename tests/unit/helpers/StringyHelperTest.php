@@ -17,7 +17,7 @@ use UnitTester;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.4.18
  */
-class StringHelperTest extends Unit
+class StringyHelperTest extends Unit
 {
     /**
      * @var UnitTester

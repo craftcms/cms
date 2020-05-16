@@ -410,6 +410,11 @@ class UserPermissions extends Component
         /** @var UserGroup $userGroup */
         $userGroup = Craft::$app->getUserGroups()->getGroupByUid($uid);
 
+        // No group - no permissions to change.
+        if (!$userGroup) {
+            return;
+        }
+
         // Delete any existing group permissions
         Db::delete(Table::USERPERMISSIONS_USERGROUPS, [
             'groupId' => $userGroup->id,

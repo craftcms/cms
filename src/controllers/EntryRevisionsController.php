@@ -90,18 +90,33 @@ class EntryRevisionsController extends BaseEntriesController
         $entry = new Entry();
         $entry->siteId = $site->id;
         $entry->sectionId = $section->id;
-        $entry->typeId = $request->getQueryParam('typeId', $section->getEntryTypes()[0]->id);
         $entry->authorId = $request->getQueryParam('authorId', Craft::$app->getUser()->getId());
-        $entry->slug = ElementHelper::tempSlug();
 
-        // Set the default status based on the section's settings
-        /** @var Section_SiteSettings $siteSettings */
-        $siteSettings = ArrayHelper::firstWhere($section->getSiteSettings(), 'siteId', $entry->siteId);
+        // Type
+        if (($typeHandle = $request->getQueryParam('type')) !== null) {
+            $type = ArrayHelper::firstWhere($section->getEntryTypes(), 'handle', $typeHandle);
+            if ($type === null) {
+                throw new BadRequestHttpException("Invalid entry type handle: $typeHandle");
+            }
+            $entry->typeId = $type->id;
+        } else {
+            $entry->typeId = $request->getQueryParam('typeId') ?? $section->getEntryTypes()[0]->id;
+        }
+
+        // Status
+        if (($status = $request->getQueryParam('status')) !== null) {
+            $enabled = $status === 'enabled';
+        } else {
+            // Set the default status based on the section's settings
+            /** @var Section_SiteSettings $siteSettings */
+            $siteSettings = ArrayHelper::firstWhere($section->getSiteSettings(), 'siteId', $entry->siteId);
+            $enabled = $siteSettings->enabledByDefault;
+        }
         if (Craft::$app->getIsMultiSite() && count($entry->getSupportedSites()) > 1) {
             $entry->enabled = true;
-            $entry->enabledForSite = $siteSettings->enabledByDefault;
+            $entry->enabledForSite = $enabled;
         } else {
-            $entry->enabled = $siteSettings->enabledByDefault;
+            $entry->enabled = $enabled;
             $entry->enabledForSite = true;
         }
 
@@ -120,6 +135,31 @@ class EntryRevisionsController extends BaseEntriesController
         // Make sure the user is allowed to create this entry
         $this->enforceSitePermission($entry->getSite());
         $this->enforceEditEntryPermissions($entry);
+
+        // Title & slug
+        $entry->title = $request->getQueryParam('title');
+        $entry->slug = $request->getQueryParam('slug');
+        if ($entry->title && !$entry->slug) {
+            $entry->slug = ElementHelper::generateSlug($entry->title, null, $site->language);
+        }
+        if (!$entry->slug) {
+            $entry->slug = ElementHelper::tempSlug();
+        }
+
+        // Post & expiry dates
+        if (($postDate = $request->getQueryParam('postDate')) !== null) {
+            $entry->postDate = DateTimeHelper::toDateTime($postDate);
+        }
+        if (($expiryDate = $request->getQueryParam('expiryDate')) !== null) {
+            $entry->expiryDate = DateTimeHelper::toDateTime($expiryDate);
+        }
+
+        // Custom fields
+        foreach ($entry->getFieldLayout()->getFields() as $field) {
+            if (($value = $request->getQueryParam($field->handle)) !== null) {
+                $entry->setFieldValue($field->handle, $value);
+            }
+        }
 
         // Save it and redirect to its edit page
         $entry->setScenario(Element::SCENARIO_ESSENTIALS);

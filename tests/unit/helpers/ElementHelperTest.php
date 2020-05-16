@@ -40,17 +40,33 @@ class ElementHelperTest extends Unit
     }
 
     /**
-     * @dataProvider createSlugDataProvider
+     * @dataProvider generateSlugDataProvider
      *
-     * @param $result
-     * @param $input
+     * @param string $result
+     * @param string $input
+     * @param bool|null $ascii
+     * @param string|null $language
      */
-    public function testCreateSlug($result, $input)
+    public function testGenerateSlug(string $result, string $input, bool $ascii = null, string $language = null)
     {
         $glue = Craft::$app->getConfig()->getGeneral()->slugWordSeparator;
         $result = str_replace('[separator-here]', $glue, $result);
 
-        $this->assertSame($result, ElementHelper::createSlug($input));
+        $this->assertSame($result, ElementHelper::generateSlug($input, $ascii, $language));
+    }
+
+    /**
+     * @dataProvider normalizeSlugDataProvider
+     *
+     * @param $result
+     * @param $input
+     */
+    public function testNormalizeSlug($result, $input)
+    {
+        $glue = Craft::$app->getConfig()->getGeneral()->slugWordSeparator;
+        $result = str_replace('[separator-here]', $glue, $result);
+
+        $this->assertSame($result, ElementHelper::normalizeSlug($input));
     }
 
     /**
@@ -149,7 +165,28 @@ class ElementHelperTest extends Unit
     /**
      * @return array
      */
-    public function createSlugDataProvider(): array
+    public function generateSlugDataProvider(): array
+    {
+        return [
+            ['wordWord', 'wordWord'],
+            ['word[separator-here]word', 'word word'],
+            ['foo[separator-here]0', 'foo 0'],
+            ['word', 'word'],
+            ['123456789', '123456789'],
+            ['abc[separator-here]dfg', 'abc...dfg'],
+            ['abc[separator-here]dfg', 'abc...(dfg)'],
+            ['A[separator-here]B[separator-here]C', 'A-B-C'], // https://github.com/craftcms/cms/issues/4266
+            ['test[separator-here]slug', 'test_slug'],
+            ['Audi[separator-here]S8[separator-here]4E[separator-here]2006[separator-here]2010', 'Audi S8 4E (2006-2010)'], // https://github.com/craftcms/cms/issues/4607
+            ['こんにちは', 'こんにちは', false], // https://github.com/craftcms/cms/issues/4628
+            ['Сертификация', 'Сертификация', false], // https://github.com/craftcms/cms/issues/1535
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function normalizeSlugDataProvider(): array
     {
         return [
             ['wordWord', 'wordWord'],

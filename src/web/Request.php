@@ -17,6 +17,8 @@ use craft\services\Sites;
 use yii\base\InvalidConfigException;
 use yii\db\Exception as DbException;
 use yii\web\BadRequestHttpException;
+use yii\web\Cookie;
+use yii\web\CookieCollection;
 use yii\web\NotFoundHttpException;
 
 /** @noinspection ClassOverridesFieldOfSuperClassInspection */
@@ -143,6 +145,12 @@ class Request extends \yii\web\Request
      * @var string|null
      */
     private $_ipAddress;
+
+    /**
+     * @var CookieCollection Collection of raw cookies
+     * @see getRawCookies()
+     */
+    private $_rawCookies;
 
     /**
      * @var string|null
@@ -1011,6 +1019,57 @@ class Request extends \yii\web\Request
         }
 
         return 'Other';
+    }
+
+    /**
+     * Returns the “raw” cookie collection.
+     *
+     * Works similar to [[getCookies()]], but these cookies won’t go through validation, and their values won’t
+     * be hashed.
+     *
+     * @return CookieCollection the cookie collection.
+     * @since 3.5.0
+     */
+    public function getRawCookies()
+    {
+        if ($this->_rawCookies === null) {
+            $this->_rawCookies = new CookieCollection($this->loadRawCookies(), [
+                'readOnly' => true,
+            ]);
+        }
+
+        return $this->_rawCookies;
+    }
+
+    /**
+     * Converts any invalid cookies in `$_COOKIE` into an array of [[Cookie]] objects.
+     *
+     * @return array the cookies obtained from request
+     * @return Cookie[]
+     * @since 3.5.0
+     */
+    protected function loadRawCookies()
+    {
+        $cookies = [];
+
+        // If cookie validation is enabled, then we don't need the concept of "raw" cookies to begin with
+        if ($this->enableCookieValidation) {
+            $security = Craft::$app->getSecurity();
+            foreach ($_COOKIE as $name => $value) {
+                // Ignore if this is a hashed cookie
+                if (is_string($value) && $security->validateData($value, $this->cookieValidationKey !== false)) {
+                    continue;
+                }
+                $cookies[$name] = Craft::createObject([
+                    'class' => Cookie::class,
+                    'name' => $name,
+                    'value' => $value,
+                    'expire' => null,
+                ]);
+            }
+        }
+
+        return $cookies;
     }
 
     /**

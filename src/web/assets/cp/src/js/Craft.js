@@ -1,5 +1,14 @@
 /** global: Craft */
 /** global: Garnish */
+
+// Use old jQuery prefilter behavior
+// see https://jquery.com/upgrade-guide/3.5/
+var rxhtmlTag = /<(?!area|br|col|embed|hr|img|input|link|meta|param)(([a-z][^\/\0>\x20\t\r\n\f]*)[^>]*)\/>/gi;
+jQuery.htmlPrefilter = function( html ) {
+    return html.replace( rxhtmlTag, "<$1></$2>" );
+};
+
+
 // Set all the standard Craft.* stuff
 $.extend(Craft,
     {
@@ -1591,6 +1600,67 @@ $.extend(Craft,
                 } catch (e) {
                 }
             }
+        },
+
+        /**
+         * Removes a value from localStorage.
+         * @param key
+         */
+        removeLocalStorage: function(key) {
+            if (typeof localStorage !== 'undefined') {
+                localStorage.removeItem(`Craft-${Craft.systemUid}.${key}`);
+            }
+        },
+
+        /**
+         * Returns a cookie value, if it exists, otherwise returns `false`
+         * @return {(string|boolean)}
+         */
+        getCookie: function(name) {
+            // Adapted from https://developer.mozilla.org/en-US/docs/Web/API/Document/cookie
+            return document.cookie.replace(new RegExp(`(?:(?:^|.*;\\s*)Craft-${Craft.systemUid}:${name}\\s*\\=\\s*([^;]*).*$)|^.*$`), "$1");
+        },
+
+        /**
+         * Sets a cookie value.
+         * @param {string} name
+         * @param {string} value
+         * @param {Object} [options]
+         * @param {string} [options.path] The cookie path.
+         * @param {string} [options.domain] The cookie domain. Defaults to the `defaultCookieDomain` config setting.
+         * @param {number} [options.maxAge] The max age of the cookie (in seconds)
+         * @param {Date} [options.expires] The expiry date of the cookie. Defaults to none (session-based cookie).
+         * @param {boolean} [options.secure] Whether this is a secure cookie. Defaults to the `useSecureCookies`
+         * config setting.
+         * @param {string} [options.sameSite] The SameSite value (`lax` or `strict`). Defaults to the
+         * `sameSiteCookieValue` config setting.
+         */
+        setCookie: function(name, value, options) {
+            options = $.extend({}, this.defaultCookieOptions, options);
+            let cookie = `Craft-${Craft.systemUid}:${name}=${encodeURIComponent(value)}`;
+            if (options.path) {
+                cookie += `;path=${options.path}`;
+            }
+            if (options.domain) {
+                cookie += `;domain=${options.domain}`;
+            }
+            if (options.maxAge) {
+                cookie += `;max-age-in-seconds=${options.maxAge}`;
+            } else if (options.expires) {
+                cookie += `;expires=${options.expires.toUTCString()}`;
+            }
+            if (options.secure) {
+                cookie += ';secure';
+            }
+            document.cookie = cookie;
+        },
+
+        /**
+         * Removes a cookie
+         * @param {string} name
+         */
+        removeCookie: function(name) {
+            this.setCookie(name, '', new Date('1970-01-01T00:00:00'));
         },
 
         /**

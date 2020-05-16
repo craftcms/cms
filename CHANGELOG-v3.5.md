@@ -96,6 +96,8 @@
 - Added `craft\helpers\Db::replace()`.
 - Added `craft\helpers\Db::update()`.
 - Added `craft\helpers\Db::upsert()`.
+- Added `craft\helpers\ElementHelper::generateSlug()`.
+- Added `craft\helpers\ElementHelper::normalizeSlug()`.
 - Added `craft\helpers\Gql::canMutateAssets()`.
 - Added `craft\helpers\Gql::canMutateCategories()`.
 - Added `craft\helpers\Gql::canMutateEntries()`.
@@ -117,10 +119,12 @@
 - Added `craft\helpers\Queue`.
 - Added `craft\models\Section::PROPAGATION_METHOD_CUSTOM`.
 - Added `craft\models\Site::$enabled`.
+- Added `craft\services\AssetTransforms::extendTransform()`. ([#5853](https://github.com/craftcms/cms/issues/5853))
 - Added `craft\services\Composer::handleError()`.
 - Added `craft\services\Composer::run()`.
 - Added `craft\services\Elements::createElementQuery()`.
 - Added `craft\services\Gql::getAllSchemaComponents()`.
+- Added `craft\services\Images::getSupportsWebP()`. ([#5853](https://github.com/craftcms/cms/issues/5853))
 - Added `craft\services\ProjectConfig::$filename`. ([#5982](https://github.com/craftcms/cms/issues/5982))
 - Added `craft\queue\jobs\PruneRevisions`.
 - Added `craft\test\mockclasses\elements\MockElementQuery`.
@@ -128,9 +132,14 @@
 - Added `craft\web\AssetBundle\IframeResizerAsset`.
 - Added `craft\web\Request::getAcceptsImage()`.
 - Added `craft\web\Request::getFullUri()`.
+- Added `craft\web\Request::getRawCookies()`.
+- Added `craft\web\Request::loadRawCookies()`.
+- Added `craft\web\Response::getRawCookies()`.
 - Added the `_includes/forms/password.html` control panel template.
 - Added the `_includes/forms/copytext.html` control panel template.
 - Added the `copytext` and `copytextField` macros to the `_includes/forms.html` control panel template.
+- Added the `Craft.removeLocalStorage()`, `getCookie()`, `setCookie()`, and `removeCookie()` JavaScript methods.
+- Added the `Craft.cp.getSiteId()` and `setSiteId()` JavaScript methods.
 - Added the `Craft.ui.createCopyTextInput()`, `createCopyTextField()`, and `createCopyTextPrompt()` JavaScript methods.
 - Added the [iFrame Resizer](http://davidjbradshaw.github.io/iframe-resizer/) library.
 
@@ -138,6 +147,9 @@
 - User registration forms in the control panel now give users the option to send an activation email, even if email verification isn’t required. ([#5836](https://github.com/craftcms/cms/issues/5836))
 - Activation emails are now sent automatically on public registration if the `deferPublicRegistrationPassword` config setting is enabled, even if email verification isn’t required. ([#5836](https://github.com/craftcms/cms/issues/5836))
 - Large asset thumbnails now use the same aspect ratio as the source image. ([#5515](https://github.com/craftcms/cms/issues/5515))
+- Craft now remembers the selected site across global sets and element indexes. ([#2779](https://github.com/craftcms/cms/issues/2779))
+- The default account activation and password reset emails now reference the system name rather than the current site name. ([#6089](https://github.com/craftcms/cms/pull/6089))
+- Craft will now regenerate missing transforms on local volumes. ([#5956](https://github.com/craftcms/cms/issues/5956))
 - Preview frames now maintain their scroll position across refreshes, even for cross-origin preview targets.
 - Preview targets that aren’t directly rendered by Craft must now include `lib/iframe-resizer-cw/iframeResizer.contentWindow.js` in order to maintain scroll position across refreshes.
 - The preview frame header no longer hides the top 54px of the preview frame when it’s scrolled all the way to the top. ([#5547](https://github.com/craftcms/cms/issues/5547))
@@ -166,25 +178,30 @@
 - Improved transform eager-loading support when using GraphQL API.
 - It’s now possible to register template roots without a template prefix. ([#6015](https://github.com/craftcms/cms/issues/6015))
 - It’s now possible to register multiple directories per template root. ([#6015](https://github.com/craftcms/cms/issues/6015))
+- It’s now possible to pass `type`, `status`, `title`, `slug`, `postDate`, `expiryDate`, and custom field query string params to the new entry URL, to set the default entry values (e.g. `/admin/entries/locations/new?phone=555-0123`).
 - Lightswitch inputs can now have labels, like checkboxes.
+- Improved support for eager-loading elements across multiple sites at once.
 - `craft\base\Element::getRoute()` now returns the route defined by `craft\events\SetElementRouteEvent::$route` even if it’s null, as long as `SetElementRouteEvent::$handled` is set to `true`.
 - `craft\db\ActiveRecord` now unsets any empty primary key values when saving new records, to avoid a SQL error on PostgreSQL. ([#5814](https://github.com/craftcms/cms/pull/5814))
 - `craft\elements\Asset::getImg()` now has a `$sizes` argument. ([#5774](https://github.com/craftcms/cms/issues/5774))
 - `craft\helpers\ElementHelper::supportedSitesForElement()` now has a `$withUnpropagatedSites` argument.
 - `craft\helpers\StringHelper::randomString()` no longer includes capital letters or numbers by default.
 - `craft\i18n\Formatter::asTimestamp()` now has a `$withPreposition` argument.
+- `craft\services\Fields::getFieldByHandle()` now has an optional `$context` argument.
 - `craft\services\Gql` now fires a `registerGqlMutations` event that allows for plugins to register their own GraphQL mutations.
 - `craft\services\Sites::getAllSiteIds()`, `getSiteByUid()`, `getAllSites()`, `getSitesByGroupId()`, `getSiteById()`, and `getSiteByHandle()` now have `$withDisabled` arguments.
 - Improved `data`/`aria` tag normalization via `craft\helpers\Html::parseTagAttributes()` and `normalizeTagAttributes()`.
 - Control panel form input macros and templates that accept a `class` variable can now pass it as an array of class names.
 - Updated Composer to 1.10.5. ([#5925](https://github.com/craftcms/cms/pull/5925))
 - Updated voku/stringy to ^6.2.2. ([#5989](https://github.com/craftcms/cms/issues/5989))
+- `craft\elements\Asset::getUrl()` now has a `$transformOverrideParameters` parameter. ([#5853](https://github.com/craftcms/cms/issues/5853))
 
 ### Deprecated
 - Deprecated the `install/plugin` command. `plugin/install` should be used instead.
 - Deprecated the `|filterByValue` Twig filter. `|where` should be used instead.
 - Deprecated the `|ucwords` Twig filter. `|title` should be used instead.
 - Deprecated `craft\gql\base\Resolver::extractEagerLoadCondition()`. `ElementQueryConditionBuilder` should be used instead.
+- Deprecated `craft\helpers\ElementHelper::createSlug()`. `normalizeSlug()` should be used instead.
 - Deprecated `craft\helpers\Stringy`.
 - Deprecated `craft\web\View::formatInputId()`. `craft\helpers\Html::namespaceHtml()` should be used instead.
 - Deprecated `craft\events\RegisterGqlPermissionsEvent`. `craft\events\RegisterGqlSchemaComponentsEvent` should be used instead.
@@ -201,7 +218,6 @@
 - Fixed a bug where the `svg()` Twig function wasn’t namespacing ID and class name CSS selectors that didn’t have any matching `id`/`class` attribute values. ([#5922](https://github.com/craftcms/cms/issues/5922))
 - Fixed a bug where `users/set-password` and `users/verify-email` requests weren’t responding with JSON when requested, if an invalid verification code was passed. ([#5210](https://github.com/craftcms/cms/issues/5210))
 - Fixed a bug where it was impossible to filter elements using a Lightswitch field using the GraphQL API. ([#5930](https://github.com/craftcms/cms/issues/5930))
-- Fixed a bug where Project Config would remain cached when switching database configuration.
 
 ### Security
 - The `_includes/forms/checkbox.html`, `checkboxGroup.html`, and `checkboxSelect.html` control panel templates now HTML-encode checkbox labels by default, preventing possible XSS vulnerabilities. If HTML code was desired, it must be passed through the new `raw()` function first.
