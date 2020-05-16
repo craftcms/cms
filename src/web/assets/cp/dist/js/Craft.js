@@ -14,7 +14,7 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-/*!   - 2020-05-14 */
+/*!   - 2020-05-16 */
 (function ($) {
   /** global: Craft */
 
@@ -699,20 +699,28 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
             resolve(apiResponse.data);
 
             if (!_this3._processedApiHeaders) {
-              _this3._processedApiHeaders = true;
+              if (apiResponse.headers['x-craft-license-status']) {
+                _this3._processedApiHeaders = true;
 
-              _this3.sendActionRequest('POST', 'app/process-api-response-headers', {
-                data: {
-                  headers: apiResponse.headers
-                },
-                cancelToken: cancelToken
-              }); // If we just got a new license key, set it and then resolve the header waitlist
+                _this3.sendActionRequest('POST', 'app/process-api-response-headers', {
+                  data: {
+                    headers: apiResponse.headers
+                  },
+                  cancelToken: cancelToken
+                }); // If we just got a new license key, set it and then resolve the header waitlist
 
 
-              if (_this3._apiHeaders && _this3._apiHeaders['X-Craft-License'] === '__REQUEST__') {
-                _this3._apiHeaders['X-Craft-License'] = apiResponse.headers['x-craft-license'];
+                if (_this3._apiHeaders && _this3._apiHeaders['X-Craft-License'] === '__REQUEST__') {
+                  _this3._apiHeaders['X-Craft-License'] = apiResponse.headers['x-craft-license'];
 
-                _this3._resolveHeaderWaitlist();
+                  _this3._resolveHeaderWaitlist();
+                }
+              } else if (_this3._apiHeaders && _this3._apiHeaders['X-Craft-License'] === '__REQUEST__' && _this3._apiHeaderWaitlist.length) {
+                // The request didn't send headers. Go ahead and resolve the next request on the
+                // header waitlist.
+                var _item = _this3._apiHeaderWaitlist.shift();
+
+                _item[0](_this3._apiHeaders);
               }
             }
           })["catch"](reject);
