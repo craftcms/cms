@@ -1696,10 +1696,7 @@ class Elements extends Component
         }
 
         // Group the elements by site
-        $elementsBySite = [];
-        foreach ($elements as $element) {
-            $elementsBySite[$element->siteId][] = $element;
-        }
+        $elementsBySite = ArrayHelper::index($elements, null, ['siteId']);
 
         foreach ($groups as $alias => list($handle, $criteria, $getCount, $subWith)) {
             foreach ($elementsBySite as $siteId => $siteElements) {
