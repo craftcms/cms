@@ -1791,15 +1791,24 @@ class Elements extends Component
         // Do we just need the count?
         if ($getCount && empty($subWith)) {
             // Just fetch the target elements’ IDs
-            $targetElementIds = $query ? array_flip($query->ids()) : [];
+            $targetElementIdCounts = [];
+            if ($query) {
+                foreach ($query->ids() as $id) {
+                    if (!isset($targetElementIdCounts[$id])) {
+                        $targetElementIdCounts[$id] = 1;
+                    } else {
+                        $targetElementIdCounts[$id]++;
+                    }
+                }
+            }
 
             // Loop through the source elements and count up their targets
             foreach ($elements as $sourceElement) {
                 $count = 0;
-                if (!empty($targetElementIds) && isset($targetElementIdsBySourceIds[$sourceElement->id])) {
+                if (!empty($targetElementIdCounts) && isset($targetElementIdsBySourceIds[$sourceElement->id])) {
                     foreach (array_keys($targetElementIdsBySourceIds[$sourceElement->id]) as $targetElementId) {
-                        if (isset($targetElementIds[$targetElementId])) {
-                            $count++;
+                        if (isset($targetElementIdCounts[$targetElementId])) {
+                            $count += $targetElementIdCounts[$targetElementId];
                         }
                     }
                 }
@@ -1809,8 +1818,7 @@ class Elements extends Component
             return;
         }
 
-        /** @var array|ElementInterface[] $targetElementData */
-        $targetElementData = $query ? $query->asArray()->indexBy('id')->all() : [];
+        $targetElementData = $query ? ArrayHelper::index($query->asArray()->all(), null, ['id']) : [];
         $targetElements = [];
 
         // Tell the source elements about their eager-loaded elements
@@ -1822,13 +1830,11 @@ class Elements extends Component
                 // Does the path mapping want a custom order?
                 if (!empty($criteria['orderBy']) || !empty($criteria['order'])) {
                     // Assign the elements in the order they were returned from the query
-                    foreach ($targetElementData as &$elementData) {
-                        /** @var array|ElementInterface $elementData */
-                        if (isset($targetElementIdsBySourceIds[$sourceElement->id][$elementData['id']])) {
-                            $targetElementIdsForSource[] = $elementData['id'];
+                    foreach (array_keys($targetElementData) as $targetElementId) {
+                        if (isset($targetElementIdsBySourceIds[$sourceElement->id][$targetElementId])) {
+                            $targetElementIdsForSource[] = $targetElementId;
                         }
                     }
-                    unset($elementData);
                 } else {
                     // Assign the elements in the order defined by the map
                     foreach (array_keys($targetElementIdsBySourceIds[$sourceElement->id]) as $targetElementId) {
@@ -1838,17 +1844,23 @@ class Elements extends Component
                     }
                 }
 
-                // Ignore elements that don't fall within the offset & limit
-                if ($offset || $limit) {
-                    $targetElementIdsForSource = array_slice($targetElementIdsForSource, $offset, $limit);
-                }
-
                 // Create the elements
+                $currentOffset = 0;
+                $count = 0;
                 foreach ($targetElementIdsForSource as $elementId) {
-                    if (!isset($targetElements[$elementId])) {
-                        $targetElements[$elementId] = $query->createElement($targetElementData[$elementId]);
+                    foreach ($targetElementData[$elementId] as $result) {
+                        if ($offset && $currentOffset < $offset) {
+                            $currentOffset++;
+                            continue;
+                        }
+                        if (!isset($targetElements[$elementId][$result['siteId']])) {
+                            $targetElements[$elementId][$result['siteId']] = $query->createElement($result);
+                        }
+                        $targetElementsForSource[] = $targetElements[$elementId][$result['siteId']];
+                        if ($limit && ++$count == $limit) {
+                            break;
+                        }
                     }
-                    $targetElementsForSource[] = $targetElements[$elementId];
                 }
             }
 
