@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Changed
+- The `users/login` action no longer adds a random delay to the request for successful login attempts. ([#6090](https://github.com/craftcms/cms/pull/6090))
 - `craft\web\View::renderObjectTemplate()` now supports wrapping function calls in single curly brace delimiters (e.g. `{clone(variable)}`).
 - Updated Codeception to 4.1.4.
 
