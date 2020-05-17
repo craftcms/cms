@@ -274,6 +274,7 @@
 ## Unreleased (3.4.x)
 
 ### Changed
+- The `users/login` action no longer adds a random delay to the request for successful login attempts. ([#6090](https://github.com/craftcms/cms/pull/6090))
 - `craft\web\View::renderObjectTemplate()` now supports wrapping function calls in single curly brace delimiters (e.g. `{clone(variable)}`).
 - Updated Codeception to 4.1.4.
 
@@ -281,6 +282,7 @@
 - Fixed a bug where custom field names weren’t getting translated in element index sort menus. ([#6073](https://github.com/craftcms/cms/issues/6073))
 - Fixed a bug where the Plugin Store could incorrectly report license key statuses. ([#6079](https://github.com/craftcms/cms/issues/6079))
 - Fixed an error that could occur when creating a new entry, if the section’s Entry URI Format contained `{sourceId}`. ([#6080](https://github.com/craftcms/cms/issues/6080))
+- Fixed a bug where some UI elements were sized incorrectly while being dragged.
 
 ## 3.4.19.1 - 2020-05-13
 
