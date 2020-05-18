@@ -678,6 +678,13 @@ interface ElementInterface extends ComponentInterface
     public function getStatus();
 
     /**
+     * Returns the same element in other locales.
+     *
+     * @return ElementQueryInterface[]|ElementInterface[]
+     */
+    public function getLocalized();
+
+    /**
      * Returns the next element relative to this one, from a given set of criteria.
      *
      * @param mixed $criteria

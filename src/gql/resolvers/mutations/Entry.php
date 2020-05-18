@@ -11,7 +11,6 @@ use Craft;
 use craft\db\Table;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry as EntryElement;
-use craft\errors\GqlException;
 use craft\gql\base\ElementMutationResolver;
 use craft\gql\base\StructureMutationTrait;
 use craft\helpers\Db;

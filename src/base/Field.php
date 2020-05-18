@@ -242,6 +242,7 @@ abstract class Field extends SavableComponent implements FieldInterface
                 'level',
                 'lft',
                 'link',
+                'localized',
                 'name', // global set-specific
                 'next',
                 'nextSibling',
