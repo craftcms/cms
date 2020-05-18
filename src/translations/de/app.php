@@ -418,6 +418,7 @@ return [
     'Find and Replace' => 'Suchen und ersetzen',
     'Finish up' => 'Vervollständigen',
     'Finishing up…' => 'Wird vervollständigt…',
+    'First draft' => 'Erster Entwurf',
     'First Name' => 'Vorname',
     'Fit' => 'Anpassen',
     'Flash' => 'Flash',
