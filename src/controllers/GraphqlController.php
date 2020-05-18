@@ -503,7 +503,7 @@ class GraphqlController extends Controller
      * @throws NotFoundHttpException
      * @since 3.4.0
      */
-    public function actionSavePublicSchema(): Response
+    public function actionSavePublicSchema()
     {
         $this->requirePostRequest();
         $this->requireAdmin();
