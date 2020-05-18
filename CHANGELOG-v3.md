@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.4.20 - 2020-05-18
 
 ### Changed
 - The `users/login` action no longer adds a random delay to the request for successful login attempts. ([#6090](https://github.com/craftcms/cms/pull/6090))
