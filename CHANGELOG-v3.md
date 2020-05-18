@@ -3,12 +3,15 @@
 ## Unreleased (3.5.0)
 
 ### Added
+- Added the `hasPhoto` argument when querying for users using the GraphQL API. ([#6083](https://github.com/craftcms/cms/issues/6083))
 - Added `craft\base\ConfigurableComponent`.
 - Added `craft\base\ConfigurableComponentInterface`.
 - Added `craft\base\Element::EVENT_DEFINE_KEYWORDS`. ([#6028](https://github.com/craftcms/cms/issues/6028))
 - Added `craft\base\Element::searchKeywords()`.
 - Added `craft\base\Field::EVENT_DEFINE_KEYWORDS`. ([#6028](https://github.com/craftcms/cms/issues/6028))
 - Added `craft\base\Field::searchKeywords()`.
+- Added `craft\elements\db\UserQuery::$hasPhoto`.
+- Added `craft\elements\db\UserQuery::hasPhoto()`.
 - Added `craft\events\DefineAttributeKeywordsEvent`.
 - Added `craft\events\DefineFieldKeywordsEvent`.
 - Added `craft\helpers\ElementHelper::generateSlug()`.
