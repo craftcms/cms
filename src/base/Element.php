@@ -724,7 +724,7 @@ abstract class Element extends Component implements ElementInterface
     protected static function defineSortOptions(): array
     {
         // Default to the available table attributes
-        $tableAttributes = Craft::$app->getElementIndexes()->getAvailableTableAttributes(static::class);
+        $tableAttributes = Craft::$app->getElementIndexes()->getAvailableTableAttributes(static::class, false);
         $sortOptions = [];
 
         foreach ($tableAttributes as $key => $labelInfo) {
