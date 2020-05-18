@@ -6,6 +6,7 @@
 - The `users/login` action no longer adds a random delay to the request for successful login attempts. ([#6090](https://github.com/craftcms/cms/pull/6090))
 - `craft\web\View::renderObjectTemplate()` now supports wrapping function calls in single curly brace delimiters (e.g. `{clone(variable)}`).
 - Element fixtures now support the `field:handle` syntax when generating element queries. ([#5929](https://github.com/craftcms/cms/pull/5929))
+- “First draft” is now translatable. ([#6096](https://github.com/craftcms/cms/pull/6096))
 
 ### Fixed
 - Fixed a bug where custom field names weren’t getting translated in element index sort menus. ([#6073](https://github.com/craftcms/cms/issues/6073))
