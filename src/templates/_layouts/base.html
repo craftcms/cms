@@ -4,7 +4,6 @@
 {% set bodyClass = [
     bodyClass ?? null,
     craft.app.locale.getOrientation(),
-    currentUser and currentUser.getPreference('roundIcons', true) ? 'round-icons',
     currentUser and currentUser.getPreference('useShapes') ? 'use-shapes',
 ]|filter|join(' ') -%}
 

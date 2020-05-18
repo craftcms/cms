@@ -249,20 +249,6 @@
                 <hr>
 
                 {% embed '_includes/forms/field' with {
-                    label: 'Appearance'|t('app'),
-                } %}
-                    {% block input %}
-                        {% from '_includes/forms' import checkboxField %}
-                        {{ checkboxField({
-                            label: 'Show round icons'|t('app'),
-                            name: 'roundIcons',
-                            id: 'roundIcons',
-                            checked: user.getPreference('roundIcons', true)
-                        }) }}
-                    {% endblock %}
-                {% endembed %}
-
-                {% embed '_includes/forms/field' with {
                     label: 'Accessibility'|t('app'),
                 } %}
                     {% block input %}

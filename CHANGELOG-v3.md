@@ -48,6 +48,7 @@
 - Fixed a bug where a broken eager-loading chain would not be resumed correctly. ([#5998](https://github.com/craftcms/cms/issues/5998))
 
 ### Removed
+- Removed the “Show rounded icons” user preference.
 - Removed `craft\base\ElementInterface::getIconUrl()`.
 
 ## 3.5.0-beta.2 - 2020-05-05
