@@ -97,6 +97,7 @@ class Category extends Structure
             ],
             'localized' => [
                 'name' => 'localized',
+                'args' => CategoryArguments::getArguments(),
                 'type' => Type::listOf(static::getType()),
                 'description' => 'The same element in other locales.',
             ],

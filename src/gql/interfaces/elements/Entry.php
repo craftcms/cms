@@ -120,6 +120,7 @@ class Entry extends Structure
             ],
             'localized' => [
                 'name' => 'localized',
+                'args' => EntryArguments::getArguments(),
                 'type' => Type::listOf(static::getType()),
                 'description' => 'The same element in other locales.',
             ],
