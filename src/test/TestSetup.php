@@ -102,6 +102,11 @@ class TestSetup
     private static $_parsedProjectConfig = [];
 
     /**
+     * @var Config|null An instance of the config service.
+     */
+    private static $_configService = null;
+
+    /**
      * Creates a craft object to play with. Ensures the Craft::$app service locator is working.
      *
      * @return mixed
@@ -228,7 +233,7 @@ class TestSetup
         Craft::setAlias('@templates', CraftTest::normalizePathSeparators(Craft::getAlias('@templates')));
         Craft::setAlias('@translations', CraftTest::normalizePathSeparators(Craft::getAlias('@translations')));
 
-        $configService = self::createConfigService();
+        $configService = self::$_configService ?? self::createConfigService();
 
         $config = ArrayHelper::merge(
             [
@@ -328,7 +333,6 @@ class TestSetup
         defined('CURLOPT_CONNECTTIMEOUT_MS') || define('CURLOPT_CONNECTTIMEOUT_MS', 156);
 
         $libPath = dirname(__DIR__, 2) . '/lib';
-
         $srcPath = dirname(__DIR__);
 
         require $libPath . '/yii2/Yii.php';
@@ -343,6 +347,19 @@ class TestSetup
         Craft::setAlias('@storage', $storagePath);
         Craft::setAlias('@templates', $templatesPath);
         Craft::setAlias('@translations', $translationsPath);
+
+        self::$_configService = self::createConfigService();
+        $generalConfig = self::$_configService->getConfigFromFile('general');
+
+        // Set any custom aliases
+        $customAliases = $generalConfig['aliases'] ?? $generalConfig['environmentVariables'] ?? null;
+        if (is_array($customAliases)) {
+            foreach ($customAliases as $name => $value) {
+                if (is_string($value)) {
+                    Craft::setAlias($name, $value);
+                }
+            }
+        }
 
         // Prevent `headers already sent` error when running tests in PhpStorm
         // https://stackoverflow.com/questions/31175636/headers-already-sent-running-unit-tests-in-phpstorm
@@ -497,7 +514,7 @@ class TestSetup
 
         foreach ($serviceMap as $craftComponent) {
             $class = $craftComponent[0];
-            list ($accessMethod, $accessProperty) = $craftComponent[1];
+            [$accessMethod, $accessProperty] = $craftComponent[1];
 
             // Create a mock.
             $mock = self::getMock($test, $class);

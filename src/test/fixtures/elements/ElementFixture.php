@@ -175,6 +175,11 @@ abstract class ElementFixture extends ActiveFixture
         $query = $modelClass::find()->anyStatus()->trashed(null);
 
         foreach ($data as $key => $value) {
+            // Is this the "field:handle" syntax?
+            if (strncmp($key, 'field:', 6) === 0) {
+                $key = substr($key, 6);
+            }
+
             if ($this->isPrimaryKey($key)) {
                 $query = $query->$key(addcslashes($value, ','));
             }

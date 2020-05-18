@@ -276,18 +276,20 @@
 ### Security
 - The `_includes/forms/checkbox.html`, `checkboxGroup.html`, and `checkboxSelect.html` control panel templates now HTML-encode checkbox labels by default, preventing possible XSS vulnerabilities. If HTML code was desired, it must be passed through the new `raw()` function first.
 
-## Unreleased (3.4.x)
+## 3.4.20 - 2020-05-18
 
 ### Changed
 - The `users/login` action no longer adds a random delay to the request for successful login attempts. ([#6090](https://github.com/craftcms/cms/pull/6090))
 - `craft\web\View::renderObjectTemplate()` now supports wrapping function calls in single curly brace delimiters (e.g. `{clone(variable)}`).
-- Updated Codeception to 4.1.4.
+- Element fixtures now support the `field:handle` syntax when generating element queries. ([#5929](https://github.com/craftcms/cms/pull/5929))
+- “First draft” is now translatable. ([#6096](https://github.com/craftcms/cms/pull/6096))
 
 ### Fixed
 - Fixed a bug where custom field names weren’t getting translated in element index sort menus. ([#6073](https://github.com/craftcms/cms/issues/6073))
 - Fixed a bug where the Plugin Store could incorrectly report license key statuses. ([#6079](https://github.com/craftcms/cms/issues/6079))
 - Fixed an error that could occur when creating a new entry, if the section’s Entry URI Format contained `{sourceId}`. ([#6080](https://github.com/craftcms/cms/issues/6080))
 - Fixed a bug where some UI elements were sized incorrectly while being dragged.
+- Fixed a bug where custom aliases were not automatically registered for tests. ([#5932](https://github.com/craftcms/cms/issues/5932))
 
 ## 3.4.19.1 - 2020-05-13
 
