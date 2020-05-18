@@ -8,6 +8,9 @@
 ### Changed
 - Asset thumbnails now use the same aspect ratio as the source image. ([#5518](https://github.com/craftcms/cms/issues/5518), [#5515](https://github.com/craftcms/cms/issues/5515))
 
+### Fixed
+- Fixed a bug where non-sortable fields could be listed as element index sort options, and sortable fields could be listed twice, for element types that didn’t override the `defineSortOptions()` method.
+
 ## 3.4.20 - 2020-05-18
 
 ### Changed
