@@ -3,8 +3,8 @@
 ## Unreleased (3.5.0)
 
 ### Added
-- Added the `hasPhoto` argument when querying for users using the GraphQL API. ([#6083](https://github.com/craftcms/cms/issues/6083))
-- Added the `localized` field when querying entries and categories using the GraphQL API. ([#6045](https://github.com/craftcms/cms/issues/6045))
+- Added the `hasPhoto` user query param/GraphQL argument. ([#6083](https://github.com/craftcms/cms/issues/6083))
+- Added the `localized` field when querying entries and categories via GraphQL. ([#6045](https://github.com/craftcms/cms/issues/6045))
 - Added `craft\base\ConfigurableComponent`.
 - Added `craft\base\ConfigurableComponentInterface`.
 - Added `craft\base\Element::EVENT_DEFINE_KEYWORDS`. ([#6028](https://github.com/craftcms/cms/issues/6028))
