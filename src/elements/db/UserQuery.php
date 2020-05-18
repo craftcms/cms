@@ -72,6 +72,12 @@ class UserQuery extends ElementQuery
     public $admin;
 
     /**
+     * @var bool|null Whether to only return users that have (or don’t have) user photos.
+     * @used-by hasPhoto()
+     */
+    public $hasPhoto;
+
+    /**
      * @var string|int|false|null The permission that the resulting users must have.
      * ---
      * ```php
@@ -191,6 +197,35 @@ class UserQuery extends ElementQuery
     public function admin(bool $value = true)
     {
         $this->admin = $value;
+        return $this;
+    }
+
+    /**
+     * Narrows the query results to only users that have (or don’t have) a user photo.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch users with photos #}
+     * {% set {elements-var} = {twig-method}
+     *     .hasPhoto()
+     *     .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch users without photos
+     * ${elements-var} = {element-class}::find()
+     *     ->hasPhoto()
+     *     ->all();
+     * ```
+     *
+     * @param bool $value The property value (defaults to true)
+     * @return static self reference
+     * @uses $hasPhoto
+     */
+    public function hasPhoto(bool $value = true)
+    {
+        $this->hasPhoto = $value;
         return $this;
     }
 
@@ -580,6 +615,15 @@ class UserQuery extends ElementQuery
 
         if (is_bool($this->admin)) {
             $this->subQuery->andWhere(['users.admin' => $this->admin]);
+        }
+
+        if (is_bool($this->hasPhoto)) {
+            if ($this->hasPhoto) {
+                $hasPhotoCondition = ['not', ['users.photoId' => null]];
+            } else {
+                $hasPhotoCondition = ['users.photoId' => null];
+            }
+            $this->subQuery->andWhere($hasPhotoCondition);
         }
 
         if ($this->admin !== true) {
