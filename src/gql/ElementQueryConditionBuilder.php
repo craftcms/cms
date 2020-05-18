@@ -42,6 +42,8 @@ class ElementQueryConditionBuilder
     private $_fragments;
     private $_eagerLoadableFieldsByContext = [];
     private $_transformableAssetProperties = ['url', 'width', 'height'];
+    private $_eagerLoadableProperties = ['children', 'localized', 'parent'];
+
 
     public function __construct(ResolveInfo $resolveInfo)
     {
@@ -251,7 +253,7 @@ class ElementQueryConditionBuilder
 
                 // That is a Craft field that can be eager-loaded or is the special `children` property
                 $possibleTransforms = $transformableAssetProperty || $isAssetField;
-                $otherEagerLoadableNode = $nodeName === 'children' || $nodeName === Gql::GRAPHQL_COUNT_FIELD;
+                $otherEagerLoadableNode = $nodeName === Gql::GRAPHQL_COUNT_FIELD || in_array($nodeName, $this->_eagerLoadableProperties, true);
 
                 if ($possibleTransforms || $craftContentField || $otherEagerLoadableNode) {
                     // Any arguments?

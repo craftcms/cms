@@ -220,6 +220,16 @@ GQL;
                 'EntryInterface',
             ],
             [
+                '{ entry { localized { id }}}',
+                ['with' => ['localized']],
+                'EntryInterface',
+            ],
+            [
+                '{ entry { parent { id }}}',
+                ['with' => ['parent']],
+                'EntryInterface',
+            ],
+            [
                 '{ entries { _count(field: "assetField") assetField { filename }}}',
                 ['with' => [['assetField', ['volumeId' => [5, 7], 'count' => true]]]],
                 '[EntryInterface]',
