@@ -430,7 +430,6 @@ body.rtl .buttons > .btn:not(.hidden) + .btn, body.rtl .buttons > .btn:not(.hidd
 .btn.chromeless { background-color: transparent; height: auto; padding: 0; }
 .btn.chromeless:hover, .btn.chromeless:active, .btn.chromeless:focus { background-color: transparent; }
 .btn.chromeless:hover, .btn.chromeless:active { text-decoration: underline; }
-.btn.rounded { border-radius: 17px; }
 .btn:focus, .btn:hover { background-color: rgba(96, 125, 159, 0.35); }
 .btn:active, .btn.active { background-color: rgba(96, 125, 159, 0.5); }
 .btn[type='color'] { padding: 6px !important; width: 36px; }

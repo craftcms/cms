@@ -996,10 +996,6 @@ ul.icons {
     }
   }
 
-  &.rounded {
-    border-radius: 17px;
-  }
-
   &:focus,
   &:hover {
     background-color: transparentize($inputColor, 0.65);
