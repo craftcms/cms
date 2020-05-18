@@ -8,6 +8,7 @@
 namespace craft\web;
 
 use Craft;
+use craft\base\ElementInterface;
 use craft\events\RegisterTemplateRootsEvent;
 use craft\events\TemplateEvent;
 use craft\helpers\ElementHelper;
@@ -1992,6 +1993,7 @@ JS;
             return null;
         }
 
+        /** @var ElementInterface $element */
         $element = $context['element'];
         $label = $element->getUiLabel();
 
