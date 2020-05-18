@@ -12,6 +12,7 @@
 - Fixed a bug where the Plugin Store could incorrectly report license key statuses. ([#6079](https://github.com/craftcms/cms/issues/6079))
 - Fixed an error that could occur when creating a new entry, if the section’s Entry URI Format contained `{sourceId}`. ([#6080](https://github.com/craftcms/cms/issues/6080))
 - Fixed a bug where some UI elements were sized incorrectly while being dragged.
+- Fixed a bug where custom aliases were not automatically registered for tests. ([#5932](https://github.com/craftcms/cms/issues/5932))
 
 ## 3.4.19.1 - 2020-05-13
 
