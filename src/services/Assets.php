@@ -638,7 +638,6 @@ class Assets extends Component
      * @param bool $fallbackToIcon whether to return the URL to a generic icon if a thumbnail can't be generated
      * @return string
      * @throws NotSupportedException if the asset can't have a thumbnail, and $fallbackToIcon is `false`
-     * @see Asset::getIconUrl()
      */
     public function getThumbUrl(Asset $asset, int $width, int $height = null, bool $generate = false, bool $fallbackToIcon = true): string
     {

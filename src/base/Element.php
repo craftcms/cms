@@ -1971,14 +1971,6 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getIconUrl(int $size)
-    {
-        return null;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getThumbUrl(int $size)
     {
         return null;

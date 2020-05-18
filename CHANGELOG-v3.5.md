@@ -43,7 +43,6 @@
 - Added `craft\base\Element::EVENT_DEFINE_KEYWORDS`. ([#6028](https://github.com/craftcms/cms/issues/6028))
 - Added `craft\base\Element::EVENT_SET_EAGER_LOADED_ELEMENTS`.
 - Added `craft\base\Element::searchKeywords()`.
-- Added `craft\base\ElementInterface::getIconUrl()`.
 - Added `craft\base\ElementInterface::getLocalized()`.
 - Added `craft\base\ElementInterface::gqlMutationNameByContext()`.
 - Added `craft\base\ElementTrait::$elementSiteId`.

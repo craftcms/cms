@@ -1070,14 +1070,6 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public function getIconUrl(int $size)
-    {
-        return Craft::$app->getAssets()->getThumbUrl($this, $size, $size, false);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getThumbUrl(int $size)
     {
         if ($this->width && $this->height) {
