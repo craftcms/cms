@@ -276,6 +276,14 @@
 ### Security
 - The `_includes/forms/checkbox.html`, `checkboxGroup.html`, and `checkboxSelect.html` control panel templates now HTML-encode checkbox labels by default, preventing possible XSS vulnerabilities. If HTML code was desired, it must be passed through the new `raw()` function first.
 
+## Unreleased (3.4.x)
+
+### Added
+- Added `craft\helpers\Assets::scaledDimensions()`.
+
+### Changed
+- Asset thumbnails now use the same aspect ratio as the source image. ([#5518](https://github.com/craftcms/cms/issues/5518), [#5515](https://github.com/craftcms/cms/issues/5515))
+
 ## 3.4.20 - 2020-05-18
 
 ### Changed

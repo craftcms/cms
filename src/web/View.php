@@ -109,16 +109,6 @@ class View extends \yii\web\View
     public $minifyJs;
 
     /**
-     * @var array The sizes that element icons should be rendered in
-     */
-    private static $_elementIconSizes = [34, 68];
-
-    /**
-     * @var array The sizes that element thumbnails should be rendered in
-     */
-    private static $_elementThumbSizes = [120, 240];
-
-    /**
      * @var Environment|null The Twig environment instance used for control panel templates
      */
     private $_cpTwig;
@@ -2021,24 +2011,18 @@ JS;
         // Create the thumb/icon image, if there is one
         // ---------------------------------------------------------------------
 
-        $method = $elementSize === 'small' ? 'getIconUrl' : 'getThumbUrl';
-        $sizes = $elementSize === 'small' ? self::$_elementIconSizes : self::$_elementThumbSizes;
-        $thumbUrl = $element->$method($sizes[0]);
+        $thumbSize = $elementSize === 'small' ? 34 : 120;
+        $thumbUrl = $element->getThumbUrl($thumbSize);
 
         if ($thumbUrl !== null) {
-            $srcsets = [];
+            $imageSize2x = $thumbSize * 2;
+            $thumbUrl2x = $element->getThumbUrl($imageSize2x);
 
-            foreach ($sizes as $i => $size) {
-                if ($i == 0) {
-                    $srcset = $thumbUrl;
-                } else {
-                    $srcset = $element->$method($size);
-                }
-
-                $srcsets[] = $srcset . ' ' . $size . 'w';
-            }
-
-            $sizesHtml = $sizes[0] . 'px';
+            $srcsets = [
+                "$thumbUrl {$thumbSize}w",
+                "$thumbUrl2x {$imageSize2x}w",
+            ];
+            $sizesHtml = "{$thumbSize}px";
             $srcsetHtml = implode(', ', $srcsets);
             $imgHtml = "<div class='elementthumb' data-sizes='{$sizesHtml}' data-srcset='{$srcsetHtml}'></div>";
         } else {

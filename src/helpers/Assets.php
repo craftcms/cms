@@ -712,7 +712,7 @@ class Assets
      * @param int $maxWidth
      * @param int $maxHeight
      * @return array The scaled width and height
-     * @since 3.5.0
+     * @since 3.4.21
      */
     public static function scaledDimensions(int $realWidth, int $realHeight, int $maxWidth, int $maxHeight): array
     {

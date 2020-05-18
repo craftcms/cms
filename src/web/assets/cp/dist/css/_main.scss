@@ -997,10 +997,6 @@ ul.icons {
     }
   }
 
-  body.round-icons &.rounded {
-    border-radius: 17px;
-  }
-
   &:focus,
   &:hover {
     background-color: transparentize($inputColor, 0.65);
@@ -1866,17 +1862,40 @@ $elementInnerSpacing: 5px;
   &.sel,
   li.sel & {
     background-color: $lightSelColor !important;
+    border-radius: $smallBorderRadius;
     cursor: default;
 
     &.loading:after {
       background-image: url(../images/spinner_element.gif);
     }
+
+    &.hasthumb {
+      .elementthumb {
+        img {
+          box-shadow: 0 0 0 1px transparentize($darkSelColor, 0.9), 0 6px 4px -4px transparentize($darkSelColor, 0.8)
+        }
+      }
+    }
   }
 
-  &.hasthumb .elementthumb img {
-    display: block;
-    flex-shrink: 0;
-    pointer-events: none;
+  &.hasthumb {
+    .elementthumb {
+      position: absolute;
+      display: flex;
+      justify-content: center;
+      -ms-flex-pack: center;
+      align-items: center;
+      -ms-flex-align: center;
+
+      img {
+        display: block;
+        flex-shrink: 0;
+        pointer-events: none;
+        border-radius: $smallBorderRadius;
+        max-width: 100%;
+        max-height: 100%;
+      }
+    }
   }
 
   .label {
@@ -1887,12 +1906,7 @@ $elementInnerSpacing: 5px;
   &.large:not(.hasthumb) {
     display: inline-block;
     padding: $baseElementSidePadding;
-    border-radius: $largeBorderRadius;
     box-sizing: border-box;
-
-    body.round-icons & {
-      border-radius: 17px;
-    }
 
     &.hasstatus {
       @include padding-left($baseElementSidePadding + $statusSize + $elementInnerSpacing);
@@ -1908,25 +1922,10 @@ $elementInnerSpacing: 5px;
       @include padding-left($smallThumbSize + $elementInnerSpacing);
 
       .elementthumb {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: absolute;
         top: calc(50% - 17px);
         @include left(0);
         width: $smallThumbSize;
         height: $smallThumbSize;
-        border-radius: $largeBorderRadius;
-        overflow: hidden;
-
-        body.round-icons & {
-          border-radius: 17px;
-        }
-
-        img {
-          width: 100%;
-          height: 100%;
-        }
       }
 
       &.hasstatus {
@@ -1944,7 +1943,6 @@ $elementInnerSpacing: 5px;
     padding: #{$baseElementSidePadding + $largeThumbSize + $elementInnerSpacing} $baseElementSidePadding $baseElementSidePadding;
     width: #{120px + $baseElementSidePadding + $baseElementSidePadding};
     box-sizing: border-box;
-    border-radius: $smallBorderRadius;
 
     &.hasstatus {
       @include padding-left($baseElementSidePadding + $statusSize + $elementInnerSpacing);
@@ -1957,21 +1955,10 @@ $elementInnerSpacing: 5px;
     }
 
     .elementthumb {
-      position: absolute;
       top: $baseElementSidePadding;
       @include left($baseElementSidePadding);
-      overflow: hidden;
-      display: flex;
-      justify-content: center;
-      -ms-flex-pack: center;
-      align-items: center;
-      -ms-flex-align: center;
       width: $largeThumbSize;
       height: $largeThumbSize;
-
-      img {
-        border-radius: $largeBorderRadius;
-      }
     }
 
     .label {
