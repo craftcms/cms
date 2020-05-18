@@ -173,9 +173,15 @@ class ElementHelper
         /** @var Element $element */
         $variables = [];
 
-        // If the URI format contains {id} but the element doesn't have one yet, preserve the {id} tag
-        if (!$element->id && strpos($uriFormat, '{id') !== false) {
-            $variables['id'] = $element->tempId = 'id-' . StringHelper::randomString(10);
+        // If the URI format contains {id} / {sourceId} but the element doesn't have one yet, preserve the tag
+        if (!$element->id) {
+            $element->tempId = 'id-' . StringHelper::randomString(10);
+            if (strpos($uriFormat, '{id') !== false) {
+                $variables['id'] = $element->tempId;
+            }
+            if (!$element->getSourceId() && strpos($uriFormat, '{sourceId') !== false) {
+                $variables['sourceId'] = $element->tempId;
+            }
         }
 
         $uri = Craft::$app->getView()->renderObjectTemplate($uriFormat, $element, $variables);

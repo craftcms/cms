@@ -53,6 +53,10 @@ body, input, select, textarea {
   margin-bottom: 0 !important;
 }
 
+.draghelper {
+  box-sizing: border-box;
+}
+
 .text,
 table.editable textarea {
   body.rtl .ltr & {

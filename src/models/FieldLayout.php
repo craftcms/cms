@@ -223,7 +223,7 @@ class FieldLayout extends Model
     }
 
     /**
-     * Sets the layout']”s fields.
+     * Sets the layout's fields.
      *
      * @param FieldInterface[] $fields An array of the layout’s fields, which can either be
      * FieldLayoutFieldModel objects or arrays defining the tab’s

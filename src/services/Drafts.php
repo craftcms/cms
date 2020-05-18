@@ -188,7 +188,7 @@ class Drafts extends Component
     public function saveElementAsDraft(ElementInterface $element, int $creatorId, string $name = null, string $notes = null): bool
     {
         if ($name === null) {
-            $name = 'First draft';
+            $name = Craft::t('app', 'First draft');
         }
 
         // Create the draft row
