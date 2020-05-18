@@ -23,10 +23,12 @@
 
 ### Changed
 - Craft now remembers the selected site across global sets and element indexes. ([#2779](https://github.com/craftcms/cms/issues/2779))
+- The default account activation and password reset emails now reference the system name rather than the current site name. ([#6089](https://github.com/craftcms/cms/pull/6089))
 - Craft will now regenerate missing transforms on local volumes. ([#5956](https://github.com/craftcms/cms/issues/5956))
 - Element queries’ `siteId` params can now be set to an array that begins with `'not'` to exclude specific site IDs.
 - It’s now possible to pass `type`, `status`, `title`, `slug`, `postDate`, `expiryDate`, and custom field query string params to the new entry URL, to set the default entry values (e.g. `/admin/entries/locations/new?phone=555-0123`).
 - Lightswitch inputs can now have labels, like checkboxes.
+- Improved support for eager-loading elements across multiple sites at once.
 - `craft\base\Element::getRoute()` now returns the route defined by `craft\events\SetElementRouteEvent::$route` even if it’s null, as long as `SetElementRouteEvent::$handled` is set to `true`.
 - `craft\elements\Asset::getUrl()` now has a `$transformOverrideParameters` parameter. ([#5853](https://github.com/craftcms/cms/issues/5853))
 - `craft\services\Fields::getFieldByHandle()` now has an optional `$context` argument.
@@ -269,6 +271,19 @@
 ### Security
 - The `_includes/forms/checkbox.html`, `checkboxGroup.html`, and `checkboxSelect.html` control panel templates now HTML-encode checkbox labels by default, preventing possible XSS vulnerabilities. If HTML code was desired, it must be passed through the new `raw()` function first.
 
+## Unreleased (3.4.x)
+
+### Changed
+- The `users/login` action no longer adds a random delay to the request for successful login attempts. ([#6090](https://github.com/craftcms/cms/pull/6090))
+- `craft\web\View::renderObjectTemplate()` now supports wrapping function calls in single curly brace delimiters (e.g. `{clone(variable)}`).
+- Updated Codeception to 4.1.4.
+
+### Fixed
+- Fixed a bug where custom field names weren’t getting translated in element index sort menus. ([#6073](https://github.com/craftcms/cms/issues/6073))
+- Fixed a bug where the Plugin Store could incorrectly report license key statuses. ([#6079](https://github.com/craftcms/cms/issues/6079))
+- Fixed an error that could occur when creating a new entry, if the section’s Entry URI Format contained `{sourceId}`. ([#6080](https://github.com/craftcms/cms/issues/6080))
+- Fixed a bug where some UI elements were sized incorrectly while being dragged.
+
 ## 3.4.19.1 - 2020-05-13
 
 ### Changed
@@ -276,7 +291,7 @@
 
 ### Fixed
 - Fixed a bug where the site selector wasn’t working when adding related elements to a relational field.
-- Fixed an error that colud occur when adding related elements to a relational field.
+- Fixed an error that could occur when adding related elements to a relational field.
 
 ## 3.4.19 - 2020-05-12
 
