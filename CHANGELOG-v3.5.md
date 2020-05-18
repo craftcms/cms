@@ -36,6 +36,7 @@
 - Added the `assetCount`, `categoryCount`, `entryCount`, `tagCount`, and `userCount` queries for fetching the element counts to the GraphPQL API. ([#4847](https://github.com/craftcms/cms/issues/4847))
 - Added the `locale` argument to the `formatDateTime` GraphQL directive. ([#5593](https://github.com/craftcms/cms/issues/5593))
 - Added support for specifying a transform on assets’ `width` and `height` fields via GraphQL.
+- Added the `hasPhoto` argument when querying for users using the GraphQL API. ([#6083](https://github.com/craftcms/cms/issues/6083))
 - Added `craft\base\ConfigurableComponent`.
 - Added `craft\base\ConfigurableComponentInterface`.
 - Added `craft\base\Element::EVENT_DEFINE_KEYWORDS`. ([#6028](https://github.com/craftcms/cms/issues/6028))
@@ -56,6 +57,8 @@
 - Added `craft\elements\actions\CopyUrl`.
 - Added `craft\elements\actions\Delete::$hard`.
 - Added `craft\elements\Asset::getSrcset()`. ([#5774](https://github.com/craftcms/cms/issues/5774))
+- Added `craft\elements\db\UserQuery::$hasPhoto`.
+- Added `craft\elements\db\UserQuery::hasPhoto()`.
 - Added `craft\events\DefineAttributeKeywordsEvent`.
 - Added `craft\events\DefineFieldKeywordsEvent`.
 - Added `craft\events\RegisterGqlMutationsEvent`.
