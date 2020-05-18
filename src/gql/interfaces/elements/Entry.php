@@ -117,7 +117,12 @@ class Entry extends Structure
                 'name' => 'url',
                 'type' => Type::string(),
                 'description' => 'The element’s full URL',
-            ]
+            ],
+            'localized' => [
+                'name' => 'localized',
+                'type' => Type::listOf(static::getType()),
+                'description' => 'The same element in other locales.',
+            ],
         ]), self::getName());
     }
 

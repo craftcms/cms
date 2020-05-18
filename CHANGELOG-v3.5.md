@@ -37,12 +37,14 @@
 - Added the `locale` argument to the `formatDateTime` GraphQL directive. ([#5593](https://github.com/craftcms/cms/issues/5593))
 - Added support for specifying a transform on assets’ `width` and `height` fields via GraphQL.
 - Added the `hasPhoto` argument when querying for users using the GraphQL API. ([#6083](https://github.com/craftcms/cms/issues/6083))
+- Added the `localized` field when querying entries and categories using the GraphQL API. ([#6045](https://github.com/craftcms/cms/issues/6045))
 - Added `craft\base\ConfigurableComponent`.
 - Added `craft\base\ConfigurableComponentInterface`.
 - Added `craft\base\Element::EVENT_DEFINE_KEYWORDS`. ([#6028](https://github.com/craftcms/cms/issues/6028))
 - Added `craft\base\Element::EVENT_SET_EAGER_LOADED_ELEMENTS`.
 - Added `craft\base\Element::searchKeywords()`.
 - Added `craft\base\ElementInterface::getIconUrl()`.
+- Added `craft\base\ElementInterface::getLocalized()`.
 - Added `craft\base\ElementInterface::gqlMutationNameByContext()`.
 - Added `craft\base\ElementTrait::$elementSiteId`.
 - Added `craft\base\Field::EVENT_DEFINE_KEYWORDS`. ([#6028](https://github.com/craftcms/cms/issues/6028))

@@ -10,7 +10,6 @@ namespace craft\gql\interfaces\elements;
 use craft\elements\Category as CategoryElement;
 use craft\gql\arguments\elements\Category as CategoryArguments;
 use craft\gql\GqlEntityRegistry;
-use craft\gql\interfaces\elements\Category as CategoryInterface;
 use craft\gql\interfaces\Structure;
 use craft\gql\TypeManager;
 use craft\gql\types\generators\CategoryType;
@@ -83,19 +82,24 @@ class Category extends Structure
             'children' => [
                 'name' => 'children',
                 'args' => CategoryArguments::getArguments(),
-                'type' => Type::listOf(CategoryInterface::getType()),
+                'type' => Type::listOf(static::getType()),
                 'description' => 'The category’s children.'
             ],
             'parent' => [
                 'name' => 'parent',
-                'type' => CategoryInterface::getType(),
+                'type' => static::getType(),
                 'description' => 'The category’s parent.'
             ],
             'url' => [
                 'name' => 'url',
                 'type' => Type::string(),
                 'description' => 'The element’s full URL',
-            ]
+            ],
+            'localized' => [
+                'name' => 'localized',
+                'type' => Type::listOf(static::getType()),
+                'description' => 'The same element in other locales.',
+            ],
         ]), self::getName());
     }
 }
