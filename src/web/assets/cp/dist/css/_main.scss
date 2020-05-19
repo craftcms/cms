@@ -1337,12 +1337,24 @@ div.btn.submit input {
   }
 
   .color-preview {
+    position: absolute;
     top: 0;
     @include left(0);
     width: 100%;
     height: 100%;
     border-radius: 17px;
     box-shadow: inset 0 0 0 1px transparentize($black, 0.85);
+
+    & > .color-preview-input {
+      position: absolute;
+      @include left(0);
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      border: none;
+      opacity: 0;
+    }
   }
 }
 

@@ -11170,7 +11170,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       }
 
       this.$colorContainer.removeClass('static');
-      this.$colorInput = $(input).addClass('hidden').insertAfter(this.$input);
+      this.$colorInput = $(input).addClass('color-preview-input').appendTo(this.$colorPreview);
       this.addListener(this.$colorContainer, 'click', function () {
         this.$colorInput.trigger('click');
       });

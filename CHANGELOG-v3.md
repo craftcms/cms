@@ -14,6 +14,7 @@
 - Fixed a bug where asset custom field values could go unsaved. ([#6086](https://github.com/craftcms/cms/issues/6086))
 - Fixed a bug where the `upscaleImages` config setting wasn’t applying properly. ([#6084](https://github.com/craftcms/cms/issues/6084))
 - Fixed a bug where image thumbnails in the control panel could stop loading if three thumbnails failed to load properly.
+- Fixed a bug where clicking on the color preview within Color fields wasn’t opening the browser’s color picker in Safari. ([#6107](https://github.com/craftcms/cms/issues/6107))
 
 ## 3.4.20 - 2020-05-18
 
