@@ -4800,7 +4800,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     getDisabledElementIds: function getDisabledElementIds() {
       var ids = this.getSelectedElementIds();
 
-      if (this.settings.sourceElementId) {
+      if (!this.settings.allowSelfRelations && this.settings.sourceElementId) {
         ids.push(this.settings.sourceElementId);
       }
 
@@ -4905,6 +4905,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       elementType: null,
       sources: null,
       criteria: {},
+      allowSelfRelations: false,
       sourceElementId: null,
       disabledElementIds: null,
       viewMode: 'list',
@@ -11241,7 +11242,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       }
 
       this.$colorContainer.removeClass('static');
-      this.$colorInput = $(input).addClass('hidden').insertAfter(this.$input);
+      this.$colorInput = $(input).addClass('color-preview-input').appendTo(this.$colorPreview);
       this.addListener(this.$colorContainer, 'click', function () {
         this.$colorInput.trigger('click');
       });

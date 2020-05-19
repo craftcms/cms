@@ -33,8 +33,8 @@ Craft.ColorInput = Garnish.Base.extend({
 
         this.$colorContainer.removeClass('static');
         this.$colorInput = $(input)
-            .addClass('hidden')
-            .insertAfter(this.$input);
+            .addClass('color-preview-input')
+            .appendTo(this.$colorPreview);
 
         this.addListener(this.$colorContainer, 'click', function() {
             this.$colorInput.trigger('click');

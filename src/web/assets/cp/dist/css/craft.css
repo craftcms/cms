@@ -554,9 +554,12 @@ body.rtl .btngroup .btn.dashed:not(:last-child) { margin-left: -1px; }
 .color { display: inline-block; position: relative; vertical-align: middle; width: 34px; height: 34px; border-radius: 17px; padding: 0; background-color: url(../images/checkers.png); }
 .color:not(.static) { cursor: pointer; }
 .color.small { width: 16px; height: 16px; background-size: 16px; }
-.color .color-preview { top: 0; width: 100%; height: 100%; border-radius: 17px; -webkit-box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.15); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.15); }
+.color .color-preview { position: absolute; top: 0; width: 100%; height: 100%; border-radius: 17px; -webkit-box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.15); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.15); }
 body.ltr .color .color-preview { left: 0; }
 body.rtl .color .color-preview { right: 0; }
+.color .color-preview > .color-preview-input { position: absolute; width: 100%; height: 100%; margin: 0; padding: 0; border: none; opacity: 0; }
+body.ltr .color .color-preview > .color-preview-input { left: 0; }
+body.rtl .color .color-preview > .color-preview-input { right: 0; }
 
 .colorhex { display: inline-block; margin-left: 5px; vertical-align: middle; color: #7b8793; }
 

@@ -193,6 +193,7 @@ JS;
             'Pay {price}',
             'Pending',
             'Previous Page',
+            'Publish changes',
             'Really delete folder “{folder}”?',
             'Remove',
             'Rename folder',
