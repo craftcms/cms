@@ -16,6 +16,7 @@
 - Fixed a bug where the `upscaleImages` config setting wasn’t applying properly. ([#6084](https://github.com/craftcms/cms/issues/6084))
 - Fixed a bug where image thumbnails in the control panel could stop loading if three thumbnails failed to load properly.
 - Fixed a bug where clicking on the color preview within Color fields wasn’t opening the browser’s color picker in Safari. ([#6107](https://github.com/craftcms/cms/issues/6107))
+- Fixed a bug where the “Publish changes” button label was not getting translated after clicking “Save as a draft” on an Edit Entry page. ([#6112](https://github.com/craftcms/cms/issues/6112))
 
 ## 3.4.20 - 2020-05-18
 
