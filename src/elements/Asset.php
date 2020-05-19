@@ -1569,7 +1569,10 @@ class Asset extends Element
         // Set the field layout
         /** @var Volume $volume */
         $volume = Craft::$app->getAssets()->getFolderById($folderId)->getVolume();
-        $this->fieldLayoutId = $volume->fieldLayoutId;
+
+        if (!$volume instanceof Temp) {
+            $this->fieldLayoutId = $volume->fieldLayoutId;
+        }
 
         return parent::beforeSave($isNew);
     }

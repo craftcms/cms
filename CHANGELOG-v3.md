@@ -10,6 +10,7 @@
 
 ### Fixed
 - Fixed a bug where non-sortable fields could be listed as element index sort options, and sortable fields could be listed twice, for element types that didn’t override the `defineSortOptions()` method.
+- Fixed a bug where custom field values for assets sometimes would not be saved. ([#6086](https://github.com/craftcms/cms/issues/6086))
 
 ## 3.4.20 - 2020-05-18
 
