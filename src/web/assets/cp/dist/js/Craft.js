@@ -14,7 +14,7 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-/*!   - 2020-05-15 */
+/*!   - 2020-05-19 */
 (function ($) {
   /** global: Craft */
 
@@ -14379,16 +14379,59 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       }
     },
     load: function load($elements) {
-      this.queue = this.queue.concat($elements.find('.elementthumb').toArray());
+      var _this12 = this;
 
-      if (this.queue.length) {
-        // See if there are any inactive workers
-        for (var i = 0; i < this.workers.length; i++) {
-          if (!this.workers[i].active) {
-            this.workers[i].loadNext();
-          }
+      // Only immediately load the visible images
+      var $thumbs = $elements.find('.elementthumb');
+
+      var _loop = function _loop(_i4) {
+        var $thumb = $thumbs.eq(_i4);
+        var $scrollParent = $thumb.scrollParent();
+
+        if (_this12.isVisible($thumb, $scrollParent)) {
+          _this12.addToQueue($thumb[0]);
+        } else {
+          var rand = Math.floor(Math.random() * 1000000);
+          $scrollParent.on("scroll.".concat(rand), {
+            $thumb: $thumb,
+            $scrollParent: $scrollParent,
+            rand: rand
+          }, function (ev) {
+            if (_this12.isVisible(ev.data.$thumb, ev.data.$scrollParent)) {
+              $scrollParent.off("scroll.".concat(ev.data.rand));
+
+              _this12.addToQueue(ev.data.$thumb[0]);
+            }
+          });
+        }
+      };
+
+      for (var _i4 = 0; _i4 < $thumbs.length; _i4++) {
+        _loop(_i4);
+      }
+    },
+    addToQueue: function addToQueue(thumb) {
+      this.queue.push(thumb); // See if there are any inactive workers
+
+      for (var i = 0; i < this.workers.length; i++) {
+        if (!this.workers[i].active) {
+          this.workers[i].loadNext();
         }
       }
+    },
+    isVisible: function isVisible($thumb, $scrollParent) {
+      var thumbOffset = $thumb.offset().top;
+      var scrollParentOffset, scrollParentHeight;
+
+      if ($scrollParent[0] === document) {
+        scrollParentOffset = $scrollParent.scrollTop();
+        scrollParentHeight = Garnish.$win.height();
+      } else {
+        scrollParentOffset = $scrollParent.offset().top;
+        scrollParentHeight = $scrollParent.height();
+      }
+
+      return thumbOffset > scrollParentOffset && thumbOffset < scrollParentOffset + scrollParentHeight + 1000;
     },
     destroy: function destroy() {
       for (var i = 0; i < this.workers.length; i++) {
@@ -14425,7 +14468,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         srcset: $container.attr('data-srcset'),
         alt: ''
       });
-      this.addListener($img, 'load', 'loadNext');
+      this.addListener($img, 'load,error', 'loadNext');
       $img.appendTo($container);
       picturefill({
         elements: [$img[0]]
