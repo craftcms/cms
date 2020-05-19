@@ -24,4 +24,12 @@ interface ComponentInterface
      * @return string The display name of this class.
      */
     public static function displayName(): string;
+
+    /**
+     * Returns whether the component should be selectable in component Type selects.
+     *
+     * @return bool whether the component should be selectable in component Type selects.
+     * @since 3.5.0
+     */
+    public static function isSelectable(): bool;
 }

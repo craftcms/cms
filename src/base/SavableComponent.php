@@ -51,14 +51,6 @@ abstract class SavableComponent extends ConfigurableComponent implements Savable
     /**
      * @inheritdoc
      */
-    public static function isSelectable(): bool
-    {
-        return true;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getIsNew(): bool
     {
         return (!$this->id || strpos($this->id, 'new') === 0);
