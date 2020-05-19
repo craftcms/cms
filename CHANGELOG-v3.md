@@ -291,9 +291,13 @@
 
 ### Changed
 - Asset thumbnails now use the same aspect ratio as the source image. ([#5518](https://github.com/craftcms/cms/issues/5518), [#5515](https://github.com/craftcms/cms/issues/5515))
+- Image thumbnails in the control panel now only load once they are in view, or close to it. ([#6104](https://github.com/craftcms/cms/issues/6104))
 
 ### Fixed
 - Fixed a bug where non-sortable fields could be listed as element index sort options, and sortable fields could be listed twice, for element types that didn’t override the `defineSortOptions()` method.
+- Fixed a bug where asset custom field values could go unsaved. ([#6086](https://github.com/craftcms/cms/issues/6086))
+- Fixed a bug where the `upscaleImages` config setting wasn’t applying properly. ([#6084](https://github.com/craftcms/cms/issues/6084))
+- Fixed a bug where image thumbnails in the control panel could stop loading if three thumbnails failed to load properly.
 
 ## 3.4.20 - 2020-05-18
 

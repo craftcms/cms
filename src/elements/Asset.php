@@ -1663,7 +1663,10 @@ class Asset extends Element
 
         // Set the field layout
         $volume = Craft::$app->getAssets()->getFolderById($folderId)->getVolume();
-        $this->fieldLayoutId = $volume->fieldLayoutId;
+
+        if (!$volume instanceof Temp) {
+            $this->fieldLayoutId = $volume->fieldLayoutId;
+        }
 
         return parent::beforeSave($isNew);
     }
@@ -1854,6 +1857,11 @@ class Asset extends Element
         }
 
         $transform = Craft::$app->getAssetTransforms()->normalizeTransform($transform);
+
+        if ($this->_width < $transform->width && $this->_height < $transform->height && !Craft::$app->getConfig()->getGeneral()->upscaleImages) {
+            return [$this->_width, $this->_height];
+        }
+
         list($width, $height) = Image::calculateMissingDimension($transform->width, $transform->height, $this->_width, $this->_height);
 
         // Special case for 'fit' since that's the only one whose dimensions vary from the transform dimensions
