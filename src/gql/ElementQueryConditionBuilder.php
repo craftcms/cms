@@ -13,6 +13,7 @@ use craft\base\FieldInterface;
 use craft\base\GqlInlineFragmentFieldInterface;
 use craft\fields\Assets as AssetField;
 use craft\fields\BaseRelationField;
+use craft\fields\Users as UserField;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\helpers\StringHelper;
 use craft\services\Gql;
@@ -250,12 +251,13 @@ class ElementQueryConditionBuilder
 
                 $transformableAssetProperty = ($rootOfAssetQuery || $parentField) && in_array($nodeName, $this->_transformableAssetProperties, true);
                 $isAssetField = $craftContentField instanceof AssetField;
+                $isUserPhoto = $nodeName === 'photo' && ($parentField === null || $parentField instanceof UserField);
 
                 // That is a Craft field that can be eager-loaded or is the special `children` property
                 $possibleTransforms = $transformableAssetProperty || $isAssetField;
                 $otherEagerLoadableNode = $nodeName === Gql::GRAPHQL_COUNT_FIELD || in_array($nodeName, $this->_eagerLoadableProperties, true);
 
-                if ($possibleTransforms || $craftContentField || $otherEagerLoadableNode) {
+                if ($possibleTransforms || $craftContentField || $otherEagerLoadableNode || $isUserPhoto) {
                     // Any arguments?
                     $arguments = $this->_extractArguments($subNode->arguments ?? []);
 
