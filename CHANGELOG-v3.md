@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Added the “Allow self relations” advanced setting to relational fields. ([#6113](https://github.com/craftcms/cms/issues/6113))
 - Added `craft\helpers\Assets::scaledDimensions()`.
 
 ### Changed

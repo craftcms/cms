@@ -160,6 +160,12 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     public $allowLimit = true;
 
     /**
+     * @var bool Whether elements should be allowed to relate themselves.
+     * @since 3.4.21
+     */
+    public $allowSelfRelations = false;
+
+    /**
      * @var bool Whether to allow the “Large Thumbnails” view mode
      */
     protected $allowLargeThumbsView = false;
@@ -243,6 +249,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         $attributes[] = 'selectionLabel';
         $attributes[] = 'localizeRelations';
         $attributes[] = 'validateRelatedElements';
+        $attributes[] = 'allowSelfRelations';
 
         return $attributes;
     }
@@ -911,7 +918,8 @@ JS;
         }
 
         $disabledElementIds = [];
-        if ($element) {
+
+        if (!$this->allowSelfRelations && $element) {
             if ($element->id) {
                 $disabledElementIds[] = $element->getSourceId();
             }
@@ -939,6 +947,7 @@ JS;
             'sources' => $this->inputSources($element),
             'criteria' => $selectionCriteria,
             'showSiteMenu' => $this->targetSiteId ? false : 'auto',
+            'allowSelfRelations' => (bool)$this->allowSelfRelations,
             'sourceElementId' => !empty($element->id) ? $element->id : null,
             'disabledElementIds' => $disabledElementIds,
             'limit' => $this->allowLimit ? $this->limit : null,
