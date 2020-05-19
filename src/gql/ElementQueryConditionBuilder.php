@@ -170,6 +170,7 @@ class ElementQueryConditionBuilder
         foreach ($directives as $directive) {
             if ($directive->name->value === 'transform') {
                 $arguments = $this->_extractArguments($directive->arguments ?? []);
+                unset($arguments['immediately']);
                 break;
             }
         }
