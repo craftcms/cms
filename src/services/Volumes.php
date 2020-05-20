@@ -317,10 +317,10 @@ class Volumes extends Component
             'sortOrder' => (int)$volume->sortOrder,
         ];
 
-        $fieldLayout = $volume->getFieldLayout();
-        $fieldLayoutConfig = $fieldLayout->getConfig();
-
-        if ($fieldLayoutConfig) {
+        if (
+            ($fieldLayout = $volume->getFieldLayout()) &&
+            ($fieldLayoutConfig = $fieldLayout->getConfig())
+        ) {
             if (empty($fieldLayout->id)) {
                 $layoutUid = StringHelper::UUID();
                 $fieldLayout->uid = $layoutUid;

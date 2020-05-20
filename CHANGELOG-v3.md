@@ -12,6 +12,8 @@
 - Added `craft\base\ElementInterface::getLocalized()`.
 - Added `craft\base\Field::EVENT_DEFINE_KEYWORDS`. ([#6028](https://github.com/craftcms/cms/issues/6028))
 - Added `craft\base\Field::searchKeywords()`.
+- Added `craft\base\Volume::getFieldLayout()`.
+- Added `craft\base\VolumeInterface::getFieldLayout()`.
 - Added `craft\elements\db\UserQuery::$hasPhoto`.
 - Added `craft\elements\db\UserQuery::hasPhoto()`.
 - Added `craft\events\DefineAttributeKeywordsEvent`.
