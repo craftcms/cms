@@ -10,16 +10,31 @@ class Item extends React.Component {
     }
 }
 
-class ToolBar extends React.Component {
+class SchemaSelector extends React.Component {
     render() {
-        return elem(GraphiQL.Toolbar, {class: 'menu'}, elem(GraphiQL.Menu, {
+        return elem(GraphiQL.Menu, {
+            class: 'menu',
             label: this.props.selectedSchema.name,
             title: "Select a GraphQL schema"
-        }, this.props.menuItems))
+        }, this.props.menuItems)
     }
 }
 
 class Root extends React.Component {
+    constructor(props) {
+        super(props);
+        this.graphiql = React.createRef();
+    }
+
+    handleClickPrettifyButton(event) {
+        this.graphiql.current.handlePrettifyQuery();
+    }
+
+
+    handleClickHistoryButton(event) {
+        this.graphiql.current.handleToggleHistory();
+    }
+
     render() {
         var logoElement = React.createElement(GraphiQL.Logo, {}, "Explore the GraphQL API")
 
@@ -37,12 +52,24 @@ class Root extends React.Component {
             }
         }
 
-        if (menuItems.length) {
-            toolBar = elem(GraphiQL.Toolbar, {}, elem(ToolBar, {menuItems: menuItems, selectedSchema: this.props.selectedSchema}));
-        } else {
-            // empty toolbar to remove default toolbar buttons
-            toolBar = elem(GraphiQL.Toolbar, {}, elem('div', {}, ''));
-        }
+        let children = [
+            elem(GraphiQL.Button, {
+                onClick: this.handleClickPrettifyButton.bind(this),
+                label: "Prettify",
+                title: "Prettify query"
+            }),
+            elem(GraphiQL.Button, {
+                onClick: this.handleClickHistoryButton.bind(this),
+                label: "History",
+                title: "Toggle history"
+            }),
+            elem(SchemaSelector, {menuItems: menuItems, selectedSchema: this.props.selectedSchema}),
+        ];
+
+        children.push
+
+        // empty toolbar to remove default toolbar buttons
+        toolBar = elem(GraphiQL.Toolbar, {}, children);
 
         return elem(GraphiQL, {
             fetcher: this.props.fetcher,
@@ -52,7 +79,8 @@ class Root extends React.Component {
             operationName: parameters.operationName,
             onEditQuery: onEditQuery,
             onEditVariables: onEditVariables,
-            onEditOperationName: onEditOperationName
+            onEditOperationName: onEditOperationName,
+            ref: this.graphiql
         }, toolBar, logoElement);
     }
 }

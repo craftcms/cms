@@ -102,34 +102,33 @@
     .toolbar {
       margin-left: 16px;
     }
-    .toolbar-menu {
-      &.toolbar-button {
-        display: inline-block;
-        background-color: $grey200;
-        border-radius: $largeBorderRadius;
-        padding: 7px 14px;
-        border: none;
-        text-align: center;
-        white-space: nowrap;
-        user-select: none;
-        cursor: pointer;
-        box-sizing: border-box;
-        appearance: none;
-        color: $textColor;
-        height: 34px;
-        max-width: 100%;
-        box-shadow: none;
+    .toolbar-button {
+      display: inline-block;
+      background-color: $grey200;
+      border-radius: $largeBorderRadius;
+      padding: 7px 14px;
+      border: none;
+      text-align: center;
+      white-space: nowrap;
+      user-select: none;
+      cursor: pointer;
+      box-sizing: border-box;
+      appearance: none;
+      color: $textColor;
+      height: 34px;
+      max-width: 100%;
+      box-shadow: none;
 
-        &:focus,
-        &:hover {
-          background-color: darken($grey200, 5%);
-        }
+      &:focus,
+      &:hover {
+        background-color: darken($grey200, 5%);
+      }
 
-        svg {
-          margin-left: 5px;
-        }
+      svg {
+        margin-left: 5px;
       }
     }
+
     .toolbar-menu-items {
       min-width: 100%;
       margin-top: 0;

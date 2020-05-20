@@ -1533,7 +1533,7 @@ li.CodeMirror-hint-active {
       color: #9aa5b1; }
   #graphiql .graphiql-container .toolbar {
     margin-left: 16px; }
-  #graphiql .graphiql-container .toolbar-menu.toolbar-button {
+  #graphiql .graphiql-container .toolbar-button {
     display: inline-block;
     background-color: #cdd8e4;
     border-radius: 5px;
@@ -1549,9 +1549,9 @@ li.CodeMirror-hint-active {
     height: 34px;
     max-width: 100%;
     box-shadow: none; }
-    #graphiql .graphiql-container .toolbar-menu.toolbar-button:focus, #graphiql .graphiql-container .toolbar-menu.toolbar-button:hover {
+    #graphiql .graphiql-container .toolbar-button:focus, #graphiql .graphiql-container .toolbar-button:hover {
       background-color: #bdcbdb; }
-    #graphiql .graphiql-container .toolbar-menu.toolbar-button svg {
+    #graphiql .graphiql-container .toolbar-button svg {
       margin-left: 5px; }
   #graphiql .graphiql-container .toolbar-menu-items {
     min-width: 100%;
