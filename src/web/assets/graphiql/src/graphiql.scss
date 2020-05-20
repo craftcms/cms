@@ -36,13 +36,20 @@
   .graphiql-container .toolbar-select-options > li.hover,
   .graphiql-container .toolbar-select-options > li:active,
   .graphiql-container .toolbar-select-options > li:hover,
-  .graphiql-container .history-contents > p:hover,
-  .graphiql-container .history-contents > p:active,
   .CodeMirror-gutters{
     background: none;
     border: none;
   }
 
+  .graphiql-container .history-contents > p:hover,
+  .graphiql-container .history-contents > p:active {
+    color: $textColor;
+    background-color: $grey050;
+
+    span:not(.history-label) {
+      font-size: 14px;
+    }
+  }
   .graphiql-container,
   .graphiql-container .editorWrap {
     overflow: visible;

@@ -1487,11 +1487,16 @@ li.CodeMirror-hint-active {
   #graphiql .graphiql-container .toolbar-select-options > li.hover,
   #graphiql .graphiql-container .toolbar-select-options > li:active,
   #graphiql .graphiql-container .toolbar-select-options > li:hover,
-  #graphiql .graphiql-container .history-contents > p:hover,
-  #graphiql .graphiql-container .history-contents > p:active,
   #graphiql .CodeMirror-gutters {
     background: none;
     border: none; }
+  #graphiql .graphiql-container .history-contents > p:hover,
+  #graphiql .graphiql-container .history-contents > p:active {
+    color: #3f4d5a;
+    background-color: #f3f7fc; }
+    #graphiql .graphiql-container .history-contents > p:hover span:not(.history-label),
+    #graphiql .graphiql-container .history-contents > p:active span:not(.history-label) {
+      font-size: 14px; }
   #graphiql .graphiql-container,
   #graphiql .graphiql-container .editorWrap {
     overflow: visible; }
