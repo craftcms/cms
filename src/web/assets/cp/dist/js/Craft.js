@@ -14,7 +14,7 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-/*!   - 2020-05-19 */
+/*!   - 2020-05-20 */
 (function ($) {
   /** global: Craft */
 
@@ -8271,13 +8271,13 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           return this._getFileDragHelper($file);
         }, this),
         dropTargets: $.proxy(function () {
-          // Which "can-move-to" attribute should we be checking
+          // Which data attribute should we be checking?
           var attr;
 
           if (this._assetDrag.$draggee && this._assetDrag.$draggee.has('.element[data-peer-file]').length) {
-            attr = 'can-move-peer-files-to';
+            attr = 'data-can-move-peer-files-to';
           } else {
-            attr = 'can-move-to';
+            attr = 'data-can-move-to';
           }
 
           var targets = [];
@@ -8286,7 +8286,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
             // Make sure it's a volume folder
             var $source = this.$sources.eq(i);
 
-            if ($source.data(attr)) {
+            if (Garnish.hasAttr($source, attr)) {
               targets.push($source);
             }
           }
@@ -8846,7 +8846,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
       var folderId = $source.data('folder-id');
 
-      if (folderId && this.$source.attr('data-can-upload')) {
+      if (folderId && Garnish.hasAttr(this.$source, 'data-can-upload')) {
         this.uploader.setParams({
           folderId: this.$source.attr('data-folder-id')
         });
@@ -9349,7 +9349,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           if (textStatus === 'success' && data.success) {
             this._prepareParentForChildren($parentFolder);
 
-            var $subfolder = $('<li>' + '<a data-key="' + $parentFolder.data('key') + '/folder:' + data.folderUid + '"' + (Garnish.hasAttr($parentFolder, 'data-has-thumbs') ? ' data-has-thumbs' : '') + ' data-folder-id="' + data.folderId + '"' + ' data-can-upload="' + $parentFolder.attr('data-can-upload') + '"' + ' data-can-move-to="' + $parentFolder.attr('data-can-move-to') + '"' + ' data-can-move-peer-files-to="' + $parentFolder.attr('data-can-move-peer-files-to') + '"' + '>' + data.folderName + '</a>' + '</li>');
+            var $subfolder = $('<li>' + '<a data-key="' + $parentFolder.data('key') + '/folder:' + data.folderUid + '"' + (Garnish.hasAttr($parentFolder, 'data-has-thumbs') ? ' data-has-thumbs' : '') + ' data-folder-id="' + data.folderId + '"' + (Garnish.hasAttr($parentFolder, 'data-can-upload') ? ' data-can-upload' : '') + (Garnish.hasAttr($parentFolder, 'data-can-move-to') ? ' data-can-move-to' : '') + (Garnish.hasAttr($parentFolder, 'data-can-move-peer-files-to') ? ' data-can-move-peer-files-to' : '') + '>' + data.folderName + '</a>' + '</li>');
             var $a = $subfolder.children('a:first');
 
             this._appendSubfolder($parentFolder, $subfolder);

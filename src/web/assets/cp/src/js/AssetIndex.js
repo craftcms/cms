@@ -141,12 +141,12 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                 }, this),
 
                 dropTargets: $.proxy(function() {
-                    // Which "can-move-to" attribute should we be checking
+                    // Which data attribute should we be checking?
                     var attr;
                     if (this._assetDrag.$draggee && this._assetDrag.$draggee.has('.element[data-peer-file]').length) {
-                        attr = 'can-move-peer-files-to';
+                        attr = 'data-can-move-peer-files-to';
                     } else {
-                        attr = 'can-move-to';
+                        attr = 'data-can-move-to';
                     }
 
                     var targets = [];
@@ -154,7 +154,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                     for (var i = 0; i < this.$sources.length; i++) {
                         // Make sure it's a volume folder
                         var $source = this.$sources.eq(i);
-                        if ($source.data(attr)) {
+                        if (Garnish.hasAttr($source, attr)) {
                             targets.push($source);
                         }
                     }
@@ -746,7 +746,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             var $source = this._getSourceByKey(this.sourceKey);
             var folderId = $source.data('folder-id');
 
-            if (folderId && this.$source.attr('data-can-upload')) {
+            if (folderId && Garnish.hasAttr(this.$source, 'data-can-upload')) {
                 this.uploader.setParams({
                     folderId: this.$source.attr('data-folder-id')
                 });
@@ -1267,9 +1267,9 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                             '<a data-key="' + $parentFolder.data('key') + '/folder:' + data.folderUid + '"' +
                             (Garnish.hasAttr($parentFolder, 'data-has-thumbs') ? ' data-has-thumbs' : '') +
                             ' data-folder-id="' + data.folderId + '"' +
-                            ' data-can-upload="' + $parentFolder.attr('data-can-upload') + '"' +
-                            ' data-can-move-to="' + $parentFolder.attr('data-can-move-to') + '"' +
-                            ' data-can-move-peer-files-to="' + $parentFolder.attr('data-can-move-peer-files-to') + '"' +
+                            (Garnish.hasAttr($parentFolder, 'data-can-upload') ? ' data-can-upload' : '') +
+                            (Garnish.hasAttr($parentFolder, 'data-can-move-to') ? ' data-can-move-to' : '') +
+                            (Garnish.hasAttr($parentFolder, 'data-can-move-peer-files-to') ? ' data-can-move-peer-files-to' : '') +
                             '>' +
                             data.folderName +
                             '</a>' +

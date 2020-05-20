@@ -501,9 +501,9 @@ class Asset extends Element
             'data' => [
                 'volume-handle' => $volumeHandle,
                 'folder-id' => $folder->id,
-                'can-upload' => ($folder->volumeId === null || $canUpload) ? 1 : false,
-                'can-move-to' => $canMoveTo ? 1 : false,
-                'can-move-peer-files-to' => $canMovePeerFilesTo ? 1 : false,
+                'can-upload' => $folder->volumeId === null || $canUpload,
+                'can-move-to' => $canMoveTo,
+                'can-move-peer-files-to' => $canMovePeerFilesTo,
             ]
         ];
 
