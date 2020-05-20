@@ -297,10 +297,10 @@ class Asset extends Element
     {
         $actions = [];
 
-        if (preg_match('/^folder:([a-z0-9\-]+)/', $source, $matches)) {
-            $folderId = $matches[1];
-
-            $folder = Craft::$app->getAssets()->getFolderByUid($folderId);
+        if (
+            preg_match('/^folder:(.+)/', $source, $matches) &&
+            $folder = Craft::$app->getAssets()->getFolderByUid($matches[1])
+        ) {
             $volume = $folder->getVolume();
 
             $actions[] = [
