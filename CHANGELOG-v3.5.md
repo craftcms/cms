@@ -42,9 +42,13 @@
 - Added the `Prettify` and `History` buttons to the GraphQL explorer.
 - Added `craft\base\ConfigurableComponent`.
 - Added `craft\base\ConfigurableComponentInterface`.
+- Added `craft\base\Element::defineFieldLayouts()`.
 - Added `craft\base\Element::EVENT_DEFINE_KEYWORDS`. ([#6028](https://github.com/craftcms/cms/issues/6028))
+- Added `craft\base\Element::EVENT_REGISTER_FIELD_LAYOUTS`.
 - Added `craft\base\Element::EVENT_SET_EAGER_LOADED_ELEMENTS`.
+- Added `craft\base\Element::fieldLayouts()`.
 - Added `craft\base\Element::searchKeywords()`.
+- Added `craft\base\ElementInterface::fieldLayouts()`.
 - Added `craft\base\ElementInterface::getLocalized()`.
 - Added `craft\base\ElementInterface::gqlMutationNameByContext()`.
 - Added `craft\base\ElementTrait::$elementSiteId`.
@@ -61,11 +65,15 @@
 - Added `craft\controllers\BaseEntriesController::enforceSitePermissions()`.
 - Added `craft\elements\actions\CopyUrl`.
 - Added `craft\elements\actions\Delete::$hard`.
+- Added `craft\elements\Asset::defineFieldLayouts()`.
 - Added `craft\elements\Asset::getSrcset()`. ([#5774](https://github.com/craftcms/cms/issues/5774))
+- Added `craft\elements\Category::defineFieldLayouts()`.
 - Added `craft\elements\db\UserQuery::$hasPhoto`.
 - Added `craft\elements\db\UserQuery::hasPhoto()`.
+- Added `craft\elements\Entry::defineFieldLayouts()`.
 - Added `craft\events\DefineAttributeKeywordsEvent`.
 - Added `craft\events\DefineFieldKeywordsEvent`.
+- Added `craft\events\RegisterElementFieldLayoutsEvent`.
 - Added `craft\events\RegisterGqlMutationsEvent`.
 - Added `craft\events\RegisterGqlSchemaComponentsEvent`.
 - Added `craft\events\SetEagerLoadedElementsEvent`.
@@ -130,7 +138,10 @@
 - Added `craft\services\AssetTransforms::extendTransform()`. ([#5853](https://github.com/craftcms/cms/issues/5853))
 - Added `craft\services\Composer::handleError()`.
 - Added `craft\services\Composer::run()`.
+- Added `craft\services\ElementIndexes::getSourceSortOptions()`.
+- Added `craft\services\ElementIndexes::getSourceTableAttributes()`.
 - Added `craft\services\Elements::createElementQuery()`.
+- Added `craft\services\Fields::getLayoutsByElementType()`.
 - Added `craft\services\Gql::getAllSchemaComponents()`.
 - Added `craft\services\Images::getSupportsWebP()`. ([#5853](https://github.com/craftcms/cms/issues/5853))
 - Added `craft\services\ProjectConfig::$filename`. ([#5982](https://github.com/craftcms/cms/issues/5982))
@@ -154,6 +165,7 @@
 - User registration forms in the control panel now give users the option to send an activation email, even if email verification isn’t required. ([#5836](https://github.com/craftcms/cms/issues/5836))
 - Activation emails are now sent automatically on public registration if the `deferPublicRegistrationPassword` config setting is enabled, even if email verification isn’t required. ([#5836](https://github.com/craftcms/cms/issues/5836))
 - Craft now remembers the selected site across global sets and element indexes. ([#2779](https://github.com/craftcms/cms/issues/2779))
+- The available table columns and sort options within element indexes now only list custom fields that are present in field layouts for the selected element source. ([#4314](https://github.com/craftcms/cms/issues/4314), [#4802](https://github.com/craftcms/cms/issues/4802))
 - The default account activation and password reset emails now reference the system name rather than the current site name. ([#6089](https://github.com/craftcms/cms/pull/6089))
 - Craft will now regenerate missing transforms on local volumes. ([#5956](https://github.com/craftcms/cms/issues/5956))
 - Preview frames now maintain their scroll position across refreshes, even for cross-origin preview targets.
@@ -187,13 +199,16 @@
 - Lightswitch inputs can now have labels, like checkboxes.
 - Improved support for eager-loading elements across multiple sites at once.
 - `craft\base\Element::getRoute()` now returns the route defined by `craft\events\SetElementRouteEvent::$route` even if it’s null, as long as `SetElementRouteEvent::$handled` is set to `true`.
+- `craft\base\ElementInterface::sortOptions()` now allows the returned `orderBy` key to be set to an array of column names.
 - `craft\base\SavableComponent::isSelectable()` has been moved into the base component class, `craft\base\Component`.
 - `craft\base\SavableComponentInterface::isSelectable()` has been moved into the base component interface, `craft\base\ComponentInterface`.
+- `craft\base\SortableFieldInterface::getSortOption()` now allows the returned `orderBy` key to be set to an array of column names.
 - `craft\db\ActiveRecord` now unsets any empty primary key values when saving new records, to avoid a SQL error on PostgreSQL. ([#5814](https://github.com/craftcms/cms/pull/5814))
 - `craft\elements\Asset::getImg()` now has a `$sizes` argument. ([#5774](https://github.com/craftcms/cms/issues/5774))
 - `craft\helpers\ElementHelper::supportedSitesForElement()` now has a `$withUnpropagatedSites` argument.
 - `craft\helpers\StringHelper::randomString()` no longer includes capital letters or numbers by default.
 - `craft\i18n\Formatter::asTimestamp()` now has a `$withPreposition` argument.
+- `craft\services\ElementIndexes::getAvailableTableAttributes()` no longer has an `$includeFields` argument.
 - `craft\services\Fields::getFieldByHandle()` now has an optional `$context` argument.
 - `craft\services\Gql` now fires a `registerGqlMutations` event that allows for plugins to register their own GraphQL mutations.
 - `craft\services\Sites::getAllSiteIds()`, `getSiteByUid()`, `getAllSites()`, `getSitesByGroupId()`, `getSiteById()`, and `getSiteByHandle()` now have `$withDisabled` arguments.
@@ -213,6 +228,7 @@
 - Deprecated `craft\helpers\Stringy`.
 - Deprecated `craft\web\View::formatInputId()`. `craft\helpers\Html::namespaceHtml()` should be used instead.
 - Deprecated `craft\events\RegisterGqlPermissionsEvent`. `craft\events\RegisterGqlSchemaComponentsEvent` should be used instead.
+- Deprecated `craft\services\ElementIndexes::getAvailableTableFields()`. `getSourceTableAttributes()` should be used instead.
 - Deprecated `craft\services\Gql::getAllPermissions()`. `craft\services\Gql::getAllSchemaComponents()` should be used instead.
 - Deprecated `craft\services\ProjectConfig::CONFIG_FILENAME`. `$filename` should be used instead.
 

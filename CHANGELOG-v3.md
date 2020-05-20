@@ -7,20 +7,31 @@
 - Added the `localized` field when querying entries and categories via GraphQL. ([#6045](https://github.com/craftcms/cms/issues/6045))
 - Added `craft\base\ConfigurableComponent`.
 - Added `craft\base\ConfigurableComponentInterface`.
+- Added `craft\base\Element::defineFieldLayouts()`.
 - Added `craft\base\Element::EVENT_DEFINE_KEYWORDS`. ([#6028](https://github.com/craftcms/cms/issues/6028))
+- Added `craft\base\Element::EVENT_REGISTER_FIELD_LAYOUTS`.
+- Added `craft\base\Element::fieldLayouts()`.
 - Added `craft\base\Element::searchKeywords()`.
+- Added `craft\base\ElementInterface::fieldLayouts()`.
 - Added `craft\base\ElementInterface::getLocalized()`.
 - Added `craft\base\Field::EVENT_DEFINE_KEYWORDS`. ([#6028](https://github.com/craftcms/cms/issues/6028))
 - Added `craft\base\Field::searchKeywords()`.
 - Added `craft\base\Volume::getFieldLayout()`.
 - Added `craft\base\VolumeInterface::getFieldLayout()`.
+- Added `craft\elements\Asset::defineFieldLayouts()`.
+- Added `craft\elements\Category::defineFieldLayouts()`.
 - Added `craft\elements\db\UserQuery::$hasPhoto`.
 - Added `craft\elements\db\UserQuery::hasPhoto()`.
+- Added `craft\elements\Entry::defineFieldLayouts()`.
 - Added `craft\events\DefineAttributeKeywordsEvent`.
 - Added `craft\events\DefineFieldKeywordsEvent`.
+- Added `craft\events\RegisterElementFieldLayoutsEvent`.
 - Added `craft\helpers\ElementHelper::generateSlug()`.
 - Added `craft\helpers\ElementHelper::normalizeSlug()`.
 - Added `craft\services\AssetTransforms::extendTransform()`. ([#5853](https://github.com/craftcms/cms/issues/5853))
+- Added `craft\services\ElementIndexes::getSourceSortOptions()`.
+- Added `craft\services\ElementIndexes::getSourceTableAttributes()`.
+- Added `craft\services\Fields::getLayoutsByElementType()`.
 - Added `craft\services\Images::getSupportsWebP()`. ([#5853](https://github.com/craftcms/cms/issues/5853))
 - Added `craft\web\Request::getRawCookies()`.
 - Added `craft\web\Request::loadRawCookies()`.
@@ -30,6 +41,7 @@
 
 ### Changed
 - Craft now remembers the selected site across global sets and element indexes. ([#2779](https://github.com/craftcms/cms/issues/2779))
+- The available table columns and sort options within element indexes now only list custom fields that are present in field layouts for the selected element source. ([#4314](https://github.com/craftcms/cms/issues/4314), [#4802](https://github.com/craftcms/cms/issues/4802))
 - The default account activation and password reset emails now reference the system name rather than the current site name. ([#6089](https://github.com/craftcms/cms/pull/6089))
 - Craft will now regenerate missing transforms on local volumes. ([#5956](https://github.com/craftcms/cms/issues/5956))
 - Element queries’ `siteId` params can now be set to an array that begins with `'not'` to exclude specific site IDs.
@@ -38,13 +50,17 @@
 - Improved support for eager-loading elements across multiple sites at once.
 - Added eager-loading support for the `photo` field when querying users via GraphQL.
 - `craft\base\Element::getRoute()` now returns the route defined by `craft\events\SetElementRouteEvent::$route` even if it’s null, as long as `SetElementRouteEvent::$handled` is set to `true`.
+- `craft\base\ElementInterface::sortOptions()` now allows the returned `orderBy` key to be set to an array of column names.
 - `craft\base\SavableComponent::isSelectable()` has been moved into the base component class, `craft\base\Component`.
 - `craft\base\SavableComponentInterface::isSelectable()` has been moved into the base component interface, `craft\base\ComponentInterface`.
+- `craft\base\SortableFieldInterface::getSortOption()` now allows the returned `orderBy` key to be set to an array of column names.
 - `craft\elements\Asset::getUrl()` now has a `$transformOverrideParameters` parameter. ([#5853](https://github.com/craftcms/cms/issues/5853))
+- `craft\services\ElementIndexes::getAvailableTableAttributes()` no longer has an `$includeFields` argument.
 - `craft\services\Fields::getFieldByHandle()` now has an optional `$context` argument.
 
 ### Deprecated
 - Deprecated `craft\helpers\ElementHelper::createSlug()`. `normalizeSlug()` should be used instead.
+- Deprecated `craft\services\ElementIndexes::getAvailableTableFields()`. `getSourceTableAttributes()` should be used instead.
 
 ### Fixed
 - Fixed a potential CORS issue when previewing a live entry, if its URL was on a different domain than the control panel.

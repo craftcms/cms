@@ -256,6 +256,34 @@ class Entry extends Element
 
     /**
      * @inheritdoc
+     * @since 3.5.0
+     */
+    protected static function defineFieldLayouts(string $source): array
+    {
+        // Get all the sections covered by this source
+        $sections = [];
+        if ($source === '*') {
+            $sections = Craft::$app->getSections()->getAllSections();
+        } else if ($source === 'singles') {
+            $sections = Craft::$app->getSections()->getSectionsByType(Section::TYPE_SINGLE);
+        } else if (
+            preg_match('/^section:(.+)$/', $source, $matches) &&
+            $section = Craft::$app->getSections()->getSectionByUid($matches[1])
+        ) {
+            $sections = [$section];
+        }
+
+        $fieldLayouts = [];
+        foreach ($sections as $section) {
+            foreach ($section->getEntryTypes() as $entryType) {
+                $fieldLayouts[] = $entryType->getFieldLayout();
+            }
+        }
+        return $fieldLayouts;
+    }
+
+    /**
+     * @inheritdoc
      */
     protected static function defineActions(string $source = null): array
     {

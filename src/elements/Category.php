@@ -186,6 +186,22 @@ class Category extends Element
 
     /**
      * @inheritdoc
+     * @since 3.5.0
+     */
+    public static function defineFieldLayouts(string $source): array
+    {
+        $fieldLayouts = [];
+        if (
+            preg_match('/^group:(.+)$/', $source, $matches) &&
+            ($group = Craft::$app->getCategories()->getGroupByUid($matches[1]))
+        ) {
+            $fieldLayouts[] = $group->getFieldLayout();
+        }
+        return $fieldLayouts;
+    }
+
+    /**
+     * @inheritdoc
      */
     protected static function defineActions(string $source = null): array
     {

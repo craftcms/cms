@@ -53,6 +53,12 @@ class ElementIndexSettingsController extends BaseElementsController
                 continue;
             }
 
+            // Available custom field attributes
+            foreach ($elementIndexesService->getSourceTableAttributes($elementType, $source['key']) as $key => $labelInfo) {
+                $source['availableTableAttributes'][] = [$key, $labelInfo['label']];
+            }
+
+            // Selected table attributes
             $tableAttributes = $elementIndexesService->getTableAttributes($elementType, $source['key']);
             $source['tableAttributes'] = [];
 

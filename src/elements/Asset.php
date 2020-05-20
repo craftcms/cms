@@ -292,6 +292,23 @@ class Asset extends Element
 
     /**
      * @inheritdoc
+     * @since 3.5.0
+     */
+    public static function defineFieldLayouts(string $source): array
+    {
+        $fieldLayouts = [];
+        if (
+            preg_match('/^folder:(.+)$/', $source, $matches) &&
+            ($folder = Craft::$app->getAssets()->getFolderByUid($matches[1])) &&
+            $fieldLayout = $folder->getVolume()->getFieldLayout()
+        ) {
+            $fieldLayouts[] = $fieldLayout;
+        }
+        return $fieldLayouts;
+    }
+
+    /**
+     * @inheritdoc
      */
     protected static function defineActions(string $source = null): array
     {

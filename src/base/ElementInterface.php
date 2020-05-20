@@ -279,6 +279,18 @@ interface ElementInterface extends ComponentInterface
     public static function sources(string $context = null): array;
 
     /**
+     * Returns all of the field layouts associated with elements from the given source.
+     *
+     * This is used to determine which custom fields should be included in the element index sort menu,
+     * and other things.
+     *
+     * @param string $source The selected source’s key
+     * @return FieldLayout[]
+     * @since 3.5.0
+     */
+    public static function fieldLayouts(string $source): array;
+
+    /**
      * Returns the available [element actions](https://docs.craftcms.com/v3/extend/element-action-types.html) for a
      * given source.
      *
@@ -361,8 +373,9 @@ interface ElementInterface extends ComponentInterface
      * This method should return an array, where each item is a sub-array with the following keys:
      *
      * - `label` – The sort option label
-     * - `orderBy` – A comma-delimited string of columns to order the query by
-     * - `attribute` _(optional)_ – The [[tableAttributes()|table attribute]] name that this option is associated with
+     * - `orderBy` – An array or comma-delimited string of columns to order the query by
+     * - `attribute` _(optional)_ – The [[tableAttributes()|table attribute]] name that this option is associated
+     *   with (required if `orderBy` is an array or more than one column name)
      *
      * ```php
      * return [
