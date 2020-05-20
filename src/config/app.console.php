@@ -10,6 +10,7 @@ return [
     'components' => [
         'request' => [
             'class' => craft\console\Request::class,
+            'isConsoleRequest' => true,
         ],
         'user' => [
             'class' => craft\console\User::class,
