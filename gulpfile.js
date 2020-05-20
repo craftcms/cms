@@ -54,6 +54,7 @@ var graphiqlJs = [
     'node_modules/react-dom/umd/react-dom.production.min.js',
     'node_modules/graphiql/graphiql.js',
     'src/web/assets/graphiql/src/graphiql-init.js',
+    'src/web/assets/graphiql/src/components.js',
 ];
 
 var graphiqlCss = [
@@ -72,7 +73,7 @@ var vueJs = [
 
 gulp.task('graphiql-js', function() {
     return gulp.src(graphiqlJs)
-        .pipe(gulpif(/(fetch\.js|graphiql-init\.js)$/, uglify()))
+        .pipe(gulpif(/(fetch\.js|graphiql-init\.js|components\.js)$/, uglify()))
         .pipe(concat('graphiql.js'))
         .pipe(gulp.dest(graphiqlDist));
 });
