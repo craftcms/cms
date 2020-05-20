@@ -105,14 +105,14 @@
 - Added `craft\helpers\Db::upsert()`.
 - Added `craft\helpers\ElementHelper::generateSlug()`.
 - Added `craft\helpers\ElementHelper::normalizeSlug()`.
+- Added `craft\helpers\FileHelper::addFilesToZip()`.
+- Added `craft\helpers\FileHelper::zip()`.
 - Added `craft\helpers\Gql::canMutateAssets()`.
 - Added `craft\helpers\Gql::canMutateCategories()`.
 - Added `craft\helpers\Gql::canMutateEntries()`.
 - Added `craft\helpers\Gql::canMutateGlobalSets()`.
 - Added `craft\helpers\Gql::canMutateTags()`.
 - Added `craft\helpers\Gql::extractEntityAllowedActions()`.
-- Added `craft\helpers\FileHelper::addFilesToZip()`.
-- Added `craft\helpers\FileHelper::zip()`.
 - Added `craft\helpers\Html::explodeClass()`.
 - Added `craft\helpers\Html::explodeStyle()`.
 - Added `craft\helpers\Html::id()`.
@@ -126,6 +126,7 @@
 - Added `craft\helpers\Queue`.
 - Added `craft\models\Section::PROPAGATION_METHOD_CUSTOM`.
 - Added `craft\models\Site::$enabled`.
+- Added `craft\queue\jobs\PruneRevisions`.
 - Added `craft\services\AssetTransforms::extendTransform()`. ([#5853](https://github.com/craftcms/cms/issues/5853))
 - Added `craft\services\Composer::handleError()`.
 - Added `craft\services\Composer::run()`.
@@ -133,7 +134,6 @@
 - Added `craft\services\Gql::getAllSchemaComponents()`.
 - Added `craft\services\Images::getSupportsWebP()`. ([#5853](https://github.com/craftcms/cms/issues/5853))
 - Added `craft\services\ProjectConfig::$filename`. ([#5982](https://github.com/craftcms/cms/issues/5982))
-- Added `craft\queue\jobs\PruneRevisions`.
 - Added `craft\test\mockclasses\elements\MockElementQuery`.
 - Added `craft\web\AssetBundle\ContentWindowAsset`.
 - Added `craft\web\AssetBundle\IframeResizerAsset`.
