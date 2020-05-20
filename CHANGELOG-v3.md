@@ -23,6 +23,7 @@
 - Fixed a bug where clicking on the color preview within Color fields wasn’t opening the browser’s color picker in Safari. ([#6107](https://github.com/craftcms/cms/issues/6107))
 - Fixed a bug where the “Publish changes” button label was not getting translated after clicking “Save as a draft” on an Edit Entry page. ([#6112](https://github.com/craftcms/cms/issues/6112))
 - Fixed a couple errors that could occur when running console commands via Cron. ([#6102](https://github.com/craftcms/cms/issues/6102))
+- Fixed a bug in test fixtures where primary keys were not being detected for relational fields. ([#6103](https://github.com/craftcms/cms/pull/6103))
 
 ## 3.4.20 - 2020-05-18
 
