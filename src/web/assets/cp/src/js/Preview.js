@@ -114,7 +114,7 @@ Craft.Preview = Garnish.Base.extend(
                     this.$targetMenu = $('<div/>', {'class': 'menu lp-target-menu'}).insertAfter(this.$targetBtn);
                     var $ul = $('<ul/>', {'class': 'padded'}).appendTo(this.$targetMenu);
                     var $li, $a;
-                    for (var i = 0; i < this.draftEditor.settings.previewTargets.length; i++) {
+                    for (let i = 0; i < this.draftEditor.settings.previewTargets.length; i++) {
                         $li = $('<li/>').appendTo($ul)
                         $a = $('<a/>', {
                             data: {target: i},
@@ -161,8 +161,8 @@ Craft.Preview = Garnish.Base.extend(
 
                 // Move all the fields into the editor rather than copying them
                 // so any JS that's referencing the elements won't break.
-                for (var i = 0; i < $fields.length; i++) {
-                    var $field = $($fields[i]),
+                for (let i = 0; i < $fields.length; i++) {
+                    let $field = $($fields[i]),
                         $clone = this._getClone($field);
 
                     // It's important that the actual field is added to the DOM *after* the clone,

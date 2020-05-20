@@ -666,8 +666,7 @@ $.extend(Craft,
                             ) {
                                 // The request didn't send headers. Go ahead and resolve the next request on the
                                 // header waitlist.
-                                let item = this._apiHeaderWaitlist.shift()
-                                item[0](this._apiHeaders);
+                                this._apiHeaderWaitlist.shift()[0](this._apiHeaders);
                             }
                         }
                     }).catch(reject);
@@ -721,9 +720,8 @@ $.extend(Craft,
                     this._loadingApiHeaders = false;
                     reject(e)
                     // Was anything else waiting for them?
-                    let item;
-                    while (item = this._apiHeaderWaitlist.shift()) {
-                        item[1](e);
+                    while (this._apiHeaderWaitlist.length) {
+                        this._apiHeaderWaitlist.shift()[1](e);
                     }
                 });
             });
@@ -732,9 +730,8 @@ $.extend(Craft,
         _resolveHeaderWaitlist: function() {
             this._loadingApiHeaders = false;
             // Was anything else waiting for them?
-            let item;
-            while (item = this._apiHeaderWaitlist.shift()) {
-                item[0](this._apiHeaders);
+            while (this._apiHeaderWaitlist.length) {
+                this._apiHeaderWaitlist.shift()[0](this._apiHeaders);
             }
         },
 
@@ -747,8 +744,8 @@ $.extend(Craft,
             this._loadingApiHeaders = false;
 
             // Reject anything in the header waitlist
-            while (item = this._apiHeaderWaitlist.shift()) {
-                item[1]();
+            while (this._apiHeaderWaitlist.length) {
+                this._apiHeaderWaitlist.shift()[1]();
             }
         },
 

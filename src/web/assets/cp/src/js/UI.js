@@ -520,7 +520,6 @@ Craft.ui =
 
             var $menu = $('<div/>', {'class': 'menu'});
             var $ul = $('<ul/>', {'class': 'padded'}).appendTo($menu);
-            var menu = new Garnish.Menu($menu);
             var $allOption = $('<a/>')
                 .addClass('sel')
                 .text(Craft.t('app', 'All'))

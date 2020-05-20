@@ -80,7 +80,7 @@
                 }
 
                 // Add in the dropdown options
-                for (var colId in this.columnsData) {
+                for (let colId in this.columnsData) {
                     if (this.columnsData.hasOwnProperty(colId) && this.columnsData[colId].type === 'select') {
                         var rowObj = this.columnsTable.$tbody.find('tr[data-id="' + colId + '"]').data('editable-table-row');
                         this.columnsData[colId].options = rowObj.options || [];
@@ -102,7 +102,7 @@
                 var theadHtml = '<thead>' +
                     '<tr>';
 
-                for (var colId in this.columnsData) {
+                for (let colId in this.columnsData) {
                     if (!this.columnsData.hasOwnProperty(colId)) {
                         continue;
                     }
@@ -262,10 +262,9 @@
 
         handleSettingsModalHide: function() {
             this.options = [];
-            var $row;
             var $rows = this.optionsTable.$table.find('tbody tr');
             for (var i = 0; i < $rows.length; i++) {
-                var $row  = $rows.eq(i);
+                let $row  = $rows.eq(i);
                 this.options.push({
                     label: $row.find('.option-label textarea').val(),
                     value: $row.find('.option-value textarea').val(),

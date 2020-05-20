@@ -2,6 +2,8 @@
 
 > {warning} If you have the `baseCpUrl` config setting set, Craft 3.5 will **only** allow the control panel to be accessed from that URL.
 
+> {warning} The control panel now requires browsers that support JavaScript modules (Firefox 67+, Chrome 63+, Safari 11.1+, and Edge 79+).
+
 ### Added
 - Added the “Use shapes to represent statuses” user preference. ([#3293](https://github.com/craftcms/cms/issues/3293))
 - Added the “Suspend by default” user registration setting. ([#5830](https://github.com/craftcms/cms/issues/5830))
