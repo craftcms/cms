@@ -9,6 +9,7 @@
 ### Changed
 - Asset thumbnails now use the same aspect ratio as the source image. ([#5518](https://github.com/craftcms/cms/issues/5518), [#5515](https://github.com/craftcms/cms/issues/5515))
 - Image thumbnails in the control panel now only load once they are in view, or close to it. ([#6104](https://github.com/craftcms/cms/issues/6104))
+- The suggested filename is now returned when uploading a file via the `assets/upload` action. ([#6099](https://github.com/craftcms/cms/issues/6099))
 
 ### Fixed
 - Fixed a bug where non-sortable fields could be listed as element index sort options, and sortable fields could be listed twice, for element types that didn’t override the `defineSortOptions()` method.
