@@ -66,8 +66,6 @@ class Root extends React.Component {
             elem(SchemaSelector, {menuItems: menuItems, selectedSchema: this.props.selectedSchema}),
         ];
 
-        children.push
-
         // empty toolbar to remove default toolbar buttons
         toolBar = elem(GraphiQL.Toolbar, {}, children);
 
