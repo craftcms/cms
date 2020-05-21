@@ -69,11 +69,13 @@
 - Added `craft\elements\Asset::defineFieldLayouts()`.
 - Added `craft\elements\Asset::getSrcset()`. ([#5774](https://github.com/craftcms/cms/issues/5774))
 - Added `craft\elements\Category::defineFieldLayouts()`.
+- Added `craft\elements\db\EagerLoadPlan`.
 - Added `craft\elements\db\UserQuery::$hasPhoto`.
 - Added `craft\elements\db\UserQuery::hasPhoto()`.
 - Added `craft\elements\Entry::defineFieldLayouts()`.
 - Added `craft\events\DefineAttributeKeywordsEvent`.
 - Added `craft\events\DefineFieldKeywordsEvent`.
+- Added `craft\events\EagerLoadElementsEvent`.
 - Added `craft\events\RegisterElementFieldLayoutsEvent`.
 - Added `craft\events\RegisterGqlMutationsEvent`.
 - Added `craft\events\RegisterGqlSchemaComponentsEvent`.
@@ -141,7 +143,9 @@
 - Added `craft\services\Composer::run()`.
 - Added `craft\services\ElementIndexes::getSourceSortOptions()`.
 - Added `craft\services\ElementIndexes::getSourceTableAttributes()`.
+- Added `craft\services\Elements::createEagerLoadingPlans()`.
 - Added `craft\services\Elements::createElementQuery()`.
+- Added `craft\services\Elements::EVENT_BEFORE_EAGER_LOAD_ELEMENTS`.
 - Added `craft\services\Fields::getLayoutsByElementType()`.
 - Added `craft\services\Gql::getAllSchemaComponents()`.
 - Added `craft\services\Images::getSupportsWebP()`. ([#5853](https://github.com/craftcms/cms/issues/5853))

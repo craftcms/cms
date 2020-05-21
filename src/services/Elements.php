@@ -19,6 +19,7 @@ use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\Category;
+use craft\elements\db\EagerLoadPlan;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\Entry;
 use craft\elements\GlobalSet;
@@ -31,6 +32,7 @@ use craft\errors\OperationAbortedException;
 use craft\errors\SiteNotFoundException;
 use craft\events\BatchElementActionEvent;
 use craft\events\DeleteElementEvent;
+use craft\events\EagerLoadElementsEvent;
 use craft\events\ElementEvent;
 use craft\events\ElementQueryEvent;
 use craft\events\MergeElementsEvent;
@@ -86,6 +88,12 @@ class Elements extends Component
      * ```
      */
     const EVENT_REGISTER_ELEMENT_TYPES = 'registerElementTypes';
+
+    /**
+     * @event EagerLoadElementsEvent The event that is triggered before elements are eager-loaded.
+     * @since 3.5.0
+     */
+    const EVENT_BEFORE_EAGER_LOAD_ELEMENTS = 'beforeEagerLoadElements';
 
     /**
      * @event MergeElementsEvent The event that is triggered after two elements are merged together.
@@ -1630,28 +1638,29 @@ class Elements extends Component
     }
 
     /**
-     * Eager-loads additional elements onto a given set of elements.
+     * Normalizes a `with` element query param into an array of eager-loading plans.
      *
-     * @param string $elementType The root element type class
-     * @param ElementInterface[] $elements The root element models that should be updated with the eager-loaded elements
-     * @param string|array $with Dot-delimited paths of the elements that should be eager-loaded into the root elements
+     * @param string|EagerLoadPlan[]|array
+     * @return EagerLoadPlan[]
+     * @since 3.5.0
      */
-    public function eagerLoadElements(string $elementType, array $elements, $with)
+    public function createEagerLoadingPlans($with): array
     {
-        /** @var ElementInterface|string $elementType */
-        // Bail if there aren't even any elements
-        if (empty($elements)) {
-            return;
-        }
-
         // Normalize the paths and group based on the top level eager loading handle
         if (is_string($with)) {
             $with = StringHelper::split($with);
         }
 
-        $groups = [];
+        $plans = [];
+        $nestedWiths = [];
 
         foreach ($with as $path) {
+            // Is this already an EagerLoadPlan object?
+            if ($path instanceof EagerLoadPlan) {
+                $plans[$path->alias] = $path;
+                continue;
+            }
+
             // Separate the path and the criteria
             if (is_array($path)) {
                 $criteria = $path[1] ?? null;
@@ -1677,66 +1686,88 @@ class Elements extends Component
                 $alias = $handle;
             }
 
-            if (!isset($groups[$alias])) {
-                // [handle, criteria, getCount, subWith]
-                $groups[$alias] = [$handle, [], false, []];
+            if (!isset($plans[$alias])) {
+                $plan = $plans[$alias] = new EagerLoadPlan([
+                    'handle' => $handle,
+                    'alias' => $alias,
+                ]);
+            } else {
+                $plan = $plans[$alias];
             }
 
             // Only set the criteria if there's no subpath
             if ($subpath === null) {
                 if ($criteria !== null) {
-                    $getCount = ArrayHelper::remove($criteria, 'count', false);
-                    $groups[$alias][1] = $criteria;
-                    $groups[$alias][2] = $groups[$alias][2] || $getCount;
+                    if (ArrayHelper::remove($criteria, 'count', false)) {
+                        $plan->count = true;
+                    }
+                    $plan->criteria = $criteria;
                 }
             } else {
                 // Add this as a nested "with"
-                $groups[$alias][3][] = [$subpath, $criteria];
+                $nestedWiths[$alias][] = [$subpath, $criteria];
             }
+        }
+
+        foreach ($nestedWiths as $alias => $withs) {
+            $plans[$alias]->nested = $this->createEagerLoadingPlans($withs);
+        }
+
+        return $plans;
+    }
+
+    /**
+     * Eager-loads additional elements onto a given set of elements.
+     *
+     * @param string $elementType The root element type class
+     * @param ElementInterface[] $elements The root element models that should be updated with the eager-loaded elements
+     * @param string|EagerLoadPlan[]|array $with Dot-delimited paths of the elements that should be eager-loaded into the root elements
+     */
+    public function eagerLoadElements(string $elementType, array $elements, $with)
+    {
+        /** @var ElementInterface|string $elementType */
+        // Bail if there aren't even any elements
+        if (empty($elements)) {
+            return;
         }
 
         // Group the elements by site
         $elementsBySite = ArrayHelper::index($elements, null, ['siteId']);
 
-        foreach ($groups as $alias => list($handle, $criteria, $getCount, $subWith)) {
+        $event = new EagerLoadElementsEvent([
+            'elementType' => $elementType,
+            'elements' => $elements,
+            'with' => $this->createEagerLoadingPlans($with),
+        ]);
+        $this->trigger(self::EVENT_BEFORE_EAGER_LOAD_ELEMENTS, $event);
+
+        foreach ($event->with as $plan) {
             foreach ($elementsBySite as $siteId => $siteElements) {
                 $this->_eagerLoadElementsInternal(
                     $elementType,
                     $siteId,
                     $siteElements,
-                    $handle,
-                    $alias,
-                    $criteria,
-                    $getCount,
-                    $subWith
+                    $plan
                 );
             }
         }
     }
 
     /**
-     * @var string $elementType
-     * @var int $siteId
-     * @var ElementInterface[] $elements
-     * @var string $handle
-     * @var string $alias
-     * @var array $criteria
-     * @var bool $getCount
-     * @var array $subWith
+     * @param string $elementType
+     * @param int $siteId
+     * @param ElementInterface[] $elements
+     * @param EagerLoadPlan $plan
      */
     private function _eagerLoadElementsInternal(
         string $elementType,
         int $siteId,
         array $elements,
-        string $handle,
-        string $alias,
-        array $criteria,
-        bool $getCount,
-        array $subWith
+        EagerLoadPlan $plan
     ) {
         // Get the eager-loading map from the source element type
         /** @var ElementInterface|string $elementType */
-        $map = $elementType::eagerLoadingMap($elements, $handle);
+        $map = $elementType::eagerLoadingMap($elements, $plan->handle);
 
         if ($map === null) {
             // Null means to skip eager-loading this segment
@@ -1770,7 +1801,7 @@ class Elements extends Component
 
             $criteria = array_merge(
                 $map['criteria'] ?? [],
-                $criteria
+                $plan->criteria
             );
 
             // Save the offset & limit params for later
@@ -1789,7 +1820,7 @@ class Elements extends Component
         }
 
         // Do we just need the count?
-        if ($getCount && empty($subWith)) {
+        if ($plan->count && empty($plan->nested)) {
             // Just fetch the target elements’ IDs
             $targetElementIdCounts = [];
             if ($query) {
@@ -1812,7 +1843,7 @@ class Elements extends Component
                         }
                     }
                 }
-                $sourceElement->setEagerLoadedElementCount($alias, $count);
+                $sourceElement->setEagerLoadedElementCount($plan->alias, $count);
             }
 
             return;
@@ -1864,16 +1895,16 @@ class Elements extends Component
                 }
             }
 
-            $sourceElement->setEagerLoadedElements($alias, $targetElementsForSource);
+            $sourceElement->setEagerLoadedElements($plan->alias, $targetElementsForSource);
 
-            if ($getCount) {
-                $sourceElement->setEagerLoadedElementCount($alias, count($targetElementsForSource));
+            if ($plan->count) {
+                $sourceElement->setEagerLoadedElementCount($plan->alias, count($targetElementsForSource));
             }
         }
 
         // Now eager-load any sub paths
-        if (!empty($map['map']) && !empty($subWith)) {
-            $this->eagerLoadElements($map['elementType'], $targetElements, $subWith);
+        if (!empty($map['map']) && !empty($plan->nested)) {
+            $this->eagerLoadElements($map['elementType'], $targetElements, $plan->nested);
         }
     }
 
