@@ -176,6 +176,7 @@ abstract class Element extends Component implements ElementInterface
      * use craft\helpers\ArrayHelper;
      * use yii\base\Event;
      *
+     * // Add support for `with(['bookClub'])` to entries
      * Event::on(
      *     Entry::class,
      *     Element::EVENT_DEFINE_EAGER_LOADING_MAP,
