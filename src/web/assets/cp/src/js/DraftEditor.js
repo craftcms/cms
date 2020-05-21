@@ -369,7 +369,7 @@ Craft.DraftEditor = Garnish.Base.extend(
             if (this.errors === null) {
                 bodyHtml = '<p>' + Craft.t('app', 'The draft has been saved.') + '</p>';
             } else {
-                var bodyHtml = '<p class="error">' + Craft.t('app', 'The draft could not be saved.') + '</p>';
+                bodyHtml = '<p class="error">' + Craft.t('app', 'The draft could not be saved.') + '</p>';
 
                 if (this.errors.length) {
                     bodyHtml += '<ul class="errors">';
@@ -413,7 +413,6 @@ Craft.DraftEditor = Garnish.Base.extend(
             var $menu = $('<div/>', {'class': 'menu'}).insertAfter($shareBtn);
             var $ul = $('<ul/>').appendTo($menu);
             var $li, $a;
-            var $a;
 
             for (var i = 0; i < this.settings.previewTargets.length; i++) {
                 $li = $('<li/>').appendTo($ul);
@@ -875,8 +874,9 @@ Craft.DraftEditor = Garnish.Base.extend(
             var $footer = $('<div class="hud-footer flex flex-center"/>').appendTo($hudBody);
 
             // Delete button
+            let $deleteLink;
             if (this.settings.canDeleteDraft) {
-                var $deleteLink = $('<a class="error" role="button">' + Craft.t('app', 'Delete') + '</a>').appendTo($footer);
+                $deleteLink = $('<a class="error" role="button">' + Craft.t('app', 'Delete') + '</a>').appendTo($footer);
             }
 
             $('<div class="flex-grow"></div>').appendTo($footer);

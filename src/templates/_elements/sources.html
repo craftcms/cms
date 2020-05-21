@@ -1,7 +1,7 @@
 {% spaceless %}
 {% set keyPrefix = keyPrefix ?? '' %}
 
-{% macro sourceLink(key, source) %}
+{% macro sourceLink(key, source, isTopLevel, elementType) %}
     {% from _self import sourceInnerHtml %}
     {{ tag('a', {
         data: {
@@ -10,6 +10,11 @@
             'has-structure': (source.structureId ?? false) ? true : false,
             'default-sort': (source.defaultSort ?? false)
                 ? (source.defaultSort is iterable ? source.defaultSort|join(':') : source.defaultSort)
+                : false,
+            'sort-options': isTopLevel
+                ? craft.app.elementIndexes.getSourceSortOptions(elementType, key)
+                    |map(o => [o.label, o.attribute ?? o.orderBy])
+                    |json_encode
                 : false,
             sites: (source.sites ?? false) ? source.sites|join(',') : false,
             'override-status': (source.criteria.status ?? false) ? true : false,
@@ -45,7 +50,7 @@
         {% else %}
             {% set key = source.keyPath ?? (keyPrefix ~ source.key) %}
             <li>
-                {{ sourceLink(key, source) }}
+                {{ sourceLink(key, source, not keyPrefix, elementType) }}
                 {% if source.nested is defined and source.nested is not empty %}
                     <div class="toggle"></div>
                     {% include "_elements/sources" with {

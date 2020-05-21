@@ -292,15 +292,32 @@ class Asset extends Element
 
     /**
      * @inheritdoc
+     * @since 3.5.0
+     */
+    public static function defineFieldLayouts(string $source): array
+    {
+        $fieldLayouts = [];
+        if (
+            preg_match('/^folder:(.+)$/', $source, $matches) &&
+            ($folder = Craft::$app->getAssets()->getFolderByUid($matches[1])) &&
+            $fieldLayout = $folder->getVolume()->getFieldLayout()
+        ) {
+            $fieldLayouts[] = $fieldLayout;
+        }
+        return $fieldLayouts;
+    }
+
+    /**
+     * @inheritdoc
      */
     protected static function defineActions(string $source = null): array
     {
         $actions = [];
 
-        if (preg_match('/^folder:([a-z0-9\-]+)/', $source, $matches)) {
-            $folderId = $matches[1];
-
-            $folder = Craft::$app->getAssets()->getFolderByUid($folderId);
+        if (
+            preg_match('/^folder:(.+)/', $source, $matches) &&
+            $folder = Craft::$app->getAssets()->getFolderByUid($matches[1])
+        ) {
             $volume = $folder->getVolume();
 
             $actions[] = [
@@ -501,9 +518,9 @@ class Asset extends Element
             'data' => [
                 'volume-handle' => $volumeHandle,
                 'folder-id' => $folder->id,
-                'can-upload' => ($folder->volumeId === null || $canUpload) ? 1 : false,
-                'can-move-to' => $canMoveTo ? 1 : false,
-                'can-move-peer-files-to' => $canMovePeerFilesTo ? 1 : false,
+                'can-upload' => $folder->volumeId === null || $canUpload,
+                'can-move-to' => $canMoveTo,
+                'can-move-peer-files-to' => $canMovePeerFilesTo,
             ]
         ];
 

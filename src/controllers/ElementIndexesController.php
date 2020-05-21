@@ -272,6 +272,7 @@ class ElementIndexesController extends BaseElementsController
 
         return $this->asJson([
             'html' => $this->getView()->renderTemplate('_elements/sources', [
+                'elementType' => $this->elementType,
                 'sources' => $sources
             ])
         ]);

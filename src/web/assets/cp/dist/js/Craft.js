@@ -1,20 +1,6 @@
 "use strict";
 
-function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
-
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-
-function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && Symbol.iterator in Object(iter)) return Array.from(iter); }
-
-function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
-
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
-
-function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
-/*!   - 2020-05-19 */
+/*!   - 2020-05-20 */
 (function ($) {
   /** global: Craft */
 
@@ -60,7 +46,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       for (var _i = 0; _i < tokens.length; _i++) {
         var token = tokens[_i];
 
-        if (_typeof(token) === 'object') {
+        if (typeof token === 'object') {
           if ((tokens[_i] = this._parseToken(token, args)) === false) {
             throw 'Message pattern is invalid.';
           }
@@ -74,7 +60,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           start,
           pos; // Get an array of the string characters (factoring in 3+ byte chars)
 
-      var chars = _toConsumableArray(pattern);
+      var chars = [...pattern];
 
       if ((start = pos = chars.indexOf('{')) === -1) {
         return [pattern];
@@ -189,18 +175,17 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
             var offset = 0;
 
             for (var _i2 = 0; _i2 + 1 < c; _i2++) {
-              if (_typeof(plural[_i2]) === 'object' || _typeof(plural[_i2 + 1]) !== 'object') {
+              if (typeof plural[_i2] === 'object' || typeof plural[_i2 + 1] !== 'object') {
                 return {
                   v: false
                 };
               }
 
               var selector = Craft.trim(plural[_i2++]);
-
-              var selectorChars = _toConsumableArray(selector);
+              var selectorChars = [...selector];
 
               if (_i2 === 1 && selector.substring(0, 7) === 'offset:') {
-                var _pos = _toConsumableArray(selector.replace(/[\n\r\t]/g, ' ')).indexOf(' ', 7);
+                var _pos = [...selector.replace(/[\n\r\t]/g, ' ')].indexOf(' ', 7);
 
                 if (_pos === -1) {
                   throw 'Message pattern is invalid.';
@@ -212,7 +197,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
               }
 
               if (message === false && selector === 'other' || selector[0] === '=' && parseInt(selectorChars.slice(1, 1 + selectorChars.length).join('')) === arg || selector === 'one' && arg - offset === 1) {
-                message = (typeof plural[_i2] === 'string' ? [plural[_i2]] : plural[_i2]).map(function (p) {
+                message = (typeof plural[_i2] === 'string' ? [plural[_i2]] : plural[_i2]).map(p => {
                   return p.replace('#', arg - offset);
                 }).join(',');
               }
@@ -231,11 +216,11 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         }
       }();
 
-      if (_typeof(_ret) === "object") return _ret.v;
+      if (typeof _ret === "object") return _ret.v;
       return false;
     },
     formatDate: function formatDate(date) {
-      if (_typeof(date) !== 'object') {
+      if (typeof date !== 'object') {
         date = new Date(date);
       }
 
@@ -554,7 +539,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       options = options || {};
 
       if (options.contentType && options.contentType.match(/\bjson\b/)) {
-        if (_typeof(data) === 'object') {
+        if (typeof data === 'object') {
           data = JSON.stringify(data);
         }
 
@@ -652,20 +637,18 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
      * @since 3.4.6
      */
     sendActionRequest: function sendActionRequest(method, action, options) {
-      var _this2 = this;
-
-      return new Promise(function (resolve, reject) {
+      return new Promise((resolve, reject) => {
         options = options ? $.extend({}, options) : {};
         options.method = method;
         options.url = Craft.getActionUrl(action);
         options.headers = $.extend({
           'X-Requested-With': 'XMLHttpRequest'
-        }, options.headers || {}, _this2._actionHeaders());
+        }, options.headers || {}, this._actionHeaders());
         options.params = $.extend({}, options.params || {}, {
           // Force Safari to not load from cache
           v: new Date().getTime()
         });
-        axios.request(options).then(resolve)["catch"](reject);
+        axios.request(options).then(resolve).catch(reject);
       });
     },
     _processedApiHeaders: false,
@@ -679,13 +662,11 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
      * @since 3.3.16
      */
     sendApiRequest: function sendApiRequest(method, uri, options) {
-      var _this3 = this;
-
-      return new Promise(function (resolve, reject) {
+      return new Promise((resolve, reject) => {
         options = options ? $.extend({}, options) : {};
         var cancelToken = options.cancelToken || null; // Get the latest headers
 
-        _this3.getApiHeaders(cancelToken).then(function (apiHeaders) {
+        this.getApiHeaders(cancelToken).then(apiHeaders => {
           options.method = method;
           options.baseURL = Craft.baseApiUrl;
           options.url = uri;
@@ -694,37 +675,33 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
             // Force Safari to not load from cache
             v: new Date().getTime()
           });
-          axios.request(options).then(function (apiResponse) {
+          axios.request(options).then(apiResponse => {
             // Send the API response back immediately
             resolve(apiResponse.data);
 
-            if (!_this3._processedApiHeaders) {
+            if (!this._processedApiHeaders) {
               if (apiResponse.headers['x-craft-license-status']) {
-                _this3._processedApiHeaders = true;
-
-                _this3.sendActionRequest('POST', 'app/process-api-response-headers', {
+                this._processedApiHeaders = true;
+                this.sendActionRequest('POST', 'app/process-api-response-headers', {
                   data: {
                     headers: apiResponse.headers
                   },
                   cancelToken: cancelToken
                 }); // If we just got a new license key, set it and then resolve the header waitlist
 
+                if (this._apiHeaders && this._apiHeaders['X-Craft-License'] === '__REQUEST__') {
+                  this._apiHeaders['X-Craft-License'] = apiResponse.headers['x-craft-license'];
 
-                if (_this3._apiHeaders && _this3._apiHeaders['X-Craft-License'] === '__REQUEST__') {
-                  _this3._apiHeaders['X-Craft-License'] = apiResponse.headers['x-craft-license'];
-
-                  _this3._resolveHeaderWaitlist();
+                  this._resolveHeaderWaitlist();
                 }
-              } else if (_this3._apiHeaders && _this3._apiHeaders['X-Craft-License'] === '__REQUEST__' && _this3._apiHeaderWaitlist.length) {
+              } else if (this._apiHeaders && this._apiHeaders['X-Craft-License'] === '__REQUEST__' && this._apiHeaderWaitlist.length) {
                 // The request didn't send headers. Go ahead and resolve the next request on the
                 // header waitlist.
-                var _item = _this3._apiHeaderWaitlist.shift();
-
-                _item[0](_this3._apiHeaders);
+                this._apiHeaderWaitlist.shift()[0](this._apiHeaders);
               }
             }
-          })["catch"](reject);
-        })["catch"](reject);
+          }).catch(reject);
+        }).catch(reject);
       });
     },
     _loadingApiHeaders: false,
@@ -738,48 +715,43 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
      * @return {Promise}
      */
     getApiHeaders: function getApiHeaders(cancelToken) {
-      var _this4 = this;
-
-      return new Promise(function (resolve, reject) {
+      return new Promise((resolve, reject) => {
         // Are we already loading them?
-        if (_this4._loadingApiHeaders) {
-          _this4._apiHeaderWaitlist.push([resolve, reject]);
+        if (this._loadingApiHeaders) {
+          this._apiHeaderWaitlist.push([resolve, reject]);
 
           return;
         } // Are the headers already cached?
 
 
-        if (_this4._apiHeaders) {
-          resolve(_this4._apiHeaders);
+        if (this._apiHeaders) {
+          resolve(this._apiHeaders);
           return;
         }
 
-        _this4._loadingApiHeaders = true;
-
-        _this4.sendActionRequest('POST', 'app/api-headers', {
+        this._loadingApiHeaders = true;
+        this.sendActionRequest('POST', 'app/api-headers', {
           cancelToken: cancelToken
-        }).then(function (response) {
+        }).then(response => {
           // Make sure we even are waiting for these anymore
-          if (!_this4._loadingApiHeaders) {
+          if (!this._loadingApiHeaders) {
             reject(e);
             return;
           }
 
-          _this4._apiHeaders = response.data;
-          resolve(_this4._apiHeaders); // If we are requesting a new Craft license, hold off on
+          this._apiHeaders = response.data;
+          resolve(this._apiHeaders); // If we are requesting a new Craft license, hold off on
           // resolving other API requests until we have one
 
           if (response.data['X-Craft-License'] !== '__REQUEST__') {
-            _this4._resolveHeaderWaitlist();
+            this._resolveHeaderWaitlist();
           }
-        })["catch"](function (e) {
-          _this4._loadingApiHeaders = false;
+        }).catch(e => {
+          this._loadingApiHeaders = false;
           reject(e); // Was anything else waiting for them?
 
-          var item;
-
-          while (item = _this4._apiHeaderWaitlist.shift()) {
-            item[1](e);
+          while (this._apiHeaderWaitlist.length) {
+            this._apiHeaderWaitlist.shift()[1](e);
           }
         });
       });
@@ -787,10 +759,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     _resolveHeaderWaitlist: function _resolveHeaderWaitlist() {
       this._loadingApiHeaders = false; // Was anything else waiting for them?
 
-      var item;
-
-      while (item = this._apiHeaderWaitlist.shift()) {
-        item[0](this._apiHeaders);
+      while (this._apiHeaderWaitlist.length) {
+        this._apiHeaderWaitlist.shift()[0](this._apiHeaders);
       }
     },
 
@@ -802,8 +772,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       this._processedApiHeaders = false;
       this._loadingApiHeaders = false; // Reject anything in the header waitlist
 
-      while (item = this._apiHeaderWaitlist.shift()) {
-        item[1]();
+      while (this._apiHeaderWaitlist.length) {
+        this._apiHeaderWaitlist.shift()[1]();
       }
     },
 
@@ -816,14 +786,12 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
      * @return {Promise}
      */
     downloadFromUrl: function downloadFromUrl(method, url, body) {
-      var _this5 = this;
-
-      return new Promise(function (resolve, reject) {
+      return new Promise((resolve, reject) => {
         // h/t https://nehalist.io/downloading-files-from-post-requests/
         var request = new XMLHttpRequest();
         request.open(method, url, true);
 
-        if (_typeof(body) === 'object') {
+        if (typeof body === 'object') {
           request.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
           body = JSON.stringify(body);
         } else {
@@ -854,7 +822,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           } else {
             reject();
           }
-        }.bind(_this5);
+        }.bind(this);
 
         request.send(body);
       });
@@ -907,7 +875,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       var modifiedDeltaNames = [];
 
       for (var n = 0; n < deltaNames.length; n++) {
-        if (Craft.inArray(deltaNames[n], Craft.modifiedDeltaNames) || _typeof(groupedNewParams[deltaNames[n]]) === 'object' && (_typeof(groupedOldParams[deltaNames[n]]) !== 'object' || JSON.stringify(groupedOldParams[deltaNames[n]]) !== JSON.stringify(groupedNewParams[deltaNames[n]]))) {
+        if (Craft.inArray(deltaNames[n], Craft.modifiedDeltaNames) || typeof groupedNewParams[deltaNames[n]] === 'object' && (typeof groupedOldParams[deltaNames[n]] !== 'object' || JSON.stringify(groupedOldParams[deltaNames[n]]) !== JSON.stringify(groupedNewParams[deltaNames[n]]))) {
           params = params.concat(groupedNewParams[deltaNames[n]]);
           params.push('modifiedDeltaNames[]=' + deltaNames[n]);
         }
@@ -990,7 +958,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
         for (i = 0; i < keys.length; i++) {
           if (i < keys.length - 1) {
-            if (_typeof(parentElem[keys[i]]) !== 'object') {
+            if (typeof parentElem[keys[i]] !== 'object') {
               // Figure out what this will be by looking at the next key
               if (!keys[i + 1] || parseInt(keys[i + 1]) == keys[i + 1]) {
                 parentElem[keys[i]] = [];
@@ -1057,11 +1025,11 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
      */
     compare: function compare(obj1, obj2, sortObjectKeys) {
       // Compare the types
-      if (_typeof(obj1) !== _typeof(obj2)) {
+      if (typeof obj1 !== typeof obj2) {
         return false;
       }
 
-      if (_typeof(obj1) === 'object') {
+      if (typeof obj1 === 'object') {
         // Compare the lengths
         if (obj1.length !== obj2.length) {
           return false;
@@ -1397,12 +1365,11 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
      */
     asciiString: function asciiString(str, charMap) {
       var asciiStr = '';
-
-      var _char;
+      var char;
 
       for (var i = 0; i < str.length; i++) {
-        _char = str.charAt(i);
-        asciiStr += typeof (charMap || Craft.asciiCharMap)[_char] === 'string' ? (charMap || Craft.asciiCharMap)[_char] : _char;
+        char = str.charAt(i);
+        asciiStr += typeof (charMap || Craft.asciiCharMap)[char] === 'string' ? (charMap || Craft.asciiCharMap)[char] : char;
       }
 
       return asciiStr;
@@ -1614,7 +1581,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         // (settings)
         settings = element;
         element = null;
-      } else if (_typeof(settings) !== 'object') {
+      } else if (typeof settings !== 'object') {
         settings = {};
       }
 
@@ -2116,7 +2083,6 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
             $('<h5/>', {
               text: response.sites[0].name
             }).appendTo($header);
-            ;
           } else {
             var $siteSelectContainer = $('<div class="select"/>').appendTo($header);
             this.$siteSelect = $('<select/>').appendTo($siteSelectContainer);
@@ -2606,15 +2572,13 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       return this._cancelToken.token;
     },
     _cancelRequests: function _cancelRequests() {
-      var _this6 = this;
-
       if (this._cancelToken) {
         this._ignoreFailedRequest = true;
 
         this._cancelToken.cancel();
 
-        Garnish.requestAnimationFrame(function () {
-          _this6._ignoreFailedRequest = false;
+        Garnish.requestAnimationFrame(() => {
+          this._ignoreFailedRequest = false;
         });
       }
     },
@@ -2676,8 +2640,6 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       }
     },
     refreshSources: function refreshSources() {
-      var _this7 = this;
-
       this.sourceSelect.removeAllItems();
       var params = {
         context: this.settings.context,
@@ -2686,18 +2648,15 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       this.setIndexBusy();
       Craft.sendActionRequest('POST', this.settings.refreshSourcesAction, {
         data: params
-      }).then(function (response) {
-        _this7.setIndexAvailable();
+      }).then(response => {
+        this.setIndexAvailable();
+        this.getSourceContainer().replaceWith(response.data.html);
+        this.initSources();
+        this.selectDefaultSource();
+      }).catch(() => {
+        this.setIndexAvailable();
 
-        _this7.getSourceContainer().replaceWith(response.data.html);
-
-        _this7.initSources();
-
-        _this7.selectDefaultSource();
-      })["catch"](function () {
-        _this7.setIndexAvailable();
-
-        if (!_this7._ignoreFailedRequest) {
+        if (!this._ignoreFailedRequest) {
           Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
         }
       });
@@ -2798,7 +2757,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       this._updateStructureSortOption();
     },
     setInstanceState: function setInstanceState(key, value) {
-      if (_typeof(key) === 'object') {
+      if (typeof key === 'object') {
         $.extend(this.instanceState, key);
       } else {
         this.instanceState[key] = value;
@@ -2831,7 +2790,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     setSelecetedSourceState: function setSelecetedSourceState(key, value) {
       var viewState = this.getSelectedSourceState();
 
-      if (_typeof(key) === 'object') {
+      if (typeof key === 'object') {
         $.extend(viewState, key);
       } else {
         viewState[key] = value;
@@ -2927,8 +2886,6 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       return params;
     },
     updateElements: function updateElements(preservePagination) {
-      var _this8 = this;
-
       // Ignore if we're not fully initialized yet
       if (!this.initialized) {
         return;
@@ -2954,14 +2911,14 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       Craft.sendActionRequest('POST', this.settings.updateElementsAction, {
         data: params,
         cancelToken: this._createCancelToken()
-      }).then(function (response) {
-        _this8.setIndexAvailable();
+      }).then(response => {
+        this.setIndexAvailable();
 
-        _this8._updateView(params, response.data);
-      })["catch"](function () {
-        _this8.setIndexAvailable();
+        this._updateView(params, response.data);
+      }).catch(() => {
+        this.setIndexAvailable();
 
-        if (!_this8._ignoreFailedRequest) {
+        if (!this._ignoreFailedRequest) {
           Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
         }
       });
@@ -2994,8 +2951,6 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       this.showingActionTriggers = true;
     },
     submitAction: function submitAction(actionClass, actionParams) {
-      var _this9 = this;
-
       // Make sure something's selected
       var selectedElementIds = this.view.getSelectedElementIds(),
           totalSelected = selectedElementIds.length;
@@ -3034,25 +2989,25 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       Craft.sendActionRequest('POST', this.settings.submitActionsAction, {
         data: params,
         cancelToken: this._createCancelToken()
-      }).then(function (response) {
-        _this9.setIndexAvailable();
+      }).then(response => {
+        this.setIndexAvailable();
 
         if (response.data.success) {
           // Update the count text too
-          _this9._resetCount();
+          this._resetCount();
 
-          _this9._updateView(viewParams, response.data);
+          this._updateView(viewParams, response.data);
 
           if (response.data.message) {
             Craft.cp.displayNotice(response.data.message);
           }
 
-          _this9.afterAction(action, params);
+          this.afterAction(action, params);
         } else {
           Craft.cp.displayError(response.data.message);
         }
-      })["catch"](function () {
-        _this9.setIndexAvailable();
+      }).catch(() => {
+        this.setIndexAvailable();
       });
     },
     afterAction: function afterAction(action, params) {
@@ -3189,7 +3144,24 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         this.stopSearching();
       } // Sort menu
       // ----------------------------------------------------------------------
-      // Does this source have a structure?
+      // Remove any existing custom sort options from the menu
+
+
+      this.$sortAttributesList.children('li[data-extra]').remove(); // Does this source have any custom sort options?
+
+      var sortOptions = this.$source.data('sort-options');
+
+      if (sortOptions) {
+        for (var _i3 = 0; _i3 < sortOptions.length; _i3++) {
+          var $option = $('<li/>', {
+            'data-extra': true
+          }).append($('<a/>', {
+            text: sortOptions[_i3][0],
+            'data-attr': sortOptions[_i3][1]
+          })).appendTo(this.$sortAttributesList);
+          this.sortMenu.addOptions($option.children());
+        }
+      } // Does this source have a structure?
 
 
       if (Garnish.hasAttr(this.$source, 'data-has-structure')) {
@@ -3779,8 +3751,6 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       return this.settings.context === 'index' && this.getSelectedSortAttribute() !== 'structure';
     },
     _updateView: function _updateView(params, response) {
-      var _this10 = this;
-
       // Cleanup
       // -------------------------------------------------------------
       // Get rid of the old action triggers regardless of whether the new batch has actions or not
@@ -3795,23 +3765,21 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         this.$countSpinner.removeClass('hidden');
         this.$countContainer.html('');
 
-        this._countResults().then(function (total) {
-          _this10.$countSpinner.addClass('hidden');
+        this._countResults().then(total => {
+          this.$countSpinner.addClass('hidden');
+          var itemLabel = Craft.elementTypeNames[this.elementType] ? Craft.elementTypeNames[this.elementType][2] : 'element';
+          var itemsLabel = Craft.elementTypeNames[this.elementType] ? Craft.elementTypeNames[this.elementType][3] : 'elements';
 
-          var itemLabel = Craft.elementTypeNames[_this10.elementType] ? Craft.elementTypeNames[_this10.elementType][2] : 'element';
-          var itemsLabel = Craft.elementTypeNames[_this10.elementType] ? Craft.elementTypeNames[_this10.elementType][3] : 'elements';
-
-          if (!_this10._isViewPaginated()) {
+          if (!this._isViewPaginated()) {
             var countLabel = Craft.t('app', '{total, number} {total, plural, =1{{item}} other{{items}}}', {
               total: total,
               item: itemLabel,
               items: itemsLabel
             });
-
-            _this10.$countContainer.text(countLabel);
+            this.$countContainer.text(countLabel);
           } else {
-            var first = Math.min(_this10.settings.batchSize * (_this10.page - 1) + 1, total);
-            var last = Math.min(first + (_this10.settings.batchSize - 1), total);
+            var first = Math.min(this.settings.batchSize * (this.page - 1) + 1, total);
+            var last = Math.min(first + (this.settings.batchSize - 1), total);
 
             var _countLabel = Craft.t('app', '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}', {
               first: first,
@@ -3821,15 +3789,15 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
               items: itemsLabel
             });
 
-            var $paginationContainer = $('<div class="flex pagination"/>').appendTo(_this10.$countContainer);
-            var totalPages = Math.max(Math.ceil(total / _this10.settings.batchSize), 1);
+            var $paginationContainer = $('<div class="flex pagination"/>').appendTo(this.$countContainer);
+            var totalPages = Math.max(Math.ceil(total / this.settings.batchSize), 1);
             var $prevBtn = $('<div/>', {
-              'class': 'page-link' + (_this10.page > 1 ? '' : ' disabled'),
+              'class': 'page-link' + (this.page > 1 ? '' : ' disabled'),
               'data-icon': 'leftangle',
               title: Craft.t('app', 'Previous Page')
             }).appendTo($paginationContainer);
             var $nextBtn = $('<div/>', {
-              'class': 'page-link' + (_this10.page < totalPages ? '' : ' disabled'),
+              'class': 'page-link' + (this.page < totalPages ? '' : ' disabled'),
               'data-icon': 'rightangle',
               title: Craft.t('app', 'Next Page')
             }).appendTo($paginationContainer);
@@ -3838,8 +3806,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
               text: _countLabel
             }).appendTo($paginationContainer);
 
-            if (_this10.page > 1) {
-              _this10.addListener($prevBtn, 'click', function () {
+            if (this.page > 1) {
+              this.addListener($prevBtn, 'click', function () {
                 this.removeListener($prevBtn, 'click');
                 this.removeListener($nextBtn, 'click');
                 this.setPage(this.page - 1);
@@ -3847,8 +3815,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
               });
             }
 
-            if (_this10.page < totalPages) {
-              _this10.addListener($nextBtn, 'click', function () {
+            if (this.page < totalPages) {
+              this.addListener($nextBtn, 'click', function () {
                 this.removeListener($prevBtn, 'click');
                 this.removeListener($nextBtn, 'click');
                 this.setPage(this.page + 1);
@@ -3856,8 +3824,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
               });
             }
           }
-        })["catch"](function () {
-          _this10.$countSpinner.addClass('hidden');
+        }).catch(() => {
+          this.$countSpinner.addClass('hidden');
         });
       } // Update the view with the new container + elements HTML
       // -------------------------------------------------------------
@@ -3944,33 +3912,30 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       this.onUpdateElements();
     },
     _countResults: function _countResults() {
-      var _this11 = this;
-
-      return new Promise(function (resolve, reject) {
-        if (_this11.totalResults !== null) {
-          resolve(_this11.totalResults);
+      return new Promise((resolve, reject) => {
+        if (this.totalResults !== null) {
+          resolve(this.totalResults);
         } else {
-          var params = _this11.getViewParams();
-
+          var params = this.getViewParams();
           delete params.criteria.offset;
           delete params.criteria.limit; // Make sure we've got an active result set ID
 
-          if (_this11.resultSet === null) {
-            _this11.resultSet = Math.floor(Math.random() * 100000000);
+          if (this.resultSet === null) {
+            this.resultSet = Math.floor(Math.random() * 100000000);
           }
 
-          params.resultSet = _this11.resultSet;
-          Craft.sendActionRequest('POST', _this11.settings.countElementsAction, {
+          params.resultSet = this.resultSet;
+          Craft.sendActionRequest('POST', this.settings.countElementsAction, {
             data: params,
-            cancelToken: _this11._createCancelToken()
-          }).then(function (response) {
-            if (response.data.resultSet == _this11.resultSet) {
-              _this11.totalResults = response.data.count;
+            cancelToken: this._createCancelToken()
+          }).then(response => {
+            if (response.data.resultSet == this.resultSet) {
+              this.totalResults = response.data.count;
               resolve(response.data.count);
             } else {
               reject();
             }
-          })["catch"](reject);
+          }).catch(reject);
         }
       });
     },
@@ -4128,7 +4093,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         Craft.downloadFromUrl('POST', Craft.getActionUrl('element-indexes/export'), params).then(function () {
           submitting = false;
           $spinner.addClass('hidden');
-        })["catch"](function () {
+        }).catch(function () {
           submitting = false;
           $spinner.addClass('hidden');
 
@@ -4805,7 +4770,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       }
 
       if (this.settings.disabledElementIds) {
-        ids.push.apply(ids, _toConsumableArray(this.settings.disabledElementIds));
+        ids.push(...this.settings.disabledElementIds);
       }
 
       return ids;
@@ -4824,8 +4789,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       this.updateDisabledElementsInModal();
     },
     selectElements: function selectElements(elements) {
-      for (var _i3 = 0; _i3 < elements.length; _i3++) {
-        var elementInfo = elements[_i3],
+      for (var _i4 = 0; _i4 < elements.length; _i4++) {
+        var elementInfo = elements[_i4],
             $element = this.createNewElement(elementInfo);
         this.appendElement($element);
         this.addElements($element);
@@ -7978,9 +7943,9 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
      * @param fabricObj
      */
     _debug: function _debug(fabricObj) {
-      this.canvas.remove(this["debugger"]);
-      this["debugger"] = fabricObj;
-      this.canvas.add(this["debugger"]);
+      this.canvas.remove(this.debugger);
+      this.debugger = fabricObj;
+      this.canvas.add(this.debugger);
     },
 
     /**
@@ -8271,13 +8236,13 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           return this._getFileDragHelper($file);
         }, this),
         dropTargets: $.proxy(function () {
-          // Which "can-move-to" attribute should we be checking
+          // Which data attribute should we be checking?
           var attr;
 
           if (this._assetDrag.$draggee && this._assetDrag.$draggee.has('.element[data-peer-file]').length) {
-            attr = 'can-move-peer-files-to';
+            attr = 'data-can-move-peer-files-to';
           } else {
-            attr = 'can-move-to';
+            attr = 'data-can-move-to';
           }
 
           var targets = [];
@@ -8286,7 +8251,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
             // Make sure it's a volume folder
             var $source = this.$sources.eq(i);
 
-            if ($source.data(attr)) {
+            if (Garnish.hasAttr($source, attr)) {
               targets.push($source);
             }
           }
@@ -8846,7 +8811,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
       var folderId = $source.data('folder-id');
 
-      if (folderId && this.$source.attr('data-can-upload')) {
+      if (folderId && Garnish.hasAttr(this.$source, 'data-can-upload')) {
         this.uploader.setParams({
           folderId: this.$source.attr('data-folder-id')
         });
@@ -9349,7 +9314,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           if (textStatus === 'success' && data.success) {
             this._prepareParentForChildren($parentFolder);
 
-            var $subfolder = $('<li>' + '<a data-key="' + $parentFolder.data('key') + '/folder:' + data.folderUid + '"' + (Garnish.hasAttr($parentFolder, 'data-has-thumbs') ? ' data-has-thumbs' : '') + ' data-folder-id="' + data.folderId + '"' + ' data-can-upload="' + $parentFolder.attr('data-can-upload') + '"' + ' data-can-move-to="' + $parentFolder.attr('data-can-move-to') + '"' + ' data-can-move-peer-files-to="' + $parentFolder.attr('data-can-move-peer-files-to') + '"' + '>' + data.folderName + '</a>' + '</li>');
+            var $subfolder = $('<li>' + '<a data-key="' + $parentFolder.data('key') + '/folder:' + data.folderUid + '"' + (Garnish.hasAttr($parentFolder, 'data-has-thumbs') ? ' data-has-thumbs' : '') + ' data-folder-id="' + data.folderId + '"' + (Garnish.hasAttr($parentFolder, 'data-can-upload') ? ' data-can-upload' : '') + (Garnish.hasAttr($parentFolder, 'data-can-move-to') ? ' data-can-move-to' : '') + (Garnish.hasAttr($parentFolder, 'data-can-move-peer-files-to') ? ' data-can-move-peer-files-to' : '') + '>' + data.folderName + '</a>' + '</li>');
             var $a = $subfolder.children('a:first');
 
             this._appendSubfolder($parentFolder, $subfolder);
@@ -9548,7 +9513,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     originalFilename: '',
     originalExtension: '',
     init: function init() {
-      if (arguments.length > 0 && _typeof(arguments[0]) === 'object') {
+      if (arguments.length > 0 && typeof arguments[0] === 'object') {
         arguments[0].editorSettings = {
           onShowHud: $.proxy(this.resetOriginalFilename, this),
           onCreateForm: $.proxy(this._renameHelper, this),
@@ -11946,7 +11911,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       return new Promise(function (resolve, reject) {
         Craft.sendApiRequest('GET', 'updates').then(function (updates) {
           this._cacheUpdates(updates, includeDetails).then(resolve);
-        }.bind(this))["catch"](function (e) {
+        }.bind(this)).catch(function (e) {
           this._cacheUpdates({}).then(resolve);
         }.bind(this));
       }.bind(this));
@@ -12587,14 +12552,16 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       this.modal.selectedSource = this;
 
       if (!this.$settingsContainer) {
-        this.$settingsContainer = $('<div/>').append(this.createSettings()).appendTo(this.modal.$sourceSettingsContainer);
+        this.$settingsContainer = this.createSettings().appendTo(this.modal.$sourceSettingsContainer);
       } else {
         this.$settingsContainer.removeClass('hidden');
       }
 
       this.modal.$sourceSettingsContainer.scrollTop(0);
     },
-    createSettings: function createSettings() {},
+    createSettings: function createSettings() {
+      return $('<div/>');
+    },
     getIndexSource: function getIndexSource() {},
     deselect: function deselect() {
       this.$item.removeClass('sel');
@@ -12611,46 +12578,49 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
   });
   Craft.CustomizeSourcesModal.Source = Craft.CustomizeSourcesModal.BaseSource.extend({
     createSettings: function createSettings() {
+      var $settings = $('<div/>');
+
       if (this.sourceData.tableAttributes.length) {
-        // Create the title column option
-        var firstAttribute = this.sourceData.tableAttributes[0],
-            firstKey = firstAttribute[0],
-            firstLabel = firstAttribute[1],
-            $titleColumnCheckbox = this.createTableColumnOption(firstKey, firstLabel, true, true); // Create the rest of the options
-
-        var $columnCheckboxes = $('<div/>'),
-            selectedAttributes = [firstKey];
-        $('<input type="hidden" name="sources[' + this.sourceData.key + '][tableAttributes][]" value=""/>').appendTo($columnCheckboxes);
-        var i, attribute, key, label; // Add the selected columns, in the selected order
-
-        for (i = 1; i < this.sourceData.tableAttributes.length; i++) {
-          attribute = this.sourceData.tableAttributes[i];
-          key = attribute[0];
-          label = attribute[1];
-          $columnCheckboxes.append(this.createTableColumnOption(key, label, false, true));
-          selectedAttributes.push(key);
-        } // Add the rest
-
-
-        for (i = 0; i < this.modal.availableTableAttributes.length; i++) {
-          attribute = this.modal.availableTableAttributes[i];
-          key = attribute[0];
-          label = attribute[1];
-
-          if (!Craft.inArray(key, selectedAttributes)) {
-            $columnCheckboxes.append(this.createTableColumnOption(key, label, false, false));
-          }
-        }
-
-        new Garnish.DragSort($columnCheckboxes.children(), {
-          handle: '.move',
-          axis: 'y'
-        });
-        return Craft.ui.createField($([$titleColumnCheckbox[0], $columnCheckboxes[0]]), {
-          label: Craft.t('app', 'Table Columns'),
-          instructions: Craft.t('app', 'Choose which table columns should be visible for this source, and in which order.')
-        });
+        $settings.append(this.createTableColumnsField());
       }
+
+      return $settings;
+    },
+    createTableColumnsField: function createTableColumnsField() {
+      // Create the title column option
+      var [firstKey, firstLabel] = this.sourceData.tableAttributes[0];
+      var $titleColumnCheckbox = this.createTableColumnOption(firstKey, firstLabel, true, true); // Create the rest of the options
+
+      var $columnCheckboxes = $('<div/>');
+      var selectedAttributes = [firstKey];
+      $('<input type="hidden" name="sources[' + this.sourceData.key + '][tableAttributes][]" value=""/>').appendTo($columnCheckboxes); // Add the selected columns, in the selected order
+
+      for (var _i5 = 1; _i5 < this.sourceData.tableAttributes.length; _i5++) {
+        var [key, label] = this.sourceData.tableAttributes[_i5];
+        $columnCheckboxes.append(this.createTableColumnOption(key, label, false, true));
+        selectedAttributes.push(key);
+      } // Add the rest
+
+
+      var availableTableAttributes = this.modal.availableTableAttributes.slice(0);
+      availableTableAttributes.push(...this.sourceData.availableTableAttributes);
+
+      for (var _i6 = 0; _i6 < availableTableAttributes.length; _i6++) {
+        var [_key, _label] = availableTableAttributes[_i6];
+
+        if (!Craft.inArray(_key, selectedAttributes)) {
+          $columnCheckboxes.append(this.createTableColumnOption(_key, _label, false, false));
+        }
+      }
+
+      new Garnish.DragSort($columnCheckboxes.children(), {
+        handle: '.move',
+        axis: 'y'
+      });
+      return Craft.ui.createField($([$titleColumnCheckbox[0], $columnCheckboxes[0]]), {
+        label: Craft.t('app', 'Table Columns'),
+        instructions: Craft.t('app', 'Choose which table columns should be visible for this source, and in which order.')
+      });
     },
     createTableColumnOption: function createTableColumnOption(key, label, first, checked) {
       var $option = $('<div class="customize-sources-table-column"/>').append('<div class="icon move"/>').append(Craft.ui.createCheckbox({
@@ -12687,16 +12657,18 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       this.$labelInput.trigger('focus');
     },
     createSettings: function createSettings() {
+      var $settings = $('<div/>');
       this.$labelField = Craft.ui.createTextField({
         label: Craft.t('app', 'Heading'),
         instructions: Craft.t('app', 'This can be left blank if you just want an unlabeled separator.'),
         value: this.sourceData.heading
-      });
+      }).appendTo($settings);
       this.$labelInput = this.$labelField.find('.text');
-      this.$deleteBtn = $('<a class="error delete"/>').text(Craft.t('app', 'Delete heading'));
+      $settings.append('<hr/>');
+      this.$deleteBtn = $('<a class="error delete"/>').text(Craft.t('app', 'Delete heading')).appendTo($settings);
       this.addListener(this.$labelInput, 'input', 'handleLabelInputChange');
       this.addListener(this.$deleteBtn, 'click', 'deleteHeading');
-      return $([this.$labelField[0], $('<hr/>')[0], this.$deleteBtn[0]]);
+      return $settings;
     },
     handleLabelInputChange: function handleLabelInputChange() {
       this.updateItemLabel(this.$labelInput.val());
@@ -12800,9 +12772,9 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           $cancelBtn = $('<div class="btn">' + Craft.t('app', 'Cancel') + '</div>').appendTo($buttons);
 
       if (settings.contentSummary.length) {
-        for (var i = 0; i < settings.contentSummary.length; i++) {
+        for (var _i7 = 0; _i7 < settings.contentSummary.length; _i7++) {
           $body.find('ul').append($('<li/>', {
-            text: settings.contentSummary[i]
+            text: settings.contentSummary[_i7]
           }));
         }
       } else {
@@ -12817,8 +12789,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       if (Garnish.isArray(this.userId)) {
         idParam = ['and'];
 
-        for (var i = 0; i < this.userId.length; i++) {
-          idParam.push('not ' + this.userId[i]);
+        for (var _i8 = 0; _i8 < this.userId.length; _i8++) {
+          idParam.push('not ' + this.userId[_i8]);
         }
       } else {
         idParam = 'not ' + this.userId;
@@ -12827,7 +12799,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       this.userSelect = new Craft.BaseElementSelectInput({
         id: 'transferselect' + this.id,
         name: 'transferContentTo',
-        elementType: "craft\\elements\\User",
+        elementType: 'craft\\elements\\User',
         criteria: {
           id: idParam
         },
@@ -13056,8 +13028,6 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       });
     },
     expandSiteStatuses: function expandSiteStatuses() {
-      var _this12 = this;
-
       this.removeListener(this.$expandSiteStatusesBtn, 'click');
       this.$expandSiteStatusesBtn.velocity({
         opacity: 0
@@ -13068,8 +13038,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       this.$siteStatusPane = $enabledForSiteField.parent(); // If this is a revision, just show the site statuses statically and be done
 
       if (this.settings.revisionId) {
-        for (var _i4 = 0; _i4 < Craft.sites.length; _i4++) {
-          var site = Craft.sites[_i4];
+        for (var _i9 = 0; _i9 < Craft.sites.length; _i9++) {
+          var site = Craft.sites[_i9];
 
           if (site.id == this.settings.siteId) {
             continue;
@@ -13102,8 +13072,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       this.$siteLightswitches = $enabledForSiteField.find('.lightswitch').on('change', this._updateGlobalStatus.bind(this));
       var addlSiteOptions = [];
 
-      for (var _i5 = 0; _i5 < Craft.sites.length; _i5++) {
-        var _site = Craft.sites[_i5];
+      for (var _i10 = 0; _i10 < Craft.sites.length; _i10++) {
+        var _site = Craft.sites[_i10];
 
         if (_site.id == this.settings.siteId) {
           continue;
@@ -13121,8 +13091,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
       var serializedStatuses = "enabled=".concat(originalEnabledValue);
 
-      for (var _i6 = 0; _i6 < this.$siteLightswitches.length; _i6++) {
-        var $input = this.$siteLightswitches.eq(_i6).data('lightswitch').$input;
+      for (var _i11 = 0; _i11 < this.$siteLightswitches.length; _i11++) {
+        var $input = this.$siteLightswitches.eq(_i11).data('lightswitch').$input;
         serializedStatuses += '&' + encodeURIComponent($input.attr('name')) + '=' + $input.val();
       }
 
@@ -13137,31 +13107,30 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         }).addClass('fullwidth');
         this.$addlSiteField = Craft.ui.createField($addlSiteSelectContainer, {}).addClass('nested add').appendTo(this.$siteStatusPane);
         var $addlSiteSelect = $addlSiteSelectContainer.find('select');
-        $addlSiteSelect.on('change', function () {
+        $addlSiteSelect.on('change', () => {
           var siteId = $addlSiteSelect.val();
           var site;
 
-          for (var _i7 = 0; _i7 < Craft.sites.length; _i7++) {
-            if (Craft.sites[_i7].id == siteId) {
-              site = Craft.sites[_i7];
+          for (var _i12 = 0; _i12 < Craft.sites.length; _i12++) {
+            if (Craft.sites[_i12].id == siteId) {
+              site = Craft.sites[_i12];
               break;
             }
           }
 
           if (site) {
-            _this12._createSiteStatusField(site);
+            this._createSiteStatusField(site);
 
             $addlSiteSelect.val('').find("option[value=\"".concat(siteId, "\"]")).remove();
 
-            if (_this12.newSites === null) {
-              _this12.newSites = [];
+            if (this.newSites === null) {
+              this.newSites = [];
             }
 
-            _this12.newSites.push(siteId); // Was that the last site?
-
+            this.newSites.push(siteId); // Was that the last site?
 
             if ($addlSiteSelect.find('option').length === 1) {
-              _this12._removeField(_this12.$addlSiteField);
+              this._removeField(this.$addlSiteField);
             }
           }
         });
@@ -13177,7 +13146,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       var height = $field.height();
       $field.css('overflow', 'hidden').height(0).velocity({
         height: height
-      }, 'fast', function () {
+      }, 'fast', () => {
         $field.css({
           overflow: '',
           height: ''
@@ -13188,7 +13157,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       var height = $field.height();
       $field.css('overflow', 'hidden').velocity({
         height: 0
-      }, 'fast', function () {
+      }, 'fast', () => {
         $field.remove();
       });
     },
@@ -13260,7 +13229,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       if (this.errors === null) {
         bodyHtml = '<p>' + Craft.t('app', 'The draft has been saved.') + '</p>';
       } else {
-        var bodyHtml = '<p class="error">' + Craft.t('app', 'The draft could not be saved.') + '</p>';
+        bodyHtml = '<p class="error">' + Craft.t('app', 'The draft could not be saved.') + '</p>';
 
         if (this.errors.length) {
           bodyHtml += '<ul class="errors">';
@@ -13299,7 +13268,6 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       }).insertAfter($shareBtn);
       var $ul = $('<ul/>').appendTo($menu);
       var $li, $a;
-      var $a;
 
       for (var i = 0; i < this.settings.previewTargets.length; i++) {
         $li = $('<li/>').appendTo($ul);
@@ -13358,7 +13326,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         this.getPreviewToken().then(function (token) {
           params[Craft.tokenParam] = token;
           resolve(Craft.getUrl(url, params));
-        })["catch"](reject);
+        }).catch(reject);
       }.bind(this));
     },
     openShareLink: function openShareLink(url) {
@@ -13388,7 +13356,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         this.ensureIsDraftOrRevision(true).then(function () {
           this.getPreview().open();
           resolve();
-        }.bind(this))["catch"](reject);
+        }.bind(this)).catch(reject);
       }.bind(this));
     },
     ensureIsDraftOrRevision: function ensureIsDraftOrRevision(onlyIfChanged) {
@@ -13399,7 +13367,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
             return;
           }
 
-          this.createDraft().then(resolve)["catch"](reject);
+          this.createDraft().then(resolve).catch(reject);
         } else {
           resolve();
         }
@@ -13441,7 +13409,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     },
     createDraft: function createDraft() {
       return new Promise(function (resolve, reject) {
-        this.saveDraft(this.serializeForm(true)).then(resolve)["catch"](reject);
+        this.saveDraft(this.serializeForm(true)).then(resolve).catch(reject);
       }.bind(this));
     },
     saveDraft: function saveDraft(data) {
@@ -13513,8 +13481,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
               revisionMenu.$container.removeClass('hidden');
             }
 
-            for (var _i8 = 0; _i8 < this.newSites.length; _i8++) {
-              var $option = revisionMenu.$options.filter("[data-site-id=".concat(this.newSites[_i8], "]"));
+            for (var _i13 = 0; _i13 < this.newSites.length; _i13++) {
+              var $option = revisionMenu.$options.filter("[data-site-id=".concat(this.newSites[_i13], "]"));
               $option.find('.status').removeClass('disabled').addClass('enabled');
               var $li = $option.parent().removeClass('hidden');
               $li.closest('.site-group').removeClass('hidden');
@@ -13714,8 +13682,10 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
       var $footer = $('<div class="hud-footer flex flex-center"/>').appendTo($hudBody); // Delete button
 
+      var $deleteLink;
+
       if (this.settings.canDeleteDraft) {
-        var $deleteLink = $('<a class="error" role="button">' + Craft.t('app', 'Delete') + '</a>').appendTo($footer);
+        $deleteLink = $('<a class="error" role="button">' + Craft.t('app', 'Delete') + '</a>').appendTo($footer);
       }
 
       $('<div class="flex-grow"></div>').appendTo($footer);
@@ -14131,7 +14101,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         } else {
           var name = baseName + '[' + rowId + '][' + colId + ']';
           $cell = $('<td/>', {
-            'class': "".concat(col['class'] || '', " ").concat(col['type'], "-cell"),
+            'class': "".concat(col.class, " ").concat(col.type, "-cell"),
             'width': col.width
           });
 
@@ -14182,7 +14152,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
                 options: col.options,
                 value: value || function () {
                   for (var key in col.options) {
-                    if (col.options.hasOwnProperty(key) && col.options[key]["default"]) {
+                    if (col.options.hasOwnProperty(key) && col.options[key].default) {
                       return typeof col.options[key].value !== 'undefined' ? col.options[key].value : key;
                     }
                   }
@@ -14401,8 +14371,9 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       for (var i = 0; i < checkboxCol.toggle.length; i++) {
         colId = checkboxCol.toggle[i];
         colIndex = this.table.colum;
+        neg = colId[0] === '!';
 
-        if (neg = colId[0] === '!') {
+        if (neg) {
           colId = colId.substr(1);
         }
 
@@ -14611,35 +14582,35 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       }
     },
     load: function load($elements) {
-      var _this13 = this;
+      var _this2 = this;
 
       // Only immediately load the visible images
       var $thumbs = $elements.find('.elementthumb');
 
-      var _loop = function _loop(_i9) {
-        var $thumb = $thumbs.eq(_i9);
+      var _loop = function _loop(_i14) {
+        var $thumb = $thumbs.eq(_i14);
         var $scrollParent = $thumb.scrollParent();
 
-        if (_this13.isVisible($thumb, $scrollParent)) {
-          _this13.addToQueue($thumb[0]);
+        if (_this2.isVisible($thumb, $scrollParent)) {
+          _this2.addToQueue($thumb[0]);
         } else {
           var rand = Math.floor(Math.random() * 1000000);
           $scrollParent.on("scroll.".concat(rand), {
             $thumb: $thumb,
             $scrollParent: $scrollParent,
             rand: rand
-          }, function (ev) {
-            if (_this13.isVisible(ev.data.$thumb, ev.data.$scrollParent)) {
+          }, ev => {
+            if (_this2.isVisible(ev.data.$thumb, ev.data.$scrollParent)) {
               $scrollParent.off("scroll.".concat(ev.data.rand));
 
-              _this13.addToQueue(ev.data.$thumb[0]);
+              _this2.addToQueue(ev.data.$thumb[0]);
             }
           });
         }
       };
 
-      for (var _i9 = 0; _i9 < $thumbs.length; _i9++) {
-        _loop(_i9);
+      for (var _i14 = 0; _i14 < $thumbs.length; _i14++) {
+        _loop(_i14);
       }
     },
     addToQueue: function addToQueue(thumb) {
@@ -17447,14 +17418,14 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           }).appendTo(this.$targetMenu);
           var $li, $a;
 
-          for (var i = 0; i < this.draftEditor.settings.previewTargets.length; i++) {
+          for (var _i15 = 0; _i15 < this.draftEditor.settings.previewTargets.length; _i15++) {
             $li = $('<li/>').appendTo($ul);
             $a = $('<a/>', {
               data: {
-                target: i
+                target: _i15
               },
-              text: this.draftEditor.settings.previewTargets[i].label,
-              'class': i === 0 ? 'sel' : null
+              text: this.draftEditor.settings.previewTargets[_i15].label,
+              'class': _i15 === 0 ? 'sel' : null
             }).appendTo($li);
           }
 
@@ -17494,8 +17465,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         this.$tempInput.insertBefore($fields.get(0)); // Move all the fields into the editor rather than copying them
         // so any JS that's referencing the elements won't break.
 
-        for (var i = 0; i < $fields.length; i++) {
-          var $field = $($fields[i]),
+        for (var _i16 = 0; _i16 < $fields.length; _i16++) {
+          var $field = $($fields[_i16]),
               $clone = this._getClone($field); // It's important that the actual field is added to the DOM *after* the clone,
           // so any radio buttons in the field get deselected from the clone rather than the actual field.
 
@@ -17620,8 +17591,6 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       }
 
       this.draftEditor.getTokenizedPreviewUrl(target.url, 'x-craft-live-preview').then(function (url) {
-        var _this14 = this;
-
         // Maintain the current scroll position?
         if (!resetScroll && this.iframeLoaded && this.$iframe) {
           this.iframeHeight = this.$iframe.height();
@@ -17651,10 +17620,10 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           checkOrigin: false,
           // Allow iframe scrolling until we've successfully initialized the resizer
           scrolling: true,
-          onInit: function onInit(iframe) {
-            _this14.iframeLoaded = true;
-            _this14.iframeHeight = null;
-            _this14.scrollTop = null;
+          onInit: iframe => {
+            this.iframeLoaded = true;
+            this.iframeHeight = null;
+            this.scrollTop = null;
             iframe.scrolling = 'no';
           }
         }, $iframe[0]);
@@ -19908,8 +19877,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         }
       });
 
-      if (config["class"]) {
-        $input.addClass(config["class"]);
+      if (config.class) {
+        $input.addClass(config.class);
       }
 
       if (config.placeholder) {
@@ -19961,7 +19930,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         'data-icon': 'clipboard',
         title: Craft.t('app', 'Copy to clipboard')
       }).appendTo($container);
-      $btn.on('click', function () {
+      $btn.on('click', () => {
         $input[0].select();
         document.execCommand('copy');
         Craft.cp.displayNotice(Craft.t('app', 'Copied to clipboard.'));
@@ -19985,7 +19954,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       var modal = new Garnish.Modal($container, {
         closeOtherModals: false
       });
-      $container.on('copy', function () {
+      $container.on('copy', () => {
         modal.hide();
       });
       return $container;
@@ -20008,8 +19977,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         $textarea.attr('data-show-chars-left', '');
       }
 
-      if (config["class"]) {
-        $textarea.addClass(config["class"]);
+      if (config.class) {
+        $textarea.addClass(config.class);
       }
 
       if (!config.size) {
@@ -20026,8 +19995,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         'class': 'select'
       });
 
-      if (config["class"]) {
-        $container.addClass(config["class"]);
+      if (config.class) {
+        $container.addClass(config.class);
       }
 
       var $select = $('<select/>', {
@@ -20071,8 +20040,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
       var $optgroup = null;
 
-      for (var _i10 = 0; _i10 < config.options.length; _i10++) {
-        var _option = config.options[_i10]; // Starting a new <optgroup>?
+      for (var _i17 = 0; _i17 < config.options.length; _i17++) {
+        var _option = config.options[_i17]; // Starting a new <optgroup>?
 
         if (typeof _option.optgroup !== 'undefined') {
           $optgroup = $('<optgroup/>', {
@@ -20113,8 +20082,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         'data-reverse-target': config.reverseToggle
       });
 
-      if (config["class"]) {
-        $input.addClass(config["class"]);
+      if (config.class) {
+        $input.addClass(config.class);
       }
 
       if (config.toggle || config.reverseToggle) {
@@ -20161,8 +20130,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     createCheckboxSelect: function createCheckboxSelect(config) {
       var $container = $('<div class="checkbox-select"/>');
 
-      if (config["class"]) {
-        $container.addClass(config["class"]);
+      if (config.class) {
+        $container.addClass(config.class);
       }
 
       var allValue, allChecked;
@@ -20336,7 +20305,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       var now = new Date();
       var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       config = $.extend({
-        "class": '',
+        class: '',
         options: ['today', 'thisWeek', 'thisMonth', 'thisYear', 'past7Days', 'past30Days', 'past90Days', 'pastYear'],
         onChange: $.noop,
         selected: null,
@@ -20349,7 +20318,6 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       var $ul = $('<ul/>', {
         'class': 'padded'
       }).appendTo($menu);
-      var menu = new Garnish.Menu($menu);
       var $allOption = $('<a/>').addClass('sel').text(Craft.t('app', 'All')).data('handle', 'all');
       $('<li/>').append($allOption).appendTo($ul);
       var option;
@@ -20535,8 +20503,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       });
       var btnClasses = 'btn menubtn';
 
-      if (config["class"]) {
-        btnClasses = btnClasses + ' ' + config["class"];
+      if (config.class) {
+        btnClasses = btnClasses + ' ' + config.class;
       }
 
       var $btn = $('<div class="' + btnClasses + '" data-icon="date"/>').text(Craft.t('app', 'All'));

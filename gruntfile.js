@@ -69,7 +69,13 @@ module.exports = function(grunt) {
         },
         babel: {
             options: {
-                presets: ['@babel/preset-env'],
+                presets: [
+                    ['@babel/preset-env', {
+                        targets: {
+                            esmodules: true,
+                        }
+                    }]
+                ],
                 compact: false,
             },
             dist: {
@@ -126,10 +132,11 @@ module.exports = function(grunt) {
         },
         jshint: {
             options: {
+                esversion: 6,
+                asi: true, // suppress "Missing semicolon" errors
                 expr: true,
                 laxbreak: true,
-                loopfunc: true, // Supresses "Don't make functions within a loop." errors
-                shadow: true,
+                loopfunc: true, // suppress "Don't make functions within a loop." errors
                 strict: false,
                 '-W041': true,
                 '-W061': true

@@ -25,6 +25,7 @@ use craft\events\ModelEvent;
 use craft\events\RegisterElementActionsEvent;
 use craft\events\RegisterElementDefaultTableAttributesEvent;
 use craft\events\RegisterElementExportersEvent;
+use craft\events\RegisterElementFieldLayoutsEvent;
 use craft\events\RegisterElementHtmlAttributesEvent;
 use craft\events\RegisterElementSearchableAttributesEvent;
 use craft\events\RegisterElementSortOptionsEvent;
@@ -136,6 +137,14 @@ abstract class Element extends Component implements ElementInterface
      * @event RegisterElementSourcesEvent The event that is triggered when registering the available sources for the element type.
      */
     const EVENT_REGISTER_SOURCES = 'registerSources';
+
+    /**
+     * @event RegisterElementFieldLayoutsEvent The event that is triggered when registering all of the field layouts
+     * associated with elements from a given source.
+     * @see fieldLayouts()
+     * @since 3.5.0
+     */
+    const EVENT_REGISTER_FIELD_LAYOUTS = 'registerFieldLayouts';
 
     /**
      * @event RegisterElementActionsEvent The event that is triggered when registering the available actions for the element type.
@@ -526,6 +535,38 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @inheritdoc
+     * @since 3.5.0
+     */
+    public static function fieldLayouts(string $source): array
+    {
+        $fieldLayouts = static::defineFieldLayouts($source);
+
+        // Give plugins a chance to modify them
+        $event = new RegisterElementFieldLayoutsEvent([
+            'source' => $source,
+            'fieldLayouts' => $fieldLayouts
+        ]);
+        Event::trigger(static::class, self::EVENT_REGISTER_FIELD_LAYOUTS, $event);
+
+        return $event->fieldLayouts;
+    }
+
+    /**
+     * Defines the field layouts associated with elements for a given source.
+     *
+     * @param string $source The selected source’s key, if any
+     * @return FieldLayout[] The associated field layouts
+     * @see fieldLayouts()
+     * @since 3.5.0
+     */
+    protected static function defineFieldLayouts(string $source): array
+    {
+        // Default to all of the field layouts associated with this element type
+        return Craft::$app->getFields()->getLayoutsByElementType(static::class);
+    }
+
+    /**
+     * @inheritdoc
      */
     public static function actions(string $source): array
     {
@@ -649,7 +690,7 @@ abstract class Element extends Component implements ElementInterface
                 unset($viewState['order']);
             }
         } else {
-            $orderBy = self::_indexOrderBy($viewState);
+            $orderBy = self::_indexOrderBy($sourceKey, $viewState);
             if ($orderBy !== false) {
                 $elementQuery->orderBy($orderBy);
             }
@@ -699,13 +740,6 @@ abstract class Element extends Component implements ElementInterface
     {
         $sortOptions = static::defineSortOptions();
 
-        // Add custom fields to the fix
-        foreach (Craft::$app->getFields()->getFieldsByElementType(static::class) as $field) {
-            if ($field instanceof SortableFieldInterface) {
-                $sortOptions[] = $field->getSortOption();
-            }
-        }
-
         // Give plugins a chance to modify them
         $event = new RegisterElementSortOptionsEvent([
             'sortOptions' => $sortOptions
@@ -724,7 +758,7 @@ abstract class Element extends Component implements ElementInterface
     protected static function defineSortOptions(): array
     {
         // Default to the available table attributes
-        $tableAttributes = Craft::$app->getElementIndexes()->getAvailableTableAttributes(static::class, false);
+        $tableAttributes = Craft::$app->getElementIndexes()->getAvailableTableAttributes(static::class);
         $sortOptions = [];
 
         foreach ($tableAttributes as $key => $labelInfo) {
@@ -1086,37 +1120,20 @@ abstract class Element extends Component implements ElementInterface
     /**
      * Returns the orderBy value for element indexes
      *
+     * @param string $sourceKey
      * @param array $viewState
      * @return array|false
      */
-    private static function _indexOrderBy(array $viewState)
+    private static function _indexOrderBy(string $sourceKey, array $viewState)
     {
-        // Define the available sort attribute/option pairs
-        $sortOptions = [];
-        foreach (static::sortOptions() as $key => $sortOption) {
-            if (is_string($key)) {
-                // Shorthand syntax
-                $sortOptions[$key] = $key;
-            } else {
-                if (!isset($sortOption['orderBy'])) {
-                    throw new InvalidValueException('Sort options must specify an orderBy value');
-                }
-                $attribute = $sortOption['attribute'] ?? $sortOption['orderBy'];
-                $sortOptions[$attribute] = $sortOption['orderBy'];
-            }
-        }
-        $sortOptions['score'] = 'score';
-
-        if (!empty($viewState['order']) && isset($sortOptions[$viewState['order']])) {
-            $columns = $sortOptions[$viewState['order']];
-        } else if (count($sortOptions) > 1) {
-            $columns = reset($sortOptions);
-        } else {
+        if (($columns = self::_indexOrderByColumns($sourceKey, $viewState)) === false) {
             return false;
         }
 
         // Borrowed from QueryTrait::normalizeOrderBy()
-        $columns = preg_split('/\s*,\s*/', trim($columns), -1, PREG_SPLIT_NO_EMPTY);
+        if (is_string($columns)) {
+            $columns = preg_split('/\s*,\s*/', trim($columns), -1, PREG_SPLIT_NO_EMPTY);
+        }
         $result = [];
         foreach ($columns as $i => $column) {
             if ($i === 0) {
@@ -1130,6 +1147,42 @@ abstract class Element extends Component implements ElementInterface
         }
 
         return $result;
+    }
+
+    /**
+     * @param string $sourceKey
+     * @param array $viewState
+     * @return bool|string|array
+     */
+    private static function _indexOrderByColumns(string $sourceKey, array $viewState)
+    {
+        if (empty($viewState['order'])) {
+            return false;
+        }
+
+        if ($viewState['order'] === 'score') {
+            return 'score';
+        }
+
+        foreach (static::sortOptions() as $key => $sortOption) {
+            if (is_array($sortOption)) {
+                $attribute = $sortOption['attribute'] ?? $sortOption['orderBy'];
+                if ($attribute === $viewState['order']) {
+                    return $sortOption['orderBy'];
+                }
+            } else if ($key === $viewState['order']) {
+                return $key;
+            }
+        }
+
+        // See if it's a source-specific sort option
+        foreach (Craft::$app->getElementIndexes()->getSourceSortOptions(static::class, $sourceKey) as $sortOption) {
+            if ($sortOption['attribute'] === $viewState['order']) {
+                return $sortOption['orderBy'];
+            }
+        }
+
+        return false;
     }
 
     /**

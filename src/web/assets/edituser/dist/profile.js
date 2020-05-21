@@ -1,7 +1,7 @@
 (function($) {
     /** global: Craft */
     /** global: Garnish */
-    var settings = {
+    let uploadSettings = {
         postParameters: {userId: $('.user-photo').attr('data-user')},
         containerSelector: '.user-photo',
         uploadAction: 'users/upload-user-photo',
@@ -20,9 +20,9 @@
         }
     };
 
-    new Craft.ImageUpload(settings);
+    new Craft.ImageUpload(uploadSettings);
 
-    var settings = {
+    let editorSettings = {
         allowSavingAsNew: false,
         onSave: function() {
             // So not optimal.
@@ -32,6 +32,6 @@
     };
 
     $('#main').on('click', '.btn.edit-photo', function(ev) {
-        new Craft.AssetImageEditor($(ev.currentTarget).data('photoid'), settings);
+        new Craft.AssetImageEditor($(ev.currentTarget).data('photoid'), editorSettings);
     });
 })(jQuery);

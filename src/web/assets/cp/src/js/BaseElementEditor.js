@@ -98,7 +98,7 @@ Craft.BaseElementEditor = Garnish.Base.extend(
                     var $header = $('<div class="hud-header"/>');
 
                     if (response.sites.length === 1) {
-                        $('<h5/>', {text: response.sites[0].name}).appendTo($header);;
+                        $('<h5/>', {text: response.sites[0].name}).appendTo($header);
                     } else {
                         var $siteSelectContainer = $('<div class="select"/>').appendTo($header);
 

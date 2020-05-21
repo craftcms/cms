@@ -7,18 +7,31 @@
 - Added the `localized` field when querying entries and categories via GraphQL. ([#6045](https://github.com/craftcms/cms/issues/6045))
 - Added `craft\base\ConfigurableComponent`.
 - Added `craft\base\ConfigurableComponentInterface`.
+- Added `craft\base\Element::defineFieldLayouts()`.
 - Added `craft\base\Element::EVENT_DEFINE_KEYWORDS`. ([#6028](https://github.com/craftcms/cms/issues/6028))
+- Added `craft\base\Element::EVENT_REGISTER_FIELD_LAYOUTS`.
+- Added `craft\base\Element::fieldLayouts()`.
 - Added `craft\base\Element::searchKeywords()`.
+- Added `craft\base\ElementInterface::fieldLayouts()`.
 - Added `craft\base\ElementInterface::getLocalized()`.
 - Added `craft\base\Field::EVENT_DEFINE_KEYWORDS`. ([#6028](https://github.com/craftcms/cms/issues/6028))
 - Added `craft\base\Field::searchKeywords()`.
+- Added `craft\base\Volume::getFieldLayout()`.
+- Added `craft\base\VolumeInterface::getFieldLayout()`.
+- Added `craft\elements\Asset::defineFieldLayouts()`.
+- Added `craft\elements\Category::defineFieldLayouts()`.
 - Added `craft\elements\db\UserQuery::$hasPhoto`.
 - Added `craft\elements\db\UserQuery::hasPhoto()`.
+- Added `craft\elements\Entry::defineFieldLayouts()`.
 - Added `craft\events\DefineAttributeKeywordsEvent`.
 - Added `craft\events\DefineFieldKeywordsEvent`.
+- Added `craft\events\RegisterElementFieldLayoutsEvent`.
 - Added `craft\helpers\ElementHelper::generateSlug()`.
 - Added `craft\helpers\ElementHelper::normalizeSlug()`.
 - Added `craft\services\AssetTransforms::extendTransform()`. ([#5853](https://github.com/craftcms/cms/issues/5853))
+- Added `craft\services\ElementIndexes::getSourceSortOptions()`.
+- Added `craft\services\ElementIndexes::getSourceTableAttributes()`.
+- Added `craft\services\Fields::getLayoutsByElementType()`.
 - Added `craft\services\Images::getSupportsWebP()`. ([#5853](https://github.com/craftcms/cms/issues/5853))
 - Added `craft\web\Request::getRawCookies()`.
 - Added `craft\web\Request::loadRawCookies()`.
@@ -28,6 +41,7 @@
 
 ### Changed
 - Craft now remembers the selected site across global sets and element indexes. ([#2779](https://github.com/craftcms/cms/issues/2779))
+- The available table columns and sort options within element indexes now only list custom fields that are present in field layouts for the selected element source. ([#4314](https://github.com/craftcms/cms/issues/4314), [#4802](https://github.com/craftcms/cms/issues/4802))
 - The default account activation and password reset emails now reference the system name rather than the current site name. ([#6089](https://github.com/craftcms/cms/pull/6089))
 - Craft will now regenerate missing transforms on local volumes. ([#5956](https://github.com/craftcms/cms/issues/5956))
 - Element queries’ `siteId` params can now be set to an array that begins with `'not'` to exclude specific site IDs.
@@ -35,14 +49,18 @@
 - Lightswitch inputs can now have labels, like checkboxes.
 - Improved support for eager-loading elements across multiple sites at once.
 - Added eager-loading support for the `photo` field when querying users via GraphQL.
+- `craft\base\Element::getRoute()` now returns the route defined by `craft\events\SetElementRouteEvent::$route` even if it’s null, as long as `SetElementRouteEvent::$handled` is set to `true`.
+- `craft\base\ElementInterface::sortOptions()` now allows the returned `orderBy` key to be set to an array of column names.
 - `craft\base\SavableComponent::isSelectable()` has been moved into the base component class, `craft\base\Component`.
 - `craft\base\SavableComponentInterface::isSelectable()` has been moved into the base component interface, `craft\base\ComponentInterface`.
-- `craft\base\Element::getRoute()` now returns the route defined by `craft\events\SetElementRouteEvent::$route` even if it’s null, as long as `SetElementRouteEvent::$handled` is set to `true`.
+- `craft\base\SortableFieldInterface::getSortOption()` now allows the returned `orderBy` key to be set to an array of column names.
 - `craft\elements\Asset::getUrl()` now has a `$transformOverrideParameters` parameter. ([#5853](https://github.com/craftcms/cms/issues/5853))
+- `craft\services\ElementIndexes::getAvailableTableAttributes()` no longer has an `$includeFields` argument.
 - `craft\services\Fields::getFieldByHandle()` now has an optional `$context` argument.
 
 ### Deprecated
 - Deprecated `craft\helpers\ElementHelper::createSlug()`. `normalizeSlug()` should be used instead.
+- Deprecated `craft\services\ElementIndexes::getAvailableTableFields()`. `getSourceTableAttributes()` should be used instead.
 
 ### Fixed
 - Fixed a potential CORS issue when previewing a live entry, if its URL was on a different domain than the control panel.
@@ -293,6 +311,8 @@
 ### Changed
 - Asset thumbnails now use the same aspect ratio as the source image. ([#5518](https://github.com/craftcms/cms/issues/5518), [#5515](https://github.com/craftcms/cms/issues/5515))
 - Image thumbnails in the control panel now only load once they are in view, or close to it. ([#6104](https://github.com/craftcms/cms/issues/6104))
+- Modal backdrops no longer blur the page content. ([#5651](https://github.com/craftcms/cms/issues/5651))
+- The suggested filename is now returned when uploading a file via the `assets/upload` action. ([#6099](https://github.com/craftcms/cms/issues/6099))
 
 ### Fixed
 - Fixed a bug where non-sortable fields could be listed as element index sort options, and sortable fields could be listed twice, for element types that didn’t override the `defineSortOptions()` method.
@@ -301,6 +321,7 @@
 - Fixed a bug where image thumbnails in the control panel could stop loading if three thumbnails failed to load properly.
 - Fixed a bug where clicking on the color preview within Color fields wasn’t opening the browser’s color picker in Safari. ([#6107](https://github.com/craftcms/cms/issues/6107))
 - Fixed a bug where the “Publish changes” button label was not getting translated after clicking “Save as a draft” on an Edit Entry page. ([#6112](https://github.com/craftcms/cms/issues/6112))
+- Fixed a couple errors that could occur when running console commands via Cron. ([#6102](https://github.com/craftcms/cms/issues/6102))
 
 ## 3.4.20 - 2020-05-18
 
