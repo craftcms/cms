@@ -53,12 +53,13 @@ var graphiqlJs = [
     'node_modules/react/umd/react.production.min.js',
     'node_modules/react-dom/umd/react-dom.production.min.js',
     'node_modules/graphiql/graphiql.js',
+    'node_modules/graphiql-with-extensions/GraphiqlWithExtensions.js',
     'src/web/assets/graphiql/src/graphiql-init.js',
     'src/web/assets/graphiql/src/components.js',
 ];
 
 var graphiqlCss = [
-    'node_modules/graphiql/graphiql.css',
+    'node_modules/graphiql-with-extensions/graphiqlWithExtensions.css',
     'src/web/assets/graphiql/src/graphiql.scss',
 ];
 

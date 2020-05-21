@@ -71,7 +71,7 @@ function initGraphiQl() {
         });
     }
 
-    ReactDOM.render(elem(Root, {
+    ReactDOM.render(elem(CraftGraphiQL, {
         fetcher: graphQLFetcher,
         gqlSchemas: gqlSchemas,
         selectedSchema: selectedSchema

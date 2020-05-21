@@ -12,64 +12,35 @@ class Item extends React.Component {
 
 class SchemaSelector extends React.Component {
     render() {
-        return elem(GraphiQL.Menu, {
-            class: 'menu',
+        let e =  elem(GraphiQL.Menu, {
+            className: 'menu',
             label: this.props.selectedSchema.name,
             title: "Select a GraphQL schema"
         }, this.props.menuItems)
+
+        return e;
     }
 }
 
-class Root extends React.Component {
-    constructor(props) {
-        super(props);
-        this.graphiql = React.createRef();
-    }
-
-    handleClickPrettifyButton(event) {
-        this.graphiql.current.handlePrettifyQuery();
-    }
-
-
-    handleClickHistoryButton(event) {
-        this.graphiql.current.handleToggleHistory();
-    }
-
-    render() {
-        var logoElement = React.createElement(GraphiQL.Logo, {}, "Explore the GraphQL API")
-
-        var menuItems = [];
-        var toolBar;
-
+class CraftGraphiQL extends React.Component {
+    _makeSchemaSelector(gqlSchemas, selectedSchema) {
+        let menuItems = [];
         let schemaName = '';
 
-        for (schemaName in this.props.gqlSchemas) {
+        for (schemaName in gqlSchemas) {
             var schemaUid = gqlSchemas[schemaName];
             if (schemaName !== selectedSchema.name) {
-                menuItems.push(elem(Item, Object.assign({}, {name: schemaName, uid: schemaUid})));
+                menuItems.push(elem(Item, Object.assign({}, {name: schemaName, uid: schemaUid, key: schemaUid})));
             } else {
-                menuItems.push(elem('li', {class: 'selected-schema'}, schemaName));
+                menuItems.push(elem('li', {className: 'selected-schema', key: schemaUid}, schemaName));
             }
         }
 
-        let children = [
-            elem(GraphiQL.Button, {
-                onClick: this.handleClickPrettifyButton.bind(this),
-                label: "Prettify",
-                title: "Prettify query"
-            }),
-            elem(GraphiQL.Button, {
-                onClick: this.handleClickHistoryButton.bind(this),
-                label: "History",
-                title: "Toggle history"
-            }),
-            elem(SchemaSelector, {menuItems: menuItems, selectedSchema: this.props.selectedSchema}),
-        ];
+        return elem(SchemaSelector, {menuItems: menuItems, selectedSchema: selectedSchema, key: 'schemaSelector'});
+    }
 
-        // empty toolbar to remove default toolbar buttons
-        toolBar = elem(GraphiQL.Toolbar, {}, children);
-
-        return elem(GraphiQL, {
+    render() {
+        return elem(GraphiQLWithExtensions.GraphiQLWithExtensions, {
             fetcher: this.props.fetcher,
             schema: undefined,
             query: parameters.query,
@@ -78,7 +49,8 @@ class Root extends React.Component {
             onEditQuery: onEditQuery,
             onEditVariables: onEditVariables,
             onEditOperationName: onEditOperationName,
-            ref: this.graphiql
-        }, toolBar, logoElement);
+            logoMessage: "Explore the GraphQL API",
+            additionalControls: [this._makeSchemaSelector(this.props.gqlSchemas, this.props.selectedSchema)]
+        });
     }
 }
