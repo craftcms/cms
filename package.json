@@ -3,6 +3,7 @@
   "main": "gulpfile.js",
   "dependencies": {
     "axios": "^0.18.1",
+    "graphiql-with-extensions": "https://github.com/craftcms/graphiql-with-extensions/tarball/master",
     "vue": "^2.6.11",
     "vue-autosuggest": "^1.8.1",
     "vue-cleave": "^1.2.2",
