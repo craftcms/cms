@@ -13,6 +13,7 @@
 - The suggested filename is now returned when uploading a file via the `assets/upload` action. ([#6099](https://github.com/craftcms/cms/issues/6099))
 
 ### Deprecated
+- Deprecated `craft\db\Connection::getVersion()`. `yii\base\Schema::getServerVersion()` should be used instead.
 - Deprecated `craft\events\GlobalSetContentEvent`.
 
 ### Fixed
