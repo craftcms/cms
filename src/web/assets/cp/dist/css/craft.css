@@ -1828,6 +1828,7 @@ body.ltr #nav li a { padding-left: 18px; }
 body.rtl #nav li a { padding-right: 18px; }
 #nav li a.active { color: #fff; }
 #nav li a.menubtn { line-height: 26px; }
+#nav li a.external:after { margin-left: 5px; font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; opacity: 0.8; content: 'external'; }
 #nav li a:active .icon { opacity: 1; }
 #nav li a .icon { opacity: 0.5; }
 body.ltr #nav li a .icon { margin: 0 22px 0 0 ; }

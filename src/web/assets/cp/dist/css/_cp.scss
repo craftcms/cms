@@ -228,6 +228,12 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
         line-height: 26px;
       }
 
+      &.external:after {
+        margin-left: 5px;
+        @include icon;
+        content: 'external';
+      }
+
       &:active .icon {
         opacity: 1;
       }
