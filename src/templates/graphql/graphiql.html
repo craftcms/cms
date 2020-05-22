@@ -1,9 +1,9 @@
-{% extends "_layouts/cp" %}
+{% extends "_layouts/basecp" %}
 {% set title = "Explore the GraphQL API"|t %}
 {% set selectedSubnavItem = 'explore' %}
 {% set showHeader = false %}
 
-{% block main %}
+{% block body %}
     <div data-endpoint="{{ url }}" id="graphiql">
         <div class="spinner big"></div>
     </div>
