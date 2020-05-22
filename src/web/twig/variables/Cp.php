@@ -237,9 +237,13 @@ class Cp extends Component
         foreach ($navItems as &$item) {
             if (!$foundSelectedItem && ($item['url'] == $path || StringHelper::startsWith($path, $item['url'] . '/'))) {
                 $item['sel'] = true;
+                if (!isset($item['subnav'])) {
+                    $item['subnav'] = false;
+                }
                 $foundSelectedItem = true;
             } else {
                 $item['sel'] = false;
+                $item['subnav'] = false;
             }
 
             if (!isset($item['id'])) {
