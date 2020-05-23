@@ -220,7 +220,8 @@
 - Element queries’ `siteId` params can now be set to an array that begins with `'not'` to exclude specific site IDs.
 - The `withTransforms` asset query param can now include `srcset`-style sizes (e.g. `100w` or `2x`), following a normal transform definition.
 - The `QueryArgument` GraphQL type now also allows boolean values.
-- Improved transform eager-loading support when using GraphQL API.
+- Improved eager-loading support when querying for image transforms via GraphQL.
+- Users’ photos are now eager-loaded when queried via GraphQL.
 - It’s now possible to register template roots without a template prefix. ([#6015](https://github.com/craftcms/cms/issues/6015))
 - It’s now possible to register multiple directories per template root. ([#6015](https://github.com/craftcms/cms/issues/6015))
 - It’s now possible to pass `type`, `status`, `title`, `slug`, `postDate`, `expiryDate`, and custom field query string params to the new entry URL, to set the default entry values (e.g. `/admin/entries/locations/new?phone=555-0123`).
@@ -233,6 +234,7 @@
 - `craft\base\SortableFieldInterface::getSortOption()` now allows the returned `orderBy` key to be set to an array of column names.
 - `craft\db\ActiveRecord` now unsets any empty primary key values when saving new records, to avoid a SQL error on PostgreSQL. ([#5814](https://github.com/craftcms/cms/pull/5814))
 - `craft\elements\Asset::getImg()` now has a `$sizes` argument. ([#5774](https://github.com/craftcms/cms/issues/5774))
+- `craft\elements\Asset::getUrl()` now has a `$transformOverrideParameters` argument. ([#5853](https://github.com/craftcms/cms/issues/5853))
 - `craft\helpers\ElementHelper::supportedSitesForElement()` now has a `$withUnpropagatedSites` argument.
 - `craft\helpers\StringHelper::randomString()` no longer includes capital letters or numbers by default.
 - `craft\i18n\Formatter::asTimestamp()` now has a `$withPreposition` argument.
@@ -246,8 +248,6 @@
 - Control panel form input macros and templates that accept a `class` variable can now pass it as an array of class names.
 - Updated Composer to 1.10.5. ([#5925](https://github.com/craftcms/cms/pull/5925))
 - Updated voku/stringy to ^6.2.2. ([#5989](https://github.com/craftcms/cms/issues/5989))
-- `craft\elements\Asset::getUrl()` now has a `$transformOverrideParameters` parameter. ([#5853](https://github.com/craftcms/cms/issues/5853))
-- Added eager-loading support for the `photo` field when querying users via GraphQL.
 
 ### Deprecated
 - Deprecated the `install/plugin` command. `plugin/install` should be used instead.
