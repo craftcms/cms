@@ -48,6 +48,7 @@
 - Added `craft\helpers\ArrayHelper::isNumeric()`.
 - Added `craft\helpers\ElementHelper::generateSlug()`.
 - Added `craft\helpers\ElementHelper::normalizeSlug()`.
+- Added `craft\helpers\Json::isJsonObject()`.
 - Added `craft\services\AssetTransforms::extendTransform()`. ([#5853](https://github.com/craftcms/cms/issues/5853))
 - Added `craft\services\ElementIndexes::getSourceSortOptions()`.
 - Added `craft\services\ElementIndexes::getSourceTableAttributes()`.
@@ -78,6 +79,7 @@
 - Lightswitch inputs can now have labels, like checkboxes.
 - Improved support for eager-loading elements across multiple sites at once.
 - Added eager-loading support for the `photo` field when querying users via GraphQL.
+- Fields’ values are now automatically JSON-decoded before being passed to `normalizeValue()`, if they look like a JSON object or array.
 - `craft\base\Element::getRoute()` now returns the route defined by `craft\events\SetElementRouteEvent::$route` even if it’s null, as long as `SetElementRouteEvent::$handled` is set to `true`.
 - `craft\base\ElementInterface::sortOptions()` now allows the returned `orderBy` key to be set to an array of column names.
 - `craft\base\SavableComponent::isSelectable()` has been moved into the base component class, `craft\base\Component`.

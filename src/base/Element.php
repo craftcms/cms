@@ -39,6 +39,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
+use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
@@ -3205,7 +3206,11 @@ abstract class Element extends Component implements ElementInterface
         }
 
         $behavior = $this->getBehavior('customFields');
-        $behavior->$fieldHandle = $field->normalizeValue($behavior->$fieldHandle, $this);
+        $value = $behavior->$fieldHandle;
+        if (is_string($value) && Json::isJsonObject($value)) {
+            $value = Json::decodeIfJson($value);
+        }
+        $behavior->$fieldHandle = $field->normalizeValue($value, $this);
         $this->_normalizedFieldValues[$fieldHandle] = true;
     }
 
