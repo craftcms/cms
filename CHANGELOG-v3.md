@@ -69,16 +69,16 @@
 - Deprecated `craft\helpers\ElementHelper::createSlug()`. `normalizeSlug()` should be used instead.
 - Deprecated `craft\services\ElementIndexes::getAvailableTableFields()`. `getSourceTableAttributes()` should be used instead.
 
+### Removed
+- Removed the “Show rounded icons” user preference.
+- Removed `craft\base\ElementInterface::getIconUrl()`.
+
 ### Fixed
 - Fixed a potential CORS issue when previewing a live entry, if its URL was on a different domain than the control panel.
 - Fixed a JavaScript error that could occur when previewing cross-origin webpages. ([#6057](https://github.com/craftcms/cms/issues/6057))
 - Fixed a styling issue on the Login page when resetting the password. ([#6042](https://github.com/craftcms/cms/issues/6042))
 - Fixed a bug where a broken eager-loading chain would not be resumed correctly. ([#5998](https://github.com/craftcms/cms/issues/5998))
 - Fixed an error that would occur when using the `immediately` parameter in GraphQL `transform` directives.
-
-### Removed
-- Removed the “Show rounded icons” user preference.
-- Removed `craft\base\ElementInterface::getIconUrl()`.
 
 ## 3.5.0-beta.2 - 2020-05-05
 
