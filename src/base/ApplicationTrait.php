@@ -601,12 +601,12 @@ trait ApplicationTrait
     /**
      * Returns the info model, or just a particular attribute.
      *
-     * @param $throwException Whether an exception should be thrown if the `info` table doesn't exist
+     * @param bool $throwException Whether an exception should be thrown if the `info` table doesn't exist
      * @return Info
      * @throws DbException if the `info` table doesn’t exist yet and `$throwException` is `true`
      * @throws ServerErrorHttpException if the info table is missing its row
      */
-    public function getInfo($throwException = false): Info
+    public function getInfo(bool $throwException = false): Info
     {
         /** @var WebApplication|ConsoleApplication $this */
         if ($this->_info !== null) {

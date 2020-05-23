@@ -389,7 +389,7 @@ class GqlTest extends Unit
         $gql->invalidateCaches();
 
         $cacheKey = 'testKey';
-        $cacheValue = 'testValue';
+        $cacheValue = ['testValue'];
         $gql->setCachedResult($cacheKey, $cacheValue);
 
         $schema = new GqlSchema([

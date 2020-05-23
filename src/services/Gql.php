@@ -388,8 +388,13 @@ class Gql extends Component
      * @return array
      * @since 3.3.11
      */
-    public function executeQuery(GqlSchema $schema, string $query, $variables = [], $operationName = '', $debugMode = false): array
-    {
+    public function executeQuery(
+        GqlSchema $schema,
+        string $query,
+        array $variables = null,
+        string $operationName = null,
+        bool $debugMode = false
+    ): array {
         $event = new ExecuteGqlQueryEvent([
             'schemaId' => $schema->id,
             'query' => $query,
@@ -400,13 +405,31 @@ class Gql extends Component
         $this->trigger(self::EVENT_BEFORE_EXECUTE_GQL_QUERY, $event);
 
         if ($event->result === null) {
-            $cacheKey = $this->_getCacheKey($schema, $query, $event->rootValue, $event->context, $event->variables, $event->operationName);
+            $cacheKey = $this->_getCacheKey(
+                $schema,
+                $query,
+                $event->rootValue,
+                $event->context,
+                $event->variables,
+                $event->operationName
+            );
 
-            if ($cacheKey && ($cachedResult = $this->getCachedResult($cacheKey))) {
+            if ($cacheKey && ($cachedResult = $this->getCachedResult($cacheKey)) !== null) {
                 $event->result = $cachedResult;
             } else {
                 $schemaDef = $this->getSchemaDef($schema, $debugMode || StringHelper::contains($query, '__schema'));
-                $event->result = GraphQL::executeQuery($schemaDef, $query, $event->rootValue, $event->context, $event->variables, $event->operationName, null, $this->getValidationRules($debugMode))->toArray($debugMode);
+
+                $event->result = GraphQL::executeQuery(
+                    $schemaDef,
+                    $query,
+                    $event->rootValue,
+                    $event->context,
+                    $event->variables,
+                    $event->operationName,
+                    null,
+                    $this->getValidationRules($debugMode)
+                )->toArray($debugMode);
+
 
                 if (empty($event->result['errors']) && $cacheKey) {
                     $this->setCachedResult($cacheKey, $event->result);
@@ -420,7 +443,7 @@ class Gql extends Component
     }
 
     /**
-     * Invalidate all GraphQL result caches.
+     * Invalidates all GraphQL result caches.
      *
      * @since 3.3.12
      */
@@ -430,25 +453,25 @@ class Gql extends Component
     }
 
     /**
-     * Get the cached result for a key.
+     * Returns the cached result for a key.
      *
-     * @param $cacheKey
-     * @return mixed
+     * @param string $cacheKey
+     * @return array|null
      * @since 3.3.12
      */
     public function getCachedResult($cacheKey)
     {
-        return Craft::$app->getCache()->get($cacheKey);
+        return Craft::$app->getCache()->get($cacheKey) ?: null;
     }
 
     /**
      * Cache a result for the key and tag it.
      *
-     * @param $cacheKey
-     * @param $result
+     * @param string $cacheKey
+     * @param array $result
      * @since 3.3.12
      */
-    public function setCachedResult($cacheKey, $result)
+    public function setCachedResult(string $cacheKey, array $result)
     {
         Craft::$app->getCache()->set($cacheKey, $result, null, new TagDependency(['tags' => self::CACHE_TAG]));
     }
@@ -1016,15 +1039,21 @@ class Gql extends Component
      *
      * @param GqlSchema $schema
      * @param string $query
-     * @param $rootValue
-     * @param $context
-     * @param $variables
-     * @param $operationName
+     * @param mixed $rootValue
+     * @param mixed $context
+     * @param array|null $variables
+     * @param string|null $operationName
      *
      * @return string|null
      */
-    private function _getCacheKey(GqlSchema $schema, string $query, $rootValue, $context, $variables, $operationName)
-    {
+    private function _getCacheKey(
+        GqlSchema $schema,
+        string $query,
+        $rootValue,
+        $context,
+        array $variables = null,
+        string $operationName = null
+    ) {
         // No cache key, if explicitly disabled
         $generalConfig = Craft::$app->getConfig()->getGeneral();
 
@@ -1038,7 +1067,8 @@ class Gql extends Component
         }
 
         try {
-            $cacheKey = 'gql.results.' . sha1($schema->uid . $query . serialize($rootValue) . serialize($context) . serialize($variables) . serialize($operationName));
+            $cacheKey = self::CACHE_TAG . "::$schema->uid::" . md5($query) . '::' . serialize($rootValue) . '::' .
+                serialize($context) . '::' . serialize($variables) . ($operationName ? "::$operationName" : '');
         } catch (\Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);
             $cacheKey = null;
