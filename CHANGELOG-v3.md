@@ -3,6 +3,7 @@
 ## Unreleased (3.5.0)
 
 ### Added
+- `{% cache %}` tags and GraphQL queries now use a new tag-based cache invalidation strategy. (No more “Deleting stale template caches” background jobs clogging up the queue!) ([#1507](https://github.com/craftcms/cms/issues/1507), [#1689](https://github.com/craftcms/cms/issues/1689))
 - Added the `hasPhoto` user query param/GraphQL argument. ([#6083](https://github.com/craftcms/cms/issues/6083))
 - Added the `localized` field when querying entries and categories via GraphQL. ([#6045](https://github.com/craftcms/cms/issues/6045))
 - Added the `Prettify` and `History` buttons to the GraphQL explorer.
@@ -14,30 +15,51 @@
 - Added `craft\base\Element::EVENT_DEFINE_KEYWORDS`. ([#6028](https://github.com/craftcms/cms/issues/6028))
 - Added `craft\base\Element::EVENT_REGISTER_FIELD_LAYOUTS`.
 - Added `craft\base\Element::fieldLayouts()`.
+- Added `craft\base\Element::getCacheTags()`.
 - Added `craft\base\Element::searchKeywords()`.
 - Added `craft\base\ElementInterface::fieldLayouts()`.
+- Added `craft\base\ElementInterface::getCacheTags()`.
 - Added `craft\base\ElementInterface::getLocalized()`.
 - Added `craft\base\Field::EVENT_DEFINE_KEYWORDS`. ([#6028](https://github.com/craftcms/cms/issues/6028))
 - Added `craft\base\Field::searchKeywords()`.
 - Added `craft\base\Volume::getFieldLayout()`.
 - Added `craft\base\VolumeInterface::getFieldLayout()`.
 - Added `craft\elements\Asset::defineFieldLayouts()`.
+- Added `craft\elements\Asset::getCacheTags()`.
 - Added `craft\elements\Category::defineFieldLayouts()`.
+- Added `craft\elements\Category::getCacheTags()`.
+- Added `craft\elements\db\AssetQuery::cacheTags()`.
+- Added `craft\elements\db\CategoryQuery::cacheTags()`.
 - Added `craft\elements\db\EagerLoadPlan`.
+- Added `craft\elements\db\ElementQuery::cacheTags()`.
+- Added `craft\elements\db\EntryQuery::cacheTags()`.
+- Added `craft\elements\db\MatrixBlockQuery::cacheTags()`.
+- Added `craft\elements\db\TagQuery::cacheTags()`.
 - Added `craft\elements\db\UserQuery::$hasPhoto`.
 - Added `craft\elements\db\UserQuery::hasPhoto()`.
 - Added `craft\elements\Entry::defineFieldLayouts()`.
+- Added `craft\elements\Entry::getCacheTags()`.
+- Added `craft\elements\MatrixBlock::getCacheTags()`.
+- Added `craft\elements\Tag::getCacheTags()`.
 - Added `craft\events\DefineAttributeKeywordsEvent`.
 - Added `craft\events\DefineFieldKeywordsEvent`.
 - Added `craft\events\EagerLoadElementsEvent`.
 - Added `craft\events\RegisterElementFieldLayoutsEvent`.
+- Added `craft\helpers\ArrayHelper::isNumeric()`.
 - Added `craft\helpers\ElementHelper::generateSlug()`.
 - Added `craft\helpers\ElementHelper::normalizeSlug()`.
 - Added `craft\services\AssetTransforms::extendTransform()`. ([#5853](https://github.com/craftcms/cms/issues/5853))
 - Added `craft\services\ElementIndexes::getSourceSortOptions()`.
 - Added `craft\services\ElementIndexes::getSourceTableAttributes()`.
+- Added `craft\services\Elements::collectCacheTags()`.
 - Added `craft\services\Elements::createEagerLoadingPlans()`.
 - Added `craft\services\Elements::EVENT_BEFORE_EAGER_LOAD_ELEMENTS`.
+- Added `craft\services\Elements::getIsCollectingCacheTags()`.
+- Added `craft\services\Elements::invalidateAllCaches()`.
+- Added `craft\services\Elements::invalidateCachesForElement()`.
+- Added `craft\services\Elements::invalidateCachesForElementType()`.
+- Added `craft\services\Elements::startCollectingCacheTags()`.
+- Added `craft\services\Elements::stopCollectingCacheTags()`.
 - Added `craft\services\Fields::getLayoutsByElementType()`.
 - Added `craft\services\Images::getSupportsWebP()`. ([#5853](https://github.com/craftcms/cms/issues/5853))
 - Added `craft\web\Request::getRawCookies()`.
@@ -64,13 +86,35 @@
 - `craft\elements\Asset::getUrl()` now has a `$transformOverrideParameters` parameter. ([#5853](https://github.com/craftcms/cms/issues/5853))
 - `craft\services\ElementIndexes::getAvailableTableAttributes()` no longer has an `$includeFields` argument.
 - `craft\services\Fields::getFieldByHandle()` now has an optional `$context` argument.
+- `craft\services\Gql::setCachedResult()` now has a `$dependency` argument.
+- `craft\services\TemplateCaches::startTemplateCache()` no longer has a `$key` argument.
 
 ### Deprecated
+- Deprecated `craft\db\Table::TEMPLATECACHEELEMENTS`.
+- Deprecated `craft\db\Table::TEMPLATECACHEQUERIES`.
+- Deprecated `craft\db\Table::TEMPLATECACHES`.
 - Deprecated `craft\helpers\ElementHelper::createSlug()`. `normalizeSlug()` should be used instead.
+- Deprecated `craft\queue\jobs\DeleteStaleTemplateCaches`.
 - Deprecated `craft\services\ElementIndexes::getAvailableTableFields()`. `getSourceTableAttributes()` should be used instead.
+- Deprecated `craft\services\TemplateCaches::deleteAllCaches()`. `craft\services\Elements::invalidateAllCaches()` should be used instead.
+- Deprecated `craft\services\TemplateCaches::deleteCacheById()`.
+- Deprecated `craft\services\TemplateCaches::deleteCachesByElement()`. `craft\services\Elements::invalidateCachesForElement()` should be used instead.
+- Deprecated `craft\services\TemplateCaches::deleteCachesByElementId()`. `craft\services\Elements::invalidateCachesForElement()` should be used instead.
+- Deprecated `craft\services\TemplateCaches::deleteCachesByElementQuery()`. `craft\services\Elements::invalidateCachesForElementType()` should be used instead.
+- Deprecated `craft\services\TemplateCaches::deleteCachesByElementType()`. `craft\services\Elements::invalidateCachesForElementType()` should be used instead.
+- Deprecated `craft\services\TemplateCaches::deleteCachesByKey()`.
+- Deprecated `craft\services\TemplateCaches::deleteExpiredCaches()`.
+- Deprecated `craft\services\TemplateCaches::deleteExpiredCachesIfOverdue()`.
+- Deprecated `craft\services\TemplateCaches::EVENT_AFTER_DELETE_CACHES`.
+- Deprecated `craft\services\TemplateCaches::EVENT_BEFORE_DELETE_CACHES`.
+- Deprecated `craft\services\TemplateCaches::handleResponse()`.
+- Deprecated `craft\services\TemplateCaches::includeElementInTemplateCaches()`.
+- Deprecated `craft\services\TemplateCaches::includeElementQueryInTemplateCaches()`.
 
 ### Removed
 - Removed the “Show rounded icons” user preference.
+- Removed the “Template caches” option from the Clear Caches tool and `clear-caches` command.
+- Removed the `cacheElementQueries` config setting.
 - Removed `craft\base\ElementInterface::getIconUrl()`.
 
 ### Fixed
@@ -79,6 +123,7 @@
 - Fixed a styling issue on the Login page when resetting the password. ([#6042](https://github.com/craftcms/cms/issues/6042))
 - Fixed a bug where a broken eager-loading chain would not be resumed correctly. ([#5998](https://github.com/craftcms/cms/issues/5998))
 - Fixed an error that would occur when using the `immediately` parameter in GraphQL `transform` directives.
+- Fixed an error that could occur when saving template caches. ([#2674](https://github.com/craftcms/cms/issues/2674))
 
 ## 3.5.0-beta.2 - 2020-05-05
 

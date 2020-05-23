@@ -956,6 +956,14 @@ interface ElementInterface extends ComponentInterface
     public function markAsClean();
 
     /**
+     * Returns the cache tags that should be cleared when this element is saved.
+     *
+     * @return string[]
+     * @since 3.5.0
+     */
+    public function getCacheTags(): array;
+
+    /**
      * Sets the element’s custom field values, when the values have come from post data.
      *
      * @param string $paramNamespace The field param namespace

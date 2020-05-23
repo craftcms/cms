@@ -156,10 +156,6 @@ class GeneralConfig extends BaseObject
      */
     public $brokenImagePath;
     /**
-     * @var bool Whether Craft should cache element queries that fall inside `{% cache %}` tags.
-     */
-    public $cacheElementQueries = true;
-    /**
      * @var mixed The default length of time Craft will store data, RSS feed, and template caches.
      *
      * If set to `0`, data and RSS feed caches will be stored indefinitely; template caches will be stored for one year.

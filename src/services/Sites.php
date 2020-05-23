@@ -931,9 +931,6 @@ class Sites extends Component
                     ->column();
 
                 if (!empty($entryIds)) {
-                    // Delete their template caches
-                    Craft::$app->getTemplateCaches()->deleteCachesByElementId($entryIds);
-
                     // Update the entry tables
                     Db::update(Table::CONTENT, [
                         'siteId' => $transferContentTo,
@@ -1056,6 +1053,9 @@ class Sites extends Component
 
         // Refresh sites
         $this->_refreshAllSites();
+
+        // Invalidate all element caches
+        Craft::$app->getElements()->invalidateAllCaches();
 
         // Was this the current site?
         if ($this->_currentSite !== null && $this->_currentSite->id == $site->id) {

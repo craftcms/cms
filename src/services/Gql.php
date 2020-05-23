@@ -418,6 +418,8 @@ class Gql extends Component
                 $event->result = $cachedResult;
             } else {
                 $schemaDef = $this->getSchemaDef($schema, $debugMode || StringHelper::contains($query, '__schema'));
+                $elementsService = Craft::$app->getElements();
+                $elementsService->startCollectingCacheTags();
 
                 $event->result = GraphQL::executeQuery(
                     $schemaDef,
@@ -430,9 +432,10 @@ class Gql extends Component
                     $this->getValidationRules($debugMode)
                 )->toArray($debugMode);
 
+                $dep = $elementsService->stopCollectingCacheTags();
 
                 if (empty($event->result['errors']) && $cacheKey) {
-                    $this->setCachedResult($cacheKey, $event->result);
+                    $this->setCachedResult($cacheKey, $event->result, $dep);
                 }
             }
         }
@@ -469,11 +472,19 @@ class Gql extends Component
      *
      * @param string $cacheKey
      * @param array $result
+     * @param TagDependency|null $dependency
      * @since 3.3.12
      */
-    public function setCachedResult(string $cacheKey, array $result)
+    public function setCachedResult(string $cacheKey, array $result, TagDependency $dependency = null)
     {
-        Craft::$app->getCache()->set($cacheKey, $result, null, new TagDependency(['tags' => self::CACHE_TAG]));
+        if ($dependency === null) {
+            $dependency = new TagDependency();
+        }
+
+        // Add the global graphql cache tag
+        $dependency->tags[] = self::CACHE_TAG;
+
+        Craft::$app->getCache()->set($cacheKey, $result, null, $dependency);
     }
 
     /**

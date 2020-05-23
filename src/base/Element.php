@@ -1821,6 +1821,15 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @inheritdoc
+     * @since 3.5.0
+     */
+    public function getCacheTags(): array
+    {
+        return [];
+    }
+
+    /**
+     * @inheritdoc
      */
     public function getUriFormat()
     {

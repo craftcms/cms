@@ -56,6 +56,9 @@ use yii\base\Behavior;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
+use yii\base\InvalidCallException;
+use yii\caching\Dependency;
+use yii\caching\TagDependency;
 use yii\db\Exception as DbException;
 
 /**
@@ -293,6 +296,130 @@ class Elements extends Component
         }
 
         return $elementType::find();
+    }
+
+    // Element caches
+    // -------------------------------------------------------------------------
+
+    /**
+     * @var array[]
+     */
+    private $_cacheTagBuffers = [];
+    /**
+     * @var string[]|null
+     */
+    private $_cacheTags;
+
+    /**
+     * Returns whether we are currently collecting element cache invalidation tags.
+     *
+     * @return bool
+     * @since 3.5.0
+     * @see startCollectingCacheTags()
+     * @see stopCollectingCacheTags()
+     */
+    public function getIsCollectingCacheTags()
+    {
+        return $this->_cacheTags !== null;
+    }
+
+    /**
+     * Starts collecting element cache invalidation tags.
+     *
+     * @since 3.5.0
+     */
+    public function startCollectingCacheTags()
+    {
+        // Save any currently-collected tags into a new buffer, and reset the array
+        if ($this->_cacheTags !== null) {
+            $this->_cacheTagBuffers[] = $this->_cacheTags;
+        }
+        $this->_cacheTags = [];
+    }
+
+    /**
+     * Adds element cache invalidation tags to the current collection.
+     *
+     * @param string[] $tags
+     * @since 3.5.0
+     */
+    public function collectCacheTags(array $tags)
+    {
+        // Ignore if we're not currently collecting tags
+        if ($this->_cacheTags === null) {
+            return;
+        }
+
+        // Element query tags
+        foreach ($tags as $tag) {
+            $this->_cacheTags[$tag] = true;
+        }
+    }
+
+    /**
+     * Stops collecting element cache invalidation tags, and returns a cache dependency object.
+     *
+     * @return TagDependency
+     * @since 3.5.0
+     */
+    public function stopCollectingCacheTags(): TagDependency
+    {
+        if ($this->_cacheTags === null) {
+            throw new InvalidCallException('Element cache invalidation tags are not currently being collected.');
+        }
+
+        $tags = $this->_cacheTags;
+
+        // Was there another active collection?
+        if (!empty($this->_cacheTagBuffers)) {
+            $this->_cacheTags = array_merge(array_pop($this->_cacheTagBuffers), $tags);
+        } else {
+            $this->_cacheTags = null;
+        }
+
+        return new TagDependency([
+            'tags' => array_keys($tags),
+        ]);
+    }
+
+    /**
+     * Invalidates all element caches.
+     *
+     * @since 3.5.0
+     */
+    public function invalidateAllCaches()
+    {
+        TagDependency::invalidate(Craft::$app->getCache(), 'element');
+    }
+
+    /**
+     * Invalidates caches for the given element type.
+     *
+     * @param string $elementType
+     * @since 3.5.0
+     */
+    public function invalidateCachesForElementType(string $elementType)
+    {
+        TagDependency::invalidate(Craft::$app->getCache(), "element::$elementType");
+    }
+
+    /**
+     * Invalidates caches for the given element.
+     *
+     * @param ElementInterface $element
+     * @since 3.5.0
+     */
+    public function invalidateCachesForElement(ElementInterface $element)
+    {
+        $elementType = get_class($element);
+        $tags = [
+            "element::$elementType::*",
+            "element::$elementType::$element->id",
+        ];
+        foreach ($element->getCacheTags() as $tag) {
+            $tags[] = "element::$elementType::$tag";
+        }
+        TagDependency::invalidate(Craft::$app->getCache(), $tags);
     }
 
     // Finding Elements
@@ -928,8 +1055,8 @@ class Elements extends Component
             ]));
         }
 
-        // Delete any caches involving this element
-        Craft::$app->getTemplateCaches()->deleteCachesByElement($element);
+        // Invalidate any caches involving this element
+        $this->invalidateCachesForElement($element);
 
         if ($updateOtherSites) {
             $this->updateElementSlugAndUriInOtherSites($element);
@@ -1224,9 +1351,10 @@ class Elements extends Component
                 $record->deleteWithChildren();
             }
 
-            // Delete the caches before they drop their elementId relations (passing `false` because there's no chance
-            // this element is suddenly going to show up in a new query)
-            Craft::$app->getTemplateCaches()->deleteCachesByElementId($element->id, false);
+            if (!ElementHelper::isDraftOrRevision($element)) {
+                // Invalidate any caches involving this element
+                $this->invalidateCachesForElement($element);
+            }
 
             if ($element->hardDelete) {
                 Db::delete(Table::ELEMENTS, [
@@ -1741,7 +1869,8 @@ class Elements extends Component
      * @param array $elementsBySite
      * @param EagerLoadPlan[] $with
      */
-    private function _eagerLoadElementsInternal(string $elementType, array $elementsBySite, array $with) {
+    private function _eagerLoadElementsInternal(string $elementType, array $elementsBySite, array $with)
+    {
         foreach ($elementsBySite as $siteId => $elements) {
             // In case the elements were
             $elements = array_values($elements);
@@ -1802,9 +1931,13 @@ class Elements extends Component
                         $query->siteId = $siteId;
                     }
 
-                    $query->andWhere([
-                        'elements.id' => array_keys($uniqueTargetElementIds),
-                    ]);
+                    if (!$query->id) {
+                        $query->id = array_keys($uniqueTargetElementIds);
+                    } else {
+                        $query->andWhere([
+                            'elements.id' => array_keys($uniqueTargetElementIds),
+                        ]);
+                    }
                 }
 
                 // Do we just need the count?
@@ -2213,9 +2346,8 @@ class Elements extends Component
             }
 
             if (!$isDraftOrRevision) {
-                // Delete any caches involving this element. (Even do this for new elements, since they
-                // might pop up in a cached criteria.)
-                Craft::$app->getTemplateCaches()->deleteCachesByElement($element);
+                // Invalidate any caches involving this element
+                $this->invalidateCachesForElement($element);
             }
         }
 

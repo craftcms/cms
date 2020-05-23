@@ -43,9 +43,6 @@ class ApplyMatrixPropagationMethod extends BaseJob
      */
     public function execute($queue)
     {
-        // Let's save ourselves some trouble and just clear all the caches for this element class
-        Craft::$app->getTemplateCaches()->deleteCachesByElementType(MatrixBlock::class);
-
         $query = MatrixBlock::find()
             ->fieldId($this->fieldId)
             ->siteId('*')

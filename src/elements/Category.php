@@ -384,6 +384,17 @@ class Category extends Element
 
     /**
      * @inheritdoc
+     * @since 3.5.0
+     */
+    public function getCacheTags(): array
+    {
+        return [
+            "group:$this->groupId",
+        ];
+    }
+
+    /**
+     * @inheritdoc
      */
     public function getUriFormat()
     {

@@ -78,8 +78,11 @@ abstract class Table
     const STRUCTURES = '{{%structures}}';
     const TAGGROUPS = '{{%taggroups}}';
     const TAGS = '{{%tags}}';
+    /** @deprecated in 3.5.0 */
     const TEMPLATECACHEELEMENTS = '{{%templatecacheelements}}';
+    /** @deprecated in 3.5.0 */
     const TEMPLATECACHEQUERIES = '{{%templatecachequeries}}';
+    /** @deprecated in 3.5.0 */
     const TEMPLATECACHES = '{{%templatecaches}}';
     const TOKENS = '{{%tokens}}';
     const USERGROUPS = '{{%usergroups}}';

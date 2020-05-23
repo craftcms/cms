@@ -678,6 +678,11 @@ class Entry extends Element
     private $_author;
 
     /**
+     * @var int|null
+     */
+    private $_oldTypeId;
+
+    /**
      * @var bool|null
      * @see _hasNewParent()
      */
@@ -690,6 +695,16 @@ class Entry extends Element
     {
         parent::__clone();
         $this->_hasNewParent = null;
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.5.0
+     */
+    public function init()
+    {
+        parent::init();
+        $this->_oldTypeId = $this->typeId;
     }
 
     /**
@@ -815,6 +830,25 @@ class Entry extends Element
         }
 
         return $sites;
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.5.0
+     */
+    public function getCacheTags(): array
+    {
+        $tags = [
+            "entryType:$this->typeId",
+            "section:$this->sectionId",
+        ];
+
+        // Did the entry type just change?
+        if ($this->typeId != $this->_oldTypeId) {
+            $tags[] = "entryType:$this->_oldTypeId";
+        }
+
+        return $tags;
     }
 
     /**
