@@ -537,6 +537,14 @@ interface ElementInterface extends ComponentInterface
     public function getSite(): Site;
 
     /**
+     * Returns the language of the element.
+     *
+     * @return string
+     * @since 3.5.0
+     */
+    public function getLanguage(): string;
+
+    /**
      * Returns the sites this element is associated with.
      *
      * The function can either return an array of site IDs, or an array of sub-arrays,

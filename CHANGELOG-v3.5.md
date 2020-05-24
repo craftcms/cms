@@ -51,9 +51,11 @@
 - Added `craft\base\Element::EVENT_SET_EAGER_LOADED_ELEMENTS`.
 - Added `craft\base\Element::fieldLayouts()`.
 - Added `craft\base\Element::getCacheTags()`.
+- Added `craft\base\Element::getLanguage()`.
 - Added `craft\base\Element::searchKeywords()`.
 - Added `craft\base\ElementInterface::fieldLayouts()`.
 - Added `craft\base\ElementInterface::getCacheTags()`.
+- Added `craft\base\ElementInterface::getLanguage()`.
 - Added `craft\base\ElementInterface::getLocalized()`.
 - Added `craft\base\ElementInterface::gqlMutationNameByContext()`.
 - Added `craft\base\ElementTrait::$elementSiteId`.

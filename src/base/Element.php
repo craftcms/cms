@@ -3300,6 +3300,15 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
+     * @inheritdoc
+     * @since 3.5.0
+     */
+    public function getLanguage(): string
+    {
+        return $this->getSite()->language;
+    }
+
+    /**
      * Returns an element right before/after this one, from a given set of criteria.
      *
      * @param mixed $criteria

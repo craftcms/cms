@@ -16,9 +16,11 @@
 - Added `craft\base\Element::EVENT_REGISTER_FIELD_LAYOUTS`.
 - Added `craft\base\Element::fieldLayouts()`.
 - Added `craft\base\Element::getCacheTags()`.
+- Added `craft\base\Element::getLanguage()`.
 - Added `craft\base\Element::searchKeywords()`.
 - Added `craft\base\ElementInterface::fieldLayouts()`.
 - Added `craft\base\ElementInterface::getCacheTags()`.
+- Added `craft\base\ElementInterface::getLanguage()`.
 - Added `craft\base\ElementInterface::getLocalized()`.
 - Added `craft\base\Field::EVENT_DEFINE_KEYWORDS`. ([#6028](https://github.com/craftcms/cms/issues/6028))
 - Added `craft\base\Field::searchKeywords()`.
