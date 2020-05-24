@@ -458,7 +458,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the GraphQL mutation name by an element's context.
      *
-     * @param mixed $context The element's context, such as a Volume, Entry Type or Matrix Block Type.
+     * @param mixed $context The element's context, such as a volume, entry type, or Matrix block type.
      * @return string
      * @since 3.5.0
      */
