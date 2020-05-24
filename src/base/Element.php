@@ -1101,6 +1101,7 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @inheritdoc
+     * @since 3.5.0
      */
     public static function gqlMutationNameByContext($context): string
     {

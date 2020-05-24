@@ -551,6 +551,7 @@ abstract class Field extends SavableComponent implements FieldInterface
 
     /**
      * @inheritdoc
+     * @since 3.5.0
      */
     public function getContentGqlMutationArgumentType()
     {
@@ -563,6 +564,7 @@ abstract class Field extends SavableComponent implements FieldInterface
 
     /**
      * @inheritdoc
+     * @since 3.5.0
      */
     public function getContentGqlQueryArgumentType()
     {

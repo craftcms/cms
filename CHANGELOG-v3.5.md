@@ -52,6 +52,8 @@
 - Added `craft\base\Element::fieldLayouts()`.
 - Added `craft\base\Element::getCacheTags()`.
 - Added `craft\base\Element::getLanguage()`.
+- Added `craft\base\Element::getLocalized()`.
+- Added `craft\base\Element::gqlMutationNameByContext()`.
 - Added `craft\base\Element::searchKeywords()`.
 - Added `craft\base\ElementInterface::fieldLayouts()`.
 - Added `craft\base\ElementInterface::getCacheTags()`.
@@ -60,6 +62,8 @@
 - Added `craft\base\ElementInterface::gqlMutationNameByContext()`.
 - Added `craft\base\ElementTrait::$elementSiteId`.
 - Added `craft\base\Field::EVENT_DEFINE_KEYWORDS`. ([#6028](https://github.com/craftcms/cms/issues/6028))
+- Added `craft\base\Field::getContentGqlMutationArgumentType()`.
+- Added `craft\base\Field::getContentGqlQueryArgumentType()`.
 - Added `craft\base\Field::searchKeywords()`.
 - Added `craft\base\FieldInterface::getContentGqlMutationArgumentType()`.
 - Added `craft\base\FieldInterface::getContentGqlQueryArgumentType()`.
@@ -75,8 +79,10 @@
 - Added `craft\elements\Asset::defineFieldLayouts()`.
 - Added `craft\elements\Asset::getCacheTags()`.
 - Added `craft\elements\Asset::getSrcset()`. ([#5774](https://github.com/craftcms/cms/issues/5774))
+- Added `craft\elements\Asset::gqlMutationNameByContext()`.
 - Added `craft\elements\Category::defineFieldLayouts()`.
 - Added `craft\elements\Category::getCacheTags()`.
+- Added `craft\elements\Category::gqlMutationNameByContext()`.
 - Added `craft\elements\db\AssetQuery::cacheTags()`.
 - Added `craft\elements\db\CategoryQuery::cacheTags()`.
 - Added `craft\elements\db\EagerLoadPlan`.
@@ -88,8 +94,11 @@
 - Added `craft\elements\db\UserQuery::hasPhoto()`.
 - Added `craft\elements\Entry::defineFieldLayouts()`.
 - Added `craft\elements\Entry::getCacheTags()`.
+- Added `craft\elements\Entry::gqlMutationNameByContext()`.
+- Added `craft\elements\GlobalSet::gqlMutationNameByContext()`.
 - Added `craft\elements\MatrixBlock::getCacheTags()`.
 - Added `craft\elements\Tag::getCacheTags()`.
+- Added `craft\elements\Tag::gqlMutationNameByContext()`.
 - Added `craft\events\DefineAttributeKeywordsEvent`.
 - Added `craft\events\DefineFieldKeywordsEvent`.
 - Added `craft\events\EagerLoadElementsEvent`.
@@ -97,6 +106,14 @@
 - Added `craft\events\RegisterGqlMutationsEvent`.
 - Added `craft\events\RegisterGqlSchemaComponentsEvent`.
 - Added `craft\events\SetEagerLoadedElementsEvent`.
+- Added `craft\fields\BaseOptionsField::getContentGqlMutationArgumentType()`.
+- Added `craft\fields\BaseRelationField::getContentGqlMutationArgumentType()`.
+- Added `craft\fields\Date::getContentGqlMutationArgumentType()`.
+- Added `craft\fields\Lightswitch::getContentGqlMutationArgumentType()`.
+- Added `craft\fields\Lightswitch::getContentGqlQueryArgumentType()`.
+- Added `craft\fields\Matrix::getContentGqlMutationArgumentType()`.
+- Added `craft\fields\Number::getContentGqlMutationArgumentType()`.
+- Added `craft\fields\Table::getContentGqlMutationArgumentType()`.
 - Added `craft\gql\arguments\mutations\Asset`.
 - Added `craft\gql\arguments\mutations\Draft`.
 - Added `craft\gql\arguments\mutations\Entry`.

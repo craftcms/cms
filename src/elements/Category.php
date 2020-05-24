@@ -150,6 +150,7 @@ class Category extends Element
 
     /**
      * @inheritdoc
+     * @since 3.5.0
      */
     public static function gqlMutationNameByContext($context): string
     {
