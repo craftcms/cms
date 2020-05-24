@@ -9,6 +9,7 @@ namespace craft\base;
 
 use craft\elements\db\ElementQueryInterface;
 use craft\models\FieldLayout;
+use craft\models\Site;
 use Twig\Markup;
 
 
@@ -527,6 +528,13 @@ interface ElementInterface extends ComponentInterface
      * @return FieldLayout|null
      */
     public function getFieldLayout();
+
+    /**
+     * Returns the site the element is associated with.
+     *
+     * @return Site
+     */
+    public function getSite(): Site;
 
     /**
      * Returns the sites this element is associated with.

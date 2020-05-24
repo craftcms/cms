@@ -3283,9 +3283,7 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
-     * Returns the site the element is associated with.
-     *
-     * @return Site
+     * @inheritdoc
      * @throws InvalidConfigException if [[siteId]] is invalid
      */
     public function getSite(): Site
