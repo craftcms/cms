@@ -12,7 +12,6 @@ use craft\base\Element;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\GlobalSetQuery;
-use craft\elements\GlobalSet as GlobalSetElement;
 use craft\helpers\UrlHelper;
 use craft\records\GlobalSet as GlobalSetRecord;
 use craft\validators\HandleValidator;
@@ -106,7 +105,7 @@ class GlobalSet extends Element
      */
     public static function gqlTypeNameByContext($context): string
     {
-        /** @var GlobalSetElement $context */
+        /** @var self $context */
         return $context->handle . '_GlobalSet';
     }
 
@@ -116,7 +115,7 @@ class GlobalSet extends Element
      */
     public static function gqlScopesByContext($context): array
     {
-        /** @var GlobalSetElement $context */
+        /** @var self $context */
         return ['globalsets.' . $context->uid];
     }
 
@@ -126,7 +125,7 @@ class GlobalSet extends Element
      */
     public static function gqlMutationNameByContext($context): string
     {
-        /** @var GlobalSetElement $context */
+        /** @var self $context */
         return 'save_' . $context->handle . '_GlobalSet';
     }
 
