@@ -1395,9 +1395,6 @@ trait ApplicationTrait
         // Register all the listeners for config items
         $this->_registerConfigListeners();
 
-        // Register all the listeners for invalidating GraphQL Cache.
-        $this->_registerGraphQlListeners();
-
         // Load the plugins
         $this->getPlugins()->loadPlugins();
 
@@ -1488,23 +1485,6 @@ trait ApplicationTrait
 
         // Default to the source language.
         return $this->sourceLanguage;
-    }
-
-    /**
-     * Register listeners for GraphQL
-     */
-    private function _registerGraphQlListeners()
-    {
-        $invalidate = [$this->getGql(), 'invalidateCaches'];
-
-        $this->getProjectConfig()->on(ProjectConfig::EVENT_ADD_ITEM, $invalidate);
-        $this->getProjectConfig()->on(ProjectConfig::EVENT_REMOVE_ITEM, $invalidate);
-        $this->getProjectConfig()->on(ProjectConfig::EVENT_UPDATE_ITEM, $invalidate);
-        $this->getProjectConfig()->on(ProjectConfig::EVENT_REBUILD, $invalidate);
-        $this->getProjectConfig()->on(ProjectConfig::EVENT_AFTER_APPLY_CHANGES, $invalidate);
-        $this->getElements()->on(Elements::EVENT_AFTER_SAVE_ELEMENT, $invalidate);
-        $this->getElements()->on(Elements::EVENT_AFTER_DELETE_ELEMENT, $invalidate);
-        $this->getStructures()->on(Structures::EVENT_AFTER_MOVE_ELEMENT, $invalidate);
     }
 
     /**

@@ -269,6 +269,9 @@ class UserGroups extends Component
                 'isNew' => $isNewGroup,
             ]));
         }
+
+        // Invalidate user caches
+        Craft::$app->getElements()->invalidateCachesForElementType(User::class);
     }
 
     /**
@@ -299,6 +302,9 @@ class UserGroups extends Component
                 'userGroup' => $group,
             ]));
         }
+
+        // Invalidate user caches
+        Craft::$app->getElements()->invalidateCachesForElementType(User::class);
     }
 
     /**

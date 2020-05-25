@@ -284,6 +284,9 @@ class Tags extends Component
                 'isNew' => $isNewTagGroup,
             ]));
         }
+
+        // Invalidate tag caches
+        Craft::$app->getElements()->invalidateCachesForElementType(Tag::class);
     }
 
     /**
@@ -396,6 +399,9 @@ class Tags extends Component
                 'tagGroup' => $tagGroup
             ]));
         }
+
+        // Invalidate tag caches
+        Craft::$app->getElements()->invalidateCachesForElementType(Tag::class);
     }
 
     /**

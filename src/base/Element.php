@@ -3185,6 +3185,9 @@ abstract class Element extends Component implements ElementInterface
                 'structureId' => $structureId,
             ]));
         }
+
+        // Invalidate caches for this element
+        Craft::$app->getElements()->invalidateCachesForElement($this);
     }
 
     /**

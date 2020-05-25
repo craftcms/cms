@@ -441,6 +441,9 @@ class Volumes extends Component
                 'isNew' => $isNewVolume
             ]));
         }
+
+        // Invalidate asset caches
+        Craft::$app->getElements()->invalidateCachesForElementType(Asset::class);
     }
 
     /**
@@ -673,6 +676,9 @@ class Volumes extends Component
                 'volume' => $volume
             ]));
         }
+
+        // Invalidate asset caches
+        Craft::$app->getElements()->invalidateCachesForElementType(Asset::class);
     }
 
     /**

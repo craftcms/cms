@@ -282,6 +282,9 @@ class AssetTransforms extends Component
                 'isNew' => $isNewTransform,
             ]));
         }
+
+        // Invalidate asset caches
+        Craft::$app->getElements()->invalidateCachesForElementType(Asset::class);
     }
 
     /**
@@ -368,6 +371,9 @@ class AssetTransforms extends Component
                 'assetTransform' => $transform
             ]));
         }
+
+        // Invalidate asset caches
+        Craft::$app->getElements()->invalidateCachesForElementType(Asset::class);
     }
 
     /**

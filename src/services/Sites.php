@@ -793,6 +793,9 @@ class Sites extends Component
                 'oldPrimarySiteId' => $oldPrimarySiteId,
             ]));
         }
+
+        // Invalidate all element caches
+        Craft::$app->getElements()->invalidateAllCaches();
     }
 
     /**
@@ -1068,6 +1071,9 @@ class Sites extends Component
                 'site' => $site,
             ]));
         }
+
+        // Invalidate all element caches
+        Craft::$app->getElements()->invalidateAllCaches();
     }
 
     /**
