@@ -409,6 +409,9 @@ class Matrix extends Component
             $this->_blockTypesByFieldId[$blockTypeRecord->fieldId]
         );
         $this->_fetchedAllBlockTypesForFieldId[$blockTypeRecord->fieldId] = false;
+
+        // Invalidate Matrix block caches
+        Craft::$app->getElements()->invalidateCachesForElementType(MatrixBlock::class);
     }
 
     /**
@@ -517,6 +520,9 @@ class Matrix extends Component
             $this->_blockTypeRecordsById[$blockTypeRecord->id]
         );
         $this->_fetchedAllBlockTypesForFieldId[$blockTypeRecord->fieldId] = false;
+
+        // Invalidate Matrix block caches
+        Craft::$app->getElements()->invalidateCachesForElementType(MatrixBlock::class);
     }
 
     /**

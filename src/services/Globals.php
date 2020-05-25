@@ -457,6 +457,9 @@ class Globals extends Component
                 'isNew' => $isNewSet
             ]));
         }
+
+        // Invalidate all element caches
+        Craft::$app->getElements()->invalidateAllCaches();
     }
 
     /**
@@ -517,6 +520,9 @@ class Globals extends Component
             $transaction->rollBack();
             throw $e;
         }
+
+        // Invalidate all element caches
+        Craft::$app->getElements()->invalidateAllCaches();
     }
 
     /**

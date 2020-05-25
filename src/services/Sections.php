@@ -782,6 +782,9 @@ class Sections extends Component
                 'isNew' => $isNewSection
             ]));
         }
+
+        // Invalidate entry caches
+        Craft::$app->getElements()->invalidateCachesForElementType(Entry::class);
     }
 
     /**
@@ -904,6 +907,9 @@ class Sections extends Component
                 'section' => $section,
             ]));
         }
+
+        // Invalidate entry caches
+        Craft::$app->getElements()->invalidateCachesForElementType(Entry::class);
     }
 
     /**
@@ -1298,6 +1304,9 @@ class Sections extends Component
                 'isNew' => $isNewEntryType,
             ]));
         }
+
+        // Invalidate entry caches
+        Craft::$app->getElements()->invalidateCachesForElementType(Entry::class);
     }
 
     /**
@@ -1453,6 +1462,9 @@ class Sections extends Component
                 'entryType' => $entryType,
             ]));
         }
+
+        // Invalidate entry caches
+        Craft::$app->getElements()->invalidateCachesForElementType(Entry::class);
     }
 
     /**

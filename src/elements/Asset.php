@@ -250,10 +250,11 @@ class Asset extends Element
 
     /**
      * @inheritdoc
+     * @since 3.5.0
      */
     public static function gqlMutationNameByContext($context): string
     {
-        /** @var Volume $context */
+        /** @var VolumeInterface $context */
         return 'save_' . $context->handle . '_Asset';
     }
 
@@ -673,6 +674,11 @@ class Asset extends Element
     private $_uploader;
 
     /**
+     * @var int|null
+     */
+    private $_oldVolumeId;
+
+    /**
      * @inheritdoc
      */
     public function __toString()
@@ -738,6 +744,16 @@ class Asset extends Element
 
     /**
      * @inheritdoc
+     * @since 3.5.0
+     */
+    public function init()
+    {
+        parent::init();
+        $this->_oldVolumeId = $this->volumeId;
+    }
+
+    /**
+     * @inheritdoc
      */
     public function datetimeAttributes(): array
     {
@@ -774,6 +790,24 @@ class Asset extends Element
         $scenarios[self::SCENARIO_INDEX] = [];
 
         return $scenarios;
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.5.0
+     */
+    public function getCacheTags(): array
+    {
+        $tags = [
+            "volume:$this->volumeId",
+        ];
+
+        // Did the volume just change?
+        if ($this->volumeId != $this->_oldVolumeId) {
+            $tags[] = "volume:$this->_oldVolumeId";
+        }
+
+        return $tags;
     }
 
     /**

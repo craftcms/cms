@@ -601,12 +601,12 @@ trait ApplicationTrait
     /**
      * Returns the info model, or just a particular attribute.
      *
-     * @param $throwException Whether an exception should be thrown if the `info` table doesn't exist
+     * @param bool $throwException Whether an exception should be thrown if the `info` table doesn't exist
      * @return Info
      * @throws DbException if the `info` table doesn’t exist yet and `$throwException` is `true`
      * @throws ServerErrorHttpException if the info table is missing its row
      */
-    public function getInfo($throwException = false): Info
+    public function getInfo(bool $throwException = false): Info
     {
         /** @var WebApplication|ConsoleApplication $this */
         if ($this->_info !== null) {
@@ -1395,9 +1395,6 @@ trait ApplicationTrait
         // Register all the listeners for config items
         $this->_registerConfigListeners();
 
-        // Register all the listeners for invalidating GraphQL Cache.
-        $this->_registerGraphQlListeners();
-
         // Load the plugins
         $this->getPlugins()->loadPlugins();
 
@@ -1491,23 +1488,6 @@ trait ApplicationTrait
     }
 
     /**
-     * Register listeners for GraphQL
-     */
-    private function _registerGraphQlListeners()
-    {
-        $invalidate = [$this->getGql(), 'invalidateCaches'];
-
-        $this->getProjectConfig()->on(ProjectConfig::EVENT_ADD_ITEM, $invalidate);
-        $this->getProjectConfig()->on(ProjectConfig::EVENT_REMOVE_ITEM, $invalidate);
-        $this->getProjectConfig()->on(ProjectConfig::EVENT_UPDATE_ITEM, $invalidate);
-        $this->getProjectConfig()->on(ProjectConfig::EVENT_REBUILD, $invalidate);
-        $this->getProjectConfig()->on(ProjectConfig::EVENT_AFTER_APPLY_CHANGES, $invalidate);
-        $this->getElements()->on(Elements::EVENT_AFTER_SAVE_ELEMENT, $invalidate);
-        $this->getElements()->on(Elements::EVENT_AFTER_DELETE_ELEMENT, $invalidate);
-        $this->getStructures()->on(Structures::EVENT_AFTER_MOVE_ELEMENT, $invalidate);
-    }
-
-    /**
      * Register event listeners for config changes.
      */
     private function _registerConfigListeners()
@@ -1527,7 +1507,7 @@ trait ApplicationTrait
             ->onUpdate(Fields::CONFIG_FIELDS_KEY . '.{uid}', [$fieldsService, 'handleChangedField'])
             ->onRemove(Fields::CONFIG_FIELDS_KEY . '.{uid}', [$fieldsService, 'handleDeletedField']);
 
-        // Block Types
+        // Block types
         $matrixService = $this->getMatrix();
         $projectConfigService
             ->onAdd(Matrix::CONFIG_BLOCKTYPE_KEY . '.{uid}', [$matrixService, 'handleChangedBlockType'])
@@ -1620,14 +1600,14 @@ trait ApplicationTrait
             ->onRemove(Sections::CONFIG_SECTIONS_KEY . '.{uid}', [$sectionsService, 'handleDeletedSection']);
         Event::on(Sites::class, Sites::EVENT_AFTER_DELETE_SITE, [$sectionsService, 'pruneDeletedSite']);
 
-        // Entry Types
+        // Entry types
         $projectConfigService
             ->onAdd(Sections::CONFIG_SECTIONS_KEY . '.{uid}.' . Sections::CONFIG_ENTRYTYPES_KEY . '.{uid}', [$sectionsService, 'handleChangedEntryType'])
             ->onUpdate(Sections::CONFIG_SECTIONS_KEY . '.{uid}.' . Sections::CONFIG_ENTRYTYPES_KEY . '.{uid}', [$sectionsService, 'handleChangedEntryType'])
             ->onRemove(Sections::CONFIG_SECTIONS_KEY . '.{uid}.' . Sections::CONFIG_ENTRYTYPES_KEY . '.{uid}', [$sectionsService, 'handleDeletedEntryType']);
         Event::on(Fields::class, Fields::EVENT_AFTER_DELETE_FIELD, [$sectionsService, 'pruneDeletedField']);
 
-        // GraphQL Scopes
+        // GraphQL schemas
         $gqlService = $this->getGql();
         $projectConfigService
             ->onAdd(Gql::CONFIG_GQL_SCHEMAS_KEY . '.{uid}', [$gqlService, 'handleChangedSchema'])

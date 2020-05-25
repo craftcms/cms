@@ -9,6 +9,7 @@ namespace craft\base;
 
 use craft\elements\db\ElementQueryInterface;
 use craft\models\FieldLayout;
+use craft\models\Site;
 use Twig\Markup;
 
 
@@ -457,7 +458,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the GraphQL mutation name by an element's context.
      *
-     * @param mixed $context The element's context, such as a Volume, Entry Type or Matrix Block Type.
+     * @param mixed $context The element's context, such as a volume, entry type, or Matrix block type.
      * @return string
      * @since 3.5.0
      */
@@ -527,6 +528,21 @@ interface ElementInterface extends ComponentInterface
      * @return FieldLayout|null
      */
     public function getFieldLayout();
+
+    /**
+     * Returns the site the element is associated with.
+     *
+     * @return Site
+     */
+    public function getSite(): Site;
+
+    /**
+     * Returns the language of the element.
+     *
+     * @return string
+     * @since 3.5.0
+     */
+    public function getLanguage(): string;
 
     /**
      * Returns the sites this element is associated with.
@@ -954,6 +970,14 @@ interface ElementInterface extends ComponentInterface
      * @since 3.4.0
      */
     public function markAsClean();
+
+    /**
+     * Returns the cache tags that should be cleared when this element is saved.
+     *
+     * @return string[]
+     * @since 3.5.0
+     */
+    public function getCacheTags(): array;
 
     /**
      * Sets the element’s custom field values, when the values have come from post data.

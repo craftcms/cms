@@ -13,6 +13,7 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\User;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
@@ -273,7 +274,7 @@ class AssetQuery extends ElementQuery
     public function volume($value)
     {
         if ($value instanceof VolumeInterface) {
-            $this->volumeId = $value->id;
+            $this->volumeId = [$value->id];
         } else if ($value !== null) {
             $this->volumeId = (new Query())
                 ->select(['id'])
@@ -838,8 +839,9 @@ class AssetQuery extends ElementQuery
             $this->query->addSelect('assets.uploaderId');
         }
 
+        $this->_normalizeVolumeId();
         if ($this->volumeId) {
-            $this->subQuery->andWhere(Db::parseParam('assets.volumeId', $this->volumeId));
+            $this->subQuery->andWhere(['assets.volumeId' => $this->volumeId]);
         }
 
         if ($this->folderId) {
@@ -890,5 +892,38 @@ class AssetQuery extends ElementQuery
         }
 
         return parent::beforePrepare();
+    }
+
+    /**
+     * Normalizes the volumeId param to an array of IDs or null
+     */
+    private function _normalizeVolumeId()
+    {
+        if (empty($this->volumeId)) {
+            $this->volumeId = null;
+        } else if (is_numeric($this->volumeId)) {
+            $this->volumeId = [$this->volumeId];
+        } else if (!is_array($this->volumeId) || !ArrayHelper::isNumeric($this->volumeId)) {
+            $this->volumeId = (new Query())
+                ->select(['id'])
+                ->from([Table::VOLUMES])
+                ->where(Db::parseParam('id', $this->volumeId))
+                ->column();
+        }
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.5.0
+     */
+    protected function cacheTags(): array
+    {
+        $tags = [];
+        if ($this->volumeId) {
+            foreach ($this->volumeId as $volumeId) {
+                $tags[] = "volume:$volumeId";
+            }
+        }
+        return $tags;
     }
 }

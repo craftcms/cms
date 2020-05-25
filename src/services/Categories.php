@@ -503,6 +503,9 @@ class Categories extends Component
                 'isNew' => $isNewCategoryGroup,
             ]));
         }
+
+        // Invalidate category caches
+        Craft::$app->getElements()->invalidateCachesForElementType(Category::class);
     }
 
     /**
@@ -632,6 +635,9 @@ class Categories extends Component
                 'categoryGroup' => $group,
             ]));
         }
+
+        // Invalidate category caches
+        Craft::$app->getElements()->invalidateCachesForElementType(Category::class);
     }
 
     /**

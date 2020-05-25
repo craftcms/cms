@@ -252,6 +252,7 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
 
     /**
      * @inheritdoc
+     * @since 3.5.0
      */
     public function getContentGqlMutationArgumentType()
     {

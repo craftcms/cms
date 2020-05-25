@@ -150,6 +150,7 @@ class Category extends Element
 
     /**
      * @inheritdoc
+     * @since 3.5.0
      */
     public static function gqlMutationNameByContext($context): string
     {
@@ -380,6 +381,17 @@ class Category extends Element
         $rules = parent::defineRules();
         $rules[] = [['groupId', 'newParentId'], 'number', 'integerOnly' => true];
         return $rules;
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.5.0
+     */
+    public function getCacheTags(): array
+    {
+        return [
+            "group:$this->groupId",
+        ];
     }
 
     /**

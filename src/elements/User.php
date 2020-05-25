@@ -1383,21 +1383,16 @@ class User extends Element implements IdentityInterface
             return false;
         }
 
+        $elementsService = Craft::$app->getElements();
+
         // Do all this stuff within a transaction
         $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
-            // Get the entry IDs that belong to this user
-            $entryQuery = (new Query())
-                ->select('e.id')
-                ->from(['e' => Table::ENTRIES])
-                ->where(['e.authorId' => $this->id]);
-
             // Should we transfer the content to a new user?
             if ($this->inheritorOnDelete) {
-                // Delete the template caches for any entries authored by this user
-                $entryIds = $entryQuery->column();
-                Craft::$app->getTemplateCaches()->deleteCachesByElementId($entryIds);
+                // Invalidate all entry caches
+                $elementsService->invalidateCachesForElementType(Entry::class);
 
                 // Update the entry/version/draft tables to point to the new user
                 $userRefs = [
@@ -1414,20 +1409,15 @@ class User extends Element implements IdentityInterface
                     ], [], false);
                 }
             } else {
-                // Get the entry IDs along with one of the sites they’re enabled in
-                $results = $entryQuery
-                    ->addSelect([
-                        'siteId' => (new Query())
-                            ->select('i18n.siteId')
-                            ->from(['i18n' => Table::ELEMENTS_SITES])
-                            ->where('[[i18n.elementId]] = [[e.id]]')
-                            ->limit(1)
-                    ])
-                    ->all();
+                // Delete the entries
+                $entryQuery = Entry::find()
+                    ->siteId('*')
+                    ->unique()
+                    ->authorId($this->id)
+                    ->anyStatus();
 
-                // Delete them
-                foreach ($results as $result) {
-                    Craft::$app->getElements()->deleteElementById($result['id'], Entry::class, $result['siteId']);
+                foreach ($entryQuery->each() as $entry) {
+                    $elementsService->deleteElement($entry);
                 }
             }
 

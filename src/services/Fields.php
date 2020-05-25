@@ -956,6 +956,9 @@ class Fields extends Component
                 'field' => $field,
             ]));
         }
+
+        // Invalidate all element caches
+        Craft::$app->getElements()->invalidateAllCaches();
     }
 
     /**
@@ -1593,6 +1596,9 @@ class Fields extends Component
                 'isNew' => $isNewField,
             ]));
         }
+
+        // Invalidate all element caches
+        Craft::$app->getElements()->invalidateAllCaches();
     }
 
     /**

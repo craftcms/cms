@@ -39,6 +39,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
+use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
@@ -1100,6 +1101,7 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @inheritdoc
+     * @since 3.5.0
      */
     public static function gqlMutationNameByContext($context): string
     {
@@ -1817,6 +1819,15 @@ abstract class Element extends Component implements ElementInterface
         }
 
         return [Craft::$app->getSites()->getPrimarySite()->id];
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.5.0
+     */
+    public function getCacheTags(): array
+    {
+        return [];
     }
 
     /**
@@ -3174,6 +3185,9 @@ abstract class Element extends Component implements ElementInterface
                 'structureId' => $structureId,
             ]));
         }
+
+        // Invalidate caches for this element
+        Craft::$app->getElements()->invalidateCachesForElement($this);
     }
 
     /**
@@ -3196,7 +3210,11 @@ abstract class Element extends Component implements ElementInterface
         }
 
         $behavior = $this->getBehavior('customFields');
-        $behavior->$fieldHandle = $field->normalizeValue($behavior->$fieldHandle, $this);
+        $value = $behavior->$fieldHandle;
+        if (is_string($value) && Json::isJsonObject($value)) {
+            $value = Json::decodeIfJson($value);
+        }
+        $behavior->$fieldHandle = $field->normalizeValue($value, $this);
         $this->_normalizedFieldValues[$fieldHandle] = true;
     }
 
@@ -3269,9 +3287,7 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
-     * Returns the site the element is associated with.
-     *
-     * @return Site
+     * @inheritdoc
      * @throws InvalidConfigException if [[siteId]] is invalid
      */
     public function getSite(): Site
@@ -3285,6 +3301,15 @@ abstract class Element extends Component implements ElementInterface
         }
 
         return $site;
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.5.0
+     */
+    public function getLanguage(): string
+    {
+        return $this->getSite()->language;
     }
 
     /**

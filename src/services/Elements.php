@@ -56,6 +56,9 @@ use yii\base\Behavior;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
+use yii\base\InvalidCallException;
+use yii\caching\Dependency;
+use yii\caching\TagDependency;
 use yii\db\Exception as DbException;
 
 /**
@@ -293,6 +296,143 @@ class Elements extends Component
         }
 
         return $elementType::find();
+    }
+
+    // Element caches
+    // -------------------------------------------------------------------------
+
+    /**
+     * @var array[]
+     */
+    private $_cacheTagBuffers = [];
+    /**
+     * @var string[]|null
+     */
+    private $_cacheTags;
+
+    /**
+     * Returns whether we are currently collecting element cache invalidation tags.
+     *
+     * @return bool
+     * @since 3.5.0
+     * @see startCollectingCacheTags()
+     * @see stopCollectingCacheTags()
+     */
+    public function getIsCollectingCacheTags()
+    {
+        return $this->_cacheTags !== null;
+    }
+
+    /**
+     * Starts collecting element cache invalidation tags.
+     *
+     * @since 3.5.0
+     */
+    public function startCollectingCacheTags()
+    {
+        // Save any currently-collected tags into a new buffer, and reset the array
+        if ($this->_cacheTags !== null) {
+            $this->_cacheTagBuffers[] = $this->_cacheTags;
+        }
+        $this->_cacheTags = [];
+
+        // If there was a requested element, tag it right away
+        if (
+            !Craft::$app->getRequest()->getIsConsoleRequest() &&
+            ($element = Craft::$app->getUrlManager()->getMatchedElement())
+        ) {
+            $elementType = get_class($element);
+            $this->collectCacheTags([
+                'element',
+                "element::$elementType",
+                "element::$elementType::$element->id",
+            ]);
+        }
+    }
+
+    /**
+     * Adds element cache invalidation tags to the current collection.
+     *
+     * @param string[] $tags
+     * @since 3.5.0
+     */
+    public function collectCacheTags(array $tags)
+    {
+        // Ignore if we're not currently collecting tags
+        if ($this->_cacheTags === null) {
+            return;
+        }
+
+        // Element query tags
+        foreach ($tags as $tag) {
+            $this->_cacheTags[$tag] = true;
+        }
+    }
+
+    /**
+     * Stops collecting element cache invalidation tags, and returns a cache dependency object.
+     *
+     * @return TagDependency
+     * @since 3.5.0
+     */
+    public function stopCollectingCacheTags(): TagDependency
+    {
+        if ($this->_cacheTags === null) {
+            throw new InvalidCallException('Element cache invalidation tags are not currently being collected.');
+        }
+
+        $tags = $this->_cacheTags;
+
+        // Was there another active collection?
+        if (!empty($this->_cacheTagBuffers)) {
+            $this->_cacheTags = array_merge(array_pop($this->_cacheTagBuffers), $tags);
+        } else {
+            $this->_cacheTags = null;
+        }
+
+        return new TagDependency([
+            'tags' => array_keys($tags),
+        ]);
+    }
+
+    /**
+     * Invalidates all element caches.
+     *
+     * @since 3.5.0
+     */
+    public function invalidateAllCaches()
+    {
+        TagDependency::invalidate(Craft::$app->getCache(), 'element');
+    }
+
+    /**
+     * Invalidates caches for the given element type.
+     *
+     * @param string $elementType
+     * @since 3.5.0
+     */
+    public function invalidateCachesForElementType(string $elementType)
+    {
+        TagDependency::invalidate(Craft::$app->getCache(), "element::$elementType");
+    }
+
+    /**
+     * Invalidates caches for the given element.
+     *
+     * @param ElementInterface $element
+     * @since 3.5.0
+     */
+    public function invalidateCachesForElement(ElementInterface $element)
+    {
+        $elementType = get_class($element);
+        $tags = [
+            "element::$elementType::*",
+            "element::$elementType::$element->id",
+        ];
+        foreach ($element->getCacheTags() as $tag) {
+            $tags[] = "element::$elementType::$tag";
+        }
+        TagDependency::invalidate(Craft::$app->getCache(), $tags);
     }
 
     // Finding Elements
@@ -928,8 +1068,8 @@ class Elements extends Component
             ]));
         }
 
-        // Delete any caches involving this element
-        Craft::$app->getTemplateCaches()->deleteCachesByElement($element);
+        // Invalidate any caches involving this element
+        $this->invalidateCachesForElement($element);
 
         if ($updateOtherSites) {
             $this->updateElementSlugAndUriInOtherSites($element);
@@ -1224,9 +1364,10 @@ class Elements extends Component
                 $record->deleteWithChildren();
             }
 
-            // Delete the caches before they drop their elementId relations (passing `false` because there's no chance
-            // this element is suddenly going to show up in a new query)
-            Craft::$app->getTemplateCaches()->deleteCachesByElementId($element->id, false);
+            if (!ElementHelper::isDraftOrRevision($element)) {
+                // Invalidate any caches involving this element
+                $this->invalidateCachesForElement($element);
+            }
 
             if ($element->hardDelete) {
                 Db::delete(Table::ELEMENTS, [
@@ -1713,7 +1854,7 @@ class Elements extends Component
             $plans[$alias]->nested = $this->createEagerLoadingPlans($withs);
         }
 
-        return $plans;
+        return array_values($plans);
     }
 
     /**
@@ -1731,180 +1872,176 @@ class Elements extends Component
             return;
         }
 
-        // Group the elements by site
         $elementsBySite = ArrayHelper::index($elements, null, ['siteId']);
-
-        $event = new EagerLoadElementsEvent([
-            'elementType' => $elementType,
-            'elements' => $elements,
-            'with' => $this->createEagerLoadingPlans($with),
-        ]);
-        $this->trigger(self::EVENT_BEFORE_EAGER_LOAD_ELEMENTS, $event);
-
-        foreach ($event->with as $plan) {
-            foreach ($elementsBySite as $siteId => $siteElements) {
-                $this->_eagerLoadElementsInternal(
-                    $elementType,
-                    $siteId,
-                    $siteElements,
-                    $plan
-                );
-            }
-        }
+        $with = $this->createEagerLoadingPlans($with);
+        $this->_eagerLoadElementsInternal($elementType, $elementsBySite, $with);
     }
 
     /**
      * @param string $elementType
-     * @param int $siteId
-     * @param ElementInterface[] $elements
-     * @param EagerLoadPlan $plan
+     * @param array $elementsBySite
+     * @param EagerLoadPlan[] $with
      */
-    private function _eagerLoadElementsInternal(
-        string $elementType,
-        int $siteId,
-        array $elements,
-        EagerLoadPlan $plan
-    ) {
-        // Get the eager-loading map from the source element type
-        /** @var ElementInterface|string $elementType */
-        $map = $elementType::eagerLoadingMap($elements, $plan->handle);
-
-        if ($map === null) {
-            // Null means to skip eager-loading this segment
-            return;
-        }
-
-        $targetElementIdsBySourceIds = null;
-        $query = null;
-        $offset = 0;
-        $limit = null;
-
-        if (!empty($map['map'])) {
-            // Loop through the map to find:
-            // - unique target element IDs
-            // - target element IDs indexed by source element IDs
-            $uniqueTargetElementIds = [];
-            $targetElementIdsBySourceIds = [];
-
-            foreach ($map['map'] as $mapping) {
-                $uniqueTargetElementIds[$mapping['target']] = true;
-                $targetElementIdsBySourceIds[$mapping['source']][$mapping['target']] = true;
-            }
-
-            // Get the target elements
-            $query = $this->createElementQuery($map['elementType']);
-
-            // Default to no order, offset, or limit, but allow the element type/path criteria to override
-            $query->orderBy = null;
-            $query->offset = null;
-            $query->limit = null;
-
-            $criteria = array_merge(
-                $map['criteria'] ?? [],
-                $plan->criteria
-            );
-
-            // Save the offset & limit params for later
-            $offset = ArrayHelper::remove($criteria, 'offset', 0);
-            $limit = ArrayHelper::remove($criteria, 'limit');
-
-            Craft::configure($query, $criteria);
-
-            if (!$query->siteId) {
-                $query->siteId = $siteId;
-            }
-
-            $query->andWhere([
-                'elements.id' => array_keys($uniqueTargetElementIds),
+    private function _eagerLoadElementsInternal(string $elementType, array $elementsBySite, array $with)
+    {
+        foreach ($elementsBySite as $siteId => $elements) {
+            // In case the elements were
+            $elements = array_values($elements);
+            $event = new EagerLoadElementsEvent([
+                'elementType' => $elementType,
+                'elements' => $elements,
+                'with' => $with,
             ]);
-        }
+            $this->trigger(self::EVENT_BEFORE_EAGER_LOAD_ELEMENTS, $event);
 
-        // Do we just need the count?
-        if ($plan->count && empty($plan->nested)) {
-            // Just fetch the target elements’ IDs
-            $targetElementIdCounts = [];
-            if ($query) {
-                foreach ($query->ids() as $id) {
-                    if (!isset($targetElementIdCounts[$id])) {
-                        $targetElementIdCounts[$id] = 1;
+            foreach ($event->with as $plan) {
+                // Get the eager-loading map from the source element type
+                /** @var ElementInterface|string $elementType */
+                $map = $elementType::eagerLoadingMap($elements, $plan->handle);
+
+                if ($map === null) {
+                    // Null means to skip eager-loading this segment
+                    return;
+                }
+
+                $targetElementIdsBySourceIds = null;
+                $query = null;
+                $offset = 0;
+                $limit = null;
+
+                if (!empty($map['map'])) {
+                    // Loop through the map to find:
+                    // - unique target element IDs
+                    // - target element IDs indexed by source element IDs
+                    $uniqueTargetElementIds = [];
+                    $targetElementIdsBySourceIds = [];
+
+                    foreach ($map['map'] as $mapping) {
+                        $uniqueTargetElementIds[$mapping['target']] = true;
+                        $targetElementIdsBySourceIds[$mapping['source']][$mapping['target']] = true;
+                    }
+
+                    // Get the target elements
+                    $query = $this->createElementQuery($map['elementType']);
+
+                    // Default to no order, offset, or limit, but allow the element type/path criteria to override
+                    $query->orderBy = null;
+                    $query->offset = null;
+                    $query->limit = null;
+
+                    $criteria = array_merge(
+                        $map['criteria'] ?? [],
+                        $plan->criteria
+                    );
+
+                    // Save the offset & limit params for later
+                    $offset = ArrayHelper::remove($criteria, 'offset', 0);
+                    $limit = ArrayHelper::remove($criteria, 'limit');
+
+                    Craft::configure($query, $criteria);
+
+                    if (!$query->siteId) {
+                        $query->siteId = $siteId;
+                    }
+
+                    if (!$query->id) {
+                        $query->id = array_keys($uniqueTargetElementIds);
                     } else {
-                        $targetElementIdCounts[$id]++;
-                    }
-                }
-            }
-
-            // Loop through the source elements and count up their targets
-            foreach ($elements as $sourceElement) {
-                $count = 0;
-                if (!empty($targetElementIdCounts) && isset($targetElementIdsBySourceIds[$sourceElement->id])) {
-                    foreach (array_keys($targetElementIdsBySourceIds[$sourceElement->id]) as $targetElementId) {
-                        if (isset($targetElementIdCounts[$targetElementId])) {
-                            $count += $targetElementIdCounts[$targetElementId];
-                        }
-                    }
-                }
-                $sourceElement->setEagerLoadedElementCount($plan->alias, $count);
-            }
-
-            return;
-        }
-
-        $targetElementData = $query ? ArrayHelper::index($query->asArray()->all(), null, ['id']) : [];
-        $targetElements = [];
-
-        // Tell the source elements about their eager-loaded elements
-        foreach ($elements as $sourceElement) {
-            $targetElementIdsForSource = [];
-            $targetElementsForSource = [];
-
-            if (isset($targetElementIdsBySourceIds[$sourceElement->id])) {
-                // Does the path mapping want a custom order?
-                if (!empty($criteria['orderBy']) || !empty($criteria['order'])) {
-                    // Assign the elements in the order they were returned from the query
-                    foreach (array_keys($targetElementData) as $targetElementId) {
-                        if (isset($targetElementIdsBySourceIds[$sourceElement->id][$targetElementId])) {
-                            $targetElementIdsForSource[] = $targetElementId;
-                        }
-                    }
-                } else {
-                    // Assign the elements in the order defined by the map
-                    foreach (array_keys($targetElementIdsBySourceIds[$sourceElement->id]) as $targetElementId) {
-                        if (isset($targetElementData[$targetElementId])) {
-                            $targetElementIdsForSource[] = $targetElementId;
-                        }
+                        $query->andWhere([
+                            'elements.id' => array_keys($uniqueTargetElementIds),
+                        ]);
                     }
                 }
 
-                // Create the elements
-                $currentOffset = 0;
-                $count = 0;
-                foreach ($targetElementIdsForSource as $elementId) {
-                    foreach ($targetElementData[$elementId] as $result) {
-                        if ($offset && $currentOffset < $offset) {
-                            $currentOffset++;
-                            continue;
-                        }
-                        if (!isset($targetElements[$elementId][$result['siteId']])) {
-                            $targetElements[$elementId][$result['siteId']] = $query->createElement($result);
-                        }
-                        $targetElementsForSource[] = $targetElements[$elementId][$result['siteId']];
-                        if ($limit && ++$count == $limit) {
-                            break;
+                // Do we just need the count?
+                if ($plan->count && empty($plan->nested)) {
+                    // Just fetch the target elements’ IDs
+                    $targetElementIdCounts = [];
+                    if ($query) {
+                        foreach ($query->ids() as $id) {
+                            if (!isset($targetElementIdCounts[$id])) {
+                                $targetElementIdCounts[$id] = 1;
+                            } else {
+                                $targetElementIdCounts[$id]++;
+                            }
                         }
                     }
+
+                    // Loop through the source elements and count up their targets
+                    foreach ($elements as $sourceElement) {
+                        $count = 0;
+                        if (!empty($targetElementIdCounts) && isset($targetElementIdsBySourceIds[$sourceElement->id])) {
+                            foreach (array_keys($targetElementIdsBySourceIds[$sourceElement->id]) as $targetElementId) {
+                                if (isset($targetElementIdCounts[$targetElementId])) {
+                                    $count += $targetElementIdCounts[$targetElementId];
+                                }
+                            }
+                        }
+                        $sourceElement->setEagerLoadedElementCount($plan->alias, $count);
+                    }
+
+                    continue;
+                }
+
+                $targetElementData = $query ? ArrayHelper::index($query->asArray()->all(), null, ['id']) : [];
+                $targetElements = [];
+
+                // Tell the source elements about their eager-loaded elements
+                foreach ($elements as $sourceElement) {
+                    $targetElementIdsForSource = [];
+                    $targetElementsForSource = [];
+
+                    if (isset($targetElementIdsBySourceIds[$sourceElement->id])) {
+                        // Does the path mapping want a custom order?
+                        if (!empty($criteria['orderBy']) || !empty($criteria['order'])) {
+                            // Assign the elements in the order they were returned from the query
+                            foreach (array_keys($targetElementData) as $targetElementId) {
+                                if (isset($targetElementIdsBySourceIds[$sourceElement->id][$targetElementId])) {
+                                    $targetElementIdsForSource[] = $targetElementId;
+                                }
+                            }
+                        } else {
+                            // Assign the elements in the order defined by the map
+                            foreach (array_keys($targetElementIdsBySourceIds[$sourceElement->id]) as $targetElementId) {
+                                if (isset($targetElementData[$targetElementId])) {
+                                    $targetElementIdsForSource[] = $targetElementId;
+                                }
+                            }
+                        }
+
+                        // Create the elements
+                        $currentOffset = 0;
+                        $count = 0;
+                        foreach ($targetElementIdsForSource as $elementId) {
+                            foreach ($targetElementData[$elementId] as $result) {
+                                if ($offset && $currentOffset < $offset) {
+                                    $currentOffset++;
+                                    continue;
+                                }
+                                $targetSiteId = $result['siteId'];
+                                if (!isset($targetElements[$targetSiteId][$elementId])) {
+                                    $targetElements[$targetSiteId][$elementId] = $query->createElement($result);
+                                }
+                                $targetElementsForSource[] = $targetElements[$targetSiteId][$elementId];
+                                if ($limit && ++$count == $limit) {
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    $sourceElement->setEagerLoadedElements($plan->alias, $targetElementsForSource);
+
+                    if ($plan->count) {
+                        $sourceElement->setEagerLoadedElementCount($plan->alias, count($targetElementsForSource));
+                    }
+                }
+
+                // Now eager-load any sub paths
+                if (!empty($map['map']) && !empty($plan->nested)) {
+                    $this->_eagerLoadElementsInternal($map['elementType'], array_map('array_values', $targetElements), $plan->nested);
                 }
             }
-
-            $sourceElement->setEagerLoadedElements($plan->alias, $targetElementsForSource);
-
-            if ($plan->count) {
-                $sourceElement->setEagerLoadedElementCount($plan->alias, count($targetElementsForSource));
-            }
-        }
-
-        // Now eager-load any sub paths
-        if (!empty($map['map']) && !empty($plan->nested)) {
-            $this->eagerLoadElements($map['elementType'], $targetElements, $plan->nested);
         }
     }
 
@@ -2222,9 +2359,8 @@ class Elements extends Component
             }
 
             if (!$isDraftOrRevision) {
-                // Delete any caches involving this element. (Even do this for new elements, since they
-                // might pop up in a cached criteria.)
-                Craft::$app->getTemplateCaches()->deleteCachesByElement($element);
+                // Invalidate any caches involving this element
+                $this->invalidateCachesForElement($element);
             }
         }
 

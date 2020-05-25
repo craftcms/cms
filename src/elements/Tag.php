@@ -149,6 +149,7 @@ class Tag extends Element
 
     /**
      * @inheritdoc
+     * @since 3.5.0
      */
     public static function gqlMutationNameByContext($context): string
     {
@@ -216,6 +217,17 @@ class Tag extends Element
         if ($query->exists()) {
             $validator->addError($this, $attribute, Craft::t('yii', '{attribute} "{value}" has already been taken.'));
         }
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.5.0
+     */
+    public function getCacheTags(): array
+    {
+        return [
+            "group:$this->groupId",
+        ];
     }
 
     /**
