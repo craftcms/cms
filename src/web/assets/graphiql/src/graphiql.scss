@@ -77,7 +77,8 @@
   }
 
   .queryWrap,
-  .docExplorerWrap {
+  .docExplorerWrap,
+  .historyPaneWrap, {
     @include pane;
     border-radius: $largeBorderRadius;
     overflow: hidden;

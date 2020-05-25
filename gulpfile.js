@@ -15,6 +15,7 @@ var sourcemaps = require('gulp-sourcemaps');
 var uglify = require('gulp-uglify-es').default;
 var gulpif = require('gulp-if');
 var sass = require('gulp-sass');
+const webpack = require('webpack-stream');
 
 var libPath = 'lib/';
 
@@ -49,17 +50,12 @@ var staticDeps = [
 ];
 
 var graphiqlJs = [
-    'node_modules/whatwg-fetch/fetch.js',
-    'node_modules/react/umd/react.production.min.js',
-    'node_modules/react-dom/umd/react-dom.production.min.js',
-    'node_modules/graphiql/graphiql.js',
-    'node_modules/graphiql-with-extensions/GraphiqlWithExtensions.js',
     'src/web/assets/graphiql/src/graphiql-init.js',
-    'src/web/assets/graphiql/src/components.js',
+    'src/web/assets/graphiql/src/CraftGraphiQL.js',
 ];
 
 var graphiqlCss = [
-    'node_modules/graphiql-with-extensions/graphiqlWithExtensions.css',
+    'node_modules/graphiql/graphiql.css',
     'src/web/assets/graphiql/src/graphiql.scss',
 ];
 
@@ -73,8 +69,25 @@ var vueJs = [
 ];
 
 gulp.task('graphiql-js', function() {
-    return gulp.src(graphiqlJs)
-        .pipe(gulpif(/(fetch\.js|graphiql-init\.js|components\.js)$/, uglify()))
+    gulp.src(graphiqlJs)
+        .pipe(webpack({
+            entry: './src/web/assets/graphiql/src/graphiql-init.js',
+            mode: 'production',
+            module: {
+                rules: [
+                    {
+                        test: /\.m?js$/,
+                        exclude: /(node_modules|bower_components)/,
+                        use: {
+                            loader: 'babel-loader',
+                            options: {
+                                presets: ['@babel/preset-env']
+                            }
+                        }
+                    }
+                ]
+            }
+        }))
         .pipe(concat('graphiql.js'))
         .pipe(gulp.dest(graphiqlDist));
 });
