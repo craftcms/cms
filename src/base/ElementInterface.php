@@ -439,6 +439,40 @@ interface ElementInterface extends ComponentInterface
      * - `map` – an array of element ID mappings, where each element is a sub-array with `source` and `target` keys.
      * - `criteria` *(optional)* – Any criteria parameters that should be applied to the element query when fetching the eager-loaded elements.
      *
+     * ```php
+     * use craft\db\Query;
+     * use craft\helpers\ArrayHelper;
+     *
+     * public static function eagerLoadingMap(array $sourceElements, string $handle) {
+     *     switch ($handle) {
+     *         case 'author':
+     *             $bookIds = ArrayHelper::getColumn($sourceElements, 'id');
+     *             $map = (new Query)
+     *                 ->select(['source' => 'id', 'target' => 'authorId'])
+     *                 ->from('{{%books}}')
+     *                 ->where(['id' => $bookIds)
+     *                 ->all();
+     *             return [
+     *                 'elementType' => \my\plugin\Author::class,
+     *                 'map' => $map,
+     *             ];
+     *         case 'bookClubs':
+     *             $bookIds = ArrayHelper::getColumn($sourceElements, 'id');
+     *             $map = (new Query)
+     *                 ->select(['source' => 'bookId', 'target' => 'clubId'])
+     *                 ->from('{{%bookclub_books}}')
+     *                 ->where(['bookId' => $bookIds)
+     *                 ->all();
+     *             return [
+     *                 'elementType' => \my\plugin\BookClub::class,
+     *                 'map' => $map,
+     *             ];
+     *         default:
+     *             return parent::eagerLoadMap($sourceElements, $handle);
+     *     }
+     * }
+     * ```
+     *
      * @param ElementInterface[] $sourceElements An array of the source elements
      * @param string $handle The property handle used to identify which target elements should be included in the map
      * @return array|false|null The eager-loading element ID mappings, false if no mappings exist, or null if the result
