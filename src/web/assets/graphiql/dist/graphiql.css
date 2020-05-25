@@ -1618,3 +1618,5 @@ li.CodeMirror-hint-active {
   #graphiql .graphiql-container .execute-button {
     background: linear-gradient(#fdfdfd, #CFD6DC);
     border: 1px solid #CFD6DC; }
+  #graphiql .graphiql-container .spinner {
+    background: none; }
