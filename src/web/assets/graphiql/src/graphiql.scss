@@ -71,6 +71,23 @@
     }
   }
 
+  /* For reasons unknown, GraphiQL Explorer doesn't bother having it's own class, so this targets the explorer*/
+  >.graphiql-container .docExplorerWrap:first-child {
+      @include margin-right(24px);
+      div.graphiql-explorer-root div {
+        @include padding-left(5px);
+      }
+  }
+
+  .doc-explorer-title-bar,
+  .history-title-bar {
+    background: $white;
+  }
+
+  .graphiql-container .editorWrap {
+    @include margin-left(24px);
+  }
+
   .docExplorerShow {
     @include margin-right(-24px);
     @include padding-right(24px);

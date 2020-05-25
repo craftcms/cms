@@ -1463,7 +1463,8 @@ li.CodeMirror-hint-active {
   font-size: 14px;
   line-height: 20px;
   color: #3f4d5a;
-  -webkit-font-smoothing: subpixel-antialiased; }
+  -webkit-font-smoothing: subpixel-antialiased;
+  /* For reasons unknown, GraphiQL Explorer doesn't bother having it's own class, so this targets the explorer*/ }
   #graphiql .graphiql-container .topBar,
   #graphiql .graphiql-container .docExplorerShow,
   #graphiql .graphiql-container .historyShow,
@@ -1510,6 +1511,21 @@ li.CodeMirror-hint-active {
         font-weight: bold;
         line-height: 1.2;
         color: #3f4d5a; }
+  body.ltr #graphiql > .graphiql-container .docExplorerWrap:first-child {
+    margin-right: 24px; }
+  body.rtl #graphiql > .graphiql-container .docExplorerWrap:first-child {
+    margin-left: 24px; }
+  body.ltr #graphiql > .graphiql-container .docExplorerWrap:first-child div.graphiql-explorer-root div {
+    padding-left: 5px; }
+  body.rtl #graphiql > .graphiql-container .docExplorerWrap:first-child div.graphiql-explorer-root div {
+    padding-right: 5px; }
+  #graphiql .doc-explorer-title-bar,
+  #graphiql .history-title-bar {
+    background: #fff; }
+  body.ltr #graphiql .graphiql-container .editorWrap {
+    margin-left: 24px; }
+  body.rtl #graphiql .graphiql-container .editorWrap {
+    margin-right: 24px; }
   body.ltr #graphiql .docExplorerShow {
     margin-right: -24px; }
   body.rtl #graphiql .docExplorerShow {
