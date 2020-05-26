@@ -552,7 +552,7 @@ class Category extends Element
             $record->save(false);
 
             // Has the parent changed?
-            if ($this->_hasNewParent()) {
+            if (!$this->duplicateOf && $this->_hasNewParent()) {
                 $mode = $isNew ? Structures::MODE_INSERT : Structures::MODE_AUTO;
                 if (!$this->newParentId) {
                     Craft::$app->getStructures()->appendToRoot($this->structureId, $this, $mode);

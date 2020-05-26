@@ -734,6 +734,7 @@ class Sections extends Component
                         'elementType' => Entry::class,
                         'criteria' => [
                             'sectionId' => $sectionRecord->id,
+                            'structureId' => $sectionRecord->structureId,
                         ],
                     ]));
                 } else if ($this->autoResaveEntries) {

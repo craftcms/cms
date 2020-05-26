@@ -14,6 +14,10 @@
 - Image thumbnails in the control panel now only load once they are in view, or close to it. ([#6104](https://github.com/craftcms/cms/issues/6104))
 - Modal backdrops no longer blur the page content. ([#5651](https://github.com/craftcms/cms/issues/5651))
 - The suggested filename is now returned when uploading a file via the `assets/upload` action. ([#6099](https://github.com/craftcms/cms/issues/6099))
+- `craft\services\Structures::append()` now allows an integer to be passed to its `$parentElement` argument.
+- `craft\services\Structures::moveAfter()` now allows an integer to be passed to its `$prevElement` argument.
+- `craft\services\Structures::moveBefore()` now allows an integer to be passed to its `$nextElement` argument.
+- `craft\services\Structures::prepend()` now allows an integer to be passed to its `$parentElement` argument.
 
 ### Deprecated
 - Deprecated `craft\db\Connection::getVersion()`. `yii\base\Schema::getServerVersion()` should be used instead.
@@ -28,6 +32,7 @@
 - Fixed a bug where the “Publish changes” button label was not getting translated after clicking “Save as a draft” on an Edit Entry page. ([#6112](https://github.com/craftcms/cms/issues/6112))
 - Fixed a couple errors that could occur when running console commands via Cron. ([#6102](https://github.com/craftcms/cms/issues/6102))
 - Fixed a bug in test fixtures where primary keys were not being detected for relational fields. ([#6103](https://github.com/craftcms/cms/pull/6103))
+- Fixed a bug where duplicated Structure entries wouldn’t retain the original entries’ structure when a new propagation method was being applied to the section. ([#6115](https://github.com/craftcms/cms/issues/6115))
 
 ## 3.4.20 - 2020-05-18
 

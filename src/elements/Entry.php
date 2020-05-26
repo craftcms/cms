@@ -1278,7 +1278,7 @@ EOD;
 
             $record->save(false);
 
-            if ($section->type == Section::TYPE_STRUCTURE) {
+            if (!$this->duplicateOf && $section->type == Section::TYPE_STRUCTURE) {
                 // Has the parent changed?
                 if ($this->_hasNewParent()) {
                     $mode = $isNew ? Structures::MODE_INSERT : Structures::MODE_AUTO;
