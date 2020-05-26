@@ -224,7 +224,7 @@ abstract class Element extends Component implements ElementInterface
      *     $element = $e->sender;
      *     
      *     if ($e->attribute === 'productTitle') {
-     *         $e->keywords = $element->getProduct()->title;
+     *         $e->value = $element->getProduct()->title;
      *     }
      * });
      * ```
