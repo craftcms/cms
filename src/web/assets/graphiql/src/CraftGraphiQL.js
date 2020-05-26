@@ -197,6 +197,7 @@ export class CraftGraphiQL extends React.Component {
                 query: this.state.query,
                 onEdit: this.handleEditQuery.bind(this),
                 explorerIsOpen: this.state.explorerIsOpen,
+                onToggleExplorer: this.handleClickExplorerButton.bind(this),
                 ref: this.explorer
             }),
             elem(GraphiQL, {
