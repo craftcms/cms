@@ -2995,17 +2995,18 @@ ul.tree,
         }
       }
 
-      & > .datetimewrapper > .datewrapper,
-      & > .datetimewrapper > .timewrapper {
-        @include floatleft;
-      }
+      & > .datetimewrapper {
+        & > .datewrapper {
+          width: 55%;
+        }
 
-      & > .datetimewrapper > .datewrapper {
-        width: 55%;
-      }
+        & > .timewrapper {
+          width: 45%;
+        }
 
-      & > .datetimewrapper > .timewrapper {
-        width: 45%;
+        & > .clear-btn {
+          @include margin-right(-24px);
+        }
       }
 
       & > .datewrapper,
@@ -4290,6 +4291,32 @@ input.checkbox:focus + label:before,
 
   .password-toggle {
     @include padding-right(7px);
+  }
+}
+
+.datetimewrapper {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
+  & > .datewrapper + .timewrapper {
+    @include margin-left(5px);
+  }
+
+  .clear-btn {
+    width: 20px;
+    @include margin-left(4px);
+    cursor: pointer;
+    color: $darkHairlineColor;
+
+    &:before {
+      @include icon;
+      content: 'remove';
+    }
+
+    &:hover {
+      color: $mediumTextColor;
+    }
   }
 }
 

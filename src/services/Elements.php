@@ -894,6 +894,10 @@ class Elements extends Component
         $mainClone->uid = null;
         $mainClone->elementSiteId = null;
         $mainClone->contentId = null;
+        $mainClone->root = null;
+        $mainClone->lft = null;
+        $mainClone->rgt = null;
+        $mainClone->level = null;
         $mainClone->dateCreated = null;
         $mainClone->duplicateOf = $element;
 
@@ -935,6 +939,30 @@ class Elements extends Component
             // Start with $element's site
             if (!$this->_saveElementInternal($mainClone, false, false)) {
                 throw new InvalidElementException($mainClone, 'Element ' . $element->id . ' could not be duplicated for site ' . $element->siteId);
+            }
+
+            // Is this a structured element?
+            if ($element->structureId && $element->root) {
+                // See if we've cloned the source element's parent
+                // (we can't use getParent() here because there's a chance that the parent doesn't exist in the same
+                //site as the source element anymore, if this is coming from an ApplyNewPropagationMethod job)
+                if (
+                    $element->level != 1 &&
+                    ($parentId = $element
+                        ->getAncestors(1)
+                        ->select(['elements.id'])
+                        ->siteId('*')
+                        ->unique()
+                        ->scalar()
+                    ) !== false &&
+                    isset(static::$duplicatedElementIds[$parentId])
+                ) {
+                    // Append the clone to the parent's clone
+                    $mode = $mainClone->root === null ? Structures::MODE_INSERT : Structures::MODE_AUTO;
+                    Craft::$app->getStructures()->append($element->structureId, $mainClone, static::$duplicatedElementIds[$parentId], $mode);
+                } else if (!$mainClone->root) {
+                    Craft::$app->getStructures()->appendToRoot($element->structureId, $mainClone, Structures::MODE_INSERT);
+                }
             }
 
             // Map it
