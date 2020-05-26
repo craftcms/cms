@@ -1606,7 +1606,7 @@ class Sections extends Component
 
         /** @var Entry $entry */
         foreach ($query->each() as $entry) {
-            $structuresService->appendToRoot($sectionRecord->structureId, $entry, 'insert');
+            $structuresService->appendToRoot($sectionRecord->structureId, $entry, Structures::MODE_INSERT);
         }
     }
 
