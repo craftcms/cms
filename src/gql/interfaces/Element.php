@@ -104,6 +104,11 @@ class Element extends InterfaceType
                 'type' => Type::int(),
                 'description' => 'The ID of the site the element is associated with.'
             ],
+            'language' => [
+                'name' => 'language',
+                'type' => Type::string(),
+                'description' => 'The language of the site element is associated with.'
+            ],
             'searchScore' => [
                 'name' => 'searchScore',
                 'type' => Type::string(),
