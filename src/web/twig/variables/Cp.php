@@ -157,12 +157,7 @@ class Cp extends Component
 
         if ($isAdmin) {
             if ($craftPro && $generalConfig->enableGql) {
-                $subNavItems = [
-                    'explore' => [
-                        'label' => Craft::t('app', 'Explore'),
-                        'url' => 'graphql',
-                    ],
-                ];
+                $subNavItems = [];
 
                 if ($generalConfig->allowAdminChanges) {
                     $subNavItems['schemas'] = [
@@ -174,6 +169,12 @@ class Cp extends Component
                 $subNavItems['tokens'] = [
                     'label' => Craft::t('app', 'Tokens'),
                     'url' => 'graphql/tokens',
+                ];
+
+                $subNavItems['graphiql'] = [
+                    'label' => 'GraphiQL',
+                    'url' => 'graphiql',
+                    'external' => true,
                 ];
 
                 $navItems[] = [
@@ -251,6 +252,10 @@ class Cp extends Component
             }
 
             $item['url'] = UrlHelper::url($item['url']);
+
+            if (!isset($item['external'])) {
+                $item['external'] = false;
+            }
 
             if (!isset($item['badgeCount'])) {
                 $item['badgeCount'] = 0;

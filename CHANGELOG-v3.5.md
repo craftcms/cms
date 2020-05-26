@@ -41,6 +41,7 @@
 - Added the `hasPhoto` user query param/GraphQL argument. ([#6083](https://github.com/craftcms/cms/issues/6083))
 - Added the `localized` field when querying entries and categories via GraphQL. ([#6045](https://github.com/craftcms/cms/issues/6045))
 - Added the `language` field when querying elements via GraphQL.
+- The GraphiQL IDE now opens as a fullscreen app in a new window.
 - Added the `Prettify` and `History` buttons to the GraphQL explorer.
 - Added the Explorer plugin to GraphiQL.
 - Added support for external subnav links in the global control panel nav.

@@ -266,6 +266,30 @@ class GraphqlController extends Controller
     }
 
     /**
+     * Redirects to the GraphQL Schemas/Tokens page in the control panel.
+     *
+     * @return Response
+     * @throws NotFoundHttpException if this isn't a control panel request
+     * @throws ForbiddenHttpException if the logged-in user isn't an admin
+     * @since 3.5.0
+     */
+    public function actionCpIndex(): Response
+    {
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        if (!Craft::$app->getRequest()->getIsCpRequest() || !$generalConfig->enableGql) {
+            throw new NotFoundHttpException();
+        }
+
+        $this->requireAdmin();
+
+        if ($generalConfig->allowAdminChanges) {
+            return $this->redirect('graphql/schemas');
+        }
+
+        return $this->redirect('graphql/tokens');
+    }
+
+    /**
      * @return Response
      * @throws ForbiddenHttpException
      * @since 3.4.0
