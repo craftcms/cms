@@ -5,6 +5,7 @@
 ### Added
 - Added the “Allow self relations” advanced setting to relational fields. ([#6113](https://github.com/craftcms/cms/issues/6113))
 - Added `craft\helpers\Assets::scaledDimensions()`.
+- Added `craft\events\SetElementSearchKeywordsEvent`.
 
 ### Changed
 - Asset thumbnails now use the same aspect ratio as the source image. ([#5518](https://github.com/craftcms/cms/issues/5518), [#5515](https://github.com/craftcms/cms/issues/5515))

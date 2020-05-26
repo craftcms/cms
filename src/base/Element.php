@@ -30,6 +30,7 @@ use craft\events\RegisterElementSourcesEvent;
 use craft\events\RegisterElementTableAttributesEvent;
 use craft\events\RegisterPreviewTargetsEvent;
 use craft\events\SetElementRouteEvent;
+use craft\events\SetElementSearchKeywordsEvent;
 use craft\events\SetElementTableAttributeHtmlEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
@@ -214,6 +215,19 @@ abstract class Element extends Component implements ElementInterface
      * @event RegisterElementHtmlAttributesEvent The event that is triggered when registering the HTML attributes that should be included in the element’s DOM representation in the control panel.
      */
     const EVENT_REGISTER_HTML_ATTRIBUTES = 'registerHtmlAttributes';
+
+    /**
+     * @event SetElementSearchKeywordsEvent The event that is triggered when defining the search keywords that should be used when this element is indexed
+     *
+     * ```php
+     * Event::on(craft\elements\Entry::class, craft\base\Element::EVENT_SET_SEARCH_KEYWORDS, function(craft\events\SetElementSearchKeywordsEvent $e) {
+     *     if ($e->attribute === 'productTitle') {
+     *         $e->keywords = $this->getProduct()->title;
+     *     }
+     * });
+     * ```
+     */
+    const EVENT_SET_SEARCH_KEYWORDS = 'setSearchKeywords';
 
     /**
      * @event SetElementRouteEvent The event that is triggered when defining the route that should be used when this element’s URL is requested
@@ -1580,7 +1594,13 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getSearchKeywords(string $attribute): string
     {
-        return StringHelper::toString($this->$attribute);
+        // Give plugins a chance to modify them
+        $event = new SetElementSearchKeywordsEvent([
+            'attribute' => $this->$attribute,
+        ]);
+        $this->trigger(self::EVENT_SET_SEARCH_KEYWORDS, $event);
+
+        return StringHelper::toString($event->keywords);
     }
 
     /**
