@@ -221,8 +221,10 @@ abstract class Element extends Component implements ElementInterface
      *
      * ```php
      * Event::on(craft\elements\Entry::class, craft\base\Element::EVENT_SET_SEARCH_KEYWORDS, function(craft\events\SetElementSearchKeywordsEvent $e) {
+     *     $element = $e->sender;
+     *     
      *     if ($e->attribute === 'productTitle') {
-     *         $e->keywords = $this->getProduct()->title;
+     *         $e->keywords = $element->getProduct()->title;
      *     }
      * });
      * ```
