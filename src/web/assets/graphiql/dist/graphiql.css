@@ -1453,18 +1453,19 @@ li.CodeMirror-hint-active {
 .CodeMirror-hint-deprecation :last-child {
   margin-bottom: 0; }
 
+body,
 #graphiql {
-  width: 100%;
+  width: 100vw;
+  height: 100vh; }
+
+#graphiql {
   display: flex;
-  height: calc(100vh - 98px);
-  min-height: 500px;
   align-items: center;
   justify-content: center;
   font-size: 14px;
   line-height: 20px;
   color: #3f4d5a;
-  -webkit-font-smoothing: subpixel-antialiased;
-  /* For reasons unknown, GraphiQL Explorer doesn't bother having it's own class, so this targets the explorer*/ }
+  -webkit-font-smoothing: subpixel-antialiased; }
   #graphiql .graphiql-container .topBar,
   #graphiql .graphiql-container .docExplorerShow,
   #graphiql .graphiql-container .historyShow,
@@ -1473,6 +1474,7 @@ li.CodeMirror-hint-active {
   #graphiql .graphiql-container .variable-editor-title,
   #graphiql .graphiql-container .footer,
   #graphiql .result-window .CodeMirror,
+  #graphiql .graphiql-container .resultWrap,
   #graphiql .graphiql-container .result-window .CodeMirror-gutters,
   #graphiql .graphiql-container .toolbar-button,
   #graphiql .graphiql-container .toolbar-button:active,
@@ -1501,58 +1503,44 @@ li.CodeMirror-hint-active {
   #graphiql .graphiql-container,
   #graphiql .graphiql-container .editorWrap {
     overflow: visible; }
-  #graphiql .topBarWrap {
-    margin-bottom: 14px; }
-    #graphiql .topBarWrap .topBar {
-      padding: 13px 0; }
-      #graphiql .topBarWrap .topBar .title {
-        font-family: system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-        font-size: 18px;
-        font-weight: bold;
-        line-height: 1.2;
-        color: #3f4d5a; }
-  body.ltr #graphiql > .graphiql-container .docExplorerWrap:first-child {
-    margin-right: 24px; }
-  body.rtl #graphiql > .graphiql-container .docExplorerWrap:first-child {
-    margin-left: 24px; }
-  body.ltr #graphiql > .graphiql-container .docExplorerWrap:first-child div.graphiql-explorer-root div {
-    padding-left: 5px; }
-  body.rtl #graphiql > .graphiql-container .docExplorerWrap:first-child div.graphiql-explorer-root div {
-    padding-right: 5px; }
+  #graphiql .topBarWrap .topBar {
+    padding: 14px 24px; }
+    #graphiql .topBarWrap .topBar .title {
+      font-family: system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+      font-size: 18px;
+      font-weight: bold;
+      line-height: 1.2;
+      color: #3f4d5a; }
+  #graphiql .topBarWrap .docExplorerShow {
+    padding: 14px 24px; }
   #graphiql .doc-explorer-title-bar,
   #graphiql .history-title-bar {
     background: #fff; }
-  body.ltr #graphiql .graphiql-container .editorWrap {
-    margin-left: 24px; }
-  body.rtl #graphiql .graphiql-container .editorWrap {
-    margin-right: 24px; }
-  body.ltr #graphiql .docExplorerShow {
-    margin-right: -24px; }
-  body.rtl #graphiql .docExplorerShow {
-    margin-left: -24px; }
-  body.ltr #graphiql .docExplorerShow {
-    padding-right: 24px; }
-  body.rtl #graphiql .docExplorerShow {
-    padding-left: 24px; }
   #graphiql .queryWrap,
   #graphiql .docExplorerWrap,
   #graphiql .historyPaneWrap {
     background: #fff;
     box-shadow: 0 0 0 1px rgba(205, 216, 228, 0.25), 0 2px 12px rgba(205, 216, 228, 0.5);
-    border-radius: 5px;
     overflow: hidden; }
-  #graphiql .queryWrap .CodeMirror-gutters {
-    background: #f3f7fc;
-    box-shadow: inset -1px 0 0 rgba(51, 64, 77, 0.1); }
-  #graphiql .queryWrap .CodeMirror-linenumber {
-    color: #9aa5b1; }
-  #graphiql .queryWrap .variable-editor {
-    height: 28px; }
-    #graphiql .queryWrap .variable-editor .variable-editor-title {
+  #graphiql .docExplorerWrap {
+    z-index: 8 !important; }
+    #graphiql .docExplorerWrap .doc-explorer-contents {
+      overflow-y: auto !important; }
+  #graphiql .queryWrap {
+    margin: 0 0 24px 24px;
+    border-radius: 5px; }
+    #graphiql .queryWrap .CodeMirror-gutters {
       background: #f3f7fc;
-      box-shadow: 0 -1px 0 rgba(51, 64, 77, 0.1), 0 1px 0 rgba(51, 64, 77, 0.1);
-      z-index: 4;
+      box-shadow: inset -1px 0 0 rgba(51, 64, 77, 0.1); }
+    #graphiql .queryWrap .CodeMirror-linenumber {
       color: #9aa5b1; }
+    #graphiql .queryWrap .variable-editor {
+      height: 28px; }
+      #graphiql .queryWrap .variable-editor .variable-editor-title {
+        background: #f3f7fc;
+        box-shadow: 0 -1px 0 rgba(51, 64, 77, 0.1), 0 1px 0 rgba(51, 64, 77, 0.1);
+        z-index: 4;
+        color: #9aa5b1; }
   #graphiql .graphiql-container .toolbar {
     margin-left: 16px; }
   #graphiql .graphiql-container .toolbar-button {
@@ -1640,5 +1628,53 @@ li.CodeMirror-hint-active {
   #graphiql .graphiql-container .execute-button {
     background: linear-gradient(#fdfdfd, #CFD6DC);
     border: 1px solid #CFD6DC; }
+  #graphiql .graphiql-container .graphiql-explorer-root {
+    padding: 0 !important; }
+    #graphiql .graphiql-container .graphiql-explorer-root > div:first-child {
+      padding: 7px 14px; }
+      #graphiql .graphiql-container .graphiql-explorer-root > div:first-child div:focus {
+        outline: none; }
+    #graphiql .graphiql-container .graphiql-explorer-root .graphiql-explorer-actions {
+      margin: 0 !important;
+      padding: 14px !important;
+      box-sizing: border-box;
+      font-family: system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+      font-weight: normal;
+      font-variant-caps: normal;
+      text-transform: none;
+      letter-spacing: normal; }
+      #graphiql .graphiql-container .graphiql-explorer-root .graphiql-explorer-actions > span {
+        margin-right: 7px; }
+      #graphiql .graphiql-container .graphiql-explorer-root .graphiql-explorer-actions .toolbar-button {
+        margin: 0 !important;
+        padding: 0 4px; }
+        #graphiql .graphiql-container .graphiql-explorer-root .graphiql-explorer-actions .toolbar-button:before {
+          font-family: 'Craft';
+          speak: none;
+          -webkit-font-feature-settings: "liga", "dlig";
+          -moz-font-feature-settings: "liga=1, dlig=1";
+          -moz-font-feature-settings: "liga", "dlig";
+          -ms-font-feature-settings: "liga", "dlig";
+          -o-font-feature-settings: "liga", "dlig";
+          font-feature-settings: "liga", "dlig";
+          text-rendering: optimizeLegibility;
+          font-weight: normal;
+          font-variant: normal;
+          text-transform: none;
+          line-height: 1;
+          direction: ltr;
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+          display: inline-block;
+          text-align: center;
+          font-style: normal;
+          vertical-align: middle;
+          word-wrap: normal !important;
+          user-select: none;
+          opacity: 0.8;
+          content: 'plus';
+          font-size: 14.4px; }
+        #graphiql .graphiql-container .graphiql-explorer-root .graphiql-explorer-actions .toolbar-button span {
+          display: none; }
   #graphiql .graphiql-container .spinner {
     background: none; }
