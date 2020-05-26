@@ -24,6 +24,10 @@ interface FieldInterface extends SavableComponentInterface
     /**
      * Returns whether this field has a column in the content table.
      *
+     * ::: warning
+     * If you set this to `false`, you will be on your own in terms of saving and retrieving your field values.
+     * :::
+     *
      * @return bool
      */
     public static function hasContentColumn(): bool;
@@ -269,6 +273,15 @@ interface FieldInterface extends SavableComponentInterface
      * `entry.myFieldHandle` is called from a template, or right before [[getInputHtml()]] is called. Whatever
      * this method returns is what `entry.myFieldHandle` will likewise return, and what [[getInputHtml()]]’s and
      * [[serializeValue()]]’s $value arguments will be set to.
+     *
+     * The value passed into this method will vary depending on the context.
+     *
+     * - If a new, unsaved element is being edited for the first time (such as an entry within a Quick Post widget
+     *   on the Dashboard), the value will be `null`.
+     * - If an element is currently being saved, the value will be the field’s POST data.
+     * - If an existing element was retrieved from the database, the value will be whatever is stored in the field’s
+     *   `content` table column. (Or if the field doesn’t have a `content` table column per [[hasContentColumn()]],
+     *   the value will be `null`.)
      *
      * @param mixed $value The raw field value
      * @param ElementInterface|null $element The element the field is associated with, if there is one
