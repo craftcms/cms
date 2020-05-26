@@ -1598,11 +1598,12 @@ abstract class Element extends Component implements ElementInterface
     {
         // Give plugins a chance to modify them
         $event = new SetElementSearchKeywordsEvent([
-            'attribute' => $this->$attribute,
+            'attribute' => $attribute,
+            'value' => $this->$attribute,
         ]);
         $this->trigger(self::EVENT_SET_SEARCH_KEYWORDS, $event);
 
-        return StringHelper::toString($event->keywords);
+        return StringHelper::toString($event->value);
     }
 
     /**

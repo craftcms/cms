@@ -23,7 +23,7 @@ class SetElementSearchKeywordsEvent extends Event
     public $attribute;
 
     /**
-     * @var mixed The attribute's keywords that should be indexed for the element.
+     * @var mixed The value that should be indexed for the element.
      */
-    public $keywords;
+    public $value;
 }
