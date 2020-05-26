@@ -100,19 +100,18 @@ export class CraftGraphiQL extends React.Component {
         this.graphiql = React.createRef();
         this.explorer = React.createRef();
 
-        // And stat
+        // And initial state.
         this.state = {
             schema: null,
             explorerIsOpen: false,
-        }
-
-        if (parameters && parameters.query) {
-            this.state.query = parameters.query;
         }
     }
 
     // On everything ready, make explorer update its schema, too.
     componentDidMount() {
+        // Make sure we're aware of the query.
+        this.state.query = this.graphiql.current.state.query;
+
         this.props
             .fetcher({
                 query: getIntrospectionQuery(),
