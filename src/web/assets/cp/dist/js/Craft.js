@@ -14,7 +14,7 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-/*!   - 2020-05-19 */
+/*!   - 2020-05-26 */
 (function ($) {
   /** global: Craft */
 
@@ -1516,6 +1516,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       $('.pill', $container).pill();
       $('.formsubmit', $container).formsubmit();
       $('.menubtn', $container).menubtn();
+      $('.datetimewrapper', $container).datetime();
     },
     _elementIndexClasses: {},
     _elementSelectorModalClasses: {},
@@ -1952,7 +1953,46 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           new Garnish.MenuBtn($btn, settings);
         }
       });
-    }
+    },
+    datetime: function datetime() {
+      return this.each(function () {
+        var $wrapper = $(this);
+        var $inputs = $wrapper.find('input:not([name$="[timezone]"])');
+
+        var checkValue = function checkValue() {
+          var hasValue = false;
+
+          for (var _i3 = 0; _i3 < $inputs.length; _i3++) {
+            if ($inputs.eq(_i3).val()) {
+              hasValue = true;
+              break;
+            }
+          }
+
+          if (hasValue) {
+            if (!$wrapper.children('.clear-btn').length) {
+              var $btn = $('<div/>', {
+                "class": 'clear-btn',
+                role: 'button',
+                title: Craft.t('app', 'Clear')
+              }).appendTo($wrapper).on('click', function () {
+                for (var _i4 = 0; _i4 < $inputs.length; _i4++) {
+                  $inputs.eq(_i4).val('');
+                }
+
+                $btn.remove();
+              });
+            }
+          } else {
+            $wrapper.children('.clear-btn').remove();
+          }
+        };
+
+        $inputs.on('change', checkValue);
+        checkValue();
+      });
+    },
+    checkDatetimeValue: function checkDatetimeValue() {}
   });
   Garnish.$doc.ready(function () {
     Craft.initUiElements();
@@ -4753,8 +4793,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       this.updateDisabledElementsInModal();
     },
     selectElements: function selectElements(elements) {
-      for (var _i3 = 0; _i3 < elements.length; _i3++) {
-        var elementInfo = elements[_i3],
+      for (var _i5 = 0; _i5 < elements.length; _i5++) {
+        var elementInfo = elements[_i5],
             $element = this.createNewElement(elementInfo);
         this.appendElement($element);
         this.addElements($element);
@@ -14385,8 +14425,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       // Only immediately load the visible images
       var $thumbs = $elements.find('.elementthumb');
 
-      var _loop = function _loop(_i4) {
-        var $thumb = $thumbs.eq(_i4);
+      var _loop = function _loop(_i6) {
+        var $thumb = $thumbs.eq(_i6);
         var $scrollParent = $thumb.scrollParent();
 
         if (_this12.isVisible($thumb, $scrollParent)) {
@@ -14407,8 +14447,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         }
       };
 
-      for (var _i4 = 0; _i4 < $thumbs.length; _i4++) {
-        _loop(_i4);
+      for (var _i6 = 0; _i6 < $thumbs.length; _i6++) {
+        _loop(_i6);
       }
     },
     addToQueue: function addToQueue(thumb) {

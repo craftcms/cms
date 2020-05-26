@@ -1460,6 +1460,7 @@ $.extend(Craft,
             $('.pill', $container).pill();
             $('.formsubmit', $container).formsubmit();
             $('.menubtn', $container).menubtn();
+            $('.datetimewrapper', $container).datetime();
         },
 
         _elementIndexClasses: {},
@@ -1904,6 +1905,46 @@ $.extend($.fn,
                     new Garnish.MenuBtn($btn, settings);
                 }
             });
+        },
+
+        datetime: function() {
+            return this.each(function() {
+                let $wrapper = $(this);
+                let $inputs = $wrapper.find('input:not([name$="[timezone]"])');
+                let checkValue = () => {
+                    let hasValue = false;
+                    for (let i = 0; i < $inputs.length; i++) {
+                        if ($inputs.eq(i).val()) {
+                            hasValue = true;
+                            break;
+                        }
+                    }
+                    if (hasValue) {
+                        if (!$wrapper.children('.clear-btn').length) {
+                            let $btn = $('<div/>', {
+                                class: 'clear-btn',
+                                role: 'button',
+                                title: Craft.t('app', 'Clear'),
+                            })
+                                .appendTo($wrapper)
+                                .on('click', () => {
+                                    for (let i = 0; i < $inputs.length; i++) {
+                                        $inputs.eq(i).val('');
+                                    }
+                                    $btn.remove();
+                                })
+                        }
+                    } else {
+                        $wrapper.children('.clear-btn').remove();
+                    }
+                };
+                $inputs.on('change', checkValue);
+                checkValue();
+            });
+        },
+
+        checkDatetimeValue: function() {
+
         }
     });
 

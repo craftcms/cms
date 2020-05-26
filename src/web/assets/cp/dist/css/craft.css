@@ -1014,10 +1014,10 @@ body.rtl .meta > .field > .heading > label.required:after { margin-right: 0; }
 .meta > .field > .input > .datewrapper, .meta > .field > .input > .timewrapper, .meta > .field > .input > .datetimewrapper > .datewrapper, .meta > .field > .input > .datetimewrapper > .timewrapper { background-color: transparent; }
 body.ltr .meta > .field > .input > .datewrapper .text:placeholder-shown + div[data-icon], body.ltr .meta > .field > .input > .timewrapper .text:placeholder-shown + div[data-icon], body.ltr .meta > .field > .input > .datetimewrapper > .datewrapper .text:placeholder-shown + div[data-icon], body.ltr .meta > .field > .input > .datetimewrapper > .timewrapper .text:placeholder-shown + div[data-icon] { left: 0; }
 body.rtl .meta > .field > .input > .datewrapper .text:placeholder-shown + div[data-icon], body.rtl .meta > .field > .input > .timewrapper .text:placeholder-shown + div[data-icon], body.rtl .meta > .field > .input > .datetimewrapper > .datewrapper .text:placeholder-shown + div[data-icon], body.rtl .meta > .field > .input > .datetimewrapper > .timewrapper .text:placeholder-shown + div[data-icon] { right: 0; }
-body.ltr .meta > .field > .input > .datetimewrapper > .datewrapper, body.ltr .meta > .field > .input > .datetimewrapper > .timewrapper { float: left; }
-body.rtl .meta > .field > .input > .datetimewrapper > .datewrapper, body.rtl .meta > .field > .input > .datetimewrapper > .timewrapper { float: right; }
 .meta > .field > .input > .datetimewrapper > .datewrapper { width: 55%; }
 .meta > .field > .input > .datetimewrapper > .timewrapper { width: 45%; }
+body.ltr .meta > .field > .input > .datetimewrapper > .clear-btn { margin-right: -24px; }
+body.rtl .meta > .field > .input > .datetimewrapper > .clear-btn { margin-left: -24px; }
 .meta > .field > .input > .datewrapper, .meta > .field > .input > .timewrapper { display: block; width: 100%; }
 .meta > .field > ul.errors { margin: 0; padding: 0 0 6px; width: 100%; list-style-type: none; }
 
@@ -1403,6 +1403,15 @@ body.rtl .passwordwrapper .password-toggle { text-align: left; }
 
 body.ltr .password { padding-right: 5em; }
 body.rtl .password { padding-left: 5em; }
+
+.datetimewrapper { display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-orient: horizontal; -webkit-box-direction: normal; -ms-flex-direction: row; flex-direction: row; -webkit-box-align: center; -ms-flex-align: center; align-items: center; }
+body.ltr .datetimewrapper > .datewrapper + .timewrapper { margin-left: 5px; }
+body.rtl .datetimewrapper > .datewrapper + .timewrapper { margin-right: 5px; }
+.datetimewrapper .clear-btn { width: 20px; cursor: pointer; color: rgba(123, 135, 147, 0.5); }
+body.ltr .datetimewrapper .clear-btn { margin-left: 4px; }
+body.rtl .datetimewrapper .clear-btn { margin-right: 4px; }
+.datetimewrapper .clear-btn:before { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; opacity: 0.8; content: 'remove'; }
+.datetimewrapper .clear-btn:hover { color: #7b8793; }
 
 .datewrapper, .timewrapper { display: inline-block; position: relative; }
 .datewrapper .text, .timewrapper .text { position: relative; z-index: 1; width: 100%; }
