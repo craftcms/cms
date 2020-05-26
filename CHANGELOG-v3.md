@@ -14,6 +14,7 @@
 - Image thumbnails in the control panel now only load once they are in view, or close to it. ([#6104](https://github.com/craftcms/cms/issues/6104))
 - Modal backdrops no longer blur the page content. ([#5651](https://github.com/craftcms/cms/issues/5651))
 - The suggested filename is now returned when uploading a file via the `assets/upload` action. ([#6099](https://github.com/craftcms/cms/issues/6099))
+- Table fields now support setting cell values by column handle, rather than just by column ID. ([#6119](https://github.com/craftcms/cms/issues/6119))
 - `craft\services\Structures::append()` now allows an integer to be passed to its `$parentElement` argument.
 - `craft\services\Structures::moveAfter()` now allows an integer to be passed to its `$prevElement` argument.
 - `craft\services\Structures::moveBefore()` now allows an integer to be passed to its `$nextElement` argument.

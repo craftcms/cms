@@ -376,9 +376,17 @@ class Table extends Field
         // Normalize the values and make them accessible from both the col IDs and the handles
         foreach ($value as &$row) {
             foreach ($this->columns as $colId => $col) {
-                $row[$colId] = $this->_normalizeCellValue($col['type'], $row[$colId] ?? null);
-                if ($col['handle'] && !isset($this->columns[$col['handle']])) {
-                    $row[$col['handle']] = $row[$colId];
+                if (array_key_exists($colId, $row)) {
+                    $cellValue = $row[$colId];
+                } else if ($col['handle'] && array_key_exists($col['handle'], $row)) {
+                    $cellValue = $row[$col['handle']];
+                } else {
+                    $cellValue = null;
+                }
+                $cellValue = $this->_normalizeCellValue($col['type'], $cellValue);
+                $row[$colId] = $cellValue;
+                if ($col['handle']) {
+                    $row[$col['handle']] = $cellValue;
                 }
             }
         }
