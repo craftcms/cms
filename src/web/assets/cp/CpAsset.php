@@ -112,6 +112,7 @@ JS;
             'Cancel',
             'Choose a user',
             'Choose which table columns should be visible for this source, and in which order.',
+            'Clear',
             'Close Preview',
             'Close',
             'Continue',
