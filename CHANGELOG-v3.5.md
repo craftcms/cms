@@ -9,6 +9,7 @@
 - Added the “Suspend by default” user registration setting. ([#5830](https://github.com/craftcms/cms/issues/5830))
 - Added the ability to disable sites on the front end. ([#3005](https://github.com/craftcms/cms/issues/3005))
 - Soft-deleted elements now have a “Delete permanently” element action. ([#4420](https://github.com/craftcms/cms/issues/4420))
+- Edit Entry pages now support a <kbd>Shift</kbd> + <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>S</kbd> keyboard shortcut for saving the entry and creating a new one. ([#2851](https://github.com/craftcms/cms/issues/2851))
 - Assets now have a “Copy URL” element action. ([#2944](https://github.com/craftcms/cms/issues/2944))
 - Entry indexes can now show “Revision Notes” and “Last Edited By” columns. ([#5907](https://github.com/craftcms/cms/issues/5907))
 - Sections now have a new Propagation Method option, which gives entries control over which sites they should be saved to. ([#5988](https://github.com/craftcms/cms/issues/5988))
@@ -45,6 +46,7 @@
 - Added the “Prettify” and “History” buttons to the GraphiQL IDE.
 - Added the Explorer plugin to GraphiQL.
 - Added support for external subnav links in the global control panel nav.
+- Added the `_layouts/components/form-action-menu.twig` control panel template.
 - Added `craft\base\ConfigurableComponent`.
 - Added `craft\base\ConfigurableComponentInterface`.
 - Added `craft\base\Element::defineFieldLayouts()`.
@@ -207,6 +209,7 @@
 - Added the `_includes/forms/copytext.html` control panel template.
 - Added the `copytext` and `copytextField` macros to the `_includes/forms.html` control panel template.
 - Added the `Craft.removeLocalStorage()`, `getCookie()`, `setCookie()`, and `removeCookie()` JavaScript methods.
+- Added the `Craft.submitForm()` JavaScript method.
 - Added the `Craft.cp.getSiteId()` and `setSiteId()` JavaScript methods.
 - Added the `Craft.ui.createCopyTextInput()`, `createCopyTextField()`, and `createCopyTextPrompt()` JavaScript methods.
 - Added the [iFrame Resizer](http://davidjbradshaw.github.io/iframe-resizer/) library.
@@ -269,6 +272,8 @@
 - `craft\services\TemplateCaches::startTemplateCache()` no longer has a `$key` argument.
 - Improved `data`/`aria` tag normalization via `craft\helpers\Html::parseTagAttributes()` and `normalizeTagAttributes()`.
 - Control panel form input macros and templates that accept a `class` variable can now pass it as an array of class names.
+- Control panel templates can now set a `formActions` variable, which registers alternative Save menu actions, optionally with associated keyboard shortcuts.
+- The `Craft.cp.submitPrimaryForm()` method now accepts an `options` argument for customizing the form submit.
 - Updated Composer to 1.10.5. ([#5925](https://github.com/craftcms/cms/pull/5925))
 - Updated voku/stringy to ^6.2.2. ([#5989](https://github.com/craftcms/cms/issues/5989))
 

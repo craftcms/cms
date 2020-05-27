@@ -3,6 +3,7 @@
 ## Unreleased (3.5.0)
 
 ### Added
+- Edit Entry pages now support a <kbd>Shift</kbd> + <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>S</kbd> keyboard shortcut for saving the entry and creating a new one. ([#2851](https://github.com/craftcms/cms/issues/2851))
 - `{% cache %}` tags and GraphQL queries now use a new tag-based cache invalidation strategy. (No more “Deleting stale template caches” background jobs clogging up the queue!) ([#1507](https://github.com/craftcms/cms/issues/1507), [#1689](https://github.com/craftcms/cms/issues/1689))
 - Added the `hasPhoto` user query param/GraphQL argument. ([#6083](https://github.com/craftcms/cms/issues/6083))
 - Added the `localized` field when querying entries and categories via GraphQL. ([#6045](https://github.com/craftcms/cms/issues/6045))
@@ -11,6 +12,7 @@
 - Added the “Prettify” and “History” buttons to the GraphiQL IDE.
 - Added the Explorer plugin to GraphiQL.
 - Added support for external subnav links in the global control panel nav.
+- Added the `_layouts/components/form-action-menu.twig` control panel template.
 - Added `craft\base\ConfigurableComponent`.
 - Added `craft\base\ConfigurableComponentInterface`.
 - Added `craft\base\Element::defineFieldLayouts()`.
@@ -88,6 +90,7 @@
 - Added `craft\web\Request::loadRawCookies()`.
 - Added `craft\web\Response::getRawCookies()`.
 - Added the `Craft.removeLocalStorage()`, `getCookie()`, `setCookie()`, and `removeCookie()` JavaScript methods.
+- Added the `Craft.submitForm()` JavaScript method.
 - Added the `Craft.cp.getSiteId()` and `setSiteId()` JavaScript methods.
 
 ### Changed
@@ -111,6 +114,8 @@
 - `craft\services\Fields::getFieldByHandle()` now has an optional `$context` argument.
 - `craft\services\Gql::setCachedResult()` now has a `$dependency` argument.
 - `craft\services\TemplateCaches::startTemplateCache()` no longer has a `$key` argument.
+- Control panel templates can now set a `formActions` variable, which registers alternative Save menu actions, optionally with associated keyboard shortcuts.
+- The `Craft.cp.submitPrimaryForm()` method now accepts an `options` argument for customizing the form submit.
 
 ### Deprecated
 - Deprecated `craft\db\Table::TEMPLATECACHEELEMENTS`.

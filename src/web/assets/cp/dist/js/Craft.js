@@ -1736,7 +1736,59 @@ $.extend(Craft,
                     elements: [$newImg[0]]
                 });
             }
-        }
+        },
+
+        /**
+         * Submits a form.
+         * @param {Object} $form
+         * @param {Object} [options]
+         * @param {string} [options.action] The `action` param value override
+         * @param {string} [options.redirect] The `redirect` param value override
+         * @param {string} [options.confirm] A confirmation message that should be shown to the user before submit
+         * @param {Object} [options.params] Additional params that should be added to the form, defined as name/value pairs
+         * @param {Object} [options.data] Additional data to be passed to the submit event
+         */
+        submitForm: function($form, options) {
+            if (typeof options === 'undefined') {
+                options = {};
+            }
+
+            if (options.confirm && !confirm(options.confirm)) {
+                return;
+            }
+
+            if (options.action) {
+                $('<input/>', {
+                    type: 'hidden',
+                    name: 'action',
+                    val: options.action,
+                })
+                    .appendTo($form);
+            }
+
+            if (options.redirect) {
+                $('<input/>', {
+                    type: 'hidden',
+                    name: 'redirect',
+                    val: options.redirect,
+                })
+                    .appendTo($form);
+            }
+
+            if (options.params) {
+                for (let name in options.params) {
+                    let value = options.params[name];
+                    $('<input/>', {
+                        type: 'hidden',
+                        name: name,
+                        val: value,
+                    })
+                        .appendTo($form);
+                }
+            }
+
+            $form.trigger($.extend({type: 'submit'}, options.data));
+        },
     });
 
 
@@ -1913,41 +1965,22 @@ $.extend($.fn,
         formsubmit: function() {
             // Secondary form submit buttons
             this.on('click', function(ev) {
-                var $btn = $(ev.currentTarget);
+                let $btn = $(ev.currentTarget);
+                let $anchor = $btn.data('menu') ? $btn.data('menu').$anchor : $btn;
+                let $form = $anchor.attr('data-form') ? $('#' + $anchor.attr('data-form')) : $anchor.closest('form');
+                let params = $form.data('params') || {};
+                if ($form.data('param')) {
+                    params[$form.data('param')] = $form.data('value');
+                }
 
-                if ($btn.attr('data-confirm')) {
-                    if (!confirm($btn.attr('data-confirm'))) {
-                        return;
+                Craft.submitForm($form, {
+                    confirm: $btn.data('confirm'),
+                    action: $btn.data('action'),
+                    redirect: $btn.data('redirect'),
+                    params: params,
+                    data: {
+                        customTrigger: $btn,
                     }
-                }
-
-                var $anchor = $btn.data('menu') ? $btn.data('menu').$anchor : $btn;
-                var $form = $anchor.attr('data-form') ? $('#' + $anchor.attr('data-form')) : $anchor.closest('form');
-
-                if ($btn.data('action')) {
-                    $('<input type="hidden" name="action"/>')
-                        .val($btn.data('action'))
-                        .appendTo($form);
-                }
-
-                if ($btn.data('redirect')) {
-                    $('<input type="hidden" name="redirect"/>')
-                        .val($btn.data('redirect'))
-                        .appendTo($form);
-                }
-
-                if ($btn.data('param')) {
-                    $('<input type="hidden"/>')
-                        .attr({
-                            name: $btn.data('param'),
-                            value: $btn.data('value')
-                        })
-                        .appendTo($form);
-                }
-
-                $form.trigger({
-                    type: 'submit',
-                    customTrigger: $btn,
                 });
             });
         },
@@ -12261,10 +12294,40 @@ Craft.CP = Garnish.Base.extend(
 
             // Does the primary form support the save shortcut?
             if (this.$primaryForm.length && Garnish.hasAttr(this.$primaryForm, 'data-saveshortcut')) {
-                Garnish.shortcutManager.registerShortcut({
-                    keyCode: Garnish.S_KEY,
-                    ctrl: true,
-                }, this.submitPrimaryForm.bind(this));
+                let shortcuts = [];
+                let actions = this.$primaryForm.data('actions');
+                if (typeof actions === 'undefined') {
+                    shortcuts.push([
+                        {keyCode: Garnish.S_KEY, ctrl: true},
+                        {redirect: this.$primaryForm.data('saveshortcut-redirect')}
+                    ]);
+                } else {
+                    for (let i = 0; i < actions.length; i++) {
+                        let action = actions[i];
+                        if (!action.shortcut) {
+                            continue;
+                        }
+                        shortcuts.push([
+                            {
+                                keyCode: Garnish.S_KEY,
+                                ctrl: true,
+                                shift: !!action.shift,
+                            },
+                            {
+                                action: action.action,
+                                redirect: action.redirect,
+                                confirm: action.confirm,
+                                params: action.params,
+                                data: action.data,
+                            }
+                        ]);
+                    }
+                }
+                for (let i = 0; i < shortcuts.length; i++) {
+                    Garnish.shortcutManager.registerShortcut(shortcuts[i][0], () => {
+                        this.submitPrimaryForm(shortcuts[i][1]);
+                    });
+                }
             }
 
             this.initTabs();
@@ -12386,18 +12449,33 @@ Craft.CP = Garnish.Base.extend(
             this.updateFixedHeader();
         },
 
-        submitPrimaryForm: function() {
+        /**
+         * Submits a form.
+         * @param {Object} [options]
+         * @param {string} [options.action] The `action` param value override
+         * @param {string} [options.redirect] The `redirect` param value override
+         * @param {string} [options.confirm] A confirmation message that should be shown to the user before submit
+         * @param {Object} [options.params] Additional params that should be added to the form, defined as name/value pairs
+         * @param {Object} [options.data] Additional data to be passed to the submit event
+         */
+        submitPrimaryForm: function(options) {
             // Give other stuff on the page a chance to prepare
             this.trigger('beforeSaveShortcut');
 
-            if (this.$primaryForm.data('saveshortcut-redirect')) {
-                $('<input type="hidden" name="redirect" value="' + this.$primaryForm.data('saveshortcut-redirect') + '"/>').appendTo(this.$primaryForm);
+            if (typeof options !== 'object' || !$.isPlainObject(options)) {
+                options = {};
             }
 
-            this.$primaryForm.trigger({
-                type: 'submit',
-                saveShortcut: true,
-            });
+            if (!options.redirect) {
+                options.redirect = this.$primaryForm.data('saveshortcut-redirect');
+            }
+
+            if (!options.data) {
+                options.data = {};
+            }
+            options.data.saveShortcut = true;
+
+            Craft.submitForm(this.$primaryForm, options);
         },
 
         updateSidebarMenuLabel: function() {
