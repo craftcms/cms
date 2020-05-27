@@ -975,14 +975,7 @@ abstract class Element extends Component implements ElementInterface
 
                     $condition[] = $thisElementCondition;
                     $sourceSelectSql .= ' WHEN ' .
-                        $qb->buildCondition(
-                            [
-                                'and',
-                                ['structureId' => $elementStructureData['structureId']],
-                                ['<', 'lft', $elementStructureData['lft']],
-                                ['>', 'rgt', $elementStructureData['rgt']]
-                            ],
-                            $query->params) .
+                        $qb->buildCondition($thisElementCondition, $query->params) .
                         " THEN :sourceId{$i}";
                     $query->params[':sourceId' . $i] = $elementStructureData['elementId'];
                 }
