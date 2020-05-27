@@ -455,9 +455,9 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             $ns = $this->handle . '_' . StringHelper::randomString(5);
             $condition = [
                 'exists', (new Query())
-                    ->from(["relations_$ns" => TableName::RELATIONS])
-                    ->innerJoin(["elements_$ns" => TableName::ELEMENTS], "[[elements_$ns.id]] = [[relations_$ns.targetId]]")
-                    ->leftJoin(["elements_sites_$ns" => TableName::ELEMENTS_SITES], [
+                    ->from(["relations_$ns" => DbTable::RELATIONS])
+                    ->innerJoin(["elements_$ns" => DbTable::ELEMENTS], "[[elements_$ns.id]] = [[relations_$ns.targetId]]")
+                    ->leftJoin(["elements_sites_$ns" => DbTable::ELEMENTS_SITES], [
                         'and',
                         "[[elements_sites_$ns.elementId]] = [[elements_$ns.id]]",
                         ["elements_sites_$ns.siteId" => $query->siteId],
