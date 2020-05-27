@@ -147,6 +147,7 @@
 - Fixed a bug where a broken eager-loading chain would not be resumed correctly. ([#5998](https://github.com/craftcms/cms/issues/5998))
 - Fixed an error that would occur when using the `immediately` parameter in GraphQL `transform` directives.
 - Fixed an error that could occur when saving template caches. ([#2674](https://github.com/craftcms/cms/issues/2674))
+- Fixed an error that could occur when saving entries with a Matrix field whose  propagation method was set to something besides “Save blocks to all sites the owner element is saved in”. ([#6128](https://github.com/craftcms/cms/issues/6128))
 
 ## 3.5.0-beta.2 - 2020-05-05
 

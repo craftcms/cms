@@ -776,11 +776,11 @@ class Entry extends Element
         // If the section is leaving it up to entries to decide which sites to be propagated to,
         // figure out which sites the entry is currently saved in
         if (
-            $this->id &&
+            ($this->duplicateOf->id ?? $this->id) &&
             $section->propagationMethod === Section::PROPAGATION_METHOD_CUSTOM
         ) {
             $currentSiteQuery = static::find()
-                ->id($this->id)
+                ->id($this->duplicateOf->id ?? $this->id)
                 ->anyStatus()
                 ->siteId('*')
                 ->select('elements_sites.siteId')

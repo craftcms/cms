@@ -914,7 +914,7 @@ class Elements extends Component
         }
 
         // Make sure the element actually supports its own site ID
-        $supportedSites = ElementHelper::supportedSitesForElement($element);
+        $supportedSites = ElementHelper::supportedSitesForElement($mainClone);
         $supportedSiteIds = ArrayHelper::getColumn($supportedSites, 'siteId');
         if (!in_array($mainClone->siteId, $supportedSiteIds, false)) {
             throw new Exception('Attempting to duplicate an element in an unsupported site.');
