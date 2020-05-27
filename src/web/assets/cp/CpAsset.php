@@ -115,6 +115,7 @@ JS;
             'Choose a user',
             'Switching sites will lose unsaved changes. Are you sure you want to switch sites?',
             'Choose which table columns should be visible for this source, and in which order.',
+            'Clear',
             'Close Preview',
             'Close',
             'Continue',

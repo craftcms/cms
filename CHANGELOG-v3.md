@@ -382,6 +382,7 @@
 ## Unreleased (3.4.x)
 
 ### Added
+- Table fields and other editable tables now support pasting in tabular data. ([#1207](https://github.com/craftcms/cms/issues/1207))
 - Added the “Allow self relations” advanced setting to relational fields. ([#6113](https://github.com/craftcms/cms/issues/6113))
 - Added `craft\helpers\Assets::scaledDimensions()`.
 - Added `craft\services\Structures::MODE_AUTO`.
@@ -414,6 +415,7 @@
 - Fixed a couple errors that could occur when running console commands via Cron. ([#6102](https://github.com/craftcms/cms/issues/6102))
 - Fixed a bug in test fixtures where primary keys were not being detected for relational fields. ([#6103](https://github.com/craftcms/cms/pull/6103))
 - Fixed a bug where duplicated Structure entries wouldn’t retain the original entries’ structure when a new propagation method was being applied to the section. ([#6115](https://github.com/craftcms/cms/issues/6115))
+- Fixed a bug where Assets would cause n+1 queries even when eager-loaded. ([#6140](https://github.com/craftcms/cms/issues/6140))
 
 ## 3.4.20 - 2020-05-18
 
