@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Table fields and other editable tables now support pasting in tabular data. ([#1207](https://github.com/craftcms/cms/issues/1207))
 - Added the “Allow self relations” advanced setting to relational fields. ([#6113](https://github.com/craftcms/cms/issues/6113))
 - Added `craft\helpers\Assets::scaledDimensions()`.
 - Added `craft\services\Structures::MODE_AUTO`.
