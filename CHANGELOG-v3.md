@@ -38,6 +38,7 @@
 - Fixed a bug where duplicated Structure entries wouldn’t retain the original entries’ structure when a new propagation method was being applied to the section. ([#6115](https://github.com/craftcms/cms/issues/6115))
 - Fixed a bug where assets would cause n+1 queries even when eager-loaded. ([#6140](https://github.com/craftcms/cms/issues/6140))
 - Fixed a validation error that could occur when saving an element with a Dropdown field, if the value of the Dropdown field’s first option had changed. ([#6148](https://github.com/craftcms/cms/issues/6148))
+- Fixed a bug where Craft was serving 503 errors instead of 403 when the system was online and an action was requested that didn’t allow anonymous access. ([#6149](https://github.com/craftcms/cms/pull/6149))
 
 ## 3.4.20 - 2020-05-18
 
