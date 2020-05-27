@@ -18,6 +18,7 @@ use yii\base\InvalidConfigException;
 use yii\base\UserException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
+use yii\web\UnauthorizedHttpException;
 use yii\web\HttpException;
 use yii\web\JsonResponseFormatter;
 use yii\web\Response as YiiResponse;
@@ -151,7 +152,7 @@ abstract class Controller extends \yii\web\Controller
                 $this->requireLogin();
                 $this->requirePermission('accessCp');
             } else if (Craft::$app->getUser()->getIsGuest()) {
-                throw new ServiceUnavailableHttpException();
+                throw new UnauthorizedHttpException();
             }
 
             // If the system is offline, make sure they have permission to access the CP/site
