@@ -22,6 +22,7 @@
 - `craft\services\Structures::moveAfter()` now allows an integer to be passed to its `$prevElement` argument.
 - `craft\services\Structures::moveBefore()` now allows an integer to be passed to its `$nextElement` argument.
 - `craft\services\Structures::prepend()` now allows an integer to be passed to its `$parentElement` argument.
+- `craft\config\DbConfig::$url`, `$driver`, `$server`, `$port`, `$unixSocket`, and `$database` are no longer deprecated.
 
 ### Deprecated
 - Deprecated `craft\db\Connection::getVersion()`. `yii\base\Schema::getServerVersion()` should be used instead.
@@ -41,6 +42,7 @@
 - Fixed a validation error that could occur when saving an element with a Dropdown field, if the value of the Dropdown field’s first option had changed. ([#6148](https://github.com/craftcms/cms/issues/6148))
 - Fixed a bug where Craft was serving 503 errors instead of 403 when the system was online and an action was requested that didn’t allow anonymous access. ([#6149](https://github.com/craftcms/cms/pull/6149))
 - Fixed a bug where Craft was not correctly encoding rounded float values for storage in project config. ([#6121](https://github.com/craftcms/cms/issues/6121))
+- Fixed a bug where progress bars in a pending state appeared to be fully complete. ([#6156](https://github.com/craftcms/cms/issues/6156))
 
 ## 3.4.20 - 2020-05-18
 
@@ -380,7 +382,6 @@
 - Environment variable autosuggestions in the control panel are now based on `$_SERVER` rather than `$_ENV`.
 - The `_includes/forms/text.html` template now supports an `inputAttributes` variable.
 - `craft\base\ApplicationTrait::getIsMultiSite()` now has a `$withTrashed` argument.
-- `craft\config\DbConfig::$url`, `$driver`, `$server`, `$port`, `$unixSocket`, and `$database` are no longer deprecated.
 
 ### Deprecated
 - Deprecated `craft\controllers\ElementIndexesController::$paginated`.
@@ -404,7 +405,6 @@
 - Fixed a validation error that occurred when duplicating an entry, if the URI format was based on a custom field value. ([#4759](https://github.com/craftcms/cms/issues/4759))
 - Fixed a deprecation warning when accessing the `children` field using GraphQL in some cases. ([#5642](https://github.com/craftcms/cms/issues/5642))
 - Fixed a bug where element search indexes weren’t getting updated for propagated saves. ([#5654](https://github.com/craftcms/cms/issues/5654))
-- Fixed a bug where progress bars in a pending state appeared to be fully complete. ([#6156](https://github.com/craftcms/cms/issues/6156))
 
 ## 3.4.5 - 2020-02-07
 
