@@ -124,6 +124,7 @@ class DbConfig extends BaseObject
 
     /**
      * @inheritdoc
+     * @throws InvalidConfigException
      */
     public function init()
     {
