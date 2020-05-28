@@ -380,6 +380,7 @@
 - Environment variable autosuggestions in the control panel are now based on `$_SERVER` rather than `$_ENV`.
 - The `_includes/forms/text.html` template now supports an `inputAttributes` variable.
 - `craft\base\ApplicationTrait::getIsMultiSite()` now has a `$withTrashed` argument.
+- `craft\config\DbConfig::$url`, `$driver`, `$server`, `$port`, `$unixSocket`, and `$database` are no longer deprecated.
 
 ### Deprecated
 - Deprecated `craft\controllers\ElementIndexesController::$paginated`.
