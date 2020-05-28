@@ -100,7 +100,7 @@ class DbConfig extends BaseObject
      */
     public $driver;
     /**
-     * @var string The database server name or IP address. Usually 'localhost' or '127.0.0.1'.
+     * @var string The database server name or IP address. Usually `localhost` or `127.0.0.1`.
      * @deprecated in 3.4.0. [[dsn]] should be set directly instead.
      */
     public $server;
