@@ -6,6 +6,29 @@
   background: url(../images/spinner.gif) no-repeat 50% 50%;
 }
 
+@mixin checkered-bg($size) {
+  // h/t https://gist.github.com/dfrankland/f6fed3e3ccc42e3de482b324126f9542
+  $halfSize: $size / 2;
+  background-image:
+          linear-gradient(45deg, $grey100 25%, transparent 25%),
+          linear-gradient(135deg, $grey100 25%, transparent 25%),
+          linear-gradient(45deg, transparent 75%, $grey100 75%),
+          linear-gradient(135deg, transparent 75%, $grey100 75%);
+  background-size: $size $size;
+  background-position: 0 0, $halfSize 0, $halfSize -#{$halfSize}, 0 $halfSize;
+}
+
+@mixin striped-bg($size, $color: $grey100) {
+  // h/t https://css-tricks.com/stripes-css/
+  $halfSize: $size / 2;
+  body.ltr & {
+    background: repeating-linear-gradient(135deg, $white, $white $halfSize, $color $halfSize, $color $size);
+  }
+  body.rtl & {
+    background: repeating-linear-gradient(45deg, $white, $white $halfSize, $color $halfSize, $color $size);
+  }
+}
+
 @font-face {
   font-family: 'Craft';
   src: url('../fonts/Craft.woff') format('woff'),
@@ -1359,16 +1382,19 @@ div.btn.submit input {
   height: 34px;
   border-radius: 17px;
   padding: 0;
-  background-color: url(../images/checkers.png);
 
   &:not(.static) {
     cursor: pointer;
   }
 
+  &:not(.small) {
+    @include checkered-bg(17px);
+  }
+
   &.small {
     width: 16px;
     height: 16px;
-    background-size: 16px;
+    @include checkered-bg(8px);
   }
 
   .color-preview {
@@ -1942,6 +1968,10 @@ $elementInnerSpacing: 5px;
         @include left(0);
         width: $smallThumbSize;
         height: $smallThumbSize;
+
+        img {
+          @include checkered-bg(8px);
+        }
       }
 
       &.hasstatus {
@@ -1975,6 +2005,10 @@ $elementInnerSpacing: 5px;
       @include left($baseElementSidePadding);
       width: $largeThumbSize;
       height: $largeThumbSize;
+
+      img {
+        @include checkered-bg(15px);
+      }
     }
 
     .label {
@@ -2690,7 +2724,7 @@ ul.tree,
 
 .progressbar {
   border-radius: 6px;
-  border: 2px solid $textColor;
+  border: 2px solid $grey700;
   padding: 2px;
   position: absolute;
   left: 20%;
@@ -2700,7 +2734,7 @@ ul.tree,
 .progressbar-inner {
   border-radius: 2px;
   height: 4px;
-  background-color: $textColor;
+  background-color: $grey700;
 }
 
 .progressbar:not(.pending) .progressbar-inner {
@@ -2709,7 +2743,7 @@ ul.tree,
 }
 
 .progressbar.pending .progressbar-inner {
-  background-color: url(../images/progressbar_pending.png) repeat-x;
+  @include striped-bg(17.6776695297px, $grey700); // sqrt(25^2 / 2);
   body.ltr & {
     animation-name: pendingprogress-ltr;
   }
@@ -2721,57 +2755,21 @@ ul.tree,
   animation-iteration-count: infinite;
 }
 
-@-webkit-keyframes pendingprogress-ltr {
-  0% {
-    background-position: 0;
-  }
-  100% {
-    background-position: -50px;
-  }
-}
-
-@-moz-keyframes pendingprogress-ltr {
-  from {
-    background-position: 0;
-  }
-  to {
-    background-position: -50px;
-  }
-}
-
 @keyframes pendingprogress-ltr {
   from {
     background-position: 0;
   }
   to {
-    background-position: -50px;
-  }
-}
-
-@-webkit-keyframes pendingprogress-rtl {
-  0% {
-    background-position: -50px;
-  }
-  100% {
-    background-position: 0;
-  }
-}
-
-@-moz-keyframes pendingprogress-rtl {
-  from {
-    background-position: -50px;
-  }
-  to {
-    background-position: 0;
+    background-position: 25px;
   }
 }
 
 @keyframes pendingprogress-rtl {
   from {
-    background-position: -50px;
+    background-position: 0;
   }
   to {
-    background-position: 0;
+    background-position: -25px;
   }
 }
 
@@ -5146,15 +5144,6 @@ only screen and (-moz-min-device-pixel-ratio: 1.5),
 only screen and (-o-min-device-pixel-ratio: 3/2),
 only screen and (min-device-pixel-ratio: 1.5),
 only screen and (min-resolution: 1.5dppx) {
-  .color {
-    background-image: url(../images/checkers_2x.png);
-    background-size: 16px;
-
-    &.small {
-      background-size: 8px;
-    }
-  }
-
   table.data {
     thead {
       th {
@@ -5212,11 +5201,6 @@ only screen and (min-resolution: 1.5dppx) {
     body.rtl & {
       background-image: url(../images/branch_rtl_2x.png);
     }
-  }
-
-  .progressbar.pending .progressbar-inner {
-    background-image: url(../images/progressbar_pending_2x.png);
-    background-size: 50px;
   }
 
   .modal .resizehandle {

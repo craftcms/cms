@@ -386,7 +386,7 @@
 ### Security
 - The `_includes/forms/checkbox.html`, `checkboxGroup.html`, and `checkboxSelect.html` control panel templates now HTML-encode checkbox labels by default, preventing possible XSS vulnerabilities. If HTML code was desired, it must be passed through the new `raw()` function first.
 
-## Unreleased (3.4.x)
+## 3.4.21 - 2020-05-28
 
 ### Added
 - Table fields and other editable tables now support pasting in tabular data. ([#1207](https://github.com/craftcms/cms/issues/1207))
@@ -397,8 +397,9 @@
 - Added `craft\services\Structures::MODE_UPDATE`.
 
 ### Changed
-- Asset thumbnails now use the same aspect ratio as the source image. ([#5518](https://github.com/craftcms/cms/issues/5518), [#5515](https://github.com/craftcms/cms/issues/5515))
-- Image thumbnails in the control panel now only load once they are in view, or close to it. ([#6104](https://github.com/craftcms/cms/issues/6104))
+- Thumbnails now use the same aspect ratio as the source image. ([#5518](https://github.com/craftcms/cms/issues/5518), [#5515](https://github.com/craftcms/cms/issues/5515))
+- Thumbnails now get a checkered background to reveal image transparency. ([#6151](https://github.com/craftcms/cms/issues/6151))
+- Thumbnails in the control panel now only load once they are in view, or close to it. ([#6104](https://github.com/craftcms/cms/issues/6104))
 - Modal backdrops no longer blur the page content. ([#5651](https://github.com/craftcms/cms/issues/5651))
 - Date + time inputs now have a close button when they have a value. ([#6124](https://github.com/craftcms/cms/issues/6124))
 - The suggested filename is now returned when uploading a file via the `assets/upload` action. ([#6099](https://github.com/craftcms/cms/issues/6099))
@@ -407,6 +408,7 @@
 - `craft\services\Structures::moveAfter()` now allows an integer to be passed to its `$prevElement` argument.
 - `craft\services\Structures::moveBefore()` now allows an integer to be passed to its `$nextElement` argument.
 - `craft\services\Structures::prepend()` now allows an integer to be passed to its `$parentElement` argument.
+- `craft\config\DbConfig::$url`, `$driver`, `$server`, `$port`, `$unixSocket`, and `$database` are no longer deprecated. ([#6159](https://github.com/craftcms/cms/issues/6159))
 
 ### Deprecated
 - Deprecated `craft\db\Connection::getVersion()`. `yii\base\Schema::getServerVersion()` should be used instead.
@@ -426,6 +428,7 @@
 - Fixed a validation error that could occur when saving an element with a Dropdown field, if the value of the Dropdown field’s first option had changed. ([#6148](https://github.com/craftcms/cms/issues/6148))
 - Fixed a bug where Craft was serving 503 errors instead of 403 when the system was online and an action was requested that didn’t allow anonymous access. ([#6149](https://github.com/craftcms/cms/pull/6149))
 - Fixed a bug where Craft was not correctly encoding rounded float values for storage in project config. ([#6121](https://github.com/craftcms/cms/issues/6121))
+- Fixed a bug where progress bars in a pending state appeared to be fully complete. ([#6156](https://github.com/craftcms/cms/issues/6156))
 
 ## 3.4.20 - 2020-05-18
 

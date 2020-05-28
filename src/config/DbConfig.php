@@ -22,9 +22,13 @@ use yii\base\InvalidConfigException;
  */
 class DbConfig extends BaseObject
 {
-    /** @deprecated in 3.4.0 */
+    /**
+     * @deprecated in 3.4.0. Use [[Connection::DRIVER_MYSQL]] instead.
+     */
     const DRIVER_MYSQL = 'mysql';
-    /** @deprecated in 3.4.0 */
+    /**
+     * @deprecated in 3.4.0. Use [[Connection::DRIVER_PGSQL]] instead.
+     */
     const DRIVER_PGSQL = 'pgsql';
 
     /**
@@ -87,39 +91,34 @@ class DbConfig extends BaseObject
      *
      * If this is set, the values for [[driver]], [[user]], [[database]], [[server]], [[port]], and [[database]]
      * will be extracted from it.
-     * @deprecated in 3.4.0. Use [[Db::url2config()]] instead.
      */
     public $url;
     /**
      * @var string The database driver to use. Either 'mysql' for MySQL or 'pgsql' for PostgreSQL.
-     * @deprecated in 3.4.0. [[dsn]] should be set directly instead.
      */
     public $driver;
     /**
-     * @var string The database server name or IP address. Usually 'localhost' or '127.0.0.1'.
-     * @deprecated in 3.4.0. [[dsn]] should be set directly instead.
+     * @var string The database server name or IP address. Usually `localhost` or `127.0.0.1`.
      */
     public $server;
     /**
      * @var int The database server port. Defaults to 3306 for MySQL and 5432 for PostgreSQL.
-     * @deprecated in 3.4.0. [[dsn]] should be set directly instead.
      */
     public $port;
     /**
      * @var string|null MySQL only. If this is set, then the CLI connection string (used for yiic) will
      * connect to the Unix socket, instead of the server and port. If this is
      * specified, then 'server' and 'port' settings are ignored.
-     * @deprecated in 3.4.0. [[dsn]] should be set directly instead, which can have a `unix_socket` param.
      */
     public $unixSocket;
     /**
      * @var string The name of the database to select.
-     * @deprecated in 3.4.0. [[dsn]] should be set directly instead.
      */
     public $database;
 
     /**
      * @inheritdoc
+     * @throws InvalidConfigException
      */
     public function init()
     {
@@ -138,7 +137,7 @@ class DbConfig extends BaseObject
 
         // If we don't have a DSN yet, create one from the deprecated settings
         if ($this->dsn === null) {
-            $this->updateDsn();
+            $this->_updateDsn();
         }
     }
 
@@ -146,9 +145,19 @@ class DbConfig extends BaseObject
      * Updates the DSN string based on the config setting values.
      *
      * @throws InvalidConfigException if [[driver]] isn’t set to `mysql` or `pgsql`.
-     * @deprecated in 3.4.0. [[dsn]] should be set directly instead.
+     * @deprecated in 3.4.0.
      */
     public function updateDsn()
+    {
+        $this->_updateDsn();
+    }
+
+    /**
+     * Updates the DSN string based on the config setting values.
+     *
+     * @throws InvalidConfigException
+     */
+    private function _updateDsn()
     {
         if (!$this->driver) {
             $this->driver = Connection::DRIVER_MYSQL;
