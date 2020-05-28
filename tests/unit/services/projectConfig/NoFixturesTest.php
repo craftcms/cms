@@ -8,16 +8,11 @@
 namespace crafttests\unit\services;
 
 use Codeception\Stub\Expected;
-use Codeception\Test\Unit;
 use Craft;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
-use craft\helpers\StringHelper;
-use craft\models\GqlSchema;
 use craft\services\ProjectConfig;
 use craft\services\Sections;
-use crafttests\fixtures\EntryTypeFixture;
-use crafttests\fixtures\EntryWithFieldsFixture;
-use crafttests\fixtures\SectionsFixture;
+use craft\test\TestCase;
 use UnitTester;
 use yii\base\NotSupportedException;
 
@@ -27,7 +22,7 @@ use yii\base\NotSupportedException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.16
  */
-class ProjectConfigTest extends Unit
+class ProjectConfigTest extends TestCase
 {
     /**
      * @var UnitTester
@@ -120,6 +115,17 @@ class ProjectConfigTest extends Unit
         Craft::$app->getProjectConfig()->processConfigChanges('sections.someUid.handle');
     }
 
+    /**
+     * @param $incomingData
+     * @param $expectedResult
+     * @dataProvider encodeTestDataProvider
+     */
+    public function testEncodeData($incomingData, $expectedResult)
+    {
+        $projectConfig = Craft::$app->getProjectConfig();
+        $this->assertSame($expectedResult, $this->invokeMethod($projectConfig, 'encodeValueAsString', [$incomingData]));
+    }
+
     public function getConfigProvider()
     {
         return [
@@ -170,6 +176,44 @@ class ProjectConfigTest extends Unit
                 'a.b',
                 ['foo' => 'bar', 'bar' => ['baz']]
             ]
+        ];
+    }
+
+    public function encodeTestDataProvider()
+    {
+        return [
+            [
+                'foo',
+                '"foo"'
+            ],
+            [
+                true,
+                'true'
+            ],
+            [
+                null,
+                'null'
+            ],
+            [
+                false,
+                'false'
+            ],
+            [
+                2.5,
+                '2.5'
+            ],
+            [
+                0,
+                '0'
+            ],
+            [
+                2,
+                '2'
+            ],
+            [
+                2.0,
+                '2.0'
+            ],
         ];
     }
 }
