@@ -1,5 +1,49 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.4.21 - 20202-05-28
+
+### Added
+- Table fields and other editable tables now support pasting in tabular data. ([#1207](https://github.com/craftcms/cms/issues/1207))
+- Added the “Allow self relations” advanced setting to relational fields. ([#6113](https://github.com/craftcms/cms/issues/6113))
+- Added `craft\helpers\Assets::scaledDimensions()`.
+- Added `craft\services\Structures::MODE_AUTO`.
+- Added `craft\services\Structures::MODE_INSERT`.
+- Added `craft\services\Structures::MODE_UPDATE`.
+
+### Changed
+- Thumbnails now use the same aspect ratio as the source image. ([#5518](https://github.com/craftcms/cms/issues/5518), [#5515](https://github.com/craftcms/cms/issues/5515))
+- Thumbnails now get a checkered background to reveal image transparency. ([#6151](https://github.com/craftcms/cms/issues/6151))
+- Thumbnails in the control panel now only load once they are in view, or close to it. ([#6104](https://github.com/craftcms/cms/issues/6104))
+- Modal backdrops no longer blur the page content. ([#5651](https://github.com/craftcms/cms/issues/5651))
+- Date + time inputs now have a close button when they have a value. ([#6124](https://github.com/craftcms/cms/issues/6124))
+- The suggested filename is now returned when uploading a file via the `assets/upload` action. ([#6099](https://github.com/craftcms/cms/issues/6099))
+- Table fields now support setting cell values by column handle, rather than just by column ID. ([#6119](https://github.com/craftcms/cms/issues/6119))
+- `craft\services\Structures::append()` now allows an integer to be passed to its `$parentElement` argument.
+- `craft\services\Structures::moveAfter()` now allows an integer to be passed to its `$prevElement` argument.
+- `craft\services\Structures::moveBefore()` now allows an integer to be passed to its `$nextElement` argument.
+- `craft\services\Structures::prepend()` now allows an integer to be passed to its `$parentElement` argument.
+- `craft\config\DbConfig::$url`, `$driver`, `$server`, `$port`, `$unixSocket`, and `$database` are no longer deprecated. ([#6159](https://github.com/craftcms/cms/issues/6159))
+
+### Deprecated
+- Deprecated `craft\db\Connection::getVersion()`. `yii\base\Schema::getServerVersion()` should be used instead.
+- Deprecated `craft\events\GlobalSetContentEvent`.
+
+### Fixed
+- Fixed a bug where non-sortable fields could be listed as element index sort options, and sortable fields could be listed twice, for element types that didn’t override the `defineSortOptions()` method.
+- Fixed a bug where asset custom field values could go unsaved. ([#6086](https://github.com/craftcms/cms/issues/6086))
+- Fixed a bug where the `upscaleImages` config setting wasn’t applying properly. ([#6084](https://github.com/craftcms/cms/issues/6084))
+- Fixed a bug where image thumbnails in the control panel could stop loading if three thumbnails failed to load properly.
+- Fixed a bug where clicking on the color preview within Color fields wasn’t opening the browser’s color picker in Safari. ([#6107](https://github.com/craftcms/cms/issues/6107))
+- Fixed a bug where the “Publish changes” button label was not getting translated after clicking “Save as a draft” on an Edit Entry page. ([#6112](https://github.com/craftcms/cms/issues/6112))
+- Fixed a couple errors that could occur when running console commands via Cron. ([#6102](https://github.com/craftcms/cms/issues/6102))
+- Fixed a bug in test fixtures where primary keys were not being detected for relational fields. ([#6103](https://github.com/craftcms/cms/pull/6103))
+- Fixed a bug where duplicated Structure entries wouldn’t retain the original entries’ structure when a new propagation method was being applied to the section. ([#6115](https://github.com/craftcms/cms/issues/6115))
+- Fixed a bug where assets would cause n+1 queries even when eager-loaded. ([#6140](https://github.com/craftcms/cms/issues/6140))
+- Fixed a validation error that could occur when saving an element with a Dropdown field, if the value of the Dropdown field’s first option had changed. ([#6148](https://github.com/craftcms/cms/issues/6148))
+- Fixed a bug where Craft was serving 503 errors instead of 403 when the system was online and an action was requested that didn’t allow anonymous access. ([#6149](https://github.com/craftcms/cms/pull/6149))
+- Fixed a bug where Craft was not correctly encoding rounded float values for storage in project config. ([#6121](https://github.com/craftcms/cms/issues/6121))
+- Fixed a bug where progress bars in a pending state appeared to be fully complete. ([#6156](https://github.com/craftcms/cms/issues/6156))
+
 ## 3.4.20 - 2020-05-18
 
 ### Changed

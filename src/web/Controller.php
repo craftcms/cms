@@ -119,7 +119,7 @@ abstract class Controller extends \yii\web\Controller
      * @param Action $action the action to be executed.
      * @return bool whether the action should continue to run.
      * @throws BadRequestHttpException if the request is missing a valid CSRF token
-     * @throws ForbiddenHttpException if the user is not logged in or locks the necessary permissions
+     * @throws ForbiddenHttpException if the user is not logged in or lacks the necessary permissions
      * @throws ServiceUnavailableHttpException if the system is offline and the user isn't allowed to access it
      */
     public function beforeAction($action)
@@ -151,7 +151,7 @@ abstract class Controller extends \yii\web\Controller
                 $this->requireLogin();
                 $this->requirePermission('accessCp');
             } else if (Craft::$app->getUser()->getIsGuest()) {
-                throw new ServiceUnavailableHttpException();
+                throw $isLive ? new ForbiddenHttpException() : new ServiceUnavailableHttpException();
             }
 
             // If the system is offline, make sure they have permission to access the CP/site

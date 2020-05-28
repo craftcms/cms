@@ -252,21 +252,35 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             $value = $this->defaultValue();
         }
 
-        // Normalize to an array
-        $selectedValues = (array)$value;
+        // Normalize to an array of strings
+        $selectedValues = [];
+        foreach ((array)$value as $val) {
+            $selectedValues[] = (string)$val;
+        }
 
         if ($this->multi) {
             // Convert the value to a MultiOptionsFieldData object
             $options = [];
-            foreach ($selectedValues as $val) {
-                $label = $this->optionLabel($val);
-                $options[] = new OptionData($label, $val, true);
+            if (!empty($this->options) && !empty($selectedValues)) {
+                foreach ($this->options as $option) {
+                    if (!isset($option['optgroup']) && in_array((string)$option['value'], $selectedValues, true)) {
+                        $options[] = new OptionData($option['label'], (string)$option['value'], true);
+                    }
+                }
             }
             $value = new MultiOptionsFieldData($options);
         } else {
             // Convert the value to a SingleOptionFieldData object
-            $value = !empty($selectedValues) ? reset($selectedValues) : null;
-            $label = $this->optionLabel($value);
+            $value = $label = null;
+            if (!empty($this->options) && !empty($selectedValues)) {
+                foreach ($this->options as $option) {
+                    if (!isset($option['optgroup']) && in_array((string)$option['value'], $selectedValues, true)) {
+                        $value = (string)$option['value'];
+                        $label = $option['label'];
+                        break;
+                    }
+                }
+            }
             $value = new SingleOptionFieldData($label, $value, true);
         }
 

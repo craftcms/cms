@@ -9,8 +9,8 @@ namespace craft\services;
 
 use Craft;
 use craft\assetpreviews\Image as ImagePreview;
-use craft\assetpreviews\Text;
 use craft\assetpreviews\Pdf;
+use craft\assetpreviews\Text;
 use craft\assetpreviews\Video;
 use craft\base\AssetPreviewHandlerInterface;
 use craft\base\Volume;

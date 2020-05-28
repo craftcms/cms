@@ -15,6 +15,14 @@ if (PHP_VERSION_ID < 70000) {
     exit(ExitCode::UNSPECIFIED_ERROR);
 }
 
+// Make sure $_SERVER['SCRIPT_FILENAME'] is set
+if (!isset($_SERVER['SCRIPT_FILENAME'])) {
+    $trace = debug_backtrace(0);
+    if (($first = end($trace)) !== false && isset($first['file'])) {
+        $_SERVER['SCRIPT_FILENAME'] = $first['file'];
+    }
+}
+
 mb_detect_order('auto');
 
 // Normalize how PHP's string methods (strtoupper, etc) behave.

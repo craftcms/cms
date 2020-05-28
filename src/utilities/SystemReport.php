@@ -114,7 +114,7 @@ class SystemReport extends Utility
             $driverName = 'PostgreSQL';
         }
 
-        return $driverName . ' ' . $db->getVersion();
+        return $driverName . ' ' . App::normalizeVersion($db->getSchema()->getServerVersion());
     }
 
     /**

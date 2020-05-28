@@ -14,7 +14,7 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-/*!   - 2020-05-15 */
+/*!   - 2020-05-27 */
 (function ($) {
   /** global: Craft */
 
@@ -1516,6 +1516,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       $('.pill', $container).pill();
       $('.formsubmit', $container).formsubmit();
       $('.menubtn', $container).menubtn();
+      $('.datetimewrapper', $container).datetime();
     },
     _elementIndexClasses: {},
     _elementSelectorModalClasses: {},
@@ -1952,7 +1953,46 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           new Garnish.MenuBtn($btn, settings);
         }
       });
-    }
+    },
+    datetime: function datetime() {
+      return this.each(function () {
+        var $wrapper = $(this);
+        var $inputs = $wrapper.find('input:not([name$="[timezone]"])');
+
+        var checkValue = function checkValue() {
+          var hasValue = false;
+
+          for (var _i3 = 0; _i3 < $inputs.length; _i3++) {
+            if ($inputs.eq(_i3).val()) {
+              hasValue = true;
+              break;
+            }
+          }
+
+          if (hasValue) {
+            if (!$wrapper.children('.clear-btn').length) {
+              var $btn = $('<div/>', {
+                "class": 'clear-btn',
+                role: 'button',
+                title: Craft.t('app', 'Clear')
+              }).appendTo($wrapper).on('click', function () {
+                for (var _i4 = 0; _i4 < $inputs.length; _i4++) {
+                  $inputs.eq(_i4).val('');
+                }
+
+                $btn.remove();
+              });
+            }
+          } else {
+            $wrapper.children('.clear-btn').remove();
+          }
+        };
+
+        $inputs.on('change', checkValue);
+        checkValue();
+      });
+    },
+    checkDatetimeValue: function checkDatetimeValue() {}
   });
   Garnish.$doc.ready(function () {
     Craft.initUiElements();
@@ -4729,7 +4769,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     getDisabledElementIds: function getDisabledElementIds() {
       var ids = this.getSelectedElementIds();
 
-      if (this.settings.sourceElementId) {
+      if (!this.settings.allowSelfRelations && this.settings.sourceElementId) {
         ids.push(this.settings.sourceElementId);
       }
 
@@ -4753,8 +4793,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       this.updateDisabledElementsInModal();
     },
     selectElements: function selectElements(elements) {
-      for (var _i3 = 0; _i3 < elements.length; _i3++) {
-        var elementInfo = elements[_i3],
+      for (var _i5 = 0; _i5 < elements.length; _i5++) {
+        var elementInfo = elements[_i5],
             $element = this.createNewElement(elementInfo);
         this.appendElement($element);
         this.addElements($element);
@@ -4834,6 +4874,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       elementType: null,
       sources: null,
       criteria: {},
+      allowSelfRelations: false,
       sourceElementId: null,
       disabledElementIds: null,
       viewMode: 'list',
@@ -11170,7 +11211,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       }
 
       this.$colorContainer.removeClass('static');
-      this.$colorInput = $(input).addClass('hidden').insertAfter(this.$input);
+      this.$colorInput = $(input).addClass('color-preview-input').appendTo(this.$colorPreview);
       this.addListener(this.$colorContainer, 'click', function () {
         this.$colorInput.trigger('click');
       });
@@ -13864,6 +13905,27 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         $(blurTd).trigger('blur');
         $input.trigger('focus');
       }
+    },
+    importData: function importData(data, row, tdIndex) {
+      var lines = data.split(/\r?\n|\r/);
+
+      for (var _i6 = 0; _i6 < lines.length; _i6++) {
+        var values = lines[_i6].split("\t");
+
+        for (var j = 0; j < values.length; j++) {
+          var value = values[j];
+          row.$tds.eq(tdIndex + j).find('textarea,input[type!=hidden]').val(value).trigger('input');
+        } // move onto the next row
+
+
+        var $nextTr = row.$tr.next('tr');
+
+        if ($nextTr.length) {
+          row = $nextTr.data('editable-table-row');
+        } else {
+          row = this.addRow(false);
+        }
+      }
     }
   }, {
     textualColTypes: ['color', 'date', 'email', 'multiline', 'number', 'singleline', 'template', 'time', 'url'],
@@ -14063,6 +14125,14 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
             type: col.type
           }, 'validateValue');
           $textarea.trigger('input');
+
+          if (col.type !== 'multiline') {
+            this.addListener($textarea, 'paste', {
+              tdIndex: i,
+              type: col.type
+            }, 'handlePaste');
+          }
+
           textareasByColId[colId] = $textarea;
         } else if (col.type === 'checkbox') {
           $checkbox = $('input[type="checkbox"]', td);
@@ -14204,6 +14274,16 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       if (ev.data.type === 'number' && !ctrl && !Craft.inArray(keyCode, Craft.EditableTable.Row.numericKeyCodes)) {
         ev.preventDefault();
       }
+    },
+    handlePaste: function handlePaste(ev) {
+      var data = Craft.trim(ev.originalEvent.clipboardData.getData('Text'), ' \n\r');
+
+      if (!data.match(/[\t\r\n]/)) {
+        return;
+      }
+
+      ev.preventDefault();
+      this.table.importData(data, this, ev.data.tdIndex);
     },
     validateValue: function validateValue(ev) {
       if (ev.data.type === 'multiline') {
@@ -14379,16 +14459,59 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       }
     },
     load: function load($elements) {
-      this.queue = this.queue.concat($elements.find('.elementthumb').toArray());
+      var _this12 = this;
 
-      if (this.queue.length) {
-        // See if there are any inactive workers
-        for (var i = 0; i < this.workers.length; i++) {
-          if (!this.workers[i].active) {
-            this.workers[i].loadNext();
-          }
+      // Only immediately load the visible images
+      var $thumbs = $elements.find('.elementthumb');
+
+      var _loop = function _loop(_i7) {
+        var $thumb = $thumbs.eq(_i7);
+        var $scrollParent = $thumb.scrollParent();
+
+        if (_this12.isVisible($thumb, $scrollParent)) {
+          _this12.addToQueue($thumb[0]);
+        } else {
+          var rand = Math.floor(Math.random() * 1000000);
+          $scrollParent.on("scroll.".concat(rand), {
+            $thumb: $thumb,
+            $scrollParent: $scrollParent,
+            rand: rand
+          }, function (ev) {
+            if (_this12.isVisible(ev.data.$thumb, ev.data.$scrollParent)) {
+              $scrollParent.off("scroll.".concat(ev.data.rand));
+
+              _this12.addToQueue(ev.data.$thumb[0]);
+            }
+          });
+        }
+      };
+
+      for (var _i7 = 0; _i7 < $thumbs.length; _i7++) {
+        _loop(_i7);
+      }
+    },
+    addToQueue: function addToQueue(thumb) {
+      this.queue.push(thumb); // See if there are any inactive workers
+
+      for (var i = 0; i < this.workers.length; i++) {
+        if (!this.workers[i].active) {
+          this.workers[i].loadNext();
         }
       }
+    },
+    isVisible: function isVisible($thumb, $scrollParent) {
+      var thumbOffset = $thumb.offset().top;
+      var scrollParentOffset, scrollParentHeight;
+
+      if ($scrollParent[0] === document) {
+        scrollParentOffset = $scrollParent.scrollTop();
+        scrollParentHeight = Garnish.$win.height();
+      } else {
+        scrollParentOffset = $scrollParent.offset().top;
+        scrollParentHeight = $scrollParent.height();
+      }
+
+      return thumbOffset > scrollParentOffset && thumbOffset < scrollParentOffset + scrollParentHeight + 1000;
     },
     destroy: function destroy() {
       for (var i = 0; i < this.workers.length; i++) {
@@ -14425,7 +14548,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         srcset: $container.attr('data-srcset'),
         alt: ''
       });
-      this.addListener($img, 'load', 'loadNext');
+      this.addListener($img, 'load,error', 'loadNext');
       $img.appendTo($container);
       picturefill({
         elements: [$img[0]]

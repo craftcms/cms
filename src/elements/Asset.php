@@ -30,6 +30,7 @@ use craft\errors\FileException;
 use craft\errors\VolumeObjectNotFoundException;
 use craft\events\AssetEvent;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Assets;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Html;
@@ -974,7 +975,13 @@ class Asset extends Element
      */
     public function getThumbUrl(int $size)
     {
-        return Craft::$app->getAssets()->getThumbUrl($this, $size, $size, false);
+        if ($this->width && $this->height) {
+            list($width, $height) = Assets::scaledDimensions($this->width, $this->height, $size, $size);
+        } else {
+            $width = $height = $size;
+        }
+
+        return Craft::$app->getAssets()->getThumbUrl($this, $width, $height, false);
     }
 
     /**
@@ -990,6 +997,7 @@ class Asset extends Element
     {
         $assetsService = Craft::$app->getAssets();
         $srcsets = [];
+        list($width, $height) = Assets::scaledDimensions($this->width, $this->height, $width, $height);
         $thumbSizes = [
             [$width, $height],
             [$width * 2, $height * 2],
@@ -1561,7 +1569,10 @@ class Asset extends Element
         // Set the field layout
         /** @var Volume $volume */
         $volume = Craft::$app->getAssets()->getFolderById($folderId)->getVolume();
-        $this->fieldLayoutId = $volume->fieldLayoutId;
+
+        if (!$volume instanceof Temp) {
+            $this->fieldLayoutId = $volume->fieldLayoutId;
+        }
 
         return parent::beforeSave($isNew);
     }
@@ -1754,6 +1765,11 @@ class Asset extends Element
         }
 
         $transform = Craft::$app->getAssetTransforms()->normalizeTransform($transform);
+
+        if ($this->_width < $transform->width && $this->_height < $transform->height && !Craft::$app->getConfig()->getGeneral()->upscaleImages) {
+            return [$this->_width, $this->_height];
+        }
+
         list($width, $height) = Image::calculateMissingDimension($transform->width, $transform->height, $this->_width, $this->_height);
 
         // Special case for 'fit' since that's the only one whose dimensions vary from the transform dimensions

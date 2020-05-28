@@ -112,7 +112,7 @@ abstract class Api
 
         // Also include the DB driver/version
         $db = Craft::$app->getDb();
-        $versions[$db->getDriverName()] = $db->getVersion();
+        $versions[$db->getDriverName()] = App::normalizeVersion($db->getSchema()->getServerVersion());
 
         return $versions;
     }

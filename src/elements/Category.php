@@ -26,6 +26,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\helpers\UrlHelper;
 use craft\models\CategoryGroup;
 use craft\records\Category as CategoryRecord;
+use craft\services\Structures;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 
@@ -551,16 +552,19 @@ class Category extends Element
             $record->save(false);
 
             // Has the parent changed?
-            if ($this->_hasNewParent()) {
+            if (!$this->duplicateOf && $this->_hasNewParent()) {
+                $mode = $isNew ? Structures::MODE_INSERT : Structures::MODE_AUTO;
                 if (!$this->newParentId) {
-                    Craft::$app->getStructures()->appendToRoot($this->structureId, $this);
+                    Craft::$app->getStructures()->appendToRoot($this->structureId, $this, $mode);
                 } else {
-                    Craft::$app->getStructures()->append($this->structureId, $this, $this->getParent());
+                    Craft::$app->getStructures()->append($this->structureId, $this, $this->getParent(), $mode);
                 }
             }
 
             // Update the category's descendants, who may be using this category's URI in their own URIs
-            Craft::$app->getElements()->updateDescendantSlugsAndUris($this, true, true);
+            if (!$isNew) {
+                Craft::$app->getElements()->updateDescendantSlugsAndUris($this, true, true);
+            }
         }
 
         parent::afterSave($isNew);

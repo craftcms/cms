@@ -734,6 +734,7 @@ class Sections extends Component
                         'elementType' => Entry::class,
                         'criteria' => [
                             'sectionId' => $sectionRecord->id,
+                            'structureId' => $sectionRecord->structureId,
                         ],
                     ]));
                 } else if ($this->autoResaveEntries) {
@@ -1606,7 +1607,7 @@ class Sections extends Component
 
         /** @var Entry $entry */
         foreach ($query->each() as $entry) {
-            $structuresService->appendToRoot($sectionRecord->structureId, $entry, 'insert');
+            $structuresService->appendToRoot($sectionRecord->structureId, $entry, Structures::MODE_INSERT);
         }
     }
 

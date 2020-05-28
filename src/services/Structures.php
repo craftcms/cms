@@ -40,6 +40,19 @@ class Structures extends Component
     const EVENT_AFTER_MOVE_ELEMENT = 'afterMoveElement';
 
     /**
+     * @since 3.4.21
+     */
+    const MODE_INSERT = 'insert';
+    /**
+     * @since 3.4.21
+     */
+    const MODE_UPDATE = 'update';
+    /**
+     * @since 3.4.21
+     */
+    const MODE_AUTO = 'auto';
+
+    /**
      * @var int The timeout to pass to [[\yii\mutex\Mutex::acquire()]] when acquiring a lock on the structure.
      * @since 3.0.19
      */
@@ -196,12 +209,12 @@ class Structures extends Component
      *
      * @param int $structureId
      * @param ElementInterface $element
-     * @param ElementInterface $parentElement
+     * @param ElementInterface|int $parentElement
      * @param string $mode Whether this is an "insert", "update", or "auto".
      * @return bool
      * @throws Exception
      */
-    public function prepend(int $structureId, ElementInterface $element, ElementInterface $parentElement, string $mode = 'auto'): bool
+    public function prepend(int $structureId, ElementInterface $element, $parentElement, string $mode = self::MODE_AUTO): bool
     {
         $parentElementRecord = $this->_getElementRecord($structureId, $parentElement);
 
@@ -217,12 +230,12 @@ class Structures extends Component
      *
      * @param int $structureId
      * @param ElementInterface $element
-     * @param ElementInterface $parentElement
+     * @param ElementInterface|int $parentElement
      * @param string $mode Whether this is an "insert", "update", or "auto".
      * @return bool
      * @throws Exception
      */
-    public function append(int $structureId, ElementInterface $element, ElementInterface $parentElement, string $mode = 'auto'): bool
+    public function append(int $structureId, ElementInterface $element, $parentElement, string $mode = self::MODE_AUTO): bool
     {
         $parentElementRecord = $this->_getElementRecord($structureId, $parentElement);
 
@@ -242,7 +255,7 @@ class Structures extends Component
      * @return bool
      * @throws Exception
      */
-    public function prependToRoot(int $structureId, ElementInterface $element, string $mode = 'auto'): bool
+    public function prependToRoot(int $structureId, ElementInterface $element, string $mode = self::MODE_AUTO): bool
     {
         $parentElementRecord = $this->_getRootElementRecord($structureId);
 
@@ -262,7 +275,7 @@ class Structures extends Component
      * @return bool
      * @throws Exception
      */
-    public function appendToRoot(int $structureId, ElementInterface $element, string $mode = 'auto'): bool
+    public function appendToRoot(int $structureId, ElementInterface $element, string $mode = self::MODE_AUTO): bool
     {
         $parentElementRecord = $this->_getRootElementRecord($structureId);
 
@@ -278,12 +291,12 @@ class Structures extends Component
      *
      * @param int $structureId
      * @param ElementInterface $element
-     * @param ElementInterface $nextElement
+     * @param ElementInterface|int $nextElement
      * @param string $mode Whether this is an "insert", "update", or "auto".
      * @return bool
      * @throws Exception
      */
-    public function moveBefore(int $structureId, ElementInterface $element, ElementInterface $nextElement, string $mode = 'auto'): bool
+    public function moveBefore(int $structureId, ElementInterface $element, $nextElement, string $mode = self::MODE_AUTO): bool
     {
         $nextElementRecord = $this->_getElementRecord($structureId, $nextElement);
 
@@ -299,12 +312,12 @@ class Structures extends Component
      *
      * @param int $structureId
      * @param ElementInterface $element
-     * @param ElementInterface $prevElement
+     * @param ElementInterface|int $prevElement
      * @param string $mode Whether this is an "insert", "update", or "auto".
      * @return bool
      * @throws Exception
      */
-    public function moveAfter(int $structureId, ElementInterface $element, ElementInterface $prevElement, string $mode = 'auto'): bool
+    public function moveAfter(int $structureId, ElementInterface $element, $prevElement, string $mode = self::MODE_AUTO): bool
     {
         $prevElementRecord = $this->_getElementRecord($structureId, $prevElement);
 
@@ -319,13 +332,12 @@ class Structures extends Component
      * Returns a structure element record from given structure and element IDs.
      *
      * @param int $structureId
-     * @param ElementInterface $element
+     * @param ElementInterface|int $element
      * @return StructureElement|null
      */
-    private function _getElementRecord(int $structureId, ElementInterface $element)
+    private function _getElementRecord(int $structureId, $element)
     {
-        /** @var Element $element */
-        $elementId = $element->id;
+        $elementId = is_numeric($element) ? $element : $element->id;
 
         if ($elementId) {
             return StructureElement::findOne([
@@ -388,12 +400,12 @@ class Structures extends Component
 
         /** @var Element $element */
         // Figure out what we're doing
-        if ($mode !== 'insert') {
+        if ($mode !== self::MODE_INSERT) {
             // See if there's an existing structure element record
             $elementRecord = $this->_getElementRecord($structureId, $element);
 
             if ($elementRecord !== null) {
-                $mode = 'update';
+                $mode = self::MODE_UPDATE;
             }
         }
 
@@ -402,10 +414,10 @@ class Structures extends Component
             $elementRecord->structureId = $structureId;
             $elementRecord->elementId = $element->id;
 
-            $mode = 'insert';
+            $mode = self::MODE_INSERT;
         }
 
-        if ($mode === 'update' && $this->hasEventHandlers(self::EVENT_BEFORE_MOVE_ELEMENT)) {
+        if ($mode === self::MODE_UPDATE && $this->hasEventHandlers(self::EVENT_BEFORE_MOVE_ELEMENT)) {
             // Fire a 'beforeMoveElement' event
             $this->trigger(self::EVENT_BEFORE_MOVE_ELEMENT, new MoveElementEvent([
                 'structureId' => $structureId,
@@ -455,7 +467,7 @@ class Structures extends Component
 
         $mutex->release($lockName);
 
-        if ($mode === 'update' && $this->hasEventHandlers(self::EVENT_AFTER_MOVE_ELEMENT)) {
+        if ($mode === self::MODE_UPDATE && $this->hasEventHandlers(self::EVENT_AFTER_MOVE_ELEMENT)) {
             // Fire an 'afterMoveElement' event
             $this->trigger(self::EVENT_AFTER_MOVE_ELEMENT, new MoveElementEvent([
                 'structureId' => $structureId,

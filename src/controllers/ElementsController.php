@@ -433,6 +433,11 @@ class ElementsController extends BaseElementsController
             $view->namespaceInputs((string)$element->getEditorHtml()) .
             '</div>';
 
+        // Set the field layout id to a discrete value, in case we know it.
+        if ($element->fieldLayoutId !== null) {
+            $response['html'] .= '<input type="hidden" name="fieldLayoutId" value="' . $element->fieldLayoutId . '">';
+        }
+
         $response['headHtml'] = $view->getHeadHtml();
         $response['footHtml'] = $view->getBodyHtml();
         $response['deltaNames'] = $view->getDeltaNames();
