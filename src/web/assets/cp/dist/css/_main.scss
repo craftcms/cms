@@ -6,6 +6,18 @@
   background: url(../images/spinner.gif) no-repeat 50% 50%;
 }
 
+@mixin checkered-bg($size) {
+  // h/t https://gist.github.com/dfrankland/f6fed3e3ccc42e3de482b324126f9542
+  $halfSize: $size / 2;
+  background-image:
+          linear-gradient(45deg, $grey100 25%, transparent 25%),
+          linear-gradient(135deg, $grey100 25%, transparent 25%),
+          linear-gradient(45deg, transparent 75%, $grey100 75%),
+          linear-gradient(135deg, transparent 75%, $grey100 75%);
+  background-size: $size $size;
+  background-position: 0 0, $halfSize 0, $halfSize -#{$halfSize}, 0 $halfSize;
+}
+
 @font-face {
   font-family: 'Craft';
   src: url('../fonts/Craft.woff') format('woff'),
@@ -1324,16 +1336,19 @@ div.btn.submit input {
   height: 34px;
   border-radius: 17px;
   padding: 0;
-  background-color: url(../images/checkers.png);
 
   &:not(.static) {
     cursor: pointer;
   }
 
+  &:not(.small) {
+    @include checkered-bg(17px);
+  }
+
   &.small {
     width: 16px;
     height: 16px;
-    background-size: 16px;
+    @include checkered-bg(8px);
   }
 
   .color-preview {
@@ -1868,15 +1883,6 @@ $elementInnerSpacing: 5px;
         border-radius: $smallBorderRadius;
         max-width: 100%;
         max-height: 100%;
-
-        // checkered BG (h/t https://gist.github.com/dfrankland/f6fed3e3ccc42e3de482b324126f9542)
-        background-image:
-          linear-gradient(45deg, $grey100 25%, transparent 25%),
-          linear-gradient(135deg, $grey100 25%, transparent 25%),
-          linear-gradient(45deg, transparent 75%, $grey100 75%),
-          linear-gradient(135deg, transparent 75%, $grey100 75%);
-        background-size: 8px 8px;
-        background-position: 0 0, 4px 0, 4px -4px, 0px 4px;
       }
     }
   }
@@ -1909,6 +1915,10 @@ $elementInnerSpacing: 5px;
         @include left(0);
         width: $smallThumbSize;
         height: $smallThumbSize;
+
+        img {
+          @include checkered-bg(8px);
+        }
       }
 
       &.hasstatus {
@@ -1944,8 +1954,7 @@ $elementInnerSpacing: 5px;
       height: $largeThumbSize;
 
       img {
-        background-size: 15px 15px;
-        background-position: 0 0, 7.5px 0, 7.5px -7.5px, 0px 7.5px;
+        @include checkered-bg(15px);
       }
     }
 
@@ -5082,15 +5091,6 @@ only screen and (-moz-min-device-pixel-ratio: 1.5),
 only screen and (-o-min-device-pixel-ratio: 3/2),
 only screen and (min-device-pixel-ratio: 1.5),
 only screen and (min-resolution: 1.5dppx) {
-  .color {
-    background-image: url(../images/checkers_2x.png);
-    background-size: 16px;
-
-    &.small {
-      background-size: 8px;
-    }
-  }
-
   table.data {
     thead {
       th {
