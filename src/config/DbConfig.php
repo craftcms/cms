@@ -22,9 +22,13 @@ use yii\base\InvalidConfigException;
  */
 class DbConfig extends BaseObject
 {
-    /** @deprecated in 3.4.0 */
+    /**
+     * @deprecated in 3.4.0. Use [[Connection::DRIVER_MYSQL]] instead.
+     */
     const DRIVER_MYSQL = 'mysql';
-    /** @deprecated in 3.4.0 */
+    /**
+     * @deprecated in 3.4.0. Use [[Connection::DRIVER_PGSQL]] instead.
+     */
     const DRIVER_PGSQL = 'pgsql';
 
     /**
