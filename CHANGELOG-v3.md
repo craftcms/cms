@@ -12,6 +12,7 @@
 
 ### Changed
 - Thumbnails now use the same aspect ratio as the source image. ([#5518](https://github.com/craftcms/cms/issues/5518), [#5515](https://github.com/craftcms/cms/issues/5515))
+- Thumbnails now get a checkered background to reveal image transparency. ([#6151](https://github.com/craftcms/cms/issues/6151))
 - Thumbnails in the control panel now only load once they are in view, or close to it. ([#6104](https://github.com/craftcms/cms/issues/6104))
 - Modal backdrops no longer blur the page content. ([#5651](https://github.com/craftcms/cms/issues/5651))
 - Date + time inputs now have a close button when they have a value. ([#6124](https://github.com/craftcms/cms/issues/6124))
