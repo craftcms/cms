@@ -137,6 +137,7 @@ code, .code, .code input, .code textarea { font-family: "SFMono-Regular", Consol
 
 /* links */
 a { color: #0B69A3; cursor: pointer; }
+body.underline-links a { text-decoration: underline; }
 
 a:hover { text-decoration: underline; }
 

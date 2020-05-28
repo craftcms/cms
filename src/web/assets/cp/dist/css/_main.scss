@@ -279,6 +279,10 @@ code,
 a {
   color: $linkColor;
   cursor: pointer;
+
+  body.underline-links & {
+    text-decoration: underline;
+  }
 }
 
 a:hover {

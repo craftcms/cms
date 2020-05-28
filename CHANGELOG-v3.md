@@ -3,6 +3,7 @@
 ## Unreleased (3.5.0)
 
 ### Added
+- Added the “Underline links” user preference. ([#6153](https://github.com/craftcms/cms/issues/6153))
 - Edit Entry pages now support a <kbd>Shift</kbd> + <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>S</kbd> keyboard shortcut for saving the entry and creating a new one. ([#2851](https://github.com/craftcms/cms/issues/2851))
 - `{% cache %}` tags and GraphQL queries now use a new tag-based cache invalidation strategy. (No more “Deleting stale template caches” background jobs clogging up the queue!) ([#1507](https://github.com/craftcms/cms/issues/1507), [#1689](https://github.com/craftcms/cms/issues/1689))
 - Added the `hasPhoto` user query param/GraphQL argument. ([#6083](https://github.com/craftcms/cms/issues/6083))

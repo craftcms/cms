@@ -5,6 +5,7 @@
     bodyClass ?? null,
     craft.app.locale.getOrientation(),
     currentUser and currentUser.getPreference('useShapes') ? 'use-shapes',
+    currentUser and currentUser.getPreference('underlineLinks') ? 'underline-links',
 ]|filter|join(' ') -%}
 
 {% do view.registerAssetBundle('craft\\web\\assets\\cp\\CpAsset') -%}

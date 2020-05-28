@@ -259,6 +259,12 @@
                             id: 'useShapes',
                             checked: user.getPreference('useShapes')
                         }) }}
+                        {{ checkboxField({
+                            label: 'Underline links'|t('app'),
+                            name: 'underlineLinks',
+                            id: 'underlineLinks',
+                            checked: user.getPreference('underlineLinks')
+                        }) }}
                     {% endblock %}
                 {% endembed %}
 
