@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## 3.4.21 - 20202-05-28
+## 3.4.21 - 2020-05-28
 
 ### Added
 - Table fields and other editable tables now support pasting in tabular data. ([#1207](https://github.com/craftcms/cms/issues/1207))
