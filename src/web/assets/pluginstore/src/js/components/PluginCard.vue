@@ -13,7 +13,7 @@
                </div>
                <div>{{ plugin.shortDescription }}</div>
            </div>
-            
+
             <p class="light">
                 <template v-if="priceRange.min !== priceRange.max">
                     <template v-if="priceRange.min > 0">
@@ -107,7 +107,7 @@
 </script>
 
 <style lang="scss" scoped>
-    @import "../../../../../../../lib/craftcms-sass/mixins";
+    @import "../../../../../../../node_modules/craftcms-sass/mixins";
 
     .plugin-details-header {
         @apply .leading-normal .overflow-hidden .mb-1;

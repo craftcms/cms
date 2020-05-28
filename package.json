@@ -16,7 +16,7 @@
     "autoprefixer": "^7.1.4",
     "babel-loader": "^8.1.0",
     "blueimp-file-upload": "^10.29.0",
-    "craftcms-sass": "^1.6.7",
+    "craftcms-sass": "^3.4.0",
     "d3": "^4.11.0",
     "d3-format": "^1.4.4",
     "d3-time-format": "^2.2.3",
