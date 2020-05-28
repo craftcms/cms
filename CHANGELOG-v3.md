@@ -22,7 +22,7 @@
 - `craft\services\Structures::moveAfter()` now allows an integer to be passed to its `$prevElement` argument.
 - `craft\services\Structures::moveBefore()` now allows an integer to be passed to its `$nextElement` argument.
 - `craft\services\Structures::prepend()` now allows an integer to be passed to its `$parentElement` argument.
-- `craft\config\DbConfig::$url`, `$driver`, `$server`, `$port`, `$unixSocket`, and `$database` are no longer deprecated.
+- `craft\config\DbConfig::$url`, `$driver`, `$server`, `$port`, `$unixSocket`, and `$database` are no longer deprecated. ([#6159](https://github.com/craftcms/cms/issues/6159))
 
 ### Deprecated
 - Deprecated `craft\db\Connection::getVersion()`. `yii\base\Schema::getServerVersion()` should be used instead.
