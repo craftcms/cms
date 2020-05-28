@@ -404,6 +404,7 @@
 - Fixed a validation error that occurred when duplicating an entry, if the URI format was based on a custom field value. ([#4759](https://github.com/craftcms/cms/issues/4759))
 - Fixed a deprecation warning when accessing the `children` field using GraphQL in some cases. ([#5642](https://github.com/craftcms/cms/issues/5642))
 - Fixed a bug where element search indexes weren’t getting updated for propagated saves. ([#5654](https://github.com/craftcms/cms/issues/5654))
+- Fixed a bug where progress bars in a pending state appeared to be fully complete. ([#6156](https://github.com/craftcms/cms/issues/6156))
 
 ## 3.4.5 - 2020-02-07
 

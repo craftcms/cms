@@ -950,18 +950,21 @@ body.rtl .status { margin-left: 10px; }
 
 .progressbar:not(.pending) .progressbar-inner { width: 0; -webkit-transition: width linear 100ms; transition: width linear 100ms; }
 
-.progressbar.pending .progressbar-inner { background-color: url(../images/progressbar_pending.png) repeat-x; -webkit-animation-timing-function: linear; animation-timing-function: linear; -webkit-animation-duration: 250ms; animation-duration: 250ms; -webkit-animation-iteration-count: infinite; animation-iteration-count: infinite; }
+.progressbar.pending .progressbar-inner { -webkit-animation-timing-function: linear; animation-timing-function: linear; -webkit-animation-duration: 250ms; animation-duration: 250ms; -webkit-animation-iteration-count: infinite; animation-iteration-count: infinite; }
+body.ltr .progressbar.pending .progressbar-inner { background: repeating-linear-gradient(135deg, #fff, #fff 8.8388347649px, #3f4d5a 8.8388347649px, #3f4d5a 17.6776695297px); }
+body.rtl .progressbar.pending .progressbar-inner { background: repeating-linear-gradient(45deg, #fff, #fff 8.8388347649px, #3f4d5a 8.8388347649px, #3f4d5a 17.6776695297px); }
 body.ltr .progressbar.pending .progressbar-inner { -webkit-animation-name: pendingprogress-ltr; animation-name: pendingprogress-ltr; }
 body.rtl .progressbar.pending .progressbar-inner { -webkit-animation-name: pendingprogress-rtl; animation-name: pendingprogress-rtl; }
 
-@-webkit-keyframes pendingprogress-ltr { 0% { background-position: 0; }
-  100% { background-position: -50px; } }
+@-webkit-keyframes pendingprogress-ltr { from { background-position: 0; }
+  to { background-position: 25px; } }
+
 @keyframes pendingprogress-ltr { from { background-position: 0; }
-  to { background-position: -50px; } }
-@-webkit-keyframes pendingprogress-rtl { 0% { background-position: -50px; }
-  100% { background-position: 0; } }
-@keyframes pendingprogress-rtl { from { background-position: -50px; }
-  to { background-position: 0; } }
+  to { background-position: 25px; } }
+@-webkit-keyframes pendingprogress-rtl { from { background-position: 0; }
+  to { background-position: -25px; } }
+@keyframes pendingprogress-rtl { from { background-position: 0; }
+  to { background-position: -25px; } }
 .elementselect .progress-shade { background-color: rgba(255, 255, 255, 0.8); width: 100%; height: 100%; position: absolute; top: 0; display: none; }
 body.ltr .elementselect .progress-shade { left: 0; }
 body.rtl .elementselect .progress-shade { right: 0; }
@@ -1766,7 +1769,6 @@ body.rtl .sitepicker-group li a:after { left: 12px; }
   .structure ul li { background-size: 40px; }
   body.ltr .structure ul li { background-image: url(../images/branch_2x.png); }
   body.rtl .structure ul li { background-image: url(../images/branch_rtl_2x.png); }
-  .progressbar.pending .progressbar-inner { background-image: url(../images/progressbar_pending_2x.png); background-size: 50px; }
   .modal .resizehandle { background-size: 13px; }
   body.ltr .modal .resizehandle { background-image: url(../images/resizehandle_2x.png); }
   body.rtl .modal .resizehandle { background-image: url(../images/resizehandle_rtl_2x.png); }

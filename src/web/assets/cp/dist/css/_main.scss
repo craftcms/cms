@@ -18,6 +18,17 @@
   background-position: 0 0, $halfSize 0, $halfSize -#{$halfSize}, 0 $halfSize;
 }
 
+@mixin striped-bg($size, $color: $grey100) {
+  // h/t https://css-tricks.com/stripes-css/
+  $halfSize: $size / 2;
+  body.ltr & {
+    background: repeating-linear-gradient(135deg, $white, $white $halfSize, $color $halfSize, $color $size);
+  }
+  body.rtl & {
+    background: repeating-linear-gradient(45deg, $white, $white $halfSize, $color $halfSize, $color $size);
+  }
+}
+
 @font-face {
   font-family: 'Craft';
   src: url('../fonts/Craft.woff') format('woff'),
@@ -2654,7 +2665,7 @@ ul.tree,
 
 .progressbar {
   border-radius: 6px;
-  border: 2px solid $textColor;
+  border: 2px solid $grey700;
   padding: 2px;
   position: absolute;
   left: 20%;
@@ -2664,7 +2675,7 @@ ul.tree,
 .progressbar-inner {
   border-radius: 2px;
   height: 4px;
-  background-color: $textColor;
+  background-color: $grey700;
 }
 
 .progressbar:not(.pending) .progressbar-inner {
@@ -2673,7 +2684,7 @@ ul.tree,
 }
 
 .progressbar.pending .progressbar-inner {
-  background-color: url(../images/progressbar_pending.png) repeat-x;
+  @include striped-bg(17.6776695297px, $grey700); // sqrt(25^2 / 2);
   body.ltr & {
     animation-name: pendingprogress-ltr;
   }
@@ -2685,57 +2696,21 @@ ul.tree,
   animation-iteration-count: infinite;
 }
 
-@-webkit-keyframes pendingprogress-ltr {
-  0% {
-    background-position: 0;
-  }
-  100% {
-    background-position: -50px;
-  }
-}
-
-@-moz-keyframes pendingprogress-ltr {
-  from {
-    background-position: 0;
-  }
-  to {
-    background-position: -50px;
-  }
-}
-
 @keyframes pendingprogress-ltr {
   from {
     background-position: 0;
   }
   to {
-    background-position: -50px;
-  }
-}
-
-@-webkit-keyframes pendingprogress-rtl {
-  0% {
-    background-position: -50px;
-  }
-  100% {
-    background-position: 0;
-  }
-}
-
-@-moz-keyframes pendingprogress-rtl {
-  from {
-    background-position: -50px;
-  }
-  to {
-    background-position: 0;
+    background-position: 25px;
   }
 }
 
 @keyframes pendingprogress-rtl {
   from {
-    background-position: -50px;
+    background-position: 0;
   }
   to {
-    background-position: 0;
+    background-position: -25px;
   }
 }
 
@@ -5148,11 +5123,6 @@ only screen and (min-resolution: 1.5dppx) {
     body.rtl & {
       background-image: url(../images/branch_rtl_2x.png);
     }
-  }
-
-  .progressbar.pending .progressbar-inner {
-    background-image: url(../images/progressbar_pending_2x.png);
-    background-size: 50px;
   }
 
   .modal .resizehandle {
