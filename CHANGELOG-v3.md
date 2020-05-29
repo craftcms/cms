@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Deprecated
+- Deprecated `craft\web\assets\positionselect\PositionSelectAsset`.
+
 ## 3.4.21 - 2020-05-28
 
 ### Added
