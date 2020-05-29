@@ -2,7 +2,12 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\controllers\FieldsController::actionRenderSettings()`.
+- Added `craft\web\assets\fieldsettings\FieldSettingsAsset`.
+
 ### Changed
+- Field settings are now lazy-loaded when the Field Type selection changes, improving the up-front load time of Edit Field pages. ([#5792](https://github.com/craftcms/cms/issues/5792))
 - The URL of the conflicting asset is now returned when uploading a file via the `assets/upload` action. ([#6158](https://github.com/craftcms/cms/issues/6158))
 - Craft no longer minifies JavaScript and CSS by default. ([#5792](https://github.com/craftcms/cms/issues/5792))
 
