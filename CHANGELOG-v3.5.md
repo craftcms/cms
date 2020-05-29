@@ -307,6 +307,8 @@
 - Deprecated `craft\services\TemplateCaches::handleResponse()`.
 - Deprecated `craft\services\TemplateCaches::includeElementInTemplateCaches()`.
 - Deprecated `craft\services\TemplateCaches::includeElementQueryInTemplateCaches()`.
+- Deprecated `craft\web\AssetBundle::dotJs()`.
+- Deprecated `craft\web\AssetBundle::useCompressedJs()`.
 - Deprecated `craft\web\View::formatInputId()`. `craft\helpers\Html::namespaceHtml()` should be used instead.
 
 ### Removed

@@ -7,10 +7,13 @@
 // - qunit
 
 const autoprefixer = require('gulp-autoprefixer');
+const babel = require('gulp-babel');
 const concat = require('gulp-concat');
 const es = require('event-stream');
+const footer = require('gulp-footer');
 const gulp = require('gulp');
 const gulpif = require('gulp-if');
+const header = require('gulp-header');
 const jsonMinify = require('gulp-json-minify');
 const rename = require('gulp-rename');
 const sass = require('gulp-sass');
@@ -19,6 +22,7 @@ const uglify = require('gulp-uglify-es').default;
 const webpack = require('webpack-stream');
 
 const cpAssetsPath = 'src/web/assets';
+const cpGlobalAssetPath = `${cpAssetsPath}/cp`;
 const graphiqlAssetPath = `${cpAssetsPath}/graphiql`;
 const psAssetPath = `${cpAssetsPath}/pluginstore`;
 const atAssetPath = `${cpAssetsPath}/admintable`;
@@ -28,6 +32,25 @@ const cpSassGlob = [
     `!${graphiqlAssetPath}/**/*.scss`,
     `!${psAssetPath}/**/*.scss`,
     `!${atAssetPath}/**/*.scss`,
+];
+
+const cpGlobalJsGlob = [
+    `${cpGlobalAssetPath}/src/js/Craft.js`,
+    `${cpGlobalAssetPath}/src/js/Base*.js`,
+    `${cpGlobalAssetPath}/src/js/*.js`,
+    `!(${cpGlobalAssetPath}/src/js/Craft.js|${cpGlobalAssetPath}/src/js/Base*.js)`,
+    `!${graphiqlAssetPath}/**/*.js`,
+    `!${psAssetPath}/**/*.js`,
+    `!${atAssetPath}/**/*.js`
+];
+
+const cpOtherJsGlob = [
+    `${cpAssetsPath}/**/src/**/*.js`,
+    `!${cpGlobalAssetPath}/**/*.js`,
+    `!${graphiqlAssetPath}/**/*.js`,
+    `!${psAssetPath}/**/*.js`,
+    `!${atAssetPath}/**/*.js`,
+    `!${cpAssetsPath}/tests/**/*.js`,
 ];
 
 const libPath = 'lib';
@@ -95,10 +118,40 @@ gulp.task('cp-sass', function() {
         }))
 });
 
-gulp.task('cp', ['cp-sass']);
+gulp.task('cp-global-js', function() {
+    gulp.src(cpGlobalJsGlob)
+        .pipe(sourcemaps.init())
+        .pipe(concat('Craft.min.js'))
+        .pipe(header('(function($){\n\n'))
+        .pipe(footer('\n})(jQuery);\n'))
+        .pipe(babel())
+        .pipe(uglify())
+        .pipe(sourcemaps.write('.'))
+        .pipe(gulp.dest(`${cpGlobalAssetPath}/dist/js`))
+});
+
+gulp.task('cp-other-js', function() {
+    gulp.src(cpOtherJsGlob)
+        .pipe(sourcemaps.init())
+        .pipe(babel())
+        .pipe(uglify())
+        .pipe(rename(function (path) {
+            path.dirname = path.dirname.replace(/\bsrc\b/, 'dist');
+            path.extname = '.min.js';
+        }))
+        .pipe(sourcemaps.write('.'))
+        .pipe(gulp.dest(function(file) {
+            return file.base;
+        }))
+});
+
+gulp.task('cp-js', ['cp-global-js', 'cp-other-js']);
+gulp.task('cp', ['cp-sass', 'cp-js']);
 
 gulp.task('watch', function() {
     gulp.watch(cpSassGlob, ['cp-sass']);
+    gulp.watch(cpGlobalAssetPath, ['cp-global-js']);
+    gulp.watch(cpOtherJsGlob, ['cp-other-js']);
 });
 
 gulp.task('graphiql-js', function() {
