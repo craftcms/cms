@@ -1,7 +1,6 @@
 // TODO: following deps are still manual:
 // - datepicker-i18n
 // - fabricjs
-// - jquery-touch-events
 // - jquery-ui
 // - prismjs (custom css added)
 // - qunit
@@ -56,6 +55,7 @@ const cpOtherJsGlob = [
 const libPath = 'lib';
 
 const jsDeps = [
+    {srcGlob: 'node_modules/@benmajor/jquery-touch-events/src/jquery.mobile-events.js', dest: `${libPath}/jquery-touch-events`},
     {srcGlob: 'node_modules/blueimp-file-upload/js/jquery.fileupload.js', dest: `${libPath}/fileupload`},
     {srcGlob: 'node_modules/d3/build/d3.js', dest: `${libPath}/d3`},
     {srcGlob: 'node_modules/element-resize-detector/dist/element-resize-detector.js', dest: `${libPath}/element-resize-detector`},
