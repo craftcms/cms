@@ -15,6 +15,7 @@ use craft\fields\PlainText;
 use craft\helpers\ArrayHelper;
 use craft\helpers\UrlHelper;
 use craft\models\FieldGroup;
+use craft\web\assets\fieldsettings\FieldSettingsAsset;
 use craft\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -227,6 +228,14 @@ class FieldsController extends Controller
             $title = Craft::t('app', 'Create a new field');
         }
 
+        $js = <<<JS
+new Craft.FieldSettingsToggle('#type', '#settings', 'types[__TYPE__]');
+JS;
+
+        $view = Craft::$app->getView();
+        $view->registerAssetBundle(FieldSettingsAsset::class);
+        $view->registerJs($js);
+
         return $this->renderTemplate('settings/fields/_edit', compact(
             'fieldId',
             'field',
@@ -240,6 +249,38 @@ class FieldsController extends Controller
             'crumbs',
             'title'
         ));
+    }
+
+    /**
+     * Renders a field's settings.
+     *
+     * @return Response
+     * @since 3.4.22
+     */
+    public function actionRenderSettings(): Response
+    {
+        $this->requirePostRequest();
+        $this->requireAcceptsJson();
+
+        $request = Craft::$app->getRequest();
+        $type = $request->getRequiredBodyParam('type');
+        $field = Craft::$app->getFields()->createField($type);
+
+        $view = Craft::$app->getView();
+        $namespace = $request->getBodyParam('namespace');
+        $oldNamespace = $view->getNamespace();
+        $view->setNamespace($namespace);
+        $html = $field->getSettingsHtml();
+        $view->setNamespace($oldNamespace);
+        if ($html !== null) {
+            $html = $view->namespaceInputs($html, $namespace);
+        }
+
+        return $this->asJson([
+            'settingsHtml' => $html,
+            'headHtml' => $view->getHeadHtml(),
+            'footHtml' => $view->getBodyHtml(),
+        ]);
     }
 
     /**

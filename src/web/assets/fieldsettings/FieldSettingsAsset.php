@@ -5,17 +5,17 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craft\web\assets\positionselect;
+namespace craft\web\assets\fieldsettings;
 
 use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
 
 /**
- * Asset bundle for Position Select fields
+ * Asset bundle for field settings views
  *
- * @deprecated in 3.4.22
+ * @since 3.4.22
  */
-class PositionSelectAsset extends AssetBundle
+class FieldSettingsAsset extends AssetBundle
 {
     /**
      * @inheritdoc
@@ -33,6 +33,6 @@ class PositionSelectAsset extends AssetBundle
      * @inheritdoc
      */
     public $js = [
-        'PositionSelectInput.min.js',
+        'fieldsettings.min.js',
     ];
 }

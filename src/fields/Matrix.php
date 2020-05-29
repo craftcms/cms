@@ -370,7 +370,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         $view->registerJs(
             'new Craft.MatrixConfigurator(' .
             Json::encode($fieldTypeInfo, JSON_UNESCAPED_UNICODE) . ', ' .
-            Json::encode($view->getNamespace(), JSON_UNESCAPED_UNICODE) .
+            Json::encode($view->getNamespace(), JSON_UNESCAPED_UNICODE) . ', ' .
+            Json::encode($view->namespaceInputName('blockTypes[__BLOCK_TYPE__][fields][__FIELD__][typesettings]')) .
             ');'
         );
 
@@ -1032,12 +1033,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     {
         $fieldTypes = [];
 
-        // Set a temporary namespace for these
-        $view = Craft::$app->getView();
-        $originalNamespace = $view->getNamespace();
-        $namespace = $view->namespaceInputName('blockTypes[__BLOCK_TYPE__][fields][__FIELD__][typesettings]', $originalNamespace);
-        $view->setNamespace($namespace);
-
         foreach (Craft::$app->getFields()->getAllFieldTypes() as $class) {
             /** @var FieldInterface|string $class */
             // No Matrix-Inception, sorry buddy.
@@ -1045,24 +1040,14 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                 continue;
             }
 
-            $view->startJsBuffer();
-            /** @var FieldInterface $field */
-            $field = new $class();
-            $settingsBodyHtml = $view->namespaceInputs((string)$field->getSettingsHtml());
-            $settingsFootHtml = $view->clearJsBuffer();
-
             $fieldTypes[] = [
                 'type' => $class,
                 'name' => $class::displayName(),
-                'settingsBodyHtml' => $settingsBodyHtml,
-                'settingsFootHtml' => $settingsFootHtml,
             ];
         }
 
         // Sort them by name
         ArrayHelper::multisort($fieldTypes, 'name');
-
-        $view->setNamespace($originalNamespace);
 
         return $fieldTypes;
     }
