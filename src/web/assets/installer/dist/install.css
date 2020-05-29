@@ -1,51 +1,79 @@
 html, body { height: 100%; }
 
-body { overflow: hidden; background: #e4edf6 url(images/installer-bg.png) no-repeat 50% 50%; background-size: cover; }
+body { overflow: hidden; background: #e4edf6 url(images/installer-bg.png) no-repeat 50% 50%; -o-background-size: cover; background-size: cover; }
 
 .beginbtncontainer { position: absolute; top: 50%; margin-top: -15px; width: 100%; text-align: center; }
 
-#beginbtn { display: inline-block; border-radius: 4px; padding: 12px 15px; font-weight: bold; font-size: 19px; height: 42px; line-height: 18px; -webkit-box-shadow: 0 0 0 4px #e4edf6; box-shadow: 0 0 0 4px #e4edf6; }
+#beginbtn { display: inline-block; border-radius: 4px; padding: 12px 15px; font-weight: bold; font-size: 19px; height: 42px; line-height: 18px; box-shadow: 0 0 0 4px #e4edf6; }
 
 #install-modal { width: 770px; height: 510px; padding: 0; }
+
 #install-modal #screens, #install-modal #screens .screen { width: 100%; height: 100%; }
-#install-modal #screens .screen { padding: 35px; -webkit-box-sizing: border-box; box-sizing: border-box; }
+
+#install-modal #screens .screen { padding: 35px; box-sizing: border-box; }
+
 #install-modal #screens .screen .icon svg { position: absolute; bottom: -50px; left: -100px; width: 500px; height: 500px; }
-#install-modal #screens .screen .icon svg rect, #install-modal #screens .screen .icon svg circle, #install-modal #screens .screen .icon svg ellipse, #install-modal #screens .screen .icon svg line, #install-modal #screens .screen .icon svg polyline, #install-modal #screens .screen .icon svg polygon, #install-modal #screens .screen .icon svg path, #install-modal #screens .screen .icon svg text { fill: #f3f7fc; stroke-width: 0; -webkit-transition: fill linear 100ms; transition: fill linear 100ms; }
+
+#install-modal #screens .screen .icon svg rect, #install-modal #screens .screen .icon svg circle, #install-modal #screens .screen .icon svg ellipse, #install-modal #screens .screen .icon svg line, #install-modal #screens .screen .icon svg polyline, #install-modal #screens .screen .icon svg polygon, #install-modal #screens .screen .icon svg path, #install-modal #screens .screen .icon svg text { fill: #f3f7fc; stroke-width: 0; -o-transition: fill linear 100ms; transition: fill linear 100ms; }
+
 #install-modal #screens .screen h1 { margin-bottom: 35px; text-align: center; position: relative; }
+
 #install-modal #screens .screen form { width: 50%; float: right; }
+
 #install-modal #screens .screen form .select, #install-modal #screens .screen form .select select { width: 100%; }
+
 #install-modal #dots { position: absolute; bottom: 10px; left: 0; width: 100%; text-align: center; }
+
 #install-modal #dots > div { display: inline-block; border-radius: 4px; border: 1px solid rgba(51, 64, 77, 0.1); width: 6px; height: 6px; }
+
 body.ltr #install-modal #dots > div + div { margin-left: 5px; }
+
 body.rtl #install-modal #dots > div + div { margin-right: 5px; }
+
 #install-modal #dots > div.sel { border-color: #E5422B; background: #E5422B; }
 
 .grid { margin-top: 35px; margin-bottom: 35px; }
 
 .buttons { position: absolute; bottom: 35px; }
+
 body.ltr .buttons { right: 35px; }
+
 body.rtl .buttons { left: 35px; }
+
 body.ltr .buttons .btn { padding-right: 10px; }
+
 body.rtl .buttons .btn { padding-left: 10px; }
-.buttons .btn:after { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; opacity: 0.8; font-size: 20px; width: 20px; height: 20px; line-height: 18px; }
+
+.buttons .btn:after { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; user-select: none; opacity: 0.8; font-size: 20px; width: 20px; height: 20px; line-height: 18px; }
+
 body.ltr .buttons .btn:after { margin: -2px 0 0 4px ; }
+
 body.rtl .buttons .btn:after { margin: -2px 4px 0 0 ; }
+
 body.ltr .buttons .btn:after { content: 'rarr'; }
+
 body.rtl .buttons .btn:after { content: 'larr'; }
+
 .buttons .btn.loading:after { content: '' !important; background: url(images/spinner_submit.gif) no-repeat 0 0; }
 
 input.hidden { position: absolute; top: 100px; }
 
 #license { padding: 70px 105px !important; overflow-y: scroll; }
+
 #license .license, #license .license h1 { font-family: Menlo, monospace; font-size: 13px; line-height: 25px; }
+
 #license .license h1 { font-weight: bold; }
+
 #license .centeralign { margin-top: 35px; }
 
 #installing { text-align: center; }
+
 #installing h1 { margin-top: 200px !important; }
+
 #installing #spinner { display: block; margin: 0 auto; }
+
 #installing .buttons .btn { margin: 0; float: none; }
 
-@media only screen and (-webkit-min-device-pixel-ratio: 1.5), only screen and (-moz-min-device-pixel-ratio: 1.5), only screen and (min-device-pixel-ratio: 1.5), only screen and (min-resolution: 1.5dppx) { .buttons .btn.loading:after { background-image: url(images/spinner_submit_2x.gif); background-size: 20px; } }
+@media only screen and (-webkit-min-device-pixel-ratio: 1.5), only screen and (-moz-min-device-pixel-ratio: 1.5), only screen and (-o-min-device-pixel-ratio: 3 / 2), only screen and (min-device-pixel-ratio: 1.5), only screen and (-o-min-device-pixel-ratio: 3/2), only screen and (min-resolution: 1.5dppx) { .buttons .btn.loading:after { background-image: url(images/spinner_submit_2x.gif); -o-background-size: 20px; background-size: 20px; } }
 
 /*# sourceMappingURL=install.css.map */

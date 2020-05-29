@@ -3,16 +3,6 @@ module.exports = function(grunt) {
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
         watch: {
-            sass: {
-                files: [
-                    'lib/craftcms-sass/_mixins.scss',
-                    'src/web/assets/**/*.scss',
-                    '!src/web/assets/graphiql/**/*.scss',
-                    '!src/web/assets/pluginstore/**/*.scss',
-                    '!src/web/assets/admintable/**/*.scss',
-                ],
-                tasks: 'css'
-            },
             cpjs: {
                 files: ['src/web/assets/cp/src/js/*.js'],
                 tasks: ['cpjs']
@@ -24,47 +14,6 @@ module.exports = function(grunt) {
             colorpickerjs: {
                 files: ['lib/colorpicker/js/colorpicker.js'],
                 tasks: ['uglify:colorpickerjs']
-            }
-        },
-        sass: {
-            options: {
-                style: 'compact',
-                unixNewlines: true
-            },
-            dist: {
-                expand: true,
-                cwd: 'src/web/assets',
-                src: [
-                    '**/*.scss',
-                    '!graphiql/**/*.scss',
-                    '!pluginstore/**/*.scss',
-                    '!admintable/**/*.scss'
-                ],
-                dest: 'src/web/assets',
-                rename: function(dest, src) {
-                    // Keep them where they came from
-                    return dest + '/' + src;
-                },
-                ext: '.css'
-            }
-        },
-        postcss: {
-            options: {
-                map: true,
-                processors: [
-                    require('autoprefixer')({browsers: 'last 2 versions'})
-                ]
-            },
-            dist: {
-                expand: true,
-                cwd: 'src/web/assets',
-                src: [
-                    '**/*.css',
-                    '!graphiql/**/*.css',
-                    '!pluginstore/**/*.css',
-                    '!admintable/**/*.css'
-                ],
-                dest: 'src/web/assets'
             }
         },
         babel: {
@@ -157,8 +106,6 @@ module.exports = function(grunt) {
     });
 
     //Load NPM tasks
-    grunt.loadNpmTasks('grunt-contrib-sass');
-    grunt.loadNpmTasks('grunt-postcss');
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-uglify-es');
     grunt.loadNpmTasks('grunt-babel');
@@ -166,8 +113,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-jshint');
 
     // Default task(s).
-    grunt.registerTask('css', ['sass', 'postcss']);
     grunt.registerTask('js', ['jshint:beforeconcat', 'concat', 'jshint:afterconcat', 'uglify']);
     grunt.registerTask('cpjs', ['concat', 'babel', 'uglify:cpjs']);
-    grunt.registerTask('default', ['css', 'js']);
+    grunt.registerTask('default', ['js']);
 };

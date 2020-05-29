@@ -6,6 +6,7 @@
 // - prismjs (custom css added)
 // - qunit
 
+const autoprefixer = require('gulp-autoprefixer');
 const concat = require('gulp-concat');
 const es = require('event-stream');
 const gulp = require('gulp');
@@ -16,6 +17,15 @@ const sass = require('gulp-sass');
 const sourcemaps = require('gulp-sourcemaps');
 const uglify = require('gulp-uglify-es').default;
 const webpack = require('webpack-stream');
+
+const cpAssetsPath = 'src/web/assets';
+
+const cpSassGlob = [
+    `${cpAssetsPath}/**/src/**/*.scss`,
+    `!${cpAssetsPath}/graphiql/**/*.scss`,
+    `!${cpAssetsPath}/pluginstore/**/*.scss`,
+    `!${cpAssetsPath}/admintable/**/*.scss`,
+];
 
 const libPath = 'lib';
 
@@ -67,6 +77,28 @@ const vueJs = [
     'node_modules/vuex/dist/vuex.min.js',
     'node_modules/vue-autosuggest/dist/vue-autosuggest.js',
 ];
+
+gulp.task('cp-sass', function() {
+    gulp.src(cpSassGlob)
+        .pipe(sourcemaps.init())
+        .pipe(sass({
+            outputStyle: 'compact'
+        }).on('error', sass.logError))
+        .pipe(autoprefixer())
+        .pipe(rename(function (path) {
+            path.dirname = path.dirname.replace(/\bsrc\b/, 'dist');
+        }))
+        .pipe(sourcemaps.write('.'))
+        .pipe(gulp.dest(function(file) {
+            return file.base;
+        }))
+});
+
+gulp.task('cp', ['cp-sass']);
+
+gulp.task('watch', function() {
+    gulp.watch(cpSassGlob, ['cp-sass']);
+});
 
 gulp.task('graphiql-js', function() {
     gulp.src(graphiqlJs)
