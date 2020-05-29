@@ -1,6 +1,9 @@
 {
   "private": true,
   "main": "gulpfile.js",
+  "scripts": {
+    "gulp:deps": "gulp deps"
+  },
   "dependencies": {
     "axios": "^0.18.1",
     "vue": "^2.6.11",
