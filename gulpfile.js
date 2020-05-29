@@ -19,12 +19,15 @@ const uglify = require('gulp-uglify-es').default;
 const webpack = require('webpack-stream');
 
 const cpAssetsPath = 'src/web/assets';
+const graphiqlAssetPath = `${cpAssetsPath}/graphiql`;
+const psAssetPath = `${cpAssetsPath}/pluginstore`;
+const atAssetPath = `${cpAssetsPath}/admintable`;
 
 const cpSassGlob = [
     `${cpAssetsPath}/**/src/**/*.scss`,
-    `!${cpAssetsPath}/graphiql/**/*.scss`,
-    `!${cpAssetsPath}/pluginstore/**/*.scss`,
-    `!${cpAssetsPath}/admintable/**/*.scss`,
+    `!${graphiqlAssetPath}/**/*.scss`,
+    `!${psAssetPath}/**/*.scss`,
+    `!${atAssetPath}/**/*.scss`,
 ];
 
 const libPath = 'lib';
@@ -60,16 +63,14 @@ const staticDeps = [
 ];
 
 const graphiqlJs = [
-    `${cpAssetsPath}/graphiql/src/graphiql-init.js`,
-    `${cpAssetsPath}/graphiql/src/CraftGraphiQL.js`,
+    `${graphiqlAssetPath}/src/graphiql-init.js`,
+    `${graphiqlAssetPath}/src/CraftGraphiQL.js`,
 ];
 
 const graphiqlCss = [
     'node_modules/graphiql/graphiql.css',
-    `${cpAssetsPath}/graphiql/src/graphiql.scss`,
+    `${graphiqlAssetPath}/src/graphiql.scss`,
 ];
-
-const graphiqlDist = `${cpAssetsPath}/graphiql/dist`;
 
 const vueJs = [
     'node_modules/vue/dist/vue.min.js',
@@ -121,14 +122,14 @@ gulp.task('graphiql-js', function() {
             }
         }))
         .pipe(concat('graphiql.js'))
-        .pipe(gulp.dest(graphiqlDist));
+        .pipe(gulp.dest(`${graphiqlAssetPath}/dist`));
 });
 
 gulp.task('graphiql-css', function() {
     return gulp.src(graphiqlCss)
         .pipe(sass().on('error', sass.logError))
         .pipe(concat('graphiql.css'))
-        .pipe(gulp.dest(graphiqlDist));
+        .pipe(gulp.dest(`${graphiqlAssetPath}/dist`));
 });
 
 gulp.task('graphiql', ['graphiql-js', 'graphiql-css']);
