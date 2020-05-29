@@ -102,13 +102,13 @@ class View extends \yii\web\View
      * @var bool Whether to minify CSS registered with [[registerCss()]]
      * @since 3.4.0
      */
-    public $minifyCss;
+    public $minifyCss = false;
 
     /**
      * @var bool Whether to minify JS registered with [[registerJs()]]
      * @since 3.4.0
      */
-    public $minifyJs;
+    public $minifyJs = false;
 
     /**
      * @var Environment|null The Twig environment instance used for control panel templates
@@ -258,23 +258,6 @@ class View extends \yii\web\View
             $this->setTemplateMode(self::TEMPLATE_MODE_CP);
         } else {
             $this->setTemplateMode(self::TEMPLATE_MODE_SITE);
-        }
-
-        if ($this->minifyCss === null || $this->minifyJs === null) {
-            $response = Craft::$app->getResponse();
-            if ($this->minifyCss === null) {
-                $this->minifyCss = (
-                    $response instanceof WebResponse &&
-                    $response->format === WebResponse::FORMAT_HTML
-                );
-            }
-            if ($this->minifyJs === null) {
-                $this->minifyJs = (
-                    $response instanceof WebResponse &&
-                    $response->format === WebResponse::FORMAT_HTML &&
-                    Craft::$app->getConfig()->getGeneral()->useCompressedJs
-                );
-            }
         }
 
         // Register the cp.elements.element hook
