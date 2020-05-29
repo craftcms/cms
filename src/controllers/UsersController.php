@@ -1132,6 +1132,7 @@ class UsersController extends Controller
             'language' => $request->getBodyParam('preferredLanguage', $user->getPreference('language')),
             'weekStartDay' => $request->getBodyParam('weekStartDay', $user->getPreference('weekStartDay')),
             'useShapes' => (bool)$request->getBodyParam('useShapes', $user->getPreference('useShapes')),
+            'underlineLinks' => (bool)$request->getBodyParam('underlineLinks', $user->getPreference('underlineLinks')),
         ];
 
         if ($user->admin) {
