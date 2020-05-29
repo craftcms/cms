@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Changed
+- The URL of the conflicting asset is now returned when uploading a file via the `assets/upload` action. ([#6158](https://github.com/craftcms/cms/issues/6158))
+
 ## 3.4.21 - 2020-05-28
 
 ### Added
