@@ -389,6 +389,17 @@
 ### Security
 - The `_includes/forms/checkbox.html`, `checkboxGroup.html`, and `checkboxSelect.html` control panel templates now HTML-encode checkbox labels by default, preventing possible XSS vulnerabilities. If HTML code was desired, it must be passed through the new `raw()` function first.
 
+## 3.4.22.1 - 2020-05-30
+
+### Added
+- Added `craft\image\SvgAllowedAttributes`.
+
+### Changed
+- SVG sanitization now allows the `filterUnits` attribute.
+
+### Fixed
+- Fixed an error that could occur when rendering field type settings, if the field’s `getSettingsHtml()` method was expecting to be called from a Twig template.
+
 ## 3.4.22 - 2020-05-29
 
 ### Added

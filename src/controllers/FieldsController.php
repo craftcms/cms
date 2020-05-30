@@ -229,7 +229,9 @@ class FieldsController extends Controller
         }
 
         $js = <<<JS
-new Craft.FieldSettingsToggle('#type', '#settings', 'types[__TYPE__]');
+new Craft.FieldSettingsToggle('#type', '#settings', 'types[__TYPE__]', {
+    wrapWithTypeClassDiv: true
+});
 JS;
 
         $view = Craft::$app->getView();
@@ -267,14 +269,10 @@ JS;
         $field = Craft::$app->getFields()->createField($type);
 
         $view = Craft::$app->getView();
-        $namespace = $request->getBodyParam('namespace');
-        $oldNamespace = $view->getNamespace();
-        $view->setNamespace($namespace);
-        $html = $field->getSettingsHtml();
-        $view->setNamespace($oldNamespace);
-        if ($html !== null) {
-            $html = $view->namespaceInputs($html, $namespace);
-        }
+        $html = $view->renderTemplate('settings/fields/_type-settings', [
+            'field' => $field,
+            'namespace' => $request->getBodyParam('namespace')
+        ]);
 
         return $this->asJson([
             'settingsHtml' => $html,
