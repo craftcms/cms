@@ -196,6 +196,8 @@ Craft.LivePreview = Garnish.Base.extend(
             Garnish.on(Craft.BaseElementEditor, 'saveElement', this._forceUpdateIframeProxy);
             Garnish.on(Craft.AssetImageEditor, 'save', this._forceUpdateIframeProxy);
 
+            Craft.ElementThumbLoader.retryAll();
+
             this.inPreviewMode = true;
             this.trigger('enter');
         },
@@ -276,6 +278,8 @@ Craft.LivePreview = Garnish.Base.extend(
             }, this));
 
             Garnish.off(Craft.BaseElementEditor, 'saveElement', this._forceUpdateIframeProxy);
+
+            Craft.ElementThumbLoader.retryAll();
 
             this.inPreviewMode = false;
             this.trigger('exit');

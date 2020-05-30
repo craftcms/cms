@@ -12,6 +12,8 @@ use craft\web\assets\cp\CpAsset;
 
 /**
  * Asset bundle for Position Select fields
+ *
+ * @deprecated in 3.4.22
  */
 class PositionSelectAsset extends AssetBundle
 {
