@@ -64,6 +64,7 @@
             }).catch(() => {
                 if (!this._ignoreFailedRequest) {
                     Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
+                    this.$container.html('');
                 }
             });
         },
