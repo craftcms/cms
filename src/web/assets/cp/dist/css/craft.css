@@ -2085,17 +2085,17 @@ body.rtl #settingsmenu ul li a:before { margin: 1px -22px 0 0 ; }
 .grid > .item { display: none; -webkit-box-sizing: border-box; box-sizing: border-box; }
 
 .lp-editor-container, .lp-preview-container { position: fixed; top: 0; height: 100%; background-color: #fff; z-index: 100; }
-.lp-editor-container header, .lp-preview-container header { padding: 10px 24px; background-color: #e4edf6; -webkit-box-shadow: inset 0 -1px 0 rgba(63, 77, 90, 0.1); box-shadow: inset 0 -1px 0 rgba(63, 77, 90, 0.1); -webkit-box-sizing: border-box; box-sizing: border-box; }
+.lp-editor-container header, .lp-preview-container header { padding: 10px 24px; background-color: #e4edf6; -webkit-box-shadow: 0 1px 0 rgba(63, 77, 90, 0.2); box-shadow: 0 1px 0 rgba(63, 77, 90, 0.2); -webkit-box-sizing: border-box; box-sizing: border-box; }
 @supports ((-webkit-backdrop-filter: blur(10px)) or (backdrop-filter: blur(10px))) { .lp-editor-container header, .lp-preview-container header { position: absolute; z-index: 2; top: 0; left: 0; width: 100%; background-color: rgba(228, 237, 246, 0.75); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
   .lp-editor-container header + .lp-editor, .lp-preview-container header + .lp-editor { padding-top: 78px; } }
 .lp-editor-container header .btn, .lp-editor-container header .spinner, .lp-editor-container header .checkmark-icon, .lp-preview-container header .btn, .lp-preview-container header .spinner, .lp-preview-container header .checkmark-icon { margin-bottom: 0; }
 
-.lp-editor-container { display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-orient: vertical; -webkit-box-direction: normal; -ms-flex-direction: column; flex-direction: column; }
+.lp-editor-container { display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-orient: vertical; -webkit-box-direction: normal; -ms-flex-direction: column; flex-direction: column; z-index: 101; -webkit-box-shadow: 1px 0 0 rgba(63, 77, 90, 0.2); box-shadow: 1px 0 0 rgba(63, 77, 90, 0.2); }
 .lp-editor-container .lp-editor { -webkit-box-flex: 1; -ms-flex: 1; flex: 1; padding: 24px; overflow: auto; -webkit-box-sizing: border-box; box-sizing: border-box; }
 .lp-editor-container .lp-editor > .field:last-child { margin-bottom: 24px !important; }
-.lp-editor-container .lp-draghandle { position: absolute; top: 0; width: 4px; height: 100%; cursor: col-resize; }
-body.ltr .lp-editor-container .lp-draghandle { right: -4px; }
-body.rtl .lp-editor-container .lp-draghandle { left: -4px; }
+.lp-editor-container .lp-draghandle { position: absolute; z-index: 6; top: 0; width: 4px; height: 100%; cursor: col-resize; }
+body.ltr .lp-editor-container .lp-draghandle { right: -2px; }
+body.rtl .lp-editor-container .lp-draghandle { left: -2px; }
 
 .lp-preview-container { display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-orient: vertical; -webkit-box-direction: normal; -ms-flex-direction: column; flex-direction: column; }
 .lp-preview-container.dragging:after { position: absolute; top: 0; left: 0; width: 100%; height: 100%; content: ''; font-size: 0; }

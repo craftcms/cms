@@ -16816,7 +16816,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
       this.handleWindowResize();
       this.addListener(Garnish.$win, 'resize', 'handleWindowResize');
-      this.$editorContainer.css(Craft.left, -(this.editorWidthInPx + Craft.LivePreview.dragHandleWidth) + 'px');
+      this.$editorContainer.css(Craft.left, -this.editorWidthInPx + 'px');
       this.$iframeContainer.css(Craft.right, -this.getIframeWidth()); // Move all the fields into the editor rather than copying them
       // so any JS that's referencing the elements won't break.
 
@@ -16902,7 +16902,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
       this.moveFieldsBack();
       this.$shade.delay(200).velocity('fadeOut');
-      this.$editorContainer.velocity('stop').animateLeft(-(this.editorWidthInPx + Craft.LivePreview.dragHandleWidth), 'slow', $.proxy(function () {
+      this.$editorContainer.velocity('stop').animateLeft(-this.editorWidthInPx, 'slow', $.proxy(function () {
         for (var i = 0; i < this.fields.length; i++) {
           this.fields[i].$newClone.remove();
         }
@@ -16933,7 +16933,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       Garnish.$win.trigger('resize');
     },
     getIframeWidth: function getIframeWidth() {
-      return Garnish.$win.width() - (this.editorWidthInPx + Craft.LivePreview.dragHandleWidth);
+      return Garnish.$win.width() - this.editorWidthInPx;
     },
     updateWidths: function updateWidths() {
       this.$editorContainer.css('width', this.editorWidthInPx + 'px');
@@ -17056,7 +17056,6 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
   }, {
     defaultEditorWidth: 0.33,
     minEditorWidthInPx: 320,
-    dragHandleWidth: 4,
     defaults: {
       trigger: '.livepreviewbtn',
       fields: null,
@@ -17364,7 +17363,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
       this.handleWindowResize();
       this.addListener(Garnish.$win, 'resize', 'handleWindowResize');
-      this.$editorContainer.css(Craft.left, -(this.editorWidthInPx + Craft.Preview.dragHandleWidth) + 'px');
+      this.$editorContainer.css(Craft.left, -this.editorWidthInPx + 'px');
       this.$previewContainer.css(Craft.right, -this.getIframeWidth()); // Find the fields, excluding nested fields
 
       this.fields = [];
@@ -17444,7 +17443,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       this.$tempInput.detach();
       this.moveFieldsBack();
       this.$shade.delay(200).velocity('fadeOut');
-      this.$editorContainer.velocity('stop').animateLeft(-(this.editorWidthInPx + Craft.Preview.dragHandleWidth), 'slow', $.proxy(function () {
+      this.$editorContainer.velocity('stop').animateLeft(-this.editorWidthInPx, 'slow', $.proxy(function () {
         for (var i = 0; i < this.fields.length; i++) {
           this.fields[i].$newClone.remove();
         }
@@ -17477,7 +17476,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       Garnish.$win.trigger('resize');
     },
     getIframeWidth: function getIframeWidth() {
-      return Garnish.$win.width() - (this.editorWidthInPx + Craft.Preview.dragHandleWidth);
+      return Garnish.$win.width() - this.editorWidthInPx;
     },
     updateWidths: function updateWidths() {
       this.$editorContainer.css('width', this.editorWidthInPx + 'px');
@@ -17587,8 +17586,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     }
   }, {
     defaultEditorWidth: 0.33,
-    minEditorWidthInPx: 320,
-    dragHandleWidth: 2
+    minEditorWidthInPx: 320
   });
   /** global: Craft */
 

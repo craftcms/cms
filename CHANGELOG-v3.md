@@ -5,6 +5,9 @@
 ### Added
 - Added `Craft.DraftEditor::pause()` and `resume()`, which should be called on the `window.draftEditor` instance (if it exists) before and after making DOM changes that don’t happen immediately (e.g. after an animation has completed). ([#6154](https://github.com/craftcms/cms/issues/6154))
 
+### Changed
+- Improved the styling of Live Preview.
+
 ### Fixed
 - Fixed a race condition that could result in lost Matrix content when a new Matrix block was added from Live Preview, under very specific conditions. ([#6154](https://github.com/craftcms/cms/issues/6154))
 
