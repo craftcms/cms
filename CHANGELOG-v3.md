@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.4.22 - 2020-05-29
 
 ### Added
 - Added `craft\controllers\FieldsController::actionRenderSettings()`.
