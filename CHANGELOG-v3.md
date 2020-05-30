@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.4.22.1 - 2020-05-30
 
 ### Added
 - Added `craft\image\SvgAllowedAttributes`.
