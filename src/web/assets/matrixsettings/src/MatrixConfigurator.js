@@ -628,8 +628,13 @@
                 // Show a spinner
                 this.$typeSettingsContainer.html('<div class="zilch"><div class="spinner"></div></div>');
 
-                this.getFieldTypeSettings(type).then($settings => {
+                this.getFieldTypeSettings(type).then(({fresh, $settings, headHtml, footHtml}) => {
                     this.$typeSettingsContainer.html('').append($settings);
+                    if (fresh) {
+                        Craft.initUiElements($settings);
+                        Craft.appendHeadHtml(headHtml);
+                        Craft.appendFootHtml(footHtml);
+                    }
 
                     // In case Firefox was sleeping on the job
                     this.$typeSettingsContainer.trigger('resize');
@@ -641,7 +646,10 @@
             getFieldTypeSettings: function(type) {
                 return new Promise((resolve, reject) => {
                     if (typeof this.initializedFieldTypeSettings[type] !== 'undefined') {
-                        resolve(this.initializedFieldTypeSettings[type]);
+                        resolve({
+                            fresh: false,
+                            $settings: this.initializedFieldTypeSettings[type],
+                        });
                         return;
                     }
 
@@ -651,10 +659,12 @@
                         footHtml = this.getParsedFieldTypeHtml(footHtml);
                         let $settings = $('<div/>').html(settingsHtml);
                         this.initializedFieldTypeSettings[type] = $settings;
-                        resolve($settings);
-                        Craft.initUiElements($settings);
-                        Craft.appendHeadHtml(headHtml);
-                        Craft.appendFootHtml(footHtml);
+                        resolve({
+                            fresh: true,
+                            $settings: $settings,
+                            headHtml: headHtml,
+                            footHtml: footHtml,
+                        });
                     }).catch($.noop);
                 });
             },
