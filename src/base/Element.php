@@ -946,49 +946,73 @@ abstract class Element extends Component implements ElementInterface
                     $selectColumns[] = 'level';
                 }
 
-                $structureData = (new Query())
+                $elementStructureData = (new Query())
                     ->select($selectColumns)
                     ->from([Table::STRUCTUREELEMENTS])
                     ->where(['elementId' => $sourceElementIds])
                     ->all();
 
-                if (empty($structureData)) {
+                if (empty($elementStructureData)) {
                     return null;
                 }
 
-                $qb = Craft::$app->getDb()->getQueryBuilder();
-                $query = new Query();
-                $sourceSelectSql = '(CASE';
+                // Build the ancestor condition & params
                 $condition = ['or'];
+                $params = [];
 
-                foreach ($structureData as $i => $elementStructureData) {
+                foreach ($elementStructureData as $i => $elementStructureDatum) {
                     $thisElementCondition = [
                         'and',
-                        ['structureId' => $elementStructureData['structureId']],
-                        ['<', 'lft', $elementStructureData['lft']],
-                        ['>', 'rgt', $elementStructureData['rgt']],
+                        ['structureId' => $elementStructureDatum['structureId']],
+                        ['<', 'lft', $elementStructureDatum['lft']],
+                        ['>', 'rgt', $elementStructureDatum['rgt']],
                     ];
 
                     if ($handle === 'parent') {
-                        $thisElementCondition[] = ['level' => $elementStructureData['level'] - 1];
+                        $thisElementCondition[] = ['level' => $elementStructureDatum['level'] - 1];
                     }
 
                     $condition[] = $thisElementCondition;
-                    $sourceSelectSql .= ' WHEN ' .
-                        $qb->buildCondition($thisElementCondition, $query->params) .
-                        " THEN :sourceId{$i}";
-                    $query->params[':sourceId' . $i] = $elementStructureData['elementId'];
+                    $params[":sourceId$i"] = $elementStructureDatum['elementId'];
                 }
 
-                $sourceSelectSql .= ' END) as source';
-
-                // Return any child elements
-                $map = $query
-                    ->select([$sourceSelectSql, 'elementId as target'])
+                // Fetch the ancestor data
+                $ancestorStructureQuery = (new Query())
+                    ->select(['structureId', 'lft', 'rgt', 'elementId'])
                     ->from([Table::STRUCTUREELEMENTS])
-                    ->where($condition)
-                    ->orderBy(['structureId' => SORT_ASC, 'lft' => SORT_ASC])
-                    ->all();
+                    ->where($condition);
+
+                if ($handle === 'parent') {
+                    $ancestorStructureQuery->addSelect('level');
+                }
+
+                $ancestorStructureData = $ancestorStructureQuery->all();
+
+                // Map the elements to their ancestors
+                $map = [];
+                foreach ($elementStructureData as $elementStructureDatum) {
+                    foreach ($ancestorStructureData as $ancestorStructureDatum) {
+                        if (
+                            $ancestorStructureDatum['structureId'] === $elementStructureDatum['structureId'] &&
+                            $ancestorStructureDatum['lft'] < $elementStructureDatum['lft'] &&
+                            $ancestorStructureDatum['rgt'] > $elementStructureDatum['rgt'] &&
+                            (
+                                $handle === 'ancestors' ||
+                                $ancestorStructureDatum['level'] == $elementStructureDatum['level'] - 1
+                            )
+                        ) {
+                            $map[] = [
+                                'source' => $elementStructureDatum['elementId'],
+                                'target' => $ancestorStructureDatum['elementId'],
+                            ];
+
+                            // If we're just fetching the parents, then we're done with this element
+                            if ($handle === 'parent') {
+                                break;
+                            }
+                        }
+                    }
+                }
 
                 return [
                     'elementType' => static::class,
