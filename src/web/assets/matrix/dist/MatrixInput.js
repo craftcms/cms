@@ -258,6 +258,11 @@
 
                 var $block = $(html);
 
+                // Pause the draft editor
+                if (window.draftEditor) {
+                    window.draftEditor.pause();
+                }
+
                 if ($insertBefore) {
                     $block.insertBefore($insertBefore);
                 }
@@ -294,6 +299,11 @@
 
                         // Focus on the first text input
                         $block.find('.text,[contenteditable]').first().trigger('focus');
+
+                        // Resume the draft editor
+                        if (window.draftEditor) {
+                            window.draftEditor.resume();
+                        }
                     });
                 }, this));
             },
@@ -696,12 +706,18 @@
             },
 
             selfDestruct: function() {
+                // Pause the draft editor
+                if (window.draftEditor) {
+                    window.draftEditor.pause();
+                }
+
                 this.$container.velocity(this.matrix.getHiddenBlockCss(this.$container), 'fast', $.proxy(function() {
                     this.$container.remove();
                     this.matrix.updateAddBlockBtn();
 
+                    // Resume the draft editor
                     if (window.draftEditor) {
-                        window.draftEditor.checkForm();
+                        window.draftEditor.resume();
                     }
                 }, this));
 

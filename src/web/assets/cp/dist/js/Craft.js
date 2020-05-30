@@ -22,7 +22,7 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-/*!   - 2020-05-29 */
+/*!   - 2020-05-30 */
 (function ($) {
   /** global: Craft */
 
@@ -12859,6 +12859,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     $saveMetaBtn: null,
     lastSerializedValue: null,
     listeningForChanges: false,
+    pauseLevel: 0,
     timeout: null,
     saving: false,
     saveXhr: null,
@@ -12931,7 +12932,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       }
     },
     listenForChanges: function listenForChanges() {
-      if (this.listeningForChanges) {
+      if (this.listeningForChanges || this.pauseLevel > 0) {
         return;
       }
 
@@ -12951,9 +12952,31 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       });
     },
     stopListeningForChanges: function stopListeningForChanges() {
+      if (!this.listeningForChanges) {
+        return;
+      }
+
       this.removeListener(Garnish.$bod, 'keypress,keyup,change,focus,blur,click,mousedown,mouseup');
       clearTimeout(this.timeout);
       this.listeningForChanges = false;
+    },
+    pause: function pause() {
+      this.pauseLevel++;
+      this.stopListeningForChanges();
+    },
+    resume: function resume() {
+      if (this.pauseLevel === 0) {
+        throw 'Craft.DraftEditor::resume() should only be called after pause().';
+      } // Only actually resume operation if this has been called the same
+      // number of times that pause() was called
+
+
+      this.pauseLevel--;
+
+      if (this.pauseLevel === 0) {
+        this.checkForm();
+        this.listenForChanges();
+      }
     },
     initForDraft: function initForDraft() {
       // Create the edit draft button
@@ -13267,7 +13290,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     },
     checkForm: function checkForm(force) {
       // If this isn't a draft and there's no active preview, then there's nothing to check
-      if (this.settings.revisionId || !this.settings.draftId && !this.isPreviewActive()) {
+      if (this.settings.revisionId || !this.settings.draftId && !this.isPreviewActive() || this.pauseLevel > 0) {
         return;
       }
 
