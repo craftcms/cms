@@ -16,6 +16,7 @@
 
 ### Fixed
 - Fixed a PHP error that could occur when editing a non-image asset. ([#6162](https://github.com/craftcms/cms/issues/6162))
+- Fixed a bug where asset thumbnails could never load from Live Preview.
 
 ## 3.4.21 - 2020-05-28
 
