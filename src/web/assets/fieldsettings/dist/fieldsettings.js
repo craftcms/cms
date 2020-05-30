@@ -6,17 +6,18 @@
         $container: null,
         namespace: null,
         currentType: null,
-        settings: null,
+        typeSettings: null,
 
         _cancelToken: null,
         _ignoreFailedRequest: false,
 
-        init: function(toggle, container, namespace) {
+        init: function(toggle, container, namespace, settings) {
             this.$toggle = $(toggle);
             this.$container = $(container);
             this.namespace = namespace;
             this.currentType = this.$toggle.val();
-            this.settings = {};
+            this.typeSettings = {};
+            this.setSettings(settings, Craft.FieldSettingsToggle.defaults);
             this.addListener(this.$toggle, 'change', 'handleToggleChange');
         },
 
@@ -31,12 +32,12 @@
             }
 
             // Save & detach the current settings
-            this.settings[this.currentType] = this.$container.children().detach();
+            this.typeSettings[this.currentType] = this.$container.children().detach();
 
             this.currentType = this.$toggle.val();
 
-            if (typeof this.settings[this.currentType] !== 'undefined') {
-                this.settings[this.currentType].appendTo(this.$container);
+            if (typeof this.typeSettings[this.currentType] !== 'undefined') {
+                this.typeSettings[this.currentType].appendTo(this.$container);
                 return;
             }
 
@@ -57,15 +58,26 @@
                 cancelToken: this._cancelToken.token,
                 data: data
             }).then(response => {
-                this.$container.html(response.data.settingsHtml || '');
+                let $settings = $(response.data.settingsHtml || '');
+                if (this.settings.wrapWithTypeClassDiv) {
+                    $settings = $('<div/>', {
+                        id: Craft.formatInputId(this.currentType)
+                    }).append($settings);
+                }
+                this.$container.html('').append($settings);
                 Craft.initUiElements(this.$container);
                 Craft.appendHeadHtml(response.data.headHtml);
                 Craft.appendFootHtml(response.data.footHtml);
             }).catch(() => {
                 if (!this._ignoreFailedRequest) {
                     Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
+                    this.$container.html('');
                 }
             });
         },
+    }, {
+        defaults: {
+            wrapWithTypeClassDiv: false,
+        }
     });
 })(jQuery);

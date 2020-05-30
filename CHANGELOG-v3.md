@@ -1,5 +1,16 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.4.22.1 - 2020-05-30
+
+### Added
+- Added `craft\image\SvgAllowedAttributes`.
+
+### Changed
+- SVG sanitization now allows the `filterUnits` attribute.
+
+### Fixed
+- Fixed an error that could occur when rendering field type settings, if the field’s `getSettingsHtml()` method was expecting to be called from a Twig template.
+
 ## 3.4.22 - 2020-05-29
 
 ### Added
