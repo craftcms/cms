@@ -280,6 +280,7 @@
 - Updated voku/stringy to ^6.2.2. ([#5989](https://github.com/craftcms/cms/issues/5989))
 
 ### Deprecated
+- Deprecated the `useCompressedJs` config setting.
 - Deprecated the `install/plugin` command. `plugin/install` should be used instead.
 - Deprecated the `|filterByValue` Twig filter. `|where` should be used instead.
 - Deprecated the `|ucwords` Twig filter. `|title` should be used instead.

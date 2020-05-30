@@ -937,6 +937,7 @@ class GeneralConfig extends BaseObject
     /**
      * @var bool Whether Craft should include minified JavaScript files whenever possible, and minify JavaScript code
      * passed to [[\craft\web\View::includeJs()]] or `{% js %}` Twig tags.
+     * @deprecated in 3.5.0
      */
     public $useCompressedJs = true;
     /**

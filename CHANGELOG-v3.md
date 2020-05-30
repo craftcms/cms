@@ -119,6 +119,7 @@
 - The `Craft.cp.submitPrimaryForm()` method now accepts an `options` argument for customizing the form submit.
 
 ### Deprecated
+- Deprecated the `useCompressedJs` config setting.
 - Deprecated `craft\db\Table::TEMPLATECACHEELEMENTS`.
 - Deprecated `craft\db\Table::TEMPLATECACHEQUERIES`.
 - Deprecated `craft\db\Table::TEMPLATECACHES`.
