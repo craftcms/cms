@@ -25,6 +25,7 @@ use craft\helpers\Sequence;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
+use craft\image\SvgAllowedAttributes;
 use craft\web\twig\nodevisitors\EventTagAdder;
 use craft\web\twig\nodevisitors\EventTagFinder;
 use craft\web\twig\nodevisitors\GetAttrAdjuster;
@@ -1092,7 +1093,9 @@ class Extension extends AbstractExtension implements GlobalsInterface
 
         // Sanitize?
         if ($sanitize) {
-            $svg = (new Sanitizer())->sanitize($svg);
+            $sanitizer = new Sanitizer();
+            $sanitizer->setAllowedAttrs(new SvgAllowedAttributes());
+            $svg = $sanitizer->sanitize($svg);
             // Remove comments, title & desc
             $svg = preg_replace('/<!--.*?-->\s*/s', '', $svg);
             $svg = preg_replace('/<title>.*?<\/title>\s*/is', '', $svg);

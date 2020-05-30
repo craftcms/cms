@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Changed
+- SVG sanitization now allows the `filterUnits` attribute.
+
 ## 3.4.22 - 2020-05-29
 
 ### Added
