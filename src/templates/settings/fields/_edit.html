@@ -115,9 +115,9 @@
 
     <div id="settings">
         <div id="{{ className(field)|id }}">
-            {% namespace 'types['~className(field)~']' %}
-                {{ field.getSettingsHtml()|raw }}
-            {% endnamespace %}
+            {% include 'settings/fields/_type-settings' with {
+                namespace: 'types['~className(field)~']'
+            } %}
         </div>
     </div>
 {% endblock %}
