@@ -186,6 +186,8 @@ Craft.Preview = Garnish.Base.extend(
             Garnish.on(Craft.BaseElementEditor, 'saveElement', this._updateIframeProxy);
             Garnish.on(Craft.AssetImageEditor, 'save', this._updateIframeProxy);
 
+            Craft.ElementThumbLoader.retryAll();
+
             this.trigger('open');
         },
 
@@ -259,6 +261,8 @@ Craft.Preview = Garnish.Base.extend(
             this.draftEditor.off('update', this._updateIframeProxy);
             Garnish.off(Craft.BaseElementEditor, 'saveElement', this._updateIframeProxy);
             Garnish.off(Craft.AssetImageEditor, 'save', this._updateIframeProxy);
+
+            Craft.ElementThumbLoader.retryAll();
 
             this.isActive = false;
             this.trigger('close');

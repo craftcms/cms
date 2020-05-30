@@ -1145,7 +1145,7 @@ class Asset extends Element
     {
         $assetsService = Craft::$app->getAssets();
         $srcsets = [];
-        list($width, $height) = Assets::scaledDimensions($this->width, $this->height, $width, $height);
+        list($width, $height) = Assets::scaledDimensions($this->width ?? 0, $this->height ?? 0, $width, $height);
         $thumbSizes = [
             [$width, $height],
             [$width * 2, $height * 2],

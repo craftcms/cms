@@ -389,7 +389,7 @@
 ### Security
 - The `_includes/forms/checkbox.html`, `checkboxGroup.html`, and `checkboxSelect.html` control panel templates now HTML-encode checkbox labels by default, preventing possible XSS vulnerabilities. If HTML code was desired, it must be passed through the new `raw()` function first.
 
-## Unreleased (3.4.x)
+## 3.4.22 - 2020-05-29
 
 ### Added
 - Added `craft\controllers\FieldsController::actionRenderSettings()`.
@@ -402,6 +402,10 @@
 
 ### Deprecated
 - Deprecated `craft\web\assets\positionselect\PositionSelectAsset`.
+
+### Fixed
+- Fixed a PHP error that could occur when editing a non-image asset. ([#6162](https://github.com/craftcms/cms/issues/6162))
+- Fixed a bug where asset thumbnails could never load from Live Preview.
 
 ## 3.4.21 - 2020-05-28
 

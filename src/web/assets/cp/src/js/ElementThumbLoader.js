@@ -25,14 +25,16 @@ Craft.ElementThumbLoader = Garnish.Base.extend(
                 if (this.isVisible($thumb, $scrollParent)) {
                     this.addToQueue($thumb[0]);
                 } else {
-                    let rand = Math.floor(Math.random() * 1000000);
-                    $scrollParent.on(`scroll.${rand}`, {
+                    let key = 'thumb' + Math.floor(Math.random() * 1000000);
+                    Craft.ElementThumbLoader.invisibleThumbs[key] = [this, $thumb, $scrollParent];
+                    $scrollParent.on(`scroll.${key}`, {
                         $thumb: $thumb,
                         $scrollParent: $scrollParent,
-                        rand: rand,
+                        key: key,
                     }, (ev) => {
                         if (this.isVisible(ev.data.$thumb, ev.data.$scrollParent)) {
-                            $scrollParent.off(`scroll.${ev.data.rand}`);
+                            delete Craft.ElementThumbLoader.invisibleThumbs[ev.data.key];
+                            $scrollParent.off(`scroll.${ev.data.key}`);
                             this.addToQueue(ev.data.$thumb[0]);
                         }
                     });
@@ -70,6 +72,16 @@ Craft.ElementThumbLoader = Garnish.Base.extend(
             }
 
             this.base();
+        }
+    }, {
+        invisibleThumbs: {},
+        retryAll: function() {
+            for (let key in Craft.ElementThumbLoader.invisibleThumbs) {
+                let [queue, $thumb, $scrollParent] = Craft.ElementThumbLoader.invisibleThumbs[key];
+                delete Craft.ElementThumbLoader.invisibleThumbs[key];
+                $scrollParent.off(`scroll.${key}`);
+                queue.load($thumb.parent());
+            }
         }
     }
 );
