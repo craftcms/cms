@@ -1,7 +1,6 @@
 // TODO: following deps are still manual:
 // - datepicker-i18n
 // - fabricjs
-// - jquery-ui
 // - prismjs (custom css added)
 // - qunit
 
@@ -73,6 +72,17 @@ const jsDeps = [
     {srcGlob: 'node_modules/velocity-animate/velocity.js', dest: `${libPath}/velocity`},
     {srcGlob: 'node_modules/xregexp/xregexp-all.js', dest: `${libPath}/xregexp`},
     {srcGlob: 'node_modules/yii2-pjax/jquery.pjax.js', dest: `${libPath}/yii2-pjax`},
+];
+
+const jquiGlob = [
+    'node_modules/jquery-ui/ui/version.js',
+    'node_modules/jquery-ui/ui/widget.js',
+    'node_modules/jquery-ui/ui/position.js',
+    'node_modules/jquery-ui/ui/focusable.js',
+    'node_modules/jquery-ui/ui/keycode.js',
+    'node_modules/jquery-ui/ui/scroll-parent.js',
+    'node_modules/jquery-ui/ui/widgets/datepicker.js',
+    'node_modules/jquery-ui/ui/widgets/mouse.js',
 ];
 
 const d3LocaleData = [
@@ -154,6 +164,16 @@ gulp.task('watch', function() {
     gulp.watch(cpOtherJsGlob, ['cp-other-js']);
 });
 
+gulp.task('jqui', function() {
+    gulp.src(jquiGlob)
+        .pipe(sourcemaps.init())
+        .pipe(concat('jquery-ui.js'))
+        .pipe(babel())
+        .pipe(uglify())
+        .pipe(sourcemaps.write('.'))
+        .pipe(gulp.dest(`${libPath}/jquery-ui`))
+});
+
 gulp.task('graphiql-js', function() {
     gulp.src(graphiqlJs)
         .pipe(webpack({
@@ -204,7 +224,7 @@ gulp.task('static-deps', function() {
     return es.merge(streams);
 });
 
-gulp.task('deps', ['graphiql', 'vue', 'static-deps'], function() {
+gulp.task('deps', ['jqui', 'graphiql', 'vue', 'static-deps'], function() {
     let streams = [];
 
     // Minify & move the JS deps
