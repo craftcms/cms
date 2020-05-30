@@ -14,7 +14,7 @@ use enshrined\svgSanitize\data\AttributeInterface;
  * SvgAllowedAttributes class is used for defining allowed SVG attributes during sanitization.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.4.22
+ * @since 3.4.23
  */
 class SvgAllowedAttributes implements AttributeInterface
 {

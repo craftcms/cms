@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\image\SvgAllowedAttributes`.
+
 ### Changed
 - SVG sanitization now allows the `filterUnits` attribute.
 
