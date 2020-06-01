@@ -2,13 +2,31 @@
 {% set title = "Entries"|t('app') %}
 {% set elementType = 'craft\\elements\\Entry' %}
 
+{% do view.registerAssetBundle('craft\\web\\assets\\conditionbuilder\\ConditionBuilderAsset') -%}
+
 {% do view.registerTranslations('app', [
     'New entry',
 ]) %}
 
+{% block main %}
+    <div id="element-query-builder"></div>
+    {{ parent() }}
+{% endblock %}
 
 {% if sectionHandle is defined %}
     {% js %}
         window.defaultSectionHandle = "{{ sectionHandle|e('js') }}";
     {% endjs %}
 {% endif %}
+
+{% js %}
+new Craft.VueConditionBuilder({
+    container: '#element-query-builder',
+    rules: [],
+    query: {},
+    singleUseRules: ['id'],
+    nestingEnabled: true,
+    topLevelGrouping: 'all'
+});
+{% endjs %}
+

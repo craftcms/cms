@@ -1,0 +1,49 @@
+{
+  "name": "condition-builder",
+  "version": "0.1.0",
+  "private": true,
+  "browserslist": [
+    "defaults",
+    "Edge >= 15",
+    "Chrome >= 29",
+    "Safari >= 9",
+    "ie >= 11",
+    "Firefox >= 28",
+    "iOS >= 9.1",
+    "Android >= 4.4"
+  ],
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint"
+  },
+  "dependencies": {
+    "@pixelandtonic/craftui": "~0.3.8",
+    "babel-eslint": "^10.1.0",
+    "core-js": "^3.4.4",
+    "eslint": "^7.1.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-vue": "^6.2.2",
+    "lodash": "^4.17.10",
+    "vue": "^2.6.11",
+    "vue-router": "^3.3.1",
+    "vuex": "^3.4.0"
+  },
+  "devDependencies": {
+    "@vue/cli-plugin-babel": "^4.1.2",
+    "@vue/cli-plugin-e2e-cypress": "^4.1.2",
+    "@vue/cli-plugin-eslint": "^4.1.2",
+    "@vue/cli-service": "^3.12.1",
+    "@vue/eslint-config-standard": "^3.0.5",
+    "@vue/test-utils": "^1.0.0-beta.30",
+    "node-sass": "^4.14.1",
+    "sass-loader": "^7.0.1",
+    "vue-template-compiler": "^2.6.11",
+    "webpack-manifest-plugin": "^2.0.4"
+  },
+  "postcss": {
+    "plugins": {
+      "autoprefixer": {}
+    }
+  }
+}
