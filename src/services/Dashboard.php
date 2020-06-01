@@ -33,13 +33,10 @@ use yii\base\Exception;
  * An instance of the Dashboard service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getDashboard()|`Craft::$app->dashboard`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Dashboard extends Component
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event RegisterComponentTypesEvent The event that is triggered when registering Dashboard widget types.
      *
@@ -81,9 +78,6 @@ class Dashboard extends Component
      * @event WidgetEvent The event that is triggered after a widget is deleted.
      */
     const EVENT_AFTER_DELETE_WIDGET = 'afterDeleteWidget';
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns all available widget type classes.
@@ -360,9 +354,6 @@ class Dashboard extends Component
 
         return true;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Adds the default widgets to the logged-in user.

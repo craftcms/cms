@@ -11,8 +11,10 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
+use craft\base\SortableFieldInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\gql\types\DateTime as DateTimeType;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\i18n\Locale;
@@ -23,13 +25,10 @@ use yii\db\Schema;
  * Date represents a Date/Time field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
-class Date extends Field implements PreviewableFieldInterface
+class Date extends Field implements PreviewableFieldInterface, SortableFieldInterface
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -38,8 +37,13 @@ class Date extends Field implements PreviewableFieldInterface
         return Craft::t('app', 'Date/Time');
     }
 
-    // Properties
-    // =========================================================================
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return DateTime::class . '|null';
+    }
 
     /**
      * @var bool Whether a datepicker should be shown as part of the input
@@ -55,9 +59,6 @@ class Date extends Field implements PreviewableFieldInterface
      * @var int The number of minutes that the timepicker options should increment by
      */
     public $minuteIncrement = 30;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -103,9 +104,9 @@ class Date extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['showDate', 'showTime'], 'boolean'];
         $rules[] = [['minuteIncrement'], 'integer', 'min' => 1, 'max' => 60];
         return $rules;
@@ -205,14 +206,19 @@ class Date extends Field implements PreviewableFieldInterface
      */
     public function getTableAttributeHtml($value, ElementInterface $element): string
     {
-        if ($value) {
-            $formatter = Craft::$app->getFormatter();
-
-            /** @var DateTime $value */
-            return '<span title="' . $formatter->asDatetime($value, Locale::LENGTH_SHORT) . '">' . $formatter->asTimestamp($value, Locale::LENGTH_SHORT) . '</span>';
+        if (!$value) {
+            return '';
         }
 
-        return '';
+        if ($this->showDate && $this->showTime) {
+            return Craft::$app->getFormatter()->asDatetime($value, Locale::LENGTH_SHORT);
+        }
+
+        if ($this->showDate) {
+            return Craft::$app->getFormatter()->asDate($value, Locale::LENGTH_SHORT);
+        }
+
+        return Craft::$app->getFormatter()->asTime($value, Locale::LENGTH_SHORT);
     }
 
     /**
@@ -233,9 +239,16 @@ class Date extends Field implements PreviewableFieldInterface
     public function modifyElementsQuery(ElementQueryInterface $query, $value)
     {
         if ($value !== null) {
-            $handle = $this->handle;
             /** @var ElementQuery $query */
-            $query->subQuery->andWhere(Db::parseDateParam('content.' . Craft::$app->getContent()->fieldColumnPrefix . $handle, $value));
+            $query->subQuery->andWhere(Db::parseDateParam('content.' . Craft::$app->getContent()->fieldColumnPrefix . $this->handle, $value));
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getContentGqlType()
+    {
+        return DateTimeType::getType();
     }
 }

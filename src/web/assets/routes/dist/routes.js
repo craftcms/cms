@@ -52,14 +52,12 @@
                             Craft.cp.displayError(Craft.t('app', 'Couldn’t save new route order.'));
                         }
                     }
-
                 }, this));
             },
 
             addRoute: function() {
                 new RouteSettingsModal();
             }
-
         });
 
 
@@ -126,7 +124,6 @@
                 this.$uri.html(uriHtml);
                 this.$template.text(this.modal.$templateInput.val());
             }
-
         });
 
 
@@ -135,6 +132,7 @@
             route: null,
             $heading: null,
             $uriInput: null,
+            $uriErrors: null,
             uriElements: null,
             $templateInput: null,
             $saveBtn: null,
@@ -161,12 +159,13 @@
                     '<form class="modal fitted route-settings" accept-charset="UTF-8">' +
                     '<div class="header">' +
                     '<h1></h1>' +
-                    '</div>' +
+                    '</div>' + // .header
                     '<div class="body">' +
-                    '<div class="field">' +
+                    '<div class="uri-field field">' +
                     '<div class="heading">' +
                     '<label for="uri">' + Craft.t('app', 'If the URI looks like this') + ':</label>' +
-                    '</div>';
+                    '</div>' +  // .heading
+                    '<div class="input">';
 
                 if (Craft.isMultiSite) {
                     containerHtml +=
@@ -180,36 +179,37 @@
 
                 if (Craft.isMultiSite) {
                     containerHtml +=
-                        '</div>' +
-                        '<div>' +
+                        '</div>' + // .flex-grow
                         '<div class="select">' +
                         '<select class="site">' +
                         '<option value="">' + Craft.t('app', 'Global') + '</option>';
 
                     for (i = 0; i < Craft.sites.length; i++) {
                         var siteInfo = Craft.sites[i];
-                        containerHtml += '<option value="' + siteInfo.uid + '">' + siteInfo.name + '</option>';
+                        containerHtml += '<option value="' + siteInfo.uid + '">' + Craft.escapeHtml(siteInfo.name) + '</option>';
                     }
 
                     containerHtml +=
                         '</select>' +
-                        '</div>' +
-                        '</div>' +
-                        '</div>';
+                        '</div>' + // .select
+                        '</div>'; // .flex
                 }
 
                 containerHtml +=
+                    '</div>' + // .input
                     '<div class="uri-tokens">' +
                     tokenHtml +
-                    '</div>' +
-                    '</div>' +
-                    '<div class="field">' +
+                    '</div>' + // .uri-tokens
+                    '</div>' + // .uri-field
+                    '<div class="template-field field">' +
                     '<div class="heading">' +
                     '<label for="template">' + Craft.t('app', 'Load this template') + ':</label>' +
-                    '</div>' +
+                    '</div>' + // .heading
+                    '<div class="input">' +
                     '<input id="template" type="text" class="text fullwidth template ltr">' +
-                    '</div>' +
-                    '</div>' +
+                    '</div>' + // .input
+                    '</div>' + // .template-field
+                    '</div>' + // .body
                     '<div class="footer">' +
                     '<div class="buttons right last">' +
                     '<input type="button" class="btn cancel" value="' + Craft.t('app', 'Cancel') + '">' +
@@ -269,21 +269,9 @@
                         }
                     }
 
-                    // Focus on the first element
-                    setTimeout($.proxy(function() {
-                        var $firstElem = this.uriInput.elements[0];
-                        this.uriInput.setFocus($firstElem);
-                        this.uriInput.setCarotPos($firstElem, 0);
-                    }, this), 1);
-
                     // Set the initial Template value
                     var templateVal = this.route.$template.text();
                     this.$templateInput.val(templateVal);
-                }
-                else {
-                    setTimeout($.proxy(function() {
-                        this.$uriInput.trigger('focus');
-                    }, this), 100);
                 }
 
                 this.base($container);
@@ -342,6 +330,17 @@
                     this.$deleteBtn.show();
                 }
 
+                // Focus on the first element
+                setTimeout(function() {
+                    if (this.uriInput.elements.length) {
+                        var $firstElem = this.uriInput.elements[0];
+                        this.uriInput.setFocus($firstElem);
+                        this.uriInput.setCarotPos($firstElem, 0);
+                    } else {
+                        this.$uriInput.trigger('focus');
+                    }
+                }.bind(this), 100);
+
                 this.base();
             },
 
@@ -352,6 +351,12 @@
                     return;
                 }
 
+                this.$container.find('.uri-field .input').removeClass('errors');
+                if (this.$uriErrors) {
+                    this.$uriErrors.remove();
+                    this.$uriErrors = null;
+                }
+
                 var data = {
                     siteUid: this.$siteInput.val()
                 };
@@ -360,11 +365,33 @@
                     data.routeUid = this.route.uid;
                 }
 
+                var $elem, val;
+
                 for (var i = 0; i < this.uriInput.elements.length; i++) {
-                    var $elem = this.uriInput.elements[i];
+                    $elem = this.uriInput.elements[i];
 
                     if (this.uriInput.isText($elem)) {
-                        data['uriParts[' + i + ']'] = $elem.val();
+                        val = $elem.val();
+
+                        if (i === 0) {
+                            // Remove any leading slashes
+                            val = Craft.ltrim(val, '/');
+
+                            // Make sure the first element isn't using the action/CP trigger
+                            if (Craft.startsWith(val, Craft.actionTrigger + '/')) {
+                                this.addUriError(Craft.t('app', 'The URI can’t begin with the {setting} config setting.', {
+                                    setting: 'actionTrigger'
+                                }));
+                                return;
+                            } else if (Craft.startsWith(val, Craft.cpTrigger + '/')) {
+                                this.addUriError(Craft.t('app', 'The URI can’t begin with the {setting} config setting.', {
+                                    setting: 'cpTrigger'
+                                }));
+                                return;
+                            }
+                        }
+
+                        data['uriParts[' + i + ']'] = val;
                     }
                     else {
                         data['uriParts[' + i + '][0]'] = $elem.attr('data-name');
@@ -421,13 +448,24 @@
                             this.hide();
 
                             Craft.cp.displayNotice(Craft.t('app', 'Route saved.'));
-                        }
-                        else {
+                        } else if (response.errors) {
+                            if (response.errors.uri) {
+                            }
+                        } else {
                             Craft.cp.displayError(Craft.t('app', 'Couldn’t save route.'));
                         }
                     }
-
                 }, this));
+            },
+
+            addUriError: function(error) {
+                this.$container.find('.uri-field .input').addClass('errors');
+                if (this.$uriErrors) {
+                    Craft.ui.addErrorsToList(this.$uriErrors, [error]);
+                } else {
+                    this.$uriErrors = Craft.ui.createErrorList([error]);
+                    this.$uriErrors.insertAfter(this.$container.find('.uri-field .input'));
+                }
             },
 
             cancel: function() {
@@ -456,7 +494,6 @@
                     }
                 }
             }
-
         });
 
 

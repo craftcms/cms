@@ -15,17 +15,11 @@ use craft\base\Widget;
  * MissingWidget represents a widget with an invalid class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class MissingWidget extends Widget implements MissingComponentInterface
 {
-    // Traits
-    // =========================================================================
-
     use MissingComponentTrait;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

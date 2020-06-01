@@ -109,6 +109,9 @@ class m180901_151639_fix_matrixcontent_tables extends Migration
             // Re-enable FK checks
             $this->execute($queryBuilder->checkIntegrity(true));
         }
+
+        // Force the fields service to refetch the fields.
+        Craft::$app->getFields()->refreshFields();
     }
 
     /**

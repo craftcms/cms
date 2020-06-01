@@ -26,17 +26,11 @@ use yii\db\ActiveQueryInterface;
  * @property int $sortOrder Sort order
  * @property SiteGroup $group Group
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Site extends ActiveRecord
 {
-    // Traits
-    // =========================================================================
-
     use SoftDeleteTrait;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

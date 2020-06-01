@@ -13,13 +13,10 @@ use yii\base\Event;
  * Entry type event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class EntryTypeEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var \craft\models\EntryType|null The entry type model associated with the event.
      */

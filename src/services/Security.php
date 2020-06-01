@@ -15,16 +15,13 @@ use yii\helpers\Inflector;
 
 /**
  * Security component.
- * An instance of the Security component is globally accessible in Craft via [[\craft\base\ApplicationTrait::getSecurity()|`Craft::$app->security`]].
+ * An instance of the Security component is globally accessible in Craft via [[\yii\base\Application::getSecurity()|`Craft::$app->security`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Security extends \yii\base\Security
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string[] Keywords used to reference sensitive data
      * @see redactIfSensitive()
@@ -35,9 +32,6 @@ class Security extends \yii\base\Security
      * @var mixed
      */
     private $_blowFishHashCost;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      */
@@ -127,7 +121,7 @@ class Security extends \yii\base\Security
      * @throws InvalidConfigException when HMAC generation fails.
      * @see hashData()
      */
-    public function validateData($data, $key = null, $rawHash = false): string
+    public function validateData($data, $key = null, $rawHash = false)
     {
         if ($key === null) {
             $key = Craft::$app->getConfig()->getGeneral()->securityKey;

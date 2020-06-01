@@ -13,13 +13,10 @@ use craft\base\Serializable;
  * Class OptionData
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class OptionData implements Serializable
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null
      */
@@ -34,9 +31,6 @@ class OptionData implements Serializable
      * @var bool|null
      */
     public $selected;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Constructor

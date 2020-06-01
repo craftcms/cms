@@ -18,7 +18,6 @@ class m170303_140500_asset_field_source_settings extends Migration
      */
     public function safeUp()
     {
-
         echo "    > Converting the field setting format \n";
         // Convert the field setting from volume id to folder:XX
         $fields = (new Query())

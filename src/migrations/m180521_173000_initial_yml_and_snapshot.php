@@ -10,7 +10,6 @@ use craft\elements\User;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Json;
-use craft\helpers\StringHelper;
 use craft\services\ProjectConfig;
 
 /**
@@ -23,8 +22,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
      */
     public function safeUp()
     {
-        $this->addColumn(Table::INFO, 'config', $this->mediumText()->null()->after('maintenance'));
-        $this->addColumn(Table::INFO, 'configMap', $this->mediumText()->null()->after('config'));
+        $this->addColumn(Table::INFO, 'configMap', $this->mediumText()->null()->after('maintenance'));
 
         $projectConfig = Craft::$app->getProjectConfig();
 
@@ -241,22 +239,23 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             ->innerJoin('{{%sections}} sections', '[[sections.id]] = [[entrytypes.sectionId]]')
             ->all();
 
-        $layoutIds = ArrayHelper::getColumn($entryTypeRows, 'fieldLayoutId');
+        $layoutIds = array_filter(ArrayHelper::getColumn($entryTypeRows, 'fieldLayoutId'));
         $fieldLayouts = $this->_generateFieldLayoutArray($layoutIds);
 
         foreach ($entryTypeRows as $entryType) {
-            $layout = $fieldLayouts[$entryType['fieldLayoutId']];
-
-            $layoutUid = $layout['uid'];
-            $sectionUid = $entryType['sectionUid'];
-            $uid = $entryType['uid'];
-
-            unset($entryType['fieldLayoutId'], $entryType['sectionUid'], $entryType['uid'], $layout['uid']);
+            $uid = ArrayHelper::remove($entryType, 'uid');
+            $sectionUid = ArrayHelper::remove($entryType, 'sectionUid');
+            $fieldLayoutId = ArrayHelper::remove($entryType, 'fieldLayoutId');
 
             $entryType['hasTitleField'] = (bool)$entryType['hasTitleField'];
             $entryType['sortOrder'] = (int)$entryType['sortOrder'];
 
-            $entryType['fieldLayouts'] = [$layoutUid => $layout];
+            if ($fieldLayoutId) {
+                $layout = array_merge($fieldLayouts[$fieldLayoutId]);
+                $layoutUid = ArrayHelper::remove($layout, 'uid');
+                $entryType['fieldLayouts'] = [$layoutUid => $layout];
+            }
+
             $sectionData[$sectionUid]['entryTypes'][$uid] = $entryType;
         }
 

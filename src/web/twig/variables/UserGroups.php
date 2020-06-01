@@ -17,14 +17,11 @@ Craft::$app->requireEdition(Craft::Pro);
  * User group functions.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
- * @deprecated in 3.0
+ * @since 3.0.0
+ * @deprecated in 3.0.0
  */
 class UserGroups
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Returns all user groups.
      *

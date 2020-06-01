@@ -21,13 +21,10 @@ use yii\web\Response;
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class StructuresController extends Controller
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var Structure|null
      */
@@ -38,13 +35,10 @@ class StructuresController extends Controller
      */
     private $_element;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * Initializes the application component.
      *
-     * @throws ForbiddenHttpException if this is not a Control Panel request
+     * @throws ForbiddenHttpException if this is not a control panel request
      * @throws NotFoundHttpException if the requested element cannot be found
      */
     public function init()
@@ -54,9 +48,9 @@ class StructuresController extends Controller
 
         $request = Craft::$app->getRequest();
 
-        // This controller is only available to the Control Panel
+        // This controller is only available to the control panel
         if (!$request->getIsCpRequest()) {
-            throw new ForbiddenHttpException('Action only available from the Control Panel');
+            throw new ForbiddenHttpException('Action only available from the control panel');
         }
 
         $structureId = $request->getRequiredBodyParam('structureId');
@@ -87,6 +81,8 @@ class StructuresController extends Controller
         if ($this->_element === null) {
             throw new NotFoundHttpException('Element not found');
         }
+
+        parent::init();
     }
 
     /**
@@ -116,12 +112,12 @@ class StructuresController extends Controller
 
         if ($prevElementId) {
             $prevElement = Craft::$app->getElements()->getElementById($prevElementId, null, $this->_element->siteId);
-            $success = $structuresService->moveAfter($this->_structure->id, $this->_element, $prevElement, 'auto');
+            $success = $structuresService->moveAfter($this->_structure->id, $this->_element, $prevElement);
         } else if ($parentElementId) {
             $parentElement = Craft::$app->getElements()->getElementById($parentElementId, null, $this->_element->siteId);
-            $success = $structuresService->prepend($this->_structure->id, $this->_element, $parentElement, 'auto');
+            $success = $structuresService->prepend($this->_structure->id, $this->_element, $parentElement);
         } else {
-            $success = $structuresService->prependToRoot($this->_structure->id, $this->_element, 'auto');
+            $success = $structuresService->prependToRoot($this->_structure->id, $this->_element);
         }
 
         return $this->asJson(compact('success'));

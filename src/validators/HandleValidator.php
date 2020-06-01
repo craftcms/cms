@@ -14,13 +14,10 @@ use yii\validators\Validator;
  * Class HandleValidator.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class HandleValidator extends Validator
 {
-    // Static
-    // =========================================================================
-
     /**
      * @var string
      */
@@ -58,16 +55,10 @@ class HandleValidator extends Validator
         'yes',
     ];
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var array
      */
     public $reservedWords = [];
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

@@ -9,6 +9,7 @@
             fieldTypeInfo: null,
 
             inputNamePrefix: null,
+            fieldTypeSettingsNamespace: null,
             inputIdPrefix: null,
 
             $container: null,
@@ -30,10 +31,14 @@
             blockTypeSort: null,
             totalNewBlockTypes: 0,
 
-            init: function(fieldTypeInfo, inputNamePrefix) {
-                this.fieldTypeInfo = fieldTypeInfo;
+            _fieldTypeSettingsHtml: {},
+            _cancelToken: null,
+            _ignoreFailedRequest: false,
 
+            init: function(fieldTypeInfo, inputNamePrefix, fieldTypeSettingsNamespace) {
+                this.fieldTypeInfo = fieldTypeInfo;
                 this.inputNamePrefix = inputNamePrefix;
+                this.fieldTypeSettingsNamespace = fieldTypeSettingsNamespace;
                 this.inputIdPrefix = Craft.formatInputId(this.inputNamePrefix);
 
                 this.$container = $('#' + this.inputIdPrefix + '-matrix-configurator:first .input:first');
@@ -142,7 +147,44 @@
                 }
 
                 return this.blockTypeSettingsModal;
-            }
+            },
+
+            getFieldTypeSettingsHtml: function(type) {
+                return new Promise((resolve, reject) => {
+                    if (typeof this._fieldTypeSettingsHtml[type] !== 'undefined') {
+                        resolve(this._fieldTypeSettingsHtml[type]);
+                        return;
+                    }
+
+                    // Cancel the current request
+                    if (this._cancelToken) {
+                        this._ignoreFailedRequest = true;
+                        this._cancelToken.cancel();
+                        Garnish.requestAnimationFrame(() => {
+                            this._ignoreFailedRequest = false;
+                        });
+                    }
+
+                    // Create a cancel token
+                    this._cancelToken = axios.CancelToken.source();
+
+                    Craft.sendActionRequest('POST', 'fields/render-settings', {
+                        cancelToken: this._cancelToken.token,
+                        data: {
+                            type: type,
+                            namespace: this.fieldTypeSettingsNamespace,
+                        }
+                    }).then(response => {
+                        this._fieldTypeSettingsHtml[type] = response.data;
+                        resolve(response.data);
+                    }).catch(() => {
+                        if (!this._ignoreFailedRequest) {
+                            Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
+                        }
+                        reject();
+                    });
+                });
+            },
         });
 
 
@@ -161,7 +203,7 @@
                 this.$nameField = $('<div class="field"/>').appendTo(this.$body);
                 this.$nameHeading = $('<div class="heading"/>').appendTo(this.$nameField);
                 this.$nameLabel = $('<label for="new-block-type-name">' + Craft.t('app', 'Name') + '</label>').appendTo(this.$nameHeading);
-                this.$nameInstructions = $('<div class="instructions"><p>' + Craft.t('app', 'What this block type will be called in the CP.') + '</p></div>').appendTo(this.$nameHeading);
+                this.$nameInstructions = $('<div class="instructions"><p>' + Craft.t('app', 'What this block type will be called in the control panel.') + '</p></div>').appendTo(this.$nameHeading);
                 this.$nameInputContainer = $('<div class="input"/>').appendTo(this.$nameField);
                 this.$nameInput = $('<input type="text" class="text fullwidth" id="new-block-type-name"/>').appendTo(this.$nameInputContainer);
                 this.$nameErrorList = $('<ul class="errors"/>').appendTo(this.$nameInputContainer).hide();
@@ -268,7 +310,6 @@
                     $errorList.hide();
                 }
             }
-
         });
 
 
@@ -441,7 +482,6 @@
                 this.configurator.blockTypes[this.id] = null;
                 delete this.configurator.blockTypes[this.id];
             }
-
         });
 
 
@@ -480,6 +520,7 @@
                 this.inputIdPrefix = this.blockType.inputIdPrefix + '-fields-' + this.id;
 
                 this.initializedFieldTypeSettings = {};
+                this.fieldTypeSettingsTemplates = {};
 
                 this.$nameLabel = this.$item.children('.name');
                 this.$handleLabel = this.$item.children('.handle');
@@ -514,8 +555,8 @@
                 }
 
                 this.addListener(this.$item, 'click', 'select');
-                this.addListener(this.$nameInput, 'textchange', 'updateNameLabel');
-                this.addListener(this.$handleInput, 'textchange', 'updateHandleLabel');
+                this.addListener(this.$nameInput, 'input', 'updateNameLabel');
+                this.addListener(this.$handleInput, 'input', 'updateHandleLabel');
                 this.addListener(this.$requiredCheckbox, 'change', 'updateRequiredIcon');
                 this.addListener(this.$typeSelect, 'change', 'onTypeSelectChange');
                 this.addListener(this.$deleteBtn, 'click', 'confirmDelete');
@@ -584,32 +625,48 @@
                 this.selectedFieldType = type;
                 this.$typeSelect.val(type);
 
-                var firstTime = (typeof this.initializedFieldTypeSettings[type] === 'undefined'),
-                    $body,
-                    footHtml;
+                // Show a spinner
+                this.$typeSettingsContainer.html('<div class="zilch"><div class="spinner"></div></div>');
 
-                if (firstTime) {
-                    var info = this.configurator.getFieldTypeInfo(type),
-                        bodyHtml = this.getParsedFieldTypeHtml(info.settingsBodyHtml);
+                this.getFieldTypeSettings(type).then(({fresh, $settings, headHtml, footHtml}) => {
+                    this.$typeSettingsContainer.html('').append($settings);
+                    if (fresh) {
+                        Craft.initUiElements($settings);
+                        Craft.appendHeadHtml(headHtml);
+                        Craft.appendFootHtml(footHtml);
+                    }
 
-                    footHtml = this.getParsedFieldTypeHtml(info.settingsFootHtml);
-                    $body = $('<div>' + bodyHtml + '</div>');
+                    // In case Firefox was sleeping on the job
+                    this.$typeSettingsContainer.trigger('resize');
+                }).catch(() => {
+                    this.$typeSettingsContainer.html('');
+                });
+            },
 
-                    this.initializedFieldTypeSettings[type] = $body;
-                }
-                else {
-                    $body = this.initializedFieldTypeSettings[type];
-                }
+            getFieldTypeSettings: function(type) {
+                return new Promise((resolve, reject) => {
+                    if (typeof this.initializedFieldTypeSettings[type] !== 'undefined') {
+                        resolve({
+                            fresh: false,
+                            $settings: this.initializedFieldTypeSettings[type],
+                        });
+                        return;
+                    }
 
-                $body.appendTo(this.$typeSettingsContainer);
-
-                if (firstTime) {
-                    Craft.initUiElements($body);
-                    Garnish.$bod.append(footHtml);
-                }
-
-                // Firefox might have been sleeping on the job.
-                this.$typeSettingsContainer.trigger('resize');
+                    this.configurator.getFieldTypeSettingsHtml(type).then(({settingsHtml, headHtml, footHtml}) => {
+                        settingsHtml = this.getParsedFieldTypeHtml(settingsHtml);
+                        headHtml = this.getParsedFieldTypeHtml(headHtml);
+                        footHtml = this.getParsedFieldTypeHtml(footHtml);
+                        let $settings = $('<div/>').html(settingsHtml);
+                        this.initializedFieldTypeSettings[type] = $settings;
+                        resolve({
+                            fresh: true,
+                            $settings: $settings,
+                            headHtml: headHtml,
+                            footHtml: footHtml,
+                        });
+                    }).catch($.noop);
+                });
             },
 
             getParsedFieldTypeHtml: function(html) {
@@ -655,6 +712,13 @@
                     label: Craft.t('app', 'This field is required'),
                     id: this.inputIdPrefix + '-required',
                     name: this.inputNamePrefix + '[required]'
+                }).appendTo($container);
+
+                Craft.ui.createCheckboxField({
+                    label: Craft.t('app', 'Use this field’s values as search keywords?'),
+                    id: this.inputIdPrefix + '-searchable',
+                    name: this.inputNamePrefix + '[searchable]',
+                    checked: true,
                 }).appendTo($container);
 
                 var fieldTypeOptions = [];
@@ -731,6 +795,5 @@
                 this.blockType.fields[this.id] = null;
                 delete this.blockType.fields[this.id];
             }
-
         });
 })(jQuery);

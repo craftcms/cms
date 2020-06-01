@@ -70,10 +70,6 @@
                 }
             },
 
-            features() {
-                return this.getCmsEditionFeatures(this.edition.handle)
-            },
-
             editionIndex() {
                 switch (this.edition.handle) {
                     case 'solo':
@@ -83,7 +79,11 @@
                     default:
                         return null
                 }
-            }
+            },
+
+            features() {
+                return this.getCmsEditionFeatures(this.edition.handle)
+            },
         },
     }
 </script>

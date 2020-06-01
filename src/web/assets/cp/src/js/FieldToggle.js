@@ -70,6 +70,7 @@ Craft.FieldToggle = Garnish.Base.extend(
 
         findTargets: function() {
             if (this.type === 'select') {
+                var toggleVal = this.getToggleVal();
                 this._$target = $(this.normalizeTargetSelector(this.targetPrefix + this.getToggleVal()));
             }
             else {
@@ -89,7 +90,7 @@ Craft.FieldToggle = Garnish.Base.extend(
             }
             else {
                 var postVal = Garnish.getInputPostVal(this.$toggle);
-                return postVal === null ? null : postVal.replace(/[\[\]\\]+/g, '-');
+                return postVal === null ? null : postVal.replace(/[\[\]\\\/]+/g, '-');
             }
         },
 

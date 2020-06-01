@@ -17,13 +17,10 @@ Craft::$app->requireEdition(Craft::Pro);
  * Rebranding functions.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Rebrand
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var
      */
@@ -33,9 +30,6 @@ class Rebrand
      * @var
      */
     private $_imageVariables = [];
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns whether a custom logo has been uploaded.
@@ -113,9 +107,6 @@ class Rebrand
 
         return $this->_imageVariables[$type] ?: null;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns the path to a rebrand image by type or false if it hasn't ben uploaded.

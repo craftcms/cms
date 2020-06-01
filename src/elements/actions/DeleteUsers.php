@@ -18,20 +18,14 @@ use yii\base\Exception;
  * DeleteUsers represents a Delete Users element action.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class DeleteUsers extends ElementAction
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null The user ID that the deleted user’s content should be transferred to
      */
     public $transferContentTo;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -141,9 +135,6 @@ JS;
 
         return true;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns a list of the user IDs that can't be deleted.

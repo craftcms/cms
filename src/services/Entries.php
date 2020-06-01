@@ -7,6 +7,7 @@
 
 namespace craft\services;
 
+use Craft;
 use craft\db\Query;
 use craft\elements\Entry;
 use yii\base\Component;
@@ -16,13 +17,10 @@ use yii\base\Component;
  * An instance of the Entries service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getEntries()|`Craft::$app->entries`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Entries extends Component
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Returns an entry by its ID.
      *
@@ -48,11 +46,9 @@ class Entries extends Component
             ->where(['entries.id' => $entryId])
             ->scalar();
 
-        $query = Entry::find();
-        $query->id($entryId);
-        $query->structureId($structureId);
-        $query->siteId($siteId);
-        $query->anyStatus();
-        return $query->one();
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return Craft::$app->getElements()->getElementById($entryId, Entry::class, $siteId, [
+            'structureId' => $structureId,
+        ]);
     }
 }

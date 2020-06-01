@@ -15,17 +15,11 @@ use craft\events\ModelEvent;
  * @property bool $isNew Whether the component is new (unsaved)
  * @property array $settings The component’s settings
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 abstract class SavableComponent extends Component implements SavableComponentInterface
 {
-    // Traits
-    // =========================================================================
-
     use SavableComponentTrait;
-
-    // Constants
-    // =========================================================================
 
     /**
      * @event ModelEvent The event that is triggered before the component is saved
@@ -54,9 +48,6 @@ abstract class SavableComponent extends Component implements SavableComponentInt
      */
     const EVENT_AFTER_DELETE = 'afterDelete';
 
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -64,9 +55,6 @@ abstract class SavableComponent extends Component implements SavableComponentInt
     {
         return true;
     }
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

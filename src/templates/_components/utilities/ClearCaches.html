@@ -1,7 +1,7 @@
 {% import "_includes/forms" as forms %}
 
 <form id="clear-caches" class="utility" method="post" accept-charset="UTF-8">
-    <input type="hidden" name="action" value="utilities/clear-caches-perform-action">
+    {{ actionInput('utilities/clear-caches-perform-action') }}
     {{ csrfInput() }}
 
     {{ forms.checkboxSelect({

@@ -15,7 +15,6 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\events\ElementContentEvent;
 use craft\helpers\Db;
-use craft\models\FieldLayout;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -24,13 +23,10 @@ use yii\base\Exception;
  * An instance of the Content service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getContent()|`Craft::$app->content`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Content extends Component
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event ElementContentEvent The event that is triggered before an element's content is saved.
      */
@@ -40,9 +36,6 @@ class Content extends Component
      * @event ElementContentEvent The event that is triggered after an element's content is saved.
      */
     const EVENT_AFTER_SAVE_CONTENT = 'afterSaveContent';
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var string
@@ -58,9 +51,6 @@ class Content extends Component
      * @var string
      */
     public $fieldContext = 'global';
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns the content row for a given element, with field column prefixes removed from the keys.
@@ -177,11 +167,26 @@ class Content extends Component
         if ($fieldLayout) {
             foreach ($fieldLayout->getFields() as $field) {
                 /** @var Field $field */
-                if ($field::hasContentColumn()) {
+                if (
+                    (!$element->contentId || $element->isFieldDirty($field->handle)) &&
+                    $field::hasContentColumn()
+                ) {
                     $column = $this->fieldColumnPrefix . $field->handle;
                     $values[$column] = Db::prepareValueForDb($field->serializeValue($element->getFieldValue($field->handle), $element));
                 }
             }
+        }
+
+        if (!$element->contentId) {
+            // It could be a draft that's getting published
+            $element->contentId = (new Query())
+                ->select(['id'])
+                ->from([$this->contentTable])
+                ->where([
+                    'elementId' => $element->id,
+                    'siteId' => $element->siteId
+                ])
+                ->scalar();
         }
 
         // Insert/update the DB row
@@ -198,10 +203,6 @@ class Content extends Component
             $element->contentId = Craft::$app->getDb()->getLastInsertID($this->contentTable);
         }
 
-        if ($fieldLayout) {
-            $this->_updateSearchIndexes($element, $fieldLayout);
-        }
-
         // Fire an 'afterSaveContent' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_CONTENT)) {
             $this->trigger(self::EVENT_AFTER_SAVE_CONTENT, new ElementContentEvent([
@@ -214,35 +215,6 @@ class Content extends Component
         $this->fieldContext = $originalFieldContext;
 
         return true;
-    }
-
-    // Private Methods
-    // =========================================================================
-
-    /**
-     * Updates the search indexes based on the new content values.
-     *
-     * @param ElementInterface $element
-     * @param FieldLayout $fieldLayout
-     */
-    private function _updateSearchIndexes(ElementInterface $element, FieldLayout $fieldLayout)
-    {
-        /** @var Element $element */
-        $searchKeywordsBySiteId = [];
-
-        foreach ($fieldLayout->getFields() as $field) {
-            /** @var Field $field */
-            if ($field->searchable) {
-                // Set the keywords for the content's site
-                $fieldValue = $element->getFieldValue($field->handle);
-                $fieldSearchKeywords = $field->getSearchKeywords($fieldValue, $element);
-                $searchKeywordsBySiteId[$element->siteId][$field->id] = $fieldSearchKeywords;
-            }
-        }
-
-        foreach ($searchKeywordsBySiteId as $siteId => $keywords) {
-            Craft::$app->getSearch()->indexElementFields($element->id, $siteId, $keywords);
-        }
     }
 
     /**

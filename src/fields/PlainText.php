@@ -19,13 +19,10 @@ use yii\db\Schema;
  * PlainText represents a Plain Text field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class PlainText extends Field implements PreviewableFieldInterface
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -34,8 +31,13 @@ class PlainText extends Field implements PreviewableFieldInterface
         return Craft::t('app', 'Plain Text');
     }
 
-    // Properties
-    // =========================================================================
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return 'string|null';
+    }
 
     /**
      * @var string|null The input’s placeholder text
@@ -63,22 +65,44 @@ class PlainText extends Field implements PreviewableFieldInterface
     public $charLimit;
 
     /**
-     * @var string The type of database column the field should have in the content table
+     * @var int|null The maximum number of bytes allowed in the field
+     * @since 3.4.0
      */
-    public $columnType = Schema::TYPE_TEXT;
+    public $byteLimit;
 
-    // Public Methods
-    // =========================================================================
+    /**
+     * @var string|null The type of database column the field should have in the content table
+     */
+    public $columnType;
 
     /**
      * @inheritdoc
      */
     public function __construct(array $config = [])
     {
-        // This existed at one point way back in the day.
-        if (isset($config['maxLengthUnit'])) {
-            unset($config['maxLengthUnit']);
+        if (isset($config['limitUnit'], $config['fieldLimit'])) {
+            if ($config['limitUnit'] === 'chars') {
+                $config['charLimit'] = (int)$config['fieldLimit'] ?: null;
+            } else {
+                $config['byteLimit'] = (int)$config['fieldLimit'] ?: null;
+            }
+            unset($config['limitUnit'], $config['fieldLimit']);
         }
+
+        if (isset($config['charLimit']) && empty($config['charLimit'])) {
+            unset($config['charLimit']);
+        }
+
+        if (isset($config['byteLimit']) && empty($config['byteLimit'])) {
+            unset($config['byteLimit']);
+        }
+
+        if (isset($config['columnType']) && $config['columnType'] === 'auto') {
+            unset($config['columnType']);
+        }
+
+        // This existed at one point way back in the day.
+        unset($config['maxLengthUnit']);
 
         parent::__construct($config);
     }
@@ -86,11 +110,11 @@ class PlainText extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
-        $rules[] = [['initialRows', 'charLimit'], 'integer', 'min' => 1];
-        $rules[] = [['charLimit'], 'validateCharLimit'];
+        $rules = parent::defineRules();
+        $rules[] = [['initialRows', 'charLimit', 'byteLimit'], 'integer', 'min' => 1];
+        $rules[] = [['charLimit', 'byteLimit'], 'validateFieldLimit'];
         return $rules;
     }
 
@@ -99,13 +123,15 @@ class PlainText extends Field implements PreviewableFieldInterface
      *
      * @param string $attribute
      */
-    public function validateCharLimit(string $attribute)
+    public function validateFieldLimit(string $attribute)
     {
-        if ($this->charLimit) {
-            $columnTypeMax = Db::getTextualColumnStorageCapacity($this->columnType);
-
-            if ($columnTypeMax && $columnTypeMax < $this->charLimit) {
-                $this->addError($attribute, Craft::t('app', 'Character Limit is too big for your chosen Column Type.'));
+        if ($bytes = $this->$attribute) {
+            if ($attribute === 'charLimit') {
+                $bytes *= 4;
+            }
+            $columnTypeMax = Db::getTextualColumnStorageCapacity($this->getContentColumnType());
+            if ($columnTypeMax && $columnTypeMax < $bytes) {
+                $this->addError($attribute, Craft::t('app', 'Field Limit is too big for your chosen Column Type.'));
             }
         }
     }
@@ -126,7 +152,19 @@ class PlainText extends Field implements PreviewableFieldInterface
      */
     public function getContentColumnType(): string
     {
-        return $this->columnType;
+        if ($this->columnType) {
+            return $this->columnType;
+        }
+
+        if ($this->byteLimit) {
+            $bytes = $this->byteLimit;
+        } else if ($this->charLimit) {
+            $bytes = $this->charLimit * 4;
+        } else {
+            return Schema::TYPE_TEXT;
+        }
+
+        return Schema::TYPE_STRING . "({$bytes})";
     }
 
     /**
@@ -161,7 +199,11 @@ class PlainText extends Field implements PreviewableFieldInterface
     public function getElementValidationRules(): array
     {
         return [
-            ['string', 'max' => $this->charLimit ?: null],
+            [
+                'string',
+                'max' => $this->byteLimit ?? $this->charLimit ?? null,
+                'encoding' => $this->byteLimit ? '8bit' : 'UTF-8',
+            ],
         ];
     }
 

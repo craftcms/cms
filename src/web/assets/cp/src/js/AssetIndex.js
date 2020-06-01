@@ -133,7 +133,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                 helperOpacity: 0.75,
 
                 filter: $.proxy(function() {
-                    return this.view.getSelectedElements();
+                    return this.view.getSelectedElements().has('div.element[data-movable]');
                 }, this),
 
                 helper: $.proxy(function($file) {
@@ -141,15 +141,22 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                 }, this),
 
                 dropTargets: $.proxy(function() {
+                    // Which "can-move-to" attribute should we be checking
+                    var attr;
+                    if (this._assetDrag.$draggee && this._assetDrag.$draggee.has('.element[data-peer-file]').length) {
+                        attr = 'can-move-peer-files-to';
+                    } else {
+                        attr = 'can-move-to';
+                    }
+
                     var targets = [];
 
                     for (var i = 0; i < this.$sources.length; i++) {
                         // Make sure it's a volume folder
                         var $source = this.$sources.eq(i);
-                        if (!this._getFolderUidFromSourceKey($source.data('key'))) {
-                            continue;
+                        if ($source.data(attr)) {
+                            targets.push($source);
                         }
-                        targets.push($source);
                     }
 
                     return targets;
@@ -617,7 +624,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                         action: 'assets/move-asset',
                         params: fileMoveList[i]
                     });
-
                 }
                 this._performBatchRequests(parameterArray, function() {
                     moveCallback(folderDeleteList);
@@ -626,6 +632,21 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             else {
                 moveCallback(folderDeleteList);
             }
+        },
+
+        /**
+         * Returns the root level source for a source.
+         *
+         * @param $source
+         * @returns {*}
+         * @private
+         */
+        _getRootSource: function($source) {
+            var $parent;
+            while (($parent = this._getParentSource($source)) && $parent.length) {
+                $source = $parent;
+            }
+            return $source;
         },
 
         /**
@@ -676,7 +697,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             this.progressBar = new Craft.ProgressBar(this.$main, true);
 
             var options = {
-                url: Craft.getActionUrl('assets/save-asset'),
+                url: Craft.getActionUrl('assets/upload'),
                 fileInput: this.$uploadInput,
                 dropZone: this.$container
             };
@@ -707,17 +728,43 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             this.base();
         },
 
+        getDefaultSourceKey: function() {
+            // Did they request a specific volume in the URL?
+            if (this.settings.context === 'index' && typeof defaultVolumeHandle !== 'undefined') {
+                for (var i = 0; i < this.$sources.length; i++) {
+                    var $source = $(this.$sources[i]);
+                    if ($source.data('volume-handle') === defaultVolumeHandle) {
+                        return $source.data('key');
+                    }
+                }
+            }
+
+            return this.base();
+        },
+
         onSelectSource: function() {
             var $source = this._getSourceByKey(this.sourceKey);
             var folderId = $source.data('folder-id');
 
-            if (folderId && this.$source.attr('data-upload')) {
+            if (folderId && this.$source.attr('data-can-upload')) {
                 this.uploader.setParams({
                     folderId: this.$source.attr('data-folder-id')
                 });
                 this.$uploadButton.removeClass('disabled');
             } else {
                 this.$uploadButton.addClass('disabled');
+            }
+
+            // Update the URL if we're on the Assets index
+            // ---------------------------------------------------------------------
+
+            if (this.settings.context === 'index' && typeof history !== 'undefined') {
+                var uri = 'assets';
+                var $rootSource = this._getRootSource($source);
+                if ($rootSource && $rootSource.data('volume-handle')) {
+                    uri += '/' + $rootSource.data('volume-handle');
+                }
+                history.replaceState({}, '', Craft.getUrl(uri));
             }
 
             this.base();
@@ -735,7 +782,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                 if (this.$includeSubfoldersContainer === null) {
                     var id = 'includeSubfolders-' + Math.floor(Math.random() * 1000000000);
 
-                    this.$includeSubfoldersContainer = $('<div style="margin-bottom: -23px; opacity: 0;"/>').insertAfter(this.$search);
+                    this.$includeSubfoldersContainer = $('<div style="margin-bottom: -25px; opacity: 0;"/>').insertAfter(this.$search);
                     var $subContainer = $('<div style="padding-top: 5px;"/>').appendTo(this.$includeSubfoldersContainer);
                     this.$includeSubfoldersCheckbox = $('<input type="checkbox" id="' + id + '" class="checkbox"/>').appendTo($subContainer);
                     $('<label class="light smalltext" for="' + id + '"/>').text(' ' + Craft.t('app', 'Search in subfolders')).appendTo($subContainer);
@@ -768,7 +815,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                 this.$includeSubfoldersContainer.velocity('stop');
 
                 this.$includeSubfoldersContainer.velocity({
-                    marginBottom: -23,
+                    marginBottom: -25,
                     opacity: 0
                 }, 'fast');
 
@@ -866,7 +913,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
         /**
          * Update the elements after an upload, setting sort to dateModified descending, if not using index.
-         * 
+         *
          * @private
          */
         _updateAfterUpload: function () {
@@ -917,7 +964,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                     else {
                         doFollowup(parameterArray, parameterIndex, callback);
                     }
-
                 }.bind(this);
 
                 if (parameterArray[parameterIndex].choice === 'replace') {
@@ -969,7 +1015,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                     this._assetDrag.removeAllItems();
                 }
 
-                this._assetDrag.addItems($newElements);
+                this._assetDrag.addItems($newElements.has('div.element[data-movable]'));
             }
 
             // See if we have freshly uploaded files to add to selection
@@ -1220,8 +1266,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                             '<li>' +
                             '<a data-key="' + $parentFolder.data('key') + '/folder:' + data.folderUid + '"' +
                             (Garnish.hasAttr($parentFolder, 'data-has-thumbs') ? ' data-has-thumbs' : '') +
-                            ' data-upload="' + $parentFolder.attr('data-upload') + '"' +
                             ' data-folder-id="' + data.folderId + '"' +
+                            ' data-can-upload="' + $parentFolder.attr('data-can-upload') + '"' +
+                            ' data-can-move-to="' + $parentFolder.attr('data-can-move-to') + '"' +
+                            ' data-can-move-peer-files-to="' + $parentFolder.attr('data-can-move-peer-files-to') + '"' +
                             '>' +
                             data.folderName +
                             '</a>' +
@@ -1298,7 +1346,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                     if (textStatus === 'success' && data.error) {
                         alert(data.error);
                     }
-
                 }, this), 'json');
             }
         },
@@ -1390,7 +1437,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         },
 
         _performBatchRequests: function(parameterArray, finalCallback) {
-
             var responseArray = [];
 
             var doRequest = function (parameters) {
@@ -1415,7 +1461,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                 doRequest(parameterArray[i]);
             }
         }
-
     });
 
 // Register it!

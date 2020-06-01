@@ -17,13 +17,10 @@ use yii\base\InvalidConfigException;
  * Class ElementUriValidator.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class ElementUriValidator extends UriValidator
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -44,13 +41,26 @@ class ElementUriValidator extends UriValidator
             throw new InvalidConfigException('Invalid use of ElementUriValidator');
         }
 
+        // If this is a draft or revision and it already has a URI, leave it alone
+        /** @var Element $model */
+        if (
+            $model->uri &&
+            (
+                ($model->getIsDraft() && !$model->getIsUnsavedDraft()) ||
+                $model->getIsRevision()
+            )
+        ) {
+            return;
+        }
+
         try {
-            /** @var Element $model */
             ElementHelper::setUniqueUri($model);
         } catch (OperationAbortedException $e) {
-            $this->addError($model, $attribute, Craft::t('app', 'Could not generate a unique URI based on the URI format.'));
-
-            return;
+            // Not a big deal if the element isn't enabled yet
+            if ($model->enabled && $model->enabledForSite) {
+                $this->addError($model, $attribute, Craft::t('app', 'Could not generate a unique URI based on the URI format.'));
+                return;
+            }
         }
 
         if (!$this->isEmpty($model->uri)) {

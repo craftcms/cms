@@ -1,0 +1,51 @@
+codecov:
+  notify:
+    require_ci_to_pass: yes
+
+coverage:
+  range: 20..100
+  round: down
+  precision: 2
+  status:
+    project:
+      default:
+        threshold: .1
+        base: pr
+
+  notify:
+    slack:
+      default:
+        url: secret:6khnlMrrqo73RkUvirgGG60/ormed+LWKvoeYGU72jUDSrPqOMR63KQsS3hzvGtOFWYNzYHkesvlagFb3aAijHGw2Md0jEbjWj/PfXV23XGB59tF9ktCdIoe9o05AKlWtGYKaguPRkbNqTk3yAaYXUQtV02KvUFm+RzAEcwuRv0=
+        threshold: 1%
+        only_pulls: false
+        branches: develop
+        flags: null
+        attachments: "sunburst, diff"
+        paths: null
+        message: "Coverage {{changed}} for {{owner}}/{{repo}}"
+
+parsers:
+  gcov:
+    branch_detection:
+      conditional: yes
+      loop: yes
+      method: no
+      macro: no
+
+comment: off
+
+ignore:
+  - "src/web/assets"
+  - "src/test/internal"
+  - "src/config"
+  - "src/icons"
+  - "src/test/internal"
+  - "src/migrations"
+  - "src/templates"
+  - "src/translations"
+  - "src/views"
+  - "src/web/assets"
+  - "bootstrap"
+  - "lib"
+  - "tests"
+  - "vendor"

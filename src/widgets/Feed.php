@@ -16,13 +16,10 @@ use craft\web\assets\feed\FeedAsset;
  * Feed represents a Feed dashboard widget.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Feed extends Widget
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -34,13 +31,10 @@ class Feed extends Widget
     /**
      * @inheritdoc
      */
-    public static function iconPath()
+    public static function icon()
     {
         return Craft::getAlias('@app/icons/feed.svg');
     }
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var string|null The feed URL
@@ -57,9 +51,6 @@ class Feed extends Widget
      */
     public $limit;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -75,9 +66,9 @@ class Feed extends Widget
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['url', 'title'], 'required'];
         $rules[] = [['url'], 'url'];
         $rules[] = [['limit'], 'integer', 'min' => 1];

@@ -15,7 +15,7 @@ use yii\validators\UrlValidator;
 
 /**
  * EnvAttributeParserBehavior can be applied to models with attributes that can be
- * set to either environment variables (`$VARIABLE_NAME`) or aliases (`@aliasName`)`.
+ * set to either environment variables (`$VARIABLE_NAME`) or aliases (`@aliasName`).
  *
  * ---
  *
@@ -32,7 +32,7 @@ use yii\validators\UrlValidator;
  * ```
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.1
+ * @since 3.1.0
  */
 class EnvAttributeParserBehavior extends Behavior
 {

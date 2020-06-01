@@ -18,13 +18,10 @@ use craft\web\assets\craftsupport\CraftSupportAsset;
  * CraftSupport represents a Craft Support dashboard widget.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class CraftSupport extends Widget
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -53,13 +50,18 @@ class CraftSupport extends Widget
     /**
      * @inheritdoc
      */
-    public static function iconPath()
+    public static function icon()
     {
         return Craft::getAlias('@app/icons/buoey.svg');
     }
 
-    // Public Methods
-    // =========================================================================
+    /**
+     * @inheritdoc
+     */
+    public function getTitle(): string
+    {
+        return '';
+    }
 
     /**
      * @inheritdoc
@@ -98,7 +100,7 @@ class CraftSupport extends Widget
             'Craft version' => Craft::$app->getVersion() . ' (' . Craft::$app->getEditionName() . ')',
             'PHP version' => App::phpVersion(),
             'OS version' => PHP_OS . ' ' . php_uname('r'),
-            'Database driver & version' => $dbDriver . ' ' . $db->getVersion(),
+            'Database driver & version' => $dbDriver . ' ' . App::normalizeVersion($db->getSchema()->getServerVersion()),
             'Image driver & version' => $imageDriver . ' ' . $imagesService->getVersion(),
             'Plugins & versions' => $plugins,
         ]);

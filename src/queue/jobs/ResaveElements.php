@@ -8,25 +8,22 @@
 namespace craft\queue\jobs;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\db\QueryAbortedException;
 use craft\elements\db\ElementQuery;
-use craft\helpers\App;
+use craft\elements\db\ElementQueryInterface;
+use craft\events\BatchElementActionEvent;
 use craft\queue\BaseJob;
-use yii\base\Exception;
+use craft\services\Elements;
+use yii\db\Exception;
 
 /**
  * ResaveElements job
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class ResaveElements extends BaseJob
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|ElementInterface|null The element type that should be resaved
      */
@@ -37,59 +34,75 @@ class ResaveElements extends BaseJob
      */
     public $criteria;
 
-    // Public Methods
-    // =========================================================================
+    /**
+     * @var bool Whether to update the search indexes for the resaved elements.
+     * @since 3.4.2
+     */
+    public $updateSearchIndex = false;
 
     /**
      * @inheritdoc
      */
     public function execute($queue)
     {
-        $class = $this->elementType;
-
         // Let's save ourselves some trouble and just clear all the caches for this element class
-        Craft::$app->getTemplateCaches()->deleteCachesByElementType($class);
+        Craft::$app->getTemplateCaches()->deleteCachesByElementType($this->elementType);
 
-        // Now find the affected element IDs
         /** @var ElementQuery $query */
-        $query = $class::find();
-        if (!empty($this->criteria)) {
-            Craft::configure($query, $this->criteria);
+        $query = $this->_query();
+        $total = $query->count();
+        if ($query->limit) {
+            $total = min($total, $query->limit);
         }
-        $query
-            ->offset(null)
-            ->limit(null)
-            ->orderBy(null);
+        $elementsService = Craft::$app->getElements();
 
-        $totalElements = $query->count();
-        $currentElement = 0;
-
-        try {
-            foreach ($query->each() as $element) {
-                $this->setProgress($queue, $currentElement++ / $totalElements);
-
-                /** @var Element $element */
-                $element->setScenario(Element::SCENARIO_ESSENTIALS);
-                $element->resaving = true;
-                if (!Craft::$app->getElements()->saveElement($element)) {
-                    throw new Exception('Couldn’t save element ' . $element->id . ' (' . get_class($element) . ') due to validation errors.');
-                }
+        $callback = function(BatchElementActionEvent $e) use ($queue, $query, $total) {
+            if ($e->query === $query) {
+                $this->setProgress($queue, ($e->position - 1) / $total, Craft::t('app', '{step} of {total}', [
+                    'step' => $e->position,
+                    'total' => $total,
+                ]));
             }
-        } catch (QueryAbortedException $e) {
-            // Fail silently
-        }
-    }
+        };
 
-    // Protected Methods
-    // =========================================================================
+        $elementsService->on(Elements::EVENT_BEFORE_RESAVE_ELEMENT, $callback);
+        $elementsService->resaveElements($query, false, true, $this->updateSearchIndex);
+        $elementsService->off(Elements::EVENT_BEFORE_RESAVE_ELEMENT, $callback);
+    }
 
     /**
      * @inheritdoc
      */
     protected function defaultDescription(): string
     {
-        return Craft::t('app', 'Resaving {class} elements', [
-            'class' => App::humanizeClass($this->elementType)
+        /** @var ElementQuery $query */
+        $query = $this->_query();
+        /** @var ElementInterface $elementType */
+        $elementType = $query->elementType;
+        return Craft::t('app', 'Resaving {type}', [
+            'type' => $elementType::pluralLowerDisplayName(),
         ]);
+    }
+
+    /**
+     * Returns the element query based on the criteria.
+     *
+     * @return ElementQueryInterface
+     */
+    private function _query(): ElementQueryInterface
+    {
+        $elementType = $this->elementType;
+        $query = $elementType::find();
+
+        if (!empty($this->criteria)) {
+            Craft::configure($query, $this->criteria);
+        }
+
+        $query
+            ->offset(null)
+            ->limit(null)
+            ->orderBy(null);
+
+        return $query;
     }
 }

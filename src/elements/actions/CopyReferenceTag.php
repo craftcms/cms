@@ -17,20 +17,14 @@ use yii\base\Exception;
  * CopyReferenceTag represents a Copy Reference Tag element action.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class CopyReferenceTag extends ElementAction
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null The element type associated with this action
      */
     public $elementType;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

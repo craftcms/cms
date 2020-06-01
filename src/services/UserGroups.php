@@ -25,13 +25,10 @@ use yii\base\Component;
  * An instance of the User Groups service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getUserGroups()|`Craft::$app->userGroups`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class UserGroups extends Component
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event UserGroupEvent The event that is triggered before a user group is saved.
      */
@@ -49,6 +46,7 @@ class UserGroups extends Component
 
     /**
      * @event UserGroupEvent The event that is triggered before a user group delete is applied to the database.
+     * @since 3.1.0
      */
     const EVENT_BEFORE_APPLY_GROUP_DELETE = 'beforeApplyGroupDelete';
 
@@ -58,9 +56,6 @@ class UserGroups extends Component
     const EVENT_AFTER_DELETE_USER_GROUP = 'afterDeleteUserGroup';
 
     const CONFIG_USERPGROUPS_KEY = 'users.groups';
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns all user groups.
@@ -178,6 +173,7 @@ class UserGroups extends Component
                 'g.id',
                 'g.name',
                 'g.handle',
+                'g.uid'
             ])
             ->from(['{{%usergroups}} g'])
             ->innerJoin('{{%usergroups_users}} gu', '[[gu.groupId]] = [[g.id]]')
@@ -234,7 +230,7 @@ class UserGroups extends Component
             'handle' => $group->handle
         ];
 
-        $projectConfig->set($configPath, $configData);
+        $projectConfig->set($configPath, $configData, "Save user group “{$group->handle}”");
 
         // Now that we have a group ID, save it on the model
         if ($isNewGroup) {
@@ -331,6 +327,7 @@ class UserGroups extends Component
      * @param UserGroup $group The user group
      * @return bool Whether the user group was deleted successfully
      * @throws WrongEditionException if this is called from Craft Solo edition
+     * @since 3.0.12
      */
     public function deleteGroup(UserGroup $group): bool
     {
@@ -347,12 +344,9 @@ class UserGroups extends Component
             ]));
         }
 
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_USERPGROUPS_KEY . '.' . $group->uid);
+        Craft::$app->getProjectConfig()->remove(self::CONFIG_USERPGROUPS_KEY . '.' . $group->uid, "Delete the “{$group->handle}” user group");
         return true;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * @return Query

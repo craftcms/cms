@@ -47,8 +47,7 @@ class DashboardAsset extends AssetBundle
 
         if ($view instanceof View) {
             $view->registerTranslations('app', [
-                '1 column',
-                '{num} columns',
+                '{num, number} {num, plural, =1{column} other{columns}}',
                 '{type} Settings',
                 'Widget saved.',
                 'Couldn’t save widget.',

@@ -15,20 +15,14 @@ use craft\helpers\Json;
  * EditImage represents an Edit Image action
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class EditImage extends ElementAction
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string The trigger label
      */
     public $label;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

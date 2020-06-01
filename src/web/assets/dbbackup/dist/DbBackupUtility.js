@@ -1,5 +1,4 @@
 (function($) {
-
     Craft.DbBackupUtility = Garnish.Base.extend(
         {
             $trigger: null,
@@ -19,8 +18,7 @@
                 if (!this.$trigger.hasClass('disabled')) {
                     if (!this.progressBar) {
                         this.progressBar = new Craft.ProgressBar(this.$status);
-                    }
-                    else {
+                    } else {
                         this.progressBar.resetProgressBar();
                     }
 
@@ -32,42 +30,28 @@
                         },
                         {
                             complete: $.proxy(function() {
-                                var postData = Garnish.getPostData(this.$form),
-                                    params = Craft.expandPostArray(postData);
-
-                                var data = {
-                                    params: params
-                                };
-
-                                Craft.postActionRequest(params.action, data, $.proxy(function(response, textStatus) {
-                                        if(textStatus === 'success')
-                                        {
-                                            if (response && response.error) {
-                                                alert(response.error);
-                                            }
-
+                                if (($('#download-backup').prop('checked'))) {
+                                    Craft.downloadFromUrl('POST', Craft.getActionUrl('utilities/db-backup-perform-action'), this.$form.serialize())
+                                        .then(function() {
                                             this.updateProgressBar();
-
-                                            if (response && response.backupFile) {
-                                                var $iframe = $('<iframe/>', {'src': Craft.getActionUrl('utilities/download-backup-file', {'filename': response.backupFile})}).hide();
-                                                this.$form.append($iframe);
-                                            }
-
-                                            setTimeout($.proxy(this, 'onComplete'), 300);
-                                        }
-                                        else
-                                        {
+                                            setTimeout(this.onComplete.bind(this), 300);
+                                        }.bind(this))
+                                        .catch(function() {
                                             Craft.cp.displayError(Craft.t('app', 'There was a problem backing up your database. Please check the Craft logs.'));
-
+                                            this.onComplete(false);
+                                        }.bind(this));
+                                } else {
+                                    Craft.postActionRequest('utilities/db-backup-perform-action', function(response, textStatus) {
+                                        this.updateProgressBar();
+                                        if (textStatus === 'success') {
+                                            setTimeout(this.onComplete.bind(this), 300);
+                                        } else {
+                                            Craft.cp.displayError(Craft.t('app', 'There was a problem backing up your database. Please check the Craft logs.'));
                                             this.onComplete(false);
                                         }
-
-                                    }, this),
-                                    {
-                                        complete: $.noop
-                                    });
-
-                            }, this)
+                                    }.bind(this))
+                                }
+                            }.bind(this))
                         });
 
                     if (this.$allDone) {
@@ -85,7 +69,6 @@
             },
 
             onComplete: function(showAllDone) {
-
                 if (!this.$allDone) {
                     this.$allDone = $('<div class="alldone" data-icon="done" />').appendTo(this.$status);
                     this.$allDone.css('opacity', 0);
@@ -93,7 +76,7 @@
 
                 this.progressBar.$progressBar.velocity({opacity: 0}, {
                     duration: 'fast', complete: $.proxy(function() {
-                        if(typeof showAllDone === 'undefined' || showAllDone === true) {
+                        if (typeof showAllDone === 'undefined' || showAllDone === true) {
                             this.$allDone.velocity({opacity: 1}, {duration: 'fast'});
                         }
 
@@ -103,5 +86,4 @@
                 });
             }
         });
-
 })(jQuery);

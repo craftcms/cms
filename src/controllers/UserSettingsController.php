@@ -19,13 +19,10 @@ use yii\web\Response;
  * Note that all actions in this controller require administrator access in order to execute.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class UserSettingsController extends Controller
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -136,7 +133,7 @@ class UserSettingsController extends Controller
             $settings['defaultGroup'] = Craft::$app->getRequest()->getBodyParam('defaultGroup');
         }
 
-        $projectConfig->set('users', $settings);
+        $projectConfig->set('users', $settings, 'Update user settings');
 
         Craft::$app->getSession()->setNotice(Craft::t('app', 'User settings saved.'));
         return $this->redirectToPostedUrl();

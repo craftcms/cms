@@ -4,8 +4,6 @@ namespace craft\migrations;
 
 use Craft;
 use craft\db\Migration;
-use craft\db\Table;
-use craft\helpers\MigrationHelper;
 
 /**
  * m190208_140000_reset_project_config_mapping migration.

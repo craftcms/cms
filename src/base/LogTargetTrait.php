@@ -85,11 +85,17 @@ trait LogTargetTrait
     {
         $context = ArrayHelper::filter($GLOBALS, $this->logVars);
         $result = [];
-        $security = Craft::$app->getSecurity();
 
-        foreach ($context as $key => $value) {
-            $value = $security->redactIfSensitive($key, $value);
-            $result[] = "\${$key} = " . VarDumper::dumpAsString($value);
+        // Workaround for codeception testing until these gets addressed:
+        // https://github.com/yiisoft/yii-core/issues/49
+        // https://github.com/yiisoft/yii2/issues/15847
+        if (Craft::$app) {
+            $security = Craft::$app->getSecurity();
+
+            foreach ($context as $key => $value) {
+                $value = $security->redactIfSensitive($key, $value);
+                $result[] = "\${$key} = " . VarDumper::dumpAsString($value);
+            }
         }
 
         return implode("\n\n", $result);

@@ -17,13 +17,10 @@ use Twig\TokenParser\AbstractTokenParser;
  * Paginates elements via an [[\craft\elements\db\ElementQuery]] instance.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class PaginateTokenParser extends AbstractTokenParser
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

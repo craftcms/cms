@@ -73,7 +73,7 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
                     }, this)
                 });
 
-                this.addListener(this.$passwordInput, 'textchange', 'validatePassword');
+                this.addListener(this.$passwordInput, 'input', 'validatePassword');
                 this.addListener($passwordModal, 'submit', 'submitPassword');
             }
             else {
@@ -131,13 +131,12 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
                 else {
                     this.showPasswordError();
                 }
-
             }, this));
         },
 
         showPasswordError: function(error) {
             if (error === null || typeof error === 'undefined') {
-                error = Craft.t('app', 'An unknown error occurred.');
+                error = Craft.t('app', 'A server error occurred.');
             }
 
             this.$errorPara.text(error);

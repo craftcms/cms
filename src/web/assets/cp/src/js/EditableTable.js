@@ -67,7 +67,7 @@ Craft.EditableTable = Garnish.Base.extend(
 
         initialize: function() {
             if (this.initialized) {
-                return;
+                return false;
             }
 
             this.initialized = true;
@@ -76,12 +76,13 @@ Craft.EditableTable = Garnish.Base.extend(
             var $rows = this.$tbody.children();
 
             for (var i = 0; i < $rows.length; i++) {
-                new Craft.EditableTable.Row(this, $rows[i]);
+                this.createRowObj($rows[i]);
             }
 
             this.$addRowBtn = this.$table.next('.add');
             this.updateAddRowButton();
             this.addListener(this.$addRowBtn, 'activate', 'addRow');
+            return true;
         },
         initializeIfVisible: function() {
             this.removeListener(Garnish.$win, 'resize');
@@ -117,6 +118,8 @@ Craft.EditableTable = Garnish.Base.extend(
             this.updateAddRowButton();
             // onDeleteRow callback
             this.settings.onDeleteRow(row.$tr);
+
+            row.destroy();
         },
         canAddRow: function() {
             if (this.settings.staticRows) {
@@ -129,7 +132,7 @@ Craft.EditableTable = Garnish.Base.extend(
 
             return true;
         },
-        addRow: function(focus) {
+        addRow: function(focus, prepend) {
             if (!this.canAddRow()) {
                 return;
             }
@@ -137,13 +140,18 @@ Craft.EditableTable = Garnish.Base.extend(
             var rowId = this.settings.rowIdPrefix + (this.biggestId + 1),
                 $tr = this.createRow(rowId, this.columns, this.baseName, $.extend({}, this.settings.defaultValues));
 
-            $tr.appendTo(this.$tbody);
-            var row = new Craft.EditableTable.Row(this, $tr);
+            if (prepend) {
+                $tr.prependTo(this.$tbody);
+            } else {
+                $tr.appendTo(this.$tbody);
+            }
+
+            var row = this.createRowObj($tr);
             this.sorter.addItems($tr);
 
             // Focus the first input in the row
             if (focus !== false) {
-                $tr.find('input,textarea,select').first().trigger('focus');
+                $tr.find('input:visible,textarea:visible,select:visible').first().trigger('focus');
             }
 
             this.rowCount++;
@@ -157,6 +165,43 @@ Craft.EditableTable = Garnish.Base.extend(
 
         createRow: function(rowId, columns, baseName, values) {
             return Craft.EditableTable.createRow(rowId, columns, baseName, values);
+        },
+
+        createRowObj: function($tr) {
+            return new Craft.EditableTable.Row(this, $tr);
+        },
+
+        focusOnPrevRow: function($tr, tdIndex, blurTd) {
+            var $prevTr = $tr.prev('tr');
+            var prevRow;
+
+            if ($prevTr.length) {
+                prevRow = $prevTr.data('editable-table-row');
+            } else {
+                prevRow = this.addRow(false, true);
+            }
+
+            // Focus on the same cell in the previous row
+            if (!prevRow) {
+                return;
+            }
+
+            if (!prevRow.$tds[tdIndex]) {
+                return;
+            }
+
+            if ($(prevRow.$tds[tdIndex]).hasClass('disabled')) {
+                if ($prevTr) {
+                    this.focusOnPrevRow($prevTr, tdIndex, blurTd);
+                }
+                return;
+            }
+
+            var $input = $('textarea,input.text', prevRow.$tds[tdIndex]);
+            if ($input.length) {
+                $(blurTd).trigger('blur');
+                $input.trigger('focus');
+            }
         },
 
         focusOnNextRow: function($tr, tdIndex, blurTd) {
@@ -191,12 +236,34 @@ Craft.EditableTable = Garnish.Base.extend(
                 $input.trigger('focus');
             }
         },
+
+        importData: function(data, row, tdIndex) {
+            let lines = data.split(/\r?\n|\r/);
+            for (let i = 0; i < lines.length; i++) {
+                let values = lines[i].split("\t");
+                for (let j = 0; j < values.length; j++) {
+                    let value = values[j];
+                    row.$tds.eq(tdIndex + j).find('textarea,input[type!=hidden]')
+                        .val(value)
+                        .trigger('input');
+                }
+
+                // move onto the next row
+                let $nextTr = row.$tr.next('tr');
+                if ($nextTr.length) {
+                    row = $nextTr.data('editable-table-row');
+                } else {
+                    row = this.addRow(false);
+                }
+            }
+        },
     },
     {
-        textualColTypes: ['color', 'date', 'multiline', 'number', 'singleline', 'template', 'time'],
+        textualColTypes: ['color', 'date', 'email', 'multiline', 'number', 'singleline', 'template', 'time', 'url'],
         defaults: {
             rowIdPrefix: '',
             defaultValues: {},
+            staticRows: false,
             minRows: null,
             maxRows: null,
             onAddRow: $.noop,
@@ -224,15 +291,14 @@ Craft.EditableTable = Garnish.Base.extend(
                         'html': value
                     });
                 } else {
-                    var name = baseName + '[' + rowId + '][' + colId + ']',
-                        textual = Craft.inArray(col.type, Craft.EditableTable.textualColTypes);
+                    var name = baseName + '[' + rowId + '][' + colId + ']';
 
                     $cell = $('<td/>', {
-                        'class': col['class'],
+                        'class': `${col['class'] || ''} ${col['type']}-cell`,
                         'width': col.width
                     });
 
-                    if (textual) {
+                    if (Craft.inArray(col.type, Craft.EditableTable.textualColTypes)) {
                         $cell.addClass('textual');
                     }
 
@@ -242,11 +308,14 @@ Craft.EditableTable = Garnish.Base.extend(
 
                     switch (col.type) {
                         case 'checkbox':
-                            Craft.ui.createCheckbox({
-                                name: name,
-                                value: col.value || '1',
-                                checked: !!value
-                            }).appendTo($cell);
+                            $('<div class="checkbox-wrapper"/>')
+                                .append(Craft.ui.createCheckbox({
+                                        name: name,
+                                        value: col.value || '1',
+                                        checked: !!value
+                                    })
+                                )
+                                .appendTo($cell);
                             break;
 
                         case 'color':
@@ -277,7 +346,14 @@ Craft.EditableTable = Garnish.Base.extend(
                             Craft.ui.createSelect({
                                 name: name,
                                 options: col.options,
-                                value: value,
+                                value: value || (function() {
+                                    for (var key in col.options) {
+                                        if (col.options.hasOwnProperty(key) && col.options[key].default) {
+                                            return typeof col.options[key].value !== 'undefined' ? col.options[key].value : key;
+                                        }
+                                    }
+                                    return null;
+                                })(),
                                 'class': 'small'
                             }).appendTo($cell);
                             break;
@@ -286,6 +362,16 @@ Craft.EditableTable = Garnish.Base.extend(
                             Craft.ui.createTimeInput({
                                 name: name,
                                 value: value
+                            }).appendTo($cell);
+                            break;
+
+                        case 'email':
+                        case 'url':
+                            Craft.ui.createTextInput({
+                                name: name,
+                                value: value,
+                                type: col.type,
+                                placeholder: col.placeholder || null,
                             }).appendTo($cell);
                             break;
 
@@ -335,6 +421,7 @@ Craft.EditableTable.Row = Garnish.Base.extend(
 
         $tr: null,
         $tds: null,
+        tds: null,
         $textareas: null,
         $deleteBtn: null,
 
@@ -342,11 +429,13 @@ Craft.EditableTable.Row = Garnish.Base.extend(
             this.table = table;
             this.$tr = $(tr);
             this.$tds = this.$tr.children();
+            this.tds = [];
+            this.id = this.$tr.attr('data-id');
 
             this.$tr.data('editable-table-row', this);
 
             // Get the row ID, sans prefix
-            var id = parseInt(this.$tr.attr('data-id').substr(this.table.settings.rowIdPrefix.length));
+            var id = parseInt(this.id.substr(this.table.settings.rowIdPrefix.length));
 
             if (id > this.table.biggestId) {
                 this.table.biggestId = id;
@@ -357,7 +446,7 @@ Craft.EditableTable.Row = Garnish.Base.extend(
             var textareasByColId = {};
 
             var i = 0;
-            var colId, col;
+            var colId, col, td, $textarea, $checkbox;
 
             for (colId in this.table.columns) {
                 if (!this.table.columns.hasOwnProperty(colId)) {
@@ -365,9 +454,10 @@ Craft.EditableTable.Row = Garnish.Base.extend(
                 }
 
                 col = this.table.columns[colId];
+                td = this.tds[colId] = this.$tds[i];
 
                 if (Craft.inArray(col.type, Craft.EditableTable.textualColTypes)) {
-                    var $textarea = $('textarea, input.text', this.$tds[i]);
+                    $textarea = $('textarea', td);
                     this.$textareas = this.$textareas.add($textarea);
 
                     this.addListener($textarea, 'focus', 'onTextareaFocus');
@@ -378,18 +468,38 @@ Craft.EditableTable.Row = Garnish.Base.extend(
                     }));
 
                     this.addListener($textarea, 'keypress', {tdIndex: i, type: col.type}, 'handleKeypress');
-                    this.addListener($textarea, 'textchange', {type: col.type}, 'validateValue');
-                    $textarea.trigger('textchange');
+                    this.addListener($textarea, 'input', {type: col.type}, 'validateValue');
+                    $textarea.trigger('input');
+
+                    if (col.type !== 'multiline') {
+                        this.addListener($textarea, 'paste', {tdIndex: i, type: col.type}, 'handlePaste');
+                    }
 
                     textareasByColId[colId] = $textarea;
-                } else if (col.type === 'checkbox' && col.radioMode) {
-                    var $checkbox = $('input[type="checkbox"]', this.$tds[i]);
-                    if (typeof this.table.radioCheckboxes[colId] === 'undefined') {
-                        this.table.radioCheckboxes[colId] = [];
-                    }
-                    this.table.radioCheckboxes[colId].push($checkbox[0]);
+                } else if (col.type === 'checkbox') {
+                    $checkbox = $('input[type="checkbox"]', td);
 
-                    this.addListener($checkbox, 'change', {colId: colId}, 'onRadioCheckboxChange');
+                    if (col.radioMode) {
+                        if (typeof this.table.radioCheckboxes[colId] === 'undefined') {
+                            this.table.radioCheckboxes[colId] = [];
+                        }
+                        this.table.radioCheckboxes[colId].push($checkbox[0]);
+                        this.addListener($checkbox, 'change', {colId: colId}, 'onRadioCheckboxChange');
+                    }
+
+                    if (col.toggle) {
+                        this.addListener($checkbox, 'change', {colId: colId}, function(ev) {
+                            this.applyToggleCheckbox(ev.data.colId);
+                        });
+                    }
+                }
+
+                if (!$(td).hasClass('disabled')) {
+                    this.addListener(td, 'click', {td: td}, function(ev) {
+                        if (ev.target === ev.data.td) {
+                            $(ev.data.td).find('textarea,input,select,.lightswitch').focus();
+                        }
+                    });
                 }
 
                 i++;
@@ -397,6 +507,17 @@ Craft.EditableTable.Row = Garnish.Base.extend(
 
             // Now that all of the text cells have been nice-ified, let's normalize the heights
             this.onTextareaHeightChange();
+
+            // See if we need to apply any checkbox toggles now that we've indexed all the TDs
+            for (colId in this.table.columns) {
+                if (!this.table.columns.hasOwnProperty(colId)) {
+                    continue;
+                }
+                col = this.table.columns[colId];
+                if (col.type === 'checkbox' && col.toggle) {
+                    this.applyToggleCheckbox(colId);
+                }
+            }
 
             // Now look for any autopopulate columns
             for (colId in this.table.columns) {
@@ -415,6 +536,14 @@ Craft.EditableTable.Row = Garnish.Base.extend(
 
             var $deleteBtn = this.$tr.children().last().find('.delete');
             this.addListener($deleteBtn, 'click', 'deleteRow');
+
+            var $inputs = this.$tr.find('input,textarea,select,.lightswitch');
+            this.addListener($inputs, 'focus', function(ev) {
+                $(ev.currentTarget).closest('td:not(.disabled)').addClass('focus');
+            });
+            this.addListener($inputs, 'blur', function(ev) {
+                $(ev.currentTarget).closest('td').removeClass('focus');
+            });
         },
 
         onTextareaFocus: function(ev) {
@@ -441,6 +570,28 @@ Craft.EditableTable.Row = Garnish.Base.extend(
             }
         },
 
+        applyToggleCheckbox: function(checkboxColId) {
+            var checkboxCol = this.table.columns[checkboxColId];
+            var checked = $('input[type="checkbox"]', this.tds[checkboxColId]).prop('checked');
+            var colId, colIndex, neg;
+            for (var i = 0; i < checkboxCol.toggle.length; i++) {
+                colId = checkboxCol.toggle[i];
+                colIndex = this.table.colum;
+                if (neg = colId[0] === '!') {
+                    colId = colId.substr(1);
+                }
+                if ((checked && !neg) || (!checked && neg)) {
+                    $(this.tds[colId])
+                        .removeClass('disabled')
+                        .find('textarea, input').prop('disabled', false);
+                } else {
+                    $(this.tds[colId])
+                        .addClass('disabled')
+                        .find('textarea, input').prop('disabled', true);
+                }
+            }
+        },
+
         ignoreNextTextareaFocus: function(ev) {
             $.data(ev.currentTarget, 'ignoreNextFocus', true);
         },
@@ -449,10 +600,14 @@ Craft.EditableTable.Row = Garnish.Base.extend(
             var keyCode = ev.keyCode ? ev.keyCode : ev.charCode;
             var ctrl = Garnish.isCtrlKeyPressed(ev);
 
-            // Going to the next row?
+            // Going to the next/previous row?
             if (keyCode === Garnish.RETURN_KEY && (ev.data.type !== 'multiline' || ctrl)) {
                 ev.preventDefault();
-                this.table.focusOnNextRow(this.$tr, ev.data.tdIndex, ev.currentTarget);
+                if (ev.shiftKey) {
+                    this.table.focusOnPrevRow(this.$tr, ev.data.tdIndex, ev.currentTarget);
+                } else {
+                    this.table.focusOnNextRow(this.$tr, ev.data.tdIndex, ev.currentTarget);
+                }
                 return;
             }
 
@@ -460,6 +615,15 @@ Craft.EditableTable.Row = Garnish.Base.extend(
             if (ev.data.type === 'number' && !ctrl && !Craft.inArray(keyCode, Craft.EditableTable.Row.numericKeyCodes)) {
                 ev.preventDefault();
             }
+        },
+
+        handlePaste: function(ev) {
+            let data = Craft.trim(ev.originalEvent.clipboardData.getData('Text'), ' \n\r');
+            if (!data.match(/[\t\r\n]/)) {
+                return;
+            }
+            ev.preventDefault();
+            this.table.importData(data, this, ev.data.tdIndex);
         },
 
         validateValue: function(ev) {
@@ -475,12 +639,10 @@ Craft.EditableTable.Row = Garnish.Base.extend(
 
                 if (match !== null) {
                     safeValue = match[1];
-                }
-                else {
+                } else {
                     safeValue = '';
                 }
-            }
-            else {
+            } else {
                 // Just strip any newlines
                 safeValue = ev.currentTarget.value.replace(/[\r\n]/g, '');
             }

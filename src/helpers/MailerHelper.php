@@ -23,13 +23,10 @@ use yii\base\Event;
  * Class MailerHelper
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class MailerHelper
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event RegisterComponentTypesEvent The event that is triggered when registering mailer transport adapter types.
      *
@@ -49,9 +46,6 @@ class MailerHelper
      * ```
      */
     const EVENT_REGISTER_MAILER_TRANSPORT_TYPES = 'registerMailerTransportTypes';
-
-    // Static
-    // =========================================================================
 
     /**
      * Returns all available mailer transport adapter classes.

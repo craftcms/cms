@@ -12,24 +12,25 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\fields\data\ColorData;
+use craft\gql\types\generators\TableRowType as TableRowTypeGenerator;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Json;
 use craft\validators\ColorValidator;
+use craft\validators\UrlValidator;
 use craft\web\assets\tablesettings\TableSettingsAsset;
 use craft\web\assets\timepicker\TimepickerAsset;
+use GraphQL\Type\Definition\Type;
 use yii\db\Schema;
+use yii\validators\EmailValidator;
 
 /**
  * Table represents a Table field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Table extends Field
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -38,8 +39,13 @@ class Table extends Field
         return Craft::t('app', 'Table');
     }
 
-    // Properties
-    // =========================================================================
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return 'array|null';
+    }
 
     /**
      * @var string|null Custom add row button label
@@ -77,9 +83,6 @@ class Table extends Field
      */
     public $columnType = Schema::TYPE_TEXT;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -93,6 +96,25 @@ class Table extends Field
 
         if (!is_array($this->columns)) {
             $this->columns = [];
+        } else {
+            foreach ($this->columns as $colId => &$column) {
+                // If the column doesn't specify a type, then it probably wasn't meant to be submitted
+                if (!isset($column['type'])) {
+                    unset($this->columns[$colId]);
+                    continue;
+                }
+
+                if ($column['type'] === 'select') {
+                    if (!isset($column['options'])) {
+                        $column['options'] = [];
+                    } else if (is_string($column['options'])) {
+                        $column['options'] = Json::decode($column['options']);
+                    }
+                } else {
+                    unset($column['options']);
+                }
+            }
+            unset($column);
         }
 
         if (!is_array($this->defaults)) {
@@ -119,13 +141,36 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['minRows'], 'compare', 'compareAttribute' => 'maxRows', 'operator' => '<=', 'type' => 'number', 'when' => [$this, 'hasMaxRows']];
         $rules[] = [['maxRows'], 'compare', 'compareAttribute' => 'minRows', 'operator' => '>=', 'type' => 'number', 'when' => [$this, 'hasMinRows']];
         $rules[] = [['minRows', 'maxRows'], 'integer', 'min' => 0];
+        $rules[] = [['columns'], 'validateColumns'];
         return $rules;
+    }
+
+    /**
+     * Validatse the column configs.
+     */
+    public function validateColumns()
+    {
+        $hasErrors = false;
+        foreach ($this->columns as &$col) {
+            if ($col['handle'] && preg_match('/^col\d+$/', $col['handle'])) {
+                $col['handle'] = [
+                    'value' => $col['handle'],
+                    'hasErrors' => true,
+                ];
+                $hasErrors = true;
+            }
+        }
+        if ($hasErrors) {
+            $this->addError('columns', Craft::t('app', 'Column handles can’t be in the format “{format}”.', [
+                'format' => 'colX',
+            ]));
+        }
     }
 
     /**
@@ -161,11 +206,14 @@ class Table extends Field
             'checkbox' => Craft::t('app', 'Checkbox'),
             'color' => Craft::t('app', 'Color'),
             'date' => Craft::t('app', 'Date'),
+            'select' => Craft::t('app', 'Dropdown'),
+            'email' => Craft::t('app', 'Email'),
             'lightswitch' => Craft::t('app', 'Lightswitch'),
             'multiline' => Craft::t('app', 'Multi-line text'),
             'number' => Craft::t('app', 'Number'),
             'singleline' => Craft::t('app', 'Single-line text'),
             'time' => Craft::t('app', 'Time'),
+            'url' => Craft::t('app', 'URL'),
         ];
 
         // Make sure they are sorted alphabetically (post-translation)
@@ -196,6 +244,38 @@ class Table extends Field
             ],
         ];
 
+        $dropdownSettingsCols = [
+            'label' => [
+                'heading' => Craft::t('app', 'Option Label'),
+                'type' => 'singleline',
+                'autopopulate' => 'value',
+                'class' => 'option-label',
+            ],
+            'value' => [
+                'heading' => Craft::t('app', 'Value'),
+                'type' => 'singleline',
+                'class' => 'option-value code',
+            ],
+            'default' => [
+                'heading' => Craft::t('app', 'Default?'),
+                'type' => 'checkbox',
+                'radioMode' => true,
+                'class' => 'option-default thin',
+            ],
+        ];
+
+        $dropdownSettingsHtml = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'editableTableField', [
+            [
+                'label' => Craft::t('app', 'Dropdown Options'),
+                'instructions' => Craft::t('app', 'Define the available options.'),
+                'id' => '__ID__',
+                'name' => '__NAME__',
+                'addRowLabel' => Craft::t('app', 'Add an option'),
+                'cols' => $dropdownSettingsCols,
+                'initJs' => false,
+            ]
+        ]);
+
         $view = Craft::$app->getView();
 
         $view->registerAssetBundle(TimepickerAsset::class);
@@ -205,20 +285,14 @@ class Table extends Field
             Json::encode($view->namespaceInputName('defaults'), JSON_UNESCAPED_UNICODE) . ', ' .
             Json::encode($this->columns, JSON_UNESCAPED_UNICODE) . ', ' .
             Json::encode($this->defaults, JSON_UNESCAPED_UNICODE) . ', ' .
-            Json::encode($columnSettings, JSON_UNESCAPED_UNICODE) .
+            Json::encode($columnSettings, JSON_UNESCAPED_UNICODE) . ', ' .
+            Json::encode($dropdownSettingsHtml, JSON_UNESCAPED_UNICODE) . ', ' .
+            Json::encode($dropdownSettingsCols, JSON_UNESCAPED_UNICODE) .
             ');');
 
-        $columnsField = $view->renderTemplateMacro('_includes/forms', 'editableTableField', [
-            [
-                'label' => Craft::t('app', 'Table Columns'),
-                'instructions' => Craft::t('app', 'Define the columns your table should have.'),
-                'id' => 'columns',
-                'name' => 'columns',
-                'cols' => $columnSettings,
-                'rows' => $this->columns,
-                'addRowLabel' => Craft::t('app', 'Add a column'),
-                'initJs' => false
-            ]
+        $columnsField = $view->renderTemplate('_components/fieldtypes/Table/columntable', [
+            'cols' => $columnSettings,
+            'rows' => $this->columns,
         ]);
 
         $defaultsField = $view->renderTemplateMacro('_includes/forms', 'editableTableField', [
@@ -229,7 +303,8 @@ class Table extends Field
                 'name' => 'defaults',
                 'cols' => $this->columns,
                 'rows' => $this->defaults,
-                'initJs' => false
+                'initJs' => false,
+                'errors' => $this->getErrors('columns'),
             ]
         ]);
 
@@ -268,8 +343,13 @@ class Table extends Field
         $value = $element->getFieldValue($this->handle);
 
         if (!empty($value) && !empty($this->columns)) {
-            foreach ($value as $row) {
+            foreach ($value as &$row) {
                 foreach ($this->columns as $colId => $col) {
+                    if (is_string($row[$colId])) {
+                        // Trim the value before validating
+                        $row[$colId] = trim($row[$colId]);
+                    }
+
                     if (!$this->_validateCellValue($col['type'], $row[$colId], $error)) {
                         $element->addError($this->handle, $error);
                     }
@@ -296,9 +376,17 @@ class Table extends Field
         // Normalize the values and make them accessible from both the col IDs and the handles
         foreach ($value as &$row) {
             foreach ($this->columns as $colId => $col) {
-                $row[$colId] = $this->_normalizeCellValue($col['type'], $row[$colId] ?? null);
+                if (array_key_exists($colId, $row)) {
+                    $cellValue = $row[$colId];
+                } else if ($col['handle'] && array_key_exists($col['handle'], $row)) {
+                    $cellValue = $row[$col['handle']];
+                } else {
+                    $cellValue = null;
+                }
+                $cellValue = $this->_normalizeCellValue($col['type'], $cellValue);
+                $row[$colId] = $cellValue;
                 if ($col['handle']) {
-                    $row[$col['handle']] = $row[$colId];
+                    $row[$col['handle']] = $cellValue;
                 }
             }
         }
@@ -336,8 +424,15 @@ class Table extends Field
         return $this->_getInputHtml($value, $element, true);
     }
 
-    // Private Methods
-    // =========================================================================
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public function getContentGqlType()
+    {
+        $typeArray = TableRowTypeGenerator::generateTypes($this);
+        return Type::listOf(array_pop($typeArray));
+    }
 
     /**
      * Normalizes a cell’s value.
@@ -390,15 +485,28 @@ class Table extends Field
      */
     private function _validateCellValue(string $type, $value, string &$error = null): bool
     {
-        if ($type === 'color' && $value !== null) {
-            /** @var ColorData $value */
-            $validator = new ColorValidator();
-            $validator->message = str_replace('{attribute}', '{value}', $validator->message);
-            $hex = $value->getHex();
-            return $validator->validate($hex, $error);
+        if ($value === null || $value === '') {
+            return true;
         }
 
-        return true;
+        switch ($type) {
+            case 'color':
+                /** @var ColorData $value */
+                $value = $value->getHex();
+                $validator = new ColorValidator();
+                break;
+            case 'url':
+                $validator = new UrlValidator();
+                break;
+            case 'email':
+                $validator = new EmailValidator();
+                break;
+            default:
+                return true;
+        }
+
+        $validator->message = str_replace('{attribute}', '{value}', $validator->message);
+        return $validator->validate($value, $error);
     }
 
     /**

@@ -15,7 +15,7 @@ use yii\base\NotSupportedException;
  * @inheritdoc
  * @property Connection $db Connection the DB connection that this command is associated with.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class QueryBuilder extends \yii\db\mysql\QueryBuilder
 {

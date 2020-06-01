@@ -21,29 +21,20 @@ use yii\base\InvalidArgumentException;
  * Class FileHelper
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class FileHelper extends \yii\helpers\FileHelper
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
     public static $mimeMagicFile = '@app/config/mimeTypes.php';
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var bool Whether file locks can be used when writing to files.
      * @see useFileLocks()
      */
     private static $_useFileLocks;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -278,6 +269,7 @@ class FileHelper extends \yii\helpers\FileHelper
      *
      * @param string $mimeType
      * @return bool
+     * @since 3.1.7
      */
     public static function canTrustMimeType(string $mimeType): bool
     {
@@ -319,6 +311,7 @@ class FileHelper extends \yii\helpers\FileHelper
      * @param bool $checkExtension whether to use the file extension to determine the MIME type in case
      * `finfo_open()` cannot determine it.
      * @return bool
+     * @since 3.0.9
      */
     public static function isGif(string $file, string $magicFile = null, bool $checkExtension = true): bool
     {
@@ -333,12 +326,13 @@ class FileHelper extends \yii\helpers\FileHelper
      * @param string $contents the new file contents
      * @param array $options options for file write. Valid options are:
      * - `createDirs`: bool, whether to create parent directories if they do
-     *   not exist. Defaults to true.
+     *   not exist. Defaults to `true`.
      * - `append`: bool, whether the contents should be appended to the
      *   existing contents. Defaults to false.
      * - `lock`: bool, whether a file lock should be used. Defaults to the
-     *   "useWriteFileLock" config setting.
-     * @throws InvalidArgumentException if the parent directory doesn't exist and options[createDirs] is false
+     *   `useWriteFileLock` config setting.
+     * @throws InvalidArgumentException if the parent directory doesn't exist and `options[createDirs]` is `false`
+     * @throws Exception if the parent directory can't be created
      * @throws ErrorException in case of failure
      */
     public static function writeToFile(string $file, string $contents, array $options = [])
@@ -363,7 +357,9 @@ class FileHelper extends \yii\helpers\FileHelper
         if ($lock) {
             $mutex = Craft::$app->getMutex();
             $lockName = md5($file);
-            $mutex->acquire($lockName);
+            if (!$mutex->acquire($lockName, 2)) {
+                throw new ErrorExeption("Unable to acquire a lock for file \"{$file}\".");
+            }
         } else {
             $lockName = $mutex = null;
         }
@@ -378,13 +374,41 @@ class FileHelper extends \yii\helpers\FileHelper
         }
 
         // Invalidate opcache
-        if (function_exists('opcache_invalidate')) {
-            @opcache_invalidate($file, true);
-        }
+        static::invalidate($file);
 
         if ($lock) {
             $mutex->release($lockName);
         }
+    }
+
+    /**
+     * Creates a `.gitignore` file in the given directory if one doesn’t exist yet.
+     *
+     * @param string $path
+     * @param array $options options for file write. Valid options are:
+     * - `createDirs`: bool, whether to create parent directories if they do
+     *   not exist. Defaults to `true`.
+     * - `lock`: bool, whether a file lock should be used. Defaults to `false`.
+     * @throws InvalidArgumentException if the parent directory doesn't exist and `options[createDirs]` is `false`
+     * @throws Exception if the parent directory can't be created
+     * @throws ErrorException in case of failure
+     * @since 3.4.0
+     */
+    public static function writeGitignoreFile(string $path, array $options = [])
+    {
+        $gitignorePath = $path . DIRECTORY_SEPARATOR . '.gitignore';
+
+        if (is_file($gitignorePath)) {
+            return;
+        }
+
+        $contents = "*\n!.gitignore\n";
+        $options = array_merge([
+            // Prevent a segfault if this is called recursively
+            'lock' => false,
+        ], $options);
+
+        static::writeToFile($gitignorePath, $contents, $options);
     }
 
     /**
@@ -398,6 +422,20 @@ class FileHelper extends \yii\helpers\FileHelper
     {
         Craft::$app->getDeprecator()->log('craft\\helpers\\FileHelper::removeFile()', 'craft\\helpers\\FileHelper::removeFile() is deprecated. Use craft\\helpers\\FileHelper::unlink() instead.');
         return static::unlink($path);
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.4.16
+     */
+    public static function unlink($path)
+    {
+        // BaseFileHelper::unlink() doesn't seem to catch all possible exceptions
+        try {
+            return parent::unlink($path);
+        } catch (\Throwable $e) {
+            return false;
+        }
     }
 
     /**
@@ -564,6 +602,7 @@ class FileHelper extends \yii\helpers\FileHelper
      *
      * @param string $basePath The base path to the first file (sans `.X`)
      * @param int $max The most files that can coexist before we should start deleting them
+     * @since 3.0.38
      */
     public static function cycle(string $basePath, int $max = 50)
     {
@@ -577,6 +616,20 @@ class FileHelper extends \yii\helpers\FileHelper
                     @rename($thisFile, "$basePath.$i");
                 }
             }
+        }
+    }
+
+    /**
+     * Invalidates a cached file with `clearstatcache()` and `opcache_invalidate()`.
+     *
+     * @param string $file the file path
+     * @since 3.4.0
+     */
+    public static function invalidate(string $file)
+    {
+        clearstatcache(true, $file);
+        if (function_exists('opcache_invalidate') && filter_var(ini_get('opcache.enable'), FILTER_VALIDATE_BOOLEAN)) {
+            @opcache_invalidate($file, true);
         }
     }
 }

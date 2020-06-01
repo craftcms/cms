@@ -18,20 +18,14 @@ use Twig\Node\TextNode;
  * EventTagAdder adds missing `head()`, `beginBody()`, and `endBody()` event tags to templates as they’re being compiled.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class EventTagAdder extends BaseEventTagVisitor
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var bool Whether we're in the middle of finding the `beginBody()` tag
      */
     private $_findingBeginBody = false;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -67,9 +61,6 @@ class EventTagAdder extends BaseEventTagVisitor
         // This needs to run after EventTagFinder
         return 1;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Processes a text node.

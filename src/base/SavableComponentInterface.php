@@ -12,22 +12,16 @@ namespace craft\base;
  * A class implementing this interface should also use [[SavableComponentTrait]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 interface SavableComponentInterface extends ComponentInterface
 {
-    // Static
-    // =========================================================================
-
     /**
      * Returns whether the component should be selectable in component Type selects.
      *
      * @return bool whether the component should be selectable in component Type selects.
      */
     public static function isSelectable(): bool;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns whether the component is new (unsaved).
@@ -180,6 +174,8 @@ interface SavableComponentInterface extends ComponentInterface
 
     /**
      * Performs actions before a component delete is applied to the database.
+     *
+     * @since 3.1.0
      */
     public function beforeApplyDelete();
 

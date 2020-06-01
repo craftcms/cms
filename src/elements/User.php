@@ -26,7 +26,6 @@ use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use craft\models\UserGroup;
-use craft\records\Session as SessionRecord;
 use craft\records\User as UserRecord;
 use craft\validators\DateTimeValidator;
 use craft\validators\UniqueValidator;
@@ -37,6 +36,7 @@ use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\NotSupportedException;
 use yii\validators\InlineValidator;
+use yii\validators\Validator;
 use yii\web\IdentityInterface;
 
 /**
@@ -54,17 +54,14 @@ use yii\web\IdentityInterface;
  * @property \DateInterval|null $remainingCooldownTime the remaining cooldown time for this user, if they've entered their password incorrectly too many times
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class User extends Element implements IdentityInterface
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event AuthenticateUserEvent The event that is triggered before a user is authenticated.
      *
-     * You may set [[AuthenticateUserEvent::isValid]] to `false` to prevent the user from getting authenticated
+     * You may set [[AuthenticateUserEvent::performAuthentication]] to `false` to prevent the user from getting authenticated
      */
     const EVENT_BEFORE_AUTHENTICATE = 'beforeAuthenticate';
 
@@ -97,15 +94,36 @@ class User extends Element implements IdentityInterface
     const SCENARIO_REGISTRATION = 'registration';
     const SCENARIO_PASSWORD = 'password';
 
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
     public static function displayName(): string
     {
         return Craft::t('app', 'User');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function lowerDisplayName(): string
+    {
+        return Craft::t('app', 'user');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function pluralDisplayName(): string
+    {
+        return Craft::t('app', 'Users');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function pluralLowerDisplayName(): string
+    {
+        return Craft::t('app', 'users');
     }
 
     /**
@@ -163,7 +181,6 @@ class User extends Element implements IdentityInterface
             [
                 'key' => '*',
                 'label' => Craft::t('app', 'All users'),
-                'criteria' => ['status' => null],
                 'hasThumbs' => true
             ]
         ];
@@ -263,6 +280,11 @@ class User extends Element implements IdentityInterface
                     'orderBy' => 'elements.dateUpdated',
                     'attribute' => 'dateUpdated'
                 ],
+                [
+                    'label' => Craft::t('app', 'ID'),
+                    'orderBy' => 'elements.id',
+                    'attribute' => 'id',
+                ],
             ];
         } else {
             $attributes = [
@@ -280,6 +302,11 @@ class User extends Element implements IdentityInterface
                     'label' => Craft::t('app', 'Date Updated'),
                     'orderBy' => 'elements.dateUpdated',
                     'attribute' => 'dateUpdated'
+                ],
+                [
+                    'label' => Craft::t('app', 'ID'),
+                    'orderBy' => 'elements.id',
+                    'attribute' => 'id',
                 ],
             ];
         }
@@ -306,6 +333,7 @@ class User extends Element implements IdentityInterface
         }
 
         $attributes['id'] = ['label' => Craft::t('app', 'ID')];
+        $attributes['uid'] = ['label' => Craft::t('app', 'UID')];
         $attributes['lastLoginDate'] = ['label' => Craft::t('app', 'Last Login')];
         $attributes['dateCreated'] = ['label' => Craft::t('app', 'Date Created')];
         $attributes['dateUpdated'] = ['label' => Craft::t('app', 'Date Updated')];
@@ -349,6 +377,15 @@ class User extends Element implements IdentityInterface
         }
 
         return parent::eagerLoadingMap($sourceElements, $handle);
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public static function gqlTypeNameByContext($context): string
+    {
+        return 'User';
     }
 
     // IdentityInterface Methods
@@ -396,9 +433,6 @@ class User extends Element implements IdentityInterface
     {
         throw new NotSupportedException('"findIdentityByAccessToken" is not implemented.');
     }
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var string|null Username
@@ -472,6 +506,7 @@ class User extends Element implements IdentityInterface
 
     /**
      * @var bool Whether the user has a dashboard
+     * @since 3.0.4
      */
     public $hasDashboard = false;
 
@@ -539,9 +574,6 @@ class User extends Element implements IdentityInterface
      * @var array|null The user’s preferences
      */
     private $_preferences;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -627,6 +659,7 @@ class User extends Element implements IdentityInterface
         $labels['lastName'] = Craft::t('app', 'Last Name');
         $labels['newPassword'] = Craft::t('app', 'New Password');
         $labels['password'] = Craft::t('app', 'Password');
+        $labels['unverifiedEmail'] = Craft::t('app', 'Email');
         $labels['username'] = Craft::t('app', 'Username');
         return $labels;
     }
@@ -634,11 +667,12 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['lastLoginDate', 'lastInvalidLoginDate', 'lockoutDate', 'lastPasswordChangeDate', 'verificationCodeIssuedDate'], DateTimeValidator::class];
         $rules[] = [['invalidLoginCount', 'photoId'], 'number', 'integerOnly' => true];
+        $rules[] = [['username', 'email', 'unverifiedEmail', 'firstName', 'lastName'], 'trim', 'skipOnEmpty' => true];
         $rules[] = [['email', 'unverifiedEmail'], 'email'];
         $rules[] = [['email', 'password', 'unverifiedEmail'], 'string', 'max' => 255];
         $rules[] = [['username', 'firstName', 'lastName', 'verificationCode'], 'string', 'max' => 100];
@@ -676,7 +710,7 @@ class User extends Element implements IdentityInterface
         ];
 
         $rules[] = [
-            ['firstName', 'lastName'], function($attribute, $params, $validator) {
+            ['firstName', 'lastName'], function($attribute, $params, Validator $validator) {
                 if (strpos($this->$attribute, '://') !== false) {
                     $validator->addError($this, $attribute, Craft::t('app', 'Invalid value “{value}”.'));
                 }
@@ -735,7 +769,7 @@ class User extends Element implements IdentityInterface
      */
     public function getFieldLayout()
     {
-        return Craft::$app->getFields()->getLayoutByType(static::class);
+        return Craft::$app->getFields()->getLayoutByType(self::class);
     }
 
     /**
@@ -853,7 +887,7 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * Sets an array of User element objects on the user.
+     * Sets an array of user groups on the user.
      *
      * @param UserGroup[] $groups An array of UserGroup objects.
      */
@@ -965,7 +999,7 @@ class User extends Element implements IdentityInterface
      *
      * @param int $size The width and height the photo should be sized to
      * @return string|null
-     * @deprecated in 3.0. Use getPhoto().getUrl() instead.
+     * @deprecated in 3.0.0. Use getPhoto().getUrl() instead.
      */
     public function getPhotoUrl(int $size = 100)
     {
@@ -1011,15 +1045,12 @@ class User extends Element implements IdentityInterface
      */
     public function getIsCurrent(): bool
     {
-        if ($this->id !== null) {
-            $currentUser = Craft::$app->getUser()->getIdentity();
-
-            if ($currentUser) {
-                return ($this->id === $currentUser->id);
-            }
+        if (!$this->id) {
+            return false;
         }
 
-        return false;
+        $currentUser = Craft::$app->getUser()->getIdentity();
+        return $currentUser && $currentUser->id == $this->id;
     }
 
     /**
@@ -1227,11 +1258,10 @@ class User extends Element implements IdentityInterface
     {
         switch ($attribute) {
             case 'email':
-                return $this->email ? Html::encodeParams('<a href="mailto:{email}">{email}</a>', ['email' => $this->email]) : '';
+                return $this->email ? Html::mailto(Html::encode($this->email)) : '';
 
             case 'preferredLanguage':
                 $language = $this->getPreferredLanguage();
-
                 return $language ? (new Locale($language))->getDisplayName(Craft::$app->language) : '';
         }
 
@@ -1252,6 +1282,15 @@ class User extends Element implements IdentityInterface
         $html .= parent::getEditorHtml();
 
         return $html;
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.3.0
+     */
+    public function getGqlTypeName(): string
+    {
+        return static::gqlTypeNameByContext($this);
     }
 
     // Events
@@ -1284,7 +1323,7 @@ class User extends Element implements IdentityInterface
             }
         } else {
             $record = new UserRecord();
-            $record->id = $this->id;
+            $record->id = (int)$this->id;
             $record->locked = $this->locked;
             $record->suspended = $this->suspended;
             $record->pending = $this->pending;
@@ -1293,7 +1332,7 @@ class User extends Element implements IdentityInterface
         $record->username = $this->username;
         $record->firstName = $this->firstName;
         $record->lastName = $this->lastName;
-        $record->photoId = $this->photoId;
+        $record->photoId = (int)$this->photoId ?: null;
         $record->email = $this->email;
         $record->admin = $this->admin;
         $record->passwordResetRequired = $this->passwordResetRequired;
@@ -1365,8 +1404,8 @@ class User extends Element implements IdentityInterface
                 // Update the entry/version/draft tables to point to the new user
                 $userRefs = [
                     Table::ENTRIES => 'authorId',
-                    Table::ENTRYDRAFTS => 'creatorId',
-                    Table::ENTRYVERSIONS => 'creatorId',
+                    Table::DRAFTS => 'creatorId',
+                    Table::REVISIONS => 'creatorId',
                 ];
 
                 foreach ($userRefs as $table => $column) {
@@ -1378,7 +1417,7 @@ class User extends Element implements IdentityInterface
                             ],
                             [
                                 $column => $this->id
-                            ])
+                            ], [], false)
                         ->execute();
                 }
             } else {
@@ -1406,25 +1445,6 @@ class User extends Element implements IdentityInterface
         }
 
         return true;
-    }
-
-    // Private Methods
-    // =========================================================================
-
-    /**
-     * Saves a new session record for the user.
-     *
-     * @param string $sessionToken
-     * @return string The new session row's UID.
-     */
-    private function _storeSessionToken(string $sessionToken): string
-    {
-        $sessionRecord = new SessionRecord();
-        $sessionRecord->userId = $this->id;
-        $sessionRecord->token = $sessionToken;
-        $sessionRecord->save();
-
-        return $sessionRecord->uid;
     }
 
     /**

@@ -7,31 +7,48 @@
     (type == 'password' ? 'password' : null),
     (disabled is defined and disabled ? 'disabled' : null),
     (size is defined and size ? null : 'fullwidth')
-]|filter|join(' ') %}
+]|filter %}
 
-{%- if showCharsLeft is defined and showCharsLeft and maxlength is defined and maxlength %}
-    {%- set style = 'padding-'~(craft.app.locale.getOrientation() == 'ltr' ? 'right' : 'left')~': '~(7.2*maxlength|length+14)~'px;' %}
+{%- set inputAttributes = {
+    class: class,
+    type: type,
+    id: id ?? false,
+    size: size ?? false,
+    name: name ?? false,
+    value: value ?? false,
+    maxlength: maxlength ?? false,
+    autofocus: (autofocus ?? false) and not craft.app.request.isMobileBrowser(true),
+    autocomplete: autocomplete is not same as(null) ? (autocomplete is same as(true) ? 'on' : (autocomplete ? false : 'off' )),
+    autocorrect: (autocorrect ?? true) ? false : 'off',
+    autocapitalize: (autocapitalize ?? true) ? false : 'off',
+    disabled: disabled ?? false,
+    readonly: readonly ?? false,
+    title: title ?? false,
+    placeholder: placeholder ?? false,
+    step: step ?? false,
+    min: min ?? false,
+    max: max ?? false,
+}|merge(inputAttributes ?? [], recursive=true) %}
+
+{%- if block('attr') is defined %}
+    {%- set inputAttributes = inputAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
 {%- endif %}
 
-{%- if type == 'password' %}<div class="passwordwrapper">{% endif -%}
-<input class="{{ class }}" type="{{ type }}"
-    {%- if style is defined %} style="{{ style }}"{% endif %}
-    {%- if id is defined %} id="{{ id }}"{% endif %}
-    {%- if size is defined %} size="{{ size }}"{% endif %}
-    {%- if name is defined %} name="{{ name }}"{% endif %}
-    {%- if value is defined %} value="{{ value }}"{% endif %}
-    {%- if maxlength is defined and maxlength %} maxlength="{{ maxlength }}"{% endif %}
-    {%- if showCharsLeft is defined and showCharsLeft %} data-show-chars-left{% endif %}
-    {%- if autofocus is defined and autofocus and not craft.app.request.isMobileBrowser(true) %} autofocus{% endif %}
-    {%- if autocomplete is not same as(null) %} autocomplete="{{ autocomplete is same as(true) ? 'on' : (autocomplete ?: 'off') }}"{% endif %}
-    {%- if not (autocorrect ?? true)  %} autocorrect="off"{% endif %}
-    {%- if not (autocapitalize ?? true)  %} autocapitalize="off"{% endif %}
-    {%- if disabled is defined and disabled %} disabled {% endif %}
-    {%- if readonly is defined and readonly %} readonly {% endif %}
-    {%- if title is defined %} title="{{ title }}"{% endif %}
-    {%- if placeholder is defined %} placeholder="{{ placeholder }}"{% endif %}
-    {%- if step is defined %} step="{{ step }}"{% endif %}
-    {%- if min is defined %} min="{{ min }}"{% endif %}
-    {%- if max is defined %} max="{{ max }}"{% endif %}
-    {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
-{%- if type == 'password' %}</div>{% endif %}
+{%- if showCharsLeft ?? false %}
+    {%- set inputAttributes = inputAttributes|merge({
+        data: {
+            'show-chars-left': showCharsLeft,
+        },
+        style: {
+            ("padding-#{craft.app.locale.getOrientation() == 'ltr' ? 'right' : 'left'}"): (maxlength ?? false) ? "#{7.2*maxlength|length+14}px",
+        },
+    }, recursive=true) %}
+{%- endif %}
+
+{%- if type == 'password' -%}
+    <div class="passwordwrapper">
+        {{- tag('input', inputAttributes) -}}
+    </div>
+{%- else %}
+    {{- tag('input', inputAttributes) }}
+{%- endif -%}

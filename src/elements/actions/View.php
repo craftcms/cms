@@ -15,20 +15,14 @@ use craft\helpers\Json;
  * View represents a View element action.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class View extends ElementAction
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null The trigger label
      */
     public $label;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

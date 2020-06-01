@@ -63,7 +63,7 @@ class Install
         }
 
         // Is there a DEFAULT_SITE_URL environment variable set?
-        if ($envValue = getenv('DEFAULT_SITE_URL')) {
+        if ($envValue = App::env('DEFAULT_SITE_URL')) {
             return $envValue;
         }
 

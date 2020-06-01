@@ -17,20 +17,14 @@ use Twig\Node\Node;
  * Represents a nav node.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class NavNode extends ForNode
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var NavItem_Node|null
      */
     protected $navItemNode;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * NavNode constructor.

@@ -22,7 +22,7 @@ use yii\di\Instance;
  * MigrationManager manages a set of migrations.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class MigrationManager extends Component
 {
@@ -34,9 +34,6 @@ class MigrationManager extends Component
     const TYPE_APP = 'app';
     const TYPE_PLUGIN = 'plugin';
     const TYPE_CONTENT = 'content';
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var string|null The type of migrations we're dealing with here. Can be 'app', 'plugin', or 'content'.
@@ -68,9 +65,6 @@ class MigrationManager extends Component
      */
     public $migrationTable = Table::MIGRATIONS;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -84,10 +78,6 @@ class MigrationManager extends Component
 
         if (!in_array($this->type, [self::TYPE_APP, self::TYPE_PLUGIN, self::TYPE_CONTENT], true)) {
             throw new InvalidConfigException('Invalid migration type: ' . $this->type);
-        }
-
-        if ($this->type == self::TYPE_PLUGIN && $this->pluginId === null) {
-            throw new InvalidConfigException('The plugin ID has not been set.');
         }
 
         if ($this->migrationPath === null) {
@@ -249,6 +239,9 @@ class MigrationManager extends Component
         }
         $time = microtime(true) - $start;
 
+        // Clear the schema cache
+        Craft::$app->getDb()->getSchema()->refresh();
+
         $log = ($success ? 'Applied ' : 'Failed to apply ') . $migrationName . ' (time: ' . sprintf('%.3f', $time) . 's).';
         if (!$isConsoleRequest) {
             $output = ob_get_clean();
@@ -303,6 +296,9 @@ class MigrationManager extends Component
         }
         $time = microtime(true) - $start;
 
+        // Clear the schema cache
+        Craft::$app->getDb()->getSchema()->refresh();
+
         $log = ($success ? 'Reverted ' : 'Failed to revert ') . $migrationName . ' (time: ' . sprintf('%.3f', $time) . 's).';
         if (!$isConsoleRequest) {
             $output = ob_get_clean();
@@ -343,6 +339,8 @@ class MigrationManager extends Component
      */
     public function addMigrationHistory(string $name)
     {
+        $this->_validatePluginConfig();
+
         Craft::$app->getDb()->createCommand()
             ->insert(
                 $this->migrationTable,
@@ -362,6 +360,8 @@ class MigrationManager extends Component
      */
     public function removeMigrationHistory(string $name)
     {
+        $this->_validatePluginConfig();
+
         Craft::$app->getDb()->createCommand()
             ->delete(
                 $this->migrationTable,
@@ -375,9 +375,13 @@ class MigrationManager extends Component
 
     /**
      * Truncates the migration history.
+     *
+     * @since 3.0.32
      */
     public function truncateHistory()
     {
+        $this->_validatePluginConfig();
+
         Craft::$app->getDb()->createCommand()
             ->delete(
                 $this->migrationTable,
@@ -436,8 +440,21 @@ class MigrationManager extends Component
         return $migrations;
     }
 
-    // Private Methods
-    // =========================================================================
+    /**
+     * Ensures that [[pluginId]] is set properly.
+     *
+     * @throws InvalidConfigException
+     */
+    private function _validatePluginConfig()
+    {
+        if ($this->type === self::TYPE_PLUGIN) {
+            if ($this->pluginId === null) {
+                throw new InvalidConfigException('The plugin ID has not been set.');
+            }
+        } else {
+            $this->pluginId = null;
+        }
+    }
 
     /**
      * Normalizes the $migration argument passed to [[migrateUp()]] and [[migrateDown()]].
@@ -465,6 +482,8 @@ class MigrationManager extends Component
      */
     private function _createMigrationQuery(): Query
     {
+        $this->_validatePluginConfig();
+
         // TODO: Remove after next breakpoint
         if (
             version_compare(Craft::$app->getInfo()->version, '3.0', '<') &&

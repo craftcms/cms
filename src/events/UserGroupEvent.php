@@ -14,13 +14,10 @@ use yii\base\Event;
  * UserGroupEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class UserGroupEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var UserGroup|null The user group associated with this event
      */

@@ -13,13 +13,10 @@ use yii\base\Event;
  * Section event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class SectionEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var \craft\models\Section|null The section model associated with the event.
      */

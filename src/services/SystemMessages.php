@@ -22,28 +22,19 @@ use yii\db\Expression;
  * An instance of the System Messages service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getSystemMessages()|`Craft::$app->systemMessages`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class SystemMessages extends Component
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event RegisterEmailMessagesEvent The event that is triggered when registering email messages.
      */
     const EVENT_REGISTER_MESSAGES = 'registerMessages';
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var SystemMessage[]|null
      */
     private $_defaultMessages;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns all of the default system email messages, without subject/body overrides.
@@ -223,9 +214,6 @@ class SystemMessages extends Component
 
         return false;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns a new Query prepped to return system email messages from the DB.

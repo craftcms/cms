@@ -24,26 +24,21 @@ use craft\models\Section;
 use craft\models\UserGroup;
 use craft\records\UserPermission as UserPermissionRecord;
 use yii\base\Component;
+use yii\db\Exception;
 
 /**
  * User Permissions service.
  * An instance of the User Permissions service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getUserPermissions()|`Craft::$app->userPermissions`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class UserPermissions extends Component
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event RegisterUserPermissionsEvent The event that is triggered when registering user permissions.
      */
     const EVENT_REGISTER_PERMISSIONS = 'registerPermissions';
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var
@@ -54,9 +49,6 @@ class UserPermissions extends Component
      * @var
      */
     private $_permissionsByUserId;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns all of the known permissions, sorted by category.
@@ -75,15 +67,18 @@ class UserPermissions extends Component
                 'label' => Craft::t('app', 'Access the site when the system is off')
             ],
             'accessCp' => [
-                'label' => Craft::t('app', 'Access the CP'),
+                'label' => Craft::t('app', 'Access the control panel'),
                 'nested' => [
                     'accessCpWhenSystemIsOff' => [
-                        'label' => Craft::t('app', 'Access the CP when the system is offline')
+                        'label' => Craft::t('app', 'Access the control panel when the system is offline')
                     ],
                     'performUpdates' => [
                         'label' => Craft::t('app', 'Perform Craft CMS and plugin updates')
                     ],
                 ]
+            ],
+            'customizeSources' => [
+                'label' => Craft::t('app', 'Customize element sources'),
             ],
         ];
 
@@ -123,6 +118,9 @@ class UserPermissions extends Component
                             'label' => Craft::t('app', 'Administrate users'),
                             'info' => Craft::t('app', 'Includes activating user accounts, resetting passwords, and changing email addresses.'),
                             'warning' => Craft::t('app', 'Accounts with this permission could use it to escalate their own permissions.'),
+                        ],
+                        'impersonateUsers' => [
+                            'label' => Craft::t('app', 'Impersonate users'),
                         ],
                     ],
                 ],
@@ -315,7 +313,7 @@ class UserPermissions extends Component
         /** @var UserGroup $group */
         $group = Craft::$app->getUserGroups()->getGroupById($groupId);
         $path = UserGroups::CONFIG_USERPGROUPS_KEY . '.' . $group->uid . '.permissions';
-        Craft::$app->getProjectConfig()->set($path, $permissions);
+        Craft::$app->getProjectConfig()->set($path, $permissions, "Update permissions for user group “{$group->handle}”");
 
         return true;
     }
@@ -364,6 +362,7 @@ class UserPermissions extends Component
      * @param array $permissions
      * @return bool
      * @throws WrongEditionException if this is called from Craft Solo edition
+     * @throws Exception
      */
     public function saveUserPermissions(int $userId, array $permissions): bool
     {
@@ -399,7 +398,7 @@ class UserPermissions extends Component
         }
 
         // Cache the new permissions
-        $this->_permissionsByUserId[$userId] = $permissions;
+        $this->_permissionsByUserId[$userId] = array_unique(array_merge($groupPermissions, $permissions));
 
         return true;
     }
@@ -418,6 +417,11 @@ class UserPermissions extends Component
 
         /** @var UserGroup $userGroup */
         $userGroup = Craft::$app->getUserGroups()->getGroupByUid($uid);
+
+        // No group - no permissions to change.
+        if (!$userGroup) {
+            return;
+        }
 
         // Delete any existing group permissions
         Craft::$app->getDb()->createCommand()
@@ -444,9 +448,6 @@ class UserPermissions extends Component
         // Update caches
         $this->_permissionsByGroupId[$userGroup->id] = $permissions;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns the entry permissions for a given Single section.
@@ -594,6 +595,27 @@ class UserPermissions extends Component
                     ],
                     "deleteFilesAndFoldersInVolume{$suffix}" => [
                         'label' => Craft::t('app', 'Remove files and folders'),
+                    ],
+                    "editImagesInVolume{$suffix}" => [
+                        'label' => Craft::t('app', 'Edit images'),
+                    ],
+                    "viewPeerFilesInVolume{$suffix}" => [
+                        'label' => Craft::t('app', 'View files uploaded by other users'),
+                        'nested' => [
+                            "editPeerFilesInVolume{$suffix}" => [
+                                'label' => Craft::t('app', 'Edit files uploaded by other users'),
+                            ],
+                            "replacePeerFilesInVolume{$suffix}" => [
+                                'label' => Craft::t('app', 'Replace files uploaded by other users'),
+                                'warning' => Craft::t('app', 'When someone replaces a file, the record of who uploaded the file will be updated as well.'),
+                            ],
+                            "deletePeerFilesInVolume{$suffix}" => [
+                                'label' => Craft::t('app', 'Remove files uploaded by other users'),
+                            ],
+                            "editPeerImagesInVolume{$suffix}" => [
+                                'label' => Craft::t('app', 'Edit images uploaded by other users'),
+                            ],
+                        ]
                     ]
                 ]
             ]

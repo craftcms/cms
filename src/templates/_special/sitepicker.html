@@ -1,0 +1,27 @@
+{% extends "_layouts/cp" %}
+
+{% set title = title ?? 'Choose a site'|t('app') %}
+{% set showHeader = false %}
+{% set bodyClass = 'sitepicker' %}
+{% set siteIds = siteIds ?? null %}
+{% set baseParams = baseParams ?? {} %}
+{% set siteGroups = craft.app.sites.getAllGroups() %}
+
+{% block main %}
+    <h1>{{ title }}</h1>
+    {% for group in siteGroups %}
+        {% set groupSiteIds = siteIds ? group.getSiteIds()|intersect(siteIds) : group.getSiteIds() %}
+        {% if groupSiteIds %}
+            {% if siteGroups|length > 1 %}<h6>{{ group.name|t('site') }}</h6>{% endif %}
+            <ul class="sitepicker-group">
+                {% for siteId in groupSiteIds %}
+                    {% set site = craft.app.sites.getSiteById(siteId) %}
+                    <li>
+                        {% set url = url(baseUrl, baseParams|merge({site: site.handle})) %}
+                        <a class="go" href="{{ url }}">{{ site.name|t('site') }}</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endfor %}
+{% endblock %}

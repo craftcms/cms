@@ -15,6 +15,7 @@ use craft\elements\Asset;
 use craft\enums\PeriodType;
 use craft\events\RegisterAssetFileKindsEvent;
 use craft\events\SetAssetFilenameEvent;
+use craft\models\AssetTransformIndex;
 use craft\models\VolumeFolder;
 use yii\base\Event;
 use yii\base\Exception;
@@ -23,13 +24,10 @@ use yii\base\Exception;
  * Class Assets
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Assets
 {
-    // Constants
-    // =========================================================================
-
     const INDEX_SKIP_ITEMS_PATTERN = '/.*(Thumbs\.db|__MACOSX|__MACOSX\/|__MACOSX\/.*|\.DS_STORE)$/i';
 
     /**
@@ -41,9 +39,6 @@ class Assets
      * @event RegisterAssetFileKindsEvent The event that is triggered when registering asset file kinds.
      */
     const EVENT_REGISTER_FILE_KINDS = 'registerFileKinds';
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var array Supported file kinds
@@ -57,9 +52,6 @@ class Assets
      */
     private static $_allowedFileKinds;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * Get a temporary file path.
      *
@@ -72,6 +64,7 @@ class Assets
         $extension = strpos($extension, '.') !== false ? pathinfo($extension, PATHINFO_EXTENSION) : $extension;
         $filename = uniqid('assets', true) . '.' . $extension;
         $path = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $filename;
+
         if (($handle = fopen($path, 'wb')) === false) {
             throw new Exception('Could not create temp file: ' . $path);
         }
@@ -84,17 +77,18 @@ class Assets
      * Generate a URL for a given Assets file in a Source Type.
      *
      * @param VolumeInterface $volume
-     * @param Asset $file
+     * @param Asset $asset
+     * @param string $uri Asset URI to use. Defaults to the filename.
+     * @param AssetTransformIndex|null $transformIndex Transform index, for which the URL is being generated, if any
      * @return string
      */
-    public static function generateUrl(VolumeInterface $volume, Asset $file): string
+    public static function generateUrl(VolumeInterface $volume, Asset $asset, string $uri = null, AssetTransformIndex $transformIndex = null): string
     {
         $baseUrl = $volume->getRootUrl();
-        $folderPath = $file->getFolder()->path;
-        $filename = $file->filename;
-        $appendix = static::urlAppendix($volume, $file);
+        $folderPath = $asset->folderPath;
+        $appendix = static::urlAppendix($volume, $asset, $transformIndex);
 
-        return $baseUrl . $folderPath . $filename . $appendix;
+        return $baseUrl . $folderPath . ($uri ?? $asset->filename) . $appendix;
     }
 
     /**
@@ -102,15 +96,21 @@ class Assets
      *
      * @param VolumeInterface $volume
      * @param Asset $file
+     * @param AssetTransformIndex|null $transformIndex Transform index, for which the URL is being generated, if any
      * @return string
      */
-    public static function urlAppendix(VolumeInterface $volume, Asset $file): string
+    public static function urlAppendix(VolumeInterface $volume, Asset $file, AssetTransformIndex $transformIndex = null): string
     {
         $appendix = '';
 
         /** @var Volume $volume */
         if (!empty($volume->expires) && DateTimeHelper::isValidIntervalString($volume->expires) && $file->dateModified) {
-            $appendix = '?mtime=' . $file->dateModified->format('YmdHis');
+            $focalAppendix = $file->getHasFocalPoint() ? urlencode($file->getFocalPoint(true)) : 'none';
+            $appendix = '?mtime=' . $file->dateModified->format('YmdHis') . '&focal=' . $focalAppendix;
+
+            if ($transformIndex) {
+                $appendix .= '&tmtime=' . $transformIndex->dateUpdated->format('YmdHis');
+            }
         }
 
         return $appendix;
@@ -296,6 +296,7 @@ class Assets
      * Returns a list of file kinds that are allowed to be uploaded.
      *
      * @return array The allowed file kinds
+     * @since 3.1.16
      */
     public static function getAllowedFileKinds(): array
     {
@@ -368,9 +369,6 @@ class Assets
 
         return [$folderId, $filename];
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Builds the internal file kinds array, if it hasn't been built already.
@@ -707,5 +705,36 @@ class Assets
         }
 
         return $uploadInBytes;
+    }
+
+    /**
+     * Returns scaled width & height values for a maximum container size.
+     *
+     * @param int $realWidth
+     * @param int $realHeight
+     * @param int $maxWidth
+     * @param int $maxHeight
+     * @return array The scaled width and height
+     * @since 3.4.21
+     */
+    public static function scaledDimensions(int $realWidth, int $realHeight, int $maxWidth, int $maxHeight): array
+    {
+        // Avoid division by 0 errors
+        if ($realWidth === 0 || $realHeight === 0) {
+            return [$maxWidth, $maxHeight];
+        }
+
+        $realRatio = $realWidth / $realHeight;
+        $boundingRatio = $maxWidth / $maxHeight;
+
+        if ($realRatio >= $boundingRatio) {
+            $scaledWidth = $maxWidth;
+            $scaledHeight = floor($realHeight * ($scaledWidth / $realWidth));
+        } else {
+            $scaledHeight = $maxHeight;
+            $scaledWidth = floor($realWidth * ($scaledHeight / $realHeight));
+        }
+
+        return [(int)$scaledWidth, (int)$scaledHeight];
     }
 }

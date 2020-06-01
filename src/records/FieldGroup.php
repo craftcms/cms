@@ -18,13 +18,10 @@ use yii\db\ActiveQueryInterface;
  * @property string $name Name
  * @property Field[] $fields Fields
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class FieldGroup extends ActiveRecord
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      * @return string

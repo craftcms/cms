@@ -109,7 +109,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
                         if (this.settings.context === 'index' || group !== selectedGroup) {
                             href = this._getGroupTriggerHref(group);
                             label = (this.settings.context === 'index' ? group.name : Craft.t('app', 'New {group} category', {group: group.name}));
-                            menuHtml += '<li><a ' + href + '">' + Craft.escapeHtml(label) + '</a></li>';
+                            menuHtml += '<li><a ' + href + '>' + Craft.escapeHtml(label) + '</a></li>';
                         }
                     }
 
@@ -184,7 +184,6 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
 
             Craft.createElementEditor(this.elementType, {
                 hudTrigger: this.$newCategoryBtnGroup,
-                elementType: 'craft\\elements\\Category',
                 siteId: this.siteId,
                 attributes: {
                     groupId: groupId

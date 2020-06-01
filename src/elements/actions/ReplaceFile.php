@@ -15,13 +15,10 @@ use craft\helpers\Json;
  * ReplaceFile represents a Replace File element action.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class ReplaceFile extends ElementAction
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -43,6 +40,10 @@ class ReplaceFile extends ElementAction
     var trigger = new Craft.ElementActionTrigger({
         type: {$type},
         batch: false,
+        validateSelection: function(\$selectedItems)
+        {
+            return Garnish.hasAttr(\$selectedItems.find('.element'), 'data-replaceable');
+        },
         activate: function(\$selectedItems)
         {
             $('.replaceFile').remove();

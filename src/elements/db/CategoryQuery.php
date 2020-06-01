@@ -25,7 +25,7 @@ use yii\db\Connection;
  * @method Category|array|null one($db = null)
  * @method Category|array|null nth(int $n, Connection $db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  * @supports-structure-params
  * @supports-site-params
  * @supports-enabledforsite-param
@@ -41,9 +41,6 @@ use yii\db\Connection;
  */
 class CategoryQuery extends ElementQuery
 {
-    // Properties
-    // =========================================================================
-
     // General parameters
     // -------------------------------------------------------------------------
 
@@ -59,9 +56,6 @@ class CategoryQuery extends ElementQuery
      * @used-by groupId()
      */
     public $groupId;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -105,7 +99,7 @@ class CategoryQuery extends ElementQuery
      *
      * Possible values include:
      *
-     * | Value | Fetches {elements}…
+     * | Value | Fetches categories…
      * | - | -
      * | `'foo'` | in a group with a handle of `foo`.
      * | `'not foo'` | not in a group with a handle of `foo`.
@@ -116,14 +110,14 @@ class CategoryQuery extends ElementQuery
      * ---
      *
      * ```twig
-     * {# Fetch {elements} in the Foo group #}
+     * {# Fetch categories in the Foo group #}
      * {% set {elements-var} = {twig-method}
      *     .group('foo')
      *     .all() %}
      * ```
      *
      * ```php
-     * // Fetch {elements} in the Foo group
+     * // Fetch categories in the Foo group
      * ${elements-var} = {php-method}
      *     ->group('foo')
      *     ->all();
@@ -156,7 +150,7 @@ class CategoryQuery extends ElementQuery
      *
      * Possible values include:
      *
-     * | Value | Fetches {elements}…
+     * | Value | Fetches categories…
      * | - | -
      * | `1` | in a group with an ID of 1.
      * | `'not 1'` | not in a group with an ID of 1.
@@ -166,14 +160,14 @@ class CategoryQuery extends ElementQuery
      * ---
      *
      * ```twig
-     * {# Fetch {elements} in the group with an ID of 1 #}
+     * {# Fetch categories in the group with an ID of 1 #}
      * {% set {elements-var} = {twig-method}
      *     .groupId(1)
      *     .all() %}
      * ```
      *
      * ```php
-     * // Fetch {elements} in the group with an ID of 1
+     * // Fetch categories in the group with an ID of 1
      * ${elements-var} = {php-method}
      *     ->groupId(1)
      *     ->all();
@@ -188,9 +182,6 @@ class CategoryQuery extends ElementQuery
         $this->groupId = $value;
         return $this;
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -214,9 +205,6 @@ class CategoryQuery extends ElementQuery
 
         return parent::beforePrepare();
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Applies the 'editable' param to the query being prepared.

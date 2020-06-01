@@ -26,12 +26,7 @@ class EditEntryAsset extends AssetBundle
             CpAsset::class,
         ];
 
-        $this->css = [
-            'entry.css',
-        ];
-
         $this->js = [
-            'EntryDraftEditor' . $this->dotJs(),
             'EntryTypeSwitcher' . $this->dotJs(),
         ];
 

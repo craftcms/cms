@@ -14,13 +14,10 @@ use yii\base\Event;
  * FieldGroupEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class FieldGroupEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var FieldGroup|null The field group associated with this event.
      */

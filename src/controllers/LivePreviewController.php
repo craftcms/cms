@@ -18,7 +18,8 @@ use yii\web\ServerErrorHttpException;
  * Class LivePreviewController
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.1
+ * @since 3.1.0
+ * @deprecated in 3.2.0
  */
 class LivePreviewController extends Controller
 {
@@ -68,7 +69,7 @@ class LivePreviewController extends Controller
         $token = Craft::$app->getTokens()->createToken($route, null, $expiryDate);
 
         if (!$token) {
-            throw new ServerErrorHttpException(Craft::t('app', 'Could not create a Live Preview token.'));
+            throw new ServerErrorHttpException('Could not create a Live Preview token.');
         }
 
         return $this->asJson(compact('token'));
@@ -103,13 +104,13 @@ class LivePreviewController extends Controller
 
         // Add CORS headers
         Craft::$app->getResponse()->getHeaders()
-            ->add('Access-Control-Allow-Origin', Craft::$app->getRequest()->getOrigin())
+            ->add('Access-Control-Allow-Origin', '*')
             ->add('Access-Control-Allow-Credentials', 'true')
             ->add('Access-Control-Allow-Headers', 'X-Craft-Token');
 
         if (Craft::$app->getRequest()->getIsOptions()) {
             // This is just a preflight request, no need to route to the real controller action yet.
-            return '1';
+            return '';
         }
 
         return Craft::$app->runAction($previewAction);

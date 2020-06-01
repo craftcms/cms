@@ -124,7 +124,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
                         ) {
                             href = this._getSectionTriggerHref(section);
                             label = (this.settings.context === 'index' ? section.name : Craft.t('app', 'New {section} entry', {section: section.name}));
-                            menuHtml += '<li><a ' + href + '">' + Craft.escapeHtml(label) + '</a></li>';
+                            menuHtml += '<li><a ' + href + '>' + Craft.escapeHtml(label) + '</a></li>';
                         }
                     }
 
@@ -160,14 +160,15 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
         _getSectionTriggerHref: function(section) {
             if (this.settings.context === 'index') {
                 var uri = 'entries/' + section.handle + '/new';
-                if (this.siteId && this.siteId != Craft.siteId) {
+                let params = {};
+                if (this.siteId) {
                     for (var i = 0; i < Craft.sites.length; i++) {
                         if (Craft.sites[i].id == this.siteId) {
-                            uri += '/'+Craft.sites[i].handle;
+                            params.site = Craft.sites[i].handle;
                         }
                     }
                 }
-                return 'href="' + Craft.getUrl(uri) + '"';
+                return 'href="' + Craft.getUrl(uri, params) + '"';
             } else {
                 return 'data-id="' + section.id + '"';
             }
@@ -198,11 +199,11 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 
             Craft.createElementEditor(this.elementType, {
                 hudTrigger: this.$newEntryBtnGroup,
-                elementType: 'craft\\elements\\Entry',
                 siteId: this.siteId,
                 attributes: {
                     sectionId: sectionId,
-                    typeId: section.entryTypes[0].id
+                    typeId: section.entryTypes[0].id,
+                    enabled: section.canPublish ? 1 : 0,
                 },
                 onBeginLoading: $.proxy(function() {
                     this.$newEntryBtn.addClass('loading');

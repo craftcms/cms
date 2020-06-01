@@ -23,7 +23,6 @@ use craft\web\UploadedFile;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\RequestOptions;
 use Symfony\Component\Yaml\Yaml;
-use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\web\BadRequestHttpException;
@@ -36,13 +35,10 @@ use ZipArchive;
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class DashboardController extends Controller
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Dashboard index.
      *
@@ -306,9 +302,7 @@ class DashboardController extends Controller
      * Creates a new support ticket for the CraftSupport widget.
      *
      * @return Response
-     * @throws ErrorException
      * @throws BadRequestHttpException
-     * @throws InvalidArgumentException
      */
     public function actionSendSupportRequest(): Response
     {
@@ -404,7 +398,7 @@ class DashboardController extends Controller
                             'except' => ['web-404s.log'],
                             'recursive' => false
                         ]);
-                    } catch (ErrorException $e) {
+                    } catch (InvalidArgumentException $e) {
                         Craft::warning("Unable to find log files in \"{$logPath}\": " . $e->getMessage(), __METHOD__);
                         $logFiles = [];
                     }
@@ -495,9 +489,6 @@ class DashboardController extends Controller
         ]);
     }
 
-    // Private Methods
-    // =========================================================================
-
     /**
      * Returns the info about a widget required to display its body and settings in the Dashboard.
      *
@@ -537,6 +528,7 @@ class DashboardController extends Controller
             'type' => get_class($widget),
             'colspan' => $colspan,
             'title' => $widget->getTitle(),
+            'subtitle' => $widget->getSubtitle(),
             'name' => $widget->displayName(),
             'bodyHtml' => $widgetBodyHtml,
             'settingsHtml' => $settingsHtml,
@@ -552,23 +544,27 @@ class DashboardController extends Controller
      */
     private function _getWidgetIconSvg(WidgetInterface $widget): string
     {
-        $iconPath = $widget::iconPath();
+        $icon = $widget::icon();
 
-        if ($iconPath === null) {
+        if ($icon === null) {
             return $this->_getDefaultWidgetIconSvg($widget);
         }
 
-        if (!is_file($iconPath)) {
-            Craft::warning("Widget icon file doesn't exist: {$iconPath}", __METHOD__);
+        if (stripos($icon, '<svg') !== false) {
+            return $icon;
+        }
+
+        if (!is_file($icon)) {
+            Craft::warning("Widget icon file doesn't exist: {$icon}", __METHOD__);
             return $this->_getDefaultWidgetIconSvg($widget);
         }
 
-        if (!FileHelper::isSvg($iconPath)) {
-            Craft::warning("Widget icon file is not an SVG: {$iconPath}", __METHOD__);
+        if (!FileHelper::isSvg($icon)) {
+            Craft::warning("Widget icon file is not an SVG: {$icon}", __METHOD__);
             return $this->_getDefaultWidgetIconSvg($widget);
         }
 
-        return file_get_contents($iconPath);
+        return file_get_contents($icon);
     }
 
     /**

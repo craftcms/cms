@@ -14,9 +14,10 @@ return [
             $request->csrfCookie = Craft::cookieConfig([], $request);
             return $request;
         },
-        'response' => [
-            'class' => craft\web\Response::class,
-        ],
+        'response' => function() {
+            $config = craft\helpers\App::webResponseConfig();
+            return Craft::createObject($config);
+        },
         'session' => function() {
             $config = craft\helpers\App::sessionConfig();
             return Craft::createObject($config);

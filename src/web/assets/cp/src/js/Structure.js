@@ -84,7 +84,6 @@ Craft.Structure = Garnish.Base.extend(
                 if (this.settings.storageKey) {
                     Craft.setLocalStorage(this.settings.storageKey, this.state);
                 }
-
             }, this));
         },
 

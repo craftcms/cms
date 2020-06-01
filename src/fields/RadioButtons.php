@@ -9,18 +9,17 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\base\SortableFieldInterface;
+use craft\fields\data\SingleOptionFieldData;
 
 /**
  * RadioButtons represents a Radio Buttons field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
-class RadioButtons extends BaseOptionsField
+class RadioButtons extends BaseOptionsField implements SortableFieldInterface
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -29,8 +28,13 @@ class RadioButtons extends BaseOptionsField
         return Craft::t('app', 'Radio Buttons');
     }
 
-    // Public Methods
-    // =========================================================================
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return SingleOptionFieldData::class;
+    }
 
     /**
      * @inheritdoc
@@ -43,9 +47,6 @@ class RadioButtons extends BaseOptionsField
             'options' => $this->translatedOptions(),
         ]);
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

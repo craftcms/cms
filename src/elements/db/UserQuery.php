@@ -24,14 +24,16 @@ use yii\db\Connection;
  * @method User|array|null one($db = null)
  * @method User|array|null nth(int $n, Connection $db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  * @supports-status-param
+ * @replace {element} user
+ * @replace {elements} users
+ * @replace {twig-method} craft.users()
+ * @replace {myElement} myUser
+ * @replace {element-class} \craft\elements\User
  */
 class UserQuery extends ElementQuery
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -79,7 +81,7 @@ class UserQuery extends ElementQuery
      *     ->all();
      * ```
      * ```twig
-     * {# fetch users with CP access #}
+     * {# fetch users with control panel access #}
      * {% set admins = craft.users()
      *     .can('accessCp')
      *     .all() %}
@@ -138,9 +140,6 @@ class UserQuery extends ElementQuery
      */
     public $lastLoginDate;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -173,7 +172,7 @@ class UserQuery extends ElementQuery
      *
      * ```twig
      * {# Fetch admins #}
-     * {% set {elements-var} = {twig-function}
+     * {% set {elements-var} = {twig-method}
      *     .admin()
      *     .all() %}
      * ```
@@ -203,14 +202,14 @@ class UserQuery extends ElementQuery
      * ---
      *
      * ```twig
-     * {# Fetch users that can access the Control Panel #}
-     * {% set {elements-var} = {twig-function}
+     * {# Fetch users that can access the control panel #}
+     * {% set {elements-var} = {twig-method}
      *     .can('accessCp')
      *     .all() %}
      * ```
      *
      * ```php
-     * // Fetch users that can access the Control Panel
+     * // Fetch users that can access the control panel
      * ${elements-var} = {element-class}::find()
      *     ->can('accessCp')
      *     ->all();
@@ -231,7 +230,7 @@ class UserQuery extends ElementQuery
      *
      * Possible values include:
      *
-     * | Value | Fetches {elements}…
+     * | Value | Fetches users…
      * | - | -
      * | `'foo'` | in a group with a handle of `foo`.
      * | `'not foo'` | not in a group with a handle of `foo`.
@@ -242,14 +241,14 @@ class UserQuery extends ElementQuery
      * ---
      *
      * ```twig
-     * {# Fetch {elements} in the Foo user group #}
+     * {# Fetch users in the Foo user group #}
      * {% set {elements-var} = {twig-method}
      *     .group('foo')
      *     .all() %}
      * ```
      *
      * ```php
-     * // Fetch {elements} in the Foo user group
+     * // Fetch users in the Foo user group
      * ${elements-var} = {php-method}
      *     ->group('foo')
      *     ->all();
@@ -281,7 +280,7 @@ class UserQuery extends ElementQuery
      *
      * Possible values include:
      *
-     * | Value | Fetches {elements}…
+     * | Value | Fetches users…
      * | - | -
      * | `1` | in a group with an ID of 1.
      * | `'not 1'` | not in a group with an ID of 1.
@@ -291,14 +290,14 @@ class UserQuery extends ElementQuery
      * ---
      *
      * ```twig
-     * {# Fetch {elements} in a group with an ID of 1 #}
+     * {# Fetch users in a group with an ID of 1 #}
      * {% set {elements-var} = {twig-method}
      *     .groupId(1)
      *     .all() %}
      * ```
      *
      * ```php
-     * // Fetch {elements} in a group with an ID of 1
+     * // Fetch users in a group with an ID of 1
      * ${elements-var} = {php-method}
      *     ->groupId(1)
      *     ->all();
@@ -319,7 +318,7 @@ class UserQuery extends ElementQuery
      *
      * Possible values include:
      *
-     * | Value | Fetches {elements}…
+     * | Value | Fetches users…
      * | - | -
      * | `'foo@bar.baz'` | with an email of `foo@bar.baz`.
      * | `'not foo@bar.baz'` | not with an email of `foo@bar.baz`.
@@ -356,7 +355,7 @@ class UserQuery extends ElementQuery
      *
      * Possible values include:
      *
-     * | Value | Fetches {elements}…
+     * | Value | Fetches users…
      * | - | -
      * | `'foo'` | with a username of `foo`.
      * | `'not foo'` | not with a username of `foo`.
@@ -398,7 +397,7 @@ class UserQuery extends ElementQuery
      *
      * Possible values include:
      *
-     * | Value | Fetches {elements}…
+     * | Value | Fetches users…
      * | - | -
      * | `'Jane'` | with a first name of `Jane`.
      * | `'not Jane'` | not with a first name of `Jane`.
@@ -434,7 +433,7 @@ class UserQuery extends ElementQuery
      *
      * Possible values include:
      *
-     * | Value | Fetches {elements}…
+     * | Value | Fetches users…
      * | - | -
      * | `'Doe'` | with a last name of `Doe`.
      * | `'not Doe'` | not with a last name of `Doe`.
@@ -470,7 +469,7 @@ class UserQuery extends ElementQuery
      *
      * Possible values include:
      *
-     * | Value | Fetches {elements}…
+     * | Value | Fetches users…
      * | - | -
      * | `'>= 2018-04-01'` | that last logged-in on or after 2018-04-01.
      * | `'< 2018-05-01'` | that last logged-in before 2018-05-01
@@ -479,7 +478,7 @@ class UserQuery extends ElementQuery
      * ---
      *
      * ```twig
-     * {# Fetch {elements} that logged in recently #}
+     * {# Fetch users that logged in recently #}
      * {% set aWeekAgo = date('7 days ago')|atom %}
      *
      * {% set {elements-var} = {twig-method}
@@ -488,7 +487,7 @@ class UserQuery extends ElementQuery
      * ```
      *
      * ```php
-     * // Fetch {elements} that logged in recently
+     * // Fetch users that logged in recently
      * $aWeekAgo = (new \DateTime('7 days ago'))->format(\DateTime::ATOM);
      *
      * ${elements-var} = {php-method}
@@ -507,11 +506,11 @@ class UserQuery extends ElementQuery
     }
 
     /**
-     * Narrows the query results based on the {elements}’ statuses.
+     * Narrows the query results based on the users’ statuses.
      *
      * Possible values include:
      *
-     * | Value | Fetches {elements}…
+     * | Value | Fetches users…
      * | - | -
      * | `'active'` _(default)_ | with active accounts.
      * | `'suspended'` | with suspended accounts.
@@ -522,14 +521,14 @@ class UserQuery extends ElementQuery
      * ---
      *
      * ```twig
-     * {# Fetch active and locked {elements} #}
-     * {% set {elements-var} = {twig-function}
+     * {# Fetch active and locked users #}
+     * {% set {elements-var} = {twig-method}
      *     .status(['active', 'locked'])
      *     .all() %}
      * ```
      *
      * ```php
-     * // Fetch active and locked {elements}
+     * // Fetch active and locked users
      * ${elements-var} = {element-class}::find()
      *     ->status(['active', 'locked'])
      *     ->all();
@@ -539,9 +538,6 @@ class UserQuery extends ElementQuery
     {
         return parent::status($value);
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -562,6 +558,7 @@ class UserQuery extends ElementQuery
             'users.firstName',
             'users.lastName',
             'users.email',
+            'users.unverifiedEmail',
             'users.admin',
             'users.locked',
             'users.pending',
@@ -590,17 +587,12 @@ class UserQuery extends ElementQuery
         }
 
         if ($this->groupId) {
-            $userIds = (new Query())
-                ->select(['userId'])
-                ->from([Table::USERGROUPS_USERS])
-                ->where(Db::parseParam('groupId', $this->groupId))
-                ->column();
-
-            if (!empty($userIds)) {
-                $this->subQuery->andWhere(['elements.id' => $userIds]);
-            } else {
-                return false;
-            }
+            $this->subQuery->andWhere([
+                'exists', (new Query())
+                    ->from(['ugu' => Table::USERGROUPS_USERS])
+                    ->where('[[elements.id]] = [[ugu.userId]]')
+                    ->andWhere(Db::parseParam('groupId', $this->groupId))
+            ]);
         }
 
         if ($this->email) {
@@ -655,9 +647,6 @@ class UserQuery extends ElementQuery
                 return parent::statusCondition($status);
         }
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Applies the 'can' param to the query being prepared.

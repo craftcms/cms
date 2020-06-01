@@ -52,31 +52,83 @@
                     settingsHtml = this.getTypeInfo(type, 'settingsHtml', '').replace(/__NAMESPACE__/g, settingsNamespace),
                     settingsJs = this.getTypeInfo(type, 'settingsJs', '').replace(/__NAMESPACE__/g, settingsNamespace),
                     $gridItem = $('<div class="item" data-colspan="1" style="display: block">'),
-                    $container = $(
-                        '<div class="widget new loading-new scaleout ' + type.toLowerCase() + '" data-type="' + type + '">' +
-                        '<div class="front">' +
-                        '<div class="pane">' +
-                        '<div class="spinner body-loading"/>' +
-                        '<div class="settings icon hidden"/>' +
-                        '<h2/>' +
-                        '<div class="body"/>' +
-                        '</div>' +
-                        '</div>' +
-                        '<div class="back">' +
-                        '<form class="pane">' +
-                        '<input type="hidden" name="type" value="' + type + '"/>' +
-                        '<input type="hidden" name="settingsNamespace" value="' + settingsNamespace + '"/>' +
-                        '<h2>' + Craft.t('app', '{type} Settings', {type: Craft.escapeHtml($option.data('name'))}) + '</h2>' +
-                        '<div class="settings"/>' +
-                        '<hr/>' +
-                        '<div class="buttons clearafter">' +
-                        '<input type="submit" class="btn submit" value="' + Craft.t('app', 'Save') + '"/>' +
-                        '<div class="btn" role="button">' + Craft.t('app', 'Cancel') + '</div>' +
-                        '<div class="spinner hidden"/>' +
-                        '</div>' +
-                        '</form>' +
-                        '</div>' +
-                        '</div>').appendTo($gridItem);
+                    $container = $('<div/>', {
+                      'class': 'widget new loading-new scaleout',
+                      'data-type': type,
+                    })
+                      .addClass(type.toLowerCase())
+                      .append(
+                        $('<div/>', {'class': 'front'})
+                          .append(
+                            $('<div/>', {'class': 'pane'})
+                              .append(
+                                $('<div/>', {'class': 'spinner body-loading'})
+                              )
+                              .append(
+                                $('<div/>', {'class': 'widget-heading'})
+                                  .append('<h2/>')
+                                  .append('<h5/>')
+                              )
+                              .append(
+                                $('<div/>', {'class': 'body'})
+                              )
+                              .append(
+                                $('<div/>', {'class': 'settings icon hidden'})
+                              )
+                          )
+                      )
+                      .append(
+                        $('<div/>', {'class': 'back'})
+                          .append(
+                            $('<form/>', {'class': 'pane'})
+                              .append(
+                                $('<input/>', {
+                                  type: 'hidden',
+                                  name: 'type',
+                                  value: type,
+                                })
+                              )
+                              .append(
+                                $('<input/>', {
+                                  type: 'hidden',
+                                  name: 'settingsNamespace',
+                                  value: settingsNamespace,
+                                })
+                              )
+                              .append(
+                                $('<h2/>', {
+                                  text: Craft.t('app', '{type} Settings', {
+                                    type: $option.data('name')
+                                  }),
+                                })
+                              )
+                              .append(
+                                $('<div/>', {'class': 'settings'})
+                              )
+                              .append('<hr/>')
+                              .append(
+                                $('<div/>', {'class': 'buttons clearafter'})
+                                  .append(
+                                    $('<input/>', {
+                                      type: 'submit',
+                                      'class': 'btn submit',
+                                      value: Craft.t('app', 'Save'),
+                                    })
+                                  )
+                                  .append(
+                                    $('<div/>', {
+                                      'class': 'btn',
+                                      role: 'button',
+                                      text: Craft.t('app', 'Cancel')
+                                    })
+                                  )
+                                  .append(
+                                    $('<div/>', {'class': 'spinner hidden'})
+                                  )
+                              )
+                          )
+                      )
+                      .appendTo($gridItem);
 
                 if (settingsHtml) {
                     $container.addClass('flipped');
@@ -178,7 +230,6 @@
                             }
 
                             this.grid.resetItemOrder();
-
                         }, this),
                         onDeleteItem: $.proxy(function(id) {
                             var widget = this.widgets[id];
@@ -205,6 +256,8 @@
             $front: null,
             $settingsBtn: null,
             $title: null,
+            $subtitle: null,
+            $heading: null,
             $bodyContainer: null,
 
             $back: null,
@@ -216,6 +269,7 @@
             id: null,
             type: null,
             title: null,
+            subtitle: null,
 
             totalCols: null,
             settingsHtml: null,
@@ -243,7 +297,9 @@
 
                 this.$front = this.$container.children('.front');
                 this.$settingsBtn = this.$front.find('> .pane > .icon.settings');
-                this.$title = this.$front.find('> .pane > h2');
+                this.$heading = this.$front.find('> .pane > .widget-heading');
+                this.$title = this.$heading.find('> h2');
+                this.$subtitle = this.$heading.find('> h5');
                 this.$bodyContainer = this.$front.find('> .pane > .body');
 
                 this.setSettingsHtml(settingsHtml, initSettingsFn);
@@ -370,6 +426,7 @@
 
             update: function(response) {
                 this.title = response.info.title;
+                this.subtitle = response.info.subtitle;
 
                 // Is this a new widget?
                 if (this.$container.hasClass('new')) {
@@ -397,7 +454,22 @@
                     }
                 }
 
-                this.$title.text(this.title);
+                if (!this.title && !this.subtitle) {
+                    this.$heading.remove();
+                } else {
+                    if (this.title) {
+                        this.$title.text(this.title);
+                    } else {
+                        this.$title.remove();
+                    }
+
+                    if (this.subtitle) {
+                        this.$subtitle.text(this.subtitle);
+                    } else {
+                        this.$subtitle.remove();
+                    }
+                }
+
                 this.$bodyContainer.html(response.info.bodyHtml);
 
                 // New colspan?
@@ -544,7 +616,9 @@
                     }
 
                     $('<a/>', {
-                        title: (i === 1 ? Craft.t('app', '1 column') : Craft.t('app', '{num} columns', {num: i})),
+                        title: Craft.t('app', '{num, number} {num, plural, =1{column} other{columns}}', {
+                            num: i,
+                        }),
                         role: 'button',
                         'class': cssClass,
                         data: {colspan: i}

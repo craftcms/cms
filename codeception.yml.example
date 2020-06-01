@@ -8,16 +8,31 @@ paths:
 settings:
     bootstrap: _bootstrap.php
     colors: true
+coverage:
+    enabled: true
+    include:
+        - src/*
+    exclude:
+        - tests/_support/_generated/*
+        - src/config/*
+        - src/icons/*
+        - src/test/*
+        - src/migrations/*
+        - src/templates/*
+        - src/translations/*
+        - src/migration.php.template
+params:
+    - tests/.env
 modules:
-  config:
-    Yii2:
-      configFile: 'tests/_craft/config/test.php'
-  enabled:
-    - Db:
-        dsn: 'mysql:host=localhost;dbname=craft3test'
-        user: 'root'
-        password: ''
-        dump: 'tests/_data/dump.sql'
-        populate: true
-        cleanup: true
-        reconnect: true
+    config:
+        \craft\test\Craft:
+            configFile: 'tests/_craft/config/test.php'
+            entryUrl: 'https://test.craftcms.dev/'
+            entryScript: 'index.php'
+            projectConfig: {}
+            migrations: [{'class': 'craft\migrations\ExampleMigration', 'params': {tableName: 'exampletable'}}]
+            plugins: [{'class': 'craftcms\base\ExamplePlugin', 'handle': 'example-plugin'}]
+            cleanup: true # Should tests and fixtures be cleaned
+            transaction: true # Wrap in transaction
+            dbSetup: {clean: true, setupCraft: true} # What DB setup work do we need to do.
+            fullMock: false

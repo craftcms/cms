@@ -16,13 +16,10 @@ use craft\base\Model;
  * FieldLayout model class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class FieldLayout extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null ID
      */
@@ -48,15 +45,12 @@ class FieldLayout extends Model
      */
     private $_fields;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['id'], 'number', 'integerOnly' => true];
         return $rules;
     }
@@ -83,6 +77,7 @@ class FieldLayout extends Model
      * Return the field layout config or null if no fields configured.
      *
      * @return array|null
+     * @since 3.1.0
      */
     public function getConfig()
     {
@@ -112,6 +107,7 @@ class FieldLayout extends Model
      *
      * @param array $config Config data to use.
      * @return self
+     * @since 3.1.0
      */
     public static function createFromConfig(array $config): self
     {
@@ -227,7 +223,7 @@ class FieldLayout extends Model
     }
 
     /**
-     * Sets the layout']”s fields.
+     * Sets the layout's fields.
      *
      * @param FieldInterface[] $fields An array of the layout’s fields, which can either be
      * FieldLayoutFieldModel objects or arrays defining the tab’s

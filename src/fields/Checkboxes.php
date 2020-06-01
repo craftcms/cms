@@ -9,18 +9,16 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\fields\data\MultiOptionsFieldData;
 
 /**
  * Checkboxes represents a Checkboxes field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Checkboxes extends BaseOptionsField
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -29,8 +27,18 @@ class Checkboxes extends BaseOptionsField
         return Craft::t('app', 'Checkboxes');
     }
 
-    // Public Methods
-    // =========================================================================
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return MultiOptionsFieldData::class;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public $multi = true;
 
     /**
      * @inheritdoc
@@ -52,9 +60,6 @@ class Checkboxes extends BaseOptionsField
             'options' => $this->translatedOptions(),
         ]);
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

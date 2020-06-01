@@ -13,13 +13,10 @@ use yii\base\Event;
  * Delete Template Caches event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.2
  */
 class DeleteTemplateCachesEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int[] Array of template cache IDs that are associated with this event
      */
