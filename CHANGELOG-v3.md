@@ -7,6 +7,7 @@
 
 ### Changed
 - Improved the styling of Live Preview.
+- Local volumes now respect the `defaultFileMode` and `defaultDirMod` config settings. ([#4251](https://github.com/craftcms/cms/pull/4251))
 
 ### Fixed
 - Fixed a race condition that could result in lost Matrix content when a new Matrix block was added from Live Preview, under very specific conditions. ([#6154](https://github.com/craftcms/cms/issues/6154))
