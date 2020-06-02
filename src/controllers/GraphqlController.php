@@ -159,7 +159,7 @@ class GraphqlController extends Controller
         }
 
         // Was a specific token passed?
-        if ($requestHeaders->has('authorization')) {
+        if (!empty($requestHeaders->get('authorization'))) {
             if (preg_match('/^Bearer\s+(.+)$/i', $requestHeaders->get('authorization'), $matches)) {
                 try {
                     $token = $gqlService->getTokenByAccessToken($matches[1]);

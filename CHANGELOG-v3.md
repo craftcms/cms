@@ -11,6 +11,7 @@
 
 ### Fixed
 - Fixed a race condition that could result in lost Matrix content when a new Matrix block was added from Live Preview, under very specific conditions. ([#6154](https://github.com/craftcms/cms/issues/6154))
+- Fixed a bug where the built-in GraphQL client would not work on some environments.
 
 ## 3.4.22.1 - 2020-05-30
 
