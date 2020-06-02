@@ -189,7 +189,9 @@
         {% endif %}
     {% elseif isDraft %}
         {% if canUpdateSource and saveSourceAction %}
-            <input type="submit" class="btn submit" value="{{ 'Publish changes'|t('app') }}">
+            <div id="publish-changes-btn-container">
+                <input type="submit" class="btn submit" value="{{ 'Publish changes'|t('app') }}">
+            </div>
         {% endif %}
     {% elseif isRevision %}
         {% if canUpdateSource and revertSourceAction %}
