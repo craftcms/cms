@@ -22,7 +22,7 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-/*!   - 2020-05-30 */
+/*!   - 2020-06-03 */
 (function ($) {
   /** global: Craft */
 
@@ -4734,9 +4734,20 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
       if (this.settings.viewMode === 'list' || this.$elements.length === 0) {
         animateCss['margin-bottom'] = -($element.outerHeight() + parseInt($element.css('margin-bottom')));
+      } // Pause the draft editor
+
+
+      if (window.draftEditor) {
+        window.draftEditor.pause();
       }
 
-      $element.velocity(animateCss, Craft.BaseElementSelectInput.REMOVE_FX_DURATION, callback);
+      $element.velocity(animateCss, Craft.BaseElementSelectInput.REMOVE_FX_DURATION, function () {
+        callback(); // Resume the draft editor
+
+        if (window.draftEditor) {
+          window.draftEditor.resume();
+        }
+      });
     },
     showModal: function showModal() {
       // Make sure we haven't reached the limit
