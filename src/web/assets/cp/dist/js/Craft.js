@@ -3635,8 +3635,11 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       }
 
       if (this.initialized) {
-        // Remember this site for later
-        Craft.setLocalStorage('BaseElementIndex.siteId', siteId); // Update the elements
+        if (this.settings.context === 'index') {
+          // Remember this site for later
+          Craft.setLocalStorage('BaseElementIndex.siteId', siteId);
+        } // Update the elements
+
 
         this.updateElements();
       }

@@ -14,6 +14,7 @@
 - Fixed a race condition that could result in lost Matrix content when a new Matrix block was added from Live Preview, under very specific conditions. ([#6154](https://github.com/craftcms/cms/issues/6154))
 - Fixed a bug where the built-in GraphQL client would not work on some environments.
 - Fixed a bug where newly-added entries and entry drafts wouldn’t remember their new parent entry selection when published. ([#6168](https://github.com/craftcms/cms/issues/6168))
+- Fixed a bug where switching the site within an element selection modal would affect which site is shown by default on element index pages. ([#6174](https://github.com/craftcms/cms/issues/6174))
 
 ## 3.4.22.1 - 2020-05-30
 
