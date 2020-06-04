@@ -11,6 +11,8 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\behaviors\DraftBehavior;
+use craft\db\Query;
+use craft\db\Table;
 use craft\elements\Entry;
 use craft\errors\InvalidElementException;
 use craft\helpers\ArrayHelper;
@@ -369,10 +371,20 @@ class EntryRevisionsController extends BaseEntriesController
         $draftId = $request->getRequiredBodyParam('draftId');
         $siteId = $request->getBodyParam('siteId');
 
+        // Get the structure ID
+        $structureId = (new Query())
+            ->select(['sections.structureId'])
+            ->from(['sections' => Table::SECTIONS])
+            ->innerJoin(['entries' => Table::ENTRIES], '[[entries.sectionId]] = [[sections.id]]')
+            ->innerJoin(['elements' => Table::ELEMENTS], '[[elements.id]] = [[entries.id]]')
+            ->where(['elements.draftId' => $draftId])
+            ->scalar();
+
         /** @var Entry|DraftBehavior|null $draft */
         $draft = Entry::find()
             ->draftId($draftId)
             ->siteId($siteId)
+            ->structureId($structureId)
             ->anyStatus()
             ->one();
 

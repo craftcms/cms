@@ -545,32 +545,24 @@ class EntriesController extends BaseEntriesController
                 throw new BadRequestHttpException('Request missing required entryId param');
             }
 
-            // Get the structure ID
-            $structureId = (new Query())
-                ->select(['sections.structureId'])
-                ->from(['entries' => Table::ENTRIES])
-                ->innerJoin(['sections' => Table::SECTIONS], '[[sections.id]] = [[entries.sectionId]]')
-                ->where(['entries.id' => $variables['entryId']])
-                ->scalar();
-
             if (!empty($variables['draftId'])) {
                 $variables['entry'] = Entry::find()
                     ->draftId($variables['draftId'])
-                    ->structureId($structureId)
+                    ->structureId($variables['section']->structureId)
                     ->siteId($site->id)
                     ->anyStatus()
                     ->one();
             } else if (!empty($variables['revisionId'])) {
                 $variables['entry'] = Entry::find()
                     ->revisionId($variables['revisionId'])
-                    ->structureId($structureId)
+                    ->structureId($variables['section']->structureId)
                     ->siteId($site->id)
                     ->anyStatus()
                     ->one();
             } else {
                 $variables['entry'] = Entry::find()
                     ->id($variables['entryId'])
-                    ->structureId($structureId)
+                    ->structureId($variables['section']->structureId)
                     ->siteId($site->id)
                     ->anyStatus()
                     ->one();

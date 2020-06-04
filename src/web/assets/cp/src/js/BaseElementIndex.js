@@ -1442,8 +1442,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             }
 
             if (this.initialized) {
-                // Remember this site for later
-                Craft.cp.setSiteId(siteId);
+                if (this.settings.context === 'index') {
+                    // Remember this site for later
+                    Craft.cp.setSiteId(siteId);
+                }
 
                 // Update the elements
                 this.updateElements();

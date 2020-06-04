@@ -418,6 +418,7 @@ class ElementHelper
             ->id($sourceId)
             ->siteId($anySite ? '*' : $element->siteId)
             ->preferSites([$element->siteId])
+            ->structureId($element->structureId)
             ->unique()
             ->anyStatus()
             ->ignorePlaceholders()
