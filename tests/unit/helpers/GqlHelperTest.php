@@ -10,8 +10,12 @@ namespace craftunit\helpers;
 use Codeception\Test\Unit;
 use Craft;
 use craft\errors\GqlException;
+use craft\gql\arguments\elements\Asset as AssetArguments;
+use craft\gql\interfaces\elements\Asset as AssetInterface;
+use craft\gql\resolvers\elements\Asset as AssetResolver;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\GqlSchema;
+use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Definition\UnionType;
 
 class GqlHelperTest extends Unit
@@ -137,6 +141,41 @@ class GqlHelperTest extends Unit
 
         $this->assertEquals($result, GqlHelper::extractEntityAllowedActions($entity));
     }
+
+    /**
+     * Test GQL types correctly wrapped in NonNull type.
+     * @param $input
+     * @param $expected
+     * @dataProvider wrapInNonNullProvider
+     */
+    public function testWrapInNonNull($input, $expected)
+    {
+        $this->assertEquals($expected, GqlHelper::wrapInNonNull($input));
+    }
+
+    public function wrapInNonNullProvider()
+    {
+        $typeDef = [
+            'name' => 'mock',
+            'type' => Type::listOf(Type::string()),
+            'args' => []
+        ];
+
+        $nonNulledTypeDef = [
+            'name' => 'mock',
+            'type' => Type::nonNull(Type::listOf(Type::string())),
+            'args' => []
+        ];
+
+        return [
+            [Type::boolean(), Type::nonNull(Type::boolean())],
+            [Type::string(),Type::nonNull(Type::string())],
+            [Type::id(),Type::nonNull(Type::id())],
+            [Type::nonNull(Type::int()),Type::nonNull(Type::int())],
+            [$typeDef, $nonNulledTypeDef],
+        ];
+    }
+
 
     public function actionExtractionDataProvider()
     {
