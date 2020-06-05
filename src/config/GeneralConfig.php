@@ -433,6 +433,10 @@ class GeneralConfig extends BaseObject
      */
     public $generateTransformsBeforePageLoad = false;
     /**
+     * @var string Prefix to use for all type names returned by GraphQL.
+     */
+    public $gqlTypePrefix = '';
+    /**
      * @var bool bool Whether the system should run in Headless Mode, which
      * optimizes the system and control panel for headless CMS implementations.
      *
