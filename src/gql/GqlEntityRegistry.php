@@ -7,6 +7,8 @@
 
 namespace craft\gql;
 
+use Craft;
+
 /**
  * Class GqlEntityRegistry
  *
@@ -19,6 +21,26 @@ class GqlEntityRegistry
      * @var array
      */
     private static $_entities = [];
+
+    /**
+     * @var string
+     */
+    private static $_prefix = null;
+
+    /**
+     * Prefix GQL type name with the configured prefix.
+     *
+     * @param string $typeName
+     * @return string
+     */
+    protected static function prefixTypeName(string $typeName): string
+    {
+        if (self::$_prefix === null) {
+            self::$_prefix = Craft::$app->getConfig()->getGeneral()->gqlTypePrefix;
+        }
+
+        return self::$_prefix . $typeName;
+    }
 
     /**
      * Get a registered entity.
@@ -40,6 +62,8 @@ class GqlEntityRegistry
      */
     public static function createEntity(string $entityName, $entity)
     {
+        $entity->name = self::prefixTypeName($entity->name);
+
         self::$_entities[$entityName] = $entity;
 
         TypeLoader::registerType($entityName, function() use ($entity) {

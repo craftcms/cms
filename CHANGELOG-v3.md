@@ -13,6 +13,7 @@
 - Added the “Prettify” and “History” buttons to the GraphiQL IDE.
 - Added the Explorer plugin to GraphiQL.
 - Added support for external subnav links in the global control panel nav.
+- Added the `gqlTypePrefix` config setting, making it possible to prefix all GraphQL types created by Craft. ([#5950](https://github.com/craftcms/cms/issues/5950))
 - Added the `_layouts/components/form-action-menu.twig` control panel template.
 - Added `craft\base\ConfigurableComponent`.
 - Added `craft\base\ConfigurableComponentInterface`.
