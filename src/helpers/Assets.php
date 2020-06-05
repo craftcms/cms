@@ -85,7 +85,7 @@ class Assets
     public static function generateUrl(VolumeInterface $volume, Asset $asset, string $uri = null, AssetTransformIndex $transformIndex = null): string
     {
         $baseUrl = $volume->getRootUrl();
-        $folderPath = $asset->getFolder()->path;
+        $folderPath = $asset->folderPath;
         $appendix = static::urlAppendix($volume, $asset, $transformIndex);
 
         return $baseUrl . $folderPath . ($uri ?? $asset->filename) . $appendix;

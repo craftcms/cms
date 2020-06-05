@@ -1,5 +1,13 @@
 "use strict";
 
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
+
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+
+function _iterableToArrayLimit(arr, i) { if (typeof Symbol === "undefined" || !(Symbol.iterator in Object(arr))) return; var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
 
 function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
@@ -14,7 +22,7 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-/*!   - 2020-05-16 */
+/*!   - 2020-05-30 */
 (function ($) {
   /** global: Craft */
 
@@ -414,7 +422,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       if (baseUrl) {
         url = baseUrl;
 
-        if (path && Craft.pathParam) {
+        if (path) {
           // Does baseUrl already contain a path?
           var pathMatch = url.match(new RegExp('[&\?]' + Craft.escapeRegex(Craft.pathParam) + '=[^&]+'));
 
@@ -436,7 +444,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       }
 
       if (!Craft.omitScriptNameInUrls && path) {
-        if (Craft.usePathInfo || !Craft.pathParam) {
+        if (Craft.usePathInfo) {
           // Make sure that the script name is in the URL
           if (url.search(Craft.scriptName) === -1) {
             url = Craft.rtrim(url, '/') + '/' + Craft.scriptName;
@@ -1402,7 +1410,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
       for (var i = 0; i < str.length; i++) {
         _char = str.charAt(i);
-        asciiStr += typeof (charMap || Craft.asciiCharMap)[_char] === 'string' ? (charMap || Craft.asciiCharMap)[_char] : _char;
+        asciiStr += (charMap || Craft.asciiCharMap)[_char] || _char;
       }
 
       return asciiStr;
@@ -1516,6 +1524,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       $('.pill', $container).pill();
       $('.formsubmit', $container).formsubmit();
       $('.menubtn', $container).menubtn();
+      $('.datetimewrapper', $container).datetime();
     },
     _elementIndexClasses: {},
     _elementSelectorModalClasses: {},
@@ -1665,72 +1674,6 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           localStorage[key] = JSON.stringify(value);
         } catch (e) {}
       }
-    },
-
-    /**
-     * Removes a value from localStorage.
-     * @param key
-     */
-    removeLocalStorage: function removeLocalStorage(key) {
-      if (typeof localStorage !== 'undefined') {
-        localStorage.removeItem("Craft-".concat(Craft.systemUid, ".").concat(key));
-      }
-    },
-
-    /**
-     * Returns a cookie value, if it exists, otherwise returns `false`
-     * @return {(string|boolean)}
-     */
-    getCookie: function getCookie(name) {
-      // Adapted from https://developer.mozilla.org/en-US/docs/Web/API/Document/cookie
-      return document.cookie.replace(new RegExp("(?:(?:^|.*;\\s*)Craft-".concat(Craft.systemUid, ":").concat(name, "\\s*\\=\\s*([^;]*).*$)|^.*$")), "$1");
-    },
-
-    /**
-     * Sets a cookie value.
-     * @param {string} name
-     * @param {string} value
-     * @param {Object} [options]
-     * @param {string} [options.path] The cookie path.
-     * @param {string} [options.domain] The cookie domain. Defaults to the `defaultCookieDomain` config setting.
-     * @param {number} [options.maxAge] The max age of the cookie (in seconds)
-     * @param {Date} [options.expires] The expiry date of the cookie. Defaults to none (session-based cookie).
-     * @param {boolean} [options.secure] Whether this is a secure cookie. Defaults to the `useSecureCookies`
-     * config setting.
-     * @param {string} [options.sameSite] The SameSite value (`lax` or `strict`). Defaults to the
-     * `sameSiteCookieValue` config setting.
-     */
-    setCookie: function setCookie(name, value, options) {
-      options = $.extend({}, this.defaultCookieOptions, options);
-      var cookie = "Craft-".concat(Craft.systemUid, ":").concat(name, "=").concat(encodeURIComponent(value));
-
-      if (options.path) {
-        cookie += ";path=".concat(options.path);
-      }
-
-      if (options.domain) {
-        cookie += ";domain=".concat(options.domain);
-      }
-
-      if (options.maxAge) {
-        cookie += ";max-age-in-seconds=".concat(options.maxAge);
-      } else if (options.expires) {
-        cookie += ";expires=".concat(options.expires.toUTCString());
-      }
-
-      if (options.secure) {
-        cookie += ';secure';
-      }
-
-      document.cookie = cookie;
-    },
-
-    /**
-     * Removes a cookie
-     * @param {string} name
-     */
-    removeCookie: function removeCookie(name) {
-      this.setCookie(name, '', new Date('1970-01-01T00:00:00'));
     },
 
     /**
@@ -2018,7 +1961,46 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           new Garnish.MenuBtn($btn, settings);
         }
       });
-    }
+    },
+    datetime: function datetime() {
+      return this.each(function () {
+        var $wrapper = $(this);
+        var $inputs = $wrapper.find('input:not([name$="[timezone]"])');
+
+        var checkValue = function checkValue() {
+          var hasValue = false;
+
+          for (var _i3 = 0; _i3 < $inputs.length; _i3++) {
+            if ($inputs.eq(_i3).val()) {
+              hasValue = true;
+              break;
+            }
+          }
+
+          if (hasValue) {
+            if (!$wrapper.children('.clear-btn').length) {
+              var $btn = $('<div/>', {
+                "class": 'clear-btn',
+                role: 'button',
+                title: Craft.t('app', 'Clear')
+              }).appendTo($wrapper).on('click', function () {
+                for (var _i4 = 0; _i4 < $inputs.length; _i4++) {
+                  $inputs.eq(_i4).val('');
+                }
+
+                $btn.remove();
+              });
+            }
+          } else {
+            $wrapper.children('.clear-btn').remove();
+          }
+        };
+
+        $inputs.on('change', checkValue);
+        checkValue();
+      });
+    },
+    checkDatetimeValue: function checkDatetimeValue() {}
   });
   Garnish.$doc.ready(function () {
     Craft.initUiElements();
@@ -2174,11 +2156,6 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       }
     },
     switchSite: function switchSite() {
-      if (this.hud.$body.serialize() !== this.initialData && !confirm(Craft.t('app', 'Switching sites will lose unsaved changes. Are you sure you want to switch sites?'))) {
-        this.$siteSelect.val(this.siteId);
-        return;
-      }
-
       var newSiteId = this.$siteSelect.val();
 
       if (newSiteId == this.siteId) {
@@ -2506,7 +2483,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
         if (this.siteId) {
           // Should we be using a different default site?
-          var defaultSiteId = this.settings.defaultSiteId || Craft.cp.getSiteId();
+          var defaultSiteId = this.settings.defaultSiteId || Craft.getLocalStorage('BaseElementIndex.siteId');
 
           if (defaultSiteId && defaultSiteId != this.siteId) {
             // Is that one available here?
@@ -2518,7 +2495,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
             }
           }
         }
-      } else if (this.settings.criteria && this.settings.criteria.siteId && this.settings.criteria.siteId !== '*') {
+      } else if (this.settings.criteria && this.settings.criteria.siteId) {
         this._setSite(this.settings.criteria.siteId);
       } else {
         this._setSite(Craft.siteId);
@@ -3659,7 +3636,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
       if (this.initialized) {
         // Remember this site for later
-        Craft.cp.setSiteId(siteId); // Update the elements
+        Craft.setLocalStorage('BaseElementIndex.siteId', siteId); // Update the elements
 
         this.updateElements();
       }
@@ -4800,7 +4777,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     getDisabledElementIds: function getDisabledElementIds() {
       var ids = this.getSelectedElementIds();
 
-      if (this.settings.sourceElementId) {
+      if (!this.settings.allowSelfRelations && this.settings.sourceElementId) {
         ids.push(this.settings.sourceElementId);
       }
 
@@ -4824,8 +4801,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       this.updateDisabledElementsInModal();
     },
     selectElements: function selectElements(elements) {
-      for (var _i3 = 0; _i3 < elements.length; _i3++) {
-        var elementInfo = elements[_i3],
+      for (var _i5 = 0; _i5 < elements.length; _i5++) {
+        var elementInfo = elements[_i5],
             $element = this.createNewElement(elementInfo);
         this.appendElement($element);
         this.addElements($element);
@@ -4905,6 +4882,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       elementType: null,
       sources: null,
       criteria: {},
+      allowSelfRelations: false,
       sourceElementId: null,
       disabledElementIds: null,
       viewMode: 'list',
@@ -11241,7 +11219,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       }
 
       this.$colorContainer.removeClass('static');
-      this.$colorInput = $(input).addClass('hidden').insertAfter(this.$input);
+      this.$colorInput = $(input).addClass('color-preview-input').appendTo(this.$colorPreview);
       this.addListener(this.$colorContainer, 'click', function () {
         this.$colorInput.trigger('click');
       });
@@ -11408,17 +11386,6 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       $('a').each(function () {
         if (this.hostname.length && this.hostname !== location.hostname && typeof $(this).attr('target') === 'undefined') {
           $(this).attr('rel', 'noopener').attr('target', '_blank');
-        }
-      }); // Listen for Option/ALT presses
-
-      this.addListener(Garnish.$win, 'keydown', function (ev) {
-        if (ev.keyCode === Garnish.ALT_KEY) {
-          Garnish.$bod.addClass('altkeydown');
-        }
-      });
-      this.addListener(Garnish.$win, 'keyup', function (ev) {
-        if (ev.keyCode === Garnish.ALT_KEY) {
-          Garnish.$bod.removeClass('altkeydown');
         }
       });
     },
@@ -12101,35 +12068,6 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           delete this.jobProgressIcon;
         }
       }
-    },
-
-    /**
-     * Returns the active site for the control panel
-     *
-     * @return {number}
-     */
-    getSiteId: function getSiteId() {
-      // If the old BaseElementIndex.siteId value is in localStorage, go aheand and remove & return that
-      var siteId = Craft.getLocalStorage('BaseElementIndex.siteId');
-
-      if (typeof siteId !== 'undefined') {
-        Craft.removeLocalStorage('BaseElementIndex.siteId');
-        this.setSiteId(siteId);
-        return siteId;
-      }
-
-      return Craft.getCookie('siteId');
-    },
-
-    /**
-     * Sets the active site for the control panel
-     * @param {number} siteId
-     */
-    setSiteId: function setSiteId(siteId) {
-      Craft.setCookie('siteId', siteId, {
-        maxAge: 31536000 // 1 year
-
-      });
     }
   }, {
     //maxWidth: 1051, //1024,
@@ -12919,13 +12857,9 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     $nameTextInput: null,
     $notesTextInput: null,
     $saveMetaBtn: null,
-    $siteStatusPane: null,
-    $globalLightswitch: null,
-    $siteLightswitches: null,
-    $addlSiteField: null,
-    newSites: null,
     lastSerializedValue: null,
     listeningForChanges: false,
+    pauseLevel: 0,
     timeout: null,
     saving: false,
     saveXhr: null,
@@ -12998,7 +12932,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       }
     },
     listenForChanges: function listenForChanges() {
-      if (this.listeningForChanges) {
+      if (this.listeningForChanges || this.pauseLevel > 0) {
         return;
       }
 
@@ -13018,9 +12952,31 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       });
     },
     stopListeningForChanges: function stopListeningForChanges() {
+      if (!this.listeningForChanges) {
+        return;
+      }
+
       this.removeListener(Garnish.$bod, 'keypress,keyup,change,focus,blur,click,mousedown,mouseup');
       clearTimeout(this.timeout);
       this.listeningForChanges = false;
+    },
+    pause: function pause() {
+      this.pauseLevel++;
+      this.stopListeningForChanges();
+    },
+    resume: function resume() {
+      if (this.pauseLevel === 0) {
+        throw 'Craft.DraftEditor::resume() should only be called after pause().';
+      } // Only actually resume operation if this has been called the same
+      // number of times that pause() was called
+
+
+      this.pauseLevel--;
+
+      if (this.pauseLevel === 0) {
+        this.checkForm();
+        this.listenForChanges();
+      }
     },
     initForDraft: function initForDraft() {
       // Create the edit draft button
@@ -13055,8 +13011,6 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       });
     },
     expandSiteStatuses: function expandSiteStatuses() {
-      var _this12 = this;
-
       this.removeListener(this.$expandSiteStatusesBtn, 'click');
       this.$expandSiteStatusesBtn.velocity({
         opacity: 0
@@ -13064,194 +13018,112 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         this.$expandSiteStatusesBtn.remove();
       }.bind(this));
       var $enabledForSiteField = $("#enabledForSite-".concat(this.settings.siteId, "-field"));
-      this.$siteStatusPane = $enabledForSiteField.parent(); // If this is a revision, just show the site statuses statically and be done
+      var $siteStatusPane = $enabledForSiteField.parent();
+      var $newFields = $();
+
+      if (!this.settings.revisionId) {
+        $enabledForSiteField.addClass('nested');
+        var $globalField = Craft.ui.createLightswitchField({
+          id: 'enabled',
+          label: Craft.t('app', 'Enabled everywhere'),
+          name: 'enabled'
+        }).insertBefore($enabledForSiteField);
+        $globalField.find('label').css('font-weight', 'bold');
+        $newFields = $newFields.add($globalField);
+        var $globalLightswitch = $globalField.find('.lightswitch'); // Figure out what the "Enabled everywhere" lightswitch would have been set to when the page first loaded
+
+        var originalEnabledValue = this.settings.enabled && !Craft.inArray(false, this.settings.siteStatuses) ? '1' : this.settings.enabledForSite ? '-' : '';
+        var originalSerializedStatus = encodeURIComponent("enabledForSite[".concat(this.settings.siteId, "]")) + '=' + (this.settings.enabledForSite ? '1' : '');
+        var serializedStatuses = "enabled=".concat(originalEnabledValue, "&").concat(originalSerializedStatus);
+      }
+
+      var site, $siteField, $siteLightswitch;
+      var $siteFields = $().add($enabledForSiteField);
+      var $siteLightswitches = $enabledForSiteField.find('.lightswitch');
+
+      for (var i = 0; i < Craft.sites.length; i++) {
+        site = Craft.sites[i];
+
+        if (site.id != this.settings.siteId && this.settings.siteStatuses.hasOwnProperty(site.id)) {
+          $siteField = Craft.ui.createLightswitchField({
+            id: "enabledForSite-".concat(site.id),
+            label: Craft.t('app', 'Enabled for {site}', {
+              site: site.name
+            }),
+            name: "enabledForSite[".concat(site.id, "]"),
+            on: this.settings.siteStatuses[site.id],
+            disabled: !!this.settings.revisionId
+          });
+
+          if (!this.settings.revisionId) {
+            $siteField.addClass('nested');
+          }
+
+          $siteField.appendTo($siteStatusPane);
+          $siteFields = $siteFields.add($siteField);
+          $newFields = $newFields.add($siteField);
+          $siteLightswitch = $siteField.find('.lightswitch');
+          $siteLightswitches = $siteLightswitches.add($siteLightswitch);
+          serializedStatuses += '&' + encodeURIComponent("enabledForSite[".concat(site.id, "]")) + '=' + $siteLightswitch.data('lightswitch').$input.val();
+        }
+      }
 
       if (this.settings.revisionId) {
-        for (var _i4 = 0; _i4 < Craft.sites.length; _i4++) {
-          var site = Craft.sites[_i4];
-
-          if (site.id == this.settings.siteId) {
-            continue;
-          }
-
-          if (this.settings.siteStatuses.hasOwnProperty(site.id)) {
-            this._createSiteStatusField(site);
-          }
-        }
-
         return;
       }
 
-      $enabledForSiteField.addClass('nested');
-      var $globalField = Craft.ui.createLightswitchField({
-        id: 'enabled',
-        label: Craft.t('app', 'Enabled everywhere'),
-        name: 'enabled'
-      }).insertBefore($enabledForSiteField);
-      $globalField.find('label').css('font-weight', 'bold');
-      this.$globalLightswitch = $globalField.find('.lightswitch');
-
-      if (!this.settings.revisionId) {
-        this._showField($globalField);
-      } // Figure out what the "Enabled everywhere" lightswitch would have been set to when the page first loaded
-
-
-      var originalEnabledValue = this.settings.enabled && !Craft.inArray(false, this.settings.siteStatuses) ? '1' : this.settings.enabledForSite ? '-' : '';
-      var originalSerializedStatus = encodeURIComponent("enabledForSite[".concat(this.settings.siteId, "]")) + '=' + (this.settings.enabledForSite ? '1' : '');
-      this.$siteLightswitches = $enabledForSiteField.find('.lightswitch').on('change', this._updateGlobalStatus.bind(this));
-      var addlSiteOptions = [];
-
-      for (var _i5 = 0; _i5 < Craft.sites.length; _i5++) {
-        var _site = Craft.sites[_i5];
-
-        if (_site.id == this.settings.siteId) {
-          continue;
-        }
-
-        if (this.settings.siteStatuses.hasOwnProperty(_site.id)) {
-          this._createSiteStatusField(_site);
-        } else if (Craft.inArray(_site.id, this.settings.addlSiteIds)) {
-          addlSiteOptions.push({
-            label: _site.name,
-            value: _site.id
+      Craft.cp.$primaryForm.data('initialSerializedValue', Craft.cp.$primaryForm.data('initialSerializedValue').replace(originalSerializedStatus, serializedStatuses));
+      $newFields.each(function () {
+        var $field = $(this);
+        var height = $field.height();
+        $field.css('overflow', 'hidden').height(0).velocity({
+          height: height
+        }, 'fast', function () {
+          $field.css({
+            overflow: '',
+            height: ''
           });
-        }
-      }
-
-      var serializedStatuses = "enabled=".concat(originalEnabledValue);
-
-      for (var _i6 = 0; _i6 < this.$siteLightswitches.length; _i6++) {
-        var $input = this.$siteLightswitches.eq(_i6).data('lightswitch').$input;
-        serializedStatuses += '&' + encodeURIComponent($input.attr('name')) + '=' + $input.val();
-      }
-
-      Craft.cp.$primaryForm.data('initialSerializedValue', Craft.cp.$primaryForm.data('initialSerializedValue').replace(originalSerializedStatus, serializedStatuses)); // Are there additional sites that can be added?
-
-      if (this.settings.addlSiteIds && this.settings.addlSiteIds.length) {
-        addlSiteOptions.unshift({
-          label: Craft.t('app', 'Add a site…')
         });
-        var $addlSiteSelectContainer = Craft.ui.createSelect({
-          options: addlSiteOptions
-        }).addClass('fullwidth');
-        this.$addlSiteField = Craft.ui.createField($addlSiteSelectContainer, {}).addClass('nested add').appendTo(this.$siteStatusPane);
-        var $addlSiteSelect = $addlSiteSelectContainer.find('select');
-        $addlSiteSelect.on('change', function () {
-          var siteId = $addlSiteSelect.val();
-          var site;
+      });
+      $globalLightswitch.on('change', function () {
+        var enabled = $globalLightswitch.data('lightswitch').on;
+        $siteLightswitches.each(function () {
+          if (enabled) {
+            $(this).data('lightswitch').turnOn(true);
+          } else {
+            $(this).data('lightswitch').turnOff(true);
+          }
+        });
+      });
 
-          for (var _i7 = 0; _i7 < Craft.sites.length; _i7++) {
-            if (Craft.sites[_i7].id == siteId) {
-              site = Craft.sites[_i7];
-              break;
-            }
+      var updateGlobalStatus = function updateGlobalStatus() {
+        var allEnabled = true,
+            allDisabled = true;
+        $siteLightswitches.each(function () {
+          var enabled = $(this).data('lightswitch').on;
+
+          if (enabled) {
+            allDisabled = false;
+          } else {
+            allEnabled = false;
           }
 
-          if (site) {
-            _this12._createSiteStatusField(site);
-
-            $addlSiteSelect.val('').find("option[value=\"".concat(siteId, "\"]")).remove();
-
-            if (_this12.newSites === null) {
-              _this12.newSites = [];
-            }
-
-            _this12.newSites.push(siteId); // Was that the last site?
-
-
-            if ($addlSiteSelect.find('option').length === 1) {
-              _this12._removeField(_this12.$addlSiteField);
-            }
+          if (!allEnabled && !allDisabled) {
+            return false;
           }
         });
 
-        this._showField(this.$addlSiteField);
-      }
-
-      this.$globalLightswitch.on('change', this._updateSiteStatuses.bind(this));
-
-      this._updateGlobalStatus();
-    },
-    _showField: function _showField($field) {
-      var height = $field.height();
-      $field.css('overflow', 'hidden').height(0).velocity({
-        height: height
-      }, 'fast', function () {
-        $field.css({
-          overflow: '',
-          height: ''
-        });
-      });
-    },
-    _removeField: function _removeField($field) {
-      var height = $field.height();
-      $field.css('overflow', 'hidden').velocity({
-        height: 0
-      }, 'fast', function () {
-        $field.remove();
-      });
-    },
-    _updateGlobalStatus: function _updateGlobalStatus() {
-      var allEnabled = true,
-          allDisabled = true;
-      this.$siteLightswitches.each(function () {
-        var enabled = $(this).data('lightswitch').on;
-
-        if (enabled) {
-          allDisabled = false;
+        if (allEnabled) {
+          $globalLightswitch.data('lightswitch').turnOn(true);
+        } else if (allDisabled) {
+          $globalLightswitch.data('lightswitch').turnOff(true);
         } else {
-          allEnabled = false;
+          $globalLightswitch.data('lightswitch').turnIndeterminate(true);
         }
+      };
 
-        if (!allEnabled && !allDisabled) {
-          return false;
-        }
-      });
-
-      if (allEnabled) {
-        this.$globalLightswitch.data('lightswitch').turnOn(true);
-      } else if (allDisabled) {
-        this.$globalLightswitch.data('lightswitch').turnOff(true);
-      } else {
-        this.$globalLightswitch.data('lightswitch').turnIndeterminate(true);
-      }
-    },
-    _updateSiteStatuses: function _updateSiteStatuses() {
-      var enabled = this.$globalLightswitch.data('lightswitch').on;
-      this.$siteLightswitches.each(function () {
-        if (enabled) {
-          $(this).data('lightswitch').turnOn(true);
-        } else {
-          $(this).data('lightswitch').turnOff(true);
-        }
-      });
-    },
-    _createSiteStatusField: function _createSiteStatusField(site) {
-      var $field = Craft.ui.createLightswitchField({
-        id: "enabledForSite-".concat(site.id),
-        label: Craft.t('app', 'Enabled for {site}', {
-          site: site.name
-        }),
-        name: "enabledForSite[".concat(site.id, "]"),
-        on: typeof this.settings.siteStatuses[site.id] !== 'undefined' ? this.settings.siteStatuses[site.id] : true,
-        disabled: !!this.settings.revisionId
-      });
-
-      if (this.$addlSiteField) {
-        $field.insertBefore(this.$addlSiteField);
-      } else {
-        $field.appendTo(this.$siteStatusPane);
-      }
-
-      if (!this.settings.revisionId) {
-        $field.addClass('nested');
-        var $lightswitch = $field.find('.lightswitch').on('change', this._updateGlobalStatus.bind(this));
-        this.$siteLightswitches = this.$siteLightswitches.add($lightswitch);
-      }
-
-      this._showField($field);
-
-      return $field;
+      updateGlobalStatus();
+      $siteLightswitches.on('change', updateGlobalStatus);
     },
     showStatusHud: function showStatusHud(target) {
       var bodyHtml;
@@ -13342,10 +13214,6 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         if (randoParam || !this.settings.isLive) {
           // Randomize the URL so CDNs don't return cached pages
           params[randoParam || 'x-craft-preview'] = Craft.randomString(10);
-        }
-
-        if (this.settings.siteToken) {
-          params[Craft.siteToken] = this.settings.siteToken;
         } // No need for a token if we're looking at a live element
 
 
@@ -13422,7 +13290,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     },
     checkForm: function checkForm(force) {
       // If this isn't a draft and there's no active preview, then there's nothing to check
-      if (this.settings.revisionId || !this.settings.draftId && !this.isPreviewActive()) {
+      if (this.settings.revisionId || !this.settings.draftId && !this.isPreviewActive() || this.pauseLevel > 0) {
         return;
       }
 
@@ -13501,28 +13369,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           this.$revisionLabel.text(response.draftName);
           this.settings.draftName = response.draftName;
           this.settings.draftNotes = response.draftNotes;
-          var revisionMenu = this.$revisionBtn.data('menubtn') ? this.$revisionBtn.data('menubtn').menu : null; // Did we just add a site?
-
-          if (this.newSites) {
-            // Do we need to create the revision menu?
-            if (!revisionMenu) {
-              this.$revisionBtn.removeClass('disabled').addClass('menubtn');
-              new Garnish.MenuBtn(this.$revisionBtn);
-              revisionMenu = this.$revisionBtn.data('menubtn').menu;
-              revisionMenu.$container.removeClass('hidden');
-            }
-
-            for (var _i8 = 0; _i8 < this.newSites.length; _i8++) {
-              var $option = revisionMenu.$options.filter("[data-site-id=".concat(this.newSites[_i8], "]"));
-              $option.find('.status').removeClass('disabled').addClass('enabled');
-              var $li = $option.parent().removeClass('hidden');
-              $li.closest('.site-group').removeClass('hidden');
-            }
-
-            revisionMenu.$container.find('.revision-hr').removeClass('hidden');
-            this.newSites = null;
-          } // Did we just create a draft?
-
+          var revisionMenu = this.$revisionBtn.data('menubtn') ? this.$revisionBtn.data('menubtn').menu : null; // Did we just create a draft?
 
           var draftCreated = !this.settings.draftId;
 
@@ -13600,12 +13447,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
           if (revisionMenu) {
             revisionMenu.$options.filter('.sel').find('.draft-name').text(response.draftName);
-            revisionMenu.$options.filter('.sel').find('.draft-meta').text('– ' + (response.creator ? Craft.t('app', 'saved {timestamp} by {creator}', {
-              timestamp: response.timestamp,
-              creator: response.creator
-            }) : Craft.t('app', 'updated {timestamp}', {
-              timestamp: response.timestamp
-            })));
+            revisionMenu.$options.filter('.sel').find('.draft-meta').text("\u2013 ".concat(response.timestamp) + (response.creator ? ", ".concat(response.creator) : ''));
           } // Did the controller send us updated preview targets?
 
 
@@ -13839,7 +13681,6 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       siteId: null,
       isLive: false,
       siteStatuses: null,
-      addlSiteIds: [],
       enabledGlobally: null,
       cpEditUrl: null,
       draftId: null,
@@ -14095,6 +13936,27 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         $(blurTd).trigger('blur');
         $input.trigger('focus');
       }
+    },
+    importData: function importData(data, row, tdIndex) {
+      var lines = data.split(/\r?\n|\r/);
+
+      for (var _i6 = 0; _i6 < lines.length; _i6++) {
+        var values = lines[_i6].split("\t");
+
+        for (var j = 0; j < values.length; j++) {
+          var value = values[j];
+          row.$tds.eq(tdIndex + j).find('textarea,input[type!=hidden]').val(value).trigger('input');
+        } // move onto the next row
+
+
+        var $nextTr = row.$tr.next('tr');
+
+        if ($nextTr.length) {
+          row = $nextTr.data('editable-table-row');
+        } else {
+          row = this.addRow(false);
+        }
+      }
     }
   }, {
     textualColTypes: ['color', 'date', 'email', 'multiline', 'number', 'singleline', 'template', 'time', 'url'],
@@ -14294,6 +14156,14 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
             type: col.type
           }, 'validateValue');
           $textarea.trigger('input');
+
+          if (col.type !== 'multiline') {
+            this.addListener($textarea, 'paste', {
+              tdIndex: i,
+              type: col.type
+            }, 'handlePaste');
+          }
+
           textareasByColId[colId] = $textarea;
         } else if (col.type === 'checkbox') {
           $checkbox = $('input[type="checkbox"]', td);
@@ -14435,6 +14305,16 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       if (ev.data.type === 'number' && !ctrl && !Craft.inArray(keyCode, Craft.EditableTable.Row.numericKeyCodes)) {
         ev.preventDefault();
       }
+    },
+    handlePaste: function handlePaste(ev) {
+      var data = Craft.trim(ev.originalEvent.clipboardData.getData('Text'), ' \n\r');
+
+      if (!data.match(/[\t\r\n]/)) {
+        return;
+      }
+
+      ev.preventDefault();
+      this.table.importData(data, this, ev.data.tdIndex);
     },
     validateValue: function validateValue(ev) {
       if (ev.data.type === 'multiline') {
@@ -14610,16 +14490,61 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       }
     },
     load: function load($elements) {
-      this.queue = this.queue.concat($elements.find('.elementthumb').toArray());
+      var _this12 = this;
 
-      if (this.queue.length) {
-        // See if there are any inactive workers
-        for (var i = 0; i < this.workers.length; i++) {
-          if (!this.workers[i].active) {
-            this.workers[i].loadNext();
-          }
+      // Only immediately load the visible images
+      var $thumbs = $elements.find('.elementthumb');
+
+      var _loop = function _loop(_i7) {
+        var $thumb = $thumbs.eq(_i7);
+        var $scrollParent = $thumb.scrollParent();
+
+        if (_this12.isVisible($thumb, $scrollParent)) {
+          _this12.addToQueue($thumb[0]);
+        } else {
+          var key = 'thumb' + Math.floor(Math.random() * 1000000);
+          Craft.ElementThumbLoader.invisibleThumbs[key] = [_this12, $thumb, $scrollParent];
+          $scrollParent.on("scroll.".concat(key), {
+            $thumb: $thumb,
+            $scrollParent: $scrollParent,
+            key: key
+          }, function (ev) {
+            if (_this12.isVisible(ev.data.$thumb, ev.data.$scrollParent)) {
+              delete Craft.ElementThumbLoader.invisibleThumbs[ev.data.key];
+              $scrollParent.off("scroll.".concat(ev.data.key));
+
+              _this12.addToQueue(ev.data.$thumb[0]);
+            }
+          });
+        }
+      };
+
+      for (var _i7 = 0; _i7 < $thumbs.length; _i7++) {
+        _loop(_i7);
+      }
+    },
+    addToQueue: function addToQueue(thumb) {
+      this.queue.push(thumb); // See if there are any inactive workers
+
+      for (var i = 0; i < this.workers.length; i++) {
+        if (!this.workers[i].active) {
+          this.workers[i].loadNext();
         }
       }
+    },
+    isVisible: function isVisible($thumb, $scrollParent) {
+      var thumbOffset = $thumb.offset().top;
+      var scrollParentOffset, scrollParentHeight;
+
+      if ($scrollParent[0] === document) {
+        scrollParentOffset = $scrollParent.scrollTop();
+        scrollParentHeight = Garnish.$win.height();
+      } else {
+        scrollParentOffset = $scrollParent.offset().top;
+        scrollParentHeight = $scrollParent.height();
+      }
+
+      return thumbOffset > scrollParentOffset && thumbOffset < scrollParentOffset + scrollParentHeight + 1000;
     },
     destroy: function destroy() {
       for (var i = 0; i < this.workers.length; i++) {
@@ -14627,6 +14552,20 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       }
 
       this.base();
+    }
+  }, {
+    invisibleThumbs: {},
+    retryAll: function retryAll() {
+      for (var key in Craft.ElementThumbLoader.invisibleThumbs) {
+        var _Craft$ElementThumbLo = _slicedToArray(Craft.ElementThumbLoader.invisibleThumbs[key], 3),
+            queue = _Craft$ElementThumbLo[0],
+            $thumb = _Craft$ElementThumbLo[1],
+            $scrollParent = _Craft$ElementThumbLo[2];
+
+        delete Craft.ElementThumbLoader.invisibleThumbs[key];
+        $scrollParent.off("scroll.".concat(key));
+        queue.load($thumb.parent());
+      }
     }
   });
   Craft.ElementThumbLoader.Worker = Garnish.Base.extend({
@@ -14656,7 +14595,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         srcset: $container.attr('data-srcset'),
         alt: ''
       });
-      this.addListener($img, 'load', 'loadNext');
+      this.addListener($img, 'load,error', 'loadNext');
       $img.appendTo($container);
       picturefill({
         elements: [$img[0]]
@@ -15704,12 +15643,14 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       return selector;
     },
     getType: function getType() {
-      if (this.$toggle.prop('nodeName') === 'INPUT' && this.$toggle.attr('type') === 'checkbox' || this.$toggle.attr('role') === 'checkbox' || this.$toggle.attr('role') === 'switch') {
+      if (this.$toggle.prop('nodeName') === 'INPUT' && this.$toggle.attr('type').toLowerCase() === 'checkbox') {
         return 'checkbox';
       } else if (this.$toggle.prop('nodeName') === 'SELECT') {
         return 'select';
       } else if (this.$toggle.prop('nodeName') === 'A') {
         return 'link';
+      } else if (this.$toggle.prop('nodeName') === 'DIV' && this.$toggle.hasClass('lightswitch')) {
+        return 'lightswitch';
       }
     },
     findTargets: function findTargets() {
@@ -15727,16 +15668,12 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       }
     },
     getToggleVal: function getToggleVal() {
-      if (this.type === 'checkbox') {
-        if (typeof this.$toggle.prop('checked') !== 'undefined') {
-          return this.$toggle.prop('checked');
-        }
-
-        return this.$toggle.attr('aria-checked') === 'true';
+      if (this.type === 'lightswitch') {
+        return this.$toggle.children('input').val();
+      } else {
+        var postVal = Garnish.getInputPostVal(this.$toggle);
+        return postVal === null ? null : postVal.replace(/[\[\]\\\/]+/g, '-');
       }
-
-      var postVal = Garnish.getInputPostVal(this.$toggle);
-      return postVal === null ? null : postVal.replace(/[\[\]\\\/]+/g, '-');
     },
     onToggleChange: function onToggleChange() {
       if (this.type === 'select') {
@@ -16544,6 +16481,10 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
       this.on = this.$outerContainer.hasClass('on');
       this.indeterminate = this.$outerContainer.hasClass('indeterminate');
+      this.$outerContainer.attr({
+        role: 'checkbox',
+        'aria-checked': this.on ? 'true' : this.indeterminate ? 'mixed' : 'false'
+      });
       this.addListener(this.$outerContainer, 'mousedown', '_onMouseDown');
       this.addListener(this.$outerContainer, 'keydown', '_onKeyDown');
       this.dragger = new Garnish.BaseDrag(this.$outerContainer, {
@@ -16729,7 +16670,6 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     $editorContainer: null,
     $editor: null,
     $dragHandle: null,
-    $previewContainer: null,
     $iframeContainer: null,
     $iframe: null,
     $fieldPlaceholder: null,
@@ -16843,12 +16783,9 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         this.$editorContainer = $('<div/>', {
           'class': 'lp-editor-container'
         }).appendTo(Garnish.$bod);
-        this.$previewContainer = $('<div/>', {
+        this.$iframeContainer = $('<div/>', {
           'class': 'lp-preview-container'
         }).appendTo(Garnish.$bod);
-        this.$iframeContainer = $('<div/>', {
-          'class': 'lp-iframe-container'
-        }).appendTo(this.$previewContainer);
         var $editorHeader = $('<header/>', {
           'class': 'flex'
         }).appendTo(this.$editorContainer);
@@ -16879,8 +16816,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
       this.handleWindowResize();
       this.addListener(Garnish.$win, 'resize', 'handleWindowResize');
-      this.$editorContainer.css(Craft.left, -(this.editorWidthInPx + Craft.LivePreview.dragHandleWidth) + 'px');
-      this.$previewContainer.css(Craft.right, -this.getIframeWidth()); // Move all the fields into the editor rather than copying them
+      this.$editorContainer.css(Craft.left, -this.editorWidthInPx + 'px');
+      this.$iframeContainer.css(Craft.right, -this.getIframeWidth()); // Move all the fields into the editor rather than copying them
       // so any JS that's referencing the elements won't break.
 
       this.fields = [];
@@ -16910,6 +16847,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
       Garnish.on(Craft.BaseElementEditor, 'saveElement', this._forceUpdateIframeProxy);
       Garnish.on(Craft.AssetImageEditor, 'save', this._forceUpdateIframeProxy);
+      Craft.ElementThumbLoader.retryAll();
       this.inPreviewMode = true;
       this.trigger('enter');
     },
@@ -16939,7 +16877,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         this.trigger('slideIn');
         Garnish.$win.trigger('resize');
       }, this));
-      this.$previewContainer.show().velocity('stop').animateRight(0, 'slow', $.proxy(function () {
+      this.$iframeContainer.show().velocity('stop').animateRight(0, 'slow', $.proxy(function () {
         this.updateIframeInterval = setInterval($.proxy(this, 'updateIframe'), 1000);
         this.addListener(Garnish.$bod, 'keyup', function (ev) {
           if (ev.keyCode === Garnish.ESC_KEY) {
@@ -16964,7 +16902,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
       this.moveFieldsBack();
       this.$shade.delay(200).velocity('fadeOut');
-      this.$editorContainer.velocity('stop').animateLeft(-(this.editorWidthInPx + Craft.LivePreview.dragHandleWidth), 'slow', $.proxy(function () {
+      this.$editorContainer.velocity('stop').animateLeft(-this.editorWidthInPx, 'slow', $.proxy(function () {
         for (var i = 0; i < this.fields.length; i++) {
           this.fields[i].$newClone.remove();
         }
@@ -16972,10 +16910,11 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         this.$editorContainer.hide();
         this.trigger('slideOut');
       }, this));
-      this.$previewContainer.velocity('stop').animateRight(-this.getIframeWidth(), 'slow', $.proxy(function () {
-        this.$previewContainer.hide();
+      this.$iframeContainer.velocity('stop').animateRight(-this.getIframeWidth(), 'slow', $.proxy(function () {
+        this.$iframeContainer.hide();
       }, this));
       Garnish.off(Craft.BaseElementEditor, 'saveElement', this._forceUpdateIframeProxy);
+      Craft.ElementThumbLoader.retryAll();
       this.inPreviewMode = false;
       this.trigger('exit');
     },
@@ -16994,11 +16933,11 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       Garnish.$win.trigger('resize');
     },
     getIframeWidth: function getIframeWidth() {
-      return Garnish.$win.width() - (this.editorWidthInPx + Craft.LivePreview.dragHandleWidth);
+      return Garnish.$win.width() - this.editorWidthInPx;
     },
     updateWidths: function updateWidths() {
       this.$editorContainer.css('width', this.editorWidthInPx + 'px');
-      this.$previewContainer.width(this.getIframeWidth());
+      this.$iframeContainer.width(this.getIframeWidth());
     },
     updateIframe: function updateIframe(force) {
       if (force) {
@@ -17099,7 +17038,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     },
     _onDragStart: function _onDragStart() {
       this.dragStartEditorWidth = this.editorWidthInPx;
-      this.$previewContainer.addClass('dragging');
+      this.$iframeContainer.addClass('dragging');
     },
     _onDrag: function _onDrag() {
       if (Craft.orientation === 'ltr') {
@@ -17111,13 +17050,12 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       this.updateWidths();
     },
     _onDragStop: function _onDragStop() {
-      this.$previewContainer.removeClass('dragging');
+      this.$iframeContainer.removeClass('dragging');
       Craft.setLocalStorage('LivePreview.editorWidth', this.editorWidth);
     }
   }, {
     defaultEditorWidth: 0.33,
     minEditorWidthInPx: 320,
-    dragHandleWidth: 4,
     defaults: {
       trigger: '.livepreviewbtn',
       fields: null,
@@ -17141,7 +17079,6 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
 
   Craft.PasswordInput = Garnish.Base.extend({
-    $passwordWrapper: null,
     $passwordInput: null,
     $textInput: null,
     $currentInput: null,
@@ -17149,7 +17086,6 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     showingPassword: null,
     init: function init(passwordInput, settings) {
       this.$passwordInput = $(passwordInput);
-      this.$passwordWrapper = this.$passwordInput.parent('.passwordwrapper');
       this.settings = $.extend({}, Craft.PasswordInput.defaults, settings); // Is this already a password input?
 
       if (this.$passwordInput.data('passwordInput')) {
@@ -17158,19 +17094,20 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       }
 
       this.$passwordInput.data('passwordInput', this);
-      this.$showPasswordToggle = $('<a/>').addClass('invisible');
+      this.$showPasswordToggle = $('<a/>').hide();
       this.$showPasswordToggle.addClass('password-toggle');
       this.$showPasswordToggle.insertAfter(this.$passwordInput);
-      this.initInputFocusEvents(this.$passwordInput);
       this.addListener(this.$showPasswordToggle, 'mousedown', 'onToggleMouseDown');
       this.hidePassword();
     },
     setCurrentInput: function setCurrentInput($input) {
       if (this.$currentInput) {
         // Swap the inputs, while preventing the focus animation
+        $input.addClass('focus');
         $input.insertAfter(this.$currentInput);
         this.$currentInput.detach();
-        $input.trigger('focus'); // Restore the input value
+        $input.trigger('focus');
+        $input.removeClass('focus'); // Restore the input value
 
         $input.val(this.$currentInput.val());
       }
@@ -17181,14 +17118,6 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     updateToggleLabel: function updateToggleLabel(label) {
       this.$showPasswordToggle.text(label);
     },
-    initInputFocusEvents: function initInputFocusEvents($input) {
-      this.addListener($input, 'focus', function () {
-        this.$passwordWrapper.addClass('focus');
-      });
-      this.addListener($input, 'blur', function () {
-        this.$passwordWrapper.removeClass('focus');
-      });
-    },
     showPassword: function showPassword() {
       if (this.showingPassword) {
         return;
@@ -17197,7 +17126,6 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       if (!this.$textInput) {
         this.$textInput = this.$passwordInput.clone(true);
         this.$textInput.attr('type', 'text');
-        this.initInputFocusEvents(this.$textInput);
       }
 
       this.setCurrentInput(this.$textInput);
@@ -17228,7 +17156,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     onKeyDown: function onKeyDown(ev) {
       if (ev.keyCode === Garnish.ALT_KEY && this.$currentInput.val()) {
         this.showPassword();
-        this.$showPasswordToggle.addClass('invisible');
+        this.$showPasswordToggle.hide();
         this.addListener(this.$textInput, 'keyup', 'onKeyUp');
       }
     },
@@ -17237,14 +17165,14 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
       if (ev.keyCode === Garnish.ALT_KEY) {
         this.hidePassword();
-        this.$showPasswordToggle.removeClass('invisible');
+        this.$showPasswordToggle.show();
       }
     },
     onInputChange: function onInputChange() {
       if (this.$currentInput.val()) {
-        this.$showPasswordToggle.removeClass('invisible');
+        this.$showPasswordToggle.show();
       } else {
-        this.$showPasswordToggle.addClass('invisible');
+        this.$showPasswordToggle.hide();
       }
     },
     onToggleMouseDown: function onToggleMouseDown(ev) {
@@ -17282,7 +17210,6 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     $statusIcon: null,
     $dragHandle: null,
     $previewContainer: null,
-    $iframeContainer: null,
     $targetBtn: null,
     $targetMenu: null,
     $iframe: null,
@@ -17294,7 +17221,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     draftId: null,
     url: null,
     fields: null,
-    iframeHeight: null,
+    scrollLeft: null,
     scrollTop: null,
     dragger: null,
     dragStartEditorWidth: null,
@@ -17388,7 +17315,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
         if (this.draftEditor.settings.previewTargets.length > 1) {
           var $previewHeader = $('<header/>', {
-            'class': 'lp-preview-header flex'
+            'class': 'flex'
           }).appendTo(this.$previewContainer);
           this.$targetBtn = $('<div/>', {
             'class': 'btn menubtn',
@@ -17421,9 +17348,6 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           });
         }
 
-        this.$iframeContainer = $('<div/>', {
-          'class': 'lp-iframe-container'
-        }).appendTo(this.$previewContainer);
         this.dragger = new Garnish.BaseDrag(this.$dragHandle, {
           axis: Garnish.X_AXIS,
           onDragStart: $.proxy(this, '_onDragStart'),
@@ -17439,7 +17363,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
       this.handleWindowResize();
       this.addListener(Garnish.$win, 'resize', 'handleWindowResize');
-      this.$editorContainer.css(Craft.left, -(this.editorWidthInPx + Craft.Preview.dragHandleWidth) + 'px');
+      this.$editorContainer.css(Craft.left, -this.editorWidthInPx + 'px');
       this.$previewContainer.css(Craft.right, -this.getIframeWidth()); // Find the fields, excluding nested fields
 
       this.fields = [];
@@ -17472,6 +17396,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       this.draftEditor.on('update', this._updateIframeProxy);
       Garnish.on(Craft.BaseElementEditor, 'saveElement', this._updateIframeProxy);
       Garnish.on(Craft.AssetImageEditor, 'save', this._updateIframeProxy);
+      Craft.ElementThumbLoader.retryAll();
       this.trigger('open');
     },
     switchTarget: function switchTarget(i) {
@@ -17518,7 +17443,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       this.$tempInput.detach();
       this.moveFieldsBack();
       this.$shade.delay(200).velocity('fadeOut');
-      this.$editorContainer.velocity('stop').animateLeft(-(this.editorWidthInPx + Craft.Preview.dragHandleWidth), 'slow', $.proxy(function () {
+      this.$editorContainer.velocity('stop').animateLeft(-this.editorWidthInPx, 'slow', $.proxy(function () {
         for (var i = 0; i < this.fields.length; i++) {
           this.fields[i].$newClone.remove();
         }
@@ -17532,6 +17457,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       this.draftEditor.off('update', this._updateIframeProxy);
       Garnish.off(Craft.BaseElementEditor, 'saveElement', this._updateIframeProxy);
       Garnish.off(Craft.AssetImageEditor, 'save', this._updateIframeProxy);
+      Craft.ElementThumbLoader.retryAll();
       this.isActive = false;
       this.trigger('close');
     },
@@ -17550,7 +17476,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       Garnish.$win.trigger('resize');
     },
     getIframeWidth: function getIframeWidth() {
-      return Garnish.$win.width() - (this.editorWidthInPx + Craft.Preview.dragHandleWidth);
+      return Garnish.$win.width() - this.editorWidthInPx;
     },
     updateWidths: function updateWidths() {
       this.$editorContainer.css('width', this.editorWidthInPx + 'px');
@@ -17576,12 +17502,20 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       }
 
       this.draftEditor.getTokenizedPreviewUrl(target.url, 'x-craft-live-preview').then(function (url) {
-        var _this13 = this;
+        // Capture the current scroll position?
+        var sameHost;
 
-        // Maintain the current scroll position?
-        if (!resetScroll && this.iframeLoaded && this.$iframe) {
-          this.iframeHeight = this.$iframe.height();
-          this.scrollTop = this.$iframeContainer.scrollTop();
+        if (resetScroll) {
+          this.scrollLeft = null;
+          this.scrolllTop = null;
+        } else {
+          sameHost = Craft.isSameHost(url);
+
+          if (sameHost && this.iframeLoaded && this.$iframe && this.$iframe[0].contentWindow) {
+            var $doc = $(this.$iframe[0].contentWindow.document);
+            this.scrollLeft = $doc.scrollLeft();
+            this.scrollTop = $doc.scrollTop();
+          }
         }
 
         this.iframeLoaded = false;
@@ -17590,30 +17524,22 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           frameborder: 0,
           src: url
         });
+        $iframe.on('load', function () {
+          this.iframeLoaded = true;
+
+          if (!resetScroll && sameHost && this.scrollLeft !== null) {
+            var $doc = $($iframe[0].contentWindow.document);
+            $doc.scrollLeft(this.scrollLeft);
+            $doc.scrollTop(this.scrollTop);
+          }
+        }.bind(this));
 
         if (this.$iframe) {
           this.$iframe.replaceWith($iframe);
         } else {
-          $iframe.appendTo(this.$iframeContainer);
+          $iframe.appendTo(this.$previewContainer);
         }
 
-        if (!resetScroll && this.iframeHeight !== null) {
-          $iframe.height(this.iframeHeight);
-          this.$iframeContainer.scrollTop(this.scrollTop);
-        } // Keep the iframe height consistent with its content
-
-
-        iFrameResize({
-          checkOrigin: false,
-          // Allow iframe scrolling until we've successfully initialized the resizer
-          scrolling: true,
-          onInit: function onInit(iframe) {
-            _this13.iframeLoaded = true;
-            _this13.iframeHeight = null;
-            _this13.scrollTop = null;
-            iframe.scrolling = 'no';
-          }
-        }, $iframe[0]);
         this.url = url;
         this.$iframe = $iframe;
         this.afterUpdateIframe();
@@ -17660,8 +17586,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     }
   }, {
     defaultEditorWidth: 0.33,
-    minEditorWidthInPx: 320,
-    dragHandleWidth: 2
+    minEditorWidthInPx: 320
   });
   /** global: Craft */
 
@@ -19901,51 +19826,6 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     createTextField: function createTextField(config) {
       return this.createField(this.createTextInput(config), config);
     },
-    createCopyTextInput: function createCopyTextInput(config) {
-      var id = config.id || "copytext-".concat(Math.floor(Math.random() * 1000000000));
-      var buttonId = config.buttonId || "".concat(id, "-btn");
-      var $container = $('<div/>', {
-        'class': 'copytext'
-      });
-      var $input = this.createTextInput($.extend({}, config, {
-        readonly: true
-      })).appendTo($container);
-      var $btn = $('<button/>', {
-        type: 'button',
-        id: buttonId,
-        'class': 'btn',
-        'data-icon': 'clipboard',
-        title: Craft.t('app', 'Copy to clipboard')
-      }).appendTo($container);
-      $btn.on('click', function () {
-        $input[0].select();
-        document.execCommand('copy');
-        Craft.cp.displayNotice(Craft.t('app', 'Copied to clipboard.'));
-        $container.trigger('copy');
-      });
-      return $container;
-    },
-    createCopyTextField: function createCopyTextField(config) {
-      return this.createField(this.createCopyTextInput(config), config);
-    },
-    createCopyTextPrompt: function createCopyTextPrompt(config) {
-      var $container = $('<div/>', {
-        'class': 'modal fitted'
-      });
-      var $body = $('<div/>', {
-        'class': 'body'
-      }).appendTo($container);
-      this.createCopyTextField($.extend({
-        size: Math.max(Math.min(config.value.length, 50), 25)
-      }, config)).appendTo($body);
-      var modal = new Garnish.Modal($container, {
-        closeOtherModals: false
-      });
-      $container.on('copy', function () {
-        modal.hide();
-      });
-      return $container;
-    },
     createTextarea: function createTextarea(config) {
       var $textarea = $('<textarea/>', {
         'class': 'text',
@@ -19992,54 +19872,29 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         'autofocus': config.autofocus && Garnish.isMobileBrowser(true),
         'disabled': config.disabled,
         'data-target-prefix': config.targetPrefix
-      }).appendTo($container); // Normalize the options into an array
-
-      if ($.isPlainObject(config.options)) {
-        var options = [];
-
-        for (var key in config.options) {
-          if (!config.options.hasOwnProperty(key)) {
-            continue;
-          }
-
-          var option = config.options[key];
-
-          if ($.isPlainObject(option)) {
-            if (typeof option.optgroup !== 'undefined') {
-              options.push(option);
-            } else {
-              options.push({
-                label: option.label,
-                value: typeof option.value !== 'undefined' ? option.value : key,
-                disabled: typeof option.disabled !== 'undefined' ? option.disabled : false
-              });
-            }
-          } else {
-            options.push({
-              label: option,
-              value: key
-            });
-          }
-        }
-
-        config.options = options;
-      }
-
+      }).appendTo($container);
       var $optgroup = null;
 
-      for (var _i9 = 0; _i9 < config.options.length; _i9++) {
-        var _option = config.options[_i9]; // Starting a new <optgroup>?
+      for (var key in config.options) {
+        if (!config.options.hasOwnProperty(key)) {
+          continue;
+        }
 
-        if (typeof _option.optgroup !== 'undefined') {
+        var option = config.options[key]; // Starting a new <optgroup>?
+
+        if (typeof option.optgroup !== 'undefined') {
           $optgroup = $('<optgroup/>', {
-            'label': _option.label
+            'label': option.label
           }).appendTo($select);
         } else {
+          var optionLabel = typeof option.label !== 'undefined' ? option.label : option,
+              optionValue = typeof option.value !== 'undefined' ? option.value : key,
+              optionDisabled = typeof option.disabled !== 'undefined' ? option.disabled : false;
           $('<option/>', {
-            'value': _option.value,
-            'selected': _option.value == config.value,
-            'disabled': typeof _option.disabled !== 'undefined' ? _option.disabled : false,
-            'html': _option.label
+            'value': optionValue,
+            'selected': optionValue == config.value,
+            'disabled': optionDisabled,
+            'html': optionLabel
           }).appendTo($optgroup || $select);
         }
       }
@@ -20172,8 +20027,6 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         'data-value': value,
         'data-indeterminate-value': indeterminateValue,
         id: config.id,
-        role: 'switch',
-        'aria-checked': config.on ? 'true' : config.indeterminate ? 'mixed' : 'false',
         'aria-labelledby': config.labelId,
         'data-target': config.toggle,
         'data-reverse-target': config.reverseToggle

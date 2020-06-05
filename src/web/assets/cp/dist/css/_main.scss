@@ -6,6 +6,29 @@
   background: url(../images/spinner.gif) no-repeat 50% 50%;
 }
 
+@mixin checkered-bg($size) {
+  // h/t https://gist.github.com/dfrankland/f6fed3e3ccc42e3de482b324126f9542
+  $halfSize: $size / 2;
+  background-image:
+          linear-gradient(45deg, $grey100 25%, transparent 25%),
+          linear-gradient(135deg, $grey100 25%, transparent 25%),
+          linear-gradient(45deg, transparent 75%, $grey100 75%),
+          linear-gradient(135deg, transparent 75%, $grey100 75%);
+  background-size: $size $size;
+  background-position: 0 0, $halfSize 0, $halfSize -#{$halfSize}, 0 $halfSize;
+}
+
+@mixin striped-bg($size, $color: $grey100) {
+  // h/t https://css-tricks.com/stripes-css/
+  $halfSize: $size / 2;
+  body.ltr & {
+    background: repeating-linear-gradient(135deg, $white, $white $halfSize, $color $halfSize, $color $size);
+  }
+  body.rtl & {
+    background: repeating-linear-gradient(45deg, $white, $white $halfSize, $color $halfSize, $color $size);
+  }
+}
+
 @font-face {
   font-family: 'Craft';
   src: url('../fonts/Craft.woff') format('woff'),
@@ -977,7 +1000,6 @@ ul.icons {
   appearance: none;
   outline: none;
   color: $textColor;
-  font-size: inherit;
   background-color: transparentize($inputColor, 0.75);
 
   &.chromeless {
@@ -1159,36 +1181,6 @@ ul.icons {
   }
 }
 
-.copytext {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  white-space: nowrap;
-  align-items: center;
-
-  body.ltr & {
-    .text {
-      border-top-right-radius: 0;
-      border-bottom-right-radius: 0;
-    }
-    .btn {
-      border-top-left-radius: 0;
-      border-bottom-left-radius: 0;
-    }
-  }
-
-  body.rtl & {
-    .text {
-      border-top-left-radius: 0;
-      border-bottom-left-radius: 0;
-    }
-    .btn {
-      border-top-right-radius: 0;
-      border-bottom-right-radius: 0;
-    }
-  }
-}
-
 /* menu buttons */
 .menubtn {
   user-select: none;
@@ -1355,25 +1347,40 @@ div.btn.submit input {
   height: 34px;
   border-radius: 17px;
   padding: 0;
-  background-color: url(../images/checkers.png);
 
   &:not(.static) {
     cursor: pointer;
   }
 
+  &:not(.small) {
+    @include checkered-bg(17px);
+  }
+
   &.small {
     width: 16px;
     height: 16px;
-    background-size: 16px;
+    @include checkered-bg(8px);
   }
 
   .color-preview {
+    position: absolute;
     top: 0;
     @include left(0);
     width: 100%;
     height: 100%;
     border-radius: 17px;
     box-shadow: inset 0 0 0 1px transparentize($black, 0.85);
+
+    & > .color-preview-input {
+      position: absolute;
+      @include left(0);
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      border: none;
+      opacity: 0;
+    }
   }
 }
 
@@ -1385,14 +1392,6 @@ div.btn.submit input {
 }
 
 /* lightswitch */
-.lightswitch-outer-container {
-  display: flex;
-
-  label {
-    @include margin-left(7px);
-  }
-}
-
 .lightswitch {
   position: relative;
   border: none !important;
@@ -1842,7 +1841,7 @@ table {
 }
 
 /* elements */
-$smallThumbSize: 34px;
+$smallThumbSize: 32px;
 $largeThumbSize: 120px;
 $statusSize: 10px;
 $baseElementSidePadding: 7px;
@@ -1860,7 +1859,8 @@ $elementInnerSpacing: 5px;
   }
 
   &.sel,
-  li.sel & {
+  li.sel &,
+  tr.sel & {
     background-color: $lightSelColor !important;
     border-radius: $smallBorderRadius;
     cursor: default;
@@ -1926,6 +1926,10 @@ $elementInnerSpacing: 5px;
         @include left(0);
         width: $smallThumbSize;
         height: $smallThumbSize;
+
+        img {
+          @include checkered-bg(8px);
+        }
       }
 
       &.hasstatus {
@@ -1959,6 +1963,10 @@ $elementInnerSpacing: 5px;
       @include left($baseElementSidePadding);
       width: $largeThumbSize;
       height: $largeThumbSize;
+
+      img {
+        @include checkered-bg(15px);
+      }
     }
 
     .label {
@@ -2578,27 +2586,10 @@ ul.tree,
 .status {
   display: inline-block;
   @include margin-right(10px);
-  width: 10px;
-  height: 10px;
-  border: 1px solid transparent;
+  width: 8px;
+  height: 8px;
   border-radius: 100%;
-  box-sizing: border-box;
-
-  body.use-shapes & {
-    &.pending {
-      background-color: transparent;
-      border-style: solid;
-      border-width: 0 5px 10px 5px;
-      border-color: transparent transparent $yellow700 transparent;
-      border-radius: 1px;
-    }
-
-    &.off,
-    &.suspended,
-    &.expired {
-      border-radius: 1px;
-    }
-  }
+  border: 1px solid transparent;
 }
 
 .status:not(.on):not(.live):not(.active):not(.enabled):not(.pending):not(.off):not(.suspended):not(.expired):not(.yellow):not(.orange):not(.red):not(.pink):not(.purple):not(.blue):not(.green):not(.turquoise):not(.light):not(.grey):not(.black) {
@@ -2674,7 +2665,7 @@ ul.tree,
 
 .progressbar {
   border-radius: 6px;
-  border: 2px solid $textColor;
+  border: 2px solid $grey700;
   padding: 2px;
   position: absolute;
   left: 20%;
@@ -2684,7 +2675,7 @@ ul.tree,
 .progressbar-inner {
   border-radius: 2px;
   height: 4px;
-  background-color: $textColor;
+  background-color: $grey700;
 }
 
 .progressbar:not(.pending) .progressbar-inner {
@@ -2693,7 +2684,7 @@ ul.tree,
 }
 
 .progressbar.pending .progressbar-inner {
-  background-color: url(../images/progressbar_pending.png) repeat-x;
+  @include striped-bg(17.6776695297px, $grey700); // sqrt(25^2 / 2);
   body.ltr & {
     animation-name: pendingprogress-ltr;
   }
@@ -2705,57 +2696,21 @@ ul.tree,
   animation-iteration-count: infinite;
 }
 
-@-webkit-keyframes pendingprogress-ltr {
-  0% {
-    background-position: 0;
-  }
-  100% {
-    background-position: -50px;
-  }
-}
-
-@-moz-keyframes pendingprogress-ltr {
-  from {
-    background-position: 0;
-  }
-  to {
-    background-position: -50px;
-  }
-}
-
 @keyframes pendingprogress-ltr {
   from {
     background-position: 0;
   }
   to {
-    background-position: -50px;
-  }
-}
-
-@-webkit-keyframes pendingprogress-rtl {
-  0% {
-    background-position: -50px;
-  }
-  100% {
-    background-position: 0;
-  }
-}
-
-@-moz-keyframes pendingprogress-rtl {
-  from {
-    background-position: -50px;
-  }
-  to {
-    background-position: 0;
+    background-position: 25px;
   }
 }
 
 @keyframes pendingprogress-rtl {
   from {
-    background-position: -50px;
+    background-position: 0;
   }
   to {
-    background-position: 0;
+    background-position: -25px;
   }
 }
 
@@ -2859,23 +2814,10 @@ ul.tree,
       @include padding-left(38px);
     }
 
-    &.add {
-      background-color: darken($grey050, 2%);
-
-      &:before {
-        position: absolute;
-        @include left(0);
-        width: 31px;
-        @include alignright;
-        @include icon;
-        content: 'plus';
-        color: $lightTextColor;
-      }
-    }
-
     & > .heading {
       flex: 0 0 105px;
-      @include margin(0, 7px, 0, 0);
+      margin-top: 0;
+      margin-bottom: 0;
       line-height: 18px;
     }
 
@@ -2909,12 +2851,12 @@ ul.tree,
 
   & > .field > .input,
   & > .data > .value {
-    flex: 1;
     padding: 7px 0;
+    width: calc(100% - 112px);
   }
 
   & > .field.lightswitch-field > .input {
-    flex: 0;
+    width: auto;
   }
 
   & > .field {
@@ -2983,17 +2925,18 @@ ul.tree,
         }
       }
 
-      & > .datetimewrapper > .datewrapper,
-      & > .datetimewrapper > .timewrapper {
-        @include floatleft;
-      }
+      & > .datetimewrapper {
+        & > .datewrapper {
+          width: 55%;
+        }
 
-      & > .datetimewrapper > .datewrapper {
-        width: 55%;
-      }
+        & > .timewrapper {
+          width: 45%;
+        }
 
-      & > .datetimewrapper > .timewrapper {
-        width: 45%;
+        & > .clear-btn {
+          @include margin-right(-24px);
+        }
       }
 
       & > .datewrapper,
@@ -3816,7 +3759,6 @@ table.editable {
 }
 
 .text:not(.selectize-text),
-.passwordwrapper,
 .border-box,
 .matrix-configurator > .field > .input,
 .selectize-text > .selectize-control > .selectize-input,
@@ -3826,7 +3768,6 @@ table.editable {
 }
 
 .text,
-.passwordwrapper,
 .border-box,
 .selectize-text > .selectize-control > .selectize-input {
   &.focus,
@@ -3979,15 +3920,6 @@ textarea.text.fullwidth {
       position: relative;
       font-weight: bold;
       color: $mediumDarkTextColor;
-
-      code {
-        font-size: 1em !important;
-      }
-
-      body:not(.altkeydown) & > .alt-label,
-      body.altkeydown & > .primary-label {
-        display: none;
-      }
 
       & > .site {
         display: inline-block;
@@ -4207,7 +4139,7 @@ input.checkbox:focus + label:before,
 
 .input.errors > .text,
 .input.errors > .border-box,
-.input.errors > .passwordwrapper,
+.input.errors > .passwordwrapper > .text,
 .input.errors > .autosuggest-container .text,
 .text.error {
   border: 1px solid $errorColor !important;
@@ -4268,16 +4200,47 @@ input.checkbox:focus + label:before,
 
 .passwordwrapper {
   position: relative;
-  display: flex;
-  align-items: center;
 
   .password {
-    flex: 1;
-    border: none;
+    width: 100%;
   }
 
   .password-toggle {
-    @include padding-right(7px);
+    display: block;
+    position: absolute;
+    top: 7px;
+    @include right(7px);
+    @include alignright;
+  }
+}
+
+.password {
+  @include padding-right(5em);
+}
+
+.datetimewrapper {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
+  & > .datewrapper + .timewrapper {
+    @include margin-left(5px);
+  }
+
+  .clear-btn {
+    width: 20px;
+    @include margin-left(4px);
+    cursor: pointer;
+    color: $darkHairlineColor;
+
+    &:before {
+      @include icon;
+      content: 'remove';
+    }
+
+    &:hover {
+      color: $mediumTextColor;
+    }
   }
 }
 
@@ -5103,15 +5066,6 @@ only screen and (-moz-min-device-pixel-ratio: 1.5),
 only screen and (-o-min-device-pixel-ratio: 3/2),
 only screen and (min-device-pixel-ratio: 1.5),
 only screen and (min-resolution: 1.5dppx) {
-  .color {
-    background-image: url(../images/checkers_2x.png);
-    background-size: 16px;
-
-    &.small {
-      background-size: 8px;
-    }
-  }
-
   table.data {
     thead {
       th {
@@ -5169,11 +5123,6 @@ only screen and (min-resolution: 1.5dppx) {
     body.rtl & {
       background-image: url(../images/branch_rtl_2x.png);
     }
-  }
-
-  .progressbar.pending .progressbar-inner {
-    background-image: url(../images/progressbar_pending_2x.png);
-    background-size: 50px;
   }
 
   .modal .resizehandle {

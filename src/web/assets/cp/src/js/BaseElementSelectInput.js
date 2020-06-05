@@ -331,7 +331,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         getDisabledElementIds: function() {
             var ids = this.getSelectedElementIds();
 
-            if (this.settings.sourceElementId) {
+            if (!this.settings.allowSelfRelations && this.settings.sourceElementId) {
                 ids.push(this.settings.sourceElementId);
             }
 
@@ -454,6 +454,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
             elementType: null,
             sources: null,
             criteria: {},
+            allowSelfRelations: false,
             sourceElementId: null,
             disabledElementIds: null,
             viewMode: 'list',

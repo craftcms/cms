@@ -273,6 +273,8 @@ return [
     'Create a new tag group' => 'Eine neue Schlagwörter-Gruppe erstellen',
     'Create a new user group' => 'Eine neue Benutzergruppe erstellen',
     'Create a new {section} entry type' => 'Erstellen Sie einen neuen Eintragstyp für „{section}“',
+    'Create and add another' => 'Speichern und einen neuen Eintrag hinzufügen',
+    'Create and continue editing' => 'Eintrag erstellen und mit dem Bearbeiten fortfahren',
     'Create entries' => 'Einträge erstellen',
     'Create subfolders' => 'Unterordner erstellen',
     'Create your account' => 'Ihren Account erstellen',

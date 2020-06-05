@@ -25,6 +25,7 @@ Craft.DraftEditor = Garnish.Base.extend(
 
         lastSerializedValue: null,
         listeningForChanges: false,
+        pauseLevel: 0,
         timeout: null,
         saving: false,
         saveXhr: null,
@@ -106,7 +107,7 @@ Craft.DraftEditor = Garnish.Base.extend(
         },
 
         listenForChanges: function() {
-            if (this.listeningForChanges) {
+            if (this.listeningForChanges || this.pauseLevel > 0) {
                 return;
             }
 
@@ -127,9 +128,32 @@ Craft.DraftEditor = Garnish.Base.extend(
         },
 
         stopListeningForChanges: function() {
+            if (!this.listeningForChanges) {
+                return;
+            }
+
             this.removeListener(Garnish.$bod, 'keypress,keyup,change,focus,blur,click,mousedown,mouseup');
             clearTimeout(this.timeout);
             this.listeningForChanges = false;
+        },
+
+        pause: function() {
+            this.pauseLevel++;
+            this.stopListeningForChanges();
+        },
+
+        resume: function() {
+            if (this.pauseLevel === 0) {
+                throw 'Craft.DraftEditor::resume() should only be called after pause().';
+            }
+
+            // Only actually resume operation if this has been called the same
+            // number of times that pause() was called
+            this.pauseLevel--;
+            if (this.pauseLevel === 0) {
+                this.checkForm();
+                this.listenForChanges();
+            }
         },
 
         initForDraft: function() {
@@ -553,7 +577,8 @@ Craft.DraftEditor = Garnish.Base.extend(
             // If this isn't a draft and there's no active preview, then there's nothing to check
             if (
                 this.settings.revisionId ||
-                (!this.settings.draftId && !this.isPreviewActive())
+                (!this.settings.draftId && !this.isPreviewActive()) ||
+                this.pauseLevel > 0
             ) {
                 return;
             }

@@ -70,7 +70,6 @@
         name: 'type',
         options: fieldTypeOptions,
         value: className(field),
-        toggle: true
     }) }}
 
     {{ missingFieldPlaceholder|raw }}
@@ -114,15 +113,13 @@
 
     <hr>
 
-    {% for type in allFieldTypes %}
-        {% set isCurrent = (type == className(field)) %}
-        <div id="{{ type|id }}"{% if not isCurrent %} class="hidden"{% endif %}>
-            {% namespace 'types['~type~']' %}
-                {% set _field = isCurrent ? field : craft.app.fields.createField(type) %}
-                {{ _field.getSettingsHtml()|raw }}
-            {% endnamespace %}
+    <div id="settings">
+        <div id="{{ className(field)|id }}">
+            {% include 'settings/fields/_type-settings' with {
+                namespace: 'types['~className(field)~']'
+            } %}
         </div>
-    {% endfor %}
+    </div>
 {% endblock %}
 
 

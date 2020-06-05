@@ -359,7 +359,9 @@ class AssetsController extends Controller
                     'conflict' => Craft::t('app', 'A file with the name “{filename}” already exists.', ['filename' => $asset->conflictingFilename]),
                     'assetId' => $asset->id,
                     'filename' => $asset->conflictingFilename,
-                    'conflictingAssetId' => $conflictingAsset ? $conflictingAsset->id : null
+                    'conflictingAssetId' => $conflictingAsset ? $conflictingAsset->id : null,
+                    'suggestedFilename' => $asset->suggestedFilename,
+                    'conflictingAssetUrl' => $conflictingAsset->getVolume()->hasUrls ? $conflictingAsset->getUrl() : null
                 ]);
             }
 

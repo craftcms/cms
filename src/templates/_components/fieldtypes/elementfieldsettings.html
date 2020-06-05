@@ -74,10 +74,21 @@
     {% endblock %}
 
     {% block advancedSettings %}
-        {% if craft.app.getIsMultiSite() %}
-            <hr>
-            <a class="fieldtoggle" data-target="advanced">{{ "Advanced"|t('app') }}</a>
-            <div id="advanced" class="hidden">
+        <hr>
+
+        <a class="fieldtoggle" data-target="advanced">{{ "Advanced"|t('app') }}</a>
+        <div id="advanced" class="hidden">
+
+            {{ forms.checkboxField({
+                label: 'Allow self relations'|t('app', { type: pluralElementType }),
+                instructions: 'Whether {type} should be allowed to relate themselves.'|t('app', { type: pluralElementType }),
+                id: 'allow-self-relations',
+                name: 'allowSelfRelations',
+                checked: field.allowSelfRelations,
+            }) }}
+
+            {% if craft.app.getIsMultiSite() %}
+
                 {% block targetSiteField %}
                     {{ field.getTargetSiteFieldHtml()|raw }}
                 {% endblock %}
@@ -90,7 +101,8 @@
                         checked: field.localizeRelations
                     }) }}
                 {% endblock %}
-            </div>
-        {% endif %}
+            {% endif %}
+
+        </div>
     {% endblock %}
 {% endblock %}

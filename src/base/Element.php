@@ -170,6 +170,34 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @event DefineEagerLoadingMapEvent The event that is triggered when defining an eager-loading map.
+     *
+     * ```php
+     * use craft\base\Element;
+     * use craft\db\Query;
+     * use craft\elements\Entry;
+     * use craft\events\DefineEagerLoadingMapEvent;
+     * use craft\helpers\ArrayHelper;
+     * use yii\base\Event;
+     *
+     * // Add support for `with(['bookClub'])` to entries
+     * Event::on(
+     *     Entry::class,
+     *     Element::EVENT_DEFINE_EAGER_LOADING_MAP,
+     *     function(DefineEagerLoadingMapEvent $e) {
+     *         if ($e->handle === 'bookClub') {
+     *             $bookEntryIds = ArrayHelper::getColumn($e->sourceElements, 'id');
+     *             $e->elementType = \my\plugin\BookClub::class,
+     *             $e->map = (new Query)
+     *                 ->select(['source' => 'bookId', 'target' => 'clubId'])
+     *                 ->from('{{%bookclub_books}}')
+     *                 ->where(['bookId' => $bookEntryIds])
+     *                 ->all();
+     *             $e->handled = true;
+     *         }
+     *     }
+     * );
+     * ```
+     *
      * @since 3.1.0
      */
     const EVENT_DEFINE_EAGER_LOADING_MAP = 'defineEagerLoadingMap';
