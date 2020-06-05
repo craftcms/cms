@@ -2147,7 +2147,9 @@ abstract class Element extends Component implements ElementInterface
         return static::find()
             ->id($this->id ?: false)
             ->structureId($this->structureId)
-            ->siteId(['not', $this->siteId]);
+            ->siteId(['not', $this->siteId])
+            ->drafts($this->getIsDraft())
+            ->revisions($this->getIsRevision());
     }
 
     /**
