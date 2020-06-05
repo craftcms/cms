@@ -350,6 +350,7 @@ class Drafts extends Component
                 ->drafts()
                 ->id($draft->id)
                 ->siteId($source->siteId)
+                ->structureId($source->structureId)
                 ->anyStatus()
                 ->one();
             if ($draft === null) {
