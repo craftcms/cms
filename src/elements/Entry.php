@@ -779,18 +779,32 @@ class Entry extends Element
             ($this->duplicateOf->id ?? $this->id) &&
             $section->propagationMethod === Section::PROPAGATION_METHOD_CUSTOM
         ) {
-            $currentSiteQuery = static::find()
-                ->id($this->duplicateOf->id ?? $this->id)
-                ->anyStatus()
-                ->siteId('*')
-                ->select('elements_sites.siteId')
-                ->indexBy('elements_sites.siteId');
-            if ($this->getIsDraft()) {
-                $currentSiteQuery->drafts();
-            } else if ($this->getIsRevision()) {
-                $currentSiteQuery->revisions();
+            if ($this->id) {
+                $currentSites = static::find()
+                    ->anyStatus()
+                    ->id($this->id)
+                    ->siteId('*')
+                    ->select('elements_sites.siteId')
+                    ->indexBy('elements_sites.siteId')
+                    ->drafts($this->getIsDraft())
+                    ->revisions($this->getIsRevision())
+                    ->column();
+            } else {
+                $currentSites = [];
             }
-            $currentSites = $currentSiteQuery->column();
+
+            // If this is being duplicated from another element (e.g. a draft), include any sites the source element is saved to as well
+            if (!empty($this->duplicateOf->id)) {
+                array_push($currentSites, ...static::find()
+                    ->anyStatus()
+                    ->id($this->duplicateOf->id)
+                    ->siteId('*')
+                    ->select('elements_sites.siteId')
+                    ->indexBy('elements_sites.siteId')
+                    ->drafts($this->duplicateOf->getIsDraft())
+                    ->revisions($this->duplicateOf->getIsRevision())
+                    ->column());
+            }
         }
 
         foreach ($section->getSiteSettings() as $siteSettings) {

@@ -161,6 +161,7 @@
 - Fixed an error that could occur when saving entries with a Matrix field whose  propagation method was set to something besides “Save blocks to all sites the owner element is saved in”. ([#6128](https://github.com/craftcms/cms/issues/6128))
 - Fixed a PHP error that occurred when `:empty:` or `:notempty:` was passed to a relation field’s element query param. ([#6135](https://github.com/craftcms/cms/issues/6135))
 - Fixed a bug where eager-loading elements’ parents wasn’t always working correctly. ([#6146](https://github.com/craftcms/cms/issues/6146))
+- Fixed a bug where entries could lose their new site-specific content if the site was added to the entry from a draft.
 
 ## 3.5.0-beta.2 - 2020-05-05
 
