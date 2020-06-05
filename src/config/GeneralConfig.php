@@ -347,6 +347,11 @@ class GeneralConfig extends BaseObject
      */
     public $enableGql = true;
     /**
+     * @var bool Whether Craft should allow the View to eval dynamic PHP code via [[\craft\web\View::evaluateDynamicContent()]]
+     * @since 3.5.0
+     */
+    public $enableDynamicContentEvaluation = false;
+    /**
      * @var mixed The amount of time a user’s elevated session will last, which is required for some sensitive actions (e.g. user group/permission assignment).
      *
      * Set to `0` to disable elevated session support.

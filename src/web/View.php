@@ -1602,6 +1602,25 @@ JS;
         parent::endPage($ajaxMode);
     }
 
+    /**
+     * Evaluates the given PHP statements, if allowed by the General Config
+     *
+     * (This method is used internally by Yii's View component. Craft overrides it as a no-op by default
+     * to prevent unintended runtime evaluation of untrusted code.)
+     *
+     * @param string $statements the PHP statements to be evaluated.
+     * @return mixed the return value of the PHP statements.
+     * @throws Exception if `enableDynamicContentEvaluation` not allowed via the General Config
+     */
+    public function evaluateDynamicContent($statements)
+    {
+        if (Craft::$app->getConfig()->getGeneral()->enableDynamicContentEvaluation)
+        {
+            return parent::evaluateDynamicContent($statements);
+        }
+        Craft::$app->getDeprecator()->log('evaluateDynamicContent', 'craft\\web\\View::evaluateDynamicContent() was invoked, but $enableDynamicContentEvaluation is not enabled in the General Config.');
+    }
+
     // Events
     // -------------------------------------------------------------------------
 
