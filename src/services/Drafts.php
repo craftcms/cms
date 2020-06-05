@@ -338,20 +338,14 @@ class Drafts extends Component
         /** @var ElementInterface|DraftBehavior $draft */
         /** @var DraftBehavior $behavior */
         $behavior = $draft->getBehavior('draft');
-        $source = ElementHelper::sourceElement($draft);
+        $source = ElementHelper::sourceElement($draft, true);
 
-        // If there is no source element for the same site, find a different site to do this from
         if ($source === null) {
-            $draftSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($draft), 'siteId');
-            $source = $draft::find()
-                ->id($draft->getSourceId())
-                ->siteId($draftSiteIds)
-                ->unique()
-                ->anyStatus()
-                ->one();
-            if ($source === null) {
-                throw new Exception('Could not find a source element for the draft in any of its supported sites.');
-            }
+            throw new Exception('Could not find a source element for the draft in any of its supported sites.');
+        }
+
+        // If the source ended up being from a different site than the draft, get the draft in that site
+        if ($source->siteId != $draft->siteId) {
             $draft = $draft::find()
                 ->drafts()
                 ->id($draft->id)
