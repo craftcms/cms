@@ -296,6 +296,10 @@ EOD;
 
         test:
 
+        $dbConfig->driver = $this->driver;
+        $dbConfig->server = $this->server;
+        $dbConfig->port = $this->port;
+        $dbConfig->database = $this->database;
         $dbConfig->dsn = "{$this->driver}:host={$this->server};port={$this->port};dbname={$this->database};";
         $dbConfig->user = $this->user;
         $dbConfig->password = $this->password;
@@ -362,8 +366,21 @@ EOD;
         $this->stdout('success!' . PHP_EOL, Console::FG_GREEN);
         $this->stdout('Saving database credentials to your .env file ... ', Console::FG_YELLOW);
 
+        // If there's a DB_DSN environment variable, go with that
+        if (App::env('DB_DSN') !== false) {
+            if (!$this->_setEnvVar('DB_DSN', $dbConfig->dsn)) {
+                return ExitCode::UNSPECIFIED_ERROR;
+            }
+        } else if (
+            !$this->_setEnvVar('DB_DRIVER', $this->driver) ||
+            !$this->_setEnvVar('DB_SERVER', $this->server) ||
+            !$this->_setEnvVar('DB_PORT', $this->port) ||
+            !$this->_setEnvVar('DB_DATABASE', $this->database)
+        ) {
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
         if (
-            !$this->_setEnvVar('DB_DSN', $dbConfig->dsn) ||
             !$this->_setEnvVar('DB_USER', $this->user) ||
             !$this->_setEnvVar('DB_PASSWORD', $this->password) ||
             !$this->_setEnvVar('DB_SCHEMA', $this->schema) ||

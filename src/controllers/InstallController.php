@@ -14,7 +14,6 @@ use craft\elements\User;
 use craft\errors\DbConnectException;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
-use craft\helpers\Db;
 use craft\helpers\Install as InstallHelper;
 use craft\helpers\StringHelper;
 use craft\migrations\Install;
@@ -125,17 +124,16 @@ class InstallController extends Controller
 
         $dbConfig = new DbConfig();
         $this->_populateDbConfig($dbConfig);
-        $parsed = Db::parseDsn($dbConfig->dsn);
         $errors = [];
 
         // Catch any low hanging fruit first
-        if (empty($parsed['port'])) {
+        if (!$dbConfig->port) {
             // Only possible if it was not numeric
             $errors['port'][] = Craft::t('yii', '{attribute} must be an integer.', [
                 'attribute' => Craft::t('app', 'Port')
             ]);
         }
-        if (empty($parsed['dbname'])) {
+        if (!$dbConfig->database) {
             $errors['database'][] = Craft::t('yii', '{attribute} cannot be blank.', [
                 'attribute' => Craft::t('app', 'Database Name')
             ]);
@@ -243,7 +241,16 @@ class InstallController extends Controller
             $dbConfig = Craft::$app->getConfig()->getDb();
             $this->_populateDbConfig($dbConfig, 'db-');
 
-            $configService->setDotEnvVar('DB_DSN', $dbConfig->dsn);
+            // If there's a DB_DSN environment variable, go with that
+            if (App::env('DB_DSN') !== false) {
+                $configService->setDotEnvVar('DB_DSN', $dbConfig->dsn);
+            } else {
+                $configService->setDotEnvVar('DB_DRIVER', $dbConfig->driver);
+                $configService->setDotEnvVar('DB_SERVER', $dbConfig->server);
+                $configService->setDotEnvVar('DB_PORT', $dbConfig->port);
+                $configService->setDotEnvVar('DB_DATABASE', $dbConfig->database);
+            }
+
             $configService->setDotEnvVar('DB_USER', $dbConfig->user);
             $configService->setDotEnvVar('DB_PASSWORD', $dbConfig->password);
             $configService->setDotEnvVar('DB_SCHEMA', $dbConfig->schema);
@@ -325,11 +332,22 @@ class InstallController extends Controller
         }
 
         // Map the DB settings we definitely care about to their environment variable names
-        $vars = [
-            'dsn' => 'DB_DSN',
-            'user' => 'DB_USER',
-            'password' => 'DB_PASSWORD',
-        ];
+        $vars = [];
+
+        if (!App::isNitro()) {
+            $vars['user'] = 'DB_USER';
+            $vars['password'] = 'DB_PASSWORD';
+        }
+
+        // If there's a DB_DSN environment variable, go with that
+        if (App::env('DB_DSN') !== false) {
+            $vars['dsn'] = 'DB_DSN';
+        } else {
+            $vars['driver'] = 'DB_DRIVER';
+            $vars['server'] = 'DB_SERVER';
+            $vars['port'] = 'DB_PORT';
+            $vars['database'] = 'DB_DATABASE';
+        }
 
         // Save the current environment variable values, and set temporary ones
         $realValues = [];
@@ -381,6 +399,10 @@ class InstallController extends Controller
             $port = $driver === Connection::DRIVER_MYSQL ? 3306 : 5432;
         }
 
+        $dbConfig->driver = $driver;
+        $dbConfig->server = $server;
+        $dbConfig->port = $port;
+        $dbConfig->database = $database;
         $dbConfig->dsn = "{$driver}:host={$server};port={$port};dbname={$database}";
         $dbConfig->user = $request->getBodyParam("{$prefix}user") ?: 'root';
         $dbConfig->password = $request->getBodyParam("{$prefix}password");
