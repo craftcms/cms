@@ -273,7 +273,7 @@ EOD;
             'default' => $this->tablePrefix ?: null,
             'validator' => function(string $input): bool {
                 if (strlen(StringHelper::ensureRight($input, '_')) > 6) {
-                    Console::stderr($this->ansiFormat('The table prefix must be 5 or less characters long.' . PHP_EOL, Console::FG_RED));
+                    $this->stderr('The table prefix must be 5 or less characters long.' . PHP_EOL, Console::FG_RED);
                     return false;
                 }
                 return true;
