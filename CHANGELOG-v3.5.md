@@ -67,9 +67,11 @@
 - Added `craft\base\ElementInterface::getLocalized()`.
 - Added `craft\base\ElementInterface::gqlMutationNameByContext()`.
 - Added `craft\base\ElementTrait::$elementSiteId`.
+- Added `craft\base\Field::EVENT_DEFINE_INPUT_HTML`. ([#5867](https://github.com/craftcms/cms/issues/5867))
 - Added `craft\base\Field::EVENT_DEFINE_KEYWORDS`. ([#6028](https://github.com/craftcms/cms/issues/6028))
 - Added `craft\base\Field::getContentGqlMutationArgumentType()`.
 - Added `craft\base\Field::getContentGqlQueryArgumentType()`.
+- Added `craft\base\Field::inputHtml()`.
 - Added `craft\base\Field::searchKeywords()`.
 - Added `craft\base\FieldInterface::getContentGqlMutationArgumentType()`.
 - Added `craft\base\FieldInterface::getContentGqlQueryArgumentType()`.
@@ -106,6 +108,7 @@
 - Added `craft\elements\Tag::getCacheTags()`.
 - Added `craft\elements\Tag::gqlMutationNameByContext()`.
 - Added `craft\events\DefineAttributeKeywordsEvent`.
+- Added `craft\events\DefineFieldHtmlEvent`.
 - Added `craft\events\DefineFieldKeywordsEvent`.
 - Added `craft\events\EagerLoadElementsEvent`.
 - Added `craft\events\RegisterElementFieldLayoutsEvent`.

@@ -245,10 +245,10 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml($value, ElementInterface $element = null): string
     {
         try {
-            return parent::getInputHtml($value, $element);
+            return parent::inputHtml($value, $element);
         } catch (InvalidSubpathException $e) {
             return Html::tag('p', Craft::t('app', 'This field’s target subfolder path is invalid: {path}', [
                 'path' => '<code>' . $this->singleUploadLocationSubpath . '</code>'
