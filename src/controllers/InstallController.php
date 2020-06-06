@@ -355,7 +355,7 @@ class InstallController extends Controller
 
         foreach ($vars as $setting => $var) {
             $realValues[$setting] = App::env($var);
-            $tempValues[$setting] = StringHelper::randomString();
+            $tempValues[$setting] = $_SERVER[$var] = StringHelper::randomString();
             putenv("{$var}={$tempValues[$setting]}");
         }
 
@@ -365,8 +365,10 @@ class InstallController extends Controller
         // Put the old values back
         foreach ($vars as $setting => $var) {
             if ($realValues[$setting] === false) {
+                unset($_SERVER[$var]);
                 putenv($var);
             } else {
+                $_SERVER[$var] = $realValues[$setting];
                 putenv("{$var}={$realValues[$setting]}");
             }
         }
