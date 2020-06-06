@@ -9,6 +9,7 @@
 - Improved the styling of Live Preview.
 - Local volumes now respect the `defaultFileMode` and `defaultDirMod` config settings. ([#4251](https://github.com/craftcms/cms/pull/4251))
 - Craft no longer logs unnecessary warnings when loading remote images’ thumbnails. ([#6166](https://github.com/craftcms/cms/pull/6166))
+- Matrix fields no longer create default blocks if the field has any validation errors. ([#6173](https://github.com/craftcms/cms/issues/6173))
 
 ### Fixed
 - Fixed a race condition that could result in lost Matrix content when a new Matrix block was added from Live Preview, under very specific conditions. ([#6154](https://github.com/craftcms/cms/issues/6154))
