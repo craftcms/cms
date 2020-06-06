@@ -2090,7 +2090,7 @@ body.rtl #settingsmenu ul li a:before { margin: 1px -22px 0 0 ; }
   .lp-editor-container header + .lp-editor, .lp-preview-container header + .lp-editor { padding-top: 78px; } }
 .lp-editor-container header .btn, .lp-editor-container header .spinner, .lp-editor-container header .checkmark-icon, .lp-preview-container header .btn, .lp-preview-container header .spinner, .lp-preview-container header .checkmark-icon { margin-bottom: 0; }
 
-.lp-editor-container { display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-orient: vertical; -webkit-box-direction: normal; -ms-flex-direction: column; flex-direction: column; z-index: 101; -webkit-box-shadow: 1px 0 0 rgba(63, 77, 90, 0.2); box-shadow: 1px 0 0 rgba(63, 77, 90, 0.2); }
+.lp-editor-container { display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-orient: vertical; -webkit-box-direction: normal; -ms-flex-direction: column; flex-direction: column; -webkit-box-shadow: 1px 0 0 rgba(63, 77, 90, 0.2); box-shadow: 1px 0 0 rgba(63, 77, 90, 0.2); }
 .lp-editor-container .lp-editor { -webkit-box-flex: 1; -ms-flex: 1; flex: 1; padding: 24px; overflow: auto; -webkit-box-sizing: border-box; box-sizing: border-box; }
 .lp-editor-container .lp-editor > .field:last-child { margin-bottom: 24px !important; }
 .lp-editor-container .lp-draghandle { position: absolute; z-index: 6; top: 0; width: 4px; height: 100%; cursor: col-resize; }

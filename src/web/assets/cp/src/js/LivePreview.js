@@ -137,8 +137,8 @@ Craft.LivePreview = Garnish.Base.extend(
 
             if (!this.$editor) {
                 this.$shade = $('<div/>', {'class': 'modal-shade dark'}).appendTo(Garnish.$bod);
-                this.$editorContainer = $('<div/>', {'class': 'lp-editor-container'}).appendTo(Garnish.$bod);
                 this.$iframeContainer =$('<div/>', {'class': 'lp-preview-container'}).appendTo(Garnish.$bod);
+                this.$editorContainer = $('<div/>', {'class': 'lp-editor-container'}).appendTo(Garnish.$bod);
 
                 var $editorHeader = $('<header/>', {'class': 'flex'}).appendTo(this.$editorContainer);
                 this.$editor = $('<form/>', {'class': 'lp-editor'}).appendTo(this.$editorContainer);

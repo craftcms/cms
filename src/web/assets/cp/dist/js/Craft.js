@@ -22,7 +22,7 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-/*!   - 2020-06-03 */
+/*!   - 2020-06-05 */
 (function ($) {
   /** global: Craft */
 
@@ -16794,11 +16794,11 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         this.$shade = $('<div/>', {
           'class': 'modal-shade dark'
         }).appendTo(Garnish.$bod);
-        this.$editorContainer = $('<div/>', {
-          'class': 'lp-editor-container'
-        }).appendTo(Garnish.$bod);
         this.$iframeContainer = $('<div/>', {
           'class': 'lp-preview-container'
+        }).appendTo(Garnish.$bod);
+        this.$editorContainer = $('<div/>', {
+          'class': 'lp-editor-container'
         }).appendTo(Garnish.$bod);
         var $editorHeader = $('<header/>', {
           'class': 'flex'
@@ -17297,11 +17297,11 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         this.$shade = $('<div/>', {
           'class': 'modal-shade dark'
         }).appendTo(Garnish.$bod);
-        this.$editorContainer = $('<div/>', {
-          'class': 'lp-editor-container'
-        }).appendTo(Garnish.$bod);
         this.$previewContainer = $('<div/>', {
           'class': 'lp-preview-container'
+        }).appendTo(Garnish.$bod);
+        this.$editorContainer = $('<div/>', {
+          'class': 'lp-editor-container'
         }).appendTo(Garnish.$bod);
         var $editorHeader = $('<header/>', {
           'class': 'flex'
