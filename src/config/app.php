@@ -4,7 +4,7 @@ return [
     'id' => 'CraftCMS',
     'name' => 'Craft CMS',
     'version' => '3.5.0-beta.2',
-    'schemaVersion' => '3.5.1',
+    'schemaVersion' => '3.5.2',
     'minVersionRequired' => '2.6.2788',
     'basePath' => dirname(__DIR__), // Defines the @app alias
     'runtimePath' => '@storage/runtime', // Defines the @runtime alias
@@ -148,13 +148,13 @@ return [
         ],
         'contentMigrator' => [
             'class' => craft\db\MigrationManager::class,
-            'type' => craft\db\MigrationManager::TYPE_CONTENT,
+            'track' => craft\db\MigrationManager::TRACK_CONTENT,
             'migrationNamespace' => 'craft\contentmigrations',
             'migrationPath' => '@contentMigrations',
         ],
         'migrator' => [
             'class' => craft\db\MigrationManager::class,
-            'type' => craft\db\MigrationManager::TYPE_APP,
+            'track' => craft\db\MigrationManager::TRACK_CRAFT,
             'migrationNamespace' => 'craft\migrations',
             'migrationPath' => '@app/migrations',
         ],

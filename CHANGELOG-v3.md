@@ -38,6 +38,9 @@
 - Added `craft\base\Field::searchKeywords()`.
 - Added `craft\base\Volume::getFieldLayout()`.
 - Added `craft\base\VolumeInterface::getFieldLayout()`.
+- Added `craft\console\controllers\MigrateController::EVENT_REGISTER_MIGRATOR`.
+- Added `craft\db\MigrationManager::TRACK_CONTENT`.
+- Added `craft\db\MigrationManager::TRACK_CRAFT`.
 - Added `craft\elements\Asset::defineFieldLayouts()`.
 - Added `craft\elements\Asset::getCacheTags()`.
 - Added `craft\elements\Asset::gqlMutationNameByContext()`.
@@ -65,6 +68,7 @@
 - Added `craft\events\DefineFieldKeywordsEvent`.
 - Added `craft\events\EagerLoadElementsEvent`.
 - Added `craft\events\RegisterElementFieldLayoutsEvent`.
+- Added `craft\events\RegisterMigratorEvent`.
 - Added `craft\fields\BaseOptionsField::getContentGqlMutationArgumentType()`.
 - Added `craft\fields\BaseRelationField::getContentGqlMutationArgumentType()`.
 - Added `craft\fields\Date::getContentGqlMutationArgumentType()`.
@@ -109,6 +113,8 @@
 - Improved support for eager-loading elements across multiple sites at once.
 - Added eager-loading support for the `photo` field when querying users via GraphQL.
 - Fields’ values are now automatically JSON-decoded before being passed to `normalizeValue()`, if they look like a JSON object or array.
+- Craft now supports running migrations for custom migration tracks. ([#6172](https://github.com/craftcms/cms/issues/6172))
+- `migrate` commands now have a `--track` option, which can be set to `craft`, `content`, or a custom migration track name.
 - `craft\base\Element::getRoute()` now returns the route defined by `craft\events\SetElementRouteEvent::$route` even if it’s null, as long as `SetElementRouteEvent::$handled` is set to `true`.
 - `craft\base\ElementInterface::sortOptions()` now allows the returned `orderBy` key to be set to an array of column names.
 - `craft\base\SavableComponent::isSelectable()` has been moved into the base component class, `craft\base\Component`.
@@ -125,6 +131,7 @@
 
 ### Deprecated
 - Deprecated the `useCompressedJs` config setting.
+- Deprecated the `--type` option on `migrate` commands. `--track` or `--plugin` should be used instead.
 - Deprecated `craft\db\Table::TEMPLATECACHEELEMENTS`.
 - Deprecated `craft\db\Table::TEMPLATECACHEQUERIES`.
 - Deprecated `craft\db\Table::TEMPLATECACHES`.
@@ -153,6 +160,11 @@
 - Removed the “Template caches” option from the Clear Caches tool and `clear-caches` command.
 - Removed the `cacheElementQueries` config setting.
 - Removed `craft\base\ElementInterface::getIconUrl()`.
+- Removed `craft\db\MigrationManager::TYPE_APP`.
+- Removed `craft\db\MigrationManager::TYPE_CONTENT`.
+- Removed `craft\db\MigrationManager::TYPE_PLUGIN`.
+- Removed `craft\records\Migration`.
+- Removed `craft\records\Plugin::getMigrations()`.
 
 ### Fixed
 - Fixed a potential CORS issue when previewing a live entry, if its URL was on a different domain than the control panel.

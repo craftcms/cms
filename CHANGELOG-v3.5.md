@@ -80,8 +80,11 @@
 - Added `craft\behaviors\BaseRevisionBehavior`.
 - Added `craft\config\GeneralConfig::getTestToEmailAddress()`.
 - Added `craft\console\controllers\MailerController::$to`.
+- Added `craft\console\controllers\MigrateController::EVENT_REGISTER_MIGRATOR`.
 - Added `craft\controllers\AppController::actionBrokenImage()`.
 - Added `craft\controllers\BaseEntriesController::enforceSitePermissions()`.
+- Added `craft\db\MigrationManager::TRACK_CONTENT`.
+- Added `craft\db\MigrationManager::TRACK_CRAFT`.
 - Added `craft\elements\actions\CopyUrl`.
 - Added `craft\elements\actions\Delete::$hard`.
 - Added `craft\elements\Asset::defineFieldLayouts()`.
@@ -114,6 +117,7 @@
 - Added `craft\events\RegisterElementFieldLayoutsEvent`.
 - Added `craft\events\RegisterGqlMutationsEvent`.
 - Added `craft\events\RegisterGqlSchemaComponentsEvent`.
+- Added `craft\events\RegisterMigratorEvent`.
 - Added `craft\events\SetEagerLoadedElementsEvent`.
 - Added `craft\fields\BaseOptionsField::getContentGqlMutationArgumentType()`.
 - Added `craft\fields\BaseRelationField::getContentGqlMutationArgumentType()`.
@@ -234,6 +238,7 @@
 - Improved the UI for copying user activation URLs, asset reference tags, and GraphQL tokens’ authentication headers.
 - Improved the wording of the meta info displayed in entry revision menus. ([#5889](https://github.com/craftcms/cms/issues/5889))
 - Plain Text fields are now sortable in the control panel. ([#5819](https://github.com/craftcms/cms/issues/5819))
+- Craft now supports running migrations for custom migration tracks. ([#6172](https://github.com/craftcms/cms/issues/6172))
 - Extra entry revisions (per the `maxRevisions` config setting) are now pruned via a background job. ([#5902](https://github.com/craftcms/cms/issues/5902))
 - Database backups created by the Database Backup utility are now saved as zip files. ([#5822](https://github.com/craftcms/cms/issues/5822))
 - It’s now possible to specify aliases when eager-loading elements via the `with` param. ([#5793](https://github.com/craftcms/cms/issues/5793))
@@ -242,6 +247,7 @@
 - The `pathParam` config setting can now be set to `null`. ([#5676](https://github.com/craftcms/cms/issues/5676))
 - If the `baseCpUrl` config setting is set, Craft will no longer treat any other base URLs as control panel requests, even if they contain the correct trigger segment. ([#5860](https://github.com/craftcms/cms/issues/5860))
 - The `mailer/test` command now only supports testing the current email settings.
+- `migrate` commands now have a `--track` option, which can be set to `craft`, `content`, or a custom migration track name.
 - Reference tags can now provide a fallback value to be used if the reference can’t be resolved. ([#5589](https://github.com/craftcms/cms/issues/5589))
 - It’s no longer necessary to append the `|raw` filter after the `|namespace` filter.
 - The `|namespace` Twig filter now namespaces ID selectors within `<style>` tags. ([#5921](https://github.com/craftcms/cms/issues/5921))
@@ -288,6 +294,7 @@
 - Deprecated the `install/plugin` command. `plugin/install` should be used instead.
 - Deprecated the `|filterByValue` Twig filter. `|where` should be used instead.
 - Deprecated the `|ucwords` Twig filter. `|title` should be used instead.
+- Deprecated the `--type` option on `migrate` commands. `--track` or `--plugin` should be used instead.
 - Deprecated `craft\db\Table::TEMPLATECACHEELEMENTS`.
 - Deprecated `craft\db\Table::TEMPLATECACHEQUERIES`.
 - Deprecated `craft\db\Table::TEMPLATECACHES`.
@@ -322,6 +329,11 @@
 - Removed the [Interactive Shell Extension for Yii 2](https://github.com/yiisoft/yii2-shell), as it’s now a dev dependency of the `craftcms/craft` project instead. ([#5783](https://github.com/craftcms/cms/issues/5783))
 - Removed the `cacheElementQueries` config setting.
 - Removed `craft\controllers\UtilitiesController::actionDbBackupPerformAction()`.
+- Removed `craft\db\MigrationManager::TYPE_APP`.
+- Removed `craft\db\MigrationManager::TYPE_CONTENT`.
+- Removed `craft\db\MigrationManager::TYPE_PLUGIN`.
+- Removed `craft\records\Migration`.
+- Removed `craft\records\Plugin::getMigrations()`.
 
 ### Fixed
 - Fixed a bug where the `mailer/test` command wasn’t factoring in custom `mailer` configurations in its settings report. ([#5763](https://github.com/craftcms/cms/issues/5763))
