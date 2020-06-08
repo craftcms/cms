@@ -190,6 +190,7 @@
 - Added `craft\services\AssetTransforms::extendTransform()`. ([#5853](https://github.com/craftcms/cms/issues/5853))
 - Added `craft\services\Composer::handleError()`.
 - Added `craft\services\Composer::run()`.
+- Added `craft\services\ElementIndexes::getFieldLayoutsForSource()`.
 - Added `craft\services\ElementIndexes::getSourceSortOptions()`.
 - Added `craft\services\ElementIndexes::getSourceTableAttributes()`.
 - Added `craft\services\Elements::collectCacheTags()`.
