@@ -115,6 +115,7 @@
 - Fields’ values are now automatically JSON-decoded before being passed to `normalizeValue()`, if they look like a JSON object or array.
 - Craft now supports running migrations for custom migration tracks. ([#6172](https://github.com/craftcms/cms/issues/6172))
 - `migrate` commands now have a `--track` option, which can be set to `craft`, `content`, or a custom migration track name.
+- “Resaving elements” jobs no longer ignore the `offset`, `limit`, and `orderBy` params specified by the criteria.
 - `craft\base\Element::getRoute()` now returns the route defined by `craft\events\SetElementRouteEvent::$route` even if it’s null, as long as `SetElementRouteEvent::$handled` is set to `true`.
 - `craft\base\ElementInterface::sortOptions()` now allows the returned `orderBy` key to be set to an array of column names.
 - `craft\base\SavableComponent::isSelectable()` has been moved into the base component class, `craft\base\Component`.

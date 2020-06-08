@@ -94,11 +94,6 @@ class ResaveElements extends BaseJob
             Craft::configure($query, $this->criteria);
         }
 
-        $query
-            ->offset(null)
-            ->limit(null)
-            ->orderBy(null);
-
         return $query;
     }
 }
