@@ -20,6 +20,9 @@
 - Fixed a bug where `setup` and `clear-caches` commands weren’t respecting the `--color` option. ([#6178](https://github.com/craftcms/cms/issues/6178))
 - Fixed a bug where an exception message would be shown instead of the web-based installer on Craft Nitro.
 
+### Security
+- Fixed a server path disclosure bug in the control panel.
+
 ## 3.4.22.1 - 2020-05-30
 
 ### Added
