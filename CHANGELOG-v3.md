@@ -417,12 +417,19 @@
 - Improved the styling of Live Preview.
 - Local volumes now respect the `defaultFileMode` and `defaultDirMod` config settings. ([#4251](https://github.com/craftcms/cms/pull/4251))
 - Craft no longer logs unnecessary warnings when loading remote images’ thumbnails. ([#6166](https://github.com/craftcms/cms/pull/6166))
+- Matrix fields no longer create default blocks if the field has any validation errors. ([#6173](https://github.com/craftcms/cms/issues/6173))
+- The `setup` command and web-based installer now set `DB_DRIVER`, `DB_SERVER`, `DB_PORT`, and `DB_DATABASE` environment variables, if a `DB_DSN` environment variable isn’t already defined. ([#6159](https://github.com/craftcms/cms/issues/6159))
 
 ### Fixed
 - Fixed a race condition that could result in lost Matrix content when a new Matrix block was added from Live Preview, under very specific conditions. ([#6154](https://github.com/craftcms/cms/issues/6154))
 - Fixed a bug where the built-in GraphQL client would not work on some environments.
 - Fixed a bug where newly-added entries and entry drafts wouldn’t remember their new parent entry selection when published. ([#6168](https://github.com/craftcms/cms/issues/6168))
 - Fixed a bug where switching the site within an element selection modal would affect which site is shown by default on element index pages. ([#6174](https://github.com/craftcms/cms/issues/6174))
+- Fixed a bug where `setup` and `clear-caches` commands weren’t respecting the `--color` option. ([#6178](https://github.com/craftcms/cms/issues/6178))
+- Fixed a bug where an exception message would be shown instead of the web-based installer on Craft Nitro.
+
+### Security
+- Fixed a server path disclosure bug in the control panel.
 
 ## 3.4.22.1 - 2020-05-30
 

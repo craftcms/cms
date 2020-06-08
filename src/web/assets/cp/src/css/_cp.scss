@@ -1289,7 +1289,6 @@ $toolbarIconColor: darken($inputColor, 10%);
 .lp-editor-container {
   display: flex;
   flex-direction: column;
-  z-index: 101;
   box-shadow: 1px 0 0 transparentize($grey700, 0.8);
 
   .lp-editor {

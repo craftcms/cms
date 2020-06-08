@@ -635,7 +635,11 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
 
         // Get the block types data
         $blockTypeInfo = $this->_getBlockTypeInfoForInput($element, $blockTypes);
-        $createDefaultBlocks = $this->minBlocks != 0 && count($blockTypeInfo) === 1;
+        $createDefaultBlocks = (
+            $this->minBlocks != 0 &&
+            count($blockTypeInfo) === 1 &&
+            (!$element || !$element->hasErrors($this->handle))
+        );
         $staticBlocks = (
             $createDefaultBlocks &&
             $this->minBlocks == $this->maxBlocks &&
