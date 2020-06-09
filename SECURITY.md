@@ -8,7 +8,7 @@ If you discover a security vulnerability, please review the following guidelines
 
 While working to identify potential security vulnerabilities, we ask that you:
 
-- **Privately** share any issues that you discover with us via [craftcms.com/contact](https://craftcms.com/contact) as soon as possible.
+- Share any issues that you discover with us via [Github](https://github.com/craftcms/cms/security/advisories) or [craftcms.com/contact](https://craftcms.com/contact) as soon as possible.
 - Give us a reasonable amount of time to address any reported issues before publicizing them.
 - Only report issues that are [in scope](#scope).
 - Provide a quality report with precise explanations and concrete attack scenarios.
