@@ -91,7 +91,7 @@ class UserGroupsService extends BaseApplicationComponent
 	/**
 	 * Gets a user group by its handle.
 	 *
-	 * @param int $groupHandle
+	 * @param string $groupHandle
 	 *
 	 * @return UserGroupModel
 	 */
