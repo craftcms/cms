@@ -2,11 +2,11 @@
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability in Craft CMS, please review the following guidelines before submitting a report. We take security very seriously, and we do our best to resolve security issues as quickly as possible.
+If you discover a security vulnerability, please review the following guidelines before submitting a report. We take security very seriously, and we do our best to resolve security issues as quickly as possible.
 
 ## Guidelines
 
-While working to identify potential security vulnerabilities in Craft, we ask that you:
+While working to identify potential security vulnerabilities, we ask that you:
 
 - **Privately** share any issues that you discover with us via [craftcms.com/contact](https://craftcms.com/contact) as soon as possible.
 - Give us a reasonable amount of time to address any reported issues before publicizing them.
@@ -16,7 +16,7 @@ While working to identify potential security vulnerabilities in Craft, we ask th
 
 ## Scope
 
-We are only interested in vulnerabilities that affect Craft CMS itself, tested against **your own local installation of the software**, running the latest version. You can install a local copy of Craft by following these [installation instructions](https://craftcms.com/docs/installing). Do **not** test against any Craft installation that you don’t own, including [craftcms.com](https://craftcms.com) or [demo.craftcms.com](https://demo.craftcms.com).
+We are only interested in vulnerabilities that affect Craft, or [1st party Craft plugins](https://github.com/craftcms) , tested against **your own local installation of the software**. You can install a local copy of Craft by following these [installation instructions](https://craftcms.com/docs/installing). Do **not** test against any Craft installation that you don’t own, including [craftcms.com](https://craftcms.com) or [demo.craftcms.com](https://demo.craftcms.com).
 
 ### Qualifying Vulnerabilities
 
