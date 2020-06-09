@@ -373,6 +373,7 @@ class ElementHelper
         return $element::find()
             ->id($sourceId)
             ->siteId($element->siteId)
+            ->structureId($element->structureId)
             ->anyStatus()
             ->ignorePlaceholders()
             ->one();

@@ -121,6 +121,15 @@ class Local extends FlysystemVolume implements LocalVolumeInterface
      */
     protected function createAdapter(): LocalAdapter
     {
-        return new LocalAdapter($this->getRootPath());
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+
+        return new LocalAdapter($this->getRootPath(), LOCK_EX, LocalAdapter::DISALLOW_LINKS, [
+            'file' => [
+                'public' => $generalConfig->defaultFileMode ?: 0644
+            ],
+            'dir' => [
+                'public' => $generalConfig->defaultDirMode ?: 0755
+            ],
+        ]);
     }
 }

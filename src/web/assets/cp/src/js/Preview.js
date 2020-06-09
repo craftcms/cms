@@ -92,8 +92,8 @@ Craft.Preview = Garnish.Base.extend(
 
             if (!this.$editor) {
                 this.$shade = $('<div/>', {'class': 'modal-shade dark'}).appendTo(Garnish.$bod);
-                this.$editorContainer = $('<div/>', {'class': 'lp-editor-container'}).appendTo(Garnish.$bod);
                 this.$previewContainer = $('<div/>', {'class': 'lp-preview-container'}).appendTo(Garnish.$bod);
+                this.$editorContainer = $('<div/>', {'class': 'lp-editor-container'}).appendTo(Garnish.$bod);
 
                 var $editorHeader = $('<header/>', {'class': 'flex'}).appendTo(this.$editorContainer);
                 this.$editor = $('<form/>', {'class': 'lp-editor'}).appendTo(this.$editorContainer);
@@ -145,7 +145,7 @@ Craft.Preview = Garnish.Base.extend(
             this.handleWindowResize();
             this.addListener(Garnish.$win, 'resize', 'handleWindowResize');
 
-            this.$editorContainer.css(Craft.left, -(this.editorWidthInPx + Craft.Preview.dragHandleWidth) + 'px');
+            this.$editorContainer.css(Craft.left, -this.editorWidthInPx + 'px');
             this.$previewContainer.css(Craft.right, -this.getIframeWidth());
 
             // Find the fields, excluding nested fields
@@ -243,7 +243,7 @@ Craft.Preview = Garnish.Base.extend(
 
             this.$shade.delay(200).velocity('fadeOut');
 
-            this.$editorContainer.velocity('stop').animateLeft(-(this.editorWidthInPx + Craft.Preview.dragHandleWidth), 'slow', $.proxy(function() {
+            this.$editorContainer.velocity('stop').animateLeft(-this.editorWidthInPx, 'slow', $.proxy(function() {
                 for (var i = 0; i < this.fields.length; i++) {
                     this.fields[i].$newClone.remove();
                 }
@@ -282,7 +282,7 @@ Craft.Preview = Garnish.Base.extend(
         },
 
         getIframeWidth: function() {
-            return Garnish.$win.width() - (this.editorWidthInPx + Craft.Preview.dragHandleWidth);
+            return Garnish.$win.width() - this.editorWidthInPx;
         },
 
         updateWidths: function() {
@@ -413,5 +413,4 @@ Craft.Preview = Garnish.Base.extend(
     {
         defaultEditorWidth: 0.33,
         minEditorWidthInPx: 320,
-        dragHandleWidth: 2,
     });

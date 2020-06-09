@@ -1245,7 +1245,7 @@ $toolbarIconColor: darken($inputColor, 10%);
   header {
     padding: 10px 24px;
     background-color: $grey100;
-    box-shadow: inset 0 -1px 0 transparentize($grey700, 0.9);
+    box-shadow: 0 1px 0 transparentize($grey700, 0.8);
     box-sizing: border-box;
 
     @supports (backdrop-filter: blur(10px)) {
@@ -1273,6 +1273,7 @@ $toolbarIconColor: darken($inputColor, 10%);
 .lp-editor-container {
   display: flex;
   flex-direction: column;
+  box-shadow: 1px 0 0 transparentize($grey700, 0.8);
 
   .lp-editor {
     flex: 1;
@@ -1287,8 +1288,9 @@ $toolbarIconColor: darken($inputColor, 10%);
 
   .lp-draghandle {
     position: absolute;
+    z-index: 6;
     top: 0;
-    @include right(-4px);
+    @include right(-2px);
     width: 4px;
     height: 100%;
     cursor: col-resize;

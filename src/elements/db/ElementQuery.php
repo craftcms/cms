@@ -2488,7 +2488,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             throw new QueryAbortedException();
         }
 
-        return $this->$property = ElementHelper::sourceElement($this->$property);
+        return $this->$property;
     }
 
     /**

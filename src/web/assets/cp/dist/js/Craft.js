@@ -22,7 +22,7 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-/*!   - 2020-05-29 */
+/*!   - 2020-06-05 */
 (function ($) {
   /** global: Craft */
 
@@ -3635,8 +3635,11 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       }
 
       if (this.initialized) {
-        // Remember this site for later
-        Craft.setLocalStorage('BaseElementIndex.siteId', siteId); // Update the elements
+        if (this.settings.context === 'index') {
+          // Remember this site for later
+          Craft.setLocalStorage('BaseElementIndex.siteId', siteId);
+        } // Update the elements
+
 
         this.updateElements();
       }
@@ -4734,9 +4737,20 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
       if (this.settings.viewMode === 'list' || this.$elements.length === 0) {
         animateCss['margin-bottom'] = -($element.outerHeight() + parseInt($element.css('margin-bottom')));
+      } // Pause the draft editor
+
+
+      if (window.draftEditor) {
+        window.draftEditor.pause();
       }
 
-      $element.velocity(animateCss, Craft.BaseElementSelectInput.REMOVE_FX_DURATION, callback);
+      $element.velocity(animateCss, Craft.BaseElementSelectInput.REMOVE_FX_DURATION, function () {
+        callback(); // Resume the draft editor
+
+        if (window.draftEditor) {
+          window.draftEditor.resume();
+        }
+      });
     },
     showModal: function showModal() {
       // Make sure we haven't reached the limit
@@ -12859,6 +12873,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     $saveMetaBtn: null,
     lastSerializedValue: null,
     listeningForChanges: false,
+    pauseLevel: 0,
     timeout: null,
     saving: false,
     saveXhr: null,
@@ -12931,7 +12946,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       }
     },
     listenForChanges: function listenForChanges() {
-      if (this.listeningForChanges) {
+      if (this.listeningForChanges || this.pauseLevel > 0) {
         return;
       }
 
@@ -12951,9 +12966,31 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       });
     },
     stopListeningForChanges: function stopListeningForChanges() {
+      if (!this.listeningForChanges) {
+        return;
+      }
+
       this.removeListener(Garnish.$bod, 'keypress,keyup,change,focus,blur,click,mousedown,mouseup');
       clearTimeout(this.timeout);
       this.listeningForChanges = false;
+    },
+    pause: function pause() {
+      this.pauseLevel++;
+      this.stopListeningForChanges();
+    },
+    resume: function resume() {
+      if (this.pauseLevel === 0) {
+        throw 'Craft.DraftEditor::resume() should only be called after pause().';
+      } // Only actually resume operation if this has been called the same
+      // number of times that pause() was called
+
+
+      this.pauseLevel--;
+
+      if (this.pauseLevel === 0) {
+        this.checkForm();
+        this.listenForChanges();
+      }
     },
     initForDraft: function initForDraft() {
       // Create the edit draft button
@@ -13267,7 +13304,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     },
     checkForm: function checkForm(force) {
       // If this isn't a draft and there's no active preview, then there's nothing to check
-      if (this.settings.revisionId || !this.settings.draftId && !this.isPreviewActive()) {
+      if (this.settings.revisionId || !this.settings.draftId && !this.isPreviewActive() || this.pauseLevel > 0) {
         return;
       }
 
@@ -16757,11 +16794,11 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         this.$shade = $('<div/>', {
           'class': 'modal-shade dark'
         }).appendTo(Garnish.$bod);
-        this.$editorContainer = $('<div/>', {
-          'class': 'lp-editor-container'
-        }).appendTo(Garnish.$bod);
         this.$iframeContainer = $('<div/>', {
           'class': 'lp-preview-container'
+        }).appendTo(Garnish.$bod);
+        this.$editorContainer = $('<div/>', {
+          'class': 'lp-editor-container'
         }).appendTo(Garnish.$bod);
         var $editorHeader = $('<header/>', {
           'class': 'flex'
@@ -16793,7 +16830,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
       this.handleWindowResize();
       this.addListener(Garnish.$win, 'resize', 'handleWindowResize');
-      this.$editorContainer.css(Craft.left, -(this.editorWidthInPx + Craft.LivePreview.dragHandleWidth) + 'px');
+      this.$editorContainer.css(Craft.left, -this.editorWidthInPx + 'px');
       this.$iframeContainer.css(Craft.right, -this.getIframeWidth()); // Move all the fields into the editor rather than copying them
       // so any JS that's referencing the elements won't break.
 
@@ -16879,7 +16916,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
       this.moveFieldsBack();
       this.$shade.delay(200).velocity('fadeOut');
-      this.$editorContainer.velocity('stop').animateLeft(-(this.editorWidthInPx + Craft.LivePreview.dragHandleWidth), 'slow', $.proxy(function () {
+      this.$editorContainer.velocity('stop').animateLeft(-this.editorWidthInPx, 'slow', $.proxy(function () {
         for (var i = 0; i < this.fields.length; i++) {
           this.fields[i].$newClone.remove();
         }
@@ -16910,7 +16947,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       Garnish.$win.trigger('resize');
     },
     getIframeWidth: function getIframeWidth() {
-      return Garnish.$win.width() - (this.editorWidthInPx + Craft.LivePreview.dragHandleWidth);
+      return Garnish.$win.width() - this.editorWidthInPx;
     },
     updateWidths: function updateWidths() {
       this.$editorContainer.css('width', this.editorWidthInPx + 'px');
@@ -17033,7 +17070,6 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
   }, {
     defaultEditorWidth: 0.33,
     minEditorWidthInPx: 320,
-    dragHandleWidth: 4,
     defaults: {
       trigger: '.livepreviewbtn',
       fields: null,
@@ -17261,11 +17297,11 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         this.$shade = $('<div/>', {
           'class': 'modal-shade dark'
         }).appendTo(Garnish.$bod);
-        this.$editorContainer = $('<div/>', {
-          'class': 'lp-editor-container'
-        }).appendTo(Garnish.$bod);
         this.$previewContainer = $('<div/>', {
           'class': 'lp-preview-container'
+        }).appendTo(Garnish.$bod);
+        this.$editorContainer = $('<div/>', {
+          'class': 'lp-editor-container'
         }).appendTo(Garnish.$bod);
         var $editorHeader = $('<header/>', {
           'class': 'flex'
@@ -17341,7 +17377,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
       this.handleWindowResize();
       this.addListener(Garnish.$win, 'resize', 'handleWindowResize');
-      this.$editorContainer.css(Craft.left, -(this.editorWidthInPx + Craft.Preview.dragHandleWidth) + 'px');
+      this.$editorContainer.css(Craft.left, -this.editorWidthInPx + 'px');
       this.$previewContainer.css(Craft.right, -this.getIframeWidth()); // Find the fields, excluding nested fields
 
       this.fields = [];
@@ -17421,7 +17457,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       this.$tempInput.detach();
       this.moveFieldsBack();
       this.$shade.delay(200).velocity('fadeOut');
-      this.$editorContainer.velocity('stop').animateLeft(-(this.editorWidthInPx + Craft.Preview.dragHandleWidth), 'slow', $.proxy(function () {
+      this.$editorContainer.velocity('stop').animateLeft(-this.editorWidthInPx, 'slow', $.proxy(function () {
         for (var i = 0; i < this.fields.length; i++) {
           this.fields[i].$newClone.remove();
         }
@@ -17454,7 +17490,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       Garnish.$win.trigger('resize');
     },
     getIframeWidth: function getIframeWidth() {
-      return Garnish.$win.width() - (this.editorWidthInPx + Craft.Preview.dragHandleWidth);
+      return Garnish.$win.width() - this.editorWidthInPx;
     },
     updateWidths: function updateWidths() {
       this.$editorContainer.css('width', this.editorWidthInPx + 'px');
@@ -17564,8 +17600,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     }
   }, {
     defaultEditorWidth: 0.33,
-    minEditorWidthInPx: 320,
-    dragHandleWidth: 2
+    minEditorWidthInPx: 320
   });
   /** global: Craft */
 

@@ -284,7 +284,19 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
                 animateCss['margin-bottom'] = -($element.outerHeight() + parseInt($element.css('margin-bottom')));
             }
 
-            $element.velocity(animateCss, Craft.BaseElementSelectInput.REMOVE_FX_DURATION, callback);
+            // Pause the draft editor
+            if (window.draftEditor) {
+                window.draftEditor.pause();
+            }
+
+            $element.velocity(animateCss, Craft.BaseElementSelectInput.REMOVE_FX_DURATION, () => {
+                callback();
+
+                // Resume the draft editor
+                if (window.draftEditor) {
+                    window.draftEditor.resume();
+                }
+            });
         },
 
         showModal: function() {

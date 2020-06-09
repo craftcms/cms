@@ -65,12 +65,9 @@ use yii\db\Exception;
 class Craft extends Yii2
 {
     /**
-     * @var array A static version of the testing config.
-     *
-     * Will be set very early on in the testing processes so it can be used in configuration files such as `general.php` and `test.php`.
-     * This variable is equivalant to calling $this->_getConfig(); but is available for public access.
+     * @var self The current instance
      */
-    public static $testConfig;
+    public static $instance;
 
     /**
      * @var TestInterface
@@ -123,10 +120,9 @@ class Craft extends Yii2
     {
         parent::_initialize();
 
-        $config = $this->_getConfig();
-        Craft::$testConfig = $config;
+        self::$instance = $this;
 
-        if ($config['fullMock'] !== true) {
+        if ($this->_getConfig('fullMock') !== true) {
             $this->setupDb();
         }
     }
