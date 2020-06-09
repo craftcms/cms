@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased (3.5.0)
+## 3.5.0-beta.3 - 2020-06-09
 
 ### Added
 - Added the “Underline links” user preference. ([#6153](https://github.com/craftcms/cms/issues/6153))
