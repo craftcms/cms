@@ -14,6 +14,8 @@ crowdin.yml export-ignore
 gulpfile.js export-ignore
 package.json
 package-lock.json
+README.md
+SECURITY.md
 tests/ export-ignore
 
 # Auto detect text files and perform LF normalization

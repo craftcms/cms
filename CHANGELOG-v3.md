@@ -409,7 +409,7 @@
 ### Security
 - The `_includes/forms/checkbox.html`, `checkboxGroup.html`, and `checkboxSelect.html` control panel templates now HTML-encode checkbox labels by default, preventing possible XSS vulnerabilities. If HTML code was desired, it must be passed through the new `raw()` function first.
 
-## Unreleased (3.4.x)
+## 3.4.23 - 2020-06-09
 
 ### Added
 - Added `Craft.DraftEditor::pause()` and `resume()`, which should be called on the `window.draftEditor` instance (if it exists) before and after making DOM changes that don’t happen immediately (e.g. after an animation has completed). ([#6154](https://github.com/craftcms/cms/issues/6154))
@@ -428,6 +428,7 @@
 - Fixed a bug where switching the site within an element selection modal would affect which site is shown by default on element index pages. ([#6174](https://github.com/craftcms/cms/issues/6174))
 - Fixed a bug where `setup` and `clear-caches` commands weren’t respecting the `--color` option. ([#6178](https://github.com/craftcms/cms/issues/6178))
 - Fixed a bug where an exception message would be shown instead of the web-based installer on Craft Nitro.
+- Fixed an error that occurred when uploading an asset that conflicted with an existing file that was missing from the index. ([#6193](https://github.com/craftcms/cms/issues/6193))
 
 ### Security
 - Fixed a server path disclosure bug in the control panel.
