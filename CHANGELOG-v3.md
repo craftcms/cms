@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.4.23 - 2020-06-09
 
 ### Added
 - Added `Craft.DraftEditor::pause()` and `resume()`, which should be called on the `window.draftEditor` instance (if it exists) before and after making DOM changes that don’t happen immediately (e.g. after an animation has completed). ([#6154](https://github.com/craftcms/cms/issues/6154))
