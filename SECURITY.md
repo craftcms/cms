@@ -43,13 +43,12 @@ We are only interested in vulnerabilities that affect Craft or [first party Craf
 - Attacks that are the result of a third party library should be reported to the library maintainers
 - Bugs that rely on an unlikely user interaction (i.e. the user effectively attacking themselves)
 - Disclosure of tools or libraries used by Craft and/or their versions
-- Issues that are the result of a user doing something silly (like sharing their password publicly)
+- Issues that are the result of a user clearing ignoring common security best practices (like sharing their password publicly)
 - Missing security headers which do not lead directly to a vulnerability via proof of concept
 - Vulnerabilities affecting users of outdated/unsupported browsers or platforms
 - Vulnerabilities affecting outdated versions of Craft
 - Any behavior that is clearly documented
 - Issues discovered while scanning a site you don’t own without permission
-- The OPTIONS header
 - Missing CSRF tokens on forms (unless you have a proof of concept, many forms either don’t need CSRF or are mitigated in other ways) and “logout” CSRF attacks
 - [Open redirects](https://www.owasp.org/index.php/open_redirect)
 
