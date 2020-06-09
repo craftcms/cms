@@ -19,6 +19,7 @@
 - Fixed a bug where switching the site within an element selection modal would affect which site is shown by default on element index pages. ([#6174](https://github.com/craftcms/cms/issues/6174))
 - Fixed a bug where `setup` and `clear-caches` commands weren’t respecting the `--color` option. ([#6178](https://github.com/craftcms/cms/issues/6178))
 - Fixed a bug where an exception message would be shown instead of the web-based installer on Craft Nitro.
+- Fixed an error that occurred when uploading an asset file that would conflict with an un-indexed asset. ([#6193](https://github.com/craftcms/cms/issues/6193))
 
 ### Security
 - Fixed a server path disclosure bug in the control panel.
