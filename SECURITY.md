@@ -12,7 +12,7 @@ While working to identify potential security vulnerabilities, we ask that you:
 - Give us a reasonable amount of time to address any reported issues before publicizing them.
 - Only report issues that are [in scope](#scope).
 - Provide a quality report with precise explanations and concrete attack scenarios.
-- Make sure you are aware of the versions of Craft and Commerce that are actively receiving security fixes: https://craftcms.com/knowledge-base/supported-versions
+- Make sure you are aware of the versions of Craft and Commerce that are actively [receiving security fixes](https://craftcms.com/knowledge-base/supported-versions).
 
 ## Scope
 
