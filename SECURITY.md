@@ -43,7 +43,7 @@ We are only interested in vulnerabilities that affect Craft or [first party Craf
 - Attacks that are the result of a third party library should be reported to the library maintainers
 - Bugs that rely on an unlikely user interaction (i.e. the user effectively attacking themselves)
 - Disclosure of tools or libraries used by Craft and/or their versions
-- Issues that are the result of a user clearing ignoring common security best practices (like sharing their password publicly)
+- Issues that are the result of a user clearly ignoring common security best practices (like sharing their password publicly)
 - Missing security headers which do not lead directly to a vulnerability via proof of concept
 - Vulnerabilities affecting users of outdated/unsupported browsers or platforms
 - Vulnerabilities affecting outdated versions of Craft
