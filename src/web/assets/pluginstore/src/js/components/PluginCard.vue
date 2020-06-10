@@ -1,5 +1,5 @@
 <template>
-    <router-link :to="{ path: '/' + plugin.handle }" class="plugin-card relative tw-flex flex-no-wrap items-start py-6 border-b border-grey-light border-solid">
+    <router-link v-if="plugin" :to="{ path: '/' + plugin.handle }" class="plugin-card relative tw-flex flex-no-wrap items-start py-6 border-b border-grey-light border-solid">
         <div class="plugin-icon mr-4">
             <img v-if="plugin.iconUrl" :src="plugin.iconUrl" />
             <img v-else :src="defaultPluginSvg" />
