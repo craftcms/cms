@@ -107,7 +107,7 @@
 </script>
 
 <style lang="scss" scoped>
-    @import "../../../../../../../node_modules/craftcms-sass/mixins";
+    @import "../../../../../../../lib/craftcms-sass/mixins";
 
     .plugin-details-header {
         @apply .leading-normal .overflow-hidden .mb-1;
