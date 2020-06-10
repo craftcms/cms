@@ -1,5 +1,5 @@
 <template>
-    <div v-if="plugin" class="plugin-card relative tw-flex flex-no-wrap items-start py-6 border-b border-grey-light border-solid" @click="$emit('click')">
+    <router-link :to="{ path: '/' + plugin.handle }" class="plugin-card relative tw-flex flex-no-wrap items-start py-6 border-b border-grey-light border-solid">
         <div class="plugin-icon mr-4">
             <img v-if="plugin.iconUrl" :src="plugin.iconUrl" />
             <img v-else :src="defaultPluginSvg" />
@@ -13,7 +13,7 @@
                </div>
                <div>{{ plugin.shortDescription }}</div>
            </div>
-            
+
             <p class="light">
                 <template v-if="priceRange.min !== priceRange.max">
                     <template v-if="priceRange.min > 0">
@@ -37,7 +37,7 @@
 
             <div v-if="isPluginInstalled(plugin.handle)" class="installed" data-icon="check"></div>
         </div>
-    </div>
+    </router-link>
 </template>
 
 <script>
@@ -107,7 +107,7 @@
 </script>
 
 <style lang="scss" scoped>
-    @import "../../../../../../../lib/craftcms-sass/mixins";
+    @import "../../../../../../../node_modules/craftcms-sass/mixins";
 
     .plugin-details-header {
         @apply .leading-normal .overflow-hidden .mb-1;
@@ -124,8 +124,12 @@
 
     .plugin-card {
         box-sizing: border-box;
-
+        color: currentColor;
+        text-decoration: none;
         &:hover {
+            color: currentColor;
+            text-decoration: none;
+
             @apply .cursor-pointer;
 
             strong {
