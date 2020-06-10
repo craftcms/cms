@@ -48,9 +48,7 @@ class Entry extends Structure
             'name' => static::getName(),
             'fields' => self::class . '::getFieldDefinitions',
             'description' => 'This is the interface implemented by all entries.',
-            'resolveType' => function(EntryElement $value) {
-                return $value->getGqlTypeName();
-            }
+            'resolveType' => self::class . '::resolveElementTypeName',
         ]));
 
         EntryType::generateTypes();

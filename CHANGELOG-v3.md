@@ -1,5 +1,14 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased (3.5.0)
+
+### Added
+- Added `craft\gql\base\InterfaceType::resolveElementTypeName()`.
+- Added `craft\gql\GqlEntityRegistry::prefixTypeName()`.
+
+### Fixed
+- Fixed an error that occurred when using the `gqlTypePrefix` config setting.
+
 ## 3.5.0-beta.3 - 2020-06-09
 
 ### Added

@@ -44,9 +44,7 @@ class MatrixBlock extends Element
             'name' => static::getName(),
             'fields' => self::class . '::getFieldDefinitions',
             'description' => 'This is the interface implemented by all matrix blocks.',
-            'resolveType' => function(MatrixBlockElement $value) {
-                return $value->getGqlTypeName();
-            }
+            'resolveType' => self::class . '::resolveElementTypeName',
         ]));
 
         MatrixBlockType::generateTypes();

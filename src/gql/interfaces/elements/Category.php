@@ -45,9 +45,7 @@ class Category extends Structure
             'name' => static::getName(),
             'fields' => self::class . '::getFieldDefinitions',
             'description' => 'This is the interface implemented by all categories.',
-            'resolveType' => function(CategoryElement $value) {
-                return $value->getGqlTypeName();
-            }
+            'resolveType' => self::class . '::resolveElementTypeName',
         ]));
 
         CategoryType::generateTypes();

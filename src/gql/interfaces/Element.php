@@ -46,9 +46,7 @@ class Element extends InterfaceType
             'name' => static::getName(),
             'fields' => self::class . '::getFieldDefinitions',
             'description' => 'This is the interface implemented by all elements.',
-            'resolveType' => function(ElementInterface $value) {
-                return $value->getGqlTypeName();
-            }
+            'resolveType' => self::class . '::resolveElementTypeName',
         ]));
 
         ElementType::generateTypes();
