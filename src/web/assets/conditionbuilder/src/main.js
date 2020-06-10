@@ -104,10 +104,106 @@ Craft.VueConditionBuilder = Garnish.Base.extend({
                             "operand": "Another One",
                             "value": "rewqrewqrew"
                         }
+                    },
+                    {
+                        "type": "condition-builder-group",
+                        "query": {
+                            "logicalOperator": "all",
+                            "children": [
+                                {
+                                    "type": "condition-builder-group",
+                                    "query": {
+                                        "logicalOperator": "all",
+                                        "children": [
+                                            {
+                                                "type": "condition-builder-rule",
+                                                "query": {
+                                                    "rule": "slider",
+                                                    "operand": "Slider",
+                                                    "value": null
+                                                }
+                                            },
+                                            {
+                                                "type": "condition-builder-rule",
+                                                "query": {
+                                                    "rule": "slider",
+                                                    "operand": "Slider",
+                                                    "value": null
+                                                }
+                                            },
+                                            {
+                                                "type": "condition-builder-rule",
+                                                "query": {
+                                                    "rule": "my-condition",
+                                                    "operand": "My Condiditon",
+                                                    "value": null
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "type": "condition-builder-group",
+                                    "query": {
+                                        "logicalOperator": "all",
+                                        "children": [
+                                            {
+                                                "type": "condition-builder-rule",
+                                                "query": {
+                                                    "rule": "slider",
+                                                    "operand": "Slider",
+                                                    "value": null
+                                                }
+                                            },
+                                            {
+                                                "type": "condition-builder-rule",
+                                                "query": {
+                                                    "rule": "slider",
+                                                    "operand": "Slider",
+                                                    "value": null
+                                                }
+                                            },
+                                            {
+                                                "type": "condition-builder-rule",
+                                                "query": {
+                                                    "rule": "vegetable",
+                                                    "operator": "equals",
+                                                    "operand": "Vegetable",
+                                                    "value": null
+                                                }
+                                            },
+                                            {
+                                                "type": "condition-builder-rule",
+                                                "query": {
+                                                    "rule": "fruit",
+                                                    "operand": "Fruit",
+                                                    "value": null
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "type": "condition-builder-rule",
+                                    "query": {
+                                        "rule": "fruit",
+                                        "operand": "Fruit",
+                                        "value": null
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "type": "condition-builder-rule",
+                        "query": {
+                            "rule": "fruit",
+                            "operand": "Fruit",
+                            "value": null
+                        }
                     }
                 ]
             }
-
             const props = this.settings;
 
             let rules = props.rules.map((rule) => {
@@ -144,6 +240,6 @@ Craft.VueConditionBuilder = Garnish.Base.extend({
             rules: [],
             query: {},
             container: null,
-            maxDepth: 1
+            maxDepth: 3
         }
     });
