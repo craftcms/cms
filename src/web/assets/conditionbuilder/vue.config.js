@@ -7,9 +7,6 @@ module.exports = {
     configureWebpack: {
         externals: {
             'vue': 'Vue',
-            'vue-router': 'VueRouter',
-            'vuex': 'Vuex',
-            'axios': 'axios'
         },
         plugins: [
             new ManifestPlugin({
