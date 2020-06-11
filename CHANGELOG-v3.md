@@ -7,6 +7,9 @@
 - Added `craft\gql\GqlEntityRegistry::prefixTypeName()`.
 - Added support for GraphQL query batching. ([#5677](https://github.com/craftcms/cms/issues/5677))
 
+### Changed
+- Entry draft forms no longer have a primary action, and the <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>S</kbd> keyboard shortcut now forces a resave of the draft, rather than publishing it. ([#6199](https://github.com/craftcms/cms/issues/6199))
+
 ### Fixed
 - Fixed an error that occurred when using the `gqlTypePrefix` config setting.
 

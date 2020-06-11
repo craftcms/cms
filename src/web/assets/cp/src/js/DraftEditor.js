@@ -707,10 +707,13 @@ Craft.DraftEditor = Garnish.Base.extend(
                         var $saveBtnContainer = $('#save-btn-container');
                         if ($saveBtnContainer.length) {
                             $saveBtnContainer.replaceWith($('<input/>', {
-                                type: 'submit',
-                                'class': 'btn submit',
-                                value: Craft.t('app', 'Publish changes')
-                            }));
+                                type: 'button',
+                                'class': 'btn secondary formsubmit',
+                                value: Craft.t('app', 'Publish changes'),
+                                data: {
+                                    action: this.settings.applyDraftAction,
+                                },
+                            }).formsubmit());
                         }
 
                         // Remove the "Save as a Draft" button
@@ -999,6 +1002,12 @@ Craft.DraftEditor = Garnish.Base.extend(
                 return;
             }
 
+            // If we're editing a (saved) draft and the shortcut was used, just force-check the form immediately
+            if (ev.saveShortcut && !this.settings.isUnsavedDraft && this.settings.draftId) {
+                this.checkForm(true);
+                return;
+            }
+
             // If we're editing a draft, this isn't a custom trigger, and the user isn't allowed to update the source,
             // then ignore the submission
             if (!ev.customTrigger && !this.settings.isUnsavedDraft && this.settings.draftId && !this.settings.canUpdateSource) {
@@ -1018,7 +1027,10 @@ Craft.DraftEditor = Garnish.Base.extend(
             var $form = Craft.createForm(data);
 
             if (this.settings.draftId) {
-                if (!ev.customTrigger || !ev.customTrigger.data('action')) {
+                if (
+                    this.settings.isUnsavedDraft &&
+                    (!ev.customTrigger || !ev.customTrigger.data('action'))
+                ) {
                     $('<input/>', {
                         type: 'hidden',
                         name: 'action',

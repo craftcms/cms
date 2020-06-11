@@ -10,6 +10,7 @@
 - Added the “Suspend by default” user registration setting. ([#5830](https://github.com/craftcms/cms/issues/5830))
 - Added the ability to disable sites on the front end. ([#3005](https://github.com/craftcms/cms/issues/3005))
 - Soft-deleted elements now have a “Delete permanently” element action. ([#4420](https://github.com/craftcms/cms/issues/4420))
+- Entry draft forms no longer have a primary action, and the <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>S</kbd> keyboard shortcut now forces a resave of the draft, rather than publishing it. ([#6199](https://github.com/craftcms/cms/issues/6199))
 - Edit Entry pages now support a <kbd>Shift</kbd> + <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>S</kbd> keyboard shortcut for saving the entry and creating a new one. ([#2851](https://github.com/craftcms/cms/issues/2851))
 - Assets now have a “Copy URL” element action. ([#2944](https://github.com/craftcms/cms/issues/2944))
 - Entry indexes can now show “Revision Notes” and “Last Edited By” columns. ([#5907](https://github.com/craftcms/cms/issues/5907))
