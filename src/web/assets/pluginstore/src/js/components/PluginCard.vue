@@ -1,5 +1,5 @@
 <template>
-    <div v-if="plugin" class="plugin-card relative tw-flex flex-no-wrap items-start py-6 border-b border-grey-light border-solid" @click="$emit('click')">
+    <router-link v-if="plugin" :to="'/' + plugin.handle" :title="plugin.name" class="plugin-card relative tw-flex flex-no-wrap items-start py-6 border-b border-grey-light border-solid no-underline hover:no-underline text-grey-darkest">
         <div class="plugin-icon mr-4">
             <img v-if="plugin.iconUrl" :src="plugin.iconUrl" />
             <img v-else :src="defaultPluginSvg" />
@@ -37,7 +37,7 @@
 
             <div v-if="isPluginInstalled(plugin.handle)" class="installed" data-icon="check"></div>
         </div>
-    </div>
+    </router-link>
 </template>
 
 <script>
@@ -126,8 +126,6 @@
         box-sizing: border-box;
 
         &:hover {
-            @apply .cursor-pointer;
-
             strong {
                 color: $linkColor;
             }
