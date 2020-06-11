@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\fields\BaseOptionsField::options()`.
+
+### Deprecated
+- Deprecated `craft\fields\BaseOptionsField::optionLabel()`.
+
 ### Security
 - Fixed a potential XSS vulnerability.
 
