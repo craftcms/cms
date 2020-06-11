@@ -12,6 +12,7 @@ use craft\errors\GqlException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Gql as GqlHelper;
+use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\models\GqlSchema;
 use craft\models\GqlToken;
@@ -122,16 +123,39 @@ class GraphqlController extends Controller
         // 'query' GET param supersedes all others though
         $query = $request->getQueryParam('query', $query);
 
+        $batched = false;
+
         // 400 error if we couldn't find the query
         if ($query === null) {
-            throw new BadRequestHttpException('No GraphQL query was supplied');
+            $batched = @file_get_contents('php://input');
+
+            if (!empty($batched)) {
+                $batched = Json::decodeIfJson($batched);
+            }
+
+            if (!is_array($batched)) {
+                throw new BadRequestHttpException('No GraphQL query was supplied');
+            }
         }
 
         // Generate all transforms immediately
         Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad = true;
 
         try {
-            $result = $gqlService->executeQuery($schema, $query, $variables, $operationName, YII_DEBUG);
+            if ($batched) {
+                $result = [];
+
+                foreach ($batched as $batchedQueryData) {
+                    $query = $batchedQueryData['query'] ?? null;
+
+                    if ($query) {
+                        $variables = $batchedQueryData['variables'] ?? [];
+                        $result[] =  $gqlService->executeQuery($schema, $query, $variables, '', YII_DEBUG);
+                    }
+                }
+            } else {
+                $result = $gqlService->executeQuery($schema, $query, $variables, $operationName, YII_DEBUG);
+            }
         } catch (\Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);
 

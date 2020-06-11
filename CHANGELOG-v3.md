@@ -5,6 +5,7 @@
 ### Added
 - Added `craft\gql\base\InterfaceType::resolveElementTypeName()`.
 - Added `craft\gql\GqlEntityRegistry::prefixTypeName()`.
+- Added support for GraphQL query batching. ([#5677](https://github.com/craftcms/cms/issues/5677))
 
 ### Fixed
 - Fixed an error that occurred when using the `gqlTypePrefix` config setting.
