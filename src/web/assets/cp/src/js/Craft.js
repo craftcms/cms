@@ -2033,10 +2033,6 @@ $.extend($.fn,
                 checkValue();
             });
         },
-
-        checkDatetimeValue: function() {
-
-        }
     });
 
 
