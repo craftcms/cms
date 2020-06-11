@@ -1961,7 +1961,7 @@ $.extend($.fn,
 
         formsubmit: function() {
             // Secondary form submit buttons
-            this.on('click', function(ev) {
+            return this.on('click', function(ev) {
                 let $btn = $(ev.currentTarget);
                 let $anchor = $btn.data('menu') ? $btn.data('menu').$anchor : $btn;
                 let $form = $anchor.attr('data-form') ? $('#' + $anchor.attr('data-form')) : $anchor.closest('form');
