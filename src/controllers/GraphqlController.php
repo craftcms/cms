@@ -111,7 +111,7 @@ class GraphqlController extends Controller
         // Check the body if it's a POST request
         if ($request->getIsPost()) {
             // If it's a application/graphql request, the whole body is the query
-            if ($request->getContentType() === 'application/graphql') {
+            if ($request->getIsGraphql()) {
                 $query = $request->getRawBody();
             } else {
                 $query = $request->getBodyParam('query');

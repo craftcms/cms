@@ -219,6 +219,9 @@
 - Added `craft\web\Controller::setSuccessFlash()`.
 - Added `craft\web\Request::getAcceptsImage()`.
 - Added `craft\web\Request::getFullUri()`.
+- Added `craft\web\Request::getIsGraphql()`.
+- Added `craft\web\Request::getIsJson()`.
+- Added `craft\web\Request::getMimeType()`.
 - Added `craft\web\Request::getRawCookies()`.
 - Added `craft\web\Request::loadRawCookies()`.
 - Added `craft\web\Response::getRawCookies()`.

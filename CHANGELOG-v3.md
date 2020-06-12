@@ -9,6 +9,9 @@
 - Added `craft\gql\GqlEntityRegistry::prefixTypeName()`.
 - Added `craft\web\Controller::setFailFlash()`.
 - Added `craft\web\Controller::setSuccessFlash()`.
+- Added `craft\web\Request::getIsGraphql()`.
+- Added `craft\web\Request::getIsJson()`.
+- Added `craft\web\Request::getMimeType()`.
 
 ### Changed
 - Entry draft forms no longer have a primary action, and the <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>S</kbd> keyboard shortcut now forces a resave of the draft, rather than publishing it. ([#6199](https://github.com/craftcms/cms/issues/6199))

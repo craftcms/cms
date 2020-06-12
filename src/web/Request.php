@@ -37,6 +37,9 @@ use yii\web\NotFoundHttpException;
  * @property bool $isLivePreview Whether this is a Live Preview request.
  * @property string $queryStringWithoutPath The request’s query string, without the path parameter.
  * @property-read bool $isPreview Whether this is an element preview request.
+ * @property-read string|null $mimeType The MIME type of the request, extracted from the request’s content type
+ * @property-read bool $isGraphql Whether the request’s MIME type is `application/graphql`
+ * @property-read bool $isJson Whether the request’s MIME type is `application/json`
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
@@ -614,6 +617,48 @@ class Request extends \yii\web\Request
     public function setIsLivePreview(bool $isLivePreview)
     {
         $this->_isLivePreview = $isLivePreview;
+    }
+
+    /**
+     * Returns the MIME type of the request, extracted from the request’s content type.
+     *
+     * @return string|null
+     * @since 3.5.0
+     */
+    public function getMimeType()
+    {
+        if (($contentType = parent::getContentType()) === null) {
+            return null;
+        }
+
+        // Strip out the charset & boundary, if present
+        if (($pos = strpos($contentType, ';')) !== false) {
+            $contentType = substr($contentType, 0, $pos);
+        }
+
+        return strtolower(trim($contentType));
+    }
+
+    /**
+     * Returns whether the request’s MIME type is `application/graphql`.
+     *
+     * @return bool
+     * @since 3.5.0
+     */
+    public function getIsGraphql(): bool
+    {
+        return $this->getMimeType() === 'application/graphql';
+    }
+
+    /**
+     * Returns whether the request’s MIME type is `application/json`.
+     *
+     * @return bool
+     * @since 3.5.0
+     */
+    public function getIsJson(): bool
+    {
+        return $this->getMimeType() === 'application/json';
     }
 
     /**
