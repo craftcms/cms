@@ -20,6 +20,7 @@ use craft\services\Gql as GqlService;
 use craft\web\assets\graphiql\GraphiqlAsset;
 use craft\web\Controller;
 use yii\base\InvalidArgumentException;
+use yii\base\InvalidValueException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
@@ -123,52 +124,48 @@ class GraphqlController extends Controller
         // 'query' GET param supersedes all others though
         $query = $request->getQueryParam('query', $query);
 
-        $batched = false;
-
-        // 400 error if we couldn't find the query
-        if ($query === null) {
-            $batched = @file_get_contents('php://input');
-
-            if (!empty($batched)) {
-                $batched = Json::decodeIfJson($batched);
+        $queries = [];
+        if ($singleQuery = ($query !== null)) {
+            $queries[] = [$query, $variables, $operationName];
+        } else {
+            if ($request->getIsJson()) {
+                // Check if there are any queries defined in the JSON body
+                foreach ($request->getBodyParams() as $key => $param) {
+                    $queries[$key] = [$param['query'] ?? null, $param['variables'] ?? null, $param['operationName'] ?? null];
+                }
             }
 
-            if (!is_array($batched)) {
-                throw new BadRequestHttpException('No GraphQL query was supplied');
+            if (empty($queries)) {
+                $singleQuery = true;
+                $queries[] = [null, null, null];
             }
         }
 
         // Generate all transforms immediately
         Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad = true;
 
-        try {
-            if ($batched) {
-                $result = [];
-
-                foreach ($batched as $batchedQueryData) {
-                    $query = $batchedQueryData['query'] ?? null;
-
-                    if ($query) {
-                        $variables = $batchedQueryData['variables'] ?? [];
-                        $result[] =  $gqlService->executeQuery($schema, $query, $variables, '', YII_DEBUG);
-                    }
+        $result = [];
+        foreach ($queries as $key => list($query, $variables, $operationName)) {
+            try {
+                if (empty($query)) {
+                    throw new InvalidValueException('No GraphQL query was supplied');
                 }
-            } else {
-                $result = $gqlService->executeQuery($schema, $query, $variables, $operationName, YII_DEBUG);
+                $result[$key] = $gqlService->executeQuery($schema, $query, $variables, $operationName, YII_DEBUG);
+            } catch (\Throwable $e) {
+                Craft::$app->getErrorHandler()->logException($e);
+                $result[$key] = [
+                    'errors' => [
+                        [
+                            'message' => YII_DEBUG || $e instanceof InvalidValueException
+                                ? $e->getMessage()
+                                : Craft::t('app', 'Something went wrong when processing the GraphQL query.'),
+                        ],
+                    ],
+                ];
             }
-        } catch (\Throwable $e) {
-            Craft::$app->getErrorHandler()->logException($e);
-
-            $result = [
-                'errors' => [
-                    [
-                        'message' => YII_DEBUG ? $e->getMessage() : Craft::t('app', 'Something went wrong when processing the GraphQL query.'),
-                    ]
-                ],
-            ];
         }
 
-        return $this->asJson($result);
+        return $this->asJson($singleQuery ? reset($result) : $result);
     }
 
     /**
