@@ -789,7 +789,7 @@ class Elements extends Component
             }
 
             // Is this a structured element?
-            if ($element->structureId && $element->root) {
+            if ($element->structureId && $mainClone->structureId && $element->root) {
                 $mode = $mainClone->root === null && !isset($newAttributes['id'])
                     ? Structures::MODE_INSERT
                     : Structures::MODE_AUTO;

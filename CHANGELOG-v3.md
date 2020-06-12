@@ -7,6 +7,7 @@
 
 ### Changed
 - `graphql/api` preflight requests now include `X-Craft-Token` in the `Access-Control-Allow-Headers` response header. ([#6207](https://github.com/craftcms/cms/issues/6207))
+- `craft\services\Elements::duplicateElements()` no longer attempts to insert duplicated elements into the source element’s structure, if the duplicated element doesn’t have a `structureId`. ([#6205](https://github.com/craftcms/cms/issues/6205))
 
 ### Deprecated
 - Deprecated support for passing a `userRegisteredNotice` param to `users/save-user` actions. A hashed `successMessage` param should be passed instead. ([#6192](https://github.com/craftcms/cms/issues/6192))
