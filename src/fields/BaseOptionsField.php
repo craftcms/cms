@@ -159,12 +159,10 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             // See how much data we could possibly be saving if everything was selected.
             $length = 0;
 
-            if ($this->options) {
-                foreach ($this->options as $option) {
-                    if (!empty($option['value'])) {
-                        // +3 because it will be json encoded. Includes the surrounding quotes and comma.
-                        $length += strlen($option['value']) + 3;
-                    }
+            foreach ($this->options() as $option) {
+                if (!empty($option['value'])) {
+                    // +3 because it will be json encoded. Includes the surrounding quotes and comma.
+                    $length += strlen($option['value']) + 3;
                 }
             }
 
@@ -260,11 +258,13 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             $selectedValues[] = (string)$val;
         }
 
+        $rawOptions = $this->options();
+
         if ($this->multi) {
             // Convert the value to a MultiOptionsFieldData object
             $options = [];
-            if (!empty($this->options) && !empty($selectedValues)) {
-                foreach ($this->options as $option) {
+            if (!empty($selectedValues)) {
+                foreach ($rawOptions as $option) {
                     if (!isset($option['optgroup']) && in_array((string)$option['value'], $selectedValues, true)) {
                         $options[] = new OptionData($option['label'], (string)$option['value'], true);
                     }
@@ -274,8 +274,8 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
         } else {
             // Convert the value to a SingleOptionFieldData object
             $value = $label = null;
-            if (!empty($this->options) && !empty($selectedValues)) {
-                foreach ($this->options as $option) {
+            if (!empty($selectedValues)) {
+                foreach ($rawOptions as $option) {
                     if (!isset($option['optgroup']) && in_array((string)$option['value'], $selectedValues, true)) {
                         $value = (string)$option['value'];
                         $label = $option['label'];
@@ -288,14 +288,12 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
 
         $options = [];
 
-        if ($this->options) {
-            foreach ($this->options as $option) {
-                if (isset($option['optgroup'])) {
-                    continue;
-                }
-                $selected = in_array($option['value'], $selectedValues, true);
-                $options[] = new OptionData($option['label'], $option['value'], $selected);
+        foreach ($rawOptions as $option) {
+            if (isset($option['optgroup'])) {
+                continue;
             }
+            $selected = in_array($option['value'], $selectedValues, true);
+            $options[] = new OptionData($option['label'], $option['value'], $selected);
         }
 
         $value->setOptions($options);
@@ -352,12 +350,10 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
         // Get all of the acceptable values
         $range = [];
 
-        if ($this->options) {
-            foreach ($this->options as $option) {
-                if (!isset($option['optgroup'])) {
-                    // Cast the option value to a string in case it is an integer
-                    $range[] = (string)$option['value'];
-                }
+        foreach ($this->options() as $option) {
+            if (!isset($option['optgroup'])) {
+                // Cast the option value to a string in case it is an integer
+                $range[] = (string)$option['value'];
             }
         }
 
@@ -467,6 +463,34 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     abstract protected function optionsSettingLabel(): string;
 
     /**
+     * Returns the available options (and optgroups) for the field.
+     *
+     * Each option should be defined as a nested array with the following keys:
+     *
+     * - `label` – The option label
+     * - `value`– The option value
+     *
+     * To define an optgroup, add an array with an `optgroup` key, set to the label of the optgroup.
+     *
+     * ```php
+     * [
+     *   ['label' => 'Foo', 'value' => 'foo'],
+     *   ['label' => 'Bar', 'value' => 'bar'],
+     *   ['optgroup' => 'Fruit']
+     *   ['label' => 'Apple', 'value' => 'apple'],
+     *   ['label' => 'Orange', 'value' => 'orange'],
+     *   ['label' => 'Banana', 'value' => 'banana'],
+     * ]
+     * ```
+     *
+     * @return array
+     */
+    protected function options(): array
+    {
+        return $this->options ?? [];
+    }
+
+    /**
      * Returns the field options, with labels run through Craft::t().
      *
      * @return array
@@ -475,18 +499,16 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     {
         $translatedOptions = [];
 
-        if ($this->options) {
-            foreach ($this->options as $option) {
-                if (isset($option['optgroup'])) {
-                    $translatedOptions[] = [
-                        'optgroup' => Craft::t('site', $option['optgroup']),
-                    ];
-                } else {
-                    $translatedOptions[] = [
-                        'label' => Craft::t('site', $option['label']),
-                        'value' => $option['value']
-                    ];
-                }
+        foreach ($this->options() as $option) {
+            if (isset($option['optgroup'])) {
+                $translatedOptions[] = [
+                    'optgroup' => Craft::t('site', $option['optgroup']),
+                ];
+            } else {
+                $translatedOptions[] = [
+                    'label' => Craft::t('site', $option['label']),
+                    'value' => $option['value']
+                ];
             }
         }
 
@@ -498,14 +520,13 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
      *
      * @param string|null $value
      * @return string|null
+     * @deprecated in 3.4.24
      */
     protected function optionLabel(string $value = null)
     {
-        if ($this->options) {
-            foreach ($this->options as $option) {
-                if (!isset($option['optgroup']) && (string)$option['value'] === $value) {
-                    return $option['label'];
-                }
+        foreach ($this->options() as $option) {
+            if (!isset($option['optgroup']) && (string)$option['value'] === $value) {
+                return $option['label'];
             }
         }
 
@@ -522,22 +543,18 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
         if ($this->multi) {
             $defaultValues = [];
 
-            if ($this->options) {
-                foreach ($this->options as $option) {
-                    if (!empty($option['default'])) {
-                        $defaultValues[] = $option['value'];
-                    }
+            foreach ($this->options() as $option) {
+                if (!empty($option['default'])) {
+                    $defaultValues[] = $option['value'];
                 }
             }
 
             return $defaultValues;
         }
 
-        if ($this->options) {
-            foreach ($this->options as $option) {
-                if (!empty($option['default'])) {
-                    return $option['value'];
-                }
+        foreach ($this->options() as $option) {
+            if (!empty($option['default'])) {
+                return $option['value'];
             }
         }
 

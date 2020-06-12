@@ -1006,7 +1006,8 @@ class Elements extends Component
                     $siteClone->enabled = $mainClone->enabled;
                     $siteClone->elementSiteId = null;
                     $siteClone->contentId = null;
-                    $siteClone->dateCreated = null;
+                    $siteClone->dateCreated = $mainClone->dateCreated;
+                    $siteClone->dateUpdated = $mainClone->dateUpdated;
 
                     // Attach behaviors
                     foreach ($behaviors as $name => $behavior) {

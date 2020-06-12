@@ -428,6 +428,18 @@
 ### Security
 - The `_includes/forms/checkbox.html`, `checkboxGroup.html`, and `checkboxSelect.html` control panel templates now HTML-encode checkbox labels by default, preventing possible XSS vulnerabilities. If HTML code was desired, it must be passed through the new `raw()` function first.
 
+## Unreleased (3.4.x)
+
+### Added
+- Added `craft\fields\BaseOptionsField::options()`.
+
+### Deprecated
+- Deprecated support for passing a `userRegisteredNotice` param to `users/save-user` actions, and will be fully removed in Craft 3.5. A hashed `successMessage` param should be passed instead. ([#6192](https://github.com/craftcms/cms/issues/6192))
+- Deprecated `craft\fields\BaseOptionsField::optionLabel()`.
+
+### Security
+- Fixed a potential XSS vulnerability.
+
 ## 3.4.23 - 2020-06-09
 
 ### Added

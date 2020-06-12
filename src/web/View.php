@@ -1595,8 +1595,8 @@ JS;
     public function endPage($ajaxMode = false)
     {
         if (!$ajaxMode && Craft::$app->getRequest()->getIsCpRequest()) {
-            $this->_registeredJs('registeredJsFiles', $this->_registeredJsFiles);
-            $this->_registeredJs('registeredAssetBundles', $this->_registeredAssetBundles);
+            $this->_setJsProperty('registeredJsFiles', $this->_registeredJsFiles);
+            $this->_setJsProperty('registeredAssetBundles', $this->_registeredAssetBundles);
         }
 
         parent::endPage($ajaxMode);
@@ -1947,7 +1947,7 @@ JS;
         return $this->_templateRoots[$which] = $roots;
     }
 
-    private function _registeredJs($property, $names)
+    private function _setJsProperty($property, $names)
     {
         if (empty($names)) {
             return;
@@ -1956,7 +1956,7 @@ JS;
         $js = "if (typeof Craft !== 'undefined') {\n";
         foreach (array_keys($names) as $name) {
             if ($name) {
-                $jsName = Json::encode($name);
+                $jsName = Json::encode(str_replace(['<', '>'], '', $name));
                 $js .= "  Craft.{$property}[{$jsName}] = true;\n";
             }
         }

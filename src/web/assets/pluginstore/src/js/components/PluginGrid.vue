@@ -2,7 +2,7 @@
     <div>
         <div class="ps-grid-plugins" v-if="plugins && plugins.length > 0">
             <div class="ps-grid-box" v-for="(plugin, key) in computedPlugins" :key="key">
-                <plugin-card :plugin="plugin" @click="showPlugin(plugin)" :trialMode="trialMode"></plugin-card>
+                <plugin-card :plugin="plugin" :trialMode="trialMode"></plugin-card>
             </div>
         </div>
     </div>
@@ -57,10 +57,6 @@
         },
 
         methods: {
-            showPlugin(plugin) {
-                this.$router.push({path: '/' + plugin.handle})
-            },
-
             onWindowResize() {
                 this.winWidth = window.innerWidth
             }

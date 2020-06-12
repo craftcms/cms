@@ -656,7 +656,7 @@ $.extend(Craft,
 
                                 // If we just got a new license key, set it and then resolve the header waitlist
                                 if (this._apiHeaders && this._apiHeaders['X-Craft-License'] === '__REQUEST__') {
-                                    this._apiHeaders['X-Craft-License'] = apiResponse.headers['x-craft-license'];
+                                    this._apiHeaders['X-Craft-License'] = window.cmsLicenseKey = apiResponse.headers['x-craft-license'];
                                     this._resolveHeaderWaitlist();
                                 }
                             } else if (
