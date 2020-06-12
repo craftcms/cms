@@ -6,6 +6,7 @@
 - Added `craft\fields\BaseOptionsField::options()`.
 
 ### Deprecated
+- Deprecated support for passing a `userRegisteredNotice` param to `users/save-user` actions, and will be fully removed in Craft 3.5. A hashed `successMessage` param should be passed instead. ([#6192](https://github.com/craftcms/cms/issues/6192))
 - Deprecated `craft\fields\BaseOptionsField::optionLabel()`.
 
 ### Security

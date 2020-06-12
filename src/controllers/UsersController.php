@@ -1200,7 +1200,11 @@ class UsersController extends Controller
         }
 
         if ($isPublicRegistration) {
-            $message = $request->getParam('userRegisteredNotice') ?? Craft::t('app', 'User registered.');
+            if (($message = $request->getParam('userRegisteredNotice')) !== null) {
+                Craft::$app->getDeprecator()->log('userRegisteredNotice', 'The `userRegisteredNotice` param has been deprecated for `users/save-user` requests. Use a hashed `successMessage` param instead.');
+            } else {
+                $message = $request->getValidatedBodyParam('successMessage') ?? Craft::t('app', 'User registered.');
+            }
             Craft::$app->getSession()->setNotice($message);
         } else {
             Craft::$app->getSession()->setNotice(Craft::t('app', 'User saved.'));
