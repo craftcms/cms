@@ -51,6 +51,7 @@
 - Added the Explorer plugin to GraphiQL.
 - Added support for external subnav links in the global control panel nav.
 - Added the `_layouts/components/form-action-menu.twig` control panel template.
+- Added the `parseRefs` GraphQL directive. ([#6200](https://github.com/craftcms/cms/issues/6200))
 - Added `craft\base\ConfigurableComponent`.
 - Added `craft\base\ConfigurableComponentInterface`.
 - Added `craft\base\Element::defineFieldLayouts()`.

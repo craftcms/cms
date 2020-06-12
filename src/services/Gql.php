@@ -27,6 +27,7 @@ use craft\gql\base\GeneratorInterface;
 use craft\gql\base\InterfaceType;
 use craft\gql\directives\FormatDateTime;
 use craft\gql\directives\Markdown;
+use craft\gql\directives\ParseRefs;
 use craft\gql\directives\Transform;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\Element as ElementInterface;
@@ -1196,6 +1197,7 @@ class Gql extends Component
             // Directives
             FormatDateTime::class,
             Markdown::class,
+            ParseRefs::class,
             Transform::class,
         ];
 

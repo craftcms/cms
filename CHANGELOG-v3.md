@@ -4,6 +4,7 @@
 
 ### Added
 - Added support for GraphQL query batching. ([#5677](https://github.com/craftcms/cms/issues/5677))
+- Added the `parseRefs` GraphQL directive. ([#6200](https://github.com/craftcms/cms/issues/6200))
 - Added `craft\gql\base\InterfaceType::resolveElementTypeName()`.
 - Added `craft\gql\GqlEntityRegistry::prefixTypeName()`.
 - Added `craft\web\Controller::setFailFlash()`.
