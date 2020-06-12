@@ -337,7 +337,6 @@
 - Removed the “Template caches” option from the Clear Caches tool and `clear-caches` command.
 - Removed the [Interactive Shell Extension for Yii 2](https://github.com/yiisoft/yii2-shell), as it’s now a dev dependency of the `craftcms/craft` project instead. ([#5783](https://github.com/craftcms/cms/issues/5783))
 - Removed the `cacheElementQueries` config setting.
-- Removed support for passing a `userRegisteredNotice` param to `users/save-user` actions. ([#6192](https://github.com/craftcms/cms/issues/6192))
 - Removed `craft\controllers\UtilitiesController::actionDbBackupPerformAction()`.
 - Removed `craft\db\MigrationManager::TYPE_APP`.
 - Removed `craft\db\MigrationManager::TYPE_CONTENT`.

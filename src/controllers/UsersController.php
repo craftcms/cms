@@ -20,6 +20,7 @@ use craft\events\RegisterUserActionsEvent;
 use craft\events\UserEvent;
 use craft\helpers\Assets;
 use craft\helpers\FileHelper;
+use craft\helpers\Html;
 use craft\helpers\Image;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
@@ -1207,7 +1208,13 @@ class UsersController extends Controller
         }
 
         if ($isPublicRegistration) {
-            $this->setSuccessFlash(Craft::t('app', 'User registered.'));
+            if (($message = $request->getParam('userRegisteredNotice')) !== null) {
+                $default = Html::encode($message);
+                Craft::$app->getDeprecator()->log('userRegisteredNotice', 'The `userRegisteredNotice` param has been deprecated for `users/save-user` requests. Use a hashed `successMessage` param instead.');
+            } else {
+                $default = Craft::t('app', 'User registered.');
+            }
+            $this->setSuccessFlash($default);
         } else {
             $this->setSuccessFlash(Craft::t('app', 'User saved.'));
         }
