@@ -45,12 +45,12 @@
 - Added the `hasPhoto` user query param/GraphQL argument. ([#6083](https://github.com/craftcms/cms/issues/6083))
 - Added the `localized` field when querying entries and categories via GraphQL. ([#6045](https://github.com/craftcms/cms/issues/6045))
 - Added the `language` field when querying elements via GraphQL.
+- Added support for GraphQL query batching. ([#5677](https://github.com/craftcms/cms/issues/5677))
 - The GraphiQL IDE now opens as a fullscreen app in a new window.
 - Added the “Prettify” and “History” buttons to the GraphiQL IDE.
 - Added the Explorer plugin to GraphiQL.
 - Added support for external subnav links in the global control panel nav.
 - Added the `_layouts/components/form-action-menu.twig` control panel template.
-- Added support for GraphQL query batching. ([#5677](https://github.com/craftcms/cms/issues/5677))
 - Added `craft\base\ConfigurableComponent`.
 - Added `craft\base\ConfigurableComponentInterface`.
 - Added `craft\base\Element::defineFieldLayouts()`.
