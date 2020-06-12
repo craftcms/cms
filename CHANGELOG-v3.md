@@ -5,6 +5,9 @@
 ### Added
 - Added `craft\fields\BaseOptionsField::options()`.
 
+### Changed
+- `graphql/api` preflight requests now include `X-Craft-Token` in the `Access-Control-Allow-Headers` response header. ([#6207](https://github.com/craftcms/cms/issues/6207))
+
 ### Deprecated
 - Deprecated support for passing a `userRegisteredNotice` param to `users/save-user` actions. A hashed `successMessage` param should be passed instead. ([#6192](https://github.com/craftcms/cms/issues/6192))
 - Deprecated `craft\fields\BaseOptionsField::optionLabel()`.
