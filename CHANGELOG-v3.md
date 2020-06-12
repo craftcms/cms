@@ -10,7 +10,7 @@
 - Deprecated `craft\fields\BaseOptionsField::optionLabel()`.
 
 ### Security
-- Fixed a potential XSS vulnerability.
+- Fixed potential XSS vulnerabilities.
 
 ## 3.4.23 - 2020-06-09
 
