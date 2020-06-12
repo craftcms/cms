@@ -56,7 +56,7 @@ class DraftsController extends Controller
         Craft::$app->getDrafts()->mergeSourceChanges($draft);
 
         // Redirect to the requested URL to reload the draft
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'Recent {type} changes merged.', [
+        $this->setSuccessFlash(Craft::t('app', 'Recent {type} changes merged.', [
             'type' => $elementType::lowerDisplayName(),
         ]));
 

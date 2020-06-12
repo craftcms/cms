@@ -63,7 +63,7 @@ class FieldsController extends Controller
 
         if (Craft::$app->getFields()->saveGroup($group)) {
             if ($isNewGroup) {
-                Craft::$app->getSession()->setNotice(Craft::t('app', 'Group added.'));
+                $this->setSuccessFlash(Craft::t('app', 'Group added.'));
             }
 
             return $this->asJson([
@@ -90,7 +90,7 @@ class FieldsController extends Controller
         $groupId = Craft::$app->getRequest()->getRequiredBodyParam('id');
         $success = Craft::$app->getFields()->deleteGroupById($groupId);
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'Group deleted.'));
+        $this->setSuccessFlash(Craft::t('app', 'Group deleted.'));
 
         return $this->asJson([
             'success' => $success,
@@ -308,7 +308,7 @@ JS;
         ]);
 
         if (!$fieldsService->saveField($field)) {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save field.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t save field.'));
 
             // Send the field back to the template
             Craft::$app->getUrlManager()->setRouteParams([
@@ -318,8 +318,7 @@ JS;
             return null;
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'Field saved.'));
-
+        $this->setSuccessFlash(Craft::t('app', 'Field saved.'));
         return $this->redirectToPostedUrl($field);
     }
 

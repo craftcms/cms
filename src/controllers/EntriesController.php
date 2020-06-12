@@ -346,7 +346,7 @@ class EntriesController extends BaseEntriesController
                     ]);
                 }
 
-                Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t duplicate entry.'));
+                $this->setFailFlash(Craft::t('app', 'Couldn’t duplicate entry.'));
 
                 // Send the original entry back to the template, with any validation errors on the clone
                 $entry->addErrors($clone->getErrors());
@@ -388,7 +388,7 @@ class EntriesController extends BaseEntriesController
                 ]);
             }
 
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save entry.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t save entry.'));
 
             // Send the entry back to the template
             Craft::$app->getUrlManager()->setRouteParams([
@@ -421,8 +421,7 @@ class EntriesController extends BaseEntriesController
             return $this->asJson($return);
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry saved.'));
-
+        $this->setSuccessFlash(Craft::t('app', 'Entry saved.'));
         return $this->redirectToPostedUrl($entry);
     }
 
@@ -470,7 +469,7 @@ class EntriesController extends BaseEntriesController
                 return $this->asJson(['success' => false]);
             }
 
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t delete entry.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t delete entry.'));
 
             // Send the entry back to the template
             Craft::$app->getUrlManager()->setRouteParams([
@@ -484,8 +483,7 @@ class EntriesController extends BaseEntriesController
             return $this->asJson(['success' => true]);
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry deleted.'));
-
+        $this->setSuccessFlash(Craft::t('app', 'Entry deleted.'));
         return $this->redirectToPostedUrl($entry);
     }
 

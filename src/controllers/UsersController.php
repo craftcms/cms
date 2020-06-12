@@ -193,9 +193,8 @@ class UsersController extends Controller
 
         if (!$userSession->loginByUserId($userId)) {
             $session->remove(User::IMPERSONATE_KEY);
-            $session->setError(Craft::t('app', 'There was a problem impersonating this user.'));
+            $this->setFailFlash(Craft::t('app', 'There was a problem impersonating this user.'));
             Craft::error($userSession->getIdentity()->username . ' tried to impersonate userId: ' . $userId . ' but something went wrong.', __METHOD__);
-
             return null;
         }
 
@@ -382,8 +381,7 @@ class UsersController extends Controller
                 return $this->asJson(['success' => true]);
             }
 
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'Password reset email sent.'));
-
+            $this->setSuccessFlash(Craft::t('app', 'Password reset email sent.'));
             return $this->redirectToPostedUrl();
         }
 
@@ -468,7 +466,7 @@ class UsersController extends Controller
                 return $this->asErrorJson(implode(', ', $errors));
             }
 
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t update password.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t update password.'));
 
             return $this->_renderSetPasswordTemplate([
                 'errors' => $errors,
@@ -538,7 +536,7 @@ class UsersController extends Controller
 
         // If they're logged in, give them a success notice
         if (!Craft::$app->getUser()->getIsGuest()) {
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'Email verified'));
+            $this->setSuccessFlash(Craft::t('app', 'Email verified'));
         }
 
         // Were they just activated?
@@ -567,9 +565,9 @@ class UsersController extends Controller
         }
 
         if (Craft::$app->getUsers()->activateUser($user)) {
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'Successfully activated the user.'));
+            $this->setSuccessFlash(Craft::t('app', 'Successfully activated the user.'));
         } else {
-            Craft::$app->getSession()->setError(Craft::t('app', 'There was a problem activating the user.'));
+            $this->setFailFlash(Craft::t('app', 'There was a problem activating the user.'));
         }
 
         return $this->redirectToPostedUrl();
@@ -588,7 +586,7 @@ class UsersController extends Controller
     public function actionEditUser($userId = null, User $user = null, array $errors = null): Response
     {
         if (!empty($errors)) {
-            Craft::$app->getSession()->setError(reset($errors));
+            $this->setFailFlash(reset($errors));
         }
 
         // Determine which user account we're editing
@@ -1111,7 +1109,7 @@ class UsersController extends Controller
                 ]);
             }
 
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save user.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t save user.'));
 
             // Send the account back to the template
             Craft::$app->getUrlManager()->setRouteParams([
@@ -1183,14 +1181,10 @@ class UsersController extends Controller
 
             if ($isNewUser) {
                 // Send the activation email
-                $emailSent = Craft::$app->getUsers()->sendActivationEmail($user);
+                Craft::$app->getUsers()->sendActivationEmail($user);
             } else {
                 // Send the standard verification email
-                $emailSent = Craft::$app->getUsers()->sendNewEmailVerifyEmail($user);
-            }
-
-            if (!$emailSent) {
-                Craft::$app->getSession()->setError(Craft::t('app', 'User saved, but couldn’t send verification email. Check your email settings.'));
+                Craft::$app->getUsers()->sendNewEmailVerifyEmail($user);
             }
 
             // Put the original email back into place
@@ -1213,10 +1207,9 @@ class UsersController extends Controller
         }
 
         if ($isPublicRegistration) {
-            $message = $request->getParam('userRegisteredNotice') ?? Craft::t('app', 'User registered.');
-            Craft::$app->getSession()->setNotice($message);
+            $this->setSuccessFlash(Craft::t('app', 'User registered.'));
         } else {
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'User saved.'));
+            $this->setSuccessFlash(Craft::t('app', 'User saved.'));
         }
 
         // Is this public registration, and is the user going to be activated automatically?
@@ -1342,9 +1335,9 @@ class UsersController extends Controller
         }
 
         if ($emailSent) {
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'Activation email sent.'));
+            $this->setSuccessFlash(Craft::t('app', 'Activation email sent.'));
         } else {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t send activation email. Check your email settings.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t send activation email. Check your email settings.'));
         }
 
         return $this->redirectToPostedUrl();
@@ -1384,8 +1377,7 @@ class UsersController extends Controller
 
         Craft::$app->getUsers()->unlockUser($user);
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'User activated.'));
-
+        $this->setSuccessFlash(Craft::t('app', 'User unlocked.'));
         return $this->redirectToPostedUrl();
     }
 
@@ -1415,13 +1407,11 @@ class UsersController extends Controller
         }
 
         if (!Craft::$app->getUsers()->suspendUser($user)) {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t suspend user.'));
-
+            $this->setFailFlash(Craft::t('app', 'Couldn’t suspend user.'));
             return null;
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'User suspended.'));
-
+        $this->setSuccessFlash(Craft::t('app', 'User suspended.'));
         return $this->redirectToPostedUrl();
     }
 
@@ -1510,13 +1500,11 @@ class UsersController extends Controller
         $user->inheritorOnDelete = $transferContentTo;
 
         if (!Craft::$app->getElements()->deleteElement($user)) {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t delete the user.'));
-
+            $this->setFailFlash(Craft::t('app', 'Couldn’t delete the user.'));
             return null;
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'User deleted.'));
-
+        $this->setSuccessFlash(Craft::t('app', 'User deleted.'));
         return $this->redirectToPostedUrl();
     }
 
@@ -1546,13 +1534,11 @@ class UsersController extends Controller
         }
 
         if (!Craft::$app->getUsers()->unsuspendUser($user)) {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t unsuspend user.'));
-
+            $this->setFailFlash(Craft::t('app', 'Couldn’t unsuspend user.'));
             return null;
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'User unsuspended.'));
-
+        $this->setSuccessFlash(Craft::t('app', 'User unsuspended.'));
         return $this->redirectToPostedUrl();
     }
 
@@ -1571,13 +1557,11 @@ class UsersController extends Controller
         $fieldLayout->type = User::class;
 
         if (!Craft::$app->getUsers()->saveLayout($fieldLayout)) {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save user fields.'));
-
+            $this->setFailFlash(Craft::t('app', 'Couldn’t save user fields.'));
             return null;
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'User fields saved.'));
-
+        $this->setSuccessFlash(Craft::t('app', 'User fields saved.'));
         return $this->redirectToPostedUrl();
     }
 
@@ -1628,7 +1612,7 @@ class UsersController extends Controller
             ]);
         }
 
-        Craft::$app->getSession()->setError($event->message);
+        $this->setFailFlash($event->message);
 
         Craft::$app->getUrlManager()->setRouteParams([
             'loginName' => $request->getBodyParam('loginName'),

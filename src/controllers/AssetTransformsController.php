@@ -117,14 +117,13 @@ class AssetTransformsController extends Controller
         // TODO: This validation should be handled on the transform object
         $errors = false;
 
-        $session = Craft::$app->getSession();
         if (empty($transform->width) && empty($transform->height)) {
-            $session->setError(Craft::t('app', 'You must set at least one of the dimensions.'));
+            $this->setFailFlash(Craft::t('app', 'You must set at least one of the dimensions.'));
             $errors = true;
         }
 
         if (!empty($transform->quality) && (!is_numeric($transform->quality) || $transform->quality > 100 || $transform->quality < 1)) {
-            $session->setError(Craft::t('app', 'Quality must be a number between 1 and 100 (included).'));
+            $this->setFailFlash(Craft::t('app', 'Quality must be a number between 1 and 100 (included).'));
             $errors = true;
         }
 
@@ -133,7 +132,7 @@ class AssetTransformsController extends Controller
         }
 
         if (!empty($transform->format) && !in_array($transform->format, Image::webSafeFormats(), true)) {
-            $session->setError(Craft::t('app', 'That is not an allowed format.'));
+            $this->setFailFlash(Craft::t('app', 'That is not an allowed format.'));
             $errors = true;
         }
 
@@ -152,8 +151,7 @@ class AssetTransformsController extends Controller
             return null;
         }
 
-        $session->setNotice(Craft::t('app', 'Transform saved.'));
-
+        $this->setSuccessFlash(Craft::t('app', 'Transform saved.'));
         return $this->redirectToPostedUrl($transform);
     }
 

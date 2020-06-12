@@ -400,6 +400,38 @@ abstract class Controller extends \yii\web\Controller
     }
 
     /**
+     * Sets a success flash message on the user session.
+     *
+     * If a hashed `successMessage` param was sent with the request, that will be used instead of the provided default.
+     *
+     * @param string|null $default
+     * @since 3.5.0
+     */
+    public function setSuccessFlash(string $default = null)
+    {
+        $message = Craft::$app->getRequest()->getValidatedBodyParam('successMessage') ?? $default;
+        if ($message !== null) {
+            Craft::$app->getSession()->setNotice($message);
+        }
+    }
+
+    /**
+     * Sets an error flash message on the user session.
+     *
+     * If a hashed `failMessage` param was sent with the request, that will be used instead of the provided default.
+     *
+     * @param string|null $default
+     * @since 3.5.0
+     */
+    public function setFailFlash(string $default = null)
+    {
+        $message = Craft::$app->getRequest()->getValidatedBodyParam('failMessage') ?? $default;
+        if ($message !== null) {
+            Craft::$app->getSession()->setError($message);
+        }
+    }
+
+    /**
      * Redirects to the URI specified in the POST.
      *
      * @param mixed $object Object containing properties that should be parsed for in the URL.

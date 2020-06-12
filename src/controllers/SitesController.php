@@ -108,7 +108,7 @@ class SitesController extends Controller
 
         if (Craft::$app->getSites()->saveGroup($group)) {
             if ($isNewGroup) {
-                Craft::$app->getSession()->setNotice(Craft::t('app', 'Group added.'));
+                $this->setSuccessFlash(Craft::t('app', 'Group added.'));
             }
 
             return $this->asJson([
@@ -135,7 +135,7 @@ class SitesController extends Controller
         $groupId = Craft::$app->getRequest()->getRequiredBodyParam('id');
         $success = Craft::$app->getSites()->deleteGroupById($groupId);
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'Group deleted.'));
+        $this->setSuccessFlash(Craft::t('app', 'Group deleted.'));
 
         return $this->asJson([
             'success' => $success,
@@ -277,7 +277,7 @@ class SitesController extends Controller
 
         // Save it
         if (!Craft::$app->getSites()->saveSite($site)) {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save the site.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t save the site.'));
 
             // Send the site back to the template
             Craft::$app->getUrlManager()->setRouteParams([
@@ -287,8 +287,7 @@ class SitesController extends Controller
             return null;
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'Site saved.'));
-
+        $this->setSuccessFlash(Craft::t('app', 'Site saved.'));
         return $this->redirectToPostedUrl($site);
     }
 

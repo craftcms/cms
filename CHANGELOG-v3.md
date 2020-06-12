@@ -6,9 +6,15 @@
 - Added support for GraphQL query batching. ([#5677](https://github.com/craftcms/cms/issues/5677))
 - Added `craft\gql\base\InterfaceType::resolveElementTypeName()`.
 - Added `craft\gql\GqlEntityRegistry::prefixTypeName()`.
+- Added `craft\web\Controller::setFailFlash()`.
+- Added `craft\web\Controller::setSuccessFlash()`.
 
 ### Changed
 - Entry draft forms no longer have a primary action, and the <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>S</kbd> keyboard shortcut now forces a resave of the draft, rather than publishing it. ([#6199](https://github.com/craftcms/cms/issues/6199))
+- All built-in success/fail flash messages are now customizable by passing a hashed `successMessage`/`failMessage` param with the request. ([#6192](https://github.com/craftcms/cms/issues/6192))
+
+### Removed
+- Removed support for passing a `userRegisteredNotice` param to `users/save-user` actions. ([#6192](https://github.com/craftcms/cms/issues/6192))
 
 ### Fixed
 - Fixed an error that occurred when using the `gqlTypePrefix` config setting.

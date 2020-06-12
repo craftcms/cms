@@ -201,10 +201,8 @@ class VolumesController extends Controller
         $fieldLayout->type = Asset::class;
         $volume->setFieldLayout($fieldLayout);
 
-        $session = Craft::$app->getSession();
-
         if (!$volumes->saveVolume($volume)) {
-            $session->setError(Craft::t('app', 'Couldn’t save volume.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t save volume.'));
 
             // Send the volume back to the template
             Craft::$app->getUrlManager()->setRouteParams([
@@ -214,8 +212,7 @@ class VolumesController extends Controller
             return null;
         }
 
-        $session->setNotice(Craft::t('app', 'Volume saved.'));
-
+        $this->setSuccessFlash(Craft::t('app', 'Volume saved.'));
         return $this->redirectToPostedUrl();
     }
 

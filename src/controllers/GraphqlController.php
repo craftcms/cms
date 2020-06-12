@@ -429,10 +429,8 @@ class GraphqlController extends Controller
             $token->expiryDate = DateTimeHelper::toDateTime($expiryDate) ?: null;
         }
 
-        $session = Craft::$app->getSession();
-
         if (!$gqlService->saveToken($token)) {
-            $session->setError(Craft::t('app', 'Couldn’t save token.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t save token.'));
 
             // Send the token back to the template
             Craft::$app->getUrlManager()->setRouteParams([
@@ -442,8 +440,7 @@ class GraphqlController extends Controller
             return null;
         }
 
-        $session->setNotice(Craft::t('app', 'Schema saved.'));
-
+        $this->setSuccessFlash(Craft::t('app', 'Schema saved.'));
         return $this->redirectToPostedUrl();
     }
 
@@ -562,10 +559,9 @@ class GraphqlController extends Controller
 
         $schema = $gqlService->getPublicSchema();
         $schema->scope = $request->getBodyParam('permissions');
-        $session = Craft::$app->getSession();
 
         if (!$gqlService->saveSchema($schema)) {
-            $session->setError(Craft::t('app', 'Couldn’t save schema.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t save schema.'));
 
             // Send the schema back to the template
             Craft::$app->getUrlManager()->setRouteParams([
@@ -583,13 +579,12 @@ class GraphqlController extends Controller
         }
 
         if (!$gqlService->saveToken($token)) {
-            $session->setError(Craft::t('app', 'Couldn’t save public schema settings.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t save public schema settings.'));
 
             return null;
         }
 
-        $session->setNotice(Craft::t('app', 'Schema saved.'));
-
+        $this->setSuccessFlash(Craft::t('app', 'Schema saved.'));
         return $this->redirectToPostedUrl();
     }
 
@@ -625,10 +620,9 @@ class GraphqlController extends Controller
 
         $schema->name = $request->getBodyParam('name') ?? $schema->name;
         $schema->scope = $request->getBodyParam('permissions');
-        $session = Craft::$app->getSession();
 
         if (!$gqlService->saveSchema($schema)) {
-            $session->setError(Craft::t('app', 'Couldn’t save schema.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t save schema.'));
 
             // Send the schema back to the template
             Craft::$app->getUrlManager()->setRouteParams([
@@ -638,8 +632,7 @@ class GraphqlController extends Controller
             return null;
         }
 
-        $session->setNotice(Craft::t('app', 'Schema saved.'));
-
+        $this->setSuccessFlash(Craft::t('app', 'Schema saved.'));
         return $this->redirectToPostedUrl();
     }
 

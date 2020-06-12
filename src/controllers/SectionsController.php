@@ -178,7 +178,7 @@ class SectionsController extends Controller
 
         // Save it
         if (!Craft::$app->getSections()->saveSection($section)) {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save section.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t save section.'));
 
             // Send the section back to the template
             Craft::$app->getUrlManager()->setRouteParams([
@@ -188,8 +188,7 @@ class SectionsController extends Controller
             return null;
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'Section saved.'));
-
+        $this->setSuccessFlash(Craft::t('app', 'Section saved.'));
         return $this->redirectToPostedUrl($section);
     }
 
@@ -361,7 +360,7 @@ class SectionsController extends Controller
 
         // Save it
         if (!Craft::$app->getSections()->saveEntryType($entryType)) {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save entry type.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t save entry type.'));
 
             // Send the entry type back to the template
             Craft::$app->getUrlManager()->setRouteParams([
@@ -371,8 +370,7 @@ class SectionsController extends Controller
             return null;
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry type saved.'));
-
+        $this->setSuccessFlash(Craft::t('app', 'Entry type saved.'));
         return $this->redirectToPostedUrl($entryType);
     }
 

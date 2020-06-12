@@ -117,7 +117,7 @@ class SystemSettingsController extends Controller
         $systemSettings['timeZone'] = $request->getBodyParam('timeZone');
         $projectConfig->set('system', $systemSettings, 'Update system settings.');
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'General settings saved.'));
+        $this->setSuccessFlash(Craft::t('app', 'General settings saved.'));
         return $this->redirectToPostedUrl();
     }
 
@@ -207,7 +207,7 @@ class SystemSettingsController extends Controller
         $adapterIsValid = $adapter->validate();
 
         if (!$settingsAreValid || !$adapterIsValid) {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save email settings.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t save email settings.'));
 
             // Send the settings back to the template
             Craft::$app->getUrlManager()->setRouteParams([
@@ -220,7 +220,7 @@ class SystemSettingsController extends Controller
 
         Craft::$app->getProjectConfig()->set('email', $settings->toArray(), 'Update email settings.');
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'Email settings saved.'));
+        $this->setSuccessFlash(Craft::t('app', 'Email settings saved.'));
         return $this->redirectToPostedUrl();
     }
 
@@ -249,12 +249,12 @@ class SystemSettingsController extends Controller
                 ->setTo(Craft::$app->getUser()->getIdentity());
 
             if ($message->send()) {
-                Craft::$app->getSession()->setNotice(Craft::t('app', 'Email sent successfully! Check your inbox.'));
+                $this->setSuccessFlash(Craft::t('app', 'Email sent successfully! Check your inbox.'));
             } else {
-                Craft::$app->getSession()->setError(Craft::t('app', 'There was an error testing your email settings.'));
+                $this->setFailFlash(Craft::t('app', 'There was an error testing your email settings.'));
             }
         } else {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Your email settings are invalid.'));
+            $this->setFailFlash(Craft::t('app', 'Your email settings are invalid.'));
         }
 
         // Send the settings back to the template

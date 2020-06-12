@@ -256,7 +256,7 @@ class AssetsController extends Controller
                 ]);
             }
 
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save asset.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t save asset.'));
 
             // Send the asset back to the template
             Craft::$app->getUrlManager()->setRouteParams([
@@ -276,8 +276,7 @@ class AssetsController extends Controller
             ]);
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'Asset saved.'));
-
+        $this->setSuccessFlash(Craft::t('app', 'Asset saved.'));
         return $this->redirectToPostedUrl($asset);
     }
 
@@ -590,7 +589,7 @@ class AssetsController extends Controller
                 return $this->asJson(['success' => false]);
             }
 
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t delete asset.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t delete asset.'));
 
             // Send the entry back to the template
             Craft::$app->getUrlManager()->setRouteParams([
@@ -604,8 +603,7 @@ class AssetsController extends Controller
             return $this->asJson(['success' => true]);
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'Asset deleted.'));
-
+        $this->setSuccessFlash(Craft::t('app', 'Asset deleted.'));
         return $this->redirectToPostedUrl($asset);
     }
 
