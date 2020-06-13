@@ -24,7 +24,7 @@ use yii\db\Expression;
  * Repairs data
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.5.0
+ * @since 3.4.24
  */
 class RepairController extends Controller
 {
