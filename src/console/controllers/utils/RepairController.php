@@ -29,6 +29,21 @@ use yii\db\Expression;
 class RepairController extends Controller
 {
     /**
+     * @var bool Whether to only do a dry run of the repair process
+     */
+    public $dryRun = false;
+
+    /**
+     * @inheritdoc
+     */
+    public function options($actionID)
+    {
+        $options = parent::options($actionID);
+        $options[] = 'dryRun';
+        return $options;
+    }
+
+    /**
      * Repairs structure data for a section
      *
      * @param string $handle The section handle
@@ -118,46 +133,67 @@ class RepairController extends Controller
             return ExitCode::OK;
         }
 
-        $this->stdout('Processing ' . count($elements) . " $displayName ..." . PHP_EOL);
+        $this->stdout('Processing ' . count($elements) . " $displayName" . ($this->dryRun ? ' (dry run)' : '') . ' ...' . PHP_EOL);
 
         $ancestors = [];
         $level = 0;
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        if (!$this->dryRun) {
+            $transaction = Craft::$app->getDb()->beginTransaction();
+        }
+
         try {
             // First delete all of the existing structure data
-            StructureElement::deleteAll([
-                'structureId' => $structureId,
-            ]);
+            if (!$this->dryRun) {
+                StructureElement::deleteAll([
+                    'structureId' => $structureId,
+                ]);
+            }
 
             foreach ($elements as $element) {
                 /** @var ElementInterface $element */
                 if (!$element->level) {
                     $issue = 'was missing from structure';
-                    $structuresService->appendToRoot($structureId, $element, Structures::MODE_INSERT);
+                    if (!$this->dryRun) {
+                        $structuresService->appendToRoot($structureId, $element, Structures::MODE_INSERT);
+                    }
                 } else if ($element->level < 1) {
                     $issue = "had unexpected level ($element->level)";
-                    $structuresService->appendToRoot($structureId, $element, Structures::MODE_INSERT);
+                    if (!$this->dryRun) {
+                        $structuresService->appendToRoot($structureId, $element, Structures::MODE_INSERT);
+                    }
                 } else if ($element->level > $level + 1 && (!$structure->maxLevels || $level < $structure->maxLevels)) {
                     $issue = "had unexpected level ($element->level)";
                     if (!empty($ancestors)) {
-                        $structuresService->append($structureId, $element, end($ancestors), Structures::MODE_INSERT);
+                        if (!$this->dryRun) {
+                            $structuresService->append($structureId, $element, end($ancestors), Structures::MODE_INSERT);
+                        }
                     } else {
-                        $structuresService->appendToRoot($structureId, $element, Structures::MODE_INSERT);
+                        if (!$this->dryRun) {
+                            $structuresService->appendToRoot($structureId, $element, Structures::MODE_INSERT);
+                        }
                     }
                 } else if ($structure->maxLevels && $element->level > $structure->maxLevels) {
                     $issue = "exceeded the max level ($structure->maxLevels)";
                     if (isset($ancestors[$level - 2])) {
-                        $structuresService->append($structureId, $element, $ancestors[$level - 2], Structures::MODE_INSERT);
+                        if (!$this->dryRun) {
+                            $structuresService->append($structureId, $element, $ancestors[$level - 2], Structures::MODE_INSERT);
+                        }
                     } else {
-                        $structuresService->appendToRoot($structureId, $element, Structures::MODE_INSERT);
+                        if (!$this->dryRun) {
+                            $structuresService->appendToRoot($structureId, $element, Structures::MODE_INSERT);
+                        }
                     }
                 } else {
                     $issue = false;
                     if ($element->level == 1) {
-                        $structuresService->appendToRoot($structureId, $element, Structures::MODE_INSERT);
+                        if (!$this->dryRun) {
+                            $structuresService->appendToRoot($structureId, $element, Structures::MODE_INSERT);
+                        }
                     } else {
-                        $structuresService->append($structureId, $element, $ancestors[$element->level - 2], Structures::MODE_INSERT);
+                        if (!$this->dryRun) {
+                            $structuresService->append($structureId, $element, $ancestors[$element->level - 2], Structures::MODE_INSERT);
+                        }
                     }
                 }
 
@@ -175,13 +211,17 @@ class RepairController extends Controller
                 $level = $element->level;
             }
 
-            $transaction->commit();
+            if (isset($transaction)) {
+                $transaction->commit();
+            }
         } catch (\Throwable $e) {
-            $transaction->rollBack();
+            if (isset($transaction)) {
+                $transaction->rollBack();
+            }
             throw $e;
         }
 
-        $this->stdout("Finished processing $displayName" . PHP_EOL);
+        $this->stdout("Finished processing $displayName" . ($this->dryRun ? ' (dry run)' : '') . PHP_EOL);
 
         return ExitCode::OK;
     }
