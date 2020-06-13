@@ -806,6 +806,7 @@ class Elements extends Component
                         ->select(['elements.id'])
                         ->siteId('*')
                         ->unique()
+                        ->anyStatus()
                         ->scalar();
 
                     if ($parentId !== false) {
@@ -815,6 +816,9 @@ class Elements extends Component
                         }
 
                         Craft::$app->getStructures()->append($element->structureId, $mainClone, $parentId, $mode);
+                    } else {
+                        // Just append it to the root
+                        Craft::$app->getStructures()->appendToRoot($element->structureId, $mainClone, $mode);
                     }
                 }
             }
