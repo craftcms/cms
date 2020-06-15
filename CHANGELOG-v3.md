@@ -432,14 +432,21 @@
 ## Unreleased (3.4.x)
 
 ### Added
+- Added the `utils/repair/section-structure` and `utils/repair/category-group-structure` commands, which can be used to repair structure data, or apply a new Max Levels setting to existing elements.
+- Added `craft\console\controllers\utils\RepairController`.
 - Added `craft\fields\BaseOptionsField::options()`.
 
 ### Changed
 - `graphql/api` preflight requests now include `X-Craft-Token` in the `Access-Control-Allow-Headers` response header. ([#6207](https://github.com/craftcms/cms/issues/6207))
+- `craft\services\Elements::duplicateElements()` no longer attempts to insert duplicated elements into the source element’s structure, if the duplicated element doesn’t have a `structureId`. ([#6205](https://github.com/craftcms/cms/issues/6205))
 
 ### Deprecated
 - Deprecated support for passing a `userRegisteredNotice` param to `users/save-user` actions. A hashed `successMessage` param should be passed instead. ([#6192](https://github.com/craftcms/cms/issues/6192))
 - Deprecated `craft\fields\BaseOptionsField::optionLabel()`.
+
+### Fixed
+- Fixed a bug where new entries that were saved with a disabled parent entry wouldn’t get added to the structure, resulting in a 404 error when accessing their edit page. ([#6204](https://github.com/craftcms/cms/issues/6204))
+- Fixed a styling issue with the query dropdown menu in the GraphiQL client. ([#6215](https://github.com/craftcms/cms/issues/6215))
 
 ### Security
 - Fixed potential XSS vulnerabilities.
