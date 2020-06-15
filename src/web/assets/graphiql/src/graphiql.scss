@@ -26,10 +26,8 @@
   .graphiql-container .toolbar-button:active,
   .graphiql-container .execute-button,
   .graphiql-container .execute-button:active,
-  .graphiql-container .execute-options,
   .graphiql-container .toolbar-menu-items,
   .graphiql-container .toolbar-select-options,
-  .graphiql-container .execute-options > li.selected,
   .graphiql-container .toolbar-menu-items > li.hover,
   .graphiql-container .toolbar-menu-items > li:active,
   .graphiql-container .toolbar-menu-items > li:hover,
@@ -130,7 +128,7 @@
         }
       }
     }
-    .toolbar-menu-items {
+    .execute-options, .toolbar-menu-items {
       min-width: 100%;
       margin-top: 0;
       @include menu-styles;
@@ -161,6 +159,10 @@
           }
         }
       }
+    }
+
+    .execute-options li {
+      padding-left: 14px;
     }
 
     .execute-button {
