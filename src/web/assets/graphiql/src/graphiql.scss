@@ -169,6 +169,7 @@ body,
         &.selected-schema {
           cursor: default;
           background: none;
+
           &:before {
             @include icon;
             content: 'check';
@@ -177,14 +178,15 @@ body,
             font-size: 14px;
             color: $lightTextColor;
           }
+
           &:hover {
             background-color: $white;
           }
         }
       }
-    .execute-options li {
     }
-
+    
+    .execute-options li {
       padding-left: 14px;
     }
 
