@@ -6,54 +6,59 @@
             $wrapper: null,
             $selectAllBtn: null,
             $allCheckboxes: null,
-            $rootCheckboxes: null,
 
             init: function(wrapper) {
                 this.$wrapper = wrapper;
                 this.$selectAllBtn = $('.select-all', this.$wrapper);
-                this.$allCheckboxes = $('input[type=checkbox]', this.$wrapper);
-                this.$rootCheckboxes = $(this.$wrapper).find('> ul > li > input[type=checkbox]');
+                this.$allCheckboxes = $('input[type=checkbox]:not(.group-permission)', this.$wrapper);
 
                 this.addListener(this.$selectAllBtn, 'click', 'toggleSelectAll');
                 this.addListener(this.$allCheckboxes, 'click', 'toggleCheckbox');
-
                 this.updateSelectAllBtn();
             },
 
             toggleSelectAll: function(ev) {
-                if (this.$allCheckboxes.filter(':checked').length < this.$allCheckboxes.length) {
+                if (this.canSelectAll()) {
                     this.$allCheckboxes.filter(':not(:checked)').trigger('click');
-                }
-                else {
-                    this.$rootCheckboxes.filter(':checked').trigger('click');
+                } else {
+                    this.$allCheckboxes.filter(':checked').trigger('click');
                 }
 
                 ev.preventDefault();
             },
 
             toggleCheckbox: function(ev) {
-                var checkbox = $(ev.currentTarget);
-                var uls = checkbox.parent('li').find('> ul');
-                var childrenCheckboxes = checkbox.parent('li').find('> ul > li > input[type=checkbox]');
+                let $checkbox = $(ev.currentTarget);
+                if ($checkbox.prop('disabled')) {
+                    ev.preventDefault();
+                    return;
+                }
 
-                if (checkbox.prop('checked')) {
-                    childrenCheckboxes.prop('disabled', false);
+                let $uls = $checkbox.parent('li').find('> ul');
+                let $childrenCheckboxes = $checkbox.parent('li').find('> ul > li > input[type=checkbox]:not(.group-permission)');
+
+                if ($checkbox.prop('checked')) {
+                    $childrenCheckboxes.prop('disabled', false);
                 }
                 else {
-                    childrenCheckboxes.filter(':checked').trigger('click');
-                    childrenCheckboxes.prop('disabled', true);
+                    $childrenCheckboxes.filter(':checked').trigger('click');
+                    $childrenCheckboxes.prop('disabled', true);
                 }
 
                 this.updateSelectAllBtn();
             },
 
             updateSelectAllBtn: function() {
-                if (this.$allCheckboxes.filter(':checked').length < this.$allCheckboxes.length) {
+                if (this.canSelectAll()) {
                     this.$selectAllBtn.text(Craft.t('app', 'Select All'));
                 }
                 else {
                     this.$selectAllBtn.text(Craft.t('app', 'Deselect All'));
                 }
+            },
+
+            canSelectAll: function() {
+                return !!this.$allCheckboxes.filter(':not(:checked)').length;
             }
         });
 

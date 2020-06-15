@@ -17,6 +17,7 @@
 
 ### Fixed
 - Fixed a bug where new entries that were saved with a disabled parent entry wouldn’t get added to the structure, resulting in a 404 error when accessing their edit page. ([#6204](https://github.com/craftcms/cms/issues/6204))
+- Fixed a bug where “Deselect All” buttons in user permission lists could enable group-defined permission. ([#6211](https://github.com/craftcms/cms/issues/6211))
 
 ### Security
 - Fixed potential XSS vulnerabilities.
