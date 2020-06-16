@@ -146,14 +146,13 @@ class MigrateController extends BaseMigrateController
         ArrayHelper::removeValue($options, 'migrationNamespaces');
         ArrayHelper::removeValue($options, 'compact');
 
-        // Global options
-        $options[] = 'type';
-        $options[] = 'track';
-        $options[] = 'plugin';
-
         if ($actionID === 'all') {
             $options[] = 'noBackup';
             $options[] = 'noContent';
+        } else {
+            $options[] = 'type';
+            $options[] = 'track';
+            $options[] = 'plugin';
         }
 
         return $options;
@@ -176,56 +175,58 @@ class MigrateController extends BaseMigrateController
      */
     public function beforeAction($action)
     {
-        // Validate $type
-        if ($this->type) {
-            switch ($this->type) {
-                case 'app':
-                    $this->track = MigrationManager::TRACK_CRAFT;
-                    $new = "--track=$this->track";
-                    break;
-                case 'content':
-                    $this->track = 'content';
-                    $new = "--track=$this->track";
-                    break;
-                case 'plugin':
-                    $this->track = null;
-                    $new = "--plugin=$this->plugin";
-                    break;
-                default:
-                    $this->stderr("Invalid --type option. Allowed values are 'app', 'plugin', or 'content'." . PHP_EOL, Console::FG_RED);
-                    return false;
+        if ($action->id !== 'all') {
+            // Validate $type
+            if ($this->type) {
+                switch ($this->type) {
+                    case 'app':
+                        $this->track = MigrationManager::TRACK_CRAFT;
+                        $new = "--track=$this->track";
+                        break;
+                    case 'content':
+                        $this->track = 'content';
+                        $new = "--track=$this->track";
+                        break;
+                    case 'plugin':
+                        $this->track = null;
+                        $new = "--plugin=$this->plugin";
+                        break;
+                    default:
+                        $this->stderr("Invalid --type option. Allowed values are 'app', 'plugin', or 'content'." . PHP_EOL, Console::FG_RED);
+                        return false;
+                }
+
+                $this->stdout("The --type option has been deprecated. Use $new instead." . PHP_EOL, Console::FG_YELLOW);
             }
 
-            $this->stdout("The --type option has been deprecated. Use $new instead." . PHP_EOL, Console::FG_YELLOW);
-        }
-
-        if ($this->plugin) {
-            $this->track = "plugin:$this->plugin";
-        } else if ($this->track && preg_match('/^plugin:([\w\-]+)$/', $this->track, $match)) {
-            $this->plugin = $match[1];
-        }
-
-        // Validate $plugin
-        if ($this->plugin) {
-            // Make sure $this->plugin in set to a valid plugin handle
-            if (empty($this->plugin)) {
-                $this->stderr('You must specify the plugin handle using the --plugin option.' . PHP_EOL, Console::FG_RED);
-                return false;
+            if ($this->plugin) {
+                $this->track = "plugin:$this->plugin";
+            } else if ($this->track && preg_match('/^plugin:([\w\-]+)$/', $this->track, $match)) {
+                $this->plugin = $match[1];
             }
-            $pluginsService = Craft::$app->getPlugins();
-            if (($plugin = $pluginsService->getPlugin($this->plugin)) === null) {
-                try {
-                    $plugin = $pluginsService->createPlugin($this->plugin);
-                } catch (InvalidPluginException $e) {
-                    $this->stderr("Invalid plugin handle: $this->plugin" . PHP_EOL, Console::FG_RED);
+
+            // Validate $plugin
+            if ($this->plugin) {
+                // Make sure $this->plugin in set to a valid plugin handle
+                if (empty($this->plugin)) {
+                    $this->stderr('You must specify the plugin handle using the --plugin option.' . PHP_EOL, Console::FG_RED);
                     return false;
                 }
+                $pluginsService = Craft::$app->getPlugins();
+                if (($plugin = $pluginsService->getPlugin($this->plugin)) === null) {
+                    try {
+                        $plugin = $pluginsService->createPlugin($this->plugin);
+                    } catch (InvalidPluginException $e) {
+                        $this->stderr("Invalid plugin handle: $this->plugin" . PHP_EOL, Console::FG_RED);
+                        return false;
+                    }
+                }
+                $this->plugin = $plugin;
             }
-            $this->plugin = $plugin;
-        }
 
-        $this->migrationPath = $this->getMigrator()->migrationPath;
-        FileHelper::createDirectory($this->migrationPath);
+            $this->migrationPath = $this->getMigrator()->migrationPath;
+            FileHelper::createDirectory($this->migrationPath);
+        }
 
         if (!parent::beforeAction($action)) {
             return false;
