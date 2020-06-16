@@ -99,6 +99,18 @@ class Category extends Structure
                 'type' => Type::listOf(static::getType()),
                 'description' => 'The same element in other locales.',
             ],
+            'prev' => [
+                'name' => 'prev',
+                'type' => self::getType(),
+                'args' => CategoryArguments::getArguments(),
+                'description' => 'Returns the previous element relative to this one, from a given set of criteria. CAUTION: Applying arguments to this field severely degrades the performance of the query.',
+            ],
+            'next' => [
+                'name' => 'next',
+                'type' => self::getType(),
+                'args' => CategoryArguments::getArguments(),
+                'description' => 'Returns the next element relative to this one, from a given set of criteria. CAUTION: Applying arguments to this field severely degrades the performance of the query.',
+            ],
         ]), self::getName());
     }
 }

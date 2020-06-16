@@ -8,6 +8,7 @@
 namespace craft\gql\interfaces\elements;
 
 use craft\elements\Asset as AssetElement;
+use craft\gql\arguments\elements\Asset as AssetArguments;
 use craft\gql\arguments\Transform;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\Element;
@@ -147,7 +148,18 @@ class Asset extends Element
                 'type' => DateTime::getType(),
                 'description' => 'The date the asset file was last modified.'
             ],
-
+            'prev' => [
+                'name' => 'prev',
+                'type' => self::getType(),
+                'args' => AssetArguments::getArguments(),
+                'description' => 'Returns the previous element relative to this one, from a given set of criteria. CAUTION: Applying arguments to this field severely degrades the performance of the query.',
+            ],
+            'next' => [
+                'name' => 'next',
+                'type' => self::getType(),
+                'args' => AssetArguments::getArguments(),
+                'description' => 'Returns the next element relative to this one, from a given set of criteria. CAUTION: Applying arguments to this field severely degrades the performance of the query.',
+            ],
         ]), self::getName());
     }
 }

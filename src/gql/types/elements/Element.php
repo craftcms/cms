@@ -43,8 +43,12 @@ class Element extends ObjectType
         /** @var BaseElementInterface $source */
         $fieldName = $resolveInfo->fieldName;
 
-        if ($fieldName == Gql::GRAPHQL_COUNT_FIELD && !empty($arguments['field'])) {
+        if ($fieldName === Gql::GRAPHQL_COUNT_FIELD && !empty($arguments['field'])) {
             return $source->getEagerLoadedElementCount($arguments['field']);
+        }
+
+        if (in_array($fieldName, ['prev', 'next'])) {
+            return $source->{'get' . ucfirst($fieldName)}(empty($arguments) ? false : $arguments);
         }
 
         return parent::resolve($source, $arguments, $context, $resolveInfo);
