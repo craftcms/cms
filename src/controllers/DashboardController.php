@@ -268,6 +268,7 @@ class DashboardController extends Controller
      * Returns the items for the Feed widget.
      *
      * @return Response
+     * @deprecated in 3.4.24
      */
     public function actionGetFeedItems(): Response
     {
@@ -310,6 +311,22 @@ class DashboardController extends Controller
             'items' => $feed['items'],
         ]);
     }
+
+    /**
+     * Caches feed data.
+     *
+     * @return Response
+     * @since 3.4.24
+     */
+    public function actionCacheFeedData(): Response
+    {
+        $request = Craft::$app->getRequest();
+        $url = $request->getRequiredBodyParam('url');
+        $data = $request->getRequiredBodyParam('data');
+        Craft::$app->getCache()->set("feed:$url", $data);
+        return $this->asJson(['success' => true]);
+    }
+
 
     /**
      * Creates a new support ticket for the CraftSupport widget.
