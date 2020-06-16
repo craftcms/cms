@@ -40,6 +40,19 @@ use ZipArchive;
 class DashboardController extends Controller
 {
     /**
+     * @inheritdoc
+     */
+    public function beforeAction($action)
+    {
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
+
+        $this->requireCpRequest();
+        return true;
+    }
+
+    /**
      * Dashboard index.
      *
      * @return Response
