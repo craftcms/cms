@@ -1,7 +1,23 @@
-<table class="fullwidth">
-    {% for i in 1..limit %}
+<table class="fullwidth" dir="{{ feed.direction }}">
+    {% for item in feed.items %}
         <tr>
-            <td>&nbsp;</td>
+            <td>
+                {% if item.permalink ?? false %}
+                    {{ tag('a', {
+                        href: item.permalink,
+                        target: '_blank',
+                        text: item.title,
+                    }) }}
+                    {% if item.date ?? false %}
+                        {{ tag('span', {
+                            class: 'light nowrap',
+                            text: item.date|timestamp('short'),
+                        }) }}
+                    {% endif %}
+                {% else %}
+                    &nbsp;
+                {% endif %}
+            </td>
         </tr>
     {% endfor %}
 </table>

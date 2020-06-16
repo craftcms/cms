@@ -431,11 +431,12 @@
 ### Security
 - The `_includes/forms/checkbox.html`, `checkboxGroup.html`, and `checkboxSelect.html` control panel templates now HTML-encode checkbox labels by default, preventing possible XSS vulnerabilities. If HTML code was desired, it must be passed through the new `raw()` function first.
 
-## Unreleased (3.4.x)
+## 3.4.24 - 2020-06-16
 
 ### Added
 - Added the `utils/repair/section-structure` and `utils/repair/category-group-structure` commands, which can be used to repair structure data, or apply a new Max Levels setting to existing elements.
 - Added `craft\console\controllers\utils\RepairController`.
+- Added `craft\controllers\DashboardController::actionCacheFeedData()`.
 - Added `craft\fields\BaseOptionsField::options()`.
 
 ### Changed
@@ -444,11 +445,16 @@
 
 ### Deprecated
 - Deprecated support for passing a `userRegisteredNotice` param to `users/save-user` actions. A hashed `successMessage` param should be passed instead. ([#6192](https://github.com/craftcms/cms/issues/6192))
+- Deprecated `craft\controllers\DashboardController::actionGetFeedItems()`.
 - Deprecated `craft\fields\BaseOptionsField::optionLabel()`.
+- Deprecated `craft\services\Feeds`.
 
 ### Fixed
 - Fixed a bug where new entries that were saved with a disabled parent entry wouldn’t get added to the structure, resulting in a 404 error when accessing their edit page. ([#6204](https://github.com/craftcms/cms/issues/6204))
+- Fixed a bug where the system could become unresponsive while loading feed data, if the feed’s server was unresponsive.
 - Fixed a styling issue with the query dropdown menu in the GraphiQL client. ([#6215](https://github.com/craftcms/cms/issues/6215))
+- Fixed a bug where “Deselect All” buttons in user permission lists could enable group-defined permission. ([#6211](https://github.com/craftcms/cms/issues/6211))
+- Fixed an error that occurred when replacing an asset that conflicted with an existing file that was missing from the index. ([#6216](https://github.com/craftcms/cms/issues/6216))
 
 ### Security
 - Fixed potential XSS vulnerabilities.

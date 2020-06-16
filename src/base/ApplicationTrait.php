@@ -1010,6 +1010,7 @@ trait ApplicationTrait
      * Returns the feeds service.
      *
      * @return \craft\feeds\Feeds The feeds service
+     * @deprecated in 3.4.24
      */
     public function getFeeds()
     {
