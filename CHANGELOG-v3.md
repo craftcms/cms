@@ -8,6 +8,7 @@
 - Added the `prev` and `next` fields for entries, categories and assets when querying elements via GraphQL. ([#5571](https://github.com/craftcms/cms/issues/5571))
 - Added `craft\gql\base\InterfaceType::resolveElementTypeName()`.
 - Added `craft\gql\GqlEntityRegistry::prefixTypeName()`.
+- Added `craft\helpers\App::dbMutexConfig()`.
 - Added `craft\web\Controller::setFailFlash()`.
 - Added `craft\web\Controller::setSuccessFlash()`.
 - Added `craft\web\Request::getIsGraphql()`.
@@ -18,6 +19,10 @@
 ### Changed
 - Entry draft forms no longer have a primary action, and the <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>S</kbd> keyboard shortcut now forces a resave of the draft, rather than publishing it. ([#6199](https://github.com/craftcms/cms/issues/6199))
 - All built-in success/fail flash messages are now customizable by passing a hashed `successMessage`/`failMessage` param with the request. ([#6192](https://github.com/craftcms/cms/issues/6192))
+- Craft now uses `yii\mutex\MysqlMutex` or `yii\mutex\PgsqlMutex` for mutex locking by default.
+
+### Deprecated
+- Deprecated `craft\helpers\App::mutexConfig()`.
 
 ### Fixed
 - Fixed an error that occurred when using the `gqlTypePrefix` config setting.

@@ -226,7 +226,7 @@ return [
         },
 
         'mutex' => function() {
-            $config = craft\helpers\App::mutexConfig();
+            $config = craft\helpers\App::dbMutexConfig();
             return Craft::createObject($config);
         },
 
