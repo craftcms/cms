@@ -1477,10 +1477,8 @@ li.CodeMirror-hint-active {
   #graphiql .graphiql-container .toolbar-button:active,
   #graphiql .graphiql-container .execute-button,
   #graphiql .graphiql-container .execute-button:active,
-  #graphiql .graphiql-container .execute-options,
   #graphiql .graphiql-container .toolbar-menu-items,
   #graphiql .graphiql-container .toolbar-select-options,
-  #graphiql .graphiql-container .execute-options > li.selected,
   #graphiql .graphiql-container .toolbar-menu-items > li.hover,
   #graphiql .graphiql-container .toolbar-menu-items > li:active,
   #graphiql .graphiql-container .toolbar-menu-items > li:hover,
@@ -1553,7 +1551,7 @@ li.CodeMirror-hint-active {
       background-color: #bdcbdb; }
     #graphiql .graphiql-container .toolbar-menu.toolbar-button svg {
       margin-left: 5px; }
-  #graphiql .graphiql-container .toolbar-menu-items {
+  #graphiql .graphiql-container .execute-options, #graphiql .graphiql-container .toolbar-menu-items {
     min-width: 100%;
     margin-top: 0;
     z-index: 100;
@@ -1563,7 +1561,7 @@ li.CodeMirror-hint-active {
     background: #fff;
     user-select: none;
     box-shadow: 0 0 0 1px rgba(31, 41, 51, 0.1), 0 5px 20px rgba(31, 41, 51, 0.25); }
-    #graphiql .graphiql-container .toolbar-menu-items li {
+    #graphiql .graphiql-container .execute-options li, #graphiql .graphiql-container .toolbar-menu-items li {
       margin: 0 -14px;
       padding: 10px 14px;
       color: #3f4d5a;
@@ -1572,13 +1570,13 @@ li.CodeMirror-hint-active {
       text-align: left;
       padding-left: 24px;
       max-width: unset; }
-      #graphiql .graphiql-container .toolbar-menu-items li:hover {
+      #graphiql .graphiql-container .execute-options li:hover, #graphiql .graphiql-container .toolbar-menu-items li:hover {
         color: #3f4d5a;
         background-color: #f3f7fc; }
-      #graphiql .graphiql-container .toolbar-menu-items li.selected-schema {
+      #graphiql .graphiql-container .execute-options li.selected-schema, #graphiql .graphiql-container .toolbar-menu-items li.selected-schema {
         cursor: default;
         background: none; }
-        #graphiql .graphiql-container .toolbar-menu-items li.selected-schema:before {
+        #graphiql .graphiql-container .execute-options li.selected-schema:before, #graphiql .graphiql-container .toolbar-menu-items li.selected-schema:before {
           font-family: 'Craft';
           speak: none;
           -webkit-font-feature-settings: "liga", "dlig";
@@ -1605,16 +1603,18 @@ li.CodeMirror-hint-active {
           content: 'check';
           font-size: 14px;
           color: #9aa5b1; }
-          body.ltr #graphiql .graphiql-container .toolbar-menu-items li.selected-schema:before {
+          body.ltr #graphiql .graphiql-container .execute-options li.selected-schema:before, body.ltr #graphiql .graphiql-container .toolbar-menu-items li.selected-schema:before {
             float: left; }
-          body.rtl #graphiql .graphiql-container .toolbar-menu-items li.selected-schema:before {
+          body.rtl #graphiql .graphiql-container .execute-options li.selected-schema:before, body.rtl #graphiql .graphiql-container .toolbar-menu-items li.selected-schema:before {
             float: right; }
-          body.ltr #graphiql .graphiql-container .toolbar-menu-items li.selected-schema:before {
+          body.ltr #graphiql .graphiql-container .execute-options li.selected-schema:before, body.ltr #graphiql .graphiql-container .toolbar-menu-items li.selected-schema:before {
             margin: 3px 0 0 -17px ; }
-          body.rtl #graphiql .graphiql-container .toolbar-menu-items li.selected-schema:before {
+          body.rtl #graphiql .graphiql-container .execute-options li.selected-schema:before, body.rtl #graphiql .graphiql-container .toolbar-menu-items li.selected-schema:before {
             margin: 3px -17px 0 0 ; }
-        #graphiql .graphiql-container .toolbar-menu-items li.selected-schema:hover {
+        #graphiql .graphiql-container .execute-options li.selected-schema:hover, #graphiql .graphiql-container .toolbar-menu-items li.selected-schema:hover {
           background-color: #fff; }
+  #graphiql .graphiql-container .execute-options li {
+    padding-left: 14px; }
   #graphiql .graphiql-container .execute-button {
     background: linear-gradient(#fdfdfd, #CFD6DC);
     border: 1px solid #CFD6DC; }

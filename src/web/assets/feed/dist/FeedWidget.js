@@ -9,38 +9,46 @@
                 this.$widget = $('#widget' + widgetId);
                 this.$widget.addClass('loading');
 
-                var data = {
-                    url: url,
-                    limit: limit
-                };
-
-                Craft.postActionRequest('dashboard/get-feed-items', data, $.proxy(function(response, textStatus) {
+                // Get the feed data
+                axios.get('https://feed-proxy.craftcms.com/', {
+                    params: {
+                        url: url,
+                    },
+                }).then(response => {
                     this.$widget.removeClass('loading');
+                    this.$widget.find('table')
+                        .attr('dir', response.data.direction);
+                    let $tds = this.$widget.find('td');
+                    let items = response.data.items || [];
 
-                    if (textStatus === 'success') {
-                        this.$widget.find('table')
-                            .attr('dir', response.dir);
+                    for (let i = 0; i < items.length; i++) {
+                        let item = items[i];
+                        let $td = $($tds[i]);
 
-                        var $tds = this.$widget.find('td');
+                        var widgetHtml = $('<a/>', {
+                            href: item.permalink,
+                            target: '_blank',
+                            text: item.title
+                        }).get(0).outerHTML + ' ';
 
-                        for (var i = 0; i < response.items.length; i++) {
-                            var item = response.items[i],
-                                $td = $($tds[i]);
-
-                            var widgetHtml = $('<a/>', {
-                                href: item.permalink,
-                                target: '_blank',
-                                text: item.title
-                            }).get(0).outerHTML + ' ';
-
-                            if (item.date) {
-                                widgetHtml += '<span class="light nowrap">' + item.date + '</span>';
-                            }
-
-                            $td.html(widgetHtml);
+                        if (item.date) {
+                            widgetHtml += '<span class="light nowrap">' + Craft.formatDate(item.date) + '</span>';
                         }
+
+                        $td.html(widgetHtml);
                     }
-                }, this));
+
+                    // Now cache the data
+                    Craft.sendActionRequest('POST', 'dashboard/cache-feed-data', {
+                        data: {
+                            url: url,
+                            data: response.data,
+                        },
+                    });
+                }).catch(() => {
+                    this.$widget.removeClass('loading');
+                    Craft.cp.displayError(Craft.t('app', 'Could not load the feed'));
+                });
             }
         });
 })(jQuery);

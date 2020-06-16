@@ -99,16 +99,33 @@ class Feed extends Widget
      */
     public function getBodyHtml()
     {
-        $view = Craft::$app->getView();
-        $view->registerAssetBundle(FeedAsset::class);
-        $view->registerJs(
-            "new Craft.FeedWidget({$this->id}, " .
-            Json::encode($this->url) . ', ' .
-            Json::encode($this->limit) . ');'
-        );
+        // See if it's already cached
+        $data = Craft::$app->getCache()->get("feed:$this->url");
+
+        if ($data) {
+            $data['items'] = array_slice($data['items'] ?? [], 0, $this->limit);
+        } else {
+            // Fake it for now and fetch it later
+            $data = [
+                'direction' => 'ltr',
+                'items' => [],
+            ];
+
+            for ($i = 0; $i < $this->limit; $i++) {
+                $data['items'][] = [];
+            }
+
+            $view = Craft::$app->getView();
+            $view->registerAssetBundle(FeedAsset::class);
+            $view->registerJs(
+                "new Craft.FeedWidget({$this->id}, " .
+                Json::encode($this->url) . ', ' .
+                Json::encode($this->limit) . ');'
+            );
+        }
 
         return Craft::$app->getView()->renderTemplate('_components/widgets/Feed/body', [
-            'limit' => $this->limit
+            'feed' => $data,
         ]);
     }
 }

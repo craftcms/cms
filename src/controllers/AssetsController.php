@@ -469,14 +469,16 @@ class AssetsController extends Controller
             return $this->asErrorJson($e->getMessage());
         }
 
+        $resultingAsset = $assetToReplace ?: $sourceAsset;
+
         return $this->asJson([
             'success' => true,
             'assetId' => $assetId,
-            'filename' => $assetToReplace->filename,
-            'formattedSize' => $assetToReplace->getFormattedSize(0),
-            'formattedSizeInBytes' => $assetToReplace->getFormattedSizeInBytes(false),
-            'formattedDateUpdated' => Craft::$app->getFormatter()->asDatetime($assetToReplace->dateUpdated, Formatter::FORMAT_WIDTH_SHORT),
-            'dimensions' => $assetToReplace->getDimensions(),
+            'filename' => $resultingAsset->filename,
+            'formattedSize' => $resultingAsset->getFormattedSize(0),
+            'formattedSizeInBytes' => $resultingAsset->getFormattedSizeInBytes(false),
+            'formattedDateUpdated' => Craft::$app->getFormatter()->asDatetime($resultingAsset->dateUpdated, Formatter::FORMAT_WIDTH_SHORT),
+            'dimensions' => $resultingAsset->getDimensions(),
         ]);
     }
 

@@ -789,7 +789,7 @@ class Elements extends Component
             }
 
             // Is this a structured element?
-            if ($element->structureId && $element->root) {
+            if ($element->structureId && $mainClone->structureId == $element->structureId && $element->root) {
                 $mode = $mainClone->root === null && !isset($newAttributes['id'])
                     ? Structures::MODE_INSERT
                     : Structures::MODE_AUTO;
@@ -806,6 +806,7 @@ class Elements extends Component
                         ->select(['elements.id'])
                         ->siteId('*')
                         ->unique()
+                        ->anyStatus()
                         ->scalar();
 
                     if ($parentId !== false) {
@@ -815,6 +816,9 @@ class Elements extends Component
                         }
 
                         Craft::$app->getStructures()->append($element->structureId, $mainClone, $parentId, $mode);
+                    } else {
+                        // Just append it to the root
+                        Craft::$app->getStructures()->appendToRoot($element->structureId, $mainClone, $mode);
                     }
                 }
             }
@@ -853,7 +857,8 @@ class Elements extends Component
                     $siteClone->uid = $mainClone->uid;
                     $siteClone->enabled = $mainClone->enabled;
                     $siteClone->contentId = null;
-                    $siteClone->dateCreated = null;
+                    $siteClone->dateCreated = $mainClone->dateCreated;
+                    $siteClone->dateUpdated = $mainClone->dateUpdated;
 
                     // Attach behaviors
                     foreach ($behaviors as $name => $behavior) {

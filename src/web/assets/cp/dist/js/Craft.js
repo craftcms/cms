@@ -22,7 +22,7 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-/*!   - 2020-06-05 */
+/*!   - 2020-06-11 */
 (function ($) {
   /** global: Craft */
 
@@ -719,7 +719,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
 
                 if (_this3._apiHeaders && _this3._apiHeaders['X-Craft-License'] === '__REQUEST__') {
-                  _this3._apiHeaders['X-Craft-License'] = apiResponse.headers['x-craft-license'];
+                  _this3._apiHeaders['X-Craft-License'] = window.cmsLicenseKey = apiResponse.headers['x-craft-license'];
 
                   _this3._resolveHeaderWaitlist();
                 }
