@@ -13,6 +13,7 @@
 - Added `craft\web\Request::getIsGraphql()`.
 - Added `craft\web\Request::getIsJson()`.
 - Added `craft\web\Request::getMimeType()`.
+- Added `craft\web\View::$allowEval()`, which determines whether calling `evaluateDynamicContent()` should be allowed. ([#6185](https://github.com/craftcms/cms/pull/6185))
 
 ### Changed
 - Entry draft forms no longer have a primary action, and the <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>S</kbd> keyboard shortcut now forces a resave of the draft, rather than publishing it. ([#6199](https://github.com/craftcms/cms/issues/6199))
@@ -21,6 +22,9 @@
 ### Fixed
 - Fixed an error that occurred when using the `gqlTypePrefix` config setting.
 - Fixed a bug where saving elements with Assets fields would move the selected assets to the top of their volume. ([#6217](https://github.com/craftcms/cms/issues/6217))
+
+### Security
+- `craft\web\View::evaluateDynamicContent()` can no longer be called by default. ([#6185](https://github.com/craftcms/cms/pull/6185))
 
 ## 3.5.0-beta.3 - 2020-06-09
 

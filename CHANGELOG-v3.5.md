@@ -226,6 +226,7 @@
 - Added `craft\web\Request::getRawCookies()`.
 - Added `craft\web\Request::loadRawCookies()`.
 - Added `craft\web\Response::getRawCookies()`.
+- `craft\web\View::evaluateDynamicContent()` can no longer be called by default. ([#6185](https://github.com/craftcms/cms/pull/6185))
 - Added the `_includes/forms/password.html` control panel template.
 - Added the `_includes/forms/copytext.html` control panel template.
 - Added the `copytext` and `copytextField` macros to the `_includes/forms.html` control panel template.
@@ -359,3 +360,4 @@
 
 ### Security
 - The `_includes/forms/checkbox.html`, `checkboxGroup.html`, and `checkboxSelect.html` control panel templates now HTML-encode checkbox labels by default, preventing possible XSS vulnerabilities. If HTML code was desired, it must be passed through the new `raw()` function first.
+- `craft\web\View::evaluateDynamicContent()` can no longer be called by default. ([#6185](https://github.com/craftcms/cms/pull/6185))

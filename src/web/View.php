@@ -35,6 +35,7 @@ use Twig\Template as TwigTemplate;
 use yii\base\Arrayable;
 use yii\base\Exception;
 use yii\base\Model;
+use yii\base\NotSupportedException;
 use yii\web\AssetBundle as YiiAssetBundle;
 use yii\web\Response as WebResponse;
 
@@ -108,6 +109,17 @@ class View extends \yii\web\View
      * @since 3.4.0
      */
     public $minifyJs = false;
+
+    /**
+     * @var bool Whether to allow [[evaluateDynamicContent()]] to be called.
+     *
+     * ::: warning
+     * Don’t enable this unless you have a *very* good reason to.
+     * :::
+     *
+     * @since 3.5.0
+     */
+    public $allowEval = false;
 
     /**
      * @var Environment|null The Twig environment instance used for control panel templates
@@ -1600,6 +1612,19 @@ JS;
         }
 
         parent::endPage($ajaxMode);
+    }
+
+    /**
+     * @inheritdoc
+     * @throws NotSupportedException unless [[allowEval]] has been set to `true`.
+     */
+    public function evaluateDynamicContent($statements)
+    {
+        if (!$this->allowEval) {
+            throw new NotSupportedException('evaluateDynamicContent() is disallowed.');
+        }
+
+        return parent::evaluateDynamicContent($statements);
     }
 
     // Events
