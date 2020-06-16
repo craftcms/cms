@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.4.24 - 2020-06-16
 
 ### Added
 - Added the `utils/repair/section-structure` and `utils/repair/category-group-structure` commands, which can be used to repair structure data, or apply a new Max Levels setting to existing elements.
