@@ -314,6 +314,7 @@ class AssetQuery extends ElementQuery
      * | `'not 1'` | not in a volume with an ID of 1.
      * | `[1, 2]` | in a volume with an ID of 1 or 2.
      * | `['not', 1, 2]` | not in a volume with an ID of 1 or 2.
+     * | `':empty:'` | that haven’t been stored in a volume yet
      *
      * ---
      *
@@ -899,6 +900,10 @@ class AssetQuery extends ElementQuery
      */
     private function _normalizeVolumeId()
     {
+        if ($this->volumeId === ':empty:') {
+            return;
+        }
+
         if (empty($this->volumeId)) {
             $this->volumeId = null;
         } else if (is_numeric($this->volumeId)) {
@@ -919,7 +924,7 @@ class AssetQuery extends ElementQuery
     protected function cacheTags(): array
     {
         $tags = [];
-        if ($this->volumeId) {
+        if ($this->volumeId && $this->volumeId !== ':empty:') {
             foreach ($this->volumeId as $volumeId) {
                 $tags[] = "volume:$volumeId";
             }

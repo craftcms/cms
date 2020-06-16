@@ -20,6 +20,7 @@
 
 ### Fixed
 - Fixed an error that occurred when using the `gqlTypePrefix` config setting.
+- Fixed a bug where saving elements with Assets fields would move the selected assets to the top of their volume. ([#6217](https://github.com/craftcms/cms/issues/6217))
 
 ## 3.5.0-beta.3 - 2020-06-09
 
