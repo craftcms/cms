@@ -1853,17 +1853,20 @@ class UsersController extends Controller
         // See if there are any new groups in here
         $oldGroupIds = ArrayHelper::getColumn($user->getGroups(), 'id');
         $hasNewGroups = false;
+        $newGroups = [];
 
         foreach ($groupIds as $groupId) {
+            $group = $newGroups[] = $allGroups[$groupId];
+
             if (!in_array($groupId, $oldGroupIds, false)) {
                 $hasNewGroups = true;
 
                 // Make sure the current user is in the group or has permission to assign it
                 if (
                     !$currentUser->isInGroup($groupId) &&
-                    !$currentUser->can("assignUserGroup:{$allGroups[$groupId]->uid}")
+                    !$currentUser->can("assignUserGroup:{$group->uid}")
                 ) {
-                    throw new ForbiddenHttpException("Your account doesn't have permission to assign user group $groupId to a user.");
+                    throw new ForbiddenHttpException("Your account doesn't have permission to assign user group “{$group->name}” to a user.");
                 }
             }
         }
@@ -1873,6 +1876,7 @@ class UsersController extends Controller
         }
 
         Craft::$app->getUsers()->assignUserToGroups($user->id, $groupIds);
+        $user->setGroups($newGroups);
     }
 
     /**
