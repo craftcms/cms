@@ -6,6 +6,7 @@
 - Added the `utils/repair/section-structure` and `utils/repair/category-group-structure` commands, which can be used to repair structure data, or apply a new Max Levels setting to existing elements.
 - Added `craft\console\controllers\utils\RepairController`.
 - Added `craft\controllers\DashboardController::actionCacheFeedData()`.
+- Added `craft\db\PrimaryReplicaTrait`, which adds `primary`/`replica` properties and methods to `craft\db\Connection`, as alternatives to `master`/`slave`. ([yiisoft/yii2#18102](https://github.com/yiisoft/yii2/pull/18102))
 - Added `craft\fields\BaseOptionsField::options()`.
 
 ### Changed

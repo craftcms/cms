@@ -42,6 +42,8 @@ use yii\db\Exception as DbException;
  */
 class Connection extends \yii\db\Connection
 {
+    use PrimaryReplicaTrait;
+
     const DRIVER_MYSQL = 'mysql';
     const DRIVER_PGSQL = 'pgsql';
 
