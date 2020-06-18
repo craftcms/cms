@@ -65,7 +65,8 @@ abstract class ObjectType extends GqlObjectType
      */
     protected function resolve($source, $arguments, $context, ResolveInfo $resolveInfo)
     {
-        $result = $source->{$resolveInfo->fieldName};
+        $fieldName = is_array($resolveInfo->path) ? array_slice($resolveInfo->path, -1)[0] : $resolveInfo->fieldName;
+        $result = $source->$fieldName;
 
         if ($result instanceof ElementQueryInterface) {
             return $result->all();
