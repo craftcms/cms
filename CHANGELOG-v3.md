@@ -2,8 +2,12 @@
 
 ## Unreleased
 
+### Changed
+- `craft\helpers\Db::escapeParam()` now escapes operators.
+
 ### Fixed
 - Fixed a bug where new user groups weren’t getting set on user accounts in time for activation email templates to reference them. ([#6225](https://github.com/craftcms/cms/issues/6225))
+- Fixed an error that occurred when adding multiple tags that began with the word “not”.
 
 ## 3.4.24 - 2020-06-16
 
