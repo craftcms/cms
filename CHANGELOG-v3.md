@@ -3,11 +3,13 @@
 ## Unreleased
 
 ### Changed
+- Element query `title` params are now case-insensitive.
 - `craft\helpers\Db::escapeParam()` now escapes operators.
 
 ### Fixed
 - Fixed a bug where new user groups weren’t getting set on user accounts in time for activation email templates to reference them. ([#6225](https://github.com/craftcms/cms/issues/6225))
 - Fixed an error that occurred when adding multiple tags that began with the word “not”.
+- Fixed a bug where it was possible to create two tags with the same title, but different casing. ([#6229](https://github.com/craftcms/cms/issues/6229))
 
 ## 3.4.24 - 2020-06-16
 
