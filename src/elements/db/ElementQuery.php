@@ -1392,7 +1392,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         if ($this->title !== null && $this->title !== '' && $class::hasTitles()) {
-            $this->subQuery->andWhere(Db::parseParam('content.title', $this->title));
+            $this->subQuery->andWhere(Db::parseParam('content.title', $this->title, '=', true));
         }
 
         if ($this->slug) {

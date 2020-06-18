@@ -442,6 +442,21 @@
 ### Security
 - The `_includes/forms/checkbox.html`, `checkboxGroup.html`, and `checkboxSelect.html` control panel templates now HTML-encode checkbox labels by default, preventing possible XSS vulnerabilities. If HTML code was desired, it must be passed through the new `raw()` function first.
 
+## Unreleased (3.4.x)
+
+### Added
+- Added `craft\db\PrimaryReplicaTrait`, which adds `primary`/`replica` properties and methods to `craft\db\Connection`, as alternatives to `master`/`slave`. ([yiisoft/yii2#18102](https://github.com/yiisoft/yii2/pull/18102))
+
+### Changed
+- Element query `title` params are now case-insensitive.
+- `craft\helpers\Db::escapeParam()` now escapes operators.
+
+### Fixed
+- Fixed a bug where new user groups weren’t getting set on user accounts in time for activation email templates to reference them. ([#6225](https://github.com/craftcms/cms/issues/6225))
+- Fixed an error that occurred when adding multiple tags that began with the word “not”.
+- Fixed a bug where it was possible to create two tags with the same title, but different casing. ([#6229](https://github.com/craftcms/cms/issues/6229))
+- Fixed a bug where the `migrate/all` command would create a `migrations/` folder for no good reason. ([#6220](https://github.com/craftcms/cms/issues/6220))
+
 ## 3.4.24 - 2020-06-16
 
 ### Added
