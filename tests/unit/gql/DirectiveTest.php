@@ -9,6 +9,8 @@ namespace craftunit\gql;
 
 use Codeception\Test\Unit;
 use Craft;
+use craft\config\GeneralConfig;
+use craft\console\Application;
 use craft\elements\Asset;
 use craft\gql\directives\FormatDateTime;
 use craft\gql\directives\Markdown;
@@ -18,6 +20,7 @@ use craft\gql\types\elements\Asset as GqlAssetType;
 use craft\gql\types\elements\Entry as GqlEntryType;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
+use craft\services\Config;
 use craft\test\mockclasses\elements\ExampleElement;
 use craft\test\mockclasses\gql\MockDirective;
 use DateTime;
@@ -219,6 +222,14 @@ class DirectiveTest extends Unit
     {
         // Make sure the mock directive is available in the entity registry
         $directiveName = $className::name();
+
+        Craft::$app = $this->make(Application::class, [
+            'getConfig' => $this->make(Config::class, [
+                'getGeneral' => $this->make(GeneralConfig::class, [
+                    'gqlTypePrefix' => 'test'
+                ])
+            ])
+        ]);
 
         if (!GqlEntityRegistry::getEntity($directiveName)) {
             GqlEntityRegistry::createEntity($directiveName, $className::create());
