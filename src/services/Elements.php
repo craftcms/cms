@@ -2170,7 +2170,7 @@ class Elements extends Component
                 $element->newSiteIds = [];
 
                 foreach ($supportedSites as $siteInfo) {
-                    // Skip the master site
+                    // Skip the initial site
                     if ($siteInfo['siteId'] != $element->siteId) {
                         $this->_propagateElement($element, $siteInfo, $isNewElement ? false : null);
                     }
@@ -2323,7 +2323,7 @@ class Elements extends Component
             $siteElement = null;
         }
 
-        // If it doesn't exist yet, just clone the master site
+        // If it doesn't exist yet, just clone the initial site
         if ($isNewSiteForElement = ($siteElement === null)) {
             $siteElement = clone $element;
             $siteElement->siteId = $siteInfo['siteId'];
@@ -2358,12 +2358,12 @@ class Elements extends Component
                 // Only copy the non-translatable field values
                 foreach ($fieldLayout->getFields() as $field) {
                     /** @var Field $field */
-                    // Has this field changed, and does it produce the same translation key as it did for the master element?
+                    // Has this field changed, and does it produce the same translation key as it did for the initial element?
                     if (
                         $element->isFieldDirty($field->handle) &&
                         $field->getTranslationKey($siteElement) === $field->getTranslationKey($element)
                     ) {
-                        // Copy the master element's value over
+                        // Copy the initial element's value over
                         $siteElement->setFieldValue($field->handle, $element->getFieldValue($field->handle));
                     }
                 }
