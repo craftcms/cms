@@ -226,6 +226,10 @@ class Sections extends Component
      */
     public function getEditableSections(): array
     {
+        if (Craft::$app->getRequest()->getIsConsoleRequest()) {
+            return $this->getAllSections();
+        }
+
         $userSession = Craft::$app->getUser();
         return ArrayHelper::where($this->getAllSections(), function(Section $section) use ($userSession) {
             return $userSession->checkPermission('editEntries:' . $section->uid);
