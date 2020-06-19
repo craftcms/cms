@@ -15,6 +15,7 @@
 - Fixed a bug where it was possible to create two tags with the same title, but different casing. ([#6229](https://github.com/craftcms/cms/issues/6229))
 - Fixed a bug where the `migrate/all` command would create a `migrations/` folder for no good reason. ([#6220](https://github.com/craftcms/cms/issues/6220))
 - Fixed an error that could occur during installation, if old database schema data was cached.
+- Fixed a bug where asset transformed width and height would ignore transform aspect ratio when using crop mode. ([#6084](https://github.com/craftcms/cms/issues/6084))
 
 ## 3.4.24 - 2020-06-16
 
