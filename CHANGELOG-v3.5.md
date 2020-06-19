@@ -363,6 +363,7 @@
 - Fixed a bug where `users/set-password` and `users/verify-email` requests weren’t responding with JSON when requested, if an invalid verification code was passed. ([#5210](https://github.com/craftcms/cms/issues/5210))
 - Fixed a bug where it was impossible to filter elements using a Lightswitch field using the GraphQL API. ([#5930](https://github.com/craftcms/cms/issues/5930))
 - Fixed an error that could occur when saving template caches. ([#2674](https://github.com/craftcms/cms/issues/2674))
+- When previewing an image asset on a non-public volume, the image is no longer published to the `cpresources` folder. ([#6093](https://github.com/craftcms/cms/issues/6093)
 
 ### Security
 - The `_includes/forms/checkbox.html`, `checkboxGroup.html`, and `checkboxSelect.html` control panel templates now HTML-encode checkbox labels by default, preventing possible XSS vulnerabilities. If HTML code was desired, it must be passed through the new `raw()` function first.
