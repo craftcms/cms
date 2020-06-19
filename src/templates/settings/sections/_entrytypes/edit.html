@@ -64,6 +64,16 @@
             errors: entryType.getErrors('titleLabel'),
             required: true
         }) }}
+
+        {{ forms.textareaField({
+            label: "Title Field Instructions"|t('app'),
+            instructions: "Helper text to guide the author."|t('app'),
+            id: 'titleInstructions',
+            class: 'nicetext',
+            name: 'titleInstructions',
+            value: entryType.titleInstructions,
+            errors: entryType.getErrors('titleInstructions'),
+        }) }}
     </div>
 
     <div id="titleFormat-container"{% if entryType.hasTitleField %} class="hidden"{% endif %}>

@@ -537,6 +537,7 @@ class Sections extends Component
                 if ($section->type === Section::TYPE_SINGLE) {
                     $entryType->hasTitleField = false;
                     $entryType->titleLabel = null;
+                    $entryType->titleInstructions = null;
                     $entryType->titleFormat = '{section.name|raw}';
                 } else {
                     $entryType->hasTitleField = true;
@@ -1158,6 +1159,7 @@ class Sections extends Component
             'handle' => $entryType->handle,
             'hasTitleField' => (bool)$entryType->hasTitleField,
             'titleLabel' => $entryType->titleLabel,
+            'titleInstructions' => $entryType->titleInstructions,
             'titleFormat' => $entryType->titleFormat,
             'sortOrder' => (int)$sortOrder,
         ];
@@ -1220,6 +1222,7 @@ class Sections extends Component
             $entryTypeRecord->handle = $data['handle'];
             $entryTypeRecord->hasTitleField = $data['hasTitleField'];
             $entryTypeRecord->titleLabel = $data['titleLabel'];
+            $entryTypeRecord->titleInstructions = $data['titleInstructions'];
             $entryTypeRecord->titleFormat = $data['titleFormat'];
             $entryTypeRecord->sortOrder = $data['sortOrder'];
             $entryTypeRecord->sectionId = $section->id;
@@ -1643,10 +1646,13 @@ class Sections extends Component
             ])
             ->from([Table::ENTRYTYPES]);
 
-        // todo: remove schema version condition after next beakpoint
+        // todo: remove schema version conditions after next beakpoint
         $schemaVersion = Craft::$app->getInstalledSchemaVersion();
         if (version_compare($schemaVersion, '3.1.19', '>=')) {
             $query->where(['dateDeleted' => null]);
+        }
+        if (version_compare($schemaVersion, '3.5.3', '>=')) {
+            $query->addSelect(['titleInstructions']);
         }
 
         return $query;

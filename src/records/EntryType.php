@@ -22,6 +22,7 @@ use yii\db\ActiveQueryInterface;
  * @property string $handle Handle
  * @property bool $hasTitleField Has title field
  * @property string|null $titleLabel Title label
+ * @property string|null $titleInstructions Title instructions
  * @property string|null $titleFormat Title format
  * @property int $sortOrder Sort order
  * @property Section $section Section

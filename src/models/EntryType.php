@@ -62,6 +62,12 @@ class EntryType extends Model
     public $titleLabel = 'Title';
 
     /**
+     * @var string|null Title instructions
+     * @since 3.5.0
+     */
+    public $titleInstructions;
+
+    /**
      * @var string|null Title format
      */
     public $titleFormat;

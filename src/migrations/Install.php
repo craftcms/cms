@@ -314,6 +314,7 @@ class Install extends Migration
             'handle' => $this->string()->notNull(),
             'hasTitleField' => $this->boolean()->defaultValue(true)->notNull(),
             'titleLabel' => $this->string()->defaultValue('Title'),
+            'titleInstructions' => $this->text(),
             'titleFormat' => $this->string(),
             'sortOrder' => $this->smallInteger()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
