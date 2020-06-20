@@ -4,12 +4,18 @@
 
 ### Added
 - Entry types can now specify custom Title field instructions. ([#1518](https://github.com/craftcms/cms/issues/1518))
+- Entry types can now change the Title field’s translation method, similar to how custom fields’ translation methods. ([#2856](https://github.com/craftcms/cms/issues/2856))
 - Added support for GraphQL query batching. ([#5677](https://github.com/craftcms/cms/issues/5677))
 - Added the `parseRefs` GraphQL directive. ([#6200](https://github.com/craftcms/cms/issues/6200))
 - Added the `prev` and `next` fields for entries, categories and assets when querying elements via GraphQL. ([#5571](https://github.com/craftcms/cms/issues/5571))
+- Added `craft\base\ElementInterface::getIsTitleTranslatable()`.
+- Added `craft\base\ElementInterface::getTitleTranslationDescription()`.
+- Added `craft\base\ElementInterface::getTitleTranslationKey()`.
 - Added `craft\gql\base\InterfaceType::resolveElementTypeName()`.
 - Added `craft\gql\GqlEntityRegistry::prefixTypeName()`.
 - Added `craft\helpers\App::dbMutexConfig()`.
+- Added `craft\helpers\ElementHelper::translationDescription()`.
+- Added `craft\helpers\ElementHelper::translationKey()`.
 - Added `craft\web\Controller::setFailFlash()`.
 - Added `craft\web\Controller::setSuccessFlash()`.
 - Added `craft\web\Request::getIsGraphql()`.

@@ -923,6 +923,37 @@ interface ElementInterface extends ComponentInterface
     public function getDirtyAttributes(): array;
 
     /**
+     * Returns whether the Title field should be shown as translatable in the UI.
+     *
+     * Note this method has no effect on whether titles will get copied over to other
+     * sites when the element is actually getting saved. That is determined by [[getTitleTranslationKey()]].
+     *
+     * @return bool
+     * @since 3.5.0
+     */
+    public function getIsTitleTranslatable(): bool;
+
+    /**
+     * Returns the description of the Title field’s translation support.
+     *
+     * @return string|null
+     * @since 3.5.0
+     */
+    public function getTitleTranslationDescription();
+
+    /**
+     * Returns the Title’s translation key.
+     *
+     * When saving an element on a multi-site Craft install, if `$propagate` is `true` for [[\craft\services\Elements::saveElement()]],
+     * then `getTitleTranslationKey()` will be called for each site the element should be propagated to.
+     * If the method returns the same value as it did for the initial site, then the initial site’s title will be copied over
+     * to the target site.
+     *
+     * @return string The translation key
+     */
+    public function getTitleTranslationKey(): string;
+
+    /**
      * Returns the element’s normalized custom field values, indexed by their handles.
      *
      * @param string[]|null $fieldHandles The list of field handles whose values

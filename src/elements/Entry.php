@@ -9,6 +9,7 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
+use craft\base\Field;
 use craft\behaviors\RevisionBehavior;
 use craft\controllers\ElementIndexesController;
 use craft\db\Query;
@@ -27,6 +28,7 @@ use craft\elements\db\EntryQuery;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
+use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\UrlHelper;
 use craft\models\EntryType;
@@ -929,6 +931,31 @@ class Entry extends Element
     public function getRef()
     {
         return $this->getSection()->handle . '/' . $this->slug;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getIsTitleTranslatable(): bool
+    {
+        return ($this->getType()->titleTranslationMethod !== Field::TRANSLATION_METHOD_NONE);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getTitleTranslationDescription()
+    {
+        return ElementHelper::translationDescription($this->getType()->titleTranslationMethod);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getTitleTranslationKey(): string
+    {
+        $type = $this->getType();
+        return ElementHelper::translationKey($this, $type->titleTranslationMethod, $type->titleTranslationKeyFormat);
     }
 
     /**

@@ -352,6 +352,8 @@ class SectionsController extends Controller
         $entryType->hasTitleField = (bool)Craft::$app->getRequest()->getBodyParam('hasTitleField', $entryType->hasTitleField);
         $entryType->titleLabel = Craft::$app->getRequest()->getBodyParam('titleLabel', $entryType->titleLabel);
         $entryType->titleInstructions = Craft::$app->getRequest()->getBodyParam('titleInstructions', $entryType->titleInstructions);
+        $entryType->titleTranslationMethod = Craft::$app->getRequest()->getBodyParam('titleTranslationMethod', $entryType->titleTranslationMethod);
+        $entryType->titleTranslationKeyFormat = Craft::$app->getRequest()->getBodyParam('titleTranslationKeyFormat', $entryType->titleTranslationKeyFormat);
         $entryType->titleFormat = Craft::$app->getRequest()->getBodyParam('titleFormat', $entryType->titleFormat);
 
         // Set the field layout

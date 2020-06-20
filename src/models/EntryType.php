@@ -8,6 +8,7 @@
 namespace craft\models;
 
 use Craft;
+use craft\base\Field;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\Entry;
@@ -66,6 +67,18 @@ class EntryType extends Model
      * @since 3.5.0
      */
     public $titleInstructions;
+
+    /**
+     * @var string Title translation method
+     * @since 3.5.0
+     */
+    public $titleTranslationMethod = Field::TRANSLATION_METHOD_SITE;
+
+    /**
+     * @var string|null Title translation key format
+     * @since 3.5.0
+     */
+    public $titleTranslationKeyFormat;
 
     /**
      * @var string|null Title format

@@ -2511,6 +2511,14 @@ class Elements extends Component
             $siteElement->setEnabledForSite($enabledForSite);
         }
 
+        // Copy the title value?
+        if (
+            $element::hasTitles() &&
+            $siteElement->getTitleTranslationKey() === $element->getTitleTranslationKey()
+        ) {
+            $siteElement->title = $element->title;
+        }
+
         // Copy any non-translatable field values
         if ($element::hasContent()) {
             if ($isNewSiteForElement) {

@@ -11,6 +11,7 @@
 - Added the ability to disable sites on the front end. ([#3005](https://github.com/craftcms/cms/issues/3005))
 - Soft-deleted elements now have a “Delete permanently” element action. ([#4420](https://github.com/craftcms/cms/issues/4420))
 - Entry types can now specify custom Title field instructions. ([#1518](https://github.com/craftcms/cms/issues/1518))
+- Entry types can now change the Title field’s translation method, similar to how custom fields’ translation methods. ([#2856](https://github.com/craftcms/cms/issues/2856))
 - Entry draft forms no longer have a primary action, and the <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>S</kbd> keyboard shortcut now forces a resave of the draft, rather than publishing it. ([#6199](https://github.com/craftcms/cms/issues/6199))
 - Edit Entry pages now support a <kbd>Shift</kbd> + <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>S</kbd> keyboard shortcut for saving the entry and creating a new one. ([#2851](https://github.com/craftcms/cms/issues/2851))
 - Assets now have a “Copy URL” element action. ([#2944](https://github.com/craftcms/cms/issues/2944))
@@ -68,8 +69,11 @@
 - Added `craft\base\Element::searchKeywords()`.
 - Added `craft\base\ElementInterface::fieldLayouts()`.
 - Added `craft\base\ElementInterface::getCacheTags()`.
+- Added `craft\base\ElementInterface::getIsTitleTranslatable()`.
 - Added `craft\base\ElementInterface::getLanguage()`.
 - Added `craft\base\ElementInterface::getLocalized()`.
+- Added `craft\base\ElementInterface::getTitleTranslationDescription()`.
+- Added `craft\base\ElementInterface::getTitleTranslationKey()`.
 - Added `craft\base\ElementInterface::gqlMutationNameByContext()`.
 - Added `craft\base\ElementTrait::$elementSiteId`.
 - Added `craft\base\Field::EVENT_DEFINE_INPUT_HTML`. ([#5867](https://github.com/craftcms/cms/issues/5867))
@@ -172,6 +176,8 @@
 - Added `craft\helpers\Db::upsert()`.
 - Added `craft\helpers\ElementHelper::generateSlug()`.
 - Added `craft\helpers\ElementHelper::normalizeSlug()`.
+- Added `craft\helpers\ElementHelper::translationDescription()`.
+- Added `craft\helpers\ElementHelper::translationKey()`.
 - Added `craft\helpers\FileHelper::addFilesToZip()`.
 - Added `craft\helpers\FileHelper::zip()`.
 - Added `craft\helpers\Gql::canMutateAssets()`.

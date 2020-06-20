@@ -9,6 +9,7 @@
 namespace craft\migrations;
 
 use Craft;
+use craft\base\Field;
 use craft\db\Migration;
 use craft\db\Table;
 use craft\elements\Asset;
@@ -316,6 +317,8 @@ class Install extends Migration
             'hasTitleField' => $this->boolean()->defaultValue(true)->notNull(),
             'titleLabel' => $this->string()->defaultValue('Title'),
             'titleInstructions' => $this->text(),
+            'titleTranslationMethod' => $this->string()->notNull()->defaultValue(Field::TRANSLATION_METHOD_SITE),
+            'titleTranslationKeyFormat' => $this->text(),
             'titleFormat' => $this->string(),
             'sortOrder' => $this->smallInteger()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
@@ -366,7 +369,7 @@ class Install extends Migration
             'context' => $this->string()->notNull()->defaultValue('global'),
             'instructions' => $this->text(),
             'searchable' => $this->boolean()->notNull()->defaultValue(true),
-            'translationMethod' => $this->string()->notNull()->defaultValue('none'),
+            'translationMethod' => $this->string()->notNull()->defaultValue(Field::TRANSLATION_METHOD_NONE),
             'translationKeyFormat' => $this->text(),
             'type' => $this->string()->notNull(),
             'settings' => $this->text(),

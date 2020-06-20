@@ -9,6 +9,7 @@ namespace craft\services;
 
 use Craft;
 use craft\base\Element;
+use craft\base\Field;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Entry;
@@ -1160,6 +1161,8 @@ class Sections extends Component
             'hasTitleField' => (bool)$entryType->hasTitleField,
             'titleLabel' => $entryType->titleLabel,
             'titleInstructions' => $entryType->titleInstructions,
+            'titleTranslationMethod' => $entryType->titleTranslationMethod,
+            'titleTranslationKeyFormat' => $entryType->titleTranslationKeyFormat,
             'titleFormat' => $entryType->titleFormat,
             'sortOrder' => (int)$sortOrder,
         ];
@@ -1223,6 +1226,8 @@ class Sections extends Component
             $entryTypeRecord->hasTitleField = $data['hasTitleField'];
             $entryTypeRecord->titleLabel = $data['titleLabel'];
             $entryTypeRecord->titleInstructions = $data['titleInstructions'];
+            $entryTypeRecord->titleTranslationMethod = $data['titleTranslationMethod'];
+            $entryTypeRecord->titleTranslationKeyFormat = $data['titleTranslationKeyFormat'];
             $entryTypeRecord->titleFormat = $data['titleFormat'];
             $entryTypeRecord->sortOrder = $data['sortOrder'];
             $entryTypeRecord->sectionId = $section->id;
@@ -1651,8 +1656,12 @@ class Sections extends Component
         if (version_compare($schemaVersion, '3.1.19', '>=')) {
             $query->where(['dateDeleted' => null]);
         }
-        if (version_compare($schemaVersion, '3.5.3', '>=')) {
-            $query->addSelect(['titleInstructions']);
+        if (version_compare($schemaVersion, '3.5.4', '>=')) {
+            $query->addSelect([
+                'titleInstructions',
+                'titleTranslationMethod',
+                'titleTranslationKeyFormat',
+            ]);
         }
 
         return $query;
