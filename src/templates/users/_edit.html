@@ -160,21 +160,18 @@
                         fieldId: 'user-groups',
                     } %}
                         {% block input %}
-                            {% from '_includes/forms' import checkbox %}
+                            {% from '_includes/forms' import checkboxField %}
                             {{ hiddenInput('groups', '') }}
                             {% if assignableGroups %}
-                                <ul>
-                                    {% for group in assignableGroups %}
-                                        <li>
-                                            {{ checkbox({
-                                                label: group.name|t('site')|e,
-                                                name: 'groups[]',
-                                                value: group.id,
-                                                checked: (group.id in currentGroupIds)
-                                            }) }}
-                                        </li>
-                                    {% endfor %}
-                                </ul>
+                                {% for group in assignableGroups %}
+                                    {{ checkboxField({
+                                        label: group.name|t('site')|e,
+                                        instructions: group.description|t('site')|e,
+                                        name: 'groups[]',
+                                        value: group.id,
+                                        checked: (group.id in currentGroupIds)
+                                    }) }}
+                                {% endfor %}
                             {% else %}
                                 <p>{{ "No user groups exist yet."|t('app') }}</p>
                             {% endif %}

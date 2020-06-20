@@ -64,20 +64,15 @@ class UserGroups extends Component
      */
     public function getAllGroups(): array
     {
-        $groups = UserGroupRecord::find()
+        $results = $this->_createUserGroupsQuery()
             ->orderBy(['name' => SORT_ASC])
             ->all();
 
-        foreach ($groups as $key => $value) {
-            $groups[$key] = new UserGroup($value->toArray([
-                'id',
-                'name',
-                'handle',
-                'uid'
-            ]));
+        foreach ($results as $key => $result) {
+            $results[$key] = new UserGroup($result);
         }
 
-        return $groups;
+        return $results;
     }
 
     /**
@@ -227,7 +222,8 @@ class UserGroups extends Component
         // Save everything except permissions. Not ours to touch.
         $configData = [
             'name' => $group->name,
-            'handle' => $group->handle
+            'handle' => $group->handle,
+            'description' => $group->description,
         ];
 
         $projectConfig->set($configPath, $configData, "Save user group “{$group->handle}”");
@@ -255,6 +251,7 @@ class UserGroups extends Component
 
         $groupRecord->name = $data['name'];
         $groupRecord->handle = $data['handle'];
+        $groupRecord->description = $data['description'];
         $groupRecord->uid = $uid;
 
         $groupRecord->save(false);
@@ -359,7 +356,7 @@ class UserGroups extends Component
      */
     private function _createUserGroupsQuery(): Query
     {
-        return (new Query())
+        $query = (new Query())
             ->select([
                 'id',
                 'name',
@@ -367,5 +364,13 @@ class UserGroups extends Component
                 'uid'
             ])
             ->from([Table::USERGROUPS]);
+
+        // todo: remove schema version conditions after next beakpoint
+        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
+        if (version_compare($schemaVersion, '3.5.5', '>=')) {
+            $query->addSelect(['description']);
+        }
+
+        return $query;
     }
 }

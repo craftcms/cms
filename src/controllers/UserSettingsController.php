@@ -63,6 +63,7 @@ class UserSettingsController extends Controller
 
         $group->name = $request->getBodyParam('name');
         $group->handle = $request->getBodyParam('handle');
+        $group->description = $request->getBodyParam('description');
 
         // Did it save?
         if (!Craft::$app->getUserGroups()->saveGroup($group)) {

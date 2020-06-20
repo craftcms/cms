@@ -5,6 +5,7 @@
 ### Added
 - Entry types can now specify custom Title field instructions. ([#1518](https://github.com/craftcms/cms/issues/1518))
 - Entry types can now change the Title field’s translation method, similar to how custom fields’ translation methods. ([#2856](https://github.com/craftcms/cms/issues/2856))
+- User groups can now have descriptions. ([#4893](https://github.com/craftcms/cms/issues/4893))
 - Added support for GraphQL query batching. ([#5677](https://github.com/craftcms/cms/issues/5677))
 - Added the `parseRefs` GraphQL directive. ([#6200](https://github.com/craftcms/cms/issues/6200))
 - Added the `prev` and `next` fields for entries, categories and assets when querying elements via GraphQL. ([#5571](https://github.com/craftcms/cms/issues/5571))
