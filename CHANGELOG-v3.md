@@ -9,6 +9,7 @@
 - Added support for GraphQL query batching. ([#5677](https://github.com/craftcms/cms/issues/5677))
 - Added the `parseRefs` GraphQL directive. ([#6200](https://github.com/craftcms/cms/issues/6200))
 - Added the `prev` and `next` fields for entries, categories and assets when querying elements via GraphQL. ([#5571](https://github.com/craftcms/cms/issues/5571))
+- Added the `imageEditorRatios` config setting, making it possible to customize the list of available aspect ratios in the image editor. ([#6201](https://github.com/craftcms/cms/issues/6201))
 - Added `craft\base\ElementInterface::getIsTitleTranslatable()`.
 - Added `craft\base\ElementInterface::getTitleTranslationDescription()`.
 - Added `craft\base\ElementInterface::getTitleTranslationKey()`.
