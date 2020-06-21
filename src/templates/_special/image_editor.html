@@ -26,7 +26,7 @@
         <div class="constraint-buttons-container">
             <div class="btngroup constraint-buttons">
                 {% for label, ratio in craft.app.config.general.imageEditorRatios %}
-                    <div class="constraint {{ ratio matches '/^[0-9]*\\.?[0-9]+$/' ? 'flip' : '' }}" data-constraint="{{ ratio }}">{{ label|t('app') }}</div>
+                    <div class="constraint {{ ratio matches '/^[0-9]*\\.[0-9]+$/' ? 'flip' : '' }}" data-constraint="{{ ratio }}">{{ label|t('app') }}</div>
                 {% endfor %}
                 <div class="constraint custom" data-constraint="custom">
                     <span class="custom-label">{{ 'Custom'|t}}</span>
