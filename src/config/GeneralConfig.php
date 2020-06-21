@@ -460,6 +460,21 @@ class GeneralConfig extends BaseObject
      */
     public $imageDriver = self::IMAGE_DRIVER_AUTO;
     /**
+     * @var array An array containing the selectable image aspect ratios for image editor. The array must be in the format of `label` => `ratio`, where ratio must be a float or a string.
+     * For string values, only values of "none" and "original" are allowed.
+     */
+    public $imageEditorRatios = [
+        'Unconstrained' => 'none',
+        'Original' => 'original',
+        'Square' => 1,
+        '16:9' => 1.78,
+        '10:8' => 1.25,
+        '7:5' => 1.4,
+        '4:3' => 1.33,
+        '5:3' => 1.67,
+        '3:2' => 1.5,
+    ];
+    /**
      * @var string[] The template filenames Craft will look for within a directory to represent the directory’s “index” template when
      * matching a template path to a file on the front end.
      */
