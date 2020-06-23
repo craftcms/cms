@@ -16,8 +16,8 @@
 - Fixed an error that occurred when adding multiple tags that began with the word “not”.
 - Fixed a bug where it was possible to create two tags with the same title, but different casing. ([#6229](https://github.com/craftcms/cms/issues/6229))
 - Fixed a bug where the `migrate/all` command would create a `migrations/` folder for no good reason. ([#6220](https://github.com/craftcms/cms/issues/6220))
-- Fixed an error that could occur during installation, if old database schema data was cached.
-- Fixed a bug where asset transformed width and height would ignore transform aspect ratio when using crop mode. ([#6084](https://github.com/craftcms/cms/issues/6084))
+- Fixed an error that could occur during installation, if an old database schema data was cached.
+- Fixed a bug where transform aspect ratios could be ignored. ([#6084](https://github.com/craftcms/cms/issues/6084))
 - Fixed a bug where no sections or category groups were considered “editable”, and no volumes were considered “viewable” for console requests. ([#6237](https://github.com/craftcms/cms/issues/6237))
 - Fixed an error that could occur when syncing the project config, if a Single entry didn’t validate due to a duplicate URI. ([#4369](https://github.com/craftcms/cms/issues/4369))
 - Fixed a bug where a “Couldn’t change Craft CMS edition” notice would be displayed after successfully switching the Craft edition.
