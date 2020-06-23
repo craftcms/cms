@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Added the `setup/app-id` command. ([#6249](https://github.com/craftcms/cms/issues/6249))
 - Added `craft\db\PrimaryReplicaTrait`, which adds `primary`/`replica` properties and methods to `craft\db\Connection`, as alternatives to `master`/`slave`. ([yiisoft/yii2#18102](https://github.com/yiisoft/yii2/pull/18102))
 
 ### Changed
