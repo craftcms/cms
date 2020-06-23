@@ -373,6 +373,10 @@ class Drafts extends Component
                 $newSource = $elementsService->duplicateElement($draft, [
                     'id' => $source->id,
                     'uid' => $source->uid,
+                    'root' => $source->root,
+                    'lft' => $source->lft,
+                    'rgt' => $source->rgt,
+                    'level' => $source->level,
                     'dateCreated' => $source->dateCreated,
                     'draftId' => null,
                     'revisionNotes' => $draft->draftNotes ?: Craft::t('app', 'Applied “{name}”', ['name' => $draft->draftName]),

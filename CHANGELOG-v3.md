@@ -21,6 +21,7 @@
 - Fixed a bug where no sections or category groups were considered “editable”, and no volumes were considered “viewable” for console requests. ([#6237](https://github.com/craftcms/cms/issues/6237))
 - Fixed an error that could occur when syncing the project config, if a Single entry didn’t validate due to a duplicate URI. ([#4369](https://github.com/craftcms/cms/issues/4369))
 - Fixed a bug where a “Couldn’t change Craft CMS edition” notice would be displayed after successfully switching the Craft edition.
+- Fixed a bug where Structure section entries would get repositioned after their draft was published. ([#6250](https://github.com/craftcms/cms/issues/6250))
 
 ## 3.4.24 - 2020-06-16
 

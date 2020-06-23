@@ -788,11 +788,14 @@ class Elements extends Component
                 throw new InvalidElementException($mainClone, 'Element ' . $element->id . ' could not be duplicated for site ' . $element->siteId);
             }
 
-            // Is this a structured element?
-            if ($element->structureId && $mainClone->structureId == $element->structureId && $element->root) {
-                $mode = $mainClone->root === null && !isset($newAttributes['id'])
-                    ? Structures::MODE_INSERT
-                    : Structures::MODE_AUTO;
+            // Should we add the clone to the source element's structure?
+            if (
+                $element->structureId &&
+                $element->root &&
+                !$mainClone->root &&
+                $mainClone->structureId == $element->structureId
+            ) {
+                $mode = isset($newAttributes['id']) ? Structures::MODE_AUTO : Structures::MODE_INSERT;
 
                 // If this is a root level element, insert the duplicate after the source
                 if ($element->level == 1) {
