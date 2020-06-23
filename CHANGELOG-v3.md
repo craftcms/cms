@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.4.25 - 2020-06-23
 
 ### Added
 - Added the `setup/app-id` command. ([#6249](https://github.com/craftcms/cms/issues/6249))
