@@ -14,6 +14,7 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Entry;
 use craft\errors\EntryTypeNotFoundException;
+use craft\errors\InvalidElementException;
 use craft\errors\SectionNotFoundException;
 use craft\events\ConfigEvent;
 use craft\events\DeleteSiteEvent;
@@ -1545,7 +1546,7 @@ class Sections extends Component
             throw new Exception('No entry types exist for section ' . $section->id);
         }
 
-        // Get/save the entry
+        // Get/save the entry with updated title, slug, and URI format
         // ---------------------------------------------------------------------
 
         // If there are any existing entries, find the first one with a valid typeId
@@ -1565,10 +1566,21 @@ class Sections extends Component
             $entry->title = $section->name;
         }
 
-        // (Re)save it with an updated title, slug, and URI format.
+        // Validate first
         $entry->setScenario(Element::SCENARIO_ESSENTIALS);
-        if (!Craft::$app->getElements()->saveElement($entry)) {
-            throw new Exception('Couldn’t save single entry due to validation errors on the slug and/or URI: ' . $section->name);
+        $entry->validate();
+
+        // If there are any errors on the URI, re-validate as disabled
+        if ($entry->hasErrors('uri') && $entry->enabled) {
+            $entry->enabled = false;
+            $entry->validate();
+        }
+
+        if (
+            $entry->hasErrors() ||
+            !Craft::$app->getElements()->saveElement($entry, false)
+        ) {
+            throw new Exception("Couldn’t save single entry for section $section->name due to validation errors: " . implode(', ', $entry->getFirstErrors()));
         }
 
         // Delete any other entries in the section

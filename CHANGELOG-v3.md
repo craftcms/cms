@@ -17,6 +17,7 @@
 - Fixed an error that could occur during installation, if old database schema data was cached.
 - Fixed a bug where asset transformed width and height would ignore transform aspect ratio when using crop mode. ([#6084](https://github.com/craftcms/cms/issues/6084))
 - Fixed a bug where no sections or category groups were considered “editable”, and no volumes were considered “viewable” for console requests. ([#6237](https://github.com/craftcms/cms/issues/6237))
+- Fixed an error that could occur when syncing the project config, if a Single entry didn’t validate due to a duplicate URI. ([#4369](https://github.com/craftcms/cms/issues/4369))
 
 ## 3.4.24 - 2020-06-16
 
