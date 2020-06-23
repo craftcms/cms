@@ -97,11 +97,11 @@ class Composer extends Component
      *
      * @param array|null $requirements Package name/version pairs, or set to null to run the equivalent of `composer install`
      * @param IOInterface|null $io The IO object that Composer should be instantiated with
-     * @param array|bool $whitelist List of package names to whitelist, `true` if that should be determined
-     * dynamically, or `false` if no whitelist should be used.
+     * @param array|bool $allowlist List of package names to allow, `true` if that should be determined
+     * dynamically, or `false` if no allowlist should be used.
      * @throws \Throwable if something goes wrong
      */
-    public function install(array $requirements = null, IOInterface $io = null, $whitelist = true)
+    public function install(array $requirements = null, IOInterface $io = null, $allowlist = true)
     {
         App::maxPowerCaptain();
 
@@ -155,11 +155,11 @@ class Composer extends Component
         if ($requirements !== null) {
             $installer->setUpdate();
 
-            if (is_array($whitelist)) {
-                $installer->setUpdateWhitelist($whitelist);
-            } else if ($whitelist === true) {
-                $whitelist = Craft::$app->getApi()->getComposerWhitelist($requirements);
-                $installer->setUpdateWhitelist($whitelist);
+            if (is_array($allowlist)) {
+                $installer->setUpdateWhitelist($allowlist);
+            } else if ($allowlist === true) {
+                $allowlist = Craft::$app->getApi()->getComposerWhitelist($requirements);
+                $installer->setUpdateWhitelist($allowlist);
             }
         }
 

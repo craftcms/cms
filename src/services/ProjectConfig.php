@@ -529,7 +529,7 @@ class ProjectConfig extends Component
         }
 
         // Disable read/write splitting for the remainder of this request
-        Craft::$app->getDb()->enableSlaves = false;
+        Craft::$app->getDb()->enableReplicas = false;
 
         $this->_applyingYamlChanges = true;
         Craft::$app->getCache()->delete(self::CACHE_KEY);

@@ -60,12 +60,12 @@ use yii\base\NotSupportedException;
 class Assets extends Component
 {
     /**
-     * @event AssetEvent The event that is triggered before an asset is replaced.
+     * @event ReplaceAssetEvent The event that is triggered before an asset is replaced.
      */
     const EVENT_BEFORE_REPLACE_ASSET = 'beforeReplaceFile';
 
     /**
-     * @event AssetEvent The event that is triggered after an asset is replaced.
+     * @event ReplaceAssetEvent The event that is triggered after an asset is replaced.
      */
     const EVENT_AFTER_REPLACE_ASSET = 'afterReplaceFile';
 

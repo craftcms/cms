@@ -107,13 +107,12 @@ class MigrateController extends BaseMigrateController
         ArrayHelper::removeValue($options, 'migrationNamespaces');
         ArrayHelper::removeValue($options, 'compact');
 
-        // Global options
-        $options[] = 'type';
-        $options[] = 'plugin';
-
         if ($actionID === 'all') {
             $options[] = 'noBackup';
             $options[] = 'noContent';
+        } else {
+            $options[] = 'type';
+            $options[] = 'plugin';
         }
 
         return $options;
@@ -137,33 +136,35 @@ class MigrateController extends BaseMigrateController
      */
     public function beforeAction($action)
     {
-        // Validate $type
-        if ($this->plugin) {
-            $this->type = MigrationManager::TYPE_PLUGIN;
-        }
-        if (!in_array($this->type, [MigrationManager::TYPE_APP, MigrationManager::TYPE_PLUGIN, MigrationManager::TYPE_CONTENT], true)) {
-            throw new Exception('Invalid migration type: ' . $this->type);
-        }
-        if ($this->type === MigrationManager::TYPE_PLUGIN) {
-            // Make sure $this->plugin in set to a valid plugin handle
-            if (empty($this->plugin)) {
-                $this->stderr('You must specify the plugin handle using the --plugin option.' . PHP_EOL, Console::FG_RED);
-                return false;
+        if ($action->id !== 'all') {
+            // Validate $type
+            if ($this->plugin) {
+                $this->type = MigrationManager::TYPE_PLUGIN;
             }
-            $pluginsService = Craft::$app->getPlugins();
-            if (($plugin = $pluginsService->getPlugin($this->plugin)) === null) {
-                try {
-                    $plugin = $pluginsService->createPlugin($this->plugin);
-                } catch (InvalidPluginException $e) {
-                    $this->stderr('Invalid plugin handle: ' . $this->plugin . PHP_EOL, Console::FG_RED);
+            if (!in_array($this->type, [MigrationManager::TYPE_APP, MigrationManager::TYPE_PLUGIN, MigrationManager::TYPE_CONTENT], true)) {
+                throw new Exception('Invalid migration type: ' . $this->type);
+            }
+            if ($this->type === MigrationManager::TYPE_PLUGIN) {
+                // Make sure $this->plugin in set to a valid plugin handle
+                if (empty($this->plugin)) {
+                    $this->stderr('You must specify the plugin handle using the --plugin option.' . PHP_EOL, Console::FG_RED);
                     return false;
                 }
+                $pluginsService = Craft::$app->getPlugins();
+                if (($plugin = $pluginsService->getPlugin($this->plugin)) === null) {
+                    try {
+                        $plugin = $pluginsService->createPlugin($this->plugin);
+                    } catch (InvalidPluginException $e) {
+                        $this->stderr('Invalid plugin handle: ' . $this->plugin . PHP_EOL, Console::FG_RED);
+                        return false;
+                    }
+                }
+                $this->plugin = $plugin;
             }
-            $this->plugin = $plugin;
-        }
 
-        $this->migrationPath = $this->getMigrator()->migrationPath;
-        FileHelper::createDirectory($this->migrationPath);
+            $this->migrationPath = $this->getMigrator()->migrationPath;
+            FileHelper::createDirectory($this->migrationPath);
+        }
 
         if (!parent::beforeAction($action)) {
             return false;

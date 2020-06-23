@@ -65,6 +65,7 @@ class Install extends Migration
         $this->createTables();
         $this->createIndexes();
         $this->addForeignKeys();
+        $this->db->getSchema()->refresh();
         $this->insertDefaultData();
     }
 
@@ -599,6 +600,7 @@ class Install extends Migration
             'PRIMARY KEY([[id]])',
         ]);
         $this->createTable(Table::TEMPLATECACHEELEMENTS, [
+            'id' => $this->primaryKey(),
             'cacheId' => $this->integer()->notNull(),
             'elementId' => $this->integer()->notNull(),
         ]);
@@ -912,7 +914,7 @@ class Install extends Migration
                 'fieldId' => $this->integer()->notNull(),
                 'siteId' => $this->integer()->notNull(),
                 'keywords' => $this->text()->notNull(),
-                'keywords_vector' => $this->getDb()->getSchema()->createColumnSchemaBuilder('tsvector')->notNull(),
+                'keywords_vector' => $this->db->getSchema()->createColumnSchemaBuilder('tsvector')->notNull(),
             ]);
 
             $this->addPrimaryKey($this->db->getIndexName(Table::SEARCHINDEX, 'elementId,attribute,fieldId,siteId', true), Table::SEARCHINDEX, 'elementId,attribute,fieldId,siteId');

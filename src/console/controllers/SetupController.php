@@ -96,6 +96,11 @@ class SetupController extends Controller
      */
     public function actionIndex(): int
     {
+        if (Craft::$app->id === 'CraftCMS' && !App::env('APP_ID')) {
+            $this->run('app-id');
+            $this->stdout(PHP_EOL);
+        }
+
         if (!Craft::$app->getConfig()->getGeneral()->securityKey) {
             $this->run('security-key');
             $this->stdout(PHP_EOL);
@@ -152,9 +157,27 @@ EOD;
         $this->stdout(str_replace("\n", PHP_EOL, $craft), Console::FG_YELLOW);
 
         // Can't do anything interactive here (https://github.com/composer/composer/issues/3299)
+        $this->run('app-id');
         $this->run('security-key');
         $this->stdout(PHP_EOL . 'Welcome to Craft CMS! Run the following command if you want to setup Craft from your terminal:' . PHP_EOL);
         $this->_outputCommand('setup');
+        return ExitCode::OK;
+    }
+
+    /**
+     * Generates a new application ID and saves it in the .env file.
+     *
+     * @return int
+     * @since 3.4.25
+     */
+    public function actionAppId(): int
+    {
+        $this->stdout('Generating an application ID ... ', Console::FG_YELLOW);
+        $key = 'CraftCMS--' . StringHelper::UUID();
+        if (!$this->_setEnvVar('APP_ID', $key)) {
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+        $this->stdout("done ({$key})" . PHP_EOL, Console::FG_YELLOW);
         return ExitCode::OK;
     }
 
@@ -165,7 +188,7 @@ EOD;
      */
     public function actionSecurityKey(): int
     {
-        $this->stdout(PHP_EOL . 'Generating a security key ... ', Console::FG_YELLOW);
+        $this->stdout('Generating a security key ... ', Console::FG_YELLOW);
         $key = Craft::$app->getSecurity()->generateRandomString();
         if (!$this->_setEnvVar('SECURITY_KEY', $key)) {
             return ExitCode::UNSPECIFIED_ERROR;

@@ -788,11 +788,14 @@ class Elements extends Component
                 throw new InvalidElementException($mainClone, 'Element ' . $element->id . ' could not be duplicated for site ' . $element->siteId);
             }
 
-            // Is this a structured element?
-            if ($element->structureId && $mainClone->structureId == $element->structureId && $element->root) {
-                $mode = $mainClone->root === null && !isset($newAttributes['id'])
-                    ? Structures::MODE_INSERT
-                    : Structures::MODE_AUTO;
+            // Should we add the clone to the source element's structure?
+            if (
+                $element->structureId &&
+                $element->root &&
+                !$mainClone->root &&
+                $mainClone->structureId == $element->structureId
+            ) {
+                $mode = isset($newAttributes['id']) ? Structures::MODE_AUTO : Structures::MODE_INSERT;
 
                 // If this is a root level element, insert the duplicate after the source
                 if ($element->level == 1) {
@@ -2170,7 +2173,7 @@ class Elements extends Component
                 $element->newSiteIds = [];
 
                 foreach ($supportedSites as $siteInfo) {
-                    // Skip the master site
+                    // Skip the initial site
                     if ($siteInfo['siteId'] != $element->siteId) {
                         $this->_propagateElement($element, $siteInfo, $isNewElement ? false : null);
                     }
@@ -2323,7 +2326,7 @@ class Elements extends Component
             $siteElement = null;
         }
 
-        // If it doesn't exist yet, just clone the master site
+        // If it doesn't exist yet, just clone the initial site
         if ($isNewSiteForElement = ($siteElement === null)) {
             $siteElement = clone $element;
             $siteElement->siteId = $siteInfo['siteId'];
@@ -2358,12 +2361,12 @@ class Elements extends Component
                 // Only copy the non-translatable field values
                 foreach ($fieldLayout->getFields() as $field) {
                     /** @var Field $field */
-                    // Has this field changed, and does it produce the same translation key as it did for the master element?
+                    // Has this field changed, and does it produce the same translation key as it did for the initial element?
                     if (
                         $element->isFieldDirty($field->handle) &&
                         $field->getTranslationKey($siteElement) === $field->getTranslationKey($element)
                     ) {
-                        // Copy the master element's value over
+                        // Copy the initial element's value over
                         $siteElement->setFieldValue($field->handle, $element->getFieldValue($field->handle));
                     }
                 }

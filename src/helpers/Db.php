@@ -406,7 +406,17 @@ class Db
      */
     public static function escapeParam(string $value): string
     {
-        return str_replace([',', '*'], ['\,', '\*'], $value);
+        $value = str_replace([',', '*'], ['\,', '\*'], $value);
+
+        // If the value starts with an operator, escape that too.
+        foreach (self::$_operators as $operator) {
+            if (stripos($value, $operator) === 0) {
+                $value = "\\$value";
+                break;
+            }
+        }
+
+        return $value;
     }
 
     /**
@@ -952,13 +962,16 @@ class Db
         $op = null;
 
         if (is_string($value)) {
-            $lcValue = strtolower($value);
             foreach (self::$_operators as $operator) {
-                $len = strlen($operator);
                 // Does the value start with this operator?
-                if (strncmp($lcValue, $operator, $len) === 0) {
-                    $value = mb_substr($value, $len);
+                if (stripos($value, $operator) === 0) {
+                    $value = mb_substr($value, strlen($operator));
                     $op = $operator === 'not ' ? '!=' : $operator;
+                    break;
+                }
+                // Does it start with this operator, but escaped?
+                if (stripos($value, "\\$operator") === 0) {
+                    $value = substr($value, 1);
                     break;
                 }
             }
