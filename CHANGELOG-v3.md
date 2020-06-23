@@ -8,6 +8,7 @@
 ### Changed
 - Element query `title` params are now case-insensitive.
 - `craft\helpers\Db::escapeParam()` now escapes operators.
+- The `templatecacheelements` table now has a primary key on new installs. ([#6246](https://github.com/craftcms/cms/issues/6246))
 
 ### Fixed
 - Fixed a bug where new user groups weren’t getting set on user accounts in time for activation email templates to reference them. ([#6225](https://github.com/craftcms/cms/issues/6225))
