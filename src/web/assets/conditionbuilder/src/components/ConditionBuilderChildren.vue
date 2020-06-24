@@ -1,5 +1,5 @@
 <template>
-  <div class="conditionbuilder-children">
+  <div class="condition-builder-children" :class="'depth-' + depth.toString()">
     <component
       :is="getComponent(child.type)"
       v-for="(child, index) in query.children"
@@ -9,6 +9,8 @@
       :rule-types="ruleTypes"
       :rules="rules"
       :rule="$parent.ruleById(child.query.rule)"
+      :availableRules="availableRules"
+      :groupOperatorEnabled="groupOperatorEnabled"
       :index="index"
       :max-depth="maxDepth"
       :depth="depth + 1"
@@ -21,7 +23,7 @@
 <script>
 export default {
   // eslint-disable-next-line vue/require-prop-types
-  props: ['query', 'ruleTypes', 'rules', 'maxDepth', 'labels', 'depth'],
+  props: ['query', 'ruleTypes', 'rules', 'maxDepth', 'labels', 'depth', 'availableRules','groupOperatorEnabled'],
 
   data() {
     return {

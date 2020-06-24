@@ -1,10 +1,7 @@
 <template>
-  <div class="vue-condition-builder content-pane">
+  <div class="vue-condition-builder">
     <slot v-bind="conditionBuilderProps">
-      <condition-builder-group
-              v-bind="conditionBuilderProps"
-              :query.sync="query"
-      />
+      <condition-builder-group v-bind="conditionBuilderProps" :query.sync="query"/>
     </slot>
   </div>
 </template>
@@ -15,16 +12,15 @@
     import deepClone from './utilities.js';
 
     var defaultLabels = {
-        matchType: "",
         matchTypes: [
-            {"id": "all", "label": "And"},
-            {"id": "any", "label": "Or"},
+            {"id": "all", "label": "All"},
+            {"id": "any", "label": "Any"},
         ],
-        addRule: "Add",
-        removeRule: "Delete",
+        addRule: "Add Rule",
+        removeRule: "Delete Rule",
         addGroup: "Add Group",
-        removeGroup: "Delete",
-        textInputPlaceholder: "value",
+        removeGroup: "Delete Group",
+        textInputPlaceholder: "Value",
     };
 
     export default {
@@ -38,21 +34,25 @@
             rules: Array,
             labels: {
                 type: Object,
-                default () {
+                default() {
                     return defaultLabels;
                 }
             },
             maxDepth: {
                 type: Number,
                 default: 1,
-                validator: function (value) {
+                validator: function(value) {
                     return value >= 1
                 }
+            },
+            groupOperatorEnabled: {
+                type: Boolean,
+                default: true
             },
             value: Object
         },
 
-        data () {
+        data() {
             return {
                 query: {
                     logicalOperator: this.labels.matchTypes[0].id,
@@ -60,12 +60,12 @@
                 },
                 ruleTypes: {
                     "text": {
-                        operators: ['equals','does not equal','contains','does not contain','is empty','is not empty','begins with','ends with'],
+                        operators: ['equals', 'does not equal', 'contains', 'does not contain', 'is empty', 'is not empty', 'begins with', 'ends with'],
                         inputType: "text",
                         id: "text-field"
                     },
                     "numeric": {
-                        operators: ['=','<>','<','<=','>','>='],
+                        operators: ['=', '<>', '<', '<=', '>', '>='],
                         inputType: "number",
                         id: "number-field"
                     },
@@ -103,38 +103,53 @@
         },
 
         computed: {
-            mergedLabels () {
+            mergedLabels() {
                 return Object.assign({}, defaultLabels, this.labels);
             },
 
-            mergedRules () {
+            mergedRules() {
                 var mergedRules = [];
                 var vm = this;
 
-                vm.rules.forEach(function(rule){
-                    if ( typeof vm.ruleTypes[rule.type] !== "undefined" ) {
-                        mergedRules.push( Object.assign({}, vm.ruleTypes[rule.type], rule) );
+                vm.rules.forEach(function(rule) {
+                    // If we know this rule, set the defaults rule data
+                    if (typeof vm.ruleTypes[rule.type] !== "undefined") {
+                        mergedRules.push(Object.assign({}, vm.ruleTypes[rule.type], rule));
                     } else {
-                        mergedRules.push( rule );
+                        mergedRules.push(rule);
                     }
                 });
 
                 return mergedRules;
             },
+            mergedAvailableRules() {
+                var availableRules = this.mergedRules;
 
-            conditionBuilderProps () {
+                // var ruleCountById = [];
+                // this.query.forEach(function(rule) {
+                //
+                // });
+                // count all used rules from the query
+                // look up the maxRuleUsage
+                // only return rules that have not used up the maxRuleUsage
+
+                return availableRules;
+            },
+            conditionBuilderProps() {
                 return {
                     index: 0,
                     depth: 1,
                     maxDepth: this.maxDepth,
                     ruleTypes: this.ruleTypes,
                     rules: this.mergedRules,
-                    labels: this.mergedLabels
+                    labels: this.mergedLabels,
+                    availableRules: this.mergedAvailableRules,
+                    groupOperatorEnabled: this.groupOperatorEnabled
                 }
             }
         },
 
-        mounted () {
+        mounted() {
             this.$watch(
                 'query',
                 newQuery => {
@@ -156,9 +171,16 @@
                     deep: true
                 });
 
-            if ( typeof this.$options.propsData.value !== "undefined" ) {
+            if (typeof this.$options.propsData.value !== "undefined") {
                 this.query = Object.assign(this.query, this.$options.propsData.value);
             }
         }
     }
 </script>
+
+<style lang="scss">
+  @import 'styles/conditionbuilder.scss';
+  .vue-condition-builder{
+    margin-right:-24px;
+  }
+</style>

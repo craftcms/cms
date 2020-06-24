@@ -25,6 +25,8 @@
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-vue": "^6.2.2",
     "lodash": "^4.17.10",
+    "postcss": "^7.0.32",
+    "tailwindcss": "^1.4.6",
     "vue": "^2.6.11",
     "vue-router": "^3.3.1",
     "vuex": "^3.4.0"
@@ -36,6 +38,7 @@
     "@vue/cli-service": "^3.12.1",
     "@vue/eslint-config-standard": "^3.0.5",
     "@vue/test-utils": "^1.0.0-beta.30",
+    "craftcms-sass": "^3.4.0",
     "node-sass": "^4.14.1",
     "sass-loader": "^7.0.1",
     "vue-template-compiler": "^2.6.11",
@@ -43,7 +46,8 @@
   },
   "postcss": {
     "plugins": {
-      "autoprefixer": {}
+      "autoprefixer": {},
+      "tailwindcss": {}
     }
   }
 }

@@ -9,7 +9,9 @@
 ]) %}
 
 {% block main %}
-    <div id="element-query-builder"></div>
+    <div class="pane">
+        <div id="element-query-builder"></div>
+    </div>
     {{ parent() }}
 {% endblock %}
 
@@ -20,13 +22,33 @@
 {% endif %}
 
 {% js %}
-new Craft.VueConditionBuilder({
-    container: '#element-query-builder',
-    rules: [],
-    query: {},
-    singleUseRules: ['id'],
-    nestingEnabled: true,
-    topLevelGrouping: 'all'
-});
+        new Craft.VueConditionBuilder({
+            container: '#element-query-builder',
+            rules: [
+                {
+                type: "text",
+                id: "elementId",
+                label: "ID"
+                },
+                {
+                type: "text",
+                id: "sectionId",
+                label: "Section ID"
+                },
+                {
+                  type: "radio",
+                  id: "status",
+                  label: "Status",
+                  choices: [
+                    { label: "Enabled", value: "enabled" },
+                    { label: "Disabled", value: "disabled" }
+                  ]
+                }
+              ],
+            query: {},
+            maxDepth: 5,
+            maxRuleUsage: 1,
+            groupOperatorEnabled: false
+        });
 {% endjs %}
 
