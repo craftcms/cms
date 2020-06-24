@@ -148,6 +148,10 @@ class Volumes extends Component
      */
     public function getViewableVolumes(): array
     {
+        if (Craft::$app->getRequest()->getIsConsoleRequest()) {
+            return $this->getAllVolumes();
+        }
+
         $userSession = Craft::$app->getUser();
         return ArrayHelper::where($this->getAllVolumes(), function(VolumeInterface $volume) use ($userSession) {
             return $userSession->checkPermission('viewVolume:' . $volume->uid);

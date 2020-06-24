@@ -719,6 +719,7 @@ $.extend(Craft,
                 }).catch(e => {
                     this._loadingApiHeaders = false;
                     reject(e)
+
                     // Was anything else waiting for them?
                     while (this._apiHeaderWaitlist.length) {
                         this._apiHeaderWaitlist.shift()[1](e);
@@ -729,6 +730,7 @@ $.extend(Craft,
 
         _resolveHeaderWaitlist: function() {
             this._loadingApiHeaders = false;
+
             // Was anything else waiting for them?
             while (this._apiHeaderWaitlist.length) {
                 this._apiHeaderWaitlist.shift()[0](this._apiHeaders);

@@ -603,6 +603,7 @@ class Install extends Migration
             'PRIMARY KEY([[id]])',
         ]);
         $this->createTable(Table::TEMPLATECACHEELEMENTS, [
+            'id' => $this->primaryKey(),
             'cacheId' => $this->integer()->notNull(),
             'elementId' => $this->integer()->notNull(),
         ]);
