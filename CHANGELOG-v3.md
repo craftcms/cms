@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed a JavaScript error that occurred when clicking the “Export…” button, on a view that had no bulk actions. ([#6183](https://github.com/craftcms/cms/issues/6183))
+- Fixed a bug where custom field values could be autosaved incorrectly. ([#6258](https://github.com/craftcms/cms/issues/6258))
 
 ## 3.4.25 - 2020-06-23
 

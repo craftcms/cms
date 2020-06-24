@@ -13535,6 +13535,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     },
     afterUpdate: function afterUpdate(data) {
       Craft.cp.$primaryForm.data('initialSerializedValue', data);
+      Craft.initialDeltaValues = {};
       this.statusIcons().removeClass('hidden').addClass('checkmark-icon').attr('title', Craft.t('app', 'The draft has been saved.'));
       this.trigger('update');
       this.nextInQueue();
