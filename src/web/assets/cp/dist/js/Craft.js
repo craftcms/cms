@@ -22,7 +22,7 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-/*!   - 2020-06-23 */
+/*!   - 2020-06-24 */
 (function ($) {
   /** global: Craft */
 
@@ -4293,8 +4293,13 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       return this.elementSelect.$selectedItems;
     },
     getSelectedElementIds: function getSelectedElementIds() {
-      var $selectedElements = this.getSelectedElements(),
-          ids = [];
+      var $selectedElements;
+
+      try {
+        $selectedElements = this.getSelectedElements();
+      } catch (e) {}
+
+      var ids = [];
 
       if ($selectedElements) {
         for (var i = 0; i < $selectedElements.length; i++) {
