@@ -168,7 +168,7 @@ class CategoriesController extends Controller
 
         // Save it
         if (!Craft::$app->getCategories()->saveGroup($group)) {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save the category group.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t save the category group.'));
 
             // Send the category group back to the template
             Craft::$app->getUrlManager()->setRouteParams([
@@ -178,8 +178,7 @@ class CategoriesController extends Controller
             return null;
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'Category group saved.'));
-
+        $this->setSuccessFlash(Craft::t('app', 'Category group saved.'));
         return $this->redirectToPostedUrl($group);
     }
 
@@ -467,7 +466,7 @@ class CategoriesController extends Controller
                     ]);
                 }
 
-                Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t duplicate category.'));
+                $this->setFailFlash(Craft::t('app', 'Couldn’t duplicate category.'));
 
                 // Send the original category back to the template, with any validation errors on the clone
                 $category->addErrors($clone->getErrors());
@@ -497,7 +496,7 @@ class CategoriesController extends Controller
                 ]);
             }
 
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save category.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t save category.'));
 
             // Send the category back to the template
             Craft::$app->getUrlManager()->setRouteParams([
@@ -519,8 +518,7 @@ class CategoriesController extends Controller
             ]);
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'Category saved.'));
-
+        $this->setSuccessFlash(Craft::t('app', 'Category saved.'));
         return $this->redirectToPostedUrl($category);
     }
 
@@ -551,7 +549,7 @@ class CategoriesController extends Controller
                 return $this->asJson(['success' => false]);
             }
 
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t delete category.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t delete category.'));
 
             // Send the category back to the template
             Craft::$app->getUrlManager()->setRouteParams([
@@ -565,8 +563,7 @@ class CategoriesController extends Controller
             return $this->asJson(['success' => true]);
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'Category deleted.'));
-
+        $this->setSuccessFlash(Craft::t('app', 'Category deleted.'));
         return $this->redirectToPostedUrl($category);
     }
 

@@ -22,7 +22,7 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-/*!   - 2020-05-30 */
+/*!   - 2020-06-23 */
 (function ($) {
   /** global: Craft */
 
@@ -719,16 +719,16 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
 
                 if (_this3._apiHeaders && _this3._apiHeaders['X-Craft-License'] === '__REQUEST__') {
-                  _this3._apiHeaders['X-Craft-License'] = apiResponse.headers['x-craft-license'];
+                  _this3._apiHeaders['X-Craft-License'] = window.cmsLicenseKey = apiResponse.headers['x-craft-license'];
 
                   _this3._resolveHeaderWaitlist();
                 }
               } else if (_this3._apiHeaders && _this3._apiHeaders['X-Craft-License'] === '__REQUEST__' && _this3._apiHeaderWaitlist.length) {
                 // The request didn't send headers. Go ahead and resolve the next request on the
                 // header waitlist.
-                var _item = _this3._apiHeaderWaitlist.shift();
+                var item = _this3._apiHeaderWaitlist.shift();
 
-                _item[0](_this3._apiHeaders);
+                item[0](_this3._apiHeaders);
               }
             }
           })["catch"](reject);
@@ -784,10 +784,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           _this4._loadingApiHeaders = false;
           reject(e); // Was anything else waiting for them?
 
-          var item;
-
-          while (item = _this4._apiHeaderWaitlist.shift()) {
-            item[1](e);
+          while (_this4._apiHeaderWaitlist.length) {
+            _this4._apiHeaderWaitlist.shift()[1](e);
           }
         });
       });
@@ -795,10 +793,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     _resolveHeaderWaitlist: function _resolveHeaderWaitlist() {
       this._loadingApiHeaders = false; // Was anything else waiting for them?
 
-      var item;
-
-      while (item = this._apiHeaderWaitlist.shift()) {
-        item[0](this._apiHeaders);
+      while (this._apiHeaderWaitlist.length) {
+        this._apiHeaderWaitlist.shift()[0](this._apiHeaders);
       }
     },
 
@@ -810,8 +806,8 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       this._processedApiHeaders = false;
       this._loadingApiHeaders = false; // Reject anything in the header waitlist
 
-      while (item = this._apiHeaderWaitlist.shift()) {
-        item[1]();
+      while (this._apiHeaderWaitlist.length) {
+        this._apiHeaderWaitlist.shift()[1]();
       }
     },
 
@@ -3635,8 +3631,11 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       }
 
       if (this.initialized) {
-        // Remember this site for later
-        Craft.setLocalStorage('BaseElementIndex.siteId', siteId); // Update the elements
+        if (this.settings.context === 'index') {
+          // Remember this site for later
+          Craft.setLocalStorage('BaseElementIndex.siteId', siteId);
+        } // Update the elements
+
 
         this.updateElements();
       }
@@ -4734,9 +4733,20 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
       if (this.settings.viewMode === 'list' || this.$elements.length === 0) {
         animateCss['margin-bottom'] = -($element.outerHeight() + parseInt($element.css('margin-bottom')));
+      } // Pause the draft editor
+
+
+      if (window.draftEditor) {
+        window.draftEditor.pause();
       }
 
-      $element.velocity(animateCss, Craft.BaseElementSelectInput.REMOVE_FX_DURATION, callback);
+      $element.velocity(animateCss, Craft.BaseElementSelectInput.REMOVE_FX_DURATION, function () {
+        callback(); // Resume the draft editor
+
+        if (window.draftEditor) {
+          window.draftEditor.resume();
+        }
+      });
     },
     showModal: function showModal() {
       // Make sure we haven't reached the limit
@@ -16780,11 +16790,11 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         this.$shade = $('<div/>', {
           'class': 'modal-shade dark'
         }).appendTo(Garnish.$bod);
-        this.$editorContainer = $('<div/>', {
-          'class': 'lp-editor-container'
-        }).appendTo(Garnish.$bod);
         this.$iframeContainer = $('<div/>', {
           'class': 'lp-preview-container'
+        }).appendTo(Garnish.$bod);
+        this.$editorContainer = $('<div/>', {
+          'class': 'lp-editor-container'
         }).appendTo(Garnish.$bod);
         var $editorHeader = $('<header/>', {
           'class': 'flex'
@@ -17283,11 +17293,11 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         this.$shade = $('<div/>', {
           'class': 'modal-shade dark'
         }).appendTo(Garnish.$bod);
-        this.$editorContainer = $('<div/>', {
-          'class': 'lp-editor-container'
-        }).appendTo(Garnish.$bod);
         this.$previewContainer = $('<div/>', {
           'class': 'lp-preview-container'
+        }).appendTo(Garnish.$bod);
+        this.$editorContainer = $('<div/>', {
+          'class': 'lp-editor-container'
         }).appendTo(Garnish.$bod);
         var $editorHeader = $('<header/>', {
           'class': 'flex'

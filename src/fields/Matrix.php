@@ -607,7 +607,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
      * @inheritdoc
      * @throws InvalidConfigException
      */
-    public function getInputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml($value, ElementInterface $element = null): string
     {
         if ($element !== null && $element->hasEagerLoadedElements($this->handle)) {
             $value = $element->getEagerLoadedElements($this->handle);
@@ -635,7 +635,11 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
 
         // Get the block types data
         $blockTypeInfo = $this->_getBlockTypeInfoForInput($element, $blockTypes);
-        $createDefaultBlocks = $this->minBlocks != 0 && count($blockTypeInfo) === 1;
+        $createDefaultBlocks = (
+            $this->minBlocks != 0 &&
+            count($blockTypeInfo) === 1 &&
+            (!$element || !$element->hasErrors($this->handle))
+        );
         $staticBlocks = (
             $createDefaultBlocks &&
             $this->minBlocks == $this->maxBlocks &&
@@ -838,6 +842,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
 
     /**
      * @inheritdoc
+     * @since 3.5.0
      */
     public function getContentGqlMutationArgumentType()
     {

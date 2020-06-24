@@ -37,6 +37,12 @@ class UserGroup extends Model
     public $handle;
 
     /**
+     * @var string|null Description
+     * @since 3.5.0
+     */
+    public $description;
+
+    /**
      * @var string|null UID
      */
     public $uid;

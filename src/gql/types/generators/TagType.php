@@ -17,8 +17,10 @@ use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\Tag as TagInterface;
 use craft\gql\TypeManager;
 use craft\gql\types\elements\Tag;
+use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\TagGroup;
+use GraphQL\Type\Definition\Type;
 
 /**
  * Class TagType
@@ -63,7 +65,8 @@ class TagType implements GeneratorInterface, SingleGeneratorInterface
 
         /** @var Field $contentField */
         foreach ($contentFields as $contentField) {
-            $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
+            $gqlType = $contentField->getContentGqlType();
+            $contentFieldGqlTypes[$contentField->handle] = $contentField->required ? Gql::wrapInNonNull($gqlType) : $gqlType;
         }
 
         $tagGroupFields = TypeManager::prepareFieldDefinitions(array_merge(TagInterface::getFieldDefinitions(), $contentFieldGqlTypes), $typeName);

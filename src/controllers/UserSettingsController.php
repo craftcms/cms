@@ -63,10 +63,11 @@ class UserSettingsController extends Controller
 
         $group->name = $request->getBodyParam('name');
         $group->handle = $request->getBodyParam('handle');
+        $group->description = $request->getBodyParam('description');
 
         // Did it save?
         if (!Craft::$app->getUserGroups()->saveGroup($group)) {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save group.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t save group.'));
 
             // Send the group back to the template
             Craft::$app->getUrlManager()->setRouteParams([
@@ -91,8 +92,8 @@ class UserSettingsController extends Controller
         }
 
         Craft::$app->getUserPermissions()->saveGroupPermissions($group->id, $permissions);
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'Group saved.'));
 
+        $this->setSuccessFlash(Craft::t('app', 'Group saved.'));
         return $this->redirectToPostedUrl();
     }
 
@@ -136,7 +137,7 @@ class UserSettingsController extends Controller
 
         $projectConfig->set('users', $settings, 'Update user settings');
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'User settings saved.'));
+        $this->setSuccessFlash(Craft::t('app', 'User settings saved.'));
         return $this->redirectToPostedUrl();
     }
 }

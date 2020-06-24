@@ -11,10 +11,12 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldInterface;
 use craft\base\PreviewableFieldInterface;
+use craft\base\SortableFieldInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\helpers\Db;
 use craft\helpers\Json;
+use craft\models\FieldLayout;
 use yii\base\Component;
 
 /**
@@ -192,26 +194,19 @@ class ElementIndexes extends Component
      * Returns all of the available attributes that can be shown for a given element type source.
      *
      * @param string $elementType The element type class
-     * @param bool $includeFields Whether custom fields should be included in the list
      * @return array
      */
-    public function getAvailableTableAttributes(string $elementType, bool $includeFields = true): array
+    public function getAvailableTableAttributes(string $elementType): array
     {
         /** @var string|ElementInterface $elementType */
         $attributes = $elementType::tableAttributes();
 
+        // Normalize
         foreach ($attributes as $key => $info) {
             if (!is_array($info)) {
                 $attributes[$key] = ['label' => $info];
             } else if (!isset($info['label'])) {
                 $attributes[$key]['label'] = '';
-            }
-        }
-
-        if ($includeFields) {
-            // Mix in custom fields
-            foreach ($this->getAvailableTableFields($elementType) as $field) {
-                $attributes['field:' . $field->id] = ['label' => Craft::t('site', $field->name)];
             }
         }
 
@@ -233,14 +228,15 @@ class ElementIndexes extends Component
             $sourceKey = substr($sourceKey, 0, $slash);
         }
 
-        $settings = $this->getSettings($elementType);
-        $availableAttributes = $this->getAvailableTableAttributes($elementType);
+        $availableAttributes = array_merge(
+            $this->getAvailableTableAttributes($elementType),
+            $this->getSourceTableAttributes($elementType, $sourceKey)
+        );
+
         $attributes = [];
 
         // Start with the first available attribute, no matter what
         $firstKey = null;
-
-        /** @noinspection LoopWhichDoesNotLoopInspection */
         foreach ($availableAttributes as $key => $attributeInfo) {
             $firstKey = $key;
             $attributes[] = [$key, $attributeInfo];
@@ -248,6 +244,7 @@ class ElementIndexes extends Component
         }
 
         // Is there a custom attributes list?
+        $settings = $this->getSettings($elementType);
         if (isset($settings['sources'][$sourceKey]['tableAttributes'])) {
             $attributeKeys = $settings['sources'][$sourceKey]['tableAttributes'];
         } else {
@@ -265,10 +262,90 @@ class ElementIndexes extends Component
     }
 
     /**
+     * @var array
+     * @see getFieldLayoutsForSource()
+     */
+    private $_fieldLayouts;
+
+    /**
+     * Returns all the field layouts available for the given element source.
+     *
+     * @param string $elementType
+     * @param string $sourceKey
+     * @return FieldLayout[]
+     * @since 3.5.0
+     */
+    public function getFieldLayoutsForSource(string $elementType, string $sourceKey): array
+    {
+        if (!isset($this->_fieldLayouts[$elementType][$sourceKey])) {
+            /** @var string|ElementInterface $elementType */
+            $this->_fieldLayouts[$elementType][$sourceKey] = $elementType::fieldLayouts($sourceKey);
+        }
+        return $this->_fieldLayouts[$elementType][$sourceKey];
+    }
+
+    /**
+     * Returns additional sort options that should be available for a given element source.
+     *
+     * @param string $elementType The element type class
+     * @param string $sourceKey The element source key
+     * @return \Generator
+     * @since 3.5.0
+     */
+    public function getSourceSortOptions(string $elementType, string $sourceKey): \Generator
+    {
+        $processedFieldIds = [];
+        foreach ($this->getFieldLayoutsForSource($elementType, $sourceKey) as $fieldLayout) {
+            foreach ($fieldLayout->getFields() as $field) {
+                if (
+                    $field instanceof SortableFieldInterface &&
+                    !isset($processedFieldIds[$field->id])
+                ) {
+                    $sortOption = $field->getSortOption();
+                    if (!isset($sortOption['attribute'])) {
+                        $sortOption['attribute'] = $sortOption['orderBy'];
+                    }
+                    yield $sortOption;
+                    $processedFieldIds[$field->id] = true;
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns additional table attributes that should be available for a given source.
+     *
+     * @param string $elementType The element type class
+     * @param string $sourceKey The element source key
+     * @return array
+     * @since 3.5.0
+     */
+    public function getSourceTableAttributes(string $elementType, string $sourceKey): array
+    {
+        $processedFieldIds = [];
+        $attributes = [];
+        foreach ($this->getFieldLayoutsForSource($elementType, $sourceKey) as $fieldLayout) {
+            foreach ($fieldLayout->getFields() as $field) {
+                if (
+                    $field instanceof PreviewableFieldInterface &&
+                    !isset($processedFieldIds[$field->id])
+                ) {
+                    $attributes["field:$field->id"] = [
+                        'label' => Craft::t('site', $field->name),
+                    ];
+                    $processedFieldIds[$field->id] = true;
+                }
+            }
+        }
+        return $attributes;
+    }
+
+    /**
      * Returns the fields that are available to be shown as table attributes.
      *
      * @param string $elementType The element type class
      * @return FieldInterface[]
+     * @deprecated in 3.5.0. Use [[getSourceTableAttributes()]] instead.
      */
     public function getAvailableTableFields(string $elementType): array
     {

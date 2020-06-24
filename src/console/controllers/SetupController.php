@@ -96,6 +96,11 @@ class SetupController extends Controller
      */
     public function actionIndex(): int
     {
+        if (Craft::$app->id === 'CraftCMS' && !App::env('APP_ID')) {
+            $this->run('app-id');
+            $this->stdout(PHP_EOL);
+        }
+
         if (!Craft::$app->getConfig()->getGeneral()->securityKey) {
             $this->run('security-key');
             $this->stdout(PHP_EOL);
@@ -152,9 +157,27 @@ EOD;
         $this->stdout(str_replace("\n", PHP_EOL, $craft), Console::FG_YELLOW);
 
         // Can't do anything interactive here (https://github.com/composer/composer/issues/3299)
+        $this->run('app-id');
         $this->run('security-key');
         $this->stdout(PHP_EOL . 'Welcome to Craft CMS! Run the following command if you want to setup Craft from your terminal:' . PHP_EOL);
         $this->_outputCommand('setup');
+        return ExitCode::OK;
+    }
+
+    /**
+     * Generates a new application ID and saves it in the .env file.
+     *
+     * @return int
+     * @since 3.4.25
+     */
+    public function actionAppId(): int
+    {
+        $this->stdout('Generating an application ID ... ', Console::FG_YELLOW);
+        $key = 'CraftCMS--' . StringHelper::UUID();
+        if (!$this->_setEnvVar('APP_ID', $key)) {
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+        $this->stdout("done ({$key})" . PHP_EOL, Console::FG_YELLOW);
         return ExitCode::OK;
     }
 
@@ -165,7 +188,7 @@ EOD;
      */
     public function actionSecurityKey(): int
     {
-        $this->stdout(PHP_EOL . 'Generating a security key ... ', Console::FG_YELLOW);
+        $this->stdout('Generating a security key ... ', Console::FG_YELLOW);
         $key = Craft::$app->getSecurity()->generateRandomString();
         if (!$this->_setEnvVar('SECURITY_KEY', $key)) {
             return ExitCode::UNSPECIFIED_ERROR;
@@ -273,7 +296,7 @@ EOD;
             'default' => $this->tablePrefix ?: null,
             'validator' => function(string $input): bool {
                 if (strlen(StringHelper::ensureRight($input, '_')) > 6) {
-                    Console::stderr($this->ansiFormat('The table prefix must be 5 or less characters long.' . PHP_EOL, Console::FG_RED));
+                    $this->stderr('The table prefix must be 5 or less characters long.' . PHP_EOL, Console::FG_RED);
                     return false;
                 }
                 return true;
@@ -296,6 +319,10 @@ EOD;
 
         test:
 
+        $dbConfig->driver = $this->driver;
+        $dbConfig->server = $this->server;
+        $dbConfig->port = $this->port;
+        $dbConfig->database = $this->database;
         $dbConfig->dsn = "{$this->driver}:host={$this->server};port={$this->port};dbname={$this->database};";
         $dbConfig->user = $this->user;
         $dbConfig->password = $this->password;
@@ -362,8 +389,21 @@ EOD;
         $this->stdout('success!' . PHP_EOL, Console::FG_GREEN);
         $this->stdout('Saving database credentials to your .env file ... ', Console::FG_YELLOW);
 
+        // If there's a DB_DSN environment variable, go with that
+        if (App::env('DB_DSN') !== false) {
+            if (!$this->_setEnvVar('DB_DSN', $dbConfig->dsn)) {
+                return ExitCode::UNSPECIFIED_ERROR;
+            }
+        } else if (
+            !$this->_setEnvVar('DB_DRIVER', $this->driver) ||
+            !$this->_setEnvVar('DB_SERVER', $this->server) ||
+            !$this->_setEnvVar('DB_PORT', $this->port) ||
+            !$this->_setEnvVar('DB_DATABASE', $this->database)
+        ) {
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
         if (
-            !$this->_setEnvVar('DB_DSN', $dbConfig->dsn) ||
             !$this->_setEnvVar('DB_USER', $this->user) ||
             !$this->_setEnvVar('DB_PASSWORD', $this->password) ||
             !$this->_setEnvVar('DB_SCHEMA', $this->schema) ||

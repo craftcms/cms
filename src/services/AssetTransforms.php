@@ -282,6 +282,9 @@ class AssetTransforms extends Component
                 'isNew' => $isNewTransform,
             ]));
         }
+
+        // Invalidate asset caches
+        Craft::$app->getElements()->invalidateCachesForElementType(Asset::class);
     }
 
     /**
@@ -368,6 +371,9 @@ class AssetTransforms extends Component
                 'assetTransform' => $transform
             ]));
         }
+
+        // Invalidate asset caches
+        Craft::$app->getElements()->invalidateCachesForElementType(Asset::class);
     }
 
     /**
@@ -995,9 +1001,7 @@ class AssetTransforms extends Component
             if (!$volume instanceof LocalVolumeInterface) {
                 if (!is_file($imageSourcePath) || filesize($imageSourcePath) === 0) {
                     // Delete it just in case it's a 0-byter
-                    if (!FileHelper::unlink($imageSourcePath)) {
-                        Craft::warning("Unable to delete the file \"$imageSourcePath\".", __METHOD__);
-                    }
+                    FileHelper::unlink($imageSourcePath);
 
                     $prefix = pathinfo($asset->filename, PATHINFO_FILENAME) . '.delimiter.';
                     $extension = $asset->getExtension();

@@ -17,7 +17,9 @@ use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\GlobalSet as GlobalSetInterface;
 use craft\gql\TypeManager;
 use craft\gql\types\elements\GlobalSet;
+use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
+use GraphQL\Type\Definition\Type;
 
 /**
  * Class GlobalSetType
@@ -71,7 +73,8 @@ class GlobalSetType implements GeneratorInterface, SingleGeneratorInterface
 
         /** @var Field $contentField */
         foreach ($contentFields as $contentField) {
-            $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
+            $gqlType = $contentField->getContentGqlType();
+            $contentFieldGqlTypes[$contentField->handle] = $contentField->required ? Gql::wrapInNonNull($gqlType) : $gqlType;
         }
 
         $globalSetFields = TypeManager::prepareFieldDefinitions(array_merge(GlobalSetInterface::getFieldDefinitions(), $contentFieldGqlTypes), $typeName);

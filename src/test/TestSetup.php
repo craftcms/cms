@@ -400,7 +400,8 @@ class TestSetup
     public static function getSeedProjectConfigData(bool $asYaml = true)
     {
         // Get the file path
-        $projectConfigFile = \craft\test\Craft::$testConfig['projectConfig']['file'] ?? null;
+        $config = \craft\test\Craft::$instance->_getConfig('projectConfig');
+        $projectConfigFile = $config['file'] ?? null;
         if (!$projectConfigFile) {
             return null;
         }
@@ -428,21 +429,19 @@ class TestSetup
      */
     public static function useProjectConfig()
     {
-        $projectConfig = \craft\test\Craft::$testConfig['projectConfig'] ?? [];
+        $config = \craft\test\Craft::$instance->_getConfig('projectConfig');
 
-        if ($projectConfig &&
-            isset($projectConfig['file'])
-        ) {
-            // Fail hard if someone has specified a project config file but doesn't have project config enabled.
-            // Prevent's confusion of https://github.com/craftcms/cms/pulls/4711
-            if (!Craft::$app->getConfig()->getGeneral()->useProjectConfigFile) {
-                throw new InvalidArgumentException('Please enable the `useProjectConfigFile` option in `general.php`');
-            }
-
-            return $projectConfig;
+        if (!isset($config['file'])) {
+            return false;
         }
 
-        return false;
+        // Fail hard if someone has specified a project config file but doesn't have project config enabled.
+        // Prevent's confusion of https://github.com/craftcms/cms/pulls/4711
+        if (!Craft::$app->getConfig()->getGeneral()->useProjectConfigFile) {
+            throw new InvalidArgumentException('Please enable the `useProjectConfigFile` option in `general.php`');
+        }
+
+        return $config;
     }
 
     /**

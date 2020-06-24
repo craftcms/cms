@@ -78,7 +78,7 @@ class GlobalsController extends Controller
 
         // Save it
         if (!Craft::$app->getGlobals()->saveSet($globalSet)) {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save global set.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t save global set.'));
 
             // Send the global set back to the template
             Craft::$app->getUrlManager()->setRouteParams([
@@ -88,8 +88,7 @@ class GlobalsController extends Controller
             return null;
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'Global set saved.'));
-
+        $this->setSuccessFlash(Craft::t('app', 'Global set saved.'));
         return $this->redirectToPostedUrl($globalSet);
     }
 
@@ -273,7 +272,7 @@ class GlobalsController extends Controller
         $globalSet->setScenario(Element::SCENARIO_LIVE);
 
         if (!Craft::$app->getElements()->saveElement($globalSet)) {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save global set.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t save global set.'));
 
             // Send the global set back to the template
             Craft::$app->getUrlManager()->setRouteParams([
@@ -283,8 +282,7 @@ class GlobalsController extends Controller
             return null;
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'Global set saved.'));
-
+        $this->setSuccessFlash(Craft::t('app', 'Global set saved.'));
         return $this->redirectToPostedUrl();
     }
 }

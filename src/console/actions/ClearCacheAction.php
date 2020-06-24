@@ -42,9 +42,8 @@ class ClearCacheAction extends Action
      */
     public function run(): int
     {
-        $label = Console::ansiFormat(Craft::t('app', 'Clearing cache:'), [Console::FG_GREEN]);
-        $name = Console::ansiFormat($this->label, [Console::FG_YELLOW]);
-        Console::output("{$label} {$name}");
+        $this->controller->stdout(Craft::t('app', 'Clearing cache:') . ' ', Console::FG_GREEN);
+        $this->controller->stdout($this->label . PHP_EOL, Console::FG_YELLOW);
 
         if (is_string($this->action)) {
             try {
@@ -53,7 +52,7 @@ class ClearCacheAction extends Action
                 // the directory doesn't exist
             } catch (\Throwable $e) {
                 $error = "Could not clear the directory {$this->label}: " . $e->getMessage();
-                Console::error(Console::ansiFormat($error, [Console::FG_RED]));
+                $this->controller->stderr($error . PHP_EOL, Console::FG_RED);
                 Craft::warning($error, __METHOD__);
             }
         } else if (isset($this->params)) {
@@ -61,7 +60,7 @@ class ClearCacheAction extends Action
                 call_user_func_array($this->action, $this->params);
             } catch (\Throwable $e) {
                 $error = "Error clearing cache {$this->label}: " . $e->getMessage();
-                Console::error(Console::ansiFormat($error, [Console::FG_RED]));
+                $this->controller->stderr($error . PHP_EOL, Console::FG_RED);
                 Craft::warning($error, __METHOD__);
             }
         } else {
@@ -70,7 +69,7 @@ class ClearCacheAction extends Action
                 $action();
             } catch (\Throwable $e) {
                 $error = "Error clearing cache {$this->label}: " . $e->getMessage();
-                Console::error(Console::ansiFormat($error, [Console::FG_RED]));
+                $this->controller->stderr($error . PHP_EOL, Console::FG_RED);
                 Craft::warning($error, __METHOD__);
             }
         }

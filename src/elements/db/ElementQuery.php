@@ -1392,7 +1392,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         if ($this->title !== null && $this->title !== '' && $class::hasTitles()) {
-            $this->subQuery->andWhere(Db::parseParam('content.title', $this->title));
+            $this->subQuery->andWhere(Db::parseParam('content.title', $this->title, '=', true));
         }
 
         if ($this->slug) {
@@ -1924,7 +1924,48 @@ class ElementQuery extends Query implements ElementQueryInterface
         $event = new CancelableEvent();
         $this->trigger(self::EVENT_AFTER_PREPARE, $event);
 
-        return $event->isValid;
+        if (!$event->isValid) {
+            return false;
+        }
+
+        $elementsService = Craft::$app->getElements();
+        if ($elementsService->getIsCollectingCacheTags()) {
+            $cacheTags = [
+                'element',
+                "element::$this->elementType",
+            ];
+
+            // If specific IDs were requested, then use those
+            if (is_numeric($this->id) || (is_array($this->id) && ArrayHelper::isNumeric($this->id))) {
+                $queryTags = (array)$this->id;
+            } else {
+                $queryTags = $this->cacheTags() ?: ['*'];
+            }
+
+            foreach ($queryTags as $tag) {
+                $cacheTags[] = "element::$this->elementType::$tag";
+            }
+
+            $elementsService->collectCacheTags($cacheTags);
+        }
+
+        return true;
+    }
+
+    /**
+     * Returns any cache invalidation tags that caches involving this element query should use as dependencies.
+     *
+     * Use the most specific tag(s) possible, to reduce the likelihood of pointless cache clearing.
+     *
+     * When elements are created/updated/deleted, their [[ElementInterface::getCacheTags()]] method will be called,
+     * and any caches that have those tags listed as dependencies will be invalidated.
+     *
+     * @return string[]
+     * @since 3.5.0
+     */
+    protected function cacheTags(): array
+    {
+        return [];
     }
 
     /**
@@ -2483,7 +2524,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             throw new QueryAbortedException();
         }
 
-        return $this->$property = ElementHelper::sourceElement($this->$property, true);
+        return $this->$property;
     }
 
     /**

@@ -11,6 +11,8 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\behaviors\DraftBehavior;
+use craft\db\Query;
+use craft\db\Table;
 use craft\elements\Entry;
 use craft\errors\InvalidElementException;
 use craft\helpers\ArrayHelper;
@@ -208,7 +210,7 @@ class EntryRevisionsController extends BaseEntriesController
 
             // Manually validate 'title' since the Elements service will just give it a title automatically.
             if (!$entry->validate(['title']) || !$elementsService->saveElement($entry, false)) {
-                Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save draft.'));
+                $this->setFailFlash(Craft::t('app', 'Couldn’t save draft.'));
                 Craft::$app->getUrlManager()->setRouteParams([
                     'entry' => $entry,
                 ]);
@@ -276,7 +278,7 @@ class EntryRevisionsController extends BaseEntriesController
                     ]);
                 }
 
-                Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save draft.'));
+                $this->setFailFlash(Craft::t('app', 'Couldn’t save draft.'));
                 Craft::$app->getUrlManager()->setRouteParams([
                     'entry' => $draft,
                 ]);
@@ -308,7 +310,7 @@ class EntryRevisionsController extends BaseEntriesController
             ]);
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'Draft saved.'));
+        $this->setSuccessFlash(Craft::t('app', 'Draft saved.'));
         return $this->redirectToPostedUrl($draft);
     }
 
@@ -342,7 +344,7 @@ class EntryRevisionsController extends BaseEntriesController
 
         Craft::$app->getElements()->deleteElement($draft, true);
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'Draft deleted'));
+        $this->setSuccessFlash(Craft::t('app', 'Draft deleted'));
 
         if ($request->getAcceptsJson()) {
             return $this->asJson([
@@ -369,10 +371,20 @@ class EntryRevisionsController extends BaseEntriesController
         $draftId = $request->getRequiredBodyParam('draftId');
         $siteId = $request->getBodyParam('siteId');
 
+        // Get the structure ID
+        $structureId = (new Query())
+            ->select(['sections.structureId'])
+            ->from(['sections' => Table::SECTIONS])
+            ->innerJoin(['entries' => Table::ENTRIES], '[[entries.sectionId]] = [[sections.id]]')
+            ->innerJoin(['elements' => Table::ELEMENTS], '[[elements.id]] = [[entries.id]]')
+            ->where(['elements.draftId' => $draftId])
+            ->scalar();
+
         /** @var Entry|DraftBehavior|null $draft */
         $draft = Entry::find()
             ->draftId($draftId)
             ->siteId($siteId)
+            ->structureId($structureId)
             ->anyStatus()
             ->one();
 
@@ -438,7 +450,7 @@ class EntryRevisionsController extends BaseEntriesController
             // Publish the draft (finally!)
             $newEntry = Craft::$app->getDrafts()->applyDraft($draft);
         } catch (InvalidElementException $e) {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t publish draft.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t publish draft.'));
 
             // Send the draft back to the template
             Craft::$app->getUrlManager()->setRouteParams([
@@ -453,7 +465,7 @@ class EntryRevisionsController extends BaseEntriesController
             ]);
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry saved.'));
+        $this->setSuccessFlash(Craft::t('app', 'Entry saved.'));
         return $this->redirectToPostedUrl($newEntry);
     }
 
@@ -505,7 +517,7 @@ class EntryRevisionsController extends BaseEntriesController
 
         // Revert to the version
         Craft::$app->getRevisions()->revertToRevision($revision, $userId);
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry reverted to past revision.'));
+        $this->setSuccessFlash(Craft::t('app', 'Entry reverted to past revision.'));
         return $this->redirectToPostedUrl($revision);
     }
 

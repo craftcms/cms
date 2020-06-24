@@ -148,6 +148,10 @@ class Volumes extends Component
      */
     public function getViewableVolumes(): array
     {
+        if (Craft::$app->getRequest()->getIsConsoleRequest()) {
+            return $this->getAllVolumes();
+        }
+
         $userSession = Craft::$app->getUser();
         return ArrayHelper::where($this->getAllVolumes(), function(VolumeInterface $volume) use ($userSession) {
             return $userSession->checkPermission('viewVolume:' . $volume->uid);
@@ -317,10 +321,10 @@ class Volumes extends Component
             'sortOrder' => (int)$volume->sortOrder,
         ];
 
-        $fieldLayout = $volume->getFieldLayout();
-        $fieldLayoutConfig = $fieldLayout->getConfig();
-
-        if ($fieldLayoutConfig) {
+        if (
+            ($fieldLayout = $volume->getFieldLayout()) &&
+            ($fieldLayoutConfig = $fieldLayout->getConfig())
+        ) {
             if (empty($fieldLayout->id)) {
                 $layoutUid = StringHelper::UUID();
                 $fieldLayout->uid = $layoutUid;
@@ -441,6 +445,9 @@ class Volumes extends Component
                 'isNew' => $isNewVolume
             ]));
         }
+
+        // Invalidate asset caches
+        Craft::$app->getElements()->invalidateCachesForElementType(Asset::class);
     }
 
     /**
@@ -673,6 +680,9 @@ class Volumes extends Component
                 'volume' => $volume
             ]));
         }
+
+        // Invalidate asset caches
+        Craft::$app->getElements()->invalidateCachesForElementType(Asset::class);
     }
 
     /**

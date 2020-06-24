@@ -178,7 +178,7 @@ class SectionsController extends Controller
 
         // Save it
         if (!Craft::$app->getSections()->saveSection($section)) {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save section.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t save section.'));
 
             // Send the section back to the template
             Craft::$app->getUrlManager()->setRouteParams([
@@ -188,8 +188,7 @@ class SectionsController extends Controller
             return null;
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'Section saved.'));
-
+        $this->setSuccessFlash(Craft::t('app', 'Section saved.'));
         return $this->redirectToPostedUrl($section);
     }
 
@@ -352,6 +351,9 @@ class SectionsController extends Controller
         $entryType->handle = Craft::$app->getRequest()->getBodyParam('handle', $entryType->handle);
         $entryType->hasTitleField = (bool)Craft::$app->getRequest()->getBodyParam('hasTitleField', $entryType->hasTitleField);
         $entryType->titleLabel = Craft::$app->getRequest()->getBodyParam('titleLabel', $entryType->titleLabel);
+        $entryType->titleInstructions = Craft::$app->getRequest()->getBodyParam('titleInstructions', $entryType->titleInstructions);
+        $entryType->titleTranslationMethod = Craft::$app->getRequest()->getBodyParam('titleTranslationMethod', $entryType->titleTranslationMethod);
+        $entryType->titleTranslationKeyFormat = Craft::$app->getRequest()->getBodyParam('titleTranslationKeyFormat', $entryType->titleTranslationKeyFormat);
         $entryType->titleFormat = Craft::$app->getRequest()->getBodyParam('titleFormat', $entryType->titleFormat);
 
         // Set the field layout
@@ -361,7 +363,7 @@ class SectionsController extends Controller
 
         // Save it
         if (!Craft::$app->getSections()->saveEntryType($entryType)) {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save entry type.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t save entry type.'));
 
             // Send the entry type back to the template
             Craft::$app->getUrlManager()->setRouteParams([
@@ -371,8 +373,7 @@ class SectionsController extends Controller
             return null;
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry type saved.'));
-
+        $this->setSuccessFlash(Craft::t('app', 'Entry type saved.'));
         return $this->redirectToPostedUrl($entryType);
     }
 

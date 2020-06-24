@@ -46,9 +46,7 @@ class Element extends InterfaceType
             'name' => static::getName(),
             'fields' => self::class . '::getFieldDefinitions',
             'description' => 'This is the interface implemented by all elements.',
-            'resolveType' => function(ElementInterface $value) {
-                return $value->getGqlTypeName();
-            }
+            'resolveType' => self::class . '::resolveElementTypeName',
         ]));
 
         ElementType::generateTypes();
@@ -103,6 +101,11 @@ class Element extends InterfaceType
                 'name' => 'siteId',
                 'type' => Type::int(),
                 'description' => 'The ID of the site the element is associated with.'
+            ],
+            'language' => [
+                'name' => 'language',
+                'type' => Type::string(),
+                'description' => 'The language of the site element is associated with.'
             ],
             'searchScore' => [
                 'name' => 'searchScore',

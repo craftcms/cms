@@ -9,10 +9,12 @@ namespace craft\services;
 
 use Craft;
 use craft\base\Element;
+use craft\base\Field;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Entry;
 use craft\errors\EntryTypeNotFoundException;
+use craft\errors\InvalidElementException;
 use craft\errors\SectionNotFoundException;
 use craft\events\ConfigEvent;
 use craft\events\DeleteSiteEvent;
@@ -226,6 +228,10 @@ class Sections extends Component
      */
     public function getEditableSections(): array
     {
+        if (Craft::$app->getRequest()->getIsConsoleRequest()) {
+            return $this->getAllSections();
+        }
+
         $userSession = Craft::$app->getUser();
         return ArrayHelper::where($this->getAllSections(), function(Section $section) use ($userSession) {
             return $userSession->checkPermission('editEntries:' . $section->uid);
@@ -537,6 +543,7 @@ class Sections extends Component
                 if ($section->type === Section::TYPE_SINGLE) {
                     $entryType->hasTitleField = false;
                     $entryType->titleLabel = null;
+                    $entryType->titleInstructions = null;
                     $entryType->titleFormat = '{section.name|raw}';
                 } else {
                     $entryType->hasTitleField = true;
@@ -783,6 +790,9 @@ class Sections extends Component
                 'isNew' => $isNewSection
             ]));
         }
+
+        // Invalidate entry caches
+        Craft::$app->getElements()->invalidateCachesForElementType(Entry::class);
     }
 
     /**
@@ -905,6 +915,9 @@ class Sections extends Component
                 'section' => $section,
             ]));
         }
+
+        // Invalidate entry caches
+        Craft::$app->getElements()->invalidateCachesForElementType(Entry::class);
     }
 
     /**
@@ -1152,6 +1165,9 @@ class Sections extends Component
             'handle' => $entryType->handle,
             'hasTitleField' => (bool)$entryType->hasTitleField,
             'titleLabel' => $entryType->titleLabel,
+            'titleInstructions' => $entryType->titleInstructions,
+            'titleTranslationMethod' => $entryType->titleTranslationMethod,
+            'titleTranslationKeyFormat' => $entryType->titleTranslationKeyFormat,
             'titleFormat' => $entryType->titleFormat,
             'sortOrder' => (int)$sortOrder,
         ];
@@ -1214,6 +1230,9 @@ class Sections extends Component
             $entryTypeRecord->handle = $data['handle'];
             $entryTypeRecord->hasTitleField = $data['hasTitleField'];
             $entryTypeRecord->titleLabel = $data['titleLabel'];
+            $entryTypeRecord->titleInstructions = $data['titleInstructions'];
+            $entryTypeRecord->titleTranslationMethod = $data['titleTranslationMethod'];
+            $entryTypeRecord->titleTranslationKeyFormat = $data['titleTranslationKeyFormat'];
             $entryTypeRecord->titleFormat = $data['titleFormat'];
             $entryTypeRecord->sortOrder = $data['sortOrder'];
             $entryTypeRecord->sectionId = $section->id;
@@ -1299,6 +1318,9 @@ class Sections extends Component
                 'isNew' => $isNewEntryType,
             ]));
         }
+
+        // Invalidate entry caches
+        Craft::$app->getElements()->invalidateCachesForElementType(Entry::class);
     }
 
     /**
@@ -1454,6 +1476,9 @@ class Sections extends Component
                 'entryType' => $entryType,
             ]));
         }
+
+        // Invalidate entry caches
+        Craft::$app->getElements()->invalidateCachesForElementType(Entry::class);
     }
 
     /**
@@ -1542,7 +1567,7 @@ class Sections extends Component
             throw new Exception('No entry types exist for section ' . $section->id);
         }
 
-        // Get/save the entry
+        // Get/save the entry with updated title, slug, and URI format
         // ---------------------------------------------------------------------
 
         // If there are any existing entries, find the first one with a valid typeId
@@ -1562,10 +1587,21 @@ class Sections extends Component
             $entry->title = $section->name;
         }
 
-        // (Re)save it with an updated title, slug, and URI format.
+        // Validate first
         $entry->setScenario(Element::SCENARIO_ESSENTIALS);
-        if (!Craft::$app->getElements()->saveElement($entry)) {
-            throw new Exception('Couldn’t save single entry due to validation errors on the slug and/or URI: ' . $section->name);
+        $entry->validate();
+
+        // If there are any errors on the URI, re-validate as disabled
+        if ($entry->hasErrors('uri') && $entry->enabled) {
+            $entry->enabled = false;
+            $entry->validate();
+        }
+
+        if (
+            $entry->hasErrors() ||
+            !Craft::$app->getElements()->saveElement($entry, false)
+        ) {
+            throw new Exception("Couldn’t save single entry for section $section->name due to validation errors: " . implode(', ', $entry->getFirstErrors()));
         }
 
         // Delete any other entries in the section
@@ -1631,10 +1667,17 @@ class Sections extends Component
             ])
             ->from([Table::ENTRYTYPES]);
 
-        // todo: remove schema version condition after next beakpoint
+        // todo: remove schema version conditions after next beakpoint
         $schemaVersion = Craft::$app->getInstalledSchemaVersion();
         if (version_compare($schemaVersion, '3.1.19', '>=')) {
             $query->where(['dateDeleted' => null]);
+        }
+        if (version_compare($schemaVersion, '3.5.4', '>=')) {
+            $query->addSelect([
+                'titleInstructions',
+                'titleTranslationMethod',
+                'titleTranslationKeyFormat',
+            ]);
         }
 
         return $query;

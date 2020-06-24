@@ -11,6 +11,7 @@ use craft\errors\AssetException;
 use craft\errors\VolumeException;
 use craft\errors\VolumeObjectExistsException;
 use craft\errors\VolumeObjectNotFoundException;
+use craft\models\FieldLayout;
 
 /**
  * VolumeInterface defines the common interface to be implemented by volume classes.
@@ -22,6 +23,14 @@ use craft\errors\VolumeObjectNotFoundException;
  */
 interface VolumeInterface extends SavableComponentInterface
 {
+    /**
+     * Returns the volume's field layout, or `null` if it doesn’t have one.
+     *
+     * @return FieldLayout|null
+     * @since 3.5.0
+     */
+    public function getFieldLayout();
+
     /**
      * Returns the URL to the source, if it’s accessible via HTTP traffic.
      *

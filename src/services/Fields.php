@@ -956,6 +956,9 @@ class Fields extends Component
                 'field' => $field,
             ]));
         }
+
+        // Invalidate all element caches
+        Craft::$app->getElements()->invalidateAllCaches();
     }
 
     /**
@@ -1044,6 +1047,31 @@ class Fields extends Component
         }
 
         return $tabs;
+    }
+
+    /**
+     * Returns all of the field layouts used by a given element type.
+     *
+     * @param string $elementType
+     * @return FieldLayout[] The field layouts
+     * @since 3.5.0
+     */
+    public function getLayoutsByElementType(string $elementType): array
+    {
+        $results = $this->_createLayoutQuery()
+            ->where([
+                'type' => $elementType,
+                'dateDeleted' => null,
+            ])
+            ->all();
+
+        $layouts = [];
+
+        foreach ($results as $result) {
+            $layouts[] = new FieldLayout($result);
+        }
+
+        return $layouts;
     }
 
     /**
@@ -1568,6 +1596,9 @@ class Fields extends Component
                 'isNew' => $isNewField,
             ]));
         }
+
+        // Invalidate all element caches
+        Craft::$app->getElements()->invalidateAllCaches();
     }
 
     /**

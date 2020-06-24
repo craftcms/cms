@@ -1,22 +1,32 @@
 /* Utilities */
 form.utility .utility-status { display: block; position: relative; width: 100px; height: 40px; }
+
 body.ltr form.utility .utility-status { float: left; }
+
 body.rtl form.utility .utility-status { float: right; }
+
 body.ltr form.utility .utility-status { margin-left: 10px; }
+
 body.rtl form.utility .utility-status { margin-right: 10px; }
 
 form.utility .utility-status .alldone { margin-top: 11px; opacity: 0; }
 
 form.utility .utility-status .progressbar { width: 100%; top: 14px; opacity: 0; }
+
 body.ltr form.utility .utility-status .progressbar { left: 0; }
+
 body.rtl form.utility .utility-status .progressbar { right: 0; }
 
 form.utility .utility-status .progressbar.has-status { top: 6px; }
 
 form.utility .utility-status .progressbar-status { margin-top: 17px; font-size: 12px; color: #7b8793; text-align: center; }
+
 body.ltr form.utility .utility-status .progressbar-status { left: 0; }
+
 body.rtl form.utility .utility-status .progressbar-status { right: 0; }
+
 body.ltr form.utility .utility-status .progressbar-status { padding-left: 10px; }
+
 body.rtl form.utility .utility-status .progressbar-status { padding-right: 10px; }
 
 /* Asset Index */

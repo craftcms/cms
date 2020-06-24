@@ -21,8 +21,11 @@ use yii\db\ActiveQueryInterface;
  * @property string $name Name
  * @property string $handle Handle
  * @property bool $hasTitleField Has title field
- * @property string $titleLabel Title label
- * @property string $titleFormat Title format
+ * @property string|null $titleLabel Title label
+ * @property string|null $titleInstructions Title instructions
+ * @property string $titleTranslationMethod Title translation method
+ * @property string|null $titleTranslationKeyFormat Title translation key format
+ * @property string|null $titleFormat Title format
  * @property int $sortOrder Sort order
  * @property Section $section Section
  * @property FieldLayout $fieldLayout Field layout

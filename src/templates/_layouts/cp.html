@@ -93,6 +93,7 @@
     'data': {
         'saveshortcut': saveShortcut ?? true,
         'saveshortcut-redirect': saveShortcutRedirect is defined ? saveShortcutRedirect|hash : false,
+        'actions': formActions ?? false,
         'confirm-unload': true,
         'delta': view.getIsDeltaRegistrationActive(),
     },
@@ -224,7 +225,13 @@
 
 {% block actionButton %}
     {% if fullPageForm %}
-        <input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
+        <div class="btngroup">
+            <input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
+            {% if formActions ?? false %}
+                <div class="btn submit menubtn"></div>
+                {% include '_layouts/components/form-action-menu' %}
+            {% endif %}
+        </div>
     {% endif %}
 {% endblock %}
 

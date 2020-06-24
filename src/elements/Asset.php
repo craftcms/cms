@@ -250,10 +250,11 @@ class Asset extends Element
 
     /**
      * @inheritdoc
+     * @since 3.5.0
      */
     public static function gqlMutationNameByContext($context): string
     {
-        /** @var Volume $context */
+        /** @var VolumeInterface $context */
         return 'save_' . $context->handle . '_Asset';
     }
 
@@ -292,15 +293,32 @@ class Asset extends Element
 
     /**
      * @inheritdoc
+     * @since 3.5.0
+     */
+    public static function defineFieldLayouts(string $source): array
+    {
+        $fieldLayouts = [];
+        if (
+            preg_match('/^folder:(.+)$/', $source, $matches) &&
+            ($folder = Craft::$app->getAssets()->getFolderByUid($matches[1])) &&
+            $fieldLayout = $folder->getVolume()->getFieldLayout()
+        ) {
+            $fieldLayouts[] = $fieldLayout;
+        }
+        return $fieldLayouts;
+    }
+
+    /**
+     * @inheritdoc
      */
     protected static function defineActions(string $source = null): array
     {
         $actions = [];
 
-        if (preg_match('/^folder:([a-z0-9\-]+)/', $source, $matches)) {
-            $folderId = $matches[1];
-
-            $folder = Craft::$app->getAssets()->getFolderByUid($folderId);
+        if (
+            preg_match('/^folder:(.+)/', $source, $matches) &&
+            $folder = Craft::$app->getAssets()->getFolderByUid($matches[1])
+        ) {
             $volume = $folder->getVolume();
 
             $actions[] = [
@@ -656,6 +674,11 @@ class Asset extends Element
     private $_uploader;
 
     /**
+     * @var int|null
+     */
+    private $_oldVolumeId;
+
+    /**
      * @inheritdoc
      */
     public function __toString()
@@ -721,6 +744,16 @@ class Asset extends Element
 
     /**
      * @inheritdoc
+     * @since 3.5.0
+     */
+    public function init()
+    {
+        parent::init();
+        $this->_oldVolumeId = $this->volumeId;
+    }
+
+    /**
+     * @inheritdoc
      */
     public function datetimeAttributes(): array
     {
@@ -757,6 +790,24 @@ class Asset extends Element
         $scenarios[self::SCENARIO_INDEX] = [];
 
         return $scenarios;
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.5.0
+     */
+    public function getCacheTags(): array
+    {
+        $tags = [
+            "volume:$this->volumeId",
+        ];
+
+        // Did the volume just change?
+        if ($this->volumeId != $this->_oldVolumeId) {
+            $tags[] = "volume:$this->_oldVolumeId";
+        }
+
+        return $tags;
     }
 
     /**
@@ -1846,7 +1897,10 @@ class Asset extends Element
         }
 
         if (!$this->_width || !$this->_height) {
-            Craft::warning("Asset {$this->id} is missing its width or height", __METHOD__);
+            if ($this->getScenario() !== self::SCENARIO_CREATE) {
+                Craft::warning("Asset {$this->id} is missing its width or height", __METHOD__);
+            }
+
             return [null, null];
         }
 
@@ -1859,7 +1913,14 @@ class Asset extends Element
         $transform = Craft::$app->getAssetTransforms()->normalizeTransform($transform);
 
         if ($this->_width < $transform->width && $this->_height < $transform->height && !Craft::$app->getConfig()->getGeneral()->upscaleImages) {
-            return [$this->_width, $this->_height];
+            $transformRatio = $transform->width / $transform->height;
+            $imageRatio = $this->_width / $this->_height;
+
+            if ($transform->mode !== 'crop' || $imageRatio === $transformRatio) {
+                return [$this->_width, $this->_height];
+            }
+
+            return $transformRatio > 1 ? [$this->_width, round($this->_height / $transformRatio)] : [round($this->_width * $transformRatio), $this->_height];
         }
 
         list($width, $height) = Image::calculateMissingDimension($transform->width, $transform->height, $this->_width, $this->_height);

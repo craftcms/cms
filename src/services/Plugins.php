@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\Plugin;
 use craft\base\PluginInterface;
 use craft\db\MigrationManager;
 use craft\db\Query;
@@ -505,7 +506,7 @@ class Plugins extends Component
             $info['installDate'] = DateTimeHelper::toDateTime($info['installDate']);
             $info['id'] = $db->getLastInsertID(Table::PLUGINS);
 
-            $this->_setPluginMigrator($plugin, $info['id']);
+            $this->_setPluginMigrator($plugin);
 
             if ($plugin->install() === false) {
                 $transaction->rollBack();
@@ -598,6 +599,10 @@ class Plugins extends Component
 
             Db::delete(Table::PLUGINS, [
                 'id' => $id,
+            ]);
+
+            Db::delete(Table::MIGRATIONS, [
+                'track' => "plugin:$handle",
             ]);
 
             $transaction->commit();
@@ -891,7 +896,7 @@ class Plugins extends Component
 
         // Create the plugin
         $plugin = Craft::createObject($config, [$handle, Craft::$app]);
-        $this->_setPluginMigrator($plugin, $info['id'] ?? null);
+        $this->_setPluginMigrator($plugin);
         return $plugin;
     }
 
@@ -1280,16 +1285,14 @@ class Plugins extends Component
      * Sets the 'migrator' component on a plugin.
      *
      * @param PluginInterface $plugin The plugin
-     * @param int|null $id The plugin’s ID
      */
-    private function _setPluginMigrator(PluginInterface $plugin, int $id = null)
+    private function _setPluginMigrator(PluginInterface $plugin)
     {
         $ref = new \ReflectionClass($plugin);
         $ns = $ref->getNamespaceName();
         $plugin->set('migrator', [
             'class' => MigrationManager::class,
-            'type' => MigrationManager::TYPE_PLUGIN,
-            'pluginId' => $id,
+            'track' => "plugin:$plugin->id",
             'migrationNamespace' => ($ns ? $ns . '\\' : '') . 'migrations',
             'migrationPath' => $plugin->getBasePath() . DIRECTORY_SEPARATOR . 'migrations',
         ]);

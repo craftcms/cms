@@ -12,12 +12,11 @@
 {%- set orientation = (site ? craft.app.i18n.getLocaleById(site.language) : craft.app.locale).getOrientation() %}
 {%- set translatable = translatable ?? (site is not same as(null)) %}
 {%- set errors = (errors is defined ? errors : null) -%}
-{%- set fieldClass = [
+{%- set fieldClass = (fieldClass ?? [])|explodeClass|merge([
     'field',
     (first is defined and first ? 'first' : null),
     (errors ? 'has-errors' : null),
-    (fieldClass is defined and fieldClass ? fieldClass : null)
-]|filter|join(' ') %}
+])|filter %}
 
 {%- set fieldAttributes = {
     class: fieldClass,

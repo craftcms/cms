@@ -296,7 +296,7 @@ class InstallController extends Controller
             goto top;
         }
         if (!$this->validatePassword($password, $error)) {
-            Console::output($error);
+            $this->stdout($error . PHP_EOL);
             goto top;
         }
         $this->stdout('Confirm: ');

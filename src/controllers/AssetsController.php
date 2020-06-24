@@ -256,7 +256,7 @@ class AssetsController extends Controller
                 ]);
             }
 
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save asset.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t save asset.'));
 
             // Send the asset back to the template
             Craft::$app->getUrlManager()->setRouteParams([
@@ -276,8 +276,7 @@ class AssetsController extends Controller
             ]);
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'Asset saved.'));
-
+        $this->setSuccessFlash(Craft::t('app', 'Asset saved.'));
         return $this->redirectToPostedUrl($asset);
     }
 
@@ -361,7 +360,7 @@ class AssetsController extends Controller
                     'filename' => $asset->conflictingFilename,
                     'conflictingAssetId' => $conflictingAsset ? $conflictingAsset->id : null,
                     'suggestedFilename' => $asset->suggestedFilename,
-                    'conflictingAssetUrl' => $conflictingAsset->getVolume()->hasUrls ? $conflictingAsset->getUrl() : null
+                    'conflictingAssetUrl' => ($conflictingAsset && $conflictingAsset->getVolume()->hasUrls) ? $conflictingAsset->getUrl() : null
                 ]);
             }
 
@@ -466,14 +465,16 @@ class AssetsController extends Controller
             return $this->asErrorJson($e->getMessage());
         }
 
+        $resultingAsset = $assetToReplace ?: $sourceAsset;
+
         return $this->asJson([
             'success' => true,
             'assetId' => $assetId,
-            'filename' => $assetToReplace->filename,
-            'formattedSize' => $assetToReplace->getFormattedSize(0),
-            'formattedSizeInBytes' => $assetToReplace->getFormattedSizeInBytes(false),
-            'formattedDateUpdated' => Craft::$app->getFormatter()->asDatetime($assetToReplace->dateUpdated, Formatter::FORMAT_WIDTH_SHORT),
-            'dimensions' => $assetToReplace->getDimensions(),
+            'filename' => $resultingAsset->filename,
+            'formattedSize' => $resultingAsset->getFormattedSize(0),
+            'formattedSizeInBytes' => $resultingAsset->getFormattedSizeInBytes(false),
+            'formattedDateUpdated' => Craft::$app->getFormatter()->asDatetime($resultingAsset->dateUpdated, Formatter::FORMAT_WIDTH_SHORT),
+            'dimensions' => $resultingAsset->getDimensions(),
         ]);
     }
 
@@ -590,7 +591,7 @@ class AssetsController extends Controller
                 return $this->asJson(['success' => false]);
             }
 
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t delete asset.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t delete asset.'));
 
             // Send the entry back to the template
             Craft::$app->getUrlManager()->setRouteParams([
@@ -604,8 +605,7 @@ class AssetsController extends Controller
             return $this->asJson(['success' => true]);
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'Asset deleted.'));
-
+        $this->setSuccessFlash(Craft::t('app', 'Asset deleted.'));
         return $this->redirectToPostedUrl($asset);
     }
 

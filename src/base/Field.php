@@ -10,11 +10,13 @@ namespace craft\base;
 use Craft;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\events\DefineFieldHtmlEvent;
 use craft\events\DefineFieldKeywordsEvent;
 use craft\events\FieldElementEvent;
 use craft\gql\types\QueryArgument;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
+use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
 use craft\records\Field as FieldRecord;
@@ -106,6 +108,12 @@ abstract class Field extends SavableComponent implements FieldInterface
      * @since 3.5.0
      */
     const EVENT_DEFINE_KEYWORDS = 'defineKeywords';
+
+    /**
+     * @event DefineFieldHtmlEvent The event that is triggered when defining the field’s input HTML.
+     * @since 3.5.0
+     */
+    const EVENT_DEFINE_INPUT_HTML = 'defineInputHtml';
 
     // Translation methods
     // -------------------------------------------------------------------------
@@ -314,16 +322,7 @@ abstract class Field extends SavableComponent implements FieldInterface
             return null;
         }
 
-        switch ($this->translationMethod) {
-            case self::TRANSLATION_METHOD_SITE:
-                return Craft::t('app', 'This field is translated for each site.');
-            case self::TRANSLATION_METHOD_SITE_GROUP:
-                return Craft::t('app', 'This field is translated for each site group.');
-            case self::TRANSLATION_METHOD_LANGUAGE:
-                return Craft::t('app', 'This field is translated for each language.');
-            default:
-                return null;
-        }
+        return ElementHelper::translationDescription($this->translationMethod);
     }
 
     /**
@@ -331,18 +330,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function getTranslationKey(ElementInterface $element): string
     {
-        switch ($this->translationMethod) {
-            case self::TRANSLATION_METHOD_NONE:
-                return '1';
-            case self::TRANSLATION_METHOD_SITE:
-                return (string)$element->siteId;
-            case self::TRANSLATION_METHOD_SITE_GROUP:
-                return (string)$element->getSite()->groupId;
-            case self::TRANSLATION_METHOD_LANGUAGE:
-                return $element->getSite()->language;
-            default:
-                return Craft::$app->getView()->renderObjectTemplate($this->translationKeyFormat, $element);
-        }
+        return ElementHelper::translationKey($element, $this->translationMethod, $this->translationKeyFormat);
     }
 
     /**
@@ -357,6 +345,31 @@ abstract class Field extends SavableComponent implements FieldInterface
      * @inheritdoc
      */
     public function getInputHtml($value, ElementInterface $element = null): string
+    {
+        $html = $this->inputHtml($value, $element);
+
+        // Give plugins a chance to modify it
+        $event = new DefineFieldHtmlEvent([
+            'value' => $value,
+            'element' => $element,
+            'html' => $html,
+        ]);
+
+        $this->trigger(self::EVENT_DEFINE_INPUT_HTML, $event);
+        return $event->html;
+    }
+
+    /**
+     * Returns the field’s input HTML.
+     *
+     * @param mixed $value The field’s value. This will either be the [[normalizeValue()|normalized value]],
+     * raw POST data (i.e. if there was a validation error), or null
+     * @param ElementInterface|null $element The element the field is associated with, if there is one
+     * @return string The input HTML.
+     * @see getInputHtml()
+     * @since 3.5.0
+     */
+    protected function inputHtml($value, ElementInterface $element = null): string
     {
         return Html::textarea($this->handle, $value);
     }
@@ -551,6 +564,7 @@ abstract class Field extends SavableComponent implements FieldInterface
 
     /**
      * @inheritdoc
+     * @since 3.5.0
      */
     public function getContentGqlMutationArgumentType()
     {
@@ -563,6 +577,7 @@ abstract class Field extends SavableComponent implements FieldInterface
 
     /**
      * @inheritdoc
+     * @since 3.5.0
      */
     public function getContentGqlQueryArgumentType()
     {

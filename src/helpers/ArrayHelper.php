@@ -380,4 +380,21 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
 
         return true;
     }
+
+    /**
+     * Returns whether all the elements in the array are numeric.
+     *
+     * @param array $array
+     * @return bool
+     * @since 3.5.0
+     */
+    public static function isNumeric(array $array): bool
+    {
+        foreach ($array as $val) {
+            if (!is_numeric($val)) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

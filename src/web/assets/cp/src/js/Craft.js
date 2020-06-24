@@ -656,7 +656,7 @@ $.extend(Craft,
 
                                 // If we just got a new license key, set it and then resolve the header waitlist
                                 if (this._apiHeaders && this._apiHeaders['X-Craft-License'] === '__REQUEST__') {
-                                    this._apiHeaders['X-Craft-License'] = apiResponse.headers['x-craft-license'];
+                                    this._apiHeaders['X-Craft-License'] = window.cmsLicenseKey = apiResponse.headers['x-craft-license'];
                                     this._resolveHeaderWaitlist();
                                 }
                             } else if (
@@ -666,8 +666,7 @@ $.extend(Craft,
                             ) {
                                 // The request didn't send headers. Go ahead and resolve the next request on the
                                 // header waitlist.
-                                let item = this._apiHeaderWaitlist.shift()
-                                item[0](this._apiHeaders);
+                                this._apiHeaderWaitlist.shift()[0](this._apiHeaders);
                             }
                         }
                     }).catch(reject);
@@ -720,10 +719,10 @@ $.extend(Craft,
                 }).catch(e => {
                     this._loadingApiHeaders = false;
                     reject(e)
+
                     // Was anything else waiting for them?
-                    let item;
-                    while (item = this._apiHeaderWaitlist.shift()) {
-                        item[1](e);
+                    while (this._apiHeaderWaitlist.length) {
+                        this._apiHeaderWaitlist.shift()[1](e);
                     }
                 });
             });
@@ -731,10 +730,10 @@ $.extend(Craft,
 
         _resolveHeaderWaitlist: function() {
             this._loadingApiHeaders = false;
+
             // Was anything else waiting for them?
-            let item;
-            while (item = this._apiHeaderWaitlist.shift()) {
-                item[0](this._apiHeaders);
+            while (this._apiHeaderWaitlist.length) {
+                this._apiHeaderWaitlist.shift()[0](this._apiHeaders);
             }
         },
 
@@ -747,8 +746,8 @@ $.extend(Craft,
             this._loadingApiHeaders = false;
 
             // Reject anything in the header waitlist
-            while (item = this._apiHeaderWaitlist.shift()) {
-                item[1]();
+            while (this._apiHeaderWaitlist.length) {
+                this._apiHeaderWaitlist.shift()[1]();
             }
         },
 
@@ -1736,7 +1735,59 @@ $.extend(Craft,
                     elements: [$newImg[0]]
                 });
             }
-        }
+        },
+
+        /**
+         * Submits a form.
+         * @param {Object} $form
+         * @param {Object} [options]
+         * @param {string} [options.action] The `action` param value override
+         * @param {string} [options.redirect] The `redirect` param value override
+         * @param {string} [options.confirm] A confirmation message that should be shown to the user before submit
+         * @param {Object} [options.params] Additional params that should be added to the form, defined as name/value pairs
+         * @param {Object} [options.data] Additional data to be passed to the submit event
+         */
+        submitForm: function($form, options) {
+            if (typeof options === 'undefined') {
+                options = {};
+            }
+
+            if (options.confirm && !confirm(options.confirm)) {
+                return;
+            }
+
+            if (options.action) {
+                $('<input/>', {
+                    type: 'hidden',
+                    name: 'action',
+                    val: options.action,
+                })
+                    .appendTo($form);
+            }
+
+            if (options.redirect) {
+                $('<input/>', {
+                    type: 'hidden',
+                    name: 'redirect',
+                    val: options.redirect,
+                })
+                    .appendTo($form);
+            }
+
+            if (options.params) {
+                for (let name in options.params) {
+                    let value = options.params[name];
+                    $('<input/>', {
+                        type: 'hidden',
+                        name: name,
+                        val: value,
+                    })
+                        .appendTo($form);
+                }
+            }
+
+            $form.trigger($.extend({type: 'submit'}, options.data));
+        },
     });
 
 
@@ -1912,42 +1963,23 @@ $.extend($.fn,
 
         formsubmit: function() {
             // Secondary form submit buttons
-            this.on('click', function(ev) {
-                var $btn = $(ev.currentTarget);
+            return this.on('click', function(ev) {
+                let $btn = $(ev.currentTarget);
+                let $anchor = $btn.data('menu') ? $btn.data('menu').$anchor : $btn;
+                let $form = $anchor.attr('data-form') ? $('#' + $anchor.attr('data-form')) : $anchor.closest('form');
+                let params = $form.data('params') || {};
+                if ($form.data('param')) {
+                    params[$form.data('param')] = $form.data('value');
+                }
 
-                if ($btn.attr('data-confirm')) {
-                    if (!confirm($btn.attr('data-confirm'))) {
-                        return;
+                Craft.submitForm($form, {
+                    confirm: $btn.data('confirm'),
+                    action: $btn.data('action'),
+                    redirect: $btn.data('redirect'),
+                    params: params,
+                    data: {
+                        customTrigger: $btn,
                     }
-                }
-
-                var $anchor = $btn.data('menu') ? $btn.data('menu').$anchor : $btn;
-                var $form = $anchor.attr('data-form') ? $('#' + $anchor.attr('data-form')) : $anchor.closest('form');
-
-                if ($btn.data('action')) {
-                    $('<input type="hidden" name="action"/>')
-                        .val($btn.data('action'))
-                        .appendTo($form);
-                }
-
-                if ($btn.data('redirect')) {
-                    $('<input type="hidden" name="redirect"/>')
-                        .val($btn.data('redirect'))
-                        .appendTo($form);
-                }
-
-                if ($btn.data('param')) {
-                    $('<input type="hidden"/>')
-                        .attr({
-                            name: $btn.data('param'),
-                            value: $btn.data('value')
-                        })
-                        .appendTo($form);
-                }
-
-                $form.trigger({
-                    type: 'submit',
-                    customTrigger: $btn,
                 });
             });
         },
@@ -2003,10 +2035,6 @@ $.extend($.fn,
                 checkValue();
             });
         },
-
-        checkDatetimeValue: function() {
-
-        }
     });
 
 

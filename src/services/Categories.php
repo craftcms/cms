@@ -130,6 +130,10 @@ class Categories extends Component
      */
     public function getEditableGroups(): array
     {
+        if (Craft::$app->getRequest()->getIsConsoleRequest()) {
+            return $this->getAllGroups();
+        }
+
         $userSession = Craft::$app->getUser();
         return ArrayHelper::where($this->getAllGroups(), function(CategoryGroup $group) use ($userSession) {
             return $userSession->checkPermission('editCategories:' . $group->uid);
@@ -503,6 +507,9 @@ class Categories extends Component
                 'isNew' => $isNewCategoryGroup,
             ]));
         }
+
+        // Invalidate category caches
+        Craft::$app->getElements()->invalidateCachesForElementType(Category::class);
     }
 
     /**
@@ -632,6 +639,9 @@ class Categories extends Component
                 'categoryGroup' => $group,
             ]));
         }
+
+        // Invalidate category caches
+        Craft::$app->getElements()->invalidateCachesForElementType(Category::class);
     }
 
     /**

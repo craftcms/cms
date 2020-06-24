@@ -9,6 +9,7 @@
 namespace craft\migrations;
 
 use Craft;
+use craft\base\Field;
 use craft\db\Migration;
 use craft\db\Table;
 use craft\elements\Asset;
@@ -64,6 +65,7 @@ class Install extends Migration
         $this->createTables();
         $this->createIndexes();
         $this->addForeignKeys();
+        $this->db->getSchema()->refresh();
         $this->insertDefaultData();
     }
 
@@ -314,6 +316,9 @@ class Install extends Migration
             'handle' => $this->string()->notNull(),
             'hasTitleField' => $this->boolean()->defaultValue(true)->notNull(),
             'titleLabel' => $this->string()->defaultValue('Title'),
+            'titleInstructions' => $this->text(),
+            'titleTranslationMethod' => $this->string()->notNull()->defaultValue(Field::TRANSLATION_METHOD_SITE),
+            'titleTranslationKeyFormat' => $this->text(),
             'titleFormat' => $this->string(),
             'sortOrder' => $this->smallInteger()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
@@ -364,7 +369,7 @@ class Install extends Migration
             'context' => $this->string()->notNull()->defaultValue('global'),
             'instructions' => $this->text(),
             'searchable' => $this->boolean()->notNull()->defaultValue(true),
-            'translationMethod' => $this->string()->notNull()->defaultValue('none'),
+            'translationMethod' => $this->string()->notNull()->defaultValue(Field::TRANSLATION_METHOD_NONE),
             'translationKeyFormat' => $this->text(),
             'type' => $this->string()->notNull(),
             'settings' => $this->text(),
@@ -438,8 +443,7 @@ class Install extends Migration
         ]);
         $this->createTable(Table::MIGRATIONS, [
             'id' => $this->primaryKey(),
-            'pluginId' => $this->integer(),
-            'type' => $this->enum('type', ['app', 'plugin', 'content'])->notNull()->defaultValue('app'),
+            'track' => $this->string()->notNull(),
             'name' => $this->string()->notNull(),
             'applyTime' => $this->dateTime()->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
@@ -599,6 +603,7 @@ class Install extends Migration
             'PRIMARY KEY([[id]])',
         ]);
         $this->createTable(Table::TEMPLATECACHEELEMENTS, [
+            'id' => $this->primaryKey(),
             'cacheId' => $this->integer()->notNull(),
             'elementId' => $this->integer()->notNull(),
         ]);
@@ -631,6 +636,7 @@ class Install extends Migration
             'id' => $this->primaryKey(),
             'name' => $this->string()->notNull(),
             'handle' => $this->string()->notNull(),
+            'description' => $this->text(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
@@ -813,8 +819,7 @@ class Install extends Migration
         $this->createIndex(null, Table::MATRIXBLOCKTYPES, ['handle', 'fieldId'], true);
         $this->createIndex(null, Table::MATRIXBLOCKTYPES, ['fieldId'], false);
         $this->createIndex(null, Table::MATRIXBLOCKTYPES, ['fieldLayoutId'], false);
-        $this->createIndex(null, Table::MIGRATIONS, ['pluginId'], false);
-        $this->createIndex(null, Table::MIGRATIONS, ['type', 'pluginId'], false);
+        $this->createIndex(null, Table::MIGRATIONS, ['track', 'name'], true);
         $this->createIndex(null, Table::PLUGINS, ['handle'], true);
         $this->createIndex(null, Table::QUEUE, ['channel', 'fail', 'timeUpdated', 'timePushed']);
         $this->createIndex(null, Table::QUEUE, ['channel', 'fail', 'timeUpdated', 'delay']);
@@ -912,7 +917,7 @@ class Install extends Migration
                 'fieldId' => $this->integer()->notNull(),
                 'siteId' => $this->integer()->notNull(),
                 'keywords' => $this->text()->notNull(),
-                'keywords_vector' => $this->getDb()->getSchema()->createColumnSchemaBuilder('tsvector')->notNull(),
+                'keywords_vector' => $this->db->getSchema()->createColumnSchemaBuilder('tsvector')->notNull(),
             ]);
 
             $this->addPrimaryKey($this->db->getIndexName(Table::SEARCHINDEX, 'elementId,attribute,fieldId,siteId', true), Table::SEARCHINDEX, 'elementId,attribute,fieldId,siteId');
@@ -980,7 +985,6 @@ class Install extends Migration
         $this->addForeignKey(null, Table::MATRIXBLOCKS, ['typeId'], Table::MATRIXBLOCKTYPES, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::MATRIXBLOCKTYPES, ['fieldId'], Table::FIELDS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::MATRIXBLOCKTYPES, ['fieldLayoutId'], Table::FIELDLAYOUTS, ['id'], 'SET NULL', null);
-        $this->addForeignKey(null, Table::MIGRATIONS, ['pluginId'], Table::PLUGINS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::RELATIONS, ['fieldId'], Table::FIELDS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::RELATIONS, ['sourceId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::RELATIONS, ['sourceSiteId'], Table::SITES, ['id'], 'CASCADE', 'CASCADE');

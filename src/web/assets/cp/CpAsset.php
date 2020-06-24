@@ -45,38 +45,44 @@ class CpAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public function init()
-    {
-        $this->sourcePath = __DIR__ . '/dist';
+    public $sourcePath = __DIR__ . '/dist';
 
-        $this->depends = [
-            AxiosAsset::class,
-            D3Asset::class,
-            ElementResizeDetectorAsset::class,
-            GarnishAsset::class,
-            JqueryAsset::class,
-            JqueryTouchEventsAsset::class,
-            JqueryUiAsset::class,
-            JqueryPaymentAsset::class,
-            DatepickerI18nAsset::class,
-            PicturefillAsset::class,
-            SelectizeAsset::class,
-            VelocityAsset::class,
-            FileUploadAsset::class,
-            XregexpAsset::class,
-            FabricAsset::class,
-            IframeResizerAsset::class,
-        ];
+    /**
+     * @inheritdoc
+     */
+    public $depends = [
+        AxiosAsset::class,
+        D3Asset::class,
+        ElementResizeDetectorAsset::class,
+        GarnishAsset::class,
+        JqueryAsset::class,
+        JqueryTouchEventsAsset::class,
+        JqueryUiAsset::class,
+        JqueryPaymentAsset::class,
+        DatepickerI18nAsset::class,
+        PicturefillAsset::class,
+        SelectizeAsset::class,
+        VelocityAsset::class,
+        FileUploadAsset::class,
+        XregexpAsset::class,
+        FabricAsset::class,
+        IframeResizerAsset::class,
+    ];
 
-        $this->css = [
-            'css/craft.css',
-            'css/charts.css',
-        ];
+    /**
+     * @inheritdoc
+     */
+    public $css = [
+        'css/craft.css',
+        'css/charts.css',
+    ];
 
-        $this->js[] = 'js/Craft' . $this->dotJs();
-
-        parent::init();
-    }
+    /**
+     * @inheritdoc
+     */
+    public $js = [
+        'js/Craft.min.js',
+    ];
 
     /**
      * @inheritdoc
@@ -327,7 +333,7 @@ JS;
             'remainingSessionTime' => !in_array($request->getSegment(1), ['updates', 'manualupdate'], true) ? $userSession->getRemainingSessionTime() : 0,
             'right' => $orientation === 'ltr' ? 'right' : 'left',
             'runQueueAutomatically' => (bool)$generalConfig->runQueueAutomatically,
-            'scriptName' => $request->getScriptFile(),
+            'scriptName' => basename($request->getScriptFile()),
             'siteId' => $upToDate ? (int)$sitesService->currentSite->id : null,
             'sites' => $this->_sites($sitesService),
             'siteToken' => $generalConfig->siteToken,

@@ -346,7 +346,7 @@ class EntriesController extends BaseEntriesController
                     ]);
                 }
 
-                Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t duplicate entry.'));
+                $this->setFailFlash(Craft::t('app', 'Couldn’t duplicate entry.'));
 
                 // Send the original entry back to the template, with any validation errors on the clone
                 $entry->addErrors($clone->getErrors());
@@ -388,7 +388,7 @@ class EntriesController extends BaseEntriesController
                 ]);
             }
 
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save entry.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t save entry.'));
 
             // Send the entry back to the template
             Craft::$app->getUrlManager()->setRouteParams([
@@ -421,8 +421,7 @@ class EntriesController extends BaseEntriesController
             return $this->asJson($return);
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry saved.'));
-
+        $this->setSuccessFlash(Craft::t('app', 'Entry saved.'));
         return $this->redirectToPostedUrl($entry);
     }
 
@@ -470,7 +469,7 @@ class EntriesController extends BaseEntriesController
                 return $this->asJson(['success' => false]);
             }
 
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t delete entry.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t delete entry.'));
 
             // Send the entry back to the template
             Craft::$app->getUrlManager()->setRouteParams([
@@ -484,8 +483,7 @@ class EntriesController extends BaseEntriesController
             return $this->asJson(['success' => true]);
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry deleted.'));
-
+        $this->setSuccessFlash(Craft::t('app', 'Entry deleted.'));
         return $this->redirectToPostedUrl($entry);
     }
 
@@ -545,32 +543,24 @@ class EntriesController extends BaseEntriesController
                 throw new BadRequestHttpException('Request missing required entryId param');
             }
 
-            // Get the structure ID
-            $structureId = (new Query())
-                ->select(['sections.structureId'])
-                ->from(['entries' => Table::ENTRIES])
-                ->innerJoin(['sections' => Table::SECTIONS], '[[sections.id]] = [[entries.sectionId]]')
-                ->where(['entries.id' => $variables['entryId']])
-                ->scalar();
-
             if (!empty($variables['draftId'])) {
                 $variables['entry'] = Entry::find()
                     ->draftId($variables['draftId'])
-                    ->structureId($structureId)
+                    ->structureId($variables['section']->structureId)
                     ->siteId($site->id)
                     ->anyStatus()
                     ->one();
             } else if (!empty($variables['revisionId'])) {
                 $variables['entry'] = Entry::find()
                     ->revisionId($variables['revisionId'])
-                    ->structureId($structureId)
+                    ->structureId($variables['section']->structureId)
                     ->siteId($site->id)
                     ->anyStatus()
                     ->one();
             } else {
                 $variables['entry'] = Entry::find()
                     ->id($variables['entryId'])
-                    ->structureId($structureId)
+                    ->structureId($variables['section']->structureId)
                     ->siteId($site->id)
                     ->anyStatus()
                     ->one();

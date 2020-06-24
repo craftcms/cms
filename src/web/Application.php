@@ -12,6 +12,7 @@ use craft\base\ApplicationTrait;
 use craft\db\Query;
 use craft\db\Table;
 use craft\debug\DeprecatedPanel;
+use craft\debug\Module as DebugModule;
 use craft\debug\RequestPanel;
 use craft\debug\UserPanel;
 use craft\helpers\ArrayHelper;
@@ -25,7 +26,6 @@ use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidRouteException;
 use yii\db\Exception as DbException;
-use yii\debug\Module as DebugModule;
 use yii\debug\panels\AssetPanel;
 use yii\debug\panels\DbPanel;
 use yii\debug\panels\LogPanel;
@@ -392,6 +392,7 @@ class Application extends \yii\web\Application
 
         $this->setModule('debug', [
             'class' => DebugModule::class,
+            'basePath' => '@vendor/yiisoft/yii2-debug/src',
             'allowedIPs' => ['*'],
             'panels' => [
                 'config' => false,

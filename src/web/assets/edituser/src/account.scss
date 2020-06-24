@@ -1,0 +1,27 @@
+@charset "UTF-8";
+@import "../../../../../node_modules/craftcms-sass/mixins";
+
+#action-menubtn {
+  margin: -6px 0;
+}
+
+#action-spinner {
+  position: absolute;
+  top: 10px;
+  @include right(0);
+}
+
+#verifypasswordmodal {
+  width: 350px;
+}
+
+#verifypasswordmodal .buttons {
+  margin-top: 1em;
+}
+
+#verifypasswordmodal .buttons .spinner {
+  position: absolute;
+  top: 0;
+  @include right(0);
+  margin-top: 0;
+}

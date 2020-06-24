@@ -393,7 +393,7 @@ Craft.DraftEditor = Garnish.Base.extend(
             if (this.errors === null) {
                 bodyHtml = '<p>' + Craft.t('app', 'The draft has been saved.') + '</p>';
             } else {
-                var bodyHtml = '<p class="error">' + Craft.t('app', 'The draft could not be saved.') + '</p>';
+                bodyHtml = '<p class="error">' + Craft.t('app', 'The draft could not be saved.') + '</p>';
 
                 if (this.errors.length) {
                     bodyHtml += '<ul class="errors">';
@@ -437,7 +437,6 @@ Craft.DraftEditor = Garnish.Base.extend(
             var $menu = $('<div/>', {'class': 'menu'}).insertAfter($shareBtn);
             var $ul = $('<ul/>').appendTo($menu);
             var $li, $a;
-            var $a;
 
             for (var i = 0; i < this.settings.previewTargets.length; i++) {
                 $li = $('<li/>').appendTo($ul);
@@ -708,10 +707,13 @@ Craft.DraftEditor = Garnish.Base.extend(
                         var $saveBtnContainer = $('#save-btn-container');
                         if ($saveBtnContainer.length) {
                             $saveBtnContainer.replaceWith($('<input/>', {
-                                type: 'submit',
-                                'class': 'btn submit',
-                                value: Craft.t('app', 'Publish changes')
-                            }));
+                                type: 'button',
+                                'class': 'btn secondary formsubmit',
+                                value: Craft.t('app', 'Publish changes'),
+                                data: {
+                                    action: this.settings.applyDraftAction,
+                                },
+                            }).formsubmit());
                         }
 
                         // Remove the "Save as a Draft" button
@@ -900,8 +902,9 @@ Craft.DraftEditor = Garnish.Base.extend(
             var $footer = $('<div class="hud-footer flex flex-center"/>').appendTo($hudBody);
 
             // Delete button
+            let $deleteLink;
             if (this.settings.canDeleteDraft) {
-                var $deleteLink = $('<a class="error" role="button">' + Craft.t('app', 'Delete') + '</a>').appendTo($footer);
+                $deleteLink = $('<a class="error" role="button">' + Craft.t('app', 'Delete') + '</a>').appendTo($footer);
             }
 
             $('<div class="flex-grow"></div>').appendTo($footer);
@@ -999,6 +1002,12 @@ Craft.DraftEditor = Garnish.Base.extend(
                 return;
             }
 
+            // If we're editing a (saved) draft and the shortcut was used, just force-check the form immediately
+            if (ev.saveShortcut && !this.settings.isUnsavedDraft && this.settings.draftId) {
+                this.checkForm(true);
+                return;
+            }
+
             // If we're editing a draft, this isn't a custom trigger, and the user isn't allowed to update the source,
             // then ignore the submission
             if (!ev.customTrigger && !this.settings.isUnsavedDraft && this.settings.draftId && !this.settings.canUpdateSource) {
@@ -1018,7 +1027,10 @@ Craft.DraftEditor = Garnish.Base.extend(
             var $form = Craft.createForm(data);
 
             if (this.settings.draftId) {
-                if (!ev.customTrigger || !ev.customTrigger.data('action')) {
+                if (
+                    this.settings.isUnsavedDraft &&
+                    (!ev.customTrigger || !ev.customTrigger.data('action'))
+                ) {
                     $('<input/>', {
                         type: 'hidden',
                         name: 'action',

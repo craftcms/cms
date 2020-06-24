@@ -83,7 +83,7 @@ interface FieldInterface extends SavableComponentInterface
      * Returns whether the field should be shown as translatable in the UI.
      *
      * Note this method has no effect on whether the field’s value will get copied over to other
-     * sites when the entry is actually getting saved. That is determined by [[getTranslationKey()]].
+     * sites when the element is actually getting saved. That is determined by [[getTranslationKey()]].
      *
      * @param ElementInterface|null $element The element being edited
      * @return bool
@@ -206,7 +206,7 @@ interface FieldInterface extends SavableComponentInterface
     /**
      * Returns a static (non-editable) version of the field’s input HTML.
      *
-     * This function is called to output field values when viewing entry drafts.
+     * This function is called to output field values when viewing element drafts.
      *
      * @param mixed $value The field’s value
      * @param ElementInterface $element The element the field is associated with
@@ -271,8 +271,8 @@ interface FieldInterface extends SavableComponentInterface
      * Normalizes the field’s value for use.
      *
      * This method is called when the field’s value is first accessed from the element. For example, the first time
-     * `entry.myFieldHandle` is called from a template, or right before [[getInputHtml()]] is called. Whatever
-     * this method returns is what `entry.myFieldHandle` will likewise return, and what [[getInputHtml()]]’s and
+     * `element.myFieldHandle` is called from a template, or right before [[getInputHtml()]] is called. Whatever
+     * this method returns is what `element.myFieldHandle` will likewise return, and what [[getInputHtml()]]’s and
      * [[serializeValue()]]’s $value arguments will be set to.
      *
      * The value passed into this method will vary depending on the context.
@@ -291,7 +291,7 @@ interface FieldInterface extends SavableComponentInterface
     public function normalizeValue($value, ElementInterface $element = null);
 
     /**
-     * Prepares the field’s value to be stored somewhere, like the content table or JSON-encoded in an entry revision table.
+     * Prepares the field’s value to be stored somewhere, like the content table.
      *
      * Data types that are JSON-encodable are safe (arrays, integers, strings, booleans, etc).
      * Whatever this returns should be something [[normalizeValue()]] can handle.

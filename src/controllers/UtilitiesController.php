@@ -389,9 +389,9 @@ class UtilitiesController extends Controller
 
         try {
             $migrator->up();
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'Applied new migrations successfully.'));
+            $this->setSuccessFlash(Craft::t('app', 'Applied new migrations successfully.'));
         } catch (MigrationException $e) {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t apply new migrations.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t apply new migrations.'));
         }
 
         return $this->redirect('utilities/migrations');

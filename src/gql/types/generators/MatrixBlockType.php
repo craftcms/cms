@@ -18,7 +18,9 @@ use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\MatrixBlock as MatrixBlockInterface;
 use craft\gql\TypeManager;
 use craft\gql\types\elements\MatrixBlock;
+use craft\helpers\Gql;
 use craft\models\MatrixBlockType as MatrixBlockTypeModel;
+use GraphQL\Type\Definition\Type;
 
 /**
  * Class MatrixBlockType
@@ -66,7 +68,8 @@ class MatrixBlockType implements GeneratorInterface, SingleGeneratorInterface
 
             /** @var Field $contentField */
             foreach ($contentFields as $contentField) {
-                $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
+                $gqlType = $contentField->getContentGqlType();
+                $contentFieldGqlTypes[$contentField->handle] = $contentField->required ? Gql::wrapInNonNull($gqlType) : $gqlType;
             }
 
             $blockTypeFields = TypeManager::prepareFieldDefinitions(array_merge(MatrixBlockInterface::getFieldDefinitions(), $contentFieldGqlTypes), $typeName);

@@ -918,6 +918,27 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             // Sort menu
             // ----------------------------------------------------------------------
 
+            // Remove any existing custom sort options from the menu
+            this.$sortAttributesList.children('li[data-extra]').remove();
+
+            // Does this source have any custom sort options?
+            let sortOptions = this.$source.data('sort-options')
+            if (sortOptions) {
+                for (let i = 0; i < sortOptions.length; i++) {
+                    let $option = $('<li/>', {
+                        'data-extra': true,
+                    })
+                        .append(
+                            $('<a/>', {
+                                text: sortOptions[i][0],
+                                'data-attr': sortOptions[i][1],
+                            })
+                        )
+                        .appendTo(this.$sortAttributesList);
+                    this.sortMenu.addOptions($option.children());
+                }
+            }
+
             // Does this source have a structure?
             if (Garnish.hasAttr(this.$source, 'data-has-structure')) {
                 if (!this.$structureSortAttribute) {
@@ -1421,8 +1442,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             }
 
             if (this.initialized) {
-                // Remember this site for later
-                Craft.cp.setSiteId(siteId);
+                if (this.settings.context === 'index') {
+                    // Remember this site for later
+                    Craft.cp.setSiteId(siteId);
+                }
 
                 // Update the elements
                 this.updateElements();

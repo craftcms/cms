@@ -130,10 +130,10 @@ class PluginStoreController extends Controller
             $url = Craft::$app->getPluginStore()->craftIdEndpoint . '/oauth/revoke';
             $options = ['query' => ['accessToken' => $token->accessToken]];
             $client->request('GET', $url, $options);
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'Disconnected from id.craftcms.com.'));
+            $this->setSuccessFlash(Craft::t('app', 'Disconnected from id.craftcms.com.'));
         } catch (\Exception $e) {
             Craft::error('Couldn’t revoke token: ' . $e->getMessage());
-            Craft::$app->getSession()->setError(Craft::t('app', 'Disconnected from id.craftcms.com with errors, check the logs.'));
+            $this->setFailFlash(Craft::t('app', 'Disconnected from id.craftcms.com with errors, check the logs.'));
         }
 
         Craft::$app->getPluginStore()->deleteToken();
@@ -205,7 +205,7 @@ class PluginStoreController extends Controller
 
             Craft::$app->getPluginStore()->saveToken($token);
 
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'Connected to craftcms.com.'));
+            $this->setSuccessFlash(Craft::t('app', 'Connected to craftcms.com.'));
 
             return $this->asJson([
                 'success' => true,

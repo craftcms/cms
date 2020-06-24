@@ -18,7 +18,9 @@ use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\gql\TypeManager;
 use craft\gql\types\elements\Asset;
+use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
+use GraphQL\Type\Definition\Type;
 
 /**
  * Class AssetType
@@ -63,7 +65,8 @@ class AssetType implements GeneratorInterface, SingleGeneratorInterface
 
         /** @var Field $contentField */
         foreach ($contentFields as $contentField) {
-            $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
+            $gqlType = $contentField->getContentGqlType();
+            $contentFieldGqlTypes[$contentField->handle] = $contentField->required ? Gql::wrapInNonNull($gqlType) : $gqlType;
         }
 
         $assetFields = TypeManager::prepareFieldDefinitions(array_merge(AssetInterface::getFieldDefinitions(), $contentFieldGqlTypes), $typeName);

@@ -132,7 +132,7 @@ class TagsController extends Controller
 
         // Save it
         if (!Craft::$app->getTags()->saveTagGroup($tagGroup)) {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save the tag group.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t save the tag group.'));
 
             // Send the tag group back to the template
             Craft::$app->getUrlManager()->setRouteParams([
@@ -142,8 +142,7 @@ class TagsController extends Controller
             return null;
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'Tag group saved.'));
-
+        $this->setSuccessFlash(Craft::t('app', 'Tag group saved.'));
         return $this->redirectToPostedUrl($tagGroup);
     }
 

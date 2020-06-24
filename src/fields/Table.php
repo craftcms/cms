@@ -321,7 +321,7 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml($value, ElementInterface $element = null): string
     {
         Craft::$app->getView()->registerAssetBundle(TimepickerAsset::class);
         return $this->_getInputHtml($value, $element, false);
@@ -438,6 +438,7 @@ class Table extends Field
 
     /**
      * @inheritdoc
+     * @since 3.5.0
      */
     public function getContentGqlMutationArgumentType()
     {

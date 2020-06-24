@@ -90,29 +90,30 @@ class ElementQueryConditionBuilder
             }
         }
 
+        // Parse everything else
         foreach ($eagerLoadingRules as $element => $parameters) {
+            // Don't need these anymore
             if (StringHelper::endsWith($element, '@' . Gql::GRAPHQL_COUNT_FIELD)) {
                 continue;
             }
 
+            // If this element was flagged for `withCount`, add it to parameters
             if (!empty($relationCountFields[$element])) {
                 $parameters['count'] = true;
             }
 
-            if ($element == 'withTransforms') {
+            // `withTransforms` get loaded using the `withTransforms` method.
+            if ($element === 'withTransforms') {
                 $extractedConditions['withTransforms'] = $parameters;
                 continue;
             }
 
+            // Just dump it all in where it belongs.
             if (empty($parameters)) {
-                $eagerLoadConditions[] = $element;
+                $extractedConditions['with'][] = $element;
             } else {
-                $eagerLoadConditions[] = [$element, $parameters];
+                $extractedConditions['with'][] = [$element, $parameters];
             }
-        }
-
-        if (!empty($eagerLoadConditions)) {
-            $extractedConditions['with'] = $eagerLoadConditions;
         }
 
         return $extractedConditions;
@@ -170,6 +171,7 @@ class ElementQueryConditionBuilder
         foreach ($directives as $directive) {
             if ($directive->name->value === 'transform') {
                 $arguments = $this->_extractArguments($directive->arguments ?? []);
+                unset($arguments['immediately']);
                 break;
             }
         }
@@ -298,7 +300,6 @@ class ElementQueryConditionBuilder
                         $nodeArguments['withTransforms'] = array_merge_recursive($nodeArguments['withTransforms'], $transformEagerLoadArguments);
                     }
 
-
                     // If this a custom Craft content field
                     if ($craftContentField) {
                         /** @var EagerLoadingFieldInterface $craftContentField */
@@ -336,24 +337,32 @@ class ElementQueryConditionBuilder
                         }
                     }
 
+                    $alias = (!(empty($subNode->alias)) && !empty($subNode->alias->value)) ? $subNode->alias->value : null;
+
                     // If they're angling for the count field, alias it so each count field gets their own eager-load arguments.
-                    if ($nodeName == Gql::GRAPHQL_COUNT_FIELD) {
-                        if (!empty($subNode->alias) && !empty($subNode->alias->value)) {
-                            $nodeName = $subNode->alias->value . '@' . $nodeName;
+                    if ($nodeName === Gql::GRAPHQL_COUNT_FIELD) {
+                        if ($alias) {
+                            $nodeName = $alias . '@' . Gql::GRAPHQL_COUNT_FIELD;
                         } else {
                             // Just re-use the node name, then.
-                            $nodeName .= '@' . $nodeName;
+                            $nodeName .= '@' . Gql::GRAPHQL_COUNT_FIELD;
                         }
                     }
 
+                    $nodeKey = $alias ? $nodeName . ' as ' . $alias : $nodeName;
+
                     // Add this to the eager loading list.
                     if (!$transformableAssetProperty) {
-                        $eagerLoadNodes[$prefix . $nodeName] = array_key_exists($prefix . $nodeName, $eagerLoadNodes) ? array_merge_recursive($eagerLoadNodes[$prefix . $nodeName], $arguments) : $arguments;
+                        $eagerLoadNodes[$prefix . $nodeKey] = array_key_exists($prefix . $nodeKey, $eagerLoadNodes) ? array_merge_recursive($eagerLoadNodes[$prefix . $nodeKey], $arguments) : $arguments;
                     }
 
                     // If it has any more selections, build the prefix further and proceed in a recursive manner
                     if (!empty($subNode->selectionSet)) {
-                        $traversePrefix = $prefix . ($craftContentField ? $craftContentField->handle : 'children');
+                        if ($alias) {
+                            $traversePrefix = $prefix . $alias;
+                        } else {
+                            $traversePrefix = $prefix . ($craftContentField ? $craftContentField->handle : 'children');
+                        }
 
                         if ($craftContentField) {
                             // Relational fields should reset context to global.

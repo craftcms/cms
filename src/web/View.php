@@ -35,6 +35,7 @@ use Twig\Template as TwigTemplate;
 use yii\base\Arrayable;
 use yii\base\Exception;
 use yii\base\Model;
+use yii\base\NotSupportedException;
 use yii\web\AssetBundle as YiiAssetBundle;
 use yii\web\Response as WebResponse;
 
@@ -108,6 +109,17 @@ class View extends \yii\web\View
      * @since 3.4.0
      */
     public $minifyJs = false;
+
+    /**
+     * @var bool Whether to allow [[evaluateDynamicContent()]] to be called.
+     *
+     * ::: warning
+     * Don’t enable this unless you have a *very* good reason to.
+     * :::
+     *
+     * @since 3.5.0
+     */
+    public $allowEval = false;
 
     /**
      * @var Environment|null The Twig environment instance used for control panel templates
@@ -1595,11 +1607,24 @@ JS;
     public function endPage($ajaxMode = false)
     {
         if (!$ajaxMode && Craft::$app->getRequest()->getIsCpRequest()) {
-            $this->_registeredJs('registeredJsFiles', $this->_registeredJsFiles);
-            $this->_registeredJs('registeredAssetBundles', $this->_registeredAssetBundles);
+            $this->_setJsProperty('registeredJsFiles', $this->_registeredJsFiles);
+            $this->_setJsProperty('registeredAssetBundles', $this->_registeredAssetBundles);
         }
 
         parent::endPage($ajaxMode);
+    }
+
+    /**
+     * @inheritdoc
+     * @throws NotSupportedException unless [[allowEval]] has been set to `true`.
+     */
+    public function evaluateDynamicContent($statements)
+    {
+        if (!$this->allowEval) {
+            throw new NotSupportedException('evaluateDynamicContent() is disallowed.');
+        }
+
+        return parent::evaluateDynamicContent($statements);
     }
 
     // Events
@@ -1947,7 +1972,7 @@ JS;
         return $this->_templateRoots[$which] = $roots;
     }
 
-    private function _registeredJs($property, $names)
+    private function _setJsProperty($property, $names)
     {
         if (empty($names)) {
             return;
@@ -1956,7 +1981,7 @@ JS;
         $js = "if (typeof Craft !== 'undefined') {\n";
         foreach (array_keys($names) as $name) {
             if ($name) {
-                $jsName = Json::encode($name);
+                $jsName = Json::encode(str_replace(['<', '>'], '', $name));
                 $js .= "  Craft.{$property}[{$jsName}] = true;\n";
             }
         }

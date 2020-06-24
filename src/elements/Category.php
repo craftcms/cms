@@ -151,6 +151,7 @@ class Category extends Element
 
     /**
      * @inheritdoc
+     * @since 3.5.0
      */
     public static function gqlMutationNameByContext($context): string
     {
@@ -183,6 +184,22 @@ class Category extends Element
         }
 
         return $sources;
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.5.0
+     */
+    public static function defineFieldLayouts(string $source): array
+    {
+        $fieldLayouts = [];
+        if (
+            preg_match('/^group:(.+)$/', $source, $matches) &&
+            ($group = Craft::$app->getCategories()->getGroupByUid($matches[1]))
+        ) {
+            $fieldLayouts[] = $group->getFieldLayout();
+        }
+        return $fieldLayouts;
     }
 
     /**
@@ -365,6 +382,17 @@ class Category extends Element
         $rules = parent::defineRules();
         $rules[] = [['groupId', 'newParentId'], 'number', 'integerOnly' => true];
         return $rules;
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.5.0
+     */
+    public function getCacheTags(): array
+    {
+        return [
+            "group:$this->groupId",
+        ];
     }
 
     /**

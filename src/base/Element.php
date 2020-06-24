@@ -25,6 +25,7 @@ use craft\events\ModelEvent;
 use craft\events\RegisterElementActionsEvent;
 use craft\events\RegisterElementDefaultTableAttributesEvent;
 use craft\events\RegisterElementExportersEvent;
+use craft\events\RegisterElementFieldLayoutsEvent;
 use craft\events\RegisterElementHtmlAttributesEvent;
 use craft\events\RegisterElementSearchableAttributesEvent;
 use craft\events\RegisterElementSortOptionsEvent;
@@ -38,6 +39,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
+use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
@@ -136,6 +138,14 @@ abstract class Element extends Component implements ElementInterface
      * @event RegisterElementSourcesEvent The event that is triggered when registering the available sources for the element type.
      */
     const EVENT_REGISTER_SOURCES = 'registerSources';
+
+    /**
+     * @event RegisterElementFieldLayoutsEvent The event that is triggered when registering all of the field layouts
+     * associated with elements from a given source.
+     * @see fieldLayouts()
+     * @since 3.5.0
+     */
+    const EVENT_REGISTER_FIELD_LAYOUTS = 'registerFieldLayouts';
 
     /**
      * @event RegisterElementActionsEvent The event that is triggered when registering the available actions for the element type.
@@ -554,6 +564,38 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @inheritdoc
+     * @since 3.5.0
+     */
+    public static function fieldLayouts(string $source): array
+    {
+        $fieldLayouts = static::defineFieldLayouts($source);
+
+        // Give plugins a chance to modify them
+        $event = new RegisterElementFieldLayoutsEvent([
+            'source' => $source,
+            'fieldLayouts' => $fieldLayouts
+        ]);
+        Event::trigger(static::class, self::EVENT_REGISTER_FIELD_LAYOUTS, $event);
+
+        return $event->fieldLayouts;
+    }
+
+    /**
+     * Defines the field layouts associated with elements for a given source.
+     *
+     * @param string $source The selected source’s key, if any
+     * @return FieldLayout[] The associated field layouts
+     * @see fieldLayouts()
+     * @since 3.5.0
+     */
+    protected static function defineFieldLayouts(string $source): array
+    {
+        // Default to all of the field layouts associated with this element type
+        return Craft::$app->getFields()->getLayoutsByElementType(static::class);
+    }
+
+    /**
+     * @inheritdoc
      */
     public static function actions(string $source): array
     {
@@ -677,7 +719,7 @@ abstract class Element extends Component implements ElementInterface
                 unset($viewState['order']);
             }
         } else {
-            $orderBy = self::_indexOrderBy($viewState);
+            $orderBy = self::_indexOrderBy($sourceKey, $viewState);
             if ($orderBy !== false) {
                 $elementQuery->orderBy($orderBy);
             }
@@ -727,13 +769,6 @@ abstract class Element extends Component implements ElementInterface
     {
         $sortOptions = static::defineSortOptions();
 
-        // Add custom fields to the fix
-        foreach (Craft::$app->getFields()->getFieldsByElementType(static::class) as $field) {
-            if ($field instanceof SortableFieldInterface) {
-                $sortOptions[] = $field->getSortOption();
-            }
-        }
-
         // Give plugins a chance to modify them
         $event = new RegisterElementSortOptionsEvent([
             'sortOptions' => $sortOptions
@@ -752,7 +787,7 @@ abstract class Element extends Component implements ElementInterface
     protected static function defineSortOptions(): array
     {
         // Default to the available table attributes
-        $tableAttributes = Craft::$app->getElementIndexes()->getAvailableTableAttributes(static::class, false);
+        $tableAttributes = Craft::$app->getElementIndexes()->getAvailableTableAttributes(static::class);
         $sortOptions = [];
 
         foreach ($tableAttributes as $key => $labelInfo) {
@@ -911,56 +946,73 @@ abstract class Element extends Component implements ElementInterface
                     $selectColumns[] = 'level';
                 }
 
-                $structureData = (new Query())
+                $elementStructureData = (new Query())
                     ->select($selectColumns)
                     ->from([Table::STRUCTUREELEMENTS])
                     ->where(['elementId' => $sourceElementIds])
                     ->all();
 
-                if (empty($structureData)) {
+                if (empty($elementStructureData)) {
                     return null;
                 }
 
-                $qb = Craft::$app->getDb()->getQueryBuilder();
-                $query = new Query();
-                $sourceSelectSql = '(CASE';
+                // Build the ancestor condition & params
                 $condition = ['or'];
+                $params = [];
 
-                foreach ($structureData as $i => $elementStructureData) {
+                foreach ($elementStructureData as $i => $elementStructureDatum) {
                     $thisElementCondition = [
                         'and',
-                        ['structureId' => $elementStructureData['structureId']],
-                        ['<', 'lft', $elementStructureData['lft']],
-                        ['>', 'rgt', $elementStructureData['rgt']],
+                        ['structureId' => $elementStructureDatum['structureId']],
+                        ['<', 'lft', $elementStructureDatum['lft']],
+                        ['>', 'rgt', $elementStructureDatum['rgt']],
                     ];
 
                     if ($handle === 'parent') {
-                        $thisElementCondition[] = ['level' => $elementStructureData['level'] - 1];
+                        $thisElementCondition[] = ['level' => $elementStructureDatum['level'] - 1];
                     }
 
                     $condition[] = $thisElementCondition;
-                    $sourceSelectSql .= ' WHEN ' .
-                        $qb->buildCondition(
-                            [
-                                'and',
-                                ['structureId' => $elementStructureData['structureId']],
-                                ['<', 'lft', $elementStructureData['lft']],
-                                ['>', 'rgt', $elementStructureData['rgt']]
-                            ],
-                            $query->params) .
-                        " THEN :sourceId{$i}";
-                    $query->params[':sourceId' . $i] = $elementStructureData['elementId'];
+                    $params[":sourceId$i"] = $elementStructureDatum['elementId'];
                 }
 
-                $sourceSelectSql .= ' END) as source';
-
-                // Return any child elements
-                $map = $query
-                    ->select([$sourceSelectSql, 'elementId as target'])
+                // Fetch the ancestor data
+                $ancestorStructureQuery = (new Query())
+                    ->select(['structureId', 'lft', 'rgt', 'elementId'])
                     ->from([Table::STRUCTUREELEMENTS])
-                    ->where($condition)
-                    ->orderBy(['structureId' => SORT_ASC, 'lft' => SORT_ASC])
-                    ->all();
+                    ->where($condition);
+
+                if ($handle === 'parent') {
+                    $ancestorStructureQuery->addSelect('level');
+                }
+
+                $ancestorStructureData = $ancestorStructureQuery->all();
+
+                // Map the elements to their ancestors
+                $map = [];
+                foreach ($elementStructureData as $elementStructureDatum) {
+                    foreach ($ancestorStructureData as $ancestorStructureDatum) {
+                        if (
+                            $ancestorStructureDatum['structureId'] === $elementStructureDatum['structureId'] &&
+                            $ancestorStructureDatum['lft'] < $elementStructureDatum['lft'] &&
+                            $ancestorStructureDatum['rgt'] > $elementStructureDatum['rgt'] &&
+                            (
+                                $handle === 'ancestors' ||
+                                $ancestorStructureDatum['level'] == $elementStructureDatum['level'] - 1
+                            )
+                        ) {
+                            $map[] = [
+                                'source' => $elementStructureDatum['elementId'],
+                                'target' => $ancestorStructureDatum['elementId'],
+                            ];
+
+                            // If we're just fetching the parents, then we're done with this element
+                            if ($handle === 'parent') {
+                                break;
+                            }
+                        }
+                    }
+                }
 
                 return [
                     'elementType' => static::class,
@@ -1094,6 +1146,7 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @inheritdoc
+     * @since 3.5.0
      */
     public static function gqlMutationNameByContext($context): string
     {
@@ -1114,37 +1167,20 @@ abstract class Element extends Component implements ElementInterface
     /**
      * Returns the orderBy value for element indexes
      *
+     * @param string $sourceKey
      * @param array $viewState
      * @return array|false
      */
-    private static function _indexOrderBy(array $viewState)
+    private static function _indexOrderBy(string $sourceKey, array $viewState)
     {
-        // Define the available sort attribute/option pairs
-        $sortOptions = [];
-        foreach (static::sortOptions() as $key => $sortOption) {
-            if (is_string($key)) {
-                // Shorthand syntax
-                $sortOptions[$key] = $key;
-            } else {
-                if (!isset($sortOption['orderBy'])) {
-                    throw new InvalidValueException('Sort options must specify an orderBy value');
-                }
-                $attribute = $sortOption['attribute'] ?? $sortOption['orderBy'];
-                $sortOptions[$attribute] = $sortOption['orderBy'];
-            }
-        }
-        $sortOptions['score'] = 'score';
-
-        if (!empty($viewState['order']) && isset($sortOptions[$viewState['order']])) {
-            $columns = $sortOptions[$viewState['order']];
-        } else if (count($sortOptions) > 1) {
-            $columns = reset($sortOptions);
-        } else {
+        if (($columns = self::_indexOrderByColumns($sourceKey, $viewState)) === false) {
             return false;
         }
 
         // Borrowed from QueryTrait::normalizeOrderBy()
-        $columns = preg_split('/\s*,\s*/', trim($columns), -1, PREG_SPLIT_NO_EMPTY);
+        if (is_string($columns)) {
+            $columns = preg_split('/\s*,\s*/', trim($columns), -1, PREG_SPLIT_NO_EMPTY);
+        }
         $result = [];
         foreach ($columns as $i => $column) {
             if ($i === 0) {
@@ -1158,6 +1194,42 @@ abstract class Element extends Component implements ElementInterface
         }
 
         return $result;
+    }
+
+    /**
+     * @param string $sourceKey
+     * @param array $viewState
+     * @return bool|string|array
+     */
+    private static function _indexOrderByColumns(string $sourceKey, array $viewState)
+    {
+        if (empty($viewState['order'])) {
+            return false;
+        }
+
+        if ($viewState['order'] === 'score') {
+            return 'score';
+        }
+
+        foreach (static::sortOptions() as $key => $sortOption) {
+            if (is_array($sortOption)) {
+                $attribute = $sortOption['attribute'] ?? $sortOption['orderBy'];
+                if ($attribute === $viewState['order']) {
+                    return $sortOption['orderBy'];
+                }
+            } else if ($key === $viewState['order']) {
+                return $key;
+            }
+        }
+
+        // See if it's a source-specific sort option
+        foreach (Craft::$app->getElementIndexes()->getSourceSortOptions(static::class, $sourceKey) as $sortOption) {
+            if ($sortOption['attribute'] === $viewState['order']) {
+                return $sortOption['orderBy'];
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -1796,6 +1868,15 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @inheritdoc
+     * @since 3.5.0
+     */
+    public function getCacheTags(): array
+    {
+        return [];
+    }
+
+    /**
+     * @inheritdoc
      */
     public function getUriFormat()
     {
@@ -2066,7 +2147,9 @@ abstract class Element extends Component implements ElementInterface
         return static::find()
             ->id($this->id ?: false)
             ->structureId($this->structureId)
-            ->siteId(['not', $this->siteId]);
+            ->siteId(['not', $this->siteId])
+            ->drafts($this->getIsDraft())
+            ->revisions($this->getIsRevision());
     }
 
     /**
@@ -2170,7 +2253,7 @@ abstract class Element extends Component implements ElementInterface
 
         return static::find()
             ->structureId($this->structureId)
-            ->ancestorOf(ElementHelper::sourceElement($this))
+            ->ancestorOf($this)
             ->siteId($this->siteId)
             ->ancestorDist($dist);
     }
@@ -2217,7 +2300,7 @@ abstract class Element extends Component implements ElementInterface
     {
         return static::find()
             ->structureId($this->structureId)
-            ->siblingOf(ElementHelper::sourceElement($this))
+            ->siblingOf($this)
             ->siteId($this->siteId);
     }
 
@@ -2230,7 +2313,7 @@ abstract class Element extends Component implements ElementInterface
             /** @var ElementQuery $query */
             $query = $this->_prevSibling = static::find();
             $query->structureId = $this->structureId;
-            $query->prevSiblingOf = ElementHelper::sourceElement($this);
+            $query->prevSiblingOf = $this;
             $query->siteId = $this->siteId;
             $query->anyStatus();
             $this->_prevSibling = $query->one();
@@ -2252,7 +2335,7 @@ abstract class Element extends Component implements ElementInterface
             /** @var ElementQuery $query */
             $query = $this->_nextSibling = static::find();
             $query->structureId = $this->structureId;
-            $query->nextSiblingOf = ElementHelper::sourceElement($this);
+            $query->nextSiblingOf = $this;
             $query->siteId = $this->siteId;
             $query->anyStatus();
             $this->_nextSibling = $query->one();
@@ -2303,8 +2386,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function isDescendantOf(ElementInterface $element): bool
     {
-        $source = ElementHelper::sourceElement($this);
-        return ($source->root == $element->root && $source->lft > $element->lft && $source->rgt < $element->rgt);
+        return ($this->root == $element->root && $this->lft > $element->lft && $this->rgt < $element->rgt);
     }
 
     /**
@@ -2321,8 +2403,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function isChildOf(ElementInterface $element): bool
     {
-        $source = ElementHelper::sourceElement($this);
-        return ($source->root == $element->root && $source->level == $element->level + 1 && $source->isDescendantOf($element));
+        return ($this->root == $element->root && $this->level == $element->level + 1 && $this->isDescendantOf($element));
     }
 
     /**
@@ -2330,13 +2411,12 @@ abstract class Element extends Component implements ElementInterface
      */
     public function isSiblingOf(ElementInterface $element): bool
     {
-        $source = ElementHelper::sourceElement($this);
-        if ($source->root == $element->root && $source->level !== null && $source->level == $element->level) {
-            if ($source->level == 1 || $source->isPrevSiblingOf($element) || $source->isNextSiblingOf($element)) {
+        if ($this->root == $element->root && $this->level !== null && $this->level == $element->level) {
+            if ($this->level == 1 || $this->isPrevSiblingOf($element) || $this->isNextSiblingOf($element)) {
                 return true;
             }
 
-            $parent = $source->getParent();
+            $parent = $this->getParent();
 
             if ($parent) {
                 return $element->isDescendantOf($parent);
@@ -2351,8 +2431,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function isPrevSiblingOf(ElementInterface $element): bool
     {
-        $source = ElementHelper::sourceElement($this);
-        return ($source->root == $element->root && $source->level == $element->level && $source->rgt == $element->lft - 1);
+        return ($this->root == $element->root && $this->level == $element->level && $this->rgt == $element->lft - 1);
     }
 
     /**
@@ -2360,8 +2439,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function isNextSiblingOf(ElementInterface $element): bool
     {
-        $source = ElementHelper::sourceElement($this);
-        return ($source->root == $element->root && $source->level == $element->level && $source->lft == $element->rgt + 1);
+        return ($this->root == $element->root && $this->level == $element->level && $this->lft == $element->rgt + 1);
     }
 
     /**
@@ -2426,6 +2504,30 @@ abstract class Element extends Component implements ElementInterface
     public function setDirtyAttributes(array $names)
     {
         $this->_dirtyAttributes = $names;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getIsTitleTranslatable(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getTitleTranslationDescription()
+    {
+        return ElementHelper::translationDescription(Field::TRANSLATION_METHOD_SITE);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getTitleTranslationKey(): string
+    {
+        return ElementHelper::translationKey($this, Field::TRANSLATION_METHOD_SITE);
     }
 
     /**
@@ -3149,6 +3251,9 @@ abstract class Element extends Component implements ElementInterface
                 'structureId' => $structureId,
             ]));
         }
+
+        // Invalidate caches for this element
+        Craft::$app->getElements()->invalidateCachesForElement($this);
     }
 
     /**
@@ -3171,7 +3276,11 @@ abstract class Element extends Component implements ElementInterface
         }
 
         $behavior = $this->getBehavior('customFields');
-        $behavior->$fieldHandle = $field->normalizeValue($behavior->$fieldHandle, $this);
+        $value = $behavior->$fieldHandle;
+        if (is_string($value) && Json::isJsonObject($value)) {
+            $value = Json::decodeIfJson($value);
+        }
+        $behavior->$fieldHandle = $field->normalizeValue($value, $this);
         $this->_normalizedFieldValues[$fieldHandle] = true;
     }
 
@@ -3244,9 +3353,7 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
-     * Returns the site the element is associated with.
-     *
-     * @return Site
+     * @inheritdoc
      * @throws InvalidConfigException if [[siteId]] is invalid
      */
     public function getSite(): Site
@@ -3260,6 +3367,15 @@ abstract class Element extends Component implements ElementInterface
         }
 
         return $site;
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.5.0
+     */
+    public function getLanguage(): string
+    {
+        return $this->getSite()->language;
     }
 
     /**

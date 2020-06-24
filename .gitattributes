@@ -11,10 +11,11 @@ codeception.yml export-ignore
 codeception.yml.example export-ignore
 composer.lock export-ignore
 crowdin.yml export-ignore
-gruntflie.js export-ignore
 gulpfile.js export-ignore
 package.json
 package-lock.json
+README.md
+SECURITY.md
 tests/ export-ignore
 
 # Auto detect text files and perform LF normalization

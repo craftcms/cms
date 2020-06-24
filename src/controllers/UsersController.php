@@ -18,18 +18,22 @@ use craft\events\DefineUserContentSummaryEvent;
 use craft\events\LoginFailureEvent;
 use craft\events\RegisterUserActionsEvent;
 use craft\events\UserEvent;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
 use craft\helpers\FileHelper;
+use craft\helpers\Html;
 use craft\helpers\Image;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\helpers\User as UserHelper;
+use craft\models\UserGroup;
 use craft\services\Users;
 use craft\web\assets\edituser\EditUserAsset;
 use craft\web\Controller;
 use craft\web\Request;
 use craft\web\ServiceUnavailableHttpException;
 use craft\web\UploadedFile;
+use craft\web\User as UserSession;
 use craft\web\View;
 use yii\base\InvalidArgumentException;
 use yii\web\BadRequestHttpException;
@@ -193,9 +197,8 @@ class UsersController extends Controller
 
         if (!$userSession->loginByUserId($userId)) {
             $session->remove(User::IMPERSONATE_KEY);
-            $session->setError(Craft::t('app', 'There was a problem impersonating this user.'));
+            $this->setFailFlash(Craft::t('app', 'There was a problem impersonating this user.'));
             Craft::error($userSession->getIdentity()->username . ' tried to impersonate userId: ' . $userId . ' but something went wrong.', __METHOD__);
-
             return null;
         }
 
@@ -382,8 +385,7 @@ class UsersController extends Controller
                 return $this->asJson(['success' => true]);
             }
 
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'Password reset email sent.'));
-
+            $this->setSuccessFlash(Craft::t('app', 'Password reset email sent.'));
             return $this->redirectToPostedUrl();
         }
 
@@ -468,7 +470,7 @@ class UsersController extends Controller
                 return $this->asErrorJson(implode(', ', $errors));
             }
 
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t update password.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t update password.'));
 
             return $this->_renderSetPasswordTemplate([
                 'errors' => $errors,
@@ -538,7 +540,7 @@ class UsersController extends Controller
 
         // If they're logged in, give them a success notice
         if (!Craft::$app->getUser()->getIsGuest()) {
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'Email verified'));
+            $this->setSuccessFlash(Craft::t('app', 'Email verified'));
         }
 
         // Were they just activated?
@@ -567,9 +569,9 @@ class UsersController extends Controller
         }
 
         if (Craft::$app->getUsers()->activateUser($user)) {
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'Successfully activated the user.'));
+            $this->setSuccessFlash(Craft::t('app', 'Successfully activated the user.'));
         } else {
-            Craft::$app->getSession()->setError(Craft::t('app', 'There was a problem activating the user.'));
+            $this->setFailFlash(Craft::t('app', 'There was a problem activating the user.'));
         }
 
         return $this->redirectToPostedUrl();
@@ -588,7 +590,7 @@ class UsersController extends Controller
     public function actionEditUser($userId = null, User $user = null, array $errors = null): Response
     {
         if (!empty($errors)) {
-            Craft::$app->getSession()->setError(reset($errors));
+            $this->setFailFlash(reset($errors));
         }
 
         // Determine which user account we're editing
@@ -1111,7 +1113,7 @@ class UsersController extends Controller
                 ]);
             }
 
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save user.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t save user.'));
 
             // Send the account back to the template
             Craft::$app->getUrlManager()->setRouteParams([
@@ -1132,6 +1134,7 @@ class UsersController extends Controller
             'language' => $request->getBodyParam('preferredLanguage', $user->getPreference('language')),
             'weekStartDay' => $request->getBodyParam('weekStartDay', $user->getPreference('weekStartDay')),
             'useShapes' => (bool)$request->getBodyParam('useShapes', $user->getPreference('useShapes')),
+            'underlineLinks' => (bool)$request->getBodyParam('underlineLinks', $user->getPreference('underlineLinks')),
         ];
 
         if ($user->admin) {
@@ -1164,13 +1167,16 @@ class UsersController extends Controller
         // Save the user's photo, if it was submitted
         $this->_processUserPhoto($user);
 
-        // If this is public registration, assign the user to the default user group
-        if ($isPublicRegistration) {
-            // Assign them to the default user group
-            Craft::$app->getUsers()->assignUserToDefaultGroup($user);
-        } else {
-            // Assign user groups and permissions if the current user is allowed to do that
-            $this->_processUserGroupsPermissions($user);
+        if (Craft::$app->getEdition() === Craft::Pro) {
+            // If this is public registration, assign the user to the default user group
+            if ($isPublicRegistration) {
+                // Assign them to the default user group
+                Craft::$app->getUsers()->assignUserToDefaultGroup($user);
+            } else if ($currentUser) {
+                // Assign user groups and permissions if the current user is allowed to do that
+                $this->_saveUserPermissions($user, $request, $currentUser);
+                $this->_saveUserGroups($user, $request, $currentUser);
+            }
         }
 
         // Do we need to send a verification email out?
@@ -1182,14 +1188,10 @@ class UsersController extends Controller
 
             if ($isNewUser) {
                 // Send the activation email
-                $emailSent = Craft::$app->getUsers()->sendActivationEmail($user);
+                Craft::$app->getUsers()->sendActivationEmail($user);
             } else {
                 // Send the standard verification email
-                $emailSent = Craft::$app->getUsers()->sendNewEmailVerifyEmail($user);
-            }
-
-            if (!$emailSent) {
-                Craft::$app->getSession()->setError(Craft::t('app', 'User saved, but couldn’t send verification email. Check your email settings.'));
+                Craft::$app->getUsers()->sendNewEmailVerifyEmail($user);
             }
 
             // Put the original email back into place
@@ -1212,10 +1214,15 @@ class UsersController extends Controller
         }
 
         if ($isPublicRegistration) {
-            $message = $request->getParam('userRegisteredNotice') ?? Craft::t('app', 'User registered.');
-            Craft::$app->getSession()->setNotice($message);
+            if (($message = $request->getParam('userRegisteredNotice')) !== null) {
+                $default = Html::encode($message);
+                Craft::$app->getDeprecator()->log('userRegisteredNotice', 'The `userRegisteredNotice` param has been deprecated for `users/save-user` requests. Use a hashed `successMessage` param instead.');
+            } else {
+                $default = Craft::t('app', 'User registered.');
+            }
+            $this->setSuccessFlash($default);
         } else {
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'User saved.'));
+            $this->setSuccessFlash(Craft::t('app', 'User saved.'));
         }
 
         // Is this public registration, and is the user going to be activated automatically?
@@ -1341,9 +1348,9 @@ class UsersController extends Controller
         }
 
         if ($emailSent) {
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'Activation email sent.'));
+            $this->setSuccessFlash(Craft::t('app', 'Activation email sent.'));
         } else {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t send activation email. Check your email settings.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t send activation email. Check your email settings.'));
         }
 
         return $this->redirectToPostedUrl();
@@ -1383,8 +1390,7 @@ class UsersController extends Controller
 
         Craft::$app->getUsers()->unlockUser($user);
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'User activated.'));
-
+        $this->setSuccessFlash(Craft::t('app', 'User unlocked.'));
         return $this->redirectToPostedUrl();
     }
 
@@ -1414,13 +1420,11 @@ class UsersController extends Controller
         }
 
         if (!Craft::$app->getUsers()->suspendUser($user)) {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t suspend user.'));
-
+            $this->setFailFlash(Craft::t('app', 'Couldn’t suspend user.'));
             return null;
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'User suspended.'));
-
+        $this->setSuccessFlash(Craft::t('app', 'User suspended.'));
         return $this->redirectToPostedUrl();
     }
 
@@ -1509,13 +1513,11 @@ class UsersController extends Controller
         $user->inheritorOnDelete = $transferContentTo;
 
         if (!Craft::$app->getElements()->deleteElement($user)) {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t delete the user.'));
-
+            $this->setFailFlash(Craft::t('app', 'Couldn’t delete the user.'));
             return null;
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'User deleted.'));
-
+        $this->setSuccessFlash(Craft::t('app', 'User deleted.'));
         return $this->redirectToPostedUrl();
     }
 
@@ -1545,13 +1547,11 @@ class UsersController extends Controller
         }
 
         if (!Craft::$app->getUsers()->unsuspendUser($user)) {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t unsuspend user.'));
-
+            $this->setFailFlash(Craft::t('app', 'Couldn’t unsuspend user.'));
             return null;
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'User unsuspended.'));
-
+        $this->setSuccessFlash(Craft::t('app', 'User unsuspended.'));
         return $this->redirectToPostedUrl();
     }
 
@@ -1570,13 +1570,11 @@ class UsersController extends Controller
         $fieldLayout->type = User::class;
 
         if (!Craft::$app->getUsers()->saveLayout($fieldLayout)) {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save user fields.'));
-
+            $this->setFailFlash(Craft::t('app', 'Couldn’t save user fields.'));
             return null;
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'User fields saved.'));
-
+        $this->setSuccessFlash(Craft::t('app', 'User fields saved.'));
         return $this->redirectToPostedUrl();
     }
 
@@ -1627,7 +1625,7 @@ class UsersController extends Controller
             ]);
         }
 
-        Craft::$app->getSession()->setError($event->message);
+        $this->setFailFlash($event->message);
 
         Craft::$app->getUrlManager()->setRouteParams([
             'loginName' => $request->getBodyParam('loginName'),
@@ -1774,101 +1772,111 @@ class UsersController extends Controller
     }
 
     /**
+     * Saves new permissions on the user
+     *
      * @param User $user
-     * @throws ForbiddenHttpException if the user account doesn't have permission to assign the attempted permissions/groups
+     * @param Request $request
+     * @param User $currentUser
+     * @throws ForbiddenHttpException if the user account doesn't have permission to assign the attempted permissions
      */
-    private function _processUserGroupsPermissions(User $user)
+    private function _saveUserPermissions(User $user, Request $request, User $currentUser)
     {
-        $userSession = Craft::$app->getUser();
-        if (($currentUser = $userSession->getIdentity()) === null) {
+        if (!$currentUser->can('assignUserPermissions')) {
             return;
         }
 
-        $request = Craft::$app->getRequest();
-        $edition = Craft::$app->getEdition();
+        // Save any user permissions
+        if ($user->admin) {
+            $permissions = [];
+        } else {
+            $permissions = $request->getBodyParam('permissions');
 
-        if ($edition === Craft::Pro && $currentUser->can('assignUserPermissions')) {
-            // Save any user permissions
-            if ($user->admin) {
+            // it will be an empty string if no permissions were assigned during user saving.
+            if ($permissions === '') {
                 $permissions = [];
-            } else {
-                $permissions = $request->getBodyParam('permissions');
-
-                // it will be an empty string if no permissions were assigned during user saving.
-                if ($permissions === '') {
-                    $permissions = [];
-                }
-            }
-
-            if (is_array($permissions)) {
-                // See if there are any new permissions in here
-                $hasNewPermissions = false;
-
-                foreach ($permissions as $permission) {
-                    if (!$user->can($permission)) {
-                        $hasNewPermissions = true;
-
-                        // Make sure the current user even has permission to grant it
-                        if (!$userSession->checkPermission($permission)) {
-                            throw new ForbiddenHttpException("Your account doesn't have permission to assign the {$permission} permission to a user.");
-                        }
-                    }
-                }
-
-                if ($hasNewPermissions) {
-                    $this->requireElevatedSession();
-                }
-
-                Craft::$app->getUserPermissions()->saveUserPermissions($user->id, $permissions);
             }
         }
 
-        // Only Craft Pro has user groups
-        if ($edition === Craft::Pro && $currentUser->can('assignUserGroups')) {
-            // Save any user groups
-            $groupIds = $request->getBodyParam('groups');
+        if (!is_array($permissions) || empty($permissions)) {
+            return;
+        }
 
-            if ($groupIds !== null) {
-                if ($groupIds === '') {
-                    $groupIds = [];
+        // See if there are any new permissions in here
+        $hasNewPermissions = false;
+
+        foreach ($permissions as $permission) {
+            if (!$user->can($permission)) {
+                $hasNewPermissions = true;
+
+                // Make sure the current user even has permission to grant it
+                if (!$currentUser->can($permission)) {
+                    throw new ForbiddenHttpException("Your account doesn't have permission to assign the $permission permission to a user.");
                 }
-
-                $groupUidMap = [];
-                $allGroups = Craft::$app->getUserGroups()->getAllGroups();
-                foreach ($allGroups as $group) {
-                    $groupUidMap[$group->id] = $group->uid;
-                }
-
-                // See if there are any new groups in here
-                $oldGroupIds = [];
-
-                foreach ($user->getGroups() as $group) {
-                    $oldGroupIds[] = $group->id;
-                }
-
-                $hasNewGroups = false;
-
-                foreach ($groupIds as $groupId) {
-                    if (!in_array($groupId, $oldGroupIds, false)) {
-                        $hasNewGroups = true;
-
-                        // Make sure the current user is in the group or has permission to assign it
-                        if (
-                            !$currentUser->isInGroup($groupId) &&
-                            !$currentUser->can('assignUserGroup:' . $groupUidMap[$groupId])
-                        ) {
-                            throw new ForbiddenHttpException("Your account doesn't have permission to assign user group {$groupId} to a user.");
-                        }
-                    }
-                }
-
-                if ($hasNewGroups) {
-                    $this->requireElevatedSession();
-                }
-
-                Craft::$app->getUsers()->assignUserToGroups($user->id, $groupIds);
             }
         }
+
+        if ($hasNewPermissions) {
+            $this->requireElevatedSession();
+        }
+
+        Craft::$app->getUserPermissions()->saveUserPermissions($user->id, $permissions);
+    }
+
+    /**
+     * Saves user groups on a user.
+     *
+     * @param User $user
+     * @param Request $request
+     * @param User $currentUser
+     * @throws ForbiddenHttpException if the user account doesn't have permission to assign the attempted groups
+     */
+    private function _saveUserGroups(User $user, Request $request, User $currentUser)
+    {
+        if (!$currentUser->can('assignUserGroups')) {
+            return;
+        }
+
+        // Save any user groups
+        $groupIds = $request->getBodyParam('groups');
+
+        if ($groupIds === null) {
+            return;
+        }
+
+        if ($groupIds === '') {
+            $groupIds = [];
+        }
+
+        /** @var UserGroup[] $allGroups */
+        $allGroups = ArrayHelper::index(Craft::$app->getUserGroups()->getAllGroups(), 'id');
+
+        // See if there are any new groups in here
+        $oldGroupIds = ArrayHelper::getColumn($user->getGroups(), 'id');
+        $hasNewGroups = false;
+        $newGroups = [];
+
+        foreach ($groupIds as $groupId) {
+            $group = $newGroups[] = $allGroups[$groupId];
+
+            if (!in_array($groupId, $oldGroupIds, false)) {
+                $hasNewGroups = true;
+
+                // Make sure the current user is in the group or has permission to assign it
+                if (
+                    !$currentUser->isInGroup($groupId) &&
+                    !$currentUser->can("assignUserGroup:{$group->uid}")
+                ) {
+                    throw new ForbiddenHttpException("Your account doesn't have permission to assign user group “{$group->name}” to a user.");
+                }
+            }
+        }
+
+        if ($hasNewGroups) {
+            $this->requireElevatedSession();
+        }
+
+        Craft::$app->getUsers()->assignUserToGroups($user->id, $groupIds);
+        $user->setGroups($newGroups);
     }
 
     /**

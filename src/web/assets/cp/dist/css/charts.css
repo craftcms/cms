@@ -16,6 +16,6 @@
 
 .cp-chart .grid-line path { stroke-width: 0; }
 
-.tooltip { border-radius: 3px; padding: 7px 10px; background: rgba(255, 255, 255, 0.9); position: absolute; z-index: 1000000; -webkit-box-shadow: 0 1px 5px -1px rgba(31, 41, 51, 0.2); box-shadow: 0 1px 5px -1px rgba(31, 41, 51, 0.2); -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; pointer-events: none; }
+.tooltip { border-radius: 3px; padding: 7px 10px; background: rgba(255, 255, 255, 0.9); position: absolute; z-index: 1000000; box-shadow: 0 1px 5px -1px rgba(31, 41, 51, 0.2); -webkit-user-select: none; user-select: none; pointer-events: none; }
 
 /*# sourceMappingURL=charts.css.map */

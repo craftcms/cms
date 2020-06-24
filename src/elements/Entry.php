@@ -9,6 +9,7 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
+use craft\base\Field;
 use craft\behaviors\RevisionBehavior;
 use craft\controllers\ElementIndexesController;
 use craft\db\Query;
@@ -27,6 +28,7 @@ use craft\elements\db\EntryQuery;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
+use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\UrlHelper;
 use craft\models\EntryType;
@@ -253,6 +255,34 @@ class Entry extends Element
         }
 
         return $sources;
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.5.0
+     */
+    protected static function defineFieldLayouts(string $source): array
+    {
+        // Get all the sections covered by this source
+        $sections = [];
+        if ($source === '*') {
+            $sections = Craft::$app->getSections()->getAllSections();
+        } else if ($source === 'singles') {
+            $sections = Craft::$app->getSections()->getSectionsByType(Section::TYPE_SINGLE);
+        } else if (
+            preg_match('/^section:(.+)$/', $source, $matches) &&
+            $section = Craft::$app->getSections()->getSectionByUid($matches[1])
+        ) {
+            $sections = [$section];
+        }
+
+        $fieldLayouts = [];
+        foreach ($sections as $section) {
+            foreach ($section->getEntryTypes() as $entryType) {
+                $fieldLayouts[] = $entryType->getFieldLayout();
+            }
+        }
+        return $fieldLayouts;
     }
 
     /**
@@ -529,6 +559,7 @@ class Entry extends Element
 
     /**
      * @inheritdoc
+     * @since 3.5.0
      */
     public static function gqlMutationNameByContext($context): string
     {
@@ -651,6 +682,11 @@ class Entry extends Element
     private $_author;
 
     /**
+     * @var int|null
+     */
+    private $_oldTypeId;
+
+    /**
      * @var bool|null
      * @see _hasNewParent()
      */
@@ -663,6 +699,16 @@ class Entry extends Element
     {
         parent::__clone();
         $this->_hasNewParent = null;
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.5.0
+     */
+    public function init()
+    {
+        parent::init();
+        $this->_oldTypeId = $this->typeId;
     }
 
     /**
@@ -732,21 +778,35 @@ class Entry extends Element
         // If the section is leaving it up to entries to decide which sites to be propagated to,
         // figure out which sites the entry is currently saved in
         if (
-            $this->id &&
+            ($this->duplicateOf->id ?? $this->id) &&
             $section->propagationMethod === Section::PROPAGATION_METHOD_CUSTOM
         ) {
-            $currentSiteQuery = static::find()
-                ->id($this->id)
-                ->anyStatus()
-                ->siteId('*')
-                ->select('elements_sites.siteId')
-                ->indexBy('elements_sites.siteId');
-            if ($this->getIsDraft()) {
-                $currentSiteQuery->drafts();
-            } else if ($this->getIsRevision()) {
-                $currentSiteQuery->revisions();
+            if ($this->id) {
+                $currentSites = static::find()
+                    ->anyStatus()
+                    ->id($this->id)
+                    ->siteId('*')
+                    ->select('elements_sites.siteId')
+                    ->indexBy('elements_sites.siteId')
+                    ->drafts($this->getIsDraft())
+                    ->revisions($this->getIsRevision())
+                    ->column();
+            } else {
+                $currentSites = [];
             }
-            $currentSites = $currentSiteQuery->column();
+
+            // If this is being duplicated from another element (e.g. a draft), include any sites the source element is saved to as well
+            if (!empty($this->duplicateOf->id)) {
+                array_push($currentSites, ...static::find()
+                    ->anyStatus()
+                    ->id($this->duplicateOf->id)
+                    ->siteId('*')
+                    ->select('elements_sites.siteId')
+                    ->indexBy('elements_sites.siteId')
+                    ->drafts($this->duplicateOf->getIsDraft())
+                    ->revisions($this->duplicateOf->getIsRevision())
+                    ->column());
+            }
         }
 
         foreach ($section->getSiteSettings() as $siteSettings) {
@@ -788,6 +848,25 @@ class Entry extends Element
         }
 
         return $sites;
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.5.0
+     */
+    public function getCacheTags(): array
+    {
+        $tags = [
+            "entryType:$this->typeId",
+            "section:$this->sectionId",
+        ];
+
+        // Did the entry type just change?
+        if ($this->typeId != $this->_oldTypeId) {
+            $tags[] = "entryType:$this->_oldTypeId";
+        }
+
+        return $tags;
     }
 
     /**
@@ -852,6 +931,31 @@ class Entry extends Element
     public function getRef()
     {
         return $this->getSection()->handle . '/' . $this->slug;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getIsTitleTranslatable(): bool
+    {
+        return ($this->getType()->titleTranslationMethod !== Field::TRANSLATION_METHOD_NONE);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getTitleTranslationDescription()
+    {
+        return ElementHelper::translationDescription($this->getType()->titleTranslationMethod);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getTitleTranslationKey(): string
+    {
+        $type = $this->getType();
+        return ElementHelper::translationKey($this, $type->titleTranslationMethod, $type->titleTranslationKeyFormat);
     }
 
     /**

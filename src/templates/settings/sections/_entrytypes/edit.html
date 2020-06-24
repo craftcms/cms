@@ -64,6 +64,46 @@
             errors: entryType.getErrors('titleLabel'),
             required: true
         }) }}
+
+        {{ forms.textareaField({
+            label: "Title Field Instructions"|t('app'),
+            instructions: "Helper text to guide the author."|t('app'),
+            id: 'titleInstructions',
+            class: 'nicetext',
+            name: 'titleInstructions',
+            value: entryType.titleInstructions,
+            errors: entryType.getErrors('titleInstructions'),
+        }) }}
+
+        {% if craft.app.getIsMultiSite() %}
+            {{ forms.selectField({
+                label: 'Title Translation Method'|t('app'),
+                instructions: 'How should entry titles be translated?'|t('app'),
+                id: 'translation-method',
+                name: 'titleTranslationMethod',
+                options: [
+                    { value: 'none', label: 'Not translatable'|t('app') },
+                    { value: 'site', label: 'Translate for each site'|t('app') },
+                    { value: 'siteGroup', label: 'Translate for each site group'|t('app') },
+                    { value: 'language', label: 'Translate for each language'|t('app') },
+                    { value: 'custom', label: 'Custom…'|t('app') },
+                ]|filter,
+                value: entryType.titleTranslationMethod,
+                toggle: true,
+                targetPrefix: 'translation-method-'
+            }) }}
+
+            <div id="translation-method-custom" {% if entryType.titleTranslationMethod != 'custom' %}class="hidden"{% endif %}>
+                {{ forms.textField({
+                    label: 'Title Translation Key Format'|t('app'),
+                    instructions: 'Template that defines the Title field’s custom “translation key” format. Entry titles will be copied to all sites that produce the same key. For example, to make titles translatable based on the first two characters of the site handle, you could enter `{site.handle[:2]}`.',
+                    id: 'translation-key-format',
+                    name: 'titleTranslationKeyFormat',
+                    value: entryType.titleTranslationKeyFormat,
+                    errors: entryType.getErrors('titleTranslationKeyFormat')
+                }) }}
+            </div>
+        {% endif %}
     </div>
 
     <div id="titleFormat-container"{% if entryType.hasTitleField %} class="hidden"{% endif %}>

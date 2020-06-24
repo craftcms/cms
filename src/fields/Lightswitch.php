@@ -75,7 +75,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml($value, ElementInterface $element = null): string
     {
         $id = Html::id($this->handle);
 
@@ -138,6 +138,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
 
     /**
      * @inheritdoc
+     * @since 3.5.0
      */
     public function getContentGqlMutationArgumentType()
     {
@@ -150,6 +151,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
 
     /**
      * @inheritdoc
+     * @since 3.5.0
      */
     public function getContentGqlQueryArgumentType()
     {
