@@ -1795,6 +1795,7 @@ class ProjectConfig extends Component
             'siteGroups' => $this->_getSiteGroupData(),
             'sites' => $this->_getSiteData(),
             'sections' => $this->_getSectionData(),
+            'entryTypes' => $this->_getEntryTypeData(),
             'fieldGroups' => $this->_getFieldGroupData(),
             'fields' => $this->_getFieldData(),
             'matrixBlockTypes' => $this->_getMatrixBlockTypeData(),
@@ -1922,7 +1923,6 @@ class ProjectConfig extends Component
             $section['enableVersioning'] = (bool)$section['enableVersioning'];
 
             $sectionData[$uid] = $section;
-            $sectionData[$uid]['entryTypes'] = [];
             $sectionData[$uid]['siteSettings'] = [];
             $sectionData[$uid]['previewTargets'] = Json::decodeIfJson($section['previewTargets']);
         }
@@ -1954,6 +1954,16 @@ class ProjectConfig extends Component
             $sectionData[$sectionUid]['siteSettings'][$siteUid] = $sectionSiteRow;
         }
 
+        return $sectionData;
+    }
+
+    /**
+     * Return entry type data config array.
+     *
+     * @return array
+     */
+    private function _getEntryTypeData(): array
+    {
         $entryTypeRows = (new Query())
             ->select([
                 'entrytypes.fieldLayoutId',
@@ -1975,9 +1985,11 @@ class ProjectConfig extends Component
         $layoutIds = array_filter(ArrayHelper::getColumn($entryTypeRows, 'fieldLayoutId'));
         $fieldLayouts = $this->_generateFieldLayoutArray($layoutIds);
 
+        $entryTypeData = [];
+
         foreach ($entryTypeRows as $entryType) {
             $uid = ArrayHelper::remove($entryType, 'uid');
-            $sectionUid = ArrayHelper::remove($entryType, 'sectionUid');
+            $entryType['section'] = ArrayHelper::remove($entryType, 'sectionUid');
             $fieldLayoutId = ArrayHelper::remove($entryType, 'fieldLayoutId');
 
             $entryType['hasTitleField'] = (bool)$entryType['hasTitleField'];
@@ -1989,10 +2001,10 @@ class ProjectConfig extends Component
                 $entryType['fieldLayouts'] = [$layoutUid => $layout];
             }
 
-            $sectionData[$sectionUid]['entryTypes'][$uid] = $entryType;
+            $entryTypeData[$uid] = $entryType;
         }
 
-        return $sectionData;
+        return $entryTypeData;
     }
 
     /**
