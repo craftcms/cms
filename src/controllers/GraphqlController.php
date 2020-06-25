@@ -159,18 +159,25 @@ class GraphqlController extends Controller
         }
 
         // Was a specific token passed?
-        if (!empty($requestHeaders->get('authorization')) && preg_match('/(^|(,\s*))Bearer\s+(.+)$/i', $requestHeaders->get('authorization'), $matches)) {
-            try {
-                $token = $gqlService->getTokenByAccessToken($matches[3]);
-            } catch (InvalidArgumentException $e) {
-            }
+        foreach ($requestHeaders->get('authorization', [], false) as $authHeader) {
+            $authValues = array_map('trim', explode(',', $authHeader));
+            foreach ($authValues as $authValue) {
+                if (preg_match('/^Bearer\s+(.+)$/i', $authValue, $matches)) {
+                    try {
+                        $token = $gqlService->getTokenByAccessToken($matches[1]);
+                    } catch (InvalidArgumentException $e) {
+                    }
 
-            if (!isset($token) || !$token->getIsValid()) {
-                throw new BadRequestHttpException('Invalid Authorization header');
+                    if (!isset($token) || !$token->getIsValid()) {
+                        throw new BadRequestHttpException('Invalid Authorization header');
+                    }
+
+                    break 2;
+                }
             }
         }
 
-        if (!$token) {
+        if (!isset($token)) {
             // Get the public schema, if it exists & is valid
             $token = $this->_publicToken($gqlService);
 
