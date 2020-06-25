@@ -160,9 +160,9 @@ class GraphqlController extends Controller
 
         // Was a specific token passed?
         if (!empty($requestHeaders->get('authorization'))) {
-            if (preg_match('/^Bearer\s+(.+)$/i', $requestHeaders->get('authorization'), $matches)) {
+            if (preg_match('/(^|(,\s*))Bearer\s+(.+)$/i', $requestHeaders->get('authorization'), $matches)) {
                 try {
-                    $token = $gqlService->getTokenByAccessToken($matches[1]);
+                    $token = $gqlService->getTokenByAccessToken($matches[3]);
                 } catch (InvalidArgumentException $e) {
                 }
             }
