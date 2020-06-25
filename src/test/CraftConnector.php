@@ -61,17 +61,18 @@ class CraftConnector extends Yii2
     }
 
     /**
-     *
+     * @inheritdoc
      */
-    public function startApp()
+    protected function mockMailer(array $config)
     {
-        parent::startApp();
-
-        Craft::$app->set('mailer', [
+        $config = parent::mockMailer($config);
+        $config['components']['mailer'] = array_merge($config['components']['mailer'], [
             'class' => TestMailer::class, 'callback' => function(MessageInterface $message) {
                 $this->emails[] = $message;
             }
         ]);
+
+        return $config;
     }
 
     /**
