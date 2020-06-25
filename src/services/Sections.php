@@ -952,23 +952,19 @@ class Sections extends Component
         $fieldUid = $field->uid;
 
         $projectConfig = Craft::$app->getProjectConfig();
-        $sections = $projectConfig->get(self::CONFIG_SECTIONS_KEY);
+        $entryTypes = $projectConfig->get(self::CONFIG_ENTRYTYPES_KEY);
 
         // Engage stealth mode
         $projectConfig->muteEvents = true;
 
         // Loop through the tag groups and prune the UID from field layouts.
-        if (is_array($sections)) {
-            foreach ($sections as $sectionUid => $section) {
-                if (!empty($section['entryTypes'])) {
-                    foreach ($section['entryTypes'] as $entryTypeUid => $entryType) {
-                        if (!empty($entryType['fieldLayouts'])) {
-                            foreach ($entryType['fieldLayouts'] as $layoutUid => $layout) {
-                                if (!empty($layout['tabs'])) {
-                                    foreach ($layout['tabs'] as $tabUid => $tab) {
-                                        $projectConfig->remove(self::CONFIG_SECTIONS_KEY . '.' . $sectionUid . '.' . self::CONFIG_ENTRYTYPES_KEY . '.' . $entryTypeUid . '.fieldLayouts.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid, 'Prune deleted field');
-                                    }
-                                }
+        if (is_array($entryTypes)) {
+            foreach ($entryTypes as $entryTypeUid => $entryType) {
+                if (!empty($entryType['fieldLayouts'])) {
+                    foreach ($entryType['fieldLayouts'] as $layoutUid => $layout) {
+                        if (!empty($layout['tabs'])) {
+                            foreach ($layout['tabs'] as $tabUid => $tab) {
+                                $projectConfig->remove(self::CONFIG_ENTRYTYPES_KEY . '.' . $entryTypeUid . '.fieldLayouts.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid, 'Prune deleted field');
                             }
                         }
                     }
@@ -1170,6 +1166,7 @@ class Sections extends Component
             'titleTranslationKeyFormat' => $entryType->titleTranslationKeyFormat,
             'titleFormat' => $entryType->titleFormat,
             'sortOrder' => (int)$sortOrder,
+            'section' => $section->uid,
         ];
 
         $fieldLayout = $entryType->getFieldLayout();
@@ -1188,7 +1185,7 @@ class Sections extends Component
             ];
         }
 
-        $configPath = self::CONFIG_SECTIONS_KEY . '.' . $section->uid . '.' . self::CONFIG_ENTRYTYPES_KEY . '.' . $entryType->uid;
+        $configPath = self::CONFIG_ENTRYTYPES_KEY . '.' . $entryType->uid;
         $projectConfig->set($configPath, $configData, "Save entry type “{$entryType->handle}”");
 
         if ($isNewEntryType) {
@@ -1205,16 +1202,14 @@ class Sections extends Component
      */
     public function handleChangedEntryType(ConfigEvent $event)
     {
-        list($sectionUid, $entryTypeUid) = $event->tokenMatches;
+        $entryTypeUid  = $event->tokenMatches[0];
         $data = $event->newValue;
 
         // Make sure fields are processed
         ProjectConfigHelper::ensureAllSitesProcessed();
         ProjectConfigHelper::ensureAllFieldsProcessed();
 
-        Craft::$app->getProjectConfig()->processConfigChanges(self::CONFIG_SECTIONS_KEY . '.' . $sectionUid);
-
-        $section = $this->getSectionByUid($sectionUid);
+        $section = $this->getSectionByUid($data['section']);
         $entryTypeRecord = $this->_getEntryTypeRecord($entryTypeUid, true);
 
         if (!$section || !$entryTypeRecord) {

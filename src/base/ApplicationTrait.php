@@ -28,16 +28,13 @@ use craft\queue\Queue;
 use craft\queue\QueueInterface;
 use craft\services\AssetTransforms;
 use craft\services\Categories;
-use craft\services\Elements;
 use craft\services\Fields;
 use craft\services\Globals;
 use craft\services\Gql;
 use craft\services\Matrix;
-use craft\services\ProjectConfig;
 use craft\services\Sections;
 use craft\services\Security;
 use craft\services\Sites;
-use craft\services\Structures;
 use craft\services\Tags;
 use craft\services\UserGroups;
 use craft\services\Users;
@@ -1603,9 +1600,9 @@ trait ApplicationTrait
 
         // Entry types
         $projectConfigService
-            ->onAdd(Sections::CONFIG_SECTIONS_KEY . '.{uid}.' . Sections::CONFIG_ENTRYTYPES_KEY . '.{uid}', [$sectionsService, 'handleChangedEntryType'])
-            ->onUpdate(Sections::CONFIG_SECTIONS_KEY . '.{uid}.' . Sections::CONFIG_ENTRYTYPES_KEY . '.{uid}', [$sectionsService, 'handleChangedEntryType'])
-            ->onRemove(Sections::CONFIG_SECTIONS_KEY . '.{uid}.' . Sections::CONFIG_ENTRYTYPES_KEY . '.{uid}', [$sectionsService, 'handleDeletedEntryType']);
+            ->onAdd(Sections::CONFIG_ENTRYTYPES_KEY . '.{uid}', [$sectionsService, 'handleChangedEntryType'])
+            ->onUpdate(Sections::CONFIG_ENTRYTYPES_KEY . '.{uid}', [$sectionsService, 'handleChangedEntryType'])
+            ->onRemove(Sections::CONFIG_ENTRYTYPES_KEY . '.{uid}', [$sectionsService, 'handleDeletedEntryType']);
         Event::on(Fields::class, Fields::EVENT_AFTER_DELETE_FIELD, [$sectionsService, 'pruneDeletedField']);
 
         // GraphQL schemas
