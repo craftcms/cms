@@ -450,6 +450,11 @@ class ElementIndexesController extends BaseElementsController
             Craft::configure($query, $criteria);
         }
 
+        // Override enabledForSite when querying for disabled
+        if ($query->status === Element::STATUS_DISABLED) {
+            $query->enabledForSite = false;
+        }
+
         // Exclude descendants of the collapsed element IDs
         $collapsedElementIds = $request->getParam('collapsedElementIds');
 
