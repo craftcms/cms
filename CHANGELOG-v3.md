@@ -4,6 +4,7 @@
 
 ### Changed
 - Craft is now more flexible when checking for the GraphQL API access token.
+- Changed how Craft determines a usable filename when uploading an asset to a volume. ([#6253](https://github.com/craftcms/cms/issues/6253))
 
 ### Fixed
 - Fixed a JavaScript error that occurred when clicking the “Export…” button, on a view that had no bulk actions. ([#6183](https://github.com/craftcms/cms/issues/6183))
