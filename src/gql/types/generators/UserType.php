@@ -47,8 +47,7 @@ class UserType implements GeneratorInterface, SingleGeneratorInterface
         $contentFieldGqlTypes = [];
 
         foreach ($contentFields as $contentField) {
-            $gqlType = $contentField->getContentGqlType();
-            $contentFieldGqlTypes[$contentField->handle] = $contentField->required ? Gql::wrapInNonNull($gqlType) : $gqlType;
+            $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
         }
 
         $userFields = TypeManager::prepareFieldDefinitions(array_merge(UserInterface::getFieldDefinitions(), $contentFieldGqlTypes), $typeName);
