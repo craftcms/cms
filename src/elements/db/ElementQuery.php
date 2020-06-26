@@ -1408,7 +1408,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->subQuery->andWhere(Db::parseParam('elements_sites.uri', $this->uri, '=', true));
         }
 
-        if ($this->enabledForSite) {
+        if ($this->enabledForSite && $this->status !== Element::STATUS_DISABLED) {
             $this->subQuery->andWhere(['elements_sites.enabled' => true]);
         }
 
