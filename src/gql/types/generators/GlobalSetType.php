@@ -73,8 +73,7 @@ class GlobalSetType implements GeneratorInterface, SingleGeneratorInterface
 
         /** @var Field $contentField */
         foreach ($contentFields as $contentField) {
-            $gqlType = $contentField->getContentGqlType();
-            $contentFieldGqlTypes[$contentField->handle] = $contentField->required ? Gql::wrapInNonNull($gqlType) : $gqlType;
+            $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
         }
 
         $globalSetFields = TypeManager::prepareFieldDefinitions(array_merge(GlobalSetInterface::getFieldDefinitions(), $contentFieldGqlTypes), $typeName);

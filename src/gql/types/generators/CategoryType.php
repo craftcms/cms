@@ -66,8 +66,7 @@ class CategoryType implements GeneratorInterface, SingleGeneratorInterface
 
         /** @var Field $contentField */
         foreach ($contentFields as $contentField) {
-            $gqlType = $contentField->getContentGqlType();
-            $contentFieldGqlTypes[$contentField->handle] = $contentField->required ? Gql::wrapInNonNull($gqlType) : $gqlType;
+            $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
         }
 
         $categoryGroupFields = TypeManager::prepareFieldDefinitions(array_merge(CategoryInterface::getFieldDefinitions(), $contentFieldGqlTypes), $typeName);
