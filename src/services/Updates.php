@@ -281,7 +281,7 @@ class Updates extends Component
     }
 
     /**
-     * Returns true if the version stored in craft_info is less than the minimum required version on the file system. This
+     * Returns true if the version stored in craft_info is less than the minimum required version on the file system.
      * This effectively makes sure that a user cannot manually update past a manual breakpoint.
      *
      * @return bool
