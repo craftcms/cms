@@ -1064,7 +1064,7 @@ class Install extends Migration
                     Craft::$app->getErrorHandler()->logException($e);
 
                     // Rename project.yaml so we can create a new one
-                    $backupFile = pathinfo($projectConfig->filename, PATHINFO_FILENAME) . date('-Ymh-His') . '.yaml';
+                    $backupFile = pathinfo($projectConfig->filename, PATHINFO_FILENAME) . date('-Y-m-d-His') . '.yaml';
                     echo "    > renaming $projectConfig->filename to $backupFile and moving to config backup folder ... ";
                     rename($configFile, Craft::$app->getPath()->getConfigBackupPath() . '/' . $backupFile);
                     echo "done\n";
