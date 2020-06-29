@@ -40,6 +40,7 @@
 - Fixed an error that occurred when using the `gqlTypePrefix` config setting.
 - Fixed a bug where saving elements with Assets fields would move the selected assets to the top of their volume. ([#6217](https://github.com/craftcms/cms/issues/6217))
 - When previewing an image asset on a non-public volume, the image is no longer published to the `cpresources` folder. ([#6093](https://github.com/craftcms/cms/issues/6093)
+- Fixed a SQL error that could occur when eager-loading elements with their ancestors/parents when using PostgreSQL. ([#6227](https://github.com/craftcms/cms/issues/6227))
 
 ### Security
 - `craft\web\View::evaluateDynamicContent()` can no longer be called by default. ([#6185](https://github.com/craftcms/cms/pull/6185))
