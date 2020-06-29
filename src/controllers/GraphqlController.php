@@ -301,7 +301,7 @@ class GraphqlController extends Controller
             throw new NotFoundHttpException();
         }
 
-        $this->requireAdmin();
+        $this->requireAdmin(false);
 
         if ($generalConfig->allowAdminChanges) {
             return $this->redirect('graphql/schemas');
