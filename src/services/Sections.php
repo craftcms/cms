@@ -1230,9 +1230,9 @@ class Sections extends Component
             $entryTypeRecord->handle = $data['handle'];
             $entryTypeRecord->hasTitleField = $data['hasTitleField'];
             $entryTypeRecord->titleLabel = $data['titleLabel'];
-            $entryTypeRecord->titleInstructions = $data['titleInstructions'];
-            $entryTypeRecord->titleTranslationMethod = $data['titleTranslationMethod'];
-            $entryTypeRecord->titleTranslationKeyFormat = $data['titleTranslationKeyFormat'];
+            $entryTypeRecord->titleInstructions = $data['titleInstructions'] ?? null;
+            $entryTypeRecord->titleTranslationMethod = $data['titleTranslationMethod'] ?? null;
+            $entryTypeRecord->titleTranslationKeyFormat = $data['titleTranslationKeyFormat'] ?? null;
             $entryTypeRecord->titleFormat = $data['titleFormat'];
             $entryTypeRecord->sortOrder = $data['sortOrder'];
             $entryTypeRecord->sectionId = $section->id;
