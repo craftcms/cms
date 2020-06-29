@@ -20,7 +20,7 @@ class m200625_131100_move_entrytypes_to_top_project_config extends Migration
         // Don't make the same config changes twice
         $projectConfig = Craft::$app->getProjectConfig();
         $schemaVersion = $projectConfig->get('system.schemaVersion', true);
-        if (version_compare($schemaVersion, '3.5.6', '<')) {
+        if (version_compare($schemaVersion, '3.5.7', '<')) {
             $muted = $projectConfig->muteEvents;
 
             $projectConfig->muteEvents = true;
