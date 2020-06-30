@@ -808,9 +808,9 @@ class Matrix extends Component
                 }
 
                 if (!empty($otherSiteIds)) {
-                    // Get the original element and duplicated element for each of those sites
-                    /** @var Element[] $otherTargets */
-                    $otherTargets = $owner::find()
+                    // Get the owner element across each of those sites
+                    /** @var Element[] $localizedOwners */
+                    $localizedOwners = $owner::find()
                         ->drafts($owner->getIsDraft())
                         ->revisions($owner->getIsRevision())
                         ->id($owner->id)
@@ -826,16 +826,16 @@ class Matrix extends Component
                     $cachedQuery->setCachedResult($blocks);
                     $owner->setFieldValue($field->handle, $cachedQuery);
 
-                    foreach ($otherTargets as $otherTarget) {
+                    foreach ($localizedOwners as $localizedOwner) {
                         // Make sure we haven't already duplicated blocks for this site, via propagation from another site
-                        if (isset($handledSiteIds[$otherTarget->siteId])) {
+                        if (isset($handledSiteIds[$localizedOwner->siteId])) {
                             continue;
                         }
 
-                        $this->duplicateBlocks($field, $owner, $otherTarget);
+                        $this->duplicateBlocks($field, $owner, $localizedOwner);
 
                         // Make sure we don't duplicate blocks for any of the sites that were just propagated to
-                        $sourceSupportedSiteIds = $this->getSupportedSiteIds($field->propagationMethod, $otherTarget);
+                        $sourceSupportedSiteIds = $this->getSupportedSiteIds($field->propagationMethod, $localizedOwner);
                         $handledSiteIds = array_merge($handledSiteIds, array_flip($sourceSupportedSiteIds));
                     }
 
