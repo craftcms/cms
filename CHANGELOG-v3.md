@@ -7,6 +7,7 @@
 - The `users/set-password` and `users/save-user` actions now include a `csrfTokenValue` key in their JSON responses for Ajax requests, if the user was logged in during the request. ([#6283](https://github.com/craftcms/cms/issues/6283))
 - Improved performance when handling asset uploads that conflict with an existing file. ([#6253](https://github.com/craftcms/cms/issues/6253))
 - `craft\elements\User::getCpEditUrl()` no longer returns `myaccount` for the currently logged-in user when the method is called from the front end. ([#6275](https://github.com/craftcms/cms/issues/6275))
+- `craft\elements\Asset::getUrl()` now has a `$generateNow` argument. ([#2103](https://github.com/craftcms/cms/issues/2103))
 
 ### Fixed
 - Fixed a JavaScript error that occurred when clicking the “Export…” button, on a view that had no bulk actions. ([#6183](https://github.com/craftcms/cms/issues/6183))
