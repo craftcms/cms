@@ -5,6 +5,7 @@
 ### Changed
 - The `graphql/api` action now checks for the access token in all `Authorization` headers, as well as all comma-separated values in each individual `Authorization` header.
 - Improved performance when handling asset uploads that conflict with an existing file. ([#6253](https://github.com/craftcms/cms/issues/6253))
+- `craft\elements\User::getCpEditUrl()` no longer returns `myaccount` for the currently logged-in user when the method is called from the front end. ([#6275](https://github.com/craftcms/cms/issues/6275))
 
 ### Fixed
 - Fixed a JavaScript error that occurred when clicking the “Export…” button, on a view that had no bulk actions. ([#6183](https://github.com/craftcms/cms/issues/6183))

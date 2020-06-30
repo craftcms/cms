@@ -1137,7 +1137,7 @@ class User extends Element implements IdentityInterface
      */
     public function getCpEditUrl()
     {
-        if ($this->getIsCurrent()) {
+        if (Craft::$app->getRequest()->getIsCpRequest() && $this->getIsCurrent()) {
             return UrlHelper::cpUrl('myaccount');
         }
 
