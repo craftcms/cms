@@ -202,7 +202,9 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @var string|string[]|null The status(es) that the resulting elements must have.
      * @used-by status()
      */
-    public $status = ['enabled'];
+    public $status = [
+        Element::STATUS_ENABLED,
+    ];
 
     /**
      * @var bool Whether to return only archived elements.
