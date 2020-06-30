@@ -842,7 +842,11 @@ class AssetQuery extends ElementQuery
 
         $this->_normalizeVolumeId();
         if ($this->volumeId) {
-            $this->subQuery->andWhere(['assets.volumeId' => $this->volumeId]);
+            if ($this->volumeId === ':empty:') {
+                $this->subQuery->andWhere(['assets.volumeId' => null]);
+            } else {
+                $this->subQuery->andWhere(['assets.volumeId' => $this->volumeId]);
+            }
         }
 
         if ($this->folderId) {
