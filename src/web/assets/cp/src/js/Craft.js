@@ -1965,12 +1965,13 @@ $.extend($.fn,
             // Secondary form submit buttons
             return this.on('click', function(ev) {
                 let $btn = $(ev.currentTarget);
+                let params = $btn.data('params') || {};
+                if ($btn.data('param')) {
+                    params[$btn.data('param')] = $btn.data('value');
+                }
+
                 let $anchor = $btn.data('menu') ? $btn.data('menu').$anchor : $btn;
                 let $form = $anchor.attr('data-form') ? $('#' + $anchor.attr('data-form')) : $anchor.closest('form');
-                let params = $form.data('params') || {};
-                if ($form.data('param')) {
-                    params[$form.data('param')] = $form.data('value');
-                }
 
                 Craft.submitForm($form, {
                     confirm: $btn.data('confirm'),
