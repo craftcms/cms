@@ -65,7 +65,7 @@ class AssetQuery extends ElementQuery
     // -------------------------------------------------------------------------
 
     /**
-     * @var int|int[]|null The volume ID(s) that the resulting assets must be in.
+     * @var int|int[]|string|null The volume ID(s) that the resulting assets must be in.
      * ---
      * ```php
      * // fetch assets in the Logos volume
@@ -332,7 +332,7 @@ class AssetQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param int|int[]|null $value The property value
+     * @param int|int[]|string|null $value The property value
      * @return static self reference
      * @uses $volumeId
      */
@@ -814,7 +814,7 @@ class AssetQuery extends ElementQuery
      */
     protected function beforePrepare(): bool
     {
-        // See if 'source' was set to an invalid handle
+        // See if 'volume' was set to an invalid handle
         if ($this->volumeId === []) {
             return false;
         }
