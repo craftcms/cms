@@ -755,7 +755,6 @@ class Sections extends Component
                             'siteId' => array_values($siteIdMap),
                             'unique' => true,
                             'status' => null,
-                            'enabledForSite' => false,
                         ],
                     ]));
                 }
@@ -1306,7 +1305,6 @@ class Sections extends Component
                     'siteId' => '*',
                     'unique' => true,
                     'status' => null,
-                    'enabledForSite' => false,
                 ]
             ]));
         }

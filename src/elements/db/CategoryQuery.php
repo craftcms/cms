@@ -29,7 +29,6 @@ use yii\db\Connection;
  * @since 3.0.0
  * @supports-structure-params
  * @supports-site-params
- * @supports-enabledforsite-param
  * @supports-title-param
  * @supports-slug-param
  * @supports-uri-param

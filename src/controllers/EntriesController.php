@@ -140,7 +140,6 @@ class EntriesController extends BaseEntriesController
                 'unique' => true,
                 'sectionId' => $section->id,
                 'status' => null,
-                'enabledForSite' => false,
                 'where' => ['not in', 'elements.id', $excludeIds]
             ];
 

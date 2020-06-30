@@ -276,7 +276,6 @@ class CategoriesController extends Controller
                 'siteId' => $site->id,
                 'groupId' => $variables['group']->id,
                 'status' => null,
-                'enabledForSite' => false,
             ];
 
             if ($variables['group']->maxLevels) {

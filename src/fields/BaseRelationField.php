@@ -504,7 +504,6 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     {
         $criteria = [
             'status' => null,
-            'enabledForSite' => false,
         ];
 
         if (!$this->targetSiteId) {
@@ -912,7 +911,6 @@ JS;
         }
 
         $selectionCriteria = $this->inputSelectionCriteria();
-        $selectionCriteria['enabledForSite'] = null;
         if (($siteId = $this->inputSiteId($element)) !== null) {
             $selectionCriteria['siteId'] = $siteId;
         }
