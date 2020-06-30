@@ -22,7 +22,7 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-/*!   - 2020-06-24 */
+/*!   - 2020-06-30 */
 (function ($) {
   /** global: Craft */
 
@@ -16448,7 +16448,10 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       this.$icon = $(icon);
       this.addListener(this.$icon, 'click', 'showHud');
     },
-    showHud: function showHud() {
+    showHud: function showHud(ev) {
+      ev.preventDefault();
+      ev.stopPropagation();
+
       if (!this.hud) {
         this.hud = new Garnish.HUD(this.$icon, this.$icon.html(), {
           hudClass: 'hud info-hud',

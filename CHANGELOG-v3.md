@@ -12,6 +12,7 @@
 - Fixed a bug where custom field values could be autosaved incorrectly. ([#6258](https://github.com/craftcms/cms/issues/6258))
 - Fixed a PHP error that could occur when saving a GraphQL schema, if there were any validation errors.
 - Fixed a bug where Craft’s `TestMailer` class was not available for tests under some cicrumstances. ([#6263](https://github.com/craftcms/cms/pull/6263))
+- Fixed a bug where clicking the info icons on the Clear Caches utility would toggle their checkbox’s state.
 
 ## 3.4.25 - 2020-06-23
 
