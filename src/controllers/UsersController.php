@@ -494,10 +494,16 @@ class UsersController extends Controller
         }
 
         // Maybe automatically log them in
-        $this->_maybeLoginUserAfterAccountActivation($user);
+        $loggedIn = $this->_maybeLoginUserAfterAccountActivation($user);
 
         if ($request->getAcceptsJson()) {
-            return $this->asJson(['success' => true]);
+            $return = [
+                'success' => true,
+            ];
+            if ($loggedIn && Craft::$app->getConfig()->getGeneral()->enableCsrfProtection) {
+                $return['csrfTokenValue'] = $request->getCsrfToken();
+            }
+            return $this->asJson($return);
         }
 
         // Can they access the CP?
@@ -1193,17 +1199,17 @@ class UsersController extends Controller
 
         // Is this public registration, and was the user going to be activated automatically?
         $publicActivation = $isPublicRegistration && $user->getStatus() === User::STATUS_ACTIVE;
-
-        if ($publicActivation) {
-            // Maybe automatically log them in
-            $this->_maybeLoginUserAfterAccountActivation($user);
-        }
+        $loggedIn = $publicActivation && $this->_maybeLoginUserAfterAccountActivation($user);
 
         if ($request->getAcceptsJson()) {
-            return $this->asJson([
+            $return = [
                 'success' => true,
                 'id' => $user->id
-            ]);
+            ];
+            if ($loggedIn && $generalConfig->enableCsrfProtection) {
+                $return['csrfTokenValue'] = $request->getCsrfToken();
+            }
+            return $this->asJson($return);
         }
 
         if ($isPublicRegistration) {
@@ -1971,13 +1977,15 @@ class UsersController extends Controller
      * Possibly log a user in right after they were activated or reset their password, if Craft is configured to do so.
      *
      * @param User $user The user that was just activated or reset their password
+     * @return bool Whether the user was logged in
      */
-    private function _maybeLoginUserAfterAccountActivation(User $user)
+    private function _maybeLoginUserAfterAccountActivation(User $user): bool
     {
         $generalConfig = Craft::$app->getConfig()->getGeneral();
-        if ($generalConfig->autoLoginAfterAccountActivation === true) {
-            Craft::$app->getUser()->login($user, $generalConfig->userSessionDuration);
+        if (!$generalConfig->autoLoginAfterAccountActivation) {
+            return false;
         }
+        return Craft::$app->getUser()->login($user, $generalConfig->userSessionDuration);
     }
 
     /**
