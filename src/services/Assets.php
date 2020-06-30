@@ -562,9 +562,8 @@ class Assets extends Component
      *
      * @param Asset $asset
      * @param AssetTransform|string|array|null $transform
-     * @param bool|null $generateNow Whether the transformed image should be
-     * generated immediately if it doesn’t exist. Default is null, meaning it
-     * will be left up to the `generateTransformsBeforePageLoad` sconfig setting.
+     * @param bool|null $generateNow Whether the transformed image should be generated immediately if it doesn’t exist. If `null`, it will be left
+     * up to the `generateTransformsBeforePageLoad` config setting.
      * @return string|null
      */
     public function getAssetUrl(Asset $asset, $transform = null, bool $generateNow = null)
