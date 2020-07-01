@@ -1073,10 +1073,12 @@ class Asset extends Element
      * @param string|array|null $transform The transform that should be applied, if any. Can either be the handle of a named transform, or an array
      * that defines the transform settings. If an array is passed, it can optionally include a `transform` key that defines a base transform which
      * the rest of the settings should be applied to.
+     * @param bool|null $generateNow Whether the transformed image should be generated immediately if it doesn’t exist. If `null`, it will be left
+     * up to the `generateTransformsBeforePageLoad` config setting.
      * @return string|null
      * @throws InvalidConfigException
      */
-    public function getUrl($transform = null)
+    public function getUrl($transform = null, bool $generateNow = null)
     {
         $volume = $this->getVolume();
 
@@ -1110,7 +1112,7 @@ class Asset extends Element
         }
 
         try {
-            return Craft::$app->getAssets()->getAssetUrl($this, $transform);
+            return Craft::$app->getAssets()->getAssetUrl($this, $transform, $generateNow);
         } catch (VolumeObjectNotFoundException $e) {
             Craft::error("Could not determine asset's URL ({$this->id}): {$e->getMessage()}");
             Craft::$app->getErrorHandler()->logException($e);

@@ -459,6 +459,30 @@
 ### Security
 - The `_includes/forms/checkbox.html`, `checkboxGroup.html`, and `checkboxSelect.html` control panel templates now HTML-encode checkbox labels by default, preventing possible XSS vulnerabilities. If HTML code was desired, it must be passed through the new `raw()` function first.
 
+## 3.4.26 - 2020-07-01
+
+### Added
+- Added the `utils/repair/project-config` command, which repairs double-packed associative arrays in the project config. ([#5533](https://github.com/craftcms/cms/issues/5533))
+
+### Changed
+- The `graphql/api` action now checks for the access token in all `Authorization` headers, as well as all comma-separated values in each individual `Authorization` header.
+- The `users/set-password` and `users/save-user` actions now include a `csrfTokenValue` key in their JSON responses for Ajax requests, if the user was logged in during the request. ([#6283](https://github.com/craftcms/cms/issues/6283))
+- Improved performance when handling asset uploads that conflict with an existing file. ([#6253](https://github.com/craftcms/cms/issues/6253))
+- `craft\elements\User::getCpEditUrl()` no longer returns `myaccount` for the currently logged-in user when the method is called from the front end. ([#6275](https://github.com/craftcms/cms/issues/6275))
+- `craft\elements\Asset::getUrl()` now has a `$generateNow` argument. ([#2103](https://github.com/craftcms/cms/issues/2103))
+
+### Fixed
+- Fixed a JavaScript error that occurred when clicking the “Export…” button, on a view that had no bulk actions. ([#6183](https://github.com/craftcms/cms/issues/6183))
+- Fixed a bug where custom field values could be autosaved incorrectly. ([#6258](https://github.com/craftcms/cms/issues/6258))
+- Fixed a PHP error that could occur when saving a GraphQL schema, if there were any validation errors.
+- Fixed a bug where Craft’s `TestMailer` class was not available for tests under some cicrumstances. ([#6263](https://github.com/craftcms/cms/pull/6263))
+- Fixed a bug where clicking the info icons on the Clear Caches utility would toggle their checkbox’s state.
+- Fixed a bug where Matrix blocks could be duplicated after a new site was added, when they should have been propagated from a preexisting site instead. ([#6244](https://github.com/craftcms/cms/issues/6244))
+- Fixed a bug where it wasn’t possible to revoke all permissions from a user. ([#6292](https://github.com/craftcms/cms/issues/6292))
+- Fixed a bug where Craft wasn’t saving new search indexes after a new site was added to a section. ([#6296](https://github.com/craftcms/cms/issues/6296))
+- Fixed a bug where it was possible for associative arrays in the project config to get double-packed, resulting in nested `__assoc__` keys. ([#5533](https://github.com/craftcms/cms/issues/5533))
+- Fixed a bug where `index-assets` commands would error out if a file was moved/deleted within the volume after the index process had started. ([#6291](https://github.com/craftcms/cms/issues/6291))
+
 ## 3.4.25 - 2020-06-23
 
 ### Added

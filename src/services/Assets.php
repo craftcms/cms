@@ -39,6 +39,7 @@ use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\Json;
 use craft\helpers\Queue;
+use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\image\Raster;
 use craft\models\AssetTransform;
@@ -562,9 +563,8 @@ class Assets extends Component
      *
      * @param Asset $asset
      * @param AssetTransform|string|array|null $transform
-     * @param bool|null $generateNow Whether the transformed image should be
-     * generated immediately if it doesn’t exist. Default is null, meaning it
-     * will be left up to the `generateTransformsBeforePageLoad` sconfig setting.
+     * @param bool|null $generateNow Whether the transformed image should be generated immediately if it doesn’t exist. If `null`, it will be left
+     * up to the `generateTransformsBeforePageLoad` config setting.
      * @return string|null
      */
     public function getAssetUrl(Asset $asset, $transform = null, bool $generateNow = null)
@@ -791,10 +791,10 @@ class Assets extends Component
      * Find a replacement for a filename
      *
      * @param string $originalFilename the original filename for which to find a replacement.
-     * @param int $folderId THe folder in which to find the replacement
+     * @param int $folderId The folder in which to find the replacement
      * @return string If a suitable filename replacement cannot be found.
      * @throws AssetLogicException If a suitable filename replacement cannot be found.
-     * @throws InvalidArgumentException If $folderId is invalid
+     * @throws InvalidArgumentException if folder ID invalid
      */
     public function getNameReplacementInFolder(string $originalFilename, int $folderId): string
     {
@@ -805,51 +805,45 @@ class Assets extends Component
         }
 
         $volume = $folder->getVolume();
-        $fileList = $volume->getFileList((string)$folder->path, false);
 
-        // Flip the array for faster lookup
-        $existingFiles = [];
+        // A potentially conflicting filename is one that shares the same stem and extension
 
-        foreach ($fileList as $file) {
-            if (mb_strtolower(rtrim($folder->path, '/')) === mb_strtolower($file['dirname'])) {
-                $existingFiles[mb_strtolower($file['basename'])] = true;
-            }
-        }
+        // Check for potentially conflicting files in index.
+        $baseFileName = pathinfo($originalFilename, PATHINFO_FILENAME);
+        $extension = pathinfo($originalFilename, PATHINFO_EXTENSION);
 
-        // Get a list from DB as well
-        $fileList = (new Query())
+        $dbFileList = (new Query())
             ->select(['assets.filename'])
             ->from(['assets' => Table::ASSETS])
             ->innerJoin(['elements' => Table::ELEMENTS], '[[elements.id]] = [[assets.id]]')
             ->where([
                 'assets.folderId' => $folderId,
-                'elements.dateDeleted' => null
+                'elements.dateDeleted' => null,
             ])
+            ->andWhere(['like', 'assets.filename', $baseFileName . '%.' . $extension, false])
             ->column();
 
-        // Combine the indexed list and the actual file list to make the final potential conflict list.
-        foreach ($fileList as $file) {
-            $existingFiles[mb_strtolower($file)] = true;
+        $potentialConflicts = [];
+
+        foreach ($dbFileList as $filename) {
+            $potentialConflicts[StringHelper::toLowerCase($filename)] = true;
         }
 
-        // Shorthand.
-        $canUse = function($filenameToTest) use ($existingFiles) {
-            return !isset($existingFiles[mb_strtolower($filenameToTest)]);
+        // Check whether a filename we'd want to use does not exist
+        $canUse = function($filenameToTest) use ($potentialConflicts, $volume, $folder) {
+            return !isset($potentialConflicts[mb_strtolower($filenameToTest)]) && !$volume->fileExists($folder->path . $filenameToTest);
         };
 
         if ($canUse($originalFilename)) {
             return $originalFilename;
         }
 
-        $extension = pathinfo($originalFilename, PATHINFO_EXTENSION);
-        $filename = pathinfo($originalFilename, PATHINFO_FILENAME);
-
         // If the file already ends with something that looks like a timestamp, use that instead.
-        if (preg_match('/.*_(\d{6}_\d{6})$/', $filename, $matches)) {
-            $base = $filename;
+        if (preg_match('/.*_\d{4}-\d{2}-\d{2}-\d{6}$/', $baseFileName, $matches)) {
+            $base = $baseFileName;
         } else {
-            $timestamp = DateTimeHelper::currentUTCDateTime()->format('ymd_His');
-            $base = $filename . '_' . $timestamp;
+            $timestamp = DateTimeHelper::currentUTCDateTime()->format('Y-m-d-His');
+            $base = $baseFileName . '_' . $timestamp;
         }
 
         $newFilename = $base . '.' . $extension;
