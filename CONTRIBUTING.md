@@ -7,8 +7,6 @@ The following is a set of guidelines for contributing to Craft CMS and its first
 #### Table of Contents
 
 - [What to Know Before You Contribute](#what-to-know-before-you-contribute)
-- [Craft isn’t FOSS](#craft-isnt-foss)
-- [Code of Conduct](#code-of-conduct)
 - [Security Disclosures](#security-disclosures)
 - [Bug Reports & Feature Requests](#bug-reports--feature-requests)
 - [Documentation Edits](#documentation-edits)
