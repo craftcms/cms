@@ -715,7 +715,7 @@ trait ApplicationTrait
         $attributes = $info->getAttributes($attributeNames);
 
         // TODO: Remove this after the next breakpoint
-        if (version_compare($info['version'], '3.1', '<') || version_compare($info['version'], '3.5', '<')) {
+        if (version_compare($info['version'], '3.1', '<')) {
             unset($attributes['config'], $attributes['configMap']);
         }
 
