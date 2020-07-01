@@ -22,6 +22,7 @@
 - Fixed a bug where it wasn’t possible to revoke all permissions from a user. ([#6292](https://github.com/craftcms/cms/issues/6292))
 - Fixed a bug where Craft wasn’t saving new search indexes after a new site was added to a section. ([#6296](https://github.com/craftcms/cms/issues/6296))
 - Fixed a bug where it was possible for associative arrays in the project config to get double-packed, resulting in nested `__assoc__` keys. ([#5533](https://github.com/craftcms/cms/issues/5533))
+- Fixed a bug where `index-assets` commands would error out if a file was moved/deleted within the volume after the index process had started. ([#6291](https://github.com/craftcms/cms/issues/6291))
 
 ## 3.4.25 - 2020-06-23
 
