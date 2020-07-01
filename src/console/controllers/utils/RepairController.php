@@ -14,8 +14,10 @@ use craft\elements\Category;
 use craft\elements\db\ElementQuery;
 use craft\elements\Entry;
 use craft\helpers\Console;
+use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\models\Section;
 use craft\records\StructureElement;
+use craft\services\ProjectConfig;
 use craft\services\Structures;
 use yii\console\ExitCode;
 use yii\db\Expression;
@@ -224,5 +226,48 @@ class RepairController extends Controller
         $this->stdout("Finished processing $displayName" . ($this->dryRun ? ' (dry run)' : '') . PHP_EOL);
 
         return ExitCode::OK;
+    }
+
+    /**
+     * Repairs double-packed associative arrays in the project config.
+     *
+     * @since 3.4.26
+     */
+    public function actionProjectConfig(): int
+    {
+        $projectConfigService = Craft::$app->getProjectConfig();
+        $config = $projectConfigService->get();
+
+        $this->stdout('Repairing project config ...' . PHP_EOL);
+        foreach ($config as $key => $value) {
+            $this->_repairProjectConfigItem($projectConfigService, $key, $value);
+        }
+        $this->stdout('Finished repairing project config' . PHP_EOL, Console::FG_GREEN);
+        return ExitCode::OK;
+    }
+
+    /**
+     * Repairs a single item within the project config, recursively.
+     *
+     * @param ProjectConfig $projectConfigService
+     * @param string $path
+     * @param mixed $value
+     * @return mixed
+     */
+    private function _repairProjectConfigItem(ProjectConfig $projectConfigService, string $path, $value)
+    {
+        if (is_array($value)) {
+            if (isset($value[ProjectConfig::CONFIG_ASSOC_KEY])) {
+                $this->stdout("- double-packed array found at $path" . PHP_EOL);
+                $value = ProjectConfigHelper::unpackAssociativeArray($value, false);
+                $projectConfigService->set($path, $value);
+            }
+
+            foreach ($value as $k => $v) {
+                $value[$k] = $this->_repairProjectConfigItem($projectConfigService, "$path.$k", $v);
+            }
+        }
+
+        return $value;
     }
 }

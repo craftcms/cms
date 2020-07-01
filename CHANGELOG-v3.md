@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Added the `utils/repair/project-config` command, which repairs double-packed associative arrays in the project config. ([#5533](https://github.com/craftcms/cms/issues/5533))
+
 ### Changed
 - The `graphql/api` action now checks for the access token in all `Authorization` headers, as well as all comma-separated values in each individual `Authorization` header.
 - The `users/set-password` and `users/save-user` actions now include a `csrfTokenValue` key in their JSON responses for Ajax requests, if the user was logged in during the request. ([#6283](https://github.com/craftcms/cms/issues/6283))
@@ -18,6 +21,7 @@
 - Fixed a bug where Matrix blocks could be duplicated after a new site was added, when they should have been propagated from a preexisting site instead. ([#6244](https://github.com/craftcms/cms/issues/6244))
 - Fixed a bug where it wasn’t possible to revoke all permissions from a user. ([#6292](https://github.com/craftcms/cms/issues/6292))
 - Fixed a bug where Craft wasn’t saving new search indexes after a new site was added to a section. ([#6296](https://github.com/craftcms/cms/issues/6296))
+- Fixed a bug where it was possible for associative arrays in the project config to get double-packed, resulting in nested `__assoc__` keys. ([#5533](https://github.com/craftcms/cms/issues/5533))
 
 ## 3.4.25 - 2020-06-23
 
