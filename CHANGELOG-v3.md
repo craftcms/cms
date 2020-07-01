@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.4.26 - 2020-07-01
 
 ### Added
 - Added the `utils/repair/project-config` command, which repairs double-packed associative arrays in the project config. ([#5533](https://github.com/craftcms/cms/issues/5533))
