@@ -232,8 +232,14 @@ class ProjectConfig
             return $array;
         }
 
+        // Make sure this isn't already packed
+        if (isset($array[ProjectConfigService::CONFIG_ASSOC_KEY])) {
+            Craft::warning('Attempting to pack an already-packed associative array.');
+            return $array;
+        }
+
         $packed = [];
-        foreach ($array as $key => &$value) {
+        foreach ($array as $key => $value) {
             $packed[] = [$key, $value];
         }
         return [ProjectConfigService::CONFIG_ASSOC_KEY => $packed];

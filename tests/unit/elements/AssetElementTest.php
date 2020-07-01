@@ -56,6 +56,9 @@ class AssetElementTest extends TestCase
             'extendTransform' => Expected::once(new AssetTransform())
         ]);
 
-        $asset->getUrl('transformHandle', ['width' => 200]);
+        $asset->getUrl([
+            'transform' => 'transformHandle',
+            'width' => 200,
+        ]);
     }
 }

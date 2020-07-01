@@ -14,7 +14,10 @@ Craft.InfoIcon = Garnish.Base.extend(
             this.addListener(this.$icon, 'click', 'showHud');
         },
 
-        showHud: function() {
+        showHud: function(ev) {
+            ev.preventDefault();
+            ev.stopPropagation();
+
             if (!this.hud) {
                 this.hud = new Garnish.HUD(this.$icon, this.$icon.html(), {
                     hudClass: 'hud info-hud',

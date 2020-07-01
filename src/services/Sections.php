@@ -668,6 +668,7 @@ class Sections extends Component
             }
 
             $siteIdMap = Db::idsByUids(Table::SITES, array_keys($siteSettingData));
+            $hasNewSite = false;
 
             foreach ($siteSettingData as $siteUid => $siteSettings) {
                 $siteId = $siteIdMap[$siteUid];
@@ -680,6 +681,7 @@ class Sections extends Component
                     $siteSettingsRecord->sectionId = $sectionRecord->id;
                     $siteSettingsRecord->siteId = $siteId;
                     $resaveEntries = true;
+                    $hasNewSite = true;
                 }
 
                 $siteSettingsRecord->enabledByDefault = $siteSettings['enabledByDefault'];
@@ -756,6 +758,7 @@ class Sections extends Component
                             'unique' => true,
                             'status' => null,
                         ],
+                        'updateSearchIndex' => $hasNewSite,
                     ]));
                 }
             }
