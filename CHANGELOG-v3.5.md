@@ -294,6 +294,7 @@
 - “Resaving elements” jobs no longer ignore the `offset`, `limit`, and `orderBy` params specified by the criteria.
 - Craft now uses `yii\mutex\MysqlMutex` or `yii\mutex\PgsqlMutex` for mutex locking by default.
 - Database backups are now named in the format `system-name--YYYY-MM-DD-HHMMSS--vX.Y.Z.sql`. ([#6231](https://github.com/craftcms/cms/issues/6231))
+- The project config is now saved across multiple files in a new `config/project-config/` folder, if the `useProjectConfigFile` config setting is enabled.
 - `craft\base\Element::getRoute()` now returns the route defined by `craft\events\SetElementRouteEvent::$route` even if it’s null, as long as `SetElementRouteEvent::$handled` is set to `true`.
 - `craft\base\ElementInterface::sortOptions()` now allows the returned `orderBy` key to be set to an array of column names.
 - `craft\base\SavableComponent::isSelectable()` has been moved into the base component class, `craft\base\Component`.
@@ -316,7 +317,6 @@
 - Control panel form input macros and templates that accept a `class` variable can now pass it as an array of class names.
 - Control panel templates can now set a `formActions` variable, which registers alternative Save menu actions, optionally with associated keyboard shortcuts.
 - The `Craft.cp.submitPrimaryForm()` method now accepts an `options` argument for customizing the form submit.
-- Project config now splits the configuration across multiple files, if the 'useProjectConfigFile' setting is enabled.
 - Updated Composer to 1.10.5. ([#5925](https://github.com/craftcms/cms/pull/5925))
 - Updated voku/stringy to ^6.2.2. ([#5989](https://github.com/craftcms/cms/issues/5989))
 

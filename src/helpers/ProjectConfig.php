@@ -322,6 +322,7 @@ class ProjectConfig
      *
      * @param array $config
      * @return array in the form of [$file => $config], where `$file` is the relative config file path in Project Config folder
+     * @since 3.5.0
      */
     public static function splitConfigIntoComponents(array $config): array
     {
