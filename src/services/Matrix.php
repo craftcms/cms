@@ -804,13 +804,16 @@ class Matrix extends Component
 
                 // If propagateAll isn't set, only deal with sites that the element was just propagated to for the first time
                 if (!$owner->propagateAll) {
+                    $preexistingOtherSiteIds = array_diff($otherSiteIds, $owner->newSiteIds);
                     $otherSiteIds = array_intersect($otherSiteIds, $owner->newSiteIds);
+                } else {
+                    $preexistingOtherSiteIds = [];
                 }
 
                 if (!empty($otherSiteIds)) {
-                    // Get the original element and duplicated element for each of those sites
-                    /** @var Element[] $otherTargets */
-                    $otherTargets = $owner::find()
+                    // Get the owner element across each of those sites
+                    /** @var Element[] $localizedOwners */
+                    $localizedOwners = $owner::find()
                         ->drafts($owner->getIsDraft())
                         ->revisions($owner->getIsRevision())
                         ->id($owner->id)
@@ -826,16 +829,34 @@ class Matrix extends Component
                     $cachedQuery->setCachedResult($blocks);
                     $owner->setFieldValue($field->handle, $cachedQuery);
 
-                    foreach ($otherTargets as $otherTarget) {
+                    foreach ($localizedOwners as $localizedOwner) {
                         // Make sure we haven't already duplicated blocks for this site, via propagation from another site
-                        if (isset($handledSiteIds[$otherTarget->siteId])) {
+                        if (isset($handledSiteIds[$localizedOwner->siteId])) {
                             continue;
                         }
 
-                        $this->duplicateBlocks($field, $owner, $otherTarget);
+                        // Find all of the field’s supported sites shared with this target
+                        $sourceSupportedSiteIds = $this->getSupportedSiteIds($field->propagationMethod, $localizedOwner);
+
+                        // Do blocks in this target happen to share supported sites with a preexisting site?
+                        if (
+                            !empty($preexistingOtherSiteIds) &&
+                            !empty($sharedPreexistingOtherSiteIds = array_intersect($preexistingOtherSiteIds, $sourceSupportedSiteIds)) &&
+                            $preexistingLocalizedOwner = $owner::find()
+                                ->drafts($owner->getIsDraft())
+                                ->revisions($owner->getIsRevision())
+                                ->id($owner->id)
+                                ->siteId($sharedPreexistingOtherSiteIds)
+                                ->anyStatus()
+                                ->one()
+                        ) {
+                            // Just resave Matrix blocks for that one site, and let them propagate over to the new site(s) from there
+                            $this->saveField($field, $preexistingLocalizedOwner);
+                        } else {
+                            $this->duplicateBlocks($field, $owner, $localizedOwner);
+                        }
 
                         // Make sure we don't duplicate blocks for any of the sites that were just propagated to
-                        $sourceSupportedSiteIds = $this->getSupportedSiteIds($field->propagationMethod, $otherTarget);
                         $handledSiteIds = array_merge($handledSiteIds, array_flip($sourceSupportedSiteIds));
                     }
 

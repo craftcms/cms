@@ -159,17 +159,25 @@ class GraphqlController extends Controller
         }
 
         // Was a specific token passed?
-        if (!empty($requestHeaders->get('authorization'))) {
-            if (preg_match('/^Bearer\s+(.+)$/i', $requestHeaders->get('authorization'), $matches)) {
-                try {
-                    $token = $gqlService->getTokenByAccessToken($matches[1]);
-                } catch (InvalidArgumentException $e) {
+        foreach ($requestHeaders->get('authorization', [], false) as $authHeader) {
+            $authValues = array_map('trim', explode(',', $authHeader));
+            foreach ($authValues as $authValue) {
+                if (preg_match('/^Bearer\s+(.+)$/i', $authValue, $matches)) {
+                    try {
+                        $token = $gqlService->getTokenByAccessToken($matches[1]);
+                    } catch (InvalidArgumentException $e) {
+                    }
+
+                    if (!isset($token) || !$token->getIsValid()) {
+                        throw new BadRequestHttpException('Invalid Authorization header');
+                    }
+
+                    break 2;
                 }
             }
-            if (!isset($token) || !$token->getIsValid()) {
-                throw new BadRequestHttpException('Invalid Authorization header');
-            }
-        } else {
+        }
+
+        if (!isset($token)) {
             // Get the public schema, if it exists & is valid
             $token = $this->_publicToken($gqlService);
 
@@ -483,12 +491,12 @@ class GraphqlController extends Controller
     }
 
     /**
-     * @return Response
+     * @return Response|null
      * @throws ForbiddenHttpException
      * @throws NotFoundHttpException
      * @since 3.4.0
      */
-    public function actionSavePublicSchema(): Response
+    public function actionSavePublicSchema()
     {
         $this->requirePostRequest();
         $this->requireAdmin();

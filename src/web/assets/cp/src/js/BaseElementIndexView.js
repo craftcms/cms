@@ -159,15 +159,18 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
         },
 
         getSelectedElementIds: function() {
-            var $selectedElements = this.getSelectedElements(),
-                ids = [];
+            let $selectedElements;
+            try {
+                $selectedElements = this.getSelectedElements();
+            } catch (e) {
+            }
 
+            let ids = [];
             if ($selectedElements) {
                 for (var i = 0; i < $selectedElements.length; i++) {
                     ids.push($selectedElements.eq(i).data('id'));
                 }
             }
-
             return ids;
         },
 

@@ -739,6 +739,7 @@ Craft.DraftEditor = Garnish.Base.extend(
 
         afterUpdate: function(data) {
             Craft.cp.$primaryForm.data('initialSerializedValue', data);
+            Craft.initialDeltaValues = {};
             this.statusIcons()
                 .removeClass('hidden')
                 .addClass('checkmark-icon')
