@@ -16,6 +16,7 @@
 - Fixed a bug where Craft’s `TestMailer` class was not available for tests under some cicrumstances. ([#6263](https://github.com/craftcms/cms/pull/6263))
 - Fixed a bug where clicking the info icons on the Clear Caches utility would toggle their checkbox’s state.
 - Fixed a bug where Matrix blocks could be duplicated after a new site was added, when they should have been propagated from a preexisting site instead. ([#6244](https://github.com/craftcms/cms/issues/6244))
+- Fixed a bug where it wasn’t possible to revoke all permissions from a user. ([#6292](https://github.com/craftcms/cms/issues/6292))
 
 ## 3.4.25 - 2020-06-23
 

@@ -1797,14 +1797,14 @@ class UsersController extends Controller
         } else {
             $permissions = $request->getBodyParam('permissions');
 
+            if ($permissions === null) {
+                return;
+            }
+
             // it will be an empty string if no permissions were assigned during user saving.
             if ($permissions === '') {
                 $permissions = [];
             }
-        }
-
-        if (!is_array($permissions) || empty($permissions)) {
-            return;
         }
 
         // See if there are any new permissions in here
