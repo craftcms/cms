@@ -309,4 +309,37 @@ class ProjectConfig
             }
         }
     }
+
+    /**
+     * Take a project config array and split it into components.
+     * Components are defined per each second-level config entry, where all the sibling entries are keyed by UIDs.
+     *
+     * @param array $config
+     * @return array in the form of [$file => $config], where `$file` is the relative config file path in Project Config folder
+     */
+    public static function splitConfigIntoComponents(array $config): array
+    {
+        $projectConfigService = Craft::$app->getProjectConfig();
+        $splitConfig = [
+            $projectConfigService->filename => []
+        ];
+
+        foreach ($config as $key => $configData) {
+            if (is_array($configData)) {
+                $keys = array_keys($configData);
+
+                if ($keys > 0 && count(preg_grep('/'. ProjectConfigService::CRAFT_UID_PATTERN . '/i', $keys)) === count($keys)) {
+                    foreach ($configData as $uid => $subConfig) {
+                        $splitConfig[$key . '/' . $uid . '.yaml'] = $subConfig;
+                    }
+                } else {
+                    $splitConfig[$projectConfigService->filename][$key] = $configData;
+                }
+            } else {
+                $splitConfig[$projectConfigService->filename][$key] = $configData;
+            }
+        }
+
+        return $splitConfig;
+    }
 }

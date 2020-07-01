@@ -650,7 +650,7 @@ trait ApplicationTrait
 
             $row['version'] = $version;
         }
-        unset($row['edition'], $row['name'], $row['timezone'], $row['on'], $row['siteName'], $row['siteUrl'], $row['build'], $row['releaseDate'], $row['track'], $row['config']);
+        unset($row['edition'], $row['name'], $row['timezone'], $row['on'], $row['siteName'], $row['siteUrl'], $row['build'], $row['releaseDate'], $row['track'], $row['config'], $row['configMap']);
 
         return $this->_info = new Info($row);
     }
@@ -705,7 +705,7 @@ trait ApplicationTrait
         /** @var WebApplication|ConsoleApplication $this */
 
         if ($attributeNames === null) {
-            $attributeNames = ['version', 'schemaVersion', 'maintenance', 'configMap', 'fieldVersion'];
+            $attributeNames = ['version', 'schemaVersion', 'maintenance', 'fieldVersion'];
         }
 
         if (!$info->validate($attributeNames)) {
@@ -715,17 +715,13 @@ trait ApplicationTrait
         $attributes = $info->getAttributes($attributeNames);
 
         // TODO: Remove this after the next breakpoint
-        if (version_compare($info['version'], '3.1', '<')) {
+        if (version_compare($info['version'], '3.1', '<') || version_compare($info['version'], '3.5', '<')) {
             unset($attributes['config'], $attributes['configMap']);
         }
 
         // TODO: Remove this after the next breakpoint
         if (version_compare($info['version'], '3.0', '<')) {
             unset($attributes['fieldVersion']);
-        }
-
-        if (isset($attributes['configMap'])) {
-            $attributes['configMap'] = Db::prepareValueForDb($attributes['configMap']);
         }
 
         $infoRowExists = (new Query())

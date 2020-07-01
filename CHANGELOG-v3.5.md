@@ -199,6 +199,7 @@
 - Added `craft\helpers\Json::isJsonObject()`.
 - Added `craft\helpers\MailerHelper::normalizeEmails()`.
 - Added `craft\helpers\MailerHelper::settingsReport()`.
+- Added `craft\helpers\ProjectConfig::splitConfigIntoComponents()`.
 - Added `craft\helpers\Queue`.
 - Added `craft\models\Section::PROPAGATION_METHOD_CUSTOM`.
 - Added `craft\models\Site::$enabled`.
@@ -222,6 +223,7 @@
 - Added `craft\services\Fields::getLayoutsByElementType()`.
 - Added `craft\services\Gql::getAllSchemaComponents()`.
 - Added `craft\services\Images::getSupportsWebP()`. ([#5853](https://github.com/craftcms/cms/issues/5853))
+- Added `craft\services\Path::getProjectConfigComponentsPath()`.
 - Added `craft\services\ProjectConfig::$filename`. ([#5982](https://github.com/craftcms/cms/issues/5982))
 - Added `craft\test\mockclasses\elements\MockElementQuery`.
 - Added `craft\web\AssetBundle\ContentWindowAsset`.
@@ -314,6 +316,7 @@
 - Control panel form input macros and templates that accept a `class` variable can now pass it as an array of class names.
 - Control panel templates can now set a `formActions` variable, which registers alternative Save menu actions, optionally with associated keyboard shortcuts.
 - The `Craft.cp.submitPrimaryForm()` method now accepts an `options` argument for customizing the form submit.
+- Project config now splits the configuration across multiple files, if the 'useProjectConfigFile' setting is enabled.
 - Updated Composer to 1.10.5. ([#5925](https://github.com/craftcms/cms/pull/5925))
 - Updated voku/stringy to ^6.2.2. ([#5989](https://github.com/craftcms/cms/issues/5989))
 
@@ -358,11 +361,13 @@
 ### Removed
 - Removed the “Template caches” option from the Clear Caches tool and `clear-caches` command.
 - Removed the [Interactive Shell Extension for Yii 2](https://github.com/yiisoft/yii2-shell), as it’s now a dev dependency of the `craftcms/craft` project instead. ([#5783](https://github.com/craftcms/cms/issues/5783))
+- Removed support for the `import` directive in project config files.
 - Removed the `cacheElementQueries` config setting.
 - Removed `craft\controllers\UtilitiesController::actionDbBackupPerformAction()`.
 - Removed `craft\db\MigrationManager::TYPE_APP`.
 - Removed `craft\db\MigrationManager::TYPE_CONTENT`.
 - Removed `craft\db\MigrationManager::TYPE_PLUGIN`.
+- Removed `craft\models\Info::$configMap`.
 - Removed `craft\records\Migration`.
 - Removed `craft\records\Plugin::getMigrations()`.
 
