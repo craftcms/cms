@@ -17,6 +17,7 @@
 - Fixed a bug where clicking the info icons on the Clear Caches utility would toggle their checkbox’s state.
 - Fixed a bug where Matrix blocks could be duplicated after a new site was added, when they should have been propagated from a preexisting site instead. ([#6244](https://github.com/craftcms/cms/issues/6244))
 - Fixed a bug where it wasn’t possible to revoke all permissions from a user. ([#6292](https://github.com/craftcms/cms/issues/6292))
+- Fixed a bug where Craft wasn’t saving new search indexes after a new site was added to a section. ([#6296](https://github.com/craftcms/cms/issues/6296))
 
 ## 3.4.25 - 2020-06-23
 
