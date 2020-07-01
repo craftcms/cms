@@ -172,7 +172,7 @@
 - `craft\base\SavableComponent::isSelectable()` has been moved into the base component class, `craft\base\Component`.
 - `craft\base\SavableComponentInterface::isSelectable()` has been moved into the base component interface, `craft\base\ComponentInterface`.
 - `craft\base\SortableFieldInterface::getSortOption()` now allows the returned `orderBy` key to be set to an array of column names.
-- `craft\elements\Asset::getUrl()` now has a `$transformOverrideParameters` parameter. ([#5853](https://github.com/craftcms/cms/issues/5853))
+- `craft\elements\Asset::getUrl()` now supports including a `transform` key in the `$transform` argument array, which specifies a base transform. ([#5853](https://github.com/craftcms/cms/issues/5853))
 - `craft\services\ElementIndexes::getAvailableTableAttributes()` no longer has an `$includeFields` argument.
 - `craft\services\Fields::getFieldByHandle()` now has an optional `$context` argument.
 - `craft\services\Gql::setCachedResult()` now has a `$dependency` argument.
