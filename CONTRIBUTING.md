@@ -33,7 +33,7 @@ Please take a couple minutes to read through Craft’s [code of conduct](https:/
 
 ## Security Disclosures
 
-If you discover a security vulnerability, please review our [Security Policy](https://github.com/craftcms/cms/wiki/Security-Policy), then report the issue directly to us from [craftcms.com/contact](https://craftcms.com/contact). We will review and respond privately via email.
+If you discover a security vulnerability, please review our [Security Policy](https://github.com/craftcms/.github/blob/master/SECURITY.md), then report the issue directly to us from [craftcms.com/contact](https://craftcms.com/contact). We will review and respond privately via email.
 
 ## Bug Reports & Feature Requests
 
