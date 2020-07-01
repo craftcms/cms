@@ -300,6 +300,7 @@
 - `craft\db\ActiveRecord` now unsets any empty primary key values when saving new records, to avoid a SQL error on PostgreSQL. ([#5814](https://github.com/craftcms/cms/pull/5814))
 - `craft\elements\Asset::getImg()` now has a `$sizes` argument. ([#5774](https://github.com/craftcms/cms/issues/5774))
 - `craft\elements\Asset::getUrl()` now has a `$transformOverrideParameters` argument. ([#5853](https://github.com/craftcms/cms/issues/5853))
+- `craft\elements\db\ElementQuery::$enabledForSite` is now set to `false` by default, leaving it up to elements’ status conditions to factor in the site-specific element statuses. ([#6273](https://github.com/craftcms/cms/issues/6273))
 - `craft\helpers\ElementHelper::supportedSitesForElement()` now has a `$withUnpropagatedSites` argument.
 - `craft\helpers\StringHelper::randomString()` no longer includes capital letters or numbers by default.
 - `craft\i18n\Formatter::asTimestamp()` now has a `$withPreposition` argument.
@@ -325,6 +326,8 @@
 - Deprecated `craft\db\Table::TEMPLATECACHEELEMENTS`.
 - Deprecated `craft\db\Table::TEMPLATECACHEQUERIES`.
 - Deprecated `craft\db\Table::TEMPLATECACHES`.
+- Deprecated `craft\elements\db\ElementQuery::$enabledForSite`.
+- Deprecated `craft\elements\db\ElementQuery::enabledForSite()`.
 - Deprecated `craft\events\RegisterGqlPermissionsEvent`. `craft\events\RegisterGqlSchemaComponentsEvent` should be used instead.
 - Deprecated `craft\gql\base\Resolver::extractEagerLoadCondition()`. `ElementQueryConditionBuilder` should be used instead.
 - Deprecated `craft\helpers\App::mutexConfig()`.

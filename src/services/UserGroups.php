@@ -251,7 +251,7 @@ class UserGroups extends Component
 
         $groupRecord->name = $data['name'];
         $groupRecord->handle = $data['handle'];
-        $groupRecord->description = $data['description'];
+        $groupRecord->description = $data['description'] ?? null;
         $groupRecord->uid = $uid;
 
         $groupRecord->save(false);

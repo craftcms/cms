@@ -726,6 +726,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *
      * @param bool $value The property value (defaults to true)
      * @return static self reference
+     * @deprecated in 3.5.0. [[status()]] should be used instead.
      */
     public function enabledForSite(bool $value = true);
 
@@ -1335,7 +1336,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function positionedAfter($value);
 
     /**
-     * Clears out the [[status()]] and [[enabledForSite()]] parameters.
+     * Removes element filters based on their statuses.
      *
      * ---
      *

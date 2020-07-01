@@ -1001,10 +1001,12 @@ abstract class Element extends Component implements ElementInterface
                                 $ancestorStructureDatum['level'] == $elementStructureDatum['level'] - 1
                             )
                         ) {
-                            $map[] = [
-                                'source' => $elementStructureDatum['elementId'],
-                                'target' => $ancestorStructureDatum['elementId'],
-                            ];
+                            if ($ancestorStructureDatum['elementId']) {
+                                $map[] = [
+                                    'source' => $elementStructureDatum['elementId'],
+                                    'target' => $ancestorStructureDatum['elementId'],
+                                ];
+                            }
 
                             // If we're just fetching the parents, then we're done with this element
                             if ($handle === 'parent') {

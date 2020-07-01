@@ -778,7 +778,6 @@ class Sites extends Component
                     'criteria' => [
                         'siteId' => $oldPrimarySiteId,
                         'status' => null,
-                        'enabledForSite' => false
                     ],
                     'siteId' => $site->id,
                 ]));
