@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where Structure section entries would get repositioned after a revision was reverted. ([#6313](https://github.com/craftcms/cms/issues/6313))
+
 ## 3.4.26 - 2020-07-01
 
 ### Added
