@@ -1944,7 +1944,7 @@ class Elements extends Component
 
                 if ($map === null) {
                     // Null means to skip eager-loading this segment
-                    return;
+                    continue;
                 }
 
                 $targetElementIdsBySourceIds = null;
