@@ -86,6 +86,8 @@
 - Added `craft\base\Field::searchKeywords()`.
 - Added `craft\base\FieldInterface::getContentGqlMutationArgumentType()`.
 - Added `craft\base\FieldInterface::getContentGqlQueryArgumentType()`.
+- Added `craft\base\Model::EVENT_DEFINE_EXTRA_FIELDS`.
+- Added `craft\base\Model::EVENT_DEFINE_FIELDS`.
 - Added `craft\base\Volume::getFieldLayout()`.
 - Added `craft\base\VolumeInterface::getFieldLayout()`.
 - Added `craft\behaviors\BaseRevisionBehavior`.
@@ -124,6 +126,7 @@
 - Added `craft\events\DefineAttributeKeywordsEvent`.
 - Added `craft\events\DefineFieldHtmlEvent`.
 - Added `craft\events\DefineFieldKeywordsEvent`.
+- Added `craft\events\DefineFieldsEvent`.
 - Added `craft\events\EagerLoadElementsEvent`.
 - Added `craft\events\RegisterElementFieldLayoutsEvent`.
 - Added `craft\events\RegisterGqlMutationsEvent`.

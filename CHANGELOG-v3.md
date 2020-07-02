@@ -13,6 +13,9 @@
 - Added `craft\base\ElementInterface::getIsTitleTranslatable()`.
 - Added `craft\base\ElementInterface::getTitleTranslationDescription()`.
 - Added `craft\base\ElementInterface::getTitleTranslationKey()`.
+- Added `craft\base\Model::EVENT_DEFINE_EXTRA_FIELDS`.
+- Added `craft\base\Model::EVENT_DEFINE_FIELDS`.
+- Added `craft\events\DefineFieldsEvent`.
 - Added `craft\gql\base\InterfaceType::resolveElementTypeName()`.
 - Added `craft\gql\GqlEntityRegistry::prefixTypeName()`.
 - Added `craft\helpers\App::dbMutexConfig()`.
