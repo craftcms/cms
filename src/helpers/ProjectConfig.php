@@ -220,11 +220,11 @@ class ProjectConfig
     {
         // Deal with the nested values first
         if ($recursive) {
-            foreach ($array as &$value) {
-                if (is_array($value)) {
-                    $value = static::packAssociativeArray($value, true);
-                }
-            }
+            $array = array_map(function($value) {
+                return is_array($value)
+                   ? static::packAssociativeArray($value, true)
+                   : $value;
+            }, $array);
         }
 
         // Only pack this array if its keys are not in numerical order
