@@ -19,6 +19,7 @@ use GraphQL\Language\AST\FragmentSpreadNode;
 use GraphQL\Language\AST\InlineFragmentNode;
 use GraphQL\Language\AST\Node;
 use GraphQL\Type\Definition\ResolveInfo;
+use yii\base\InvalidArgumentException;
 
 /**
  * Class Resolver
@@ -218,24 +219,31 @@ abstract class Resolver
                             $eagerLoadNodes += $traverseNodes($subNode, $traversePrefix . '.', $traverseContext, $field);
                         }
                     }
-                    // If not, see if it's an inline fragment
-                } else if ($subNode instanceof InlineFragmentNode) {
+                    // If not, see if it's a fragment
+                } else if ($subNode instanceof InlineFragmentNode || $subNode instanceof FragmentSpreadNode) {
+                    // For named fragments, replace the node with the actual fragment.
+                    if ($subNode instanceof FragmentSpreadNode) {
+                        $subNode = $fragments[$nodeName];
+                    }
+
                     $nodeName = $subNode->typeCondition->name->value;
 
                     // If we are inside a field that supports different subtypes, it should implement the appropriate interface
                     if ($parentField instanceof GqlInlineFragmentFieldInterface) {
                         // Get the Craft entity that correlates to the fragment
                         // Build the prefix, load the context and proceed in a recursive manner
-                        $gqlFragmentEntity = $parentField->getGqlFragmentEntityByName($nodeName);
-                        $eagerLoadNodes += $traverseNodes($subNode, $prefix . $gqlFragmentEntity->getEagerLoadingPrefix() . ':', $gqlFragmentEntity->getFieldContext(), $parentField);
+                        try {
+                            $gqlFragmentEntity = $parentField->getGqlFragmentEntityByName($nodeName);
+                            $eagerLoadNodes += $traverseNodes($subNode, $prefix . $gqlFragmentEntity->getEagerLoadingPrefix() . ':', $gqlFragmentEntity->getFieldContext(), $parentField);
+
+                            // This is to be expected, depending on whether the fragment is targeted towards the field itself instead of its subtypes.
+                        } catch (InvalidArgumentException $exception) {
+                            $eagerLoadNodes += $traverseNodes($subNode, $prefix, $context, $parentField);
+                        }
                         // If we are not, just expand the fragment and traverse it as if on the same level in the query tree
                     } else {
                         $eagerLoadNodes += $traverseNodes($subNode, $prefix, $context, $parentField);
                     }
-                    // Finally, if this is a named fragment, expand it and traverse it as if on the same level in the query tree
-                } else if ($subNode instanceof FragmentSpreadNode) {
-                    $fragmentDefinition = $fragments[$nodeName];
-                    $eagerLoadNodes += $traverseNodes($fragmentDefinition, $prefix, $context, $parentField);
                 }
             }
 
