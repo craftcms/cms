@@ -7,8 +7,8 @@
 
 ### Fixed
 - Fixed a bug where Structure section entries would get repositioned after a revision was reverted. ([#6313](https://github.com/craftcms/cms/issues/6313))
-- Fixed an unexpected PHP error that could occur if `craft\helpers\FileHelper::writeToFile()` was unable to acquire a lock. ([#6315](https://github.com/craftcms/cms/issues/6315)
-- Fixed a bug where eager-loading from GraphQL could break if using named fragments inside matrix fields. ([#6294](https://github.com/craftcms/cms/issues/6294)
+- Fixed an unexpected PHP error that could occur if `craft\helpers\FileHelper::writeToFile()` was unable to acquire a lock. ([#6315](https://github.com/craftcms/cms/issues/6315))
+- Fixed a bug where eager-loading from GraphQL could break if using named fragments inside matrix fields. ([#6294](https://github.com/craftcms/cms/issues/6294))
 - Fixed a bug where associative array values within the project config could get duplicated. ([#6317](https://github.com/craftcms/cms/issues/6317))
 
 ## 3.4.26 - 2020-07-01
