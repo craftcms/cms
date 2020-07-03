@@ -67,6 +67,40 @@ class ProjectConfigHelperTest extends Unit
                     'randomArray' => [1, 7, 2, 'ok']
                 ]
             ],
+            [
+                [
+                    'test' => [
+                        'rootA' => [
+                            'label' => 'childA'
+                        ],
+                        'rootB' => [
+                            'label' => 'childB'
+                        ]
+                    ]
+                ],
+                [
+                    'test' => [
+                        ProjectConfig::CONFIG_ASSOC_KEY => [
+                            [
+                                'rootA',
+                                [
+                                    ProjectConfig::CONFIG_ASSOC_KEY => [
+                                        ['label', 'childA']
+                                    ]
+                                ]
+                            ],
+                            [
+                                'rootB',
+                                [
+                                    ProjectConfig::CONFIG_ASSOC_KEY => [
+                                        ['label', 'childB']
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ]
         ];
     }
 

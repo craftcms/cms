@@ -231,6 +231,10 @@ class Revisions extends Component
             $newSource = Craft::$app->getElements()->duplicateElement($revision, [
                 'id' => $source->id,
                 'uid' => $source->uid,
+                'root' => $source->root,
+                'lft' => $source->lft,
+                'rgt' => $source->rgt,
+                'level' => $source->level,
                 'revisionId' => null,
                 'revisionCreatorId' => $creatorId,
                 'revisionNotes' => Craft::t('app', 'Reverted to revision {num}.', ['num' => $revision->revisionNum]),
