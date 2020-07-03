@@ -1,13 +1,13 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.4.27 - 2020-07-03
 
 ### Changed
 - Improved the performance of structured element index views.
 
 ### Fixed
 - Fixed a bug where Structure section entries would get repositioned after a revision was reverted. ([#6313](https://github.com/craftcms/cms/issues/6313))
-- Fixed a typo in the `FileHelper` class where incorrect class name was being referenced. ([#6315](https://github.com/craftcms/cms/issues/6315)
+- Fixed an unexpected PHP error that could occur if `craft\helpers\FileHelper::writeToFile()` was unable to acquire a lock. ([#6315](https://github.com/craftcms/cms/issues/6315)
 - Fixed a bug where eager-loading from GraphQL could break if using named fragments inside matrix fields. ([#6294](https://github.com/craftcms/cms/issues/6294)
 - Fixed a bug where associative array values within the project config could get duplicated. ([#6317](https://github.com/craftcms/cms/issues/6317))
 
