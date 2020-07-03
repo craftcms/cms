@@ -7,6 +7,7 @@
 
 ### Fixed
 - Fixed a bug where Structure section entries would get repositioned after a revision was reverted. ([#6313](https://github.com/craftcms/cms/issues/6313))
+- Fixed a typo in the `FileHelper` class where incorrect class name was being referenced. ([#6315](https://github.com/craftcms/cms/issues/6315)
 
 ## 3.4.26 - 2020-07-01
 
