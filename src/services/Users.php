@@ -441,7 +441,7 @@ class Users extends Component
             $photo->tempFilePath = $fileLocation;
             $photo->filename = $filenameToUse;
             $photo->newFolderId = $folderId;
-            $photo->volumeId = $volume->id;
+            $photo->setVolumeId($volume->id);
 
             // Save photo.
             $elementsService = Craft::$app->getElements();

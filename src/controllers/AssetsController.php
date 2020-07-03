@@ -338,7 +338,7 @@ class AssetsController extends Controller
             $asset->tempFilePath = $tempPath;
             $asset->filename = $filename;
             $asset->newFolderId = $folder->id;
-            $asset->volumeId = $folder->volumeId;
+            $asset->setVolumeId($folder->volumeId);
             $asset->avoidFilenameConflicts = true;
             $asset->uploaderId = Craft::$app->getUser()->getId();
             $asset->setScenario(Asset::SCENARIO_CREATE);
@@ -1027,7 +1027,7 @@ class AssetsController extends Controller
                 $newAsset->tempFilePath = $imageCopy;
                 $newAsset->filename = $asset->filename;
                 $newAsset->newFolderId = $folder->id;
-                $newAsset->volumeId = $folder->volumeId;
+                $newAsset->setVolumeId($folder->volumeId);
                 $newAsset->setFocalPoint($focal);
 
                 // Don't validate required custom fields
@@ -1250,7 +1250,7 @@ class AssetsController extends Controller
      */
     protected function requireVolumePermissionByAsset(string $permissionName, Asset $asset)
     {
-        if (!$asset->volumeId) {
+        if (!$asset->getVolumeId()) {
             $userTemporaryFolder = Craft::$app->getAssets()->getUserTemporaryUploadFolder();
 
             // Skip permission check only if it's the user's temporary folder
@@ -1273,7 +1273,7 @@ class AssetsController extends Controller
      */
     protected function requirePeerVolumePermissionByAsset(string $permissionName, Asset $asset)
     {
-        if ($asset->volumeId) {
+        if ($asset->getVolumeId()) {
             $userId = Craft::$app->getUser()->getId();
             if ($asset->uploaderId != $userId) {
                 $this->requireVolumePermissionByAsset($permissionName, $asset);

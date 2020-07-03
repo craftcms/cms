@@ -541,7 +541,7 @@ class AssetTransforms extends Component
         // Check if an entry exists already
         $query = $this->_createTransformIndexQuery()
             ->where([
-                'volumeId' => $asset->volumeId,
+                'volumeId' => $asset->getVolumeId(),
                 'assetId' => $asset->id,
                 'location' => $transformLocation
             ]);
@@ -574,7 +574,7 @@ class AssetTransforms extends Component
         $transformIndex = new AssetTransformIndex([
             'assetId' => $asset->id,
             'format' => $transform->format,
-            'volumeId' => $asset->volumeId,
+            'volumeId' => $asset->getVolumeId(),
             'dateIndexed' => Db::prepareDateForDb(new DateTime()),
             'location' => $transformLocation,
             'fileExists' => false,

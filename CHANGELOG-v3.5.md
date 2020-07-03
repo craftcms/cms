@@ -103,7 +103,9 @@
 - Added `craft\elements\Asset::defineFieldLayouts()`.
 - Added `craft\elements\Asset::getCacheTags()`.
 - Added `craft\elements\Asset::getSrcset()`. ([#5774](https://github.com/craftcms/cms/issues/5774))
+- Added `craft\elements\Asset::getVolumeId()`.
 - Added `craft\elements\Asset::gqlMutationNameByContext()`.
+- Added `craft\elements\Asset::setVolumeId()`.
 - Added `craft\elements\Category::defineFieldLayouts()`.
 - Added `craft\elements\Category::getCacheTags()`.
 - Added `craft\elements\Category::gqlMutationNameByContext()`.
