@@ -58,16 +58,17 @@ use yii\base\UnknownPropertyException;
 /**
  * Asset represents an asset element.
  *
- * @property string $extension the file extension
- * @property array|null $focalPoint the focal point represented as an array with `x` and `y` keys, or null if it's not an image
- * @property VolumeFolder $folder the asset’s volume folder
- * @property bool $hasFocalPoint whether a user-defined focal point is set on the asset
  * @property int|float|null $height the image height
- * @property Markup|null $img an `<img>` tag based on this asset
- * @property string|null $mimeType the file’s MIME type, if it can be determined
- * @property string $path the asset's path in the volume
- * @property VolumeInterface $volume the asset’s volume
  * @property int|float|null $width the image width
+ * @property int|null $volumeId the volume ID
+ * @property string|array|null $focalPoint the focal point represented as an array with `x` and `y` keys, or null if it's not an image
+ * @property-read Markup|null $img an `<img>` tag based on this asset
+ * @property-read VolumeFolder $folder the asset’s volume folder
+ * @property-read VolumeInterface $volume the asset’s volume
+ * @property-read bool $hasFocalPoint whether a user-defined focal point is set on the asset
+ * @property-read string $extension the file extension
+ * @property-read string $path the asset's path in the volume
+ * @property-read string|null $mimeType the file’s MIME type, if it can be determined
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
@@ -539,11 +540,6 @@ class Asset extends Element
     }
 
     /**
-     * @var int|null Volume ID
-     */
-    public $volumeId;
-
-    /**
      * @var int|null Folder ID
      */
     public $folderId;
@@ -637,6 +633,11 @@ class Asset extends Element
      * @see afterDelete()
      */
     public $keepFileOnDelete = false;
+
+    /**
+     * @var int|null Volume ID
+     */
+    private $_volumeId;
 
     /**
      * @var int|float|null Width
@@ -749,7 +750,40 @@ class Asset extends Element
     public function init()
     {
         parent::init();
-        $this->_oldVolumeId = $this->volumeId;
+        $this->_oldVolumeId = $this->_volumeId;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function fields()
+    {
+        $fields = parent::fields();
+        $fields['volumeId'] = 'volumeId';
+        return $fields;
+    }
+
+    /**
+     * Returns the volume’s ID.
+     *
+     * @return int|null
+     */
+    public function getVolumeId()
+    {
+        return (int)$this->_volumeId ?: null;
+    }
+
+    /**
+     * Sets the volume’s ID.
+     *
+     * @param int|null $id
+     */
+    public function setVolumeId(int $id = null)
+    {
+        if ($id !== $this->getVolumeId()) {
+            $this->_volumeId = $id;
+            $this->_volume = null;
+        }
     }
 
     /**
@@ -799,11 +833,11 @@ class Asset extends Element
     public function getCacheTags(): array
     {
         $tags = [
-            "volume:$this->volumeId",
+            "volume:$this->_volumeId"
         ];
 
         // Did the volume just change?
-        if ($this->volumeId != $this->_oldVolumeId) {
+        if ($this->_volumeId != $this->_oldVolumeId) {
             $tags[] = "volume:$this->_oldVolumeId";
         }
 
@@ -1007,12 +1041,12 @@ class Asset extends Element
             return $this->_volume;
         }
 
-        if ($this->volumeId === null) {
+        if ($this->_volumeId === null) {
             return new Temp();
         }
 
-        if (($volume = Craft::$app->getVolumes()->getVolumeById($this->volumeId)) === null) {
-            throw new InvalidConfigException('Invalid volume ID: ' . $this->volumeId);
+        if (($volume = Craft::$app->getVolumes()->getVolumeById($this->_volumeId)) === null) {
+            throw new InvalidConfigException('Invalid volume ID: ' . $this->_volumeId);
         }
 
         return $this->_volume = $volume;
@@ -1756,7 +1790,7 @@ class Asset extends Element
             }
 
             $record->filename = $this->filename;
-            $record->volumeId = (int)$this->volumeId ?: null;
+            $record->volumeId = $this->getVolumeId();
             $record->folderId = (int)$this->folderId;
             $record->uploaderId = (int)$this->uploaderId ?: null;
             $record->kind = $this->kind;
@@ -2008,7 +2042,7 @@ class Asset extends Element
         }
 
         // Update file properties
-        $this->volumeId = $newFolder->volumeId;
+        $this->setVolumeId($newFolder->volumeId);
         $this->folderId = $folderId;
         $this->folderPath = $newFolder->path;
         $this->filename = $filename;

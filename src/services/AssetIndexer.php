@@ -473,7 +473,7 @@ class AssetIndexer extends Component
             }
 
             $asset = new Asset();
-            $asset->volumeId = $volume->id;
+            $asset->setVolumeId($volume->id);
             $asset->folderId = $folderId;
             $asset->folderPath = $folder->path;
             $asset->filename = $filename;

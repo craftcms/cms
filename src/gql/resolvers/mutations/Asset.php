@@ -80,6 +80,7 @@ class Asset extends ElementMutationResolver
             ]);
         }
 
+        /** @var AssetElement $asset */
         if (!empty($arguments['newFolderId'])) {
             $folder = Craft::$app->getAssets()->getFolderById($arguments['newFolderId']);
 
@@ -87,7 +88,7 @@ class Asset extends ElementMutationResolver
                 throw new UserError('Invalid folder id provided');
             }
         } else {
-            if ($asset->volumeId != $volume->id) {
+            if ($asset->getVolumeId() != $volume->id) {
                 throw new UserError('A folder id must be provided to change the asset\'s volume.');
             }
         }
@@ -114,13 +115,14 @@ class Asset extends ElementMutationResolver
         $assetId = $arguments['id'];
 
         $elementService = Craft::$app->getElements();
+        /** @var AssetElement $asset */
         $asset = $elementService->getElementById($assetId, AssetElement::class);
 
         if (!$asset) {
             return true;
         }
 
-        $volumeUid = Db::uidById(Table::VOLUMES, $asset->volumeId);
+        $volumeUid = Db::uidById(Table::VOLUMES, $asset->getVolumeId());
         $this->requireSchemaAction('volumes.' . $volumeUid, 'delete');
 
         $elementService->deleteElementById($assetId);
