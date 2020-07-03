@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Improved the performance of structured element index views.
+
 ### Fixed
 - Fixed a bug where Structure section entries would get repositioned after a revision was reverted. ([#6313](https://github.com/craftcms/cms/issues/6313))
 
