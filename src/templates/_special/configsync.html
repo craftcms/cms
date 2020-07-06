@@ -2,16 +2,17 @@
 {% set title = "Project Config Sync"|t('app') %}
 
 {% block message %}
-    <p>
-        {{ 'Changes to `{file}` must be applied to the loaded project config.'|t('app', {
-            file: craft.app.projectConfig.filename,
-        })|md(inlineOnly=true) }}
-    </p>
-
-    <form method="post" class="buttons">
-        {{ csrfInput() }}
-        {{ actionInput('config-sync') }}
-        {{ hiddenInput('return', craft.app.request.getPathInfo()) }}
-        <input type="submit" class="btn submit" value="{{ 'Sync changes'|t('app') }}">
-    </form>
+<p>
+    {{ 'Changes were made to your project config. Would you like to sync them now?'|t('app') }}
+</p>
+​
+<form method="post" class="buttons">
+    {{ csrfInput() }}
+    {{ actionInput('config-sync') }}
+    {{ hiddenInput('return', craft.app.request.getPathInfo()) }}
+    <div class="flex flex-nowrap">
+        <button class="formsubmit btn" data-action="project-config/ignore">{{ 'No'|t('app') }}</button>
+        <button type="submit" class="btn submit">{{ 'Yes'|t('app') }}</button>
+    </div>
+</form>
 {% endblock %}

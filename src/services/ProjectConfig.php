@@ -580,7 +580,16 @@ class ProjectConfig extends Component
             $this->saveModifiedConfigData();
         }
 
-        if (!$this->_useConfigFile() || !$this->_isConfigFileModified()) {
+        // Only way to trigger a config check is by making a cp request while site is in devmode.
+        if (!Craft::$app->getConfig()->getGeneral()->devMode || !Craft::$app->getRequest()->getIsCpRequest()) {
+            return false;
+        }
+
+        if (!$this->_useConfigFile()) {
+            return false;
+        }
+
+        if (!$this->_areConfigFilesModified()) {
             return false;
         }
 
@@ -1209,7 +1218,7 @@ class ProjectConfig extends Component
      */
     private function _getConfigFileModifiedTime(): int
     {
-        return FileHelper::lastModifiedTime(Craft::$app->getPath()->getProjectConfigFilePath());
+        return FileHelper::lastModifiedTime(Craft::$app->getPath()->getProjectConfigComponentsPath());
     }
 
     /**
@@ -1328,20 +1337,22 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Return true if the main config file has been modified since last we checked.
+     * Return true if the config files have been modified since last we checked.
      *
      * @return bool
      */
-    private function _isConfigFileModified(): bool
+    private function _areConfigFilesModified(): bool
     {
         $cachedModifiedTime = Craft::$app->getCache()->get(self::CACHE_KEY);
 
-        if (empty($cachedModifiedTimes)) {
+        if (empty($cachedModifiedTime)) {
             return true;
         }
 
-        $file = Craft::$app->getPath()->getProjectConfigFilePath();
-        if (!file_exists($file) || FileHelper::lastModifiedTime($file) > $modified) {
+        $pathService = Craft::$app->getPath();
+        // Check whether we have a missing main config file or any of the sub-files have been modified.
+        $mod = $this->_getConfigFileModifiedTime();
+        if (!file_exists($pathService->getProjectConfigFilePath()) || $this->_getConfigFileModifiedTime() > $cachedModifiedTime) {
             return true;
         }
 
