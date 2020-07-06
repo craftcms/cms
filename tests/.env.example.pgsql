@@ -1,6 +1,8 @@
 # Set in accordance to your environment
 
-DB_DSN="pgsql:host=127.0.01;port=54320;dbname=craft-test"
+DB_DSN="pgsql:host=localhost;port=5432;dbname=craft-test"
+# if you are using the docker-compose.yaml file use these
+# DB_DSN="pgsql:host=127.0.0.1;port=54320;dbname=craft-test"
 DB_USER="craft"
 DB_PASSWORD="craft"
 DB_SCHEMA="public"
