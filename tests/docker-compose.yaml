@@ -9,8 +9,6 @@ services:
       MYSQL_DATABASE: craft-test
       MYSQL_USER: craft
       MYSQL_PASSWORD: craft
-    tmpfs:
-      - /var/lib/mysql:rw,noexec,nosuid,size=1024m
   postgres:
     image: postgres:11-alpine
     ports:
@@ -19,6 +17,3 @@ services:
       POSTGRES_PASSWORD: craft
       POSTGRES_USER: craft
       POSTGRES_DB: craft-test
-    tmpfs:
-      - /var/lib/postgresql/data:rw,noexec,nosuid,size=1024m
-
