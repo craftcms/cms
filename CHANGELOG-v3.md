@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where site-specific tests were not able to properly use `craft\test\fixtures\elements\AssetFixture`. ([#6309](https://github.com/craftcms/cms/issues/6309))
+
 ## 3.4.27 - 2020-07-03
 
 ### Changed
