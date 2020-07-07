@@ -5,6 +5,7 @@
 ### Fixed
 - Fixed a bug where indexing assets using the `index-assets` would not clean up stale indexing data after it was done.
 - Fixed a bug where preparing an indexing file list for a folder would return incorrect results for missing folders.
+- Fixed a bug where site-specific tests were not able to properly use `craft\test\fixtures\elements\AssetFixture`. ([#6309](https://github.com/craftcms/cms/issues/6309))
 - Fixed a bug where deleting an asset folder would orphan element records in the database. ([#6326](https://github.com/craftcms/cms/issues/6326))
 
 ### Added
