@@ -319,9 +319,18 @@ class Assets extends Component
                     $volume->deleteDir($folder->path);
                 }
 
-                VolumeFolderRecord::deleteAll(['id' => $folderId]);
             }
         }
+
+        $assets = Asset::find()->folderId($folderIds)->all();
+
+        $elementService = Craft::$app->getElements();
+
+        foreach ($assets as $asset) {
+            $elementService->deleteElement($asset, true);
+        }
+
+        VolumeFolderRecord::deleteAll(['id' => $folderIds]);
     }
 
     /**

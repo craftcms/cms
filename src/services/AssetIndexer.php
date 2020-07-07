@@ -89,13 +89,16 @@ class AssetIndexer extends Component
             // Compile a list of missing folders.
             $missingFolders = [];
 
-            $allFolders = $assets->findFolders(
-                [
-                    'volumeId' => $volumeId
-                ]);
+            $folderCriteria = [
+                'volumeId' => $volumeId,
+            ];
+
+            $allFolders = $assets->findFolders($folderCriteria);
+
+            $normalizedDir = !empty($directory) ? rtrim($directory, '/') . '/' : '';
 
             foreach ($allFolders as $folderModel) {
-                if (!isset($indexedFolderIds[$folderModel->id])) {
+                if (!isset($indexedFolderIds[$folderModel->id]) && $folderModel->path !== $normalizedDir && StringHelper::startsWith($folderModel->path, $normalizedDir)) {
                     $missingFolders[$folderModel->id] = $volume->name . '/' . $folderModel->path;
                 }
             }
@@ -424,6 +427,36 @@ class AssetIndexer extends Component
         $this->updateIndexEntry($indexEntry->id, ['completed' => true, 'inProgress' => false, 'recordId' => $asset->id]);
 
         return $asset;
+    }
+
+    /**
+     * Clean up stale asset indexing data. Stale indexing data is all session data for sessions that have all the recordIds set.
+     *
+     * @throws \yii\db\Exception
+     */
+    public function deleteStaleIndexingData()
+    {
+        // Clean up stale indexing data (all sessions that have all recordIds set)
+        $sessionsInProgress = (new Query())
+            ->select(['sessionId'])
+            ->from([Table::ASSETINDEXDATA])
+            ->where(['recordId' => null])
+            ->groupBy(['sessionId'])
+            ->scalar();
+
+        $db = Craft::$app->getDb();
+
+        if (empty($sessionsInProgress)) {
+            $db->createCommand()
+                ->delete(Table::ASSETINDEXDATA)
+                ->execute();
+        } else {
+            $db->createCommand()
+                ->delete(
+                    Table::ASSETINDEXDATA,
+                    ['not', ['sessionId' => $sessionsInProgress]])
+                ->execute();
+        }
     }
 
     /**
