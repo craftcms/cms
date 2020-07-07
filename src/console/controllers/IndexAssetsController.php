@@ -247,7 +247,7 @@ class IndexAssetsController extends Controller
         }
 
         $assetIndexer->deleteStaleIndexingData();
-        
+
         return ExitCode::OK;
     }
 

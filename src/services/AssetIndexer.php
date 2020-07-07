@@ -89,13 +89,16 @@ class AssetIndexer extends Component
             // Compile a list of missing folders.
             $missingFolders = [];
 
-            $allFolders = $assets->findFolders(
-                [
-                    'volumeId' => $volumeId
-                ]);
+            $folderCriteria = [
+                'volumeId' => $volumeId,
+            ];
+
+            $allFolders = $assets->findFolders($folderCriteria);
+
+            $normalizedDir = !empty($directory) ? rtrim($directory, '/') . '/' : '';
 
             foreach ($allFolders as $folderModel) {
-                if (!isset($indexedFolderIds[$folderModel->id])) {
+                if (!isset($indexedFolderIds[$folderModel->id]) && $folderModel->path !== $normalizedDir && StringHelper::startsWith($folderModel->path, $normalizedDir)) {
                     $missingFolders[$folderModel->id] = $volume->name . '/' . $folderModel->path;
                 }
             }

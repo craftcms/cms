@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed a bug where indexing assets using the `index-assets` would not clean up stale indexing data after it was done.
+- Fixed a bug where preparing an indexing file list for a folder would return incorrect results for missing folders.
 
 ### Added
 - Added `craft\services\AssetIndexer::deleteStaleIndexingData()`.
