@@ -427,6 +427,36 @@ class AssetIndexer extends Component
     }
 
     /**
+     * Clean up stale asset indexing data. Stale indexing data is all session data for sessions that have all the recordIds set.
+     *
+     * @throws \yii\db\Exception
+     */
+    public function deleteStaleIndexingData()
+    {
+        // Clean up stale indexing data (all sessions that have all recordIds set)
+        $sessionsInProgress = (new Query())
+            ->select(['sessionId'])
+            ->from([Table::ASSETINDEXDATA])
+            ->where(['recordId' => null])
+            ->groupBy(['sessionId'])
+            ->scalar();
+
+        $db = Craft::$app->getDb();
+
+        if (empty($sessionsInProgress)) {
+            $db->createCommand()
+                ->delete(Table::ASSETINDEXDATA)
+                ->execute();
+        } else {
+            $db->createCommand()
+                ->delete(
+                    Table::ASSETINDEXDATA,
+                    ['not', ['sessionId' => $sessionsInProgress]])
+                ->execute();
+        }
+    }
+
+    /**
      * Indexes a file.
      *
      * @param AssetIndexData $indexEntry Asset Index Data entry that contains information for the Asset-to-be.

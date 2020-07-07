@@ -1,5 +1,13 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where indexing assets using the `index-assets` would not clean up stale indexing data after it was done.
+
+### Added
+- Added `craft\services\AssetIndexer::deleteStaleIndexingData()`.
+
 ## 3.4.27 - 2020-07-03
 
 ### Changed
