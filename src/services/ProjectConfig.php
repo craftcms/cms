@@ -514,6 +514,7 @@ class ProjectConfig extends Component
         $baseFile = Craft::$app->getPath()->getProjectConfigFilePath();
         $this->_saveConfig($loadedConfig, $baseFile);
         $this->updateParsedConfigTimesAfterRequest();
+        $this->saveModifiedConfigData();
     }
 
     /**
