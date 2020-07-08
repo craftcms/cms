@@ -58,6 +58,7 @@
 - Fixed a SQL error that could occur when eager-loading elements with their ancestors/parents when using PostgreSQL. ([#6227](https://github.com/craftcms/cms/issues/6227))
 - Fixed a 403 Forbidden error that occurred when clicking on the GraphQL nav item, if the `allowAdminChanges` config setting was disabled. ([#6242](https://github.com/craftcms/cms/issues/6242))
 - Fixed a bug where `data-params` and `data-param` attributes on `.formsubmit` elements weren’t being respected.
+- Fix a bug where it was impossible to upload an asset using GraphQL mutations. ([#6322](https://github.com/craftcms/cms/pull/6322))
 
 ### Security
 - `craft\web\View::evaluateDynamicContent()` can no longer be called by default. ([#6185](https://github.com/craftcms/cms/pull/6185))
@@ -470,6 +471,17 @@
 
 ### Security
 - The `_includes/forms/checkbox.html`, `checkboxGroup.html`, and `checkboxSelect.html` control panel templates now HTML-encode checkbox labels by default, preventing possible XSS vulnerabilities. If HTML code was desired, it must be passed through the new `raw()` function first.
+
+## 3.4.27 - 2020-07-03
+
+### Changed
+- Improved the performance of structured element index views.
+
+### Fixed
+- Fixed a bug where Structure section entries would get repositioned after a revision was reverted. ([#6313](https://github.com/craftcms/cms/issues/6313))
+- Fixed an unexpected PHP error that could occur if `craft\helpers\FileHelper::writeToFile()` was unable to acquire a lock. ([#6315](https://github.com/craftcms/cms/issues/6315)
+- Fixed a bug where eager-loading from GraphQL could break if using named fragments inside matrix fields. ([#6294](https://github.com/craftcms/cms/issues/6294)
+- Fixed a bug where associative array values within the project config could get duplicated. ([#6317](https://github.com/craftcms/cms/issues/6317))
 
 ## 3.4.26 - 2020-07-01
 
