@@ -1,9 +1,9 @@
 {% extends "_layouts/message" %}
-{% set title = "Project Config Sync"|t('app') %}
+{% set title = "Project Config Changes"|t('app') %}
 
 {% block message %}
 <p>
-    {{ 'Changes were made to your project config. Would you like to sync them now?'|t('app') }}
+    {{ 'Changes were made to your project config. Would you like to apply them now?'|t('app') }}
 </p>
 ​
 <form method="post" class="buttons">
@@ -11,7 +11,7 @@
     {{ actionInput('config-sync') }}
     {{ hiddenInput('return', craft.app.request.getPathInfo()) }}
     <div class="flex flex-nowrap">
-        <button class="formsubmit btn" data-action="project-config/ignore">{{ 'No'|t('app') }}</button>
+        <button class="formsubmit btn" data-action="project-config/ignore">{{ 'Not yet'|t('app') }}</button>
         <button type="submit" class="btn submit">{{ 'Yes'|t('app') }}</button>
     </div>
 </form>
