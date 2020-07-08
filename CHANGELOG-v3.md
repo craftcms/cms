@@ -7,6 +7,7 @@
 - Fixed a bug where preparing an indexing file list for a folder would return incorrect results for missing folders.
 - Fixed a bug where site-specific tests were not able to properly use `craft\test\fixtures\elements\AssetFixture`. ([#6309](https://github.com/craftcms/cms/issues/6309))
 - Fixed a bug where deleting an asset folder would orphan element records in the database. ([#6326](https://github.com/craftcms/cms/issues/6326))
+- Fixed a bug where it was sometimes impossible to use the `relatedToAll` argument with GraphQL queries. ([#6343](https://github.com/craftcms/cms/issues/6343))
 
 ### Added
 - Added `craft\services\AssetIndexer::deleteStaleIndexingData()`.

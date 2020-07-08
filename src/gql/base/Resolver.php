@@ -175,13 +175,18 @@ abstract class Resolver
                                             $arguments = ['id' => 0];
 
                                             break;
-                                        } else {
-                                            $arguments[$argumentName] = $allowed;
                                         }
+
+                                        $arguments[$argumentName] = $allowed;
                                     } else {
                                         $arguments[$argumentName] = $argumentValue;
                                     }
                                 }
+                            }
+
+                            // For relational fields, take care of the
+                            if ($field instanceof BaseRelationField) {
+                                $arguments = ElementResolver::prepareArguments($arguments);
                             }
                         }
 
