@@ -18,6 +18,7 @@ use craft\utilities\DeprecationErrors;
 use craft\utilities\FindAndReplace;
 use craft\utilities\Migrations;
 use craft\utilities\PhpInfo;
+use craft\utilities\ProjectConfig as ProjectConfigUtility;
 use craft\utilities\QueueManager;
 use craft\utilities\SystemMessages as SystemMessagesUtility;
 use craft\utilities\SystemReport;
@@ -86,6 +87,7 @@ class Utilities extends Component
         $utilityTypes[] = DbBackup::class;
         $utilityTypes[] = FindAndReplace::class;
         $utilityTypes[] = Migrations::class;
+        $utilityTypes[] = ProjectConfigUtility::class;
 
         $event = new RegisterComponentTypesEvent([
             'types' => $utilityTypes
@@ -122,7 +124,10 @@ class Utilities extends Component
     public function checkAuthorization(string $class): bool
     {
         /** @var string|UtilityInterface $class */
-        return Craft::$app->getUser()->checkPermission('utility:' . $class::id());
+        $utilityId = $class::id();
+        $user = Craft::$app->getUser();
+
+        return $utilityId === ProjectConfigUtility::id() ? $user->getIsAdmin() : $user->checkPermission('utility:' . $utilityId);
     }
 
     /**

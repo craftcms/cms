@@ -22,6 +22,7 @@ use craft\models\CategoryGroup;
 use craft\models\Section;
 use craft\models\UserGroup;
 use craft\records\UserPermission as UserPermissionRecord;
+use craft\utilities\ProjectConfig as ProjectConfigUtility;
 use yii\base\Component;
 use yii\db\Exception;
 
@@ -620,6 +621,11 @@ class UserPermissions extends Component
 
         foreach (Craft::$app->getUtilities()->getAllUtilityTypes() as $class) {
             /** @var UtilityInterface $class */
+            // Admins only
+            if (ProjectConfigUtility::id() === $class::id()) {
+                continue;
+            }
+
             $permissions['utility:' . $class::id()] = [
                 'label' => $class::displayName()
             ];

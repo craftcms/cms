@@ -15,6 +15,7 @@
 - Added `craft\base\ElementInterface::getTitleTranslationKey()`.
 - Added `craft\base\Model::EVENT_DEFINE_EXTRA_FIELDS`.
 - Added `craft\base\Model::EVENT_DEFINE_FIELDS`.
+- Added `craft\controllers\UtilitiesController::actionProjectConfigPerformAction()`.
 - Added `craft\elements\Asset::getVolumeId()`.
 - Added `craft\elements\Asset::setVolumeId()`.
 - Added `craft\events\DefineFieldsEvent`.
@@ -25,6 +26,7 @@
 - Added `craft\helpers\ElementHelper::translationKey()`.
 - Added `craft\helpers\ProjectConfig::splitConfigIntoComponents()`.
 - Added `craft\services\Path::getProjectConfigComponentsPath()`.
+- Added `craft\utilities\ProjectConfig`.
 - Added `craft\web\Controller::setFailFlash()`.
 - Added `craft\web\Controller::setSuccessFlash()`.
 - Added `craft\web\Request::getIsGraphql()`.

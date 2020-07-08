@@ -96,6 +96,7 @@
 - Added `craft\console\controllers\MigrateController::EVENT_REGISTER_MIGRATOR`.
 - Added `craft\controllers\AppController::actionBrokenImage()`.
 - Added `craft\controllers\BaseEntriesController::enforceSitePermissions()`.
+- Added `craft\controllers\UtilitiesController::actionProjectConfigPerformAction()`.
 - Added `craft\db\MigrationManager::TRACK_CONTENT`.
 - Added `craft\db\MigrationManager::TRACK_CRAFT`.
 - Added `craft\elements\actions\CopyUrl`.
@@ -231,6 +232,7 @@
 - Added `craft\services\Path::getProjectConfigComponentsPath()`.
 - Added `craft\services\ProjectConfig::$filename`. ([#5982](https://github.com/craftcms/cms/issues/5982))
 - Added `craft\test\mockclasses\elements\MockElementQuery`.
+- Added `craft\utilities\ProjectConfig`.
 - Added `craft\web\AssetBundle\ContentWindowAsset`.
 - Added `craft\web\AssetBundle\IframeResizerAsset`.
 - Added `craft\web\Controller::setFailFlash()`.

@@ -1138,6 +1138,8 @@ class ProjectConfig extends Component
             $this->set($path, $value, 'Project config rebuild');
         }
 
+        $this->_appliedConfig = $configData;
+
         $this->readOnly = $readOnly;
         $this->muteEvents = false;
     }

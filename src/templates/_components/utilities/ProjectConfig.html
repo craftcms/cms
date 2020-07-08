@@ -1,0 +1,38 @@
+{% import "_includes/forms" as forms %}
+
+<div class="buttons">
+    <button class="btn" onclick="$('.highlight').removeClass('hidden'); $(this).remove();">{{ 'Click to view project config data'|t('app') }}</button>
+</div>
+
+<div class="highlight entire-config hidden">
+    <pre><code class="language-yaml">{{ entireConfig }}</code></pre>
+</div>
+
+<hr />
+
+<form id="project-config" class="utility" method="post" accept-charset="UTF-8">
+    {{ actionInput('utilities/project-config-perform-action') }}
+    {{ csrfInput() }}
+
+    <p>Parse the external project config files and apply any changes found to the Craft installation.</p>
+    <div class="buttons">
+        <button class="btn submit" name="performAction" value="apply">{{ 'Apply changes'|t('app') }}</button>
+    </div>
+    <hr />
+    <p>Re-applying the entire config will parse the external project config files  and apply everything to the Craft installation.</p>
+    <div class="buttons">
+        <button class="btn submit" name="performAction" value="force-apply">{{ 'Re-apply entire config'|t('app') }}</button>
+    </div>
+    <hr />
+    <p>Scan the entire Craft installation state and rebuild the project config based on that infermation.</p>
+    <div class="buttons">
+        <button class="btn submit" name="performAction" value="rebuild">{{ 'Rebuild project config'|t('app') }}</button>
+    </div>
+</form>
+
+{% do view.registerAssetBundle("craft\\web\\assets\\prismjs\\PrismJsAsset") %}
+
+{% js %}
+var $highlight = $('.highlight.entire-config');
+Prism.highlightElement($highlight.find('pre code').get(0));
+{% endjs %}
