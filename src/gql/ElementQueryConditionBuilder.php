@@ -336,6 +336,11 @@ class ElementQueryConditionBuilder
                                 }
                             }
                         }
+                        
+                        // For relational fields, take care of the
+                        if ($craftContentField instanceof BaseRelationField) {
+                            $arguments = ElementResolver::prepareArguments($arguments);
+                        }
                     }
 
                     $alias = (!(empty($subNode->alias)) && !empty($subNode->alias->value)) ? $subNode->alias->value : null;
