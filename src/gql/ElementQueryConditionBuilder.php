@@ -14,6 +14,7 @@ use craft\base\GqlInlineFragmentFieldInterface;
 use craft\fields\Assets as AssetField;
 use craft\fields\BaseRelationField;
 use craft\fields\Users as UserField;
+use craft\gql\base\ElementResolver;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\helpers\StringHelper;
 use craft\services\Gql;
