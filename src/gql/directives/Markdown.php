@@ -26,6 +26,7 @@ use GraphQL\Type\Definition\Type;
 class Markdown extends Directive
 {
     const DEFAULT_FLAVOR = null;
+    const DEFAULT_INLINE_ONLY = false;
 
     /**
      * @inheritdoc
@@ -48,6 +49,12 @@ class Markdown extends Directive
                     'defaultValue' => self::DEFAULT_FLAVOR,
                     'description' => 'The “flavor” of Markdown the input should be interpreted with. Accepts the same arguments as yii\\helpers\\Markdown::process().'
                 ]),
+                new FieldArgument([
+                    'name' => 'inlineOnly',
+                    'type' => Type::boolval(),
+                    'defaultValue' => self::DEFAULT_INLINE_ONLY,
+                    'description' => 'Whether to only parse inline elements, omitting any `<p>` tags.'
+                ]),
             ],
             'description' => 'Parses the passed field value as Markdown.'
         ]));
@@ -68,6 +75,12 @@ class Markdown extends Directive
      */
     public static function apply($source, $value, array $arguments, ResolveInfo $resolveInfo)
     {
+        $inlineOnly = $arguments['inlineOnly'] ?? self::DEFAULT_INLINE_ONLY;
+
+        if ($inlineOnly) {
+            return Markdown::processParagraph((string)$value, $arguments['flavor'] ?? self::DEFAULT_FLAVOR);
+        }
+
         return MarkdownHelper::process((string)$value, $arguments['flavor'] ?? self::DEFAULT_FLAVOR);
     }
 }
