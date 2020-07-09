@@ -55,8 +55,7 @@ class GeneralConfig extends BaseObject
      * If this is disabled, the Settings and Plugin Store sections will be hidden,
      * the Craft edition and Craft/plugin versions will be locked, and the project config will become read-only.
      *
-     * Therefore you should only disable this in production environments when <config:useProjectConfigFile> is enabled,
-     * and you have a deployment workflow that runs `composer install` automatically on deploy.
+     * Therefore you should only disable this in production environments when you have a deployment workflow that runs `composer install` automatically on deploy.
      *
      * ::: warning
      * Don’t disable this setting until **all** environments have been updated to Craft 3.1.0 or later.
@@ -1016,9 +1015,10 @@ class GeneralConfig extends BaseObject
      * documentation, and carefully follow the “Enabling the Project Config File” steps when enabling this setting.
      * :::
      *
+     * @deprecated since 3.5.0. Craft now always saves project config out to the `config/project-config` folder.
      * @since 3.1.0
      */
-    public $useProjectConfigFile = false;
+    public $useProjectConfigFile = true;
     /**
      * @var mixed The amount of time a user verification code can be used before expiring.
      *
@@ -1176,6 +1176,9 @@ class GeneralConfig extends BaseObject
         if ($this->suppressTemplateErrors) {
             Craft::$app->getDeprecator()->log('suppressTemplateErrors', "The suppressTemplateErrors config setting has been deprecated because it relies on a deprecated Twig feature.");
         }
+
+        // Always use project config files
+        $this->useProjectConfigFile = true;
     }
 
     /**

@@ -330,6 +330,7 @@
 
 ### Deprecated
 - Deprecated the `useCompressedJs` config setting.
+- Deprecated the `useProjectConfigFile` config setting.
 - Deprecated the `install/plugin` command. `plugin/install` should be used instead.
 - Deprecated the `|filterByValue` Twig filter. `|where` should be used instead.
 - Deprecated the `|ucwords` Twig filter. `|title` should be used instead.

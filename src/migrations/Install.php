@@ -1040,36 +1040,34 @@ class Install extends Migration
 
         $applyExistingProjectConfig = false;
 
-        if ($generalConfig->useProjectConfigFile) {
-            $configFile = Craft::$app->getPath()->getProjectConfigFilePath();
-            if (file_exists($configFile)) {
-                try {
-                    $expectedSchemaVersion = (string)$projectConfig->get(ProjectConfig::CONFIG_SCHEMA_VERSION_KEY, true);
-                    $craftSchemaVersion = (string)Craft::$app->schemaVersion;
+        $configFile = Craft::$app->getPath()->getProjectConfigFilePath();
+        if (file_exists($configFile)) {
+            try {
+                $expectedSchemaVersion = (string)$projectConfig->get(ProjectConfig::CONFIG_SCHEMA_VERSION_KEY, true);
+                $craftSchemaVersion = (string)Craft::$app->schemaVersion;
 
-                    // Compare existing Craft schema version with the one that is being applied.
-                    if (!version_compare($craftSchemaVersion, $expectedSchemaVersion, '=')) {
-                        throw new InvalidConfigException("Craft is installed at the wrong schema version ({$craftSchemaVersion}, but $projectConfig->filename lists {$expectedSchemaVersion}).");
-                    }
-
-                    // Make sure at least sites are processed
-                    ProjectConfigHelper::ensureAllSitesProcessed();
-
-                    $this->_installPlugins();
-                    $applyExistingProjectConfig = true;
-                } catch (\Throwable $e) {
-                    echo "    > can't apply existing project config: {$e->getMessage()}\n";
-                    Craft::$app->getErrorHandler()->logException($e);
-
-                    // Rename project.yaml so we can create a new one
-                    $backupFile = pathinfo($projectConfig->filename, PATHINFO_FILENAME) . date('-Y-m-d-His') . '.yaml';
-                    echo "    > renaming $projectConfig->filename to $backupFile and moving to config backup folder ... ";
-                    rename($configFile, Craft::$app->getPath()->getConfigBackupPath() . '/' . $backupFile);
-                    echo "done\n";
-
-                    // Forget everything we knew about the old config
-                    $projectConfig->reset();
+                // Compare existing Craft schema version with the one that is being applied.
+                if (!version_compare($craftSchemaVersion, $expectedSchemaVersion, '=')) {
+                    throw new InvalidConfigException("Craft is installed at the wrong schema version ({$craftSchemaVersion}, but $projectConfig->filename lists {$expectedSchemaVersion}).");
                 }
+
+                // Make sure at least sites are processed
+                ProjectConfigHelper::ensureAllSitesProcessed();
+
+                $this->_installPlugins();
+                $applyExistingProjectConfig = true;
+            } catch (\Throwable $e) {
+                echo "    > can't apply existing project config: {$e->getMessage()}\n";
+                Craft::$app->getErrorHandler()->logException($e);
+
+                // Rename project.yaml so we can create a new one
+                $backupFile = pathinfo($projectConfig->filename, PATHINFO_FILENAME) . date('-Y-m-d-His') . '.yaml';
+                echo "    > renaming $projectConfig->filename to $backupFile and moving to config backup folder ... ";
+                rename($configFile, Craft::$app->getPath()->getConfigBackupPath() . '/' . $backupFile);
+                echo "done\n";
+
+                // Forget everything we knew about the old config
+                $projectConfig->reset();
             }
         }
 

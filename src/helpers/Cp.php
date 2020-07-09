@@ -148,12 +148,9 @@ class Cp
         if (
             $user->admin &&
             $generalConfig->allowAdminChanges &&
-            $generalConfig->useProjectConfigFile &&
-            !FileHelper::isWritable(Craft::$app->getPath()->getProjectConfigFilePath())
+            !FileHelper::isWritable(Craft::$app->getPath()->getProjectConfigComponentsPath())
         ) {
-            $alerts[] = Craft::t('app', 'Your {file} file isn’t writable.', [
-                'file' => Craft::$app->getProjectConfig()->filename,
-            ]);
+            $alerts[] = Craft::t('app', 'Your `config/project-config` folder isn’t writable.');
         }
 
         // Give plugins a chance to add their own alerts

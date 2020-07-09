@@ -24,22 +24,17 @@ use yii\console\ExitCode;
 class ProjectConfigController extends Controller
 {
     /**
-     * @var bool Whether every entry change should be force-synced.
+     * @var bool Whether every entry change should be force-applied.
      */
     public $force = false;
 
     /**
-     * Syncs the project config.
+     * Applies project config file changes.
      *
      * @return int
      */
     public function actionSync(): int
     {
-        if (!Craft::$app->getConfig()->getGeneral()->useProjectConfigFile) {
-            $this->stdout('Craft is not configured to use project.yaml. Please enable the \'useProjectConfigFile\' config setting in config/general.php.' . PHP_EOL, Console::FG_YELLOW);
-            return ExitCode::UNSPECIFIED_ERROR;
-        }
-
         $updatesService = Craft::$app->getUpdates();
 
         if ($updatesService->getIsCraftDbMigrationNeeded() || $updatesService->getIsPluginDbUpdateNeeded()) {
@@ -77,7 +72,7 @@ class ProjectConfigController extends Controller
             $this->_uninstallPlugins(array_diff($loadedConfigPlugins, $yamlPlugins));
 
             if (!$this->_installPlugins(array_diff($yamlPlugins, $loadedConfigPlugins))) {
-                $this->stdout('Aborting config sync' . PHP_EOL, Console::FG_RED);
+                $this->stdout('Aborting config apply process' . PHP_EOL, Console::FG_RED);
                 return ExitCode::UNSPECIFIED_ERROR;
             }
 

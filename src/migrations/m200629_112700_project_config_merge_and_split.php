@@ -27,7 +27,7 @@ class m200629_112700_project_config_merge_and_split extends Migration
         $projectConfig = Craft::$app->getProjectConfig();
         $schemaVersion = $projectConfig->get('system.schemaVersion', true);
 
-        if (version_compare($schemaVersion, '3.5.7', '<') && Craft::$app->getConfig()->getGeneral()->useProjectConfigFile) {
+        if (version_compare($schemaVersion, '3.5.7', '<')) {
             echo '    > Creating the new project config component folder ... ';
             $pathService = Craft::$app->getPath();
             $configComponentFolder = $pathService->getProjectConfigComponentsPath();

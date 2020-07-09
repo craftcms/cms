@@ -26,7 +26,8 @@
 - Added `craft\helpers\ElementHelper::translationKey()`.
 - Added `craft\helpers\ProjectConfig::splitConfigIntoComponents()`.
 - Added `craft\services\Path::getProjectConfigComponentsPath()`.
-- Added `craft\utilities\ProjectConfig`.
+
+
 - Added `craft\web\Controller::setFailFlash()`.
 - Added `craft\web\Controller::setSuccessFlash()`.
 - Added `craft\web\Request::getIsGraphql()`.
@@ -46,6 +47,7 @@
 - Updated PrismJS to 1.20.0.
 
 ### Deprecated
+- Deprecated the `useProjectConfigFile` config setting.
 - Deprecated `craft\elements\db\ElementQuery::$enabledForSite`.
 - Deprecated `craft\elements\db\ElementQuery::enabledForSite()`.
 - Deprecated `craft\helpers\App::mutexConfig()`.

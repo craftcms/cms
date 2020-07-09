@@ -435,12 +435,6 @@ class TestSetup
             return false;
         }
 
-        // Fail hard if someone has specified a project config file but doesn't have project config enabled.
-        // Prevent's confusion of https://github.com/craftcms/cms/pulls/4711
-        if (!Craft::$app->getConfig()->getGeneral()->useProjectConfigFile) {
-            throw new InvalidArgumentException('Please enable the `useProjectConfigFile` option in `general.php`');
-        }
-
         return $config;
     }
 
