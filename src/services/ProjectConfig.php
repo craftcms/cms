@@ -1367,9 +1367,13 @@ class ProjectConfig extends Component
         $this->_configFileList = [];
 
         foreach ($folders as $folder) {
-            array_push($this->_configFileList, ...array_map(static function($path) use ($basePath) {
+            $files = array_map(static function($path) use ($basePath) {
                 return StringHelper::removeLeft($path, $basePath);
-            }, glob($folder . '*.yaml') ?: []));
+            }, glob($folder . '*.yaml') ?: []);
+
+            if (count($files)) {
+                array_push($this->_configFileList, ...$files);
+            }
         }
 
         return $this->_configFileList;
