@@ -412,7 +412,6 @@ class Install extends Migration
             'version' => $this->string(50)->notNull(),
             'schemaVersion' => $this->string(15)->notNull(),
             'maintenance' => $this->boolean()->defaultValue(false)->notNull(),
-            'configMap' => $this->mediumText()->null(),
             'fieldVersion' => $this->char(12)->notNull()->defaultValue('000000000000'),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
@@ -1033,7 +1032,6 @@ class Install extends Migration
             'schemaVersion' => Craft::$app->schemaVersion,
             'maintenance' => false,
             'fieldVersion' => StringHelper::randomString(12),
-            'configMap' => Json::encode([]),
         ]));
         echo "done\n";
 
