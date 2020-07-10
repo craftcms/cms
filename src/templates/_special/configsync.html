@@ -3,16 +3,16 @@
 
 {% block message %}
 <p>
-    {{ 'Changes were made to your project config. Would you like to apply them now?'|t('app') }}
+    {{ 'Your project config files contain pending changes. Apply them now?'|t('app') }}
 </p>
-​
+
 <form method="post" class="buttons">
     {{ csrfInput() }}
     {{ actionInput('config-sync') }}
     {{ hiddenInput('return', craft.app.request.getPathInfo()) }}
     <div class="flex flex-nowrap">
-        <button class="formsubmit btn" data-action="project-config/ignore">{{ 'Not yet'|t('app') }}</button>
         <button type="submit" class="btn submit">{{ 'Yes'|t('app') }}</button>
+        <button class="formsubmit btn" data-action="project-config/ignore">{{ 'Not yet'|t('app') }}</button>
     </div>
 </form>
 {% endblock %}
