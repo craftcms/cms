@@ -40,6 +40,15 @@ class ProjectConfigHelperTest extends Unit
         $this->assertSame($expectedResult, ProjectConfigHelper::cleanupConfig($inputData));
     }
 
+    /**
+     * @dataProvider splitIntoComponentsProvider
+     * @param $inputData
+     * @param $expectedResult
+     */
+    public function testSplitIntoComponents($inputData, $expectedResult)
+    {
+        $this->assertSame($expectedResult, ProjectConfigHelper::splitConfigIntoComponents($inputData));
+    }
 
     /**
      * @return array
@@ -138,6 +147,117 @@ class ProjectConfigHelperTest extends Unit
                     'randomArray' => [1, 7, 2, 'ok']
                 ],
             ]
+        ];
+    }
+
+    public function splitIntoComponentsProvider()
+    {
+        return [
+            [
+                [
+                    'dateModified' => 1,
+                    'email' => [
+                        'provider' => 'gmail'
+                    ]
+                ],
+                [
+                    'project.yaml' => [
+                        'dateModified' => 1,
+                        'email' => [
+                            'provider' => 'gmail'
+                        ]
+                    ]
+                ],
+            ],
+            [
+                [
+                    'dateModified' => 2,
+                    'email' => [
+                        'provider' => 'gmail',
+                        'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' => [
+                            'key' => 'value'
+                        ]
+                    ]
+                ],
+                [
+                    'project.yaml' => [
+                        'dateModified' => 2,
+                        'email' => [
+                            'provider' => 'gmail',
+                            'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' => [
+                                'key' => 'value'
+                            ]
+                        ]
+                    ]
+                ],
+            ],
+            [
+                [
+                    'dateModified' => 3,
+                    'email' => [
+                        'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' => [
+                            'key' => 'value'
+                        ]
+                    ]
+                ],
+                [
+                    'project.yaml' => [
+                        'dateModified' => 3
+                    ],
+                    'email/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa.yaml' => [
+                        'key' => 'value'
+                    ]
+                ],
+            ],
+            [
+                [
+                    'dateModified' => 4,
+                    'email' => [
+                        'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' => [
+                            'key' => 'value'
+                        ],
+                        'bbbbbbbb-aaaa-aaaa-aaaa-aaaaaaaaaaaa' => [
+                            'key2' => 'value'
+                        ]
+                    ]
+                ],
+                [
+                    'project.yaml' => [
+                        'dateModified' => 4
+                    ],
+                    'email/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa.yaml' => [
+                        'key' => 'value'
+                    ],
+                    'email/bbbbbbbb-aaaa-aaaa-aaaa-aaaaaaaaaaaa.yaml' => [
+                        'key2' => 'value'
+                    ]
+                ],
+            ],
+            [
+                [
+                    'dateModified' => 4, 'email' => [
+                    'aaaaaaaG-aaaa-aaaa-aaaa-aaaaaaaaaaaa' => [
+                        'key' => 'value'
+                    ],
+                    'bbbbbbbb-aaaa-aaaa-aaaa-aaaaaaaaaaaa' => [
+                        'key2' => 'value'
+                    ]
+                ]
+                ],
+                [
+                    'project.yaml' => [
+                        'dateModified' => 4,
+                        'email' => [
+                            'aaaaaaaG-aaaa-aaaa-aaaa-aaaaaaaaaaaa' => [
+                                'key' => 'value'
+                            ],
+                            'bbbbbbbb-aaaa-aaaa-aaaa-aaaaaaaaaaaa' => [
+                                'key2' => 'value'
+                            ]
+                        ]
+                    ]
+                ],
+            ],
         ];
     }
 }

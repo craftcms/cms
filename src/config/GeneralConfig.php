@@ -55,8 +55,7 @@ class GeneralConfig extends BaseObject
      * If this is disabled, the Settings and Plugin Store sections will be hidden,
      * the Craft edition and Craft/plugin versions will be locked, and the project config will become read-only.
      *
-     * Therefore you should only disable this in production environments when <config:useProjectConfigFile> is enabled,
-     * and you have a deployment workflow that runs `composer install` automatically on deploy.
+     * Therefore you should only disable this in production environments when you have a deployment workflow that runs `composer install` automatically on deploy.
      *
      * ::: warning
      * Don’t disable this setting until **all** environments have been updated to Craft 3.1.0 or later.
@@ -1005,20 +1004,11 @@ class GeneralConfig extends BaseObject
      */
     public $useFileLocks;
     /**
-     * @var bool Whether the project config should be saved out to `config/project.yaml`.
-     *
-     * If set to `true`, a hard copy of your system’s project config will be saved in `config/project.yaml`,
-     * and any changes to `config/project.yaml` will be applied back to the system, making it possible for
-     * multiple environments to share the same project config despite having separate databases.
-     *
-     * ::: warning
-     * Make sure you’ve read the entire [Project Config](https://docs.craftcms.com/v3/project-config.html)
-     * documentation, and carefully follow the “Enabling the Project Config File” steps when enabling this setting.
-     * :::
-     *
+     * @var bool Whether the project config should be saved to the `config/` folder.
      * @since 3.1.0
+     * @deprecated since 3.5.0. Craft now always saves the project config out to the `config/` folder.
      */
-    public $useProjectConfigFile = false;
+    public $useProjectConfigFile = true;
     /**
      * @var mixed The amount of time a user verification code can be used before expiring.
      *
@@ -1176,6 +1166,9 @@ class GeneralConfig extends BaseObject
         if ($this->suppressTemplateErrors) {
             Craft::$app->getDeprecator()->log('suppressTemplateErrors', "The suppressTemplateErrors config setting has been deprecated because it relies on a deprecated Twig feature.");
         }
+
+        // Always use project config files
+        $this->useProjectConfigFile = true;
     }
 
     /**

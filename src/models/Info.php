@@ -39,11 +39,6 @@ class Info extends Model
     public $maintenance = false;
 
     /**
-     * @var string JSON array of configuration map of UIDs to location in configuration
-     */
-    public $configMap = '';
-
-    /**
      * @var string|null Uid
      */
     public $uid;

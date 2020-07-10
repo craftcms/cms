@@ -678,6 +678,7 @@ class Application extends \yii\web\Application
             if (
                 $firstSegment === 'updater' ||
                 $firstSegment === 'config-sync' ||
+                $firstSegment === 'project-config' ||
                 $actionSegments === ['app', 'migrate'] ||
                 $actionSegments === ['pluginstore', 'install', 'migrate']
             ) {

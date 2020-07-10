@@ -5,6 +5,7 @@
 > {warning} The control panel now requires browsers that support JavaScript modules (Firefox 67+, Chrome 63+, Safari 11.1+, and Edge 79+).
 
 ### Added
+- Added the Project Config utility, which can be used to perform project config actions, and view a dump of the stored project config. ([#4371](https://github.com/craftcms/cms/issues/4371))
 - Added the “Use shapes to represent statuses” user preference. ([#3293](https://github.com/craftcms/cms/issues/3293))
 - Added the “Underline links” user preference. ([#6153](https://github.com/craftcms/cms/issues/6153))
 - Added the “Suspend by default” user registration setting. ([#5830](https://github.com/craftcms/cms/issues/5830))
@@ -96,6 +97,7 @@
 - Added `craft\console\controllers\MigrateController::EVENT_REGISTER_MIGRATOR`.
 - Added `craft\controllers\AppController::actionBrokenImage()`.
 - Added `craft\controllers\BaseEntriesController::enforceSitePermissions()`.
+- Added `craft\controllers\UtilitiesController::actionProjectConfigPerformAction()`.
 - Added `craft\db\MigrationManager::TRACK_CONTENT`.
 - Added `craft\db\MigrationManager::TRACK_CRAFT`.
 - Added `craft\elements\actions\CopyUrl`.
@@ -204,6 +206,7 @@
 - Added `craft\helpers\Json::isJsonObject()`.
 - Added `craft\helpers\MailerHelper::normalizeEmails()`.
 - Added `craft\helpers\MailerHelper::settingsReport()`.
+- Added `craft\helpers\ProjectConfig::splitConfigIntoComponents()`.
 - Added `craft\helpers\Queue`.
 - Added `craft\models\Section::PROPAGATION_METHOD_CUSTOM`.
 - Added `craft\models\Site::$enabled`.
@@ -227,8 +230,10 @@
 - Added `craft\services\Fields::getLayoutsByElementType()`.
 - Added `craft\services\Gql::getAllSchemaComponents()`.
 - Added `craft\services\Images::getSupportsWebP()`. ([#5853](https://github.com/craftcms/cms/issues/5853))
-- Added `craft\services\ProjectConfig::$filename`. ([#5982](https://github.com/craftcms/cms/issues/5982))
+- Added `craft\services\Path::getProjectConfigPath()`.
+- Added `craft\services\ProjectConfig::$folderName`. ([#5982](https://github.com/craftcms/cms/issues/5982))
 - Added `craft\test\mockclasses\elements\MockElementQuery`.
+- Added `craft\utilities\ProjectConfig`.
 - Added `craft\web\AssetBundle\ContentWindowAsset`.
 - Added `craft\web\AssetBundle\IframeResizerAsset`.
 - Added `craft\web\Controller::setFailFlash()`.
@@ -252,6 +257,7 @@
 - Added the [iFrame Resizer](http://davidjbradshaw.github.io/iframe-resizer/) library.
 
 ### Changed
+- Craft now stores project config files in a new `config/project/` folder, regardless of whether the (deprecated) `useProjectConfigFile` config setting is enabled, and syncing new project config file changes is now optional.
 - User registration forms in the control panel now give users the option to send an activation email, even if email verification isn’t required. ([#5836](https://github.com/craftcms/cms/issues/5836))
 - Activation emails are now sent automatically on public registration if the `deferPublicRegistrationPassword` config setting is enabled, even if email verification isn’t required. ([#5836](https://github.com/craftcms/cms/issues/5836))
 - Craft now remembers the selected site across global sets and element indexes. ([#2779](https://github.com/craftcms/cms/issues/2779))
@@ -276,6 +282,7 @@
 - The `pathParam` config setting can now be set to `null`. ([#5676](https://github.com/craftcms/cms/issues/5676))
 - If the `baseCpUrl` config setting is set, Craft will no longer treat any other base URLs as control panel requests, even if they contain the correct trigger segment. ([#5860](https://github.com/craftcms/cms/issues/5860))
 - The `mailer/test` command now only supports testing the current email settings.
+- The `project-config/sync` command has been renamed to `project-config/apply`.
 - `migrate` commands now have a `--track` option, which can be set to `craft`, `content`, or a custom migration track name.
 - Reference tags can now provide a fallback value to be used if the reference can’t be resolved. ([#5589](https://github.com/craftcms/cms/issues/5589))
 - It’s no longer necessary to append the `|raw` filter after the `|namespace` filter.
@@ -320,10 +327,13 @@
 - Control panel templates can now set a `formActions` variable, which registers alternative Save menu actions, optionally with associated keyboard shortcuts.
 - The `Craft.cp.submitPrimaryForm()` method now accepts an `options` argument for customizing the form submit.
 - Updated Composer to 1.10.5. ([#5925](https://github.com/craftcms/cms/pull/5925))
+- Updated PrismJS to 1.20.0.
 - Updated voku/stringy to ^6.2.2. ([#5989](https://github.com/craftcms/cms/issues/5989))
 
 ### Deprecated
+- Deprecated the `project-config/sync` command. `project-config/apply` should be used instead.
 - Deprecated the `useCompressedJs` config setting.
+- Deprecated the `useProjectConfigFile` config setting.
 - Deprecated the `install/plugin` command. `plugin/install` should be used instead.
 - Deprecated the `|filterByValue` Twig filter. `|where` should be used instead.
 - Deprecated the `|ucwords` Twig filter. `|title` should be used instead.
@@ -341,7 +351,6 @@
 - Deprecated `craft\queue\jobs\DeleteStaleTemplateCaches`.
 - Deprecated `craft\services\ElementIndexes::getAvailableTableFields()`. `getSourceTableAttributes()` should be used instead.
 - Deprecated `craft\services\Gql::getAllPermissions()`. `craft\services\Gql::getAllSchemaComponents()` should be used instead.
-- Deprecated `craft\services\ProjectConfig::CONFIG_FILENAME`. `$filename` should be used instead.
 - Deprecated `craft\services\TemplateCaches::deleteAllCaches()`. `craft\services\Elements::invalidateAllCaches()` should be used instead.
 - Deprecated `craft\services\TemplateCaches::deleteCacheById()`.
 - Deprecated `craft\services\TemplateCaches::deleteCachesByElement()`. `craft\services\Elements::invalidateCachesForElement()` should be used instead.
@@ -363,11 +372,13 @@
 ### Removed
 - Removed the “Template caches” option from the Clear Caches tool and `clear-caches` command.
 - Removed the [Interactive Shell Extension for Yii 2](https://github.com/yiisoft/yii2-shell), as it’s now a dev dependency of the `craftcms/craft` project instead. ([#5783](https://github.com/craftcms/cms/issues/5783))
+- Removed support for the `import` directive in project config files.
 - Removed the `cacheElementQueries` config setting.
 - Removed `craft\controllers\UtilitiesController::actionDbBackupPerformAction()`.
 - Removed `craft\db\MigrationManager::TYPE_APP`.
 - Removed `craft\db\MigrationManager::TYPE_CONTENT`.
 - Removed `craft\db\MigrationManager::TYPE_PLUGIN`.
+- Removed `craft\models\Info::$configMap`.
 - Removed `craft\records\Migration`.
 - Removed `craft\records\Plugin::getMigrations()`.
 

@@ -28,16 +28,13 @@ use craft\queue\Queue;
 use craft\queue\QueueInterface;
 use craft\services\AssetTransforms;
 use craft\services\Categories;
-use craft\services\Elements;
 use craft\services\Fields;
 use craft\services\Globals;
 use craft\services\Gql;
 use craft\services\Matrix;
-use craft\services\ProjectConfig;
 use craft\services\Sections;
 use craft\services\Security;
 use craft\services\Sites;
-use craft\services\Structures;
 use craft\services\Tags;
 use craft\services\UserGroups;
 use craft\services\Users;
@@ -653,7 +650,7 @@ trait ApplicationTrait
 
             $row['version'] = $version;
         }
-        unset($row['edition'], $row['name'], $row['timezone'], $row['on'], $row['siteName'], $row['siteUrl'], $row['build'], $row['releaseDate'], $row['track'], $row['config']);
+        unset($row['edition'], $row['name'], $row['timezone'], $row['on'], $row['siteName'], $row['siteUrl'], $row['build'], $row['releaseDate'], $row['track'], $row['config'], $row['configMap']);
 
         return $this->_info = new Info($row);
     }
@@ -708,7 +705,7 @@ trait ApplicationTrait
         /** @var WebApplication|ConsoleApplication $this */
 
         if ($attributeNames === null) {
-            $attributeNames = ['version', 'schemaVersion', 'maintenance', 'configMap', 'fieldVersion'];
+            $attributeNames = ['version', 'schemaVersion', 'maintenance', 'fieldVersion'];
         }
 
         if (!$info->validate($attributeNames)) {
@@ -725,10 +722,6 @@ trait ApplicationTrait
         // TODO: Remove this after the next breakpoint
         if (version_compare($info['version'], '3.0', '<')) {
             unset($attributes['fieldVersion']);
-        }
-
-        if (isset($attributes['configMap'])) {
-            $attributes['configMap'] = Db::prepareValueForDb($attributes['configMap']);
         }
 
         $infoRowExists = (new Query())
@@ -1603,9 +1596,9 @@ trait ApplicationTrait
 
         // Entry types
         $projectConfigService
-            ->onAdd(Sections::CONFIG_SECTIONS_KEY . '.{uid}.' . Sections::CONFIG_ENTRYTYPES_KEY . '.{uid}', [$sectionsService, 'handleChangedEntryType'])
-            ->onUpdate(Sections::CONFIG_SECTIONS_KEY . '.{uid}.' . Sections::CONFIG_ENTRYTYPES_KEY . '.{uid}', [$sectionsService, 'handleChangedEntryType'])
-            ->onRemove(Sections::CONFIG_SECTIONS_KEY . '.{uid}.' . Sections::CONFIG_ENTRYTYPES_KEY . '.{uid}', [$sectionsService, 'handleDeletedEntryType']);
+            ->onAdd(Sections::CONFIG_ENTRYTYPES_KEY . '.{uid}', [$sectionsService, 'handleChangedEntryType'])
+            ->onUpdate(Sections::CONFIG_ENTRYTYPES_KEY . '.{uid}', [$sectionsService, 'handleChangedEntryType'])
+            ->onRemove(Sections::CONFIG_ENTRYTYPES_KEY . '.{uid}', [$sectionsService, 'handleDeletedEntryType']);
         Event::on(Fields::class, Fields::EVENT_AFTER_DELETE_FIELD, [$sectionsService, 'pruneDeletedField']);
 
         // GraphQL schemas
