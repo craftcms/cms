@@ -153,6 +153,9 @@ class Cp
             $alerts[] = Craft::t('app', 'Your `config/project-config` folder isn’t writable.');
         }
 
+        // Checking the folder writability changed the date-modified, so re-cache it.
+        Craft::$app->getProjectConfig()->updateParsedConfigTimes();
+
         // Give plugins a chance to add their own alerts
         $event = new RegisterCpAlertsEvent();
         Event::trigger(self::class, self::EVENT_REGISTER_ALERTS, $event);
