@@ -165,16 +165,16 @@ class UtilitiesController extends Controller
                 $forceUpdate = $projectConfig->forceUpdate;
                 $projectConfig->forceUpdate = true;
                 $projectConfig->applyYamlChanges();
-                $this->setSuccessFlash(Craft::t('app', 'Project config changes force-applied successfully'));
+                $this->setSuccessFlash(Craft::t('app', 'Project config changes applied successfully.'));
                 $projectConfig->forceUpdate = $forceUpdate;
                 break;
             case 'apply':
                 $projectConfig->applyYamlChanges();
-                $this->setSuccessFlash(Craft::t('app', 'Project config changes applied successfully'));
+                $this->setSuccessFlash(Craft::t('app', 'Project config changes applied successfully.'));
                 break;
             case 'rebuild':
                 $projectConfig->rebuild();
-                $this->setSuccessFlash(Craft::t('app', 'Project config rebuilt successfully'));
+                $this->setSuccessFlash(Craft::t('app', 'Project config rebuilt successfully.'));
                 break;
         }
 
