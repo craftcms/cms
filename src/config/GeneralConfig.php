@@ -1004,19 +1004,9 @@ class GeneralConfig extends BaseObject
      */
     public $useFileLocks;
     /**
-     * @var bool Whether the project config should be saved out to `config/project.yaml`.
-     *
-     * If set to `true`, a hard copy of your system’s project config will be saved in `config/project.yaml`,
-     * and any changes to `config/project.yaml` will be applied back to the system, making it possible for
-     * multiple environments to share the same project config despite having separate databases.
-     *
-     * ::: warning
-     * Make sure you’ve read the entire [Project Config](https://docs.craftcms.com/v3/project-config.html)
-     * documentation, and carefully follow the “Enabling the Project Config File” steps when enabling this setting.
-     * :::
-     *
-     * @deprecated since 3.5.0. Craft now always saves project config out to the `config/project-config` folder.
+     * @var bool Whether the project config should be saved to the `config/` folder.
      * @since 3.1.0
+     * @deprecated since 3.5.0. Craft now always saves the project config out to the `config/` folder.
      */
     public $useProjectConfigFile = true;
     /**

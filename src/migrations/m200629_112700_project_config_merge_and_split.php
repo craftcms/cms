@@ -9,6 +9,7 @@ use craft\db\Table;
 use craft\helpers\FileHelper;
 use craft\helpers\Path as PathHelper;
 use craft\helpers\ProjectConfig;
+use craft\services\ProjectConfig as ProjectConfigService;
 use craft\services\Sections;
 use craft\services\UserGroups;
 use Symfony\Component\Yaml\Yaml;
@@ -30,17 +31,17 @@ class m200629_112700_project_config_merge_and_split extends Migration
         if (version_compare($schemaVersion, '3.5.7', '<')) {
             echo '    > Creating the new project config component folder ... ';
             $pathService = Craft::$app->getPath();
-            $configComponentFolder = $pathService->getProjectConfigComponentsPath();
-            
+            $configComponentFolder = $pathService->getProjectConfigPath();
+
             if (!FileHelper::isWritable($configComponentFolder)) {
                 Craft::error('Could not ensure a writable path at ' . $configComponentFolder);
                 return false;
             }
 
             echo "done\n";
-                
+
             echo '    > Loading existing configuration ... ';
-            $baseFile = $pathService->getConfigPath() . DIRECTORY_SEPARATOR . $projectConfig->filename;
+            $baseFile = $pathService->getConfigPath() . DIRECTORY_SEPARATOR . ProjectConfigService::CONFIG_FILENAME;
             $configData = [];
             $previousFiles = [];
 
@@ -64,7 +65,7 @@ class m200629_112700_project_config_merge_and_split extends Migration
             $traverseFile($baseFile);
             echo "done\n";
 
-            $backupFile = pathinfo($projectConfig->filename, PATHINFO_FILENAME) . date('-Y-m-d-His') . '.yaml';
+            $backupFile = pathinfo(ProjectConfigService::CONFIG_FILENAME, PATHINFO_FILENAME) . date('-Y-m-d-His') . '.yaml';
             echo "    > Backing up the existing project config to $backupFile and moving to config backup folder ... ";
 
             $backupPath = $pathService->getConfigBackupPath() . DIRECTORY_SEPARATOR . $backupFile;
@@ -77,7 +78,7 @@ class m200629_112700_project_config_merge_and_split extends Migration
 
             echo "    > Writing components to the individual files ... ";
             foreach ($splitConfig as $filePath => $configData) {
-                FileHelper::writeToFile($pathService->getProjectConfigComponentsPath() . DIRECTORY_SEPARATOR . $filePath, Yaml::dump($configData, 20, 2));
+                FileHelper::writeToFile($pathService->getProjectConfigPath() . DIRECTORY_SEPARATOR . $filePath, Yaml::dump($configData, 20, 2));
             }
             echo "done\n";
 

@@ -229,8 +229,8 @@
 - Added `craft\services\Fields::getLayoutsByElementType()`.
 - Added `craft\services\Gql::getAllSchemaComponents()`.
 - Added `craft\services\Images::getSupportsWebP()`. ([#5853](https://github.com/craftcms/cms/issues/5853))
-- Added `craft\services\Path::getProjectConfigComponentsPath()`.
-- Added `craft\services\ProjectConfig::$filename`. ([#5982](https://github.com/craftcms/cms/issues/5982))
+- Added `craft\services\Path::getProjectConfigPath()`.
+- Added `craft\services\ProjectConfig::$folderName`. ([#5982](https://github.com/craftcms/cms/issues/5982))
 - Added `craft\test\mockclasses\elements\MockElementQuery`.
 - Added `craft\utilities\ProjectConfig`.
 - Added `craft\web\AssetBundle\ContentWindowAsset`.
@@ -348,7 +348,6 @@
 - Deprecated `craft\queue\jobs\DeleteStaleTemplateCaches`.
 - Deprecated `craft\services\ElementIndexes::getAvailableTableFields()`. `getSourceTableAttributes()` should be used instead.
 - Deprecated `craft\services\Gql::getAllPermissions()`. `craft\services\Gql::getAllSchemaComponents()` should be used instead.
-- Deprecated `craft\services\ProjectConfig::CONFIG_FILENAME`. `$filename` should be used instead.
 - Deprecated `craft\services\TemplateCaches::deleteAllCaches()`. `craft\services\Elements::invalidateAllCaches()` should be used instead.
 - Deprecated `craft\services\TemplateCaches::deleteCacheById()`.
 - Deprecated `craft\services\TemplateCaches::deleteCachesByElement()`. `craft\services\Elements::invalidateCachesForElement()` should be used instead.

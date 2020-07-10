@@ -329,7 +329,7 @@ class ProjectConfig
     {
         $projectConfigService = Craft::$app->getProjectConfig();
         $splitConfig = [
-            $projectConfigService->filename => []
+            ProjectConfigService::CONFIG_FILENAME => [],
         ];
 
         foreach ($config as $key => $configData) {
@@ -341,10 +341,10 @@ class ProjectConfig
                         $splitConfig[$key . '/' . $uid . '.yaml'] = $subConfig;
                     }
                 } else {
-                    $splitConfig[$projectConfigService->filename][$key] = $configData;
+                    $splitConfig[ProjectConfigService::CONFIG_FILENAME][$key] = $configData;
                 }
             } else {
-                $splitConfig[$projectConfigService->filename][$key] = $configData;
+                $splitConfig[ProjectConfigService::CONFIG_FILENAME][$key] = $configData;
             }
         }
 

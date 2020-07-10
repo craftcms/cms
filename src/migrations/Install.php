@@ -1048,7 +1048,7 @@ class Install extends Migration
 
                 // Compare existing Craft schema version with the one that is being applied.
                 if (!version_compare($craftSchemaVersion, $expectedSchemaVersion, '=')) {
-                    throw new InvalidConfigException("Craft is installed at the wrong schema version ({$craftSchemaVersion}, but $projectConfig->filename lists {$expectedSchemaVersion}).");
+                    throw new InvalidConfigException("Craft is installed at the wrong schema version ({$craftSchemaVersion}, but project.yaml lists {$expectedSchemaVersion}).");
                 }
 
                 // Make sure at least sites are processed
@@ -1061,8 +1061,8 @@ class Install extends Migration
                 Craft::$app->getErrorHandler()->logException($e);
 
                 // Rename project.yaml so we can create a new one
-                $backupFile = pathinfo($projectConfig->filename, PATHINFO_FILENAME) . date('-Y-m-d-His') . '.yaml';
-                echo "    > renaming $projectConfig->filename to $backupFile and moving to config backup folder ... ";
+                $backupFile = pathinfo(ProjectConfig::CONFIG_FILENAME, PATHINFO_FILENAME) . date('-Y-m-d-His') . '.yaml';
+                echo "    > renaming project.yaml to $backupFile and moving to config backup folder ... ";
                 rename($configFile, Craft::$app->getPath()->getConfigBackupPath() . '/' . $backupFile);
                 echo "done\n";
 
@@ -1141,7 +1141,7 @@ class Install extends Migration
             $expectedSchemaVersion = $projectConfig->get(Plugins::CONFIG_PLUGINS_KEY . '.' . $handle . '.schemaVersion', true);
 
             if ($plugin->schemaVersion && $expectedSchemaVersion && $plugin->schemaVersion != $expectedSchemaVersion) {
-                throw new InvalidPluginException($handle, "{$handle} is installed at the wrong schema version ({$plugin->schemaVersion}, but $projectConfig->filename lists {$expectedSchemaVersion}).");
+                throw new InvalidPluginException($handle, "{$handle} is installed at the wrong schema version ({$plugin->schemaVersion}, but project.yaml lists {$expectedSchemaVersion}).");
             }
         }
 

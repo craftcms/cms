@@ -54,7 +54,6 @@ class ProjectConfig extends Component
     /**
      * @var string Filename for base config file
      * @since 3.1.0
-     * @deprecated in 3.5.0. Use [[filename]] instead.
      */
     const CONFIG_FILENAME = 'project.yaml';
 
@@ -150,7 +149,7 @@ class ProjectConfig extends Component
     const EVENT_REMOVE_ITEM = 'removeItem';
 
     /**
-     * @event Event The event that is triggered after pending changes in `config/project.yaml` have been applied.
+     * @event Event The event that is triggered after pending project config file changes have been applied.
      */
     const EVENT_AFTER_APPLY_CHANGES = 'afterApplyChanges';
 
@@ -175,10 +174,10 @@ class ProjectConfig extends Component
     const EVENT_REBUILD = 'rebuild';
 
     /**
-     * @var string The filename to save the project config as.
+     * @var string The folder name to save the project config files in, within the `config/` folder.
      * @since 3.5.0
      */
-    public $filename = 'project.yaml';
+    public $folderName = 'project';
 
     /**
      * @var int The maximum number of project.yaml deltas to store in storage/config-backups/
@@ -382,7 +381,7 @@ class ProjectConfig extends Component
      * ```
      *
      * @param string|null $path The config item path, or `null` if the entire config should be returned
-     * @param bool $getFromYaml whether data should be fetched from `config/project.yaml` instead of the loaded config. Defaults to `false`.
+     * @param bool $getFromYaml whether data should be fetched from the project config files instead of the loaded config. Defaults to `false`.
      * @return mixed The config item value
      */
     public function get(string $path = null, $getFromYaml = false)
@@ -607,7 +606,7 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Processes changes in `config/project.yaml` for a given path.
+     * Processes changes in the project config files for a given config item path.
      *
      * @param string $path The config item path
      * @param bool $triggerUpdate is set to true and no changes are detected, an update event will be triggered, anyway.
@@ -1210,7 +1209,7 @@ class ProjectConfig extends Component
      */
     private function _getConfigFileModifiedTime(): int
     {
-        return FileHelper::lastModifiedTime(Craft::$app->getPath()->getProjectConfigComponentsPath());
+        return FileHelper::lastModifiedTime(Craft::$app->getPath()->getProjectConfigPath());
     }
 
     /**
@@ -1228,7 +1227,7 @@ class ProjectConfig extends Component
         $generatedConfig = [];
 
         foreach ($fileList as $file) {
-            $filePath = Craft::$app->getPath()->getProjectConfigComponentsPath() . DIRECTORY_SEPARATOR . $file;
+            $filePath = Craft::$app->getPath()->getProjectConfigPath() . DIRECTORY_SEPARATOR . $file;
             $yamlConfig = Yaml::parse(file_get_contents($filePath));
 
             if (StringHelper::countSubstrings($file, '/') > 0) {
@@ -1252,7 +1251,7 @@ class ProjectConfig extends Component
     /**
      * Return a nested array for pending config changes
      *
-     * @param array $configData config data to use. If null, config is fetched from `config/project.yaml`
+     * @param array $configData config data to use. If null, the config is fetched from the project config files.
      * @return array
      */
     private function _getPendingChanges(array $configData = null): array
@@ -1359,7 +1358,7 @@ class ProjectConfig extends Component
         }
 
         $pathService = Craft::$app->getPath();
-        $basePath = $pathService->getProjectConfigComponentsPath() . DIRECTORY_SEPARATOR;
+        $basePath = $pathService->getProjectConfigPath() . DIRECTORY_SEPARATOR;
 
         $folders = glob($basePath . '*', GLOB_ONLYDIR + GLOB_MARK) ?: [];
         $folders[] = $basePath;
@@ -1523,7 +1522,7 @@ class ProjectConfig extends Component
     private function _updateYamlFiles()
     {
         $config = ProjectConfigHelper::splitConfigIntoComponents($this->_appliedConfig);
-        $bsePath = Craft::$app->getPath()->getProjectConfigComponentsPath() . DIRECTORY_SEPARATOR;
+        $bsePath = Craft::$app->getPath()->getProjectConfigPath() . DIRECTORY_SEPARATOR;
 
         foreach ($config as $relativeFile => $configData) {
             $configData = ProjectConfigHelper::cleanupConfig($configData);

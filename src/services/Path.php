@@ -63,27 +63,28 @@ class Path extends Component
     }
 
     /**
-     * Returns the path to `config/project.yaml`.
+     * Returns the path to `config/project/project.yaml`.
      *
      * @return string
      * @since 3.1.2
+     * @deprecated in 3.5.0
      */
     public function getProjectConfigFilePath(): string
     {
-        return $this->getProjectConfigComponentsPath() . DIRECTORY_SEPARATOR . Craft::$app->getProjectConfig()->filename;
+        return $this->getProjectConfigPath() . DIRECTORY_SEPARATOR . ProjectConfig::CONFIG_FILENAME;
     }
 
     /**
-     * Returns the path to `config/project-config/ directory`.
+     * Returns the path to `config/project/` directory.
      *
      * @param bool $create Whether the directory should be created if it doesn't exist
      * @return string
      * @throws Exception
      * @since 3.5.0
      */
-    public function getProjectConfigComponentsPath(bool $create = true): string
+    public function getProjectConfigPath(bool $create = true): string
     {
-        $path = $this->getConfigPath() . DIRECTORY_SEPARATOR . 'project-config';
+        $path = $this->getConfigPath() . DIRECTORY_SEPARATOR . Craft::$app->getProjectConfig()->folderName;
 
         if ($create) {
             FileHelper::createDirectory($path);
