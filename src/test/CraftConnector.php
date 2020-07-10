@@ -27,9 +27,9 @@ use yii\web\Application;
 class CraftConnector extends Yii2
 {
     /**
-     * @var array|MessageInterface
+     * @var array
      */
-    protected $emails;
+    protected $emails = [];
 
     /**
      * @inheritdoc
