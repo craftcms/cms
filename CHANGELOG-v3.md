@@ -36,6 +36,7 @@
 
 ### Changed
 - Entry draft forms no longer have a primary action, and the <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>S</kbd> keyboard shortcut now forces a resave of the draft, rather than publishing it. ([#6199](https://github.com/craftcms/cms/issues/6199))
+- The `project-config/sync` command has been renamed to `project-config/apply`.
 - All built-in success/fail flash messages are now customizable by passing a hashed `successMessage`/`failMessage` param with the request. ([#6192](https://github.com/craftcms/cms/issues/6192))
 - Craft now uses `yii\mutex\MysqlMutex` or `yii\mutex\PgsqlMutex` for mutex locking by default.
 - It’s now possible to use aliases when eager-loading elements via GraphQL. ([#5481](https://github.com/craftcms/cms/issues/5481))
@@ -47,6 +48,7 @@
 - Updated PrismJS to 1.20.0.
 
 ### Deprecated
+- Deprecated the `project-config/sync` command. `project-config/apply` should be used instead.
 - Deprecated the `useProjectConfigFile` config setting.
 - Deprecated `craft\elements\db\ElementQuery::$enabledForSite`.
 - Deprecated `craft\elements\db\ElementQuery::enabledForSite()`.

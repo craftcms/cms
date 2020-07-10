@@ -29,11 +29,25 @@ class ProjectConfigController extends Controller
     public $force = false;
 
     /**
+     * @inheritdoc
+     */
+    public function options($actionID)
+    {
+        $options = parent::options($actionID);
+
+        if (in_array($actionID, ['apply', 'sync'], true)) {
+            $options[] = 'force';
+        }
+
+        return $options;
+    }
+
+    /**
      * Applies project config file changes.
      *
      * @return int
      */
-    public function actionSync(): int
+    public function actionApply(): int
     {
         $updatesService = Craft::$app->getUpdates();
 
@@ -91,6 +105,18 @@ class ProjectConfigController extends Controller
 
         $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
         return ExitCode::OK;
+    }
+
+    /**
+     * Alias for `apply`.
+     *
+     * @return int
+     * @deprecated in 3.5.0. Use [[actionApply()]] instead.
+     */
+    public function actionSync(): int
+    {
+        $this->stderr('project-config/sync has been renamed to project-config/apply. Running that instead...' . PHP_EOL, Console::FG_RED);
+        return $this->runAction('apply');
     }
 
     /**
@@ -185,19 +211,5 @@ class ProjectConfigController extends Controller
         }
 
         return true;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function options($actionID)
-    {
-        $options = parent::options($actionID);
-
-        if ($actionID == 'sync') {
-            $options[] = 'force';
-        }
-
-        return $options;
     }
 }
