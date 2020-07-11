@@ -78,6 +78,7 @@
 - Added `craft\base\ElementInterface::getTitleTranslationDescription()`.
 - Added `craft\base\ElementInterface::getTitleTranslationKey()`.
 - Added `craft\base\ElementInterface::gqlMutationNameByContext()`.
+- Added `craft\base\ElementInterface::isFieldEmpty()`.
 - Added `craft\base\ElementTrait::$elementSiteId`.
 - Added `craft\base\Field::EVENT_DEFINE_INPUT_HTML`. ([#5867](https://github.com/craftcms/cms/issues/5867))
 - Added `craft\base\Field::EVENT_DEFINE_KEYWORDS`. ([#6028](https://github.com/craftcms/cms/issues/6028))

@@ -1710,10 +1710,7 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
-     * Returns whether a field is empty.
-     *
-     * @param string $handle
-     * @return bool
+     * @inheritdoc
      */
     public function isFieldEmpty(string $handle): bool
     {

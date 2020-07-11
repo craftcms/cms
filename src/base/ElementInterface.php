@@ -954,6 +954,14 @@ interface ElementInterface extends ComponentInterface
     public function getTitleTranslationKey(): string;
 
     /**
+     * Returns whether a field is empty.
+     *
+     * @param string $handle
+     * @return bool
+     */
+    public function isFieldEmpty(string $handle): bool;
+
+    /**
      * Returns the element’s normalized custom field values, indexed by their handles.
      *
      * @param string[]|null $fieldHandles The list of field handles whose values

@@ -14,6 +14,7 @@
 - Added `craft\base\ElementInterface::getIsTitleTranslatable()`.
 - Added `craft\base\ElementInterface::getTitleTranslationDescription()`.
 - Added `craft\base\ElementInterface::getTitleTranslationKey()`.
+- Added `craft\base\ElementInterface::isFieldEmpty()`.
 - Added `craft\base\Model::EVENT_DEFINE_EXTRA_FIELDS`.
 - Added `craft\base\Model::EVENT_DEFINE_FIELDS`.
 - Added `craft\controllers\UtilitiesController::actionProjectConfigPerformAction()`.
