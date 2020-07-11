@@ -17,7 +17,7 @@ class m200619_215137_title_translation_method extends Migration
      */
     public function safeUp()
     {
-        $this->addColumn(Table::ENTRYTYPES, 'titleTranslationMethod', $this->string()->notNull()->defaultValue(Field::TRANSLATION_METHOD_SITE)->after('titleInstructions'));
+        $this->addColumn(Table::ENTRYTYPES, 'titleTranslationMethod', $this->string()->notNull()->defaultValue(Field::TRANSLATION_METHOD_SITE)->after('hasTitleField'));
         $this->addColumn(Table::ENTRYTYPES, 'titleTranslationKeyFormat', $this->text()->after('titleTranslationMethod'));
     }
 

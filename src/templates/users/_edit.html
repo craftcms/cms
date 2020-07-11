@@ -68,7 +68,7 @@
         {{ redirectInput(CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users' : 'dashboard') }}
         {{ hiddenInputs }}
 
-        <div id="account">
+        <div id="account" class="flex-fields">
             {% include "users/_accountfields" %}
 
             {% if not isNewUser %}
@@ -137,18 +137,10 @@
             {% endif %}
         </div>
 
-        {% for tab in user.getFieldLayout().getTabs() %}
-            <div id="profile-{{ tab.getHtmlId() }}" class="hidden">
-                {% include "_includes/fields" with {
-                    fields:  tab.getFields(),
-                    element: user,
-                    registerDeltas: true,
-                } only %}
-            </div>
-        {% endfor %}
+        {{ fieldsHtml|raw }}
 
         {% if CraftEdition == CraftPro and (currentUser.can('assignUserGroups') or currentUser.can('assignUserPermissions')) %}
-            <div id="perms" class="hidden">
+            <div id="perms" class="flex-fields hidden">
 
                 {% if CraftEdition == CraftPro and currentUser.can('assignUserGroups') %}
                     <h2>{{ "User Groups"|t('app') }}</h2>
@@ -209,7 +201,7 @@
         {% endif %}
 
         {% if user.getIsCurrent() %}
-            <div id="prefs" class="hidden">
+            <div id="prefs" class="flex-fields hidden">
                 {% embed '_includes/forms/field' with {
                     id: 'language',
                     label: "Language"|t('app'),

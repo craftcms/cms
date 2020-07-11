@@ -31,16 +31,9 @@
     {{ hiddenInput('siteId', globalSet.siteId) }}
     {{ csrfInput() }}
 
-    {% if globalSet.getFieldLayout().getFields() | length %}
-        <div>
-            {% for tab in globalSet.getFieldLayout().getTabs() %}
-                <div id="{{ tab.getHtmlId() }}"{% if not loop.first %} class="hidden"{% endif %}>
-                    {% include "_includes/fields" with {
-                        fields:  tab.getFields(),
-                        element: globalSet
-                    } only %}
-                </div>
-            {% endfor %}
+    {% if globalSet.getFieldLayout().getTabs()|length %}
+        <div id="fields">
+            {{ fieldsHtml|raw }}
         </div>
     {% else %}
         {{ "This global set doesn’t have any fields assigned to it in its field layout."|t('app') }}

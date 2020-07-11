@@ -542,12 +542,9 @@ class Sections extends Component
 
                 if ($section->type === Section::TYPE_SINGLE) {
                     $entryType->hasTitleField = false;
-                    $entryType->titleLabel = null;
-                    $entryType->titleInstructions = null;
                     $entryType->titleFormat = '{section.name|raw}';
                 } else {
                     $entryType->hasTitleField = true;
-                    $entryType->titleLabel = Craft::t('app', 'Title');
                     $entryType->titleFormat = null;
                 }
 
@@ -1162,8 +1159,6 @@ class Sections extends Component
             'name' => $entryType->name,
             'handle' => $entryType->handle,
             'hasTitleField' => (bool)$entryType->hasTitleField,
-            'titleLabel' => $entryType->titleLabel,
-            'titleInstructions' => $entryType->titleInstructions,
             'titleTranslationMethod' => $entryType->titleTranslationMethod,
             'titleTranslationKeyFormat' => $entryType->titleTranslationKeyFormat,
             'titleFormat' => $entryType->titleFormat,
@@ -1226,8 +1221,6 @@ class Sections extends Component
             $entryTypeRecord->name = $data['name'];
             $entryTypeRecord->handle = $data['handle'];
             $entryTypeRecord->hasTitleField = $data['hasTitleField'];
-            $entryTypeRecord->titleLabel = $data['titleLabel'];
-            $entryTypeRecord->titleInstructions = $data['titleInstructions'] ?? null;
             $entryTypeRecord->titleTranslationMethod = $data['titleTranslationMethod'] ?? '';
             $entryTypeRecord->titleTranslationKeyFormat = $data['titleTranslationKeyFormat'] ?? null;
             $entryTypeRecord->titleFormat = $data['titleFormat'];
@@ -1657,7 +1650,6 @@ class Sections extends Component
                 'name',
                 'handle',
                 'hasTitleField',
-                'titleLabel',
                 'titleFormat',
                 'uid',
             ])
@@ -1670,7 +1662,6 @@ class Sections extends Component
         }
         if (version_compare($schemaVersion, '3.5.4', '>=')) {
             $query->addSelect([
-                'titleInstructions',
                 'titleTranslationMethod',
                 'titleTranslationKeyFormat',
             ]);

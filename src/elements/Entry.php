@@ -737,21 +737,6 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function attributeLabels()
-    {
-        $labels = parent::attributeLabels();
-
-        // Use the entry type's title label
-        if ($titleLabel = $this->getType()->titleLabel) {
-            $labels['title'] = Craft::t('site', $titleLabel);
-        }
-
-        return $labels;
-    }
-
-    /**
-     * @inheritdoc
-     */
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
@@ -1297,16 +1282,6 @@ $('#{$typeInputId}').on('change', function(ev) {
 EOD;
                 $view->registerJs($js);
             }
-        }
-
-        // Get the entry type
-        $entryType = $this->getType();
-
-        // Show the Title field?
-        if ($entryType->hasTitleField) {
-            $html .= $view->renderTemplate('entries/_titlefield', [
-                'entry' => $this
-            ]);
         }
 
         // Render the custom fields

@@ -1838,7 +1838,6 @@ class ProjectConfig extends Component
                 'entrytypes.name',
                 'entrytypes.handle',
                 'entrytypes.hasTitleField',
-                'entrytypes.titleLabel',
                 'entrytypes.titleFormat',
                 'entrytypes.sortOrder',
                 'entrytypes.uid',

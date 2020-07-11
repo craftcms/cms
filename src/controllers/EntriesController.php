@@ -9,8 +9,6 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\Element;
-use craft\db\Query;
-use craft\db\Table;
 use craft\elements\Entry;
 use craft\elements\User;
 use craft\errors\InvalidElementException;
@@ -278,17 +276,17 @@ class EntriesController extends BaseEntriesController
         }
 
         $view = $this->getView();
-        $tabsHtml = !empty($variables['tabs']) ? $view->renderTemplate('_includes/tabs', $variables) : null;
-        $fieldsHtml = $view->renderTemplate('entries/_fields', $variables);
-        $headHtml = $view->getHeadHtml();
-        $bodyHtml = $view->getBodyHtml();
+        $form = $variables['entryType']->getFieldLayout()->createForm($variables['entry']);
+        $tabs = $form->getTabMenu();
 
-        return $this->asJson(compact(
-            'tabsHtml',
-            'fieldsHtml',
-            'headHtml',
-            'bodyHtml'
-        ));
+        return $this->asJson([
+            'tabsHtml' => count($tabs) > 1 ? $view->renderTemplate('_includes/tabs', [
+                'tabs' => $tabs,
+            ]) : null,
+            'fieldsHtml' => $form->render(),
+            'headHtml' => $view->getHeadHtml(),
+            'bodyHtml' => $view->getBodyHtml(),
+        ]);
     }
 
     /**
@@ -619,30 +617,6 @@ class EntriesController extends BaseEntriesController
 
         // Prevent the last entry type's field layout from being used
         $variables['entry']->fieldLayoutId = null;
-
-        // Define the content tabs
-        // ---------------------------------------------------------------------
-
-        $variables['tabs'] = [];
-
-        foreach ($variables['entryType']->getFieldLayout()->getTabs() as $index => $tab) {
-            // Do any of the fields on this tab have errors?
-            $hasErrors = false;
-
-            if ($variables['entry']->hasErrors()) {
-                foreach ($tab->getFields() as $field) {
-                    if ($hasErrors = $variables['entry']->hasErrors($field->handle . '.*')) {
-                        break;
-                    }
-                }
-            }
-
-            $variables['tabs'][] = [
-                'label' => Craft::t('site', $tab->name),
-                'url' => '#' . $tab->getHtmlId(),
-                'class' => $hasErrors ? 'error' : null
-            ];
-        }
 
         return null;
     }

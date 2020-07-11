@@ -106,17 +106,6 @@ class CategoriesController extends Controller
             $variables['title'] = Craft::t('app', 'Create a new category group');
         }
 
-        $variables['tabs'] = [
-            'settings' => [
-                'label' => Craft::t('app', 'Settings'),
-                'url' => '#categorygroup-settings'
-            ],
-            'fieldLayout' => [
-                'label' => Craft::t('app', 'Field Layout'),
-                'url' => '#categorygroup-fieldlayout'
-            ]
-        ];
-
         $variables['groupId'] = $groupId;
         $variables['categoryGroup'] = $categoryGroup;
 
@@ -704,29 +693,10 @@ class CategoriesController extends Controller
             }
         }
 
-        // Define the content tabs
-        // ---------------------------------------------------------------------
-
-        $variables['tabs'] = [];
-
-        foreach ($variables['group']->getFieldLayout()->getTabs() as $index => $tab) {
-            // Do any of the fields on this tab have errors?
-            $hasErrors = false;
-
-            if ($variables['category']->hasErrors()) {
-                foreach ($tab->getFields() as $field) {
-                    if ($hasErrors = $variables['category']->hasErrors($field->handle . '.*')) {
-                        break;
-                    }
-                }
-            }
-
-            $variables['tabs'][] = [
-                'label' => Craft::t('site', $tab->name),
-                'url' => '#' . $tab->getHtmlId(),
-                'class' => $hasErrors ? 'error' : null
-            ];
-        }
+        // Prep the form tabs & content
+        $form = $variables['group']->getFieldLayout()->createForm($variables['category']);
+        $variables['tabs'] = $form->getTabMenu();
+        $variables['fieldsHtml'] = $form->render();
     }
 
     /**

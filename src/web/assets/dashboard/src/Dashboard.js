@@ -529,7 +529,43 @@
                 );
 
                 // Initialize the colspan picker
-                this.colspanPicker = new Craft.WidgetColspanPicker(this, $row.find('> td.widgetmanagerhud-col-colspan-picker'));
+                this.colspanPicker = new Craft.SlidePicker(this.getColspan(), {
+                    min: 1,
+                    max: () => {
+                        return window.dashboard.grid.totalCols;
+                    },
+                    step: 1,
+                    valueLabel: colspan => {
+                        return Craft.t('app', '{num, number} {num, plural, =1{column} other{columns}}', {
+                            num: colspan,
+                        });
+                    },
+                    onChange: colspan => {
+                        // Update the widget and grid
+                        this.setColspan(colspan);
+                        window.dashboard.grid.refreshCols(true);
+
+                        // Save the change
+                        let data = {
+                            id: this.id,
+                            colspan: colspan
+                        };
+
+                        Craft.postActionRequest('dashboard/change-widget-colspan', data, (response, textStatus) => {
+                            if (textStatus === 'success' && response.success) {
+                                Craft.cp.displayNotice(Craft.t('app', 'Widget saved.'));
+                            }
+                            else {
+                                Craft.cp.displayError(Craft.t('app', 'Couldn’t save widget.'));
+                            }
+                        });
+                    }
+                });
+
+                this.colspanPicker.$container.appendTo($row.find('> td.widgetmanagerhud-col-colspan-picker'));
+                window.dashboard.grid.on('refreshCols', () => {
+                    this.colspanPicker.refresh();
+                });
 
                 return $row;
             },
@@ -549,125 +585,6 @@
                     window.dashboard.grid.removeItems(this.$gridItem);
                     this.$gridItem.remove();
                 }, this), 200);
-            }
-        });
-
-
-    /**
-     * Widget colspan picker class
-     */
-    Craft.WidgetColspanPicker = Garnish.Base.extend(
-        {
-            widget: null,
-            maxColspan: null,
-
-            $container: null,
-            $colspanButtons: null,
-
-            totalGridCols: null,
-
-            init: function(widget, $td) {
-                this.widget = widget;
-                this.$container = $('<div class="colspan-picker"/>').appendTo($td);
-                this.maxColspan = this.widget.getTypeInfo('maxColspan');
-
-                this.totalGridCols = window.dashboard.grid.totalCols;
-                this.createColspanButtons();
-
-                window.dashboard.grid.on('refreshCols', $.proxy(this, 'handleGridRefresh'));
-
-                this.addListener(this.$container, 'mouseover', function(ev) {
-                    $(ev.currentTarget).addClass('hover');
-                });
-
-                this.addListener(this.$container, 'mouseout', function(ev) {
-                    $(ev.currentTarget).removeClass('hover');
-                });
-            },
-
-            handleGridRefresh: function() {
-                // Have the number of columns changed?
-                if (this.totalGridCols !== (this.totalGridCols = window.dashboard.grid.totalCols)) {
-                    // Remove the current buttons
-                    if (this.$colspanButtons) {
-                        this.$colspanButtons.remove();
-                    }
-
-                    // Recreate them
-                    this.createColspanButtons();
-                }
-            },
-
-            createColspanButtons: function() {
-                // Figure out what the current max colspan and widget colspan are.
-                var currentMaxColspan = this.maxColspan ? Math.min(this.maxColspan, this.totalGridCols) : this.totalGridCols,
-                    currentColspan = Math.min(this.widget.getColspan(), currentMaxColspan);
-
-                // Create the buttons
-                for (var i = 1; i <= currentMaxColspan; i++) {
-                    var cssClass = '';
-
-                    if (i <= currentColspan) {
-                        cssClass = 'active';
-                    }
-
-                    if (i === currentColspan) {
-                        cssClass += (cssClass ? ' ' : '') + 'last';
-                    }
-
-                    $('<a/>', {
-                        title: Craft.t('app', '{num, number} {num, plural, =1{column} other{columns}}', {
-                            num: i,
-                        }),
-                        role: 'button',
-                        'class': cssClass,
-                        data: {colspan: i}
-                    }).appendTo(this.$container);
-                }
-
-                // Add listeners
-                this.$colspanButtons = this.$container.children();
-
-                this.addListener(this.$colspanButtons, 'mouseover', function(ev) {
-                    var $button = $(ev.currentTarget);
-                    $button.add($button.prevAll()).addClass('highlight');
-                    $button.nextAll().removeClass('highlight');
-                });
-
-                this.addListener(this.$colspanButtons, 'mouseout', function() {
-                    this.$colspanButtons.removeClass('highlight');
-                });
-
-                this.addListener(this.$colspanButtons, 'click', $.proxy(function(ev) {
-                    this.setWidgetColspan($.data(ev.currentTarget, 'colspan'));
-                }, this));
-            },
-
-            setWidgetColspan: function(newColspan) {
-                // Update the button .active and .last classes
-                this.$colspanButtons.removeClass('last active');
-                var $activeButton = this.$colspanButtons.eq(newColspan - 1);
-                $activeButton.add($activeButton.prevAll()).addClass('active');
-                $activeButton.addClass('last');
-
-                // Update the widget and grid
-                this.widget.setColspan(newColspan);
-                window.dashboard.grid.refreshCols(true);
-
-                // Save the change
-                var data = {
-                    id: this.widget.id,
-                    colspan: newColspan
-                };
-
-                Craft.postActionRequest('dashboard/change-widget-colspan', data, function(response, textStatus) {
-                    if (textStatus === 'success' && response.success) {
-                        Craft.cp.displayNotice(Craft.t('app', 'Widget saved.'));
-                    }
-                    else {
-                        Craft.cp.displayError(Craft.t('app', 'Couldn’t save widget.'));
-                    }
-                });
             }
         });
 })(jQuery);

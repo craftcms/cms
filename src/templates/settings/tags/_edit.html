@@ -10,39 +10,38 @@
 
     {% if tagGroup.id %}{{ hiddenInput('tagGroupId', tagGroup.id) }}{% endif %}
 
-    <div id="taggroup-settings">
-        {{ forms.textField({
-            first: true,
-            label: "Name"|t('app'),
-            instructions: "What this tag group will be called in the control panel."|t('app'),
-            id: 'name',
-            name: 'name',
-            value: tagGroup.name,
-            errors: tagGroup.getErrors('name'),
-            autofocus: true,
-            required: true,
-        }) }}
+    {{ forms.textField({
+        first: true,
+        label: "Name"|t('app'),
+        instructions: "What this tag group will be called in the control panel."|t('app'),
+        id: 'name',
+        name: 'name',
+        value: tagGroup.name,
+        errors: tagGroup.getErrors('name'),
+        autofocus: true,
+        required: true,
+    }) }}
 
-        {{ forms.textField({
-            label: "Handle"|t('app'),
-            instructions: "How you’ll refer to this tag group in the templates."|t('app'),
-            id: 'handle',
-            name: 'handle',
-            class: 'code',
-            autocorrect: false,
-            autocapitalize: false,
-            value: tagGroup.handle,
-            errors: tagGroup.getErrors('handle'),
-            required: true
-        }) }}
-    </div>
+    {{ forms.textField({
+        label: "Handle"|t('app'),
+        instructions: "How you’ll refer to this tag group in the templates."|t('app'),
+        id: 'handle',
+        name: 'handle',
+        class: 'code',
+        autocorrect: false,
+        autocapitalize: false,
+        value: tagGroup.handle,
+        errors: tagGroup.getErrors('handle'),
+        required: true
+    }) }}
 
-    <div id="taggroup-fieldlayout" class="hidden">
-        {% include "_includes/fieldlayoutdesigner" with {
-            fieldLayout: tagGroup.getFieldLayout(),
-            customizableTabs: false
-        } only %}
-    </div>
+    <hr>
+
+    {{ forms.fieldLayoutDesignerField({
+        fieldLayout: tagGroup.getFieldLayout(),
+        customizableTabs: false,
+        customizableUi: false,
+    }) }}
 {% endblock %}
 
 

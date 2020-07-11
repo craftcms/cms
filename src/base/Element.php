@@ -35,6 +35,7 @@ use craft\events\RegisterPreviewTargetsEvent;
 use craft\events\SetEagerLoadedElementsEvent;
 use craft\events\SetElementRouteEvent;
 use craft\events\SetElementTableAttributeHtmlEvent;
+use craft\fieldlayoutelements\BaseField;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
@@ -57,7 +58,6 @@ use Twig\Markup;
 use yii\base\Event;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
-use yii\base\InvalidValueException;
 use yii\validators\NumberValidator;
 use yii\validators\Validator;
 
@@ -1574,8 +1574,14 @@ abstract class Element extends Component implements ElementInterface
             $layout = $this->getFieldLayout();
 
             if ($layout !== null) {
-                foreach ($layout->getFields() as $field) {
-                    $labels[$field->handle] = Craft::t('site', $field->name);
+                foreach ($layout->getTabs() as $tab) {
+                    if ($tab->elements) {
+                        foreach ($tab->elements as $element) {
+                            if ($element instanceof BaseField && ($label = $element->label()) !== null) {
+                                $labels[$element->attribute()] = $label;
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -3055,32 +3061,20 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getEditorHtml(): string
     {
-        $html = '';
-
         $fieldLayout = $this->getFieldLayout();
-        $view = Craft::$app->getView();
-
-        if ($fieldLayout) {
-            $namespace = $view->getNamespace();
-            $view->setNamespace($view->namespaceInputName('fields'));
-            $view->setIsDeltaRegistrationActive(true);
-
-            foreach ($fieldLayout->getFields() as $field) {
-                $fieldHtml = $view->renderTemplate('_includes/field', [
-                    'element' => $this,
-                    'field' => $field,
-                    'required' => $field->required,
-                    'registerDeltas' => true,
-                ]);
-
-                $html .= Html::namespaceHtml($fieldHtml, 'fields');
-            }
-
-            $view->setNamespace($namespace);
-            $view->setIsDeltaRegistrationActive(false);
-
-            $html .= Html::hiddenInput('fieldLayoutId', $fieldLayout->id);
+        if (!$fieldLayout) {
+            return '';
         }
+
+        $html = '';
+        foreach ($fieldLayout->getTabs() as $tab) {
+            foreach ($tab->elements as $element) {
+                if ($element instanceof BaseField) {
+                    $html .= $element->formHtml($this);
+                }
+            }
+        }
+        $html .= Html::hiddenInput('fieldLayoutId', $fieldLayout->id);
 
         return $html;
     }

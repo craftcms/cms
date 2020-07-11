@@ -304,25 +304,12 @@ class SystemSettingsController extends Controller
             ]
         ];
 
-        // Tabs
-        $tabs = [
-            'settings' => [
-                'label' => Craft::t('app', 'Settings'),
-                'url' => '#set-settings'
-            ],
-            'fieldlayout' => [
-                'label' => Craft::t('app', 'Field Layout'),
-                'url' => '#set-fieldlayout'
-            ]
-        ];
-
         // Render the template!
         return $this->renderTemplate('settings/globals/_edit', [
             'globalSetId' => $globalSetId,
             'globalSet' => $globalSet,
             'title' => $title,
             'crumbs' => $crumbs,
-            'tabs' => $tabs
         ]);
     }
 

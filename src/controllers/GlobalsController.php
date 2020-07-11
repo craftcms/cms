@@ -201,40 +201,17 @@ class GlobalsController extends Controller
             $globalSet = $editableGlobalSets[$globalSetHandle];
         }
 
-        // Body class
-        $bodyClass = 'edit-global-set site--' . $site->handle;
-
-        // Define the content tabs
-        // ---------------------------------------------------------------------
-
-        $tabs = [];
-
-        foreach ($globalSet->getFieldLayout()->getTabs() as $index => $tab) {
-            // Do any of the fields on this tab have errors?
-            $hasErrors = false;
-
-            if ($globalSet->hasErrors()) {
-                foreach ($tab->getFields() as $field) {
-                    if ($hasErrors = $globalSet->hasErrors($field->handle . '.*')) {
-                        break;
-                    }
-                }
-            }
-
-            $tabs[] = [
-                'label' => Craft::t('site', $tab->name),
-                'url' => '#' . $tab->getHtmlId(),
-                'class' => $hasErrors ? 'error' : null
-            ];
-        }
+        // Prep the form tabs & content
+        $form = $globalSet->getFieldLayout()->createForm($globalSet);
 
         // Render the template!
-        return $this->renderTemplate('globals/_edit', compact(
-            'bodyClass',
-            'editableGlobalSets',
-            'globalSet',
-            'tabs'
-        ));
+        return $this->renderTemplate('globals/_edit', [
+            'bodyClass' => 'edit-global-set site--' . $site->handle,
+            'editableGlobalSets' => $editableGlobalSets,
+            'globalSet' => $globalSet,
+            'tabs' => $form->getTabMenu(),
+            'fieldsHtml' => $form->render(),
+        ]);
     }
 
     /**

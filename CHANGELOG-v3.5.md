@@ -6,12 +6,16 @@
 
 ### Added
 - Added the Project Config utility, which can be used to perform project config actions, and view a dump of the stored project config. ([#4371](https://github.com/craftcms/cms/issues/4371))
+- It’s now possible to customize the labels and author instructions for all fields (including Title fields), from within field layout designers. ([#806](https://github.com/craftcms/cms/issues/806), [#841](https://github.com/craftcms/cms/issues/841))
+- It’s now possible to set Title fields’ positions within field layout designers. ([#3953](https://github.com/craftcms/cms/issues/3953))
+- It’s now possible to set field widths to 25%, 50%, 75%, or 100%, and fields will be positioned next to each other when there’s room. ([#2644](https://github.com/craftcms/cms/issues/2644))
+- It’s now possible to add headings, tips, warnings, and horizontal rules to field layouts. ([#1103](https://github.com/craftcms/cms/issues/1103), [#1138](https://github.com/craftcms/cms/issues/1138), [#4738](https://github.com/craftcms/cms/issues/4738))
+- It’s now possible to search for fields from within field layout designers. ([#913](https://github.com/craftcms/cms/issues/913))
 - Added the “Use shapes to represent statuses” user preference. ([#3293](https://github.com/craftcms/cms/issues/3293))
 - Added the “Underline links” user preference. ([#6153](https://github.com/craftcms/cms/issues/6153))
 - Added the “Suspend by default” user registration setting. ([#5830](https://github.com/craftcms/cms/issues/5830))
 - Added the ability to disable sites on the front end. ([#3005](https://github.com/craftcms/cms/issues/3005))
 - Soft-deleted elements now have a “Delete permanently” element action. ([#4420](https://github.com/craftcms/cms/issues/4420))
-- Entry types can now specify custom Title field instructions. ([#1518](https://github.com/craftcms/cms/issues/1518))
 - Entry types can now change the Title field’s translation method, similar to how custom fields’ translation methods. ([#2856](https://github.com/craftcms/cms/issues/2856))
 - Entry draft forms no longer have a primary action, and the <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>S</kbd> keyboard shortcut now forces a resave of the draft, rather than publishing it. ([#6199](https://github.com/craftcms/cms/issues/6199))
 - Edit Entry pages now support a <kbd>Shift</kbd> + <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>S</kbd> keyboard shortcut for saving the entry and creating a new one. ([#2851](https://github.com/craftcms/cms/issues/2851))
@@ -34,6 +38,7 @@
 - Added the `|diff` Twig filter.
 - Added the `|explodeClass` Twig filter, which converts class names into an array.
 - Added the `|explodeStyle` Twig filter, which converts CSS styles into an array of property/value pairs.
+- Added the `|namespaceAttributes` Twig filter, which namespaces `id`, `for`, and other attributes, but not `name`.
 - Added the `|push` Twig filter, which returns a new array with one or more items appended to it.
 - Added the `|unshift` Twig filter, which returns a new array with one or more items prepended to it.
 - Added the `|where` Twig filter.
@@ -55,6 +60,8 @@
 - Added the “Prettify” and “History” buttons to the GraphiQL IDE.
 - Added the Explorer plugin to GraphiQL.
 - Added support for external subnav links in the global control panel nav.
+- Added the `fieldLayoutDesigner()` and `fieldLayoutDesignerField()` macros to the `_includes/forms.html` control panel template.
+- Added the `_includes/forms/fieldLayoutDesigner.html` control panel template.
 - Added the `_layouts/components/form-action-menu.twig` control panel template.
 - Added the `parseRefs` GraphQL directive. ([#6200](https://github.com/craftcms/cms/issues/6200))
 - Added the `prev` and `next` fields for entries, categories and assets when querying elements via GraphQL. ([#5571](https://github.com/craftcms/cms/issues/5571))
@@ -88,6 +95,8 @@
 - Added `craft\base\Field::searchKeywords()`.
 - Added `craft\base\FieldInterface::getContentGqlMutationArgumentType()`.
 - Added `craft\base\FieldInterface::getContentGqlQueryArgumentType()`.
+- Added `craft\base\FieldLayoutElement`.
+- Added `craft\base\FieldLayoutElementInterface`.
 - Added `craft\base\Model::EVENT_DEFINE_EXTRA_FIELDS`.
 - Added `craft\base\Model::EVENT_DEFINE_FIELDS`.
 - Added `craft\base\Volume::getFieldLayout()`.
@@ -98,6 +107,7 @@
 - Added `craft\console\controllers\MigrateController::EVENT_REGISTER_MIGRATOR`.
 - Added `craft\controllers\AppController::actionBrokenImage()`.
 - Added `craft\controllers\BaseEntriesController::enforceSitePermissions()`.
+- Added `craft\controllers\FieldsController::actionRenderLayoutElementSelector()`.
 - Added `craft\controllers\UtilitiesController::actionProjectConfigPerformAction()`.
 - Added `craft\db\MigrationManager::TRACK_CONTENT`.
 - Added `craft\db\MigrationManager::TRACK_CRAFT`.
@@ -131,6 +141,7 @@
 - Added `craft\events\DefineAttributeKeywordsEvent`.
 - Added `craft\events\DefineFieldHtmlEvent`.
 - Added `craft\events\DefineFieldKeywordsEvent`.
+- Added `craft\events\DefineFieldLayoutFieldEvent`.
 - Added `craft\events\DefineFieldsEvent`.
 - Added `craft\events\EagerLoadElementsEvent`.
 - Added `craft\events\RegisterElementFieldLayoutsEvent`.
@@ -138,6 +149,15 @@
 - Added `craft\events\RegisterGqlSchemaComponentsEvent`.
 - Added `craft\events\RegisterMigratorEvent`.
 - Added `craft\events\SetEagerLoadedElementsEvent`.
+- Added `craft\fieldlayoutelements\BaseField`.
+- Added `craft\fieldlayoutelements\CustomField`.
+- Added `craft\fieldlayoutelements\EntryTitleField`.
+- Added `craft\fieldlayoutelements\Heading`.
+- Added `craft\fieldlayoutelements\HorizontalRule`.
+- Added `craft\fieldlayoutelements\StandardField`.
+- Added `craft\fieldlayoutelements\StandardTextField`.
+- Added `craft\fieldlayoutelements\Tip`.
+- Added `craft\fieldlayoutelements\TitleField`.
 - Added `craft\fields\BaseOptionsField::getContentGqlMutationArgumentType()`.
 - Added `craft\fields\BaseRelationField::getContentGqlMutationArgumentType()`.
 - Added `craft\fields\Date::getContentGqlMutationArgumentType()`.
@@ -209,6 +229,20 @@
 - Added `craft\helpers\MailerHelper::settingsReport()`.
 - Added `craft\helpers\ProjectConfig::splitConfigIntoComponents()`.
 - Added `craft\helpers\Queue`.
+- Added `craft\models\FieldLayout::createForm()`.
+- Added `craft\models\FieldLayout::EVENT_DEFINE_STANDARD_FIELDS`.
+- Added `craft\models\FieldLayout::getAvailableCustomFields()`.
+- Added `craft\models\FieldLayout::getAvailableStandardFields()`.
+- Added `craft\models\FieldLayout::getAvailableUiElements()`.
+- Added `craft\models\FieldLayout::getField()`.
+- Added `craft\models\FieldLayout::isFieldIncluded()`.
+- Added `craft\models\FieldLayoutForm`.
+- Added `craft\models\FieldLayoutFormTab`.
+- Added `craft\models\FieldLayoutTab::$elements`.
+- Added `craft\models\FieldLayoutTab::createFromConfig()`.
+- Added `craft\models\FieldLayoutTab::getConfig()`.
+- Added `craft\models\FieldLayoutTab::getElementConfigs()`.
+- Added `craft\models\FieldLayoutTab::updateConfig()`.
 - Added `craft\models\Section::PROPAGATION_METHOD_CUSTOM`.
 - Added `craft\models\Site::$enabled`.
 - Added `craft\queue\jobs\PruneRevisions`.
@@ -228,6 +262,7 @@
 - Added `craft\services\Elements::invalidateCachesForElementType()`.
 - Added `craft\services\Elements::startCollectingCacheTags()`.
 - Added `craft\services\Elements::stopCollectingCacheTags()`.
+- Added `craft\services\Fields::createLayoutElement()`.
 - Added `craft\services\Fields::getLayoutsByElementType()`.
 - Added `craft\services\Gql::getAllSchemaComponents()`.
 - Added `craft\services\Images::getSupportsWebP()`. ([#5853](https://github.com/craftcms/cms/issues/5853))
@@ -251,6 +286,8 @@
 - Added the `_includes/forms/password.html` control panel template.
 - Added the `_includes/forms/copytext.html` control panel template.
 - Added the `copytext` and `copytextField` macros to the `_includes/forms.html` control panel template.
+- Added the `Craft.Listbox` JavaScript class.
+- Added the `Craft.SlidePicker` JavaScript class.
 - Added the `Craft.removeLocalStorage()`, `getCookie()`, `setCookie()`, and `removeCookie()` JavaScript methods.
 - Added the `Craft.submitForm()` JavaScript method.
 - Added the `Craft.cp.getSiteId()` and `setSiteId()` JavaScript methods.
@@ -351,6 +388,7 @@
 - Deprecated `craft\helpers\Stringy`.
 - Deprecated `craft\queue\jobs\DeleteStaleTemplateCaches`.
 - Deprecated `craft\services\ElementIndexes::getAvailableTableFields()`. `getSourceTableAttributes()` should be used instead.
+- Deprecated `craft\services\Fields::assembleLayout()`.
 - Deprecated `craft\services\Gql::getAllPermissions()`. `craft\services\Gql::getAllSchemaComponents()` should be used instead.
 - Deprecated `craft\services\TemplateCaches::deleteAllCaches()`. `craft\services\Elements::invalidateAllCaches()` should be used instead.
 - Deprecated `craft\services\TemplateCaches::deleteCacheById()`.
@@ -375,10 +413,13 @@
 - Removed the [Interactive Shell Extension for Yii 2](https://github.com/yiisoft/yii2-shell), as it’s now a dev dependency of the `craftcms/craft` project instead. ([#5783](https://github.com/craftcms/cms/issues/5783))
 - Removed support for the `import` directive in project config files.
 - Removed the `cacheElementQueries` config setting.
+- Removed the `entries/_fields.html` control panel template.
+- Removed the `entries/_titlefield.html` control panel template.
 - Removed `craft\controllers\UtilitiesController::actionDbBackupPerformAction()`.
 - Removed `craft\db\MigrationManager::TYPE_APP`.
 - Removed `craft\db\MigrationManager::TYPE_CONTENT`.
 - Removed `craft\db\MigrationManager::TYPE_PLUGIN`.
+- Removed `craft\models\EntryType::$titleLabel`.
 - Removed `craft\models\Info::$configMap`.
 - Removed `craft\records\Migration`.
 - Removed `craft\records\Plugin::getMigrations()`.
@@ -391,6 +432,7 @@
 - Fixed a bug where it was impossible to filter elements using a Lightswitch field using the GraphQL API. ([#5930](https://github.com/craftcms/cms/issues/5930))
 - Fixed an error that could occur when saving template caches. ([#2674](https://github.com/craftcms/cms/issues/2674))
 - When previewing an image asset on a non-public volume, the image is no longer published to the `cpresources` folder. ([#6093](https://github.com/craftcms/cms/issues/6093)
+- Fixed a bug where Entry Edit pages would start showing a tab bar after switching entry types, even if the new entry type only had one content tab.
 
 ### Security
 - The `_includes/forms/checkbox.html`, `checkboxGroup.html`, and `checkboxSelect.html` control panel templates now HTML-encode checkbox labels by default, preventing possible XSS vulnerabilities. If HTML code was desired, it must be passed through the new `raw()` function first.

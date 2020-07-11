@@ -14,15 +14,22 @@ use craft\db\Connection;
 use craft\db\MigrationManager;
 use craft\db\Query;
 use craft\db\Table;
+use craft\elements\Asset;
+use craft\elements\Category;
+use craft\elements\Entry;
 use craft\errors\DbConnectException;
 use craft\errors\SiteNotFoundException;
 use craft\errors\WrongEditionException;
+use craft\events\DefineFieldLayoutFieldsEvent;
 use craft\events\EditionChangeEvent;
+use craft\fieldlayoutelements\EntryTitleField;
+use craft\fieldlayoutelements\TitleField;
 use craft\helpers\App;
 use craft\helpers\Db;
 use craft\i18n\Formatter;
 use craft\i18n\I18N;
 use craft\i18n\Locale;
+use craft\models\FieldLayout;
 use craft\models\Info;
 use craft\queue\Queue;
 use craft\queue\QueueInterface;
@@ -1386,6 +1393,9 @@ trait ApplicationTrait
      */
     private function _postInit()
     {
+        // Register field layout listeners
+        $this->_registerFieldLayoutListener();
+
         // Register all the listeners for config items
         $this->_registerConfigListeners();
 
@@ -1479,6 +1489,27 @@ trait ApplicationTrait
 
         // Default to the source language.
         return $this->sourceLanguage;
+    }
+
+    /**
+     * Register event listeners for field layouts.
+     */
+    private function _registerFieldLayoutListener()
+    {
+        Event::on(FieldLayout::class, FieldLayout::EVENT_DEFINE_STANDARD_FIELDS, function(DefineFieldLayoutFieldsEvent $event) {
+            /** @var FieldLayout $fieldLayout */
+            $fieldLayout = $event->sender;
+
+            switch ($fieldLayout->type) {
+                case Asset::class:
+                case Category::class:
+                    $event->fields[] = new TitleField();
+                    break;
+                case Entry::class:
+                    $event->fields[] = new EntryTitleField();
+                    break;
+            }
+        });
     }
 
     /**

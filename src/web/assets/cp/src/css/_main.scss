@@ -474,6 +474,7 @@ strong, b, i em {
 
 .smalltext {
   font-size: 12px;
+  line-height: 1.2;
 }
 
 .zilch {
@@ -986,6 +987,7 @@ ul.icons {
     }
   }
 
+  .hud-footer > &,
   .footer > & {
     margin: 0;
   }
@@ -1025,6 +1027,7 @@ ul.icons {
   }
 
   &:focus,
+  &.focus,
   &:hover {
     background-color: transparentize($inputColor, 0.65);
   }
@@ -1032,6 +1035,12 @@ ul.icons {
   &:active,
   &.active {
     background-color: transparentize($inputColor, 0.5);
+
+    &:focus,
+    &.focus,
+    .btngroup:focus & {
+      background-color: transparentize($inputColor, 0.4);
+    }
   }
 
   &[type='color'] {
@@ -1142,6 +1151,10 @@ ul.icons {
   display: flex;
   white-space: nowrap;
   align-items: center;
+
+  &:focus {
+    outline: none;
+  }
 
   &.fullwidth .btn {
     flex: 1;
@@ -2864,7 +2877,7 @@ ul.tree,
     display: flex;
     justify-content: space-between;
     align-items: center;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     margin: 0 !important;
     padding: 0 24px;
     transition: padding-left linear 100ms, padding-right linear 100ms;
@@ -2923,12 +2936,13 @@ ul.tree,
 
   & > .field > .input,
   & > .data > .value {
-    flex: 1;
     padding: 7px 0;
+    width: calc(100% - 112px);
   }
 
   & > .field.lightswitch-field > .input {
     flex: 0;
+    width: auto;
   }
 
   & > .field {
@@ -3492,10 +3506,6 @@ ul.tree,
     left: 0;
     width: 100%;
     margin: 0;
-
-    .buttons {
-      margin: 0;
-    }
 
     .spinner {
       @include floatright;
@@ -4662,6 +4672,61 @@ body .selectize-dropdown .active {
   color: $white;
   @include light-on-dark-text;
   cursor: default;
+}
+
+/* slide picker */
+.slide-picker {
+  display: flex;
+  height: 15px;
+  white-space: nowrap;
+
+  a {
+    border: 1px solid $hairlineColor;
+    @include border-left(none);
+    background-image: none;
+    width: 7px;
+    height: 13px;
+    margin-left: 0;
+    display: inline-block;
+    margin-top: 1px;
+    margin-bottom: 1px;
+    box-sizing: border-box;
+
+    &:first-child {
+      width: 8px;
+      @include border-left(1px solid $grey400 !important);
+    }
+  }
+
+  &:not(:hover) a.active,
+  &:hover a.active-hover {
+    border-top-color: $grey400;
+    border-bottom-color: $grey400;
+    height: 15px;
+    margin-top: 0;
+    margin-bottom: 0;
+
+    &:first-child {
+      @include border-left(1px solid $grey400);
+      @include border-top-left-radius($smallBorderRadius);
+      @include border-bottom-left-radius($smallBorderRadius);
+    }
+  }
+
+  &:not(:hover) a.last-active,
+  &:hover a.last-active-hover {
+    @include border-right(1px solid $grey400);
+    @include border-top-right-radius($smallBorderRadius);
+    @include border-bottom-right-radius($smallBorderRadius);
+  }
+
+  &:focus {
+    outline: none;
+
+    a.active {
+      background-color: $lightSelColor;
+    }
+  }
 }
 
 /* errors */

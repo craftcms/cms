@@ -42,6 +42,7 @@ Craft.FieldToggle = Garnish.Base.extend(
             }
             else {
                 this.addListener(this.$toggle, 'change', 'onToggleChange');
+                this.onToggleChange();
             }
         },
 
@@ -136,21 +137,27 @@ Craft.FieldToggle = Garnish.Base.extend(
                         this.$toggle.addClass('expanded');
                     }
 
-                    $target.height('auto');
-                    this.showTarget._targetHeight = $target.height();
-                    $target.css({
-                        height: this.showTarget._currentHeight,
-                        overflow: 'hidden'
-                    });
+                    for (let i = 0; i < $target.length; i++) {
+                        ($t => {
+                            if ($t.prop('nodeName') !== 'SPAN') {
+                                $t.height('auto');
+                                this.showTarget._targetHeight = $t.height();
+                                $t.css({
+                                    height: this.showTarget._currentHeight,
+                                    overflow: 'hidden'
+                                });
 
-                    $target.velocity('stop');
+                                $t.velocity('stop');
 
-                    $target.velocity({height: this.showTarget._targetHeight}, 'fast', function() {
-                        $target.css({
-                            height: '',
-                            overflow: ''
-                        });
-                    });
+                                $t.velocity({height: this.showTarget._targetHeight}, 'fast', function() {
+                                    $t.css({
+                                        height: '',
+                                        overflow: ''
+                                    });
+                                });
+                            }
+                        })($target.eq(i));
+                    }
 
                     delete this.showTarget._targetHeight;
                 }
@@ -173,11 +180,22 @@ Craft.FieldToggle = Garnish.Base.extend(
                         this.$toggle.addClass('collapsed');
                     }
 
-                    $target.css('overflow', 'hidden');
-                    $target.velocity('stop');
-                    $target.velocity({height: 0}, 'fast', function() {
-                        $target.addClass('hidden');
-                    });
+                    for (let i = 0; i < $target.length; i++) {
+                        ($t => {
+                            if ($t.hasClass('hidden')) {
+                                return;
+                            }
+                            if ($t.prop('nodeName') === 'SPAN') {
+                                $t.addClass('hidden');
+                            } else {
+                                $t.css('overflow', 'hidden');
+                                $t.velocity('stop');
+                                $t.velocity({height: 0}, 'fast', function() {
+                                    $t.addClass('hidden');
+                                });
+                            }
+                        })($target.eq(i));
+                    }
                 }
             }
         }

@@ -243,6 +243,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('merge', [$this, 'mergeFilter']),
             new TwigFilter('multisort', [$this, 'multisortFilter']),
             new TwigFilter('namespace', [$this->view, 'namespaceInputs'], ['is_safe' => ['html']]),
+            new TwigFilter('namespaceAttributes', [Html::class, 'namespaceAttributes'], ['is_safe' => ['html']]),
             new TwigFilter('ns', [$this->view, 'namespaceInputs'], ['is_safe' => ['html']]),
             new TwigFilter('namespaceInputName', [$this->view, 'namespaceInputName']),
             new TwigFilter('namespaceInputId', [$this->view, 'namespaceInputId']),

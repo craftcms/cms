@@ -10,13 +10,16 @@ namespace craft\controllers;
 use Craft;
 use craft\base\Field;
 use craft\base\FieldInterface;
+use craft\base\FieldLayoutElementInterface;
 use craft\fields\MissingField;
 use craft\fields\PlainText;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Component;
 use craft\helpers\UrlHelper;
 use craft\models\FieldGroup;
 use craft\web\assets\fieldsettings\FieldSettingsAsset;
 use craft\web\Controller;
+use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
@@ -336,5 +339,25 @@ JS;
         $success = Craft::$app->getFields()->deleteFieldById($fieldId);
 
         return $this->asJson(['success' => $success]);
+    }
+
+    // Field Layouts
+    // -------------------------------------------------------------------------
+
+    /**
+     * Renders a field layout element’s selector HTML.
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     * @since 3.5.0
+     */
+    public function actionRenderLayoutElementSelector(): Response
+    {
+        $config = Craft::$app->getRequest()->getRequiredBodyParam('config');
+        $element = Craft::$app->getFields()->createLayoutElement($config);
+
+        return $this->asJson([
+            'html' => $element->selectorHtml(),
+        ]);
     }
 }

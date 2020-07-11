@@ -13,106 +13,103 @@
 
     {% if categoryGroup.id %}{{ hiddenInput('groupId', categoryGroup.id) }}{% endif %}
 
-    <div id="categorygroup-settings">
-        {{ forms.textField({
-            first: true,
-            label: "Name"|t('app'),
-            instructions: "What this category group will be called in the control panel."|t('app'),
-            id: 'name',
-            name: 'name',
-            value: categoryGroup.name,
-            errors: categoryGroup.getErrors('name'),
-            autofocus: true,
-            required: true,
-        }) }}
+    {{ forms.textField({
+        first: true,
+        label: "Name"|t('app'),
+        instructions: "What this category group will be called in the control panel."|t('app'),
+        id: 'name',
+        name: 'name',
+        value: categoryGroup.name,
+        errors: categoryGroup.getErrors('name'),
+        autofocus: true,
+        required: true,
+    }) }}
 
-        {{ forms.textField({
-            label: "Handle"|t('app'),
-            instructions: "How you’ll refer to this category group in the templates."|t('app'),
-            id: 'handle',
-            name: 'handle',
-            class: 'code',
-            autocorrect: false,
-            autocapitalize: false,
-            value: categoryGroup.handle,
-            errors: categoryGroup.getErrors('handle'),
-            required: true
-        }) }}
+    {{ forms.textField({
+        label: "Handle"|t('app'),
+        instructions: "How you’ll refer to this category group in the templates."|t('app'),
+        id: 'handle',
+        name: 'handle',
+        class: 'code',
+        autocorrect: false,
+        autocapitalize: false,
+        value: categoryGroup.handle,
+        errors: categoryGroup.getErrors('handle'),
+        required: true
+    }) }}
 
-        {{ forms.textField({
-            label: "Max Levels"|t('app'),
-            instructions: "The maximum number of levels this category group can have. Leave blank if you don’t care."|t('app'),
-            id: 'maxLevels',
-            name: 'maxLevels',
-            value: categoryGroup.maxLevels,
-            size: 5,
-            errors: categoryGroup.getErrors('maxLevels')
-        }) }}
+    {{ forms.textField({
+        label: "Max Levels"|t('app'),
+        instructions: "The maximum number of levels this category group can have. Leave blank if you don’t care."|t('app'),
+        id: 'maxLevels',
+        name: 'maxLevels',
+        value: categoryGroup.maxLevels,
+        size: 5,
+        errors: categoryGroup.getErrors('maxLevels')
+    }) }}
 
-        <hr>
+    <hr>
 
-        {% set siteRows = [] %}
-        {% set siteErrors = categoryGroup.getErrors('siteSettings') %}
+    {% set siteRows = [] %}
+    {% set siteErrors = categoryGroup.getErrors('siteSettings') %}
 
-        {% for site in craft.app.sites.getAllSites() %}
-            {% set siteSettings = categoryGroup.siteSettings[site.id] ?? null %}
-            {% if siteSettings %}
-                {% for attribute, errors in siteSettings.getErrors() %}
-                    {% set siteErrors = siteErrors|merge(errors) %}
-                {% endfor %}
-            {% endif %}
-            {% set siteRows = siteRows|merge({
-                (site.handle): {
-                    heading: site.name|t('site')|e,
-                    uriFormat: {
-                        value: siteSettings.uriFormat ?? null,
-                        hasErrors: siteSettings.hasErrors('uriFormat') ?? false
-                    },
-                    template: not headlessMode ? {
-                        value: siteSettings.template ?? null,
-                        hasErrors: siteSettings.hasErrors('template') ?? false,
-                    }
-                }
-            }) %}
-        {% endfor %}
-
-        {{ forms.editableTableField({
-            label: "Site Settings"|t('app'),
-            instructions: "Configure the category group’s site-specific settings."|t('app'),
-            id: 'sites',
-            name: 'sites',
-            cols: {
-                heading: {
-                    type: 'heading',
-                    heading: "Site"|t('app'),
-                    class: 'thin'
-                },
+    {% for site in craft.app.sites.getAllSites() %}
+        {% set siteSettings = categoryGroup.siteSettings[site.id] ?? null %}
+        {% if siteSettings %}
+            {% for attribute, errors in siteSettings.getErrors() %}
+                {% set siteErrors = siteErrors|merge(errors) %}
+            {% endfor %}
+        {% endif %}
+        {% set siteRows = siteRows|merge({
+            (site.handle): {
+                heading: site.name|t('site')|e,
                 uriFormat: {
-                    type: 'singleline',
-                    heading: "Category URI Format"|t('app'),
-                    info: "What category URIs should look like for the site."|t('app'),
-                    placeholder: "Leave blank if categories don’t have URLs"|t('app'),
-                    code: true
+                    value: siteSettings.uriFormat ?? null,
+                    hasErrors: siteSettings.hasErrors('uriFormat') ?? false
                 },
                 template: not headlessMode ? {
-                    type: 'template',
-                    heading: "Template"|t('app'),
-                    info: "Which template should be loaded when a category’s URL is requested."|t('app'),
-                    code: true
-                },
-            }|filter,
-            rows: siteRows,
-            staticRows: true,
-            errors: siteErrors|unique
-        }) }}
+                    value: siteSettings.template ?? null,
+                    hasErrors: siteSettings.hasErrors('template') ?? false,
+                }
+            }
+        }) %}
+    {% endfor %}
 
-    </div>
+    {{ forms.editableTableField({
+        label: "Site Settings"|t('app'),
+        instructions: "Configure the category group’s site-specific settings."|t('app'),
+        id: 'sites',
+        name: 'sites',
+        cols: {
+            heading: {
+                type: 'heading',
+                heading: "Site"|t('app'),
+                class: 'thin'
+            },
+            uriFormat: {
+                type: 'singleline',
+                heading: "Category URI Format"|t('app'),
+                info: "What category URIs should look like for the site."|t('app'),
+                placeholder: "Leave blank if categories don’t have URLs"|t('app'),
+                code: true
+            },
+            template: not headlessMode ? {
+                type: 'template',
+                heading: "Template"|t('app'),
+                info: "Which template should be loaded when a category’s URL is requested."|t('app'),
+                code: true
+            },
+        }|filter,
+        rows: siteRows,
+        staticRows: true,
+        errors: siteErrors|unique
+    }) }}
 
-    <div id="categorygroup-fieldlayout" class="hidden">
-        {% include "_includes/fieldlayoutdesigner" with {
-        fieldLayout: categoryGroup.getFieldLayout()
-        } only %}
-    </div>
+    <hr>
+
+    {{ forms.fieldLayoutDesignerField({
+        fieldLayout: categoryGroup.getFieldLayout(),
+    }) }}
 {% endblock %}
 
 

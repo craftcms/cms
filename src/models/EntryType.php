@@ -58,17 +58,6 @@ class EntryType extends Model
     public $hasTitleField = true;
 
     /**
-     * @var string Title label
-     */
-    public $titleLabel = 'Title';
-
-    /**
-     * @var string|null Title instructions
-     * @since 3.5.0
-     */
-    public $titleInstructions;
-
-    /**
      * @var string Title translation method
      * @since 3.5.0
      */
@@ -112,7 +101,6 @@ class EntryType extends Model
             'handle' => Craft::t('app', 'Handle'),
             'name' => Craft::t('app', 'Name'),
             'titleFormat' => Craft::t('app', 'Title Format'),
-            'titleLabel' => Craft::t('app', 'Title Field Label'),
         ];
     }
 
@@ -145,9 +133,7 @@ class EntryType extends Model
             'comboNotUnique' => Craft::t('yii', '{attribute} "{value}" has already been taken.'),
         ];
 
-        if ($this->hasTitleField) {
-            $rules[] = [['titleLabel'], 'required'];
-        } else {
+        if (!$this->hasTitleField) {
             $rules[] = [['titleFormat'], 'required'];
         }
 

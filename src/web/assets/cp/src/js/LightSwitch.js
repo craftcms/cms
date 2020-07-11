@@ -127,7 +127,7 @@ Craft.LightSwitch = Garnish.Base.extend(
 
         onChange: function() {
             this.trigger('change');
-            this.settings.onChange();
+            this.settings.onChange(this.on);
             this.$outerContainer.trigger('change');
         },
 

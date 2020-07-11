@@ -136,17 +136,6 @@ class VolumesController extends Controller
             ],
         ];
 
-        $tabs = [
-            'settings' => [
-                'label' => Craft::t('app', 'Settings'),
-                'url' => '#assetvolume-settings'
-            ],
-            'fieldlayout' => [
-                'label' => Craft::t('app', 'Field Layout'),
-                'url' => '#assetvolume-fieldlayout'
-            ],
-        ];
-
         return $this->renderTemplate('settings/assets/volumes/_edit', [
             'volumeId' => $volumeId,
             'volume' => $volume,
@@ -157,7 +146,6 @@ class VolumesController extends Controller
             'volumeInstances' => $volumeInstances,
             'title' => $title,
             'crumbs' => $crumbs,
-            'tabs' => $tabs
         ]);
     }
 

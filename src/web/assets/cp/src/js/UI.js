@@ -404,7 +404,11 @@ Craft.ui =
                 new Craft.FieldToggle($container);
             }
 
-            return $container.lightswitch();
+            new Craft.LightSwitch($container, {
+                onChange: config.onChange || $.noop,
+            });
+
+            return $container;
         },
 
         createLightswitchField: function(config) {

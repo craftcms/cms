@@ -81,15 +81,10 @@
     {% set saveShortcutRedirect = '{cpEditUrl}' %}
 {% endif %}
 
+{% set form = element.getFieldLayout().createForm(element, isRevision or not canEdit) %}
+
 {% if tabs is not defined %}
-    {% set tabs = [] %}
-    {% for tab in element.fieldLayout.tabs ?? [] %}
-        {% set tabs = tabs|merge([{
-            label: tab.name|t('site'),
-            url: '#' ~ tab.getHtmlId(),
-            class: tab.elementHasErrors(element) ? 'error',
-        }]) %}
-    {% endfor %}
+    {% set tabs = form.getTabMenu() %}
 {% endif %}
 
 {% set settingsHtml = (block('settings') ?? '')|trim %}
@@ -232,16 +227,7 @@
 
 {% block content %}
     <div id="fields">
-        {% for tab in element.fieldLayout.tabs ?? [] %}
-            <div id="{{ tab.getHtmlId() }}"{% if not loop.first %} class="hidden"{% endif %}>
-                {% include "_includes/fields" with {
-                    fields:  tab.getFields(),
-                    element: element,
-                    static:  isRevision or not canEdit,
-                    registerDeltas: true,
-                } only %}
-            </div>
-        {% endfor %}
+        {{ form.render()|raw }}
     </div>
 {% endblock %}
 

@@ -4,6 +4,11 @@
 
 ### Added
 - Added the Project Config utility, which can be used to perform project config actions, and view a dump of the stored project config. ([#4371](https://github.com/craftcms/cms/issues/4371))
+- It’s now possible to customize the labels and author instructions for all fields (including Title fields), from within field layout designers. ([#806](https://github.com/craftcms/cms/issues/806), [#841](https://github.com/craftcms/cms/issues/841))
+- It’s now possible to set Title fields’ positions within field layout designers. ([#3953](https://github.com/craftcms/cms/issues/3953))
+- It’s now possible to set field widths to 25%, 50%, 75%, or 100%, and fields will be positioned next to each other when there’s room. ([#2644](https://github.com/craftcms/cms/issues/2644))
+- It’s now possible to add headings, tips, warnings, and horizontal rules to field layouts. ([#1103](https://github.com/craftcms/cms/issues/1103), [#1138](https://github.com/craftcms/cms/issues/1138), [#4738](https://github.com/craftcms/cms/issues/4738))
+- It’s now possible to search for fields from within field layout designers. ([#913](https://github.com/craftcms/cms/issues/913))
 - Entry types can now specify custom Title field instructions. ([#1518](https://github.com/craftcms/cms/issues/1518))
 - Entry types can now change the Title field’s translation method, similar to how custom fields’ translation methods. ([#2856](https://github.com/craftcms/cms/issues/2856))
 - User groups can now have descriptions. ([#4893](https://github.com/craftcms/cms/issues/4893))
@@ -11,22 +16,53 @@
 - Added the `parseRefs` GraphQL directive. ([#6200](https://github.com/craftcms/cms/issues/6200))
 - Added the `prev` and `next` fields for entries, categories and assets when querying elements via GraphQL. ([#5571](https://github.com/craftcms/cms/issues/5571))
 - Added the `imageEditorRatios` config setting, making it possible to customize the list of available aspect ratios in the image editor. ([#6201](https://github.com/craftcms/cms/issues/6201))
+- Added the `|namespaceAttributes` Twig filter, which namespaces `id`, `for`, and other attributes, but not `name`.
+- Added the `fieldLayoutDesigner()` and `fieldLayoutDesignerField()` macros to the `_includes/forms.html` control panel template.
+- Added the `_includes/forms/fieldLayoutDesigner.html` control panel template.
 - Added `craft\base\ElementInterface::getIsTitleTranslatable()`.
 - Added `craft\base\ElementInterface::getTitleTranslationDescription()`.
 - Added `craft\base\ElementInterface::getTitleTranslationKey()`.
 - Added `craft\base\ElementInterface::isFieldEmpty()`.
+- Added `craft\base\FieldLayoutElement`.
+- Added `craft\base\FieldLayoutElementInterface`.
 - Added `craft\base\Model::EVENT_DEFINE_EXTRA_FIELDS`.
 - Added `craft\base\Model::EVENT_DEFINE_FIELDS`.
+- Added `craft\controllers\FieldsController::actionRenderLayoutElementSelector()`.
 - Added `craft\controllers\UtilitiesController::actionProjectConfigPerformAction()`.
 - Added `craft\elements\Asset::getVolumeId()`.
 - Added `craft\elements\Asset::setVolumeId()`.
+- Added `craft\events\DefineFieldLayoutFieldEvent`.
 - Added `craft\events\DefineFieldsEvent`.
+- Added `craft\fieldlayoutelements\BaseField`.
+- Added `craft\fieldlayoutelements\CustomField`.
+- Added `craft\fieldlayoutelements\EntryTitleField`.
+- Added `craft\fieldlayoutelements\Heading`.
+- Added `craft\fieldlayoutelements\HorizontalRule`.
+- Added `craft\fieldlayoutelements\StandardField`.
+- Added `craft\fieldlayoutelements\StandardTextField`.
+- Added `craft\fieldlayoutelements\Tip`.
+- Added `craft\fieldlayoutelements\TitleField`.
 - Added `craft\gql\base\InterfaceType::resolveElementTypeName()`.
 - Added `craft\gql\GqlEntityRegistry::prefixTypeName()`.
 - Added `craft\helpers\App::dbMutexConfig()`.
 - Added `craft\helpers\ElementHelper::translationDescription()`.
 - Added `craft\helpers\ElementHelper::translationKey()`.
 - Added `craft\helpers\ProjectConfig::splitConfigIntoComponents()`.
+- Added `craft\models\FieldLayout::createForm()`.
+- Added `craft\models\FieldLayout::EVENT_DEFINE_STANDARD_FIELDS`.
+- Added `craft\models\FieldLayout::getAvailableCustomFields()`.
+- Added `craft\models\FieldLayout::getAvailableStandardFields()`.
+- Added `craft\models\FieldLayout::getAvailableUiElements()`.
+- Added `craft\models\FieldLayout::getField()`.
+- Added `craft\models\FieldLayout::isFieldIncluded()`.
+- Added `craft\models\FieldLayoutForm`.
+- Added `craft\models\FieldLayoutFormTab`.
+- Added `craft\models\FieldLayoutTab::$elements`.
+- Added `craft\models\FieldLayoutTab::createFromConfig()`.
+- Added `craft\models\FieldLayoutTab::getConfig()`.
+- Added `craft\models\FieldLayoutTab::getElementConfigs()`.
+- Added `craft\models\FieldLayoutTab::updateConfig()`.
+- Added `craft\services\Fields::createLayoutElement()`.
 - Added `craft\services\Path::getProjectConfigPath()`.
 - Added `craft\services\ProjectConfig::$folderName`. ([#5982](https://github.com/craftcms/cms/issues/5982))
 - Added `craft\web\Controller::setFailFlash()`.
@@ -35,6 +71,8 @@
 - Added `craft\web\Request::getIsJson()`.
 - Added `craft\web\Request::getMimeType()`.
 - Added `craft\web\View::$allowEval()`, which determines whether calling `evaluateDynamicContent()` should be allowed. ([#6185](https://github.com/craftcms/cms/pull/6185))
+- Added the `Craft.Listbox` JavaScript class.
+- Added the `Craft.SlidePicker` JavaScript class.
 
 ### Changed
 - Craft now stores project config files in a new `config/project/` folder, regardless of whether the (deprecated) `useProjectConfigFile` config setting is enabled, and syncing new project config file changes is now optional.
@@ -55,11 +93,15 @@
 - Deprecated `craft\elements\db\ElementQuery::$enabledForSite`.
 - Deprecated `craft\elements\db\ElementQuery::enabledForSite()`.
 - Deprecated `craft\helpers\App::mutexConfig()`.
+- Deprecated `craft\services\Fields::assembleLayout()`.
 
 ### Removed
 - Removed support for the `import` directive in project config files.
+- Removed the `entries/_fields.html` control panel template.
+- Removed the `entries/_titlefield.html` control panel template.
 - Removed `craft\models\Info::$configMap`.
 - Removed `craft\services\ProjectConfig::$filename`.
+- Removed `craft\models\EntryType::$titleLabel`.
 
 ### Fixed
 - Fixed an error that occurred when using the `gqlTypePrefix` config setting.
@@ -69,6 +111,8 @@
 - Fixed a 403 Forbidden error that occurred when clicking on the GraphQL nav item, if the `allowAdminChanges` config setting was disabled. ([#6242](https://github.com/craftcms/cms/issues/6242))
 - Fixed a bug where `data-params` and `data-param` attributes on `.formsubmit` elements weren’t being respected.
 - Fix a bug where it was impossible to upload an asset using GraphQL mutations. ([#6322](https://github.com/craftcms/cms/pull/6322))
+- Fixed a bug where Entry Edit pages would start showing a tab bar after switching entry types, even if the new entry type only had one content tab.
+- Fixed a bug where some fields were growing wider than they were supposed to within element editor HUDs.
 
 ### Security
 - `craft\web\View::evaluateDynamicContent()` can no longer be called by default. ([#6185](https://github.com/craftcms/cms/pull/6185))

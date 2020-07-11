@@ -87,24 +87,11 @@ class TagsController extends Controller
             ]
         ];
 
-        // Tabs
-        $tabs = [
-            'settings' => [
-                'label' => Craft::t('app', 'Settings'),
-                'url' => '#taggroup-settings'
-            ],
-            'fieldLayout' => [
-                'label' => Craft::t('app', 'Field Layout'),
-                'url' => '#taggroup-fieldlayout'
-            ]
-        ];
-
         return $this->renderTemplate('settings/tags/_edit', [
             'tagGroupId' => $tagGroupId,
             'tagGroup' => $tagGroup,
             'title' => $title,
             'crumbs' => $crumbs,
-            'tabs' => $tabs
         ]);
     }
 
