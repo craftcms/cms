@@ -190,7 +190,7 @@ abstract class BaseField extends FieldLayoutElement
         return Craft::$app->getView()->renderTemplate('_includes/forms/field', [
             'id' => $this->id(),
             'fieldClass' => 'width-' . ($this->width ?? 100),
-            'fieldAttributes' => $this->containerAttributes($element, $static),
+            'fieldAttributes' => $this->fieldAttributes($element, $static),
             'inputAttributes' => $this->inputContainerAttributes($element, $static),
             'labelAttributes' => $this->labelAttributes($element, $static),
             'status' => $statusClass ? [$statusClass, $this->statusLabel() ?? ucfirst($statusClass)] : null,
@@ -239,7 +239,7 @@ abstract class BaseField extends FieldLayoutElement
      * @param bool $static Whether the form should be static (non-interactive)
      * @return array
      */
-    protected function containerAttributes(ElementInterface $element = null, bool $static = false): array
+    protected function fieldAttributes(ElementInterface $element = null, bool $static = false): array
     {
         return [];
     }

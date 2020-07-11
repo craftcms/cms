@@ -99,7 +99,7 @@ abstract class StandardField extends BaseField
     /**
      * @inheritdoc
      */
-    protected function containerAttributes(ElementInterface $element = null, bool $static = false): array
+    protected function fieldAttributes(ElementInterface $element = null, bool $static = false): array
     {
         return $this->containerAttributes;
     }

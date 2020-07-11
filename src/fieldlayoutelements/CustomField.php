@@ -115,7 +115,7 @@ class CustomField extends BaseField
     /**
      * @inheritdoc
      */
-    protected function containerAttributes(ElementInterface $element = null, bool $static = false): array
+    protected function fieldAttributes(ElementInterface $element = null, bool $static = false): array
     {
         return [
             'id' => "{$this->_field->handle}-field",
