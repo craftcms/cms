@@ -10,6 +10,7 @@ namespace craft\fieldlayoutelements;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldInterface;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Html;
 use yii\base\InvalidArgumentException;
 
@@ -97,6 +98,18 @@ class CustomField extends BaseField
         $fields = parent::fields();
         $fields['fieldUid'] = 'fieldUid';
         return $fields;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function selectorAttributes(): array
+    {
+        return ArrayHelper::merge(parent::selectorAttributes(), [
+            'data' => [
+                'id' => $this->_field->id,
+            ],
+        ]);
     }
 
     /**

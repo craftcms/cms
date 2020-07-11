@@ -107,13 +107,7 @@ abstract class BaseField extends FieldLayoutElement
      */
     public function selectorHtml(): string
     {
-        return Html::tag('div', $this->selectorInnerHtml(), [
-            'class' => 'fld-field',
-            'data' => [
-                'mandatory' => $this->mandatory(),
-                'requirable' => $this->requirable(),
-            ],
-        ]);
+        return Html::tag('div', $this->selectorInnerHtml(), $this->selectorAttributes());
     }
 
     /**
@@ -134,6 +128,23 @@ abstract class BaseField extends FieldLayoutElement
         return Html::tag('div', $innerHtml, [
             'class' => ['field-name'],
         ]);
+    }
+
+    /**
+     * Returns HTML attributes that should be added to the selector container.
+     *
+     * @return array
+     */
+    protected function selectorAttributes(): array
+    {
+        return [
+            'class' => 'fld-field',
+            'data' => [
+                'attribute' => $this->attribute(),
+                'mandatory' => $this->mandatory(),
+                'requirable' => $this->requirable(),
+            ],
+        ];
     }
 
     /**

@@ -44,9 +44,6 @@
                 not forLibrary and element.required ? 'fld-required',
             ]|filter,
             data: {
-                attribute: element.attribute(),
-                mandatory: element.mandatory(),
-                requirable: element.requirable(),
                 keywords: forLibrary ? element.keywords()|join(' ')|lower : false,
             },
         }|merge(attr ?? {}, recursive=true) %}
