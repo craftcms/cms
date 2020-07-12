@@ -62,6 +62,6 @@ HTML;
      */
     public function formHtml(ElementInterface $element = null, bool $static = false)
     {
-        return Html::tag('h2', Html::encode($this->heading));
+        return Html::tag('h2', Html::encode(Craft::t('site', $this->heading)));
     }
 }
