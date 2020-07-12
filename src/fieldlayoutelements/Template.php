@@ -54,7 +54,7 @@ HTML;
         return Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField', [
             [
                 'label' => Craft::t('app', 'Template'),
-                'instructions' => Craft::t('app', 'The path to a template file within your site’s `templates/` folder.'),
+                'instructions' => Craft::t('app', 'The path to a template file within your `templates/` folder.'),
                 'tip' => Craft::t('app', 'The template will be rendered with an `element` variable.'),
                 'class' => 'code',
                 'id' => 'template',
