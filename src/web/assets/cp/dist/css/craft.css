@@ -2048,7 +2048,7 @@ body.ltr .field > .heading > label > .site { margin-left: 7px; }
 
 body.rtl .field > .heading > label > .site { margin-right: 7px; }
 
-.field > .notice, .field > .warning { margin: 2px 0 0; }
+.field > .notice, .field > .warning { margin: 5px 0 0; }
 
 .field > .input { position: relative; }
 
