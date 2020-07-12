@@ -14,7 +14,7 @@ use craft\helpers\Html;
 use yii\helpers\Markdown;
 
 /**
- * Class Tip
+ * Tip represents an author tip UI element that can be included in field layouts.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0

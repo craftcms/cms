@@ -13,7 +13,7 @@ use craft\helpers\Html;
 use yii\base\InvalidArgumentException;
 
 /**
- * EntryTitleField represents a Title field that is available to be placed within an entry type’s field layout designer.
+ * EntryTitleField represents a Title field that can be included within an entry type’s field layout designer.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0

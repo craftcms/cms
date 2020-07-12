@@ -13,7 +13,7 @@ use craft\base\FieldLayoutElement;
 use craft\helpers\Html;
 
 /**
- * Class HeadingLayoutElement
+ * Heading represents an `<h2>` UI element that can be included in field layouts.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0

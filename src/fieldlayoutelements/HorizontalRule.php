@@ -13,7 +13,7 @@ use craft\base\FieldLayoutElement;
 use craft\helpers\Html;
 
 /**
- * Class HRLayoutElement
+ * HorizontalRule represents an `<hr>` UI element can be included in field layouts.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0
