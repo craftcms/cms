@@ -3350,9 +3350,9 @@ body.rtl nav > ul > li > ul > li > ul > li > ul > li > ul > li .toggle { right: 
 
 .layoutdesigner { display: -webkit-flex; display: flex; -webkit-align-items: stretch; align-items: stretch; position: relative; border-radius: 3px; border: 1px solid rgba(96, 125, 159, 0.25); background-color: #fbfcfe; box-shadow: inset 0 1px 4px -1px rgba(96, 125, 159, 0.25); background-clip: padding-box; overflow: hidden; box-shadow: none; min-height: 500px; }
 
-body.ltr .layoutdesigner { padding-right: 265px; }
+body.ltr .layoutdesigner { padding-right: 241px; }
 
-body.rtl .layoutdesigner { padding-left: 265px; }
+body.rtl .layoutdesigner { padding-left: 241px; }
 
 .layoutdesigner .fld-workspace { -webkit-flex: 1; flex: 1; background-color: #f3f7fc; background-image: -o-linear-gradient(left, #ecf2f9 1px, transparent 0px), -o-linear-gradient(top, #ecf2f9 1px, transparent 1px); background-image: linear-gradient(to right, #ecf2f9 1px, transparent 0px), linear-gradient(to bottom, #ecf2f9 1px, transparent 1px); -o-background-size: 24px 24px; background-size: 24px 24px; background-position: -1px -1px; box-shadow: inset 0 1px 3px -1px #acbed2; }
 
@@ -3366,7 +3366,7 @@ body.rtl .layoutdesigner .fld-workspace { padding: 24px 24px 24px 0 ; }
 
 .layoutdesigner .fld-workspace .fld-tabs { display: -webkit-flex; display: flex; -webkit-align-items: flex-start; align-items: flex-start; -webkit-flex-wrap: wrap; flex-wrap: wrap; }
 
-.layoutdesigner .fld-sidebar { position: absolute; top: 0; height: 100%; width: 265px; padding: 14px; overflow: auto; box-sizing: border-box; }
+.layoutdesigner .fld-sidebar { position: absolute; top: 0; height: 100%; width: 241px; padding: 14px; overflow: auto; box-sizing: border-box; }
 
 body.ltr .layoutdesigner .fld-sidebar { right: 0; }
 
@@ -3392,7 +3392,7 @@ body.rtl .fld-tab .settings, body.rtl .fld-field .settings, body.rtl .fld-field 
 
 .fld-tab .settings:hover:before, .fld-tab .settings.active:before, .fld-field .settings:hover:before, .fld-field .settings.active:before { opacity: 1; }
 
-.fld-tab { width: 288px; box-sizing: border-box; }
+.fld-tab { width: 264px; box-sizing: border-box; }
 
 body.ltr .fld-tab { padding: 0 25px 24px 0 ; }
 
@@ -3478,7 +3478,7 @@ body.rtl .fld-heading .fld-element-icon, body.rtl .fld-tip .fld-element-icon { m
 
 .fld-tip .fld-element-icon.fld-tip-warning:before { content: 'alert'; }
 
-.fld-element-settings { width: 264px; }
+.fld-element-settings { width: 240px; }
 
 /* No Scroll */
 html.noscroll, html.noscroll body { overflow: hidden; height: 100%; }

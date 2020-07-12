@@ -39,7 +39,7 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend({
         // Set up the layout grids
         this.tabGrid = new Craft.Grid(this.$tabContainer, {
             itemSelector: '.fld-tab',
-            minColWidth: 24 * 12,
+            minColWidth: 24 * 11,
             fillMode: 'grid',
             snapToGrid: 24
         });
