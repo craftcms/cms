@@ -62,7 +62,12 @@ class m200629_112700_project_config_merge_and_split extends Migration
                 $configData = array_merge($configData, $fileConfig);
             };
 
-            $traverseFile($baseFile);
+            if (file_exists($baseFile)) {
+                $traverseFile($baseFile);
+            } else {
+                $configData = $projectConfig->get();
+            }
+
             echo "done\n";
 
             $backupFile = pathinfo(ProjectConfigService::CONFIG_FILENAME, PATHINFO_FILENAME) . date('-Y-m-d-His') . '.yaml';
