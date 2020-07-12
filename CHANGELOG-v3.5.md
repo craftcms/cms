@@ -9,7 +9,7 @@
 - It’s now possible to customize the labels and author instructions for all fields (including Title fields), from within field layout designers. ([#806](https://github.com/craftcms/cms/issues/806), [#841](https://github.com/craftcms/cms/issues/841))
 - It’s now possible to set Title fields’ positions within field layout designers. ([#3953](https://github.com/craftcms/cms/issues/3953))
 - It’s now possible to set field widths to 25%, 50%, 75%, or 100%, and fields will be positioned next to each other when there’s room. ([#2644](https://github.com/craftcms/cms/issues/2644))
-- It’s now possible to add headings, tips, warnings, and horizontal rules to field layouts. ([#1103](https://github.com/craftcms/cms/issues/1103), [#1138](https://github.com/craftcms/cms/issues/1138), [#4738](https://github.com/craftcms/cms/issues/4738))
+- It’s now possible to add headings, tips, warnings, horizontal rules, and custom UI elements based on site templates, to field layouts. ([#1103](https://github.com/craftcms/cms/issues/1103), [#1138](https://github.com/craftcms/cms/issues/1138), [#4738](https://github.com/craftcms/cms/issues/4738))
 - It’s now possible to search for fields from within field layout designers. ([#913](https://github.com/craftcms/cms/issues/913))
 - Added the “Use shapes to represent statuses” user preference. ([#3293](https://github.com/craftcms/cms/issues/3293))
 - Added the “Underline links” user preference. ([#6153](https://github.com/craftcms/cms/issues/6153))
@@ -156,6 +156,7 @@
 - Added `craft\fieldlayoutelements\HorizontalRule`.
 - Added `craft\fieldlayoutelements\StandardField`.
 - Added `craft\fieldlayoutelements\StandardTextField`.
+- Added `craft\fieldlayoutelements\Template`.
 - Added `craft\fieldlayoutelements\Tip`.
 - Added `craft\fieldlayoutelements\TitleField`.
 - Added `craft\fields\BaseOptionsField::getContentGqlMutationArgumentType()`.

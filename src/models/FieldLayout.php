@@ -17,6 +17,7 @@ use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
 use craft\fieldlayoutelements\Heading;
 use craft\fieldlayoutelements\HorizontalRule;
+use craft\fieldlayoutelements\Template;
 use craft\fieldlayoutelements\Tip;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -276,6 +277,7 @@ class FieldLayout extends Model
             new Tip([
                 'style' => Tip::STYLE_WARNING,
             ]),
+            new Template(),
             new HorizontalRule(),
         ];
     }
