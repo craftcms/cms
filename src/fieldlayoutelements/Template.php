@@ -55,6 +55,7 @@ HTML;
             [
                 'label' => Craft::t('app', 'Template'),
                 'instructions' => Craft::t('app', 'The path to a template file within your site’s templates/ folder'),
+                'class' => 'code',
                 'id' => 'template',
                 'name' => 'template',
                 'value' => $this->template,
