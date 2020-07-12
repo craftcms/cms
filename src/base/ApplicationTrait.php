@@ -1503,10 +1503,10 @@ trait ApplicationTrait
             switch ($fieldLayout->type) {
                 case Asset::class:
                 case Category::class:
-                    $event->fields[] = new TitleField();
+                    $event->fields[] = TitleField::class;
                     break;
                 case Entry::class:
-                    $event->fields[] = new EntryTitleField();
+                    $event->fields[] = EntryTitleField::class;
                     break;
             }
         });

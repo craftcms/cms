@@ -19,6 +19,7 @@ use craft\fieldlayoutelements\Heading;
 use craft\fieldlayoutelements\HorizontalRule;
 use craft\fieldlayoutelements\Tip;
 use yii\base\InvalidArgumentException;
+use yii\base\InvalidConfigException;
 
 /**
  * FieldLayout model class.
@@ -29,7 +30,27 @@ use yii\base\InvalidArgumentException;
 class FieldLayout extends Model
 {
     /**
-     * @event DefineFieldLayoutElementsEvent The event that is triggered when defining the standard (not custom) fields for the layout.
+     * @event DefineFieldLayoutFieldsEvent The event that is triggered when defining the standard (not custom) fields for the layout.
+     *
+     * ```php
+     * use craft\models\FieldLayout;
+     * use craft\events\DefineFieldLayoutFieldsEvent;
+     * use yii\base\Event;
+     *
+     * Event::on(
+     *     FieldLayout::class,
+     *     FieldLayout::EVENT_DEFINE_STANDARD_FIELDS,
+     *     function(DefineFieldLayoutFieldsEvent $event) {
+     *         // @var FieldLayout $layout
+     *         $layout = $event->sender;
+     *
+     *         if ($layout->type === MyElementType::class) {
+     *             $event->fields[] = MyStandardField::class;
+     *         }
+     *     }
+     * );
+     * ```
+     *
      * @see getAvailableStandardFields()
      * @since 3.5.0
      */
@@ -225,6 +246,16 @@ class FieldLayout extends Model
             $event = new DefineFieldLayoutFieldsEvent();
             $this->trigger(self::EVENT_DEFINE_STANDARD_FIELDS, $event);
             $this->_availableStandardFields = $event->fields;
+
+            // Instantiate them
+            foreach ($this->_availableStandardFields as &$field) {
+                if (is_string($field) || is_array($field)) {
+                    $field = Craft::createObject($field);
+                }
+                if (!$field instanceof BaseField) {
+                    throw new InvalidConfigException('Invalid standard field config');
+                }
+            }
         }
         return $this->_availableStandardFields;
     }
@@ -376,7 +407,8 @@ class FieldLayout extends Model
      * @return FieldLayoutForm
      * @since 3.5.0
      */
-    public function createForm(ElementInterface $element = null, bool $static = false, array $config = []): FieldLayoutForm {
+    public function createForm(ElementInterface $element = null, bool $static = false, array $config = []): FieldLayoutForm
+    {
         $form = new FieldLayoutForm($config);
 
         foreach ($this->getTabs() as $tab) {
