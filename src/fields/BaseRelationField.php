@@ -647,8 +647,7 @@ JS;
         }
 
         $condition = [
-            'and',
-            ['fieldId' => $this->id],
+            'or',
         ];
 
         foreach ($sourceElementIdsBySiteId as $siteId => $elementIds) {
@@ -663,7 +662,11 @@ JS;
         $map = (new Query())
             ->select(['sourceId as source', 'targetId as target'])
             ->from([TableName::RELATIONS])
-            ->where($condition)
+            ->where([
+                'and',
+                ['fieldId' => $this->id],
+                $condition
+            ])
             ->orderBy(['sortOrder' => SORT_ASC])
             ->all();
 
