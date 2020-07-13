@@ -3,17 +3,16 @@
 ## Unreleased
 
 ### Fixed
-- Fixed a bug where indexing assets using the `index-assets` would not clean up stale indexing data after it was done.
-- Fixed a bug where preparing an indexing file list for a folder would return incorrect results for missing folders.
-- Fixed a bug where site-specific tests were not able to properly use `craft\test\fixtures\elements\AssetFixture`. ([#6309](https://github.com/craftcms/cms/issues/6309))
-- Fixed a bug where deleting an asset folder would orphan element records in the database. ([#6326](https://github.com/craftcms/cms/issues/6326))
-- Fixed a bug where it was sometimes impossible to use the `relatedToAll` argument with GraphQL queries. ([#6343](https://github.com/craftcms/cms/issues/6343))
-- Fixed a bug where rebuilding project config without an existing `project.yaml` file could result in loss of data. ([#6350](https://github.com/craftcms/cms/issues/6350))
-- Fixed a PHP error that could occur when using `craft\test\TestMailer` in some scenarios. ([#6259](https://github.com/craftcms/cms/issues/6259))
 - Fixed a bug where all Title fields within Quick Post widgets had the same input ID.
-- Fixed a bug where the asset indexer would not properly clean up after itself.
-- Fixed a bug where the asset indexer would incorrectly exclude files with disallowed extensions from the skipped file list.
-- Fixed a MySQL error that would occur when backing up a database in Craft using MySQL server 5.x and `mysqldump` 8.x.  ([#6368](https://github.com/craftcms/cms/issues/6368))
+- Fixed a bug where rebuilding the project config without an existing `project.yaml` file could result in data loss. ([#6350](https://github.com/craftcms/cms/issues/6350))
+- Fixed a bug where it was not always possible to use the `relatedToAll` argument with GraphQL queries. ([#6343](https://github.com/craftcms/cms/issues/6343))
+- Fixed an error that would occur when backing up a MySQL 5 database using `mysqldump` 8.  ([#6368](https://github.com/craftcms/cms/issues/6368))
+- Fixed a bug where the asset indexer would wasn’t skipping files with disallowed file extensions.
+- Fixed a bug where the asset indexer wasn’t handling missing volume folders properly.
+- Fixed a bug where the asset indexer wasn’t cleaning up after itself.
+- Fixed a bug where orphan rows could be left in the `elements` table after deleting an asset folder. ([#6326](https://github.com/craftcms/cms/issues/6326))
+- Fixed a bug where site-specific tests were not able to properly use `craft\test\fixtures\elements\AssetFixture`. ([#6309](https://github.com/craftcms/cms/issues/6309))
+- Fixed a PHP error that could occur when using `craft\test\TestMailer` in some scenarios. ([#6259](https://github.com/craftcms/cms/issues/6259))
 
 ### Added
 - Added `craft\services\AssetIndexer::deleteStaleIndexingData()`.
