@@ -10,7 +10,9 @@ namespace craft\fieldlayoutelements;
 use craft\base\ElementInterface;
 
 /**
- * FieldLayoutStaticField represents a standard field that is available to be placed within a field layout designer
+ * StandardField is the base class for standard fields that can be included in field layouts.
+ *
+ * Standard fields can be registered using [[\craft\models\FieldLayout::EVENT_DEFINE_STANDARD_FIELDS]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0

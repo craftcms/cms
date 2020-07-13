@@ -11,7 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 
 /**
- * FieldLayoutStaticTextField represents a static text field that is available to be placed within a field layout designer
+ * StandardTextField represents a text field that can be included in field layouts.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0

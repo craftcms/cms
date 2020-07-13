@@ -3,7 +3,7 @@
 
 $base: 24px;
 $tabPadding: 14px;
-$tabWidth: $base * 11;
+$tabWidth: $base * 10;
 $gridColor: hsl(212, 50%, 95%);
 
 @mixin workspaceBg {
@@ -253,7 +253,8 @@ body.dragging {
 }
 
 .fld-heading,
-.fld-tip {
+.fld-tip,
+.fld-template {
   display: flex;
   align-items: center;
 
@@ -266,6 +267,9 @@ body.dragging {
 
   .fld-element-label {
     flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
 
@@ -274,11 +278,14 @@ body.dragging {
   font-weight: bold;
 }
 
-.fld-tip .fld-element-icon {
-  &:before {
+.fld-tip,
+.fld-template {
+  .fld-element-icon:before {
     @include icon;
   }
+}
 
+.fld-tip .fld-element-icon {
   &:not(.fld-tip-warning):before {
     content: 'lightbulb';
   }
@@ -286,6 +293,10 @@ body.dragging {
   &.fld-tip-warning:before {
     content: 'alert';
   }
+}
+
+.fld-template .fld-element-icon:before {
+  content: 'template';
 }
 
 .fld-element-settings {

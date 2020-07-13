@@ -14,7 +14,7 @@ use craft\helpers\Html;
 use yii\helpers\Markdown;
 
 /**
- * Class Tip
+ * Tip represents an author tip UI element that can be included in field layouts.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0
@@ -45,7 +45,14 @@ class Tip extends FieldLayoutElement
                 !$this->_isTip() ? 'fld-tip-warning' : null,
             ]),
         ]);
-        $text = Html::tag('div', $this->_isTip() ? Craft::t('app', 'Tip') : Craft::t('app', 'Warning'), [
+
+        if ($this->tip) {
+            $label = Html::encode($this->tip);
+        } else {
+            $label = $this->_isTip() ? Craft::t('app', 'Tip') : Craft::t('app', 'Warning');
+        }
+
+        $text = Html::tag('div', $label, [
             'class' => 'fld-element-label',
         ]);
 

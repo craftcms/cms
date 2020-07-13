@@ -13,7 +13,7 @@ use craft\base\FieldLayoutElement;
 use craft\helpers\Html;
 
 /**
- * FieldLayoutField represents a field that is available to be placed within a field layout designer.
+ * BaseField is the base class for custom and standard fields that can be included in field layouts.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0

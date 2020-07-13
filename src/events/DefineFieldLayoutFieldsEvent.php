@@ -19,7 +19,7 @@ use yii\base\Event;
 class DefineFieldLayoutFieldsEvent extends Event
 {
     /**
-     * @var BaseField[] The fields that should be available to the field layout designer.
+     * @var BaseField[]|string[]|array[] The fields that should be available to the field layout designer.
      */
     public $fields = [];
 }
