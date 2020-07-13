@@ -26,7 +26,7 @@ class ProjectConfigController extends Controller
     public function beforeAction($action)
     {
         // This controller is only available to the CP
-        if (!Craft::$app->getRequest()->getIsCpRequest()) {
+        if (!$this->request->getIsCpRequest()) {
             throw new NotFoundHttpException();
         }
 

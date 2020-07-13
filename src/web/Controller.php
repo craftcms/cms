@@ -27,6 +27,8 @@ use yii\web\Response as YiiResponse;
  * Controller is a base class that all controllers in Craft extend.
  * It extends Yii’s [[\yii\web\Controller]], overwriting specific methods as required.
  *
+ * @property Request $request
+ * @property Response $response
  * @property View $view The view object that can be used to render views or view files
  * @method View getView() Returns the view object that can be used to render views or view files
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>

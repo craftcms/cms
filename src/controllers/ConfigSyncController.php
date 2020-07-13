@@ -146,7 +146,7 @@ class ConfigSyncController extends BaseUpdaterController
         $data['uninstallPlugins'] = array_diff($loadedConfigPlugins, $yamlPlugins);
 
         // Set the return URL, if any
-        if (($returnUrl = Craft::$app->getRequest()->getBodyParam('return')) !== null) {
+        if (($returnUrl = $this->request->getBodyParam('return')) !== null) {
             $data['returnUrl'] = strip_tags($returnUrl);
         }
 

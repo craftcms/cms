@@ -43,9 +43,8 @@ class PluginsController extends Controller
     {
         $this->requirePostRequest();
 
-        $request = Craft::$app->getRequest();
-        $pluginHandle = $request->getRequiredBodyParam('pluginHandle');
-        $edition = $request->getBodyParam('edition');
+        $pluginHandle = $this->request->getRequiredBodyParam('pluginHandle');
+        $edition = $this->request->getBodyParam('edition');
 
         if (Craft::$app->getPlugins()->installPlugin($pluginHandle, $edition)) {
             $this->setSuccessFlash(Craft::t('app', 'Plugin installed.'));
@@ -64,12 +63,11 @@ class PluginsController extends Controller
     public function actionSwitchEdition(): Response
     {
         $this->requirePostRequest();
-        $request = Craft::$app->getRequest();
-        $pluginHandle = $request->getRequiredBodyParam('pluginHandle');
-        $edition = $request->getRequiredBodyParam('edition');
+        $pluginHandle = $this->request->getRequiredBodyParam('pluginHandle');
+        $edition = $this->request->getRequiredBodyParam('edition');
         Craft::$app->getPlugins()->switchEdition($pluginHandle, $edition);
 
-        if (Craft::$app->getRequest()->getAcceptsJson()) {
+        if ($this->request->getAcceptsJson()) {
             return $this->asJson(['success' => true]);
         }
 
@@ -85,7 +83,7 @@ class PluginsController extends Controller
     public function actionUninstallPlugin(): Response
     {
         $this->requirePostRequest();
-        $pluginHandle = Craft::$app->getRequest()->getRequiredBodyParam('pluginHandle');
+        $pluginHandle = $this->request->getRequiredBodyParam('pluginHandle');
 
         if (Craft::$app->getPlugins()->uninstallPlugin($pluginHandle)) {
             $this->setSuccessFlash(Craft::t('app', 'Plugin uninstalled.'));
@@ -124,7 +122,7 @@ class PluginsController extends Controller
     public function actionEnablePlugin(): Response
     {
         $this->requirePostRequest();
-        $pluginHandle = Craft::$app->getRequest()->getRequiredBodyParam('pluginHandle');
+        $pluginHandle = $this->request->getRequiredBodyParam('pluginHandle');
 
         if (Craft::$app->getPlugins()->enablePlugin($pluginHandle)) {
             $this->setSuccessFlash(Craft::t('app', 'Plugin enabled.'));
@@ -143,7 +141,7 @@ class PluginsController extends Controller
     public function actionDisablePlugin(): Response
     {
         $this->requirePostRequest();
-        $pluginHandle = Craft::$app->getRequest()->getRequiredBodyParam('pluginHandle');
+        $pluginHandle = $this->request->getRequiredBodyParam('pluginHandle');
 
         if (Craft::$app->getPlugins()->disablePlugin($pluginHandle)) {
             $this->setSuccessFlash(Craft::t('app', 'Plugin disabled.'));
@@ -163,8 +161,8 @@ class PluginsController extends Controller
     public function actionSavePluginSettings()
     {
         $this->requirePostRequest();
-        $pluginHandle = Craft::$app->getRequest()->getRequiredBodyParam('pluginHandle');
-        $settings = Craft::$app->getRequest()->getBodyParam('settings', []);
+        $pluginHandle = $this->request->getRequiredBodyParam('pluginHandle');
+        $settings = $this->request->getBodyParam('settings', []);
         $plugin = Craft::$app->getPlugins()->getPlugin($pluginHandle);
 
         if ($plugin === null) {

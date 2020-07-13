@@ -96,9 +96,8 @@ class ElementIndexSettingsController extends BaseElementsController
 
         $elementType = $this->elementType();
 
-        $request = Craft::$app->getRequest();
-        $sourceOrder = $request->getBodyParam('sourceOrder', []);
-        $sources = $request->getBodyParam('sources', []);
+        $sourceOrder = $this->request->getBodyParam('sourceOrder', []);
+        $sources = $this->request->getBodyParam('sources', []);
 
         // Normalize to the way it's stored in the DB
         foreach ($sourceOrder as $i => $source) {

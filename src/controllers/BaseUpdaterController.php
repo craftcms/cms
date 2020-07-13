@@ -59,7 +59,7 @@ abstract class BaseUpdaterController extends Controller
     public function beforeAction($action)
     {
         // This controller is only available to the CP
-        if (!Craft::$app->getRequest()->getIsCpRequest()) {
+        if (!$this->request->getIsCpRequest()) {
             throw new NotFoundHttpException();
         }
 
@@ -70,7 +70,7 @@ abstract class BaseUpdaterController extends Controller
         }
 
         if ($action->id !== 'index') {
-            if (($data = Craft::$app->getRequest()->getValidatedBodyParam('data')) === null) {
+            if (($data = $this->request->getValidatedBodyParam('data')) === null) {
                 throw new BadRequestHttpException();
             }
 
@@ -580,7 +580,6 @@ abstract class BaseUpdaterController extends Controller
     protected function installPlugin(string $handle, string $edition = null): array
     {
         // Prevent the plugin from sending any headers, etc.
-        $realResponse = Craft::$app->getResponse();
         $tempResponse = new CraftResponse(['isSent' => true]);
         Craft::$app->set('response', $tempResponse);
 
@@ -590,7 +589,7 @@ abstract class BaseUpdaterController extends Controller
             $errorDetails = null;
         } catch (\Throwable $e) {
             $success = false;
-            Craft::$app->set('response', $realResponse);
+            Craft::$app->set('response', $this->response);
             $migration = $output = null;
 
             if ($e instanceof MigrateException) {
@@ -614,7 +613,7 @@ abstract class BaseUpdaterController extends Controller
         }
 
         // Put the real response back
-        Craft::$app->set('response', $realResponse);
+        Craft::$app->set('response', $this->response);
 
         return [$success, $tempResponse, $errorDetails];
     }

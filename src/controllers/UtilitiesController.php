@@ -141,7 +141,7 @@ class UtilitiesController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $logId = Craft::$app->getRequest()->getRequiredBodyParam('logId');
+        $logId = $this->request->getRequiredBodyParam('logId');
         Craft::$app->deprecator->deleteLogById($logId);
 
         return $this->asJson([
@@ -160,7 +160,7 @@ class UtilitiesController extends Controller
         $this->requireAdmin();
         $projectConfig = Craft::$app->getProjectConfig();
 
-        switch (Craft::$app->getRequest()->getRequiredBodyParam('performAction')) {
+        switch ($this->request->getRequiredBodyParam('performAction')) {
             case 'force-apply':
                 $forceUpdate = $projectConfig->forceUpdate;
                 $projectConfig->forceUpdate = true;
@@ -191,7 +191,7 @@ class UtilitiesController extends Controller
     {
         $this->requirePermission('utility:asset-indexes');
 
-        $params = Craft::$app->getRequest()->getRequiredBodyParam('params');
+        $params = $this->request->getRequiredBodyParam('params');
 
         // Initial request
         if (!empty($params['start'])) {
@@ -314,7 +314,7 @@ class UtilitiesController extends Controller
     {
         $this->requirePermission('utility:clear-caches');
 
-        $caches = Craft::$app->getRequest()->getRequiredBodyParam('caches');
+        $caches = $this->request->getRequiredBodyParam('caches');
 
         if (!isset($caches)) {
             return $this->asJson([
@@ -374,11 +374,11 @@ class UtilitiesController extends Controller
         $zipPath = FileHelper::zip($backupPath);
         unlink($backupPath);
 
-        if (!Craft::$app->getRequest()->getBodyParam('downloadBackup')) {
+        if (!$this->request->getBodyParam('downloadBackup')) {
             return $this->asJson(['success' => true]);
         }
 
-        return Craft::$app->getResponse()->sendFile($zipPath, null, [
+        return $this->response->sendFile($zipPath, null, [
             'mimeType' => 'application/zip',
         ]);
     }
@@ -393,7 +393,7 @@ class UtilitiesController extends Controller
     {
         $this->requirePermission('utility:find-replace');
 
-        $params = Craft::$app->getRequest()->getRequiredBodyParam('params');
+        $params = $this->request->getRequiredBodyParam('params');
 
         if (!empty($params['find']) && !empty($params['replace'])) {
             Queue::push(new FindAndReplace([

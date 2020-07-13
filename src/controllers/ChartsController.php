@@ -34,9 +34,9 @@ class ChartsController extends Controller
      */
     public function actionGetNewUsersData(): Response
     {
-        $userGroupId = Craft::$app->getRequest()->getRequiredBodyParam('userGroupId');
-        $startDateParam = Craft::$app->getRequest()->getRequiredBodyParam('startDate');
-        $endDateParam = Craft::$app->getRequest()->getRequiredBodyParam('endDate');
+        $userGroupId = $this->request->getRequiredBodyParam('userGroupId');
+        $startDateParam = $this->request->getRequiredBodyParam('startDate');
+        $endDateParam = $this->request->getRequiredBodyParam('endDate');
 
         $startDate = DateTimeHelper::toDateTime($startDateParam);
         $endDate = DateTimeHelper::toDateTime($endDateParam);

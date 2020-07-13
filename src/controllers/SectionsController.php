@@ -129,28 +129,26 @@ class SectionsController extends Controller
     {
         $this->requirePostRequest();
 
-        $request = Craft::$app->getRequest();
-
         $section = new Section();
 
         // Main section settings
-        $section->id = $request->getBodyParam('sectionId');
-        $section->name = $request->getBodyParam('name');
-        $section->handle = $request->getBodyParam('handle');
-        $section->type = $request->getBodyParam('type');
-        $section->enableVersioning = $request->getBodyParam('enableVersioning', true);
-        $section->propagationMethod = $request->getBodyParam('propagationMethod', Section::PROPAGATION_METHOD_ALL);
-        $section->previewTargets = $request->getBodyParam('previewTargets') ?: [];
+        $section->id = $this->request->getBodyParam('sectionId');
+        $section->name = $this->request->getBodyParam('name');
+        $section->handle = $this->request->getBodyParam('handle');
+        $section->type = $this->request->getBodyParam('type');
+        $section->enableVersioning = $this->request->getBodyParam('enableVersioning', true);
+        $section->propagationMethod = $this->request->getBodyParam('propagationMethod', Section::PROPAGATION_METHOD_ALL);
+        $section->previewTargets = $this->request->getBodyParam('previewTargets') ?: [];
 
         if ($section->type === Section::TYPE_STRUCTURE) {
-            $section->maxLevels = $request->getBodyParam('maxLevels');
+            $section->maxLevels = $this->request->getBodyParam('maxLevels');
         }
 
         // Site-specific settings
         $allSiteSettings = [];
 
         foreach (Craft::$app->getSites()->getAllSites() as $site) {
-            $postedSettings = $request->getBodyParam('sites.' . $site->handle);
+            $postedSettings = $this->request->getBodyParam('sites.' . $site->handle);
 
             // Skip disabled sites if this is a multi-site install
             if (Craft::$app->getIsMultiSite() && empty($postedSettings['enabled'])) {
@@ -202,7 +200,7 @@ class SectionsController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $sectionId = Craft::$app->getRequest()->getRequiredBodyParam('id');
+        $sectionId = $this->request->getRequiredBodyParam('id');
 
         Craft::$app->getSections()->deleteSectionById($sectionId);
 
@@ -333,7 +331,7 @@ class SectionsController extends Controller
     {
         $this->requirePostRequest();
 
-        $entryTypeId = Craft::$app->getRequest()->getBodyParam('entryTypeId');
+        $entryTypeId = $this->request->getBodyParam('entryTypeId');
 
         if ($entryTypeId) {
             $entryType = Craft::$app->getSections()->getEntryTypeById($entryTypeId);
@@ -346,13 +344,13 @@ class SectionsController extends Controller
         }
 
         // Set the simple stuff
-        $entryType->sectionId = Craft::$app->getRequest()->getRequiredBodyParam('sectionId');
-        $entryType->name = Craft::$app->getRequest()->getBodyParam('name', $entryType->name);
-        $entryType->handle = Craft::$app->getRequest()->getBodyParam('handle', $entryType->handle);
-        $entryType->hasTitleField = (bool)Craft::$app->getRequest()->getBodyParam('hasTitleField', $entryType->hasTitleField);
-        $entryType->titleTranslationMethod = Craft::$app->getRequest()->getBodyParam('titleTranslationMethod', $entryType->titleTranslationMethod);
-        $entryType->titleTranslationKeyFormat = Craft::$app->getRequest()->getBodyParam('titleTranslationKeyFormat', $entryType->titleTranslationKeyFormat);
-        $entryType->titleFormat = Craft::$app->getRequest()->getBodyParam('titleFormat', $entryType->titleFormat);
+        $entryType->sectionId = $this->request->getRequiredBodyParam('sectionId');
+        $entryType->name = $this->request->getBodyParam('name', $entryType->name);
+        $entryType->handle = $this->request->getBodyParam('handle', $entryType->handle);
+        $entryType->hasTitleField = (bool)$this->request->getBodyParam('hasTitleField', $entryType->hasTitleField);
+        $entryType->titleTranslationMethod = $this->request->getBodyParam('titleTranslationMethod', $entryType->titleTranslationMethod);
+        $entryType->titleTranslationKeyFormat = $this->request->getBodyParam('titleTranslationKeyFormat', $entryType->titleTranslationKeyFormat);
+        $entryType->titleFormat = $this->request->getBodyParam('titleFormat', $entryType->titleFormat);
 
         // Set the field layout
         $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
@@ -385,7 +383,7 @@ class SectionsController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $entryTypeIds = Json::decode(Craft::$app->getRequest()->getRequiredBodyParam('ids'));
+        $entryTypeIds = Json::decode($this->request->getRequiredBodyParam('ids'));
         Craft::$app->getSections()->reorderEntryTypes($entryTypeIds);
 
         return $this->asJson(['success' => true]);
@@ -401,7 +399,7 @@ class SectionsController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $entryTypeId = Craft::$app->getRequest()->getRequiredBodyParam('id');
+        $entryTypeId = $this->request->getRequiredBodyParam('id');
 
         Craft::$app->getSections()->deleteEntryTypeById($entryTypeId);
 
