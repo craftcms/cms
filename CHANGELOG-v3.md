@@ -487,6 +487,7 @@
 - The `pathParam` config setting can now be set to `null`. ([#5676](https://github.com/craftcms/cms/issues/5676))
 - If the `baseCpUrl` config setting is set, Craft will no longer treat any other base URLs as control panel requests, even if they contain the correct trigger segment. ([#5860](https://github.com/craftcms/cms/issues/5860))
 - The `backup` command now has an `--overwrite` flag that can be passed to overwrite existing backup files for non-interactive shells.
+- The `backup` command now has a `--zip` flag that can be passed to store the backup as a zip file. ([#6335](https://github.com/craftcms/cms/issues/6335))
 - The `mailer/test` command now only supports testing the current email settings.
 - Reference tags can now provide a fallback value to be used if the reference can’t be resolved. ([#5589](https://github.com/craftcms/cms/issues/5589))
 - It’s no longer necessary to append the `|raw` filter after the `|namespace` filter.
