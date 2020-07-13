@@ -320,6 +320,7 @@
 - The `cpTrigger` config setting can now be set to `null`. ([#5122](https://github.com/craftcms/cms/issues/5122))
 - The `pathParam` config setting can now be set to `null`. ([#5676](https://github.com/craftcms/cms/issues/5676))
 - If the `baseCpUrl` config setting is set, Craft will no longer treat any other base URLs as control panel requests, even if they contain the correct trigger segment. ([#5860](https://github.com/craftcms/cms/issues/5860))
+- The `backup` command now has an `--overwrite` flag that can be passed to overwrite existing backup files for non-interactive shells.
 - The `mailer/test` command now only supports testing the current email settings.
 - The `project-config/sync` command has been renamed to `project-config/apply`.
 - `migrate` commands now have a `--track` option, which can be set to `craft`, `content`, or a custom migration track name.

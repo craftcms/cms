@@ -27,6 +27,22 @@ class BackupController extends Controller
     public $defaultAction = 'db';
 
     /**
+     * @var bool Whether to overwrite an existing backup file, if a specific file path is given.
+     * @since 3.5.0
+     */
+    public $overwrite = false;
+
+    /**
+     * @inheritdoc
+     */
+    public function options($actionID)
+    {
+        $options = parent::options($actionID);
+        $options[] = 'overwrite';
+        return $options;
+    }
+
+    /**
      * Creates a new database backup.
      *
      * @param string|null The path the database backup should be created at.
@@ -55,9 +71,15 @@ class BackupController extends Controller
             if (is_dir($path)) {
                 $path .= DIRECTORY_SEPARATOR . basename($db->getBackupFilePath());
             } else if (is_file($path)) {
-                if (!$this->confirm("{$path} already exists. Overwrite?")) {
-                    $this->stdout('Aborting' . PHP_EOL);
-                    return ExitCode::OK;
+                if (!$this->overwrite) {
+                    if (!$this->confirm("$path already exists. Overwrite?")) {
+                        if ($this->interactive) {
+                            $this->stdout('Aborting' . PHP_EOL);
+                            return ExitCode::OK;
+                        }
+                        $this->stderr("$path already exists. Retry with the --overwire flag to overwrite it." . PHP_EOL, Console::FG_RED);
+                        return ExitCode::UNSPECIFIED_ERROR;
+                    }
                 }
                 unlink($path);
             }
