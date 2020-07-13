@@ -332,15 +332,9 @@ class ProjectConfig
         ];
 
         foreach ($config as $key => $configData) {
-            if (is_array($configData)) {
-                $keys = array_keys($configData);
-
-                if ($keys > 0 && count(preg_grep('/'. ProjectConfigService::CRAFT_UID_PATTERN . '/i', $keys)) === count($keys)) {
-                    foreach ($configData as $uid => $subConfig) {
-                        $splitConfig[$key . '/' . $uid . '.yaml'] = $subConfig;
-                    }
-                } else {
-                    $splitConfig[ProjectConfigService::CONFIG_FILENAME][$key] = $configData;
+            if (self::isComponentArray($configData)) {
+                foreach ($configData as $uid => $subConfig) {
+                    $splitConfig["$key/$uid.yaml"] = $subConfig;
                 }
             } else {
                 $splitConfig[ProjectConfigService::CONFIG_FILENAME][$key] = $configData;
@@ -348,5 +342,26 @@ class ProjectConfig
         }
 
         return $splitConfig;
+    }
+
+    /**
+     * Returns whether the given project config item is an array of component configs, where each key is a UUID, and each item is a sub-array.
+     *
+     * @param mixed $item
+     * @return bool
+     */
+    private static function isComponentArray(&$item): bool
+    {
+        if (!is_array($item) || empty($item)) {
+            return false;
+        }
+
+        foreach ($item as $key => $value) {
+            if (!is_array($value) || !StringHelper::isUUID($key)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

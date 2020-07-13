@@ -89,11 +89,6 @@ class ProjectConfig extends Component
      */
     const UID_PATTERN = '[a-zA-Z0-9_-]+';
 
-    /**
-     * Regexp pattern to determine if a string fits the Craft's UID format.
-     */
-    const CRAFT_UID_PATTERN = '^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$';
-
     // Events
     // -------------------------------------------------------------------------
 
