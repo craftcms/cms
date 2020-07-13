@@ -163,14 +163,21 @@ class AssetIndexer extends Component
     public function extractSkippedItemsFromIndexList(array &$indexList): array
     {
         $isMysql = Craft::$app->getDb()->getIsMysql();
+        $allowedExtensions = Craft::$app->getConfig()->getGeneral()->allowedFileExtensions;
 
-        $skippedItems = array_filter($indexList, function($entry) use ($isMysql) {
+        $skippedItems = array_filter($indexList, function($entry) use ($isMysql, $allowedExtensions) {
             if (preg_match(AssetsHelper::INDEX_SKIP_ITEMS_PATTERN, $entry['basename'])) {
                 return true;
             }
+
             if ($isMysql && StringHelper::containsMb4($entry['basename'])) {
                 return true;
             }
+
+            if (isset($entry['extension']) && !in_array(strtolower($entry['extension']), $allowedExtensions, true)) {
+                return true;
+            }
+
             return false;
         });
 

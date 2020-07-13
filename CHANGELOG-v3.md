@@ -12,6 +12,7 @@
 - Fixed a PHP error that could occur when using `craft\test\TestMailer` in some scenarios. ([#6259](https://github.com/craftcms/cms/issues/6259))
 - Fixed a bug where all Title fields within Quick Post widgets had the same input ID.
 - Fixed a bug where the asset indexer would not properly clean up after itself.
+- Fixed a bug where the asset indexer would incorrectly exclude files with disallowed extensions from the skipped file list.
 
 ### Added
 - Added `craft\services\AssetIndexer::deleteStaleIndexingData()`.
