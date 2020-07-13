@@ -9,7 +9,9 @@
 - Fixed a bug where deleting an asset folder would orphan element records in the database. ([#6326](https://github.com/craftcms/cms/issues/6326))
 - Fixed a bug where it was sometimes impossible to use the `relatedToAll` argument with GraphQL queries. ([#6343](https://github.com/craftcms/cms/issues/6343))
 - Fixed a bug where rebuilding project config without an existing `project.yaml` file could result in loss of data. ([#6350](https://github.com/craftcms/cms/issues/6350))
-- Fixed a bug where asset indexer would not properly clean up after itself.
+- Fixed a PHP error that could occur when using `craft\test\TestMailer` in some scenarios. ([#6259](https://github.com/craftcms/cms/issues/6259))
+- Fixed a bug where all Title fields within Quick Post widgets had the same input ID.
+- Fixed a bug where the asset indexer would not properly clean up after itself.
 
 ### Added
 - Added `craft\services\AssetIndexer::deleteStaleIndexingData()`.
