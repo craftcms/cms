@@ -233,31 +233,6 @@ class ProjectConfigHelperTest extends Unit
                     ]
                 ],
             ],
-            [
-                [
-                    'dateModified' => 4, 'email' => [
-                    'aaaaaaaG-aaaa-aaaa-aaaa-aaaaaaaaaaaa' => [
-                        'key' => 'value'
-                    ],
-                    'bbbbbbbb-aaaa-aaaa-aaaa-aaaaaaaaaaaa' => [
-                        'key2' => 'value'
-                    ]
-                ]
-                ],
-                [
-                    'project.yaml' => [
-                        'dateModified' => 4,
-                        'email' => [
-                            'aaaaaaaG-aaaa-aaaa-aaaa-aaaaaaaaaaaa' => [
-                                'key' => 'value'
-                            ],
-                            'bbbbbbbb-aaaa-aaaa-aaaa-aaaaaaaaaaaa' => [
-                                'key2' => 'value'
-                            ]
-                        ]
-                    ]
-                ],
-            ],
         ];
     }
 }
