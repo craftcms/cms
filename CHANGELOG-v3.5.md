@@ -350,6 +350,7 @@
 - `craft\base\SavableComponent::isSelectable()` has been moved into the base component class, `craft\base\Component`.
 - `craft\base\SavableComponentInterface::isSelectable()` has been moved into the base component interface, `craft\base\ComponentInterface`.
 - `craft\base\SortableFieldInterface::getSortOption()` now allows the returned `orderBy` key to be set to an array of column names.
+- `craft\behaviors\SessionBehavior::setNotice()` and `setError()` now store flash messages using `cp-notice` and `cp-error` keys when called from control panel requests. ([#5704](https://github.com/craftcms/cms/issues/5704))
 - `craft\db\ActiveRecord` now unsets any empty primary key values when saving new records, to avoid a SQL error on PostgreSQL. ([#5814](https://github.com/craftcms/cms/pull/5814))
 - `craft\elements\Asset::getImg()` now has a `$sizes` argument. ([#5774](https://github.com/craftcms/cms/issues/5774))
 - `craft\elements\Asset::getUrl()` now has a `$transformOverrideParameters` argument. ([#5853](https://github.com/craftcms/cms/issues/5853))
