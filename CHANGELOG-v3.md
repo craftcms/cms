@@ -5,6 +5,7 @@
 ### Fixed
 - Fixed a bug where all Title fields within Quick Post widgets had the same input ID.
 - Fixed a bug where rebuilding the project config without an existing `project.yaml` file could result in data loss. ([#6350](https://github.com/craftcms/cms/issues/6350))
+- Fixed a bug where eager-loading relations across multiple sites wasn’t working. ([#6366](https://github.com/craftcms/cms/issues/6366))
 - Fixed a bug where it was not always possible to use the `relatedToAll` argument with GraphQL queries. ([#6343](https://github.com/craftcms/cms/issues/6343))
 - Fixed an error that would occur when backing up a MySQL 5 database using `mysqldump` 8.  ([#6368](https://github.com/craftcms/cms/issues/6368))
 - Fixed a bug where the asset indexer would wasn’t skipping files with disallowed file extensions.
