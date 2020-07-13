@@ -9,6 +9,7 @@
 - Fixed a bug where deleting an asset folder would orphan element records in the database. ([#6326](https://github.com/craftcms/cms/issues/6326))
 - Fixed a bug where it was sometimes impossible to use the `relatedToAll` argument with GraphQL queries. ([#6343](https://github.com/craftcms/cms/issues/6343))
 - Fixed a bug where rebuilding project config without an existing `project.yaml` file could result in loss of data. ([#6350](https://github.com/craftcms/cms/issues/6350))
+- Fixed a bug where asset indexer would not properly clean up after itself.
 
 ### Added
 - Added `craft\services\AssetIndexer::deleteStaleIndexingData()`.

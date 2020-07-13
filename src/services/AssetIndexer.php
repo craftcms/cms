@@ -408,6 +408,7 @@ class AssetIndexer extends Component
      * @return bool|Asset
      * @throws MissingAssetException if the asset record doesn't exist and $createIfMissing is false
      * @throws VolumeObjectNotFoundException If the file to be indexed cannot be found.
+     * @throws AssetDisallowedExtensionException If the file being indexed has a disallowed extension
      */
     public function indexFileByEntry(AssetIndexData $indexEntry, bool $cacheImages = false, bool $createIfMissing = true)
     {
@@ -423,10 +424,14 @@ class AssetIndexer extends Component
 
         $indexEntry->id = $record->id;
 
-        $asset = $this->_indexFileByIndexData($indexEntry, $createIfMissing, $cacheImages);
-        $this->updateIndexEntry($indexEntry->id, ['completed' => true, 'inProgress' => false, 'recordId' => $asset->id]);
-
-        return $asset;
+        try {
+            $asset = $this->_indexFileByIndexData($indexEntry, $createIfMissing, $cacheImages);
+            $this->updateIndexEntry($indexEntry->id, ['completed' => true, 'inProgress' => false, 'recordId' => $asset->id]);
+        } catch (AssetDisallowedExtensionException $exception) {
+            $this->updateIndexEntry($indexEntry->id, ['completed' => true, 'inProgress' => false]);
+            throw $exception;
+        }
+            return $asset;
     }
 
     /**
@@ -440,9 +445,9 @@ class AssetIndexer extends Component
         $sessionsInProgress = (new Query())
             ->select(['sessionId'])
             ->from([Table::ASSETINDEXDATA])
-            ->where(['recordId' => null])
+            ->where(['completed' => false])
             ->groupBy(['sessionId'])
-            ->scalar();
+            ->column();
 
         $db = Craft::$app->getDb();
 
