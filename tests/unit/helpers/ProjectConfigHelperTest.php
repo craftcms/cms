@@ -174,7 +174,7 @@ class ProjectConfigHelperTest extends Unit
                     'dateModified' => 2,
                     'email' => [
                         'provider' => 'gmail',
-                        'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' => [
+                        'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa' => [
                             'key' => 'value'
                         ]
                     ]
@@ -184,7 +184,7 @@ class ProjectConfigHelperTest extends Unit
                         'dateModified' => 2,
                         'email' => [
                             'provider' => 'gmail',
-                            'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' => [
+                            'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa' => [
                                 'key' => 'value'
                             ]
                         ]
@@ -195,7 +195,7 @@ class ProjectConfigHelperTest extends Unit
                 [
                     'dateModified' => 3,
                     'email' => [
-                        'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' => [
+                        'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa' => [
                             'key' => 'value'
                         ]
                     ]
@@ -204,7 +204,7 @@ class ProjectConfigHelperTest extends Unit
                     'project.yaml' => [
                         'dateModified' => 3
                     ],
-                    'email/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa.yaml' => [
+                    'email/aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa.yaml' => [
                         'key' => 'value'
                     ]
                 ],
@@ -213,10 +213,10 @@ class ProjectConfigHelperTest extends Unit
                 [
                     'dateModified' => 4,
                     'email' => [
-                        'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' => [
+                        'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa' => [
                             'key' => 'value'
                         ],
-                        'bbbbbbbb-aaaa-aaaa-aaaa-aaaaaaaaaaaa' => [
+                        'bbbbbbbb-aaaa-4aaa-aaaa-aaaaaaaaaaaa' => [
                             'key2' => 'value'
                         ]
                     ]
@@ -225,10 +225,10 @@ class ProjectConfigHelperTest extends Unit
                     'project.yaml' => [
                         'dateModified' => 4
                     ],
-                    'email/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa.yaml' => [
+                    'email/aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa.yaml' => [
                         'key' => 'value'
                     ],
-                    'email/bbbbbbbb-aaaa-aaaa-aaaa-aaaaaaaaaaaa.yaml' => [
+                    'email/bbbbbbbb-aaaa-4aaa-aaaa-aaaaaaaaaaaa.yaml' => [
                         'key2' => 'value'
                     ]
                 ],
