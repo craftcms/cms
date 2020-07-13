@@ -327,7 +327,6 @@ class ProjectConfig
      */
     public static function splitConfigIntoComponents(array $config): array
     {
-        $projectConfigService = Craft::$app->getProjectConfig();
         $splitConfig = [
             ProjectConfigService::CONFIG_FILENAME => [],
         ];
