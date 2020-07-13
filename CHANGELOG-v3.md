@@ -13,6 +13,7 @@
 - Fixed a bug where all Title fields within Quick Post widgets had the same input ID.
 - Fixed a bug where the asset indexer would not properly clean up after itself.
 - Fixed a bug where the asset indexer would incorrectly exclude files with disallowed extensions from the skipped file list.
+- Fixed a MySQL error that would occur when backing up a database in Craft using MySQL server 5.x and `mysqldump` 8.x.  ([#6368](https://github.com/craftcms/cms/issues/6368))
 
 ### Added
 - Added `craft\services\AssetIndexer::deleteStaleIndexingData()`.

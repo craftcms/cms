@@ -7,11 +7,14 @@
 
 namespace craft\db\mysql;
 
+use Composer\Util\Platform;
 use Craft;
 use craft\db\Connection;
 use craft\db\TableSchema;
+use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
+use mikehaertl\shellcommand\Command as ShellCommand;
 use yii\base\ErrorException;
 use yii\db\Exception;
 
@@ -151,6 +154,30 @@ class Schema extends \yii\db\mysql\Schema
             ' --default-character-set=' . Craft::$app->getConfig()->getDb()->charset .
             ' --set-charset' .
             ' --triggers';
+
+        // If the server is MySQL 5.x, we need to see what version of mysqldump is installed (5.x or 8.x)
+        if (version_compare(App::normalizeVersion(Craft::$app->getDb()->getSchema()->getServerVersion()), "8", "<")) {
+            // Find out if the db supports column-statistics
+            $shellCommand = new ShellCommand();
+
+            if (Platform::isWindows()) {
+                $shellCommand->setCommand('mysqldump --help | findstr "column-statistics"');
+            } else {
+                $shellCommand->setCommand('mysqldump --help | grep "column-statistics"');
+            }
+
+            // If we don't have proc_open, maybe we've got exec
+            if (!function_exists('proc_open') && function_exists('exec')) {
+                $shellCommand->useExec = true;
+            }
+
+            $success = $shellCommand->execute();
+
+            // if there was output, then they're running mysqldump 8.x against a 5.x database.
+            if ($success && $shellCommand->getOutput()) {
+                $defaultArgs .= ' --skip-column-statistics';
+            }
+        }
 
         if ($ignoreTables === null) {
             $ignoreTables = $this->db->getIgnoredBackupTables();
