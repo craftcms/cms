@@ -1634,18 +1634,6 @@ class Asset extends Element
             ]
         ]);
 
-        $html .= $view->renderTemplateMacro('_includes/forms', 'textField', [
-            [
-                'label' => Craft::t('app', 'Title'),
-                'siteId' => $this->siteId,
-                'id' => 'title',
-                'name' => 'title',
-                'value' => $this->title,
-                'errors' => $this->getErrors('title'),
-                'required' => true
-            ]
-        ]);
-
         $html .= parent::getEditorHtml();
 
         return $html;
