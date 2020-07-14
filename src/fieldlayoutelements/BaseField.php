@@ -117,13 +117,15 @@ abstract class BaseField extends FieldLayoutElement
      */
     protected function selectorInnerHtml(): string
     {
-        $innerHtml = Html::tag('h4', $this->label());
-
-        if ($type = $this->fieldType()) {
-            $innerHtml .= Html::tag('div', $type, [
-                'class' => ['smalltext', 'light'],
+        $innerHtml =
+            Html::tag('h4', $this->label(), [
+                'class' => 'fld-element-label',
+                'title' => $this->label(),
+            ]) .
+            Html::tag('div', $this->attribute(), [
+                'class' => ['smalltext', 'light', 'code'],
+                'title' => $this->attribute(),
             ]);
-        }
 
         return Html::tag('div', $innerHtml, [
             'class' => ['field-name'],
@@ -218,7 +220,6 @@ abstract class BaseField extends FieldLayoutElement
         return array_filter([
             $this->label,
             $this->defaultLabel(),
-            $this->fieldType(),
         ]);
     }
 

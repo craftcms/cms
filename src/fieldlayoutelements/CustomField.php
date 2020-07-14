@@ -147,14 +147,6 @@ class CustomField extends BaseField
     /**
      * @inheritdoc
      */
-    protected function fieldType(ElementInterface $element = null, bool $static = false)
-    {
-        return $this->_field::displayName();
-    }
-
-    /**
-     * @inheritdoc
-     */
     protected function defaultInstructions(ElementInterface $element = null, bool $static = false)
     {
         return $this->_field->instructions ? Craft::t('site', $this->_field->instructions) : null;

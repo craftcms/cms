@@ -296,6 +296,10 @@ code,
 .code input,
 .code textarea {
   @include fixed-width-font;
+
+  &.smalltext {
+    font-size: 0.8em !important;
+  }
 }
 
 /* links */

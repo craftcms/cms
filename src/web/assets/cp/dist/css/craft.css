@@ -147,6 +147,8 @@ body.rtl ol { padding-right: 40px; }
 /* code */
 code, .code, .code input, .code textarea { font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace; font-size: 0.9em !important; }
 
+code.smalltext, .code.smalltext, .code input.smalltext, .code textarea.smalltext { font-size: 0.8em !important; }
+
 /* links */
 a { color: #0B69A3; cursor: pointer; }
 
@@ -3442,15 +3444,19 @@ body.rtl .fld-element.fld-field .fld-field-hidden:not(.hidden) { margin-left: 5p
 
 .fld-element.fld-field .fld-field-hidden:not(.hidden), .fld-element.fld-field .fld-field-hidden:not(.hidden) + .field-name h4 { color: #7b8793; }
 
-.fld-element.fld-field .field-name { -webkit-flex: 1; flex: 1; }
+.fld-element.fld-field .field-name { -webkit-flex: 1; flex: 1; overflow: hidden; }
 
-.fld-element.fld-field .field-name h4 { font-weight: normal; color: #3f4d5a; margin-bottom: 2px; }
+.fld-element.fld-field .field-name h4 { margin-bottom: 2px; }
 
 .fld-element.fld-field.fld-required .field-name h4:after { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; user-select: none; opacity: 0.8; content: 'asterisk'; font-size: 8px; }
 
 body.ltr .fld-element.fld-field.fld-required .field-name h4:after { margin: -2px 0 0 5px ; }
 
 body.rtl .fld-element.fld-field.fld-required .field-name h4:after { margin: -2px 5px 0 0 ; }
+
+.fld-element .fld-element-label { font-weight: normal; color: #3f4d5a; }
+
+.fld-element .fld-element-label, .fld-element.fld-field .field-name .smalltext { -webkit-flex: 1; flex: 1; white-space: nowrap; overflow: hidden; -o-text-overflow: ellipsis; text-overflow: ellipsis; }
 
 body.dragging { cursor: move !important; cursor: -webkit-grabbing !important; cursor: grabbing !important; }
 
@@ -3467,8 +3473,6 @@ body.dragging { cursor: move !important; cursor: -webkit-grabbing !important; cu
 body.ltr .fld-heading .fld-element-icon, body.ltr .fld-tip .fld-element-icon, body.ltr .fld-template .fld-element-icon { margin-right: 5px; }
 
 body.rtl .fld-heading .fld-element-icon, body.rtl .fld-tip .fld-element-icon, body.rtl .fld-template .fld-element-icon { margin-left: 5px; }
-
-.fld-heading .fld-element-label, .fld-tip .fld-element-label, .fld-template .fld-element-label { -webkit-flex: 1; flex: 1; white-space: nowrap; overflow: hidden; -o-text-overflow: ellipsis; text-overflow: ellipsis; }
 
 .fld-heading .fld-element-icon:before { content: '#'; font-weight: bold; }
 

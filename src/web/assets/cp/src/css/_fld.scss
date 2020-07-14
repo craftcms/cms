@@ -204,10 +204,9 @@ $gridColor: hsl(212, 50%, 95%);
 
     .field-name {
       flex: 1;
+      overflow: hidden;
 
       h4 {
-        font-weight: normal;
-        color: $textColor;
         margin-bottom: 2px;
       }
     }
@@ -218,6 +217,19 @@ $gridColor: hsl(212, 50%, 95%);
       content: 'asterisk';
       font-size: 8px;
     }
+  }
+
+  .fld-element-label {
+    font-weight: normal;
+    color: $textColor;
+  }
+
+  .fld-element-label,
+  &.fld-field .field-name .smalltext {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
 
@@ -263,13 +275,6 @@ body.dragging {
     @include margin-right(5px);
     color: $lightTextColor;
     text-align: center;
-  }
-
-  .fld-element-label {
-    flex: 1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
 }
 
