@@ -22,7 +22,7 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-/*!   - 2020-06-30 */
+/*!   - 2020-07-13 */
 (function ($) {
   /** global: Craft */
 
@@ -17236,6 +17236,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     $tempInput: null,
     $fieldPlaceholder: null,
     isActive: false,
+    isVisible: false,
     activeTarget: 0,
     draftId: null,
     url: null,
@@ -17244,7 +17245,6 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     scrollTop: null,
     dragger: null,
     dragStartEditorWidth: null,
-    _slideInOnIframeLoad: false,
     _updateIframeProxy: null,
     _editorWidth: null,
     _editorWidthInPx: null,
@@ -17410,7 +17410,6 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         }
       }
 
-      this._slideInOnIframeLoad = true;
       this.updateIframe();
       this.draftEditor.on('update', this._updateIframeProxy);
       Garnish.on(Craft.BaseElementEditor, 'saveElement', this._updateIframeProxy);
@@ -17435,6 +17434,10 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       this.updateWidths();
     },
     slideIn: function slideIn() {
+      if (!this.isActive || this.isVisible) {
+        return;
+      }
+
       $('html').addClass('noscroll');
       this.$shade.velocity('fadeIn');
       this.$editorContainer.show().velocity('stop').animateLeft(0, 'slow', $.proxy(function () {
@@ -17448,9 +17451,10 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           }
         });
       }, this));
+      this.isVisible = true;
     },
     close: function close() {
-      if (!this.isActive) {
+      if (!this.isActive || !this.isVisible) {
         return;
       }
 
@@ -17478,6 +17482,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       Garnish.off(Craft.AssetImageEditor, 'save', this._updateIframeProxy);
       Craft.ElementThumbLoader.retryAll();
       this.isActive = false;
+      this.isVisible = false;
       this.trigger('close');
     },
     moveFieldsBack: function moveFieldsBack() {
@@ -17517,6 +17522,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       }); // If this is an existing preview target, make sure it wants to be refreshed automatically
 
       if (!refresh) {
+        this.slideIn();
         return;
       }
 
@@ -17561,19 +17567,12 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
         this.url = url;
         this.$iframe = $iframe;
-        this.afterUpdateIframe();
-      }.bind(this));
-    },
-    afterUpdateIframe: function afterUpdateIframe() {
-      this.trigger('afterUpdateIframe', {
-        target: this.draftEditor.settings.previewTargets[this.activeTarget],
-        $iframe: this.$iframe
-      });
-
-      if (this._slideInOnIframeLoad) {
+        this.trigger('afterUpdateIframe', {
+          target: this.draftEditor.settings.previewTargets[this.activeTarget],
+          $iframe: this.$iframe
+        });
         this.slideIn();
-        this._slideInOnIframeLoad = false;
-      }
+      }.bind(this));
     },
     _getClone: function _getClone($field) {
       var $clone = $field.clone(); // clone() won't account for input values that have changed since the original HTML set them

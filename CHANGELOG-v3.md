@@ -12,6 +12,7 @@
 - Fixed a bug where the asset indexer wasn’t handling missing volume folders properly.
 - Fixed a bug where the asset indexer wasn’t cleaning up after itself.
 - Fixed a bug where orphan rows could be left in the `elements` table after deleting an asset folder. ([#6326](https://github.com/craftcms/cms/issues/6326))
+- Fixed a bug where Live Preview wouldn’t open after it had been previously closed, if the active target was configured with `refresh: false`. ([#6356](https://github.com/craftcms/cms/issues/6356))
 - Fixed a bug where site-specific tests were not able to properly use `craft\test\fixtures\elements\AssetFixture`. ([#6309](https://github.com/craftcms/cms/issues/6309))
 - Fixed a PHP error that could occur when using `craft\test\TestMailer` in some scenarios. ([#6259](https://github.com/craftcms/cms/issues/6259))
 
