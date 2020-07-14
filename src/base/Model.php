@@ -13,6 +13,7 @@ use craft\events\DefineFieldsEvent;
 use craft\events\DefineRulesEvent;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\StringHelper;
+use yii\validators\Validator;
 
 /**
  * Model base class.
@@ -100,7 +101,27 @@ abstract class Model extends \yii\base\Model
         ]);
         $this->trigger(self::EVENT_DEFINE_RULES, $event);
 
+        foreach ($event->rules as &$rule) {
+            $this->_normalizeRule($rule);
+        }
+
         return $event->rules;
+    }
+
+    /**
+     * Normalizes a validation rule.
+     *
+     * @param Validator|array $rule
+     */
+    private function _normalizeRule(&$rule)
+    {
+        if (is_array($rule) && isset($rule[1]) && $rule[1] instanceof \Closure) {
+            // Wrap the closure in another one, so InlineValidator doesn’t bind it to the model
+            $method = $rule[1];
+            $rule[1] = function($attribute, $params, $validator, $current) use ($method) {
+                $method($attribute, $params, $validator, $current);
+            };
+        }
     }
 
     /**
