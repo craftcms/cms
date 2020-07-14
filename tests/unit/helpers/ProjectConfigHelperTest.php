@@ -201,11 +201,11 @@ class ProjectConfigHelperTest extends Unit
                     ]
                 ],
                 [
-                    'project.yaml' => [
-                        'dateModified' => 3
-                    ],
                     'email/aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa.yaml' => [
                         'key' => 'value'
+                    ],
+                    'project.yaml' => [
+                        'dateModified' => 3
                     ]
                 ],
             ],
@@ -222,14 +222,44 @@ class ProjectConfigHelperTest extends Unit
                     ]
                 ],
                 [
-                    'project.yaml' => [
-                        'dateModified' => 4
-                    ],
                     'email/aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa.yaml' => [
                         'key' => 'value'
                     ],
                     'email/bbbbbbbb-aaaa-4aaa-aaaa-aaaaaaaaaaaa.yaml' => [
                         'key2' => 'value'
+                    ],
+                    'project.yaml' => [
+                        'dateModified' => 4
+                    ]
+                ],
+            ],
+            [
+                [
+                    'dateModified' => 4,
+                    'commerce' => [
+                        'provider' => 'gmail',
+                        'productTypes' => [
+                            'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa' => [
+                                'key' => 'value'
+                            ],
+                            'bbbbbbbb-aaaa-4aaa-aaaa-aaaaaaaaaaaa' => [
+                                'key2' => 'value'
+                            ]
+                        ]
+                    ],
+                ],
+                [
+                    'commerce/productTypes/aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa.yaml' => [
+                        'key' => 'value'
+                    ],
+                    'commerce/productTypes/bbbbbbbb-aaaa-4aaa-aaaa-aaaaaaaaaaaa.yaml' => [
+                        'key2' => 'value'
+                    ],
+                    'commerce/commerce.yaml' => [
+                        'provider' => 'gmail',
+                    ],
+                    'project.yaml' => [
+                        'dateModified' => 4
                     ]
                 ],
             ],

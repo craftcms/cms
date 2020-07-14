@@ -327,37 +327,68 @@ class ProjectConfig
      */
     public static function splitConfigIntoComponents(array $config): array
     {
-        $splitConfig = [
-            ProjectConfigService::CONFIG_FILENAME => [],
-        ];
+        $splitConfig = [];
+        self::splitConfigIntoComponentsInternal($config, $splitConfig);
 
-        foreach ($config as $key => $configData) {
-            if (self::isComponentArray($configData)) {
-                foreach ($configData as $uid => $subConfig) {
-                    $splitConfig["$key/$uid.yaml"] = $subConfig;
-                }
-            } else {
-                $splitConfig[ProjectConfigService::CONFIG_FILENAME][$key] = $configData;
-            }
-        }
+        // Store whatever's left in project.yaml
+        $splitConfig[ProjectConfigService::CONFIG_FILENAME] = $config;
 
         return $splitConfig;
     }
 
     /**
+     * Recursively looks for an array of component configs (sub-arrays indexed by UUIDs), within the given config array.
+     *
+     * @param array $config
+     * @param array $splitConfig
+     * @param string|null $path
+     * @return bool whether the config was split
+     */
+    private static function splitConfigIntoComponentsInternal(array &$config, array &$splitConfig, string $path = null): bool
+    {
+        $split = false;
+
+        foreach ($config as $key => $configData) {
+            if (is_array($configData)) {
+                if (self::isComponentArray($configData)) {
+                    foreach ($configData as $uid => $subConfig) {
+                        $file = ($path ? "$path/" : '') . "$key/$uid.yaml";
+                        $splitConfig[$file] = $subConfig;
+                    }
+                    unset($config[$key]);
+                    $split = true;
+                } else if (ArrayHelper::isAssociative($configData)) {
+                    // Look deeper
+                    $subpath = ($path ? "$path/" : '') . $key;
+                    if (static::splitConfigIntoComponentsInternal($configData, $splitConfig, $subpath)) {
+                        $split = true;
+                        // Store whatever's left in the same folder
+                        if (!empty($configData)) {
+                            $splitConfig["$subpath/$key.yaml"] = $configData;
+                        }
+                        unset($config[$key]);
+                    }
+                }
+            }
+        }
+
+        return $split;
+    }
+
+    /**
      * Returns whether the given project config item is an array of component configs, where each key is a UUID, and each item is a sub-array.
      *
-     * @param mixed $item
+     * @param array $item
      * @return bool
      */
-    private static function isComponentArray(&$item): bool
+    private static function isComponentArray(array &$item): bool
     {
-        if (!is_array($item) || empty($item)) {
+        if (empty($item)) {
             return false;
         }
 
         foreach ($item as $key => $value) {
-            if (!is_array($value) || !StringHelper::isUUID($key)) {
+            if (!is_array($value) || !is_string($key) || !StringHelper::isUUID($key)) {
                 return false;
             }
         }
