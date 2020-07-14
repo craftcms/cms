@@ -39,7 +39,7 @@
             {% if context == 'index' %}
                 {% if showStatusMenu %}<hr class="padded">{% endif %}
                 <ul class="padded">
-                    {% set draftsExist = elementInstance.find().draftOf(false).anyStatus().exists() %}
+                    {% set draftsExist = elementInstance.find().draftOf(false).anyStatus().siteId('*').limit(1).exists() %}
                     {% if draftsExist %}
                         <li><a data-drafts><span class="icon" data-icon="draft"></span>{{ 'Drafts'|t('app') }}</a></li>
                     {% endif %}

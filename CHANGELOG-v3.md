@@ -23,6 +23,7 @@
 - Fixed a bug where site-specific tests were not able to properly use `craft\test\fixtures\elements\AssetFixture`. ([#6309](https://github.com/craftcms/cms/issues/6309))
 - Fixed a PHP error that could occur when using `craft\test\TestMailer` in some scenarios. ([#6259](https://github.com/craftcms/cms/issues/6259))
 - Fixed a bug where it wasn’t possible to change a disabled plugin’s license key. ([#4525](https://github.com/craftcms/cms/issues/4525))
+- Fixed a bug where the “Drafts” status option wasn’t showing up on the Entries index page, if unsaved entry drafts only existed in a non-primary site. ([#6370](https://github.com/craftcms/cms/issues/6370))
 
 ## 3.4.27 - 2020-07-03
 
