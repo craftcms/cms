@@ -117,6 +117,7 @@
 - Fix a bug where it was impossible to upload an asset using GraphQL mutations. ([#6322](https://github.com/craftcms/cms/pull/6322))
 - Fixed a bug where Entry Edit pages would start showing a tab bar after switching entry types, even if the new entry type only had one content tab.
 - Fixed a bug where some fields were growing wider than they were supposed to within element editor HUDs.
+- Fixed a bug where `craft\web\Request::getSegments()` wasn’t filtering out empty URI segments. ([#6371](https://github.com/craftcms/cms/issues/6371))
 
 ### Security
 - `craft\web\View::evaluateDynamicContent()` can no longer be called by default. ([#6185](https://github.com/craftcms/cms/pull/6185))
