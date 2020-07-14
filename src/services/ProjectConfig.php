@@ -1361,15 +1361,24 @@ class ProjectConfig extends Component
             return $this->_configFileList;
         }
 
-        $pathService = Craft::$app->getPath();
-        $basePath = $pathService->getProjectConfigPath() . DIRECTORY_SEPARATOR;
+        return $this->_configFileList = $this->_findConfigFiles();
+    }
 
-        $this->_configFileList = FileHelper::findFiles($basePath, [
+    /**
+     * Finds all of the `.yaml` files in the `config/project/` folder.
+     *
+     * @param string|null $path
+     * @return string[]
+     */
+    private function _findConfigFiles(string $path = null): array
+    {
+        if ($path === null) {
+            $path = Craft::$app->getPath()->getProjectConfigPath();
+        }
+        return FileHelper::findFiles($path, [
             'only' => ['*.yaml'],
             'caseSensitive' => false
         ]);
-
-        return $this->_configFileList;
     }
 
     /**
@@ -1516,13 +1525,22 @@ class ProjectConfig extends Component
     private function _updateYamlFiles()
     {
         $config = ProjectConfigHelper::splitConfigIntoComponents($this->_appliedConfig);
-        $bsePath = Craft::$app->getPath()->getProjectConfigPath() . DIRECTORY_SEPARATOR;
+        $basePath = Craft::$app->getPath()->getProjectConfigPath();
 
         foreach ($config as $relativeFile => $configData) {
             $configData = ProjectConfigHelper::cleanupConfig($configData);
             ksort($configData);
-            $filePath = $bsePath . $relativeFile;
+            $filePath = $basePath . DIRECTORY_SEPARATOR . $relativeFile;
             FileHelper::writeToFile($filePath, Yaml::dump($configData, 20, 2));
+        }
+
+        // See if there are any files that shouldn’t be around anymore
+        $basePathLength = strlen($basePath);
+        foreach ($this->_findConfigFiles($basePath) as $file) {
+            $path = substr($file, $basePathLength + 1);
+            if (!isset($config[$path])) {
+                FileHelper::unlink($file);
+            }
         }
     }
 
