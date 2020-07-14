@@ -7,7 +7,6 @@
 
 namespace craft\gql\interfaces;
 
-use craft\base\ElementInterface;
 use craft\gql\base\InterfaceType;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\TypeManager;

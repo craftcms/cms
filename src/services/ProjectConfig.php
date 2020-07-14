@@ -19,7 +19,6 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
-use craft\helpers\Path as PathHelper;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use Symfony\Component\Yaml\Yaml;
@@ -2408,7 +2407,7 @@ class ProjectConfig extends Component
 
         foreach ($scopeRows as &$row) {
             unset($row['uid']);
-            $row['isPublic'] = (bool) $row['isPublic'];
+            $row['isPublic'] = (bool)$row['isPublic'];
             $row['scope'] = Json::decodeIfJson($row['scope']);
         }
 
@@ -2497,6 +2496,6 @@ class ProjectConfig extends Component
      */
     protected function encodeValueAsString($value): string
     {
-        return  Json::encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRESERVE_ZERO_FRACTION);
+        return Json::encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRESERVE_ZERO_FRACTION);
     }
 }

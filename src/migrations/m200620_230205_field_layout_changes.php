@@ -6,8 +6,6 @@ use Craft;
 use craft\db\Migration;
 use craft\db\Table;
 use craft\fieldlayoutelements\EntryTitleField;
-use craft\helpers\MigrationHelper;
-use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\services\ProjectConfig;
 

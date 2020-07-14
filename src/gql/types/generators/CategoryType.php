@@ -20,7 +20,6 @@ use craft\gql\types\elements\Category;
 use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\CategoryGroup;
-use GraphQL\Type\Definition\Type;
 
 /**
  * Class CategoryType

@@ -16,8 +16,6 @@ use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\User as UserInterface;
 use craft\gql\TypeManager;
 use craft\gql\types\elements\User;
-use craft\helpers\Gql;
-use GraphQL\Type\Definition\Type;
 
 /**
  * Class UserType

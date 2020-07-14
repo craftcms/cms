@@ -7,7 +7,6 @@
 
 namespace craft\gql\interfaces\elements;
 
-use craft\elements\Asset as AssetElement;
 use craft\gql\arguments\elements\Asset as AssetArguments;
 use craft\gql\arguments\Transform;
 use craft\gql\GqlEntityRegistry;

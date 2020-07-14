@@ -7,7 +7,6 @@
 
 namespace craft\gql\interfaces\elements;
 
-use craft\elements\MatrixBlock as MatrixBlockElement;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\Element;
 use craft\gql\TypeManager;

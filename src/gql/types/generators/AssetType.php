@@ -20,7 +20,6 @@ use craft\gql\TypeManager;
 use craft\gql\types\elements\Asset;
 use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
-use GraphQL\Type\Definition\Type;
 
 /**
  * Class AssetType

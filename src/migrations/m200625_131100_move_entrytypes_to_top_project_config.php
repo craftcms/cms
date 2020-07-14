@@ -4,8 +4,6 @@ namespace craft\migrations;
 
 use Craft;
 use craft\db\Migration;
-use craft\db\Table;
-use craft\services\Sections;
 
 /**
  * m200625_131100_move_entrytypes_to_top_project_config migration.

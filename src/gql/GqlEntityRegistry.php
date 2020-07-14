@@ -52,6 +52,7 @@ class GqlEntityRegistry
 
         return self::$_prefix;
     }
+
     /**
      * Get a registered entity.
      *

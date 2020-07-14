@@ -337,7 +337,7 @@ class ElementQueryConditionBuilder
                                 }
                             }
                         }
-                        
+
                         // For relational fields, take care of the
                         if ($craftContentField instanceof BaseRelationField) {
                             $arguments = ElementResolver::prepareArguments($arguments);

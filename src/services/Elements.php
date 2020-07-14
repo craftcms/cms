@@ -57,7 +57,6 @@ use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidCallException;
-use yii\caching\Dependency;
 use yii\caching\TagDependency;
 use yii\db\Exception as DbException;
 

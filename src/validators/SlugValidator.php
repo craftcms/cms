@@ -10,7 +10,6 @@ namespace craft\validators;
 use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\ElementHelper;
-use craft\helpers\StringHelper;
 use yii\validators\Validator;
 
 /**
