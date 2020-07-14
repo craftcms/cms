@@ -1221,18 +1221,28 @@ class ProjectConfig extends Component
         $fileList = $this->_getConfigFileList();
         $generatedConfig = [];
 
-        foreach ($fileList as $file) {
-            $filePath = Craft::$app->getPath()->getProjectConfigPath() . DIRECTORY_SEPARATOR . $file;
+        foreach ($fileList as $filePath) {
             $yamlConfig = Yaml::parse(file_get_contents($filePath));
+            $subPath = StringHelper::removeLeft($filePath, Craft::$app->getPath()->getProjectConfigPath() . DIRECTORY_SEPARATOR);
 
-            if (StringHelper::countSubstrings($file, '/') > 0) {
-                list($topLevelKey, $uid) = explode("/", $file);
-                $uid = pathinfo($uid, PATHINFO_FILENAME);
-                if (empty($generatedConfig[$topLevelKey])) {
-                    $generatedConfig[$topLevelKey] = [];
+            if (StringHelper::countSubstrings($subPath, '/') > 0) {
+                $configPath = explode("/", $subPath);
+                $filename = pathinfo(array_pop($configPath), PATHINFO_FILENAME);
+                $insertionPoint = &$generatedConfig;
+
+                foreach ($configPath as $pathSegment) {
+                    if (!isset($insertionPoint[$pathSegment])) {
+                        $insertionPoint[$pathSegment] = [];
+                    }
+
+                    $insertionPoint = &$insertionPoint[$pathSegment];
                 }
 
-                $generatedConfig[$topLevelKey][$uid] = $yamlConfig;
+                if ($pathSegment === $filename) {
+                    $insertionPoint = array_merge($insertionPoint, $yamlConfig);
+                } else {
+                    $insertionPoint[$filename] = $yamlConfig;
+                }
             } else {
                 $generatedConfig = array_merge($generatedConfig, $yamlConfig);
             }
@@ -1329,8 +1339,8 @@ class ProjectConfig extends Component
         }
 
         $pathService = Craft::$app->getPath();
+
         // Check whether we have a missing main config file or any of the sub-files have been modified.
-        $mod = $this->_getConfigFileModifiedTime();
         if (!file_exists($pathService->getProjectConfigFilePath()) || $this->_getConfigFileModifiedTime() > $cachedModifiedTime) {
             return true;
         }
@@ -1355,20 +1365,10 @@ class ProjectConfig extends Component
         $pathService = Craft::$app->getPath();
         $basePath = $pathService->getProjectConfigPath() . DIRECTORY_SEPARATOR;
 
-        $folders = glob($basePath . '*', GLOB_ONLYDIR + GLOB_MARK) ?: [];
-        $folders[] = $basePath;
-
-        $this->_configFileList = [];
-
-        foreach ($folders as $folder) {
-            $files = array_map(static function($path) use ($basePath) {
-                return StringHelper::removeLeft($path, $basePath);
-            }, glob($folder . '*.yaml') ?: []);
-
-            if (count($files)) {
-                array_push($this->_configFileList, ...$files);
-            }
-        }
+        $this->_configFileList = FileHelper::findFiles($basePath, [
+            'only' => ['*.yaml'],
+            'caseSensitive' => false
+        ]);
 
         return $this->_configFileList;
     }
@@ -2408,7 +2408,7 @@ class ProjectConfig extends Component
 
         foreach ($scopeRows as &$row) {
             unset($row['uid']);
-            $row['isPublic'] = (bool) $row['isPublic'];
+            $row['isPublic'] = (bool)$row['isPublic'];
             $row['scope'] = Json::decodeIfJson($row['scope']);
         }
 
@@ -2497,6 +2497,6 @@ class ProjectConfig extends Component
      */
     protected function encodeValueAsString($value): string
     {
-        return  Json::encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRESERVE_ZERO_FRACTION);
+        return Json::encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRESERVE_ZERO_FRACTION);
     }
 }

@@ -342,8 +342,9 @@ class ProjectConfig
      * @param array $config
      * @param array $splitConfig
      * @param string|null $path
+     * @return bool whether the config was split
      */
-    private static function splitConfigIntoComponentsInternal(array &$config, array &$splitConfig, string $path = null)
+    private static function splitConfigIntoComponentsInternal(array &$config, array &$splitConfig, string $path = null): bool
     {
         $split = false;
 
