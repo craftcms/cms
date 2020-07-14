@@ -19,6 +19,7 @@
 - Added the `|namespaceAttributes` Twig filter, which namespaces `id`, `for`, and other attributes, but not `name`.
 - Added the `fieldLayoutDesigner()` and `fieldLayoutDesignerField()` macros to the `_includes/forms.html` control panel template.
 - Added the `_includes/forms/fieldLayoutDesigner.html` control panel template.
+- Web controller actions now support basic authentication. ([#5303](https://github.com/craftcms/cms/issues/5303))
 - Added `craft\base\ElementInterface::getIsTitleTranslatable()`.
 - Added `craft\base\ElementInterface::getTitleTranslationDescription()`.
 - Added `craft\base\ElementInterface::getTitleTranslationKey()`.
