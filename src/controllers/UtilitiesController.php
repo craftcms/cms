@@ -230,6 +230,7 @@ class UtilitiesController extends Controller
             if (!empty($missingFiles) || !empty($missingFolders) || !empty($skippedFiles)) {
                 return $this->asJson([
                     'confirm' => $this->getView()->renderTemplate('assets/_missing_items', compact('missingFiles', 'missingFolders', 'skippedFiles')),
+                    'showDelete' => !empty($missingFiles) || !empty($missingFolders)
                 ]);
             }
 

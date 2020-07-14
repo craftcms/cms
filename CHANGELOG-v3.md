@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\services\AssetIndexer::deleteStaleIndexingData()`.
+
+### Changed
+- If there are no files or folders to delete, the asset indexing utility dialog no longer displays a "delete them" button.
+
 ### Fixed
 - Fixed a bug where all Title fields within Quick Post widgets had the same input ID.
 - Fixed a bug where rebuilding the project config without an existing `project.yaml` file could result in data loss. ([#6350](https://github.com/craftcms/cms/issues/6350))
@@ -16,8 +22,6 @@
 - Fixed a bug where site-specific tests were not able to properly use `craft\test\fixtures\elements\AssetFixture`. ([#6309](https://github.com/craftcms/cms/issues/6309))
 - Fixed a PHP error that could occur when using `craft\test\TestMailer` in some scenarios. ([#6259](https://github.com/craftcms/cms/issues/6259))
 
-### Added
-- Added `craft\services\AssetIndexer::deleteStaleIndexingData()`.
 
 ## 3.4.27 - 2020-07-03
 
