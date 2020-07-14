@@ -61,30 +61,29 @@ class QueueController extends Controller
     public function actionRun(): Response
     {
         // Prep the response
-        $response = Craft::$app->getResponse();
-        $response->content = '1';
+        $this->response->content = '1';
 
         // Make sure Craft is configured to run queues over the web
         if (!Craft::$app->getConfig()->getGeneral()->runQueueAutomatically) {
-            return $response;
+            return $this->response;
         }
 
         // Make sure the queue isn't already running, and there are waiting jobs
         $queue = Craft::$app->getQueue();
         if ($queue->getHasReservedJobs() || !$queue->getHasWaitingJobs()) {
-            return $response;
+            return $this->response;
         }
 
         // Attempt to close the connection if this is an Ajax request
-        if (Craft::$app->getRequest()->getIsAjax()) {
-            $response->sendAndClose();
+        if ($this->request->getIsAjax()) {
+            $this->response->sendAndClose();
         }
 
         // Run the queue
         App::maxPowerCaptain();
         $queue->run();
 
-        return $response;
+        return $this->response;
     }
 
     /**
@@ -100,7 +99,7 @@ class QueueController extends Controller
         $this->requirePostRequest();
         $this->requirePermission('utility:queue-manager');
 
-        $id = Craft::$app->getRequest()->getRequiredBodyParam('id');
+        $id = $this->request->getRequiredBodyParam('id');
         Craft::$app->getQueue()->retry($id);
 
         return $this->actionRun();
@@ -118,7 +117,7 @@ class QueueController extends Controller
         $this->requirePostRequest();
         $this->requirePermission('utility:queue-manager');
 
-        $id = Craft::$app->getRequest()->getRequiredBodyParam('id');
+        $id = $this->request->getRequiredBodyParam('id');
         Craft::$app->getQueue()->release($id);
 
         return $this->asJson([
@@ -177,7 +176,7 @@ class QueueController extends Controller
         $this->requireAcceptsJson();
         $this->requirePermission('accessCp');
 
-        $limit = Craft::$app->getRequest()->getParam('limit');
+        $limit = $this->request->getParam('limit');
         $queue = Craft::$app->getQueue();
 
         return $this->asJson([
@@ -199,7 +198,7 @@ class QueueController extends Controller
         $this->requireAcceptsJson();
         $this->requirePermission('utility:queue-manager');
 
-        $jobId = Craft::$app->getRequest()->getRequiredParam('id');
+        $jobId = $this->request->getRequiredParam('id');
         $details = [
             'id' => $jobId,
         ];

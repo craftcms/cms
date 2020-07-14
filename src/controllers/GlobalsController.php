@@ -55,7 +55,7 @@ class GlobalsController extends Controller
         $this->requirePostRequest();
         $this->requireAdmin();
 
-        $globalSetId = Craft::$app->getRequest()->getBodyParam('setId');
+        $globalSetId = $this->request->getBodyParam('setId');
 
         if ($globalSetId) {
             $globalSet = Craft::$app->getGlobals()->getSetById($globalSetId);
@@ -68,8 +68,8 @@ class GlobalsController extends Controller
         }
 
         // Set the simple stuff
-        $globalSet->name = Craft::$app->getRequest()->getBodyParam('name');
-        $globalSet->handle = Craft::$app->getRequest()->getBodyParam('handle');
+        $globalSet->name = $this->request->getBodyParam('name');
+        $globalSet->handle = $this->request->getBodyParam('handle');
 
         // Set the field layout
         $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
@@ -103,7 +103,7 @@ class GlobalsController extends Controller
         $this->requireAcceptsJson();
         $this->requireAdmin();
 
-        $globalSetId = Craft::$app->getRequest()->getRequiredBodyParam('id');
+        $globalSetId = $this->request->getRequiredBodyParam('id');
 
         Craft::$app->getGlobals()->deleteGlobalSetById($globalSetId);
 
@@ -135,7 +135,7 @@ class GlobalsController extends Controller
             // Make sure a specific site was requested
             if ($siteHandle === null) {
                 // See if they have a cookie for it
-                $siteId = Craft::$app->getRequest()->getRawCookies()->getValue($siteCookieName);
+                $siteId = $this->request->getRawCookies()->getValue($siteCookieName);
                 if ($siteId && in_array($siteId, $editableSiteIds, false)) {
                     $site = Craft::$app->getSites()->getSiteById($siteId);
                 } else {
@@ -174,7 +174,7 @@ class GlobalsController extends Controller
                 'httpOnly' => false,
                 'expire' => (new \DateTime('+1 year'))->getTimestamp(),
             ]));
-            Craft::$app->getResponse()->getRawCookies()->add($cookie);
+            $this->response->getRawCookies()->add($cookie);
         } else {
             /** @noinspection PhpUnhandledExceptionInspection */
             $site = Craft::$app->getSites()->getPrimarySite();
@@ -224,8 +224,8 @@ class GlobalsController extends Controller
     {
         $this->requirePostRequest();
 
-        $globalSetId = Craft::$app->getRequest()->getRequiredBodyParam('setId');
-        $siteId = Craft::$app->getRequest()->getBodyParam('siteId') ?: Craft::$app->getSites()->getPrimarySite()->id;
+        $globalSetId = $this->request->getRequiredBodyParam('setId');
+        $siteId = $this->request->getBodyParam('siteId') ?: Craft::$app->getSites()->getPrimarySite()->id;
 
         $site = Craft::$app->getSites()->getSiteById($siteId);
         $globalSet = Craft::$app->getGlobals()->getSetById($globalSetId, $siteId);

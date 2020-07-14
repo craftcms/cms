@@ -441,7 +441,7 @@ class UpdateController extends Controller
         }
 
         try {
-            $script = Craft::$app->getRequest()->getScriptFile();
+            $script = $this->request->getScriptFile();
         } catch (InvalidConfigException $e) {
             $this->stderr('Can’t apply new migrations: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
             $this->stdout('You can apply new migrations manually by running ');
@@ -532,7 +532,7 @@ class UpdateController extends Controller
         FileHelper::writeToFile($composerService->getLockPath(), $lockContents);
 
         try {
-            $script = Craft::$app->getRequest()->getScriptFile();
+            $script = $this->request->getScriptFile();
         } catch (InvalidConfigException $e) {
             $this->stderr('Can’t revert Composer changes: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
             $this->stdout('You can revert Composer changes manually by running ');

@@ -4,15 +4,10 @@ namespace craft\migrations;
 
 use Craft;
 use craft\db\Migration;
-use craft\db\Query;
-use craft\db\Table;
 use craft\helpers\FileHelper;
 use craft\helpers\Path as PathHelper;
-use craft\helpers\ProjectConfig;
 use craft\helpers\StringHelper;
 use craft\services\ProjectConfig as ProjectConfigService;
-use craft\services\Sections;
-use craft\services\UserGroups;
 use Symfony\Component\Yaml\Yaml;
 
 /**

@@ -37,7 +37,6 @@ use yii\base\Exception;
 use yii\base\Model;
 use yii\base\NotSupportedException;
 use yii\web\AssetBundle as YiiAssetBundle;
-use yii\web\Response as WebResponse;
 
 /**
  * @inheritdoc

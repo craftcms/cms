@@ -19,7 +19,6 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
-use craft\helpers\Path as PathHelper;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use Symfony\Component\Yaml\Yaml;

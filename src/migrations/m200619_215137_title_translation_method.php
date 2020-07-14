@@ -2,7 +2,6 @@
 
 namespace craft\migrations;
 
-use Craft;
 use craft\base\Field;
 use craft\db\Migration;
 use craft\db\Table;

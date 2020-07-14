@@ -89,8 +89,6 @@ class EntriesController extends BaseEntriesController
         $this->enforceEditEntryPermissions($entry);
 
         $currentUser = Craft::$app->getUser()->getIdentity();
-        $request = Craft::$app->getRequest();
-
         $variables['permissionSuffix'] = ':' . $entry->getSection()->uid;
 
         if (Craft::$app->getEdition() === Craft::Pro && $section->type !== Section::TYPE_SINGLE) {
@@ -159,7 +157,7 @@ class EntriesController extends BaseEntriesController
             }
 
             // Get the initially selected parent
-            $parentId = $request->getParam('parentId');
+            $parentId = $this->request->getParam('parentId');
 
             if ($parentId === null) {
                 // Is it already set on the model (e.g. if we're loading a draft)?
@@ -302,8 +300,6 @@ class EntriesController extends BaseEntriesController
         $this->requirePostRequest();
 
         $entry = $this->_getEntryModel();
-        $request = Craft::$app->getRequest();
-
         // Permission enforcement
         $this->enforceSitePermission($entry->getSite());
         $this->enforceEditEntryPermissions($entry, $duplicate);
@@ -336,7 +332,7 @@ class EntriesController extends BaseEntriesController
                 /** @var Entry $clone */
                 $clone = $e->element;
 
-                if ($request->getAcceptsJson()) {
+                if ($this->request->getAcceptsJson()) {
                     return $this->asJson([
                         'success' => false,
                         'errors' => $clone->getErrors(),
@@ -379,7 +375,7 @@ class EntriesController extends BaseEntriesController
         }
 
         if (!Craft::$app->getElements()->saveElement($entry)) {
-            if ($request->getAcceptsJson()) {
+            if ($this->request->getAcceptsJson()) {
                 return $this->asJson([
                     'errors' => $entry->getErrors(),
                 ]);
@@ -395,7 +391,7 @@ class EntriesController extends BaseEntriesController
             return null;
         }
 
-        if ($request->getAcceptsJson()) {
+        if ($this->request->getAcceptsJson()) {
             $return = [];
 
             $return['success'] = true;
@@ -403,7 +399,7 @@ class EntriesController extends BaseEntriesController
             $return['title'] = $entry->title;
             $return['slug'] = $entry->slug;
 
-            if ($request->getIsCpRequest()) {
+            if ($this->request->getIsCpRequest()) {
                 $return['cpEditUrl'] = $entry->getCpEditUrl();
             }
 
@@ -444,9 +440,8 @@ class EntriesController extends BaseEntriesController
     {
         $this->requirePostRequest();
 
-        $request = Craft::$app->getRequest();
-        $entryId = $request->getRequiredBodyParam('entryId');
-        $siteId = $request->getBodyParam('siteId');
+        $entryId = $this->request->getRequiredBodyParam('entryId');
+        $siteId = $this->request->getBodyParam('siteId');
         $entry = Craft::$app->getEntries()->getEntryById($entryId, $siteId);
 
         if (!$entry) {
@@ -462,7 +457,7 @@ class EntriesController extends BaseEntriesController
         }
 
         if (!Craft::$app->getElements()->deleteElement($entry)) {
-            if ($request->getAcceptsJson()) {
+            if ($this->request->getAcceptsJson()) {
                 return $this->asJson(['success' => false]);
             }
 
@@ -476,7 +471,7 @@ class EntriesController extends BaseEntriesController
             return null;
         }
 
-        if ($request->getAcceptsJson()) {
+        if ($this->request->getAcceptsJson()) {
             return $this->asJson(['success' => true]);
         }
 
@@ -494,8 +489,6 @@ class EntriesController extends BaseEntriesController
      */
     private function _prepEditEntryVariables(array &$variables)
     {
-        $request = Craft::$app->getRequest();
-
         // Get the section
         // ---------------------------------------------------------------------
 
@@ -605,7 +598,7 @@ class EntriesController extends BaseEntriesController
         // ---------------------------------------------------------------------
 
         // Override the entry type?
-        $typeId = $request->getParam('typeId');
+        $typeId = $this->request->getParam('typeId');
 
         if (!$typeId) {
             // Default to the section's first entry type
@@ -629,9 +622,8 @@ class EntriesController extends BaseEntriesController
      */
     private function _getEntryModel(): Entry
     {
-        $request = Craft::$app->getRequest();
-        $entryId = $request->getBodyParam('entryId');
-        $siteId = $request->getBodyParam('siteId');
+        $entryId = $this->request->getBodyParam('entryId');
+        $siteId = $this->request->getBodyParam('siteId');
 
         if ($entryId) {
             $entry = Craft::$app->getEntries()->getEntryById($entryId, $siteId);
@@ -641,7 +633,7 @@ class EntriesController extends BaseEntriesController
             }
         } else {
             $entry = new Entry();
-            $entry->sectionId = $request->getRequiredBodyParam('sectionId');
+            $entry->sectionId = $this->request->getRequiredBodyParam('sectionId');
 
             if ($siteId) {
                 $entry->siteId = $siteId;
@@ -658,15 +650,13 @@ class EntriesController extends BaseEntriesController
      */
     private function _populateEntryModel(Entry $entry)
     {
-        $request = Craft::$app->getRequest();
-
         // Set the entry attributes, defaulting to the existing values for whatever is missing from the post data
-        $entry->typeId = $request->getBodyParam('typeId', $entry->typeId);
-        $entry->slug = $request->getBodyParam('slug', $entry->slug);
-        if (($postDate = $request->getBodyParam('postDate')) !== null) {
+        $entry->typeId = $this->request->getBodyParam('typeId', $entry->typeId);
+        $entry->slug = $this->request->getBodyParam('slug', $entry->slug);
+        if (($postDate = $this->request->getBodyParam('postDate')) !== null) {
             $entry->postDate = DateTimeHelper::toDateTime($postDate) ?: null;
         }
-        if (($expiryDate = $request->getBodyParam('expiryDate')) !== null) {
+        if (($expiryDate = $this->request->getBodyParam('expiryDate')) !== null) {
             $entry->expiryDate = DateTimeHelper::toDateTime($expiryDate) ?: null;
         }
 
@@ -675,10 +665,10 @@ class EntriesController extends BaseEntriesController
             // Set the global status to true if it's enabled for *any* sites, or if already enabled.
             $entry->enabled = in_array(true, $enabledForSite, false) || $entry->enabled;
         } else {
-            $entry->enabled = (bool)$request->getBodyParam('enabled', $entry->enabled);
+            $entry->enabled = (bool)$this->request->getBodyParam('enabled', $entry->enabled);
         }
         $entry->setEnabledForSite($enabledForSite ?? $entry->getEnabledForSite());
-        $entry->title = $request->getBodyParam('title', $entry->title);
+        $entry->title = $this->request->getBodyParam('title', $entry->title);
 
         if (!$entry->typeId) {
             // Default to the section's first entry type
@@ -688,11 +678,11 @@ class EntriesController extends BaseEntriesController
         // Prevent the last entry type's field layout from being used
         $entry->fieldLayoutId = null;
 
-        $fieldsLocation = $request->getParam('fieldsLocation', 'fields');
+        $fieldsLocation = $this->request->getParam('fieldsLocation', 'fields');
         $entry->setFieldValuesFromRequest($fieldsLocation);
 
         // Author
-        $authorId = $request->getBodyParam('author', ($entry->authorId ?: Craft::$app->getUser()->getIdentity()->id));
+        $authorId = $this->request->getBodyParam('author', ($entry->authorId ?: Craft::$app->getUser()->getIdentity()->id));
 
         if (is_array($authorId)) {
             $authorId = $authorId[0] ?? null;
@@ -701,7 +691,7 @@ class EntriesController extends BaseEntriesController
         $entry->authorId = $authorId;
 
         // Parent
-        if (($parentId = $request->getBodyParam('parentId')) !== null) {
+        if (($parentId = $this->request->getBodyParam('parentId')) !== null) {
             if (is_array($parentId)) {
                 $parentId = reset($parentId) ?: '';
             }
@@ -710,6 +700,6 @@ class EntriesController extends BaseEntriesController
         }
 
         // Revision notes
-        $entry->setRevisionNotes($request->getBodyParam('revisionNotes'));
+        $entry->setRevisionNotes($this->request->getBodyParam('revisionNotes'));
     }
 }

@@ -490,43 +490,6 @@ class Category extends Element
 
     /**
      * @inheritdoc
-     */
-    public function getEditorHtml(): string
-    {
-        $html = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField', [
-            [
-                'label' => Craft::t('app', 'Title'),
-                'siteId' => $this->siteId,
-                'id' => 'title',
-                'name' => 'title',
-                'value' => $this->title,
-                'errors' => $this->getErrors('title'),
-                'first' => true,
-                'autofocus' => true,
-                'required' => true
-            ]
-        ]);
-
-        $html .= Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField', [
-            [
-                'label' => Craft::t('app', 'Slug'),
-                'siteId' => $this->siteId,
-                'id' => 'slug',
-                'name' => 'slug',
-                'value' => $this->slug,
-                'errors' => $this->getErrors('slug'),
-                'required' => true
-            ]
-        ]);
-
-        // Render the custom fields
-        $html .= parent::getEditorHtml();
-
-        return $html;
-    }
-
-    /**
-     * @inheritdoc
      * @since 3.3.0
      */
     public function getGqlTypeName(): string

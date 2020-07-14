@@ -158,21 +158,20 @@ class VolumesController extends Controller
     {
         $this->requirePostRequest();
 
-        $request = Craft::$app->getRequest();
         $volumes = Craft::$app->getVolumes();
 
-        $type = $request->getBodyParam('type');
+        $type = $this->request->getBodyParam('type');
 
-        $volumeId = $request->getBodyParam('volumeId');
+        $volumeId = $this->request->getBodyParam('volumeId');
 
         $volumeData = [
             'id' => $volumeId,
             'type' => $type,
-            'name' => $request->getBodyParam('name'),
-            'handle' => $request->getBodyParam('handle'),
-            'hasUrls' => (bool)$request->getBodyParam('hasUrls'),
-            'url' => $request->getBodyParam('url'),
-            'settings' => $request->getBodyParam('types.' . $type)
+            'name' => $this->request->getBodyParam('name'),
+            'handle' => $this->request->getBodyParam('handle'),
+            'hasUrls' => (bool)$this->request->getBodyParam('hasUrls'),
+            'url' => $this->request->getBodyParam('url'),
+            'settings' => $this->request->getBodyParam('types.' . $type)
         ];
 
         // If this is an existing volume, populate with properties unchangeable by this action.
@@ -214,7 +213,7 @@ class VolumesController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $volumeIds = Json::decode(Craft::$app->getRequest()->getRequiredBodyParam('ids'));
+        $volumeIds = Json::decode($this->request->getRequiredBodyParam('ids'));
         Craft::$app->getVolumes()->reorderVolumes($volumeIds);
 
         return $this->asJson(['success' => true]);
@@ -230,7 +229,7 @@ class VolumesController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $volumeId = Craft::$app->getRequest()->getRequiredBodyParam('id');
+        $volumeId = $this->request->getRequiredBodyParam('id');
 
         Craft::$app->getVolumes()->deleteVolumeById($volumeId);
 

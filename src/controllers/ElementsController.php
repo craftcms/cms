@@ -51,12 +51,11 @@ class ElementsController extends BaseElementsController
      */
     public function actionGetModalBody(): Response
     {
-        $request = Craft::$app->getRequest();
-        $sourceKeys = $request->getParam('sources');
+        $sourceKeys = $this->request->getParam('sources');
         $elementType = $this->elementType();
         $context = $this->context();
 
-        $showSiteMenu = $request->getParam('showSiteMenu', 'auto');
+        $showSiteMenu = $this->request->getParam('showSiteMenu', 'auto');
 
         if ($showSiteMenu !== 'auto') {
             $showSiteMenu = (bool)$showSiteMenu;
@@ -123,7 +122,7 @@ class ElementsController extends BaseElementsController
     public function actionGetEditorHtml(): Response
     {
         $element = $this->_getEditorElement();
-        $includeSites = (bool)Craft::$app->getRequest()->getBodyParam('includeSites', false);
+        $includeSites = (bool)$this->request->getBodyParam('includeSites', false);
 
         return $this->_getEditorHtmlResponse($element, $includeSites);
     }
@@ -140,11 +139,10 @@ class ElementsController extends BaseElementsController
         $element = $this->_getEditorElement();
 
         // Figure out where the data will be in POST
-        $request = Craft::$app->getRequest();
-        $namespace = $request->getRequiredBodyParam('namespace');
+        $namespace = $this->request->getRequiredBodyParam('namespace');
 
         // Configure the element
-        $params = $request->getBodyParam($namespace, []);
+        $params = $this->request->getBodyParam($namespace, []);
         ArrayHelper::remove($params, 'fields');
         Craft::configure($element, $params);
 
@@ -166,7 +164,7 @@ class ElementsController extends BaseElementsController
             ];
 
             // Should we be including table attributes too?
-            $sourceKey = $request->getBodyParam('includeTableAttributesForSource');
+            $sourceKey = $this->request->getBodyParam('includeTableAttributesForSource');
 
             if ($sourceKey) {
                 $attributes = Craft::$app->getElementIndexes()->getTableAttributes(get_class($element), $sourceKey);
@@ -192,8 +190,7 @@ class ElementsController extends BaseElementsController
      */
     public function actionGetCategoriesInputHtml(): Response
     {
-        $request = Craft::$app->getRequest();
-        $categoryIds = $request->getParam('categoryIds', []);
+        $categoryIds = $this->request->getParam('categoryIds', []);
 
         /** @var Category[] $categories */
         $categories = [];
@@ -201,7 +198,7 @@ class ElementsController extends BaseElementsController
         if (!empty($categoryIds)) {
             $categories = Category::find()
                 ->id($categoryIds)
-                ->siteId($request->getParam('siteId'))
+                ->siteId($this->request->getParam('siteId'))
                 ->anyStatus()
                 ->all();
 
@@ -210,7 +207,7 @@ class ElementsController extends BaseElementsController
             $categoriesService->fillGapsInCategories($categories);
 
             // Enforce the branch limit
-            if ($branchLimit = $request->getParam('branchLimit')) {
+            if ($branchLimit = $this->request->getParam('branchLimit')) {
                 $categoriesService->applyBranchLimitToCategories($categories, $branchLimit);
             }
         }
@@ -218,9 +215,9 @@ class ElementsController extends BaseElementsController
         $html = $this->getView()->renderTemplate('_components/fieldtypes/Categories/input',
             [
                 'elements' => $categories,
-                'id' => $request->getParam('id'),
-                'name' => $request->getParam('name'),
-                'selectionLabel' => $request->getParam('selectionLabel'),
+                'id' => $this->request->getParam('id'),
+                'name' => $this->request->getParam('name'),
+                'selectionLabel' => $this->request->getParam('selectionLabel'),
             ]);
 
         return $this->asJson([
@@ -235,12 +232,11 @@ class ElementsController extends BaseElementsController
      */
     public function actionGetElementHtml(): Response
     {
-        $request = Craft::$app->getRequest();
-        $elementId = $request->getRequiredBodyParam('elementId');
-        $siteId = $request->getBodyParam('siteId', null);
-        $size = $request->getBodyParam('size', null);
-        $viewMode = $request->getBodyParam('viewMode', null);
-        $context = $request->getBodyParam('context', 'field');
+        $elementId = $this->request->getRequiredBodyParam('elementId');
+        $siteId = $this->request->getBodyParam('siteId', null);
+        $size = $this->request->getBodyParam('size', null);
+        $viewMode = $this->request->getBodyParam('viewMode', null);
+        $context = $this->request->getBodyParam('context', 'field');
         $element = Craft::$app->getElements()->getElementById($elementId, null, $siteId);
 
         $view = $this->getView();
@@ -266,15 +262,14 @@ class ElementsController extends BaseElementsController
      */
     private function _getEditorElement(): ElementInterface
     {
-        $request = Craft::$app->getRequest();
         $elementsService = Craft::$app->getElements();
 
-        $elementId = $request->getBodyParam('elementId');
+        $elementId = $this->request->getBodyParam('elementId');
         /** @noinspection PhpUnhandledExceptionInspection */
-        $siteId = $request->getBodyParam('siteId') ?: Craft::$app->getSites()->getCurrentSite()->id;
+        $siteId = $this->request->getBodyParam('siteId') ?: Craft::$app->getSites()->getCurrentSite()->id;
 
         // Determine the element type
-        $elementType = $request->getBodyParam('elementType');
+        $elementType = $this->request->getBodyParam('elementType');
 
         if ($elementType === null && $elementId !== null) {
             $elementType = $elementsService->getElementTypeById($elementId);
@@ -295,7 +290,7 @@ class ElementsController extends BaseElementsController
         }
 
         // Instantiate the element
-        $attributes = $request->getBodyParam('attributes', []);
+        $attributes = $this->request->getBodyParam('attributes', []);
         $element = $this->_getEditorElementInternal($elementId, $elementType, $siteId, $attributes);
 
         $site = Craft::$app->getSites()->getSiteById($siteId);
@@ -340,7 +335,7 @@ class ElementsController extends BaseElementsController
         }
 
         // Prevalidate?
-        if ($request->getBodyParam('prevalidate') && $element->enabled && $element->enabledForSite) {
+        if ($this->request->getBodyParam('prevalidate') && $element->enabled && $element->enabledForSite) {
             $element->setScenario(Element::SCENARIO_LIVE);
             $element->validate();
         }

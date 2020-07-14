@@ -9,12 +9,10 @@ namespace craft\services;
 
 use Craft;
 use craft\base\Element;
-use craft\base\Field;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Entry;
 use craft\errors\EntryTypeNotFoundException;
-use craft\errors\InvalidElementException;
 use craft\errors\SectionNotFoundException;
 use craft\events\ConfigEvent;
 use craft\events\DeleteSiteEvent;
@@ -1199,7 +1197,7 @@ class Sections extends Component
      */
     public function handleChangedEntryType(ConfigEvent $event)
     {
-        $entryTypeUid  = $event->tokenMatches[0];
+        $entryTypeUid = $event->tokenMatches[0];
         $data = $event->newValue;
 
         // Make sure fields are processed

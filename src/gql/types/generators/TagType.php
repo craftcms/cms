@@ -20,7 +20,6 @@ use craft\gql\types\elements\Tag;
 use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\TagGroup;
-use GraphQL\Type\Definition\Type;
 
 /**
  * Class TagType

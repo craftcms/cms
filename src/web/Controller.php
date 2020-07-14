@@ -8,6 +8,8 @@
 namespace craft\web;
 
 use Craft;
+use craft\elements\User as UserElement;
+use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
@@ -22,11 +24,14 @@ use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
 use yii\web\JsonResponseFormatter;
 use yii\web\Response as YiiResponse;
+use yii\web\UnauthorizedHttpException;
 
 /**
  * Controller is a base class that all controllers in Craft extend.
  * It extends Yii’s [[\yii\web\Controller]], overwriting specific methods as required.
  *
+ * @property Request $request
+ * @property Response $response
  * @property View $view The view object that can be used to render views or view files
  * @method View getView() Returns the view object that can be used to render views or view files
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -122,14 +127,29 @@ abstract class Controller extends \yii\web\Controller
      * @throws BadRequestHttpException if the request is missing a valid CSRF token
      * @throws ForbiddenHttpException if the user is not logged in or lacks the necessary permissions
      * @throws ServiceUnavailableHttpException if the system is offline and the user isn't allowed to access it
+     * @throws UnauthorizedHttpException
      */
     public function beforeAction($action)
     {
-        $request = Craft::$app->getRequest();
-
         // Don't enable CSRF validation for Live Preview requests
-        if ($request->getIsLivePreview()) {
+        if ($this->request->getIsLivePreview()) {
             $this->enableCsrfValidation = false;
+        }
+
+        // Did the request include user credentials?
+        list($username, $password) = $this->request->getAuthCredentials();
+        if ($username && $password) {
+            $user = UserElement::find()
+                ->username(Db::escapeParam($username))
+                ->addSelect(['users.password'])
+                ->one();
+            if (!$user) {
+                throw new UnauthorizedHttpException('Your request was made with invalid credentials.');
+            }
+            if (!$user->authenticate($password)) {
+                throw new UnauthorizedHttpException('Your request was made with invalid credentials.');
+            }
+            Craft::$app->getUser()->setIdentity($user);
         }
 
         if (!parent::beforeAction($action)) {
@@ -148,7 +168,7 @@ abstract class Controller extends \yii\web\Controller
 
         if (!($test & $allowAnonymous)) {
             // If this is a CP request, make sure they have access to the CP
-            if ($request->getIsCpRequest()) {
+            if ($this->request->getIsCpRequest()) {
                 $this->requireLogin();
                 $this->requirePermission('accessCp');
             } else if (Craft::$app->getUser()->getIsGuest()) {
@@ -157,9 +177,9 @@ abstract class Controller extends \yii\web\Controller
 
             // If the system is offline, make sure they have permission to access the CP/site
             if (!$isLive) {
-                $permission = $request->getIsCpRequest() ? 'accessCpWhenSystemIsOff' : 'accessSiteWhenSystemIsOff';
+                $permission = $this->request->getIsCpRequest() ? 'accessCpWhenSystemIsOff' : 'accessSiteWhenSystemIsOff';
                 if (!Craft::$app->getUser()->checkPermission($permission)) {
-                    $error = $request->getIsCpRequest()
+                    $error = $this->request->getIsCpRequest()
                         ? Craft::t('app', 'Your account doesn’t have permission to access the control panel when the system is offline.')
                         : Craft::t('app', 'Your account doesn’t have permission to access the site when the system is offline.');
                     throw new ServiceUnavailableHttpException($error);
@@ -216,8 +236,7 @@ abstract class Controller extends \yii\web\Controller
      */
     public function renderTemplate(string $template, array $variables = [], string $templateMode = null): YiiResponse
     {
-        $response = Craft::$app->getResponse();
-        $headers = $response->getHeaders();
+        $headers = $this->response->getHeaders();
         $view = $this->getView();
 
         // Set the MIME type for the request based on the matched template's file extension (unless the
@@ -230,7 +249,7 @@ abstract class Controller extends \yii\web\Controller
                 $mimeType = 'text/html';
             }
 
-            $headers->set('content-type', $mimeType . '; charset=' . $response->charset);
+            $headers->set('content-type', $mimeType . '; charset=' . $this->response->charset);
         }
 
         // If this is a preview request, register the iframe resizer script
@@ -239,12 +258,12 @@ abstract class Controller extends \yii\web\Controller
         }
 
         // Render and return the template
-        $response->data = $view->renderPageTemplate($template, $variables, $templateMode);
+        $this->response->data = $view->renderPageTemplate($template, $variables, $templateMode);
 
         // Prevent a response formatter from overriding the content-type header
-        $response->format = YiiResponse::FORMAT_RAW;
+        $this->response->format = YiiResponse::FORMAT_RAW;
 
-        return $response;
+        return $this->response;
     }
 
     /**
@@ -469,11 +488,9 @@ abstract class Controller extends \yii\web\Controller
      */
     public function asJsonP($data): YiiResponse
     {
-        $response = Craft::$app->getResponse();
-        $response->data = $data;
-        $response->format = YiiResponse::FORMAT_JSONP;
-
-        return $response;
+        $this->response->data = $data;
+        $this->response->format = YiiResponse::FORMAT_JSONP;
+        return $this->response;
     }
 
     /** @noinspection ArrayTypeOfParameterByDefaultValueInspection */
@@ -487,11 +504,9 @@ abstract class Controller extends \yii\web\Controller
      */
     public function asRaw($data): YiiResponse
     {
-        $response = Craft::$app->getResponse();
-        $response->data = $data;
-        $response->format = YiiResponse::FORMAT_RAW;
-
-        return $response;
+        $this->response->data = $data;
+        $this->response->format = YiiResponse::FORMAT_RAW;
+        return $this->response;
     }
 
     /**

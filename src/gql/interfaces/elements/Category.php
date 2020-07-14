@@ -7,7 +7,6 @@
 
 namespace craft\gql\interfaces\elements;
 
-use craft\elements\Category as CategoryElement;
 use craft\gql\arguments\elements\Category as CategoryArguments;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\Structure;

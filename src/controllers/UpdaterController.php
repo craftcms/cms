@@ -216,11 +216,9 @@ class UpdaterController extends BaseUpdaterController
      */
     protected function initialData(): array
     {
-        $request = Craft::$app->getRequest();
-
         // Set the things to install, if any
-        if (($install = $request->getBodyParam('install')) !== null) {
-            $packageNames = $request->getRequiredBodyParam('packageNames');
+        if (($install = $this->request->getBodyParam('install')) !== null) {
+            $packageNames = $this->request->getRequiredBodyParam('packageNames');
 
             $data = [
                 'install' => $this->_parseInstallParam($install),
@@ -258,7 +256,7 @@ class UpdaterController extends BaseUpdaterController
         }
 
         // Set the return URL, if any
-        if (($returnUrl = $request->getBodyParam('return')) !== null) {
+        if (($returnUrl = $this->request->getBodyParam('return')) !== null) {
             $data['returnUrl'] = strip_tags($returnUrl);
         }
 

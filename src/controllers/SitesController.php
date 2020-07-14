@@ -101,8 +101,8 @@ class SitesController extends Controller
         $this->requireAcceptsJson();
 
         $group = new SiteGroup();
-        $group->id = Craft::$app->getRequest()->getBodyParam('id');
-        $group->name = Craft::$app->getRequest()->getRequiredBodyParam('name');
+        $group->id = $this->request->getBodyParam('id');
+        $group->name = $this->request->getRequiredBodyParam('name');
 
         $isNewGroup = empty($group->id);
 
@@ -132,7 +132,7 @@ class SitesController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $groupId = Craft::$app->getRequest()->getRequiredBodyParam('id');
+        $groupId = $this->request->getRequiredBodyParam('id');
         $success = Craft::$app->getSites()->deleteGroupById($groupId);
 
         $this->setSuccessFlash(Craft::t('app', 'Group deleted.'));
@@ -255,25 +255,23 @@ class SitesController extends Controller
     public function actionSaveSite()
     {
         $this->requirePostRequest();
-        $request = Craft::$app->getRequest();
-
-        $siteId = $request->getBodyParam('siteId');
+        $siteId = $this->request->getBodyParam('siteId');
 
         if ($siteId) {
             $site = Craft::$app->getSites()->getSiteById($siteId);
         } else {
             $site = new Site();
-            $site->id = $request->getBodyParam('siteId');
+            $site->id = $this->request->getBodyParam('siteId');
         }
 
-        $site->groupId = $request->getBodyParam('group');
-        $site->name = $request->getBodyParam('name');
-        $site->handle = $request->getBodyParam('handle');
-        $site->language = $request->getBodyParam('language');
-        $site->primary = (bool)$request->getBodyParam('primary');
-        $site->enabled = $site->primary || (bool)$request->getBodyParam('enabled');
-        $site->hasUrls = (bool)$request->getBodyParam('hasUrls');
-        $site->baseUrl = $site->hasUrls ? $request->getBodyParam('baseUrl') : null;
+        $site->groupId = $this->request->getBodyParam('group');
+        $site->name = $this->request->getBodyParam('name');
+        $site->handle = $this->request->getBodyParam('handle');
+        $site->language = $this->request->getBodyParam('language');
+        $site->primary = (bool)$this->request->getBodyParam('primary');
+        $site->enabled = $site->primary || (bool)$this->request->getBodyParam('enabled');
+        $site->hasUrls = (bool)$this->request->getBodyParam('hasUrls');
+        $site->baseUrl = $site->hasUrls ? $this->request->getBodyParam('baseUrl') : null;
 
         // Save it
         if (!Craft::$app->getSites()->saveSite($site)) {
@@ -301,7 +299,7 @@ class SitesController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $siteIds = Json::decode(Craft::$app->getRequest()->getRequiredBodyParam('ids'));
+        $siteIds = Json::decode($this->request->getRequiredBodyParam('ids'));
         Craft::$app->getSites()->reorderSites($siteIds);
 
         return $this->asJson(['success' => true]);
@@ -317,9 +315,8 @@ class SitesController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $request = Craft::$app->getRequest();
-        $siteId = $request->getRequiredBodyParam('id');
-        $transferContentTo = $request->getBodyParam('transferContentTo');
+        $siteId = $this->request->getRequiredBodyParam('id');
+        $transferContentTo = $this->request->getBodyParam('transferContentTo');
 
         Craft::$app->getSites()->deleteSiteById($siteId, $transferContentTo);
 

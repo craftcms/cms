@@ -29,6 +29,7 @@ abstract class ElementMutationResolver extends MutationResolver
 
     /**
      * A list of attributes that are unchangeable by mutations.
+     *
      * @var string[]
      */
     protected $immutableAttributes = ['id', 'uid'];

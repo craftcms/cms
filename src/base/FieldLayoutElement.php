@@ -7,7 +7,6 @@
 
 namespace craft\base;
 
-use yii\base\Arrayable;
 use yii\base\ArrayableTrait;
 use yii\base\BaseObject;
 

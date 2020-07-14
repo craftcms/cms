@@ -472,7 +472,7 @@ class Assets extends Component
      * @param string $orderBy
      * @return array
      */
-    public function  getAllDescendantFolders(VolumeFolder $parentFolder, string $orderBy = 'path'): array
+    public function getAllDescendantFolders(VolumeFolder $parentFolder, string $orderBy = 'path'): array
     {
         /** @var $query Query */
         $query = $this->_createFolderQuery()

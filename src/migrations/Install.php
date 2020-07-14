@@ -17,7 +17,6 @@ use craft\elements\User;
 use craft\errors\InvalidPluginException;
 use craft\helpers\App;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\Json;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\mail\transportadapters\Sendmail;

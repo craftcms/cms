@@ -129,6 +129,7 @@ class Asset extends ElementMutationResolver
 
         return true;
     }
+
     /**
      * @inheritDoc
      */

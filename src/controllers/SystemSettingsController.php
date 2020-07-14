@@ -109,12 +109,10 @@ class SystemSettingsController extends Controller
         $this->requirePostRequest();
 
         $projectConfig = Craft::$app->getProjectConfig();
-        $request = Craft::$app->getRequest();
-
         $systemSettings = $projectConfig->get('system');
-        $systemSettings['name'] = $request->getBodyParam('name');
-        $systemSettings['live'] = (bool)$request->getBodyParam('live');
-        $systemSettings['timeZone'] = $request->getBodyParam('timeZone');
+        $systemSettings['name'] = $this->request->getBodyParam('name');
+        $systemSettings['live'] = (bool)$this->request->getBodyParam('live');
+        $systemSettings['timeZone'] = $this->request->getBodyParam('timeZone');
         $projectConfig->set('system', $systemSettings, 'Update system settings.');
 
         $this->setSuccessFlash(Craft::t('app', 'General settings saved.'));
@@ -320,15 +318,14 @@ class SystemSettingsController extends Controller
      */
     private function _createMailSettingsFromPost(): MailSettings
     {
-        $request = Craft::$app->getRequest();
         $settings = new MailSettings();
 
-        $settings->fromEmail = $request->getBodyParam('fromEmail');
-        $settings->replyToEmail = $request->getBodyParam('replyToEmail') ?: null;
-        $settings->fromName = $request->getBodyParam('fromName');
-        $settings->template = $request->getBodyParam('template');
-        $settings->transportType = $request->getBodyParam('transportType');
-        $settings->transportSettings = $request->getBodyParam('transportTypes.' . $settings->transportType);
+        $settings->fromEmail = $this->request->getBodyParam('fromEmail');
+        $settings->replyToEmail = $this->request->getBodyParam('replyToEmail') ?: null;
+        $settings->fromName = $this->request->getBodyParam('fromName');
+        $settings->template = $this->request->getBodyParam('template');
+        $settings->transportType = $this->request->getBodyParam('transportType');
+        $settings->transportSettings = $this->request->getBodyParam('transportTypes.' . $settings->transportType);
 
         return $settings;
     }

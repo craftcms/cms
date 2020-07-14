@@ -10,11 +10,9 @@ namespace craft\controllers;
 use Craft;
 use craft\base\Field;
 use craft\base\FieldInterface;
-use craft\base\FieldLayoutElementInterface;
 use craft\fields\MissingField;
 use craft\fields\PlainText;
 use craft\helpers\ArrayHelper;
-use craft\helpers\Component;
 use craft\helpers\UrlHelper;
 use craft\models\FieldGroup;
 use craft\web\assets\fieldsettings\FieldSettingsAsset;
@@ -59,8 +57,8 @@ class FieldsController extends Controller
         $this->requireAcceptsJson();
 
         $group = new FieldGroup();
-        $group->id = Craft::$app->getRequest()->getBodyParam('id');
-        $group->name = Craft::$app->getRequest()->getRequiredBodyParam('name');
+        $group->id = $this->request->getBodyParam('id');
+        $group->name = $this->request->getRequiredBodyParam('name');
 
         $isNewGroup = empty($group->id);
 
@@ -90,7 +88,7 @@ class FieldsController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $groupId = Craft::$app->getRequest()->getRequiredBodyParam('id');
+        $groupId = $this->request->getRequiredBodyParam('id');
         $success = Craft::$app->getFields()->deleteGroupById($groupId);
 
         $this->setSuccessFlash(Craft::t('app', 'Group deleted.'));
@@ -267,14 +265,13 @@ JS;
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $request = Craft::$app->getRequest();
-        $type = $request->getRequiredBodyParam('type');
+        $type = $this->request->getRequiredBodyParam('type');
         $field = Craft::$app->getFields()->createField($type);
 
         $view = Craft::$app->getView();
         $html = $view->renderTemplate('settings/fields/_type-settings', [
             'field' => $field,
-            'namespace' => $request->getBodyParam('namespace')
+            'namespace' => $this->request->getBodyParam('namespace')
         ]);
 
         return $this->asJson([
@@ -294,20 +291,19 @@ JS;
         $this->requirePostRequest();
 
         $fieldsService = Craft::$app->getFields();
-        $request = Craft::$app->getRequest();
-        $type = $request->getRequiredBodyParam('type');
+        $type = $this->request->getRequiredBodyParam('type');
 
         $field = $fieldsService->createField([
             'type' => $type,
-            'id' => $request->getBodyParam('fieldId'),
-            'groupId' => $request->getRequiredBodyParam('group'),
-            'name' => $request->getBodyParam('name'),
-            'handle' => $request->getBodyParam('handle'),
-            'instructions' => $request->getBodyParam('instructions'),
-            'searchable' => (bool)$request->getBodyParam('searchable', true),
-            'translationMethod' => $request->getBodyParam('translationMethod', Field::TRANSLATION_METHOD_NONE),
-            'translationKeyFormat' => $request->getBodyParam('translationKeyFormat'),
-            'settings' => $request->getBodyParam('types.' . $type),
+            'id' => $this->request->getBodyParam('fieldId'),
+            'groupId' => $this->request->getRequiredBodyParam('group'),
+            'name' => $this->request->getBodyParam('name'),
+            'handle' => $this->request->getBodyParam('handle'),
+            'instructions' => $this->request->getBodyParam('instructions'),
+            'searchable' => (bool)$this->request->getBodyParam('searchable', true),
+            'translationMethod' => $this->request->getBodyParam('translationMethod', Field::TRANSLATION_METHOD_NONE),
+            'translationKeyFormat' => $this->request->getBodyParam('translationKeyFormat'),
+            'settings' => $this->request->getBodyParam('types.' . $type),
         ]);
 
         if (!$fieldsService->saveField($field)) {
@@ -335,7 +331,7 @@ JS;
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $fieldId = Craft::$app->getRequest()->getRequiredBodyParam('id');
+        $fieldId = $this->request->getRequiredBodyParam('id');
         $success = Craft::$app->getFields()->deleteFieldById($fieldId);
 
         return $this->asJson(['success' => $success]);
@@ -353,7 +349,7 @@ JS;
      */
     public function actionRenderLayoutElementSelector(): Response
     {
-        $config = Craft::$app->getRequest()->getRequiredBodyParam('config');
+        $config = $this->request->getRequiredBodyParam('config');
         $element = Craft::$app->getFields()->createLayoutElement($config);
 
         return $this->asJson([

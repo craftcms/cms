@@ -20,7 +20,6 @@ use craft\gql\types\elements\Entry;
 use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\EntryType as EntryTypeModel;
-use GraphQL\Type\Definition\Type;
 
 /**
  * Class EntryType

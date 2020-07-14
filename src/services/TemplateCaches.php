@@ -14,7 +14,6 @@ use craft\helpers\StringHelper;
 use DateTime;
 use yii\base\Component;
 use yii\base\Event;
-use yii\caching\TagDependency;
 
 /**
  * Template Caches service.

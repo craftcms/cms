@@ -1,12 +1,17 @@
 {% set systemName = craft.app.getSystemName()|t('site') -%}
 {% set docTitle = docTitle is defined ? docTitle : title|striptags -%}
+{% set orientation = craft.app.locale.getOrientation() -%}
 
-{% set bodyClass = [
-    bodyClass ?? null,
-    craft.app.locale.getOrientation(),
+{% set bodyClass = (bodyClass ?? [])|explodeClass|merge([
+    orientation,
     currentUser and currentUser.getPreference('useShapes') ? 'use-shapes',
     currentUser and currentUser.getPreference('underlineLinks') ? 'underline-links',
-]|filter|join(' ') -%}
+])|filter -%}
+
+{% set bodyAttributes = {
+    class: bodyClass,
+    dir: orientation,
+}|merge(bodyAttributes ?? {}, recursive=true) -%}
 
 {% do view.registerAssetBundle('craft\\web\\assets\\cp\\CpAsset') -%}
 {% set cpAssetUrl = view.getAssetManager().getPublishedUrl('@app/web/assets/cp/dist', true) -%}
@@ -44,7 +49,7 @@
     </script>
     {% endblock %}
 </head>
-<body class="{{ bodyClass }}">
+<body {{ attr(bodyAttributes) }}>
     {{ beginBody() }}
     {% block body %}{% endblock %}
     {% block foot %}{% endblock %}
