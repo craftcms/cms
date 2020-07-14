@@ -50,7 +50,7 @@ class Markdown extends Directive
                 ]),
                 new FieldArgument([
                     'name' => 'inlineOnly',
-                    'type' => Type::boolval(),
+                    'type' => Type::boolean(),
                     'defaultValue' => self::DEFAULT_INLINE_ONLY,
                     'description' => 'Whether to only parse inline elements, omitting any `<p>` tags.'
                 ]),
@@ -77,7 +77,7 @@ class Markdown extends Directive
         $inlineOnly = $arguments['inlineOnly'] ?? self::DEFAULT_INLINE_ONLY;
 
         if ($inlineOnly) {
-            return Markdown::processParagraph((string)$value, $arguments['flavor'] ?? self::DEFAULT_FLAVOR);
+            return MarkdownHelper::processParagraph((string)$value, $arguments['flavor'] ?? self::DEFAULT_FLAVOR);
         }
 
         return MarkdownHelper::process((string)$value, $arguments['flavor'] ?? self::DEFAULT_FLAVOR);

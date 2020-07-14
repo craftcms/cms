@@ -4,6 +4,7 @@
 
 ### Added
 - Added `craft\services\AssetIndexer::deleteStaleIndexingData()`.
+- Added the `inlineOnly` argument to the `markdown` GraphQL directive, which can be used to specify that only inline element markdown should be processed. ([#6353](https://github.com/craftcms/cms/pull/6353))
 
 ### Changed
 - If there are no files or folders to delete, the asset indexing utility dialog no longer displays a "delete them" button.
