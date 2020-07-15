@@ -158,7 +158,7 @@ class CustomField extends BaseField
     public function formHtml(ElementInterface $element = null, bool $static = false)
     {
         $view = Craft::$app->getView();
-        $registerDeltas = $view->getIsDeltaRegistrationActive();
+        $registerDeltas = ($element->id ?? false) && $view->getIsDeltaRegistrationActive();
         $namespace = $view->getNamespace();
         $view->setIsDeltaRegistrationActive(!$static);
         $view->setNamespace($view->namespaceInputName('fields'));
