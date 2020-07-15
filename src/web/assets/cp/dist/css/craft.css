@@ -93,7 +93,7 @@ body.rtl #share-btn:before { content: 'shareleft'; }
 /* headings */
 h1 { margin-bottom: 24px; font-size: 18px; font-weight: bold; line-height: 1.2; }
 
-h2 { margin: 14px 0; font-size: 16px; font-weight: bold; line-height: 20px; }
+h2 { margin: 14px 0; font-size: 16px; font-weight: bold; line-height: 20px; padding-bottom: 2px; border-bottom: 1px solid rgba(51, 64, 77, 0.1); }
 
 h3 { margin: 14px 0; font-weight: bold; line-height: 1.2; }
 
@@ -3329,7 +3329,7 @@ body.rtl nav > ul > li > ul > li > ul > li > ul > li > ul > li .toggle { right: 
 /* flexbox field layouts */
 .flex-fields { display: -webkit-flex; display: flex; -webkit-flex-wrap: wrap; flex-wrap: wrap; -webkit-align-content: flex-start; align-content: flex-start; margin: 0 -14px -24px 0; width: calc(100% + 14px); }
 
-.flex-fields > h2 { margin: 0 14px 14px 0 !important; width: 100%; }
+.flex-fields > h2 { margin: 14px 14px 24px 0 !important; width: 100%; }
 
 .flex-fields > hr { margin: 0 -10px 24px -24px; width: calc(100% + 34px); }
 
