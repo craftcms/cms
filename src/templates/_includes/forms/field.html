@@ -1,5 +1,6 @@
-{%- set labelId = (labelId is defined ? labelId : (id is defined ? id~'-label' : null)) %}
-{%- set fieldId = (fieldId is defined ? fieldId : (id is defined ? id~'-field' : null)) %}
+{%- set fieldId = fieldId ?? ((id ?? false) ? "#{id}-field" : "field#{random()}") %}
+{%- set labelId = labelId ?? "#{fieldId}-label" %}
+{%- set instructionsId = instructionsId ?? "#{fieldId}-instructions"  %}
 {%- set status = status ?? null %}
 {%- set label = label is defined and label != '__blank__' ? label : (block('label') ?? null) %}
 {%- set altLabel = altLabel ?? false %}
@@ -21,6 +22,9 @@
 {%- set fieldAttributes = {
     class: fieldClass,
     id: fieldId,
+    aria: {
+        describedby: instructions ? instructionsId : false,
+    }
 }|merge(fieldAttributes ?? [], recursive=true) %}
 
 {%- if block('attr') is defined %}
@@ -69,6 +73,7 @@
             {% endif %}
             {% if instructions %}
                 {{ tag('div', {
+                    id: instructionsId,
                     class: ['instructions'],
                     html: instructions|md('gfm-comment')|replace('/&amp;(\\w+);/', '&$1;'),
                 }) }}
