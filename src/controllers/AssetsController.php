@@ -35,6 +35,7 @@ use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
+use yii\web\ServerErrorHttpException;
 use ZipArchive;
 
 /** @noinspection ClassOverridesFieldOfSuperClassInspection */
@@ -1152,6 +1153,7 @@ class AssetsController extends Controller
      * @param int|null $transformId
      * @return Response
      * @throws NotFoundHttpException if the transform can't be found
+     * @throws ServerErrorHttpException if the transform can't be generated
      */
     public function actionGenerateTransform(int $transformId = null): Response
     {
@@ -1176,7 +1178,12 @@ class AssetsController extends Controller
             throw new NotFoundHttpException('Image transform not found.');
         }
 
-        $url = $assetTransforms->ensureTransformUrlByIndexModel($transformIndexModel);
+        try {
+            $url = $assetTransforms->ensureTransformUrlByIndexModel($transformIndexModel);
+        } catch (\Exception $exception) {
+            Craft::$app->getErrorHandler()->logException($exception);
+            throw new ServerErrorHttpException('Image transform cannot be created.');
+        }
 
         if (Craft::$app->getRequest()->getAcceptsJson()) {
             return $this->asJson(['url' => $url]);

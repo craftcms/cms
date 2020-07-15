@@ -124,6 +124,7 @@ class Install extends Migration
             'volumeId' => $this->integer(),
             'fileExists' => $this->boolean()->defaultValue(false)->notNull(),
             'inProgress' => $this->boolean()->defaultValue(false)->notNull(),
+            'error' => $this->boolean()->defaultValue(false)->notNull(),
             'dateIndexed' => $this->dateTime(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),

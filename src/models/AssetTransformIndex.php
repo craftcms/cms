@@ -62,6 +62,11 @@ class AssetTransformIndex extends Model
     public $inProgress = false;
 
     /**
+     * @var bool Transform generation failed
+     */
+    public $error = false;
+
+    /**
      * @var \DateTime|null Date indexed
      */
     public $dateIndexed;

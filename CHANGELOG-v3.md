@@ -8,6 +8,7 @@
 
 ### Changed
 - If there are no files or folders to delete, the asset indexing utility dialog no longer displays a "delete them" button.
+- Improved error handling when asset transforms cannot be generated for any reason. ([#6357](https://github.com/craftcms/cms/issues/6357))
 
 ### Fixed
 - Fixed a bug where all Title fields within Quick Post widgets had the same input ID.

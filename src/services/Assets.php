@@ -611,9 +611,8 @@ class Assets extends Component
         if ($generateNow) {
             try {
                 return $assetTransforms->ensureTransformUrlByIndexModel($index);
-            } catch (ImageException $exception) {
-                Craft::warning($exception->getMessage(), __METHOD__);
-                $assetTransforms->deleteTransformIndex($index->id);
+            } catch (\Exception $exception) {
+                Craft::$app->getErrorHandler()->logException($exception);
                 return null;
             }
         }
