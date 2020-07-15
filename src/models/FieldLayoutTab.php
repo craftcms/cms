@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\base\FieldInterface;
 use craft\base\FieldLayoutElementInterface;
 use craft\base\Model;
+use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
@@ -285,8 +286,8 @@ class FieldLayoutTab extends Model
             return false;
         }
 
-        foreach ($this->getFields() as $field) {
-            if ($element->hasErrors("{$field->handle}.*")) {
+        foreach ($this->elements as $layoutElement) {
+            if ($layoutElement instanceof BaseField && $element->hasErrors($layoutElement->attribute() . '.*')) {
                 return true;
             }
         }
