@@ -115,12 +115,12 @@
 
                     var $item = $(
                         '<div class="matrixconfigitem mci-blocktype" data-id="' + id + '">' +
-                        '<div class="name"></div>' +
-                        '<div class="handle code"></div>' +
-                        '<div class="actions">' +
-                        '<a class="move icon" title="' + Craft.t('app', 'Reorder') + '"></a>' +
-                        '<a class="settings icon" title="' + Craft.t('app', 'Settings') + '"></a>' +
+                        '<div class="mci-name">' +
+                        '<h4></h4>' +
+                        '<div class="smalltext light code"></div>' +
                         '</div>' +
+                        '<a class="settings icon" title="' + Craft.t('app', 'Settings') + '"></a>' +
+                        '<a class="move icon" title="' + Craft.t('app', 'Reorder') + '"></a>' +
                         '<input class="hidden" name="types[craft\\fields\\Matrix][blockTypes][' + id + '][name]">' +
                         '<input class="hidden" name="types[craft\\fields\\Matrix][blockTypes][' + id + '][handle]">' +
                         '</div>'
@@ -349,8 +349,9 @@
                 this.inputNamePrefix = this.configurator.inputNamePrefix + '[blockTypes][' + this.id + ']';
                 this.inputIdPrefix = this.configurator.inputIdPrefix + '-blockTypes-' + this.id;
 
-                this.$nameLabel = this.$item.children('.name');
-                this.$handleLabel = this.$item.children('.handle');
+                let $nameContainer = this.$item.children('.mci-name');
+                this.$nameLabel = $nameContainer.children('h4');
+                this.$handleLabel = $nameContainer.children('.smalltext');
                 this.$nameHiddenInput = this.$item.find('input[name$="[name]"]:first');
                 this.$handleHiddenInput = this.$item.find('input[name$="[handle]"]:first');
                 this.$settingsBtn = this.$item.find('.settings');
@@ -459,8 +460,10 @@
 
                 var $item = $(
                     '<div class="matrixconfigitem mci-field" data-id="' + id + '">' +
-                    '<div class="name"><em class="light">' + Craft.t('app', '(blank)') + '</em>&nbsp;</div>' +
-                    '<div class="handle code">&nbsp;</div>' +
+                    '<div class="mci-name">' +
+                    '<h4><em class="light">' + Craft.t('app', '(blank)') + '</em></h4>' +
+                    '<div class="smalltext light code"></div>' +
+                    '</div>' +
                     '<div class="actions">' +
                     '<a class="move icon" title="' + Craft.t('app', 'Reorder') + '"></a>' +
                     '</div>' +
@@ -508,6 +511,7 @@
             $typeSelect: null,
             $translationSettingsContainer: null,
             $typeSettingsContainer: null,
+            $widthInput: null,
             $deleteBtn: null,
 
             init: function(configurator, blockType, $item) {
@@ -522,8 +526,9 @@
                 this.initializedFieldTypeSettings = {};
                 this.fieldTypeSettingsTemplates = {};
 
-                this.$nameLabel = this.$item.children('.name');
-                this.$handleLabel = this.$item.children('.handle');
+                let $nameContainer = this.$item.children('.mci-name');
+                this.$nameLabel = $nameContainer.children('h4');
+                this.$handleLabel = $nameContainer.children('.smalltext');
 
                 // Find the field settings container if it exists, otherwise create it
                 this.$fieldSettingsContainer = this.blockType.$fieldSettingsContainer.children('[data-id="' + this.id + '"]:first');
@@ -540,6 +545,7 @@
                 this.$typeSelect = $('#' + this.inputIdPrefix + '-type');
                 this.$translationSettingsContainer = $('#' + this.inputIdPrefix + '-translation-settings');
                 this.$typeSettingsContainer = this.$fieldSettingsContainer.children('.fieldtype-settings:first');
+                this.$widthInput = $('#' + this.inputIdPrefix + '-width');
                 this.$deleteBtn = this.$fieldSettingsContainer.children('a.delete:first');
 
                 if (isNew) {
@@ -560,6 +566,19 @@
                 this.addListener(this.$requiredCheckbox, 'change', 'updateRequiredIcon');
                 this.addListener(this.$typeSelect, 'change', 'onTypeSelectChange');
                 this.addListener(this.$deleteBtn, 'click', 'confirmDelete');
+
+                let widthSlider = new Craft.SlidePicker(this.$widthInput.val() || 100, {
+                    min: 25,
+                    max: 100,
+                    step: 25,
+                    valueLabel: width => {
+                        return Craft.t('app', '{pct} width', {pct: `${width}%`});
+                    },
+                    onChange: width => {
+                        this.$widthInput.val(width);
+                    }
+                });
+                widthSlider.$container.insertAfter($nameContainer);
             },
 
             select: function() {
@@ -594,11 +613,11 @@
 
             updateNameLabel: function() {
                 var val = this.$nameInput.val();
-                this.$nameLabel.html((val ? Craft.escapeHtml(val) : '<em class="light">' + Craft.t('app', '(blank)') + '</em>') + '&nbsp;');
+                this.$nameLabel.html((val ? Craft.escapeHtml(val) : '<em class="light">' + Craft.t('app', '(blank)') + '</em>'));
             },
 
             updateHandleLabel: function() {
-                this.$handleLabel.html(Craft.escapeHtml(this.$handleInput.val()) + '&nbsp;');
+                this.$handleLabel.html(Craft.escapeHtml(this.$handleInput.val()));
             },
 
             updateRequiredIcon: function() {
@@ -769,6 +788,13 @@
 
                 $('<div/>', {
                     'class': 'fieldtype-settings'
+                }).appendTo($container);
+
+                $('<input/>', {
+                    type: 'hidden',
+                    id: this.inputIdPrefix + '-width',
+                    name: this.inputNamePrefix + '[width]',
+                    value: '100',
                 }).appendTo($container);
 
                 $('<hr/>').appendTo($container);

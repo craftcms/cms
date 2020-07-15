@@ -57,6 +57,16 @@ class CustomField extends BaseField
     }
 
     /**
+     * Returns the custom field this layout field is based on.
+     *
+     * @return FieldInterface
+     */
+    public function getField(): FieldInterface
+    {
+        return $this->_field;
+    }
+
+    /**
      * Sets the custom field this layout field is based on.
      *
      * @param FieldInterface $field

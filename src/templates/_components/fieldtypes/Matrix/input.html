@@ -68,13 +68,9 @@
                     </div>
                 {% endif %}
                 <div class="fields">
-                    {% include "_includes/fields" with {
-                        namespace: "#{baseInputName}[fields]",
-                        element: block,
-                        fields: block.getType().getFieldLayout().getFields(),
-                        static: static,
-                        registerDeltas: not blockIsNew,
-                    } %}
+                    {% namespace baseInputName %}
+                        {{ block.getFieldLayout().createForm(block, static).render()|raw }}
+                    {% endnamespace %}
                 </div>
             </div>
         {% endfor %}
