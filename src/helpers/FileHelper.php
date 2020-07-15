@@ -261,11 +261,6 @@ class FileHelper extends \yii\helpers\FileHelper
         if ($checkExtension && ($mimeType === null || !static::canTrustMimeType($mimeType))) {
             return static::getMimeTypeByExtension($file, $magicFile) ?? $mimeType;
         }
-        
-        // Handle invalid SVG mime type reported by PHP (https://bugs.php.net/bug.php?id=79045)
-        if ($mimeType === 'image/svg') {
-            return 'image/svg+xml';
-        }
 
         // Handle invalid SVG mime type reported by PHP (https://bugs.php.net/bug.php?id=79045)
         if (strpos($mimeType, 'image/svg') === 0) {
