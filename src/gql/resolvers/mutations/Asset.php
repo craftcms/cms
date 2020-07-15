@@ -50,6 +50,9 @@ class Asset extends ElementMutationResolver
         $canIdentify = !empty($arguments['id']) || !empty($arguments['uid']);
         $elementService = Craft::$app->getElements();
 
+        $newFolderId = $arguments['newFolderId'] ?? null;
+        $assetService = Craft::$app->getAssets();
+
         if ($canIdentify) {
             $this->requireSchemaAction('volumes.' . $volume->uid, 'save');
 
@@ -69,32 +72,34 @@ class Asset extends ElementMutationResolver
                 throw new UserError('Impossible to create an asset without providing a file');
             }
 
-            if (empty($arguments['newFolderId'])) {
-                throw new UserError('Impossible to create an asset without providing a folder');
+            if (empty($newFolderId)) {
+                $newFolderId = $assetService->getRootFolderByVolumeId($volume->id)->id;
             }
 
             $asset = $elementService->createElement([
                 'type' => AssetElement::class,
                 'volumeId' => $volume->id,
-                'newFolderId' => $arguments['newFolderId']
+                'newFolderId' => $newFolderId
             ]);
         }
 
         /** @var AssetElement $asset */
-        if (!empty($arguments['newFolderId'])) {
-            $folder = Craft::$app->getAssets()->getFolderById($arguments['newFolderId']);
+        if (empty($newFolderId)) {
+            if (!$canIdentify) {
+                $asset->newFolderId = $assetService->getRootFolderByVolumeId($volume->id)->id;
+            }
+        } else {
+            $folder = $assetService->getFolderById($newFolderId);
 
             if (!$folder || $folder->volumeId != $volume->id) {
                 throw new UserError('Invalid folder id provided');
             }
-        } else {
-            if ($asset->getVolumeId() != $volume->id) {
-                throw new UserError('A folder id must be provided to change the asset\'s volume.');
-            }
+
         }
 
-        $asset = $this->populateElementWithData($asset, $arguments);
+        $asset->setVolumeId($volume->id);
 
+        $asset = $this->populateElementWithData($asset, $arguments);
         $asset = $this->saveElement($asset);
 
         return $elementService->getElementById($asset->id, AssetElement::class);
