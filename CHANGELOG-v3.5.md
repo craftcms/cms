@@ -11,6 +11,7 @@
 - It’s now possible to set field widths to 25%, 50%, 75%, or 100% (including Matrix sub-fields), and fields will be positioned next to each other when there’s room. ([#2644](https://github.com/craftcms/cms/issues/2644), [#6346](https://github.com/craftcms/cms/issues/6346))
 - It’s now possible to add headings, tips, warnings, horizontal rules, and custom UI elements based on site templates, to field layouts. ([#1103](https://github.com/craftcms/cms/issues/1103), [#1138](https://github.com/craftcms/cms/issues/1138), [#4738](https://github.com/craftcms/cms/issues/4738))
 - It’s now possible to search for fields from within field layout designers. ([#913](https://github.com/craftcms/cms/issues/913))
+- Added the “Formatting Locale” user preference. ([#6363](https://github.com/craftcms/cms/issues/6363))
 - Added the “Use shapes to represent statuses” user preference. ([#3293](https://github.com/craftcms/cms/issues/3293))
 - Added the “Underline links” user preference. ([#6153](https://github.com/craftcms/cms/issues/6153))
 - Added the “Suspend by default” user registration setting. ([#5830](https://github.com/craftcms/cms/issues/5830))
@@ -139,6 +140,7 @@
 - Added `craft\elements\MatrixBlock::getCacheTags()`.
 - Added `craft\elements\Tag::getCacheTags()`.
 - Added `craft\elements\Tag::gqlMutationNameByContext()`.
+- Added `craft\elements\User::getPreferredLocale()`.
 - Added `craft\events\DefineAttributeKeywordsEvent`.
 - Added `craft\events\DefineFieldHtmlEvent`.
 - Added `craft\events\DefineFieldKeywordsEvent`.

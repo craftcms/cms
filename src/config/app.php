@@ -212,6 +212,16 @@ return [
         },
 
         'locale' => function() {
+            // If this is a CP request, a user is logged in, and they have a preferred locale, use that
+            if (Craft::$app->getRequest()->getIsCpRequest()) {
+                $session = Craft::$app->getSession();
+                $id = $session->getHasSessionId() || $session->getIsActive() ? $session->get(Craft::$app->getUser()->idParam) : null;
+                if ($id && ($locale = Craft::$app->getUsers()->getUserPreference($id, 'locale')) !== null) {
+                    return Craft::$app->getI18n()->getLocaleById($locale);
+                }
+            }
+
+            // Otherwise default to the application language
             return Craft::$app->getI18n()->getLocaleById(Craft::$app->language);
         },
 

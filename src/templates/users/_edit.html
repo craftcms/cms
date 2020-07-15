@@ -202,30 +202,23 @@
 
         {% if user.getIsCurrent() %}
             <div id="prefs" class="flex-fields hidden">
-                {% embed '_includes/forms/field' with {
-                    id: 'language',
+                {{ forms.selectField({
+                    id: 'preferredLanguage',
+                    name: 'preferredLanguage',
                     label: "Language"|t('app'),
-                } %}
-                    {% block input %}
-                        <div class="select">
-                            <select id="language" name="preferredLanguage">
-                                {% set allAppLocales = craft.app.i18n.getAppLocales()|multisort('displayName')|index('id') %}
-                                {% set userLanguage = user.getPreferredLanguage() ?: craft.app.language %}
+                    instructions: 'The language that the control panel should use.'|t('app'),
+                    options: localeOptions,
+                    value: userLanguage,
+                }) }}
 
-                                {% if allAppLocales[userLanguage] is not defined %}
-                                    {% set userLanguage = userLanguage|replace('/-.*/', '') %}
-                                    {% if allAppLocales[userLanguage] is not defined %}
-                                        {% set userLanguage = 'en' %}
-                                    {% endif %}
-                                {% endif %}
-
-                                {% for locale in allAppLocales %}
-                                    <option value="{{ locale.id }}" {% if locale.id == userLanguage %}selected{% endif %}>{{ locale.getDisplayName() }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                    {% endblock %}
-                {% endembed %}
+                {{ forms.selectField({
+                    id: 'preferredLocale',
+                    name: 'preferredLocale',
+                    label: "Formatting Locale"|t('app'),
+                    instructions: 'The locale that should be used for date and number formatting.'|t('app'),
+                    options: localeOptions|unshift({label: 'Same as language'|t('app'), value: ''}),
+                    value: userLocale,
+                }) }}
 
                 {{ forms.selectField({
                     label: "Week Start Day"|t('app'),

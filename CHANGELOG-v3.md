@@ -9,6 +9,7 @@
 - It’s now possible to set field widths to 25%, 50%, 75%, or 100% (including Matrix sub-fields), and fields will be positioned next to each other when there’s room. ([#2644](https://github.com/craftcms/cms/issues/2644), [#6346](https://github.com/craftcms/cms/issues/6346))
 - It’s now possible to add headings, tips, warnings, horizontal rules, and custom UI elements based on site templates, to field layouts. ([#1103](https://github.com/craftcms/cms/issues/1103), [#1138](https://github.com/craftcms/cms/issues/1138), [#4738](https://github.com/craftcms/cms/issues/4738))
 - It’s now possible to search for fields from within field layout designers. ([#913](https://github.com/craftcms/cms/issues/913))
+- Added the “Formatting Locale” user preference. ([#6363](https://github.com/craftcms/cms/issues/6363))
 - Entry types can now specify custom Title field instructions. ([#1518](https://github.com/craftcms/cms/issues/1518))
 - Entry types can now change the Title field’s translation method, similar to how custom fields’ translation methods. ([#2856](https://github.com/craftcms/cms/issues/2856))
 - User groups can now have descriptions. ([#4893](https://github.com/craftcms/cms/issues/4893))
@@ -32,6 +33,7 @@
 - Added `craft\controllers\UtilitiesController::actionProjectConfigPerformAction()`.
 - Added `craft\elements\Asset::getVolumeId()`.
 - Added `craft\elements\Asset::setVolumeId()`.
+- Added `craft\elements\User::getPreferredLocale()`.
 - Added `craft\events\DefineFieldLayoutFieldEvent`.
 - Added `craft\events\DefineFieldsEvent`.
 - Added `craft\fieldlayoutelements\BaseField`.

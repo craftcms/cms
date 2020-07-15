@@ -26,6 +26,7 @@ use craft\helpers\Image;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\helpers\User as UserHelper;
+use craft\i18n\Locale;
 use craft\models\UserGroup;
 use craft\services\Users;
 use craft\web\assets\edituser\EditUserAsset;
@@ -839,6 +840,37 @@ class UsersController extends Controller
 
         $fieldsHtml = $form->render(false);
 
+        // Prepare the language/locale options
+        // ---------------------------------------------------------------------
+
+        if ($isCurrentUser) {
+            /** @var Locale[] $allLocales */
+            $allLocales = ArrayHelper::index(Craft::$app->getI18n()->getAppLocales(), 'id');
+            ArrayHelper::multisort($allLocales, 'displayName');
+            $localeOptions = [];
+            foreach ($allLocales as $locale) {
+                $localeOptions[] = [
+                    'label' => $locale->getDisplayName(),
+                    'value' => $locale->id,
+                ];
+            }
+
+            $userLanguage = $user->getPreferredLanguage() ?? Craft::$app->language;
+            if (!isset($allLocales[$userLanguage])) {
+                $userLanguage = preg_replace('/\-.*/', '', $userLanguage);
+                if (!isset($allLocales[$userLanguage])) {
+                    $userLanguage = 'en';
+                }
+            }
+
+            $userLocale = $user->getPreferredLocale();
+            if ($userLocale !== null && !isset($allLocales[$userLocale])) {
+                $userLocale = null;
+            }
+        } else {
+            $localeOptions = $userLanguage = $userLocale = null;
+        }
+
         // Load the resources and render the page
         // ---------------------------------------------------------------------
 
@@ -859,6 +891,9 @@ class UsersController extends Controller
             'isNewUser',
             'statusLabel',
             'actions',
+            'localeOptions',
+            'userLanguage',
+            'userLocale',
             'bodyClass',
             'title',
             'tabs',
@@ -1115,6 +1150,7 @@ class UsersController extends Controller
         // Save their preferences too
         $preferences = [
             'language' => $this->request->getBodyParam('preferredLanguage', $user->getPreference('language')),
+            'locale' => $this->request->getBodyParam('preferredLocale', $user->getPreference('locale')) ?: null,
             'weekStartDay' => $this->request->getBodyParam('weekStartDay', $user->getPreference('weekStartDay')),
             'useShapes' => (bool)$this->request->getBodyParam('useShapes', $user->getPreference('useShapes')),
             'underlineLinks' => (bool)$this->request->getBodyParam('underlineLinks', $user->getPreference('underlineLinks')),
