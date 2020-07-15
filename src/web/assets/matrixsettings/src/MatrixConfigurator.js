@@ -622,10 +622,10 @@
 
             updateRequiredIcon: function() {
                 if (this.$requiredCheckbox.prop('checked')) {
-                    this.$nameLabel.addClass('required');
+                    this.$nameLabel.addClass('mci-required');
                 }
                 else {
-                    this.$nameLabel.removeClass('required');
+                    this.$nameLabel.removeClass('mci-required');
                 }
             },
 

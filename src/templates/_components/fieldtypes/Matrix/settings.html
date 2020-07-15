@@ -42,15 +42,13 @@
                             {% set field = layoutElement.getField() %}
                             <div class="matrixconfigitem mci-field{% if field.hasErrors() %} error{% endif %}" data-id="{{ fieldId }}">
                                 <div class="mci-name">
-                                    <h4{% if layoutElement.required %} class="required"{% endif %}>
-                                        {%-if field.name and field.name != '__blank__' %}
+                                    <h4{% if layoutElement.required %} class="mci-required"{% endif %}>
+                                        {%- if field.name and field.name != '__blank__' -%}
                                             {{ field.name }}
-                                        {% else %}
+                                        {%- else -%}
                                             <em class="light">{{ '(blank)'|t('app') }}</em>
-                                        {% endif %}
-                                        {% if field.hasErrors() %}
-                                            <span data-icon="alert"></span>
-                                        {% endif %}
+                                        {%- endif -%}
+                                        {%- if field.hasErrors() %} <span data-icon="alert"></span>{% endif -%}
                                     </h4>
                                     <div class="smalltext light code">{{ field.handle }}</div>
                                 </div>

@@ -495,7 +495,7 @@ input.checkbox + label.smalltext {
 
 .required:after {
   content: 'asterisk';
-  @include margin(-2px, 0, 0, 7px);
+  @include margin(-2px, 0, 0, 5px);
   font-size: 7px;
   color: $errorColor;
 }
@@ -4957,9 +4957,15 @@ ul.errors li {
       margin-bottom: 2px;
       font-weight: normal;
       color: $textColor;
+
+      &.mci-required:after {
+        @include icon;
+        @include margin(-2px, 0, 0, 4px);
+        content: 'asterisk';
+        font-size: 8px;
+      }
     }
   }
-
 
   &.error .mci-name h4 {
     color: $errorColor;

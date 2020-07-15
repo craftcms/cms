@@ -213,7 +213,7 @@ $gridColor: hsl(212, 50%, 95%);
 
     &.fld-required .field-name h4:after {
       @include icon;
-      @include margin(-2px, 0, 0, 5px);
+      @include margin(-2px, 0, 0, 4px);
       content: 'asterisk';
       font-size: 8px;
     }

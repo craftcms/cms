@@ -306,9 +306,9 @@ input.checkbox + label.smalltext { padding-top: 2px; }
 
 .required:after { content: 'asterisk'; font-size: 7px; color: #EF4E4E; }
 
-body.ltr .required:after { margin: -2px 0 0 7px ; }
+body.ltr .required:after { margin: -2px 0 0 5px ; }
 
-body.rtl .required:after { margin: -2px 7px 0 0 ; }
+body.rtl .required:after { margin: -2px 5px 0 0 ; }
 
 .scrollpane { overflow: auto; }
 
@@ -2526,6 +2526,12 @@ body.rtl .matrix-configurator .mc-sidebar.fields { right: 200px; }
 
 .matrixconfigitem .mci-name h4 { margin-bottom: 2px; font-weight: normal; color: #3f4d5a; }
 
+.matrixconfigitem .mci-name h4.mci-required:after { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; user-select: none; opacity: 0.8; content: 'asterisk'; font-size: 8px; }
+
+body.ltr .matrixconfigitem .mci-name h4.mci-required:after { margin: -2px 0 0 4px ; }
+
+body.rtl .matrixconfigitem .mci-name h4.mci-required:after { margin: -2px 4px 0 0 ; }
+
 .matrixconfigitem.error .mci-name h4 { color: #EF4E4E; }
 
 body.ltr .matrixconfigitem .slide-picker, body.ltr .matrixconfigitem .icon { margin-left: 7px; }
@@ -3447,9 +3453,9 @@ body.rtl .fld-element.fld-field .fld-field-hidden:not(.hidden) { margin-left: 5p
 
 .fld-element.fld-field.fld-required .field-name h4:after { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; user-select: none; opacity: 0.8; content: 'asterisk'; font-size: 8px; }
 
-body.ltr .fld-element.fld-field.fld-required .field-name h4:after { margin: -2px 0 0 5px ; }
+body.ltr .fld-element.fld-field.fld-required .field-name h4:after { margin: -2px 0 0 4px ; }
 
-body.rtl .fld-element.fld-field.fld-required .field-name h4:after { margin: -2px 5px 0 0 ; }
+body.rtl .fld-element.fld-field.fld-required .field-name h4:after { margin: -2px 4px 0 0 ; }
 
 .fld-element .fld-element-label { font-weight: normal; color: #3f4d5a; }
 
