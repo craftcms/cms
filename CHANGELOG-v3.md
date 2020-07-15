@@ -27,6 +27,7 @@
 - Fixed a bug where the “Drafts” status option wasn’t showing up on the Entries index page, if unsaved entry drafts only existed in a non-primary site. ([#6370](https://github.com/craftcms/cms/issues/6370))
 - Fixed a bug where `craft\helpers\FileHelper::getMimeType()` could return the wrong MIME type for SVG files. ([#6351](https://github.com/craftcms/cms/issues/6351))
 - Fixed compatibility with MySQL 8.0.21. ([#6379](https://github.com/craftcms/cms/issues/6379))
+- Fixed a bug where the `setup/db-creds` command was ignoring the `port` option. ([#6339](https://github.com/craftcms/cms/issues/6339))
 
 ## 3.4.27 - 2020-07-03
 
