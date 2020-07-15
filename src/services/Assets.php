@@ -320,9 +320,18 @@ class Assets extends Component
                     $volume->deleteDir($folder->path);
                 }
 
-                VolumeFolderRecord::deleteAll(['id' => $folderId]);
             }
         }
+
+        $assets = Asset::find()->folderId($folderIds)->all();
+
+        $elementService = Craft::$app->getElements();
+
+        foreach ($assets as $asset) {
+            $elementService->deleteElement($asset, true);
+        }
+
+        VolumeFolderRecord::deleteAll(['id' => $folderIds]);
     }
 
     /**
@@ -611,9 +620,8 @@ class Assets extends Component
         if ($generateNow) {
             try {
                 return $assetTransforms->ensureTransformUrlByIndexModel($index);
-            } catch (ImageException $exception) {
-                Craft::warning($exception->getMessage(), __METHOD__);
-                $assetTransforms->deleteTransformIndex($index->id);
+            } catch (\Exception $exception) {
+                Craft::$app->getErrorHandler()->logException($exception);
                 return null;
             }
         }

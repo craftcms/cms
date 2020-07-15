@@ -244,6 +244,8 @@ class IndexAssetsController extends Controller
             $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
         }
 
+        $assetIndexer->deleteStaleIndexingData();
+
         return ExitCode::OK;
     }
 

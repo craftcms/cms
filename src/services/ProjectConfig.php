@@ -481,6 +481,7 @@ class ProjectConfig extends Component
         $loadedConfig = $this->_getLoadedConfig();
         $this->_saveConfig($loadedConfig);
         $this->updateParsedConfigTimesAfterRequest();
+        $this->saveModifiedConfigData();
     }
 
     /**

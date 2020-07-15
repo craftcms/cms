@@ -1,0 +1,19 @@
+version: "3.6"
+services:
+  mysql:
+    image: mysql:5.7
+    ports:
+      - 33060:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: craft
+      MYSQL_DATABASE: craft-test
+      MYSQL_USER: craft
+      MYSQL_PASSWORD: craft
+  postgres:
+    image: postgres:11-alpine
+    ports:
+      - 54320:5432
+    environment:
+      POSTGRES_PASSWORD: craft
+      POSTGRES_USER: craft
+      POSTGRES_DB: craft-test

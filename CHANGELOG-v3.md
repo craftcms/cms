@@ -535,6 +535,34 @@
 ### Security
 - The `_includes/forms/checkbox.html`, `checkboxGroup.html`, and `checkboxSelect.html` control panel templates now HTML-encode checkbox labels by default, preventing possible XSS vulnerabilities. If HTML code was desired, it must be passed through the new `raw()` function first.
 
+## Unreleased (3.4.x)
+
+### Added
+- Added the `inlineOnly` argument to the `markdown` GraphQL directive, which can be used to specify that only inline element markdown should be processed. ([#6353](https://github.com/craftcms/cms/pull/6353))
+- Added `craft\services\AssetIndexer::deleteStaleIndexingData()`.
+
+### Changed
+- If there are no files or folders to delete, the asset indexing utility dialog no longer displays a "delete them" button.
+- Improved error handling when asset transforms cannot be generated for any reason. ([#6357](https://github.com/craftcms/cms/issues/6357))
+
+### Fixed
+- Fixed a bug where all Title fields within Quick Post widgets had the same input ID.
+- Fixed a bug where rebuilding the project config without an existing `project.yaml` file could result in data loss. ([#6350](https://github.com/craftcms/cms/issues/6350))
+- Fixed a bug where eager-loading relations across multiple sites wasn’t working. ([#6366](https://github.com/craftcms/cms/issues/6366))
+- Fixed a bug where it was not always possible to use the `relatedToAll` argument with GraphQL queries. ([#6343](https://github.com/craftcms/cms/issues/6343))
+- Fixed an error that would occur when backing up a MySQL 5 database using `mysqldump` 8.  ([#6368](https://github.com/craftcms/cms/issues/6368))
+- Fixed a bug where the asset indexer would wasn’t skipping files with disallowed file extensions.
+- Fixed a bug where the asset indexer wasn’t handling missing volume folders properly.
+- Fixed a bug where the asset indexer wasn’t cleaning up after itself.
+- Fixed a bug where orphan rows could be left in the `elements` table after deleting an asset folder. ([#6326](https://github.com/craftcms/cms/issues/6326))
+- Fixed a bug where Live Preview wouldn’t open after it had been previously closed, if the active target was configured with `refresh: false`. ([#6356](https://github.com/craftcms/cms/issues/6356))
+- Fixed a bug where site-specific tests were not able to properly use `craft\test\fixtures\elements\AssetFixture`. ([#6309](https://github.com/craftcms/cms/issues/6309))
+- Fixed a PHP error that could occur when using `craft\test\TestMailer` in some scenarios. ([#6259](https://github.com/craftcms/cms/issues/6259))
+- Fixed a bug where it wasn’t possible to change a disabled plugin’s license key. ([#4525](https://github.com/craftcms/cms/issues/4525))
+- Fixed a bug where the “Drafts” status option wasn’t showing up on the Entries index page, if unsaved entry drafts only existed in a non-primary site. ([#6370](https://github.com/craftcms/cms/issues/6370))
+- Fixed a bug where `craft\helpers\FileHelper::getMimeType()` could return the wrong MIME type for SVG files. ([#6351](https://github.com/craftcms/cms/issues/6351))
+- Fixed compatibility with MySQL 8.0.21. ([#6379](https://github.com/craftcms/cms/issues/6379))
+
 ## 3.4.27 - 2020-07-03
 
 ### Changed
@@ -542,8 +570,8 @@
 
 ### Fixed
 - Fixed a bug where Structure section entries would get repositioned after a revision was reverted. ([#6313](https://github.com/craftcms/cms/issues/6313))
-- Fixed an unexpected PHP error that could occur if `craft\helpers\FileHelper::writeToFile()` was unable to acquire a lock. ([#6315](https://github.com/craftcms/cms/issues/6315)
-- Fixed a bug where eager-loading from GraphQL could break if using named fragments inside matrix fields. ([#6294](https://github.com/craftcms/cms/issues/6294)
+- Fixed an unexpected PHP error that could occur if `craft\helpers\FileHelper::writeToFile()` was unable to acquire a lock. ([#6315](https://github.com/craftcms/cms/issues/6315))
+- Fixed a bug where eager-loading from GraphQL could break if using named fragments inside matrix fields. ([#6294](https://github.com/craftcms/cms/issues/6294))
 - Fixed a bug where associative array values within the project config could get duplicated. ([#6317](https://github.com/craftcms/cms/issues/6317))
 
 ## 3.4.26 - 2020-07-01

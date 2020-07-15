@@ -476,6 +476,9 @@ class ViewTest extends TestCase
 
             // Test that model params dont override variable params.
             ['IM DIFFERENTExample Param', '{ exampleParam }{ object.exampleParam }', $model, ['exampleParam' => 'IM DIFFERENT']],
+
+            // Test basic arrays
+            ['foo=bar', 'foo={foo}', ['foo' => 'bar']],
         ];
     }
 

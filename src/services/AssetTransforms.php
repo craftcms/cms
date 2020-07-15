@@ -625,6 +625,13 @@ class AssetTransforms extends Component
         // Make sure we're not in the middle of working on this transform from a separate request
         if ($index->inProgress) {
             for ($safety = 0; $safety < 100; $safety++) {
+
+                if ($index->error) {
+                    throw new AssetTransformException(Craft::t('app',
+                        'Failed to generate transform with id of {id}.',
+                        ['id' => $index->id]));
+                }
+
                 // Wait a second!
                 sleep(1);
                 App::maxPowerCaptain();
@@ -656,12 +663,26 @@ class AssetTransforms extends Component
             $this->storeTransformIndexData($index);
 
             // Generate the transform
-            if ($this->_generateTransform($index)) {
-                // Update the index
-                $index->inProgress = false;
-                $index->fileExists = true;
+            try {
+                if ($this->_generateTransform($index)) {
+                    // Update the index
+                    $index->inProgress = false;
+                    $index->fileExists = true;
+                } else {
+                    $index->inProgress = false;
+                    $index->fileExists = false;
+                    $index->error = true;
+
+                }
+
                 $this->storeTransformIndexData($index);
-            } else {
+            } catch (\Exception $e) {
+                $index->inProgress = false;
+                $index->fileExists = false;
+                $index->error = true;
+                $this->storeTransformIndexData($index);
+                Craft::$app->getErrorHandler()->logException($e);
+
                 throw new AssetTransformException(Craft::t('app',
                     'Failed to generate transform with id of {id}.',
                     ['id' => $index->id]));
@@ -869,6 +890,7 @@ class AssetTransforms extends Component
                 'volumeId',
                 'fileExists',
                 'inProgress',
+                'error',
                 'dateIndexed',
             ], [], false)
         );
@@ -1371,6 +1393,7 @@ class AssetTransforms extends Component
                 'volumeId',
                 'fileExists',
                 'inProgress',
+                'error',
                 'dateIndexed',
                 'dateUpdated',
                 'dateCreated',

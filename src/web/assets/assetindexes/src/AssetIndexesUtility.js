@@ -126,9 +126,19 @@
                 var $modal = $('<form class="modal fitted confirmmodal"/>').appendTo(Garnish.$bod),
                     $body = $('<div class="body"/>').appendTo($modal).html(data.confirm),
                     $footer = $('<footer class="footer"/>').appendTo($modal),
-                    $buttons = $('<div class="buttons right"/>').appendTo($footer),
-                    $cancelBtn = $('<div class="btn">' + Craft.t('app', 'Keep them') + '</div>').appendTo($buttons),
+                    $buttons = $('<div class="buttons right"/>').appendTo($footer);
+
+                if (data.showDelete) {
+                    var $cancelBtn = $('<div class="btn">' + Craft.t('app', 'Keep them') + '</div>').appendTo($buttons),
                     $okBtn = $('<input type="submit" class="btn submit" value="' + Craft.t('app', 'Delete them') + '"/>').appendTo($buttons);
+
+                    this.addListener($cancelBtn, 'click', function() {
+                        modal.hide();
+                        this.onComplete();
+                    });
+                } else {
+                    $('<input type="submit" class="btn submit" value="' + Craft.t('app', 'OK') + '"/>').appendTo($buttons);
+                }
 
                 Craft.initUiElements($body);
 
@@ -136,11 +146,6 @@
                     hideOnEsc: false,
                     hideOnShadeClick: false,
                     onHide: $.proxy(this, 'onActionResponse')
-                });
-
-                this.addListener($cancelBtn, 'click', function() {
-                    modal.hide();
-                    this.onComplete();
                 });
 
                 this.addListener($modal, 'submit', function(ev) {

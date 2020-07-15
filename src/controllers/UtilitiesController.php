@@ -194,8 +194,10 @@ class UtilitiesController extends Controller
         $params = $this->request->getRequiredBodyParam('params');
 
         // Initial request
+        $assetIndexerService = Craft::$app->getAssetIndexer();
+        $userSession = Craft::$app->getSession();
         if (!empty($params['start'])) {
-            $sessionId = Craft::$app->getAssetIndexer()->getIndexingSessionId();
+            $sessionId = $assetIndexerService->getIndexingSessionId();
 
             $response = [
                 'volumes' => [],
@@ -214,7 +216,7 @@ class UtilitiesController extends Controller
 
             foreach ($volumeIds as $volumeId) {
                 // Get the indexing list
-                $indexList = Craft::$app->getAssetIndexer()->prepareIndexList($sessionId, $volumeId);
+                $indexList = $assetIndexerService->prepareIndexList($sessionId, $volumeId);
 
                 if (!empty($indexList['error'])) {
                     return $this->asJson($indexList);
@@ -234,9 +236,9 @@ class UtilitiesController extends Controller
                 ];
             }
 
-            Craft::$app->getSession()->set('assetsVolumesBeingIndexed', $volumeIds);
-            Craft::$app->getSession()->set('assetsMissingFolders', $missingFolders);
-            Craft::$app->getSession()->set('assetsSkippedFiles', $skippedFiles);
+            $userSession->set('assetsVolumesBeingIndexed', $volumeIds);
+            $userSession->set('assetsMissingFolders', $missingFolders);
+            $userSession->set('assetsSkippedFiles', $skippedFiles);
 
             return $this->asJson([
                 'indexingData' => $response,
@@ -245,7 +247,7 @@ class UtilitiesController extends Controller
 
         if (!empty($params['process'])) {
             // Index the file
-            Craft::$app->getAssetIndexer()->processIndexForVolume($params['sessionId'], $params['volumeId'], $params['cacheImages']);
+            $assetIndexerService->processIndexForVolume($params['sessionId'], $params['volumeId'], $params['cacheImages']);
 
             return $this->asJson([
                 'success' => true
@@ -253,29 +255,18 @@ class UtilitiesController extends Controller
         }
 
         if (!empty($params['overview'])) {
-            $missingFiles = Craft::$app->getAssetIndexer()->getMissingFiles($params['sessionId']);
-            $missingFolders = Craft::$app->getSession()->get('assetsMissingFolders', []);
-            $skippedFiles = Craft::$app->getSession()->get('assetsSkippedFiles', []);
+            $missingFiles = $assetIndexerService->getMissingFiles($params['sessionId']);
+            $missingFolders = $userSession->get('assetsMissingFolders', []);
+            $skippedFiles = $userSession->get('assetsSkippedFiles', []);
 
             if (!empty($missingFiles) || !empty($missingFolders) || !empty($skippedFiles)) {
                 return $this->asJson([
                     'confirm' => $this->getView()->renderTemplate('assets/_missing_items', compact('missingFiles', 'missingFolders', 'skippedFiles')),
+                    'showDelete' => !empty($missingFiles) || !empty($missingFolders)
                 ]);
             }
 
-            // Clean up stale indexing data (all sessions that have all recordIds set)
-            $sessionsInProgress = (new Query())
-                ->select(['sessionId'])
-                ->from([Table::ASSETINDEXDATA])
-                ->where(['recordId' => null])
-                ->groupBy(['sessionId'])
-                ->scalar();
-
-            if (empty($sessionsInProgress)) {
-                Db::delete(Table::ASSETINDEXDATA);
-            } else {
-                Db::delete(Table::ASSETINDEXDATA, ['not', ['sessionId' => $sessionsInProgress]]);
-            }
+            $assetIndexerService->deleteStaleIndexingData();
         } else if (!empty($params['finish'])) {
             if (!empty($params['deleteAsset']) && is_array($params['deleteAsset'])) {
                 Db::delete(Table::ASSETTRANSFORMINDEX, [
