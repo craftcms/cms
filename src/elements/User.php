@@ -320,26 +320,20 @@ class User extends Element implements IdentityInterface
      */
     protected static function defineTableAttributes(): array
     {
-        $attributes = [
+        return [
             'user' => ['label' => Craft::t('app', 'User')],
             'email' => ['label' => Craft::t('app', 'Email')],
             'username' => ['label' => Craft::t('app', 'Username')],
             'fullName' => ['label' => Craft::t('app', 'Full Name')],
             'firstName' => ['label' => Craft::t('app', 'First Name')],
             'lastName' => ['label' => Craft::t('app', 'Last Name')],
+            'preferredLanguage' => ['label' => Craft::t('app', 'Preferred Language')],
+            'id' => ['label' => Craft::t('app', 'ID')],
+            'uid' => ['label' => Craft::t('app', 'UID')],
+            'lastLoginDate' => ['label' => Craft::t('app', 'Last Login')],
+            'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
+            'dateUpdated' => ['label' => Craft::t('app', 'Date Updated')],
         ];
-
-        if (Craft::$app->getIsMultiSite()) {
-            $attributes['preferredLanguage'] = ['label' => Craft::t('app', 'Preferred Language')];
-        }
-
-        $attributes['id'] = ['label' => Craft::t('app', 'ID')];
-        $attributes['uid'] = ['label' => Craft::t('app', 'UID')];
-        $attributes['lastLoginDate'] = ['label' => Craft::t('app', 'Last Login')];
-        $attributes['dateCreated'] = ['label' => Craft::t('app', 'Date Created')];
-        $attributes['dateUpdated'] = ['label' => Craft::t('app', 'Date Updated')];
-
-        return $attributes;
     }
 
     /**
