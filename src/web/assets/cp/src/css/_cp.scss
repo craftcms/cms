@@ -1551,6 +1551,8 @@ nav > ul > li > ul > li > ul > li > ul > li > ul > li .toggle {
   & > h2 {
     margin: 14px 14px 24px 0 !important;
     width: 100%;
+    padding-bottom: 2px;
+    border-bottom: 1px solid $hairlineColor;
   }
 
   & > hr {
