@@ -1162,9 +1162,8 @@ class Fields extends Component
             throw new InvalidArgumentException("Invalid field layout element class: $type");
         }
 
-        $element = new $type();
-        Craft::configure($element, $config);
-        return $element;
+        $config['class'] = $type;
+        return Craft::createObject($config);
     }
 
     /**
