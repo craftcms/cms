@@ -354,7 +354,7 @@
 - `craft\behaviors\SessionBehavior::setNotice()` and `setError()` now store flash messages using `cp-notice` and `cp-error` keys when called from control panel requests. ([#5704](https://github.com/craftcms/cms/issues/5704))
 - `craft\db\ActiveRecord` now unsets any empty primary key values when saving new records, to avoid a SQL error on PostgreSQL. ([#5814](https://github.com/craftcms/cms/pull/5814))
 - `craft\elements\Asset::getImg()` now has a `$sizes` argument. ([#5774](https://github.com/craftcms/cms/issues/5774))
-- `craft\elements\Asset::getUrl()` now has a `$transformOverrideParameters` argument. ([#5853](https://github.com/craftcms/cms/issues/5853))
+- `craft\elements\Asset::getUrl()` now supports including a `transform` key in the `$transform` argument array, which specifies a base transform. ([#5853](https://github.com/craftcms/cms/issues/5853))
 - `craft\elements\db\ElementQuery::$enabledForSite` is now set to `false` by default, leaving it up to elements’ status conditions to factor in the site-specific element statuses. ([#6273](https://github.com/craftcms/cms/issues/6273))
 - `craft\helpers\ElementHelper::supportedSitesForElement()` now has a `$withUnpropagatedSites` argument.
 - `craft\helpers\StringHelper::randomString()` no longer includes capital letters or numbers by default.
