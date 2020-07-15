@@ -88,6 +88,7 @@
 - `craft\elements\db\ElementQuery::$enabledForSite` is now set to `false` by default, leaving it up to elements’ status conditions to factor in the site-specific element statuses. ([#6273](https://github.com/craftcms/cms/issues/6273))
 - `craft\services\ProjectConfig::CONFIG_FILENAME` is no longer deprecated.
 - The `_layouts/base` template now supports a `bodyAttributes` variable.
+- Volume root folder is now used if folder id is ommitted when saving an asset via GraphQL. ([#6377](https://github.com/craftcms/cms/issues/6377)
 - Updated Yii to 2.0.36.
 - Updated PrismJS to 1.20.0.
 
