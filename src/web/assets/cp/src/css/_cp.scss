@@ -1565,24 +1565,26 @@ nav > ul > li > ul > li > ul > li > ul > li > ul > li .toggle {
       margin: 0 14px 24px 0 !important;
       width: calc(100% - 14px);
 
-      // 4 cols for >= 1200
-      @media only screen and (min-width: $minFullUiWidth + $sidebarWidth) {
-        &.width-25 {
-          width: calc(25% - 14px);
+      #content & {
+        // 4 cols for >= 1200
+        @media only screen and (min-width: $minFullUiWidth + $sidebarWidth) {
+          &.width-25 {
+            width: calc(25% - 14px);
+          }
+          &.width-50 {
+            width: calc(50% - 14px);
+          }
+          &.width-75 {
+            width: calc(75% - 14px);
+          }
         }
-        &.width-50 {
-          width: calc(50% - 14px);
-        }
-        &.width-75 {
-          width: calc(75% - 14px);
-        }
-      }
 
-      // 2 cols fol 712 - 1200
-      @media only screen and (min-width: 500px) and (max-width: $minFullUiWidth + $sidebarWidth - 1px) {
-        &.width-25,
-        &.width-50 {
-          width: calc(50% - 24px);
+        // 2 cols fol 712 - 1200
+        @media only screen and (min-width: 500px) and (max-width: $minFullUiWidth + $sidebarWidth - 1px) {
+          &.width-25,
+          &.width-50 {
+            width: calc(50% - 24px);
+          }
         }
       }
     }
