@@ -26,6 +26,7 @@
 - User groups can now have descriptions. ([#4893](https://github.com/craftcms/cms/issues/4893))
 - It’s now possible to set a custom route that handles Set Password requests. ([#5722](https://github.com/craftcms/cms/issues/5722))
 - Field labels now reveal their handles when the <kbd>Option</kbd>/<kbd>ALT</kbd> key is pressed. ([#5833](https://github.com/craftcms/cms/issues/5833))
+- Added the `defaultCpLocale` config setting. ([#6363](https://github.com/craftcms/cms/issues/6363))
 - Added the `gqlTypePrefix` config setting, making it possible to prefix all GraphQL types created by Craft. ([#5950](https://github.com/craftcms/cms/issues/5950))
 - Added the `imageEditorRatios` config setting, making it possible to customize the list of available aspect ratios in the image editor. ([#6201](https://github.com/craftcms/cms/issues/6201))
 - Added the `allowedGraphqlOrigins` config setting. ([#5933](https://github.com/craftcms/cms/issues/5933))

@@ -253,6 +253,16 @@ class GeneralConfig extends BaseObject
      */
     public $defaultCpLanguage;
     /**
+     * @var string|null The default locale the control panel should use for date/number formatting,
+     * for users who haven’t set a preferred language or preferred formatting locale yet.
+     *
+     * If this is `null`, then the <config:defaultCpLanguage> config setting will determine which locale is used for
+     * date/number formatting by default.
+     *
+     * @since 3.5.0
+     */
+    public $defaultCpLocale;
+    /**
      * @var mixed The default permission to be set for newly generated directories.
      *
      * If set to `null`, the permission will be determined by the current environment.

@@ -855,17 +855,27 @@ class UsersController extends Controller
                 ];
             }
 
-            $userLanguage = $user->getPreferredLanguage() ?? Craft::$app->language;
-            if (!isset($allLocales[$userLanguage])) {
-                $userLanguage = preg_replace('/\-.*/', '', $userLanguage);
-                if (!isset($allLocales[$userLanguage])) {
-                    $userLanguage = 'en';
-                }
+            $userLanguage = $user->getPreferredLanguage();
+            if ($userLanguage !== null && !isset($allLocales[$userLanguage])) {
+                $userLanguage = null;
             }
 
             $userLocale = $user->getPreferredLocale();
             if ($userLocale !== null && !isset($allLocales[$userLocale])) {
                 $userLocale = null;
+            }
+
+            if ($userLanguage === null) {
+                $userLanguage = Craft::$app->language;
+
+                // Only set the locale to the defaultCpLocale by default if the language isn't set either.
+                // Otherwise `null` means "Same as language"
+                if ($userLocale === null) {
+                    $generalConfig = Craft::$app->getConfig()->getGeneral();
+                    if ($generalConfig->defaultCpLocale) {
+                        $userLocale = $generalConfig->defaultCpLocale;
+                    }
+                }
             }
         } else {
             $localeOptions = $userLanguage = $userLocale = null;

@@ -212,17 +212,34 @@ return [
         },
 
         'locale' => function() {
-            // If this is a CP request, a user is logged in, and they have a preferred locale, use that
+            $i18n = Craft::$app->getI18n();
+
             if (Craft::$app->getRequest()->getIsCpRequest()) {
+                // Is someone logged in?
                 $session = Craft::$app->getSession();
                 $id = $session->getHasSessionId() || $session->getIsActive() ? $session->get(Craft::$app->getUser()->idParam) : null;
-                if ($id && ($locale = Craft::$app->getUsers()->getUserPreference($id, 'locale')) !== null) {
-                    return Craft::$app->getI18n()->getLocaleById($locale);
+                if ($id) {
+                    // If they have a preferred locale, use it
+                    $usersService = Craft::$app->getUsers();
+                    if (($locale = $usersService->getUserPreference($id, 'locale')) !== null) {
+                        return $i18n->getLocaleById($locale);
+                    }
+
+                    // Otherwise see if they have a preferred language
+                    if (($language = $usersService->getUserPreference($id, 'language')) !== null) {
+                        return $i18n->getLocaleById($language);
+                    }
+                }
+
+                // If the defaultCpLocale setting is set, go with that
+                $generalConfig = Craft::$app->getConfig()->getGeneral();
+                if ($generalConfig->defaultCpLocale) {
+                    return $i18n->getLocaleById($generalConfig->defaultCpLocale);
                 }
             }
 
-            // Otherwise default to the application language
-            return Craft::$app->getI18n()->getLocaleById(Craft::$app->language);
+            // Default to the application language
+            return $i18n->getLocaleById(Craft::$app->language);
         },
 
         'log' => function() {
