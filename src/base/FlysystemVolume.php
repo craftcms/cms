@@ -204,9 +204,7 @@ abstract class FlysystemVolume extends Volume
     public function createDir(string $path)
     {
         if ($this->folderExists($path)) {
-            throw new VolumeObjectExistsException(Craft::t('app', 'Folder “{folder}” already exists on the volume!', [
-                'folder' => $path
-            ]));
+            throw new VolumeObjectExistsException("$path already exists on the volume");
         }
 
         if (!$this->filesystem()->createDir($path)) {

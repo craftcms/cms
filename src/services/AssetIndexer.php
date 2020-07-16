@@ -89,13 +89,16 @@ class AssetIndexer extends Component
             // Compile a list of missing folders.
             $missingFolders = [];
 
-            $allFolders = $assets->findFolders(
-                [
-                    'volumeId' => $volumeId
-                ]);
+            $folderCriteria = [
+                'volumeId' => $volumeId,
+            ];
+
+            $allFolders = $assets->findFolders($folderCriteria);
+
+            $normalizedDir = !empty($directory) ? rtrim($directory, '/') . '/' : '';
 
             foreach ($allFolders as $folderModel) {
-                if (!isset($indexedFolderIds[$folderModel->id])) {
+                if (!isset($indexedFolderIds[$folderModel->id]) && $folderModel->path !== $normalizedDir && StringHelper::startsWith($folderModel->path, $normalizedDir)) {
                     $missingFolders[$folderModel->id] = $volume->name . '/' . $folderModel->path;
                 }
             }
@@ -160,14 +163,21 @@ class AssetIndexer extends Component
     public function extractSkippedItemsFromIndexList(array &$indexList): array
     {
         $isMysql = Craft::$app->getDb()->getIsMysql();
+        $allowedExtensions = Craft::$app->getConfig()->getGeneral()->allowedFileExtensions;
 
-        $skippedItems = array_filter($indexList, function($entry) use ($isMysql) {
+        $skippedItems = array_filter($indexList, function($entry) use ($isMysql, $allowedExtensions) {
             if (preg_match(AssetsHelper::INDEX_SKIP_ITEMS_PATTERN, $entry['basename'])) {
                 return true;
             }
+
             if ($isMysql && StringHelper::containsMb4($entry['basename'])) {
                 return true;
             }
+
+            if (isset($entry['extension']) && !in_array(strtolower($entry['extension']), $allowedExtensions, true)) {
+                return true;
+            }
+
             return false;
         });
 
@@ -405,6 +415,7 @@ class AssetIndexer extends Component
      * @return bool|Asset
      * @throws MissingAssetException if the asset record doesn't exist and $createIfMissing is false
      * @throws VolumeObjectNotFoundException If the file to be indexed cannot be found.
+     * @throws AssetDisallowedExtensionException If the file being indexed has a disallowed extension
      */
     public function indexFileByEntry(AssetIndexData $indexEntry, bool $cacheImages = false, bool $createIfMissing = true)
     {
@@ -420,10 +431,44 @@ class AssetIndexer extends Component
 
         $indexEntry->id = $record->id;
 
-        $asset = $this->_indexFileByIndexData($indexEntry, $createIfMissing, $cacheImages);
-        $this->updateIndexEntry($indexEntry->id, ['completed' => true, 'inProgress' => false, 'recordId' => $asset->id]);
+        try {
+            $asset = $this->_indexFileByIndexData($indexEntry, $createIfMissing, $cacheImages);
+            $this->updateIndexEntry($indexEntry->id, ['completed' => true, 'inProgress' => false, 'recordId' => $asset->id]);
+        } catch (AssetDisallowedExtensionException $exception) {
+            $this->updateIndexEntry($indexEntry->id, ['completed' => true, 'inProgress' => false]);
+            throw $exception;
+        }
+            return $asset;
+    }
 
-        return $asset;
+    /**
+     * Clean up stale asset indexing data. Stale indexing data is all session data for sessions that have all the recordIds set.
+     *
+     * @throws \yii\db\Exception
+     */
+    public function deleteStaleIndexingData()
+    {
+        // Clean up stale indexing data (all sessions that have all recordIds set)
+        $sessionsInProgress = (new Query())
+            ->select(['sessionId'])
+            ->from([Table::ASSETINDEXDATA])
+            ->where(['completed' => false])
+            ->groupBy(['sessionId'])
+            ->column();
+
+        $db = Craft::$app->getDb();
+
+        if (empty($sessionsInProgress)) {
+            $db->createCommand()
+                ->delete(Table::ASSETINDEXDATA)
+                ->execute();
+        } else {
+            $db->createCommand()
+                ->delete(
+                    Table::ASSETINDEXDATA,
+                    ['not', ['sessionId' => $sessionsInProgress]])
+                ->execute();
+        }
     }
 
     /**

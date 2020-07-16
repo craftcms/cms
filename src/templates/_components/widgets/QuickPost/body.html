@@ -9,7 +9,7 @@
     {% if section.type != 'single' and entryType.hasTitleField %}
         {{ forms.textField({
             label: entryType.titleLabel|t('app'),
-            id: 'title',
+            id: 'title-'~random(),
             name: 'title',
             required: true,
             first: true

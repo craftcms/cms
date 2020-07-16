@@ -229,14 +229,14 @@ class Assets extends Component
         }
 
         $volume = $parent->getVolume();
+        $path = rtrim($folder->path, '/');
 
         try {
-            $volume->createDir(rtrim($folder->path, '/'));
-        } catch (VolumeObjectExistsException $exception) {
-            // Rethrow exception unless this is a temporary Volume or we're allowed to index it silently
-            if ($folder->volumeId !== null && !$indexExisting) {
-                throw $exception;
-            }
+            $volume->createDir($path);
+        } catch (VolumeObjectExistsException $e) {
+            // Already there, so just log a warning about it
+            Craft::warning("Couldn’t create volume folder at $path because it already exists.");
+            Craft::$app->getErrorHandler()->log($e);
         }
 
         $this->storeFolderRecord($folder);
@@ -319,9 +319,18 @@ class Assets extends Component
                     $volume->deleteDir($folder->path);
                 }
 
-                VolumeFolderRecord::deleteAll(['id' => $folderId]);
             }
         }
+
+        $assets = Asset::find()->folderId($folderIds)->all();
+
+        $elementService = Craft::$app->getElements();
+
+        foreach ($assets as $asset) {
+            $elementService->deleteElement($asset, true);
+        }
+
+        VolumeFolderRecord::deleteAll(['id' => $folderIds]);
     }
 
     /**
@@ -602,9 +611,8 @@ class Assets extends Component
         if ($generateNow) {
             try {
                 return $assetTransforms->ensureTransformUrlByIndexModel($index);
-            } catch (ImageException $exception) {
-                Craft::warning($exception->getMessage(), __METHOD__);
-                $assetTransforms->deleteTransformIndex($index->id);
+            } catch (\Exception $exception) {
+                Craft::$app->getErrorHandler()->logException($exception);
                 return null;
             }
         }
@@ -907,8 +915,10 @@ class Assets extends Component
                 if (!$justRecord) {
                     try {
                         $volume->createDir($path);
-                    } catch (VolumeObjectExistsException $exception) {
-                        // Already there. Good.
+                    } catch (VolumeObjectExistsException $e) {
+                        // Already there, so just log a warning about it
+                        Craft::warning("Couldn’t create volume folder at $path because it already exists.");
+                        Craft::$app->getErrorHandler()->log($e);
                     }
                 }
 
