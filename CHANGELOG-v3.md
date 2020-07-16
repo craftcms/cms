@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.4.28.1 - 2020-07-16
 
 ### Fixed
 - Fixed a PHP error that occurred when attempting to create a volume folder that already exists.
