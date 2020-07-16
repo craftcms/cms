@@ -58,6 +58,7 @@ use craft\gql\types\Mutation;
 use craft\gql\types\Number;
 use craft\gql\types\Query;
 use craft\gql\types\QueryArgument;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Gql as GqlHelper;
 use craft\helpers\Json;
@@ -270,11 +271,46 @@ class Gql extends Component
     const CONFIG_GQL_SCHEMAS_KEY = 'graphql.schemas';
 
     /**
+     * @since 3.5.0
+     */
+    const CONFIG_GQL_PUBLIC_TOKEN_KEY = 'graphql.publicToken';
+
+    /**
      * The field name to use when fetching count of related elements
      *
      * @since 3.4.0
      */
     const GRAPHQL_COUNT_FIELD = '_count';
+
+    /**
+     * Save a GQL Token record based on the model.
+     *
+     * @param GqlToken $token
+     */
+    private function _saveTokenInternal(GqlToken $token)
+    {
+        $isNewToken = !$token->id;
+
+        if ($isNewToken) {
+            $tokenRecord = new GqlTokenRecord();
+        } else {
+            $tokenRecord = GqlTokenRecord::findOne($token->id) ?: new GqlTokenRecord();
+        }
+
+        $tokenRecord->name = $token->name;
+        $tokenRecord->enabled = (bool)$token->enabled;
+        $tokenRecord->expiryDate = $token->expiryDate;
+        $tokenRecord->lastUsed = $token->lastUsed;
+        $tokenRecord->schemaId = $token->schemaId;
+
+        if ($token->accessToken) {
+            $tokenRecord->accessToken = $token->accessToken;
+        }
+
+        $tokenRecord->save();
+        $token->id = $tokenRecord->id;
+        $token->uid = $tokenRecord->uid;
+    }
 
     /**
      * @var Schema Currently loaded schema definition
@@ -305,7 +341,6 @@ class Gql extends Component
         if ($schema) {
             $this->setActiveSchema($schema);
         }
-
         if (!$this->_schemaDef || $prebuildSchema) {
             // Either cached version was not found or we need a pre-built schema.
             $registeredTypes = $this->_registerGqlTypes();
@@ -659,8 +694,6 @@ class Gql extends Component
 
     /**
      * Flush all GraphQL caches, registries and loaders.
-     *
-     * @return void
      */
     public function flushCaches()
     {
@@ -762,34 +795,51 @@ class Gql extends Component
             return false;
         }
 
-        $isNewToken = !$token->id;
+        // Public token information is stored in the project config
+        if ($token->accessToken === GqlToken::PUBLIC_TOKEN) {
+            $data = [
+                'expiryDate' => $token->expiryDate ? $token->expiryDate->getTimestamp() : null,
+                'enabled' => (bool)$token->enabled
+            ];
+
+            Craft::$app->getProjectConfig()->set(self::CONFIG_GQL_PUBLIC_TOKEN_KEY, $data);
+
+            return true;
+        }
 
         if ($runValidation && !$token->validate()) {
             Craft::info('Token not saved due to validation error.', __METHOD__);
             return false;
         }
 
-        if ($isNewToken) {
-            $tokenRecord = new GqlTokenRecord();
-        } else {
-            $tokenRecord = GqlTokenRecord::findOne($token->id) ?: new GqlTokenRecord();
-        }
-
-        $tokenRecord->name = $token->name;
-        $tokenRecord->enabled = (bool)$token->enabled;
-        $tokenRecord->expiryDate = $token->expiryDate;
-        $tokenRecord->lastUsed = $token->lastUsed;
-        $tokenRecord->schemaId = $token->schemaId;
-
-        if ($token->accessToken) {
-            $tokenRecord->accessToken = $token->accessToken;
-        }
-
-        $tokenRecord->save();
-        $token->id = $tokenRecord->id;
-        $token->uid = $tokenRecord->uid;
+        $this->_saveTokenInternal($token);
 
         return true;
+    }
+
+    /**
+     * Handle public token settings being updated.
+     * @param ConfigEvent $event
+     *
+     * @since 3.5.0
+     */
+    public function handleChangedPublicToken(ConfigEvent $event)
+    {
+        $data = $event->newValue;
+
+        try {
+            $token = $this->getTokenByAccessToken(GqlToken::PUBLIC_TOKEN);
+        } catch (InvalidArgumentException $exception) {
+            $token = new GqlToken([
+                'name' => 'Public Token',
+                'accessToken' => GqlToken::PUBLIC_TOKEN,
+            ]);
+        }
+
+        $token->expiryDate = $data['expiryDate'] ? DateTimeHelper::toDateTime($data['expiryDate']): null;
+        $token->enabled = $data['enabled'] ?: false;
+
+        $this->_saveTokenInternal($token);
     }
 
     /**
@@ -1129,8 +1179,6 @@ class Gql extends Component
 
     /**
      * Get GraphQL query definitions
-     *
-     * @return void
      */
     private function _registerGqlQueries()
     {
@@ -1159,8 +1207,6 @@ class Gql extends Component
 
     /**
      * Get GraphQL mutation definitions
-     *
-     * @return void
      */
     private function _registerGqlMutations()
     {

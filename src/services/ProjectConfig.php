@@ -21,6 +21,7 @@ use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
+use craft\models\GqlToken;
 use Symfony\Component\Yaml\Yaml;
 use yii\base\Application;
 use yii\base\Component;
@@ -2430,7 +2431,29 @@ class ProjectConfig extends Component
             $row['scope'] = Json::decodeIfJson($row['scope']);
         }
 
-        return ['schemas' => $scopeRows];
+        $output = [
+            'schemas' => $scopeRows,
+            'publicToken' => [
+                'enabled' => false,
+                'expiryDate' => null,
+            ]
+        ];
+
+        $publicToken = (new Query())
+            ->select([
+                'enabled',
+                'expiryDate',
+            ])
+            ->from([Table::GQLTOKENS])
+            ->where(['accessToken' => GqlToken::PUBLIC_TOKEN])
+            ->one();
+
+        if ($publicToken) {
+            $output['publicToken']['expiryDate'] = $publicToken['expiryDate'] ? DateTimeHelper::toDateTime($publicToken['expiryDate'])->getTimestamp() : null;
+            $output['publicToken']['enabled'] = (bool)$publicToken['enabled'];
+        }
+        
+        return $output;
     }
 
     /**

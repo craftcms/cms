@@ -69,6 +69,8 @@
 - Added `craft\models\FieldLayoutTab::getElementConfigs()`.
 - Added `craft\models\FieldLayoutTab::updateConfig()`.
 - Added `craft\services\Fields::createLayoutElement()`.
+- Added `craft\services\Gql::CONFIG_GQL_PUBLIC_TOKEN_KEY`.
+- Added `craft\services\Gql::handleChangedPublicToken()`.
 - Added `craft\services\Path::getProjectConfigPath()`.
 - Added `craft\services\ProjectConfig::$folderName`. ([#5982](https://github.com/craftcms/cms/issues/5982))
 - Added `craft\web\Controller::setFailFlash()`.
@@ -83,6 +85,7 @@
 
 ### Changed
 - Craft now stores project config files in a new `config/project/` folder, regardless of whether the (deprecated) `useProjectConfigFile` config setting is enabled, and syncing new project config file changes is now optional.
+- The public GraphQL schema’s access settings are now stored in the project config. ([#6078](https://github.com/craftcms/cms/issues/6078))
 - Entry draft forms no longer have a primary action, and the <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>S</kbd> keyboard shortcut now forces a resave of the draft, rather than publishing it. ([#6199](https://github.com/craftcms/cms/issues/6199))
 - When creating a new field, the “Use this field’s values as search keywords?” setting is now disabled by default. ([#6390](https://github.com/craftcms/cms/issues/6390))
 - The `project-config/sync` command has been renamed to `project-config/apply`.
