@@ -270,7 +270,9 @@
 - Added `craft\services\Elements::stopCollectingCacheTags()`.
 - Added `craft\services\Fields::createLayoutElement()`.
 - Added `craft\services\Fields::getLayoutsByElementType()`.
+- Added `craft\services\Gql::CONFIG_GQL_PUBLIC_TOKEN_KEY`.
 - Added `craft\services\Gql::getAllSchemaComponents()`.
+- Added `craft\services\Gql::handleChangedPublicToken()`.
 - Added `craft\services\Images::getSupportsWebP()`. ([#5853](https://github.com/craftcms/cms/issues/5853))
 - Added `craft\services\Path::getProjectConfigPath()`.
 - Added `craft\services\ProjectConfig::$folderName`. ([#5982](https://github.com/craftcms/cms/issues/5982))
@@ -303,6 +305,7 @@
 
 ### Changed
 - Craft now stores project config files in a new `config/project/` folder, regardless of whether the (deprecated) `useProjectConfigFile` config setting is enabled, and syncing new project config file changes is now optional.
+- The public GraphQL schema’s access settings are now stored in the project config. ([#6078](https://github.com/craftcms/cms/issues/6078))
 - User registration forms in the control panel now give users the option to send an activation email, even if email verification isn’t required. ([#5836](https://github.com/craftcms/cms/issues/5836))
 - Activation emails are now sent automatically on public registration if the `deferPublicRegistrationPassword` config setting is enabled, even if email verification isn’t required. ([#5836](https://github.com/craftcms/cms/issues/5836))
 - Craft now remembers the selected site across global sets and element indexes. ([#2779](https://github.com/craftcms/cms/issues/2779))
@@ -376,7 +379,6 @@
 - Improved `data`/`aria` tag normalization via `craft\helpers\Html::parseTagAttributes()` and `normalizeTagAttributes()`.
 - Control panel form input macros and templates that accept a `class` variable can now pass it as an array of class names.
 - Control panel templates can now set a `formActions` variable, which registers alternative Save menu actions, optionally with associated keyboard shortcuts.
-- The GraphQL public schema token settings are now stored in the project config. ([#6078](https://github.com/craftcms/cms/issues/6078))
 - The `_layouts/base` template now supports a `bodyAttributes` variable.
 - The `Craft.cp.submitPrimaryForm()` method now accepts an `options` argument for customizing the form submit.
 - Updated Yii to 2.0.36.
