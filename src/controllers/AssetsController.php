@@ -413,8 +413,7 @@ class AssetsController extends Controller
             throw new NotFoundHttpException('Asset not found.');
         }
 
-        $this->requireVolumePermissionByAsset('saveAssetInVolume', $assetToReplace ?: $sourceAsset);
-        $this->requireVolumePermissionByAsset('deleteFilesAndFoldersInVolume', $assetToReplace ?: $sourceAsset);
+        $this->requireVolumePermissionByAsset('replaceFilesInVolume', $assetToReplace ?: $sourceAsset);
         $this->requirePeerVolumePermissionByAsset('replacePeerFilesInVolume', $assetToReplace ?: $sourceAsset);
 
         try {

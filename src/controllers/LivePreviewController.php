@@ -104,9 +104,9 @@ class LivePreviewController extends Controller
 
         // Add CORS headers
         $this->response->getHeaders()
-            ->add('Access-Control-Allow-Origin', '*')
-            ->add('Access-Control-Allow-Credentials', 'true')
-            ->add('Access-Control-Allow-Headers', 'X-Craft-Token');
+            ->setDefault('Access-Control-Allow-Origin', '*')
+            ->setDefault('Access-Control-Allow-Credentials', 'true')
+            ->setDefault('Access-Control-Allow-Headers', 'X-Craft-Token');
 
         if ($this->request->getIsOptions()) {
             // This is just a preflight request, no need to route to the real controller action yet.

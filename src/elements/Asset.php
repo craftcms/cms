@@ -337,10 +337,7 @@ class Asset extends Element
             ];
 
             $userSession = Craft::$app->getUser();
-            if (
-                $userSession->checkPermission("saveAssetInVolume:{$volume->uid}") &&
-                $userSession->checkPermission("deleteFilesAndFoldersInVolume:{$volume->uid}")
-            ) {
+            if ($userSession->checkPermission("replaceFilesInVolume:{$volume->uid}")) {
                 // Rename/Replace File
                 $actions[] = RenameFile::class;
                 $actions[] = ReplaceFile::class;
