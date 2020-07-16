@@ -227,7 +227,7 @@ class FieldLayout extends Model
             foreach (Craft::$app->getFields()->getAllGroups() as $group) {
                 $groupName = Craft::t('site', $group->name);
                 foreach ($group->getFields() as $field) {
-                    $this->_availableCustomFields[$groupName][] = new CustomField($field);
+                    $this->_availableCustomFields[$groupName][] = Craft::createObject(CustomField::class, [$field]);
                 }
             }
         }

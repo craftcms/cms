@@ -119,8 +119,11 @@ class FieldLayoutTab extends Model
         if ($this->elements === null) {
             $this->elements = [];
             foreach ($this->getFields() as $field) {
-                $this->elements[] = new CustomField($field, [
+                $this->elements[] = Craft::createObject([
+                    'class' => CustomField::class,
                     'required' => $field->required,
+                ], [
+                    $field,
                 ]);
             }
         } else {
@@ -257,8 +260,11 @@ class FieldLayoutTab extends Model
 
         $this->elements = [];
         foreach ($this->_fields as $field) {
-            $this->elements[] = new CustomField($field, [
+            $this->elements[] = Craft::createObject([
+                'class' => CustomField::class,
                 'required' => $field->required,
+            ], [
+                $field,
             ]);
         }
     }
