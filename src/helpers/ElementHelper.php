@@ -542,6 +542,10 @@ class ElementHelper
             case Field::TRANSLATION_METHOD_LANGUAGE:
                 return $element->getSite()->language;
             default:
+                // Translate for each site if a translation key format wasn’t specified
+                if ($translationKeyFormat === null) {
+                    return (string)$element->siteId;
+                }
                 return Craft::$app->getView()->renderObjectTemplate($translationKeyFormat, $element);
         }
     }
