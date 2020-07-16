@@ -74,7 +74,7 @@ class GraphqlController extends Controller
     {
         // Add CORS headers
         $headers = $this->response->getHeaders();
-        $headers->add('Access-Control-Allow-Credentials', 'true');
+        $headers->setDefault('Access-Control-Allow-Credentials', 'true');
 
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         if (is_array($generalConfig->allowedGraphqlOrigins)) {
@@ -82,18 +82,18 @@ class GraphqlController extends Controller
                 $origins = ArrayHelper::filterEmptyStringsFromArray(array_map('trim', explode(',', $origins)));
                 foreach ($origins as $origin) {
                     if (in_array($origin, $generalConfig->allowedGraphqlOrigins)) {
-                        $headers->add('Access-Control-Allow-Origin', $origin);
+                        $headers->setDefault('Access-Control-Allow-Origin', $origin);
                         break;
                     }
                 }
             }
         } else if ($generalConfig->allowedGraphqlOrigins !== false) {
-            $headers->add('Access-Control-Allow-Origin', '*');
+            $headers->setDefault('Access-Control-Allow-Origin', '*');
         }
 
         if ($this->request->getIsOptions()) {
             // This is just a preflight request, no need to run the actual query yet
-            $this->response->getHeaders()->add('Access-Control-Allow-Headers', 'Authorization, Content-Type, X-Craft-Token');
+            $this->response->getHeaders()->setDefault('Access-Control-Allow-Headers', 'Authorization, Content-Type, X-Craft-Token');
             $this->response->format = Response::FORMAT_RAW;
             $this->response->data = '';
             return $this->response;
