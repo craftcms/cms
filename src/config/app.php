@@ -214,7 +214,7 @@ return [
         'locale' => function() {
             $i18n = Craft::$app->getI18n();
 
-            if (Craft::$app->getRequest()->getIsCpRequest()) {
+            if (Craft::$app->getRequest()->getIsCpRequest() && !Craft::$app->getResponse()->isSent) {
                 // Is someone logged in?
                 $session = Craft::$app->getSession();
                 $id = $session->getHasSessionId() || $session->getIsActive() ? $session->get(Craft::$app->getUser()->idParam) : null;
