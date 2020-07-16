@@ -584,6 +584,9 @@ class UserPermissions extends Component
                     "deleteFilesAndFoldersInVolume{$suffix}" => [
                         'label' => Craft::t('app', 'Remove files and folders'),
                     ],
+                    "replaceFilesInVolume{$suffix}" => [
+                        'label' => Craft::t('app', 'Replace files'),
+                    ],
                     "editImagesInVolume{$suffix}" => [
                         'label' => Craft::t('app', 'Edit images'),
                     ],
