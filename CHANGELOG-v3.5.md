@@ -363,6 +363,7 @@
 - `craft\elements\Asset::getImg()` now has a `$sizes` argument. ([#5774](https://github.com/craftcms/cms/issues/5774))
 - `craft\elements\Asset::getUrl()` now supports including a `transform` key in the `$transform` argument array, which specifies a base transform. ([#5853](https://github.com/craftcms/cms/issues/5853))
 - `craft\elements\db\ElementQuery::$enabledForSite` is now set to `false` by default, leaving it up to elements’ status conditions to factor in the site-specific element statuses. ([#6273](https://github.com/craftcms/cms/issues/6273))
+- `craft\helpers\Component::createComponent()` now creates component objects via `Craft::createObject()`. ([#6097](https://github.com/craftcms/cms/issues/6097))
 - `craft\helpers\ElementHelper::supportedSitesForElement()` now has a `$withUnpropagatedSites` argument.
 - `craft\helpers\StringHelper::randomString()` no longer includes capital letters or numbers by default.
 - `craft\i18n\Formatter::asTimestamp()` now has a `$withPreposition` argument.
