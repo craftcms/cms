@@ -287,7 +287,7 @@ class Gql extends Component
      *
      * @param GqlToken $token
      */
-    protected function saveTokenInternal(GqlToken $token): void
+    private function _saveTokenInternal(GqlToken $token)
     {
         $isNewToken = !$token->id;
 
@@ -694,8 +694,6 @@ class Gql extends Component
 
     /**
      * Flush all GraphQL caches, registries and loaders.
-     *
-     * @return void
      */
     public function flushCaches()
     {
@@ -814,7 +812,7 @@ class Gql extends Component
             return false;
         }
 
-        $this->saveTokenInternal($token);
+        $this->_saveTokenInternal($token);
 
         return true;
     }
@@ -841,7 +839,7 @@ class Gql extends Component
         $token->expiryDate = $data['expiryDate'] ? DateTimeHelper::toDateTime($data['expiryDate']): null;
         $token->enabled = $data['enabled'] ?: false;
 
-        $this->saveTokenInternal($token);
+        $this->_saveTokenInternal($token);
     }
 
     /**
@@ -1181,8 +1179,6 @@ class Gql extends Component
 
     /**
      * Get GraphQL query definitions
-     *
-     * @return void
      */
     private function _registerGqlQueries()
     {
@@ -1211,8 +1207,6 @@ class Gql extends Component
 
     /**
      * Get GraphQL mutation definitions
-     *
-     * @return void
      */
     private function _registerGqlMutations()
     {
