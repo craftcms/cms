@@ -541,6 +541,11 @@
 ### Security
 - The `_includes/forms/checkbox.html`, `checkboxGroup.html`, and `checkboxSelect.html` control panel templates now HTML-encode checkbox labels by default, preventing possible XSS vulnerabilities. If HTML code was desired, it must be passed through the new `raw()` function first.
 
+## 3.4.28.1 - 2020-07-16
+
+### Fixed
+- Fixed a PHP error that occurred when attempting to create a volume folder that already exists.
+
 ## 3.4.28 - 2020-07-16
 
 ### Added
