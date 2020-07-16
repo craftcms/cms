@@ -219,6 +219,7 @@ class AssetsController extends Controller
 
         $assetId = $this->request->getRequiredParam('assetId');
         $siteId = $this->request->getBodyParam('siteId');
+        $assetVariable = $this->request->getBodyParam('assetVariable', 'asset');
 
         /** @var Asset|null $asset */
         $asset = Asset::find()
@@ -259,7 +260,7 @@ class AssetsController extends Controller
 
             // Send the asset back to the template
             Craft::$app->getUrlManager()->setRouteParams([
-                'asset' => $asset
+                $assetVariable => $asset
             ]);
 
             return null;

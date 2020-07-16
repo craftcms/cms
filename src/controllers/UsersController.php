@@ -938,6 +938,7 @@ class UsersController extends Controller
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         $userSettings = Craft::$app->getProjectConfig()->get('users') ?? [];
         $requireEmailVerification = $userSettings['requireEmailVerification'] ?? true;
+        $userVariable = $this->request->getBodyParam('userVariable', 'user');
 
         // Get the user being edited
         // ---------------------------------------------------------------------
@@ -1145,7 +1146,7 @@ class UsersController extends Controller
 
             // Send the account back to the template
             Craft::$app->getUrlManager()->setRouteParams([
-                'user' => $user
+                $userVariable => $user
             ]);
 
             return null;
