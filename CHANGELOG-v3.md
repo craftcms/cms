@@ -28,6 +28,7 @@
 - Fixed a bug where `craft\helpers\FileHelper::getMimeType()` could return the wrong MIME type for SVG files. ([#6351](https://github.com/craftcms/cms/issues/6351))
 - Fixed compatibility with MySQL 8.0.21. ([#6379](https://github.com/craftcms/cms/issues/6379))
 - Fixed a bug where the `setup/db-creds` command was ignoring the `port` option. ([#6339](https://github.com/craftcms/cms/issues/6339))
+- Fixed a bug where it wasn’t possible to install a plugin via the `install/plugin` command when the `allowAdminChanges` config setting was disabled. ([#6329](https://github.com/craftcms/cms/issues/6329))
 
 ## 3.4.27 - 2020-07-03
 
