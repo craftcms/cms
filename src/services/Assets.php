@@ -236,7 +236,7 @@ class Assets extends Component
         } catch (VolumeObjectExistsException $e) {
             // Already there, so just log a warning about it
             Craft::warning("Couldn’t create volume folder at $path because it already exists.");
-            Craft::$app->getErrorHandler()->log($e);
+            Craft::$app->getErrorHandler()->logException($e);
         }
 
         $this->storeFolderRecord($folder);
@@ -918,7 +918,7 @@ class Assets extends Component
                     } catch (VolumeObjectExistsException $e) {
                         // Already there, so just log a warning about it
                         Craft::warning("Couldn’t create volume folder at $path because it already exists.");
-                        Craft::$app->getErrorHandler()->log($e);
+                        Craft::$app->getErrorHandler()->logException($e);
                     }
                 }
 
