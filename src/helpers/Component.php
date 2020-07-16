@@ -97,7 +97,7 @@ class Component
             }
 
             $class = $config['type'];
-            unset($config['type']);
+            unset($config['type'], $config['__class']);
         }
 
         // Validate the component class
@@ -107,11 +107,8 @@ class Component
         $config = self::mergeSettings($config);
 
         // Instantiate and return
-        $config['__class'] = $class;
-        /** @var ComponentInterface $object */
-        $object = Craft::createObject($config);
-
-        return $object;
+        $config['class'] = $class;
+        return Craft::createObject($config);
     }
 
     /**

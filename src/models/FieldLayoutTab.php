@@ -118,14 +118,12 @@ class FieldLayoutTab extends Model
         if ($this->elements === null) {
             $this->elements = [];
             foreach ($this->getFields() as $field) {
-                $fieldConfig = [
-                    '__class' => CustomField::class,
-                    'required' => $field->required
-                ];
-                /** @var CustomField $customField */
-                $customField = Craft::createObject($fieldConfig, [$field]);
-
-                $this->elements[] = $customField;
+                $this->elements[] = Craft::createObject([
+                    'class' => CustomField::class,
+                    'required' => $field->required,
+                ], [
+                    $field,
+                ]);
             }
         } else {
             if (is_string($this->elements)) {
@@ -261,16 +259,12 @@ class FieldLayoutTab extends Model
 
         $this->elements = [];
         foreach ($this->_fields as $field) {
-            // use the `__class` syntax instead of `class`
-            // just in case the property is going to be used
-            $fieldConfig = [
-                '__class' => CustomField::class,
-                'required' => $field->required
-            ];
-            /** @var CustomField $customField */
-            $customField = Craft::createObject($fieldConfig, [$field]);
-
-            $this->elements[] = $customField;
+            $this->elements[] = Craft::createObject([
+                'class' => CustomField::class,
+                'required' => $field->required,
+            ], [
+                $field,
+            ]);
         }
     }
 

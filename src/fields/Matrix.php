@@ -333,13 +333,13 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                             'settings' => $fieldConfig['typesettings'],
                         ]);
 
-                        $customFieldConfig = [
-                            '__class' => CustomField::class,
+                        $fieldLayoutTab->elements[] = Craft::createObject([
+                            'class' => CustomField::class,
                             'required' => (bool)$fieldConfig['required'],
                             'width' => (int)($fieldConfig['width'] ?? 0) ?: 100,
-                        ];
-
-                        $fieldLayoutTab->elements[] = Craft::createObject($customFieldConfig, [$field]);
+                        ], [
+                            $field,
+                        ]);
                     }
                 }
 
