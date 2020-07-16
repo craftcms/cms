@@ -94,6 +94,7 @@
 - The `graphql/api` and `live-preview/preview` actions no longer add CORS headers that were already set on the response. ([#6355](https://github.com/craftcms/cms/issues/6355))
 - `craft\elements\db\ElementQuery::$enabledForSite` is now set to `false` by default, leaving it up to elements’ status conditions to factor in the site-specific element statuses. ([#6273](https://github.com/craftcms/cms/issues/6273))
 - `craft\services\ProjectConfig::CONFIG_FILENAME` is no longer deprecated.
+- The GraphQL public schema token settings are now stored in the project config. ([#6078](https://github.com/craftcms/cms/issues/6078))
 - The `_layouts/base` template now supports a `bodyAttributes` variable.
 - Updated Yii to 2.0.36.
 - Updated PrismJS to 1.20.0.

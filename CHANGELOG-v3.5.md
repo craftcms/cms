@@ -374,6 +374,7 @@
 - Improved `data`/`aria` tag normalization via `craft\helpers\Html::parseTagAttributes()` and `normalizeTagAttributes()`.
 - Control panel form input macros and templates that accept a `class` variable can now pass it as an array of class names.
 - Control panel templates can now set a `formActions` variable, which registers alternative Save menu actions, optionally with associated keyboard shortcuts.
+- The GraphQL public schema token settings are now stored in the project config. ([#6078](https://github.com/craftcms/cms/issues/6078))
 - The `_layouts/base` template now supports a `bodyAttributes` variable.
 - The `Craft.cp.submitPrimaryForm()` method now accepts an `options` argument for customizing the form submit.
 - Updated Yii to 2.0.36.

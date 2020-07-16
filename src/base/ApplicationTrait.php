@@ -1638,5 +1638,11 @@ trait ApplicationTrait
             ->onAdd(Gql::CONFIG_GQL_SCHEMAS_KEY . '.{uid}', [$gqlService, 'handleChangedSchema'])
             ->onUpdate(Gql::CONFIG_GQL_SCHEMAS_KEY . '.{uid}', [$gqlService, 'handleChangedSchema'])
             ->onRemove(Gql::CONFIG_GQL_SCHEMAS_KEY . '.{uid}', [$gqlService, 'handleDeletedSchema']);
+
+        // GraphQL public token
+        $projectConfigService
+            ->onAdd(Gql::CONFIG_GQL_PUBLIC_TOKEN_KEY, [$gqlService, 'handleChangedPublicToken'])
+            ->onUpdate(Gql::CONFIG_GQL_PUBLIC_TOKEN_KEY, [$gqlService, 'handleChangedPublicToken']);
+
     }
 }
