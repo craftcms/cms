@@ -94,6 +94,10 @@
 - The `_layouts/base` template now supports a `bodyAttributes` variable.
 - Updated Yii to 2.0.36.
 - Updated PrismJS to 1.20.0.
+- `craft\helpers\Component` will now initialize classes via `Craft::createObject` instead of `new`
+- `craft\models\FieldLayoutTab` will now initialize `craft\fieldlayoutelements\CustomField` via `Craft::createObject` 
+- `craft\fields\Matrix` will now initialize `craft\fieldlayoutelements\CustomField` via `Craft::createObject` 
+- `craft\models\FieldLayout` will now initialize `craft\fieldlayoutelements\CustomField` via `Craft::createObject` 
 
 ### Deprecated
 - Deprecated the `project-config/sync` command. `project-config/apply` should be used instead.

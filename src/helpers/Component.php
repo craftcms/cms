@@ -107,7 +107,11 @@ class Component
         $config = self::mergeSettings($config);
 
         // Instantiate and return
-        return new $class($config);
+        $config['__class'] = $class;
+        /** @var ComponentInterface $object */
+        $object = Craft::createObject($config);
+
+        return $object;
     }
 
     /**

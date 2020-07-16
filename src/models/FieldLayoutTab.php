@@ -12,7 +12,6 @@ use craft\base\ElementInterface;
 use craft\base\FieldInterface;
 use craft\base\FieldLayoutElementInterface;
 use craft\base\Model;
-use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
@@ -119,9 +118,14 @@ class FieldLayoutTab extends Model
         if ($this->elements === null) {
             $this->elements = [];
             foreach ($this->getFields() as $field) {
-                $this->elements[] = new CustomField($field, [
-                    'required' => $field->required,
-                ]);
+                $fieldConfig = [
+                    '__class' => CustomField::class,
+                    'required' => $field->required
+                ];
+                /** @var CustomField $customField */
+                $customField = Craft::createObject($fieldConfig, [$field]);
+
+                $this->elements[] = $customField;
             }
         } else {
             if (is_string($this->elements)) {
@@ -257,9 +261,16 @@ class FieldLayoutTab extends Model
 
         $this->elements = [];
         foreach ($this->_fields as $field) {
-            $this->elements[] = new CustomField($field, [
-                'required' => $field->required,
-            ]);
+            // use the `__class` syntax instead of `class`
+            // just in case the property is going to be used
+            $fieldConfig = [
+                '__class' => CustomField::class,
+                'required' => $field->required
+            ];
+            /** @var CustomField $customField */
+            $customField = Craft::createObject($fieldConfig, [$field]);
+
+            $this->elements[] = $customField;
         }
     }
 
