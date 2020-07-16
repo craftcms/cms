@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\base\FieldInterface;
 use craft\base\FieldLayoutElementInterface;
 use craft\base\Model;
+use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
