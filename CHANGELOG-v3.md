@@ -1,35 +1,35 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.4.28 - 2020-07-16
 
 ### Added
 - Added the `inlineOnly` argument to the `markdown` GraphQL directive, which can be used to specify that only inline element markdown should be processed. ([#6353](https://github.com/craftcms/cms/pull/6353))
 - Added `craft\services\AssetIndexer::deleteStaleIndexingData()`.
 
 ### Changed
-- If there are no files or folders to delete, the asset indexing utility dialog no longer displays a “Delete them” button.
-- Improved error handling when asset transforms cannot be generated for any reason. ([#6357](https://github.com/craftcms/cms/issues/6357))
 - Craft no longer throws an exception when attempting to create a volume folder that already exists. ([#6394](https://github.com/craftcms/cms/issues/6394))
+- Improved error handling when asset transform generation fails. ([#6357](https://github.com/craftcms/cms/issues/6357))
 
 ### Fixed
-- Fixed a bug where all Title fields within Quick Post widgets had the same input ID.
+- Fixed compatibility with MySQL 8.0.21. ([#6379](https://github.com/craftcms/cms/issues/6379))
+- Fixed an error that would occur when backing up a MySQL 5 database using `mysqldump` v8.  ([#6368](https://github.com/craftcms/cms/issues/6368))
 - Fixed a bug where rebuilding the project config without an existing `project.yaml` file could result in data loss. ([#6350](https://github.com/craftcms/cms/issues/6350))
 - Fixed a bug where eager-loading relations across multiple sites wasn’t working. ([#6366](https://github.com/craftcms/cms/issues/6366))
 - Fixed a bug where it was not always possible to use the `relatedToAll` argument with GraphQL queries. ([#6343](https://github.com/craftcms/cms/issues/6343))
-- Fixed an error that would occur when backing up a MySQL 5 database using `mysqldump` 8.  ([#6368](https://github.com/craftcms/cms/issues/6368))
+- Fixed a bug where orphan rows could be left in the `elements` table after deleting an asset folder. ([#6326](https://github.com/craftcms/cms/issues/6326))
 - Fixed a bug where the asset indexer would wasn’t skipping files with disallowed file extensions.
 - Fixed a bug where the asset indexer wasn’t handling missing volume folders properly.
 - Fixed a bug where the asset indexer wasn’t cleaning up after itself.
-- Fixed a bug where orphan rows could be left in the `elements` table after deleting an asset folder. ([#6326](https://github.com/craftcms/cms/issues/6326))
-- Fixed a bug where Live Preview wouldn’t open after it had been previously closed, if the active target was configured with `refresh: false`. ([#6356](https://github.com/craftcms/cms/issues/6356))
-- Fixed a bug where site-specific tests were not able to properly use `craft\test\fixtures\elements\AssetFixture`. ([#6309](https://github.com/craftcms/cms/issues/6309))
-- Fixed a PHP error that could occur when using `craft\test\TestMailer` in some scenarios. ([#6259](https://github.com/craftcms/cms/issues/6259))
-- Fixed a bug where it wasn’t possible to change a disabled plugin’s license key. ([#4525](https://github.com/craftcms/cms/issues/4525))
+- Fixed a bug where the Asset Indexes utility could display a “Delete them” button even if there were no files or folders to delete.
 - Fixed a bug where the “Drafts” status option wasn’t showing up on the Entries index page, if unsaved entry drafts only existed in a non-primary site. ([#6370](https://github.com/craftcms/cms/issues/6370))
+- Fixed a bug where Live Preview wouldn’t open after it had been previously closed, if the active target was configured with `refresh: false`. ([#6356](https://github.com/craftcms/cms/issues/6356))
+- Fixed a bug where it wasn’t possible to change a disabled plugin’s license key. ([#4525](https://github.com/craftcms/cms/issues/4525))
+- Fixed a bug where all Title fields within Quick Post widgets had the same input ID.
 - Fixed a bug where `craft\helpers\FileHelper::getMimeType()` could return the wrong MIME type for SVG files. ([#6351](https://github.com/craftcms/cms/issues/6351))
-- Fixed compatibility with MySQL 8.0.21. ([#6379](https://github.com/craftcms/cms/issues/6379))
 - Fixed a bug where the `setup/db-creds` command was ignoring the `port` option. ([#6339](https://github.com/craftcms/cms/issues/6339))
 - Fixed a bug where it wasn’t possible to install a plugin via the `install/plugin` command when the `allowAdminChanges` config setting was disabled. ([#6329](https://github.com/craftcms/cms/issues/6329))
+- Fixed a bug where site-specific tests were not able to properly use `craft\test\fixtures\elements\AssetFixture`. ([#6309](https://github.com/craftcms/cms/issues/6309))
+- Fixed a PHP error that could occur when using `craft\test\TestMailer` in some scenarios. ([#6259](https://github.com/craftcms/cms/issues/6259))
 
 ## 3.4.27 - 2020-07-03
 
