@@ -43,7 +43,7 @@ trait FieldTrait
     /**
      * @var bool Whether the field's values should be registered as search keywords on the elements.
      */
-    public $searchable = true;
+    public $searchable = false;
 
     /**
      * @var string The field’s translation method
