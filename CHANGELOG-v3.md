@@ -75,6 +75,7 @@
 - Added `craft\web\Request::getIsGraphql()`.
 - Added `craft\web\Request::getIsJson()`.
 - Added `craft\web\Request::getMimeType()`.
+- Added `craft\web\Response::setNoCacheHeaders()`.
 - Added `craft\web\View::$allowEval()`, which determines whether calling `evaluateDynamicContent()` should be allowed. ([#6185](https://github.com/craftcms/cms/pull/6185))
 - Added the `Craft.Listbox` JavaScript class.
 - Added the `Craft.SlidePicker` JavaScript class.

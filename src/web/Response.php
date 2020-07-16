@@ -82,7 +82,21 @@ class Response extends \yii\web\Response
             ->set('Expires', gmdate('D, d M Y H:i:s', time() + $cacheTime) . ' GMT')
             ->set('Pragma', 'cache')
             ->set('Cache-Control', 'max-age=' . $cacheTime);
+        return $this;
+    }
 
+    /**
+     * Sets headers that will instruct the client to not cache this response.
+     *
+     * @return static self reference
+     * @since 3.5.0
+     */
+    public function setNoCacheHeaders()
+    {
+        $this->getHeaders()
+            ->set('Expires', '0')
+            ->set('Pragma', 'no-cache')
+            ->set('Cache-Control', 'no-cache, no-store, must-revalidate');
         return $this;
     }
 

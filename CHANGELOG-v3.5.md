@@ -287,6 +287,7 @@
 - Added `craft\web\Request::getRawCookies()`.
 - Added `craft\web\Request::loadRawCookies()`.
 - Added `craft\web\Response::getRawCookies()`.
+- Added `craft\web\Response::setNoCacheHeaders()`.
 - `craft\web\View::evaluateDynamicContent()` can no longer be called by default. ([#6185](https://github.com/craftcms/cms/pull/6185))
 - Added the `_includes/forms/password.html` control panel template.
 - Added the `_includes/forms/copytext.html` control panel template.

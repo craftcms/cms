@@ -124,10 +124,7 @@ class PreviewController extends Controller
         }
 
         // Prevent the browser from caching the response
-        $this->response->getHeaders()
-            ->set('Cache-Control', 'no-cache, no-store, must-revalidate')
-            ->set('Pragma', 'no-cache')
-            ->set('Expires', '0');
+        $this->response->setNoCacheHeaders();
 
         // Re-route the request, this time ignoring the token
         $urlManager = Craft::$app->getUrlManager();
