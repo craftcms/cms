@@ -775,7 +775,7 @@ $toolbarIconColor: darken($inputColor, 10%);
 
 #sidebar {
   box-sizing: border-box;
-  padding: 0 24px;
+  padding: 0 31px;
   width: $sidebarWidth;
   background-color: transparent;
 
@@ -787,11 +787,11 @@ $toolbarIconColor: darken($inputColor, 10%);
   }
 
   nav {
+    margin-left: -31px;
+    margin-right: -31px;
+
     li {
       a {
-        margin-left: -24px;
-        margin-right: -24px;
-
         &:not(.sel) {
           &:hover {
             background-color: $grey200;
@@ -1352,7 +1352,7 @@ $toolbarIconColor: darken($inputColor, 10%);
 
   .heading {
     position: relative;
-    margin: 14px 0 2px;
+    margin: 14px 24px 2px;
 
     span {
       display: inline-block;
@@ -1367,30 +1367,30 @@ $toolbarIconColor: darken($inputColor, 10%);
     }
   }
 
-  @mixin nav-padding($level) {
-    @include padding-left(24px + 14 * $level);
+  @mixin nav-level($level) {
+    & > a {
+      @include padding-left(24px + 14 * $level);
+    }
+
+    & > .toggle {
+      @include left(14px * $level);
+    }
   }
 
   nav {
     padding: 0 7px;
 
-    & > ul > li > ul > li {
-      & > a {
-        @include nav-padding(1);
-      }
-
+    & > ul > li {
+      @include nav-level(0);
       & > ul > li {
-        & > a {
-          @include nav-padding(2);
-        }
-
+        @include nav-level(1);
         & > ul > li {
-          & > a {
-            @include nav-padding(3);
-          }
-
-          & > ul > li a {
-            @include nav-padding(4);
+          @include nav-level(2);
+          & > ul > li {
+            @include nav-level(3);
+            & > ul > li {
+              @include nav-level(4);
+            }
           }
         }
       }
@@ -1414,6 +1414,7 @@ $toolbarIconColor: darken($inputColor, 10%);
       }
 
       a {
+        position: relative;
         margin-bottom: 1px;
         display: flex;
         flex-direction: row;
@@ -1510,26 +1511,6 @@ $toolbarIconColor: darken($inputColor, 10%);
 
 .content.has-sidebar:not(.hiding-sidebar) {
   @include margin-left($sidebarWidth);
-}
-
-nav > ul > li > .toggle {
-  @include left(-20px);
-}
-
-nav > ul > li > ul > li > .toggle {
-  @include left(-7px);
-}
-
-nav > ul > li > ul > li > ul > li > .toggle {
-  @include left(7px);
-}
-
-nav > ul > li > ul > li > ul > li > ul > li > .toggle {
-  @include left(21px);
-}
-
-nav > ul > li > ul > li > ul > li > ul > li > ul > li .toggle {
-  @include left(35px);
 }
 
 /* flexbox field layouts */

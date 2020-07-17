@@ -3005,11 +3005,11 @@ body.ltr #sidebar-container { margin-left: -24px; }
 
 body.rtl #sidebar-container { margin-right: -24px; }
 
-#sidebar { box-sizing: border-box; padding: 0 24px; width: 226px; background-color: transparent; }
+#sidebar { box-sizing: border-box; padding: 0 31px; width: 226px; background-color: transparent; }
 
 #sidebar.fixed { position: fixed; overflow-y: auto; padding-top: 14px; padding-bottom: 14px; }
 
-#sidebar nav li a { margin-left: -24px; margin-right: -24px; }
+#sidebar nav { margin-left: -31px; margin-right: -31px; }
 
 #sidebar nav li a:not(.sel):hover { background-color: #cdd8e4; }
 
@@ -3226,27 +3226,51 @@ body.rtl .lp-editor-container .lp-draghandle { left: -2px; }
 /* Sidebar */
 .sidebar { padding: 14px 0; width: 226px; box-sizing: border-box; font-size: 13px; background-color: #f3f7fc; }
 
-.sidebar .heading { position: relative; margin: 14px 0 2px; }
+.sidebar .heading { position: relative; margin: 14px 24px 2px; }
 
 .sidebar .heading span { display: inline-block; position: relative; z-index: 1; padding: 0 5px; margin: 0 -5px; text-transform: uppercase; color: #9aa5b1; font-size: 11px; font-weight: bold; }
 
 .sidebar nav { padding: 0 7px; }
 
+body.ltr .sidebar nav > ul > li > a { padding-left: 24px; }
+
+body.rtl .sidebar nav > ul > li > a { padding-right: 24px; }
+
+body.ltr .sidebar nav > ul > li > .toggle { left: 0px; }
+
+body.rtl .sidebar nav > ul > li > .toggle { right: 0px; }
+
 body.ltr .sidebar nav > ul > li > ul > li > a { padding-left: 38px; }
 
 body.rtl .sidebar nav > ul > li > ul > li > a { padding-right: 38px; }
+
+body.ltr .sidebar nav > ul > li > ul > li > .toggle { left: 14px; }
+
+body.rtl .sidebar nav > ul > li > ul > li > .toggle { right: 14px; }
 
 body.ltr .sidebar nav > ul > li > ul > li > ul > li > a { padding-left: 52px; }
 
 body.rtl .sidebar nav > ul > li > ul > li > ul > li > a { padding-right: 52px; }
 
+body.ltr .sidebar nav > ul > li > ul > li > ul > li > .toggle { left: 28px; }
+
+body.rtl .sidebar nav > ul > li > ul > li > ul > li > .toggle { right: 28px; }
+
 body.ltr .sidebar nav > ul > li > ul > li > ul > li > ul > li > a { padding-left: 66px; }
 
 body.rtl .sidebar nav > ul > li > ul > li > ul > li > ul > li > a { padding-right: 66px; }
 
-body.ltr .sidebar nav > ul > li > ul > li > ul > li > ul > li > ul > li a { padding-left: 80px; }
+body.ltr .sidebar nav > ul > li > ul > li > ul > li > ul > li > .toggle { left: 42px; }
 
-body.rtl .sidebar nav > ul > li > ul > li > ul > li > ul > li > ul > li a { padding-right: 80px; }
+body.rtl .sidebar nav > ul > li > ul > li > ul > li > ul > li > .toggle { right: 42px; }
+
+body.ltr .sidebar nav > ul > li > ul > li > ul > li > ul > li > ul > li > a { padding-left: 80px; }
+
+body.rtl .sidebar nav > ul > li > ul > li > ul > li > ul > li > ul > li > a { padding-right: 80px; }
+
+body.ltr .sidebar nav > ul > li > ul > li > ul > li > ul > li > ul > li > .toggle { left: 56px; }
+
+body.rtl .sidebar nav > ul > li > ul > li > ul > li > ul > li > ul > li > .toggle { right: 56px; }
 
 .sidebar nav li { position: relative; }
 
@@ -3256,7 +3280,7 @@ body.rtl .sidebar nav > ul > li > ul > li > ul > li > ul > li > ul > li a { padd
 
 .sidebar nav li:not(.has-subnav) > a.sel { cursor: default; background-color: #cdd8e4; }
 
-.sidebar nav li a { margin-bottom: 1px; display: -webkit-flex; display: flex; -webkit-flex-direction: row; flex-direction: row; -webkit-align-items: center; align-items: center; padding: 7px 24px; min-height: 24px; box-sizing: border-box; color: #3f4d5a; -webkit-user-select: none; user-select: none; outline: none; border-radius: 5px; }
+.sidebar nav li a { position: relative; margin-bottom: 1px; display: -webkit-flex; display: flex; -webkit-flex-direction: row; flex-direction: row; -webkit-align-items: center; align-items: center; padding: 7px 24px; min-height: 24px; box-sizing: border-box; color: #3f4d5a; -webkit-user-select: none; user-select: none; outline: none; border-radius: 5px; }
 
 .sidebar nav li a .status { -webkit-flex-shrink: 1; flex-shrink: 1; }
 
@@ -3299,26 +3323,6 @@ body.rtl .sidebar nav li a .badge { margin: 0 10px 0 -4px ; }
 body.ltr .content.has-sidebar:not(.hiding-sidebar) { margin-left: 226px; }
 
 body.rtl .content.has-sidebar:not(.hiding-sidebar) { margin-right: 226px; }
-
-body.ltr nav > ul > li > .toggle { left: -20px; }
-
-body.rtl nav > ul > li > .toggle { right: -20px; }
-
-body.ltr nav > ul > li > ul > li > .toggle { left: -7px; }
-
-body.rtl nav > ul > li > ul > li > .toggle { right: -7px; }
-
-body.ltr nav > ul > li > ul > li > ul > li > .toggle { left: 7px; }
-
-body.rtl nav > ul > li > ul > li > ul > li > .toggle { right: 7px; }
-
-body.ltr nav > ul > li > ul > li > ul > li > ul > li > .toggle { left: 21px; }
-
-body.rtl nav > ul > li > ul > li > ul > li > ul > li > .toggle { right: 21px; }
-
-body.ltr nav > ul > li > ul > li > ul > li > ul > li > ul > li .toggle { left: 35px; }
-
-body.rtl nav > ul > li > ul > li > ul > li > ul > li > ul > li .toggle { right: 35px; }
 
 /* flexbox field layouts */
 .flex-fields { display: -webkit-flex; display: flex; -webkit-flex-wrap: wrap; flex-wrap: wrap; -webkit-align-content: flex-start; align-content: flex-start; margin: 0 -14px -24px 0; width: calc(100% + 14px); }
