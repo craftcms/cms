@@ -12,6 +12,7 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\elements\Entry as EntryElement;
 use craft\errors\GqlException;
+use craft\events\MutationPopulateElementEvent;
 use GraphQL\Error\UserError;
 
 /**
@@ -26,6 +27,47 @@ abstract class ElementMutationResolver extends MutationResolver
      * Constant used to reference content fields in resolution data storage.
      */
     const CONTENT_FIELD_KEY = '_contentFields';
+
+    /**
+     * @event MutationPopulateElementEvent The event that is triggered before populating an element when resolving a mutation
+     *
+     * Plugins get a chance to modify the arguments used to populate an element as well as the element itself before it gets populated with data.
+     *
+     * ---
+     * ```php
+     * use craft\events\MutationPopulateElementEvent;
+     * use craft\gql\resolvers\mutations\Asset as AssetMutationResolver;
+     * use craft\helpers\DateTimeHelper;
+     * use yii\base\Event;
+     *
+     * Event::on(AssetMutationResolver::class, AssetMutationResolver::EVENT_BEFORE_POPULATE_ELEMENT, function(MutationPopulateElementEvent $event) {
+     *     // Add the timestamp to the element's title
+     *     $event->arguments['title'] = ($event->arguments['title'] ?? '') . '[' . DateTimeHelper::currentTimeStamp() . ']';
+     * });
+     * ```
+     */
+    const EVENT_BEFORE_POPULATE_ELEMENT = 'beforeMutationPopulateElement';
+
+    /**
+     * @event MutationPopulateElementEvent The event that is triggered after populating an element when resolving a mutation
+     *
+     * Plugins get a chance to modify the element before it gets saved to the database.
+     *
+     * ---
+     * ```php
+     * use craft\events\MutationPopulateElementEvent;
+     * use craft\gql\resolvers\mutations\Asset as AssetMutationResolver;
+     * use yii\base\Event;
+     *
+     * Event::on(AssetMutationResolver::class, AssetMutationResolver::EVENT_AFTER_POPULATE_ELEMENT, function(MutationPopulateElementEvent $event) {
+     *     // Always set the focal point to top left corner for new files just because it's funny.
+     *     if (empty($event->element->id)) {
+     *         $event->element->focalpoint = ['x' => 0, 'y' => 0];
+     *     }
+     * });
+     * ```
+     */
+    const EVENT_AFTER_POPULATE_ELEMENT = 'afterMutationPopulateElement';
 
     /**
      * A list of attributes that are unchangeable by mutations.
@@ -50,6 +92,18 @@ abstract class ElementMutationResolver extends MutationResolver
             unset($arguments[$attribute]);
         }
 
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_POPULATE_ELEMENT)) {
+            $event = new MutationPopulateElementEvent([
+                'arguments' => $arguments,
+                'element' => $element
+            ]);
+
+            $this->trigger(self::EVENT_BEFORE_POPULATE_ELEMENT, $event);
+
+            $arguments = $event->arguments;
+            $element = $event->element;
+        }
+
         foreach ($arguments as $argument => $value) {
             if (isset($contentFields[$argument])) {
                 $value = $this->normalizeValue($argument, $value);
@@ -59,6 +113,16 @@ abstract class ElementMutationResolver extends MutationResolver
                     $element->{$argument} = $value;
                 }
             }
+        }
+
+        if ($this->hasEventHandlers(self::EVENT_AFTER_POPULATE_ELEMENT)) {
+            $event = new MutationPopulateElementEvent([
+                'arguments' => $arguments,
+                'element' => $element
+            ]);
+
+            $this->trigger(self::EVENT_AFTER_POPULATE_ELEMENT, $event);
+            $element = $event->element;
         }
 
         return $element;

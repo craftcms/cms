@@ -153,6 +153,7 @@
 - Added `craft\events\DefineFieldLayoutFieldEvent`.
 - Added `craft\events\DefineFieldsEvent`.
 - Added `craft\events\EagerLoadElementsEvent`.
+- Added `craft\events\MutationPopulateElementEvent`.
 - Added `craft\events\RegisterElementFieldLayoutsEvent`.
 - Added `craft\events\RegisterGqlMutationsEvent`.
 - Added `craft\events\RegisterGqlSchemaComponentsEvent`.

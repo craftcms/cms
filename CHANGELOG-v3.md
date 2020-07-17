@@ -23,6 +23,7 @@
 - Added the `_includes/forms/fieldLayoutDesigner.html` control panel template.
 - Added the “Replace file” permission. ([#6336](https://github.com/craftcms/cms/issues/6336))
 - Web controller actions now support basic authentication. ([#5303](https://github.com/craftcms/cms/issues/5303))
+- `craft\gql\base\ElementMutationResolver` now fires `beforeMutationPopulateElement` and `afterMutationPopulateElement` events that allows for plugins to modify element before it's saved to the database as part of a GraphQL mutation. ([#6398](https://github.com/craftcms/cms/issues/6398))
 - Added `craft\base\ElementInterface::getIsTitleTranslatable()`.
 - Added `craft\base\ElementInterface::getTitleTranslationDescription()`.
 - Added `craft\base\ElementInterface::getTitleTranslationKey()`.
@@ -38,6 +39,7 @@
 - Added `craft\elements\User::getPreferredLocale()`.
 - Added `craft\events\DefineFieldLayoutFieldEvent`.
 - Added `craft\events\DefineFieldsEvent`.
+- Added `craft\events\MutationPopulateElementEvent`.
 - Added `craft\fieldlayoutelements\BaseField`.
 - Added `craft\fieldlayoutelements\CustomField`.
 - Added `craft\fieldlayoutelements\EntryTitleField`.
@@ -48,6 +50,8 @@
 - Added `craft\fieldlayoutelements\Template`.
 - Added `craft\fieldlayoutelements\Tip`.
 - Added `craft\fieldlayoutelements\TitleField`.
+- Added `craft\gql\base\ElementMutationResolver::EVENT_BEFORE_POPULATE_ELEMENT`.
+- Added `craft\gql\base\ElementMutationResolver::EVENT_AFTER_POPULATE_ELEMENT`.
 - Added `craft\gql\base\InterfaceType::resolveElementTypeName()`.
 - Added `craft\gql\GqlEntityRegistry::prefixTypeName()`.
 - Added `craft\helpers\App::dbMutexConfig()`.
