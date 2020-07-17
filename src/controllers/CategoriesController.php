@@ -430,7 +430,7 @@ class CategoriesController extends Controller
         $this->requirePostRequest();
 
         $category = $this->_getCategoryModel();
-        $categoryVariable = $this->request->getBodyParam('categoryVariable', 'category');
+        $categoryVariable = $this->request->getValidatedBodyParam('categoryVariable', 'category');
         // Permission enforcement
         $this->_enforceEditCategoryPermissions($category);
 

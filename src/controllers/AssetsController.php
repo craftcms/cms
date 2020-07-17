@@ -219,7 +219,7 @@ class AssetsController extends Controller
 
         $assetId = $this->request->getRequiredParam('assetId');
         $siteId = $this->request->getBodyParam('siteId');
-        $assetVariable = $this->request->getBodyParam('assetVariable', 'asset');
+        $assetVariable = $this->request->getValidatedBodyParam('assetVariable', 'asset');
 
         /** @var Asset|null $asset */
         $asset = Asset::find()
