@@ -109,6 +109,7 @@ class Path extends Component
      *
      * @return string
      * @throws Exception
+     * @since 3.4.29
      */
     public function getTestsPath(): string
     {
