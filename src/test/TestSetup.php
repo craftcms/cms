@@ -318,6 +318,7 @@ class TestSetup
         $contentMigrationsPath = realpath(CRAFT_MIGRATIONS_PATH);
         $storagePath = realpath(CRAFT_STORAGE_PATH);
         $templatesPath = realpath(CRAFT_TEMPLATES_PATH);
+        $testsPath = realpath(CRAFT_TESTS_PATH);
         $translationsPath = realpath(CRAFT_TRANSLATIONS_PATH);
 
         // Log errors to craft/storage/logs/phperrors.log
@@ -346,6 +347,7 @@ class TestSetup
         Craft::setAlias('@contentMigrations', $contentMigrationsPath);
         Craft::setAlias('@storage', $storagePath);
         Craft::setAlias('@templates', $templatesPath);
+        Craft::setAlias('@tests', $testsPath);
         Craft::setAlias('@translations', $translationsPath);
 
         self::$_configService = self::createConfigService();

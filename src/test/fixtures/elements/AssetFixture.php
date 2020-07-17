@@ -73,8 +73,8 @@ abstract class AssetFixture extends ElementFixture
             ])->id;
         }
 
-        $this->sourceAssetPath = CRAFT_TESTS_PATH.'/_craft/assets/';
-        $this->destinationAssetPath = CRAFT_STORAGE_PATH.'/runtime/temp/';
+        $this->sourceAssetPath = Craft::$app->getPath()->getTestsPath().'/_craft/assets/';
+        $this->destinationAssetPath = Craft::$app->getPath()->getStoragePath().'/runtime/temp/';
 
         if (!is_dir($this->destinationAssetPath)) {
             FileHelper::createDirectory($this->destinationAssetPath);
