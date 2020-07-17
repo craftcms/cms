@@ -41,7 +41,7 @@ class ProjectConfig extends Utility
      */
     public static function iconPath()
     {
-        return Craft::getAlias('@app/icons/tools.svg');
+        return Craft::getAlias('@app/icons/sliders.svg');
     }
 
     /**
