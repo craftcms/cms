@@ -300,6 +300,7 @@ class EntriesController extends BaseEntriesController
         $this->requirePostRequest();
 
         $entry = $this->_getEntryModel();
+        $entryVariable = $this->request->getValidatedBodyParam('entryVariable', 'entry');
         // Permission enforcement
         $this->enforceSitePermission($entry->getSite());
         $this->enforceEditEntryPermissions($entry, $duplicate);
@@ -385,7 +386,7 @@ class EntriesController extends BaseEntriesController
 
             // Send the entry back to the template
             Craft::$app->getUrlManager()->setRouteParams([
-                'entry' => $entry
+                $entryVariable => $entry
             ]);
 
             return null;

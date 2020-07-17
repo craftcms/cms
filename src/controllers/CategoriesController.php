@@ -430,6 +430,7 @@ class CategoriesController extends Controller
         $this->requirePostRequest();
 
         $category = $this->_getCategoryModel();
+        $categoryVariable = $this->request->getValidatedBodyParam('categoryVariable', 'category');
         // Permission enforcement
         $this->_enforceEditCategoryPermissions($category);
 
@@ -483,7 +484,7 @@ class CategoriesController extends Controller
 
             // Send the category back to the template
             Craft::$app->getUrlManager()->setRouteParams([
-                'category' => $category
+                $categoryVarible => $category
             ]);
 
             return null;
