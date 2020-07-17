@@ -441,7 +441,7 @@ class EntriesController extends BaseEntriesController
     {
         $this->requirePostRequest();
 
-        $entryId = $this->request->getRequiredBodyParam('entryId');
+        $entryId = $this->request->getBodyParam('sourceId') ?? $this->request->getRequiredBodyParam('entryId');
         $siteId = $this->request->getBodyParam('siteId');
         $entry = Craft::$app->getEntries()->getEntryById($entryId, $siteId);
 
@@ -623,7 +623,7 @@ class EntriesController extends BaseEntriesController
      */
     private function _getEntryModel(): Entry
     {
-        $entryId = $this->request->getBodyParam('entryId');
+        $entryId = $this->request->getBodyParam('draftId') ?? $this->request->getBodyParam('sourceId') ?? $this->request->getBodyParam('entryIdId');
         $siteId = $this->request->getBodyParam('siteId');
 
         if ($entryId) {

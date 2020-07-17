@@ -787,7 +787,11 @@ Craft.DraftEditor = Garnish.Base.extend(
                         this.checkMetaValues();
                     }
 
-                    $.extend(this.duplicatedElements, response.duplicatedElements);
+                    for (let oldId in response.duplicatedElements) {
+                        if (oldId != this.settings.sourceId && response.duplicatedElements.hasOwnProperty(oldId)) {
+                            this.duplicatedElements[oldId] = response.duplicatedElements[oldId];
+                        }
+                    }
 
                     resolve();
                 }.bind(this));
@@ -812,20 +816,19 @@ Craft.DraftEditor = Garnish.Base.extend(
         },
 
         swapDuplicatedElementIds: function(data) {
-            for (var oldId in this.duplicatedElements) {
-                if (this.duplicatedElements.hasOwnProperty(oldId)) {
-                    data = data
-                        .replace(
-                            new RegExp(Craft.escapeRegex(encodeURIComponent('][' + oldId + ']')), 'g'),
-                            '][' + this.duplicatedElements[oldId] + ']'
-                        )
-                        .replace(
-                            new RegExp('=' + oldId + '\\b', 'g'),
-                            '=' + this.duplicatedElements[oldId]
-                        );
-                }
+            let idsRE = Object.keys(this.duplicatedElements).join('|');
+            if (idsRE === '') {
+                return data;
             }
-            return data;
+            let lb = encodeURIComponent('[');
+            let rb = encodeURIComponent(']');
+            return data
+                .replace(new RegExp(`(&fields${lb}[^=]+${rb}${lb})(${idsRE})(${rb})`, 'g'), (m, pre, id, post) => {
+                    return pre + this.duplicatedElements[id] + post;
+                })
+                .replace(new RegExp(`(&fields${lb}[^=]+=)(${idsRE})\\b`, 'g'), (m, pre, id) => {
+                    return pre + this.duplicatedElements[id];
+                });
         },
 
         getDeltaNames: function() {

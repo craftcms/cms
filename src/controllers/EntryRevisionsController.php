@@ -188,7 +188,7 @@ class EntryRevisionsController extends BaseEntriesController
         $elementsService = Craft::$app->getElements();
 
         $draftId = $this->request->getBodyParam('draftId');
-        $entryId = $this->request->getBodyParam('entryId');
+        $entryId = $this->request->getBodyParam('sourceId') ?? $this->request->getBodyParam('entryId');
         $siteId = $this->request->getBodyParam('siteId') ?: Craft::$app->getSites()->getPrimarySite()->id;
         $fieldsLocation = $this->request->getParam('fieldsLocation', 'fields');
 

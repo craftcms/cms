@@ -217,7 +217,7 @@ class AssetsController extends Controller
             return $this->runAction('upload');
         }
 
-        $assetId = $this->request->getRequiredParam('assetId');
+        $assetId = $this->request->getBodyParam('sourceId') ?? $this->request->getRequiredParam('assetId');
         $siteId = $this->request->getBodyParam('siteId');
         $assetVariable = $this->request->getValidatedBodyParam('assetVariable', 'asset');
 
@@ -560,7 +560,7 @@ class AssetsController extends Controller
     {
         $this->requirePostRequest();
 
-        $assetId = $this->request->getRequiredBodyParam('assetId');
+        $assetId = $this->request->getBodyParam('sourceId') ?? $this->request->getRequiredBodyParam('assetId');
         $asset = Craft::$app->getAssets()->getAssetById($assetId);
 
         if (!$asset) {
