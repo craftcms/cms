@@ -22,7 +22,7 @@
 
 ### Fixed
 - Fixed compatibility with MySQL 8.0.21. ([#6379](https://github.com/craftcms/cms/issues/6379))
-- Fixed an error that would occur when backing up a MySQL 5 database using `mysqldump` v8.  ([#6368](https://github.com/craftcms/cms/issues/6368))
+- Fixed an error that would occur when backing up a MySQL 5 database using `mysqldump` v8. ([#6368](https://github.com/craftcms/cms/issues/6368))
 - Fixed a bug where rebuilding the project config without an existing `project.yaml` file could result in data loss. ([#6350](https://github.com/craftcms/cms/issues/6350))
 - Fixed a bug where eager-loading relations across multiple sites wasn’t working. ([#6366](https://github.com/craftcms/cms/issues/6366))
 - Fixed a bug where it was not always possible to use the `relatedToAll` argument with GraphQL queries. ([#6343](https://github.com/craftcms/cms/issues/6343))
