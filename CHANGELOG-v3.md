@@ -89,6 +89,10 @@
 - Entry draft forms no longer have a primary action, and the <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>S</kbd> keyboard shortcut now forces a resave of the draft, rather than publishing it. ([#6199](https://github.com/craftcms/cms/issues/6199))
 - When creating a new field, the “Use this field’s values as search keywords?” setting is now disabled by default. ([#6390](https://github.com/craftcms/cms/issues/6390))
 - The `project-config/sync` command has been renamed to `project-config/apply`.
+- Front-end asset forms can now set a hashed `assetVariable` param, to customize the name of the variable that the asset should be passed back to the template as, if it contains any validation errors. ([#6240](https://github.com/craftcms/cms/issues/6240))
+- Front-end category forms can now set a hashed `categoryVariable` param, to customize the name of the variable that the category should be passed back to the template as, if it contains any validation errors. ([#6240](https://github.com/craftcms/cms/issues/6240))
+- Front-end entry forms can now set a hashed `entryVariable` param, to customize the name of the variable that the entry should be passed back to the template as, if it contains any validation errors. ([#6240](https://github.com/craftcms/cms/issues/6240))
+- Front-end user forms can now set a hashed `userVariable` param, to customize the name of the variable that the user should be passed back to the template as, if it contains any validation errors. ([#6240](https://github.com/craftcms/cms/issues/6240))
 - All built-in success/fail flash messages are now customizable by passing a hashed `successMessage`/`failMessage` param with the request. ([#6192](https://github.com/craftcms/cms/issues/6192))
 - Craft now uses `yii\mutex\MysqlMutex` or `yii\mutex\PgsqlMutex` for mutex locking by default.
 - It’s now possible to use aliases when eager-loading elements via GraphQL. ([#5481](https://github.com/craftcms/cms/issues/5481))
