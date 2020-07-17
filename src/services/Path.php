@@ -34,6 +34,11 @@ class Path extends Component
     /**
      * @var
      */
+    private $_testsPath;
+
+    /**
+     * @var
+     */
     private $_siteTranslationsPath;
 
     /**
@@ -97,6 +102,28 @@ class Path extends Component
         }
 
         return $this->_storagePath;
+    }
+
+    /**
+     * Returns the path to the `tests/` directory.
+     *
+     * @return string
+     * @throws Exception
+     * @since 3.4.29
+     */
+    public function getTestsPath(): string
+    {
+        if ($this->_testsPath !== null) {
+            return $this->_testsPath;
+        }
+
+        $path = Craft::getAlias('@tests');
+
+        if ($path === false) {
+            throw new Exception('There was a problem getting the tests path.');
+        }
+
+        return $this->_testsPath = FileHelper::normalizePath($path);
     }
 
     /**
