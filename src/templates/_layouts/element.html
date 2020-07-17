@@ -221,6 +221,12 @@
 {% endblock %}
 
 {% block content %}
+    {% if not isRevision %}
+        {{ hiddenInput('sourceId', element.getSourceId()) }}
+    {% else %}
+        {{ hiddenInput('revisionId', entry.revisionId) }}
+    {% endif %}
+
     <div id="fields">
         {% for tab in element.fieldLayout.tabs ?? [] %}
             <div id="{{ tab.getHtmlId() }}"{% if not loop.first %} class="hidden"{% endif %}>

@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where entry data could get corrupted when a newly-created draft was autosaved. ([#6344](https://github.com/craftcms/cms/issues/6344))
+
 ## 3.4.28.1 - 2020-07-16
 
 ### Fixed

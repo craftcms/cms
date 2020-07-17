@@ -222,7 +222,7 @@ class AssetsController extends Controller
         }
 
         $request = Craft::$app->getRequest();
-        $assetId = $request->getRequiredParam('assetId');
+        $assetId = $request->getBodyParam('sourceId') ?? $request->getRequiredParam('assetId');
         $siteId = $request->getBodyParam('siteId');
 
         /** @var Asset|null $asset */
@@ -571,7 +571,7 @@ class AssetsController extends Controller
         $this->requirePostRequest();
 
         $request = Craft::$app->getRequest();
-        $assetId = $request->getRequiredBodyParam('assetId');
+        $assetId = $request->getBodyParam('sourceId') ?? $request->getRequiredBodyParam('assetId');
         $asset = Craft::$app->getAssets()->getAssetById($assetId);
 
         if (!$asset) {

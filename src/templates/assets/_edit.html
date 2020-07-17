@@ -24,8 +24,6 @@
 {% endblock %}
 
 {% block content %}
-    {{ hiddenInput('assetId', element.id) }}
-
     {{ forms.textField({
         label: 'Title'|t('app'),
         siteId: element.siteId,
