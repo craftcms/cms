@@ -271,11 +271,11 @@ class InstallController extends Controller
             $siteUrl = Craft::getAlias($siteUrl);
         }
 
-        // Try to save the site URL to a DEFAULT_SITE_URL environment variable
+        // Try to save the site URL to a PRIMARY_SITE_URL environment variable
         // if it's not already set to an alias or environment variable
         if ($siteUrl[0] !== '@' && $siteUrl[0] !== '$' && !App::isEphemeral()) {
             try {
-                $configService->setDotEnvVar('DEFAULT_SITE_URL', $siteUrl);
+                $configService->setDotEnvVar('PRIMARY_SITE_URL', $siteUrl);
                 $siteUrl = '$DEFAULT_SITE_URL';
             } catch (Exception $e) {
                 // that's fine, we'll just store the entered URL

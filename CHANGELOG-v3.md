@@ -108,6 +108,7 @@
 - `craft\helpers\Component::createComponent()` now creates component objects via `Craft::createObject()`. ([#6097](https://github.com/craftcms/cms/issues/6097))
 - `craft\services\ProjectConfig::CONFIG_FILENAME` is no longer deprecated.
 - The `_layouts/base` template now supports a `bodyAttributes` variable.
+- New installs now set the primary site’s base URL to a `PRIMARY_SITE_URL` environment variable, rather than `DEFAULT_SITE_URL`.
 - Updated Yii to 2.0.36.
 - Updated PrismJS to 1.20.0.
 
