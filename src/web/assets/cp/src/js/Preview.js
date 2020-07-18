@@ -355,17 +355,19 @@ Craft.Preview = Garnish.Base.extend(
                 }
 
                 // Keep the iframe height consistent with its content
-                iFrameResize({
-                    checkOrigin: false,
-                    // Allow iframe scrolling until we've successfully initialized the resizer
-                    scrolling: true,
-                    onInit: iframe => {
-                        this.iframeLoaded = true;
-                        this.iframeHeight = null;
-                        this.scrollTop = null;
-                        iframe.scrolling = 'no';
-                    },
-                }, $iframe[0])
+                if (Craft.previewIframeResizerOptions !== false) {
+                    iFrameResize($.extend({
+                        checkOrigin: false,
+                        // Allow iframe scrolling until we've successfully initialized the resizer
+                        scrolling: true,
+                        onInit: iframe => {
+                            this.iframeLoaded = true;
+                            this.iframeHeight = null;
+                            this.scrollTop = null;
+                            iframe.scrolling = 'no';
+                        },
+                    }, Craft.previewIframeResizerOptions || {}), $iframe[0]);
+                }
 
                 this.url = url;
                 this.$iframe = $iframe;

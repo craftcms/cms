@@ -32,6 +32,7 @@
 - Added the `defaultCpLocale` config setting. ([#6363](https://github.com/craftcms/cms/issues/6363))
 - Added the `gqlTypePrefix` config setting, making it possible to prefix all GraphQL types created by Craft. ([#5950](https://github.com/craftcms/cms/issues/5950))
 - Added the `imageEditorRatios` config setting, making it possible to customize the list of available aspect ratios in the image editor. ([#6201](https://github.com/craftcms/cms/issues/6201))
+- Added the `previewIframeResizerOptions` config setting. ([#6388](https://github.com/craftcms/cms/issues/6388))
 - Added the `siteToken` config setting.
 - Added the `install/check` command. ([#5810](https://github.com/craftcms/cms/issues/5810))
 - Added the `plugin/install`, `plugin/uninstall`, `plugin/enable`, and `plugin/disable` commands. ([#5817](https://github.com/craftcms/cms/issues/5817))

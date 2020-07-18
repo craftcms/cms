@@ -18,6 +18,7 @@
 - Added the `prev` and `next` fields for entries, categories and assets when querying elements via GraphQL. ([#5571](https://github.com/craftcms/cms/issues/5571))
 - Added the `defaultCpLocale` config setting. ([#6363](https://github.com/craftcms/cms/issues/6363))
 - Added the `imageEditorRatios` config setting, making it possible to customize the list of available aspect ratios in the image editor. ([#6201](https://github.com/craftcms/cms/issues/6201))
+- Added the `previewIframeResizerOptions` config setting. ([#6388](https://github.com/craftcms/cms/issues/6388))
 - Added the `|namespaceAttributes` Twig filter, which namespaces `id`, `for`, and other attributes, but not `name`.
 - Added the `fieldLayoutDesigner()` and `fieldLayoutDesignerField()` macros to the `_includes/forms.html` control panel template.
 - Added the `_includes/forms/fieldLayoutDesigner.html` control panel template.

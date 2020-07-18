@@ -703,6 +703,20 @@ class GeneralConfig extends BaseObject
      */
     public $preventUserEnumeration = false;
     /**
+     * @var array|false Custom [iFrame Resizer options](http://davidjbradshaw.github.io/iframe-resizer/#options) that should be used for preview iframes.
+     *
+     * Set this to `false` to disable the iFrame Resizer altogether.
+     *
+     * ```php
+     * 'previewIframeResizerOptions' => [
+     *     'autoResize' => false,
+     * ],
+     * ```
+     *
+     * @since 3.5.0
+     */
+    public $previewIframeResizerOptions = [];
+    /**
      * @var mixed The amount of time to wait before Craft purges pending users from the system that have not activated.
      *
      * Note that any content assigned to a pending user will be deleted as well when the given time interval passes.

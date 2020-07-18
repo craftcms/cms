@@ -324,6 +324,7 @@ JS;
             'pageTrigger' => $generalConfig->getPageTrigger(),
             'path' => $request->getPathInfo(),
             'pathParam' => $generalConfig->pathParam,
+            'previewIframeResizerOptions' => $generalConfig->previewIframeResizerOptions !== [] ? $generalConfig->previewIframeResizerOptions : null,
             'primarySiteId' => $primarySite ? (int)$primarySite->id : null,
             'primarySiteLanguage' => $primarySite->language ?? null,
             'Pro' => Craft::Pro,
