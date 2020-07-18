@@ -94,8 +94,7 @@
 - When creating a new field, the “Use this field’s values as search keywords?” setting is now disabled by default. ([#6390](https://github.com/craftcms/cms/issues/6390))
 - The `project-config/sync` command has been renamed to `project-config/apply`.
 - Front-end asset forms can now set a hashed `assetVariable` param, to customize the name of the variable that the asset should be passed back to the template as, if it contains any validation errors. ([#6240](https://github.com/craftcms/cms/issues/6240))
-- Fro
-nt-end category forms can now set a hashed `categoryVariable` param, to customize the name of the variable that the category should be passed back to the template as, if it contains any validation errors. ([#6240](https://github.com/craftcms/cms/issues/6240))
+- Front-end category forms can now set a hashed `categoryVariable` param, to customize the name of the variable that the category should be passed back to the template as, if it contains any validation errors. ([#6240](https://github.com/craftcms/cms/issues/6240))
 - Front-end entry forms can now set a hashed `entryVariable` param, to customize the name of the variable that the entry should be passed back to the template as, if it contains any validation errors. ([#6240](https://github.com/craftcms/cms/issues/6240))
 - Front-end user forms can now set a hashed `userVariable` param, to customize the name of the variable that the user should be passed back to the template as, if it contains any validation errors. ([#6240](https://github.com/craftcms/cms/issues/6240))
 - All built-in success/fail flash messages are now customizable by passing a hashed `successMessage`/`failMessage` param with the request. ([#6192](https://github.com/craftcms/cms/issues/6192))
