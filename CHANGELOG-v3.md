@@ -78,6 +78,10 @@
 - Added `craft\services\Gql::handleChangedPublicToken()`.
 - Added `craft\services\Path::getProjectConfigPath()`.
 - Added `craft\services\ProjectConfig::$folderName`. ([#5982](https://github.com/craftcms/cms/issues/5982))
+- Added `craft\services\ProjectConfig::FILE_ISSUES_CACHE_KEY`.
+- Added `craft\services\ProjectConfig::getHadFileWriteIssues()`.
+- Added `craft\services\ProjectConfig::IGNORE_CACHE_KEY`.
+- Added `craft\services\ProjectConfig::ignorePendingChanges()`.
 - Added `craft\web\Controller::setFailFlash()`.
 - Added `craft\web\Controller::setSuccessFlash()`.
 - Added `craft\web\Request::getIsGraphql()`.
@@ -107,6 +111,7 @@
 - The `graphql/api` and `live-preview/preview` actions no longer add CORS headers that were already set on the response. ([#6355](https://github.com/craftcms/cms/issues/6355))
 - `craft\elements\db\ElementQuery::$enabledForSite` is now set to `false` by default, leaving it up to elements’ status conditions to factor in the site-specific element statuses. ([#6273](https://github.com/craftcms/cms/issues/6273))
 - `craft\helpers\Component::createComponent()` now creates component objects via `Craft::createObject()`. ([#6097](https://github.com/craftcms/cms/issues/6097))
+- `craft\services\ProjectConfig::areChangesPending()` now has a `$force` argument.
 - `craft\services\ProjectConfig::CONFIG_FILENAME` is no longer deprecated.
 - The `_layouts/base` template now supports a `bodyAttributes` variable.
 - New installs now set the primary site’s base URL to a `PRIMARY_SITE_URL` environment variable, rather than `DEFAULT_SITE_URL`.

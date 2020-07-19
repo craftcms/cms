@@ -49,9 +49,21 @@ class ProjectConfig extends Component
      */
     const CACHE_KEY = 'projectConfig:files';
     /**
+     * The cache key that is used to store the modified time of the project config files, at the time they were last applied or ignored.
+     *
+     * @since 3.5.0
+     */
+    const IGNORE_CACHE_KEY = 'projectConfig:ignore';
+    /**
      * The cache key that is used to store the loaded project config data.
      */
     const STORED_CACHE_KEY = 'projectConfig:internal';
+    /**
+     * The cache key that is used to store whether there were any issues writing the project config files out.
+     *
+     * @since 3.5.0
+     */
+    const FILE_ISSUES_CACHE_KEY = 'projectConfig:fileIssues';
     /**
      * The duration that project config caches should be cached.
      */
@@ -507,14 +519,16 @@ class ProjectConfig extends Component
         Craft::$app->getDb()->enableReplicas = false;
 
         $this->_applyingYamlChanges = true;
-        Craft::$app->getCache()->delete(self::CACHE_KEY);
+        $cache = Craft::$app->getCache();
+        $cache->delete(self::CACHE_KEY);
+        $cache->delete(self::IGNORE_CACHE_KEY);
 
         $changes = $this->_getPendingChanges();
 
         $this->_applyChanges($changes);
 
         // Kill the cached config data
-        Craft::$app->getCache()->delete(self::STORED_CACHE_KEY);
+        $cache->delete(self::STORED_CACHE_KEY);
 
         $mutex->release($lockName);
     }
@@ -554,10 +568,12 @@ class ProjectConfig extends Component
      * Returns whether a given path has pending changes that need to be applied to the loaded project config.
      *
      * @param string|null $path A specific config path that should be checked for pending changes.
-     * If this is null, then `true` will be returned if there are *any* pending changes in `project.yaml.`.
+     * If this is null, then `true` will be returned if there are *any* pending changes in `project.yaml`.
+     * @param bool $force Whether to check for changes even if it doesn’t look like anything has changed since
+     * the last time [[ignorePendingChanges()]] has been called.
      * @return bool
      */
-    public function areChangesPending(string $path = null): bool
+    public function areChangesPending(string $path = null, bool $force = false): bool
     {
         // If the path is currently being processed, return true
         if ($path !== null && array_key_exists($path, $this->_oldValuesByPath)) {
@@ -573,9 +589,11 @@ class ProjectConfig extends Component
         if (!file_exists(Craft::$app->getPath()->getProjectConfigFilePath())) {
             $this->regenerateYamlFromConfig();
             $this->saveModifiedConfigData();
+            return false;
         }
 
-        if (!$this->_areConfigFilesModified()) {
+        // If the file modification date hasn't changed, then no need to check the contents
+        if (!$this->_areConfigFilesModified($force)) {
             return false;
         }
 
@@ -586,20 +604,16 @@ class ProjectConfig extends Component
             return $this->encodeValueAsString($oldValue) !== $this->encodeValueAsString($newValue);
         }
 
-        $changes = $this->_getPendingChanges();
-
-        foreach ($changes as $changeType) {
-            if (!empty($changeType)) {
-                // Clear the cached config, just in case it conflicts with what we've got here
-                Craft::$app->getCache()->delete(self::STORED_CACHE_KEY);
-                $this->_loadedConfig = null;
-                return true;
-            }
+        // If the file contents haven't changed, just update the cached file modification date
+        if (!$this->_getPendingChanges(null, true)) {
+            $this->updateParsedConfigTimes();
+            return false;
         }
 
-        $this->updateParsedConfigTimes();
-
-        return false;
+        // Clear the cached config, just in case it conflicts with what we've got here
+        Craft::$app->getCache()->delete(self::STORED_CACHE_KEY);
+        $this->_loadedConfig = null;
+        return true;
     }
 
     /**
@@ -693,13 +707,27 @@ class ProjectConfig extends Component
     }
 
     /**
+     * Ignores any pending changes in the project config files.
+     *
+     * @since 3.5.0
+     */
+    public function ignorePendingChanges()
+    {
+        return Craft::$app->getCache()->set(self::IGNORE_CACHE_KEY, $this->_getConfigFileModifiedTime(), self::CACHE_DURATION);
+    }
+
+    /**
      * Updates cached config file modified times immediately.
      *
      * @return bool
      */
     public function updateParsedConfigTimes(): bool
     {
-        return Craft::$app->getCache()->set(self::CACHE_KEY, $this->_getConfigFileModifiedTime(), self::CACHE_DURATION);
+        $time = $this->_getConfigFileModifiedTime();
+        return !empty(Craft::$app->getCache()->multiSet([
+            self::CACHE_KEY => $time,
+            self::IGNORE_CACHE_KEY => $time,
+        ], self::CACHE_DURATION));
     }
 
     /**
@@ -1206,7 +1234,11 @@ class ProjectConfig extends Component
      */
     private function _getConfigFileModifiedTime(): int
     {
-        return FileHelper::lastModifiedTime(Craft::$app->getPath()->getProjectConfigPath());
+        $path = Craft::$app->getPath()->getProjectConfigPath(false);
+        if (!is_dir($path)) {
+            return 0;
+        }
+        return FileHelper::lastModifiedTime($path);
     }
 
     /**
@@ -1222,10 +1254,11 @@ class ProjectConfig extends Component
 
         $fileList = $this->_getConfigFileList();
         $generatedConfig = [];
+        $projectConfigPathLength = strlen(Craft::$app->getPath()->getProjectConfigPath(false));
 
         foreach ($fileList as $filePath) {
             $yamlConfig = Yaml::parse(file_get_contents($filePath));
-            $subPath = StringHelper::removeLeft($filePath, Craft::$app->getPath()->getProjectConfigPath() . DIRECTORY_SEPARATOR);
+            $subPath = substr($filePath, $projectConfigPathLength + 1);
 
             if (StringHelper::countSubstrings($subPath, '/') > 0) {
                 $configPath = explode("/", $subPath);
@@ -1259,9 +1292,10 @@ class ProjectConfig extends Component
      * Return a nested array for pending config changes
      *
      * @param array $configData config data to use. If null, the config is fetched from the project config files.
-     * @return array
+     * @param bool $existsOnly whether to just return `true` or `false` depending on whether any changes are found.
+     * @return array|bool
      */
-    private function _getPendingChanges(array $configData = null): array
+    private function _getPendingChanges(array $configData = null, bool $existsOnly = false)
     {
         $newItems = [];
         $changedItems = [];
@@ -1288,12 +1322,22 @@ class ProjectConfig extends Component
             $immediateParent = pathinfo($key, PATHINFO_FILENAME);
 
             if (!array_key_exists($key, $flatCurrent)) {
+                if ($existsOnly) {
+                    return true;
+                }
                 $newItems[] = $immediateParent;
             } else if ($this->forceUpdate || $flatCurrent[$key] !== $value) {
+                if ($existsOnly) {
+                    return true;
+                }
                 $changedItems[] = $immediateParent;
             }
 
             unset($flatCurrent[$key]);
+        }
+
+        if ($existsOnly) {
+            return !empty($flatCurrent);
         }
 
         $removedItems = array_keys($flatCurrent);
@@ -1329,27 +1373,17 @@ class ProjectConfig extends Component
     /**
      * Return true if the config files have been modified since last we checked.
      *
+     * @param bool $force Whether to check for changes even if it doesn’t look like anything has changed since
+     * the last time [[ignorePendingChanges()]] has been called.
      * @return bool
      */
-    private function _areConfigFilesModified(): bool
+    private function _areConfigFilesModified(bool $force): bool
     {
-        $cachedModifiedTime = Craft::$app->getCache()->get(self::CACHE_KEY);
-
-        if (empty($cachedModifiedTime)) {
-            return true;
-        }
-
-        $pathService = Craft::$app->getPath();
-
-        // Check whether we have a missing main config file or any of the sub-files have been modified.
-        if (!file_exists($pathService->getProjectConfigFilePath()) || $this->_getConfigFileModifiedTime() != $cachedModifiedTime) {
-            return true;
-        }
-
-        // Re-cache
-        Craft::$app->getCache()->set(self::CACHE_KEY, $cachedModifiedTime, self::CACHE_DURATION);
-
-        return false;
+        $cachedModifiedTime = Craft::$app->getCache()->get($force ? self::CACHE_KEY : self::IGNORE_CACHE_KEY);
+        return (
+            !$cachedModifiedTime ||
+            $this->_getConfigFileModifiedTime() !== $cachedModifiedTime
+        );
     }
 
     /**
@@ -1375,7 +1409,10 @@ class ProjectConfig extends Component
     private function _findConfigFiles(string $path = null): array
     {
         if ($path === null) {
-            $path = Craft::$app->getPath()->getProjectConfigPath();
+            $path = Craft::$app->getPath()->getProjectConfigPath(false);
+        }
+        if (!is_dir($path)) {
+            return [];
         }
         return FileHelper::findFiles($path, [
             'only' => ['*.yaml'],
@@ -1527,23 +1564,44 @@ class ProjectConfig extends Component
     private function _updateYamlFiles()
     {
         $config = ProjectConfigHelper::splitConfigIntoComponents($this->_appliedConfig);
-        $basePath = Craft::$app->getPath()->getProjectConfigPath();
 
-        foreach ($config as $relativeFile => $configData) {
-            $configData = ProjectConfigHelper::cleanupConfig($configData);
-            ksort($configData);
-            $filePath = $basePath . DIRECTORY_SEPARATOR . $relativeFile;
-            FileHelper::writeToFile($filePath, Yaml::dump($configData, 20, 2));
-        }
+        try {
+            $basePath = Craft::$app->getPath()->getProjectConfigPath();
 
-        // See if there are any files that shouldn’t be around anymore
-        $basePathLength = strlen($basePath);
-        foreach ($this->_findConfigFiles($basePath) as $file) {
-            $path = substr($file, $basePathLength + 1);
-            if (!isset($config[$path])) {
-                FileHelper::unlink($file);
+            foreach ($config as $relativeFile => $configData) {
+                $configData = ProjectConfigHelper::cleanupConfig($configData);
+                ksort($configData);
+                $filePath = $basePath . DIRECTORY_SEPARATOR . $relativeFile;
+                FileHelper::writeToFile($filePath, Yaml::dump($configData, 20, 2));
             }
+
+            // See if there are any files that shouldn’t be around anymore
+            $basePathLength = strlen($basePath);
+            foreach ($this->_findConfigFiles($basePath) as $file) {
+                $path = substr($file, $basePathLength + 1);
+                if (!isset($config[$path])) {
+                    FileHelper::unlink($file);
+                }
+            }
+        } catch (\Throwable $e) {
+            Craft::warning('An error occurred when writing new project config files: ' . $e->getMessage(), __METHOD__);
+            Craft::$app->getErrorHandler()->logException($e);
+            Craft::$app->getCache()->set(self::FILE_ISSUES_CACHE_KEY, true, self::CACHE_DURATION);
+            return;
         }
+
+        Craft::$app->getCache()->delete(self::FILE_ISSUES_CACHE_KEY);
+    }
+
+    /**
+     * Returns whether we have a record of issues writing out files to the project config folder.
+     *
+     * @return bool
+     * @since 3.5.0
+     */
+    public function getHadFileWriteIssues(): bool
+    {
+        return Craft::$app->getCache()->get(self::FILE_ISSUES_CACHE_KEY);
     }
 
     /**

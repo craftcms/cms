@@ -282,6 +282,10 @@
 - Added `craft\services\Images::getSupportsWebP()`. ([#5853](https://github.com/craftcms/cms/issues/5853))
 - Added `craft\services\Path::getProjectConfigPath()`.
 - Added `craft\services\ProjectConfig::$folderName`. ([#5982](https://github.com/craftcms/cms/issues/5982))
+- Added `craft\services\ProjectConfig::FILE_ISSUES_CACHE_KEY`.
+- Added `craft\services\ProjectConfig::getHadFileWriteIssues()`.
+- Added `craft\services\ProjectConfig::IGNORE_CACHE_KEY`.
+- Added `craft\services\ProjectConfig::ignorePendingChanges()`.
 - Added `craft\test\mockclasses\elements\MockElementQuery`.
 - Added `craft\utilities\ProjectConfig`.
 - Added `craft\web\AssetBundle\ContentWindowAsset`.
@@ -380,6 +384,7 @@
 - `craft\services\Fields::getFieldByHandle()` now has an optional `$context` argument.
 - `craft\services\Gql::setCachedResult()` now has a `$dependency` argument.
 - `craft\services\Gql` now fires a `registerGqlMutations` event that allows for plugins to register their own GraphQL mutations.
+- `craft\services\ProjectConfig::areChangesPending()` now has a `$force` argument.
 - `craft\services\Sites::getAllSiteIds()`, `getSiteByUid()`, `getAllSites()`, `getSitesByGroupId()`, `getSiteById()`, and `getSiteByHandle()` now have `$withDisabled` arguments.
 - `craft\services\TemplateCaches::startTemplateCache()` no longer has a `$key` argument.
 - Improved `data`/`aria` tag normalization via `craft\helpers\Html::parseTagAttributes()` and `normalizeTagAttributes()`.

@@ -149,13 +149,12 @@ class Cp
         if (
             $user->admin &&
             $generalConfig->allowAdminChanges &&
-            !FileHelper::isWritable(Craft::$app->getPath()->getProjectConfigPath())
+            $projectConfig->getHadFileWriteIssues()
         ) {
-            $alerts[] = Craft::t('app', "Your config/$projectConfig->folderName/ folder isn’t writable.");
+            $alerts[] = Craft::t('app', 'Your {folder} folder isn’t writable.', [
+                'folder' => "config/$projectConfig->folderName/",
+            ]);
         }
-
-        // Checking the folder writability changed the date-modified, so re-cache it.
-        $projectConfig->updateParsedConfigTimes();
 
         // Give plugins a chance to add their own alerts
         $event = new RegisterCpAlertsEvent();

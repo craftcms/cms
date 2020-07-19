@@ -71,7 +71,7 @@ class Path extends Component
      */
     public function getProjectConfigFilePath(): string
     {
-        return $this->getProjectConfigPath() . DIRECTORY_SEPARATOR . ProjectConfig::CONFIG_FILENAME;
+        return $this->getProjectConfigPath(false) . DIRECTORY_SEPARATOR . ProjectConfig::CONFIG_FILENAME;
     }
 
     /**

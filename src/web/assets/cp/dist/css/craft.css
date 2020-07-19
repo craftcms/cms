@@ -184,6 +184,8 @@ body.rtl #revision-btngroup { margin-left: 7px; }
 
 .checkmark-icon { background-color: #cdd8e4; }
 
+p .checkmark-icon { display: inline-block; }
+
 .checkmark-icon:before { content: 'check'; color: #27AB83; }
 
 .alert-icon { background-color: #cdd8e4; }

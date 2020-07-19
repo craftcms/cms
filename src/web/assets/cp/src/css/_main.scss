@@ -364,6 +364,10 @@ li.sel a {
 }
 
 .checkmark-icon {
+  p & {
+    display: inline-block;
+  }
+
   background-color: $grey200;
 
   &:before {

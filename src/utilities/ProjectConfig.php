@@ -61,13 +61,14 @@ class ProjectConfig extends Utility
 }
 CSS;
 
-
         $view = Craft::$app->getView();
         $view->registerAssetBundle(PrismJsAsset::class);
         $view->registerCss($css);
 
+        $projectConfig = Craft::$app->getProjectConfig();
         return $view->renderTemplate('_components/utilities/ProjectConfig', [
-            'entireConfig' => Yaml::dump(Craft::$app->getProjectConfig()->get(), 20, 2),
+            'changesPending' => $projectConfig->areChangesPending(null, true),
+            'entireConfig' => Yaml::dump($projectConfig->get(), 20, 2),
         ]);
     }
 }

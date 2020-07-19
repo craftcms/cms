@@ -43,7 +43,7 @@ class ProjectConfigController extends Controller
      */
     public function actionIgnore(): Response
     {
-        Craft::$app->getProjectConfig()->updateParsedConfigTimes();
+        Craft::$app->getProjectConfig()->ignorePendingChanges();
         return $this->redirectToPostedUrl($this->data['returnUrl'] ?? Craft::$app->getConfig()->getGeneral()->getPostCpLoginRedirect());
     }
 }
