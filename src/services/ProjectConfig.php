@@ -55,7 +55,7 @@ class ProjectConfig extends Component
     /**
      * The duration that project config caches should be cached.
      */
-    const CACHE_DURATION = 2592000; // 30 days
+    const CACHE_DURATION = 31536000; // 1 year
     /**
      * @deprecated in 3.5.0
      */
