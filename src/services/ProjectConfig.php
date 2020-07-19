@@ -554,7 +554,7 @@ class ProjectConfig extends Component
     public function areChangesPending(string $path = null): bool
     {
         // If the path is currently being processed, return true
-        if (array_key_exists($path, $this->_oldValuesByPath)) {
+        if ($path !== null && array_key_exists($path, $this->_oldValuesByPath)) {
             return true;
         }
 
