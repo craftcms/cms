@@ -112,7 +112,7 @@ class Transform extends Directive
             case 'width':
                 return $source->getWidth($transform);
             case 'url':
-                return Craft::$app->getAssets()->getAssetUrl($source, $transform, $generateNow);
+                return $source->getUrl($transform, $generateNow);
         }
 
         return $value;
