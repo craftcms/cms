@@ -209,11 +209,12 @@ class Application extends \yii\web\Application
             throw new ServiceUnavailableHttpException();
         }
 
+        // If Dev Mode is enabled and this is a CP request, check if there are any pending project config changes
         $projectConfig = $this->getProjectConfig();
+        $areProjectConfigChangesPending = $generalConfig->devMode && $request->getIsCpRequest() && $projectConfig->areChangesPending();
 
         // Make sure schema required by config files aligns with what we have.
-        $issues = [];
-        if ($projectConfig->areChangesPending() && !$projectConfig->getAreConfigSchemaVersionsCompatible($issues)) {
+        if ($areProjectConfigChangesPending && !$projectConfig->getAreConfigSchemaVersionsCompatible($issues)) {
             return $this->_handleIncompatibleConfig($request, $issues);
         }
 
@@ -243,8 +244,8 @@ class Application extends \yii\web\Application
             return $this->_processUpdateLogic($request) ?: $this->getResponse();
         }
 
-        // If Dev Mode is enabled and this is a CP request, check if there are any pending project config changes
-        if ($generalConfig->devMode && $request->getIsCpRequest() && $projectConfig->areChangesPending()) {
+        // If project config changes are pending, give them a chance to process them now
+        if ($areProjectConfigChangesPending) {
             return $this->_processConfigSyncLogic($request) ?: $this->getResponse();
         }
 
