@@ -1269,11 +1269,10 @@ class ProjectConfig extends Component
 
         unset($configData['imports'], $currentConfig['imports']);
 
+        // flatten both configs so we can compare them.
         $flatConfig = [];
         $flatCurrent = [];
 
-
-        // flatten both configs so we can compare them.
         ProjectConfigHelper::flattenConfigArray($configData, '', $flatConfig);
         ProjectConfigHelper::flattenConfigArray($currentConfig, '', $flatCurrent);
 
@@ -1337,7 +1336,7 @@ class ProjectConfig extends Component
         $pathService = Craft::$app->getPath();
 
         // Check whether we have a missing main config file or any of the sub-files have been modified.
-        if (!file_exists($pathService->getProjectConfigFilePath()) || $this->_getConfigFileModifiedTime() > $cachedModifiedTime) {
+        if (!file_exists($pathService->getProjectConfigFilePath()) || $this->_getConfigFileModifiedTime() != $cachedModifiedTime) {
             return true;
         }
 
