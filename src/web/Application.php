@@ -160,6 +160,7 @@ class Application extends \yii\web\Application
         $this->_processResourceRequest($request);
 
         $headers = $this->getResponse()->getHeaders();
+        $generalConfig = $this->getConfig()->getGeneral();
 
         // Tell bots not to index/follow CP and tokenized pages
         if ($request->getIsCpRequest() || $request->getToken() !== null) {
@@ -173,7 +174,7 @@ class Application extends \yii\web\Application
         }
 
         // Send the X-Powered-By header?
-        if ($this->getConfig()->getGeneral()->sendPoweredByHeader) {
+        if ($generalConfig->sendPoweredByHeader) {
             $original = $headers->get('X-Powered-By');
             $headers->set('X-Powered-By', $original . ($original ? ',' : '') . $this->name);
         } else {
@@ -242,8 +243,8 @@ class Application extends \yii\web\Application
             return $this->_processUpdateLogic($request) ?: $this->getResponse();
         }
 
-        // Check if there are any pending changes in project.yaml
-        if ($projectConfig->areChangesPending()) {
+        // If Dev Mode is enabled and this is a CP request, check if there are any pending project config changes
+        if ($generalConfig->devMode && $request->getIsCpRequest() && $projectConfig->areChangesPending()) {
             return $this->_processConfigSyncLogic($request) ?: $this->getResponse();
         }
 

@@ -569,11 +569,6 @@ class ProjectConfig extends Component
             $this->saveModifiedConfigData();
         }
 
-        // Only way to trigger a config check is by making a cp request while site is in devmode.
-        if (!Craft::$app->getConfig()->getGeneral()->devMode || !Craft::$app->getRequest()->getIsCpRequest()) {
-            return false;
-        }
-
         if (!$this->_areConfigFilesModified()) {
             return false;
         }
@@ -2452,7 +2447,7 @@ class ProjectConfig extends Component
             $output['publicToken']['expiryDate'] = $publicToken['expiryDate'] ? DateTimeHelper::toDateTime($publicToken['expiryDate'])->getTimestamp() : null;
             $output['publicToken']['enabled'] = (bool)$publicToken['enabled'];
         }
-        
+
         return $output;
     }
 
