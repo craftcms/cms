@@ -415,6 +415,8 @@
 - Deprecated `craft\services\ElementIndexes::getAvailableTableFields()`. `getSourceTableAttributes()` should be used instead.
 - Deprecated `craft\services\Fields::assembleLayout()`.
 - Deprecated `craft\services\Gql::getAllPermissions()`. `craft\services\Gql::getAllSchemaComponents()` should be used instead.
+- Deprecated `craft\services\ProjectConfig::CONFIG_ALL_KEY`.
+- Deprecated `craft\services\ProjectConfig::CONFIG_KEY`.
 - Deprecated `craft\services\TemplateCaches::deleteAllCaches()`. `craft\services\Elements::invalidateAllCaches()` should be used instead.
 - Deprecated `craft\services\TemplateCaches::deleteCacheById()`.
 - Deprecated `craft\services\TemplateCaches::deleteCachesByElement()`. `craft\services\Elements::invalidateCachesForElement()` should be used instead.

@@ -120,6 +120,8 @@
 - Deprecated `craft\elements\db\ElementQuery::enabledForSite()`.
 - Deprecated `craft\helpers\App::mutexConfig()`.
 - Deprecated `craft\services\Fields::assembleLayout()`.
+- Deprecated `craft\services\ProjectConfig::CONFIG_ALL_KEY`.
+- Deprecated `craft\services\ProjectConfig::CONFIG_KEY`.
 
 ### Removed
 - Removed support for the `import` directive in project config files.

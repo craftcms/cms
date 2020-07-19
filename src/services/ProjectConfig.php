@@ -44,40 +44,46 @@ class ProjectConfig extends Component
     // Cache settings
     // -------------------------------------------------------------------------
 
+    /**
+     * The cache key that is used to store the modified time of the project config files, at the time they were last applied.
+     */
     const CACHE_KEY = 'projectConfig:files';
+    /**
+     * The cache key that is used to store the loaded project config data.
+     */
     const STORED_CACHE_KEY = 'projectConfig:internal';
+    /**
+     * The duration that project config caches should be cached.
+     */
     const CACHE_DURATION = 2592000; // 30 days
-
-    // Array key to use if not using config files.
+    /**
+     * @deprecated in 3.5.0
+     */
     const CONFIG_KEY = 'storedConfig';
-
     /**
      * @var string Filename for base config file
      * @since 3.1.0
      */
     const CONFIG_FILENAME = 'project.yaml';
-
     /**
      * Filename for base config delta files
      *
      * @since 3.4.0
      */
     const CONFIG_DELTA_FILENAME = 'delta.yaml';
-
-    // Key to use for schema version storage.
-    const CONFIG_SCHEMA_VERSION_KEY = 'system.schemaVersion';
-
     /**
-     * Key to use for signaling ordered-to-associative array conversion
+     * The project config key that the Craft schema version is stored at.
+     */
+    const CONFIG_SCHEMA_VERSION_KEY = 'system.schemaVersion';
+    /**
+     * The array key to use for signaling ordered-to-associative array conversion.
      *
      * @since 3.4.0
      */
     const CONFIG_ASSOC_KEY = '__assoc__';
-
     /**
-     * Key to use when memoizing the entire config array
-     *
      * @since 3.4.0
+     * @deprecated in 3.5.0
      */
     const CONFIG_ALL_KEY = '__all__';
 
