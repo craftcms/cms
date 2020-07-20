@@ -12,6 +12,7 @@ use craft\base\Element;
 use craft\elements\Entry;
 use craft\elements\User;
 use craft\errors\InvalidElementException;
+use craft\errors\UnsupportedSiteException;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\UrlHelper;
 use craft\models\Section;
@@ -375,7 +376,14 @@ class EntriesController extends BaseEntriesController
             $entry->setScenario(Element::SCENARIO_LIVE);
         }
 
-        if (!Craft::$app->getElements()->saveElement($entry)) {
+        try {
+            $success = Craft::$app->getElements()->saveElement($entry);
+        } catch (UnsupportedSiteException $e) {
+            $entry->addError('siteId', $e->getMessage());
+            $success = false;
+        }
+
+        if (!$success) {
             if ($this->request->getAcceptsJson()) {
                 return $this->asJson([
                     'errors' => $entry->getErrors(),

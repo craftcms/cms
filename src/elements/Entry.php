@@ -25,6 +25,7 @@ use craft\elements\actions\View;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
+use craft\errors\UnsupportedSiteException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
@@ -1338,7 +1339,7 @@ EOD;
         // Verify that the section supports this site
         $sectionSiteSettings = $section->getSiteSettings();
         if (!isset($sectionSiteSettings[$this->siteId])) {
-            throw new Exception("The section '{$section->name}' is not enabled for the site '{$this->siteId}'");
+            throw new UnsupportedSiteException($this, $this->siteId, "The section '{$section->name}' is not enabled for the site '{$this->siteId}'");
         }
 
         // Make sure the entry has at least one revision if the section has versioning enabled

@@ -101,6 +101,7 @@
 - Relational fields now have a “Show the site menu” setting. ([#5864](https://github.com/craftcms/cms/issues/5864))
 - Date/Time fields now have “Min Date” and “Max Date” settings. ([#6241](https://github.com/craftcms/cms/issues/6241))
 - When creating a new field, the “Use this field’s values as search keywords?” setting is now disabled by default. ([#6390](https://github.com/craftcms/cms/issues/6390))
+- Quick Post widgets now have a “Site” setting. ([#5253](https://github.com/craftcms/cms/issues/5253))
 - The `project-config/sync` command has been renamed to `project-config/apply`.
 - Front-end asset forms can now set a hashed `assetVariable` param, to customize the name of the variable that the asset should be passed back to the template as, if it contains any validation errors. ([#6240](https://github.com/craftcms/cms/issues/6240))
 - Front-end category forms can now set a hashed `categoryVariable` param, to customize the name of the variable that the category should be passed back to the template as, if it contains any validation errors. ([#6240](https://github.com/craftcms/cms/issues/6240))
