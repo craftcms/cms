@@ -4203,8 +4203,13 @@ fieldset {
   }
 }
 
-.checkboxfield.has-instructions .instructions {
-  @include padding-left($checkboxSize + 5);
+.checkboxfield {
+  .instructions,
+  .notice,
+  .warning {
+    margin-top: 2px;
+    @include padding-left($checkboxSize + 5);
+  }
 }
 
 /* multiselect */

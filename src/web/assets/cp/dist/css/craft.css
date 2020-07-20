@@ -2121,9 +2121,11 @@ input.checkbox:focus + label:before, :focus div.checkbox:before { outline: none;
 
 fieldset .checkboxfield { margin-bottom: 5px; }
 
-body.ltr .checkboxfield.has-instructions .instructions { padding-left: 21px; }
+.checkboxfield .instructions, .checkboxfield .notice, .checkboxfield .warning { margin-top: 2px; }
 
-body.rtl .checkboxfield.has-instructions .instructions { padding-right: 21px; }
+body.ltr .checkboxfield .instructions, body.ltr .checkboxfield .notice, body.ltr .checkboxfield .warning { padding-left: 21px; }
+
+body.rtl .checkboxfield .instructions, body.rtl .checkboxfield .notice, body.rtl .checkboxfield .warning { padding-right: 21px; }
 
 /* multiselect */
 .multiselect > select { color: #3f4d5a; font-size: 14px; -webkit-appearance: none; appearance: none; }
