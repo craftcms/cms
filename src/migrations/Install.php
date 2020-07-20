@@ -753,8 +753,8 @@ class Install extends Migration
         $this->createIndex(null, Table::ASSETS, ['folderId'], false);
         $this->createIndex(null, Table::ASSETS, ['volumeId'], false);
         $this->createIndex(null, Table::ASSETTRANSFORMINDEX, ['volumeId', 'assetId', 'location'], false);
-        $this->createIndex(null, Table::ASSETTRANSFORMS, ['name'], true);
-        $this->createIndex(null, Table::ASSETTRANSFORMS, ['handle'], true);
+        $this->createIndex(null, Table::ASSETTRANSFORMS, ['name']);
+        $this->createIndex(null, Table::ASSETTRANSFORMS, ['handle']);
         $this->createIndex(null, Table::CATEGORIES, ['groupId'], false);
         $this->createIndex(null, Table::CATEGORYGROUPS, ['name'], false);
         $this->createIndex(null, Table::CATEGORYGROUPS, ['handle'], false);
@@ -792,7 +792,7 @@ class Install extends Migration
         $this->createIndex(null, Table::ENTRYTYPES, ['sectionId'], false);
         $this->createIndex(null, Table::ENTRYTYPES, ['fieldLayoutId'], false);
         $this->createIndex(null, Table::ENTRYTYPES, ['dateDeleted'], false);
-        $this->createIndex(null, Table::FIELDGROUPS, ['name'], true);
+        $this->createIndex(null, Table::FIELDGROUPS, ['name']);
         $this->createIndex(null, Table::FIELDLAYOUTFIELDS, ['layoutId', 'fieldId'], true);
         $this->createIndex(null, Table::FIELDLAYOUTFIELDS, ['sortOrder'], false);
         $this->createIndex(null, Table::FIELDLAYOUTFIELDS, ['tabId'], false);
@@ -801,7 +801,7 @@ class Install extends Migration
         $this->createIndex(null, Table::FIELDLAYOUTS, ['type'], false);
         $this->createIndex(null, Table::FIELDLAYOUTTABS, ['sortOrder'], false);
         $this->createIndex(null, Table::FIELDLAYOUTTABS, ['layoutId'], false);
-        $this->createIndex(null, Table::FIELDS, ['handle', 'context'], true);
+        $this->createIndex(null, Table::FIELDS, ['handle', 'context']);
         $this->createIndex(null, Table::FIELDS, ['groupId'], false);
         $this->createIndex(null, Table::FIELDS, ['context'], false);
         $this->createIndex(null, Table::GLOBALSETS, ['name'], false);
@@ -813,8 +813,8 @@ class Install extends Migration
         $this->createIndex(null, Table::MATRIXBLOCKS, ['fieldId'], false);
         $this->createIndex(null, Table::MATRIXBLOCKS, ['typeId'], false);
         $this->createIndex(null, Table::MATRIXBLOCKS, ['sortOrder'], false);
-        $this->createIndex(null, Table::MATRIXBLOCKTYPES, ['name', 'fieldId'], true);
-        $this->createIndex(null, Table::MATRIXBLOCKTYPES, ['handle', 'fieldId'], true);
+        $this->createIndex(null, Table::MATRIXBLOCKTYPES, ['name', 'fieldId']);
+        $this->createIndex(null, Table::MATRIXBLOCKTYPES, ['handle', 'fieldId']);
         $this->createIndex(null, Table::MATRIXBLOCKTYPES, ['fieldId'], false);
         $this->createIndex(null, Table::MATRIXBLOCKTYPES, ['fieldLayoutId'], false);
         $this->createIndex(null, Table::MIGRATIONS, ['track', 'name'], true);
@@ -861,8 +861,8 @@ class Install extends Migration
         $this->createIndex(null, Table::TEMPLATECACHES, ['siteId'], false);
         $this->createIndex(null, Table::TOKENS, ['token'], true);
         $this->createIndex(null, Table::TOKENS, ['expiryDate'], false);
-        $this->createIndex(null, Table::USERGROUPS, ['handle'], true);
-        $this->createIndex(null, Table::USERGROUPS, ['name'], true);
+        $this->createIndex(null, Table::USERGROUPS, ['handle']);
+        $this->createIndex(null, Table::USERGROUPS, ['name']);
         $this->createIndex(null, Table::USERGROUPS_USERS, ['groupId', 'userId'], true);
         $this->createIndex(null, Table::USERGROUPS_USERS, ['userId'], false);
         $this->createIndex(null, Table::USERPERMISSIONS, ['name'], true);
