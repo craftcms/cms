@@ -795,20 +795,9 @@ JS;
             return null;
         }
 
+        $view = Craft::$app->getView();
         $type = $class::pluralLowerDisplayName();
         $showTargetSite = !empty($this->targetSiteId);
-
-        $html = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'checkboxField',
-                [
-                    [
-                        'label' => Craft::t('app', 'Relate {type} from a specific site?', ['type' => $type]),
-                        'name' => 'useTargetSite',
-                        'checked' => $showTargetSite,
-                        'toggle' => 'target-site-container'
-                    ]
-                ]) .
-            '<div id="target-site-container"' . (!$showTargetSite ? ' class="hidden"' : '') . '>';
-
         $siteOptions = [];
 
         foreach (Craft::$app->getSites()->getAllSites() as $site) {
@@ -818,20 +807,25 @@ JS;
             ];
         }
 
-        $html .= Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'selectField',
-            [
+        return
+            $view->renderTemplateMacro('_includes/forms', 'checkboxField', [
                 [
+                    'label' => Craft::t('app', 'Relate {type} from a specific site?', ['type' => $type]),
+                    'name' => 'useTargetSite',
+                    'checked' => $showTargetSite,
+                    'toggle' => 'target-site-field',
+                ]
+            ]) .
+            $view->renderTemplateMacro('_includes/forms', 'selectField', [
+                [
+                    'fieldClass' => !$showTargetSite ? 'hidden' : null,
                     'label' => Craft::t('app', 'Which site should {type} be related from?', ['type' => $type]),
-                    'id' => 'targetSiteId',
+                    'id' => 'target-site',
                     'name' => 'targetSiteId',
                     'options' => $siteOptions,
-                    'value' => $this->targetSiteId
+                    'value' => $this->targetSiteId,
                 ]
             ]);
-
-        $html .= '</div>';
-
-        return $html;
     }
 
     /**
