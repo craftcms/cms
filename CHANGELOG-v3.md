@@ -98,6 +98,7 @@
 - Craft now stores project config files in a new `config/project/` folder, regardless of whether the (deprecated) `useProjectConfigFile` config setting is enabled, and syncing new project config file changes is now optional.
 - The public GraphQL schema’s access settings are now stored in the project config. ([#6078](https://github.com/craftcms/cms/issues/6078))
 - Entry draft forms no longer have a primary action, and the <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>S</kbd> keyboard shortcut now forces a resave of the draft, rather than publishing it. ([#6199](https://github.com/craftcms/cms/issues/6199))
+- Relational fields now have a “Show the site menu” setting. ([#5864](https://github.com/craftcms/cms/issues/5864))
 - Date/Time fields now have “Min Date” and “Max Date” settings. ([#6241](https://github.com/craftcms/cms/issues/6241))
 - When creating a new field, the “Use this field’s values as search keywords?” setting is now disabled by default. ([#6390](https://github.com/craftcms/cms/issues/6390))
 - The `project-config/sync` command has been renamed to `project-config/apply`.

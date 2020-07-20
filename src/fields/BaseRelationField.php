@@ -126,6 +126,13 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     public $targetSiteId;
 
     /**
+     * @var bool Whether the site menu should be shown in element selector modals.
+     *
+     * @since 3.5.0
+     */
+    public $showSiteMenu = false;
+
+    /**
      * @var string|null The view mode
      */
     public $viewMode;
@@ -209,6 +216,11 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             unset($config['useTargetSite']);
         }
 
+        // If showSiteMenu isn't set, default it to true, to avoid a change in behavior
+        if (!isset($config['showSiteMenu'])) {
+            $config['showSiteMenu'] = true;
+        }
+
         parent::__construct($config);
     }
 
@@ -226,6 +238,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
 
         $this->validateRelatedElements = (bool)$this->validateRelatedElements;
         $this->allowSelfRelations = (bool)$this->allowSelfRelations;
+        $this->showSiteMenu = (bool)$this->showSiteMenu;
         $this->localizeRelations = (bool)$this->localizeRelations;
     }
 
@@ -252,6 +265,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         $attributes[] = 'viewMode';
         $attributes[] = 'limit';
         $attributes[] = 'selectionLabel';
+        $attributes[] = 'showSiteMenu';
         $attributes[] = 'localizeRelations';
         $attributes[] = 'validateRelatedElements';
         $attributes[] = 'allowSelfRelations';
@@ -801,6 +815,7 @@ JS;
         }
 
         $view = Craft::$app->getView();
+        $type = $class::lowerDisplayName();
         $pluralType = $class::pluralLowerDisplayName();
         $showTargetSite = !empty($this->targetSiteId);
         $siteOptions = [];
@@ -819,6 +834,7 @@ JS;
                     'name' => 'useTargetSite',
                     'checked' => $showTargetSite,
                     'toggle' => 'target-site-field',
+                    'reverseToggle' => 'show-site-menu-field',
                 ]
             ]) .
             $view->renderTemplateMacro('_includes/forms', 'selectField', [
@@ -829,6 +845,21 @@ JS;
                     'name' => 'targetSiteId',
                     'options' => $siteOptions,
                     'value' => $this->targetSiteId,
+                ]
+            ]) .
+            $view->renderTemplateMacro('_includes/forms', 'checkboxField', [
+                [
+                    'fieldClass' => $showTargetSite ? 'hidden' : null,
+                    'label' => Craft::t('app', 'Show the site menu'),
+                    'instructions' => Craft::t('app', 'Whether the site menu should be shown for {type} selection modals.', [
+                        'type' => $type,
+                    ]),
+                    'warning' => Craft::t('app', 'Relations don’t store the selected site, so this should only be enabled if some {type} aren’t propagated to all sites.', [
+                        'type' => $pluralType,
+                    ]),
+                    'id' => 'show-site-menu',
+                    'name' => 'showSiteMenu',
+                    'checked' => $this->showSiteMenu,
                 ]
             ]);
     }
@@ -943,7 +974,7 @@ JS;
             'elements' => $value,
             'sources' => $this->inputSources($element),
             'criteria' => $selectionCriteria,
-            'showSiteMenu' => $this->targetSiteId ? false : 'auto',
+            'showSiteMenu' => ($this->targetSiteId || !$this->showSiteMenu) ? false : 'auto',
             'allowSelfRelations' => (bool)$this->allowSelfRelations,
             'sourceElementId' => !empty($element->id) ? $element->id : null,
             'disabledElementIds' => $disabledElementIds,
