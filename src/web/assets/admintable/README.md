@@ -61,6 +61,29 @@ new Craft.VueAdminTable({...options...});
 
 ### Events
 
+#### JS Events
+
+| Name         | Data             | Scenario                                                                                                                             |
+| ------------ | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| onSelect     | Array of IDs     | When a checkbox or select all is selected or de-selected.                                                                            |
+| onData       | Array of objects | On successful load or page change.                                                                                                   |
+| onLoaded     | -                | When the table has loaded (regardless of data loading).                                                                              |
+| onLoading    | -                | When the table is in a loading state.                                                                                                |
+| onPagination | Object           | When pagination has loaded (also occurs on first load). Object contains pagination information (e.g. current page, total pages etc). |
+
+Example usage:
+
+```js
+new Craft.VueAdminTable({
+  // ...
+  onLoaded: function() { console.log('LOADED!'); },
+  onData: function(data) { console.log('Data:', data); }
+  // ...
+});
+```
+
+#### Vue Events
+
 | Name     | Data             | Scenario                                                  |
 | -------- | ---------------- | --------------------------------------------------------- |
 | onSelect | Array of IDs     | When a checkbox or select all is selected or de-selected. |
