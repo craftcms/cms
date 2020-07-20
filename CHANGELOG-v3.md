@@ -6,7 +6,7 @@
 - Added `craft\services\Path::getTestsPath()`.
 
 ### Fixed
-- Fixed a bug where entry data could get corrupted when a newly-created draft was autosaved. ([#6331](https://github.com/craftcms/cms/issues/6331))
+- Fixed a bug where entry data could get corrupted when a newly-created draft was autosaved. ([#6344](https://github.com/craftcms/cms/issues/6344))
 - Fixed a PHP error that would occur when using the `craft fixture` console command. ([#6331](https://github.com/craftcms/cms/issues/6331))
 - Fixed a bug where requesting an asset transform via GraphQL API would ignore the `transformGifs` config setting. ([#6407](https://github.com/craftcms/cms/issues/6407))
 
