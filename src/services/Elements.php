@@ -1626,7 +1626,7 @@ class Elements extends Component
                     foreach ($tokensByName as $refName => $tokens) {
                         $element = $elements[$refName] ?? null;
 
-                        foreach ($tokens as [$token, $matches]) {
+                        foreach ($tokens as list($token, $matches)) {
                             $search[] = $token;
                             $replace[] = $this->_getRefTokenReplacement($element, $matches);
                         }
