@@ -75,6 +75,7 @@
 - Added the “Replace file” permission. ([#6336](https://github.com/craftcms/cms/issues/6336))
 - Web controller actions now support basic authentication. ([#5303](https://github.com/craftcms/cms/issues/5303))
 - Added support for JavaScript events on admin tables. ([#6063](https://github.com/craftcms/cms/issues/6063))
+- Added the ability to enable/disable checkboxes on a per row basis in admin tables. ([#6223](https://github.com/craftcms/cms/issues/6223))
 - Added `craft\base\ConfigurableComponent`.
 - Added `craft\base\ConfigurableComponentInterface`.
 - Added `craft\base\Element::defineFieldLayouts()`.

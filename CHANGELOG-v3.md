@@ -26,6 +26,7 @@
 - Web controller actions now support basic authentication. ([#5303](https://github.com/craftcms/cms/issues/5303))
 - `craft\gql\base\ElementMutationResolver` now fires `beforeMutationPopulateElement` and `afterMutationPopulateElement` events that allows for plugins to modify element before it's saved to the database as part of a GraphQL mutation. ([#6398](https://github.com/craftcms/cms/issues/6398))
 - Added support for JavaScript events on admin tables. ([#6063](https://github.com/craftcms/cms/issues/6063))
+- Added the ability to enable/disable checkboxes on a per row basis in admin tables. ([#6223](https://github.com/craftcms/cms/issues/6223))
 - Added `craft\base\ElementInterface::getIsTitleTranslatable()`.
 - Added `craft\base\ElementInterface::getTitleTranslationDescription()`.
 - Added `craft\base\ElementInterface::getTitleTranslationKey()`.
