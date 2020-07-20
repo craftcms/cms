@@ -46,10 +46,6 @@
 - Added the `|unshift` Twig filter, which returns a new array with one or more items prepended to it.
 - Added the `|where` Twig filter.
 - Added the `raw()` Twig function, which wraps the given string in a `Twig\Markup` object to prevent it from getting HTML-encoded.
-- Front-end asset forms can now set a hashed `assetVariable` param, to customize the name of the variable that the asset should be passed back to the template as, if it contains any validation errors. ([#6240](https://github.com/craftcms/cms/issues/6240))
-- Front-end category forms can now set a hashed `categoryVariable` param, to customize the name of the variable that the category should be passed back to the template as, if it contains any validation errors. ([#6240](https://github.com/craftcms/cms/issues/6240))
-- Front-end entry forms can now set a hashed `entryVariable` param, to customize the name of the variable that the entry should be passed back to the template as, if it contains any validation errors. ([#6240](https://github.com/craftcms/cms/issues/6240))
-- Front-end user forms can now set a hashed `userVariable` param, to customize the name of the variable that the user should be passed back to the template as, if it contains any validation errors. ([#6240](https://github.com/craftcms/cms/issues/6240))
 - Added support for eager-loading elements’ current revisions, via `currentRevision`.
 - Added support for eager-loading drafts’ and revisions’ creators, via `draftCreator` and `revisionCreator`.
 - Added support for the `CRAFT_CP` PHP constant. ([#5122](https://github.com/craftcms/cms/issues/5122))
@@ -348,6 +344,10 @@
 - The `project-config/sync` command has been renamed to `project-config/apply`.
 - `migrate` commands now have a `--track` option, which can be set to `craft`, `content`, or a custom migration track name.
 - Reference tags can now provide a fallback value to be used if the reference can’t be resolved. ([#5589](https://github.com/craftcms/cms/issues/5589))
+- Front-end asset forms can now set a hashed `assetVariable` param, to customize the name of the variable that the asset should be passed back to the template as, if it contains any validation errors. ([#6240](https://github.com/craftcms/cms/issues/6240))
+- Front-end category forms can now set a hashed `categoryVariable` param, to customize the name of the variable that the category should be passed back to the template as, if it contains any validation errors. ([#6240](https://github.com/craftcms/cms/issues/6240))
+- Front-end entry forms can now set a hashed `entryVariable` param, to customize the name of the variable that the entry should be passed back to the template as, if it contains any validation errors. ([#6240](https://github.com/craftcms/cms/issues/6240))
+- Front-end user forms can now set a hashed `userVariable` param, to customize the name of the variable that the user should be passed back to the template as, if it contains any validation errors. ([#6240](https://github.com/craftcms/cms/issues/6240))
 - It’s no longer necessary to append the `|raw` filter after the `|namespace` filter.
 - The `|namespace` Twig filter now namespaces ID selectors within `<style>` tags. ([#5921](https://github.com/craftcms/cms/issues/5921))
 - The `|namespace` Twig filter now has a `withClasses` argument, which if set to `true` causes `class` attributes and class name CSS selectors within `<style>` tags to be namespaced. ([#5921](https://github.com/craftcms/cms/issues/5921))
