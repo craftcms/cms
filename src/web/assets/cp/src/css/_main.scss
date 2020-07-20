@@ -3966,7 +3966,8 @@ textarea.text.fullwidth {
   }
 }
 
-.field {
+.field,
+fieldset {
   position: relative;
   margin: 24px 0;
 
@@ -3974,7 +3975,9 @@ textarea.text.fullwidth {
     margin-top: 0;
     margin-bottom: 0;
   }
+}
 
+.field {
   & > .status-badge {
     position: absolute;
     top: 2px;
@@ -4194,8 +4197,10 @@ input.checkbox:focus + label:before,
   border-color: $inputColor;
 }
 
-.checkboxfield:not(.has-instructions) + .checkboxfield:not(.has-instructions) {
-  margin-top: -22px;
+fieldset {
+  .checkboxfield {
+    margin-bottom: 5px;
+  }
 }
 
 .checkboxfield.has-instructions .instructions {

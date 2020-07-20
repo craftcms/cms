@@ -2022,9 +2022,9 @@ body.rtl .chars-left { margin: -27px 0 0 7px ; }
 
 .chars-left.negative-chars-left { color: #EF4E4E; }
 
-.field { position: relative; margin: 24px 0; }
+.field, fieldset { position: relative; margin: 24px 0; }
 
-.flex > .field { margin-top: 0; margin-bottom: 0; }
+.flex > .field, .flex > fieldset { margin-top: 0; margin-bottom: 0; }
 
 .field > .status-badge { position: absolute; top: 2px; font-size: 9px; font-weight: bold; line-height: 15px; width: 15px; text-align: center; cursor: default; border-radius: 3px; }
 
@@ -2119,7 +2119,7 @@ input.checkbox:indeterminate + label:before, div.checkbox.indeterminate:before {
 
 input.checkbox:focus + label:before, :focus div.checkbox:before { outline: none; border-color: #607d9f; }
 
-.checkboxfield:not(.has-instructions) + .checkboxfield:not(.has-instructions) { margin-top: -22px; }
+fieldset .checkboxfield { margin-bottom: 5px; }
 
 body.ltr .checkboxfield.has-instructions .instructions { padding-left: 21px; }
 
