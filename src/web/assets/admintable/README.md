@@ -64,6 +64,8 @@ new Craft.VueAdminTable({...options...});
 
 Below is a simple example of how to use the `checkboxStatus` callback, if you have a `boolean` piece of data each row to determine the status.
 
+Although if you require further logic (calling other data etc) this is also the place it will live.
+
 ```js
 new Craft.VueAdminTable({
     // ... 
