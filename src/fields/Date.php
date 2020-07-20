@@ -57,6 +57,18 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     public $showTime = false;
 
     /**
+     * @var DateTime|null The minimum allowed date
+     * @since 3.5.0
+     */
+    public $min;
+
+    /**
+     * @var DateTime|null The maximum allowed date
+     * @since 3.5.0
+     */
+    public $max;
+
+    /**
      * @var int The number of minutes that the timepicker options should increment by
      */
     public $minuteIncrement = 30;
@@ -86,7 +98,26 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
             unset($config['dateTime']);
         }
 
+        if (isset($config['min'])) {
+            $config['min'] = DateTimeHelper::toDateTime($config['min']) ?: null;
+        }
+
+        if (isset($config['max'])) {
+            $config['max'] = DateTimeHelper::toDateTime($config['max']) ?: null;
+        }
+
         parent::__construct($config);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function datetimeAttributes(): array
+    {
+        $attributes = parent::datetimeAttributes();
+        $attributes[] = 'min';
+        $attributes[] = 'max';
+        return $attributes;
     }
 
     /**

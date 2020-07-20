@@ -328,6 +328,7 @@
 - Improved the UI for copying user activation URLs, asset reference tags, and GraphQL tokens’ authentication headers.
 - Improved the wording of the meta info displayed in entry revision menus. ([#5889](https://github.com/craftcms/cms/issues/5889))
 - Plain Text fields are now sortable in the control panel. ([#5819](https://github.com/craftcms/cms/issues/5819))
+- Date/Time fields now have “Min Date” and “Max Date” settings. ([#6241](https://github.com/craftcms/cms/issues/6241))
 - When creating a new field, the “Use this field’s values as search keywords?” setting is now disabled by default. ([#6390](https://github.com/craftcms/cms/issues/6390))
 - Craft now supports running migrations for custom migration tracks. ([#6172](https://github.com/craftcms/cms/issues/6172))
 - Extra entry revisions (per the `maxRevisions` config setting) are now pruned via a background job. ([#5902](https://github.com/craftcms/cms/issues/5902))
@@ -368,6 +369,7 @@
 - Craft now uses `yii\mutex\MysqlMutex` or `yii\mutex\PgsqlMutex` for mutex locking by default.
 - Database backups are now named in the format `system-name--YYYY-MM-DD-HHMMSS--vX.Y.Z.sql`. ([#6231](https://github.com/craftcms/cms/issues/6231))
 - The `graphql/api` and `live-preview/preview` actions no longer add CORS headers that were already set on the response. ([#6355](https://github.com/craftcms/cms/issues/6355))
+- `craft\base\ConfigurableComponent::getSettings()` now converts `DateTime` attributes returned from `datetimeAttributes()` into ISO-8601 strings.
 - `craft\base\Element::getRoute()` now returns the route defined by `craft\events\SetElementRouteEvent::$route` even if it’s null, as long as `SetElementRouteEvent::$handled` is set to `true`.
 - `craft\base\ElementInterface::sortOptions()` now allows the returned `orderBy` key to be set to an array of column names.
 - `craft\base\SavableComponent::isSelectable()` has been moved into the base component class, `craft\base\Component`.

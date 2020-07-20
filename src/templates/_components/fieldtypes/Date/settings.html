@@ -23,3 +23,27 @@
     options: incrementOptions,
     value: field.minuteIncrement ? field.minuteIncrement : 30,
 }) }}
+
+{{ forms.dateField({
+    fieldClass: [
+        "#{targetPrefix}showDate",
+        "#{targetPrefix}showBoth",
+        value == 'showTime' ? 'hidden',
+    ]|filter,
+    label: 'Min Date'|t('app'),
+    id: 'min',
+    name: 'min',
+    value: field.min,
+}) }}
+
+{{ forms.dateField({
+    fieldClass: [
+        "#{targetPrefix}showDate",
+        "#{targetPrefix}showBoth",
+        value == 'showTime' ? 'hidden',
+    ]|filter,
+    label: 'Max Date'|t('app'),
+    id: 'max',
+    name: 'max',
+    value: field.max,
+}) }}
