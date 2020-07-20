@@ -33,6 +33,7 @@ Craft.VueAdminTable = Garnish.Base.extend({
     defaults: {
         actions: [],
         checkboxes: false,
+        checkboxStatus: $.noop,
         columns: [],
         container: null,
         deleteAction: null,

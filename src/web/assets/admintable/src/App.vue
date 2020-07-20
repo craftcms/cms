@@ -58,6 +58,7 @@
                             <admin-table-checkbox
                                 :id="props.rowData.id"
                                 :checks="checks"
+                                :status="checkboxStatus(props.rowData)"
                                 v-on:addCheck="addCheck"
                                 v-on:removeCheck="removeCheck"
                             ></admin-table-checkbox>
@@ -152,6 +153,10 @@
             checkboxes: {
                 type: Boolean,
                 default: false,
+            },
+            checkboxStatus: {
+                type: Function,
+                default: function() { return true; }
             },
             columns: {
                 type: Array,
@@ -374,9 +379,12 @@
 
             handleSelectAll() {
                 var tableData = this.$refs.vuetable.tableData;
-                if (this.checks.length != tableData.length) {
+                let tableLength = tableData.length - this.disabledCheckboxesCount;
+                if (this.checks.length != tableLength) {
                     tableData.forEach(row => {
-                        this.addCheck(row.id);
+                        if (this.checkboxStatus instanceof Function && this.checkboxStatus(row)) {
+                          this.addCheck(row.id);
+                        }
                     });
                 } else {
                     this.checks = [];
@@ -487,6 +495,18 @@
 
             canReorder() {
                 return (this.$refs.vuetable.tableData.length > 1 && this.reorderAction && this.$el.querySelector(this.tableBodySelector) && (!this.$refs.vuetable.tablePagination))
+            },
+
+            disabledCheckboxesCount() {
+                let checkboxCount = 0;
+
+                if (this.$refs.vuetable.tableData.length) {
+                    let disabledRows = this.$refs.vuetable.tableData.filter(row => !this.checkboxStatus(row));
+
+                    checkboxCount = disabledRows.length;
+                }
+
+                return checkboxCount;
             },
 
             fields() {

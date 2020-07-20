@@ -39,6 +39,7 @@ new Craft.VueAdminTable({...options...});
 | actions                   | Array    | `[]`                                        | Array of action options to create action buttons in the table toolbar. |
 | allowMultipleSelections | Bool | true | When using checkboxes, determines whether or not multiple selections are allowed. When set to `false` the select all checkbox is hidden. |
 | checkboxes                | Bool     | `false`                                     | Whether to show the checkbox column or not.                  |
+| checkboxStatus            | Function | `true`                                      | Callback function to determine if the row's checkbox should be disabled. [See example below](#checkboxstatus-example) |
 | columns                   | Array    | `[]`                                        | Used to define the table columns. See column definition.     |
 | container                 | String   | `null`                                      | CSS selector for which element the table should mounted on.     |
 | deleteAction              | String   | `null`                                      | The action URL used to post to for deleting an item. Enables the delete buttons when not `null`. |
@@ -58,6 +59,20 @@ new Craft.VueAdminTable({...options...});
 | searchPlaceholder         | String   | `Search`                                    | Search placeholder text.                                     |
 | tableData                 | Array    | `null`                                      | Array of objects used to populate the table data for data mode. |
 | tableDataEndpoint         | String   | `null`                                      | Endpoint for api mode to retrieve table data, pagination and table metadata (e.g. total count). |
+
+#### `checkboxStatus` example
+
+Below is a simple example of how to use the `checkboxStatus` callback, if you have a `boolean` piece of data each row to determine the status.
+
+```js
+new Craft.VueAdminTable({
+    // ... 
+    checkboxStatus: function(row) {
+        return row.isCheckboxEnabled
+    }
+    // ...
+});
+```
 
 ### Events
 
