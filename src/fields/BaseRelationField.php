@@ -223,6 +223,10 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         if (!$this->sources) {
             $this->sources = '*';
         }
+
+        $this->validateRelatedElements = (bool)$this->validateRelatedElements;
+        $this->allowSelfRelations = (bool)$this->allowSelfRelations;
+        $this->localizeRelations = (bool)$this->localizeRelations;
     }
 
     /**
