@@ -96,6 +96,7 @@ $contentMigrationsPath = $findConfigPath('CRAFT_CONTENT_MIGRATIONS_PATH', 'conte
 $storagePath = $findConfigPath('CRAFT_STORAGE_PATH', 'storagePath') ?: $rootPath . DIRECTORY_SEPARATOR . 'storage';
 $templatesPath = $findConfigPath('CRAFT_TEMPLATES_PATH', 'templatesPath') ?: $rootPath . DIRECTORY_SEPARATOR . 'templates';
 $translationsPath = $findConfigPath('CRAFT_TRANSLATIONS_PATH', 'translationsPath') ?: $rootPath . DIRECTORY_SEPARATOR . 'translations';
+$testsPath = $findConfigPath('CRAFT_TESTS_PATH', 'testsPath') ?: $rootPath . DIRECTORY_SEPARATOR . 'tests';
 
 // Set the environment
 $environment = $findConfig('CRAFT_ENVIRONMENT', 'env') ?: ($_SERVER['SERVER_NAME'] ?? null);
@@ -208,6 +209,7 @@ Craft::setAlias('@contentMigrations', $contentMigrationsPath);
 Craft::setAlias('@storage', $storagePath);
 Craft::setAlias('@templates', $templatesPath);
 Craft::setAlias('@translations', $translationsPath);
+Craft::setAlias('@tests', $testsPath);
 
 // Set any custom aliases
 $customAliases = $generalConfig['aliases'] ?? $generalConfig['environmentVariables'] ?? null;

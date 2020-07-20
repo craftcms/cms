@@ -572,8 +572,19 @@
 
 ## Unreleased (3.4.x)
 
+### Added
+- Added `craft\errors\ElementException`.
+- Added `craft\errors\UnsupportedSiteException`.
+- Added `craft\services\Path::getTestsPath()`.
+
+### Changed
+- `craft\services\Elements` methods now throw `craft\errors\UnsupportedSiteException` errors when attempting to perform an element operation for an unsupported site.
+
 ### Fixed
 - Fixed a bug where entry data could get corrupted when a newly-created draft was autosaved. ([#6344](https://github.com/craftcms/cms/issues/6344))
+- Fixed a PHP error that would occur when using the `craft fixture` console command. ([#6331](https://github.com/craftcms/cms/issues/6331))
+- Fixed a bug where requesting an asset transform via GraphQL API would ignore the `transformGifs` config setting. ([#6407](https://github.com/craftcms/cms/issues/6407))
+- Fixed a bug where “Applying new propagation method to Matrix blocks” jobs could fail if a Matrix block existed for a site that its owner didn’t support.
 
 ## 3.4.28.1 - 2020-07-16
 
@@ -592,7 +603,7 @@
 
 ### Fixed
 - Fixed compatibility with MySQL 8.0.21. ([#6379](https://github.com/craftcms/cms/issues/6379))
-- Fixed an error that would occur when backing up a MySQL 5 database using `mysqldump` v8.  ([#6368](https://github.com/craftcms/cms/issues/6368))
+- Fixed an error that would occur when backing up a MySQL 5 database using `mysqldump` v8. ([#6368](https://github.com/craftcms/cms/issues/6368))
 - Fixed a bug where rebuilding the project config without an existing `project.yaml` file could result in data loss. ([#6350](https://github.com/craftcms/cms/issues/6350))
 - Fixed a bug where eager-loading relations across multiple sites wasn’t working. ([#6366](https://github.com/craftcms/cms/issues/6366))
 - Fixed a bug where it was not always possible to use the `relatedToAll` argument with GraphQL queries. ([#6343](https://github.com/craftcms/cms/issues/6343))
