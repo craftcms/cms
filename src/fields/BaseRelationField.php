@@ -793,6 +793,7 @@ JS;
      */
     public function getTargetSiteFieldHtml()
     {
+        /** @var ElementInterface|string $class */
         $class = static::elementType();
 
         if (!Craft::$app->getIsMultiSite() || !$class::isLocalized()) {
@@ -800,7 +801,7 @@ JS;
         }
 
         $view = Craft::$app->getView();
-        $type = $class::pluralLowerDisplayName();
+        $pluralType = $class::pluralLowerDisplayName();
         $showTargetSite = !empty($this->targetSiteId);
         $siteOptions = [];
 
@@ -814,7 +815,7 @@ JS;
         return
             $view->renderTemplateMacro('_includes/forms', 'checkboxField', [
                 [
-                    'label' => Craft::t('app', 'Relate {type} from a specific site?', ['type' => $type]),
+                    'label' => Craft::t('app', 'Relate {type} from a specific site?', ['type' => $pluralType]),
                     'name' => 'useTargetSite',
                     'checked' => $showTargetSite,
                     'toggle' => 'target-site-field',
@@ -823,7 +824,7 @@ JS;
             $view->renderTemplateMacro('_includes/forms', 'selectField', [
                 [
                     'fieldClass' => !$showTargetSite ? 'hidden' : null,
-                    'label' => Craft::t('app', 'Which site should {type} be related from?', ['type' => $type]),
+                    'label' => Craft::t('app', 'Which site should {type} be related from?', ['type' => $pluralType]),
                     'id' => 'target-site',
                     'name' => 'targetSiteId',
                     'options' => $siteOptions,
