@@ -1,13 +1,22 @@
 {% import "_includes/forms" as forms %}
 
+{% set targetPrefix = "datetime#{random()}-" %}
+
 {{ forms.radioGroupField({
     id: 'dateTime',
     name: 'dateTime',
     options: options,
-    value: value
+    value: value,
+    toggle: true,
+    targetPrefix: ".#{targetPrefix}",
 }) }}
 
 {{ forms.selectField({
+    fieldClass: [
+        "#{targetPrefix}showTime",
+        "#{targetPrefix}showBoth",
+        value == 'showDate' ? 'hidden',
+    ]|filter,
     label: "Minute Increment"|t('app'),
     id: 'minuteIncrement',
     name: 'minuteIncrement',

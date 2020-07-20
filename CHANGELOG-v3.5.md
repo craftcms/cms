@@ -391,6 +391,7 @@
 - `craft\services\TemplateCaches::startTemplateCache()` no longer has a `$key` argument.
 - Improved `data`/`aria` tag normalization via `craft\helpers\Html::parseTagAttributes()` and `normalizeTagAttributes()`.
 - Control panel form input macros and templates that accept a `class` variable can now pass it as an array of class names.
+- Radio groups in the control panel can now toggle other UI elements, like select inputs.
 - Control panel templates can now set a `formActions` variable, which registers alternative Save menu actions, optionally with associated keyboard shortcuts.
 - The `_layouts/base` template now supports a `bodyAttributes` variable.
 - The `Craft.cp.submitPrimaryForm()` method now accepts an `options` argument for customizing the form submit.

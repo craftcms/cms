@@ -116,6 +116,7 @@
 - `craft\services\ProjectConfig::areChangesPending()` now has a `$force` argument.
 - `craft\services\ProjectConfig::CONFIG_FILENAME` is no longer deprecated.
 - The `_layouts/base` template now supports a `bodyAttributes` variable.
+- Radio groups in the control panel can now toggle other UI elements, like select inputs.
 - New installs now set the primary site’s base URL to a `PRIMARY_SITE_URL` environment variable, rather than `DEFAULT_SITE_URL`.
 - Updated Yii to 2.0.36.
 - Updated PrismJS to 1.20.0.

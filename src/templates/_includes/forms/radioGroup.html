@@ -1,8 +1,24 @@
 {%- set options = (options is defined ? options : []) %}
 {%- set value = (value is defined ? value : null) %}
 
-<div class="radio-group"
-        {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
+{%- set class = (class ?? [])|explodeClass|merge([
+    'radio-group',
+    (toggle ?? false) ? 'fieldtoggle',
+    (disabled ?? false) ? 'disabled',
+]|filter) %}
+
+{%- set containerAttributes = {
+    class: class,
+    data: {
+        'target-prefix': targetPrefix ?? false,
+    },
+}|merge(containerAttributes ?? [], recursive=true) %}
+
+{%- if block('attr') is defined %}
+    {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
+{% endif %}
+
+<fieldset {{ attr(containerAttributes) }}>
     {%- for key, option in options %}
         {%- if option is not iterable %}
             {%- set option = {label: option, value: key} %}
@@ -16,4 +32,4 @@
             }|merge(option) only %}
         </div>
     {% endfor %}
-</div>
+</fieldset>
