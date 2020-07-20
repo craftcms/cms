@@ -2119,7 +2119,7 @@ input.checkbox:indeterminate + label:before, div.checkbox.indeterminate:before {
 
 input.checkbox:focus + label:before, :focus div.checkbox:before { outline: none; border-color: #607d9f; }
 
-fieldset .checkboxfield { margin-bottom: 5px; }
+fieldset .checkboxfield { margin: 0 5px; }
 
 .checkboxfield .instructions, .checkboxfield .notice, .checkboxfield .warning { margin-top: 2px; }
 
