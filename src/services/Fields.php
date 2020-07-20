@@ -1188,6 +1188,10 @@ class Fields extends Component
             return new FieldLayout();
         }
 
+        if ($elementPlacements === '') {
+            $elementPlacements = [];
+        }
+
         $elementConfigs = $request->getBodyParam("{$paramPrefix}elementConfigs", []);
 
         $layout = new FieldLayout();
