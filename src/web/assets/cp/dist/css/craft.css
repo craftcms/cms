@@ -3331,7 +3331,7 @@ body.rtl .content.has-sidebar:not(.hiding-sidebar) { margin-right: 226px; }
 /* flexbox field layouts */
 .flex-fields { display: -webkit-flex; display: flex; -webkit-flex-wrap: wrap; flex-wrap: wrap; -webkit-align-content: flex-start; align-content: flex-start; margin: 0 -14px -24px 0; width: calc(100% + 14px); }
 
-.flex-fields > h2 { margin: 14px 14px 24px 0 !important; width: 100%; padding-bottom: 2px; border-bottom: 1px solid rgba(51, 64, 77, 0.1); }
+.flex-fields > h2:not(:first-child) { margin: 0 -10px 24px -24px; width: calc(100% + 34px); padding: 24px 10px 0 24px; border-top: 1px solid rgba(51, 64, 77, 0.1); }
 
 .flex-fields > hr { margin: 0 -10px 24px -24px; width: calc(100% + 34px); }
 

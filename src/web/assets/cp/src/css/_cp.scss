@@ -1521,11 +1521,11 @@ $toolbarIconColor: darken($inputColor, 10%);
   margin: 0 -14px -24px 0;
   width: calc(100% + 14px);
 
-  & > h2 {
-    margin: 14px 14px 24px 0 !important;
-    width: 100%;
-    padding-bottom: 2px;
-    border-bottom: 1px solid $hairlineColor;
+  & > h2:not(:first-child) {
+    margin: 0 -10px 24px -24px;
+    width: calc(100% + 34px);
+    padding: 24px 10px 0 24px;
+    border-top: 1px solid $hairlineColor;
   }
 
   & > hr {
