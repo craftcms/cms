@@ -240,35 +240,12 @@ class Matrix extends Component
             return false;
         }
 
-        $fieldsService = Craft::$app->getFields();
-
-        $parentField = $fieldsService->getFieldById($blockType->fieldId);
         $isNewBlockType = $blockType->getIsNew();
-        $fieldLayout = $blockType->getFieldLayout();
-
-        if (!$fieldLayout->uid) {
-            $fieldLayout->uid = StringHelper::UUID();
-        }
-
-        $configData = [
-            'field' => $parentField->uid,
-            'name' => $blockType->name,
-            'handle' => $blockType->handle,
-            'sortOrder' => (int)$blockType->sortOrder,
-            'fields' => [],
-        ];
-
-        $fieldLayoutConfig = $fieldLayout->getConfig();
-        if ($fieldLayoutConfig !== null) {
-            $configData['fieldLayouts'][$fieldLayout->uid] = $fieldLayoutConfig;
-        }
-
-        foreach ($blockType->getFields() as $field) {
-            $configData['fields'][$field->uid] = $fieldsService->createFieldConfig($field);
-        }
-
         $configPath = self::CONFIG_BLOCKTYPE_KEY . '.' . $blockType->uid;
-        Craft::$app->getProjectConfig()->set($configPath, $configData, "Save matrix block type “{$blockType->handle}” for parent field “{$parentField->handle}”");
+        $configData = $blockType->getConfig();
+        $field = $blockType->getField();
+
+        Craft::$app->getProjectConfig()->set($configPath, $configData, "Save matrix block type “{$blockType->handle}” for parent field “{$field->handle}”");
 
         if ($isNewBlockType) {
             $blockType->id = Db::idByUid(Table::MATRIXBLOCKTYPES, $blockType->uid);

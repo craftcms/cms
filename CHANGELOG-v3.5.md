@@ -251,6 +251,7 @@
 - Added `craft\models\FieldLayoutTab::getConfig()`.
 - Added `craft\models\FieldLayoutTab::getElementConfigs()`.
 - Added `craft\models\FieldLayoutTab::updateConfig()`.
+- Added `craft\models\MatrixBlockType::getConfig()`.
 - Added `craft\models\Section::PROPAGATION_METHOD_CUSTOM`.
 - Added `craft\models\Site::$enabled`.
 - Added `craft\queue\jobs\PruneRevisions`.

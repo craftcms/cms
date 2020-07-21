@@ -1,5 +1,13 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Added
+- Added `craft\models\MatrixBlockType::getConfig()`.
+
+### Fixed
+- Fixed an error that occurred when running the `project-config/rebuild` command, if there were any Matrix block types that didn’t have any fields.
+
 ## 3.5.0-RC1 - 2020-07-21
 
 ### Added

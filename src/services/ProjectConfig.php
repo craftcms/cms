@@ -2034,96 +2034,9 @@ class ProjectConfig extends Component
     private function _getMatrixBlockTypeData(): array
     {
         $data = [];
-
-        $matrixBlockTypes = (new Query())
-            ->select([
-                'bt.fieldId',
-                'bt.fieldLayoutId',
-                'bt.name',
-                'bt.handle',
-                'bt.sortOrder',
-                'bt.uid',
-                'f.uid AS field',
-            ])
-            ->from(['bt' => Table::MATRIXBLOCKTYPES])
-            ->innerJoin(['f' => Table::FIELDS], '[[f.id]] = [[bt.fieldId]]')
-            ->all();
-
-        $layoutIds = [];
-        $blockTypeData = [];
-
-        foreach ($matrixBlockTypes as $matrixBlockType) {
-            $fieldId = $matrixBlockType['fieldId'];
-            unset($matrixBlockType['fieldId']);
-
-            $layoutIds[] = $matrixBlockType['fieldLayoutId'];
-
-            $matrixBlockType['sortOrder'] = (int)$matrixBlockType['sortOrder'];
-
-            $blockTypeData[$fieldId][$matrixBlockType['uid']] = $matrixBlockType;
+        foreach (Craft::$app->getMatrix()->getAllBlockTypes() as $blockType) {
+            $data[$blockType->uid] = $blockType->getConfig();
         }
-
-        $matrixFieldLayouts = $this->_generateFieldLayoutArray($layoutIds);
-
-        // Fetch the subfields
-        $matrixSubfieldRows = (new Query())
-            ->select([
-                'fields.id',
-                'fields.name',
-                'fields.handle',
-                'fields.instructions',
-                'fields.searchable',
-                'fields.translationMethod',
-                'fields.translationKeyFormat',
-                'fields.type',
-                'fields.settings',
-                'fields.context',
-                'fields.uid',
-                'fieldGroups.uid AS fieldGroup',
-            ])
-            ->from(['fields' => Table::FIELDS])
-            ->leftJoin(['fieldGroups' => Table::FIELDGROUPS], '[[fieldGroups.id]] = [[fields.groupId]]')
-            ->where(['like', 'fields.context', 'matrixBlockType:'])
-            ->all();
-
-        $matrixSubFields = [];
-        $fieldService = Craft::$app->getFields();
-
-        // Massage the data and index by UID
-        foreach ($matrixSubfieldRows as $matrixSubfieldRow) {
-            $matrixSubfieldRow['settings'] = Json::decodeIfJson($matrixSubfieldRow['settings']);
-
-            if (is_array($matrixSubfieldRow['settings'])) {
-                $matrixSubfieldRow['settings'] = ProjectConfigHelper::packAssociativeArrays($matrixSubfieldRow['settings']);
-            }
-
-            $fieldInstance = $fieldService->getFieldById($matrixSubfieldRow['id']);
-            $matrixSubfieldRow['contentColumnType'] = $fieldInstance->getContentColumnType();
-            list (, $blockTypeUid) = explode(':', $matrixSubfieldRow['context']);
-
-            if (empty($matrixSubFields[$blockTypeUid])) {
-                $matrixSubFields[$blockTypeUid] = [];
-            }
-
-            $fieldUid = $matrixSubfieldRow['uid'];
-            unset($matrixSubfieldRow['uid'], $matrixSubfieldRow['id'], $matrixSubfieldRow['context']);
-
-            $matrixSubfieldRow['searchable'] = (bool)$matrixSubfieldRow['searchable'];
-
-            $matrixSubFields[$blockTypeUid][$fieldUid] = $matrixSubfieldRow;
-        }
-
-        foreach ($blockTypeData as &$blockTypes) {
-            foreach ($blockTypes as &$blockType) {
-                $blockTypeUid = $blockType['uid'];
-                $layout = $matrixFieldLayouts[$blockType['fieldLayoutId']];
-                unset($blockType['uid'], $blockType['fieldLayoutId']);
-                $blockType['fieldLayouts'] = [$layout['uid'] => ['tabs' => $layout['tabs']]];
-                $blockType['fields'] = $matrixSubFields[$blockTypeUid] ?? [];
-                $data[$blockTypeUid] = $blockType;
-            }
-        }
-
         return $data;
     }
 
