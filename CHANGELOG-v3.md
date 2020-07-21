@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.4.29 - 2020-07-21
 
 ### Added
 - Added `craft\errors\ElementException`.
