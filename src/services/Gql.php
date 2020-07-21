@@ -1123,6 +1123,11 @@ class Gql extends Component
             return null;
         }
 
+        // Do not cache mutations
+        if (preg_match('/^\s*mutation(?P<operationName>\s+\w*\s*(?P<variables>\(.*\))?\s*)?{/si', $query)) {
+            return null;
+        }
+
         // No cache key if we have placeholder elements
         if (!empty(Craft::$app->getElements()->getPlaceholderElements())) {
             return null;
