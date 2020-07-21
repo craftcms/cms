@@ -1,8 +1,6 @@
 # Running Release Notes for Craft CMS 3.5
 
-> {warning} If you have the `baseCpUrl` config setting set, Craft 3.5 will **only** allow the control panel to be accessed from that URL.
-
-> {warning} The control panel now requires browsers that support JavaScript modules (Firefox 67+, Chrome 63+, Safari 11.1+, and Edge 79+).
+> {warning} Read through the [Upgrading to Craft 3.5](https://craftcms.com/knowledge-base/upgrading-to-craft-3-5) guide before updating.
 
 ### Added
 - Added the Project Config utility, which can be used to perform project config actions, and view a dump of the stored project config. ([#4371](https://github.com/craftcms/cms/issues/4371))
