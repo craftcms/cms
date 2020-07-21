@@ -7,6 +7,7 @@
 
 ### Fixed
 - Fixed an error that occurred when running the `project-config/rebuild` command, if there were any Matrix block types that didn’t have any fields.
+- Fixed a bug where nested project config files weren’t getting saved properly on Windows servers. ([#6419](https://github.com/craftcms/cms/issues/6419))
 
 ## 3.5.0-RC1 - 2020-07-21
 

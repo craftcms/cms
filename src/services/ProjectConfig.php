@@ -1576,9 +1576,9 @@ class ProjectConfig extends Component
             }
 
             // See if there are any files that shouldn’t be around anymore
-            $basePathLength = strlen($basePath);
+            $basePathLength = strlen(FileHelper::normalizePath($basePath, '/'));
             foreach ($this->_findConfigFiles($basePath) as $file) {
-                $path = substr($file, $basePathLength + 1);
+                $path = substr(FileHelper::normalizePath($file, '/'), $basePathLength + 1);
                 if (!isset($config[$path])) {
                     FileHelper::unlink($file);
                 }
