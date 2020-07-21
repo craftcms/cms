@@ -157,7 +157,7 @@ class UtilitiesController extends Controller
      */
     public function actionProjectConfigPerformAction(): Response
     {
-        $this->requireAdmin();
+        $this->requireAdmin(false);
         $projectConfig = Craft::$app->getProjectConfig();
 
         switch ($this->request->getRequiredBodyParam('performAction')) {
