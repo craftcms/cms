@@ -382,6 +382,10 @@ class Application extends \yii\web\Application
      */
     protected function authenticate()
     {
+        if (!Craft::$app->getConfig()->getGeneral()->enableBasicHttpAuth) {
+            return;
+        }
+
         // Did the request include user credentials?
         list($username, $password) = $this->getRequest()->getAuthCredentials();
 

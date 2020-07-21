@@ -340,6 +340,11 @@ class GeneralConfig extends BaseObject
      */
     public $disabledPlugins = [];
     /**
+     * @var bool Whether front-end web requests should support basic HTTP authentication.
+     * @since 3.5.0
+     */
+    public $enableBasicHttpAuth = false;
+    /**
      * @var bool Whether to use a cookie to persist the CSRF token if <config:enableCsrfProtection> is enabled. If false, the CSRF token
      * will be stored in session under the `csrfTokenName` config setting name. Note that while storing CSRF tokens in
      * session increases security, it requires starting a session for every page that a CSRF token is needed, which may

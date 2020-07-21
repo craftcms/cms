@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+### Added
+- Added the `enableBasicHttpAuth` config setting. ([#6421](https://github.com/craftcms/cms/issues/6421))
+
 ## 3.5.0-RC1.1 - 2020-07-21
 
 ### Added
