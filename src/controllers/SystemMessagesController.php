@@ -29,10 +29,10 @@ class SystemMessagesController extends Controller
      */
     public function init()
     {
+        parent::init();
+
         // Make sure they have access to the System Messages utility
         $this->requirePermission('utility:system-messages');
-
-        parent::init();
     }
 
     /**

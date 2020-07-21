@@ -26,10 +26,10 @@ class RoutesController extends Controller
      */
     public function init()
     {
+        parent::init();
+
         // All route actions require an admin
         $this->requireAdmin();
-
-        parent::init();
     }
 
     /**

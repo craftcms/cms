@@ -43,6 +43,8 @@ class StructuresController extends Controller
      */
     public function init()
     {
+        parent::init();
+
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
@@ -79,8 +81,6 @@ class StructuresController extends Controller
         if ($this->_element === null) {
             throw new NotFoundHttpException('Element not found');
         }
-
-        parent::init();
     }
 
     /**

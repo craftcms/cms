@@ -28,8 +28,8 @@ abstract class BaseElementsController extends Controller
      */
     public function init()
     {
-        $this->requireCpRequest();
         parent::init();
+        $this->requireCpRequest();
     }
 
     /**

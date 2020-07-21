@@ -33,10 +33,10 @@ class SitesController extends Controller
      */
     public function init()
     {
+        parent::init();
+
         // All actions require an admin account
         $this->requireAdmin();
-
-        parent::init();
     }
 
     /**

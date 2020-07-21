@@ -35,10 +35,10 @@ class VolumesController extends Controller
      */
     public function init()
     {
+        parent::init();
+
         // All asset volume actions require an admin
         $this->requireAdmin();
-
-        parent::init();
     }
 
     /**
