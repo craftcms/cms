@@ -15,7 +15,9 @@ use craft\debug\DeprecatedPanel;
 use craft\debug\Module as DebugModule;
 use craft\debug\RequestPanel;
 use craft\debug\UserPanel;
+use craft\elements\User as UserElement;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Path;
 use craft\helpers\UrlHelper;
@@ -37,6 +39,7 @@ use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
+use yii\web\UnauthorizedHttpException;
 
 /**
  * Craft Web Application class
@@ -100,6 +103,7 @@ class Application extends \yii\web\Application
         parent::init();
         $this->ensureResourcePathExists();
         $this->_postInit();
+        $this->authenticate();
         $this->debugBootstrap();
     }
 
@@ -371,21 +375,54 @@ class Application extends \yii\web\Application
     }
 
     /**
+     * Authenticates the request.
+     *
+     * @throws UnauthorizedHttpException
+     * @since 3.5.0
+     */
+    protected function authenticate()
+    {
+        // Did the request include user credentials?
+        list($username, $password) = $this->getRequest()->getAuthCredentials();
+
+        if (!$username || !$password) {
+            return;
+        }
+
+        $user = UserElement::find()
+            ->username(Db::escapeParam($username))
+            ->addSelect(['users.password'])
+            ->one();
+
+        if (!$user) {
+            throw new UnauthorizedHttpException('Your request was made with invalid credentials.');
+        }
+
+        if (!$user->authenticate($password)) {
+            throw new UnauthorizedHttpException('Your request was made with invalid credentials.');
+        }
+
+        $this->getUser()->setIdentity($user);
+    }
+
+    /**
      * Bootstraps the Debug Toolbar if necessary.
      */
     protected function debugBootstrap()
     {
-        $session = $this->getSession();
-        if (!$session->getHasSessionId() && !$session->getIsActive()) {
+        $request = $this->getRequest();
+
+        if ($request->getIsLivePreview() || $request->getIsPreview()) {
             return;
         }
 
-        $request = $this->getRequest();
-        if (
-            $request->getIsLivePreview() ||
-            ($request->getIsCpRequest() && !$session->get('enableDebugToolbarForCp')) ||
-            (!$request->getIsCpRequest() && !$session->get('enableDebugToolbarForSite'))
-        ) {
+        $user = $this->getUser()->getIdentity();
+        if (!$user || !$user->admin) {
+            return;
+        }
+
+        $pref = $request->getIsCpRequest() ? 'enableDebugToolbarForCp' : 'enableDebugToolbarForSite';
+        if (!$user->getPreference($pref)) {
             return;
         }
 

@@ -23,7 +23,7 @@
 - Added the `fieldLayoutDesigner()` and `fieldLayoutDesignerField()` macros to the `_includes/forms.html` control panel template.
 - Added the `_includes/forms/fieldLayoutDesigner.html` control panel template.
 - Added the “Replace file” permission. ([#6336](https://github.com/craftcms/cms/issues/6336))
-- Web controller actions now support basic authentication. ([#5303](https://github.com/craftcms/cms/issues/5303))
+- Web requests now support basic authentication. ([#5303](https://github.com/craftcms/cms/issues/5303))
 - `craft\gql\base\ElementMutationResolver` now fires `beforeMutationPopulateElement` and `afterMutationPopulateElement` events that allows for plugins to modify element before it's saved to the database as part of a GraphQL mutation. ([#6398](https://github.com/craftcms/cms/issues/6398))
 - Added support for JavaScript events on admin tables. ([#6063](https://github.com/craftcms/cms/issues/6063))
 - Added the ability to enable/disable checkboxes on a per row basis in admin tables. ([#6223](https://github.com/craftcms/cms/issues/6223))
@@ -84,6 +84,7 @@
 - Added `craft\services\ProjectConfig::getHadFileWriteIssues()`.
 - Added `craft\services\ProjectConfig::IGNORE_CACHE_KEY`.
 - Added `craft\services\ProjectConfig::ignorePendingChanges()`.
+- Added `craft\web\Application::authenticate()`.
 - Added `craft\web\Controller::setFailFlash()`.
 - Added `craft\web\Controller::setSuccessFlash()`.
 - Added `craft\web\Request::getIsGraphql()`.
@@ -134,6 +135,8 @@
 - Deprecated `craft\services\Fields::assembleLayout()`.
 - Deprecated `craft\services\ProjectConfig::CONFIG_ALL_KEY`.
 - Deprecated `craft\services\ProjectConfig::CONFIG_KEY`.
+- Deprecated `craft\web\User::destroyDebugPreferencesInSession()`.
+- Deprecated `craft\web\User::saveDebugPreferencesToSession()`.
 
 ### Removed
 - Removed support for the `import` directive in project config files.

@@ -1184,8 +1184,6 @@ class UsersController extends Controller
             if ($user !== $currentUser) {
                 $currentUser->mergePreferences($preferences);
             }
-
-            $userSession->saveDebugPreferencesToSession();
         }
 
         // Is this the current user, and did their username just change?

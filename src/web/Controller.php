@@ -8,8 +8,6 @@
 namespace craft\web;
 
 use Craft;
-use craft\elements\User as UserElement;
-use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
@@ -134,22 +132,6 @@ abstract class Controller extends \yii\web\Controller
         // Don't enable CSRF validation for Live Preview requests
         if ($this->request->getIsLivePreview()) {
             $this->enableCsrfValidation = false;
-        }
-
-        // Did the request include user credentials?
-        list($username, $password) = $this->request->getAuthCredentials();
-        if ($username && $password) {
-            $user = UserElement::find()
-                ->username(Db::escapeParam($username))
-                ->addSelect(['users.password'])
-                ->one();
-            if (!$user) {
-                throw new UnauthorizedHttpException('Your request was made with invalid credentials.');
-            }
-            if (!$user->authenticate($password)) {
-                throw new UnauthorizedHttpException('Your request was made with invalid credentials.');
-            }
-            Craft::$app->getUser()->setIdentity($user);
         }
 
         if (!parent::beforeAction($action)) {
