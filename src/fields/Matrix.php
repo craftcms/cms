@@ -420,7 +420,15 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             $blockTypes[$blockTypeId] = $blockType;
             $blockTypeFields[$blockTypeId] = [];
             $totalNewFields = 0;
-            $tab = $blockType->getFieldLayout()->getTabs()[0];
+            $fieldLayout = $blockType->getFieldLayout();
+            if (!$fieldLayout) {
+                continue;
+            }
+            $tabs = $fieldLayout->getTabs();
+            if (empty($tabs)) {
+                continue;
+            }
+            $tab = $fieldLayout->getTabs()[0];
 
             foreach ($tab->elements as $element) {
                 if ($element instanceof CustomField) {

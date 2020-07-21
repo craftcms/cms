@@ -256,10 +256,12 @@ class Matrix extends Component
             'handle' => $blockType->handle,
             'sortOrder' => (int)$blockType->sortOrder,
             'fields' => [],
-            'fieldLayouts' => [
-                $fieldLayout->uid => $fieldLayout->getConfig(),
-            ]
         ];
+
+        $fieldLayoutConfig = $fieldLayout->getConfig();
+        if ($fieldLayoutConfig !== null) {
+            $configData['fieldLayouts'][$fieldLayout->uid] = $fieldLayoutConfig;
+        }
 
         foreach ($blockType->getFields() as $field) {
             $configData['fields'][$field->uid] = $fieldsService->createFieldConfig($field);
@@ -348,9 +350,12 @@ class Matrix extends Component
                 // Refresh the schema cache
                 Craft::$app->getDb()->getSchema()->refresh();
 
-                if (!empty($data['fieldLayouts'])) {
+                if (
+                    !empty($data['fieldLayouts']) &&
+                    ($layoutConfig = reset($data['fieldLayouts']))
+                ) {
                     // Save the field layout
-                    $layout = FieldLayout::createFromConfig(reset($data['fieldLayouts']));
+                    $layout = FieldLayout::createFromConfig($layoutConfig);
                     $layout->id = $blockTypeRecord->fieldLayoutId;
                     $layout->type = MatrixBlock::class;
                     $layout->uid = key($data['fieldLayouts']);
