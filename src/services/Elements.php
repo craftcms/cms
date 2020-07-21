@@ -32,6 +32,7 @@ use craft\errors\ElementNotFoundException;
 use craft\errors\InvalidElementException;
 use craft\errors\OperationAbortedException;
 use craft\errors\SiteNotFoundException;
+use craft\errors\UnsupportedSiteException;
 use craft\events\BatchElementActionEvent;
 use craft\events\DeleteElementEvent;
 use craft\events\ElementEvent;
@@ -723,6 +724,7 @@ class Elements extends Component
      * @param ElementInterface $element the element to duplicate
      * @param array $newAttributes any attributes to apply to the duplicate
      * @return ElementInterface the duplicated element
+     * @throws UnsupportedSiteException if the element is being duplicated into a site it doesn’t support
      * @throws InvalidElementException if saveElement() returns false for any of the sites
      * @throws \Throwable if reasons
      */
@@ -764,7 +766,7 @@ class Elements extends Component
         $supportedSites = ElementHelper::supportedSitesForElement($mainClone);
         $supportedSiteIds = ArrayHelper::getColumn($supportedSites, 'siteId');
         if (!in_array($mainClone->siteId, $supportedSiteIds, false)) {
-            throw new Exception('Attempting to duplicate an element in an unsupported site.');
+            throw new UnsupportedSiteException($element, $mainClone->siteId, 'Attempting to duplicate an element in an unsupported site.');
         }
 
         // Validate
@@ -1335,7 +1337,7 @@ class Elements extends Component
      *
      * @param ElementInterface[] $elements
      * @return bool Whether at least one element was restored successfully
-     * @throws Exception if an $element doesn’t have any supported sites
+     * @throws UnsupportedSiteException if an element is being restored for a site it doesn’t support
      * @throws \Throwable if reasons
      */
     public function restoreElements(array $elements): bool
@@ -1362,13 +1364,13 @@ class Elements extends Component
             foreach ($elements as $element) {
                 // Get the sites supported by this element
                 if (empty($supportedSites = ElementHelper::supportedSitesForElement($element))) {
-                    throw new Exception("Element {$element->id} has no supported sites.");
+                    throw new UnsupportedSiteException($element, $element->siteId, "Element {$element->id} has no supported sites.");
                 }
 
                 // Make sure the element actually supports the site it's being saved in
                 $supportedSiteIds = ArrayHelper::getColumn($supportedSites, 'siteId');
                 if (!in_array($element->siteId, $supportedSiteIds, false)) {
-                    throw new Exception('Attempting to restore an element in an unsupported site.');
+                    throw new UnsupportedSiteException($element, $element->siteId, 'Attempting to restore an element in an unsupported site.');
                 }
 
                 // Get the element in each supported site
@@ -1922,6 +1924,7 @@ class Elements extends Component
      * @param ElementInterface|false|null $siteElement The element loaded for the propagated site (only pass this if you
      * already had a reason to load it). Set to `false` if it is known to not exist yet.
      * @throws Exception if the element couldn't be propagated
+     * @throws UnsupportedSiteException if the element doesn’t support `$siteId`
      * @since 3.0.13
      */
     public function propagateElement(ElementInterface $element, int $siteId, $siteElement = null)
@@ -1935,7 +1938,7 @@ class Elements extends Component
         $supportedSites = ArrayHelper::index($supportedSites, 'siteId');
         $siteInfo = $supportedSites[(string)$siteId] ?? null;
         if ($siteInfo === null) {
-            throw new Exception('Attempting to propagate an element to an unsupported site.');
+            throw new UnsupportedSiteException($element, $siteId, 'Attempting to propagate an element to an unsupported site.');
         }
 
         $this->_propagateElement($element, $siteInfo, $siteElement);
@@ -1951,7 +1954,7 @@ class Elements extends Component
      * (this will happen via a background job if this is a web request)
      * @return bool
      * @throws ElementNotFoundException if $element has an invalid $id
-     * @throws Exception if the $element doesn’t have any supported sites
+     * @throws UnsupportedSiteException if the element is being saved for a site it doesn’t support
      * @throws \Throwable if reasons
      */
     private function _saveElementInternal(ElementInterface $element, bool $runValidation = true, bool $propagate = true, bool $updateSearchIndex = null): bool
@@ -2005,13 +2008,13 @@ class Elements extends Component
 
         // Get the sites supported by this element
         if (empty($supportedSites = ElementHelper::supportedSitesForElement($element))) {
-            throw new Exception('All elements must have at least one site associated with them.');
+            throw new UnsupportedSiteException($element, $element->siteId, 'All elements must have at least one site associated with them.');
         }
 
         // Make sure the element actually supports the site it's being saved in
         $supportedSiteIds = ArrayHelper::getColumn($supportedSites, 'siteId');
         if (!in_array($element->siteId, $supportedSiteIds, false)) {
-            throw new Exception('Attempting to save an element in an unsupported site.');
+            throw new UnsupportedSiteException($element, $element->siteId, 'Attempting to save an element in an unsupported site.');
         }
 
         // If the element only supports a single site, ensure it's enabled for that site

@@ -54,7 +54,7 @@ class Asset extends Element
                 $transform = $arguments;
             }
 
-            return Craft::$app->getAssets()->getAssetUrl($source, $transform, $generateNow);
+            return $source->getUrl($transform, $generateNow);
         }
 
         return parent::resolve($source, $arguments, $context, $resolveInfo);

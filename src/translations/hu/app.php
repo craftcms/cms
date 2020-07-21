@@ -1113,7 +1113,7 @@ return [
     'You’re running Craft {edition} with a Craft {licensedEdition} license.' => 'A Craft {edition} {licensedEdition} licensz.',
     'account_activation_body' => 'Hello {{user.friendlyName}},
 
-Köszönjük, hogy regisztráltál, a felhasználói fiókod aktiválásához kattints az alábbi linkre:
+Köszönjük, hogy regsiztráltál, a felhasználói filókod aktiváláshoz kattints az alábbi linkre:
 
 <{{link}}>',
     'account_activation_heading' => 'ha valaki készít egy fiókot:',

@@ -39,9 +39,11 @@
 
 
 {% block content %}
+    {{ hiddenInput('sectionId', section.id) }}
+
+    {# todo: remove this in 3.5 #}
     {% if not isRevision %}
-        {{ hiddenInput('sectionId', section.id) }}
-        {{ hiddenInput('entryId', entry.sourceId) }}
+        {{ hiddenInput('sourceId', element.getSourceId()) }}
     {% else %}
         {{ hiddenInput('revisionId', entry.revisionId) }}
     {% endif %}
