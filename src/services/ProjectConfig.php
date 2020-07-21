@@ -2517,72 +2517,22 @@ class ProjectConfig extends Component
     /**
      * Generate field layout config data for a list of array ids
      *
-     * @param int[] $layoutIds
-     *
-     * @return array
+     * @param int[]|null[] $layoutIds
+     * @return array[]
      */
     private function _generateFieldLayoutArray(array $layoutIds): array
     {
-        // Get all the UIDs
-        $fieldLayoutUids = (new Query())
-            ->select(['id', 'uid'])
-            ->from([Table::FIELDLAYOUTS])
-            ->where(['id' => $layoutIds])
-            ->pairs();
-
         $fieldLayouts = [];
-        foreach ($fieldLayoutUids as $id => $uid) {
-            $fieldLayouts[$id] = [
-                'uid' => $uid,
-                'tabs' => [],
-            ];
-        }
+        $fieldsService = Craft::$app->getFields();
 
-        // Get the tabs and fields
-        $fieldRows = (new Query())
-            ->select([
-                'fields.handle',
-                'fields.uid AS fieldUid',
-                'layoutFields.fieldId',
-                'layoutFields.required',
-                'layoutFields.sortOrder AS fieldOrder',
-                'tabs.id AS tabId',
-                'tabs.name as tabName',
-                'tabs.sortOrder AS tabOrder',
-                'tabs.uid AS tabUid',
-                'layouts.id AS layoutId',
-            ])
-            ->from(['layoutFields' => Table::FIELDLAYOUTFIELDS])
-            ->innerJoin(['tabs' => Table::FIELDLAYOUTTABS], '[[tabs.id]] = [[layoutFields.tabId]]')
-            ->innerJoin(['layouts' => Table::FIELDLAYOUTS], '[[layouts.id]] = [[layoutFields.layoutId]]')
-            ->innerJoin(['fields' => Table::FIELDS], '[[fields.id]] = [[layoutFields.fieldId]]')
-            ->where(['layouts.id' => $layoutIds])
-            ->andWhere(['layouts.dateDeleted' => null])
-            ->orderBy(['tabs.sortOrder' => SORT_ASC, 'layoutFields.sortOrder' => SORT_ASC])
-            ->all();
-
-        foreach ($fieldRows as $fieldRow) {
-            $layout = &$fieldLayouts[$fieldRow['layoutId']];
-
-            if (empty($layout['tabs'][$fieldRow['tabUid']])) {
-                $layout['tabs'][$fieldRow['tabUid']] =
-                    [
-                        'name' => $fieldRow['tabName'],
-                        'sortOrder' => (int)$fieldRow['tabOrder'],
-                    ];
+        foreach ($layoutIds as $layoutId) {
+            if ($layoutId) {
+                $fieldLayout = $fieldsService->getLayoutById($layoutId);
+                if ($fieldLayout) {
+                    $fieldLayouts[$fieldLayout->id] = $fieldLayout->getConfig();
+                    $fieldLayouts[$fieldLayout->id]['uid'] = $fieldLayout->uid;
+                }
             }
-
-            $tab = &$layout['tabs'][$fieldRow['tabUid']];
-
-            $field['required'] = (bool)$fieldRow['required'];
-            $field['sortOrder'] = (int)$fieldRow['fieldOrder'];
-
-            $tab['fields'][$fieldRow['fieldUid']] = $field;
-        }
-
-        // Get rid of UIDs
-        foreach ($fieldLayouts as &$fieldLayout) {
-            $fieldLayout['tabs'] = array_values($fieldLayout['tabs']);
         }
 
         return $fieldLayouts;
