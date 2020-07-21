@@ -189,9 +189,10 @@ class AppController extends Controller
      * services (like [DeployBot](https://deploybot.com/) or [DeployPlace](https://deployplace.com/)) to minimize site
      * downtime after a deployment.
      *
+     * @param bool $applyProjectConfigChanges
      * @throws ServerErrorException if something went wrong
      */
-    public function actionMigrate()
+    public function actionMigrate(bool $applyProjectConfigChanges = false)
     {
         $this->requirePostRequest();
 
@@ -203,7 +204,9 @@ class AppController extends Controller
         $runMigrations = !empty($handles);
 
         $projectConfigService = Craft::$app->getProjectConfig();
-        $applyProjectConfigChanges = $projectConfigService->areChangesPending();
+        if ($applyProjectConfigChanges) {
+            $applyProjectConfigChanges = $projectConfigService->areChangesPending();
+        }
 
         if (!$runMigrations && !$applyProjectConfigChanges) {
             // That was easy

@@ -371,6 +371,7 @@
 - “Resaving elements” jobs no longer ignore the `offset`, `limit`, and `orderBy` params specified by the criteria.
 - Craft now uses `yii\mutex\MysqlMutex` or `yii\mutex\PgsqlMutex` for mutex locking by default.
 - Database backups are now named in the format `system-name--YYYY-MM-DD-HHMMSS--vX.Y.Z.sql`. ([#6231](https://github.com/craftcms/cms/issues/6231))
+- The `app/migrate` action no longer applies project config file changes by default, unless `?applyProjectConfigChanges=1` is passed.
 - The `graphql/api` and `live-preview/preview` actions no longer add CORS headers that were already set on the response. ([#6355](https://github.com/craftcms/cms/issues/6355))
 - `craft\base\ConfigurableComponent::getSettings()` now converts `DateTime` attributes returned from `datetimeAttributes()` into ISO-8601 strings.
 - `craft\base\Element::getRoute()` now returns the route defined by `craft\events\SetElementRouteEvent::$route` even if it’s null, as long as `SetElementRouteEvent::$handled` is set to `true`.
