@@ -47,7 +47,7 @@ class m200625_131100_move_entrytypes_to_top_project_config extends Migration
                 $projectConfig->set('sections', $sections);
                 $projectConfig->set('entryTypes', $entryTypes);
             }
-            
+
             $projectConfig->muteEvents = $muted;
         }
     }
