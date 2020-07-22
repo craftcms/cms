@@ -215,6 +215,41 @@ GQL;
 
         return [
             [
+                '{ user { photo { id }}}',
+                ['with' => ['photo']],
+                'UserInterface'
+            ],
+            [
+                '{ entry { assetField { localized { id }}}}',
+                ['with' => [['assetField', ['volumeId' => [5, 7]]]]],
+                'UserInterface'
+            ],
+            [
+                '{ entry { entryField { photo }}}',
+                ['with' => [['entryField', ['sectionId' => [5], 'typeId' => [2]]]]],
+                'EntryInterface',
+            ],
+            [
+                '{ entry { localized { title } alias: localized { title }}}',
+                ['with' => ['localized', 'localized as alias']],
+                'EntryInterface',
+            ],
+            [
+                '{ user { ph: photo { id }}}',
+                ['with' => ['photo']],
+                '[UserInterface]'
+            ],
+            [
+                '{entry { author { ph: photo { id }}}}',
+                ['with' => ['author', 'author.photo']],
+                'EntryInterface'
+            ],
+            [
+                '{entry { author { photo { id }}}}',
+                ['with' => ['author', 'author.photo']],
+                'EntryInterface'
+            ],
+            [
                 '{ entry { assetField (volumeId: 4) { filename }}}',
                 ['with' => [['assetField', ['id' => 0]]]],
                 'EntryInterface',
@@ -242,7 +277,7 @@ GQL;
                 '[EntryInterface]',
             ],
             [$complexGql, $complexResult, 'EntryInterface'],
-            [$assetGql, $assetResult, 'AssetInterface']
+            [$assetGql, $assetResult, 'AssetInterface'],
         ];
     }
 
