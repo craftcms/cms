@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.4.29.1 - 2020-07-22
+
+### Fixed
+- Fixed a bug where the `entries/save-entry` action wasn’t working for updating existing entries on front-end forms. ([#6430](https://github.com/craftcms/cms/issues/6430))
+
 ## 3.4.29 - 2020-07-21
 
 ### Added
@@ -41,7 +46,7 @@
 - Fixed a bug where the asset indexer would wasn’t skipping files with disallowed file extensions.
 - Fixed a bug where the asset indexer wasn’t handling missing volume folders properly.
 - Fixed a bug where the asset indexer wasn’t cleaning up after itself.
-- Fixed a bug where the Asset Indexes utility could display a “Delete them” button even if there were no files or folders to delete.
+- Fixed a bug where the Asset Indexes utility could display a “Delete them” button even if there were no files or folders to delete.
 - Fixed a bug where the “Drafts” status option wasn’t showing up on the Entries index page, if unsaved entry drafts only existed in a non-primary site. ([#6370](https://github.com/craftcms/cms/issues/6370))
 - Fixed a bug where Live Preview wouldn’t open after it had been previously closed, if the active target was configured with `refresh: false`. ([#6356](https://github.com/craftcms/cms/issues/6356))
 - Fixed a bug where it wasn’t possible to change a disabled plugin’s license key. ([#4525](https://github.com/craftcms/cms/issues/4525))
