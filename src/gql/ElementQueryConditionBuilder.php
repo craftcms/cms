@@ -493,7 +493,7 @@ class ElementQueryConditionBuilder extends Component
                         } else {
                             $traverseContext = $context;
                         }
-                        
+
                         $eagerLoadNodes = array_merge_recursive($eagerLoadNodes, $this->_traverseAndExtractRules($subNode, $traversePrefix . '.', $traverseContext, $nodeName === self::LOCALIZED_NODENAME ? $parentField : $craftContentField));
                     }
                 }

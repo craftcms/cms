@@ -26,9 +26,10 @@ class RegisterGqlEagerLoadableFields extends Event
      *
      * If a field is encountered in a GraphQL query outside of a relational field scope, it is always allowed.
      *
-     * There are two special values you can use as occurrences:
-     *  - '*' is used to configure the field to be allowed anywhere.
+     * There are two special values you can use:
+     *  - '*' can be used both as a key or value and is used to configure the field to be allowed anywhere.
      *  - 'canBeAliased' is used to configure whether the GraphQL field alias (if any) can be used when constructing the eager-loading parameters. Defaults to `true`.
+     *    To invert the behavior, use `canBeAliased` as a key and set the value to the required boolean value.
      */
     public $fieldList = [];
 }
