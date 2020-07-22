@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.4.29.1 - 2020-07-22
 
 ### Fixed
 - Fixed a bug where the `entries/save-entry` action wasn’t working for updating existing entries on front-end forms. ([#6430](https://github.com/craftcms/cms/issues/6430))
