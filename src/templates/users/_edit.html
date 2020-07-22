@@ -143,32 +143,34 @@
             <div id="perms" class="flex-fields hidden">
 
                 {% if CraftEdition == CraftPro and currentUser.can('assignUserGroups') %}
-                    <h2>{{ "User Groups"|t('app') }}</h2>
+                    <fieldset>
+                        <h2>{{ "User Groups"|t('app') }}</h2>
 
-                    {% do view.registerDeltaName('groups') %}
-                    {% set assignableGroups = craft.app.userGroups.getAssignableGroups(user) %}
+                        {% do view.registerDeltaName('groups') %}
+                        {% set assignableGroups = craft.app.userGroups.getAssignableGroups(user) %}
 
-                    {% embed '_includes/forms/field' with {
-                        fieldId: 'user-groups',
-                    } %}
-                        {% block input %}
-                            {% from '_includes/forms' import checkboxField %}
-                            {{ hiddenInput('groups', '') }}
-                            {% if assignableGroups %}
-                                {% for group in assignableGroups %}
-                                    {{ checkboxField({
-                                        label: group.name|t('site')|e,
-                                        instructions: group.description|t('site')|e,
-                                        name: 'groups[]',
-                                        value: group.id,
-                                        checked: (group.id in currentGroupIds)
-                                    }) }}
-                                {% endfor %}
-                            {% else %}
-                                <p>{{ "No user groups exist yet."|t('app') }}</p>
-                            {% endif %}
-                        {% endblock %}
-                    {% endembed %}
+                        {% embed '_includes/forms/field' with {
+                            fieldId: 'user-groups',
+                        } %}
+                            {% block input %}
+                                {% from '_includes/forms' import checkboxField %}
+                                {{ hiddenInput('groups', '') }}
+                                {% if assignableGroups %}
+                                    {% for group in assignableGroups %}
+                                        {{ checkboxField({
+                                            label: group.name|t('site')|e,
+                                            instructions: group.description|t('site')|e,
+                                            name: 'groups[]',
+                                            value: group.id,
+                                            checked: (group.id in currentGroupIds)
+                                        }) }}
+                                    {% endfor %}
+                                {% else %}
+                                    <p>{{ "No user groups exist yet."|t('app') }}</p>
+                                {% endif %}
+                            {% endblock %}
+                        {% endembed %}
+                    </fieldset>
                 {% endif %}
 
                 {% if currentUser.can('assignUserPermissions') %}
