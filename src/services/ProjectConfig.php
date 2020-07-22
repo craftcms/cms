@@ -1260,8 +1260,8 @@ class ProjectConfig extends Component
             $yamlConfig = Yaml::parse(file_get_contents($filePath));
             $subPath = substr($filePath, $projectConfigPathLength + 1);
 
-            if (StringHelper::countSubstrings($subPath, '/') > 0) {
-                $configPath = explode("/", $subPath);
+            if (StringHelper::countSubstrings($subPath, DIRECTORY_SEPARATOR) > 0) {
+                $configPath = explode(DIRECTORY_SEPARATOR, $subPath);
                 $filename = pathinfo(array_pop($configPath), PATHINFO_FILENAME);
                 $insertionPoint = &$generatedConfig;
 
