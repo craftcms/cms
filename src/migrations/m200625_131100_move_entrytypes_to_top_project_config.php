@@ -23,27 +23,32 @@ class m200625_131100_move_entrytypes_to_top_project_config extends Migration
 
             $projectConfig->muteEvents = true;
             $sections = $projectConfig->get('sections');
-            $entryTypes = [];
 
-            // For each section, remove the entry type for separate storage.
-            foreach ($sections as $uid => &$section) {
-                if (empty($section['entryTypes'])) {
-                    continue;
+            if (!empty($sections)) {
+                $entryTypes = [];
+
+                // For each section, remove the entry type for separate storage.
+                foreach ($sections as $uid => &$section) {
+                    if (empty($section['entryTypes'])) {
+                        continue;
+                    }
+
+                    foreach ($section['entryTypes'] as &$entryType) {
+                        $entryType['section'] = $uid;
+                        ksort($entryType);
+                    }
+
+                    $entryTypes += $section['entryTypes'];
+                    unset($section['entryTypes']);
                 }
 
-                foreach ($section['entryTypes'] as &$entryType) {
-                    $entryType['section'] = $uid;
-                    ksort($entryType);
-                }
+                ksort($entryTypes);
 
-                $entryTypes += $section['entryTypes'];
-                unset($section['entryTypes']);
+                $projectConfig->set('sections', $sections);
+                $projectConfig->set('entryTypes', $entryTypes);
             }
 
-            ksort($entryTypes);
 
-            $projectConfig->set('sections', $sections);
-            $projectConfig->set('entryTypes', $entryTypes);
             $projectConfig->muteEvents = $muted;
         }
     }

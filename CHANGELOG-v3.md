@@ -9,6 +9,7 @@
 
 ### Fixed
 - Fixed a bug where aliasing some fields when using GraphQL API could cause an error. ([#6418](https://github.com/craftcms/cms/issues/6418))
+- Fixed a bug that prevented updating to Craft 3.5 on Craft installations that had no sections defined.
 
 ## 3.5.0-RC1.1 - 2020-07-21
 
