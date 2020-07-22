@@ -836,6 +836,11 @@ class Gql extends Component
             ]);
         }
 
+        $publicSchema = $this->_createSchemaQuery()
+            ->where(['isPublic' => true])
+            ->one();
+
+        $token->schemaId = $publicSchema['id'];
         $token->expiryDate = $data['expiryDate'] ? DateTimeHelper::toDateTime($data['expiryDate']): null;
         $token->enabled = $data['enabled'] ?: false;
 
