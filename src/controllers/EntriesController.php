@@ -631,7 +631,7 @@ class EntriesController extends BaseEntriesController
      */
     private function _getEntryModel(): Entry
     {
-        $entryId = $this->request->getBodyParam('draftId') ?? $this->request->getBodyParam('sourceId') ?? $this->request->getBodyParam('entryIdId');
+        $entryId = $this->request->getBodyParam('draftId') ?? $this->request->getBodyParam('sourceId') ?? $this->request->getBodyParam('entryId');
         $siteId = $this->request->getBodyParam('siteId');
 
         if ($entryId) {
