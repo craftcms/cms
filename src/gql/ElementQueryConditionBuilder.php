@@ -493,13 +493,8 @@ class ElementQueryConditionBuilder extends Component
                         } else {
                             $traverseContext = $context;
                         }
-
-                        // IMPORTANT
-                        if ($nodeName === self::LOCALIZED_NODENAME) {
-                            $craftContentField = $parentField;
-                        }
-
-                        $eagerLoadNodes = array_merge_recursive($eagerLoadNodes, $this->_traverseAndExtractRules($subNode, $traversePrefix . '.', $traverseContext, $craftContentField));
+                        
+                        $eagerLoadNodes = array_merge_recursive($eagerLoadNodes, $this->_traverseAndExtractRules($subNode, $traversePrefix . '.', $traverseContext, $nodeName === self::LOCALIZED_NODENAME ? $parentField : $craftContentField));
                     }
                 }
                 // If not, see if it's a fragment
