@@ -6,10 +6,12 @@
 - Added the `enableBasicHttpAuth` config setting. ([#6421](https://github.com/craftcms/cms/issues/6421))
 - `craft\gql\ElementQueryConditionBuilder` now fires the `registerGqlEagerLoadableFields` event that allows for plugins to register additional fields that should be eager-loaded when using GraphQL.
 - Added `craft\events\RegisterGqlEagerLoadableFields`.
+- Added `craft\helpers\ProjectConfig::ensureAllGqlSchemasProcessed()`.
 
 ### Fixed
 - Fixed a bug where aliasing some fields when using GraphQL API could cause an error. ([#6418](https://github.com/craftcms/cms/issues/6418))
 - Fixed a bug that prevented updating to Craft 3.5 on Craft installations that had no sections defined.
+- Fixed a bug that prevented updating to Craft 3.5 on Craft installations that had no GraphQL public schema defined.
 - Fixed the sidebar styling in the Assets and Users settings sections. ([#6416](https://github.com/craftcms/cms/issues/6416))
 - Fixed a bug where it was sometimes impossible to modify public GraphQL API access using project config. ([#6429](https://github.com/craftcms/cms/issues/6429))
 - Fixed a bug where nested project config files weren’t getting saved properly on Windows servers. ([#6425](https://github.com/craftcms/cms/issues/6425))

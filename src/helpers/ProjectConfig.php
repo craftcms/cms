@@ -9,6 +9,7 @@ namespace craft\helpers;
 
 use Craft;
 use craft\services\Fields;
+use craft\services\Gql as GqlService;
 use craft\services\ProjectConfig as ProjectConfigService;
 use craft\services\Sites;
 use craft\services\UserGroups;
@@ -39,6 +40,12 @@ class ProjectConfig
      * @see ensureAllUserGroupsProcessed()
      */
     private static $_processedUserGroups = false;
+
+    /**
+     * @var bool Whether we've already processed all GraphQL schemas.
+     * @see ensureAllGqlSchemasProcessed()
+     */
+    private static $_processedGqlSchemas = false;
 
     /**
      * Ensures all field config changes are processed immediately in a safe manner.
@@ -113,6 +120,28 @@ class ProjectConfig
     }
 
     /**
+     * Ensure all GraphQL schema config changes are processed immediately in a safe manner.
+     */
+    public static function ensureAllGqlSchemasProcessed()
+    {
+        if (static::$_processedGqlSchemas) {
+            return;
+        }
+        static::$_processedGqlSchemas = true;
+
+        $projectConfig = Craft::$app->getProjectConfig();
+        $allSchemas = $projectConfig->get(GqlService::CONFIG_GQL_SCHEMAS_KEY, true);
+
+        if (is_array($allSchemas)) {
+            foreach ($allSchemas as $schemaUid => $schema) {
+                $path = GqlService::CONFIG_GQL_SCHEMAS_KEY . '.';
+                // Ensure schema is processed
+                $projectConfig->processConfigChanges($path . $schemaUid);
+            }
+        }
+    }
+
+    /**
      * Resets the static memoization variables.
      *
      * @return void
@@ -122,6 +151,7 @@ class ProjectConfig
         static::$_processedFields = false;
         static::$_processedSites = false;
         static::$_processedUserGroups = false;
+        static::$_processedGqlSchemas = false;
     }
 
     /**

@@ -62,6 +62,7 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Gql as GqlHelper;
 use craft\helpers\Json;
+use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\models\GqlSchema;
 use craft\models\GqlToken;
@@ -827,6 +828,9 @@ class Gql extends Component
     {
         $data = $event->newValue;
 
+        // If we're just adding a public schema, ensure it makes it in.
+        ProjectConfigHelper::ensureAllGqlSchemasProcessed();
+
         try {
             $token = $this->getTokenByAccessToken(GqlToken::PUBLIC_TOKEN);
         } catch (InvalidArgumentException $exception) {
@@ -840,7 +844,7 @@ class Gql extends Component
             ->where(['isPublic' => true])
             ->one();
 
-        $token->schemaId = $publicSchema['id'];
+        $token->schemaId = $publicSchema ? $publicSchema['id'] : null;
         $token->expiryDate = $data['expiryDate'] ? DateTimeHelper::toDateTime($data['expiryDate']): null;
         $token->enabled = $data['enabled'] ?: false;
 
