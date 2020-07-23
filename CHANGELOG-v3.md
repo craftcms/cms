@@ -30,7 +30,7 @@
 
 ## 3.5.0-RC1 - 2020-07-21
 
-### Added
+### Added
 - Added the Project Config utility, which can be used to perform project config actions, and view a dump of the stored project config. ([#4371](https://github.com/craftcms/cms/issues/4371))
 - It’s now possible to customize the labels and author instructions for all fields (including Title fields), from within field layout designers. ([#806](https://github.com/craftcms/cms/issues/806), [#841](https://github.com/craftcms/cms/issues/841))
 - It’s now possible to set Title fields’ positions within field layout designers. ([#3953](https://github.com/craftcms/cms/issues/3953))
@@ -167,7 +167,7 @@
 - Deprecated `craft\web\User::destroyDebugPreferencesInSession()`.
 - Deprecated `craft\web\User::saveDebugPreferencesToSession()`.
 
-### Removed
+### Removed
 - Removed support for the `import` directive in project config files.
 - Removed the `entries/_fields.html` control panel template.
 - Removed the `entries/_titlefield.html` control panel template.
