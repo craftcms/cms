@@ -59,6 +59,8 @@ class ElementQueryConditionBuilder extends Component
      *     $event->queries['fieldList']['myEagerLoadableField'] = ['*'];
      * });
      * ```
+     *
+     * @since 3.5.0
      */
     const EVENT_REGISTER_GQL_EAGERLOADABLE_FIELDS = 'registerGqlEagerLoadableFields';
 
@@ -211,7 +213,7 @@ class ElementQueryConditionBuilder extends Component
                 }
             }
         }
-        
+
         return false;
     }
 
