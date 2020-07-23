@@ -12,7 +12,6 @@ use Codeception\Module\Yii2;
 use Codeception\PHPUnit\TestCase;
 use Codeception\Stub;
 use Codeception\TestInterface;
-use craft\base\ElementInterface;
 use craft\config\DbConfig;
 use craft\db\Connection;
 use craft\db\Query;
@@ -127,6 +126,18 @@ class Craft extends Yii2
     }
 
     /**
+     * @throws YiiBaseErrorException
+     */
+    public function _afterSuite()
+    {
+        parent::_afterSuite();
+
+        if (TestSetup::useProjectConfig()) {
+            TestSetup::removeProjectConfigFolders(CRAFT_CONFIG_PATH.DIRECTORY_SEPARATOR.'project');
+        }
+    }
+
+    /**
      * @param TestInterface $test
      * @throws InvalidConfigException
      * @throws ReflectionException
@@ -182,7 +193,7 @@ class Craft extends Yii2
             TestSetup::setupProjectConfig();
 
             \Craft::$app->getProjectConfig()->applyConfigChanges(
-                TestSetup::getSeedProjectConfigData(false)
+                TestSetup::getSeedProjectConfigData()
             );
 
             \Craft::$app->getProjectConfig()->saveModifiedConfigData();

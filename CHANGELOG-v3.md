@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where tests would not run if they were configured to use Project Config. ([#6428](https://github.com/craftcms/cms/issues/6428))
+
 ## 3.5.0-RC2 - 2020-07-23
 
 ### Added
