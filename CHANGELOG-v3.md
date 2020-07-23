@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.5.0-RC2 - 2020-07-23
 
 ### Added
 - Added the “Header Column Heading” element index source setting. ([#3814](https://github.com/craftcms/cms/issues/3814))
