@@ -1556,7 +1556,7 @@ $toolbarIconColor: darken($inputColor, 10%);
         @media only screen and (min-width: 500px) and (max-width: $minFullUiWidth + $sidebarWidth - 1px) {
           &.width-25,
           &.width-50 {
-            width: calc(50% - 24px);
+            width: calc(50% - 14px);
           }
         }
       }

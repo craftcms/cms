@@ -15,6 +15,7 @@
 - Fixed the sidebar styling in the Assets and Users settings sections. ([#6416](https://github.com/craftcms/cms/issues/6416))
 - Fixed a bug where it was sometimes impossible to modify public GraphQL API access using project config. ([#6429](https://github.com/craftcms/cms/issues/6429))
 - Fixed a bug where nested project config files weren’t getting saved properly on Windows servers. ([#6425](https://github.com/craftcms/cms/issues/6425))
+- Fixed a bug where half-width fields weren’t quite wide enough on medium-sized screens. ([#6423](https://github.com/craftcms/cms/issues/6423))
 
 ## 3.5.0-RC1.1 - 2020-07-21
 

@@ -3341,7 +3341,7 @@ body.rtl .content.has-sidebar:not(.hiding-sidebar) { margin-right: 226px; }
   #content .flex-fields > :not(h2):not(hr).width-50, #content .flex-fields > :not(h2):not(hr):last-child.width-50 { width: calc(50% - 14px); }
   #content .flex-fields > :not(h2):not(hr).width-75, #content .flex-fields > :not(h2):not(hr):last-child.width-75 { width: calc(75% - 14px); } }
 
-@media only screen and (min-width: 500px) and (max-width: 1425px) { #content .flex-fields > :not(h2):not(hr).width-25, #content .flex-fields > :not(h2):not(hr).width-50, #content .flex-fields > :not(h2):not(hr):last-child.width-25, #content .flex-fields > :not(h2):not(hr):last-child.width-50 { width: calc(50% - 24px); } }
+@media only screen and (min-width: 500px) and (max-width: 1425px) { #content .flex-fields > :not(h2):not(hr).width-25, #content .flex-fields > :not(h2):not(hr).width-50, #content .flex-fields > :not(h2):not(hr):last-child.width-25, #content .flex-fields > :not(h2):not(hr):last-child.width-50 { width: calc(50% - 14px); } }
 
 /* retina */
 @media only screen and (-webkit-min-device-pixel-ratio: 1.5), only screen and (-moz-min-device-pixel-ratio: 1.5), only screen and (-o-min-device-pixel-ratio: 3 / 2), only screen and (min-device-pixel-ratio: 1.5), only screen and (-o-min-device-pixel-ratio: 3/2), only screen and (min-resolution: 1.5dppx) { #details .spinner { background-image: url(../images/spinner_details_2x.gif); -o-background-size: 20px; background-size: 20px; }
