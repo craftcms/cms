@@ -69,6 +69,18 @@ class ElementIndexSettingsController extends BaseElementsController
                     $attribute[1]['label']
                 ];
             }
+
+            // Header column info
+            if ($firstAttribute = reset($tableAttributes)) {
+                list (, $attributeInfo) = $firstAttribute;
+                // Is there a custom header col heading?
+                if (isset($attributeInfo['defaultLabel'])) {
+                    $source['headerColHeading'] = $attributeInfo['label'];
+                    $source['defaultHeaderColHeading'] = $attributeInfo['defaultLabel'];
+                } else {
+                    $source['defaultHeaderColHeading'] = $attributeInfo['label'];
+                }
+            }
         }
         unset($source);
 

@@ -162,6 +162,7 @@ JS;
             'From',
             'Give your tab a name.',
             'Handle',
+            'Header Column Heading',
             'Heading',
             'Hide sidebar',
             'Hide',

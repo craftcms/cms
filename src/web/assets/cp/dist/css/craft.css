@@ -963,7 +963,7 @@ body.ltr .datatablesorthelper .tableview .toggle { -webkit-transform: rotate(-90
 body.rtl .datatablesorthelper .tableview .toggle { -webkit-transform: rotate(90deg) !important; -o-transform: rotate(90deg) !important; transform: rotate(90deg) !important; }
 
 /* elements */
-.element { position: relative; cursor: default; outline: none !important; -webkit-user-select: none; user-select: none; }
+.element { position: relative; cursor: default; outline: none !important; -webkit-user-select: none; user-select: none; font-weight: normal; }
 
 .element:focus, li:focus .element { background-color: #f3f7fc; }
 

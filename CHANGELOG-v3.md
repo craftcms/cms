@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Added the “Header Column Heading” element index source setting. ([#3814](https://github.com/craftcms/cms/issues/3814))
 - Added the `enableBasicHttpAuth` config setting. ([#6421](https://github.com/craftcms/cms/issues/6421))
 - `craft\gql\ElementQueryConditionBuilder` now fires the `registerGqlEagerLoadableFields` event that allows for plugins to register additional fields that should be eager-loaded when using GraphQL.
 - Added `craft\events\RegisterGqlEagerLoadableFields`.

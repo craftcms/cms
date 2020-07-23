@@ -1916,6 +1916,7 @@ $elementInnerSpacing: 5px;
   cursor: default;
   outline: none !important;
   user-select: none;
+  font-weight: normal;
 
   &:focus,
   li:focus & {

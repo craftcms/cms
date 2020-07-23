@@ -311,7 +311,13 @@ Craft.CustomizeSourcesModal.BaseSource = Garnish.Base.extend(
 Craft.CustomizeSourcesModal.Source = Craft.CustomizeSourcesModal.BaseSource.extend(
     {
         createSettings: function() {
-            let $settings = $('<div/>');
+            let $settings = $('<div/>').append(Craft.ui.createTextField({
+                label: Craft.t('app', 'Header Column Heading'),
+                id: 'defaultHeaderColHeading' + Math.floor(Math.random() * 100000),
+                name: `sources[${this.sourceData.key}][headerColHeading]`,
+                value: this.sourceData.headerColHeading,
+                placeholder: this.sourceData.defaultHeaderColHeading,
+            }));
 
             if (this.sourceData.tableAttributes.length) {
                 $settings.append(this.createTableColumnsField());
