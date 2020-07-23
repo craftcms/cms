@@ -1136,7 +1136,10 @@ class Sections extends Component
 
             $maxSortOrder = (new Query())
                 ->from([Table::ENTRYTYPES])
-                ->where(['sectionId' => $entryType->sectionId])
+                ->where([
+                    'sectionId' => $entryType->sectionId,
+                    'dateDeleted' => null,
+                ])
                 ->max('[[sortOrder]]');
             $sortOrder = $maxSortOrder ? $maxSortOrder + 1 : 1;
         } else {
