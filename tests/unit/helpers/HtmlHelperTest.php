@@ -339,6 +339,7 @@ class HtmlHelperTest extends Unit
             ['foo', '-foo-'],
             ['foo-bar', 'foo--bar'],
             ['foo-bar-baz', 'foo[bar][baz]'],
+            ['foo-bar-baz', 'foo bar baz'],
         ];
     }
 
