@@ -775,7 +775,7 @@ class Sections extends Component
         if (
             !$isNewSection &&
             $section->type === Section::TYPE_SINGLE &&
-            !Craft::$app->getProjectConfig()->areChangesPending($event->path . '.' . self::CONFIG_ENTRYTYPES_KEY)
+            !Craft::$app->getProjectConfig()->areChangesPending(self::CONFIG_ENTRYTYPES_KEY)
         ) {
             $this->_ensureSingleEntry($section, $siteSettingData);
         }
