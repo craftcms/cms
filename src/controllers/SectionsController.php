@@ -401,8 +401,7 @@ class SectionsController extends Controller
 
         $entryTypeId = $this->request->getRequiredBodyParam('id');
 
-        Craft::$app->getSections()->deleteEntryTypeById($entryTypeId);
-
-        return $this->asJson(['success' => true]);
+        $success = Craft::$app->getSections()->deleteEntryTypeById($entryTypeId);
+        return $this->asJson(['success' => $success]);
     }
 }
