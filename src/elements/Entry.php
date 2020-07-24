@@ -773,7 +773,6 @@ class Entry extends Element
                     ->id($this->id)
                     ->siteId('*')
                     ->select('elements_sites.siteId')
-                    ->indexBy('elements_sites.siteId')
                     ->drafts($this->getIsDraft())
                     ->revisions($this->getIsRevision())
                     ->column();
@@ -788,11 +787,13 @@ class Entry extends Element
                     ->id($this->duplicateOf->id)
                     ->siteId('*')
                     ->select('elements_sites.siteId')
-                    ->indexBy('elements_sites.siteId')
                     ->drafts($this->duplicateOf->getIsDraft())
                     ->revisions($this->duplicateOf->getIsRevision())
-                    ->column());
+                    ->column()
+                );
             }
+
+            $currentSites = array_flip($currentSites);
         }
 
         foreach ($section->getSiteSettings() as $siteSettings) {
