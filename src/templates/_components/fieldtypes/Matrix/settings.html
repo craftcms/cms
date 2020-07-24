@@ -104,19 +104,21 @@
                                         errors: field.getErrors('instructions'),
                                     }) }}
 
-                                    {{ forms.checkboxField({
-                                        label: "This field is required"|t('app'),
-                                        id: 'required',
-                                        name: 'required',
-                                        checked: layoutElement.required
-                                    }) }}
+                                    <fieldset>
+                                        {{ forms.checkboxField({
+                                            label: "This field is required"|t('app'),
+                                            id: 'required',
+                                            name: 'required',
+                                            checked: layoutElement.required
+                                        }) }}
 
-                                    {{ forms.checkboxField({
-                                        label: 'Use this field’s values as search keywords'|t('app'),
-                                        id: 'searchable',
-                                        name: 'searchable',
-                                        checked: field.searchable
-                                    }) }}
+                                        {{ forms.checkboxField({
+                                            label: 'Use this field’s values as search keywords'|t('app'),
+                                            id: 'searchable',
+                                            name: 'searchable',
+                                            checked: field.searchable
+                                        }) }}
+                                    </fieldset>
 
                                     {{ forms.selectField({
                                         label: "Field Type"|t('app'),

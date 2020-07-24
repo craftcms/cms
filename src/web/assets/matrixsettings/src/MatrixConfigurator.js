@@ -727,18 +727,20 @@
                     name: this.inputNamePrefix + '[instructions]'
                 }).appendTo($container);
 
+                let $fieldset = $('<fieldset/>').appendTo($container);
+
                 Craft.ui.createCheckboxField({
                     label: Craft.t('app', 'This field is required'),
                     id: this.inputIdPrefix + '-required',
                     name: this.inputNamePrefix + '[required]'
-                }).appendTo($container);
+                }).appendTo($fieldset);
 
                 Craft.ui.createCheckboxField({
                     label: Craft.t('app', 'Use this field’s values as search keywords'),
                     id: this.inputIdPrefix + '-searchable',
                     name: this.inputNamePrefix + '[searchable]',
                     checked: false,
-                }).appendTo($container);
+                }).appendTo($fieldset);
 
                 var fieldTypeOptions = [];
 

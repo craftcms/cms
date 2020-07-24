@@ -297,7 +297,7 @@ Craft.ui =
         },
 
         createCheckboxSelect: function(config) {
-            var $container = $('<div class="checkbox-select"/>');
+            var $container = $('<fieldset class="checkbox-select"/>');
 
             if (config.class) {
                 $container.addClass(config.class);

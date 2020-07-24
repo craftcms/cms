@@ -8,7 +8,7 @@
     {%- set allChecked = (values == allValue) %}
 {%- endif %}
 
-<div class="checkbox-select{% if class is defined %} {{ class }}{% endif %}"
+<fieldset class="checkbox-select{% if class is defined %} {{ class }}{% endif %}"
         {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
     {%- if showAllOption %}
         <div>
@@ -37,4 +37,4 @@
             </div>
         {% endif %}
     {% endfor %}
-</div>
+</fieldset>
