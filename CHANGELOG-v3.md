@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.5.0-RC3 - 2020-07-24
 
 ### Fixed
 - Fixed a bug where entries weren’t always retaining all of their enabled sites when creating or publishing a draft, if the section’s propagation method was set to “Let each entry choose which sites it should be saved to”. ([#6441](https://github.com/craftcms/cms/issues/6441))
