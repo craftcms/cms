@@ -1391,11 +1391,7 @@ class Sections extends Component
             ]));
         }
 
-        $entryTypeUid = $entryType->uid;
-        $section = $entryType->getSection();
-        $sectionUid = $section->uid;
-
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_SECTIONS_KEY . '.' . $sectionUid . '.' . self::CONFIG_ENTRYTYPES_KEY . '.' . $entryTypeUid, "Delete the “{$entryType->handle}” entry type");
+        Craft::$app->getProjectConfig()->remove(self::CONFIG_ENTRYTYPES_KEY . '.' . $entryType->uid, "Delete the “{$entryType->handle}” entry type");
         return true;
     }
 
@@ -1406,7 +1402,7 @@ class Sections extends Component
      */
     public function handleDeletedEntryType(ConfigEvent $event)
     {
-        $uid = $event->tokenMatches[1];
+        $uid = $event->tokenMatches[0];
         $entryTypeRecord = $this->_getEntryTypeRecord($uid);
 
         if (!$entryTypeRecord->id) {

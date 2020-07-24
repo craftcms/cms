@@ -5,6 +5,7 @@
 ### Fixed
 - Fixed a bug where entries weren’t always retaining all of their enabled sites when creating or publishing a draft, if the section’s propagation method was set to “Let each entry choose which sites it should be saved to”. ([#6441](https://github.com/craftcms/cms/issues/6441))
 - Fixed a bug where Matrix blocks weren’t always propagating to newly-enabled sites right away, if the section’s propagation method was set to “Let each entry choose which sites it should be saved to”. ([#6441](https://github.com/craftcms/cms/issues/6441))
+- Fixed a bug where entry types weren’t getting deleted.
 - Fixed a bug where tests would not run if they were configured to use Project Config. ([#6428](https://github.com/craftcms/cms/issues/6428))
 
 ## 3.5.0-RC2 - 2020-07-23
