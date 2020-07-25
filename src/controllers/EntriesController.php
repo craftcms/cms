@@ -301,7 +301,7 @@ class EntriesController extends BaseEntriesController
         $this->requirePostRequest();
 
         $entry = $this->_getEntryModel();
-        $entryVariable = $this->request->getValidatedBodyParam('entryVariable', 'entry');
+        $entryVariable = $this->request->getValidatedBodyParam('entryVariable') ?? 'entry';
         // Permission enforcement
         $this->enforceSitePermission($entry->getSite());
         $this->enforceEditEntryPermissions($entry, $duplicate);
