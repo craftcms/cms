@@ -915,12 +915,31 @@ interface ElementInterface extends ComponentInterface
     public function getAttributeStatus(string $attribute);
 
     /**
+     * Returns whether an attribute has changed since the element was first loaded.
+     *
+     * @param string $name
+     * @return bool
+     * @since 3.5.0
+     */
+    public function isAttributeDirty(string $name): bool;
+
+    /**
      * Returns a list of attribute names that have changed since the element was first loaded.
      *
      * @return string[]
      * @since 3.4.0
      */
     public function getDirtyAttributes(): array;
+
+    /**
+     * Sets the list of dirty attribute names.
+     *
+     * @param string[] $names
+     * @param bool $merge Whether these attributes should be merged with existing dirty attributes
+     * @see getDirtyAttributes()
+     * @since 3.5.0
+     */
+    public function setDirtyAttributes(array $names, bool $merge = true);
 
     /**
      * Returns whether the Title field should be shown as translatable in the UI.

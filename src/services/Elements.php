@@ -2342,6 +2342,12 @@ class Elements extends Component
                 Craft::$app->getContent()->saveContent($element);
             }
 
+            // Set all of the dirty attributes on the element, in case an event listener wants to know
+            if ($trackChanges) {
+                ArrayHelper::append($dirtyAttributes, ...$element->getDirtyAttributes());
+                $element->setDirtyAttributes($dirtyAttributes, false);
+            }
+
             // It is now officially saved
             $element->afterSave($isNewElement);
 
@@ -2423,19 +2429,10 @@ class Elements extends Component
             }
         }
 
-        // Fire an 'afterSaveElement' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_ELEMENT)) {
-            $this->trigger(self::EVENT_AFTER_SAVE_ELEMENT, new ElementEvent([
-                'element' => $element,
-                'isNew' => $isNewElement,
-            ]));
-        }
-
         // Update the changed attributes & fields
         if ($trackChanges) {
             $userId = Craft::$app->getUser()->getId();
             $timestamp = Db::prepareDateForDb(new \DateTime());
-            ArrayHelper::append($dirtyAttributes, ...$element->getDirtyAttributes());
 
             foreach ($dirtyAttributes as $attributeName) {
                 Db::upsert(Table::CHANGEDATTRIBUTES, [
@@ -2464,6 +2461,14 @@ class Elements extends Component
                     }
                 }
             }
+        }
+
+        // Fire an 'afterSaveElement' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_ELEMENT)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_ELEMENT, new ElementEvent([
+                'element' => $element,
+                'isNew' => $isNewElement,
+            ]));
         }
 
         // Clear the element's record of dirty fields

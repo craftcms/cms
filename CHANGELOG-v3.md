@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\base\ElementInterface::isAttributeDirty()`.
+- Added `craft\base\ElementInterface::setDirtyAttributes()`.
+
 ### Changed
 - Template field layout UI elements can now have custom widths. ([#6454](https://github.com/craftcms/cms/issues/6454))
 

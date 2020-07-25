@@ -1277,8 +1277,9 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @var string[]|null Record of dirty attributes.
      * @see getDirtyAttributes()
+     * @see isAttributeDirty()
      */
-    private $_dirtyAttributes;
+    private $_dirtyAttributes = [];
 
     /**
      * @var string|null The initial title value, if there was one.
@@ -2506,24 +2507,32 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getDirtyAttributes(): array
+    public function isAttributeDirty(string $name): bool
     {
-        $dirtyAttributes = $this->_dirtyAttributes ?? [];
-        if (static::hasTitles() && $this->title !== $this->_savedTitle) {
-            $dirtyAttributes[] = 'title';
-        }
-        return $dirtyAttributes;
+        return $this->_allDirty() || isset($this->_dirtyAttributes[$name]);
     }
 
     /**
-     * Sets the list of dirty attribute names.
-     *
-     * @param string[] $names
-     * @see getDirtyAttributes()
+     * @inheritdoc
      */
-    public function setDirtyAttributes(array $names)
+    public function getDirtyAttributes(): array
     {
-        $this->_dirtyAttributes = $names;
+        if (static::hasTitles() && $this->title !== $this->_savedTitle) {
+            $this->_dirtyAttributes['title'] = true;
+        }
+        return array_keys($this->_dirtyAttributes);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setDirtyAttributes(array $names, bool $merge = true)
+    {
+        if ($merge) {
+            $this->_dirtyAttributes = array_merge($this->_dirtyAttributes, array_flip($names));
+        } else {
+            $this->_dirtyAttributes = array_flip($names);
+        }
     }
 
     /**
@@ -2677,7 +2686,7 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
-     * Returns whether all fields should be considered dirty.
+     * Returns whether all fields and attributes should be considered dirty.
      *
      * @return bool
      */
@@ -2700,7 +2709,7 @@ abstract class Element extends Component implements ElementInterface
     public function markAsClean()
     {
         $this->_allDirty = false;
-        $this->_dirtyAttributes = null;
+        $this->_dirtyAttributes = [];
         $this->_dirtyFields = null;
         if (static::hasTitles()) {
             $this->_savedTitle = $this->title;
