@@ -707,7 +707,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function getSupportedSites(): array
+    public function defineSupportedSites(): array
     {
         $section = $this->getSection();
         /** @var Site[] $allSites */
