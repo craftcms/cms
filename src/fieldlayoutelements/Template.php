@@ -49,6 +49,14 @@ HTML;
     /**
      * @inheritdoc
      */
+    public function hasCustomWidth(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function settingsHtml()
     {
         return Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField', [
@@ -86,7 +94,7 @@ HTML;
             return null;
         }
 
-        return Html::tag('div', $content);
+        return Html::tag('div', $content, $this->containerAttributes($element, $static));
     }
 
     /**

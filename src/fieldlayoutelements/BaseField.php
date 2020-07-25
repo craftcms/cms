@@ -46,11 +46,6 @@ abstract class BaseField extends FieldLayoutElement
     public $required = false;
 
     /**
-     * @var int The width (%) of the field
-     */
-    public $width = 100;
-
-    /**
      * Returns the element attribute this field is for.
      *
      * @return string
@@ -152,6 +147,14 @@ abstract class BaseField extends FieldLayoutElement
     /**
      * @inheritdoc
      */
+    public function hasCustomWidth(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function settingsHtml()
     {
         $view = Craft::$app->getView();
@@ -191,8 +194,7 @@ abstract class BaseField extends FieldLayoutElement
 
         return Craft::$app->getView()->renderTemplate('_includes/forms/field', [
             'id' => $this->id(),
-            'fieldClass' => 'width-' . ($this->width ?? 100),
-            'fieldAttributes' => $this->fieldAttributes($element, $static),
+            'fieldAttributes' => $this->containerAttributes($element, $static),
             'inputAttributes' => $this->inputContainerAttributes($element, $static),
             'labelAttributes' => $this->labelAttributes($element, $static),
             'status' => $statusClass ? [$statusClass, $this->statusLabel() ?? ucfirst($statusClass)] : null,
@@ -231,18 +233,6 @@ abstract class BaseField extends FieldLayoutElement
     protected function id(): string
     {
         return $this->attribute();
-    }
-
-    /**
-     * Returns field container HTML attributes.
-     *
-     * @param ElementInterface|null $element The element the form is being rendered for
-     * @param bool $static Whether the form should be static (non-interactive)
-     * @return array
-     */
-    protected function fieldAttributes(ElementInterface $element = null, bool $static = false): array
-    {
-        return [];
     }
 
     /**

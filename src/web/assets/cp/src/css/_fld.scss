@@ -82,8 +82,7 @@ $gridColor: hsl(212, 50%, 95%);
 }
 
 .fld-tab .settings,
-.fld-field .settings,
-.fld-field .slide-picker{
+.fld-element .slide-picker{
   @include margin-left(7px);
 }
 

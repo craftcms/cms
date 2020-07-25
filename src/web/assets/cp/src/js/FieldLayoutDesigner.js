@@ -304,6 +304,7 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
     attribute: null,
     requirable: false,
     key: null,
+    hasCustomWidth: false,
     hasSettings: false,
     hud: null,
 
@@ -328,6 +329,7 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
 
         let settingsHtml = this.$container.data('settings-html');
         let isRequired = this.requirable && this.$container.hasClass('fld-required');
+        this.hasCustomWidth = this.designer.settings.customizableUi && Garnish.hasAttr(this.$container, 'data-has-custom-width');
         this.hasSettings = settingsHtml || this.requirable;
 
         if (this.hasSettings) {
@@ -380,22 +382,20 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
         }).appendTo(this.$container);
         this.updateConfigInput();
 
-        if (this.isField) {
-            if (this.designer.settings.customizableUi) {
-                let widthSlider = new Craft.SlidePicker(this.config.width || 100, {
-                    min: 25,
-                    max: 100,
-                    step: 25,
-                    valueLabel: width => {
-                        return Craft.t('app', '{pct} width', {pct: `${width}%`});
-                    },
-                    onChange: width => {
-                        this.config.width = width;
-                        this.updateConfigInput();
-                    }
-                });
-                widthSlider.$container.appendTo(this.$container);
-            }
+        if (this.hasCustomWidth) {
+            let widthSlider = new Craft.SlidePicker(this.config.width || 100, {
+                min: 25,
+                max: 100,
+                step: 25,
+                valueLabel: width => {
+                    return Craft.t('app', '{pct} width', {pct: `${width}%`});
+                },
+                onChange: width => {
+                    this.config.width = width;
+                    this.updateConfigInput();
+                }
+            });
+            widthSlider.$container.appendTo(this.$container);
         }
 
         if (this.hasSettings) {

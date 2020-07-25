@@ -3385,9 +3385,9 @@ body.rtl .layoutdesigner .fld-sidebar { left: 0; }
 
 .fld-sidebar, .fld-tab .tabs .tab, .fld-tab .fld-tabcontent, .fld-new-tab-btn, .fld-new-tab-btn:hover { background-color: #fff; box-shadow: 0 0 0 1px rgba(31, 41, 51, 0.1), 0 2px 5px -2px rgba(31, 41, 51, 0.2); }
 
-body.ltr .fld-tab .settings, body.ltr .fld-field .settings, body.ltr .fld-field .slide-picker { margin-left: 7px; }
+body.ltr .fld-tab .settings, body.ltr .fld-element .slide-picker { margin-left: 7px; }
 
-body.rtl .fld-tab .settings, body.rtl .fld-field .settings, body.rtl .fld-field .slide-picker { margin-right: 7px; }
+body.rtl .fld-tab .settings, body.rtl .fld-element .slide-picker { margin-right: 7px; }
 
 .fld-tab .settings:before, .fld-field .settings:before { margin-top: -2px; font-size: 16px; opacity: 0.5; }
 

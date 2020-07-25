@@ -57,6 +57,7 @@
         data: {
             type: className(element),
             config: element.toArray(),
+            'has-custom-width': element.hasCustomWidth(),
             'settings-html': settingsHtml ? settingsHtml|namespaceAttributes("element-#{random()}") ?: false,
         },
     }|merge(attr ?? {}, recursive=true)) }}

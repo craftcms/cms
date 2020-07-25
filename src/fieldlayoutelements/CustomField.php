@@ -125,14 +125,12 @@ class CustomField extends BaseField
     /**
      * @inheritdoc
      */
-    protected function fieldAttributes(ElementInterface $element = null, bool $static = false): array
+    protected function containerAttributes(ElementInterface $element = null, bool $static = false): array
     {
-        return [
-            'id' => "{$this->_field->handle}-field",
-            'data' => [
-                'type' => get_class($this->_field),
-            ]
-        ];
+        $attributes = parent::containerAttributes($element, $static);
+        $attributes['id'] = "{$this->_field->handle}-field";
+        $attributes['data']['type'] = get_class($this->_field);
+        return $attributes;
     }
 
     /**

@@ -25,6 +25,13 @@ interface FieldLayoutElementInterface extends Arrayable
     public function selectorHtml(): string;
 
     /**
+     * Returns whether the element can have a custom width.
+     *
+     * @return bool
+     */
+    public function hasCustomWidth(): bool;
+
+    /**
      * Returns the settings HTML for the layout element.
      *
      * @return string|null

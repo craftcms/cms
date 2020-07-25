@@ -8,6 +8,7 @@
 namespace craft\fieldlayoutelements;
 
 use craft\base\ElementInterface;
+use craft\helpers\ArrayHelper;
 
 /**
  * StandardField is the base class for standard fields that can be included in field layouts.
@@ -101,9 +102,10 @@ abstract class StandardField extends BaseField
     /**
      * @inheritdoc
      */
-    protected function fieldAttributes(ElementInterface $element = null, bool $static = false): array
+    protected function containerAttributes(ElementInterface $element = null, bool $static = false): array
     {
-        return $this->containerAttributes;
+        $attributes = parent::containerAttributes($element, $static);
+        return ArrayHelper::merge($attributes, $this->containerAttributes);
     }
 
     /**
