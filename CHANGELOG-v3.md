@@ -9,6 +9,9 @@
 ### Changed
 - Template field layout UI elements can now have custom widths. ([#6454](https://github.com/craftcms/cms/issues/6454))
 
+### Deprecated
+- Deprecated the `class` argument of the `svg()` Twig function. The `|attr` filter should be used instead.
+
 ### Fixed
 - Fixed a bug where asset, category, entry, and user forms in the control panel weren’t showing changed values or inline validation errors, if the save was unsuccessful. ([#6453](https://github.com/craftcms/cms/issues/6453))
 

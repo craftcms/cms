@@ -419,6 +419,7 @@
 - Deprecated the `install/plugin` command. `plugin/install` should be used instead.
 - Deprecated the `|filterByValue` Twig filter. `|where` should be used instead.
 - Deprecated the `|ucwords` Twig filter. `|title` should be used instead.
+- Deprecated the `class` argument of the `svg()` Twig function. The `|attr` filter should be used instead.
 - Deprecated the `--type` option on `migrate` commands. `--track` or `--plugin` should be used instead.
 - Deprecated `craft\db\Table::TEMPLATECACHEELEMENTS`.
 - Deprecated `craft\db\Table::TEMPLATECACHEQUERIES`.
