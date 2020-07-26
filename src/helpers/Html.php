@@ -547,17 +547,10 @@ class Html extends \yii\helpers\Html
     }
 
     /**
-     * Prepends a namespace to various HTML attributes, as well as any ID selectors within `<style>` tags.
+     * Prepends a namespace to `id` attributes, and any of the following things that reference those IDs:
      *
-     * The following attributes will be namespaced:
-     *
-     * - `id`
-     * - `for`
-     * - `list`
-     * - `aria-labelledby`
-     * - `data-target`
-     * - `data-reverse-target`
-     * - `data-target-prefix`
+     * - `for`, `list`, `href`, `aria-labelledby`, `aria-describedby`, `data-target`, `data-reverse-target`, and `data-target-prefix` attributes
+     * - ID selectors within `<style>` tags
      *
      * For example, this:
      *
@@ -598,11 +591,19 @@ class Html extends \yii\helpers\Html
         // normalize the namespace
         $namespace = static::id($namespace);
 
+        // Namespace & capture the ID attributes
+        $ids = [];
+        $html = preg_replace_callback('/(?<=\sid=)(\'|")([^\'"\s]*)\1/i', function($match) use ($namespace, &$ids): string {
+            $ids[] = preg_quote($match[2], '/');
+            return $match[1] . $namespace . '-' . $match[2] . $match[1];
+        }, $html);
+
         // normal HTML attributes
-        $html = preg_replace('/(?<![\w\-])\b((id|for|list|aria\-labelledby|data\-target|data\-reverse\-target|data\-target\-prefix)=(\'|")#?)([^\.\'"][^\'"]*)?\3/i', "$1$namespace-$4$3", $html);
+        $idPattern = implode('|', $ids);
+        $html = preg_replace("/(?<=\\s)((?:for|list|xlink:href|href|aria\\-labelledby|aria\\-describedby|data\\-target|data\\-reverse\\-target|data\\-target\\-prefix)=('|\")#?)($idPattern)\\2/i", "$1$namespace-$3$2", $html);
 
         // ID references in url() calls
-        $html = preg_replace('/(?<=url\(#)[\w\-]+(?=\))/i', "$namespace-$0", $html);
+        $html = preg_replace("/(?<=url\\(#)(?:$idPattern)(?=\\))/i", "$namespace-$0", $html);
 
         // class attributes
         if ($withClasses) {
@@ -616,9 +617,11 @@ class Html extends \yii\helpers\Html
         }
 
         // CSS selectors
-        $dlm = $withClasses ? '[\.#]' : '#';
-        $html = preg_replace_callback('/(<style\b[^>]*>)(.*?)(<\/style>)/is', function(array $matches) use ($namespace, $dlm) {
-            $html = preg_replace("/(?<![\w'\"])($dlm)([\w\-]+)(?=[,\s\{])/", "$1$namespace-$2", $matches[2]);
+        $html = preg_replace_callback('/(<style\b[^>]*>)(.*?)(<\/style>)/is', function(array $matches) use ($namespace, $withClasses, $idPattern) {
+            $html = preg_replace("/(?<![\w'\"])#($idPattern)(?=[,\\s\\{])/", "#$namespace-$1", $matches[2]);
+            if ($withClasses) {
+                $html = preg_replace("/(?<![\\w'\"])\\.([\\w\\-]+)(?=[,\\s\\{])/", ".$namespace-$1", $matches[2]);
+            }
             return $matches[1] . $html . $matches[3];
         }, $html);
     }

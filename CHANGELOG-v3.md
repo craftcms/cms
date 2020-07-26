@@ -8,12 +8,15 @@
 
 ### Changed
 - Template field layout UI elements can now have custom widths. ([#6454](https://github.com/craftcms/cms/issues/6454))
+- `craft\helpers\Html::namespaceAttributes()` now namespaces `aria-describedby` and `href` attributes.
+- `craft\helpers\Html::namespaceAttributes()` no longer namespaces attributes unless their values reference another `id` attribute in the same HTML blob.
 
 ### Deprecated
 - Deprecated the `class` argument of the `svg()` Twig function. The `|attr` filter should be used instead.
 
 ### Fixed
 - Fixed a bug where asset, category, entry, and user forms in the control panel weren’t showing changed values or inline validation errors, if the save was unsuccessful. ([#6453](https://github.com/craftcms/cms/issues/6453))
+- Fixed a bug where `xlink:href` attributes within SVGs weren’t getting namespaced properly. ([#6457](https://github.com/craftcms/cms/issues/6457))
 
 ## 3.5.0-RC3 - 2020-07-24
 
