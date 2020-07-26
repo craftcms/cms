@@ -554,7 +554,7 @@ class Html extends \yii\helpers\Html
      * - `id`
      * - `for`
      * - `list`
-     * - `aria-labeled-by`
+     * - `aria-labelledby`
      * - `data-target`
      * - `data-reverse-target`
      * - `data-target-prefix`
