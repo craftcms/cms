@@ -1337,8 +1337,8 @@ class Sections extends Component
                     $sectionRecord = SectionRecord::findOne($entryTypeRecord->sectionId);
                 }
 
-                $configPath = self::CONFIG_SECTIONS_KEY . '.' . $sectionRecord->uid . '.' . self::CONFIG_ENTRYTYPES_KEY . '.' . $entryTypeUid;
-                $projectConfig->set($configPath . '.sortOrder', $entryTypeOrder + 1, 'Reorder entry types');
+                $configPath = self::CONFIG_ENTRYTYPES_KEY . '.' . $entryTypeUid . '.sortOrder';
+                $projectConfig->set($configPath, $entryTypeOrder + 1, 'Reorder entry types');
             }
         }
 
