@@ -77,7 +77,7 @@
 
 {% set showHeader = showHeader ?? true %}
 {% if not showHeader %}
-    {% set bodyClass = (bodyClass is defined ? bodyClass~' ' : '') ~ 'no-header' -%}
+    {% set bodyClass = (bodyClass ?? [])|explodeClass|push('no-header') -%}
 {% endif %}
 
 {% set mainAttributes = {

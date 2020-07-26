@@ -18,6 +18,7 @@
 - Fixed a bug where asset, category, entry, and user forms in the control panel weren’t showing changed values or inline validation errors, if the save was unsuccessful. ([#6453](https://github.com/craftcms/cms/issues/6453))
 - Fixed a bug where `xlink:href` attributes within SVGs weren’t getting namespaced properly. ([#6457](https://github.com/craftcms/cms/issues/6457))
 - Fixed a bug where entry types weren’t getting reordered. ([#6458](https://github.com/craftcms/cms/issues/6458))
+- Fixed a PHP error that could occur in the control panel. ([#6459](https://github.com/craftcms/cms/issues/6459))
 
 ## 3.5.0-RC3 - 2020-07-24
 

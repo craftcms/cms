@@ -2,7 +2,7 @@
 
 {# Give the body a .mobile class for mobile devices #}
 {% if craft.app.request.isMobileBrowser(true) %}
-    {% set bodyClass = (bodyClass is defined and bodyClass ? bodyClass~' ' : '') ~ 'mobile' %}
+    {% set bodyClass = (bodyClass ?? [])|explodeClass|push('mobile') -%}
 {% endif %}
 
 {% do view.registerTranslations('app', [
