@@ -3675,8 +3675,11 @@ ul.tree,
     li {
       a {
         @include menu-option-styles;
-        display: block !important;
         font-size: 14px;
+
+        &:not(.flex) {
+          display: block !important;
+        }
 
         &.sel {
           cursor: default;
@@ -3691,7 +3694,7 @@ ul.tree,
     }
   }
 
-  .flex {
+  & > .flex {
     margin-top: 10px;
     margin-bottom: 10px;
     position: relative;

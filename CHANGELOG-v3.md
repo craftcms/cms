@@ -7,6 +7,7 @@
 - Added `craft\base\ElementInterface::setDirtyAttributes()`.
 
 ### Changed
+- The account menu in the control panel header now includes identity info. ([#6460](https://github.com/craftcms/cms/issues/6460))
 - Template field layout UI elements can now have custom widths. ([#6454](https://github.com/craftcms/cms/issues/6454))
 - `craft\helpers\Html::namespaceAttributes()` now namespaces `aria-describedby` and `href` attributes.
 - `craft\helpers\Html::namespaceAttributes()` no longer namespaces attributes unless their values reference another `id` attribute in the same HTML blob.

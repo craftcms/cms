@@ -320,6 +320,7 @@
 ### Changed
 - Craft now stores project config files in a new `config/project/` folder, regardless of whether the (deprecated) `useProjectConfigFile` config setting is enabled, and syncing new project config file changes is now optional.
 - The public GraphQL schema’s access settings are now stored in the project config. ([#6078](https://github.com/craftcms/cms/issues/6078))
+- The account menu in the control panel header now includes identity info. ([#6460](https://github.com/craftcms/cms/issues/6460))
 - User registration forms in the control panel now give users the option to send an activation email, even if email verification isn’t required. ([#5836](https://github.com/craftcms/cms/issues/5836))
 - Activation emails are now sent automatically on public registration if the `deferPublicRegistrationPassword` config setting is enabled, even if email verification isn’t required. ([#5836](https://github.com/craftcms/cms/issues/5836))
 - Craft now remembers the selected site across global sets and element indexes. ([#2779](https://github.com/craftcms/cms/issues/2779))

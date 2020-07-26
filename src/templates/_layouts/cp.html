@@ -99,6 +99,19 @@
     },
 }|merge(mainFormAttributes ?? [], recursive=true) %}
 
+{% set userPhoto %}
+    <div class="header-photo">
+        {{ tag('img', {
+            width: 30,
+            height: 30,
+            sizes: '30px',
+            srcset: "#{currentUser.getThumbUrl(30)} 30w, #{currentUser.getThumbUrl(60)} 60w",
+            alt: currentUser.getName(),
+            title: currentUser.getName(),
+        }) }}
+    </div>
+{% endset %}
+
 {% block body %}
     <div id="global-container">
         {% include '_layouts/components/global-sidebar' %}
@@ -111,21 +124,27 @@
                 <div class="flex">
                     {% include '_layouts/components/crumbs' %}
                     <div class="flex-grow"></div>
-                    <div id="user-info" class="btn menubtn" data-menu-anchor="#user-photo" role="button">
-                        <div id="user-photo">
-                            {{ tag('img', {
-                                width: 30,
-                                height: 30,
-                                sizes: '30px',
-                                srcset: "#{currentUser.getThumbUrl(30)} 30w, #{currentUser.getThumbUrl(60)} 60w",
-                                alt: currentUser.getName(),
-                                title: currentUser.getName(),
-                            }) }}
-                        </div>
+                    <div id="user-info" class="btn menubtn" data-menu-anchor=".header-photo" role="button">
+                        {{ userPhoto }}
                     </div>
                     <div class="menu" data-align="right">
                         <ul>
-                            <li><a href="{{ url('myaccount') }}">{{ 'My Account'|t('app') }}</a></li>
+                            <li>
+                                <a href="{{ url('myaccount') }}" class="flex flex-nowrap">
+                                    {% if currentUser.photoId %}
+                                        {{ userPhoto }}
+                                    {% endif %}
+                                    <span class="flex-grow">
+                                        {{ currentUser.username }}<br>
+                                        {% if not craft.app.config.general.useEmailAsUsername %}
+                                            <span class="light smalltext">{{ currentUser.email }}</span>
+                                        {% endif %}
+                                    </span>
+                                </a>
+                            </li>
+                        </ul>
+                        <hr>
+                        <ul>
                             <li><a href="{{ url('logout') }}">{{ "Sign out"|t('app') }}</a></li>
                         </ul>
                     </div>
