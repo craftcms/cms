@@ -638,7 +638,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         }
 
         // Get the block types data
-        $blockTypeInfo = $this->_getBlockTypeInfoForInput($element, $blockTypes);
+        $placeholderKey = StringHelper::randomString(10);
+        $blockTypeInfo = $this->_getBlockTypeInfoForInput($element, $blockTypes, $placeholderKey);
         $createDefaultBlocks = (
             $this->minBlocks != 0 &&
             count($blockTypeInfo) === 1 &&
@@ -653,6 +654,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         $view->registerAssetBundle(MatrixAsset::class);
 
         $settings = [
+            'placeholderKey' => $placeholderKey,
             'maxBlocks' => $this->maxBlocks,
             'staticBlocks' => $staticBlocks,
         ];
@@ -1062,9 +1064,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
      *
      * @param ElementInterface|null $element
      * @param MatrixBlockType[] $blockTypes
+     * @param string $placeholderKey
      * @return array
      */
-    private function _getBlockTypeInfoForInput(ElementInterface $element = null, array $blockTypes): array
+    private function _getBlockTypeInfoForInput(ElementInterface $element = null, array $blockTypes, string $placeholderKey): array
     {
         /** @var Element $element */
         $blockTypeInfo = [];
@@ -1072,7 +1075,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         // Set a temporary namespace for these
         $view = Craft::$app->getView();
         $originalNamespace = $view->getNamespace();
-        $namespace = $view->namespaceInputName($this->handle . '[blocks][__BLOCK__][fields]', $originalNamespace);
+        $namespace = $view->namespaceInputName($this->handle . "[blocks][__BLOCK_{$placeholderKey}__][fields]", $originalNamespace);
         $view->setNamespace($namespace);
 
         foreach ($blockTypes as $blockType) {
