@@ -26,6 +26,7 @@
 - Fixed an error that could occur if JSON data was stored in a Plain Text field. ([#6327](https://github.com/craftcms/cms/issues/6327))
 - Fixed a bug where `ping` GraphQL queries weren’t working on fresh installs, until the Schemas index page had been accessed in the control panel. ([#6444](https://github.com/craftcms/cms/issues/6444))
 - Fixed a bug where having a non-writable project config folder could result in loss of data. ([#6438](https://github.com/craftcms/cms/issues/6438))
+- Fixed a bug where it was impossible to use GraphQL variables in some queries. ([#6463](https://github.com/craftcms/cms/issues/6463))
 
 ## 3.5.0-RC3 - 2020-07-24
 
