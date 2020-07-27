@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Improved support for nesting Matrix fields within other fields.
+
 ### Fixed
 - Fixed a bug where assets uploaded by front-end entry forms weren’t getting saved with the `uploaderId` attribute. ([#6456](https://github.com/craftcms/cms/issues/6456))
 - Fixed a bug where Matrix blocks weren’t always propagating to newly-enabled sites right away.
