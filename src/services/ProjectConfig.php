@@ -361,6 +361,11 @@ class ProjectConfig extends Component
         $this->on(self::EVENT_REMOVE_ITEM, [$this, 'handleChangeEvent']);
 
         parent::init();
+
+        // If we had config file write issues before, try to write out the existing config to files.
+        if ($this->getHadFileWriteIssues()) {
+            $this->regenerateYamlFromConfig();
+        }
     }
 
     /**
