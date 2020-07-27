@@ -362,13 +362,15 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         $fieldTypeInfo = $this->_getFieldOptionsForConfigurator();
 
         $view = Craft::$app->getView();
-
         $view->registerAssetBundle(MatrixSettingsAsset::class);
+
+        $placeholderKey = StringHelper::randomString(10);
         $view->registerJs(
             'new Craft.MatrixConfigurator(' .
             Json::encode($fieldTypeInfo, JSON_UNESCAPED_UNICODE) . ', ' .
             Json::encode($view->getNamespace(), JSON_UNESCAPED_UNICODE) . ', ' .
-            Json::encode($view->namespaceInputName('blockTypes[__BLOCK_TYPE__][fields][__FIELD__][typesettings]')) .
+            Json::encode($view->namespaceInputName("blockTypes[__BLOCK_TYPE_{$placeholderKey}__][fields][__FIELD_{$placeholderKey}__][typesettings]")) . ', ' .
+            Json::encode($placeholderKey) .
             ');'
         );
 
