@@ -587,20 +587,8 @@ class Gql extends Component
      */
     public function getPublicSchema()
     {
-        $result = $this->_createTokenQuery()
-            ->where(['accessToken' => GqlToken::PUBLIC_TOKEN])
-            ->one();
-
-        if ($result && $result['schemaId']) {
-            return (new GqlToken($result))->getSchema();
-        }
-
-        // If admin changes aren't currently supported, return null
-        if (!Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
-            return null;
-        }
-
-        return $this->_createPublicSchema($result ? $result['id'] : null);
+        $token = $this->getPublicToken();
+        return $token ? $token->getSchema() : null;
     }
 
     /**
@@ -782,6 +770,44 @@ class Gql extends Component
     }
 
     /**
+     * Returns the public token. If it does not exist and admin changes are allowed, it will be created.
+     *
+     * @return GqlToken|null
+     * @since 3.5.0
+     */
+    public function getPublicToken()
+    {
+        $result = $this->_createTokenQuery()
+            ->where(['accessToken' => GqlToken::PUBLIC_TOKEN])
+            ->one();
+
+        // If we don't have it and admin changes aren't currently supported, return null
+        if (
+            (!$result || !$result['schemaId']) &&
+            !Craft::$app->getConfig()->getGeneral()->allowAdminChanges
+        ) {
+            return null;
+        }
+
+        $token = $result ? new GqlToken($result) : new GqlToken([
+            'name' => 'Public Token',
+            'accessToken' => GqlToken::PUBLIC_TOKEN,
+            'enabled' => true,
+        ]);
+
+        if (!$token->schemaId) {
+            $schema = $this->_createPublicSchema();
+            $token->setSchema($schema);
+
+            if (!$this->saveToken($token)) {
+                throw new Exception('Couldn’t save the public token.');
+            }
+        }
+
+        return $token;
+    }
+
+    /**
      * Saves a GraphQL token.
      *
      * @param GqlToken $token the schema to save
@@ -880,14 +906,14 @@ class Gql extends Component
      */
     public function saveSchema(GqlSchema $schema, $runValidation = true): bool
     {
-        $isNewScope = !$schema->id;
+        $isNewSchema = !$schema->id;
 
         if ($runValidation && !$schema->validate()) {
             Craft::info('Schema not saved due to validation error.', __METHOD__);
             return false;
         }
 
-        if ($isNewScope && empty($schema->uid)) {
+        if ($isNewSchema && empty($schema->uid)) {
             $schema->uid = StringHelper::UUID();
         } else if (empty($schema->uid)) {
             $schema->uid = Db::uidById(Table::GQLSCHEMAS, $schema->id);
@@ -902,6 +928,10 @@ class Gql extends Component
 
         $configPath = self::CONFIG_GQL_SCHEMAS_KEY . '.' . $schema->uid;
         $projectConfig->set($configPath, $configData, "Save GraphQL schema “{$schema->name}”");
+
+        if ($isNewSchema) {
+            $schema->id = Db::idByUid(Table::GQLSCHEMAS, $schema->uid);
+        }
 
         return true;
     }
@@ -1523,16 +1553,15 @@ class Gql extends Component
     /**
      * Creates the public schema.
      *
-     * @param int $tokenId Token id, if one exists already for the public schema
      * @return GqlSchema
-     * @throws Exception if the schema couldn't be created.
      */
-    private function _createPublicSchema(int $tokenId = null): GqlSchema
+    private function _createPublicSchema(): GqlSchema
     {
-        $existingSchema = $this->_createSchemaQuery()->where(['isPublic' => true])->one();
+        // See if it already exists, and is just missing its token
+        $result = $this->_createSchemaQuery()->where(['isPublic' => true])->one();
 
-        if ($existingSchema) {
-            $schema = new GqlSchema($existingSchema);
+        if ($result) {
+            $schema = new GqlSchema($result);
         } else {
             $schemaUid = StringHelper::UUID();
             $schema = new GqlSchema([
@@ -1542,20 +1571,7 @@ class Gql extends Component
             ]);
         }
 
-        $this->saveSchema($schema);
-
-        $token = $tokenId ? $this->getTokenById($tokenId) : new GqlToken([
-            'name' => 'Public Token',
-            'accessToken' => GqlToken::PUBLIC_TOKEN,
-            'enabled' => true,
-        ]);
-
-        $token->schemaId = $existingSchema ? $schema->id : Db::idByUid(Table::GQLSCHEMAS, $schemaUid);
-
-        if (!$this->saveToken($token)) {
-            throw new Exception('Couldn’t create public schema.');
-        }
-
+        $this->saveSchema($schema, false);
         return $schema;
     }
 

@@ -5,6 +5,8 @@
 ### Added
 - Added `craft\base\ElementInterface::isAttributeDirty()`.
 - Added `craft\base\ElementInterface::setDirtyAttributes()`.
+- Added `craft\models\GqlToken::setSchema()`.
+- Added `craft\services\Gql::getPublicToken()`.
 
 ### Changed
 - The account menu in the control panel header now includes identity info. ([#6460](https://github.com/craftcms/cms/issues/6460))
@@ -22,6 +24,7 @@
 - Fixed a bug where entry types weren’t getting reordered. ([#6458](https://github.com/craftcms/cms/issues/6458))
 - Fixed a PHP error that could occur in the control panel. ([#6459](https://github.com/craftcms/cms/issues/6459))
 - Fixed an error that could occur if JSON data was stored in a Plain Text field. ([#6327](https://github.com/craftcms/cms/issues/6327))
+- Fixed a bug where `ping` GraphQL queries weren’t working on fresh installs, until the Schemas index page had been accessed in the control panel. ([#6444](https://github.com/craftcms/cms/issues/6444))
 
 ## 3.5.0-RC3 - 2020-07-24
 

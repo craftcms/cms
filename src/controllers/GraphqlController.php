@@ -238,10 +238,13 @@ class GraphqlController extends Controller
     private function _publicToken(GqlService $gqlService)
     {
         try {
-            $token = $gqlService->getTokenByAccessToken(GqlToken::PUBLIC_TOKEN);
-        } catch (InvalidArgumentException $e) {
+            $token = $gqlService->getPublicToken();
+        } catch (\Throwable $e) {
+            Craft::warning('Could not obtain the public token: ' . $e->getMessage());
+            Craft::$app->getErrorHandler()->logException($e);
             return null;
         }
+
         return $token->getIsValid() ? $token : null;
     }
 

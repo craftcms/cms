@@ -257,6 +257,7 @@
 - Added `craft\models\FieldLayoutTab::getConfig()`.
 - Added `craft\models\FieldLayoutTab::getElementConfigs()`.
 - Added `craft\models\FieldLayoutTab::updateConfig()`.
+- Added `craft\models\GqlToken::setSchema()`.
 - Added `craft\models\MatrixBlockType::getConfig()`.
 - Added `craft\models\Section::PROPAGATION_METHOD_CUSTOM`.
 - Added `craft\models\Site::$enabled`.
@@ -281,6 +282,7 @@
 - Added `craft\services\Fields::getLayoutsByElementType()`.
 - Added `craft\services\Gql::CONFIG_GQL_PUBLIC_TOKEN_KEY`.
 - Added `craft\services\Gql::getAllSchemaComponents()`.
+- Added `craft\services\Gql::getPublicToken()`.
 - Added `craft\services\Gql::handleChangedPublicToken()`.
 - Added `craft\services\Images::getSupportsWebP()`. ([#5853](https://github.com/craftcms/cms/issues/5853))
 - Added `craft\services\Path::getProjectConfigPath()`.
