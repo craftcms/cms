@@ -9,6 +9,7 @@
 ### Changed
 - The account menu in the control panel header now includes identity info. ([#6460](https://github.com/craftcms/cms/issues/6460))
 - Template field layout UI elements can now have custom widths. ([#6454](https://github.com/craftcms/cms/issues/6454))
+- Fields’ values are no longer automatically JSON-decoded before being passed to `normalizeValue()`, if they look like a JSON object or array.
 - `craft\helpers\Html::namespaceAttributes()` now namespaces `aria-describedby` and `href` attributes.
 - `craft\helpers\Html::namespaceAttributes()` no longer namespaces attributes unless their values reference another `id` attribute in the same HTML blob.
 
@@ -20,6 +21,7 @@
 - Fixed a bug where `xlink:href` attributes within SVGs weren’t getting namespaced properly. ([#6457](https://github.com/craftcms/cms/issues/6457))
 - Fixed a bug where entry types weren’t getting reordered. ([#6458](https://github.com/craftcms/cms/issues/6458))
 - Fixed a PHP error that could occur in the control panel. ([#6459](https://github.com/craftcms/cms/issues/6459))
+- Fixed an error that could occur if JSON data was stored in a Plain Text field. ([#6327](https://github.com/craftcms/cms/issues/6327))
 
 ## 3.5.0-RC3 - 2020-07-24
 
