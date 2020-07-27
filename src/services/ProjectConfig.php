@@ -361,11 +361,6 @@ class ProjectConfig extends Component
         $this->on(self::EVENT_REMOVE_ITEM, [$this, 'handleChangeEvent']);
 
         parent::init();
-
-        // If we had config file write issues before, try to write out the existing config to files.
-        if ($this->getHadFileWriteIssues()) {
-            $this->regenerateYamlFromConfig();
-        }
     }
 
     /**
@@ -591,7 +586,10 @@ class ProjectConfig extends Component
         }
 
         // If the file does not exist, but should, generate it
-        if (!file_exists(Craft::$app->getPath()->getProjectConfigFilePath())) {
+        if (
+            $this->getHadFileWriteIssues() ||
+            !file_exists(Craft::$app->getPath()->getProjectConfigFilePath())
+        ) {
             $this->regenerateYamlFromConfig();
             $this->saveModifiedConfigData();
             return false;
@@ -1563,8 +1561,7 @@ class ProjectConfig extends Component
     /**
      * Update the config Yaml files with the buffered changes.
      *
-     * @throws ErrorException
-     * @throws \yii\base\InvalidConfigException
+     * @throws Exception if something goes wrong
      */
     private function _updateYamlFiles()
     {
@@ -1589,10 +1586,8 @@ class ProjectConfig extends Component
                 }
             }
         } catch (\Throwable $e) {
-            Craft::warning('An error occurred when writing new project config files: ' . $e->getMessage(), __METHOD__);
-            Craft::$app->getErrorHandler()->logException($e);
             Craft::$app->getCache()->set(self::FILE_ISSUES_CACHE_KEY, true, self::CACHE_DURATION);
-            return;
+            throw new Exception('Unable to write new project config files', 0, $e);
         }
 
         Craft::$app->getCache()->delete(self::FILE_ISSUES_CACHE_KEY);

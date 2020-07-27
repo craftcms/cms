@@ -12,6 +12,7 @@
 - The account menu in the control panel header now includes identity info. ([#6460](https://github.com/craftcms/cms/issues/6460))
 - Template field layout UI elements can now have custom widths. ([#6454](https://github.com/craftcms/cms/issues/6454))
 - Fields’ values are no longer automatically JSON-decoded before being passed to `normalizeValue()`, if they look like a JSON object or array.
+- An exception is now thrown immediately if there are any errors writing new project config files. ([#6438](https://github.com/craftcms/cms/issues/6438))
 - `craft\helpers\Html::namespaceAttributes()` now namespaces `aria-describedby` and `href` attributes.
 - `craft\helpers\Html::namespaceAttributes()` no longer namespaces attributes unless their values reference another `id` attribute in the same HTML blob.
 
@@ -25,7 +26,6 @@
 - Fixed a PHP error that could occur in the control panel. ([#6459](https://github.com/craftcms/cms/issues/6459))
 - Fixed an error that could occur if JSON data was stored in a Plain Text field. ([#6327](https://github.com/craftcms/cms/issues/6327))
 - Fixed a bug where `ping` GraphQL queries weren’t working on fresh installs, until the Schemas index page had been accessed in the control panel. ([#6444](https://github.com/craftcms/cms/issues/6444))
-- Fixed a bug where having a non-writable project config folder could result in loss of data. ([#6438](https://github.com/craftcms/cms/issues/6438))
 
 ## 3.5.0-RC3 - 2020-07-24
 
