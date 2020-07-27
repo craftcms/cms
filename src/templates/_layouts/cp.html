@@ -134,12 +134,12 @@
                                     {% if currentUser.photoId %}
                                         {{ userPhoto }}
                                     {% endif %}
-                                    <span class="flex-grow">
-                                        {{ currentUser.username }}<br>
+                                    <div class="flex-grow">
+                                        <div>{{ currentUser.username }}</div>
                                         {% if not craft.app.config.general.useEmailAsUsername %}
-                                            <span class="light smalltext">{{ currentUser.email }}</span>
+                                            <div class="light smalltext">{{ currentUser.email }}</div>
                                         {% endif %}
-                                    </span>
+                                    </div>
                                 </a>
                             </li>
                         </ul>
