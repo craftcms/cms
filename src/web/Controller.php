@@ -356,7 +356,7 @@ abstract class Controller extends \yii\web\Controller
      */
     public function requireAcceptsJson()
     {
-        if (!$this->request->getAcceptsJson()) {
+        if (!$this->request->getAcceptsJson() && !$this->request->getIsOptions()) {
             throw new BadRequestHttpException('Request must accept JSON in response');
         }
     }
