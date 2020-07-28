@@ -362,13 +362,15 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         $fieldTypeInfo = $this->_getFieldOptionsForConfigurator();
 
         $view = Craft::$app->getView();
-
         $view->registerAssetBundle(MatrixSettingsAsset::class);
+
+        $placeholderKey = StringHelper::randomString(10);
         $view->registerJs(
             'new Craft.MatrixConfigurator(' .
             Json::encode($fieldTypeInfo, JSON_UNESCAPED_UNICODE) . ', ' .
             Json::encode($view->getNamespace(), JSON_UNESCAPED_UNICODE) . ', ' .
-            Json::encode($view->namespaceInputName('blockTypes[__BLOCK_TYPE__][fields][__FIELD__][typesettings]')) .
+            Json::encode($view->namespaceInputName("blockTypes[__BLOCK_TYPE_{$placeholderKey}__][fields][__FIELD_{$placeholderKey}__][typesettings]")) . ', ' .
+            Json::encode($placeholderKey) .
             ');'
         );
 
@@ -636,7 +638,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         }
 
         // Get the block types data
-        $blockTypeInfo = $this->_getBlockTypeInfoForInput($element, $blockTypes);
+        $placeholderKey = StringHelper::randomString(10);
+        $blockTypeInfo = $this->_getBlockTypeInfoForInput($element, $blockTypes, $placeholderKey);
         $createDefaultBlocks = (
             $this->minBlocks != 0 &&
             count($blockTypeInfo) === 1 &&
@@ -651,6 +654,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         $view->registerAssetBundle(MatrixAsset::class);
 
         $settings = [
+            'placeholderKey' => $placeholderKey,
             'maxBlocks' => $this->maxBlocks,
             'staticBlocks' => $staticBlocks,
         ];
@@ -957,7 +961,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         /** @var Element $element */
         if ($element->duplicateOf !== null) {
             $matrixService->duplicateBlocks($this, $element->duplicateOf, $element, true);
-        } else if ($element->isFieldDirty($this->handle)) {
+        } else if ($element->isFieldDirty($this->handle) || !empty($element->newSiteIds)) {
             $matrixService->saveField($this, $element);
         }
 
@@ -1060,9 +1064,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
      *
      * @param ElementInterface|null $element
      * @param MatrixBlockType[] $blockTypes
+     * @param string $placeholderKey
      * @return array
      */
-    private function _getBlockTypeInfoForInput(ElementInterface $element = null, array $blockTypes): array
+    private function _getBlockTypeInfoForInput(ElementInterface $element = null, array $blockTypes, string $placeholderKey): array
     {
         /** @var Element $element */
         $blockTypeInfo = [];
@@ -1070,7 +1075,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         // Set a temporary namespace for these
         $view = Craft::$app->getView();
         $originalNamespace = $view->getNamespace();
-        $namespace = $view->namespaceInputName($this->handle . '[blocks][__BLOCK__][fields]', $originalNamespace);
+        $namespace = $view->namespaceInputName($this->handle . "[blocks][__BLOCK_{$placeholderKey}__][fields]", $originalNamespace);
         $view->setNamespace($namespace);
 
         foreach ($blockTypes as $blockType) {
