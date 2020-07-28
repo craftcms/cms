@@ -2484,7 +2484,7 @@ body.rtl .matrix-configurator > .field > .input { padding-right: 440px; }
 
 .matrix-configurator .mc-sidebar { position: absolute; top: 0; margin: 0; border: none; height: 100%; box-sizing: border-box; }
 
-.matrix-configurator .mc-sidebar .items { margin-top: -1px; padding-top: 1px; }
+.matrix-configurator .mc-sidebar .mc-col-items { margin-top: -1px; padding-top: 1px; }
 
 .matrix-configurator .mc-sidebar.block-types { width: 200px; }
 
@@ -2492,25 +2492,25 @@ body.ltr .matrix-configurator .mc-sidebar.block-types { left: 0; }
 
 body.rtl .matrix-configurator .mc-sidebar.block-types { right: 0; }
 
-.matrix-configurator .mc-sidebar.block-types .items .btn { margin: 14px; }
+.matrix-configurator .mc-sidebar.block-types .mc-col-items .btn { margin: 14px; }
 
-.matrix-configurator .mc-sidebar.fields { width: 240px; z-index: 1; background: #fff; box-shadow: 0 0 0 1px rgba(31, 41, 51, 0.1), 0 2px 5px -2px rgba(31, 41, 51, 0.2); }
+.matrix-configurator .mc-sidebar.mc-fields { width: 240px; z-index: 1; background: #fff; box-shadow: 0 0 0 1px rgba(31, 41, 51, 0.1), 0 2px 5px -2px rgba(31, 41, 51, 0.2); }
 
-body.ltr .matrix-configurator .mc-sidebar.fields { left: 200px; }
+body.ltr .matrix-configurator .mc-sidebar.mc-fields { left: 200px; }
 
-body.rtl .matrix-configurator .mc-sidebar.fields { right: 200px; }
+body.rtl .matrix-configurator .mc-sidebar.mc-fields { right: 200px; }
 
-.matrix-configurator .mc-sidebar.fields .items { padding: 14px; }
+.matrix-configurator .mc-sidebar.mc-fields .mc-col-items { padding: 14px; }
 
-.matrix-configurator .mc-sidebar.fields .items .btn { margin-top: 14px; }
+.matrix-configurator .mc-sidebar.mc-fields .mc-col-items .btn { margin-top: 14px; }
 
-.matrix-configurator .mc-sidebar > .col-inner-container > .heading, .matrix-configurator .field-settings > .col-inner-container > .heading { margin: 0; padding: 7px 14px 6px; border-bottom: 1px solid rgba(51, 64, 77, 0.1); background-color: #f3f7fc; background-image: -o-linear-gradient(rgba(51, 64, 77, 0), rgba(51, 64, 77, 0.05)); background-image: linear-gradient(rgba(51, 64, 77, 0), rgba(51, 64, 77, 0.05)); }
+.matrix-configurator .mc-sidebar > .mc-col-inner-container > .mc-col-heading, .matrix-configurator .mc-field-settings > .mc-col-inner-container > .mc-col-heading { margin: 0; padding: 7px 14px 6px; border-bottom: 1px solid rgba(51, 64, 77, 0.1); background-color: #f3f7fc; background-image: -o-linear-gradient(rgba(51, 64, 77, 0), rgba(51, 64, 77, 0.05)); background-image: linear-gradient(rgba(51, 64, 77, 0), rgba(51, 64, 77, 0.05)); }
 
-.matrix-configurator .field-settings { position: relative; height: 100%; }
+.matrix-configurator .mc-field-settings { position: relative; height: 100%; }
 
-.matrix-configurator .field-settings > .col-inner-container > .heading { padding-left: 24px; padding-right: 24px; }
+.matrix-configurator .mc-field-settings > .mc-col-inner-container > .mc-col-heading { padding-left: 24px; padding-right: 24px; }
 
-.matrix-configurator .field-settings .items { padding: 24px; }
+.matrix-configurator .mc-field-settings > .mc-col-inner-container > .mc-col-items { padding: 24px; }
 
 .matrixconfigitem { position: relative; display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; -webkit-user-select: none; user-select: none; cursor: default; min-height: 48px; box-sizing: border-box; }
 

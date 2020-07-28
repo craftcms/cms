@@ -2,12 +2,12 @@
 
 {% set blockTypeInput %}
     <div class="mc-sidebar block-types">
-        <div class="col-inner-container">
-            <div class="heading">
+        <div class="mc-col-inner-container">
+            <div class="mc-col-heading">
                 <h5>{{ "Block Types"|t('app') }}</h5>
             </div>
-            <div class="items">
-                <div class="blocktypes">
+            <div class="mc-col-items">
+                <div class="mc-blocktypes">
                     {% for blockTypeId, blockType in blockTypes %}
                         <div class="matrixconfigitem mci-blocktype{% if blockType.hasFieldErrors %} error{% endif %}" data-id="{{ blockTypeId }}"{% if blockType.hasErrors() %} data-errors="{{ blockType.getErrors() | json_encode }}"{% endif %}>
                             <div class="mci-name">
@@ -30,12 +30,12 @@
             </div>
         </div>
     </div>
-    <div class="mc-sidebar fields">
-        <div class="col-inner-container hidden">
-            <div class="heading">
+    <div class="mc-sidebar mc-fields">
+        <div class="mc-col-inner-container hidden">
+            <div class="mc-col-heading">
                 <h5>{{ "Fields"|t('app') }}</h5>
             </div>
-            <div class="items">
+            <div class="mc-col-items">
                 {% for blockTypeId, blockType in blockTypes %}
                     <div data-id="{{ blockTypeId }}" class="hidden">
                         {% for fieldId, layoutElement in blockTypeFields[blockTypeId] %}
@@ -61,12 +61,12 @@
             </div>
         </div>
     </div>
-    <div class="field-settings">
-        <div class="col-inner-container hidden">
-            <div class="heading">
+    <div class="mc-field-settings">
+        <div class="mc-col-inner-container hidden">
+            <div class="mc-col-heading">
                 <h5>{{ "Field Settings"|t('app') }}</h5>
             </div>
-            <div class="items">
+            <div class="mc-col-items">
                 {% for blockTypeId, blockType in blockTypes %}
                     <div data-id="{{ blockTypeId }}">
                         {% for fieldId, layoutElement in blockTypeFields[blockTypeId] %}
@@ -170,7 +170,7 @@
 
                                 <hr>
 
-                                <div class="fieldtype-settings">
+                                <div class="mc-fieldtype-settings">
                                     <div>
                                         {% namespace 'blockTypes['~blockTypeId~'][fields]['~fieldId~'][typesettings]' %}
                                             {{ field.getSettingsHtml()|raw  }}

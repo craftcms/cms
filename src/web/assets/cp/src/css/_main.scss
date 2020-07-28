@@ -4861,7 +4861,7 @@ ul.errors li {
     height: 100%;
     box-sizing: border-box;
 
-    .items {
+    .mc-col-items {
       margin-top: -1px;
       padding-top: 1px;
     }
@@ -4870,21 +4870,21 @@ ul.errors li {
       @include left(0);
       width: 200px;
 
-      .items {
+      .mc-col-items {
         .btn {
           margin: 14px;
         }
       }
     }
 
-    &.fields {
+    &.mc-fields {
       @include left(200px);
       width: 240px;
       z-index: 1;
       background: #fff;
       box-shadow: 0 0 0 1px transparentize($grey900, 0.9), 0 2px 5px -2px transparentize($grey900, 0.8);
 
-      .items {
+      .mc-col-items {
         padding: 14px;
 
         .btn {
@@ -4895,8 +4895,8 @@ ul.errors li {
   }
 
   .mc-sidebar,
-  .field-settings {
-    & > .col-inner-container > .heading {
+  .mc-field-settings {
+    & > .mc-col-inner-container > .mc-col-heading {
       margin: 0;
       padding: 7px 14px 6px;
       border-bottom: 1px solid $hairlineColor;
@@ -4905,17 +4905,19 @@ ul.errors li {
     }
   }
 
-  .field-settings {
+  .mc-field-settings {
     position: relative;
     height: 100%;
 
-    & > .col-inner-container > .heading {
-      padding-left: 24px;
-      padding-right: 24px;
-    }
+    & > .mc-col-inner-container {
+      & > .mc-col-heading {
+        padding-left: 24px;
+        padding-right: 24px;
+      }
 
-    .items {
-      padding: 24px;
+      & > .mc-col-items {
+        padding: 24px;
+      }
     }
   }
 }

@@ -46,13 +46,13 @@
                 this.$container = $('#' + this.inputIdPrefix + '-matrix-configurator:first .input:first');
 
                 this.$blockTypesColumnContainer = this.$container.children('.block-types').children();
-                this.$fieldsColumnContainer = this.$container.children('.fields').children();
-                this.$fieldSettingsColumnContainer = this.$container.children('.field-settings').children();
+                this.$fieldsColumnContainer = this.$container.children('.mc-fields').children();
+                this.$fieldSettingsColumnContainer = this.$container.children('.mc-field-settings').children();
 
-                this.$blockTypeItemsOuterContainer = this.$blockTypesColumnContainer.children('.items');
-                this.$blockTypeItemsContainer = this.$blockTypeItemsOuterContainer.children('.blocktypes');
-                this.$fieldItemsOuterContainer = this.$fieldsColumnContainer.children('.items');
-                this.$fieldSettingItemsContainer = this.$fieldSettingsColumnContainer.children('.items');
+                this.$blockTypeItemsOuterContainer = this.$blockTypesColumnContainer.children('.mc-col-items');
+                this.$blockTypeItemsContainer = this.$blockTypeItemsOuterContainer.children('.mc-blocktypes');
+                this.$fieldItemsOuterContainer = this.$fieldsColumnContainer.children('.mc-col-items');
+                this.$fieldSettingItemsContainer = this.$fieldSettingsColumnContainer.children('.mc-col-items');
 
                 this.setContainerHeight();
 
@@ -548,7 +548,7 @@
                 this.$requiredCheckbox = $('#' + this.inputIdPrefix + '-required');
                 this.$typeSelect = $('#' + this.inputIdPrefix + '-type');
                 this.$translationSettingsContainer = $('#' + this.inputIdPrefix + '-translation-settings');
-                this.$typeSettingsContainer = this.$fieldSettingsContainer.children('.fieldtype-settings:first');
+                this.$typeSettingsContainer = this.$fieldSettingsContainer.children('.mc-fieldtype-settings:first');
                 this.$widthInput = $('#' + this.inputIdPrefix + '-width');
                 this.$deleteBtn = this.$fieldSettingsContainer.children('a.delete:first');
 
@@ -793,7 +793,7 @@
                 $('<hr/>').appendTo($container);
 
                 $('<div/>', {
-                    'class': 'fieldtype-settings'
+                    'class': 'mc-fieldtype-settings'
                 }).appendTo($container);
 
                 $('<input/>', {
