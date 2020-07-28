@@ -641,6 +641,15 @@
 ### Security
 - The `_includes/forms/checkbox.html`, `checkboxGroup.html`, and `checkboxSelect.html` control panel templates now HTML-encode checkbox labels by default, preventing possible XSS vulnerabilities. If HTML code was desired, it must be passed through the new `raw()` function first.
 
+## Unreleased (3.4.x)
+
+### Changed
+- Improved support for nesting Matrix fields within other fields.
+
+### Fixed
+- Fixed a bug where assets uploaded by front-end entry forms weren’t getting saved with the `uploaderId` attribute. ([#6456](https://github.com/craftcms/cms/issues/6456))
+- Fixed a bug where Matrix blocks weren’t always propagating to newly-enabled sites right away.
+
 ## 3.4.29.1 - 2020-07-22
 
 ### Fixed

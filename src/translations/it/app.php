@@ -1075,7 +1075,7 @@ return [
     'Which group should this field be displayed in?' => 'In quale gruppo dovrebbe essere visualizzato questo campo?',
     'Which group should this site belong to?' => 'A quale gruppo dovrebbe appartenere il sito?',
     'Which section do you want to publish entries to?' => 'In quale sezione vuoi pubblicare gli inserimenti?',
-    'Which section do you want to pull recent entries from?' => 'Da quale sezione vuoi estrarre gli inserimenti recenti?',
+    'Which section do you want to pull recent entries from?' => 'Da quale sezione vuoi estrarre gli articoli recenti?',
     'Which site should {type} be related from?' => 'Da quale sito deve dipendere {type}?',
     'Which source do you want to select {type} from?' => 'Da quale origine vuoi selezionare (select) {type} from?',
     'Which sources do you want to select {type} from?' => 'Da quale fonte vuoi selezionare il {type}?',

@@ -482,8 +482,8 @@ class Assets extends BaseRelationField
                     $asset->filename = $file['filename'];
                     $asset->newFolderId = $targetFolderId;
                     $asset->setVolumeId($folder->volumeId);
-                    $asset->setScenario(Asset::SCENARIO_CREATE);
                     $asset->avoidFilenameConflicts = true;
+                    $asset->setScenario(Asset::SCENARIO_CREATE);
                     Craft::$app->getElements()->saveElement($asset);
 
                     $assetIds[] = $asset->id;

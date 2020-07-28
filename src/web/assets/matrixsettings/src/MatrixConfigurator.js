@@ -11,6 +11,7 @@
             inputNamePrefix: null,
             fieldTypeSettingsNamespace: null,
             inputIdPrefix: null,
+            placeholderKey: null,
 
             $container: null,
 
@@ -31,15 +32,16 @@
             blockTypeSort: null,
             totalNewBlockTypes: 0,
 
-            _fieldTypeSettingsHtml: {},
+            _fieldTypeSettingsHtml: null,
             _cancelToken: null,
             _ignoreFailedRequest: false,
 
-            init: function(fieldTypeInfo, inputNamePrefix, fieldTypeSettingsNamespace) {
+            init: function(fieldTypeInfo, inputNamePrefix, fieldTypeSettingsNamespace, placeholderKey) {
                 this.fieldTypeInfo = fieldTypeInfo;
                 this.inputNamePrefix = inputNamePrefix;
                 this.fieldTypeSettingsNamespace = fieldTypeSettingsNamespace;
                 this.inputIdPrefix = Craft.formatInputId(this.inputNamePrefix);
+                this.placeholderKey = placeholderKey;
 
                 this.$container = $('#' + this.inputIdPrefix + '-matrix-configurator:first .input:first');
 
@@ -56,6 +58,8 @@
 
                 this.$newBlockTypeBtn = this.$blockTypeItemsOuterContainer.children('.btn');
                 this.$newFieldBtn = this.$fieldItemsOuterContainer.children('.btn');
+
+                this._fieldTypeSettingsHtml = {};
 
                 // Find the existing block types
                 this.blockTypes = {};
@@ -121,8 +125,8 @@
                         '</div>' +
                         '<a class="settings icon" title="' + Craft.t('app', 'Settings') + '"></a>' +
                         '<a class="move icon" title="' + Craft.t('app', 'Reorder') + '"></a>' +
-                        '<input class="hidden" name="types[craft\\fields\\Matrix][blockTypes][' + id + '][name]">' +
-                        '<input class="hidden" name="types[craft\\fields\\Matrix][blockTypes][' + id + '][handle]">' +
+                        '<input class="hidden" name="' + this.inputNamePrefix + '[blockTypes][' + id + '][name]">' +
+                        '<input class="hidden" name="' + this.inputNamePrefix + '[blockTypes][' + id + '][handle]">' +
                         '</div>'
                     ).appendTo(this.$blockTypeItemsContainer);
 
@@ -690,8 +694,8 @@
 
             getParsedFieldTypeHtml: function(html) {
                 if (typeof html === 'string') {
-                    html = html.replace(/__BLOCK_TYPE__/g, this.blockType.id);
-                    html = html.replace(/__FIELD__/g, this.id);
+                    html = html.replace(new RegExp(`__BLOCK_TYPE_${this.configurator.placeholderKey}__`, 'g'), this.blockType.id);
+                    html = html.replace(new RegExp(`__FIELD_${this.configurator.placeholderKey}__`, 'g'), this.id);
                 }
                 else {
                     html = '';
