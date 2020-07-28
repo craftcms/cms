@@ -123,8 +123,8 @@
                         '<a class="move icon" title="' + Craft.t('app', 'Reorder') + '"></a>' +
                         '<a class="settings icon" title="' + Craft.t('app', 'Settings') + '"></a>' +
                         '</div>' +
-                        '<input class="hidden" name="types[craft\\fields\\Matrix][blockTypes][' + id + '][name]">' +
-                        '<input class="hidden" name="types[craft\\fields\\Matrix][blockTypes][' + id + '][handle]">' +
+                        '<input class="hidden" name="' + this.inputNamePrefix + '[blockTypes][' + id + '][name]">' +
+                        '<input class="hidden" name="' + this.inputNamePrefix + '[blockTypes][' + id + '][handle]">' +
                         '</div>'
                     ).appendTo(this.$blockTypeItemsContainer);
 
