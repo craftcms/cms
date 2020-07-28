@@ -29,6 +29,7 @@
 - Fixed a bug where it wasn’t possible to pass variables into some GraphQL query arguments. ([#6463](https://github.com/craftcms/cms/issues/6463))
 - Fixed a bug where collapsed Matrix blocks weren’t showing any preview text. ([#6468](https://github.com/craftcms/cms/issues/6468))
 - Fixed a PHP error that would occur if the `CRAFT_SITE` PHP constant was defined. ([#6471](https://github.com/craftcms/cms/issues/6471))
+- Fixed a bug where headings within field layouts weren’t getting styled correctly if they were the first element in the layout, followed by a field that wasn’t full-width. ([#6470](https://github.com/craftcms/cms/issues/6470))
 
 ## 3.5.0-RC3 - 2020-07-24
 
