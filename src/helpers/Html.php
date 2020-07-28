@@ -597,33 +597,56 @@ class Html extends \yii\helpers\Html
             $ids[] = preg_quote($match[2], '/');
             return $match[1] . $namespace . '-' . $match[2] . $match[1];
         }, $html);
+        $ids = array_flip($ids);
 
         // normal HTML attributes
-        $idPattern = implode('|', $ids);
-        $html = preg_replace("/(?<=\\s)((?:for|list|xlink:href|href|aria\\-labelledby|aria\\-describedby|data\\-target|data\\-reverse\\-target|data\\-target\\-prefix)=('|\")#?)($idPattern)\\2/i", "$1$namespace-$3$2", $html);
+        $html = preg_replace_callback(
+            "/(?<=\\s)((?:for|list|xlink:href|href|aria\\-labelledby|aria\\-describedby|data\\-target|data\\-reverse\\-target|data\\-target\\-prefix)=('|\")#?)([^'\"\s]*)\\2/i",
+            function(array $match) use ($namespace, $ids): string {
+                if (isset($ids[$match[3]])) {
+                    return $match[1] . $namespace . '-' . $match[3] . $match[2];
+                }
+                return $match[0];
+            }, $html);
 
         // ID references in url() calls
-        $html = preg_replace("/(?<=url\\(#)(?:$idPattern)(?=\\))/i", "$namespace-$0", $html);
+        $html = preg_replace_callback(
+            "/(?<=url\\(#)[^'\"\s]*(?=\\))/i",
+            function(array $match) use ($namespace, $ids): string {
+                if (isset($ids[$match[0]])) {
+                    return $namespace . '-' . $match[0];
+                }
+                return $match[0];
+            }, $html);
 
         // class attributes
         if ($withClasses) {
-            $html = preg_replace_callback('/(?<![\w\-])\bclass=(\'|")([^\'"]+)\\1/i', function($matches) use ($namespace) {
+            $html = preg_replace_callback('/(?<![\w\-])\bclass=(\'|")([^\'"]+)\\1/i', function($match) use ($namespace) {
                 $newClasses = [];
-                foreach (preg_split('/\s+/', $matches[2]) as $class) {
+                foreach (preg_split('/\s+/', $match[2]) as $class) {
                     $newClasses[] = "$namespace-$class";
                 }
-                return 'class=' . $matches[1] . implode(' ', $newClasses) . $matches[1];
+                return 'class=' . $match[1] . implode(' ', $newClasses) . $match[1];
             }, $html);
         }
 
         // CSS selectors
-        $html = preg_replace_callback('/(<style\b[^>]*>)(.*?)(<\/style>)/is', function(array $matches) use ($namespace, $withClasses, $idPattern) {
-            $html = preg_replace("/(?<![\w'\"])#($idPattern)(?=[,\\s\\{])/", "#$namespace-$1", $matches[2]);
-            if ($withClasses) {
-                $html = preg_replace("/(?<![\\w'\"])\\.([\\w\\-]+)(?=[,\\s\\{])/", ".$namespace-$1", $matches[2]);
-            }
-            return $matches[1] . $html . $matches[3];
-        }, $html);
+        $html = preg_replace_callback(
+            '/(<style\b[^>]*>)(.*?)(<\/style>)/is',
+            function(array $match) use ($namespace, $withClasses, $ids) {
+                $html = preg_replace_callback(
+                    "/(?<![\w'\"])#([^'\"\s]*)(?=[,\\s\\{])/",
+                    function(array $match) use ($namespace, $ids): string {
+                        if (isset($ids[$match[1]])) {
+                            return '#' . $namespace . '-' . $match[1];
+                        }
+                        return $match[0];
+                    }, $match[2]);
+                if ($withClasses) {
+                    $html = preg_replace("/(?<![\\w'\"])\\.([\\w\\-]+)(?=[,\\s\\{])/", ".$namespace-$1", $match[2]);
+                }
+                return $match[1] . $html . $match[3];
+            }, $html);
     }
 
     /**

@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a PHP error that could occur on Edit Field pages. ([#6474](https://github.com/craftcms/cms/issues/6474))
+
 ## 3.5.0-RC4 - 2020-07-28
 
 ### Added
