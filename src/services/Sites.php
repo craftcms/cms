@@ -454,9 +454,9 @@ class Sites extends Component
         if ($site instanceof Site) {
             $this->_currentSite = $site;
         } else if (is_numeric($site)) {
-            $this->_currentSite = $this->getSiteById($site);
+            $this->_currentSite = $this->getSiteById($site, false);
         } else {
-            $this->_currentSite = $this->getSiteByHandle($site);
+            $this->_currentSite = $this->getSiteByHandle($site, false);
         }
 
         // Did something go wrong?
