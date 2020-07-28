@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.4.30 - 2020-07-28
 
 ### Changed
 - Improved support for nesting Matrix fields within other fields.
