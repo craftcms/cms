@@ -32,7 +32,7 @@
             blockTypeSort: null,
             totalNewBlockTypes: 0,
 
-            _fieldTypeSettingsHtml: {},
+            _fieldTypeSettingsHtml: null,
             _cancelToken: null,
             _ignoreFailedRequest: false,
 
@@ -58,6 +58,8 @@
 
                 this.$newBlockTypeBtn = this.$blockTypeItemsOuterContainer.children('.btn');
                 this.$newFieldBtn = this.$fieldItemsOuterContainer.children('.btn');
+
+                this._fieldTypeSettingsHtml = {};
 
                 // Find the existing block types
                 this.blockTypes = {};
