@@ -180,7 +180,7 @@ abstract class Controller extends \yii\web\Controller
         try {
             return parent::runAction($id, $params);
         } catch (\Throwable $e) {
-            if (Craft::$app->getRequest()->getAcceptsJson()) {
+            if ($this->request->getAcceptsJson()) {
                 Craft::$app->getErrorHandler()->logException($e);
                 if (!YII_DEBUG && !$e instanceof UserException) {
                     $message = Craft::t('app', 'A server error occurred.');
@@ -235,7 +235,7 @@ abstract class Controller extends \yii\web\Controller
         }
 
         // If this is a preview request, register the iframe resizer script
-        if (Craft::$app->getRequest()->getIsPreview()) {
+        if ($this->request->getIsPreview()) {
             $view->registerAssetBundle(ContentWindowAsset::class);
         }
 
@@ -344,7 +344,7 @@ abstract class Controller extends \yii\web\Controller
      */
     public function requirePostRequest()
     {
-        if (!Craft::$app->getRequest()->getIsPost()) {
+        if (!$this->request->getIsPost()) {
             throw new BadRequestHttpException('Post request required');
         }
     }
@@ -356,7 +356,7 @@ abstract class Controller extends \yii\web\Controller
      */
     public function requireAcceptsJson()
     {
-        if (!Craft::$app->getRequest()->getAcceptsJson()) {
+        if (!$this->request->getAcceptsJson()) {
             throw new BadRequestHttpException('Request must accept JSON in response');
         }
     }
@@ -369,7 +369,7 @@ abstract class Controller extends \yii\web\Controller
      */
     public function requireToken()
     {
-        if (Craft::$app->getRequest()->getToken() === null) {
+        if ($this->request->getToken() === null) {
             throw new BadRequestHttpException('Valid token required');
         }
     }
@@ -382,7 +382,7 @@ abstract class Controller extends \yii\web\Controller
      */
     public function requireCpRequest()
     {
-        if (!Craft::$app->getRequest()->getIsCpRequest()) {
+        if (!$this->request->getIsCpRequest()) {
             throw new BadRequestHttpException('Request must be a control panel request');
         }
     }
@@ -395,7 +395,7 @@ abstract class Controller extends \yii\web\Controller
      */
     public function requireSiteRequest()
     {
-        if (!Craft::$app->getRequest()->getIsSiteRequest()) {
+        if (!$this->request->getIsSiteRequest()) {
             throw new BadRequestHttpException('Request must be a site request');
         }
     }
@@ -410,7 +410,7 @@ abstract class Controller extends \yii\web\Controller
      */
     public function setSuccessFlash(string $default = null)
     {
-        $message = Craft::$app->getRequest()->getValidatedBodyParam('successMessage') ?? $default;
+        $message = $this->request->getValidatedBodyParam('successMessage') ?? $default;
         if ($message !== null) {
             Craft::$app->getSession()->setNotice($message);
         }
@@ -426,7 +426,7 @@ abstract class Controller extends \yii\web\Controller
      */
     public function setFailFlash(string $default = null)
     {
-        $message = Craft::$app->getRequest()->getValidatedBodyParam('failMessage') ?? $default;
+        $message = $this->request->getValidatedBodyParam('failMessage') ?? $default;
         if ($message !== null) {
             Craft::$app->getSession()->setError($message);
         }
@@ -443,13 +443,13 @@ abstract class Controller extends \yii\web\Controller
      */
     public function redirectToPostedUrl($object = null, string $default = null): YiiResponse
     {
-        $url = Craft::$app->getRequest()->getValidatedBodyParam('redirect');
+        $url = $this->request->getValidatedBodyParam('redirect');
 
         if ($url === null) {
             if ($default !== null) {
                 $url = $default;
             } else {
-                $url = Craft::$app->getRequest()->getPathInfo();
+                $url = $this->request->getPathInfo();
             }
         } else if ($object) {
             $url = $this->getView()->renderObjectTemplate($url, $object);
@@ -513,7 +513,7 @@ abstract class Controller extends \yii\web\Controller
         }
 
         if ($url !== null) {
-            return Craft::$app->getResponse()->redirect($url, $statusCode);
+            return $this->response->redirect($url, $statusCode);
         }
 
         return $this->goHome();
