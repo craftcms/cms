@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.5.0-RC4 - 2020-07-28
 
 ### Added
 - Added `craft\base\ElementInterface::isAttributeDirty()`.
