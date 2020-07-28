@@ -27,6 +27,7 @@
 - Fixed an error that could occur if JSON data was stored in a Plain Text field. ([#6327](https://github.com/craftcms/cms/issues/6327))
 - Fixed a bug where `ping` GraphQL queries weren’t working on fresh installs, until the Schemas index page had been accessed in the control panel. ([#6444](https://github.com/craftcms/cms/issues/6444))
 - Fixed a bug where it wasn’t possible to pass variables into some GraphQL query arguments. ([#6463](https://github.com/craftcms/cms/issues/6463))
+- Fixed a bug where collapsed Matrix blocks weren’t showing any preview text. ([#6468](https://github.com/craftcms/cms/issues/6468))
 
 ## 3.5.0-RC3 - 2020-07-24
 

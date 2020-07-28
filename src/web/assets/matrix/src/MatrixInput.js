@@ -479,7 +479,7 @@
                 this.$container.addClass('collapsed');
 
                 var previewHtml = '',
-                    $fields = this.$fieldsContainer.children();
+                    $fields = this.$fieldsContainer.children().children();
 
                 for (var i = 0; i < $fields.length; i++) {
                     var $field = $($fields[i]),
