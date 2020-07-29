@@ -393,10 +393,7 @@ class Application extends \yii\web\Application
             return;
         }
 
-        $user = UserElement::find()
-            ->username(Db::escapeParam($username))
-            ->addSelect(['users.password'])
-            ->one();
+        $user = Craft::$app->getUsers()->getUserByUsernameOrEmail(Db::escapeParam($username));
 
         if (!$user) {
             throw new UnauthorizedHttpException('Your request was made with invalid credentials.');
