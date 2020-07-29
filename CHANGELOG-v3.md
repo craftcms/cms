@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Added
+- Added the `disableGraphqlTransformDirective` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
+- Added the `enableGraphqlIntrospection` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
+- Added the `maxGraphqlComplexity` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
+- Added the `maxGraphqlDepth` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
+- Added the `maxGraphqlResults` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
+
 ### Fixed
 - Fixed a PHP error that could occur on Edit Field pages. ([#6474](https://github.com/craftcms/cms/issues/6474))
 
