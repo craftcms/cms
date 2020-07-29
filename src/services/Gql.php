@@ -284,6 +284,14 @@ class Gql extends Component
     const GRAPHQL_COUNT_FIELD = '_count';
 
     /**
+     * @since 3.5.0
+     */
+    const GRAPHQL_COMPLEXITY_QUERY = 10;
+    const GRAPHQL_COMPLEXITY_EAGER_LOAD = 25;
+    const GRAPHQL_COMPLEXITY_CPU_HEAVY = 200;
+    const GRAPHQL_COMPLEXITY_NPLUS1 = 500;
+
+    /**
      * Save a GQL Token record based on the model.
      *
      * @param GqlToken $token
