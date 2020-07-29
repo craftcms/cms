@@ -172,16 +172,6 @@ class Element extends InterfaceType
                 'type' => Type::boolean(),
                 'description' => 'Returns whether this is a draft.',
             ],
-            'sourceUid' => [
-                'name' => 'sourceUid',
-                'type' => Type::string(),
-                'description' => 'Returns the element’s UUID, or if it’s a draft/revision, its source element’s UUID.',
-            ],
-            'isUnsavedDraft' => [
-                'name' => 'isUnsavedDraft',
-                'type' => Type::boolean(),
-                'description' => 'Returns whether this is a draft.',
-            ],
             'draftName' => [
                 'name' => 'draftName',
                 'type' => Type::string(),
