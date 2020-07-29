@@ -2,7 +2,7 @@
   "private": true,
   "main": "gulpfile.js",
   "dependencies": {
-    "axios": "^0.18.1",
+    "axios": "^0.19.2",
     "vue": "^2.6.11",
     "vue-autosuggest": "^1.8.1",
     "vue-cleave": "^1.2.2",
