@@ -81,21 +81,25 @@ trait FieldTrait
 
     /**
      * @var int|null The ID of the field layout that the field was fetched from
+     * @deprecated Will never be populated, data is stored on field layout element.
      */
     public $layoutId;
 
     /**
      * @var int|null The tab ID of the field layout that the field was fetched from
+     * @deprecated Will never be populated, data is stored on field layout element.
      */
     public $tabId;
 
     /**
      * @var bool|null Whether the field is required in the field layout it was fetched from
+     * @deprecated Will never be populated, data is stored on field layout element.
      */
     public $required;
 
     /**
      * @var int|null The field’s sort position in the field layout it was fetched from
+     * @deprecated Will never be populated, data is stored on field layout element.
      */
     public $sortOrder;
 }
