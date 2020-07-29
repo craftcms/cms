@@ -378,7 +378,7 @@ class GeneralConfig extends BaseObject
      */
     public $generateTransformsBeforePageLoad = false;
     /**
-     * @var bool bool Whether the system should run in Headless Mode, which
+     * @var bool Whether the system should run in Headless Mode, which
      * optimizes the system and control panel for headless CMS implementations.
      *
      * When this is enabled, the following changes will take place:
