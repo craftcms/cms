@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.5.0-RC5 - 2020-07-30
 
 ### Added
 - Added “GraphQL queries” and “Template caches” cache tag invalidation options to the Caches (formerly “Clear Caches”) utility. ([#6279](https://github.com/craftcms/cms/issues/6279))
