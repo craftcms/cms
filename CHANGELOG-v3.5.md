@@ -233,7 +233,10 @@
 - Added `craft\helpers\Gql::canMutateEntries()`.
 - Added `craft\helpers\Gql::canMutateGlobalSets()`.
 - Added `craft\helpers\Gql::canMutateTags()`.
+- Added `craft\helpers\Gql::eagerLoadComplexity()`.
 - Added `craft\helpers\Gql::extractEntityAllowedActions()`.
+- Added `craft\helpers\Gql::nPlus1Complexity()`.
+- Added `craft\helpers\Gql::singleQueryComplexity()`.
 - Added `craft\helpers\Html::explodeClass()`.
 - Added `craft\helpers\Html::explodeStyle()`.
 - Added `craft\helpers\Html::id()`.
@@ -286,6 +289,11 @@
 - Added `craft\services\Fields::createLayoutElement()`.
 - Added `craft\services\Fields::getLayoutsByElementType()`.
 - Added `craft\services\Gql::CONFIG_GQL_PUBLIC_TOKEN_KEY`.
+- Added `craft\services\Gql::GRAPHQL_COMPLEXITY_CPU_HEAVY`.
+- Added `craft\services\Gql::GRAPHQL_COMPLEXITY_EAGER_LOAD`.
+- Added `craft\services\Gql::GRAPHQL_COMPLEXITY_NPLUS1`.
+- Added `craft\services\Gql::GRAPHQL_COMPLEXITY_QUERY`.
+- Added `craft\services\Gql::GRAPHQL_COMPLEXITY_SIMPLE_FIELD`.
 - Added `craft\services\Gql::getAllSchemaComponents()`.
 - Added `craft\services\Gql::getPublicToken()`.
 - Added `craft\services\Gql::handleChangedPublicToken()`.

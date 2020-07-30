@@ -12,6 +12,7 @@ use craft\errors\GqlException;
 use craft\gql\base\Directive;
 use craft\gql\GqlEntityRegistry;
 use craft\models\GqlSchema;
+use craft\services\Gql as GqlService;
 use GraphQL\Type\Definition\NonNull;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
@@ -338,5 +339,41 @@ class Gql
             }
         }
         return $value;
+    }
+
+    /**
+     * Shorthand for returning the complexity function for an eager-loaded field.
+     *
+     * @return callable
+     */
+    public static function eagerLoadComplexity(): callable
+    {
+        return static function () {
+            return GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD;
+        };
+    }
+
+    /**
+     * Shorthand for returning the complexity function for a field that will add a single query to execution.
+     *
+     * @return callable
+     */
+    public static function singleQueryComplexity(): callable
+    {
+        return static function () {
+            return GqlService::GRAPHQL_COMPLEXITY_QUERY;
+        };
+    }
+
+    /**
+     * Shorthand for returning the complexity function for a field that will generate a single query for every iteration.
+     *
+     * @return callable
+     */
+    public static function nPlus1Complexity(): callable
+    {
+        return static function () {
+            return GqlService::GRAPHQL_COMPLEXITY_NPLUS1;
+        };
     }
 }
