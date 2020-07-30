@@ -2142,6 +2142,10 @@ body.rtl .checkboxfield .instructions, body.rtl .checkboxfield .notice, body.rtl
 
 .text.small { padding: 3px; }
 
+.text.readable { padding: 16px 18px; font-size: 16px; line-height: 22px; }
+
+.text.readable + .chars-left { margin-top: -23px; }
+
 .text input { margin: 0; padding: 0; border: none; outline: none; background-color: transparent; }
 
 .input.errors > .text, .input.errors > .border-box, .input.errors > .passwordwrapper, .input.errors > .autosuggest-container .text, .text.error { border: 1px solid #EF4E4E !important; }

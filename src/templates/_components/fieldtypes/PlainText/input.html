@@ -3,6 +3,7 @@
 {%- set class = [
     'nicetext',
     field.code ? 'code',
+    field.uiMode == 'enlarged' ? 'readable',
 ]|filter %}
 
 {% set config = {

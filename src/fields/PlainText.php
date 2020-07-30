@@ -41,6 +41,12 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
     }
 
     /**
+     * @var string The UI mode of the field.
+     * @since 3.5.0
+     */
+    public $uiMode = 'normal';
+
+    /**
      * @var string|null The input’s placeholder text
      */
     public $placeholder;

@@ -4243,6 +4243,16 @@ fieldset {
     padding: 3px;
   }
 
+  &.readable {
+    padding: 16px 18px;
+    font-size: 16px;
+    line-height: 22px;
+
+    & + .chars-left {
+      margin-top: -23px;
+    }
+  }
+
   input {
     margin: 0;
     padding: 0;
