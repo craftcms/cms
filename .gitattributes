@@ -11,7 +11,7 @@ codeception.yml export-ignore
 codeception.yml.example export-ignore
 composer.lock export-ignore
 crowdin.yml export-ignore
-gruntflie.js export-ignore
+gruntfile.js export-ignore
 gulpfile.js export-ignore
 package.json export-ignore
 package-lock.json export-ignore
