@@ -263,44 +263,24 @@ body.dragging {
   }
 }
 
-.fld-heading,
-.fld-tip,
-.fld-template {
+.fld-ui-element {
   display: flex;
   align-items: center;
 
   .fld-element-icon {
-    width: 1em;
     @include margin-right(5px);
-    color: $lightTextColor;
     text-align: center;
+
+    &,
+    svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    svg {
+      @include svg-mask($lightTextColor);
+    }
   }
-}
-
-.fld-heading .fld-element-icon:before {
-  content: '#';
-  font-weight: bold;
-}
-
-.fld-tip,
-.fld-template {
-  .fld-element-icon:before {
-    @include icon;
-  }
-}
-
-.fld-tip .fld-element-icon {
-  &:not(.fld-tip-warning):before {
-    content: 'lightbulb';
-  }
-
-  &.fld-tip-warning:before {
-    content: 'alert';
-  }
-}
-
-.fld-template .fld-element-icon:before {
-  content: 'template';
 }
 
 .fld-element-settings {

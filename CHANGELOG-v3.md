@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\events\DefineFieldLayoutElementsEvent`.
+- Added `craft\fieldlayoutelements\BaseUiElement`.
+- Added `craft\helpers\Component::iconSvg()`.
+- Added `craft\models\FieldLayout::EVENT_DEFINE_UI_ELEMENTS`.
+
 ### Changed
 - Basic authentication now supports passing an email address instead of a username. ([#6487](https://github.com/craftcms/cms/pull/6487))
 - `craft\web\Controller::requireAcceptsJson()` no longer throws an exception for preflight requests.

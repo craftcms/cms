@@ -19,7 +19,7 @@ use yii\helpers\Markdown;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0
  */
-class Tip extends FieldLayoutElement
+class Tip extends BaseUiElement
 {
     const STYLE_TIP = 'tip';
     const STYLE_WARNING = 'warning';
@@ -37,31 +37,21 @@ class Tip extends FieldLayoutElement
     /**
      * @inheritdoc
      */
-    public function selectorHtml(): string
+    protected function selectorLabel(): string
     {
-        $icon = Html::tag('div', '', [
-            'class' => array_filter([
-                'fld-element-icon',
-                !$this->_isTip() ? 'fld-tip-warning' : null,
-            ]),
-        ]);
-
         if ($this->tip) {
-            $label = Html::encode($this->tip);
-        } else {
-            $label = $this->_isTip() ? Craft::t('app', 'Tip') : Craft::t('app', 'Warning');
+            return $this->tip;
         }
 
-        $text = Html::tag('div', $label, [
-            'class' => 'fld-element-label',
-        ]);
+        return $this->_isTip() ? Craft::t('app', 'Tip') : Craft::t('app', 'Warning');
+    }
 
-        return <<<HTML
-<div class="fld-tip">
-  $icon
-  $text
-</div>
-HTML;
+    /**
+     * @inheritdoc
+     */
+    protected function selectorIcon()
+    {
+        return '@app/icons/' . ($this->_isTip() ? 'tip' : 'alert') . '.svg';
     }
 
     /**

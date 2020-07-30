@@ -151,6 +151,7 @@
 - Added `craft\events\DefineAttributeKeywordsEvent`.
 - Added `craft\events\DefineFieldHtmlEvent`.
 - Added `craft\events\DefineFieldKeywordsEvent`.
+- Added `craft\events\DefineFieldLayoutElementsEvent`.
 - Added `craft\events\DefineFieldLayoutFieldEvent`.
 - Added `craft\events\DefineFieldsEvent`.
 - Added `craft\events\EagerLoadElementsEvent`.
@@ -162,6 +163,7 @@
 - Added `craft\events\RegisterMigratorEvent`.
 - Added `craft\events\SetEagerLoadedElementsEvent`.
 - Added `craft\fieldlayoutelements\BaseField`.
+- Added `craft\fieldlayoutelements\BaseUiElement`.
 - Added `craft\fieldlayoutelements\CustomField`.
 - Added `craft\fieldlayoutelements\EntryTitleField`.
 - Added `craft\fieldlayoutelements\Heading`.
@@ -210,6 +212,7 @@
 - Added `craft\helpers\App::dbMutexConfig()`.
 - Added `craft\helpers\ArrayHelper::isNumeric()`.
 - Added `craft\helpers\Assets::parseSrcsetSize()`.
+- Added `craft\helpers\Component::iconSvg()`.
 - Added `craft\helpers\Console::ensureProjectConfigFileExists()`.
 - Added `craft\helpers\Db::batchInsert()`.
 - Added `craft\helpers\Db::delete()`.
@@ -245,6 +248,7 @@
 - Added `craft\helpers\Queue`.
 - Added `craft\models\FieldLayout::createForm()`.
 - Added `craft\models\FieldLayout::EVENT_DEFINE_STANDARD_FIELDS`.
+- Added `craft\models\FieldLayout::EVENT_DEFINE_UI_ELEMENTS`.
 - Added `craft\models\FieldLayout::getAvailableCustomFields()`.
 - Added `craft\models\FieldLayout::getAvailableStandardFields()`.
 - Added `craft\models\FieldLayout::getAvailableUiElements()`.

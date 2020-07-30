@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\base\FieldInterface;
 use craft\base\FieldLayoutElementInterface;
 use craft\base\Model;
+use craft\events\DefineFieldLayoutElementsEvent;
 use craft\events\DefineFieldLayoutFieldsEvent;
 use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
@@ -56,6 +57,28 @@ class FieldLayout extends Model
      * @since 3.5.0
      */
     const EVENT_DEFINE_STANDARD_FIELDS = 'defineStandardFields';
+
+    /**
+     * @event DefineFieldLayoutElementsEvent The event that is triggered when defining UI elements for the layout.
+     *
+     * ```php
+     * use craft\models\FieldLayout;
+     * use craft\events\DefineFieldLayoutElementsEvent;
+     * use yii\base\Event;
+     *
+     * Event::on(
+     *     FieldLayout::class,
+     *     FieldLayout::EVENT_DEFINE_UI_ELEMENTS,
+     *     function(DefineFieldLayoutElementsEvent $event) {
+     *         $event->elements[] = MyUiElement::class;
+     *     }
+     * );
+     * ```
+     *
+     * @see getAvailableStandardFields()
+     * @since 3.5.0
+     */
+    const EVENT_DEFINE_UI_ELEMENTS = 'defineUiElements';
 
     /**
      * Creates a new field layout from the given config.
@@ -269,17 +292,35 @@ class FieldLayout extends Model
      */
     public function getAvailableUiElements(): array
     {
-        return [
-            new Heading(),
-            new Tip([
-                'style' => Tip::STYLE_TIP,
-            ]),
-            new Tip([
-                'style' => Tip::STYLE_WARNING,
-            ]),
-            new Template(),
-            new HorizontalRule(),
-        ];
+        $event =  new DefineFieldLayoutElementsEvent([
+            'elements' => [
+                new Heading(),
+                new Tip([
+                    'style' => Tip::STYLE_TIP,
+                ]),
+                new Tip([
+                    'style' => Tip::STYLE_WARNING,
+                ]),
+                new Template(),
+            ],
+        ]);
+
+        $this->trigger(self::EVENT_DEFINE_UI_ELEMENTS, $event);
+
+        // HR should always be last
+        $event->elements[] = new HorizontalRule();
+
+        // Instantiate them
+        foreach ($event->elements as &$element) {
+            if (is_string($element) || is_array($element)) {
+                $element = Craft::createObject($element);
+            }
+            if (!$element instanceof FieldLayoutElementInterface) {
+                throw new InvalidConfigException('Invalid UI element config');
+            }
+        }
+
+        return $event->elements;
     }
 
     /**
