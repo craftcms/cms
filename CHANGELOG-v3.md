@@ -2,12 +2,8 @@
 
 ## Unreleased
 
-### Added
-- Added `craft\services\Fields::getFieldsByLayoutTabId()`.
-
 ### Changed
 - Basic authentication now supports passing an email address instead of a username. ([#6487](https://github.com/craftcms/cms/pull/6487))
-- `craft\services\Fields::getFieldsByElementType()` and `getFieldsByLayoutId()` no longer reinstantiate fields. ([#6478](https://github.com/craftcms/cms/issues/6478))
 - `craft\web\Controller::requireAcceptsJson()` no longer throws an exception for preflight requests.
 
 ### Fixed

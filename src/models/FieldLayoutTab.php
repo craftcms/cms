@@ -118,16 +118,13 @@ class FieldLayoutTab extends Model
 
         if ($this->elements === null) {
             $this->elements = [];
-            if ($this->id) {
-                $fields = Craft::$app->getFields()->getFieldsByLayoutTabId($this->id, true);
-                foreach ($fields as $field) {
-                    $this->elements[] = Craft::createObject([
-                        'class' => CustomField::class,
-                        'required' => $field->required,
-                    ], [
-                        $field,
-                    ]);
-                }
+            foreach ($this->getFields() as $field) {
+                $this->elements[] = Craft::createObject([
+                    'class' => CustomField::class,
+                    'required' => $field->required,
+                ], [
+                    $field,
+                ]);
             }
         } else {
             if (is_string($this->elements)) {

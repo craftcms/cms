@@ -279,7 +279,6 @@
 - Added `craft\services\Elements::startCollectingCacheTags()`.
 - Added `craft\services\Elements::stopCollectingCacheTags()`.
 - Added `craft\services\Fields::createLayoutElement()`.
-- Added `craft\services\Fields::getFieldsByLayoutTabId()`.
 - Added `craft\services\Fields::getLayoutsByElementType()`.
 - Added `craft\services\Gql::CONFIG_GQL_PUBLIC_TOKEN_KEY`.
 - Added `craft\services\Gql::getAllSchemaComponents()`.
@@ -398,7 +397,6 @@
 - `craft\i18n\Formatter::asTimestamp()` now has a `$withPreposition` argument.
 - `craft\services\ElementIndexes::getAvailableTableAttributes()` no longer has an `$includeFields` argument.
 - `craft\services\Fields::getFieldByHandle()` now has an optional `$context` argument.
-- `craft\services\Fields::getFieldsByElementType()` and `getFieldsByLayoutId()` no longer reinstantiate fields. ([#6478](https://github.com/craftcms/cms/issues/6478))
 - `craft\services\Gql::setCachedResult()` now has a `$dependency` argument.
 - `craft\services\Gql` now fires a `registerGqlMutations` event that allows for plugins to register their own GraphQL mutations.
 - `craft\services\ProjectConfig::areChangesPending()` now has a `$force` argument.

@@ -685,10 +685,7 @@ class Fields extends Component
      */
     public function getFieldsByElementType(string $elementType): array
     {
-        $fields = [];
-
-        $ids = $this->_createFieldQuery()
-            ->select(['fields.id'])
+        $results = $this->_createFieldQuery()
             ->innerJoin(['flf' => Table::FIELDLAYOUTFIELDS], '[[flf.fieldId]] = [[fields.id]]')
             ->innerJoin(['fl' => Table::FIELDLAYOUTS], '[[fl.id]] = [[flf.layoutId]]')
             ->where([
@@ -696,12 +693,12 @@ class Fields extends Component
                 'fl.dateDeleted' => null,
             ])
             ->groupBy(['fields.id'])
-            ->column();
+            ->all();
 
-        foreach ($ids as $id) {
-            if ($field = $this->getFieldById($id)) {
-                $fields[] = $field;
-            }
+        $fields = [];
+
+        foreach ($results as $result) {
+            $fields[] = $this->createField($result);
         }
 
         return $fields;
@@ -1129,61 +1126,21 @@ class Fields extends Component
     {
         $fields = [];
 
-        $ids = $this->_createFieldQuery()
-            ->select(['fields.id'])
+        $results = $this->_createFieldQuery()
+            ->addSelect([
+                'flf.layoutId',
+                'flf.tabId',
+                'flf.required',
+                'flf.sortOrder',
+            ])
             ->innerJoin(['flf' => Table::FIELDLAYOUTFIELDS], '[[flf.fieldId]] = [[fields.id]]')
             ->innerJoin(['flt' => Table::FIELDLAYOUTTABS], '[[flt.id]] = [[flf.tabId]]')
             ->where(['flf.layoutId' => $layoutId])
             ->orderBy(['flt.sortOrder' => SORT_ASC, 'flf.sortOrder' => SORT_ASC])
-            ->column();
+            ->all();
 
-        foreach ($ids as $id) {
-            if ($field = $this->getFieldById($id)) {
-                $fields[] = $field;
-            }
-        }
-
-        return $fields;
-    }
-
-    /**
-     * Returns the fields in a field layout tab, identified by its ID.
-     *
-     * @param int $tabId The field layout tab’s ID
-     * @param bool $withLayoutAttributes Whether the fields should be loaded with their `layoutId`, `tabId`, `required`, and `sortOrder` layout attributes
-     * @return FieldInterface[] The fields
-     * @since 3.5.0
-     */
-    public function getFieldsByLayoutTabId(int $tabId, bool $withLayoutAttributes = true): array
-    {
-        $fields = [];
-
-        $query = $this->_createFieldQuery()
-            ->innerJoin(['flf' => Table::FIELDLAYOUTFIELDS], '[[flf.fieldId]] = [[fields.id]]')
-            ->where(['flf.tabId' => $tabId])
-            ->orderBy(['flf.sortOrder' => SORT_ASC]);
-
-        if ($withLayoutAttributes) {
-            $results = $query
-                ->addSelect([
-                    'flf.layoutId',
-                    'flf.tabId',
-                    'flf.required',
-                    'flf.sortOrder',
-                ])
-                ->all();
-            foreach ($results as $result) {
-                $fields[] = $this->createField($result);
-            }
-        } else {
-            $ids = $query
-                ->select(['fields.id'])
-                ->column();
-            foreach ($ids as $id) {
-                if ($field = $this->getFieldById($id)) {
-                    $fields[] = $field;
-                }
-            }
+        foreach ($results as $result) {
+            $fields[] = $this->createField($result);
         }
 
         return $fields;
