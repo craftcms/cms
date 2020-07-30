@@ -240,6 +240,7 @@
 - Added `craft\helpers\Html::namespaceId()`.
 - Added `craft\helpers\Html::namespaceInputName()`.
 - Added `craft\helpers\Html::namespaceInputs()`.
+- Added `craft\helpers\Html::sanitizeSvg()`.
 - Added `craft\helpers\Json::isJsonObject()`.
 - Added `craft\helpers\MailerHelper::normalizeEmails()`.
 - Added `craft\helpers\MailerHelper::settingsReport()`.

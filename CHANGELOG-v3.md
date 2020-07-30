@@ -6,6 +6,7 @@
 - Added `craft\events\DefineFieldLayoutElementsEvent`.
 - Added `craft\fieldlayoutelements\BaseUiElement`.
 - Added `craft\helpers\Component::iconSvg()`.
+- Added `craft\helpers\Html::sanitizeSvg()`.
 - Added `craft\models\FieldLayout::EVENT_DEFINE_UI_ELEMENTS`.
 
 ### Changed

@@ -8,6 +8,8 @@
 namespace craft\helpers;
 
 use Craft;
+use craft\image\SvgAllowedAttributes;
+use enshrined\svgSanitize\Sanitizer;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -676,5 +678,24 @@ class Html extends \yii\helpers\Html
     private static function _restoreTextareas(string $html, array &$markers): string
     {
         return str_replace(array_keys($markers), array_values($markers), $html);
+    }
+
+    /**
+     * Sanitizes an SVG.
+     *
+     * @param string $svg
+     * @return string
+     * @since 3.5.0
+     */
+    public static function sanitizeSvg(string $svg): string
+    {
+        $sanitizer = new Sanitizer();
+        $sanitizer->setAllowedAttrs(new SvgAllowedAttributes());
+        $svg = $sanitizer->sanitize($svg);
+        // Remove comments, title & desc
+        $svg = preg_replace('/<!--.*?-->\s*/s', '', $svg);
+        $svg = preg_replace('/<title>.*?<\/title>\s*/is', '', $svg);
+        $svg = preg_replace('/<desc>.*?<\/desc>\s*/is', '', $svg);
+        return $svg;
     }
 }
