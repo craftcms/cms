@@ -404,6 +404,7 @@
 - `craft\services\ProjectConfig::areChangesPending()` now has a `$force` argument.
 - `craft\services\Sites::getAllSiteIds()`, `getSiteByUid()`, `getAllSites()`, `getSitesByGroupId()`, `getSiteById()`, and `getSiteByHandle()` now have `$withDisabled` arguments.
 - `craft\services\TemplateCaches::startTemplateCache()` no longer has a `$key` argument.
+- `craft\web\Controller::requireAcceptsJson()` no longer throws an exception for preflight requests.
 - Improved `data`/`aria` tag normalization via `craft\helpers\Html::parseTagAttributes()` and `normalizeTagAttributes()`.
 - Control panel form input macros and templates that accept a `class` variable can now pass it as an array of class names.
 - Radio groups in the control panel can now toggle other UI elements, like select inputs.
