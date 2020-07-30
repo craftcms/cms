@@ -659,6 +659,12 @@
 ### Security
 - The `_includes/forms/checkbox.html`, `checkboxGroup.html`, and `checkboxSelect.html` control panel templates now HTML-encode checkbox labels by default, preventing possible XSS vulnerabilities. If HTML code was desired, it must be passed through the new `raw()` function first.
 
+## Unreleased (3.4.x)
+
+### Fixed
+- Fixed a bug where Craft was exiting with a 200 status code if the `license.key` file didn’t contain a valid license key, and wasn’t writable. ([#6475](https://github.com/craftcms/cms/issues/6475))
+- Fixed a PHP error that would occur when calling `craft\web\User::guestRequired()` if a user was logged in. ([#6497](https://github.com/craftcms/cms/issues/6497))
+
 ## 3.4.30 - 2020-07-28
 
 ### Changed
