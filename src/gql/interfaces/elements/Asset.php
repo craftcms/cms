@@ -149,12 +149,6 @@ class Asset extends Element
                 'type' => DateTime::getType(),
                 'description' => 'The date the asset file was last modified.'
             ],
-            'uploader' => [
-                'name' => 'uploader',
-                'type' => UserInterface::getType(),
-                'args' => UserArguments::getArguments(),
-                'description' => 'The ID of the user who first added this asset (if known).'
-            ],
             'prev' => [
                 'name' => 'prev',
                 'type' => self::getType(),
@@ -168,5 +162,29 @@ class Asset extends Element
                 'description' => 'Returns the next element relative to this one, from a given set of criteria. CAUTION: Applying arguments to this field severely degrades the performance of the query.',
             ],
         ]), self::getName());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected static function getConditionalFields(): array
+    {
+        if (Gql::canQueryUsers()) {
+            return [
+                'uploaderId' => [
+                    'name' => 'uploaderId',
+                    'type' => Type::int(),
+                    'description' => 'The ID of the user who first added this asset (if known).'
+                ],
+                'uploader' => [
+                    'name' => 'uploader',
+                    'type' => User::getType(),
+                    'args' => UserArguments::getArguments(),
+                    'description' => 'The user who first added this asset (if known).'
+                ],
+            ];
+        }
+
+        return [];
     }
 }
