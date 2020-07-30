@@ -13,10 +13,10 @@ composer.lock export-ignore
 crowdin.yml export-ignore
 gruntflie.js export-ignore
 gulpfile.js export-ignore
-package.json
-package-lock.json
-README.md
-SECURITY.md
+package.json export-ignore
+package-lock.json export-ignore
+README.md export-ignore
+SECURITY.md export-ignore
 tests/ export-ignore
 
 # Auto detect text files and perform LF normalization
