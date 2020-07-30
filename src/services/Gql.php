@@ -75,6 +75,7 @@ use GraphQL\Validator\DocumentValidator;
 use GraphQL\Validator\Rules\FieldsOnCorrectType;
 use GraphQL\Validator\Rules\KnownTypeNames;
 use GraphQL\Validator\Rules\QueryComplexity;
+use GraphQL\Validator\Rules\QueryDepth;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -442,10 +443,16 @@ class Gql extends Component
 
         $generalConfig = Craft::$app->getConfig()->getGeneral();
 
-        // Set complexity, if defined,
+        // Set complexity rule, if defined,
         if (!empty($generalConfig->maxGraphqlComplexity)) {
             $validationRules[QueryComplexity::class] = new QueryComplexity($generalConfig->maxGraphqlComplexity);
         }
+
+        // Set depth rule, if defined,
+        if (!empty($generalConfig->maxGraphqlDepth)) {
+            $validationRules[QueryDepth::class] = new QueryDepth($generalConfig->maxGraphqlDepth);
+        }
+
         $event = new DefineGqlValidationRulesEvent([
             'validationRules' => $validationRules,
             'debug' => $debug
