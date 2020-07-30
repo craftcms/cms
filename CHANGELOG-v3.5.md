@@ -421,6 +421,7 @@
 - Radio groups in the control panel can now toggle other UI elements, like select inputs.
 - Control panel templates can now set a `formActions` variable, which registers alternative Save menu actions, optionally with associated keyboard shortcuts.
 - The `_layouts/base` template now supports a `bodyAttributes` variable.
+- Control panel settings pages registered via `craft\web\twig\variables\Cp::EVENT_REGISTER_CP_SETTINGS` can now specify their icon path with an `iconMask` key, which will have it filled in with the same color as Craft’s built-in settings icons.
 - The `Craft.cp.submitPrimaryForm()` method now accepts an `options` argument for customizing the form submit.
 - New installs now set the primary site’s base URL to a `PRIMARY_SITE_URL` environment variable, rather than `DEFAULT_SITE_URL`.
 - Updated Yii to 2.0.36.

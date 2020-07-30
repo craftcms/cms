@@ -897,13 +897,19 @@ ul.icons {
         border-color: $grey100;
       }
 
-      img,
-      svg {
-        width: 40px;
-        height: 40px;
-        position: absolute;
-        top: 12px;
-        left: calc(50% - 20px);
+      .icon {
+        img,
+        svg {
+          width: 40px;
+          height: 40px;
+          position: absolute;
+          top: 12px;
+          left: calc(50% - 20px);
+        }
+
+        &.icon-mask svg {
+          @include svg-mask($grey500);
+        }
       }
     }
   }
