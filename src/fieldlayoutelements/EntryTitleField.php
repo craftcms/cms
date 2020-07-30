@@ -20,7 +20,6 @@ use yii\base\InvalidArgumentException;
  */
 class EntryTitleField extends TitleField
 {
-
     /**
      * @inheritdoc
      */
