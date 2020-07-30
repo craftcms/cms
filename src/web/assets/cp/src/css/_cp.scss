@@ -1522,7 +1522,7 @@ $toolbarIconColor: darken($inputColor, 10%);
   width: calc(100% + 14px);
 
   & > h2 {
-    margin: 0 -10px 24px -24px;
+    margin: 0 -10px 24px -24px !important;
     padding: 0 10px 0 24px;
     width: calc(100% + 34px);
 
