@@ -8,6 +8,7 @@
 namespace craft\gql\interfaces\elements;
 
 use craft\gql\arguments\elements\Asset as AssetArguments;
+use craft\gql\arguments\elements\User as UserArguments;
 use craft\gql\arguments\Transform;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\Element;
@@ -146,6 +147,12 @@ class Asset extends Element
                 'name' => 'dateModified',
                 'type' => DateTime::getType(),
                 'description' => 'The date the asset file was last modified.'
+            ],
+            'uploader' => [
+                'name' => 'uploader',
+                'type' => User::getType(),
+                'args' => UserArguments::getArguments(),
+                'description' => 'The ID of the user who first added this asset (if known).'
             ],
             'prev' => [
                 'name' => 'prev',
