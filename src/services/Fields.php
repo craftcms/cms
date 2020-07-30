@@ -685,7 +685,10 @@ class Fields extends Component
      */
     public function getFieldsByElementType(string $elementType): array
     {
-        $results = $this->_createFieldQuery()
+        $fields = [];
+
+        $ids = $this->_createFieldQuery()
+            ->select(['fields.id'])
             ->innerJoin(['flf' => Table::FIELDLAYOUTFIELDS], '[[flf.fieldId]] = [[fields.id]]')
             ->innerJoin(['fl' => Table::FIELDLAYOUTS], '[[fl.id]] = [[flf.layoutId]]')
             ->where([
@@ -693,12 +696,12 @@ class Fields extends Component
                 'fl.dateDeleted' => null,
             ])
             ->groupBy(['fields.id'])
-            ->all();
+            ->column();
 
-        $fields = [];
-
-        foreach ($results as $result) {
-            $fields[] = $this->createField($result);
+        foreach ($ids as $id) {
+            if ($field = $this->getFieldById($id)) {
+                $fields[] = $field;
+            }
         }
 
         return $fields;
@@ -1126,21 +1129,18 @@ class Fields extends Component
     {
         $fields = [];
 
-        $results = $this->_createFieldQuery()
-            ->addSelect([
-                'flf.layoutId',
-                'flf.tabId',
-                'flf.required',
-                'flf.sortOrder',
-            ])
+        $ids = $this->_createFieldQuery()
+            ->select(['fields.id'])
             ->innerJoin(['flf' => Table::FIELDLAYOUTFIELDS], '[[flf.fieldId]] = [[fields.id]]')
             ->innerJoin(['flt' => Table::FIELDLAYOUTTABS], '[[flt.id]] = [[flf.tabId]]')
             ->where(['flf.layoutId' => $layoutId])
             ->orderBy(['flt.sortOrder' => SORT_ASC, 'flf.sortOrder' => SORT_ASC])
-            ->all();
+            ->column();
 
-        foreach ($results as $result) {
-            $fields[] = $this->createField($result);
+        foreach ($ids as $id) {
+            if ($field = $this->getFieldById($id)) {
+                $fields[] = $field;
+            }
         }
 
         return $fields;

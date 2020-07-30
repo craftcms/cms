@@ -397,6 +397,7 @@
 - `craft\i18n\Formatter::asTimestamp()` now has a `$withPreposition` argument.
 - `craft\services\ElementIndexes::getAvailableTableAttributes()` no longer has an `$includeFields` argument.
 - `craft\services\Fields::getFieldByHandle()` now has an optional `$context` argument.
+- `craft\services\Fields::getFieldsByElementType()` and `getFieldsByLayoutId()` no longer reinstantiate fields. ([#6478](https://github.com/craftcms/cms/issues/6478))
 - `craft\services\Gql::setCachedResult()` now has a `$dependency` argument.
 - `craft\services\Gql` now fires a `registerGqlMutations` event that allows for plugins to register their own GraphQL mutations.
 - `craft\services\ProjectConfig::areChangesPending()` now has a `$force` argument.

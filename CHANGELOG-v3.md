@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- `craft\services\Fields::getFieldsByElementType()` and `getFieldsByLayoutId()` no longer reinstantiate fields. ([#6478](https://github.com/craftcms/cms/issues/6478))
+
 ### Fixed
 - Fixed a PHP error that could occur on Edit Field pages. ([#6474](https://github.com/craftcms/cms/issues/6474))
 
