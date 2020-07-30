@@ -594,7 +594,7 @@ class Html extends \yii\helpers\Html
         // Namespace & capture the ID attributes
         $ids = [];
         $html = preg_replace_callback('/(?<=\sid=)(\'|")([^\'"\s]*)\1/i', function($match) use ($namespace, &$ids): string {
-            $ids[] = preg_quote($match[2], '/');
+            $ids[] = $match[2];
             return $match[1] . $namespace . '-' . $match[2] . $match[1];
         }, $html);
         $ids = array_flip($ids);
