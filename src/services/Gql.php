@@ -72,6 +72,7 @@ use craft\records\GqlToken as GqlTokenRecord;
 use GraphQL\GraphQL;
 use GraphQL\Type\Schema;
 use GraphQL\Validator\DocumentValidator;
+use GraphQL\Validator\Rules\DisableIntrospection;
 use GraphQL\Validator\Rules\FieldsOnCorrectType;
 use GraphQL\Validator\Rules\KnownTypeNames;
 use GraphQL\Validator\Rules\QueryComplexity;
@@ -430,7 +431,7 @@ class Gql extends Component
      * @param bool $isIntrospectionQuery Whether this is an introspection query
      * @return array
      */
-    public function getValidationRules(bool $debug = false, bool $isIntrospectionQuery = false)
+    public function getValidationRules(bool $debug = false, bool $isIntrospectionQuery = false): array
     {
         $validationRules = DocumentValidator::defaultRules();
 
@@ -456,6 +457,8 @@ class Gql extends Component
             }
         }
 
+        if (!$generalConfig->enableGraphqlIntrospection) {
+            $validationRules[DisableIntrospection::class] = new DisableIntrospection();
         }
 
         $event = new DefineGqlValidationRulesEvent([
