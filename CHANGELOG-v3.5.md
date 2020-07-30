@@ -3,7 +3,6 @@
 > {warning} Read through the [Upgrading to Craft 3.5](https://craftcms.com/knowledge-base/upgrading-to-craft-3-5) guide before updating.
 
 ### Added
-- Added the Project Config utility, which can be used to perform project config actions, and view a dump of the stored project config. ([#4371](https://github.com/craftcms/cms/issues/4371))
 - It’s now possible to customize the labels and author instructions for all fields (including Title fields), from within field layout designers. ([#806](https://github.com/craftcms/cms/issues/806), [#841](https://github.com/craftcms/cms/issues/841))
 - It’s now possible to set Title fields’ positions within field layout designers. ([#3953](https://github.com/craftcms/cms/issues/3953))
 - It’s now possible to set field widths to 25%, 50%, 75%, or 100% (including Matrix sub-fields), and fields will be positioned next to each other when there’s room. ([#2644](https://github.com/craftcms/cms/issues/2644), [#6346](https://github.com/craftcms/cms/issues/6346))
@@ -25,6 +24,7 @@
 - User groups can now have descriptions. ([#4893](https://github.com/craftcms/cms/issues/4893))
 - It’s now possible to set a custom route that handles Set Password requests. ([#5722](https://github.com/craftcms/cms/issues/5722))
 - Field labels now reveal their handles when the <kbd>Option</kbd>/<kbd>ALT</kbd> key is pressed. ([#5833](https://github.com/craftcms/cms/issues/5833))
+- Added the Project Config utility, which can be used to perform project config actions, and view a dump of the stored project config. ([#4371](https://github.com/craftcms/cms/issues/4371))
 - Added the `allowedGraphqlOrigins` config setting. ([#5933](https://github.com/craftcms/cms/issues/5933))
 - Added the `brokenImagePath` config setting. ([#5877](https://github.com/craftcms/cms/issues/5877))
 - Added the `cpHeadTags` config setting, making it possible to give the control panel a custom favicon. ([#4003](https://github.com/craftcms/cms/issues/4003))
