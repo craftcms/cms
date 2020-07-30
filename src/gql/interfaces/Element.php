@@ -12,6 +12,7 @@ use craft\gql\GqlEntityRegistry;
 use craft\gql\TypeManager;
 use craft\gql\types\DateTime;
 use craft\gql\types\generators\ElementType;
+use craft\helpers\Gql as GqlHelper;
 use craft\services\Gql;
 use GraphQL\Type\Definition\InterfaceType as GqlInterfaceType;
 use GraphQL\Type\Definition\Type;
@@ -69,7 +70,8 @@ class Element extends InterfaceType
                         'description' => 'The handle of the field that holds the relations.'
                     ]
                 ],
-                'description' => 'Return a number of related elements for a field.'
+                'description' => 'Return a number of related elements for a field.',
+                'complexity' => GqlHelper::eagerLoadComplexity(),
             ],
             'title' => [
                 'name' => 'title',

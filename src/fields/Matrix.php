@@ -31,6 +31,7 @@ use craft\gql\types\input\Matrix as MatrixInputType;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
+use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
@@ -861,6 +862,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             'type' => Type::listOf(GqlHelper::getUnionType($typeName, $typeArray, $resolver)),
             'args' => MatrixBlockArguments::getArguments(),
             'resolve' => MatrixBlockResolver::class . '::resolve',
+            'complexity' => Gql::eagerLoadComplexity()
         ];
     }
 

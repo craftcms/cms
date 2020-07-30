@@ -163,6 +163,7 @@ class Categories extends BaseRelationField
             'type' => Type::listOf(CategoryInterface::getType()),
             'args' => CategoryArguments::getArguments(),
             'resolve' => CategoryResolver::class . '::resolve',
+            'complexity' => Gql::eagerLoadComplexity()
         ];
     }
 

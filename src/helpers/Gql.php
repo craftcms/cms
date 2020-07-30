@@ -348,8 +348,8 @@ class Gql
      */
     public static function eagerLoadComplexity(): callable
     {
-        return static function () {
-            return GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD;
+        return static function ($childComplexity) {
+            return $childComplexity + GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD;
         };
     }
 
@@ -360,8 +360,8 @@ class Gql
      */
     public static function singleQueryComplexity(): callable
     {
-        return static function () {
-            return GqlService::GRAPHQL_COMPLEXITY_QUERY;
+        return static function ($childComplexity) {
+            return $childComplexity + GqlService::GRAPHQL_COMPLEXITY_QUERY;
         };
     }
 
@@ -372,8 +372,8 @@ class Gql
      */
     public static function nPlus1Complexity(): callable
     {
-        return static function () {
-            return GqlService::GRAPHQL_COMPLEXITY_NPLUS1;
+        return static function ($childComplexity) {
+            return $childComplexity + GqlService::GRAPHQL_COMPLEXITY_NPLUS1;
         };
     }
 }
