@@ -130,6 +130,9 @@ class TemplateCaches extends Component
 
         $dep = Craft::$app->getElements()->stopCollectingCacheTags();
 
+        // Always add a `template` tag
+        $dep->tags[] = 'template';
+
         // If there are any transform generation URLs in the body, don't cache it.
         // stripslashes($body) in case the URL has been JS-encoded or something.
         if (StringHelper::contains(stripslashes($body), 'assets/generate-transform')) {

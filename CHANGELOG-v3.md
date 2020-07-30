@@ -3,11 +3,18 @@
 ## Unreleased
 
 ### Added
+- Added “GraphQL queries” and “Template caches” cache tag invalidation options to the Caches (formerly “Clear Caches”) utility. ([#6279](https://github.com/craftcms/cms/issues/6279))
+- Added the `invalidate-tags` command. ([#6279](https://github.com/craftcms/cms/issues/6279))
+- Added `craft\console\actions\InvalidateTagAction`.
+- Added `craft\console\controllers\InvalidateTagsController`.
+- Added `craft\controllers\UtilitiesController::actionInvalidateTags()`.
 - Added `craft\events\DefineFieldLayoutElementsEvent`.
 - Added `craft\fieldlayoutelements\BaseUiElement`.
 - Added `craft\helpers\Component::iconSvg()`.
 - Added `craft\helpers\Html::sanitizeSvg()`.
 - Added `craft\models\FieldLayout::EVENT_DEFINE_UI_ELEMENTS`.
+- Added `craft\utilities\ClearCaches::EVENT_REGISTER_TAG_OPTIONS`.
+- Added `craft\utilities\ClearCaches::tagOptions()`.
 
 ### Changed
 - Plain Text fields now have a “UI Mode” setting.

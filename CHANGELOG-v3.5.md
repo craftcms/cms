@@ -25,6 +25,7 @@
 - It’s now possible to set a custom route that handles Set Password requests. ([#5722](https://github.com/craftcms/cms/issues/5722))
 - Field labels now reveal their handles when the <kbd>Option</kbd>/<kbd>ALT</kbd> key is pressed. ([#5833](https://github.com/craftcms/cms/issues/5833))
 - Added the Project Config utility, which can be used to perform project config actions, and view a dump of the stored project config. ([#4371](https://github.com/craftcms/cms/issues/4371))
+- Added “GraphQL queries” and “Template caches” cache tag invalidation options to the Caches (formerly “Clear Caches”) utility. ([#6279](https://github.com/craftcms/cms/issues/6279))
 - Added the `allowedGraphqlOrigins` config setting. ([#5933](https://github.com/craftcms/cms/issues/5933))
 - Added the `brokenImagePath` config setting. ([#5877](https://github.com/craftcms/cms/issues/5877))
 - Added the `cpHeadTags` config setting, making it possible to give the control panel a custom favicon. ([#4003](https://github.com/craftcms/cms/issues/4003))
@@ -35,6 +36,7 @@
 - Added the `previewIframeResizerOptions` config setting. ([#6388](https://github.com/craftcms/cms/issues/6388))
 - Added the `siteToken` config setting.
 - Added the `install/check` command. ([#5810](https://github.com/craftcms/cms/issues/5810))
+- Added the `invalidate-tags` command. ([#6279](https://github.com/craftcms/cms/issues/6279))
 - Added the `plugin/install`, `plugin/uninstall`, `plugin/enable`, and `plugin/disable` commands. ([#5817](https://github.com/craftcms/cms/issues/5817))
 - `{% cache %}` tags and GraphQL queries now use a new tag-based cache invalidation strategy. (No more “Deleting stale template caches” background jobs clogging up the queue!) ([#1507](https://github.com/craftcms/cms/issues/1507), [#1689](https://github.com/craftcms/cms/issues/1689))
 - Added the `{% html %}` Twig tag, which makes it possible to register arbitrary HTML for inclusion in the `<head>`, beginning of `<body>`, or end of `<body>`. ([#5955](https://github.com/craftcms/cms/issues/5955))
@@ -112,11 +114,14 @@
 - Added `craft\base\VolumeInterface::getFieldLayout()`.
 - Added `craft\behaviors\BaseRevisionBehavior`.
 - Added `craft\config\GeneralConfig::getTestToEmailAddress()`.
+- Added `craft\console\actions\InvalidateTagAction`.
+- Added `craft\console\controllers\InvalidateTagsController`.
 - Added `craft\console\controllers\MailerController::$to`.
 - Added `craft\console\controllers\MigrateController::EVENT_REGISTER_MIGRATOR`.
 - Added `craft\controllers\AppController::actionBrokenImage()`.
 - Added `craft\controllers\BaseEntriesController::enforceSitePermissions()`.
 - Added `craft\controllers\FieldsController::actionRenderLayoutElementSelector()`.
+- Added `craft\controllers\UtilitiesController::actionInvalidateTags()`.
 - Added `craft\controllers\UtilitiesController::actionProjectConfigPerformAction()`.
 - Added `craft\db\MigrationManager::TRACK_CONTENT`.
 - Added `craft\db\MigrationManager::TRACK_CRAFT`.
@@ -297,6 +302,8 @@
 - Added `craft\services\ProjectConfig::IGNORE_CACHE_KEY`.
 - Added `craft\services\ProjectConfig::ignorePendingChanges()`.
 - Added `craft\test\mockclasses\elements\MockElementQuery`.
+- Added `craft\utilities\ClearCaches::EVENT_REGISTER_TAG_OPTIONS`.
+- Added `craft\utilities\ClearCaches::tagOptions()`.
 - Added `craft\utilities\ProjectConfig`.
 - Added `craft\web\Application::authenticate()`.
 - Added `craft\web\AssetBundle\ContentWindowAsset`.
