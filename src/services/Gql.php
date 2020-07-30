@@ -427,9 +427,10 @@ class Gql extends Component
      * Return a set of validation rules to use.
      *
      * @param bool $debug Whether debugging validation rules should be allowed.
+     * @param bool $isIntrospectionQuery Whether this is an introspection query
      * @return array
      */
-    public function getValidationRules($debug = false)
+    public function getValidationRules(bool $debug = false, bool $isIntrospectionQuery = false)
     {
         $validationRules = DocumentValidator::defaultRules();
 
@@ -443,14 +444,18 @@ class Gql extends Component
 
         $generalConfig = Craft::$app->getConfig()->getGeneral();
 
-        // Set complexity rule, if defined,
-        if (!empty($generalConfig->maxGraphqlComplexity)) {
-            $validationRules[QueryComplexity::class] = new QueryComplexity($generalConfig->maxGraphqlComplexity);
+        if (!$isIntrospectionQuery) {
+            // Set complexity rule, if defined,
+            if (!empty($generalConfig->maxGraphqlComplexity)) {
+                $validationRules[QueryComplexity::class] = new QueryComplexity($generalConfig->maxGraphqlComplexity);
+            }
+
+            // Set depth rule, if defined,
+            if (!empty($generalConfig->maxGraphqlDepth)) {
+                $validationRules[QueryDepth::class] = new QueryDepth($generalConfig->maxGraphqlDepth);
+            }
         }
 
-        // Set depth rule, if defined,
-        if (!empty($generalConfig->maxGraphqlDepth)) {
-            $validationRules[QueryDepth::class] = new QueryDepth($generalConfig->maxGraphqlDepth);
         }
 
         $event = new DefineGqlValidationRulesEvent([
@@ -503,7 +508,8 @@ class Gql extends Component
             if ($cacheKey && ($cachedResult = $this->getCachedResult($cacheKey)) !== null) {
                 $event->result = $cachedResult;
             } else {
-                $schemaDef = $this->getSchemaDef($schema, $debugMode || StringHelper::contains($query, '__schema'));
+                $isIntrospectionQuery = StringHelper::containsAny($query, ['__schema', '__type']);
+                $schemaDef = $this->getSchemaDef($schema, $debugMode || $isIntrospectionQuery);
                 $elementsService = Craft::$app->getElements();
                 $elementsService->startCollectingCacheTags();
 
@@ -515,7 +521,7 @@ class Gql extends Component
                     $event->variables,
                     $event->operationName,
                     null,
-                    $this->getValidationRules($debugMode)
+                    $this->getValidationRules($debugMode, $isIntrospectionQuery)
                 )->toArray($debugMode);
 
                 $dep = $elementsService->stopCollectingCacheTags();
