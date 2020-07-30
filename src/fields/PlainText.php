@@ -186,12 +186,11 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
      */
     protected function inputHtml($value, ElementInterface $element = null): string
     {
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/PlainText/input',
-            [
-                'name' => $this->handle,
-                'value' => $value,
-                'field' => $this,
-            ]);
+        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/PlainText/input', [
+            'name' => $this->handle,
+            'value' => $value,
+            'field' => $this,
+        ]);
     }
 
     /**

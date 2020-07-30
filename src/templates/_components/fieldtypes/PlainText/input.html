@@ -2,8 +2,8 @@
 
 {%- set class = [
     'nicetext',
-    (field.code ? 'code' : null)
-]|filter|join(' ') %}
+    field.code ? 'code',
+]|filter %}
 
 {% set config = {
     id: name,
