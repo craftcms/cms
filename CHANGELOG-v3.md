@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\services\Fields::getFieldsByLayoutTabId()`.
+
 ### Changed
 - `craft\services\Fields::getFieldsByElementType()` and `getFieldsByLayoutId()` no longer reinstantiate fields. ([#6478](https://github.com/craftcms/cms/issues/6478))
 

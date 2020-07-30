@@ -1147,6 +1147,49 @@ class Fields extends Component
     }
 
     /**
+     * Returns the fields in a field layout tab, identified by its ID.
+     *
+     * @param int $tabId The field layout tab’s ID
+     * @param bool $withLayoutAttributes Whether the fields should be loaded with their `layoutId`, `tabId`, `required`, and `sortOrder` layout attributes
+     * @return FieldInterface[] The fields
+     * @since 3.5.0
+     */
+    public function getFieldsByLayoutTabId(int $tabId, bool $withLayoutAttributes = true): array
+    {
+        $fields = [];
+
+        $query = $this->_createFieldQuery()
+            ->innerJoin(['flf' => Table::FIELDLAYOUTFIELDS], '[[flf.fieldId]] = [[fields.id]]')
+            ->where(['flf.tabId' => $tabId])
+            ->orderBy(['flf.sortOrder' => SORT_ASC]);
+
+        if ($withLayoutAttributes) {
+            $results = $query
+                ->addSelect([
+                    'flf.layoutId',
+                    'flf.tabId',
+                    'flf.required',
+                    'flf.sortOrder',
+                ])
+                ->all();
+            foreach ($results as $result) {
+                $fields[] = $this->createField($result);
+            }
+        } else {
+            $ids = $query
+                ->select(['fields.id'])
+                ->column();
+            foreach ($ids as $id) {
+                if ($field = $this->getFieldById($id)) {
+                    $fields[] = $field;
+                }
+            }
+        }
+
+        return $fields;
+    }
+
+    /**
      * Creates a field layout element instance from its config.
      *
      * @param array $config
