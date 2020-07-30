@@ -457,7 +457,7 @@ class Gql extends Component
             }
         }
 
-        if (!$generalConfig->enableGraphqlIntrospection) {
+        if (!$generalConfig->enableGraphqlIntrospection && Craft::$app->getUser()->getIsGuest()) {
             $validationRules[DisableIntrospection::class] = new DisableIntrospection();
         }
 
