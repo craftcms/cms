@@ -2506,7 +2506,7 @@ body.rtl .matrix-configurator .mc-sidebar.mc-fields { right: 200px; }
 
 .matrix-configurator .mc-sidebar > .mc-col-inner-container > .mc-col-heading, .matrix-configurator .mc-field-settings > .mc-col-inner-container > .mc-col-heading { margin: 0; padding: 7px 14px 6px; border-bottom: 1px solid rgba(51, 64, 77, 0.1); background-color: #f3f7fc; background-image: -o-linear-gradient(rgba(51, 64, 77, 0), rgba(51, 64, 77, 0.05)); background-image: linear-gradient(rgba(51, 64, 77, 0), rgba(51, 64, 77, 0.05)); }
 
-.matrix-configurator .mc-field-settings { position: relative; height: 100%; }
+.matrix-configurator .mc-field-settings { -webkit-flex: 1; flex: 1; position: relative; height: 100%; }
 
 .matrix-configurator .mc-field-settings > .mc-col-inner-container > .mc-col-heading { padding-left: 24px; padding-right: 24px; }
 
