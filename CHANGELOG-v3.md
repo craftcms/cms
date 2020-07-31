@@ -3,9 +3,11 @@
 ## Unreleased (3.5)
 
 ### Added
+- Entries within Structure sections and categories now have a “Delete (with descendants)” element action.
 - Added the `uploader` GraphQL argument asset queries. ([#6498](https://github.com/craftcms/cms/pull/6498))
 - Added the `uploaderId` GraphQL argument for asset queries. ([#6498](https://github.com/craftcms/cms/pull/6498))
 - Added the `uploader` and `uploaderId` GraphQL fields for assets. ([#6498](https://github.com/craftcms/cms/pull/6498))
+- Added `craft\elements\actions\Delete::$withDescendants`.
 
 ### Changed
 - Control panel settings pages registered via `craft\web\twig\variables\Cp::EVENT_REGISTER_CP_SETTINGS` can now specify their icon path with an `iconMask` key, which will have it filled in with the same color as Craft’s built-in settings icons.

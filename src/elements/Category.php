@@ -278,6 +278,10 @@ class Category extends Element
 
             // Delete
             $actions[] = Delete::class;
+            $actions[] = [
+                'type' => Delete::class,
+                'withDescendants' => true,
+            ];
         }
 
         // Restore

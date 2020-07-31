@@ -430,6 +430,13 @@ class Entry extends Element
                     $userSession->checkPermission('deletePeerEntries:' . $section->uid)
                 ) {
                     $actions[] = Delete::class;
+
+                    if ($section->type === Section::TYPE_STRUCTURE) {
+                        $actions[] = [
+                            'type' => Delete::class,
+                            'withDescendants' => true,
+                        ];
+                    }
                 }
             }
         }

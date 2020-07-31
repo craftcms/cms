@@ -14,6 +14,7 @@
 - Added the “Underline links” user preference. ([#6153](https://github.com/craftcms/cms/issues/6153))
 - Added the “Suspend by default” user registration setting. ([#5830](https://github.com/craftcms/cms/issues/5830))
 - Added the ability to disable sites on the front end. ([#3005](https://github.com/craftcms/cms/issues/3005))
+- Entries within Structure sections and categories now have a “Delete (with descendants)” element action.
 - Soft-deleted elements now have a “Delete permanently” element action. ([#4420](https://github.com/craftcms/cms/issues/4420))
 - Entry types can now change the Title field’s translation method, similar to how custom fields’ translation methods. ([#2856](https://github.com/craftcms/cms/issues/2856))
 - Entry draft forms no longer have a primary action, and the <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>S</kbd> keyboard shortcut now forces a resave of the draft, rather than publishing it. ([#6199](https://github.com/craftcms/cms/issues/6199))
@@ -127,6 +128,7 @@
 - Added `craft\db\MigrationManager::TRACK_CRAFT`.
 - Added `craft\elements\actions\CopyUrl`.
 - Added `craft\elements\actions\Delete::$hard`.
+- Added `craft\elements\actions\Delete::$withDescendants`.
 - Added `craft\elements\Asset::defineFieldLayouts()`.
 - Added `craft\elements\Asset::getCacheTags()`.
 - Added `craft\elements\Asset::getSrcset()`. ([#5774](https://github.com/craftcms/cms/issues/5774))
