@@ -1346,8 +1346,11 @@ class Gql extends Component
             FormatDateTime::class,
             Markdown::class,
             ParseRefs::class,
-            Transform::class,
         ];
+
+        if (!Craft::$app->getConfig()->getGeneral()->disableGraphqlTransformDirective) {
+            $directiveClasses[] = Transform::class;
+        }
 
         $event = new RegisterGqlDirectivesEvent([
             'directives' => $directiveClasses
