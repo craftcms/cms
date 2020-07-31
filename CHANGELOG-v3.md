@@ -3,15 +3,15 @@
 ## Unreleased (3.5)
 
 ### Added
-- Added the `uploader` argument for assets when querying elements via GraphQL. ([#6498](https://github.com/craftcms/cms/pull/6498))
-- Added the `uploaderId` argument for assets when modifying elements via GraphQL. ([#6498](https://github.com/craftcms/cms/pull/6498))
-- Added the `uploader` and `uploaderId` fields for assets when querying elements via GraphQL. ([#6498](https://github.com/craftcms/cms/pull/6498))
+- Added the `uploader` GraphQL argument asset queries. ([#6498](https://github.com/craftcms/cms/pull/6498))
+- Added the `uploaderId` GraphQL argument for asset queries. ([#6498](https://github.com/craftcms/cms/pull/6498))
+- Added the `uploader` and `uploaderId` GraphQL fields for assets. ([#6498](https://github.com/craftcms/cms/pull/6498))
 
 ### Changed
 - Control panel settings pages registered via `craft\web\twig\variables\Cp::EVENT_REGISTER_CP_SETTINGS` can now specify their icon path with an `iconMask` key, which will have it filled in with the same color as Craft’s built-in settings icons.
 
 ### Fixed
-- Fixed a bug where sometimes using variables with the GraphQL API was impossible. ([#6463](https://github.com/craftcms/cms/issues/6463))
+- Fixed an error that could occur when passing variables to GraphQL arguments. ([#6463](https://github.com/craftcms/cms/issues/6463))
 
 ## 3.5.0-RC5 - 2020-07-30
 
