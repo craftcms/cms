@@ -118,6 +118,8 @@ Craft.FieldToggle = Garnish.Base.extend(
                 this.findTargets();
                 this.showTarget(this._$target);
             } else {
+                this.findTargets();
+
                 if (this.type === 'link') {
                     this.onToggleChange._show = this.$toggle.hasClass('collapsed') || !this.$toggle.hasClass('expanded');
                 } else {
