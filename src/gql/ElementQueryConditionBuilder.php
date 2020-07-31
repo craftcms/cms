@@ -168,18 +168,22 @@ class ElementQueryConditionBuilder extends Component
      * Extract the value from an argument node, even if it's an array or a GraphQL variable.
      *
      * @param Node $argumentNode
-     * @param string $nodeName
      */
-    private function _extractArgumentValue(Node $argumentNode, $nodeName = null)
+    private function _extractArgumentValue(Node $argumentNode)
     {
-        if (isset($argumentNode->value->values)) {
+        $argumentNodeValue = $argumentNode->value;
+
+        if (isset($argumentNodeValue->values)) {
             $extractedValue = [];
-            foreach ($argumentNode->value->values as $value) {
-                $extractedValue[] = $this->_extractArgumentValue($value, $argumentNode->name->value);
+            foreach ($argumentNodeValue->values as $value) {
+                $extractedValue[] = $this->_extractArgumentValue($value);
             }
         } else {
-            $nodeName = $nodeName ?? $argumentNode->name->value;
-            $extractedValue = $argumentNode->value->kind === 'Variable' ? $this->_resolveInfo->variableValues[$nodeName] : ($argumentNode->value->value ?? ($argumentNode->value ?? null));
+            if (in_array($argumentNode->kind, ['Argument', 'Variable'], true)) {
+                $extractedValue = $argumentNodeValue->kind === 'Variable' ? $this->_resolveInfo->variableValues[$argumentNodeValue->name->value] : $argumentNodeValue->value;
+            } else {
+                $extractedValue = $argumentNodeValue;
+            }
         }
 
         return $extractedValue;

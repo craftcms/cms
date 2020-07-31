@@ -102,15 +102,17 @@ class ExtractEagerLoadingParameterTest extends Unit
      * Test eager loading parameter extraction from a query string
      *
      * @param string $query The query string
+     * @param array $variables Query variables
      * @param array $expectedParameters The expected eager-loading parameters.
      * @param string $returnType The return type of the GQL query
      *
+     * @throws \GraphQL\Error\SyntaxError
      * @dataProvider eagerLoadingParameterExtractionProvider
      */
-    public function testEagerLoadingParameterExtraction(string $query, array $expectedParameters, $returnType)
+    public function testEagerLoadingParameterExtraction(string $query, array $variables, array $expectedParameters, $returnType)
     {
         $documentNode = Parser::parse(new Source($query ?: '', 'GraphQL'));
-        $resolveInfo = $this->_buildResolveInfo($documentNode, $returnType);
+        $resolveInfo = $this->_buildResolveInfo($documentNode, $variables, $returnType);
 
         $eagerLoadBuilder = new ElementQueryConditionBuilder($resolveInfo);
         $extractedConditions = $eagerLoadBuilder->extractQueryConditions();
@@ -216,68 +218,96 @@ GQL;
         return [
             [
                 '{ user { photo { id }}}',
+                [],
                 ['with' => ['photo']],
                 'UserInterface'
             ],
             [
                 '{ entry { assetField { localized { id }}}}',
+                [],
                 ['with' => [['assetField', ['volumeId' => [5, 7]]]]],
                 'UserInterface'
             ],
             [
                 '{ entry { entryField { photo }}}',
+                [],
                 ['with' => [['entryField', ['sectionId' => [5], 'typeId' => [2]]]]],
                 'EntryInterface',
             ],
             [
                 '{ entry { localized { title } alias: localized { title }}}',
+                [],
                 ['with' => ['localized', 'localized as alias']],
                 'EntryInterface',
             ],
             [
                 '{ user { ph: photo { id }}}',
+                [],
                 ['with' => ['photo']],
                 '[UserInterface]'
             ],
             [
                 '{entry { author { ph: photo { id }}}}',
+                [],
                 ['with' => ['author', 'author.photo']],
                 'EntryInterface'
             ],
             [
                 '{entry { author { photo { id }}}}',
+                [],
                 ['with' => ['author', 'author.photo']],
                 'EntryInterface'
             ],
             [
                 '{ entry { assetField (volumeId: 4) { filename }}}',
+                [],
                 ['with' => [['assetField', ['id' => 0]]]],
                 'EntryInterface',
             ],
             [
                 '{ entry { localized { id }}}',
+                [],
                 ['with' => ['localized']],
                 'EntryInterface',
             ],
             [
                 '{ entry { parent { id }}}',
+                [],
                 ['with' => ['parent']],
                 'EntryInterface',
             ],
             [
                 '{ entries { _count(field: "assetField") assetField { filename }}}',
+                [],
                 ['with' => [['assetField', ['volumeId' => [5, 7], 'count' => true]]]],
                 '[EntryInterface]',
             ],
             [
                 '{ entries { assetField { filename }}}',
+                [],
                 [
                     'with' => [['assetField', ['volumeId' => [5, 7]]]]
                 ],
                 '[EntryInterface]',
             ],
-            [$complexGql, $complexResult, 'EntryInterface'],
-            [$assetGql, $assetResult, 'AssetInterface'],
+            [
+                'query entries ($childSlug: [String]) {
+                    entries  {
+                        children(type: "child", slug: $childSlug) {
+                            id
+                            title
+                            slug
+                        }
+                    }
+                }',
+                ['childSlug' => ['slugslug', 'slugger']],
+                [
+                    'with' => [['children', ['type' => 'child', 'slug' => ['slugslug', 'slugger']]]],
+                ],
+                '[EntryInterface]',
+            ],
+            [$complexGql, [], $complexResult, 'EntryInterface'],
+            [$assetGql, [], $assetResult, 'AssetInterface'],
         ];
     }
 
@@ -285,10 +315,12 @@ GQL;
      * Mock the ResolveInfo variable.
      *
      * @param DocumentNode $documentNode
+     * @param array $variables
+     * @param $returnType
      * @return object
      * @throws \Exception
      */
-    private function _buildResolveInfo(DocumentNode $documentNode, $returnType)
+    private function _buildResolveInfo(DocumentNode $documentNode, array $variables, $returnType)
     {
 
         $fragments = [];
@@ -316,6 +348,7 @@ GQL;
                 $documentNode->definitions[0]->selectionSet->selections[0]
             ],
             'fieldName' => 'mockField',
+            'variableValues' => $variables,
             'returnType' => $list ? Type::listOf($type) : $type,
         ]);
     }

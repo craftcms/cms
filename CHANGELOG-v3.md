@@ -5,6 +5,9 @@
 ### Changed
 - Control panel settings pages registered via `craft\web\twig\variables\Cp::EVENT_REGISTER_CP_SETTINGS` can now specify their icon path with an `iconMask` key, which will have it filled in with the same color as Craft’s built-in settings icons.
 
+### Fixed
+- Fixed a bug where sometimes using variables with the GraphQL API was impossible. ([#6463](https://github.com/craftcms/cms/issues/6463))
+
 ## 3.5.0-RC5 - 2020-07-30
 
 ### Added
