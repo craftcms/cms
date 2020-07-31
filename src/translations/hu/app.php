@@ -1307,7 +1307,7 @@ Amennyiben nem neked szól ez a levél, egyszerűen csak hagyd figyelmen kívül
     'Unknown' => 'Ismeretlen',
     'Couldn’t add all items to the cart.' => 'Nem sikerült az összes elemet a kosárba rakni.',
     'Add all to cart' => 'Összeset a kosárba',
-    'Back' => 'Fekete',
+    'Back' => 'Vissza',
     'The volume set for temp asset storage is not valid.' => 'Az ideiglenes tartalom tárolására beállított kötet nem érvényes.',
     'Whether validation errors on the related {type} should prevent the source element from being saved.' => 'Akadályozzák-e meg a kapcsolódó {type} ellenőrzési hibái a forráselem mentését.',
     'Draft deleted' => 'Vázlat törölve',
