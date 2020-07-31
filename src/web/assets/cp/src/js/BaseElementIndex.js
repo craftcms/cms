@@ -702,7 +702,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.showingActionTriggers = true;
         },
 
-        submitAction: function(actionClass, actionParams) {
+        submitAction: function(action, actionParams) {
             // Make sure something's selected
             var selectedElementIds = this.view.getSelectedElementIds(),
                 totalSelected = selectedElementIds.length;
@@ -711,17 +711,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 return;
             }
 
-            // Find the action
-            var action;
-
-            for (var i = 0; i < this.actions.length; i++) {
-                if (this.actions[i].type === actionClass) {
-                    action = this.actions[i];
-                    break;
-                }
-            }
-
-            if (!action || (action.confirm && !confirm(action.confirm))) {
+            if (action.confirm && !confirm(action.confirm)) {
                 return;
             }
 
@@ -732,8 +722,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             var viewParams = this.getViewParams();
 
             actionParams = actionParams ? Craft.expandPostArray(actionParams) : {};
-            var params = $.extend(viewParams, actionParams, {
-                elementAction: actionClass,
+            var params = $.extend(viewParams, action.settings || {}, actionParams, {
+                elementAction: action.type,
                 elementIds: selectedElementIds
             });
 
@@ -1350,10 +1340,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 return;
             }
 
-            var actionClass = $form.data('action'),
-                params = Garnish.getPostData($form);
-
-            this.submitAction(actionClass, params);
+            this.submitAction($form.data('action'), Garnish.getPostData($form));
         },
 
         _handleMenuActionTriggerSubmit: function(ev) {
@@ -1364,8 +1351,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 return;
             }
 
-            var actionClass = $option.data('action');
-            this.submitAction(actionClass);
+            this.submitAction($option.data('action'));
         },
 
         _handleStatusChange: function(ev) {
@@ -1798,7 +1784,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
                 if (action.trigger) {
                     var $form = $('<form id="' + Craft.formatInputId(action.type) + '-actiontrigger"/>')
-                        .data('action', action.type)
+                        .data('action', action)
                         .append(action.trigger);
 
                     this.addListener($form, 'submit', '_handleActionTriggerSubmit');
@@ -1962,11 +1948,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 var $ul = $('<ul/>');
 
                 for (var i = 0; i < actions.length; i++) {
-                    var actionClass = actions[i].type;
                     $('<li/>').append($('<a/>', {
-                        id: Craft.formatInputId(actionClass) + '-actiontrigger',
+                        id: Craft.formatInputId(actions[i].type) + '-actiontrigger',
                         'class': (destructive ? 'error' : null),
-                        'data-action': actionClass,
+                        data: {
+                            action: actions[i],
+                        },
                         text: actions[i].name
                     })).appendTo($ul);
                 }

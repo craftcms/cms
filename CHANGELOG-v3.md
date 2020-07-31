@@ -13,6 +13,7 @@
 ### Fixed
 - Fixed a bug where element index tables didn’t respond to structure changes correctly.
 - Fixed an error that could occur when passing variables to GraphQL arguments. ([#6463](https://github.com/craftcms/cms/issues/6463))
+- Fixed a bug where element actions weren’t always getting configured properly if an element type defined multiple actions of the same type.
 
 ## 3.5.0-RC5 - 2020-07-30
 

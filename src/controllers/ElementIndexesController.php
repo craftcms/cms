@@ -184,7 +184,7 @@ class ElementIndexesController extends BaseElementsController
             /** @var ElementAction $availableAction */
             foreach ($this->actions as $availableAction) {
                 if ($actionClass === get_class($availableAction)) {
-                    $action = $availableAction;
+                    $action = clone $availableAction;
                     break;
                 }
             }
@@ -648,6 +648,7 @@ class ElementIndexesController extends BaseElementsController
                 'name' => $action->getTriggerLabel(),
                 'trigger' => $action->getTriggerHtml(),
                 'confirm' => $action->getConfirmationMessage(),
+                'settings' => $action->getSettings() ?: null,
             ];
         }
 

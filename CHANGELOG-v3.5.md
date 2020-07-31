@@ -500,6 +500,7 @@
 - When previewing an image asset on a non-public volume, the image is no longer published to the `cpresources` folder. ([#6093](https://github.com/craftcms/cms/issues/6093)
 - Fixed a bug where Entry Edit pages would start showing a tab bar after switching entry types, even if the new entry type only had one content tab.
 - Fixed a SQL error that could occur when applying project config changes due to unique constraints. ([#5946](https://github.com/craftcms/cms/issues/5946))
+- Fixed a bug where element actions weren’t always getting configured properly if an element type defined multiple actions of the same type.
 
 ### Security
 - The `_includes/forms/checkbox.html`, `checkboxGroup.html`, and `checkboxSelect.html` control panel templates now HTML-encode checkbox labels by default, preventing possible XSS vulnerabilities. If HTML code was desired, it must be passed through the new `raw()` function first.
