@@ -10,6 +10,9 @@
 ### Changed
 - Control panel settings pages registered via `craft\web\twig\variables\Cp::EVENT_REGISTER_CP_SETTINGS` can now specify their icon path with an `iconMask` key, which will have it filled in with the same color as Craft’s built-in settings icons.
 
+### Deprecated
+- Deprecated `craft\elements\actions\DeepDuplicate`.
+
 ### Fixed
 - Fixed a bug where element index tables didn’t respond to structure changes correctly.
 - Fixed an error that could occur when passing variables to GraphQL arguments. ([#6463](https://github.com/craftcms/cms/issues/6463))

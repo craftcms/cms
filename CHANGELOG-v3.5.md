@@ -441,6 +441,7 @@
 - Deprecated `craft\db\Table::TEMPLATECACHEELEMENTS`.
 - Deprecated `craft\db\Table::TEMPLATECACHEQUERIES`.
 - Deprecated `craft\db\Table::TEMPLATECACHES`.
+- Deprecated `craft\elements\actions\DeepDuplicate`.
 - Deprecated `craft\elements\db\ElementQuery::$enabledForSite`.
 - Deprecated `craft\elements\db\ElementQuery::enabledForSite()`.
 - Deprecated `craft\events\RegisterGqlPermissionsEvent`. `craft\events\RegisterGqlSchemaComponentsEvent` should be used instead.

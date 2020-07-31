@@ -12,7 +12,6 @@ use craft\base\Element;
 use craft\controllers\ElementIndexesController;
 use craft\db\Query;
 use craft\db\Table;
-use craft\elements\actions\DeepDuplicate;
 use craft\elements\actions\Delete;
 use craft\elements\actions\Duplicate;
 use craft\elements\actions\Edit;
@@ -271,7 +270,10 @@ class Category extends Element
             $actions[] = Duplicate::class;
 
             if ($group->maxLevels != 1) {
-                $actions[] = DeepDuplicate::class;
+                $actions[] = [
+                    'type' => Duplicate::class,
+                    'deep' => true,
+                ];
             }
 
             // Delete
