@@ -5,6 +5,7 @@
 ### Fixed
 - Fixed a bug where Craft was exiting with a 200 status code if the `license.key` file didn’t contain a valid license key, and wasn’t writable. ([#6475](https://github.com/craftcms/cms/issues/6475))
 - Fixed a PHP error that would occur when calling `craft\web\User::guestRequired()` if a user was logged in. ([#6497](https://github.com/craftcms/cms/issues/6497))
+- Fixed a bug where deleting a user photo and immediately setting a new one would cause an exception to be thrown. ([#6491](https://github.com/craftcms/cms/issues/6491))
 
 ## 3.4.30 - 2020-07-28
 
