@@ -1,4 +1,4 @@
-{%- set id = id ?? 'lightswitch'~random() %}
+{%- set id = id ?? ('lightswitch'~random()) %}
 {%- set on = on ?? false %}
 {%- set indeterminate = not on and (indeterminate ?? false) %}
 {%- set value = value ?? '1' %}
