@@ -2884,174 +2884,198 @@ ul.tree,
 
 /* meta panes */
 .meta {
-  padding: 0;
+  padding: 0 24px;
   overflow: visible;
 
-  & > .field,
-  & > .data {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: nowrap;
-    margin: 0 !important;
-    padding: 0 24px;
-    transition: padding-left linear 100ms, padding-right linear 100ms;
+  &,
+  & > .flex-fields {
+    & > .field,
+    & > .data {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: nowrap;
+      margin: 0 -24px !important;
+      padding: 0 24px;
+      transition: padding-left linear 100ms, padding-right linear 100ms;
 
-    &.nested {
-      @include padding-left(38px);
-    }
-
-    &.add {
-      background-color: darken($grey050, 2%);
-
-      &:before {
-        position: absolute;
-        @include left(0);
-        width: 31px;
-        @include alignright;
-        @include icon;
-        content: 'plus';
-        color: $lightTextColor;
+      &.nested {
+        @include padding-left(38px);
       }
-    }
 
-    & > .heading {
-      flex: 0 0 105px;
-      @include margin(0, 7px, 0, 0);
-      line-height: 18px;
-    }
+      &.add {
+        background-color: darken($grey050, 2%);
 
-    &.lightswitch-field > .heading {
-      flex: 1;
-    }
+        &:before {
+          position: absolute;
+          @include left(0);
+          width: 31px;
+          @include alignright;
+          @include icon;
+          content: 'plus';
+          color: $lightTextColor;
+        }
+      }
 
-    & > .input {
-      .flex {
-        flex-wrap: nowrap;
+      & > .heading {
+        flex: 0 0 105px;
+        @include margin(0, 7px, 0, 0);
+        line-height: 18px;
+      }
 
-        & > * {
-          margin-bottom: 0;
+      &.lightswitch-field > .heading {
+        flex: 1;
+      }
+
+      & > .input {
+        .flex {
+          flex-wrap: nowrap;
+
+          & > * {
+            margin-bottom: 0;
+          }
         }
       }
     }
-  }
 
-  & > .field > .heading {
-    padding: 14px 0;
-  }
+    & > .field > .heading {
+      padding: 14px 0;
+    }
 
-  & > .data > .heading {
-    padding: 7px 0;
-  }
+    & > .data > .heading {
+      padding: 7px 0;
+    }
 
-  & > .field > .heading > label,
-  & > .data > .heading {
-    color: $mediumTextColor;
-  }
+    & > .field > .heading > label,
+    & > .data > .heading {
+      color: $mediumTextColor;
+    }
 
-  & > .field > .input,
-  & > .data > .value {
-    padding: 7px 0;
-    width: calc(100% - 112px);
-  }
+    & > .field > .input,
+    & > .data > .value {
+      padding: 7px 0;
+      width: calc(100% - 112px);
+    }
 
-  & > .field.lightswitch-field > .input {
-    flex: 0;
-    width: auto;
-  }
+    & > .field.lightswitch-field > .input {
+      flex: 0;
+      width: auto;
+    }
 
-  & > .field {
-    &.has-errors {
-      margin: 0 -1px !important;
-      border: 1px solid $errorColor !important;
+    & > .field {
+      &.has-errors {
+        margin: 0 -1px !important;
+        border: 1px solid $errorColor !important;
 
-      &:first-child {
-        border-top-left-radius: $largeBorderRadius;
-        border-top-right-radius: $largeBorderRadius;
+        &:first-child {
+          border-top-left-radius: $largeBorderRadius;
+          border-top-right-radius: $largeBorderRadius;
+        }
+
+        &:last-child {
+          border-bottom-left-radius: $largeBorderRadius;
+          border-bottom-right-radius: $largeBorderRadius;
+        }
+
+        & + .field {
+          border-top: none !important;
+        }
       }
 
-      &:last-child {
-        border-bottom-left-radius: $largeBorderRadius;
-        border-bottom-right-radius: $largeBorderRadius;
+      & > .heading {
+        & > label {
+          font-weight: normal;
+
+          &.required:after {
+            position: absolute;
+            top: 6px;
+            @include left(-13px);
+            @include margin-left(0);
+          }
+        }
       }
 
-      & + .field {
-        border-top: none !important;
+      & > .input {
+        &,
+        & > .flex,
+        & > .flex > .textwrapper,
+        & > .datewrapper,
+        & > .timewrapper,
+        & > .datetimewrapper > .datewrapper,
+        & > .datetimewrapper > .timewrapper {
+          & > .text {
+            display: block;
+            margin: -7px 0;
+            padding: 14px 0;
+            border-radius: 0;
+            box-shadow: none;
+            background-color: transparent;
+            border: none !important;
+          }
+        }
+
+        & > .datewrapper,
+        & > .timewrapper,
+        & > .datetimewrapper > .datewrapper,
+        & > .datetimewrapper > .timewrapper {
+          background-color: transparent;
+          .text:placeholder-shown + div[data-icon] {
+            @include left(0);
+          }
+        }
+
+        & > .datetimewrapper {
+          & > .datewrapper {
+            width: 55%;
+          }
+
+          & > .timewrapper {
+            width: 45%;
+          }
+
+          & > .clear-btn {
+            @include margin-right(-24px);
+          }
+        }
+
+        & > .datewrapper,
+        & > .timewrapper {
+          display: block;
+          width: 100%;
+        }
+      }
+
+      & > ul.errors {
+        margin: 0;
+        padding: 0 0 6px;
+        width: 100%;
+        list-style-type: none;
       }
     }
 
-    & + .field {
+    & > .field + .field,
+    & > .field + .flex-fields,
+    & > .flex-fields + .flex-fields,
+    & > .flex-fields + .field {
       border-top: 1px solid $hairlineColor;
     }
+  }
 
-    & > .heading {
-      & > label {
-        font-weight: normal;
-
-        &.required:after {
-          position: absolute;
-          top: 6px;
-          @include left(-13px);
-          @include margin-left(0);
-        }
-      }
+  & > .flex-fields {
+    h2,
+    blockquote.note {
+      margin: 0 -24px !important;
+      padding: 14px 24px;
+      background-color: darken($grey050, 2%);
     }
 
-    & > .input {
-      &,
-      & > .flex,
-      & > .flex > .textwrapper,
-      & > .datewrapper,
-      & > .timewrapper,
-      & > .datetimewrapper > .datewrapper,
-      & > .datetimewrapper > .timewrapper {
-        & > .text {
-          display: block;
-          margin: -7px 0;
-          padding: 14px 0;
-          border-radius: 0;
-          box-shadow: none;
-          background-color: transparent;
-          border: none !important;
-        }
-      }
-
-      & > .datewrapper,
-      & > .timewrapper,
-      & > .datetimewrapper > .datewrapper,
-      & > .datetimewrapper > .timewrapper {
-        background-color: transparent;
-        .text:placeholder-shown + div[data-icon] {
-          @include left(0);
-        }
-      }
-
-      & > .datetimewrapper {
-        & > .datewrapper {
-          width: 55%;
-        }
-
-        & > .timewrapper {
-          width: 45%;
-        }
-
-        & > .clear-btn {
-          @include margin-right(-24px);
-        }
-      }
-
-      & > .datewrapper,
-      & > .timewrapper {
-        display: block;
-        width: 100%;
-      }
+    blockquote.note {
+      border-radius: 0;
+      border: none;
     }
 
-    & > ul.errors {
-      margin: 0;
-      padding: 0 0 6px;
-      width: 100%;
-      list-style-type: none;
+    hr {
+      margin: 0 -24px;
     }
   }
 }
