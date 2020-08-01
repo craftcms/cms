@@ -220,7 +220,7 @@ abstract class BaseField extends FieldLayoutElement
     public function keywords(): array
     {
         return array_filter([
-            $this->label,
+            $this->label(),
             $this->defaultLabel(),
         ]);
     }
