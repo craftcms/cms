@@ -158,7 +158,7 @@ class FieldLayoutTab extends Model
     }
 
     /**
-     * Return the tab config.
+     * Returns the field layout config for this field layout tab.
      *
      * @return array|null
      * @since 3.5.0
@@ -177,7 +177,7 @@ class FieldLayoutTab extends Model
     }
 
     /**
-     * Returns the tab’s elements’ configs.
+     * Returns the field layout configs for this field layout’s tabs.
      *
      * @return array[]
      * @since 3.5.0

@@ -705,7 +705,7 @@ class Fields extends Component
     }
 
     /**
-     * Creates a field config array for the given field.
+     * Returns the field layout config for the given field.
      *
      * @param FieldInterface $field
      * @return array

@@ -354,7 +354,7 @@ class FieldLayout extends Model
     }
 
     /**
-     * Return the field layout config or null if no fields configured.
+     * Returns the field layout config for this field layout.
      *
      * @return array|null
      * @since 3.1.0
