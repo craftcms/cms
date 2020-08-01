@@ -222,6 +222,7 @@ abstract class BaseField extends FieldLayoutElement
         return array_filter([
             $this->label(),
             $this->defaultLabel(),
+            $this->attribute(),
         ]);
     }
 

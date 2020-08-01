@@ -65,7 +65,7 @@
 
 {% macro fieldSelectors(groupName, groupFields, context) %}
     {% set showGroup = groupFields|contains(f => not context.fieldLayout.isFieldIncluded(f.attribute())) %}
-    <div class="fld-field-group{% if not showGroup %} hidden{% endif %}">
+    <div class="fld-field-group{% if not showGroup %} hidden{% endif %}" data-name="{{ groupName|replace('"', '')|lower }}">
         <h6>{{ groupName }}</h6>
         {% for field in groupFields %}
             {{ _self.elementSelector(field, true, {

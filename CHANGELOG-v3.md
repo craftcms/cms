@@ -11,6 +11,7 @@
 
 ### Changed
 - Nested project config file names now begin with the component handle, if there is one. ([#6504](https://github.com/craftcms/cms/issues/6504))
+- The search bar in field layout designers now searches fields’ handles and group names, in addition to their labels. ([#6507](https://github.com/craftcms/cms/issues/6507))
 - Control panel settings pages registered via `craft\web\twig\variables\Cp::EVENT_REGISTER_CP_SETTINGS` can now specify their icon path with an `iconMask` key, which will have it filled in with the same color as Craft’s built-in settings icons.
 
 ### Deprecated
