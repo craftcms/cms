@@ -8,7 +8,9 @@
 namespace craft\fieldlayoutelements;
 
 use craft\base\ElementInterface;
+use craft\base\Field;
 use craft\elements\Entry;
+use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use yii\base\InvalidArgumentException;
 
@@ -30,6 +32,27 @@ class EntryTitleField extends TitleField
                 'class' => ['fld-title-field-icon', 'fld-field-hidden', 'hidden'],
             ]) .
             parent::selectorInnerHtml();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function translatable(ElementInterface $element = null, bool $static = false): bool
+    {
+        if (!$element instanceof Entry) {
+            throw new InvalidArgumentException('EntryTitleField can only be used in entry field layouts.');
+        }
+
+        return $element->getType()->titleTranslationMethod !== Field::TRANSLATION_METHOD_NONE;
+    }
+
+    protected function translationDescription(ElementInterface $element = null, bool $static = false)
+    {
+        if (!$element instanceof Entry) {
+            throw new InvalidArgumentException('EntryTitleField can only be used in entry field layouts.');
+        }
+
+        return ElementHelper::translationDescription($element->getType()->titleTranslationMethod);
     }
 
     /**
