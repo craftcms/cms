@@ -291,7 +291,7 @@
 - Added `craft\services\Elements::startCollectingCacheTags()`.
 - Added `craft\services\Elements::stopCollectingCacheTags()`.
 - Added `craft\services\Fields::createLayoutElement()`.
-- Added `craft\services\Fields::getLayoutsByElementType()`.
+- Added `craft\services\Fields::getLayoutsByType()`.
 - Added `craft\services\Gql::CONFIG_GQL_PUBLIC_TOKEN_KEY`.
 - Added `craft\services\Gql::getAllSchemaComponents()`.
 - Added `craft\services\Gql::getPublicToken()`.

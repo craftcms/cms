@@ -1030,6 +1030,28 @@ class Fields extends Component
     }
 
     /**
+     * Returns all of the field layouts associated with a given element type.
+     *
+     * @param string $type
+     * @return FieldLayout[] The field layouts
+     * @since 3.5.0
+     */
+    public function getLayoutsByType(string $type): array
+    {
+        $results = $this->_createLayoutQuery()
+            ->andWhere(['type' => $type])
+            ->all();
+
+        $layouts = [];
+
+        foreach ($results as $result) {
+            $layouts[] = new FieldLayout($result);
+        }
+
+        return $layouts;
+    }
+
+    /**
      * Returns a layout's tabs by its ID.
      *
      * @param int $layoutId The field layout’s ID
@@ -1051,31 +1073,6 @@ class Fields extends Component
         }
 
         return $tabs;
-    }
-
-    /**
-     * Returns all of the field layouts used by a given element type.
-     *
-     * @param string $elementType
-     * @return FieldLayout[] The field layouts
-     * @since 3.5.0
-     */
-    public function getLayoutsByElementType(string $elementType): array
-    {
-        $results = $this->_createLayoutQuery()
-            ->where([
-                'type' => $elementType,
-                'dateDeleted' => null,
-            ])
-            ->all();
-
-        $layouts = [];
-
-        foreach ($results as $result) {
-            $layouts[] = new FieldLayout($result);
-        }
-
-        return $layouts;
     }
 
     /**

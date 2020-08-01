@@ -590,7 +590,7 @@ abstract class Element extends Component implements ElementInterface
     protected static function defineFieldLayouts(string $source): array
     {
         // Default to all of the field layouts associated with this element type
-        return Craft::$app->getFields()->getLayoutsByElementType(static::class);
+        return Craft::$app->getFields()->getLayoutsByType(static::class);
     }
 
     /**
