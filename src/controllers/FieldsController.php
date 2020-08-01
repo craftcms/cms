@@ -10,9 +10,11 @@ namespace craft\controllers;
 use Craft;
 use craft\base\Field;
 use craft\base\FieldInterface;
+use craft\db\Table;
 use craft\fields\MissingField;
 use craft\fields\PlainText;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
 use craft\helpers\UrlHelper;
 use craft\models\FieldGroup;
 use craft\web\assets\fieldsettings\FieldSettingsAsset;
@@ -50,31 +52,36 @@ class FieldsController extends Controller
      * Saves a field group.
      *
      * @return Response
+     * @throws BadRequestHttpException
      */
     public function actionSaveGroup(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $group = new FieldGroup();
-        $group->id = $this->request->getBodyParam('id');
+        $fieldsService = Craft::$app->getFields();
+        $groupId = $this->request->getBodyParam('id');
+
+        if ($groupId) {
+            $group = $fieldsService->getGroupById($groupId);
+            if (!$group) {
+                throw new BadRequestHttpException("Invalid field group ID: $groupId");
+            }
+        } else {
+            $group = new FieldGroup();
+        }
+
         $group->name = $this->request->getRequiredBodyParam('name');
 
-        $isNewGroup = empty($group->id);
-
-        if (Craft::$app->getFields()->saveGroup($group)) {
-            if ($isNewGroup) {
-                $this->setSuccessFlash(Craft::t('app', 'Group added.'));
-            }
-
+        if (!$fieldsService->saveGroup($group)) {
             return $this->asJson([
-                'success' => true,
-                'group' => $group->getAttributes(),
+                'errors' => $group->getErrors(),
             ]);
         }
 
         return $this->asJson([
-            'errors' => $group->getErrors(),
+            'success' => true,
+            'group' => $group->getAttributes(),
         ]);
     }
 
@@ -285,6 +292,7 @@ JS;
      * Saves a field.
      *
      * @return Response|null
+     * @throws BadRequestHttpException
      */
     public function actionSaveField()
     {
@@ -292,10 +300,21 @@ JS;
 
         $fieldsService = Craft::$app->getFields();
         $type = $this->request->getRequiredBodyParam('type');
+        $fieldId = $this->request->getBodyParam('fieldId') ?: null;
+
+        if ($fieldId) {
+            $fieldUid = Db::uidById(Table::FIELDS, $fieldId);
+            if (!$fieldUid) {
+                throw new BadRequestHttpException("Invalid field ID: $fieldId");
+            }
+        } else {
+            $fieldUid = null;
+        }
 
         $field = $fieldsService->createField([
             'type' => $type,
-            'id' => $this->request->getBodyParam('fieldId'),
+            'id' => $fieldId,
+            'uid' => $fieldUid,
             'groupId' => $this->request->getRequiredBodyParam('group'),
             'name' => $this->request->getBodyParam('name'),
             'handle' => $this->request->getBodyParam('handle'),

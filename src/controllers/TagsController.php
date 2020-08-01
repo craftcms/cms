@@ -99,38 +99,48 @@ class TagsController extends Controller
      * Save a tag group.
      *
      * @return Response|null
+     * @throws BadRequestHttpException
      */
     public function actionSaveTagGroup()
     {
         $this->requirePostRequest();
         $this->requireAdmin();
 
-        $tagGroup = new TagGroup();
+        $tagsService = Craft::$app->getTags();
+        $groupId = $this->request->getBodyParam('tagGroupId');
+
+        if ($groupId) {
+            $group = $tagsService->getTagGroupById($groupId);
+            if (!$group) {
+                throw new BadRequestHttpException("Invalid tag group ID: $groupId");
+            }
+        } else {
+            $group = new TagGroup();
+        }
 
         // Set the simple stuff
-        $tagGroup->id = $this->request->getBodyParam('tagGroupId');
-        $tagGroup->name = $this->request->getBodyParam('name');
-        $tagGroup->handle = $this->request->getBodyParam('handle');
+        $group->name = $this->request->getBodyParam('name');
+        $group->handle = $this->request->getBodyParam('handle');
 
         // Set the field layout
         $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
         $fieldLayout->type = Tag::class;
-        $tagGroup->setFieldLayout($fieldLayout);
+        $group->setFieldLayout($fieldLayout);
 
         // Save it
-        if (!Craft::$app->getTags()->saveTagGroup($tagGroup)) {
+        if (!Craft::$app->getTags()->saveTagGroup($group)) {
             $this->setFailFlash(Craft::t('app', 'Couldn’t save the tag group.'));
 
             // Send the tag group back to the template
             Craft::$app->getUrlManager()->setRouteParams([
-                'tagGroup' => $tagGroup
+                'tagGroup' => $group
             ]);
 
             return null;
         }
 
         $this->setSuccessFlash(Craft::t('app', 'Tag group saved.'));
-        return $this->redirectToPostedUrl($tagGroup);
+        return $this->redirectToPostedUrl($group);
     }
 
     /**

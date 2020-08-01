@@ -16,6 +16,7 @@ use craft\helpers\UrlHelper;
 use craft\volumes\Local;
 use craft\volumes\MissingVolume;
 use craft\web\Controller;
+use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -153,19 +154,27 @@ class VolumesController extends Controller
      * Saves an asset volume.
      *
      * @return Response|null
+     * @throws BadRequestHttpException
      */
     public function actionSaveVolume()
     {
         $this->requirePostRequest();
 
-        $volumes = Craft::$app->getVolumes();
-
+        $volumesService = Craft::$app->getVolumes();
         $type = $this->request->getBodyParam('type');
+        $volumeId = $this->request->getBodyParam('volumeId') ?: null;
 
-        $volumeId = $this->request->getBodyParam('volumeId');
+        if ($volumeId) {
+            $savedVolume = $volumesService->getVolumeById($volumeId);
+            if (!$savedVolume) {
+                throw new BadRequestHttpException("Invalid volume ID: $volumeId");
+            }
+        }
 
         $volumeData = [
             'id' => $volumeId,
+            'uid' => $savedVolume->uid ?? null,
+            'sortOrder' => $savedVolume->sortOrder ?? null,
             'type' => $type,
             'name' => $this->request->getBodyParam('name'),
             'handle' => $this->request->getBodyParam('handle'),
@@ -174,21 +183,14 @@ class VolumesController extends Controller
             'settings' => $this->request->getBodyParam('types.' . $type)
         ];
 
-        // If this is an existing volume, populate with properties unchangeable by this action.
-        if ($volumeId) {
-            $savedVolume = $volumes->getVolumeById($volumeId);
-            $volumeData['uid'] = $savedVolume->uid;
-            $volumeData['sortOrder'] = $savedVolume->sortOrder;
-        }
-
-        $volume = $volumes->createVolume($volumeData);
+        $volume = $volumesService->createVolume($volumeData);
 
         // Set the field layout
         $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
         $fieldLayout->type = Asset::class;
         $volume->setFieldLayout($fieldLayout);
 
-        if (!$volumes->saveVolume($volume)) {
+        if (!$volumesService->saveVolume($volume)) {
             $this->setFailFlash(Craft::t('app', 'Couldn’t save volume.'));
 
             // Send the volume back to the template

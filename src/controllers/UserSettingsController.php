@@ -10,6 +10,7 @@ namespace craft\controllers;
 use Craft;
 use craft\models\UserGroup;
 use craft\web\Controller;
+use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
@@ -42,7 +43,7 @@ class UserSettingsController extends Controller
      * Saves a user group.
      *
      * @return Response|null
-     * @throws NotFoundHttpException if the requested user group cannot be found
+     * @throws BadRequestHttpException
      */
     public function actionSaveGroup()
     {
@@ -52,9 +53,8 @@ class UserSettingsController extends Controller
 
         if ($groupId) {
             $group = Craft::$app->getUserGroups()->getGroupById($groupId);
-
             if (!$group) {
-                throw new NotFoundHttpException('User group not found');
+                throw new BadRequestHttpException('User group not found');
             }
         } else {
             $group = new UserGroup();
