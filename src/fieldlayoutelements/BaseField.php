@@ -307,18 +307,6 @@ abstract class BaseField extends FieldLayoutElement
     }
 
     /**
-     * Returns the field’s type.
-     *
-     * @param ElementInterface|null $element The element the form is being rendered for
-     * @param bool $static Whether the form should be static (non-interactive)
-     * @return string|null
-     */
-    protected function fieldType(ElementInterface $element = null, bool $static = false)
-    {
-        return null;
-    }
-
-    /**
      * Returns the field’s instructions.
      *
      * @param ElementInterface|null $element The element the form is being rendered for
