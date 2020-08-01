@@ -497,11 +497,13 @@ ul.icons li a { display: block; position: relative; padding: 60px 5px 10px; widt
 
 ul.icons li a:before { display: block; position: absolute; top: 0; left: 0; width: 100%; font-size: 40px; line-height: 60px; }
 
-ul.icons li a:hover { text-decoration: none; background-color: #f3f7fc; border-color: #e4edf6; }
-
 ul.icons li a .icon img, ul.icons li a .icon svg { width: 40px; height: 40px; position: absolute; top: 12px; left: calc(50% - 20px); }
 
-ul.icons li a .icon.icon-mask svg rect, ul.icons li a .icon.icon-mask svg circle, ul.icons li a .icon.icon-mask svg ellipse, ul.icons li a .icon.icon-mask svg line, ul.icons li a .icon.icon-mask svg polyline, ul.icons li a .icon.icon-mask svg polygon, ul.icons li a .icon.icon-mask svg path, ul.icons li a .icon.icon-mask svg text { fill: #606d7b; stroke-width: 0; -o-transition: fill linear 100ms; transition: fill linear 100ms; }
+ul.icons li a .icon.icon-mask svg rect, ul.icons li a .icon.icon-mask svg circle, ul.icons li a .icon.icon-mask svg ellipse, ul.icons li a .icon.icon-mask svg line, ul.icons li a .icon.icon-mask svg polyline, ul.icons li a .icon.icon-mask svg polygon, ul.icons li a .icon.icon-mask svg path, ul.icons li a .icon.icon-mask svg text { fill: #3f4d5a; stroke-width: 0; -o-transition: fill linear 100ms; transition: fill linear 100ms; }
+
+ul.icons li a:hover { text-decoration: none; background-color: #f3f7fc; border-color: #e4edf6; }
+
+ul.icons li a:hover .icon.icon-mask svg rect, ul.icons li a:hover .icon.icon-mask svg circle, ul.icons li a:hover .icon.icon-mask svg ellipse, ul.icons li a:hover .icon.icon-mask svg line, ul.icons li a:hover .icon.icon-mask svg polyline, ul.icons li a:hover .icon.icon-mask svg polygon, ul.icons li a:hover .icon.icon-mask svg path, ul.icons li a:hover .icon.icon-mask svg text { fill: #0B69A3; stroke-width: 0; -o-transition: fill linear 100ms; transition: fill linear 100ms; }
 
 @media only screen and (max-width: 380px) { ul.icons li a { width: 96px; } }
 

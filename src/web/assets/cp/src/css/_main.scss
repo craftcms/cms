@@ -891,12 +891,6 @@ ul.icons {
         line-height: 60px;
       }
 
-      &:hover {
-        text-decoration: none;
-        background-color: $grey050;
-        border-color: $grey100;
-      }
-
       .icon {
         img,
         svg {
@@ -908,7 +902,17 @@ ul.icons {
         }
 
         &.icon-mask svg {
-          @include svg-mask($grey500);
+          @include svg-mask($textColor);
+        }
+      }
+
+      &:hover {
+        text-decoration: none;
+        background-color: $grey050;
+        border-color: $grey100;
+
+        .icon.icon-mask svg {
+          @include svg-mask($linkColor);
         }
       }
     }
