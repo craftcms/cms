@@ -256,7 +256,7 @@
 - Added `craft\helpers\Queue`.
 - Added `craft\models\FieldLayout::createForm()`.
 - Added `craft\models\FieldLayout::EVENT_DEFINE_STANDARD_FIELDS`.
-- Added `craft\models\FieldLayout::EVENT_DEFINE_UI_ELEMENTS`.
+- Added `craft\models\FieldLayout::EVENT_DEFINE_UI_ELEMENTS`. ([#6360](https://github.com/craftcms/cms/issues/6360))
 - Added `craft\models\FieldLayout::getAvailableCustomFields()`.
 - Added `craft\models\FieldLayout::getAvailableStandardFields()`.
 - Added `craft\models\FieldLayout::getAvailableUiElements()`.

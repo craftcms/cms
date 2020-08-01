@@ -37,7 +37,7 @@
 - Added `craft\fieldlayoutelements\BaseUiElement`.
 - Added `craft\helpers\Component::iconSvg()`.
 - Added `craft\helpers\Html::sanitizeSvg()`.
-- Added `craft\models\FieldLayout::EVENT_DEFINE_UI_ELEMENTS`.
+- Added `craft\models\FieldLayout::EVENT_DEFINE_UI_ELEMENTS`. ([#6360](https://github.com/craftcms/cms/issues/6360))
 - Added `craft\utilities\ClearCaches::EVENT_REGISTER_TAG_OPTIONS`.
 - Added `craft\utilities\ClearCaches::tagOptions()`.
 
