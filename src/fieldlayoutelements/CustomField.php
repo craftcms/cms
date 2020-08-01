@@ -155,6 +155,28 @@ class CustomField extends BaseField
     /**
      * @inheritdoc
      */
+    protected function statusClass(ElementInterface $element = null, bool $static = false)
+    {
+        if ($element && ($status = $element->getFieldStatus($this->_field->handle))) {
+            return $status[0];
+        }
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function statusLabel(ElementInterface $element = null, bool $static = false)
+    {
+        if ($element && ($status = $element->getFieldStatus($this->_field->handle))) {
+            return $status[1];
+        }
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function defaultInstructions(ElementInterface $element = null, bool $static = false)
     {
         return $this->_field->instructions ? Craft::t('site', $this->_field->instructions) : null;
