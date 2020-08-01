@@ -91,7 +91,7 @@ const d3LocaleData = [
 ];
 
 const staticDeps = [
-    {srcGlob: 'node_modules/axios/dist/axios.min.js', dest: `${libPath}/axios`},
+    {srcGlob: ['node_modules/axios/dist/axios.min.js', 'node_modules/axios/dist/axios.min.map'], dest: `${libPath}/axios`},
     {srcGlob: 'node_modules/selectize/dist/css/selectize.css', dest: `${libPath}/selectize`},
 ];
 
