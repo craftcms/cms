@@ -1218,7 +1218,7 @@ class Install extends Migration
                 'allowPublicRegistration' => false,
                 'defaultGroup' => null,
                 'photoVolumeUid' => null,
-                'photoSubpath' => '',
+                'photoSubpath' => null,
             ],
         ];
     }

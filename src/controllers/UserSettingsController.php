@@ -125,7 +125,7 @@ class UserSettingsController extends Controller
         $settings = $projectConfig->get('users') ?? [];
 
         $settings['photoVolumeUid'] = $this->request->getBodyParam('photoVolumeUid') ?: null;
-        $settings['photoSubpath'] = $this->request->getBodyParam('photoSubpath');
+        $settings['photoSubpath'] = $this->request->getBodyParam('photoSubpath') ?: null;
 
         if (Craft::$app->getEdition() === Craft::Pro) {
             $settings['requireEmailVerification'] = (bool)$this->request->getBodyParam('requireEmailVerification');

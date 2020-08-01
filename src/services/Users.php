@@ -416,7 +416,7 @@ class Users extends Component
                 'The volume set for user photo storage is not valid.'));
         }
 
-        $subpath = (string)Craft::$app->getProjectConfig()->get('users.photoSubpath');
+        $subpath = Craft::$app->getProjectConfig()->get('users.photoSubpath');
 
         if ($subpath) {
             try {
@@ -433,7 +433,7 @@ class Users extends Component
             // No longer a new file.
             $assetsService->replaceAssetFile($assetsService->getAssetById($user->photoId), $fileLocation, $filenameToUse);
         } else {
-            $folderId = $assetsService->ensureFolderByFullPathAndVolume($subpath, $volume);
+            $folderId = $assetsService->ensureFolderByFullPathAndVolume((string)$subpath, $volume);
             $filenameToUse = $assetsService->getNameReplacementInFolder($filenameToUse, $folderId);
 
             $photo = new Asset();
