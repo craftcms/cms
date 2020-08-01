@@ -261,6 +261,28 @@ abstract class BaseField extends FieldLayoutElement
     }
 
     /**
+     * Returns the field’s label.
+     *
+     * @return string|null
+     */
+    public function label()
+    {
+        return $this->label ?: $this->defaultLabel();
+    }
+
+    /**
+     * Returns the field’s default label, which will be used if [[label]] is null.
+     *
+     * @param ElementInterface|null $element The element the form is being rendered for
+     * @param bool $static Whether the form should be static (non-interactive)
+     * @return string|null
+     */
+    protected function defaultLabel(ElementInterface $element = null, bool $static = false)
+    {
+        return null;
+    }
+
+    /**
      * Returns the field’s status class.
      *
      * @param ElementInterface|null $element The element the form is being rendered for
@@ -280,28 +302,6 @@ abstract class BaseField extends FieldLayoutElement
      * @return string|null
      */
     protected function statusLabel(ElementInterface $element = null, bool $static = false)
-    {
-        return null;
-    }
-
-    /**
-     * Returns the field’s label.
-     *
-     * @return string|null
-     */
-    public function label()
-    {
-        return $this->label ?: $this->defaultLabel();
-    }
-
-    /**
-     * Returns the field’s default label, which will be used if [[label]] is null.
-     *
-     * @param ElementInterface|null $element The element the form is being rendered for
-     * @param bool $static Whether the form should be static (non-interactive)
-     * @return string|null
-     */
-    protected function defaultLabel(ElementInterface $element = null, bool $static = false)
     {
         return null;
     }
