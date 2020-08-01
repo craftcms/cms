@@ -896,11 +896,11 @@ class Gql extends Component
     }
 
     /**
-     * Saves a GraphQL scope.
+     * Saves a GraphQL schema.
      *
      * @param GqlSchema $schema the schema to save
-     * @param bool $runValidation Whether the scope should be validated
-     * @return bool Whether the scope was saved successfully
+     * @param bool $runValidation Whether the schema should be validated
+     * @return bool Whether the schema was saved successfully
      * @throws Exception
      * @since 3.4.0
      */
@@ -1013,9 +1013,9 @@ class Gql extends Component
      * @return bool
      * @since 3.4.0
      */
-    public function deleteSchema(GqlSchema $scope): bool
+    public function deleteSchema(GqlSchema $schema): bool
     {
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_GQL_SCHEMAS_KEY . '.' . $scope->uid, "Delete the “{$scope->name}” GraphQL schema");
+        Craft::$app->getProjectConfig()->remove(self::CONFIG_GQL_SCHEMAS_KEY . '.' . $schema->uid, "Delete the “{$schema->name}” GraphQL schema");
         return true;
     }
 
@@ -1039,7 +1039,7 @@ class Gql extends Component
         $transaction = $db->beginTransaction();
 
         try {
-            // Delete the scope
+            // Delete the schema
             Db::delete(Table::GQLSCHEMAS, [
                 'id' => $schemaRecord->id,
             ]);
@@ -1095,13 +1095,13 @@ class Gql extends Component
         $rows = $this->_createSchemaQuery()
             ->all();
 
-        $scopes = [];
+        $schemas = [];
 
         foreach ($rows as $row) {
-            $scopes[] = new GqlSchema($row);
+            $schemas[] = new GqlSchema($row);
         }
 
-        return $scopes;
+        return $schemas;
     }
 
 
