@@ -1127,21 +1127,21 @@ class ProjectConfig extends Component
 
         $config = $this->get();
         $config['dateModified'] = DateTimeHelper::currentTimeStamp();
-        $config['siteGroups'] = $this->_getSiteGroupData();
-        $config['sites'] = $this->_getSiteData();
-        $config['sections'] = $this->_getSectionData();
-        $config['entryTypes'] = $this->_getEntryTypeData();
-        $config['fieldGroups'] = $this->_getFieldGroupData();
-        $config['fields'] = $this->_getFieldData();
-        $config['matrixBlockTypes'] = $this->_getMatrixBlockTypeData();
-        $config['volumes'] = $this->_getVolumeData();
-        $config['categoryGroups'] = $this->_getCategoryGroupData();
-        $config['tagGroups'] = $this->_getTagGroupData();
-        $config['users'] = array_merge($config['users'] ?? [], $this->_getUserData());
-        $config['globalSets'] = $this->_getGlobalSetData();
-        $config['plugins'] = $this->_getPluginData($config['plugins'] ?? []);
-        $config['imageTransforms'] = $this->_getTransformData();
-        $config['graphql'] = $this->_getGqlData();
+        $config[Sites::CONFIG_SITEGROUP_KEY] = $this->_getSiteGroupData();
+        $config[Sites::CONFIG_SITES_KEY] = $this->_getSiteData();
+        $config[Sections::CONFIG_SECTIONS_KEY] = $this->_getSectionData();
+        $config[Sections::CONFIG_ENTRYTYPES_KEY] = $this->_getEntryTypeData();
+        $config[Fields::CONFIG_FIELDGROUP_KEY] = $this->_getFieldGroupData();
+        $config[Fields::CONFIG_FIELDS_KEY] = $this->_getFieldData();
+        $config[Matrix::CONFIG_BLOCKTYPE_KEY] = $this->_getMatrixBlockTypeData();
+        $config[Volumes::CONFIG_VOLUME_KEY] = $this->_getVolumeData();
+        $config[Categories::CONFIG_CATEGORYROUP_KEY] = $this->_getCategoryGroupData();
+        $config[Tags::CONFIG_TAGGROUP_KEY] = $this->_getTagGroupData();
+        $config[Users::CONFIG_USERS_KEY] = $this->_getUserData($config[Users::CONFIG_USERS_KEY] ?? []);
+        $config[Globals::CONFIG_GLOBALSETS_KEY] = $this->_getGlobalSetData();
+        $config[Plugins::CONFIG_PLUGINS_KEY] = $this->_getPluginData($config[Plugins::CONFIG_PLUGINS_KEY] ?? []);
+        $config[AssetTransforms::CONFIG_TRANSFORM_KEY] = $this->_getTransformData();
+        $config[Gql::CONFIG_GQL_KEY] = $this->_getGqlData();
 
         // Fire a 'rebuild' event
         $event = new RebuildConfigEvent([
@@ -1737,20 +1737,9 @@ class ProjectConfig extends Component
     private function _getSiteGroupData(): array
     {
         $data = [];
-
-        $siteGroups = (new Query())
-            ->select([
-                'uid',
-                'name',
-            ])
-            ->from([Table::SITEGROUPS])
-            ->where(['dateDeleted' => null])
-            ->pairs();
-
-        foreach ($siteGroups as $uid => $name) {
-            $data[$uid] = ['name' => $name];
+        foreach (Craft::$app->getSites()->getAllGroups() as $group) {
+            $data[$group->uid] = $group->getConfig();
         }
-
         return $data;
     }
 
@@ -1762,37 +1751,9 @@ class ProjectConfig extends Component
     private function _getSiteData(): array
     {
         $data = [];
-
-        $sites = (new Query())
-            ->select([
-                'sites.name',
-                'sites.handle',
-                'sites.language',
-                'sites.hasUrls',
-                'sites.baseUrl',
-                'sites.sortOrder',
-                'sites.groupId',
-                'sites.uid',
-                'sites.primary',
-                'siteGroups.uid AS siteGroup',
-            ])
-            ->from(['sites' => Table::SITES])
-            ->innerJoin(['siteGroups' => Table::SITEGROUPS], '[[siteGroups.id]] = [[sites.groupId]]')
-            ->where(['sites.dateDeleted' => null])
-            ->andWhere(['siteGroups.dateDeleted' => null])
-            ->all();
-
-        foreach ($sites as $site) {
-            $uid = $site['uid'];
-            unset($site['uid'], $site['groupId']);
-
-            $site['sortOrder'] = (int)$site['sortOrder'];
-            $site['hasUrls'] = (bool)$site['hasUrls'];
-            $site['primary'] = (bool)$site['primary'];
-
-            $data[$uid] = $site;
+        foreach (Craft::$app->getSites()->getAllSites(true) as $site) {
+            $data[$site->uid] = $site->getConfig();
         }
-
         return $data;
     }
 
@@ -1803,75 +1764,11 @@ class ProjectConfig extends Component
      */
     private function _getSectionData(): array
     {
-        $sectionRows = (new Query())
-            ->select([
-                'sections.id',
-                'sections.name',
-                'sections.handle',
-                'sections.type',
-                'sections.enableVersioning',
-                'sections.propagationMethod',
-                'sections.previewTargets',
-                'sections.uid',
-                'structures.uid AS structure',
-                'structures.maxLevels AS structureMaxLevels',
-            ])
-            ->from(['sections' => Table::SECTIONS])
-            ->leftJoin(['structures' => Table::STRUCTURES], '[[structures.id]] = [[sections.structureId]]')
-            ->where(['sections.dateDeleted' => null])
-            ->andWhere(['structures.dateDeleted' => null])
-            ->all();
-
-        $sectionData = [];
-
-        foreach ($sectionRows as $section) {
-            if (!empty($section['structure'])) {
-                $section['structure'] = [
-                    'uid' => $section['structure'],
-                    'maxLevels' => (int)$section['structureMaxLevels'] ?: null,
-                ];
-            } else {
-                unset($section['structure']);
-            }
-
-            $uid = $section['uid'];
-            unset($section['id'], $section['structureMaxLevels'], $section['uid']);
-
-            $section['enableVersioning'] = (bool)$section['enableVersioning'];
-
-            $sectionData[$uid] = $section;
-            $sectionData[$uid]['siteSettings'] = [];
-            $sectionData[$uid]['previewTargets'] = Json::decodeIfJson($section['previewTargets']);
+        $data = [];
+        foreach (Craft::$app->getSections()->getAllSections() as $section) {
+            $data[$section->uid] = $section->getConfig();
         }
-
-        $sectionSiteRows = (new Query())
-            ->select([
-                'sections_sites.enabledByDefault',
-                'sections_sites.hasUrls',
-                'sections_sites.uriFormat',
-                'sections_sites.template',
-                'sites.uid AS siteUid',
-                'sections.uid AS sectionUid',
-            ])
-            ->from(['sections_sites' => Table::SECTIONS_SITES])
-            ->innerJoin(['sites' => Table::SITES], '[[sites.id]] = [[sections_sites.siteId]]')
-            ->innerJoin(['sections' => Table::SECTIONS], '[[sections.id]] = [[sections_sites.sectionId]]')
-            ->where(['sites.dateDeleted' => null])
-            ->andWhere(['sections.dateDeleted' => null])
-            ->all();
-
-        foreach ($sectionSiteRows as $sectionSiteRow) {
-            $sectionUid = $sectionSiteRow['sectionUid'];
-            $siteUid = $sectionSiteRow['siteUid'];
-            unset($sectionSiteRow['sectionUid'], $sectionSiteRow['siteUid']);
-
-            $sectionSiteRow['hasUrls'] = (bool)$sectionSiteRow['hasUrls'];
-            $sectionSiteRow['enabledByDefault'] = (bool)$sectionSiteRow['enabledByDefault'];
-
-            $sectionData[$sectionUid]['siteSettings'][$siteUid] = $sectionSiteRow;
-        }
-
-        return $sectionData;
+        return $data;
     }
 
     /**
@@ -1881,48 +1778,11 @@ class ProjectConfig extends Component
      */
     private function _getEntryTypeData(): array
     {
-        $entryTypeRows = (new Query())
-            ->select([
-                'entrytypes.fieldLayoutId',
-                'entrytypes.name',
-                'entrytypes.handle',
-                'entrytypes.hasTitleField',
-                'entrytypes.titleTranslationMethod',
-                'entrytypes.titleTranslationKeyFormat',
-                'entrytypes.titleFormat',
-                'entrytypes.sortOrder',
-                'entrytypes.uid',
-                'sections.uid AS sectionUid',
-            ])
-            ->from(['entrytypes' => Table::ENTRYTYPES])
-            ->innerJoin(['sections' => Table::SECTIONS], '[[sections.id]] = [[entrytypes.sectionId]]')
-            ->where(['sections.dateDeleted' => null])
-            ->andWhere(['entrytypes.dateDeleted' => null])
-            ->all();
-
-        $layoutIds = array_filter(ArrayHelper::getColumn($entryTypeRows, 'fieldLayoutId'));
-        $fieldLayouts = $this->_generateFieldLayoutArray($layoutIds);
-
-        $entryTypeData = [];
-
-        foreach ($entryTypeRows as $entryType) {
-            $uid = ArrayHelper::remove($entryType, 'uid');
-            $entryType['section'] = ArrayHelper::remove($entryType, 'sectionUid');
-            $fieldLayoutId = ArrayHelper::remove($entryType, 'fieldLayoutId');
-
-            $entryType['hasTitleField'] = (bool)$entryType['hasTitleField'];
-            $entryType['sortOrder'] = (int)$entryType['sortOrder'];
-
-            if ($fieldLayoutId) {
-                $layout = array_merge($fieldLayouts[$fieldLayoutId]);
-                $layoutUid = ArrayHelper::remove($layout, 'uid');
-                $entryType['fieldLayouts'] = [$layoutUid => $layout];
-            }
-
-            $entryTypeData[$uid] = $entryType;
+        $data = [];
+        foreach (Craft::$app->getSections()->getAllEntryTypes() as $entryType) {
+            $data[$entryType->uid] = $entryType->getConfig();
         }
-
-        return $entryTypeData;
+        return $data;
     }
 
     /**
@@ -1933,19 +1793,9 @@ class ProjectConfig extends Component
     private function _getFieldGroupData(): array
     {
         $data = [];
-
-        $fieldGroups = (new Query())
-            ->select([
-                'uid',
-                'name',
-            ])
-            ->from([Table::FIELDGROUPS])
-            ->pairs();
-
-        foreach ($fieldGroups as $uid => $name) {
-            $data[$uid] = ['name' => $name];
+        foreach (Craft::$app->getFields()->getAllGroups() as $group) {
+            $data[$group->uid] = $group->getConfig();
         }
-
         return $data;
     }
 
@@ -1957,51 +1807,10 @@ class ProjectConfig extends Component
     private function _getFieldData(): array
     {
         $data = [];
-
-        $fieldRows = (new Query())
-            ->select([
-                'fields.id',
-                'fields.name',
-                'fields.handle',
-                'fields.instructions',
-                'fields.searchable',
-                'fields.translationMethod',
-                'fields.translationKeyFormat',
-                'fields.type',
-                'fields.settings',
-                'fields.uid',
-                'fieldGroups.uid AS fieldGroup',
-            ])
-            ->from(['fields' => Table::FIELDS])
-            ->leftJoin(['fieldGroups' => Table::FIELDGROUPS], '[[fieldGroups.id]] = [[fields.groupId]]')
-            ->where(['fields.context' => 'global'])
-            ->all();
-
-        $fields = [];
-        $fieldService = Craft::$app->getFields();
-
-        // Massage the data and index by UID
-        foreach ($fieldRows as $fieldRow) {
-            $fieldRow['settings'] = Json::decodeIfJson($fieldRow['settings']);
-
-            if (is_array($fieldRow['settings'])) {
-                $fieldRow['settings'] = ProjectConfigHelper::packAssociativeArrays($fieldRow['settings']);
-            }
-
-            $fieldInstance = $fieldService->getFieldById($fieldRow['id']);
-            $fieldRow['contentColumnType'] = $fieldInstance->getContentColumnType();
-
-            $fieldRow['searchable'] = (bool)$fieldRow['searchable'];
-
-            $fields[$fieldRow['uid']] = $fieldRow;
+        $fieldsService = Craft::$app->getFields();
+        foreach ($fieldsService->getAllFields('global') as $field) {
+            $data[$field->uid] = $fieldsService->createFieldConfig($field);
         }
-
-        foreach ($fields as $field) {
-            $fieldUid = $field['uid'];
-            unset($field['id'], $field['uid']);
-            $data[$fieldUid] = $field;
-        }
-
         return $data;
     }
 
@@ -2026,105 +1835,35 @@ class ProjectConfig extends Component
      */
     private function _getVolumeData(): array
     {
-        $volumes = (new Query())
-            ->select([
-                'volumes.fieldLayoutId',
-                'volumes.name',
-                'volumes.handle',
-                'volumes.type',
-                'volumes.hasUrls',
-                'volumes.url',
-                'volumes.settings',
-                'volumes.sortOrder',
-                'volumes.uid',
-            ])
-            ->from(['volumes' => Table::VOLUMES])
-            ->where(['volumes.dateDeleted' => null])
-            ->all();
-
-        $layoutIds = [];
-
-        foreach ($volumes as $volume) {
-            $layoutIds[] = $volume['fieldLayoutId'];
-        }
-
-        $fieldLayouts = $this->_generateFieldLayoutArray($layoutIds);
-
         $data = [];
-
-        foreach ($volumes as $volume) {
-            if (isset($fieldLayouts[$volume['fieldLayoutId']])) {
-                $layoutUid = $fieldLayouts[$volume['fieldLayoutId']]['uid'];
-                unset($fieldLayouts[$volume['fieldLayoutId']]['uid']);
-                $volume['fieldLayouts'] = [$layoutUid => $fieldLayouts[$volume['fieldLayoutId']]];
-            }
-
-            $volume['settings'] = Json::decodeIfJson($volume['settings']);
-
-            $uid = $volume['uid'];
-            unset($volume['fieldLayoutId'], $volume['uid']);
-
-            $volume['hasUrls'] = (bool)$volume['hasUrls'];
-            $volume['sortOrder'] = (int)$volume['sortOrder'];
-
-            $data[$uid] = $volume;
+        $volumesService = Craft::$app->getVolumes();
+        foreach ($volumesService->getAllVolumes() as $volume) {
+            $data[$volume->uid] = $volumesService->createVolumeConfig($volume);
         }
-
         return $data;
     }
 
     /**
-     * Return user group data config array.
+     * Return user data config array.
      *
+     * @param array $data
      * @return array
      */
-    private function _getUserData(): array
+    private function _getUserData(array $data): array
     {
-        $data = [];
-
-        $layoutId = (new Query())
-            ->select(['id'])
-            ->from([Table::FIELDLAYOUTS])
-            ->where(['type' => User::class])
-            ->andWhere(['dateDeleted' => null])
-            ->scalar();
-
-        if ($layoutId) {
-            $layouts = array_values($this->_generateFieldLayoutArray([$layoutId]));
-            $layout = reset($layouts);
-            $uid = $layout['uid'];
-            unset($layout['uid']);
-            $data['fieldLayouts'] = [$uid => $layout];
-        }
-
-        $groups = (new Query())
-            ->select(['id', 'name', 'handle', 'description', 'uid'])
-            ->from([Table::USERGROUPS])
-            ->all();
-
-        $permissions = (new Query())
-            ->select(['id', 'name'])
-            ->from([Table::USERPERMISSIONS])
-            ->pairs();
-
-        $groupPermissions = (new Query())
-            ->select(['permissionId', 'groupId'])
-            ->from([Table::USERPERMISSIONS_USERGROUPS])
-            ->all();
-
-        $permissionList = [];
-
-        foreach ($groupPermissions as $groupPermission) {
-            $permissionList[$groupPermission['groupId']][] = $permissions[$groupPermission['permissionId']];
-        }
-
-        foreach ($groups as $group) {
-            $data['groups'][$group['uid']] = [
-                'name' => $group['name'],
-                'handle' => $group['handle'],
-                'description' => $group['description'],
-                'permissions' => $permissionList[$group['id']] ?? []
+        $fieldLayout = Craft::$app->getFields()->getLayoutByType(User::class);
+        if ($fieldLayoutConfig = $fieldLayout->getConfig()) {
+            $data['fieldLayouts'] = [
+                $fieldLayout->uid => $fieldLayoutConfig,
             ];
+        } else {
+            unset($data['fieldLayouts']);
+        }
+
+        $data['groups'] = [];
+
+        foreach (Craft::$app->getUserGroups()->getAllGroups() as $group) {
+            $data['groups'][$group->uid] = $group->getConfig();
         }
 
         return $data;
@@ -2137,80 +1876,11 @@ class ProjectConfig extends Component
      */
     private function _getCategoryGroupData(): array
     {
-        $groupRows = (new Query())
-            ->select([
-                'groups.name',
-                'groups.handle',
-                'groups.uid',
-                'groups.fieldLayoutId',
-                'structures.uid AS structure',
-                'structures.maxLevels AS structureMaxLevels',
-            ])
-            ->from(['groups' => Table::CATEGORYGROUPS])
-            ->leftJoin(['structures' => Table::STRUCTURES], '[[structures.id]] = [[groups.structureId]]')
-            ->where(['groups.dateDeleted' => null])
-            ->andWhere(['structures.dateDeleted' => null])
-            ->all();
-
-        $groupData = [];
-
-        $layoutIds = [];
-
-        foreach ($groupRows as $group) {
-            $layoutIds[] = $group['fieldLayoutId'];
+        $data = [];
+        foreach (Craft::$app->getCategories()->getAllGroups() as $group) {
+            $data[$group->uid] = $group->getConfig();
         }
-
-        $fieldLayouts = $this->_generateFieldLayoutArray($layoutIds);
-
-        foreach ($groupRows as $group) {
-            if (!empty($group['structure'])) {
-                $group['structure'] = [
-                    'uid' => $group['structure'],
-                    'maxLevels' => (int)$group['structureMaxLevels'] ?: null,
-                ];
-            } else {
-                unset($group['structure']);
-            }
-
-            if (isset($fieldLayouts[$group['fieldLayoutId']])) {
-                $layoutUid = $fieldLayouts[$group['fieldLayoutId']]['uid'];
-                unset($fieldLayouts[$group['fieldLayoutId']]['uid']);
-                $group['fieldLayouts'] = [$layoutUid => $fieldLayouts[$group['fieldLayoutId']]];
-            }
-
-            $uid = $group['uid'];
-            unset($group['structureMaxLevels'], $group['uid'], $group['fieldLayoutId']);
-
-            $groupData[$uid] = $group;
-            $groupData[$uid]['siteSettings'] = [];
-        }
-
-        $groupSiteRows = (new Query())
-            ->select([
-                'groups_sites.hasUrls',
-                'groups_sites.uriFormat',
-                'groups_sites.template',
-                'sites.uid AS siteUid',
-                'groups.uid AS groupUid',
-            ])
-            ->from(['groups_sites' => Table::CATEGORYGROUPS_SITES])
-            ->innerJoin(['sites' => Table::SITES], '[[sites.id]] = [[groups_sites.siteId]]')
-            ->innerJoin(['groups' => Table::CATEGORYGROUPS], '[[groups.id]] = [[groups_sites.groupId]]')
-            ->where(['groups.dateDeleted' => null])
-            ->andWhere(['sites.dateDeleted' => null])
-            ->all();
-
-        foreach ($groupSiteRows as $groupSiteRow) {
-            $groupUid = $groupSiteRow['groupUid'];
-            $siteUid = $groupSiteRow['siteUid'];
-            unset($groupSiteRow['siteUid'], $groupSiteRow['groupUid']);
-
-            $groupSiteRow['hasUrls'] = (bool)$groupSiteRow['hasUrls'];
-
-            $groupData[$groupUid]['siteSettings'][$siteUid] = $groupSiteRow;
-        }
-
-        return $groupData;
+        return $data;
     }
 
     /**
@@ -2220,40 +1890,11 @@ class ProjectConfig extends Component
      */
     private function _getTagGroupData(): array
     {
-        $groupRows = (new Query())
-            ->select([
-                'groups.name',
-                'groups.handle',
-                'groups.uid',
-                'groups.fieldLayoutId',
-            ])
-            ->from(['groups' => Table::TAGGROUPS])
-            ->where(['groups.dateDeleted' => null])
-            ->all();
-
-        $groupData = [];
-        $layoutIds = [];
-
-        foreach ($groupRows as $group) {
-            $layoutIds[] = $group['fieldLayoutId'];
+        $data = [];
+        foreach (Craft::$app->getTags()->getAllTagGroups() as $group) {
+            $data[$group->uid] = $group->getConfig();
         }
-
-        $fieldLayouts = $this->_generateFieldLayoutArray($layoutIds);
-
-        foreach ($groupRows as $group) {
-            if (isset($fieldLayouts[$group['fieldLayoutId']])) {
-                $layoutUid = $fieldLayouts[$group['fieldLayoutId']]['uid'];
-                unset($fieldLayouts[$group['fieldLayoutId']]['uid']);
-                $group['fieldLayouts'] = [$layoutUid => $fieldLayouts[$group['fieldLayoutId']]];
-            }
-
-            $uid = $group['uid'];
-            unset($group['uid'], $group['fieldLayoutId']);
-
-            $groupData[$uid] = $group;
-        }
-
-        return $groupData;
+        return $data;
     }
 
     /**
@@ -2263,39 +1904,11 @@ class ProjectConfig extends Component
      */
     private function _getGlobalSetData(): array
     {
-        $setRows = (new Query())
-            ->select([
-                'sets.name',
-                'sets.handle',
-                'sets.uid',
-                'sets.fieldLayoutId',
-            ])
-            ->from(['sets' => Table::GLOBALSETS])
-            ->all();
-
-        $setData = [];
-        $layoutIds = [];
-
-        foreach ($setRows as $setRow) {
-            $layoutIds[] = $setRow['fieldLayoutId'];
+        $data = [];
+        foreach (Craft::$app->getGlobals()->getAllSets() as $globalSet) {
+            $data[$globalSet->uid] = $globalSet->getConfig();
         }
-
-        $fieldLayouts = $this->_generateFieldLayoutArray($layoutIds);
-
-        foreach ($setRows as $setRow) {
-            if (isset($fieldLayouts[$setRow['fieldLayoutId']])) {
-                $layoutUid = $fieldLayouts[$setRow['fieldLayoutId']]['uid'];
-                unset($fieldLayouts[$setRow['fieldLayoutId']]['uid']);
-                $setRow['fieldLayouts'] = [$layoutUid => $fieldLayouts[$setRow['fieldLayoutId']]];
-            }
-
-            $uid = $setRow['uid'];
-            unset($setRow['uid'], $setRow['fieldLayoutId']);
-
-            $setData[$uid] = $setRow;
-        }
-
-        return $setData;
+        return $data;
     }
 
     /**
@@ -2369,70 +1982,22 @@ class ProjectConfig extends Component
      */
     private function _getGqlData(): array
     {
-        $scopeRows = (new Query())
-            ->select([
-                'name',
-                'scope',
-                'isPublic',
-                'uid',
-            ])
-            ->from([Table::GQLSCHEMAS])
-            ->indexBy('uid')
-            ->all();
+        $gqlService = Craft::$app->getGql();
+        $publicToken = $gqlService->getPublicToken();
 
-        foreach ($scopeRows as &$row) {
-            unset($row['uid']);
-            $row['isPublic'] = (bool)$row['isPublic'];
-            $row['scope'] = Json::decodeIfJson($row['scope']);
-        }
-
-        $output = [
-            'schemas' => $scopeRows,
+        $data = [
+            'schemas' => [],
             'publicToken' => [
-                'enabled' => false,
-                'expiryDate' => null,
+                'enabled' => (bool)($publicToken->enabled ?? false),
+                'expiryDate' => ($publicToken->expiryDate ?? false) ? $publicToken->expiryDate->getTimestamp() : null,
             ]
         ];
 
-        $publicToken = (new Query())
-            ->select([
-                'enabled',
-                'expiryDate',
-            ])
-            ->from([Table::GQLTOKENS])
-            ->where(['accessToken' => GqlToken::PUBLIC_TOKEN])
-            ->one();
-
-        if ($publicToken) {
-            $output['publicToken']['expiryDate'] = $publicToken['expiryDate'] ? DateTimeHelper::toDateTime($publicToken['expiryDate'])->getTimestamp() : null;
-            $output['publicToken']['enabled'] = (bool)$publicToken['enabled'];
+        foreach ($gqlService->getSchemas() as $schema) {
+            $data['schemas'][$schema->uid] = $schema->getConfig();
         }
 
-        return $output;
-    }
-
-    /**
-     * Generate field layout config data for a list of array ids
-     *
-     * @param int[]|null[] $layoutIds
-     * @return array[]
-     */
-    private function _generateFieldLayoutArray(array $layoutIds): array
-    {
-        $fieldLayouts = [];
-        $fieldsService = Craft::$app->getFields();
-
-        foreach ($layoutIds as $layoutId) {
-            if ($layoutId) {
-                $fieldLayout = $fieldsService->getLayoutById($layoutId);
-                if ($fieldLayout) {
-                    $fieldLayouts[$fieldLayout->id] = $fieldLayout->getConfig();
-                    $fieldLayouts[$fieldLayout->id]['uid'] = $fieldLayout->uid;
-                }
-            }
-        }
-
-        return $fieldLayouts;
+        return $data;
     }
 
     /**

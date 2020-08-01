@@ -11,7 +11,10 @@ use Craft;
 use craft\base\Field;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
+use craft\db\Table;
 use craft\elements\Entry;
+use craft\helpers\Db;
+use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\records\EntryType as EntryTypeRecord;
 use craft\validators\HandleValidator;
@@ -51,6 +54,12 @@ class EntryType extends Model
      * @var string|null Handle
      */
     public $handle;
+
+    /**
+     * @var int|null Sort order
+     * @since 3.5.0
+     */
+    public $sortOrder;
 
     /**
      * @var bool Has title field
@@ -177,5 +186,38 @@ class EntryType extends Model
         }
 
         return $section;
+    }
+
+    /**
+     * Returns the field layout config for this entry type.
+     *
+     * @return array
+     * @since 3.5.0
+     */
+    public function getConfig(): array
+    {
+        $config = [
+            'name' => $this->name,
+            'handle' => $this->handle,
+            'hasTitleField' => (bool)$this->hasTitleField,
+            'titleTranslationMethod' => $this->titleTranslationMethod,
+            'titleTranslationKeyFormat' => $this->titleTranslationKeyFormat ?: null,
+            'titleFormat' => $this->titleFormat ?: null,
+            'sortOrder' => (int)$this->sortOrder,
+            'section' => $this->getSection()->uid,
+        ];
+
+        $fieldLayout = $this->getFieldLayout();
+
+        if ($fieldLayoutConfig = $fieldLayout->getConfig()) {
+            if (!$fieldLayout->uid) {
+                $fieldLayout->uid = $fieldLayout->id ? Db::uidById(Table::FIELDLAYOUTS, $fieldLayout->id) : StringHelper::UUID();
+            }
+            $config['fieldLayouts'] = [
+                $fieldLayout->uid => $fieldLayoutConfig,
+            ];
+        }
+
+        return $config;
     }
 }

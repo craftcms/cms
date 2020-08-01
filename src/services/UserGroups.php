@@ -218,14 +218,7 @@ class UserGroups extends Component
         }
 
         $configPath = self::CONFIG_USERPGROUPS_KEY . '.' . $group->uid;
-
-        // Save everything except permissions. Not ours to touch.
-        $configData = [
-            'name' => $group->name,
-            'handle' => $group->handle,
-            'description' => $group->description,
-        ];
-
+        $configData = $group->getConfig(false);
         $projectConfig->set($configPath, $configData, "Save user group “{$group->handle}”");
 
         // Now that we have a group ID, save it on the model

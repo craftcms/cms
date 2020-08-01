@@ -96,4 +96,26 @@ class UserGroup extends Model
 
         return false;
     }
+
+    /**
+     * Returns the field layout config for this user group.
+     *
+     * @param bool $withPermissions Whether permissions should be included
+     * @return array
+     * @since 3.5.0
+     */
+    public function getConfig(bool $withPermissions = true): array
+    {
+        $config = [
+            'name' => $this->name,
+            'handle' => $this->handle,
+            'description' => $this->description,
+        ];
+
+        if ($withPermissions && $this->id) {
+            $config['permissions'] = Craft::$app->getUserPermissions()->getPermissionsByGroupId($this->id);
+        }
+
+        return $config;
+    }
 }

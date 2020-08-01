@@ -135,7 +135,15 @@ class Users extends Component
      */
     const EVENT_AFTER_ASSIGN_USER_TO_DEFAULT_GROUP = 'afterAssignUserToDefaultGroup';
 
-    const CONFIG_USERLAYOUT_KEY = 'users.fieldLayouts';
+    /**
+     * @since 3.5.0
+     */
+    const CONFIG_USERS_KEY = 'users';
+
+    /**
+     * @since 3.1.0
+     */
+    const CONFIG_USERLAYOUT_KEY = self::CONFIG_USERS_KEY . '.' . 'fieldLayouts';
 
     /**
      * Returns a user by their ID.

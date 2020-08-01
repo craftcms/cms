@@ -233,18 +233,15 @@ class Sites extends Component
             return false;
         }
 
-        $projectConfig = Craft::$app->getProjectConfig();
-        $configData = [
-            'name' => $group->name
-        ];
-
         if ($isNewGroup) {
             $group->uid = StringHelper::UUID();
         } else if (!$group->uid) {
             $group->uid = Db::uidById(Table::SITEGROUPS, $group->id);
         }
 
-        $projectConfig->set(self::CONFIG_SITEGROUP_KEY . '.' . $group->uid, $configData, "Save the “{$group->name}” site group");
+        $configPath = self::CONFIG_SITEGROUP_KEY . '.' . $group->uid;
+        $configData = $group->getConfig();
+        Craft::$app->getProjectConfig()->set($configPath, $configData, "Save the “{$group->name}” site group");
 
         // Now that we have an ID, save it on the model
         if ($isNewGroup) {
@@ -642,24 +639,9 @@ class Sites extends Component
             return false;
         }
 
-        $groupRecord = $this->_getGroupRecord($site->groupId);
-
-        $projectConfig = Craft::$app->getProjectConfig();
-        $configData = [
-            'siteGroup' => $groupRecord->uid,
-            'name' => $site->name,
-            'handle' => $site->handle,
-            'language' => $site->language,
-            'hasUrls' => (bool)$site->hasUrls,
-            'baseUrl' => $site->baseUrl,
-            'sortOrder' => (int)$site->sortOrder,
-            'primary' => (bool)$site->primary,
-            'enabled' => (bool)$site->enabled,
-        ];
-
         if ($isNewSite) {
             $site->uid = StringHelper::UUID();
-            $configData['sortOrder'] = ((int)(new Query())
+            $site->sortOrder = ((int)(new Query())
                     ->from([Table::SITES])
                     ->where(['dateDeleted' => null])
                     ->max('[[sortOrder]]')) + 1;
@@ -668,7 +650,8 @@ class Sites extends Component
         }
 
         $configPath = self::CONFIG_SITES_KEY . '.' . $site->uid;
-        $projectConfig->set($configPath, $configData, "Save the “{$site->handle}” site");
+        $configData = $site->getConfig();
+        Craft::$app->getProjectConfig()->set($configPath, $configData, "Save the “{$site->handle}” site");
 
         // Now that we have a site ID, save it on the model
         if ($isNewSite) {

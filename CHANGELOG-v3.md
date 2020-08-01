@@ -8,8 +8,23 @@
 - Added the `uploaderId` GraphQL argument for asset queries. ([#6498](https://github.com/craftcms/cms/pull/6498))
 - Added the `uploader` and `uploaderId` GraphQL fields for assets. ([#6498](https://github.com/craftcms/cms/pull/6498))
 - Added `craft\elements\actions\Delete::$withDescendants`.
+- Added `craft\elements\GlobalSet::getConfig()`.
+- Added `craft\models\CategoryGroup::getConfig()`.
+- Added `craft\models\EntryType::$sortOrder`.
+- Added `craft\models\EntryType::getConfig()`.
+- Added `craft\models\FieldGroup::getConfig()`.
+- Added `craft\models\GqlSchema::getConfig()`.
+- Added `craft\models\Section::getConfig()`.
+- Added `craft\models\Site::getConfig()`.
+- Added `craft\models\SiteGroup::getConfig()`.
+- Added `craft\models\TagGroup::getConfig()`.
+- Added `craft\models\UserGroup::getConfig()`.
+- Added `craft\services\Gql::CONFIG_GQL_KEY`.
+- Added `craft\services\Users::CONFIG_USERS_KEY`.
+- Added `craft\services\Volumes::createVolumeConfig()`.
 
 ### Changed
+- Built-in system components now consistently store their settings in the project config with the expected value types. ([#4424](https://github.com/craftcms/cms/issues/4424))
 - Nested project config file names now begin with the component handle, if there is one. ([#6504](https://github.com/craftcms/cms/issues/6504))
 - The search bar in field layout designers now searches fields’ handles and group names, in addition to their labels. ([#6507](https://github.com/craftcms/cms/issues/6507))
 - Control panel settings pages registered via `craft\web\twig\variables\Cp::EVENT_REGISTER_CP_SETTINGS` can now specify their icon path with an `iconMask` key, which will have it filled in with the same color as Craft’s built-in settings icons.

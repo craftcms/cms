@@ -8,6 +8,8 @@
 namespace craft\models;
 
 use craft\base\Model;
+use craft\db\Table;
+use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\records\GqlSchema as GqlSchemaRecord;
@@ -133,5 +135,25 @@ class GqlSchema extends Model
     {
         $pairs = $this->getAllScopePairs();
         return $pairs[$action] ?? [];
+    }
+
+    /**
+     * Returns the field layout config for this schema.
+     *
+     * @return array
+     * @since 3.5.0
+     */
+    public function getConfig(): array
+    {
+        $config = [
+            'name' => $this->name,
+            'isPublic' => (bool)$this->isPublic,
+        ];
+
+        if ($this->scope) {
+            $config['scope'] = $this->scope;
+        }
+
+        return $config;
     }
 }

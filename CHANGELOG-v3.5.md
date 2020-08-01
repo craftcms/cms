@@ -150,6 +150,7 @@
 - Added `craft\elements\Entry::defineFieldLayouts()`.
 - Added `craft\elements\Entry::getCacheTags()`.
 - Added `craft\elements\Entry::gqlMutationNameByContext()`.
+- Added `craft\elements\GlobalSet::getConfig()`.
 - Added `craft\elements\GlobalSet::gqlMutationNameByContext()`.
 - Added `craft\elements\MatrixBlock::getCacheTags()`.
 - Added `craft\elements\Tag::getCacheTags()`.
@@ -254,6 +255,10 @@
 - Added `craft\helpers\ProjectConfig::ensureAllGqlSchemasProcessed()`.
 - Added `craft\helpers\ProjectConfig::splitConfigIntoComponents()`.
 - Added `craft\helpers\Queue`.
+- Added `craft\models\CategoryGroup::getConfig()`.
+- Added `craft\models\EntryType::$sortOrder`.
+- Added `craft\models\EntryType::getConfig()`.
+- Added `craft\models\FieldGroup::getConfig()`.
 - Added `craft\models\FieldLayout::createForm()`.
 - Added `craft\models\FieldLayout::EVENT_DEFINE_STANDARD_FIELDS`.
 - Added `craft\models\FieldLayout::EVENT_DEFINE_UI_ELEMENTS`. ([#6360](https://github.com/craftcms/cms/issues/6360))
@@ -269,10 +274,16 @@
 - Added `craft\models\FieldLayoutTab::getConfig()`.
 - Added `craft\models\FieldLayoutTab::getElementConfigs()`.
 - Added `craft\models\FieldLayoutTab::updateConfig()`.
+- Added `craft\models\GqlSchema::getConfig()`.
 - Added `craft\models\GqlToken::setSchema()`.
 - Added `craft\models\MatrixBlockType::getConfig()`.
+- Added `craft\models\Section::getConfig()`.
 - Added `craft\models\Section::PROPAGATION_METHOD_CUSTOM`.
 - Added `craft\models\Site::$enabled`.
+- Added `craft\models\Site::getConfig()`.
+- Added `craft\models\SiteGroup::getConfig()`.
+- Added `craft\models\TagGroup::getConfig()`.
+- Added `craft\models\UserGroup::getConfig()`.
 - Added `craft\queue\jobs\PruneRevisions`.
 - Added `craft\services\AssetTransforms::extendTransform()`. ([#5853](https://github.com/craftcms/cms/issues/5853))
 - Added `craft\services\Composer::handleError()`.
@@ -292,6 +303,7 @@
 - Added `craft\services\Elements::stopCollectingCacheTags()`.
 - Added `craft\services\Fields::createLayoutElement()`.
 - Added `craft\services\Fields::getLayoutsByType()`.
+- Added `craft\services\Gql::CONFIG_GQL_KEY`.
 - Added `craft\services\Gql::CONFIG_GQL_PUBLIC_TOKEN_KEY`.
 - Added `craft\services\Gql::getAllSchemaComponents()`.
 - Added `craft\services\Gql::getPublicToken()`.
@@ -303,6 +315,8 @@
 - Added `craft\services\ProjectConfig::getHadFileWriteIssues()`.
 - Added `craft\services\ProjectConfig::IGNORE_CACHE_KEY`.
 - Added `craft\services\ProjectConfig::ignorePendingChanges()`.
+- Added `craft\services\Users::CONFIG_USERS_KEY`.
+- Added `craft\services\Volumes::createVolumeConfig()`.
 - Added `craft\test\mockclasses\elements\MockElementQuery`.
 - Added `craft\utilities\ClearCaches::EVENT_REGISTER_TAG_OPTIONS`.
 - Added `craft\utilities\ClearCaches::tagOptions()`.
@@ -336,6 +350,7 @@
 ### Changed
 - Craft now stores project config files in a new `config/project/` folder, regardless of whether the (deprecated) `useProjectConfigFile` config setting is enabled, and syncing new project config file changes is now optional.
 - The public GraphQL schema’s access settings are now stored in the project config. ([#6078](https://github.com/craftcms/cms/issues/6078))
+- Built-in system components now consistently store their settings in the project config with the expected value types. ([#4424](https://github.com/craftcms/cms/issues/4424))
 - The account menu in the control panel header now includes identity info. ([#6460](https://github.com/craftcms/cms/issues/6460))
 - User registration forms in the control panel now give users the option to send an activation email, even if email verification isn’t required. ([#5836](https://github.com/craftcms/cms/issues/5836))
 - Activation emails are now sent automatically on public registration if the `deferPublicRegistrationPassword` config setting is enabled, even if email verification isn’t required. ([#5836](https://github.com/craftcms/cms/issues/5836))

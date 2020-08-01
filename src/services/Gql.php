@@ -267,14 +267,19 @@ class Gql extends Component
     const CACHE_TAG = 'graphql';
 
     /**
+     * @since 3.5.0
+     */
+    const CONFIG_GQL_KEY = 'graphql';
+
+    /**
      * @since 3.4.0
      */
-    const CONFIG_GQL_SCHEMAS_KEY = 'graphql.schemas';
+    const CONFIG_GQL_SCHEMAS_KEY = self::CONFIG_GQL_KEY . '.' . 'schemas';
 
     /**
      * @since 3.5.0
      */
-    const CONFIG_GQL_PUBLIC_TOKEN_KEY = 'graphql.publicToken';
+    const CONFIG_GQL_PUBLIC_TOKEN_KEY = self::CONFIG_GQL_KEY . '.' . 'publicToken';
 
     /**
      * The field name to use when fetching count of related elements
@@ -919,15 +924,9 @@ class Gql extends Component
             $schema->uid = Db::uidById(Table::GQLSCHEMAS, $schema->id);
         }
 
-        $projectConfig = Craft::$app->getProjectConfig();
-        $configData = [
-            'name' => $schema->name,
-            'scope' => $schema->scope,
-            'isPublic' => $schema->isPublic
-        ];
-
         $configPath = self::CONFIG_GQL_SCHEMAS_KEY . '.' . $schema->uid;
-        $projectConfig->set($configPath, $configData, "Save GraphQL schema “{$schema->name}”");
+        $configData = $schema->getConfig();
+        Craft::$app->getProjectConfig()->set($configPath, $configData, "Save GraphQL schema “{$schema->name}”");
 
         if ($isNewSchema) {
             $schema->id = Db::idByUid(Table::GQLSCHEMAS, $schema->uid);
