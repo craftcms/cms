@@ -46,6 +46,9 @@ class EntryTitleField extends TitleField
         return $element->getType()->titleTranslationMethod !== Field::TRANSLATION_METHOD_NONE;
     }
 
+    /**
+     * @inheritdoc
+     */
     protected function translationDescription(ElementInterface $element = null, bool $static = false)
     {
         if (!$element instanceof Entry) {
