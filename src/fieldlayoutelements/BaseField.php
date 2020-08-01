@@ -190,14 +190,14 @@ abstract class BaseField extends FieldLayoutElement
             return null;
         }
 
-        $statusClass = $this->statusClass();
+        $statusClass = $this->statusClass($element, $static);
 
         return Craft::$app->getView()->renderTemplate('_includes/forms/field', [
             'id' => $this->id(),
             'fieldAttributes' => $this->containerAttributes($element, $static),
             'inputAttributes' => $this->inputContainerAttributes($element, $static),
             'labelAttributes' => $this->labelAttributes($element, $static),
-            'status' => $statusClass ? [$statusClass, $this->statusLabel() ?? ucfirst($statusClass)] : null,
+            'status' => $statusClass ? [$statusClass, $this->statusLabel($element, $static) ?? ucfirst($statusClass)] : null,
             'label' => $this->label ? Craft::t('site', $this->label) : $this->defaultLabel($element, $static),
             'altLabel' => Html::tag('code', $this->attribute()),
             'required' => !$static && $this->required,
