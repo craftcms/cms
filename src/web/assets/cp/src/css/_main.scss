@@ -4018,7 +4018,7 @@ fieldset {
 .field {
   & > .status-badge {
     position: absolute;
-    top: 2px;
+    top: -3px;
     @include left(-19px);
     font-size: 9px;
     font-weight: bold;
