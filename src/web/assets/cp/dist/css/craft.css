@@ -715,6 +715,8 @@ body.ltr .btngroup .btn.dashed:not(:last-child) { margin-right: -1px; }
 
 body.rtl .btngroup .btn.dashed:not(:last-child) { margin-left: -1px; }
 
+.btn.dashed:focus { background-color: rgba(205, 216, 228, 0.1) !important; }
+
 .btn.dashed:not(.disabled):active, .btn.dashed:not(.disabled).active { background-color: rgba(205, 216, 228, 0.25) !important; }
 
 /* color inputs */
@@ -972,6 +974,8 @@ body.rtl .datatablesorthelper .tableview .toggle { -webkit-transform: rotate(90d
 .element:focus, li:focus .element { background-color: #f3f7fc; }
 
 .element.sel, li.sel .element { background-color: #cdd8e4 !important; border-radius: 3px; cursor: default; }
+
+.element.sel:focus, li.sel .element:focus { background-color: #bdcbdb !important; }
 
 .element.sel.loading:after, li.sel .element.loading:after { background-image: url(../images/spinner_element.gif); }
 

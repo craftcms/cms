@@ -404,6 +404,7 @@
 - It’s now possible to pass `type`, `status`, `title`, `slug`, `postDate`, `expiryDate`, and custom field query string params to the new entry URL, to set the default entry values (e.g. `/admin/entries/locations/new?phone=555-0123`).
 - Lightswitch inputs can now have labels, like checkboxes.
 - Clicking on a Lightswitch field’s label will now set focus to the lightswitch.
+- Improved the focus styling for relational fields. ([#6002](https://github.com/craftcms/cms/issues/6002))
 - Improved support for eager-loading elements across multiple sites at once.
 - All built-in success/fail flash messages are now customizable by passing a hashed `successMessage`/`failMessage` param with the request. ([#6192](https://github.com/craftcms/cms/issues/6192))
 - “Resaving elements” jobs no longer ignore the `offset`, `limit`, and `orderBy` params specified by the criteria.

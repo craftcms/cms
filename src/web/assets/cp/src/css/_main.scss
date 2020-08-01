@@ -1379,7 +1379,7 @@ div.btn.submit {
 
 div.btn.submit input {
   position: absolute;
-  left: 100%;
+  left: 100%
 }
 
 /* dashed buttons */
@@ -1390,6 +1390,10 @@ div.btn.submit input {
   .btngroup &:not(:last-child) {
     @include border-right(1px solid transparent);
     @include margin-right(-1px);
+  }
+
+  &:focus {
+    background-color: transparentize($grey200, 0.9) !important;
   }
 
   &:not(.disabled) {
@@ -1938,6 +1942,10 @@ $elementInnerSpacing: 5px;
     background-color: $lightSelColor !important;
     border-radius: $smallBorderRadius;
     cursor: default;
+
+    &:focus {
+      background-color: darken($lightSelColor, 5%) !important;
+    }
 
     &.loading:after {
       background-image: url(../images/spinner_element.gif);
