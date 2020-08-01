@@ -1124,38 +1124,40 @@ class ProjectConfig extends Component
     public function rebuild()
     {
         $this->reset();
-        $currentConfig = $this->get();
 
-        // Gather everything that we can about the current state of affairs
-        $configData = $this->_getCurrentStateData();
+        $config = $this->get();
+        $config['dateModified'] = DateTimeHelper::currentTimeStamp();
+        $config['siteGroups'] = $this->_getSiteGroupData();
+        $config['sites'] = $this->_getSiteData();
+        $config['sections'] = $this->_getSectionData();
+        $config['entryTypes'] = $this->_getEntryTypeData();
+        $config['fieldGroups'] = $this->_getFieldGroupData();
+        $config['fields'] = $this->_getFieldData();
+        $config['matrixBlockTypes'] = $this->_getMatrixBlockTypeData();
+        $config['volumes'] = $this->_getVolumeData();
+        $config['categoryGroups'] = $this->_getCategoryGroupData();
+        $config['tagGroups'] = $this->_getTagGroupData();
+        $config['users'] = array_merge($config['users'] ?? [], $this->_getUserData());
+        $config['globalSets'] = $this->_getGlobalSetData();
+        $config['plugins'] = $this->_getPluginData($config['plugins'] ?? []);
+        $config['imageTransforms'] = $this->_getTransformData();
+        $config['graphql'] = $this->_getGqlData();
 
         // Fire a 'rebuild' event
         $event = new RebuildConfigEvent([
-            'config' => $configData,
+            'config' => $config,
         ]);
         $this->trigger(self::EVENT_REBUILD, $event);
-
-        // Remove any existing user groups and fieldlayouts from $currentConfig
-        unset($currentConfig['users']['groups'], $currentConfig['users']['fieldLayouts']);
-
-        // Merge the new data over the existing one.
-        $configData = array_replace_recursive([
-            'system' => $currentConfig['system'],
-            'routes' => $currentConfig['routes'] ?? [],
-            'plugins' => $currentConfig['plugins'] ?? [],
-            'users' => $currentConfig['users'] ?? [],
-            'email' => $currentConfig['email'] ?? [],
-        ], $event->config);
 
         $this->muteEvents = true;
         $readOnly = $this->readOnly;
         $this->readOnly = false;
 
-        foreach ($configData as $path => $value) {
+        foreach ($event->config as $path => $value) {
             $this->set($path, $value, 'Project config rebuild');
         }
 
-        $this->_appliedConfig = $configData;
+        $this->_appliedConfig = $event->config;
 
         $this->readOnly = $readOnly;
         $this->muteEvents = false;
@@ -1728,36 +1730,6 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Return project config array.
-     * TODO: this is just a reminder that this part *needs* to be kept up-to-date as Craft evolves.
-     *
-     * @return array
-     */
-    private function _getCurrentStateData(): array
-    {
-        $data = [
-            'dateModified' => DateTimeHelper::currentTimeStamp(),
-            'siteGroups' => $this->_getSiteGroupData(),
-            'sites' => $this->_getSiteData(),
-            'sections' => $this->_getSectionData(),
-            'entryTypes' => $this->_getEntryTypeData(),
-            'fieldGroups' => $this->_getFieldGroupData(),
-            'fields' => $this->_getFieldData(),
-            'matrixBlockTypes' => $this->_getMatrixBlockTypeData(),
-            'volumes' => $this->_getVolumeData(),
-            'categoryGroups' => $this->_getCategoryGroupData(),
-            'tagGroups' => $this->_getTagGroupData(),
-            'users' => $this->_getUserData(),
-            'globalSets' => $this->_getGlobalSetData(),
-            'plugins' => $this->_getPluginData(),
-            'imageTransforms' => $this->_getTransformData(),
-            'graphql' => $this->_getGqlData(),
-        ];
-
-        return $data;
-    }
-
-    /**
      * Return site data config array.
      *
      * @return array
@@ -1915,6 +1887,8 @@ class ProjectConfig extends Component
                 'entrytypes.name',
                 'entrytypes.handle',
                 'entrytypes.hasTitleField',
+                'entrytypes.titleTranslationMethod',
+                'entrytypes.titleTranslationKeyFormat',
                 'entrytypes.titleFormat',
                 'entrytypes.sortOrder',
                 'entrytypes.uid',
@@ -2124,7 +2098,7 @@ class ProjectConfig extends Component
         }
 
         $groups = (new Query())
-            ->select(['id', 'name', 'handle', 'uid'])
+            ->select(['id', 'name', 'handle', 'description', 'uid'])
             ->from([Table::USERGROUPS])
             ->all();
 
@@ -2148,6 +2122,7 @@ class ProjectConfig extends Component
             $data['groups'][$group['uid']] = [
                 'name' => $group['name'],
                 'handle' => $group['handle'],
+                'description' => $group['description'],
                 'permissions' => $permissionList[$group['id']] ?? []
             ];
         }
@@ -2326,9 +2301,10 @@ class ProjectConfig extends Component
     /**
      * Return plugin data config array
      *
+     * @param array $currentPluginData
      * @return array
      */
-    private function _getPluginData(): array
+    private function _getPluginData(array $currentPluginData): array
     {
         $plugins = (new Query())
             ->select([
@@ -2341,9 +2317,12 @@ class ProjectConfig extends Component
         $pluginData = [];
 
         foreach ($plugins as $plugin) {
-            $pluginData[$plugin['handle']] = [
-                'schemaVersion' => $plugin['schemaVersion'],
-            ];
+            $pluginData[$plugin['handle']] = array_merge(
+                $currentPluginData[$plugin['handle']] ?? [],
+                [
+                    'schemaVersion' => $plugin['schemaVersion'],
+                ]
+            );
         }
 
         return $pluginData;

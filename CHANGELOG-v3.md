@@ -24,6 +24,7 @@
 - Fixed a bug where entry Title fields weren’t correctly identifying their translation method. ([#6503](https://github.com/craftcms/cms/issues/6503))
 - Fixed a bug where Lightswitch fields’ container IDs didn’t match their label’s `for` attribute. ([#6505](https://github.com/craftcms/cms/pull/6505))
 - Fixed a browser console warning about `axios.min.map` not loading. ([#6506](https://github.com/craftcms/cms/issues/6506))
+- Fixed a bug where rebuilding the project config would omit some settings. ([#6509](https://github.com/craftcms/cms/issues/6509))
 
 ## 3.5.0-RC5 - 2020-07-30
 
