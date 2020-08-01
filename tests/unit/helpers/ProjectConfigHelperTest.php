@@ -236,6 +236,42 @@ class ProjectConfigHelperTest extends Unit
             [
                 [
                     'dateModified' => 4,
+                    'email' => [
+                        'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa' => [
+                            'handle' => 'fooBar'
+                        ],
+                    ]
+                ],
+                [
+                    'email/fooBar--aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa.yaml' => [
+                        'handle' => 'fooBar'
+                    ],
+                    'project.yaml' => [
+                        'dateModified' => 4
+                    ]
+                ],
+            ],
+            [
+                [
+                    'dateModified' => 4,
+                    'email' => [
+                        'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa' => [
+                            'handle' => 'foo-bar'
+                        ],
+                    ]
+                ],
+                [
+                    'email/aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa.yaml' => [
+                        'handle' => 'foo-bar'
+                    ],
+                    'project.yaml' => [
+                        'dateModified' => 4
+                    ]
+                ],
+            ],
+            [
+                [
+                    'dateModified' => 4,
                     'commerce' => [
                         'provider' => 'gmail',
                         'productTypes' => [
