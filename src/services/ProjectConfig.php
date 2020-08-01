@@ -1279,6 +1279,11 @@ class ProjectConfig extends Component
                 if ($pathSegment === $filename) {
                     $insertionPoint = array_merge($insertionPoint, $yamlConfig);
                 } else {
+                    // Is this in the <handle>--<uid> format?
+                    if (preg_match('/^\w+\-\-(' . StringHelper::UUID_PATTERN . ')$/', $filename, $match)) {
+                        // Ignore the handle
+                        $filename = $match[1];
+                    }
                     $insertionPoint[$filename] = $yamlConfig;
                 }
             } else {

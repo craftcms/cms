@@ -382,7 +382,13 @@ class ProjectConfig
             if (is_array($configData)) {
                 if (self::isComponentArray($configData)) {
                     foreach ($configData as $uid => $subConfig) {
-                        $file = ($path ? "$path/" : '') . "$key/$uid.yaml";
+                        // Does the sub config specify a handle?
+                        if (isset($subConfig['handle']) && is_string($subConfig['handle']) && preg_match('/^\w+$/', $subConfig['handle'])) {
+                            $filename = "{$subConfig['handle']}--$uid";
+                        } else {
+                            $filename = $uid;
+                        }
+                        $file = ($path ? "$path/" : '') . "$key/$filename.yaml";
                         $splitConfig[$file] = $subConfig;
                     }
                     unset($config[$key]);
