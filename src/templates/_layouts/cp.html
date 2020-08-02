@@ -92,7 +92,7 @@
     'novalidate': true,
     'data': {
         'saveshortcut': saveShortcut ?? true,
-        'saveshortcut-redirect': saveShortcutRedirect is defined ? saveShortcutRedirect|hash : false,
+        'saveshortcut-redirect': (saveShortcutRedirect ?? false) ? saveShortcutRedirect|hash : false,
         'actions': formActions ?? false,
         'confirm-unload': true,
         'delta': view.getIsDeltaRegistrationActive(),
