@@ -85,8 +85,9 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend({
             }
 
             this.$clearFieldSearchBtn.removeClass('hidden');
-            let $matches = this.$fields.filter(`[data-keywords*="${val}"]`).removeClass('filtered')
-                .add(this.$fieldGroups.filter(`[data-name*="${val}"]`).children('.fld-element'));
+            let $matches = this.$fields.filter(`[data-keywords*="${val}"]`)
+                .add(this.$fieldGroups.filter(`[data-name*="${val}"]`).children('.fld-element'))
+                .removeClass('filtered');
             this.$fields.not($matches).addClass('filtered');
 
             // hide any groups that don't have any results

@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed a PHP error that occurred when saving a category, if there were any validation errors.
+- Fixed a bug where some field groups could be hidden in the field layout designer sidebar while searching, when they shouldn’t be. ([#6512](https://github.com/craftcms/cms/issues/6512))
 
 ## 3.5.0-RC6 - 2020-08-01
 
