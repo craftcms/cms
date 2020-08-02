@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased (3.5)
+## 3.5.0-RC6 - 2020-08-01
 
 ### Added
 - Entries within Structure sections and categories now have a “Delete (with descendants)” element action.
