@@ -711,6 +711,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 return;
             }
 
+            if (typeof action === 'string') {
+                action = this._findAction(action);
+            }
+
             if (action.confirm && !confirm(action.confirm)) {
                 return;
             }
@@ -752,6 +756,15 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             }).catch(() => {
                 this.setIndexAvailable();
             });
+        },
+
+        _findAction: function(actionClass) {
+            for (var i = 0; i < this.actions.length; i++) {
+                if (this.actions[i].type === actionClass) {
+                    return this.actions[i];
+                }
+            }
+            throw `Invalid element action: ${actionClass}`;
         },
 
         afterAction: function(action, params) {
