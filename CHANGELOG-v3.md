@@ -29,6 +29,7 @@
 - The search bar in field layout designers now searches fields’ handles and group names, in addition to their labels. ([#6507](https://github.com/craftcms/cms/issues/6507))
 - Clicking on a Lightswitch field’s label will now set focus to the lightswitch.
 - Improved the focus styling for relational fields. ([#6002](https://github.com/craftcms/cms/issues/6002))
+- Matrix blocks’ action menus now include “Move up” and “Move down” options. ([#1035](https://github.com/craftcms/cms/issues/1035))
 - Control panel settings pages registered via `craft\web\twig\variables\Cp::EVENT_REGISTER_CP_SETTINGS` can now specify their icon path with an `iconMask` key, which will have it filled in with the same color as Craft’s built-in settings icons.
 - Renamed `craft\services\Fields::getLayoutsByElementType()` to `getLayoutsByType()`.
 
