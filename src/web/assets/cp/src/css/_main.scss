@@ -3632,9 +3632,7 @@ ul.tree,
 
   .buttons {
     .spinner {
-      @include floatright;
       @include margin-right(-20px);
-      @include margin-left(-4px);
     }
   }
 }

@@ -1838,17 +1838,9 @@ body.ltr .deleteusermodal .elementselect { margin-left: 10px; }
 
 body.rtl .deleteusermodal .elementselect { margin-right: 10px; }
 
-body.ltr .deleteusermodal .buttons .spinner { float: right; }
-
-body.rtl .deleteusermodal .buttons .spinner { float: left; }
-
 body.ltr .deleteusermodal .buttons .spinner { margin-right: -20px; }
 
 body.rtl .deleteusermodal .buttons .spinner { margin-left: -20px; }
-
-body.ltr .deleteusermodal .buttons .spinner { margin-left: -4px; }
-
-body.rtl .deleteusermodal .buttons .spinner { margin-right: -4px; }
 
 .dropdownsettingsmodal { width: auto; height: auto; min-width: 0; min-height: 0; max-width: 400px; }
 
