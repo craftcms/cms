@@ -7,6 +7,7 @@
 
 namespace craft\test\mockclasses\components;
 
+use craft\base\Component;
 use craft\base\ComponentInterface;
 use Exception;
 use RuntimeException;
@@ -18,7 +19,7 @@ use RuntimeException;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since  3.2
  */
-class DependencyHeavyComponentExample implements ComponentInterface
+class DependencyHeavyComponentExample extends Component
 {
     /**
      * @param array $settings
