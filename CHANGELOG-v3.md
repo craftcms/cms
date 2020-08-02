@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased (3.5)
+
+### Fixed
+- Fixed a PHP error that occurred when saving a category, if there were any validation errors.
+
 ## 3.5.0-RC6 - 2020-08-01
 
 ### Added
