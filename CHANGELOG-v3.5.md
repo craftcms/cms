@@ -358,6 +358,7 @@
 - The available table columns and sort options within element indexes now only list custom fields that are present in field layouts for the selected element source. ([#4314](https://github.com/craftcms/cms/issues/4314), [#4802](https://github.com/craftcms/cms/issues/4802))
 - The default account activation and password reset emails now reference the system name rather than the current site name. ([#6089](https://github.com/craftcms/cms/pull/6089))
 - Craft will now regenerate missing transforms on local volumes. ([#5956](https://github.com/craftcms/cms/issues/5956))
+- Asset, category, entry, and user edit pages now retain their scroll position when the <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>S</kbd> keyboard shortcut is used. ([#6513](https://github.com/craftcms/cms/issues/6513))
 - Preview frames now maintain their scroll position across refreshes, even for cross-origin preview targets.
 - Preview targets that aren’t directly rendered by Craft must now include `lib/iframe-resizer-cw/iframeResizer.contentWindow.js` in order to maintain scroll position across refreshes.
 - The preview frame header no longer hides the top 54px of the preview frame when it’s scrolled all the way to the top. ([#5547](https://github.com/craftcms/cms/issues/5547))
@@ -440,6 +441,7 @@
 - Control panel form input macros and templates that accept a `class` variable can now pass it as an array of class names.
 - Radio groups in the control panel can now toggle other UI elements, like select inputs.
 - Control panel templates can now set a `formActions` variable, which registers alternative Save menu actions, optionally with associated keyboard shortcuts.
+- Control panel templates that support the <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>S</kbd> keyboard shortcut can now have the browser retain its scroll position on the next page load by setting `retainScrollPosOnSaveShortcut = true`, or including `retainScroll: true` in a `formActions` object. ([#6513](https://github.com/craftcms/cms/issues/6513))
 - The `_layouts/base` template now supports a `bodyAttributes` variable.
 - Control panel settings pages registered via `craft\web\twig\variables\Cp::EVENT_REGISTER_CP_SETTINGS` can now specify their icon path with an `iconMask` key, which will have it filled in with the same color as Craft’s built-in settings icons.
 - The `Craft.cp.submitPrimaryForm()` method now accepts an `options` argument for customizing the form submit.

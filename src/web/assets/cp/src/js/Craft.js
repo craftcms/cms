@@ -1746,6 +1746,7 @@ $.extend(Craft,
          * @param {string} [options.confirm] A confirmation message that should be shown to the user before submit
          * @param {Object} [options.params] Additional params that should be added to the form, defined as name/value pairs
          * @param {Object} [options.data] Additional data to be passed to the submit event
+         * @param {boolean} [options.retainScroll] Whether the scroll position should be stored and reapplied on the next page load
          */
         submitForm: function($form, options) {
             if (typeof options === 'undefined') {
@@ -1784,6 +1785,10 @@ $.extend(Craft,
                     })
                         .appendTo($form);
                 }
+            }
+
+            if (options.retainScroll) {
+                this.setLocalStorage('scrollY', window.scrollY);
             }
 
             $form.trigger($.extend({type: 'submit'}, options.data));

@@ -59,6 +59,7 @@
         'data': {
             'saveshortcut': true,
             'saveshortcut-redirect':  (user.getIsCurrent() ? 'myaccount' : (CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users/{id}' : 'dashboard'))|hash,
+            'saveshortcut-scroll': true,
             'confirm-unload': true,
             'delta': true,
         },

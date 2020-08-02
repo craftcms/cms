@@ -95,6 +95,7 @@
         label: isUnsavedDraft ? 'Create and continue editing'|t('app') : 'Save and continue editing'|t('app'),
         redirect: '{cpEditUrl}'|hash,
         shortcut: true,
+        retainScroll: true,
     }) %}
     {% if canUpdateSource %}
         {% if canAddAnother and addAnotherRedirectUrl %}
