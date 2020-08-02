@@ -318,7 +318,6 @@ class Assets extends Component
                     $volume = $folder->getVolume();
                     $volume->deleteDir($folder->path);
                 }
-
             }
         }
 

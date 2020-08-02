@@ -1643,6 +1643,5 @@ trait ApplicationTrait
         $projectConfigService
             ->onAdd(Gql::CONFIG_GQL_PUBLIC_TOKEN_KEY, [$gqlService, 'handleChangedPublicToken'])
             ->onUpdate(Gql::CONFIG_GQL_PUBLIC_TOKEN_KEY, [$gqlService, 'handleChangedPublicToken']);
-
     }
 }

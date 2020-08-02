@@ -94,7 +94,6 @@ class Asset extends ElementMutationResolver
             if (!$folder || $folder->volumeId != $volume->id) {
                 throw new UserError('Invalid folder id provided');
             }
-
         }
 
         $asset->setVolumeId($volume->id);

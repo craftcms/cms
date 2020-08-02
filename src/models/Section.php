@@ -17,10 +17,8 @@ use craft\helpers\Db;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\records\Section as SectionRecord;
-use craft\services\Sections;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
-use yii\base\Exception;
 
 /**
  * Section model class.

@@ -212,7 +212,7 @@ class ElementQueryConditionBuilder extends Component
                     return true;
                 }
 
-                if (is_string($value)&& is_a($parentField, $value)) {
+                if (is_string($value) && is_a($parentField, $value)) {
                     return true;
                 }
             }

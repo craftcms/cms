@@ -672,7 +672,6 @@ class AssetTransforms extends Component
                     $index->inProgress = false;
                     $index->fileExists = false;
                     $index->error = true;
-
                 }
 
                 $this->storeTransformIndexData($index);

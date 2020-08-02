@@ -24,7 +24,6 @@ use craft\helpers\MigrationHelper;
 use craft\helpers\StringHelper;
 use craft\migrations\CreateMatrixContentTable;
 use craft\models\FieldLayout;
-use craft\models\FieldLayoutTab;
 use craft\models\MatrixBlockType;
 use craft\models\Site;
 use craft\records\MatrixBlockType as MatrixBlockTypeRecord;

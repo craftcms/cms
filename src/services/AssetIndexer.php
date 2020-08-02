@@ -424,7 +424,7 @@ class AssetIndexer extends Component
             $this->updateIndexEntry($indexEntry->id, ['completed' => true, 'inProgress' => false]);
             throw $exception;
         }
-            return $asset;
+        return $asset;
     }
 
     /**

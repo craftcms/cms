@@ -9,7 +9,6 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\UtilityInterface;
-use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
 use craft\errors\MigrationException;

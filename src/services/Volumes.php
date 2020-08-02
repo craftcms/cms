@@ -3,7 +3,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\FieldInterface;
 use craft\base\VolumeInterface;
 use craft\db\Query;
 use craft\db\Table;

@@ -292,7 +292,7 @@ class FieldLayout extends Model
      */
     public function getAvailableUiElements(): array
     {
-        $event =  new DefineFieldLayoutElementsEvent([
+        $event = new DefineFieldLayoutElementsEvent([
             'elements' => [
                 new Heading(),
                 new Tip([

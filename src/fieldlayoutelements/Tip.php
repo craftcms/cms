@@ -9,7 +9,6 @@ namespace craft\fieldlayoutelements;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\FieldLayoutElement;
 use craft\helpers\Html;
 use yii\helpers\Markdown;
 

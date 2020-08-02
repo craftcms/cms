@@ -10,7 +10,6 @@ namespace craft\fieldlayoutelements;
 use craft\base\FieldLayoutElement;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Component;
-use craft\helpers\FileHelper;
 use craft\helpers\Html;
 
 /**

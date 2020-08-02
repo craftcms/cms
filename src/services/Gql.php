@@ -851,6 +851,7 @@ class Gql extends Component
 
     /**
      * Handle public token settings being updated.
+     *
      * @param ConfigEvent $event
      *
      * @since 3.5.0
@@ -876,7 +877,7 @@ class Gql extends Component
             ->one();
 
         $token->schemaId = $publicSchema ? $publicSchema['id'] : null;
-        $token->expiryDate = $data['expiryDate'] ? DateTimeHelper::toDateTime($data['expiryDate']): null;
+        $token->expiryDate = $data['expiryDate'] ? DateTimeHelper::toDateTime($data['expiryDate']) : null;
         $token->enabled = $data['enabled'] ?: false;
 
         $this->_saveTokenInternal($token);

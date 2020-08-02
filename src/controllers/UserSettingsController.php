@@ -11,7 +11,6 @@ use Craft;
 use craft\models\UserGroup;
 use craft\web\Controller;
 use yii\web\BadRequestHttpException;
-use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
 /**

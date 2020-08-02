@@ -8,8 +8,6 @@
 namespace craft\models;
 
 use craft\base\Model;
-use craft\db\Table;
-use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\records\GqlSchema as GqlSchemaRecord;
