@@ -180,6 +180,8 @@ JS;
             'Merge the folder (any conflicting files will be replaced)',
             'More',
             'Move',
+            'Move up',
+            'Move down',
             'Name',
             'New category',
             'New child',
