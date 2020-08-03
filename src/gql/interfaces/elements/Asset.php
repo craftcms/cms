@@ -12,10 +12,10 @@ use craft\gql\arguments\elements\User as UserArguments;
 use craft\gql\arguments\Transform;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\Element;
-use craft\gql\interfaces\elements\User as UserInterface;
 use craft\gql\TypeManager;
 use craft\gql\types\DateTime;
 use craft\gql\types\generators\AssetType;
+use craft\helpers\Gql;
 use GraphQL\Type\Definition\InterfaceType;
 use GraphQL\Type\Definition\Type;
 
@@ -70,7 +70,7 @@ class Asset extends Element
     public static function getFieldDefinitions(): array
     {
         // @TODO Remove the `uri` field for Assets.
-        return TypeManager::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), [
+        return TypeManager::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), self::getConditionalFields(), [
             'volumeId' => [
                 'name' => 'volumeId',
                 'type' => Type::int(),
