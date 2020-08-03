@@ -110,9 +110,13 @@ abstract class ElementResolver extends Resolver
             }
         }
 
-        $conditions = (new ElementQueryConditionBuilder($resolveInfo))->extractQueryConditions($parentField);
+        $conditionBuilder = Craft::createObject([
+            'class' => ElementQueryConditionBuilder::class,
+            'resolveInfo' => $resolveInfo
+        ]);
 
-        // Todo make element resolver classes non-static in Craft 4.0
+        $conditions = $conditionBuilder->extractQueryConditions($parentField);
+
         /** @var ElementQuery $query */
         foreach ($conditions as $method => $parameters) {
             if (method_exists($query, $method)) {
