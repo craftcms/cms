@@ -603,10 +603,10 @@ class Html extends \yii\helpers\Html
 
         // normal HTML attributes
         $html = preg_replace_callback(
-            "/(?<=\\s)((?:for|list|xlink:href|href|aria\\-labelledby|aria\\-describedby|data\\-target|data\\-reverse\\-target|data\\-target\\-prefix)=('|\")#?)([^'\"\s]*)\\2/i",
+            "/(?<=\\s)((for|list|xlink:href|href|aria\\-labelledby|aria\\-describedby|data\\-target|data\\-reverse\\-target|data\\-target\\-prefix)=('|\")#?)([^'\"\s]*)\\3/i",
             function(array $match) use ($namespace, $ids): string {
-                if (isset($ids[$match[3]])) {
-                    return $match[1] . $namespace . '-' . $match[3] . $match[2];
+                if ($match[2] === 'data-target-prefix' || isset($ids[$match[4]])) {
+                    return $match[1] . $namespace . '-' . $match[4] . $match[3];
                 }
                 return $match[0];
             }, $html);
