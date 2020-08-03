@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@pixelandtonic/craftui": "~0.3.8",
-    "lodash": "^4.17.10",
+    "lodash": "^4.17.19",
     "sortablejs": "^1.10.1",
     "vue": "^2.5.17",
     "vue-router": "^3.0.1",
