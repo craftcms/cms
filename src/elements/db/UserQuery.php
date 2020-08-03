@@ -25,6 +25,7 @@ use yii\db\Connection;
  * @method User|array|null nth(int $n, Connection $db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @doc-path users.md
  * @supports-status-param
  * @replace {element} user
  * @replace {elements} users

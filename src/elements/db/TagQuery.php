@@ -25,6 +25,7 @@ use yii\db\Connection;
  * @method Tag|array|null nth(int $n, Connection $db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @doc-path tags.md
  * @supports-site-params
  * @supports-title-param
  * @supports-uri-param
