@@ -447,7 +447,7 @@
 - The `Craft.cp.submitPrimaryForm()` method now accepts an `options` argument for customizing the form submit.
 - New installs now set the primary site’s base URL to a `PRIMARY_SITE_URL` environment variable, rather than `DEFAULT_SITE_URL`.
 - Updated Yii to 2.0.36.
-- Updated Composer to 1.10.9. ([#5925](https://github.com/craftcms/cms/pull/5925))
+- Updated Composer to 1.10.10. ([#5925](https://github.com/craftcms/cms/pull/5925))
 - Updated PrismJS to 1.20.0.
 - Updated voku/stringy to ^6.2.2. ([#5989](https://github.com/craftcms/cms/issues/5989))
 

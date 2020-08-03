@@ -27,7 +27,7 @@
     "ext-pcre": "*",
     "ext-pdo": "*",
     "ext-zip": "*",
-    "composer/composer": "1.10.9",
+    "composer/composer": "1.10.10",
     "craftcms/oauth2-craftid": "~1.0.0",
     "craftcms/plugin-installer": "~1.5.3",
     "craftcms/server-check": "~1.1.0",

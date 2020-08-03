@@ -5,7 +5,7 @@
 ### Changed
 - Asset, category, entry, and user edit pages now retain their scroll position when the <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>S</kbd> keyboard shortcut is used. ([#6513](https://github.com/craftcms/cms/issues/6513))
 - Control panel templates that support the <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>S</kbd> keyboard shortcut can now have the browser retain its scroll position on the next page load by setting `retainScrollPosOnSaveShortcut = true`, or including `retainScroll: true` in a `formActions` object. ([#6513](https://github.com/craftcms/cms/issues/6513))
-- Updated Composer to 1.10.9.
+- Updated Composer to 1.10.10.
 
 ### Fixed
 - Fixed a PHP error that occurred when saving a category, if there were any validation errors.
