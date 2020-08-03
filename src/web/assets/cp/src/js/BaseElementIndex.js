@@ -735,27 +735,35 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this.setIndexBusy();
             this._autoSelectElements = selectedElementIds;
 
-            Craft.sendActionRequest('POST', this.settings.submitActionsAction, {
-                data: params,
-                cancelToken: this._createCancelToken(),
-            }).then((response) => {
-                this.setIndexAvailable();
-                if (response.data.success) {
-                    // Update the count text too
-                    this._resetCount();
-                    this._updateView(viewParams, response.data);
+            if (action.download) {
+                Craft.downloadFromUrl('POST', Craft.getActionUrl(this.settings.submitActionsAction), params).then(response => {
+                    this.setIndexAvailable();
+                }).catch(e => {
+                    this.setIndexAvailable();
+                });
+            } else {
+                Craft.sendActionRequest('POST', this.settings.submitActionsAction, {
+                    data: params,
+                    cancelToken: this._createCancelToken(),
+                }).then((response) => {
+                    this.setIndexAvailable();
+                    if (response.data.success) {
+                        // Update the count text too
+                        this._resetCount();
+                        this._updateView(viewParams, response.data);
 
-                    if (response.data.message) {
-                        Craft.cp.displayNotice(response.data.message);
+                        if (response.data.message) {
+                            Craft.cp.displayNotice(response.data.message);
+                        }
+
+                        this.afterAction(action, params);
+                    } else {
+                        Craft.cp.displayError(response.data.message);
                     }
-
-                    this.afterAction(action, params);
-                } else {
-                    Craft.cp.displayError(response.data.message);
-                }
-            }).catch(() => {
-                this.setIndexAvailable();
-            });
+                }).catch(() => {
+                    this.setIndexAvailable();
+                });
+            }
         },
 
         _findAction: function(actionClass) {
