@@ -699,8 +699,12 @@ class Sites extends Component
             $siteRecord->hasUrls = $data['hasUrls'];
             $siteRecord->baseUrl = $data['baseUrl'];
             $siteRecord->primary = $data['primary'];
-            $siteRecord->enabled = $data['enabled'] ?? true;
             $siteRecord->sortOrder = $data['sortOrder'];
+
+            // todo: remove schema version conditions after next beakpoint
+            if (version_compare(Craft::$app->getInstalledSchemaVersion(), '3.5.0', '>=')) {
+                $siteRecord->enabled = $data['enabled'] ?? true;
+            }
 
             if ($siteRecord->dateDeleted) {
                 $siteRecord->restore();
