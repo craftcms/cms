@@ -525,6 +525,7 @@
 - Fixed a SQL error that could occur when applying project config changes due to unique constraints. ([#5946](https://github.com/craftcms/cms/issues/5946))
 - Fixed a bug where element actions weren’t always getting configured properly if an element type defined multiple actions of the same type.
 - Fixed a browser console warning about `axios.min.map` not loading. ([#6506](https://github.com/craftcms/cms/issues/6506))
+- Fixed a SQL error that could occur when updating to Craft 3 from Craft 2.6.2984 or later, if there were multiple routes with the same URI pattern.
 
 ### Security
 - The `_includes/forms/checkbox.html`, `checkboxGroup.html`, and `checkboxSelect.html` control panel templates now HTML-encode checkbox labels by default, preventing possible XSS vulnerabilities. If HTML code was desired, it must be passed through the new `raw()` function first.

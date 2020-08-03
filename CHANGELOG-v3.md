@@ -13,6 +13,7 @@
 - Fixed a bug where element actions that called `Craft.elementIndex.submitAction()` directly weren’t working. ([#6515](https://github.com/craftcms/cms/issues/6515))
 - Fixed a PHP error that would occur in tests when saving an element.
 - Fixed a bug where some permission checkbox labels were getting double-encoded. ([#6525](https://github.com/craftcms/cms/pull/6525))
+- Fixed a SQL error that could occur when updating to Craft 3 from Craft 2.6.2984 or later, if there were multiple routes with the same URI pattern.
 
 ## 3.5.0-RC6 - 2020-08-01
 
