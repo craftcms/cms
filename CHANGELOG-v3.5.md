@@ -371,6 +371,7 @@
 - Relational fields now have a “Show the site menu” setting. ([#5864](https://github.com/craftcms/cms/issues/5864))
 - Date/Time fields now have “Min Date” and “Max Date” settings. ([#6241](https://github.com/craftcms/cms/issues/6241))
 - When creating a new field, the “Use this field’s values as search keywords?” setting is now disabled by default. ([#6390](https://github.com/craftcms/cms/issues/6390))
+- Sections’ “Entry URI Format” settings now have placeholder text indicating that the the input should be left blank if entries don’t have URLs. ([#6527](https://github.com/craftcms/cms/issues/6527))
 - Quick Post widgets now have a “Site” setting. ([#5253](https://github.com/craftcms/cms/issues/5253))
 - Craft now supports running migrations for custom migration tracks. ([#6172](https://github.com/craftcms/cms/issues/6172))
 - Extra entry revisions (per the `maxRevisions` config setting) are now pruned via a background job. ([#5902](https://github.com/craftcms/cms/issues/5902))
