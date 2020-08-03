@@ -12,6 +12,7 @@ use Codeception\Module\Yii2;
 use Codeception\PHPUnit\TestCase;
 use Codeception\Stub;
 use Codeception\TestInterface;
+use craft\base\ElementInterface;
 use craft\config\DbConfig;
 use craft\db\Connection;
 use craft\db\Query;
