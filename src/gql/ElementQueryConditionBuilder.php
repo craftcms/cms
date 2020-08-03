@@ -54,9 +54,9 @@ class ElementQueryConditionBuilder extends Component
      * use craft\gql\ElementQueryConditionBuilder;
      * use yii\base\Event;
      *
-     * Event::on(ElementQueryConditionBuilder::class, Gql::EVENT_REGISTER_GQL_EAGERLOADABLE_FIELDS, function(RegisterGqlEagerLoadableFields $event) {
+     * Event::on(ElementQueryConditionBuilder::class, ElementQueryConditionBuilder::EVENT_REGISTER_GQL_EAGERLOADABLE_FIELDS, function(RegisterGqlEagerLoadableFields $event) {
      *     // Add my fields
-     *     $event->queries['fieldList']['myEagerLoadableField'] = ['*'];
+     *     $event->fieldList['myEagerLoadableField'] = ['*'];
      * });
      * ```
      *
