@@ -12,6 +12,7 @@
 - Fixed a bug where some field groups could be hidden in the field layout designer sidebar while searching, when they shouldn’t be. ([#6512](https://github.com/craftcms/cms/issues/6512))
 - Fixed a bug where element actions that called `Craft.elementIndex.submitAction()` directly weren’t working. ([#6515](https://github.com/craftcms/cms/issues/6515))
 - Fixed a PHP error that would occur in tests when saving an element.
+- Fixed a bug where some permission checkbox labels were getting double-encoded. ([#6525](https://github.com/craftcms/cms/pull/6525))
 
 ## 3.5.0-RC6 - 2020-08-01
 
