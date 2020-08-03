@@ -109,7 +109,8 @@ Craft.FieldToggle = Garnish.Base.extend(
                 postVal = Garnish.getInputPostVal(this.$toggle);
             }
 
-            return (typeof postVal === 'undefined' || postVal === null) ? null : postVal.replace(/[\[\]\\\/]+/g, '-');
+            // Normalize the value
+            return (typeof postVal === 'undefined' || postVal === null) ? null : postVal.replace(/[^\w]+/g, '-');
         },
 
         onToggleChange: function() {
