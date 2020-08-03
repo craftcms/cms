@@ -17,6 +17,7 @@
 - Fixed a SQL error that could occur when updating to Craft 3 from Craft 2.6.2984 or later, if there were multiple routes with the same URI pattern.
 - Fixed a couple error that could occur when updating to Craft 3.5.
 - Fixed a bug where `craft\helpers\Html::namespaceAttributes()` was not namespacing `data-target-prefix` attributes.
+- Fixed an error that would occur when backing up a MySQL 5.7.31+ or 8.0.21+ database.
 
 ## 3.5.0-RC6 - 2020-08-01
 
