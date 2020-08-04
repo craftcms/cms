@@ -68,7 +68,8 @@ class TypeManager extends Component
      */
     public static function prepareFieldDefinitions(array $fields, string $typeName)
     {
-        if (empty(self::$_definitions[$typeName])) {
+        // TODO In Craft 4.0, kill all the static in this class to make it more injectable and testable.
+        if (!isset(self::$_definitions[$typeName])) {
             $instance = self::$_instance ?? self::$_instance = new self();
             self::$_definitions[$typeName] = $instance->_triggerEvent($fields, $typeName);
         }
@@ -81,6 +82,7 @@ class TypeManager extends Component
      */
     public static function flush()
     {
+        // TODO looking at you, static method flush.
         self::$_definitions = [];
     }
 

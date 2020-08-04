@@ -1,8 +1,9 @@
 {% from "_includes/forms" import text -%}
 
 {% macro sortOptionLabel(sortOption) %}
-    {{ sortOption.label ?? sortOption  }}
+    {{ sortOption.label ?? sortOption }}
 {% endmacro %}
+
 {% from _self import sortOptionLabel %}
 {% do view.registerTranslations('app', [
     "Sort by {attribute}",
@@ -63,7 +64,15 @@
     <div class="menu">
         <ul class="padded sort-attributes">
             {% for key, sortOption in sortOptions %}
-                <li><a{% if loop.first %} class="sel"{% endif %} data-attr="{{ sortOption.attribute ?? sortOption.orderBy ?? key }}">{{ sortOptionLabel(sortOption) }}</a></li>
+                <li>
+                    {{ tag('a', {
+                        class: loop.first ? 'sel',
+                        text: sortOptionLabel(sortOption),
+                        data: {
+                            attr: sortOption.attribute ?? sortOption.orderBy ?? key,
+                        }
+                    }) }}
+                </li>
             {% endfor %}
         </ul>
         <hr>

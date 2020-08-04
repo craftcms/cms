@@ -153,7 +153,8 @@ class Schema extends \yii\db\mysql\Schema
             ' --routines' .
             ' --default-character-set=' . Craft::$app->getConfig()->getDb()->charset .
             ' --set-charset' .
-            ' --triggers';
+            ' --triggers' .
+            ' --no-tablespaces';
 
         // If the server is MySQL 5.x, we need to see what version of mysqldump is installed (5.x or 8.x)
         if (version_compare(App::normalizeVersion(Craft::$app->getDb()->getSchema()->getServerVersion()), "8", "<")) {

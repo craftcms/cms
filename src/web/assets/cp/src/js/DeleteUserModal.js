@@ -49,7 +49,7 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
                 $cancelBtn = $('<div class="btn">' + Craft.t('app', 'Cancel') + '</div>').appendTo($buttons);
 
             if (settings.contentSummary.length) {
-                for (var i = 0; i < settings.contentSummary.length; i++) {
+                for (let i = 0; i < settings.contentSummary.length; i++) {
                     $body.find('ul').append($('<li/>', { text: settings.contentSummary[i] }));
                 }
             } else {
@@ -65,7 +65,7 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
             if (Garnish.isArray(this.userId)) {
                 idParam = ['and'];
 
-                for (var i = 0; i < this.userId.length; i++) {
+                for (let i = 0; i < this.userId.length; i++) {
                     idParam.push('not ' + this.userId[i]);
                 }
             }
@@ -140,8 +140,14 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
             this._deleting = true;
 
             // Let the onSubmit callback prevent the form from getting submitted
-            if (this.settings.onSubmit() === false) {
+            try {
+                if (this.settings.onSubmit() === false) {
+                    ev.preventDefault();
+                }
+            } catch (e) {
                 ev.preventDefault();
+                this.$deleteSpinner.addClass('hidden');
+                throw e;
             }
         },
 

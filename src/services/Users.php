@@ -8,8 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\Field;
-use craft\base\Volume;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
@@ -137,7 +135,15 @@ class Users extends Component
      */
     const EVENT_AFTER_ASSIGN_USER_TO_DEFAULT_GROUP = 'afterAssignUserToDefaultGroup';
 
-    const CONFIG_USERLAYOUT_KEY = 'users.fieldLayouts';
+    /**
+     * @since 3.5.0
+     */
+    const CONFIG_USERS_KEY = 'users';
+
+    /**
+     * @since 3.1.0
+     */
+    const CONFIG_USERLAYOUT_KEY = self::CONFIG_USERS_KEY . '.' . 'fieldLayouts';
 
     /**
      * Returns a user by their ID.
@@ -215,7 +221,7 @@ class Users extends Component
      * Returns whether a verification code is valid for the given user.
      *
      * This method first checks if the code has expired past the
-     * <config:verificationCodeDuration> config setting. If it is still valid,
+     * <config3:verificationCodeDuration> config setting. If it is still valid,
      * then, the checks the validity of the contents of the code.
      *
      * @param User $user The user to check the code for.
@@ -289,14 +295,11 @@ class Users extends Component
     {
         $preferences = $user->mergePreferences($preferences);
 
-        Craft::$app->getDb()->createCommand()
-            ->upsert(
-                Table::USERPREFERENCES,
-                ['userId' => $user->id],
-                ['preferences' => Json::encode($preferences)],
-                [],
-                false)
-            ->execute();
+        Db::upsert(Table::USERPREFERENCES, [
+            'userId' => $user->id,
+        ], [
+            'preferences' => Json::encode($preferences),
+        ], [], false);
     }
 
     /**
@@ -421,7 +424,7 @@ class Users extends Component
                 'The volume set for user photo storage is not valid.'));
         }
 
-        $subpath = (string)Craft::$app->getProjectConfig()->get('users.photoSubpath');
+        $subpath = Craft::$app->getProjectConfig()->get('users.photoSubpath');
 
         if ($subpath) {
             try {
@@ -431,7 +434,6 @@ class Users extends Component
             }
         }
 
-        /** @var Volume $volume */
         $assetsService = Craft::$app->getAssets();
 
         // If the photo exists, just replace the file.
@@ -439,7 +441,7 @@ class Users extends Component
             // No longer a new file.
             $assetsService->replaceAssetFile($assetsService->getAssetById($user->photoId), $fileLocation, $filenameToUse);
         } else {
-            $folderId = $assetsService->ensureFolderByFullPathAndVolume($subpath, $volume);
+            $folderId = $assetsService->ensureFolderByFullPathAndVolume((string)$subpath, $volume);
             $filenameToUse = $assetsService->getNameReplacementInFolder($filenameToUse, $folderId);
 
             $photo = new Asset();
@@ -447,7 +449,7 @@ class Users extends Component
             $photo->tempFilePath = $fileLocation;
             $photo->filename = $filenameToUse;
             $photo->newFolderId = $folderId;
-            $photo->volumeId = $volume->id;
+            $photo->setVolumeId($volume->id);
 
             // Save photo.
             $elementsService = Craft::$app->getElements();
@@ -466,7 +468,13 @@ class Users extends Component
      */
     public function deleteUserPhoto(User $user): bool
     {
-        return Craft::$app->getElements()->deleteElementById($user->photoId, Asset::class);
+        $result = Craft::$app->getElements()->deleteElementById($user->photoId, Asset::class);
+
+        if ($result) {
+            $user->setPhoto(null);
+        }
+
+        return $result;
     }
 
     /**
@@ -782,19 +790,12 @@ class Users extends Component
      */
     public function shunMessageForUser(int $userId, string $message, DateTime $expiryDate = null): bool
     {
-        $affectedRows = Craft::$app->getDb()->createCommand()
-            ->upsert(
-                Table::SHUNNEDMESSAGES,
-                [
-                    'userId' => $userId,
-                    'message' => $message
-                ],
-                [
-                    'expiryDate' => Db::prepareDateForDb($expiryDate)
-                ])
-            ->execute();
-
-        return (bool)$affectedRows;
+        return (bool)Db::upsert(Table::SHUNNEDMESSAGES, [
+            'userId' => $userId,
+            'message' => $message,
+        ], [
+            'expiryDate' => Db::prepareDateForDb($expiryDate),
+        ]);
     }
 
     /**
@@ -806,16 +807,10 @@ class Users extends Component
      */
     public function unshunMessageForUser(int $userId, string $message): bool
     {
-        $affectedRows = Craft::$app->getDb()->createCommand()
-            ->delete(
-                Table::SHUNNEDMESSAGES,
-                [
-                    'userId' => $userId,
-                    'message' => $message
-                ])
-            ->execute();
-
-        return (bool)$affectedRows;
+        return (bool)Db::delete(Table::SHUNNEDMESSAGES, [
+            'userId' => $userId,
+            'message' => $message,
+        ]);
     }
 
     /**
@@ -863,7 +858,7 @@ class Users extends Component
      * Deletes any pending users that have shown zero sense of urgency and are
      * just taking up space.
      *
-     * This method will check the <config:purgePendingUsersDuration> config
+     * This method will check the <config3:purgePendingUsersDuration> config
      * setting, and if it is set to a valid duration, it will delete any user
      * accounts that were created that duration ago, and have still not
      * activated their account.
@@ -913,9 +908,9 @@ class Users extends Component
         }
 
         // Delete their existing groups
-        Craft::$app->getDb()->createCommand()
-            ->delete(Table::USERGROUPS_USERS, ['userId' => $userId])
-            ->execute();
+        Db::delete(Table::USERGROUPS_USERS, [
+            'userId' => $userId,
+        ]);
 
         if (!empty($groupIds)) {
             // Add the new ones
@@ -924,15 +919,7 @@ class Users extends Component
                 $values[] = [$groupId, $userId];
             }
 
-            Craft::$app->getDb()->createCommand()
-                ->batchInsert(
-                    Table::USERGROUPS_USERS,
-                    [
-                        'groupId',
-                        'userId'
-                    ],
-                    $values)
-                ->execute();
+            Db::batchInsert(Table::USERGROUPS_USERS, ['groupId', 'userId'], $values);
         }
 
         // Fire an 'afterAssignUserToGroups' event
@@ -1039,6 +1026,9 @@ class Users extends Component
         $layout->type = User::class;
         $layout->uid = key($data);
         $fieldsService->saveLayout($layout);
+
+        // Invalidate user caches
+        Craft::$app->getElements()->invalidateCachesForElementType(User::class);
     }
 
     /**
@@ -1103,7 +1093,6 @@ class Users extends Component
      */
     public function pruneDeletedField(FieldEvent $event)
     {
-        /** @var Field $field */
         $field = $event->field;
         $fieldUid = $field->uid;
 
@@ -1125,7 +1114,9 @@ class Users extends Component
         }
 
         // Nuke all the layout fields from the DB
-        Craft::$app->getDb()->createCommand()->delete('{{%fieldlayoutfields}}', ['fieldId' => $field->id])->execute();
+        Db::delete(Table::FIELDLAYOUTFIELDS, [
+            'fieldId' => $field->id,
+        ]);
 
         // Allow events again
         $projectConfig->muteEvents = false;
@@ -1207,7 +1198,6 @@ class Users extends Component
         $unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
         $userRecord->save();
 
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
         $params = [
             'code' => $unhashedVerificationCode,
             'id' => $user->uid
@@ -1221,11 +1211,11 @@ class Users extends Component
 
         // Only use cpUrl() if the base CP URL has been explicitly set,
         // so UrlHelper won't use HTTP_HOST
-        if ($generalConfig->baseCpUrl) {
+        if (Craft::$app->getConfig()->getGeneral()->baseCpUrl) {
             return UrlHelper::cpUrl($cpPath, $params, $scheme);
         }
 
-        $path = $generalConfig->cpTrigger . '/' . $cpPath;
+        $path = UrlHelper::prependCpTrigger($cpPath);
         return UrlHelper::siteUrl($path, $params, $scheme);
     }
 }

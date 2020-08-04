@@ -1,13 +1,11 @@
 {%- set type = (type is defined ? type : 'text') %}
 {%- set autocomplete = (autocomplete is defined ? autocomplete : false) %}
 
-{%- set class = [
+{%- set class = (class ?? [])|explodeClass|merge([
     'text',
-    (class is defined and class ? class : null),
-    (type == 'password' ? 'password' : null),
-    (disabled is defined and disabled ? 'disabled' : null),
-    (size is defined and size ? null : 'fullwidth')
-]|filter %}
+    (disabled ?? false) ? 'disabled',
+    not (size ?? false) ? 'fullwidth',
+]|filter) %}
 
 {%- set inputAttributes = {
     class: class,
@@ -45,10 +43,4 @@
     }, recursive=true) %}
 {%- endif %}
 
-{%- if type == 'password' -%}
-    <div class="passwordwrapper">
-        {{- tag('input', inputAttributes) -}}
-    </div>
-{%- else %}
-    {{- tag('input', inputAttributes) }}
-{%- endif -%}
+{{- tag('input', inputAttributes) }}

@@ -15,6 +15,7 @@ use craft\base\SortableFieldInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Db;
+use craft\helpers\Html;
 use GraphQL\Type\Definition\Type;
 use yii\db\Schema;
 
@@ -74,9 +75,9 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml($value, ElementInterface $element = null): string
     {
-        $id = Craft::$app->getView()->formatInputId($this->handle);
+        $id = Html::id($this->handle);
 
         return Craft::$app->getView()->renderTemplate('_includes/forms/lightswitch',
             [
@@ -133,5 +134,30 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
     public function getContentGqlType()
     {
         return Type::boolean();
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.5.0
+     */
+    public function getContentGqlMutationArgumentType()
+    {
+        return [
+            'name' => $this->handle,
+            'type' => Type::boolean(),
+            'description' => $this->instructions,
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.5.0
+     */
+    public function getContentGqlQueryArgumentType()
+    {
+        return [
+            'name' => $this->handle,
+            'type' => Type::boolean(),
+        ];
     }
 }

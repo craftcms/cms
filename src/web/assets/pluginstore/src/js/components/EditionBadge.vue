@@ -27,7 +27,7 @@
 </script>
 
 <style lang="scss" scoped>
-    @import "../../../../../../../lib/craftcms-sass/mixins";
+    @import "../../../../../../../node_modules/craftcms-sass/mixins";
 
     .edition-badge {
         @apply .inline-block;

@@ -1,0 +1,42 @@
+{% macro actionList(actions, destructive) %}
+    {% import '_includes/forms' as forms %}
+    <ul>
+        {% for action in actions %}
+            <li>
+                {% set linkAttributes = {
+                    class: [
+                        'formsubmit',
+                        (destructive ?? false) ? 'error',
+                    ],
+                    data: {
+                        action: action.action ?? false,
+                        redirect: action.redirect ?? false,
+                        confirm: action.confirm ?? false,
+                        params: action.params ?? false
+                    }
+                } %}
+                <a {{ attr(linkAttributes) }}>
+                    {% if action.shortcut ?? false %}
+                        {{ forms.optionShortcutLabel('S', action.shift ?? false) }}
+                    {% endif %}
+                    {{ action.label }}
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+{% endmacro %}
+
+{% set safeActions = formActions|filter(a => not (a.destructive ?? false)) %}
+{% set destructiveActions = formActions|filter(a => a.destructive ?? false) %}
+
+<div class="menu" data-align="right">
+    {% if safeActions %}
+        {{ _self.actionList(safeActions, false) }}
+    {% endif %}
+    {% if safeActions and destructiveActions %}
+        <hr>
+    {% endif %}
+    {% if destructiveActions %}
+        {{ _self.actionList(destructiveActions, true) }}
+    {% endif %}
+</div>

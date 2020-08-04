@@ -46,7 +46,7 @@
     }) }}
 
     {{ forms.textareaField({
-        label: "Instructions"|t('app'),
+        label: "Default Instructions"|t('app'),
         instructions: "Helper text to guide the author."|t('app'),
         id: 'instructions',
         class: 'nicetext',
@@ -56,7 +56,7 @@
     }) }}
 
     {{ forms.checkboxField({
-        label: "Use this field’s values as search keywords?"|t('app'),
+        label: 'Use this field’s values as search keywords'|t('app'),
         id: 'searchable',
         name: 'searchable',
         checked: field.searchable

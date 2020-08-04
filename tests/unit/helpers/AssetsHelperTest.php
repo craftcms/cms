@@ -14,6 +14,7 @@ use craft\helpers\Assets;
 use crafttests\fixtures\AssetsFixture;
 use UnitTester;
 use yii\base\Exception;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
 /**
@@ -185,6 +186,24 @@ class AssetsHelperTest extends Unit
     }
 
     /**
+     * @dataProvider parseSrcsetSizeDataProvider
+     *
+     * @param $result
+     * @param $input
+     */
+    public function testParseSrcsetSize($result, $input)
+    {
+        if (is_array($result)) {
+            $parsed = Assets::parseSrcsetSize($input);
+            $this->assertSame($result, $parsed);
+        } else {
+            $this->tester->expectThrowable(InvalidArgumentException::class, function() use ($input) {
+                Assets::parseSrcsetSize($input);
+            });
+        }
+    }
+
+    /**
      * @return array
      */
     public function urlGenerationDataProvider(): array
@@ -243,6 +262,21 @@ class AssetsHelperTest extends Unit
         return [
             [['2', '.'], '{folder:2}.'],
             [['2', '.!@#$%^&*()'], '{folder:2}.!@#$%^&*()']
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function parseSrcsetSizeDataProvider(): array
+    {
+        return [
+            [[100.0, 'w'], 100],
+            [[100.0, 'w'], '100w'],
+            [[100.0, 'w'], '100W'],
+            [[2.0, 'x'], '2x'],
+            [[2.0, 'x'], '2X'],
+            [false, '2xo'],
         ];
     }
 

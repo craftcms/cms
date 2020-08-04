@@ -93,6 +93,13 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
             if ($this->hasAttribute('uid') && !isset($this->uid)) {
                 $this->uid = StringHelper::UUID();
             }
+
+            // Unset any empty primary key values
+            foreach (static::primaryKey() as $key) {
+                if ($this->hasAttribute($key) && empty($this->$key)) {
+                    unset($this->$key);
+                }
+            }
         } else if (
             !empty($this->getDirtyAttributes()) &&
             $this->hasAttribute('dateUpdated')

@@ -357,7 +357,7 @@
 </script>
 
 <style lang="scss">
-    @import "../../../../../../../../../lib/craftcms-sass/mixins";
+    @import "../../../../../../../../../node_modules/craftcms-sass/mixins";
 
     table.cart-data {
         thead,

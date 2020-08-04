@@ -8,7 +8,6 @@
 namespace craft\queue\jobs;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\queue\BaseJob;
 
@@ -46,7 +45,6 @@ class UpdateSearchIndex extends BaseJob
      */
     public function execute($queue)
     {
-        /** @var Element $class */
         $class = $this->elementType;
         $elements = $class::find()
             ->id($this->elementId)

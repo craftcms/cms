@@ -16,6 +16,7 @@ use Symfony\Component\Filesystem\Filesystem;
 use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
+use ZipArchive;
 
 /**
  * Class FileHelper
@@ -424,7 +425,6 @@ class FileHelper extends \yii\helpers\FileHelper
      */
     public static function removeFile(string $path): bool
     {
-        Craft::$app->getDeprecator()->log('craft\\helpers\\FileHelper::removeFile()', 'craft\\helpers\\FileHelper::removeFile() is deprecated. Use craft\\helpers\\FileHelper::unlink() instead.');
         return static::unlink($path);
     }
 
@@ -634,6 +634,77 @@ class FileHelper extends \yii\helpers\FileHelper
         clearstatcache(true, $file);
         if (function_exists('opcache_invalidate') && filter_var(ini_get('opcache.enable'), FILTER_VALIDATE_BOOLEAN)) {
             @opcache_invalidate($file, true);
+        }
+    }
+
+    /**
+     * Zips a file.
+     *
+     * @param string $path the file/directory path
+     * @param string|null $to the target zip file path. If null, the original path will be used, with “.zip” appended to it.
+     * @return string the zip file path
+     * @throws InvalidArgumentException if `$path` is not a valid file/directory path
+     * @throws Exception if the zip cannot be created
+     * @since 3.5.0
+     */
+    public static function zip(string $path, string $to = null): string
+    {
+        $path = static::normalizePath($path);
+
+        if (!file_exists($path)) {
+            throw new InvalidArgumentException("No file/directory exists at $path");
+        }
+
+        if ($to === null) {
+            $to = "$path.zip";
+        }
+
+        $zip = new ZipArchive();
+
+        if ($zip->open($to, ZipArchive::CREATE) !== true) {
+            throw new Exception("Cannot create zip at $to");
+        }
+
+        $name = basename($path);
+
+        if (is_file($path)) {
+            $zip->addFile($path, $name);
+        } else {
+            static::addFilesToZip($zip, $path);
+        }
+
+        $zip->close();
+        return $to;
+    }
+
+    /**
+     * Adds all the files in a given directory to a ZipArchive, preserving the nested directory structure.
+     *
+     * @param ZipArchive $zip the ZipArchive object
+     * @param string $dir the directory path
+     * @param string|null $prefix the path prefix to use when adding the contents of the directory
+     * @param array $options options for file searching. See [[findFiles()]] for available options.
+     * @param 3.5.0
+     */
+    public static function addFilesToZip(ZipArchive $zip, string $dir, string $prefix = null, $options = [])
+    {
+        if (!is_dir($dir)) {
+            return;
+        }
+
+        if ($prefix !== null) {
+            $prefix = static::normalizePath($prefix) . '/';
+        } else {
+            $prefix = '';
+        }
+
+        $files = static::findFiles($dir, $options);
+
+        foreach ($files as $file) {
+            // Use forward slashes
+            $file = str_replace(DIRECTORY_SEPARATOR, '/', $file);
+            // Preserve the directory structure within the templates folder
+            $zip->addFile($file, $prefix . substr($file, strlen($dir) + 1));
         }
     }
 }

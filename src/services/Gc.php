@@ -38,7 +38,7 @@ class Gc extends Component
     /**
      * @var bool whether [[hardDelete()]] should delete *all* soft-deleted rows,
      * rather than just the ones that were deleted long enough ago to be ready
-     * for hard-deletion per the <config:softDeleteDuration> config setting.
+     * for hard-deletion per the <config3:softDeleteDuration> config setting.
      */
     public $deleteAllTrashed = false;
 
@@ -55,7 +55,6 @@ class Gc extends Component
         }
 
         Craft::$app->getDrafts()->purgeUnsavedDrafts();
-        Craft::$app->getTemplateCaches()->deleteExpiredCaches();
         Craft::$app->getUsers()->purgeExpiredPendingUsers();
         $this->_deleteStaleSessions();
 
@@ -111,12 +110,8 @@ class Gc extends Component
             $tables = [$tables];
         }
 
-        $db = Craft::$app->getDb();
-
         foreach ($tables as $table) {
-            $db->createCommand()
-                ->delete($table, $condition)
-                ->execute();
+            Db::delete($table, $condition);
         }
     }
 
@@ -135,8 +130,6 @@ class Gc extends Component
         $expire = DateTimeHelper::currentUTCDateTime();
         $pastTime = $expire->sub($interval);
 
-        Craft::$app->getDb()->createCommand()
-            ->delete(Table::SESSIONS, ['<', 'dateUpdated', Db::prepareDateForDb($pastTime)])
-            ->execute();
+        Db::delete(Table::SESSIONS, ['<', 'dateUpdated', Db::prepareDateForDb($pastTime)]);
     }
 }

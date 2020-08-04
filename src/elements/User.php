@@ -21,6 +21,7 @@ use craft\elements\db\UserQuery;
 use craft\events\AuthenticateUserEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
+use craft\helpers\Db;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
@@ -51,6 +52,7 @@ use yii\web\IdentityInterface;
  * @property Asset|null $photo the user's photo
  * @property array $preferences the user’s preferences
  * @property string|null $preferredLanguage the user’s preferred language
+ * @property string|null $preferredLocale the user’s preferred formatting locale
  * @property \DateInterval|null $remainingCooldownTime the remaining cooldown time for this user, if they've entered their password incorrectly too many times
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -319,26 +321,21 @@ class User extends Element implements IdentityInterface
      */
     protected static function defineTableAttributes(): array
     {
-        $attributes = [
+        return [
             'user' => ['label' => Craft::t('app', 'User')],
             'email' => ['label' => Craft::t('app', 'Email')],
             'username' => ['label' => Craft::t('app', 'Username')],
             'fullName' => ['label' => Craft::t('app', 'Full Name')],
             'firstName' => ['label' => Craft::t('app', 'First Name')],
             'lastName' => ['label' => Craft::t('app', 'Last Name')],
+            'preferredLanguage' => ['label' => Craft::t('app', 'Preferred Language')],
+            'preferredLocale' => ['label' => Craft::t('app', 'Preferred Locale')],
+            'id' => ['label' => Craft::t('app', 'ID')],
+            'uid' => ['label' => Craft::t('app', 'UID')],
+            'lastLoginDate' => ['label' => Craft::t('app', 'Last Login')],
+            'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
+            'dateUpdated' => ['label' => Craft::t('app', 'Date Updated')],
         ];
-
-        if (Craft::$app->getIsMultiSite()) {
-            $attributes['preferredLanguage'] = ['label' => Craft::t('app', 'Preferred Language')];
-        }
-
-        $attributes['id'] = ['label' => Craft::t('app', 'ID')];
-        $attributes['uid'] = ['label' => Craft::t('app', 'UID')];
-        $attributes['lastLoginDate'] = ['label' => Craft::t('app', 'Last Login')];
-        $attributes['dateCreated'] = ['label' => Craft::t('app', 'Date Created')];
-        $attributes['dateUpdated'] = ['label' => Craft::t('app', 'Date Updated')];
-
-        return $attributes;
     }
 
     /**
@@ -1183,11 +1180,32 @@ class User extends Element implements IdentityInterface
      */
     public function getPreferredLanguage()
     {
-        $language = $this->getPreference('language');
+        return $this->_validateLocale($this->getPreference('language'));
+    }
 
-        // Make sure it's valid
-        if ($language !== null && in_array($language, Craft::$app->getI18n()->getAppLocaleIds(), true)) {
-            return $language;
+    /**
+     * Returns the user’s preferred locale to be used for date/number formatting, if they have one.
+     *
+     * If the user doesn’t have a preferred locale, their preferred language will be used instead.
+     *
+     * @return string|null The preferred locale
+     * @since 3.5.0
+     */
+    public function getPreferredLocale()
+    {
+        return $this->_validateLocale($this->getPreference('locale'));
+    }
+
+    /**
+     * Validates and returns a locale ID.
+     *
+     * @param string|null $locale
+     * @return string|null
+     */
+    private function _validateLocale(string $locale = null)
+    {
+        if ($locale !== null && in_array($locale, Craft::$app->getI18n()->getAppLocaleIds(), true)) {
+            return $locale;
         }
 
         return null;
@@ -1263,6 +1281,10 @@ class User extends Element implements IdentityInterface
             case 'preferredLanguage':
                 $language = $this->getPreferredLanguage();
                 return $language ? (new Locale($language))->getDisplayName(Craft::$app->language) : '';
+
+            case 'preferredLocale':
+                $locale = $this->getPreferredLocale();
+                return $locale ? (new Locale($locale))->getDisplayName(Craft::$app->language) : '';
         }
 
         return parent::tableAttributeHtml($attribute);
@@ -1362,11 +1384,9 @@ class User extends Element implements IdentityInterface
 
         if (!$isNew && $changePassword) {
             // Destroy all sessions for this user
-            Craft::$app->getDb()->createCommand()
-                ->delete(Table::SESSIONS, [
-                    'userId' => $this->id,
-                ])
-                ->execute();
+            Db::delete(Table::SESSIONS, [
+                'userId' => $this->id,
+            ]);
 
             // If this is for the current user, generate a new user session token for them
             if ($this->getIsCurrent()) {
@@ -1384,22 +1404,16 @@ class User extends Element implements IdentityInterface
             return false;
         }
 
+        $elementsService = Craft::$app->getElements();
+
         // Do all this stuff within a transaction
-        $db = Craft::$app->getDb();
-        $transaction = $db->beginTransaction();
+        $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
-            // Get the entry IDs that belong to this user
-            $entryQuery = (new Query())
-                ->select('e.id')
-                ->from('{{%entries}} e')
-                ->where(['e.authorId' => $this->id]);
-
             // Should we transfer the content to a new user?
             if ($this->inheritorOnDelete) {
-                // Delete the template caches for any entries authored by this user
-                $entryIds = $entryQuery->column();
-                Craft::$app->getTemplateCaches()->deleteCachesByElementId($entryIds);
+                // Invalidate all entry caches
+                $elementsService->invalidateCachesForElementType(Entry::class);
 
                 // Update the entry/version/draft tables to point to the new user
                 $userRefs = [
@@ -1409,32 +1423,22 @@ class User extends Element implements IdentityInterface
                 ];
 
                 foreach ($userRefs as $table => $column) {
-                    $db->createCommand()
-                        ->update(
-                            $table,
-                            [
-                                $column => $this->inheritorOnDelete->id
-                            ],
-                            [
-                                $column => $this->id
-                            ], [], false)
-                        ->execute();
+                    Db::update($table, [
+                        $column => $this->inheritorOnDelete->id
+                    ], [
+                        $column => $this->id,
+                    ], [], false);
                 }
             } else {
-                // Get the entry IDs along with one of the sites they’re enabled in
-                $results = $entryQuery
-                    ->addSelect([
-                        'siteId' => (new Query())
-                            ->select('i18n.siteId')
-                            ->from('{{%elements_sites}} i18n')
-                            ->where('[[i18n.elementId]] = [[e.id]]')
-                            ->limit(1)
-                    ])
-                    ->all();
+                // Delete the entries
+                $entryQuery = Entry::find()
+                    ->siteId('*')
+                    ->unique()
+                    ->authorId($this->id)
+                    ->anyStatus();
 
-                // Delete them
-                foreach ($results as $result) {
-                    Craft::$app->getElements()->deleteElementById($result['id'], Entry::class, $result['siteId']);
+                foreach ($entryQuery->each() as $entry) {
+                    $elementsService->deleteElement($entry);
                 }
             }
 

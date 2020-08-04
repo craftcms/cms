@@ -3,7 +3,6 @@
 namespace craft\migrations;
 
 use Craft;
-use craft\base\Volume;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\db\Table;
@@ -22,7 +21,6 @@ class m191222_002848_peer_asset_permissions extends Migration
         // mapped to the old permissions users/groups must have to gain the new ones
         $newPermissions = [];
         foreach (Craft::$app->getVolumes()->getAllVolumes() as $volume) {
-            /** @var Volume $volume */
             $suffix = ":{$volume->uid}";
             $newPermissions += [
                 "viewvolume{$suffix}" => "viewpeerfilesinvolume{$suffix}",
@@ -37,7 +35,7 @@ class m191222_002848_peer_asset_permissions extends Migration
             $userIds = (new Query())
                 ->select(['upu.userId'])
                 ->from(['upu' => Table::USERPERMISSIONS_USERS])
-                ->innerJoin(Table::USERPERMISSIONS . ' up', '[[up.id]] = [[upu.permissionId]]')
+                ->innerJoin(['up' => Table::USERPERMISSIONS], '[[up.id]] = [[upu.permissionId]]')
                 ->where(['up.name' => $oldPermission])
                 ->column($this->db);
             if (!empty($userIds)) {

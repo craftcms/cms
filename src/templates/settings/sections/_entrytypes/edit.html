@@ -49,22 +49,42 @@
         first: (section.type == 'single'),
         label: "Show the Title field"|t('app'),
         name: 'hasTitleField',
-        toggle: 'titleLabel-container',
-        reverseToggle: 'titleFormat-container',
+        toggle: 'title-container',
+        reverseToggle: '#titleFormat-container, .fld-title-field-icon',
         checked: entryType.hasTitleField
     }) }}
 
-    <div id="titleLabel-container"{% if not entryType.hasTitleField %} class="hidden"{% endif %}>
-        {{ forms.textField({
-            label: "Title Field Label"|t('app'),
-            instructions: "What do you want the Title field to be called?"|t('app'),
-            id: 'titleLabel',
-            name: 'titleLabel',
-            value: entryType.titleLabel,
-            errors: entryType.getErrors('titleLabel'),
-            required: true
-        }) }}
-    </div>
+    {% if craft.app.getIsMultiSite() %}
+        <div id="title-container"{% if not entryType.hasTitleField %} class="hidden"{% endif %}>
+            {{ forms.selectField({
+                label: 'Title Translation Method'|t('app'),
+                instructions: 'How should entry titles be translated?'|t('app'),
+                id: 'translation-method',
+                name: 'titleTranslationMethod',
+                options: [
+                    { value: 'none', label: 'Not translatable'|t('app') },
+                    { value: 'site', label: 'Translate for each site'|t('app') },
+                    { value: 'siteGroup', label: 'Translate for each site group'|t('app') },
+                    { value: 'language', label: 'Translate for each language'|t('app') },
+                    { value: 'custom', label: 'Custom…'|t('app') },
+                ]|filter,
+                value: entryType.titleTranslationMethod,
+                toggle: true,
+                targetPrefix: 'translation-method-'
+            }) }}
+
+            <div id="translation-method-custom" {% if entryType.titleTranslationMethod != 'custom' %}class="hidden"{% endif %}>
+                {{ forms.textField({
+                    label: 'Title Translation Key Format'|t('app'),
+                    instructions: 'Template that defines the Title field’s custom “translation key” format. Entry titles will be copied to all sites that produce the same key. For example, to make titles translatable based on the first two characters of the site handle, you could enter `{site.handle[:2]}`.',
+                    id: 'translation-key-format',
+                    name: 'titleTranslationKeyFormat',
+                    value: entryType.titleTranslationKeyFormat,
+                    errors: entryType.getErrors('titleTranslationKeyFormat')
+                }) }}
+            </div>
+        </div>
+    {% endif %}
 
     <div id="titleFormat-container"{% if entryType.hasTitleField %} class="hidden"{% endif %}>
         {{ forms.textField({
@@ -81,9 +101,9 @@
 
     <hr>
 
-    {% include "_includes/fieldlayoutdesigner" with {
+    {{ forms.fieldLayoutDesignerField({
         fieldLayout: entryType.getFieldLayout(),
-    } only %}
+    }) }}
 {% endblock %}
 
 

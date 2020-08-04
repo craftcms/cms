@@ -8,6 +8,8 @@
 namespace craft\helpers;
 
 use Craft;
+use craft\image\SvgAllowedAttributes;
+use enshrined\svgSanitize\Sanitizer;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -304,35 +306,75 @@ class Html extends \yii\helpers\Html
         $normalized = [];
 
         foreach ($attributes as $name => $value) {
-            if (!is_bool($value) && !is_array($value)) {
-                if ($name === 'class') {
-                    $normalized[$name] = ArrayHelper::filterEmptyStringsFromArray(explode(' ', $value));
-                    continue;
-                }
-
-                if ($name === 'style') {
-                    $styles = ArrayHelper::filterEmptyStringsFromArray(preg_split('/\s*;\s*/', $value));
-                    foreach ($styles as $style) {
-                        list($n, $v) = array_pad(preg_split('/\s*:\s*/', $style, 2), 2, '');
-                        $normalized[$name][$n] = $v;
+            switch ($name) {
+                case 'class':
+                    $normalized[$name] = static::explodeClass($value);
+                    break;
+                case 'style':
+                    $normalized[$name] = static::explodeStyle($value);
+                    break;
+                default:
+                    // See if it's a data attribute
+                    foreach (self::_sortedDataAttributes() as $dataAttribute) {
+                        if (strpos($name, $dataAttribute . '-') === 0) {
+                            $n = substr($name, strlen($dataAttribute) + 1);
+                            $normalized[$dataAttribute][$n] = $value;
+                            break 2;
+                        }
                     }
-                    continue;
-                }
-
-                // See if it's a data attribute
-                foreach (self::_sortedDataAttributes() as $dataAttribute) {
-                    if (strpos($name, $dataAttribute . '-') === 0) {
-                        $n = substr($name, strlen($dataAttribute) + 1);
-                        $normalized[$dataAttribute][$n] = $value;
-                        continue 2;
-                    }
-                }
+                    $normalized[$name] = $value;
             }
-
-            $normalized[$name] = $value;
         }
 
         return $normalized;
+    }
+
+    /**
+     * Explodes a `class` attribute into an array.
+     *
+     * @param string|string[]|bool|null $value
+     * @return string[]
+     * @since 3.5.0
+     */
+    public static function explodeClass($value): array
+    {
+        if ($value === null || is_bool($value)) {
+            return [];
+        }
+        if (is_array($value)) {
+            return $value;
+        }
+        if (is_string($value)) {
+            return ArrayHelper::filterEmptyStringsFromArray(explode(' ', $value));
+        }
+        throw new InvalidArgumentException('Invalid class value');
+    }
+
+    /**
+     * Explodes a `style` attribute into an array of property/value pairs.
+     *
+     * @param string|string[]|bool|null $value
+     * @return string[]
+     * @since 3.5.0
+     */
+    public static function explodeStyle($value): array
+    {
+        if ($value === null || is_bool($value)) {
+            return [];
+        }
+        if (is_array($value)) {
+            return $value;
+        }
+        if (is_string($value)) {
+            $styles = ArrayHelper::filterEmptyStringsFromArray(preg_split('/\s*;\s*/', $value));
+            $normalized = [];
+            foreach ($styles as $style) {
+                list($n, $v) = array_pad(preg_split('/\s*:\s*/', $style, 2), 2, '');
+                $normalized[$n] = $v;
+            }
+            return $normalized;
+        }
+        throw new InvalidArgumentException('Invalid style value');
     }
 
     /**
@@ -404,5 +446,256 @@ class Html extends \yii\helpers\Html
             });
         }
         return self::$_sortedDataAttributes;
+    }
+
+    /**
+     * Normalizes an element ID into only alphanumeric characters, underscores, and dashes, or generates one at random.
+     *
+     * @param string $id
+     * @return string
+     * @since 3.5.0
+     */
+    public static function id(string $id = ''): string
+    {
+        $id = trim(preg_replace('/[^\w]+/', '-', $id), '-');
+        return $id ?: StringHelper::randomString(10);
+    }
+
+    /**
+     * Namespaces an input name.
+     *
+     * @param string $inputName The input name
+     * @param string|null $namespace The namespace
+     * @return string The namespaced input name
+     * @since 3.5.0
+     */
+    public static function namespaceInputName(string $inputName, string $namespace): string
+    {
+        return preg_replace('/([^\'"\[\]]+)([^\'"]*)/', $namespace . '[$1]$2', $inputName);
+    }
+
+    /**
+     * Namespaces an ID.
+     *
+     * @param string $id The ID
+     * @param string|null $namespace The namespace
+     * @return string The namespaced ID
+     * @since 3.5.0
+     */
+    public static function namespaceId(string $id, string $namespace): string
+    {
+        return static::id("$namespace-$id");
+    }
+
+    /**
+     * Namespaces input names and other HTML attributes, as well as CSS selectors.
+     *
+     * This is a shortcut for calling [[namespaceInputs()]] and [[namespaceAttributes()]].
+     *
+     * @param string $html The HTML code
+     * @param string $namespace The namespace
+     * @param bool $withClasses Whether class names should be namespaced as well (affects both `class` attributes and class name CSS selectors)
+     * @return string The HTML with namespaced attributes
+     * @since 3.5.0
+     */
+    public static function namespaceHtml(string $html, string $namespace, bool $withClasses = false): string
+    {
+        $markers = self::_escapeTextareas($html);
+        self::_namespaceInputs($html, $namespace);
+        self::_namespaceAttributes($html, $namespace, $withClasses);
+        return self::_restoreTextareas($html, $markers);
+    }
+
+    /**
+     * Renames HTML input names so they belong to a namespace.
+     *
+     * This method will go through the passed-in HTML code looking for `name` attributes, and namespace their values.
+     *
+     * For example, this:
+     *
+     * ```html
+     * <input type="text" name="title">
+     * <textarea name="fields[body]"></textarea>
+     * ```
+     *
+     * would become this, if it were namespaced with `foo`:
+     *
+     * ```html
+     * <input type="text" name="foo[title]">
+     * <textarea name="foo[fields][body]"></textarea>
+     * ```
+     *
+     * @param string $html The HTML code
+     * @param string|null $namespace The namespace
+     * @return string The HTML with namespaced input names
+     * @since 3.5.0
+     * @see namespaceHtml()
+     * @see namespaceAttributes()
+     */
+    public static function namespaceInputs(string $html, string $namespace): string
+    {
+        $markers = self::_escapeTextareas($html);
+        static::_namespaceInputs($html, $namespace);
+        return self::_restoreTextareas($html, $markers);
+    }
+
+    /**
+     * @param string $html
+     * @param string $namespace
+     */
+    private static function _namespaceInputs(string &$html, string $namespace)
+    {
+        $html = preg_replace('/(?<![\w\-])(name=(\'|"))([^\'"\[\]]+)([^\'"]*)\2/i', '$1' . $namespace . '[$3]$4$2', $html);
+    }
+
+    /**
+     * Prepends a namespace to `id` attributes, and any of the following things that reference those IDs:
+     *
+     * - `for`, `list`, `href`, `aria-labelledby`, `aria-describedby`, `data-target`, `data-reverse-target`, and `data-target-prefix` attributes
+     * - ID selectors within `<style>` tags
+     *
+     * For example, this:
+     *
+     * ```html
+     * <style>#summary { font-size: larger }</style>
+     * <p id="summary">...</p>
+     * ```
+     *
+     * would become this, if it were namespaced with `foo`:
+     *
+     * ```html
+     * <style>#foo-summary { font-size: larger }</style>
+     * <p id="foo-summary">...</p>
+     * ```
+     *
+     * @param string $html The HTML code
+     * @param string $namespace The namespace
+     * @param bool $withClasses Whether class names should be namespaced as well (affects both `class` attributes and class name CSS selectors)
+     * @return string The HTML with namespaced attributes
+     * @since 3.5.0
+     * @see namespaceHtml()
+     * @see namespaceInputs()
+     */
+    public static function namespaceAttributes(string $html, string $namespace, bool $withClasses = false): string
+    {
+        $markers = self::_escapeTextareas($html);
+        self::_namespaceAttributes($html, $namespace, $withClasses);
+        return self::_restoreTextareas($html, $markers);
+    }
+
+    /**
+     * @param string $html
+     * @param string $namespace
+     * @param bool $withClasses
+     */
+    private static function _namespaceAttributes(string &$html, string $namespace, bool $withClasses)
+    {
+        // normalize the namespace
+        $namespace = static::id($namespace);
+
+        // Namespace & capture the ID attributes
+        $ids = [];
+        $html = preg_replace_callback('/(?<=\sid=)(\'|")([^\'"\s]*)\1/i', function($match) use ($namespace, &$ids): string {
+            $ids[] = $match[2];
+            return $match[1] . $namespace . '-' . $match[2] . $match[1];
+        }, $html);
+        $ids = array_flip($ids);
+
+        // normal HTML attributes
+        $html = preg_replace_callback(
+            "/(?<=\\s)((for|list|xlink:href|href|aria\\-labelledby|aria\\-describedby|data\\-target|data\\-reverse\\-target|data\\-target\\-prefix)=('|\")#?)([^'\"\s]*)\\3/i",
+            function(array $match) use ($namespace, $ids): string {
+                if ($match[2] === 'data-target-prefix' || isset($ids[$match[4]])) {
+                    return $match[1] . $namespace . '-' . $match[4] . $match[3];
+                }
+                return $match[0];
+            }, $html);
+
+        // ID references in url() calls
+        $html = preg_replace_callback(
+            "/(?<=url\\(#)[^'\"\s]*(?=\\))/i",
+            function(array $match) use ($namespace, $ids): string {
+                if (isset($ids[$match[0]])) {
+                    return $namespace . '-' . $match[0];
+                }
+                return $match[0];
+            }, $html);
+
+        // class attributes
+        if ($withClasses) {
+            $html = preg_replace_callback('/(?<![\w\-])\bclass=(\'|")([^\'"]+)\\1/i', function($match) use ($namespace) {
+                $newClasses = [];
+                foreach (preg_split('/\s+/', $match[2]) as $class) {
+                    $newClasses[] = "$namespace-$class";
+                }
+                return 'class=' . $match[1] . implode(' ', $newClasses) . $match[1];
+            }, $html);
+        }
+
+        // CSS selectors
+        $html = preg_replace_callback(
+            '/(<style\b[^>]*>)(.*?)(<\/style>)/is',
+            function(array $match) use ($namespace, $withClasses, $ids) {
+                $html = preg_replace_callback(
+                    "/(?<![\w'\"])#([^'\"\s]*)(?=[,\\s\\{])/",
+                    function(array $match) use ($namespace, $ids): string {
+                        if (isset($ids[$match[1]])) {
+                            return '#' . $namespace . '-' . $match[1];
+                        }
+                        return $match[0];
+                    }, $match[2]);
+                if ($withClasses) {
+                    $html = preg_replace("/(?<![\\w'\"])\\.([\\w\\-]+)(?=[,\\s\\{])/", ".$namespace-$1", $match[2]);
+                }
+                return $match[1] . $html . $match[3];
+            }, $html);
+    }
+
+    /**
+     * Replaces textareas with markers
+     *
+     * @param string $html
+     * @return array
+     */
+    private static function _escapeTextareas(string &$html): array
+    {
+        $markers = [];
+        $html = preg_replace_callback('/(<textarea\b[^>]*>)(.*?)(<\/textarea>)/is', function(array $matches) use (&$markers) {
+            $marker = '{marker:' . StringHelper::randomString() . '}';
+            $markers[$marker] = $matches[2];
+            return $matches[1] . $marker . $matches[3];
+        }, $html);
+        return $markers;
+    }
+
+    /**
+     * Replaces markers with textareas.
+     *
+     * @param string $html
+     * @param array $markers
+     * @return string
+     */
+    private static function _restoreTextareas(string $html, array &$markers): string
+    {
+        return str_replace(array_keys($markers), array_values($markers), $html);
+    }
+
+    /**
+     * Sanitizes an SVG.
+     *
+     * @param string $svg
+     * @return string
+     * @since 3.5.0
+     */
+    public static function sanitizeSvg(string $svg): string
+    {
+        $sanitizer = new Sanitizer();
+        $sanitizer->setAllowedAttrs(new SvgAllowedAttributes());
+        $svg = $sanitizer->sanitize($svg);
+        // Remove comments, title & desc
+        $svg = preg_replace('/<!--.*?-->\s*/s', '', $svg);
+        $svg = preg_replace('/<title>.*?<\/title>\s*/is', '', $svg);
+        $svg = preg_replace('/<desc>.*?<\/desc>\s*/is', '', $svg);
+        return $svg;
     }
 }

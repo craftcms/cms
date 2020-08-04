@@ -9,7 +9,6 @@ namespace craft\helpers;
 
 use Craft;
 use craft\base\LocalVolumeInterface;
-use craft\base\Volume;
 use craft\base\VolumeInterface;
 use craft\elements\Asset;
 use craft\enums\PeriodType;
@@ -19,6 +18,7 @@ use craft\models\AssetTransformIndex;
 use craft\models\VolumeFolder;
 use yii\base\Event;
 use yii\base\Exception;
+use yii\base\InvalidArgumentException;
 
 /**
  * Class Assets
@@ -103,7 +103,6 @@ class Assets
     {
         $appendix = '';
 
-        /** @var Volume $volume */
         if (!empty($volume->expires) && DateTimeHelper::isValidIntervalString($volume->expires) && $file->dateModified) {
             $focalAppendix = $file->getHasFocalPoint() ? urlencode($file->getFocalPoint(true)) : 'none';
             $appendix = '?mtime=' . $file->dateModified->format('YmdHis') . '&focal=' . $focalAppendix;
@@ -273,7 +272,6 @@ class Assets
         $sort = [];
 
         foreach ($tree as $topFolder) {
-            /** @var Volume $volume */
             $volume = $topFolder->getVolume();
             $sort[] = $volume->sortOrder;
         }
@@ -623,7 +621,6 @@ class Assets
             return false;
         }
 
-        /** @var Volume $volume */
         $volume = $asset->getVolume();
 
         $imagePath = Craft::$app->getPath()->getImageEditorSourcesPath();
@@ -736,5 +733,28 @@ class Assets
         }
 
         return [(int)$scaledWidth, (int)$scaledHeight];
+    }
+
+    /**
+     * Parses a srcset size (e.g. `100w` or `2x`).
+     *
+     * @param mixed $size
+     * @return array An array of the size value and unit (`w` or `x`)
+     * @throws InvalidArgumentException if the size can’t be parsed
+     * @since 3.5.0
+     */
+    public static function parseSrcsetSize($size)
+    {
+        if (is_numeric($size)) {
+            $size = $size . 'w';
+        }
+        if (!is_string($size)) {
+            throw new InvalidArgumentException('Invalid srcset size');
+        }
+        $size = strtolower($size);
+        if (!preg_match('/^([\d\.]+)(w|x)$/', $size, $match)) {
+            throw new InvalidArgumentException("Invalid srcset size: $size");
+        }
+        return [(float)$match[1], $match[2]];
     }
 }

@@ -1,13 +1,18 @@
 {% extends "_layouts/message" %}
-{% set title = "Project Config Sync"|t('app') %}
+{% set title = "Project Config Changes"|t('app') %}
 
 {% block message %}
-    <p>{{ "Changes to `project.yaml` must be applied to the loaded project config."|t('app')|md(inlineOnly=true) }}</p>
+<p>
+    {{ 'Your project config files contain pending changes. Apply them now?'|t('app') }}
+</p>
 
-    <form method="post" class="buttons">
-        {{ csrfInput() }}
-        {{ actionInput('config-sync') }}
-        {{ hiddenInput('return', craft.app.request.getPathInfo()) }}
-        <input type="submit" class="btn submit" value="{{ 'Sync changes'|t('app') }}">
-    </form>
+<form method="post" class="buttons">
+    {{ csrfInput() }}
+    {{ actionInput('config-sync') }}
+    {{ hiddenInput('return', craft.app.request.getPathInfo()) }}
+    <div class="flex flex-nowrap">
+        <button type="submit" class="btn submit">{{ 'Yes'|t('app') }}</button>
+        <button class="formsubmit btn" data-action="project-config/ignore">{{ 'Not yet'|t('app') }}</button>
+    </div>
+</form>
 {% endblock %}

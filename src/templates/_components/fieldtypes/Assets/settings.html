@@ -33,7 +33,7 @@
 
 {% block fieldSettings %}
     {{ forms.checkboxField({
-        label: "Restrict uploads to a single folder?"|t('app'),
+        label: 'Restrict uploads to a single folder'|t('app'),
         id: 'useSingleFolder-toggle',
         name: 'useSingleFolder',
         class: 'use-single-folder-cb',
@@ -86,7 +86,7 @@
     }) }}
 
     {{ forms.checkboxField({
-        label: "Restrict allowed file types?"|t('app'),
+        label: 'Restrict allowed file types'|t('app'),
         class: 'restrictFiles',
         id: 'restrictFiles',
         name: 'restrictFiles',
@@ -95,7 +95,7 @@
         toggle: 'restrict-allowed-types'
     }) }}
 
-    <div id="restrict-allowed-types"{% if not field.restrictFiles %} class="hidden indent"{% endif %}>
+    <fieldset id="restrict-allowed-types"{% if not field.restrictFiles %} class="hidden indent"{% endif %}>
         {% for option in fileKindOptions %}
             {{ forms.checkboxField({
                 label: option.label,
@@ -106,7 +106,7 @@
             }) }}
         {% endfor %}
         {{ forms.errorList(field.getErrors('allowedKinds')) }}
-    </div>
+    </fieldset>
 
     {{ block('limitField') }}
     {{ block('viewModeField') }}

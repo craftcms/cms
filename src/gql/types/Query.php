@@ -17,7 +17,9 @@ use craft\gql\base\GqlTypeTrait;
  * @since 3.3.0
  */
 class Query
-{    use GqlTypeTrait;
+{
+    use GqlTypeTrait;
+
     /**
      * @inheritdoc
      * @throws GqlException if class called incorrectly.

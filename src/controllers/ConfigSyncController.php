@@ -8,10 +8,10 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\Plugin;
 use craft\db\Table;
 use craft\errors\InvalidPluginException;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
 use craft\services\Plugins;
 use yii\base\NotSupportedException;
 use yii\web\Response;
@@ -79,12 +79,13 @@ class ConfigSyncController extends BaseUpdaterController
         try {
             Craft::$app->getPlugins()->uninstallPlugin($handle);
         } catch (\Throwable $e) {
-            Craft::warning('Could not uninstall plugin "' . $handle . '" that was removed from project.yaml: ' . $e->getMessage());
+            $projectConfig = Craft::$app->getProjectConfig();
+            Craft::warning("Could not uninstall plugin \"$handle\" that was removed from your project config files: " . $e->getMessage());
 
             // Just remove the row
-            Craft::$app->getDb()->createCommand()
-                ->delete(Table::PLUGINS, ['handle' => $handle])
-                ->execute();
+            Db::delete(Table::PLUGINS, [
+                'handle' => $handle,
+            ]);
         }
 
         return $this->sendNextAction($this->_nextApplyYamlAction());
@@ -145,7 +146,7 @@ class ConfigSyncController extends BaseUpdaterController
         $data['uninstallPlugins'] = array_diff($loadedConfigPlugins, $yamlPlugins);
 
         // Set the return URL, if any
-        if (($returnUrl = Craft::$app->getRequest()->getBodyParam('return')) !== null) {
+        if (($returnUrl = $this->request->getBodyParam('return')) !== null) {
             $data['returnUrl'] = strip_tags($returnUrl);
         }
 
@@ -172,7 +173,6 @@ class ConfigSyncController extends BaseUpdaterController
                     $plugin = null;
                 }
 
-                /** @var Plugin|null $plugin */
                 if (
                     !$plugin ||
                     $plugin->schemaVersion != $projectConfig->get(Plugins::CONFIG_PLUGINS_KEY . '.' . $handle . '.schemaVersion', true)
@@ -182,7 +182,7 @@ class ConfigSyncController extends BaseUpdaterController
             }
 
             if (!empty($badPlugins)) {
-                $error = Craft::t('app', 'The following plugins are listed in `project.yaml`, but appear to be missing or installed at the wrong version:') .
+                $error = Craft::t('app', "The following plugins are listed in your project config files, but appear to be missing or installed at the wrong version:") .
                     ' ' . implode(', ', $badPlugins) .
                     "\n\n" . Craft::t('app', 'Try running `composer install` from your terminal to resolve.');
 
@@ -201,10 +201,12 @@ class ConfigSyncController extends BaseUpdaterController
 
         if ($configModifiedTime > $yamlModifiedTime) {
             return [
-                'error' => Craft::t('app', 'The loaded project config has more recent changes than `project.yaml`.'),
+                'error' => Craft::t('app', "The loaded project config has more recent changes than your project config files."),
                 'options' => [
                     $this->actionOption(Craft::t('app', 'Use the loaded project config'), self::ACTION_REGENERATE_YAML, ['submit' => true]),
-                    $this->actionOption(Craft::t('app', 'Use project.yaml'), $this->_nextApplyYamlAction(), ['submit' => true]),
+                    $this->actionOption(Craft::t('app', 'Use files'), $this->_nextApplyYamlAction(), [
+                        'submit' => true,
+                    ]),
                 ]
             ];
         }
@@ -239,7 +241,7 @@ class ConfigSyncController extends BaseUpdaterController
             case self::ACTION_APPLY_YAML_CHANGES:
                 return Craft::t('app', 'Applying changes from the config file…');
             case self::ACTION_REGENERATE_YAML:
-                return Craft::t('app', 'Regenerating `project.yaml` from the loaded project config…');
+                return Craft::t('app', 'Regenerating project config files from the loaded project config…');
             case self::ACTION_UNINSTALL_PLUGIN:
                 $handle = ArrayHelper::firstValue($this->data['uninstallPlugins']);
                 return Craft::t('app', 'Uninstalling {name}', [

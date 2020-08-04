@@ -62,6 +62,59 @@ Craft.ui =
             return this.createField(this.createTextInput(config), config);
         },
 
+        createCopyTextInput: function(config) {
+            let id = config.id || `copytext-${Math.floor(Math.random() * 1000000000)}`;
+            let buttonId = config.buttonId || `${id}-btn`;
+
+            let $container = $('<div/>', {
+                'class': 'copytext',
+            });
+
+            let $input = this.createTextInput($.extend({}, config, {
+                readonly: true,
+            })).appendTo($container);
+
+            let $btn = $('<button/>', {
+                type: 'button',
+                id: buttonId,
+                'class': 'btn',
+                'data-icon': 'clipboard',
+                title: Craft.t('app', 'Copy to clipboard'),
+            }).appendTo($container);
+
+            $btn.on('click', () => {
+                $input[0].select();
+                document.execCommand('copy');
+                Craft.cp.displayNotice(Craft.t('app', 'Copied to clipboard.'));
+                $container.trigger('copy');
+            });
+
+            return $container;
+        },
+
+        createCopyTextField: function(config) {
+            return this.createField(this.createCopyTextInput(config), config);
+        },
+
+        createCopyTextPrompt: function(config) {
+            let $container = $('<div/>', {
+                'class': 'modal fitted',
+            });
+            let $body = $('<div/>', {
+                'class': 'body',
+            }).appendTo($container);
+            this.createCopyTextField($.extend({
+                size: Math.max(Math.min(config.value.length, 50), 25),
+            }, config)).appendTo($body);
+            let modal = new Garnish.Modal($container, {
+                closeOtherModals: false,
+            });
+            $container.on('copy', () => {
+                modal.hide();
+            })
+            return $container;
+        },
+
         createTextarea: function(config) {
             var $textarea = $('<textarea/>', {
                 'class': 'text',
@@ -112,14 +165,38 @@ Craft.ui =
                 'data-target-prefix': config.targetPrefix
             }).appendTo($container);
 
+            // Normalize the options into an array
+            if ($.isPlainObject(config.options)) {
+                let options = [];
+                for (var key in config.options) {
+                    if (!config.options.hasOwnProperty(key)) {
+                        continue;
+                    }
+                    let option = config.options[key];
+                    if ($.isPlainObject(option)) {
+                        if (typeof option.optgroup !== 'undefined') {
+                            options.push(option);
+                        } else {
+                            options.push({
+                                label: option.label,
+                                value: typeof option.value !== 'undefined' ? option.value : key,
+                                disabled: typeof option.disabled !== 'undefined' ? option.disabled : false,
+                            });
+                        }
+                    } else {
+                        options.push({
+                            label: option,
+                            value: key,
+                        })
+                    }
+                }
+                config.options = options;
+            }
+
             var $optgroup = null;
 
-            for (var key in config.options) {
-                if (!config.options.hasOwnProperty(key)) {
-                    continue;
-                }
-
-                var option = config.options[key];
+            for (let i = 0; i < config.options.length; i++) {
+                let option = config.options[i];
 
                 // Starting a new <optgroup>?
                 if (typeof option.optgroup !== 'undefined') {
@@ -127,15 +204,11 @@ Craft.ui =
                         'label': option.label
                     }).appendTo($select);
                 } else {
-                    var optionLabel = (typeof option.label !== 'undefined' ? option.label : option),
-                        optionValue = (typeof option.value !== 'undefined' ? option.value : key),
-                        optionDisabled = (typeof option.disabled !== 'undefined' ? option.disabled : false);
-
                     $('<option/>', {
-                        'value': optionValue,
-                        'selected': (optionValue == config.value),
-                        'disabled': optionDisabled,
-                        'html': optionLabel
+                        'value': option.value,
+                        'selected': (option.value == config.value),
+                        'disabled': typeof option.disabled !== 'undefined' ? option.disabled : false,
+                        'html':  option.label
                     }).appendTo($optgroup || $select);
                 }
             }
@@ -224,7 +297,7 @@ Craft.ui =
         },
 
         createCheckboxSelect: function(config) {
-            var $container = $('<div class="checkbox-select"/>');
+            var $container = $('<fieldset class="checkbox-select"/>');
 
             if (config.class) {
                 $container.addClass(config.class);
@@ -290,6 +363,8 @@ Craft.ui =
                 'data-value': value,
                 'data-indeterminate-value': indeterminateValue,
                 id: config.id,
+                role: 'switch',
+                'aria-checked': config.on ? 'true' : (config.indeterminate ? 'mixed' : 'false'),
                 'aria-labelledby': config.labelId,
                 'data-target': config.toggle,
                 'data-reverse-target': config.reverseToggle
@@ -329,7 +404,11 @@ Craft.ui =
                 new Craft.FieldToggle($container);
             }
 
-            return $container.lightswitch();
+            new Craft.LightSwitch($container, {
+                onChange: config.onChange || $.noop,
+            });
+
+            return $container;
         },
 
         createLightswitchField: function(config) {
@@ -445,7 +524,6 @@ Craft.ui =
 
             var $menu = $('<div/>', {'class': 'menu'});
             var $ul = $('<ul/>', {'class': 'padded'}).appendTo($menu);
-            var menu = new Garnish.Menu($menu);
             var $allOption = $('<a/>')
                 .addClass('sel')
                 .text(Craft.t('app', 'All'))
@@ -793,5 +871,5 @@ Craft.ui =
 
         getDisabledValue: function(disabled) {
             return (disabled ? 'disabled' : null);
-        }
+        },
     };

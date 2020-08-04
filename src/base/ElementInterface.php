@@ -9,6 +9,7 @@ namespace craft\base;
 
 use craft\elements\db\ElementQueryInterface;
 use craft\models\FieldLayout;
+use craft\models\Site;
 use Twig\Markup;
 
 
@@ -16,6 +17,7 @@ use Twig\Markup;
  * ElementInterface defines the common interface to be implemented by element classes.
  * A class implementing this interface should also use [[ElementTrait]] and [[ContentTrait]].
  *
+ * @mixin ElementTrait
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
@@ -278,7 +280,19 @@ interface ElementInterface extends ComponentInterface
     public static function sources(string $context = null): array;
 
     /**
-     * Returns the available [element actions](https://docs.craftcms.com/v3/extend/element-action-types.html) for a
+     * Returns all of the field layouts associated with elements from the given source.
+     *
+     * This is used to determine which custom fields should be included in the element index sort menu,
+     * and other things.
+     *
+     * @param string $source The selected source’s key
+     * @return FieldLayout[]
+     * @since 3.5.0
+     */
+    public static function fieldLayouts(string $source): array;
+
+    /**
+     * Returns the available [element actions](https://craftcms.com/docs/3.x/extend/element-action-types.html) for a
      * given source.
      *
      * The actions can be represented by their fully qualified class name, a config array with the class name
@@ -360,8 +374,9 @@ interface ElementInterface extends ComponentInterface
      * This method should return an array, where each item is a sub-array with the following keys:
      *
      * - `label` – The sort option label
-     * - `orderBy` – A comma-delimited string of columns to order the query by
-     * - `attribute` _(optional)_ – The [[tableAttributes()|table attribute]] name that this option is associated with
+     * - `orderBy` – An array or comma-delimited string of columns to order the query by
+     * - `attribute` _(optional)_ – The [[tableAttributes()|table attribute]] name that this option is associated
+     *   with (required if `orderBy` is an array or more than one column name)
      *
      * ```php
      * return [
@@ -475,6 +490,15 @@ interface ElementInterface extends ComponentInterface
     public static function gqlTypeNameByContext($context): string;
 
     /**
+     * Returns the GraphQL mutation name by an element's context.
+     *
+     * @param mixed $context The element's context, such as a volume, entry type, or Matrix block type.
+     * @return string
+     * @since 3.5.0
+     */
+    public static function gqlMutationNameByContext($context): string;
+
+    /**
      * Returns the GraphQL scopes required by element's context.
      *
      * @param mixed $context The element's context, such as a Volume, Entry Type or Matrix Block Type.
@@ -540,10 +564,30 @@ interface ElementInterface extends ComponentInterface
     public function getFieldLayout();
 
     /**
+     * Returns the site the element is associated with.
+     *
+     * @return Site
+     */
+    public function getSite(): Site;
+
+    /**
+     * Returns the language of the element.
+     *
+     * @return string
+     * @since 3.5.0
+     */
+    public function getLanguage(): string;
+
+    /**
      * Returns the sites this element is associated with.
      *
      * The function can either return an array of site IDs, or an array of sub-arrays,
-     * each with the keys `siteId` (int) and `enabledByDefault` (boolean).
+     * each with the following keys:
+     *
+     * - `siteId` (integer) - The site ID
+     * - `propagate` (boolean) – Whether the element should be propagated to this site on save (`true` by default)
+     * - `enabledByDefault` (boolean) – Whether the element should be enabled in this site by default
+     *   (`true` by default)
      *
      * @return int[]|array
      */
@@ -653,7 +697,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the URL to the element’s thumbnail, if there is one.
      *
-     * @param int $size
+     * @param int $size The maximum width and height the thumbnail should have.
      * @return string|null
      */
     public function getThumbUrl(int $size);
@@ -686,6 +730,13 @@ interface ElementInterface extends ComponentInterface
      * @return string|null
      */
     public function getStatus();
+
+    /**
+     * Returns the same element in other locales.
+     *
+     * @return ElementQueryInterface[]|ElementInterface[]
+     */
+    public function getLocalized();
 
     /**
      * Returns the next element relative to this one, from a given set of criteria.
@@ -864,12 +915,70 @@ interface ElementInterface extends ComponentInterface
     public function getAttributeStatus(string $attribute);
 
     /**
+     * Returns whether an attribute has changed since the element was first loaded.
+     *
+     * @param string $name
+     * @return bool
+     * @since 3.5.0
+     */
+    public function isAttributeDirty(string $name): bool;
+
+    /**
      * Returns a list of attribute names that have changed since the element was first loaded.
      *
      * @return string[]
      * @since 3.4.0
      */
     public function getDirtyAttributes(): array;
+
+    /**
+     * Sets the list of dirty attribute names.
+     *
+     * @param string[] $names
+     * @param bool $merge Whether these attributes should be merged with existing dirty attributes
+     * @see getDirtyAttributes()
+     * @since 3.5.0
+     */
+    public function setDirtyAttributes(array $names, bool $merge = true);
+
+    /**
+     * Returns whether the Title field should be shown as translatable in the UI.
+     *
+     * Note this method has no effect on whether titles will get copied over to other
+     * sites when the element is actually getting saved. That is determined by [[getTitleTranslationKey()]].
+     *
+     * @return bool
+     * @since 3.5.0
+     */
+    public function getIsTitleTranslatable(): bool;
+
+    /**
+     * Returns the description of the Title field’s translation support.
+     *
+     * @return string|null
+     * @since 3.5.0
+     */
+    public function getTitleTranslationDescription();
+
+    /**
+     * Returns the Title’s translation key.
+     *
+     * When saving an element on a multi-site Craft install, if `$propagate` is `true` for [[\craft\services\Elements::saveElement()]],
+     * then `getTitleTranslationKey()` will be called for each site the element should be propagated to.
+     * If the method returns the same value as it did for the initial site, then the initial site’s title will be copied over
+     * to the target site.
+     *
+     * @return string The translation key
+     */
+    public function getTitleTranslationKey(): string;
+
+    /**
+     * Returns whether a field is empty.
+     *
+     * @param string $handle
+     * @return bool
+     */
+    public function isFieldEmpty(string $handle): bool;
 
     /**
      * Returns the element’s normalized custom field values, indexed by their handles.
@@ -955,6 +1064,14 @@ interface ElementInterface extends ComponentInterface
     public function markAsClean();
 
     /**
+     * Returns the cache tags that should be cleared when this element is saved.
+     *
+     * @return string[]
+     * @since 3.5.0
+     */
+    public function getCacheTags(): array;
+
+    /**
      * Sets the element’s custom field values, when the values have come from post data.
      *
      * @param string $paramNamespace The field param namespace
@@ -1015,7 +1132,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Sets some eager-loaded elements on a given handle.
      *
-     * @param string $handle The handle to load the elements with in the future
+     * @param string $handle The handle that was used to eager-load the elements
      * @param ElementInterface[] $elements The eager-loaded elements
      */
     public function setEagerLoadedElements(string $handle, array $elements);

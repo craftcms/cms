@@ -41,17 +41,19 @@ class PrepareQueryTest extends Unit
         $this->tester->mockMethods(
             Craft::$app,
             'gql',
-            ['getActiveSchema' => $this->make(GqlSchema::class, [
-                'scope' => [
-                    'volumes.' . self::VOLUME_UID . ':read',
-                    'categorygroups.' . self::CATEGORY_GROUP_UID . ':read',
-                    'sections.' . self::SECTION_UID . ':read',
-                    'entrytypes.' . self::ENTRY_TYPE_UID . ':read',
-                    'globalsets.' . self::GLOBAL_SET_UID . ':read',
-                    'taggroups.' . self::TAG_GROUP_UID . ':read',
-                    'usergroups.' . self::USER_GROUP_UID . ':read',
-                ]
-            ])]
+            [
+                'getActiveSchema' => $this->make(GqlSchema::class, [
+                    'scope' => [
+                        'volumes.' . self::VOLUME_UID . ':read',
+                        'categorygroups.' . self::CATEGORY_GROUP_UID . ':read',
+                        'sections.' . self::SECTION_UID . ':read',
+                        'entrytypes.' . self::ENTRY_TYPE_UID . ':read',
+                        'globalsets.' . self::GLOBAL_SET_UID . ':read',
+                        'taggroups.' . self::TAG_GROUP_UID . ':read',
+                        'usergroups.' . self::USER_GROUP_UID . ':read',
+                    ]
+                ])
+            ]
         );
     }
 
@@ -102,37 +104,113 @@ class PrepareQueryTest extends Unit
 
         return [
             // Assets
-            [AssetResolver::class, [(object)['field' => ['foo', 'bar']], [], 'field'], function ($result) { return $result === ['foo', 'bar'];}],
-            [AssetResolver::class, [null, ['volumeId' => 2, 'folderId' => 5]], function ($result) { return $result->volumeId == 2 && $result->folderId == 5;}],
-            [AssetResolver::class, [null, []], function ($result) { return $result->where[0] === 'in' && !empty($result->where[2]);}, [$this, '_setupAssets']],
+            [
+                AssetResolver::class, [(object)['field' => ['foo', 'bar']], [], 'field'], function($result) {
+                return $result === ['foo', 'bar'];
+            }
+            ],
+            [
+                AssetResolver::class, [null, ['volumeId' => 2, 'folderId' => 5]], function($result) {
+                return $result->volumeId == 2 && $result->folderId == 5;
+            }
+            ],
+            [
+                AssetResolver::class, [null, []], function($result) {
+                return $result->where[0] === 'in' && !empty($result->where[2]);
+            }, [$this, '_setupAssets']
+            ],
 
             // Category
-            [CategoryResolver::class, [(object)['field' => ['foo', 'bar']], [], 'field'], function ($result) { return $result === ['foo', 'bar'];}],
-            [CategoryResolver::class, [null, ['groupId' => 2]], function ($result) { return $result->groupId == 2;}],
-            [CategoryResolver::class, [null, []], function ($result) { return $result->where[0] === 'in' && !empty($result->where[2]);}, [$this, '_setupCategories']],
+            [
+                CategoryResolver::class, [(object)['field' => ['foo', 'bar']], [], 'field'], function($result) {
+                return $result === ['foo', 'bar'];
+            }
+            ],
+            [
+                CategoryResolver::class, [null, ['groupId' => 2]], function($result) {
+                return $result->groupId == 2;
+            }
+            ],
+            [
+                CategoryResolver::class, [null, []], function($result) {
+                return $result->where[0] === 'in' && !empty($result->where[2]);
+            }, [$this, '_setupCategories']
+            ],
 
             // Entries
-            [EntryResolver::class, [(object)['field' => ['foo', 'bar']], [], 'field'], function ($result) { return $result === ['foo', 'bar'];}],
-            [EntryResolver::class, [null, ['sectionId' => 2, 'typeId' => 5]], function ($result) { return $result->sectionId == 2 && $result->typeId == 5;}],
-            [EntryResolver::class, [null, []], function ($result) { return $result->where[0] === 'and' && !empty($result->where[2]);}, [$this, '_setupEntries']],
+            [
+                EntryResolver::class, [(object)['field' => ['foo', 'bar']], [], 'field'], function($result) {
+                return $result === ['foo', 'bar'];
+            }
+            ],
+            [
+                EntryResolver::class, [null, ['sectionId' => 2, 'typeId' => 5]], function($result) {
+                return $result->sectionId == 2 && $result->typeId == 5;
+            }
+            ],
+            [
+                EntryResolver::class, [null, []], function($result) {
+                return $result->where[0] === 'and' && !empty($result->where[2]);
+            }, [$this, '_setupEntries']
+            ],
 
             // Global Sets
-            [GlobalSetResolver::class, [null, ['handle' => 'foo']], function ($result) { return $result->handle == 'foo';}],
-            [GlobalSetResolver::class, [null, []], function ($result) { return $result->where[0] === 'in' && !empty($result->where[2]);}, [$this, '_setupGlobals']],
+            [
+                GlobalSetResolver::class, [null, ['handle' => 'foo']], function($result) {
+                return $result->handle == 'foo';
+            }
+            ],
+            [
+                GlobalSetResolver::class, [null, []], function($result) {
+                return $result->where[0] === 'in' && !empty($result->where[2]);
+            }, [$this, '_setupGlobals']
+            ],
 
             // Tags
-            [TagResolver::class, [(object)['field' => ['foo', 'bar']], [], 'field'], function ($result) { return $result === ['foo', 'bar'];}],
-            [TagResolver::class, [null, ['groupId' => 2]], function ($result) { return $result->groupId == 2;}],
-            [TagResolver::class, [null, []], function ($result) { return $result->where[0] === 'in' && !empty($result->where[2]);}, [$this, '_setupTags']],
+            [
+                TagResolver::class, [(object)['field' => ['foo', 'bar']], [], 'field'], function($result) {
+                return $result === ['foo', 'bar'];
+            }
+            ],
+            [
+                TagResolver::class, [null, ['groupId' => 2]], function($result) {
+                return $result->groupId == 2;
+            }
+            ],
+            [
+                TagResolver::class, [null, []], function($result) {
+                return $result->where[0] === 'in' && !empty($result->where[2]);
+            }, [$this, '_setupTags']
+            ],
 
             // Users
-            [UserResolver::class, [(object)['field' => ['foo', 'bar']], [], 'field'], function ($result) { return $result === ['foo', 'bar'];}],
-            [UserResolver::class, [null, ['groupId' => 2, 'email' => 'foo@bar.org']], function ($result) { return $result->groupId == 2 && $result->email == 'foo@bar.org';}],
-            [UserResolver::class, [null, []], function ($result) { return !empty($result->groupBy);}, [$this, '_setupUsers']],
+            [
+                UserResolver::class, [(object)['field' => ['foo', 'bar']], [], 'field'], function($result) {
+                return $result === ['foo', 'bar'];
+            }
+            ],
+            [
+                UserResolver::class, [null, ['groupId' => 2, 'email' => 'foo@bar.org']], function($result) {
+                return $result->groupId == 2 && $result->email == 'foo@bar.org';
+            }
+            ],
+            [
+                UserResolver::class, [null, []], function($result) {
+                return !empty($result->groupBy);
+            }, [$this, '_setupUsers']
+            ],
 
             // Matrix Blocks
-            [MatrixBlockResolver::class, [(object)['field' => ['foo', 'bar']], [], 'field'], function ($result) { return $result === ['foo', 'bar'];}],
-            [MatrixBlockResolver::class, [null, ['fieldId' => 2, 'typeId' => 5]], function ($result) { return $result->fieldId == 2 && $result->typeId == 5;}],
+            [
+                MatrixBlockResolver::class, [(object)['field' => ['foo', 'bar']], [], 'field'], function($result) {
+                return $result === ['foo', 'bar'];
+            }
+            ],
+            [
+                MatrixBlockResolver::class, [null, ['fieldId' => 2, 'typeId' => 5]], function($result) {
+                return $result->fieldId == 2 && $result->typeId == 5;
+            }
+            ],
 
         ];
     }

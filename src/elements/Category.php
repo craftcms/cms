@@ -12,7 +12,6 @@ use craft\base\Element;
 use craft\controllers\ElementIndexesController;
 use craft\db\Query;
 use craft\db\Table;
-use craft\elements\actions\DeepDuplicate;
 use craft\elements\actions\Delete;
 use craft\elements\actions\Duplicate;
 use craft\elements\actions\Edit;
@@ -23,6 +22,7 @@ use craft\elements\actions\View;
 use craft\elements\db\CategoryQuery;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\helpers\Db;
 use craft\helpers\UrlHelper;
 use craft\models\CategoryGroup;
 use craft\records\Category as CategoryRecord;
@@ -150,6 +150,16 @@ class Category extends Element
 
     /**
      * @inheritdoc
+     * @since 3.5.0
+     */
+    public static function gqlMutationNameByContext($context): string
+    {
+        /** @var CategoryGroup $context */
+        return 'save_' . $context->handle . '_Category';
+    }
+
+    /**
+     * @inheritdoc
      */
     protected static function defineSources(string $context = null): array
     {
@@ -173,6 +183,22 @@ class Category extends Element
         }
 
         return $sources;
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.5.0
+     */
+    public static function defineFieldLayouts(string $source): array
+    {
+        $fieldLayouts = [];
+        if (
+            preg_match('/^group:(.+)$/', $source, $matches) &&
+            ($group = Craft::$app->getCategories()->getGroupByUid($matches[1]))
+        ) {
+            $fieldLayouts[] = $group->getFieldLayout();
+        }
+        return $fieldLayouts;
     }
 
     /**
@@ -244,15 +270,18 @@ class Category extends Element
             $actions[] = Duplicate::class;
 
             if ($group->maxLevels != 1) {
-                $actions[] = DeepDuplicate::class;
+                $actions[] = [
+                    'type' => Duplicate::class,
+                    'deep' => true,
+                ];
             }
 
             // Delete
-            $actions[] = $elementsService->createAction([
+            $actions[] = Delete::class;
+            $actions[] = [
                 'type' => Delete::class,
-                'confirmationMessage' => Craft::t('app', 'Are you sure you want to delete the selected categories?'),
-                'successMessage' => Craft::t('app', 'Categories deleted.'),
-            ]);
+                'withDescendants' => true,
+            ];
         }
 
         // Restore
@@ -363,6 +392,17 @@ class Category extends Element
 
     /**
      * @inheritdoc
+     * @since 3.5.0
+     */
+    public function getCacheTags(): array
+    {
+        return [
+            "group:$this->groupId",
+        ];
+    }
+
+    /**
+     * @inheritdoc
      */
     public function getUriFormat()
     {
@@ -453,43 +493,6 @@ class Category extends Element
 
     // Indexes, etc.
     // -------------------------------------------------------------------------
-
-    /**
-     * @inheritdoc
-     */
-    public function getEditorHtml(): string
-    {
-        $html = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField', [
-            [
-                'label' => Craft::t('app', 'Title'),
-                'siteId' => $this->siteId,
-                'id' => 'title',
-                'name' => 'title',
-                'value' => $this->title,
-                'errors' => $this->getErrors('title'),
-                'first' => true,
-                'autofocus' => true,
-                'required' => true
-            ]
-        ]);
-
-        $html .= Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField', [
-            [
-                'label' => Craft::t('app', 'Slug'),
-                'siteId' => $this->siteId,
-                'id' => 'slug',
-                'name' => 'slug',
-                'value' => $this->slug,
-                'errors' => $this->getErrors('slug'),
-                'required' => true
-            ]
-        ]);
-
-        // Render the custom fields
-        $html .= parent::getEditorHtml();
-
-        return $html;
-    }
 
     /**
      * @inheritdoc
@@ -596,9 +599,9 @@ class Category extends Element
             }
         }
 
-        Craft::$app->getDb()->createCommand()
-            ->update(Table::CATEGORIES, $data, ['id' => $this->id], [], false)
-            ->execute();
+        Db::update(Table::CATEGORIES, $data, [
+            'id' => $this->id,
+        ], [], false);
 
         return true;
     }
@@ -613,7 +616,7 @@ class Category extends Element
         // Add the category back into its structure
         $parent = self::find()
             ->structureId($structureId)
-            ->innerJoin('{{%categories}} j', '[[j.parentId]] = [[elements.id]]')
+            ->innerJoin(['j' => Table::CATEGORIES], '[[j.parentId]] = [[elements.id]]')
             ->andWhere(['j.id' => $this->id])
             ->one();
 
@@ -674,12 +677,7 @@ class Category extends Element
             }
 
             if (!empty($newRelationValues)) {
-                Craft::$app->getDb()->createCommand()
-                    ->batchInsert(
-                        Table::RELATIONS,
-                        ['fieldId', 'sourceId', 'sourceSiteId', 'targetId'],
-                        $newRelationValues)
-                    ->execute();
+                Db::batchInsert(Table::RELATIONS, ['fieldId', 'sourceId', 'sourceSiteId', 'targetId'], $newRelationValues);
             }
         }
 

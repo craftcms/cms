@@ -8,19 +8,12 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\db\Query;
-use craft\db\Table;
 use craft\elements\db\ElementQuery;
-use craft\events\DeleteTemplateCachesEvent;
-use craft\helpers\Db;
 use craft\helpers\StringHelper;
-use craft\queue\jobs\DeleteStaleTemplateCaches;
 use DateTime;
 use yii\base\Component;
 use yii\base\Event;
-use yii\web\Response;
 
 /**
  * Template Caches service.
@@ -34,44 +27,28 @@ class TemplateCaches extends Component
     /**
      * @event SectionEvent The event that is triggered before template caches are deleted.
      * @since 3.0.2
+     * @deprecated in 3.5.0
      */
     const EVENT_BEFORE_DELETE_CACHES = 'beforeDeleteCaches';
 
     /**
      * @event SectionEvent The event that is triggered after template caches are deleted.
      * @since 3.0.2
+     * @deprecated in 3.5.0
      */
     const EVENT_AFTER_DELETE_CACHES = 'afterDeleteCaches';
 
     /**
-     * @var string|null The current request's path, as it will be stored in the templatecaches table.
+     * @var bool Whether template caching should be enabled for this request
+     * @see _isTemplateCachingEnabled()
+     */
+    private $_enabled;
+
+    /**
+     * @var string|null The current request's path
+     * @see _path()
      */
     private $_path;
-
-    /**
-     * @var array|null A list of element queries that were executed within the existing caches.
-     */
-    private $_cachedQueries;
-
-    /**
-     * @var array|null A list of element IDs that are active within the existing caches.
-     */
-    private $_cacheElementIds;
-
-    /**
-     * @var bool Whether all caches have been deleted in this request.
-     */
-    private $_deletedAllCaches = false;
-
-    /**
-     * @var bool|null Whether all caches have been deleted, on a per-element type basis, in this request.
-     */
-    private $_deletedCachesByElementType;
-
-    /**
-     * @var int[]|null Index of element IDs to clear caches for in the Delete Stale Template Caches job
-     */
-    private $_deleteCachesIndex;
 
     /**
      * Returns a cached template by its key.
@@ -87,129 +64,51 @@ class TemplateCaches extends Component
             return null;
         }
 
-        // Don't return anything if it's not a global request and it is a console request.
-        if (!$global && Craft::$app->getRequest()->getIsConsoleRequest()) {
+        $cacheKey = $this->_cacheKey($key, $global);
+        $data = Craft::$app->getCache()->get($cacheKey);
+
+        if ($data === false) {
             return null;
         }
 
-        // Don't return anything if it's not a global request and the path > 255 characters.
-        if (!$global && strlen($this->_getPath()) > 255) {
-            return null;
-        }
+        list($body, $tags) = $data;
 
-        /** @noinspection PhpUnhandledExceptionInspection */
-        $query = (new Query())
-            ->select(['body'])
-            ->from([Table::TEMPLATECACHES])
-            ->where([
-                'and',
-                [
-                    'cacheKey' => $key,
-                    'siteId' => Craft::$app->getSites()->getCurrentSite()->id
-                ],
-                ['>', 'expiryDate', Db::prepareDateForDb(new \DateTime())],
-            ]);
-
-        if (!$global) {
-            $query->andWhere([
-                'path' => $this->_getPath()
-            ]);
-        }
-
-        $cachedBody = $query->scalar();
-
-        if ($cachedBody === false) {
-            return null;
-        }
-
-        return $cachedBody;
+        // If we're actively collecting element cache tags, add this cache's tags to the collection
+        Craft::$app->getElements()->collectCacheTags($tags);
+        return $body;
     }
 
     /**
      * Starts a new template cache.
-     *
-     * @param string $key The template cache key.
      */
-    public function startTemplateCache(string $key)
+    public function startTemplateCache()
     {
         // Make sure template caching is enabled
         if ($this->_isTemplateCachingEnabled() === false) {
             return;
         }
 
-        // Is this the first time we've started caching?
-        if ($this->_cachedQueries === null) {
-            Event::on(ElementQuery::class, ElementQuery::EVENT_AFTER_PREPARE, [
-                $this,
-                'includeElementQueryInTemplateCaches'
-            ]);
-        }
-
-        if (Craft::$app->getConfig()->getGeneral()->cacheElementQueries) {
-            $this->_cachedQueries[$key] = [];
-        }
-
-        $this->_cacheElementIds[$key] = [];
+        Craft::$app->getElements()->startCollectingCacheTags();
     }
 
     /**
      * Includes an element criteria in any active caches.
      *
      * @param Event $event The 'afterPrepare' element query event
+     * @deprecated in 3.5.0
      */
     public function includeElementQueryInTemplateCaches(Event $event)
     {
-        // Make sure template caching is enabled
-        if ($this->_isTemplateCachingEnabled() === false) {
-            return;
-        }
-
-        if (!empty($this->_cachedQueries)) {
-            /** @var ElementQuery $elementQuery */
-            $elementQuery = $event->sender;
-            $query = $elementQuery->query;
-            $subQuery = $elementQuery->subQuery;
-            $customFields = $elementQuery->customFields;
-            $elementQuery->query = null;
-            $elementQuery->subQuery = null;
-            $elementQuery->customFields = null;
-            // We need to base64-encode the string so db\Connection::quoteSql() doesn't tweak any of the table/columns names
-            $serialized = base64_encode(serialize($elementQuery));
-            $elementQuery->query = $query;
-            $elementQuery->subQuery = $subQuery;
-            $elementQuery->customFields = $customFields;
-            $hash = md5($serialized);
-
-            foreach ($this->_cachedQueries as &$queries) {
-                $queries[$hash] = [
-                    $elementQuery->elementType,
-                    $serialized
-                ];
-            }
-            unset($queries);
-        }
     }
 
     /**
      * Includes an element in any active caches.
      *
      * @param int $elementId The element ID.
+     * @deprecated in 3.5.0
      */
     public function includeElementInTemplateCaches(int $elementId)
     {
-        // Make sure template caching is enabled
-        if ($this->_isTemplateCachingEnabled() === false) {
-            return;
-        }
-
-        if (!empty($this->_cacheElementIds)) {
-            foreach ($this->_cacheElementIds as &$elementIds) {
-                if (!in_array($elementId, $elementIds, false)) {
-                    $elementIds[] = $elementId;
-                }
-            }
-            unset($elementIds);
-        }
     }
 
     /**
@@ -229,10 +128,10 @@ class TemplateCaches extends Component
             return;
         }
 
-        // Don't return anything if it's not a global request and it's a console request.
-        if (!$global && Craft::$app->getRequest()->getIsConsoleRequest()) {
-            return;
-        }
+        $dep = Craft::$app->getElements()->stopCollectingCacheTags();
+
+        // Always add a `template` tag
+        $dep->tags[] = 'template';
 
         // If there are any transform generation URLs in the body, don't cache it.
         // stripslashes($body) in case the URL has been JS-encoded or something.
@@ -240,103 +139,11 @@ class TemplateCaches extends Component
             return;
         }
 
-        if (!$global && (strlen($path = $this->_getPath()) > 255)) {
-            Craft::warning('Skipped adding ' . $key . ' to template cache table because the path is > 255 characters: ' . $path, __METHOD__);
-
-            return;
-        }
-
-        if (Craft::$app->getDb()->getIsMysql()) {
-            // Encode any 4-byte UTF-8 characters
-            $body = StringHelper::encodeMb4($body);
-        }
-
-        // Figure out the expiration date
+        $cacheKey = $this->_cacheKey($key, $global);
         if ($duration !== null) {
-            $expiration = new DateTime($duration);
+            $duration = (new DateTime($duration))->getTimestamp() - time();
         }
-
-        if (!$expiration) {
-            $cacheDuration = Craft::$app->getConfig()->getGeneral()->cacheDuration;
-
-            if ($cacheDuration <= 0) {
-                $cacheDuration = 31536000; // 1 year
-            }
-
-            $cacheDuration += time();
-
-            $expiration = new DateTime('@' . $cacheDuration);
-        }
-
-        // Save it
-        $transaction = Craft::$app->getDb()->beginTransaction();
-
-        try {
-            Craft::$app->getDb()->createCommand()
-                ->insert(
-                    Table::TEMPLATECACHES,
-                    [
-                        'cacheKey' => $key,
-                        'siteId' => Craft::$app->getSites()->getCurrentSite()->id,
-                        'path' => $global ? null : $this->_getPath(),
-                        'expiryDate' => Db::prepareDateForDb($expiration),
-                        'body' => $body
-                    ],
-                    false)
-                ->execute();
-
-            $cacheId = Craft::$app->getDb()->getLastInsertID(Table::TEMPLATECACHES);
-
-            // Tag it with any element queries that were executed within the cache
-            if (!empty($this->_cachedQueries[$key])) {
-                $values = [];
-                foreach ($this->_cachedQueries[$key] as $query) {
-                    $values[] = [
-                        $cacheId,
-                        $query[0],
-                        $query[1]
-                    ];
-                    // We can no longer say we’ve deleted all template caches for this element type
-                    unset($this->_deletedCachesByElementType[$query[0]]);
-                }
-                Craft::$app->getDb()->createCommand()
-                    ->batchInsert(Table::TEMPLATECACHEQUERIES, [
-                        'cacheId',
-                        'type',
-                        'query'
-                    ], $values, false)
-                    ->execute();
-                unset($this->_cachedQueries[$key]);
-            }
-
-            // Tag it with any element IDs that were output within the cache
-            if (!empty($this->_cacheElementIds[$key])) {
-                $values = [];
-
-                foreach ($this->_cacheElementIds[$key] as $elementId) {
-                    $values[] = [$cacheId, $elementId];
-                }
-
-                Craft::$app->getDb()->createCommand()
-                    ->batchInsert(
-                        Table::TEMPLATECACHEELEMENTS,
-                        ['cacheId', 'elementId'],
-                        $values,
-                        false)
-                    ->execute();
-
-                unset($this->_cacheElementIds[$key]);
-            }
-
-            // We can no longer say we’ve deleted all template caches
-            $this->_deletedAllCaches = false;
-
-            $transaction->commit();
-        } catch (\Throwable $e) {
-            $transaction->rollBack();
-
-            throw $e;
-        }
+        Craft::$app->getCache()->set($cacheKey, [$body, $dep->tags], $duration, $dep);
     }
 
     /**
@@ -344,36 +151,11 @@ class TemplateCaches extends Component
      *
      * @param int|int[] $cacheId The cache ID(s)
      * @return bool
+     * @deprecated in 3.5.0
      */
     public function deleteCacheById($cacheId): bool
     {
-        if (is_array($cacheId) && empty($cacheId)) {
-            return false;
-        }
-
-        if ($this->_deletedAllCaches) {
-            return false;
-        }
-
-        // Fire a 'beforeDeleteCaches' event
-        if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_CACHES)) {
-            $this->trigger(self::EVENT_BEFORE_DELETE_CACHES, new DeleteTemplateCachesEvent([
-                'cacheIds' => (array)$cacheId
-            ]));
-        }
-
-        $affectedRows = Craft::$app->getDb()->createCommand()
-            ->delete(Table::TEMPLATECACHES, ['id' => $cacheId])
-            ->execute();
-
-        // Fire an 'afterDeleteCaches' event
-        if ($affectedRows && $this->hasEventHandlers(self::EVENT_AFTER_DELETE_CACHES)) {
-            $this->trigger(self::EVENT_AFTER_DELETE_CACHES, new DeleteTemplateCachesEvent([
-                'cacheIds' => (array)$cacheId
-            ]));
-        }
-
-        return (bool)$affectedRows;
+        return false;
     }
 
     /**
@@ -381,22 +163,12 @@ class TemplateCaches extends Component
      *
      * @param string $elementType The element class.
      * @return bool
+     * @deprecated in 3.5.0. Use [[\craft\services\Elements::invalidateCachesForElementType()]] instead.
      */
     public function deleteCachesByElementType(string $elementType): bool
     {
-        if ($this->_deletedAllCaches || isset($this->_deletedCachesByElementType[$elementType])) {
-            return false;
-        }
-
-        $cacheIds = (new Query())
-            ->select(['cacheId'])
-            ->from([Table::TEMPLATECACHEQUERIES])
-            ->where(['type' => $elementType])
-            ->column();
-
-        $success = $this->deleteCacheById($cacheIds);
-        $this->_deletedCachesByElementType[$elementType] = true;
-        return $success;
+        Craft::$app->getElements()->invalidateCachesForElementType($elementType);
+        return true;
     }
 
     /**
@@ -404,30 +176,19 @@ class TemplateCaches extends Component
      *
      * @param ElementInterface|ElementInterface[] $elements The element(s) whose caches should be deleted.
      * @return bool
+     * @deprecated in 3.5.0. Use [[\craft\services\Elements::invalidateCachesForElement()]] instead.
      */
     public function deleteCachesByElement($elements): bool
     {
-        if ($this->_deletedAllCaches || empty($elements)) {
-            return false;
-        }
-
+        $elementsService = Craft::$app->getElements();
         if (is_array($elements)) {
-            $firstElement = reset($elements);
+            foreach ($elements as $element) {
+                $elementsService->invalidateCachesForElement($element);
+            }
         } else {
-            $firstElement = $elements;
-            $elements = [$elements];
+            $elementsService->invalidateCachesForElement($elements);
         }
-
-        $elementType = get_class($firstElement);
-        $deleteQueryCaches = !isset($this->_deletedCachesByElementType[$elementType]);
-        $elementIds = [];
-
-        /** @var Element[] $elements */
-        foreach ($elements as $element) {
-            $elementIds[] = $element->id;
-        }
-
-        return $this->deleteCachesByElementId($elementIds, $deleteQueryCaches);
+        return true;
     }
 
     /**
@@ -438,55 +199,26 @@ class TemplateCaches extends Component
      * should be added to the queue, deleting any query caches that may now
      * involve this element, but hadn't previously. (Defaults to `true`.)
      * @return bool
+     * @deprecated in 3.5.0. Use [[\craft\services\Elements::invalidateCachesForElement()]] instead.
      */
     public function deleteCachesByElementId($elementId, bool $deleteQueryCaches = true): bool
     {
-        if ($this->_deletedAllCaches || !$elementId) {
+        $elementsService = Craft::$app->getElements();
+        $element = Craft::$app->getElements()->getElementById($elementId);
+        if (!$element) {
             return false;
         }
-
-        // Check the query caches too?
-        if (
-            $deleteQueryCaches &&
-            $this->_isTemplateCachingEnabled() &&
-            Craft::$app->getConfig()->getGeneral()->cacheElementQueries
-        ) {
-            if ($this->_deleteCachesIndex === null) {
-                Craft::$app->getResponse()->on(Response::EVENT_AFTER_PREPARE, [$this, 'handleResponse']);
-                $this->_deleteCachesIndex = [];
-            }
-            if (is_array($elementId)) {
-                foreach ($elementId as $id) {
-                    $this->_deleteCachesIndex[$id] = true;
-                }
-            } else {
-                $this->_deleteCachesIndex[$elementId] = true;
-            }
-        }
-
-        $cacheIds = (new Query())
-            ->select(['cacheId'])
-            ->distinct(true)
-            ->from([Table::TEMPLATECACHEELEMENTS])
-            ->where(['elementId' => $elementId])
-            ->column();
-
-        return $this->deleteCacheById($cacheIds);
+        $elementsService->invalidateCachesForElement($element);
+        return true;
     }
 
     /**
      * Queues up a Delete Stale Template Caches job
+     *
+     * @deprecated in 3.5.0
      */
     public function handleResponse()
     {
-        // It's possible this is already null
-        if ($this->_deleteCachesIndex !== null) {
-            Craft::$app->getQueue()->push(new DeleteStaleTemplateCaches([
-                'elementId' => array_keys($this->_deleteCachesIndex),
-            ]));
-
-            $this->_deleteCachesIndex = null;
-        }
     }
 
     /**
@@ -495,19 +227,15 @@ class TemplateCaches extends Component
      * @param ElementQuery $query The element query that should be used to find elements whose caches
      * should be deleted.
      * @return bool
+     * @deprecated in 3.5.0. Use [[\craft\services\Elements::invalidateCachesForElementType()]] instead.
      */
     public function deleteCachesByElementQuery(ElementQuery $query): bool
     {
-        if ($this->_deletedAllCaches) {
+        if (!$query->elementType) {
             return false;
         }
-
-        $limit = $query->limit;
-        $query->limit(null);
-        $elementIds = $query->ids();
-        $query->limit($limit);
-
-        return $this->deleteCachesByElementId($elementIds);
+        Craft::$app->getElements()->invalidateCachesForElementType($query->elementType);
+        return true;
     }
 
     /**
@@ -515,72 +243,49 @@ class TemplateCaches extends Component
      *
      * @param int|array $key The cache key(s) to delete.
      * @return bool
+     * @deprecated in 3.5.0
      */
     public function deleteCachesByKey($key): bool
     {
-        if ($this->_deletedAllCaches) {
-            return false;
-        }
-
-        $cacheIds = (new Query())
-            ->select(['id'])
-            ->from([Table::TEMPLATECACHES])
-            ->where(['cacheKey' => $key])
-            ->column();
-
-        return $this->deleteCacheById($cacheIds);
+        $cache = Craft::$app->getCache();
+        // ¯\_(ツ)_/¯
+        $cache->delete($this->_cacheKey($key, true));
+        $cache->delete($this->_cacheKey($key, false));
+        return true;
     }
 
     /**
      * Deletes any expired caches.
      *
      * @return bool
+     * @deprecated in 3.5.0
      */
     public function deleteExpiredCaches(): bool
     {
-        if ($this->_deletedAllCaches) {
-            return false;
-        }
-
-        $cacheIds = (new Query())
-            ->select(['id'])
-            ->from([Table::TEMPLATECACHES])
-            ->where(['<=', 'expiryDate', Db::prepareDateForDb(new \DateTime())])
-            ->column();
-
-        return $this->deleteCacheById($cacheIds);
+        return true;
     }
 
     /**
      * Deletes any expired caches.
      *
      * @return bool
-     * @deprecated in 3.2.0. Use [[deleteExpiredCaches()]] instead.
+     * @deprecated in 3.2.0
      */
     public function deleteExpiredCachesIfOverdue(): bool
     {
-        return $this->deleteExpiredCaches();
+        return true;
     }
 
     /**
      * Deletes all the template caches.
      *
      * @return bool
+     * @deprecated in 3.5.0. Use [[\craft\services\Elements::invalidateAllCaches()]] instead.
      */
     public function deleteAllCaches(): bool
     {
-        if ($this->_deletedAllCaches) {
-            return false;
-        }
-
-        $cacheIds = (new Query())
-            ->select(['id'])
-            ->from([Table::TEMPLATECACHES])
-            ->column();
-
-        $success = $this->deleteCacheById($cacheIds);
-        $this->_deletedAllCaches = true;
-        return $success;
+        Craft::$app->getElements()->invalidateAllCaches();
+        return true;
     }
 
     /**
@@ -590,11 +295,30 @@ class TemplateCaches extends Component
      */
     private function _isTemplateCachingEnabled(): bool
     {
-        if (Craft::$app->getConfig()->getGeneral()->enableTemplateCaching) {
-            return true;
+        if ($this->_enabled === null) {
+            $this->_enabled = (
+                Craft::$app->getConfig()->getGeneral()->enableTemplateCaching &&
+                !Craft::$app->getRequest()->getIsConsoleRequest()
+            );
+        }
+        return $this->_enabled;
+    }
+
+    /**
+     * Defines a data cache key that should be used for a template cache.
+     *
+     * @param string $key
+     * @param bool $global
+     */
+    private function _cacheKey(string $key, bool $global): string
+    {
+        $cacheKey = "template::$key::" . Craft::$app->getSites()->getCurrentSite()->id;
+
+        if (!$global) {
+            $cacheKey .= '::' . $this->_path();
         }
 
-        return false;
+        return $cacheKey;
     }
 
     /**
@@ -602,7 +326,7 @@ class TemplateCaches extends Component
      *
      * @return string
      */
-    private function _getPath(): string
+    private function _path(): string
     {
         if ($this->_path !== null) {
             return $this->_path;

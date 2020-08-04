@@ -26,8 +26,8 @@ class m170306_150500_asset_temporary_uploads extends Migration
         // Get indexed temporary uploads
         $assets = (new Query())
             ->select(['assets.id', 'assets.filename', 'assets.folderId', 'volumeFolders.path'])
-            ->from('{{%assets}} assets')
-            ->innerJoin('{{%volumefolders}} volumeFolders', $folderId . ' = ' . $volumeFoldersId)
+            ->from(['assets' => Table::ASSETS])
+            ->innerJoin(['volumeFolders' => Table::VOLUMEFOLDERS], $folderId . ' = ' . $volumeFoldersId)
             ->where(['assets.volumeId' => null])
             ->all($this->db);
 

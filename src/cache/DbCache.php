@@ -9,6 +9,7 @@ namespace craft\cache;
 
 use Craft;
 use craft\db\Connection;
+use craft\helpers\Db;
 use yii\caching\DbCache as YiiDbCache;
 use yii\db\PdoValue;
 
@@ -28,13 +29,11 @@ class DbCache extends YiiDbCache
         // Copied from yii\caching\DbCache::setValue() except for the added includeAuditColumns=false argument
         try {
             $this->db->noCache(function(Connection $db) use ($key, $value, $duration) {
-                $db->createCommand()
-                    ->upsert($this->cacheTable, [
-                        'id' => $key,
-                        'expire' => $duration > 0 ? $duration + time() : 0,
-                        'data' => new PdoValue($value, \PDO::PARAM_LOB),
-                    ], true, [], false)
-                    ->execute();
+                Db::upsert($this->cacheTable, [
+                    'id' => $key,
+                    'expire' => $duration > 0 ? $duration + time() : 0,
+                    'data' => new PdoValue($value, \PDO::PARAM_LOB),
+                ], true, [], false, $db);
             });
             $this->gc();
             return true;
@@ -52,14 +51,12 @@ class DbCache extends YiiDbCache
         $this->gc();
 
         try {
-            $this->db->noCache(function (Connection $db) use ($key, $value, $duration) {
-                $db->createCommand()
-                    ->insert($this->cacheTable, [
-                        'id' => $key,
-                        'expire' => $duration > 0 ? $duration + time() : 0,
-                        'data' => new PdoValue($value, \PDO::PARAM_LOB),
-                    ], false)
-                    ->execute();
+            $this->db->noCache(function(Connection $db) use ($key, $value, $duration) {
+                Db::insert($this->cacheTable, [
+                    'id' => $key,
+                    'expire' => $duration > 0 ? $duration + time() : 0,
+                    'data' => new PdoValue($value, \PDO::PARAM_LOB),
+                ], false, $db);
             });
             return true;
         } catch (\Exception $e) {

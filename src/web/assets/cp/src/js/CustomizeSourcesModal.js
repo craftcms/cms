@@ -275,8 +275,7 @@ Craft.CustomizeSourcesModal.BaseSource = Garnish.Base.extend(
             this.modal.selectedSource = this;
 
             if (!this.$settingsContainer) {
-                this.$settingsContainer = $('<div/>')
-                    .append(this.createSettings())
+                this.$settingsContainer = this.createSettings()
                     .appendTo(this.modal.$sourceSettingsContainer);
             }
             else {
@@ -287,6 +286,7 @@ Craft.CustomizeSourcesModal.BaseSource = Garnish.Base.extend(
         },
 
         createSettings: function() {
+            return $('<div/>');
         },
 
         getIndexSource: function() {
@@ -311,52 +311,59 @@ Craft.CustomizeSourcesModal.BaseSource = Garnish.Base.extend(
 Craft.CustomizeSourcesModal.Source = Craft.CustomizeSourcesModal.BaseSource.extend(
     {
         createSettings: function() {
+            let $settings = $('<div/>').append(Craft.ui.createTextField({
+                label: Craft.t('app', 'Header Column Heading'),
+                id: 'defaultHeaderColHeading' + Math.floor(Math.random() * 100000),
+                name: `sources[${this.sourceData.key}][headerColHeading]`,
+                value: this.sourceData.headerColHeading,
+                placeholder: this.sourceData.defaultHeaderColHeading,
+            }));
+
             if (this.sourceData.tableAttributes.length) {
-                // Create the title column option
-                var firstAttribute = this.sourceData.tableAttributes[0],
-                    firstKey = firstAttribute[0],
-                    firstLabel = firstAttribute[1],
-                    $titleColumnCheckbox = this.createTableColumnOption(firstKey, firstLabel, true, true);
-
-                // Create the rest of the options
-                var $columnCheckboxes = $('<div/>'),
-                    selectedAttributes = [firstKey];
-
-                $('<input type="hidden" name="sources[' + this.sourceData.key + '][tableAttributes][]" value=""/>').appendTo($columnCheckboxes);
-
-                var i, attribute, key, label;
-
-                // Add the selected columns, in the selected order
-                for (i = 1; i < this.sourceData.tableAttributes.length; i++) {
-                    attribute = this.sourceData.tableAttributes[i];
-                    key = attribute[0];
-                    label = attribute[1];
-
-                    $columnCheckboxes.append(this.createTableColumnOption(key, label, false, true));
-                    selectedAttributes.push(key);
-                }
-
-                // Add the rest
-                for (i = 0; i < this.modal.availableTableAttributes.length; i++) {
-                    attribute = this.modal.availableTableAttributes[i];
-                    key = attribute[0];
-                    label = attribute[1];
-
-                    if (!Craft.inArray(key, selectedAttributes)) {
-                        $columnCheckboxes.append(this.createTableColumnOption(key, label, false, false));
-                    }
-                }
-
-                new Garnish.DragSort($columnCheckboxes.children(), {
-                    handle: '.move',
-                    axis: 'y'
-                });
-
-                return Craft.ui.createField($([$titleColumnCheckbox[0], $columnCheckboxes[0]]), {
-                    label: Craft.t('app', 'Table Columns'),
-                    instructions: Craft.t('app', 'Choose which table columns should be visible for this source, and in which order.')
-                });
+                $settings.append(this.createTableColumnsField());
             }
+
+            return $settings;
+        },
+
+        createTableColumnsField: function() {
+            // Create the title column option
+            let [firstKey, firstLabel] = this.sourceData.tableAttributes[0];
+            let $titleColumnCheckbox = this.createTableColumnOption(firstKey, firstLabel, true, true);
+
+            // Create the rest of the options
+            let $columnCheckboxes = $('<div/>');
+            let selectedAttributes = [firstKey];
+
+            $('<input type="hidden" name="sources[' + this.sourceData.key + '][tableAttributes][]" value=""/>').appendTo($columnCheckboxes);
+
+            // Add the selected columns, in the selected order
+            for (let i = 1; i < this.sourceData.tableAttributes.length; i++) {
+                let [key, label] = this.sourceData.tableAttributes[i];
+                $columnCheckboxes.append(this.createTableColumnOption(key, label, false, true));
+                selectedAttributes.push(key);
+            }
+
+            // Add the rest
+            let availableTableAttributes = this.modal.availableTableAttributes.slice(0);
+            availableTableAttributes.push(...this.sourceData.availableTableAttributes);
+
+            for (let i = 0; i < availableTableAttributes.length; i++) {
+                let [key, label] = availableTableAttributes[i];
+                if (!Craft.inArray(key, selectedAttributes)) {
+                    $columnCheckboxes.append(this.createTableColumnOption(key, label, false, false));
+                }
+            }
+
+            new Garnish.DragSort($columnCheckboxes.children(), {
+                handle: '.move',
+                axis: 'y'
+            });
+
+            return Craft.ui.createField($([$titleColumnCheckbox[0], $columnCheckboxes[0]]), {
+                label: Craft.t('app', 'Table Columns'),
+                instructions: Craft.t('app', 'Choose which table columns should be visible for this source, and in which order.')
+            });
         },
 
         createTableColumnOption: function(key, label, first, checked) {
@@ -404,24 +411,25 @@ Craft.CustomizeSourcesModal.Heading = Craft.CustomizeSourcesModal.BaseSource.ext
         },
 
         createSettings: function() {
+            let $settings = $('<div/>');
+
             this.$labelField = Craft.ui.createTextField({
                 label: Craft.t('app', 'Heading'),
                 instructions: Craft.t('app', 'This can be left blank if you just want an unlabeled separator.'),
                 value: this.sourceData.heading
-            });
+            }).appendTo($settings);
 
             this.$labelInput = this.$labelField.find('.text');
 
-            this.$deleteBtn = $('<a class="error delete"/>').text(Craft.t('app', 'Delete heading'));
+            $settings.append('<hr/>');
+
+            this.$deleteBtn = $('<a class="error delete"/>').text(Craft.t('app', 'Delete heading'))
+                .appendTo($settings);
 
             this.addListener(this.$labelInput, 'input', 'handleLabelInputChange');
             this.addListener(this.$deleteBtn, 'click', 'deleteHeading');
 
-            return $([
-                this.$labelField[0],
-                $('<hr/>')[0],
-                this.$deleteBtn[0]
-            ]);
+            return $settings;
         },
 
         handleLabelInputChange: function() {

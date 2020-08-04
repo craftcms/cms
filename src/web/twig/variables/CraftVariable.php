@@ -206,7 +206,7 @@ class CraftVariable extends ServiceLocator
     // -------------------------------------------------------------------------
 
     /**
-     * Returns a new [asset query](https://docs.craftcms.com/v3/dev/element-queries/asset-queries.html).
+     * Returns a new [asset query](https://craftcms.com/docs/3.x/assets.html#querying-assets).
      *
      * @param array $criteria
      * @return AssetQuery
@@ -219,7 +219,7 @@ class CraftVariable extends ServiceLocator
     }
 
     /**
-     * Returns a new [category query](https://docs.craftcms.com/v3/dev/element-queries/category-queries.html).
+     * Returns a new [category query](https://craftcms.com/docs/3.x/categories.html#querying-categories).
      *
      * @param array $criteria
      * @return CategoryQuery
@@ -232,7 +232,7 @@ class CraftVariable extends ServiceLocator
     }
 
     /**
-     * Returns a new [entry query](https://docs.craftcms.com/v3/dev/element-queries/entry-queries.html).
+     * Returns a new [entry query](https://craftcms.com/docs/3.x/entries.html#querying-entries).
      *
      * @param array $criteria
      * @return EntryQuery
@@ -245,7 +245,7 @@ class CraftVariable extends ServiceLocator
     }
 
     /**
-     * Returns a new [global set query](https://docs.craftcms.com/v3/dev/element-queries/global-set-queries.html).
+     * Returns a new [global set query](https://craftcms.com/docs/3.x/globals.html#querying-globals).
      *
      * @param array $criteria
      * @return GlobalSetQuery
@@ -259,7 +259,7 @@ class CraftVariable extends ServiceLocator
     }
 
     /**
-     * Returns a new [Matrix block query](https://docs.craftcms.com/v3/dev/element-queries/matrix-block-queries.html).
+     * Returns a new [Matrix block query](https://craftcms.com/docs/3.x/matrix-blocks.html#querying-matrix-blocks).
      *
      * @param array $criteria
      * @return MatrixBlockQuery
@@ -283,7 +283,7 @@ class CraftVariable extends ServiceLocator
     }
 
     /**
-     * Returns a new [tag query](https://docs.craftcms.com/v3/dev/element-queries/tag-queries.html).
+     * Returns a new [tag query](https://craftcms.com/docs/3.x/tags.html#querying-tags).
      *
      * @param array $criteria
      * @return TagQuery
@@ -296,7 +296,7 @@ class CraftVariable extends ServiceLocator
     }
 
     /**
-     * Returns a new [user query](https://docs.craftcms.com/v3/dev/element-queries/user-queries.html).
+     * Returns a new [user query](https://craftcms.com/docs/3.x/users.html#querying-users).
      *
      * @param array $criteria
      * @return UserQuery

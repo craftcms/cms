@@ -14,7 +14,6 @@ use craft\elements\db\ElementQueryInterface;
 use craft\events\BatchElementActionEvent;
 use craft\queue\BaseJob;
 use craft\services\Elements;
-use yii\db\Exception;
 
 /**
  * ResaveElements job
@@ -45,9 +44,6 @@ class ResaveElements extends BaseJob
      */
     public function execute($queue)
     {
-        // Let's save ourselves some trouble and just clear all the caches for this element class
-        Craft::$app->getTemplateCaches()->deleteCachesByElementType($this->elementType);
-
         /** @var ElementQuery $query */
         $query = $this->_query();
         $total = $query->count();
@@ -97,11 +93,6 @@ class ResaveElements extends BaseJob
         if (!empty($this->criteria)) {
             Craft::configure($query, $this->criteria);
         }
-
-        $query
-            ->offset(null)
-            ->limit(null)
-            ->orderBy(null);
 
         return $query;
     }

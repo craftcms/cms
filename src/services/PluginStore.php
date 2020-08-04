@@ -10,6 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\db\Table;
 use craft\helpers\DateTimeHelper;
+use craft\helpers\Db;
 use craft\models\CraftIdToken;
 use craft\records\CraftIdToken as OauthTokenRecord;
 use DateInterval;
@@ -184,9 +185,9 @@ class PluginStore extends Component
             return false;
         }
 
-        Craft::$app->getDb()->createCommand()
-            ->delete(Table::CRAFTIDTOKENS, ['userId' => $userId])
-            ->execute();
+        Db::delete(Table::CRAFTIDTOKENS, [
+            'userId' => $userId,
+        ]);
 
         return true;
     }

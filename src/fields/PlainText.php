@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
+use craft\base\SortableFieldInterface;
 use craft\helpers\Db;
 use LitEmoji\LitEmoji;
 use yii\db\Schema;
@@ -21,7 +22,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class PlainText extends Field implements PreviewableFieldInterface
+class PlainText extends Field implements PreviewableFieldInterface, SortableFieldInterface
 {
     /**
      * @inheritdoc
@@ -38,6 +39,12 @@ class PlainText extends Field implements PreviewableFieldInterface
     {
         return 'string|null';
     }
+
+    /**
+     * @var string The UI mode of the field.
+     * @since 3.5.0
+     */
+    public $uiMode = 'normal';
 
     /**
      * @var string|null The input’s placeholder text
@@ -183,14 +190,13 @@ class PlainText extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml($value, ElementInterface $element = null): string
     {
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/PlainText/input',
-            [
-                'name' => $this->handle,
-                'value' => $value,
-                'field' => $this,
-            ]);
+        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/PlainText/input', [
+            'name' => $this->handle,
+            'value' => $value,
+            'field' => $this,
+        ]);
     }
 
     /**
@@ -221,7 +227,7 @@ class PlainText extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getSearchKeywords($value, ElementInterface $element): string
+    protected function searchKeywords($value, ElementInterface $element): string
     {
         $value = (string)$value;
         $value = LitEmoji::unicodeToShortcode($value);

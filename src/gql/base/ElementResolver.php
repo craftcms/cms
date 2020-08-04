@@ -7,11 +7,12 @@
 
 namespace craft\gql\base;
 
-use craft\base\Element;
+use Craft;
+use craft\base\ElementInterface;
+use craft\base\GqlInlineFragmentFieldInterface;
 use craft\elements\db\ElementQuery;
+use craft\gql\ElementQueryConditionBuilder;
 use craft\helpers\Gql as GqlHelper;
-use craft\helpers\StringHelper;
-use craft\services\Gql;
 use GraphQL\Type\Definition\ResolveInfo;
 
 /**
@@ -39,7 +40,7 @@ abstract class ElementResolver extends Resolver
      * @param array $arguments
      * @param $context
      * @param ResolveInfo $resolveInfo
-     * @return Element|null|mixed
+     * @return ElementInterface|null|mixed
      */
     public static function resolveOne($source, array $arguments, $context, ResolveInfo $resolveInfo)
     {
@@ -56,6 +57,21 @@ abstract class ElementResolver extends Resolver
         $query = self::prepareElementQuery($source, $arguments, $context, $resolveInfo);
         $value = $query instanceof ElementQuery ? $query->all() : $query;
         return GqlHelper::applyDirectives($source, $resolveInfo, $value);
+    }
+
+    /**
+     * Resolve an element query to a total count of elements.
+     *
+     * @param $source
+     * @param array $arguments
+     * @param $context
+     * @param ResolveInfo $resolveInfo
+     * @return ElementInterface|null|mixed
+     */
+    public static function resolveCount($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    {
+        $query = self::prepareElementQuery($source, $arguments, $context, $resolveInfo);
+        return $query->count();
     }
 
     /**
@@ -79,44 +95,36 @@ abstract class ElementResolver extends Resolver
             return $query;
         }
 
-        /** @var ElementQuery $query */
-        $preloadNodes = self::extractEagerLoadCondition($resolveInfo);
-        $eagerLoadConditions = [];
+        $parentField = null;
 
-        $relationCountFields = [];
+        // This will happen if something is either dynamically added or is inside an block element that didn't support eager-loading
+        // and broke the eager-loading chain. In this case Craft has to provide the relevant context so the condition builder knows where it's at.
+        if ($source instanceof ElementInterface) {
+            $context = $source->getFieldContext();
 
-        // Set up the preload count
-        foreach ($preloadNodes as $element => $parameters) {
-            if (StringHelper::endsWith($element, '@' . Gql::GRAPHQL_COUNT_FIELD)) {
-                if (isset($parameters['field'])) {
-                    $relationCountFields[$parameters['field']] = true;
+            if ($context !== 'global') {
+                $field = Craft::$app->getFields()->getFieldByHandle($fieldName, $context);
+                if ($field instanceof GqlInlineFragmentFieldInterface) {
+                    $parentField = $field;
                 }
             }
         }
 
-        foreach ($relationCountFields as $fieldName => $dud) {
-            if (!array_key_exists($fieldName, $preloadNodes)) {
-                $preloadNodes[$fieldName] = [];
+        $conditionBuilder = Craft::createObject([
+            'class' => ElementQueryConditionBuilder::class,
+            'resolveInfo' => $resolveInfo
+        ]);
+
+        $conditions = $conditionBuilder->extractQueryConditions($parentField);
+
+        /** @var ElementQuery $query */
+        foreach ($conditions as $method => $parameters) {
+            if (method_exists($query, $method)) {
+                $query = $query->{$method}($parameters);
             }
         }
 
-        foreach ($preloadNodes as $element => $parameters) {
-            if (StringHelper::endsWith($element, '@' . Gql::GRAPHQL_COUNT_FIELD)) {
-                continue;
-            }
-
-            if (!empty($relationCountFields[$element])) {
-                $parameters['count'] = true;
-            }
-
-            if (empty($parameters)) {
-                $eagerLoadConditions[] = $element;
-            } else {
-                $eagerLoadConditions[] = [$element, $parameters];
-            }
-        }
-
-        return $query->with($eagerLoadConditions);
+        return $query;
     }
 
     /**

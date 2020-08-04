@@ -8,12 +8,16 @@
 namespace craft\models;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\base\Field;
 use craft\base\FieldInterface;
+use craft\base\FieldLayoutElementInterface;
 use craft\base\Model;
+use craft\fieldlayoutelements\BaseField;
+use craft\fieldlayoutelements\CustomField;
+use craft\helpers\ArrayHelper;
+use craft\helpers\Json;
 use craft\helpers\StringHelper;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
 /**
@@ -24,6 +28,46 @@ use yii\base\InvalidConfigException;
  */
 class FieldLayoutTab extends Model
 {
+    /**
+     * Creates a new field layout tab from the given config.
+     *
+     * @param array $config
+     * @return self
+     * @since 3.5.0
+     */
+    public static function createFromConfig(array $config): self
+    {
+        static::updateConfig($config);
+        return new self($config);
+    }
+
+    /**
+     * Updates a field layout tab’s config to the new format.
+     *
+     * @param array $config
+     * @since 3.5.0
+     */
+    public static function updateConfig(array &$config)
+    {
+        if (!array_key_exists('fields', $config)) {
+            return;
+        }
+
+        $config['elements'] = [];
+
+        ArrayHelper::multisort($config['fields'], 'sortOrder');
+        foreach ($config['fields'] as $fieldUid => $fieldConfig) {
+            $config['elements'][] = [
+                'type' => CustomField::class,
+                'fieldUid' => $fieldUid,
+                'required' => (bool)$fieldConfig['required'],
+            ];
+        }
+
+        unset($config['fields']);
+    }
+
+
     /**
      * @var int|null ID
      */
@@ -38,6 +82,12 @@ class FieldLayoutTab extends Model
      * @var string|null Name
      */
     public $name;
+
+    /**
+     * @var FieldLayoutElementInterface[]|null The tab’s layout elements
+     * @since 3.5.0
+     */
+    public $elements;
 
     /**
      * @var int|null Sort order
@@ -62,6 +112,42 @@ class FieldLayoutTab extends Model
     /**
      * @inheritdoc
      */
+    public function init()
+    {
+        parent::init();
+
+        if ($this->elements === null) {
+            $this->elements = [];
+            foreach ($this->getFields() as $field) {
+                $this->elements[] = Craft::createObject([
+                    'class' => CustomField::class,
+                    'required' => $field->required,
+                ], [
+                    $field,
+                ]);
+            }
+        } else {
+            if (is_string($this->elements)) {
+                $this->elements = Json::decode($this->elements);
+            }
+            $fieldsService = Craft::$app->getFields();
+            foreach ($this->elements as $i => $element) {
+                if (is_array($element)) {
+                    try {
+                        $this->elements[$i] = $fieldsService->createLayoutElement($element);
+                    } catch (InvalidArgumentException $e) {
+                        Craft::warning('Invalid field layout element config: ' . $e->getMessage(), __METHOD__);
+                        Craft::$app->getErrorHandler()->logException($e);
+                        unset($this->elements[$i]);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
@@ -69,6 +155,40 @@ class FieldLayoutTab extends Model
         $rules[] = [['name'], 'string', 'max' => 255];
         $rules[] = [['sortOrder'], 'string', 'max' => 4];
         return $rules;
+    }
+
+    /**
+     * Returns the field layout config for this field layout tab.
+     *
+     * @return array|null
+     * @since 3.5.0
+     */
+    public function getConfig()
+    {
+        if (empty($this->elements)) {
+            return null;
+        }
+
+        return [
+            'name' => $this->name,
+            'sortOrder' => (int)$this->sortOrder,
+            'elements' => $this->getElementConfigs(),
+        ];
+    }
+
+    /**
+     * Returns the field layout configs for this field layout’s tabs.
+     *
+     * @return array[]
+     * @since 3.5.0
+     */
+    public function getElementConfigs(): array
+    {
+        $elementConfigs = [];
+        foreach ($this->elements as $element) {
+            $elementConfigs[] = ['type' => get_class($element)] + $element->toArray();
+        }
+        return $elementConfigs;
     }
 
     /**
@@ -105,9 +225,9 @@ class FieldLayoutTab extends Model
     }
 
     /**
-     * Returns the tab’s fields.
+     * Returns the custom fields included in this tab.
      *
-     * @return FieldInterface[] The tab’s fields.
+     * @return FieldInterface[]
      */
     public function getFields(): array
     {
@@ -119,7 +239,6 @@ class FieldLayoutTab extends Model
 
         if ($layout = $this->getLayout()) {
             foreach ($layout->getFields() as $field) {
-                /** @var Field $field */
                 if ($field->tabId == $this->id) {
                     $this->_fields[] = $field;
                 }
@@ -130,17 +249,28 @@ class FieldLayoutTab extends Model
     }
 
     /**
-     * Sets the tab’s fields.
+     * Sets the custom fields included in this tab.
      *
-     * @param FieldInterface[] $fields The tab’s fields.
+     * @param FieldInterface[] $fields
      */
     public function setFields(array $fields)
     {
+        ArrayHelper::multisort($fields, 'sortOrder');
         $this->_fields = $fields;
+
+        $this->elements = [];
+        foreach ($this->_fields as $field) {
+            $this->elements[] = Craft::createObject([
+                'class' => CustomField::class,
+                'required' => $field->required,
+            ], [
+                $field,
+            ]);
+        }
     }
 
     /**
-     * Returns the tab’s anchor name.
+     * Returns the tab’s HTML ID.
      *
      * @return string
      */
@@ -150,7 +280,7 @@ class FieldLayoutTab extends Model
     }
 
     /**
-     * Returns whether the given element has any validation errors within the fields in this tab.
+     * Returns whether the given element has any validation errors for the custom fields included in this tab.
      *
      * @param ElementInterface $element
      * @return bool
@@ -158,14 +288,12 @@ class FieldLayoutTab extends Model
      */
     public function elementHasErrors(ElementInterface $element): bool
     {
-        /** @var Element $element */
         if (!$element->hasErrors()) {
             return false;
         }
 
-        foreach ($this->getFields() as $field) {
-            /** @var Field $field */
-            if ($element->hasErrors("{$field->handle}.*")) {
+        foreach ($this->elements as $layoutElement) {
+            if ($layoutElement instanceof BaseField && $element->hasErrors($layoutElement->attribute() . '.*')) {
                 return true;
             }
         }

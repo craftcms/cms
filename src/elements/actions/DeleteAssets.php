@@ -9,7 +9,6 @@ namespace craft\elements\actions;
 
 use Craft;
 use craft\base\ElementAction;
-use craft\base\Volume;
 use craft\elements\Asset;
 use craft\elements\db\ElementQueryInterface;
 use yii\base\Exception;
@@ -56,8 +55,7 @@ class DeleteAssets extends ElementAction
 
         try {
             foreach ($query->all() as $asset) {
-                /*** @var Asset $asset */
-                /** @var Volume $volume */
+                /** @var Asset $asset */
                 $volume = $asset->getVolume();
                 if ($userSession->checkPermission('deleteFilesAndFoldersInVolume:' . $volume->uid)) {
                     $elementsService->deleteElement($asset);

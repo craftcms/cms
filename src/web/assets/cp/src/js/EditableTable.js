@@ -294,7 +294,7 @@ Craft.EditableTable = Garnish.Base.extend(
                     var name = baseName + '[' + rowId + '][' + colId + ']';
 
                     $cell = $('<td/>', {
-                        'class': `${col['class'] || ''} ${col['type']}-cell`,
+                        'class': `${col.class} ${col.type}-cell`,
                         'width': col.width
                     });
 
@@ -577,7 +577,8 @@ Craft.EditableTable.Row = Garnish.Base.extend(
             for (var i = 0; i < checkboxCol.toggle.length; i++) {
                 colId = checkboxCol.toggle[i];
                 colIndex = this.table.colum;
-                if (neg = colId[0] === '!') {
+                neg = colId[0] === '!';
+                if (neg) {
                     colId = colId.substr(1);
                 }
                 if ((checked && !neg) || (!checked && neg)) {

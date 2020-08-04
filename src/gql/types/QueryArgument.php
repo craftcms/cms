@@ -9,6 +9,7 @@ namespace craft\gql\types;
 
 use craft\errors\GqlException;
 use craft\gql\GqlEntityRegistry;
+use GraphQL\Language\AST\BooleanValueNode;
 use GraphQL\Language\AST\IntValueNode;
 use GraphQL\Language\AST\StringValueNode;
 use GraphQL\Type\Definition\ScalarType;
@@ -29,7 +30,7 @@ class QueryArgument extends ScalarType
     /**
      * @var string
      */
-    public $description = 'The `QueryArgument` scalar type represents a value to be using in Craft element queries. It can be both an integer or a string.';
+    public $description = 'The `QueryArgument` scalar type represents a value to be using in Craft element queries. It can be an integer, a string, or a boolean value.';
 
     public function __construct(array $config = [])
     {
@@ -61,7 +62,7 @@ class QueryArgument extends ScalarType
     public function serialize($value)
     {
         // If it's neither int or string, attempt to make it a string.
-        if (!is_int($value) && !is_string($value)) {
+        if (!is_int($value) && !is_string($value) && !is_bool($value)) {
             $value = (string)$value;
         }
 
@@ -73,8 +74,8 @@ class QueryArgument extends ScalarType
      */
     public function parseValue($value)
     {
-        if (!is_int($value) && !is_string($value)) {
-            throw new GqlException("QueryArgument must be either a string or an integer.");
+        if (!is_int($value) && !is_string($value) && !is_bool($value)) {
+            throw new GqlException("QueryArgument must be either a string, an integer, or a boolean value.");
         }
 
         return $value;
@@ -93,7 +94,11 @@ class QueryArgument extends ScalarType
             return (int)$valueNode->value;
         }
 
-        // Intentionally without message, as all information already in wrapped Exception
-        throw new GqlException("QueryArgument must be either a string or an integer.");
+        if ($valueNode instanceof BooleanValueNode) {
+            return (bool)$valueNode->value;
+        }
+
+        // This message will be lost by the wrapping exception, but it feels good to provide one.
+        throw new GqlException("QueryArgument must be either a string, an integer, or a boolean value.");
     }
 }

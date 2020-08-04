@@ -11,10 +11,13 @@ use Craft;
 use craft\base\Field;
 use craft\elements\Tag as TagElement;
 use craft\gql\base\GeneratorInterface;
+use craft\gql\base\ObjectType;
+use craft\gql\base\SingleGeneratorInterface;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\Tag as TagInterface;
 use craft\gql\TypeManager;
 use craft\gql\types\elements\Tag;
+use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\TagGroup;
 
@@ -24,7 +27,7 @@ use craft\models\TagGroup;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0
  */
-class TagType implements GeneratorInterface
+class TagType implements GeneratorInterface, SingleGeneratorInterface
 {
     /**
      * @inheritdoc
@@ -35,33 +38,42 @@ class TagType implements GeneratorInterface
         $gqlTypes = [];
 
         foreach ($tagGroups as $tagGroup) {
-            /** @var TagGroup $tagGroup */
-            $typeName = TagElement::gqlTypeNameByContext($tagGroup);
             $requiredContexts = TagElement::gqlScopesByContext($tagGroup);
 
             if (!GqlHelper::isSchemaAwareOf($requiredContexts)) {
                 continue;
             }
 
-            $contentFields = $tagGroup->getFields();
-            $contentFieldGqlTypes = [];
-
-            /** @var Field $contentField */
-            foreach ($contentFields as $contentField) {
-                $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
-            }
-
-            $tagGroupFields = TypeManager::prepareFieldDefinitions(array_merge(TagInterface::getFieldDefinitions(), $contentFieldGqlTypes), $typeName);
-
-            // Generate a type for each entry type
-            $gqlTypes[$typeName] = GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new Tag([
-                'name' => $typeName,
-                'fields' => function() use ($tagGroupFields) {
-                    return $tagGroupFields;
-                }
-            ]));
+            // Generate a type for each tag group
+            $type = static::generateType($tagGroup);
+            $gqlTypes[$type->name] = $type;
         }
 
         return $gqlTypes;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function generateType($context): ObjectType
+    {
+        /** @var TagGroup $tagGroup */
+        $typeName = TagElement::gqlTypeNameByContext($context);
+        $contentFields = $context->getFields();
+        $contentFieldGqlTypes = [];
+
+        /** @var Field $contentField */
+        foreach ($contentFields as $contentField) {
+            $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
+        }
+
+        $tagGroupFields = TypeManager::prepareFieldDefinitions(array_merge(TagInterface::getFieldDefinitions(), $contentFieldGqlTypes), $typeName);
+
+        return GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new Tag([
+            'name' => $typeName,
+            'fields' => function() use ($tagGroupFields) {
+                return $tagGroupFields;
+            }
+        ]));
     }
 }

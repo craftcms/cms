@@ -8,7 +8,6 @@
 namespace craft\elements\actions;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementAction;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
@@ -50,7 +49,6 @@ class Duplicate extends ElementAction
             $query->orderBy(['structureelements.lft' => SORT_ASC]);
         }
 
-        /** @var Element[] $elements */
         $elements = $query->all();
         $successCount = 0;
         $failCount = 0;
@@ -73,7 +71,7 @@ class Duplicate extends ElementAction
     }
 
     /**
-     * @param Element[] $elements
+     * @param ElementInterface[] $elements
      * @param int[] $duplicatedElementIds
      * @param int $successCount
      * @param int $failCount

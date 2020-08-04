@@ -13,6 +13,7 @@ use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\MatrixBlock;
 use craft\fields\Matrix;
+use craft\helpers\StringHelper;
 use yii\base\InvalidConfigException;
 
 /**
@@ -145,5 +146,41 @@ class MatrixBlockType extends Model implements GqlInlineFragmentInterface
     public function getEagerLoadingPrefix(): string
     {
         return $this->handle;
+    }
+
+    /**
+     * Returns the field layout config for this block type.
+     *
+     * @return array
+     * @since 3.5.0
+     */
+    public function getConfig(): array
+    {
+        $field = $this->getField();
+
+        $config = [
+            'field' => $field->uid,
+            'name' => $this->name,
+            'handle' => $this->handle,
+            'sortOrder' => (int)$this->sortOrder,
+            'fields' => [],
+        ];
+
+        if (
+            ($fieldLayout = $this->getFieldLayout()) &&
+            ($fieldLayoutConfig = $fieldLayout->getConfig())
+        ) {
+            if (!$fieldLayout->uid) {
+                $fieldLayout->uid = StringHelper::UUID();
+            }
+            $config['fieldLayouts'][$fieldLayout->uid] = $fieldLayoutConfig;
+        }
+
+        $fieldsService = Craft::$app->getFields();
+        foreach ($this->getFields() as $field) {
+            $config['fields'][$field->uid] = $fieldsService->createFieldConfig($field);
+        }
+
+        return $config;
     }
 }

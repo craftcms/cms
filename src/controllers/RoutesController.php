@@ -26,10 +26,10 @@ class RoutesController extends Controller
      */
     public function init()
     {
+        parent::init();
+
         // All route actions require an admin
         $this->requireAdmin();
-
-        parent::init();
     }
 
     /**
@@ -42,10 +42,10 @@ class RoutesController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $uriParts = Craft::$app->getRequest()->getRequiredBodyParam('uriParts');
-        $template = Craft::$app->getRequest()->getRequiredBodyParam('template');
-        $siteUid = Craft::$app->getRequest()->getBodyParam('siteUid');
-        $routeUid = Craft::$app->getRequest()->getBodyParam('routeUid');
+        $uriParts = $this->request->getRequiredBodyParam('uriParts');
+        $template = $this->request->getRequiredBodyParam('template');
+        $siteUid = $this->request->getBodyParam('siteUid');
+        $routeUid = $this->request->getBodyParam('routeUid');
 
         if ($siteUid === '') {
             $siteUid = null;
@@ -69,7 +69,7 @@ class RoutesController extends Controller
     {
         $this->requirePostRequest();
 
-        $routeUid = Craft::$app->getRequest()->getRequiredBodyParam('routeUid');
+        $routeUid = $this->request->getRequiredBodyParam('routeUid');
         Craft::$app->getRoutes()->deleteRouteByUid($routeUid);
 
         return $this->asJson(['success' => true]);
@@ -85,7 +85,7 @@ class RoutesController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $routeUids = Craft::$app->getRequest()->getRequiredBodyParam('routeUids');
+        $routeUids = $this->request->getRequiredBodyParam('routeUids');
         Craft::$app->getRoutes()->updateRouteOrder($routeUids);
 
         return $this->asJson(['success' => true]);

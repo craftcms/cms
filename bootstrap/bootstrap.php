@@ -131,6 +131,8 @@ if (!defined('CRAFT_LICENSE_KEY')) {
 
             // See if it worked.
             if (!file_exists($licenseFullPath) || (file_exists($licenseFullPath) && file_get_contents($licenseFullPath) !== 'temp')) {
+                // Set a 503 response header so things like Varnish won't cache a bad page.
+                http_response_code(503);
                 exit($licensePath . ' isn\'t writable by PHP. Please fix that.' . PHP_EOL);
             }
         }
@@ -237,10 +239,6 @@ $config = ArrayHelper::merge(
     $configService->getConfigFromFile('app'),
     $configService->getConfigFromFile("app.{$appType}")
 );
-
-if (defined('CRAFT_SITE') || defined('CRAFT_LOCALE')) {
-    $config['components']['sites']['currentSite'] = defined('CRAFT_SITE') ? CRAFT_SITE : CRAFT_LOCALE;
-}
 
 // Initialize the application
 /** @var \craft\web\Application|craft\console\Application $app */

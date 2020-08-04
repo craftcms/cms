@@ -8,16 +8,18 @@
 namespace craft\console\controllers;
 
 use Craft;
-use craft\base\Plugin;
+use craft\base\PluginInterface;
 use craft\console\ControllerTrait;
 use craft\db\MigrationManager;
 use craft\errors\InvalidPluginException;
 use craft\errors\MigrateException;
 use craft\errors\MigrationException;
+use craft\events\RegisterMigratorEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use yii\base\ErrorException;
 use yii\base\InvalidArgumentException;
+use yii\base\InvalidConfigException;
 use yii\console\controllers\BaseMigrateController;
 use yii\console\Exception;
 use yii\console\ExitCode;
@@ -49,14 +51,51 @@ class MigrateController extends BaseMigrateController
     use ControllerTrait;
 
     /**
-     * @var string|null The type of migrations we're dealing with here. Can be 'app', 'plugin', or 'content'.
+     * @event RegisterMigratorEvent The event that is triggered when resolving an unknown migration track.
      *
-     * If --plugin is passed, this will automatically be set to 'plugin'. Otherwise defaults to 'content'.
+     * ```php
+     * use craft\console\controllers\MigrateController;
+     * use craft\db\MigrationManager;
+     * use craft\events\RegisterMigratorEvent;
+     * use yii\base\Event;
+     *
+     * Event::on(
+     *     MigrateController::class,
+     *     MigrateController::EVENT_REGISTER_MIGRATOR,
+     *     function(RegisterMigratorEvent $event) {
+     *         if ($event->track === 'myCustomTrack') {
+     *             $event->migrator = Craft::createObject([
+     *                 'class' => MigrationManager::class,
+     *                 'track' => 'myCustomTrack',
+     *                 'migrationNamespace' => 'my\migration\namespace',
+     *                 'migrationPath' => '/path/to/migrations',
+     *             ]);
+     *             $event->handled = true;
+     *         }
+     *     }
+     * );
+     * ```
+     *
+     * @since 3.5.0
      */
-    public $type = MigrationManager::TYPE_CONTENT;
+    const EVENT_REGISTER_MIGRATOR = 'registerMigrator';
 
     /**
-     * @var string|Plugin|null The handle of the plugin to use during migration operations, or the plugin itself
+     * @var string The migration track to work with (e.g. `craft`, `content`, `plugin:commerce`, etc.)
+     *
+     * If --plugin is passed, this will automatically be set to the plugin’s track. Otherwise defaults to 'content'.
+     * @since 3.5.0
+     */
+    public $track = MigrationManager::TRACK_CONTENT;
+
+    /**
+     * @var string|null The type of migrations we're dealing with here. Can be 'app', 'plugin', or 'content'.
+     * @deprecated in 3.5.0. Use [[track]] instead.
+     */
+    public $type;
+
+    /**
+     * @var string|PluginInterface|null The handle of the plugin to use during migration operations, or the plugin itself
      */
     public $plugin;
 
@@ -112,6 +151,7 @@ class MigrateController extends BaseMigrateController
             $options[] = 'noContent';
         } else {
             $options[] = 'type';
+            $options[] = 'track';
             $options[] = 'plugin';
         }
 
@@ -132,19 +172,41 @@ class MigrateController extends BaseMigrateController
 
     /**
      * @inheritdoc
-     * @throws Exception if the 'plugin' option isn't valid
      */
     public function beforeAction($action)
     {
         if ($action->id !== 'all') {
             // Validate $type
+            if ($this->type) {
+                switch ($this->type) {
+                    case 'app':
+                        $this->track = MigrationManager::TRACK_CRAFT;
+                        $new = "--track=$this->track";
+                        break;
+                    case 'content':
+                        $this->track = 'content';
+                        $new = "--track=$this->track";
+                        break;
+                    case 'plugin':
+                        $this->track = null;
+                        $new = "--plugin=$this->plugin";
+                        break;
+                    default:
+                        $this->stderr("Invalid --type option. Allowed values are 'app', 'plugin', or 'content'." . PHP_EOL, Console::FG_RED);
+                        return false;
+                }
+
+                $this->stdout("The --type option has been deprecated. Use $new instead." . PHP_EOL, Console::FG_YELLOW);
+            }
+
             if ($this->plugin) {
-                $this->type = MigrationManager::TYPE_PLUGIN;
+                $this->track = "plugin:$this->plugin";
+            } else if ($this->track && preg_match('/^plugin:([\w\-]+)$/', $this->track, $match)) {
+                $this->plugin = $match[1];
             }
-            if (!in_array($this->type, [MigrationManager::TYPE_APP, MigrationManager::TYPE_PLUGIN, MigrationManager::TYPE_CONTENT], true)) {
-                throw new Exception('Invalid migration type: ' . $this->type);
-            }
-            if ($this->type === MigrationManager::TYPE_PLUGIN) {
+
+            // Validate $plugin
+            if ($this->plugin) {
                 // Make sure $this->plugin in set to a valid plugin handle
                 if (empty($this->plugin)) {
                     $this->stderr('You must specify the plugin handle using the --plugin option.' . PHP_EOL, Console::FG_RED);
@@ -155,7 +217,7 @@ class MigrateController extends BaseMigrateController
                     try {
                         $plugin = $pluginsService->createPlugin($this->plugin);
                     } catch (InvalidPluginException $e) {
-                        $this->stderr('Invalid plugin handle: ' . $this->plugin . PHP_EOL, Console::FG_RED);
+                        $this->stderr("Invalid plugin handle: $this->plugin" . PHP_EOL, Console::FG_RED);
                         return false;
                     }
                 }
@@ -164,6 +226,12 @@ class MigrateController extends BaseMigrateController
 
             $this->migrationPath = $this->getMigrator()->migrationPath;
             FileHelper::createDirectory($this->migrationPath);
+        }
+
+        // TODO remove after next breakpoint
+        // Make sure that the new project config structure is there before any migrations cause Project Config to look there.
+        if (!file_exists(Craft::$app->getPath()->getProjectConfigFilePath())) {
+            Craft::$app->getProjectConfig()->regenerateYamlFromConfig();
         }
 
         if (!parent::beforeAction($action)) {
@@ -316,13 +384,10 @@ class MigrateController extends BaseMigrateController
 
         if ($res === ExitCode::OK && empty($this->getNewMigrations())) {
             // Update any schema versions.
-            switch ($this->type) {
-                case MigrationManager::TYPE_APP:
-                    Craft::$app->getUpdates()->updateCraftVersionInfo();
-                    break;
-                case MigrationManager::TYPE_PLUGIN:
-                    Craft::$app->getUpdates()->setNewPluginInfo($this->plugin);
-                    break;
+            if ($this->track === MigrationManager::TRACK_CRAFT) {
+                Craft::$app->getUpdates()->updateCraftVersionInfo();
+            } else if ($this->plugin) {
+                Craft::$app->getUpdates()->setNewPluginInfo($this->plugin);
             }
 
             // Delete all compiled templates
@@ -343,20 +408,32 @@ class MigrateController extends BaseMigrateController
      * Returns the migration manager that should be used for this request
      *
      * @return MigrationManager
+     * @throws InvalidConfigException
      */
-    protected function getMigrator(): MigrationManager
+    public function getMigrator(): MigrationManager
     {
         if ($this->_migrator === null) {
-            switch ($this->type) {
-                case MigrationManager::TYPE_APP:
-                    $this->_migrator = Craft::$app->getMigrator();
-                    break;
-                case MigrationManager::TYPE_CONTENT:
-                    $this->_migrator = Craft::$app->getContentMigrator();
-                    break;
-                case MigrationManager::TYPE_PLUGIN:
-                    $this->_migrator = $this->plugin->getMigrator();
-                    break;
+            if ($this->plugin) {
+                $this->_migrator = $this->plugin->getMigrator();
+            } else {
+                switch ($this->track) {
+                    case MigrationManager::TRACK_CRAFT:
+                        $this->_migrator = Craft::$app->getMigrator();
+                        break;
+                    case MigrationManager::TRACK_CONTENT:
+                        $this->_migrator = Craft::$app->getContentMigrator();
+                        break;
+                    default:
+                        // Give plugins & modules a chance to register a custom migrator
+                        $event = new RegisterMigratorEvent([
+                            'track' => $this->track,
+                        ]);
+                        $this->trigger(self::EVENT_REGISTER_MIGRATOR, $event);
+                        if (!$event->migrator) {
+                            throw new InvalidConfigException("Invalid migration track: $this->track");
+                        }
+                        $this->_migrator = $event->migrator;
+                }
             }
         }
 

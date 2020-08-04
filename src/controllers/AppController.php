@@ -21,6 +21,7 @@ use craft\models\Updates;
 use craft\web\Controller;
 use craft\web\ServiceUnavailableHttpException;
 use Http\Client\Common\Exception\ServerErrorException;
+use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
@@ -42,6 +43,7 @@ class AppController extends Controller
      */
     public $allowAnonymous = [
         'migrate' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+        'broken-image' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
     ];
 
     /**
@@ -79,7 +81,7 @@ class AppController extends Controller
     public function actionProcessApiResponseHeaders()
     {
         $this->requireCpRequest();
-        $headers = Craft::$app->getRequest()->getRequiredBodyParam('headers');
+        $headers = $this->request->getRequiredBodyParam('headers');
         Api::processResponseHeaders($headers);
         return $this->asJson(1);
     }
@@ -101,15 +103,14 @@ class AppController extends Controller
             throw new ForbiddenHttpException('User is not permitted to perform this action');
         }
 
-        $request = Craft::$app->getRequest();
         $updatesService = Craft::$app->getUpdates();
 
-        if ($request->getParam('onlyIfCached') && !$updatesService->getIsUpdateInfoCached()) {
+        if ($this->request->getParam('onlyIfCached') && !$updatesService->getIsUpdateInfoCached()) {
             return $this->asJson(['cached' => false]);
         }
 
-        $forceRefresh = (bool)$request->getParam('forceRefresh');
-        $includeDetails = (bool)$request->getParam('includeDetails');
+        $forceRefresh = (bool)$this->request->getParam('forceRefresh');
+        $includeDetails = (bool)$this->request->getParam('includeDetails');
 
         $updates = $updatesService->getUpdates($forceRefresh);
         return $this->_updatesResponse($updates, $includeDetails);
@@ -132,11 +133,10 @@ class AppController extends Controller
             throw new ForbiddenHttpException('User is not permitted to perform this action');
         }
 
-        $request = Craft::$app->getRequest();
-        $updateData = $request->getBodyParam('updates');
+        $updateData = $this->request->getBodyParam('updates');
         $updatesService = Craft::$app->getUpdates();
         $updates = $updatesService->cacheUpdates($updateData);
-        $includeDetails = (bool)$request->getParam('includeDetails');
+        $includeDetails = (bool)$this->request->getParam('includeDetails');
         return $this->_updatesResponse($updates, $includeDetails);
     }
 
@@ -189,9 +189,10 @@ class AppController extends Controller
      * services (like [DeployBot](https://deploybot.com/) or [DeployPlace](https://deployplace.com/)) to minimize site
      * downtime after a deployment.
      *
+     * @param bool $applyProjectConfigChanges
      * @throws ServerErrorException if something went wrong
      */
-    public function actionMigrate()
+    public function actionMigrate(bool $applyProjectConfigChanges = false)
     {
         $this->requirePostRequest();
 
@@ -203,11 +204,13 @@ class AppController extends Controller
         $runMigrations = !empty($handles);
 
         $projectConfigService = Craft::$app->getProjectConfig();
-        $applyProjectConfigChanges = $projectConfigService->areChangesPending();
+        if ($applyProjectConfigChanges) {
+            $applyProjectConfigChanges = $projectConfigService->areChangesPending();
+        }
 
         if (!$runMigrations && !$applyProjectConfigChanges) {
             // That was easy
-            return Craft::$app->getResponse();
+            return $this->response;
         }
 
         // Bail if Craft is already in maintenance mode
@@ -275,7 +278,7 @@ class AppController extends Controller
         }
 
         Craft::$app->disableMaintenanceMode();
-        return Craft::$app->getResponse();
+        return $this->response;
     }
 
     /**
@@ -310,7 +313,7 @@ class AppController extends Controller
         $this->requireAcceptsJson();
         $this->requirePermission('accessCp');
 
-        $path = Craft::$app->getRequest()->getRequiredBodyParam('path');
+        $path = $this->request->getRequiredBodyParam('path');
 
         // Fetch 'em and send 'em
         $alerts = Cp::alerts($path, true);
@@ -328,7 +331,7 @@ class AppController extends Controller
         $this->requireAcceptsJson();
         $this->requirePermission('accessCp');
 
-        $message = Craft::$app->getRequest()->getRequiredBodyParam('message');
+        $message = $this->request->getRequiredBodyParam('message');
         $user = Craft::$app->getUser()->getIdentity();
 
         $currentTime = DateTimeHelper::currentUTCDateTime();
@@ -355,7 +358,7 @@ class AppController extends Controller
         $this->requireAcceptsJson();
         $this->requireAdmin();
 
-        $edition = Craft::$app->getRequest()->getRequiredBodyParam('edition');
+        $edition = $this->request->getRequiredBodyParam('edition');
         $licensedEdition = Craft::$app->getLicensedEdition();
 
         if ($licensedEdition === null) {
@@ -414,7 +417,7 @@ class AppController extends Controller
     public function actionGetPluginLicenseInfo(): Response
     {
         $this->requireAdmin();
-        $pluginLicenses = Craft::$app->getRequest()->getBodyParam('pluginLicenses');
+        $pluginLicenses = $this->request->getBodyParam('pluginLicenses');
         $result = $this->_pluginLicenseInfo($pluginLicenses);
         ArrayHelper::multisort($result, 'name');
         return $this->asJson($result);
@@ -431,9 +434,8 @@ class AppController extends Controller
         $this->requireAcceptsJson();
         $this->requireAdmin();
 
-        $request = Craft::$app->getRequest();
-        $handle = $request->getRequiredBodyParam('handle');
-        $newKey = $request->getRequiredBodyParam('key');
+        $handle = $this->request->getRequiredBodyParam('handle');
+        $newKey = $this->request->getRequiredBodyParam('key');
 
         // Get the current key and set the new one
         $pluginsService = Craft::$app->getPlugins();
@@ -566,5 +568,26 @@ class AppController extends Controller
         }
 
         return $result;
+    }
+
+    /**
+     * Sends a broken image.
+     *
+     * @return Response
+     * @throws InvalidConfigException
+     * @since 3.5.0
+     */
+    public function actionBrokenImage(): Response
+    {
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $imagePath = Craft::getAlias($generalConfig->brokenImagePath);
+        if (!is_file($imagePath)) {
+            throw new InvalidConfigException("Invalid broken image path: $generalConfig->brokenImagePath");
+        }
+
+        $statusCode = $this->response->getStatusCode();
+        return $this->response
+            ->sendFile($imagePath, ['inline' => true])
+            ->setStatusCode($statusCode);
     }
 }

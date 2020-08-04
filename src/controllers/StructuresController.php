@@ -8,7 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\Element;
+use craft\base\ElementInterface;
 use craft\models\Structure;
 use craft\web\Controller;
 use yii\web\ForbiddenHttpException;
@@ -31,7 +31,7 @@ class StructuresController extends Controller
     private $_structure;
 
     /**
-     * @var Element|null
+     * @var ElementInterface|null
      */
     private $_element;
 
@@ -43,19 +43,19 @@ class StructuresController extends Controller
      */
     public function init()
     {
+        parent::init();
+
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $request = Craft::$app->getRequest();
-
         // This controller is only available to the control panel
-        if (!$request->getIsCpRequest()) {
+        if (!$this->request->getIsCpRequest()) {
             throw new ForbiddenHttpException('Action only available from the control panel');
         }
 
-        $structureId = $request->getRequiredBodyParam('structureId');
-        $elementId = $request->getRequiredBodyParam('elementId');
-        $siteId = $request->getRequiredBodyParam('siteId');
+        $structureId = $this->request->getRequiredBodyParam('structureId');
+        $elementId = $this->request->getRequiredBodyParam('elementId');
+        $siteId = $this->request->getRequiredBodyParam('siteId');
 
         // Make sure they have permission to edit this structure
         $this->requireAuthorization('editStructure:' . $structureId);
@@ -70,7 +70,7 @@ class StructuresController extends Controller
             throw new NotFoundHttpException('Element not found');
         }
 
-        /** @var Element|string $elementType */
+        /** @var ElementInterface|string $elementType */
         $this->_element = $elementType::find()
             ->id($elementId)
             ->siteId($siteId)
@@ -81,8 +81,6 @@ class StructuresController extends Controller
         if ($this->_element === null) {
             throw new NotFoundHttpException('Element not found');
         }
-
-        parent::init();
     }
 
     /**
@@ -104,11 +102,10 @@ class StructuresController extends Controller
      */
     public function actionMoveElement(): Response
     {
-        $request = Craft::$app->getRequest();
         $structuresService = Craft::$app->getStructures();
 
-        $parentElementId = $request->getBodyParam('parentId');
-        $prevElementId = $request->getBodyParam('prevId');
+        $parentElementId = $this->request->getBodyParam('parentId');
+        $prevElementId = $this->request->getBodyParam('prevId');
 
         if ($prevElementId) {
             $prevElement = Craft::$app->getElements()->getElementById($prevElementId, null, $this->_element->siteId);

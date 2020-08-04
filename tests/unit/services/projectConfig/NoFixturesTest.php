@@ -95,11 +95,11 @@ class ProjectConfigTest extends TestCase
                     ]
                 ]
             ],
-            'get' => function ($path, $useYaml) use ($yaml) {
+            'get' => function($path, $useYaml) use ($yaml) {
                 return $yaml[$path];
             }
         ]);
-        
+
         // Mocking the project config killed all event listeners, though
         $projectConfig->init();
 

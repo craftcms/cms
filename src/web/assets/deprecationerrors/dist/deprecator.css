@@ -4,6 +4,6 @@
 
 #traces .body strong { color: #7b8793; }
 
-@media only screen and (-webkit-min-device-pixel-ratio: 1.5), only screen and (-moz-min-device-pixel-ratio: 1.5), only screen and (min-device-pixel-ratio: 1.5), only screen and (min-resolution: 1.5dppx) { #traces.loading { background-image: url(images/spinner_big_2x.gif); background-size: 48px; } }
+@media only screen and (-webkit-min-device-pixel-ratio: 1.5), only screen and (-moz-min-device-pixel-ratio: 1.5), only screen and (-o-min-device-pixel-ratio: 3 / 2), only screen and (min-device-pixel-ratio: 1.5), only screen and (-o-min-device-pixel-ratio: 3/2), only screen and (min-resolution: 1.5dppx) { #traces.loading { background-image: url(images/spinner_big_2x.gif); -o-background-size: 48px; background-size: 48px; } }
 
 /*# sourceMappingURL=deprecator.css.map */

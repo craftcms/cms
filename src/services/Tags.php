@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\Field;
 use craft\db\Table;
 use craft\elements\Tag;
 use craft\errors\TagGroupNotFoundException;
@@ -184,30 +183,9 @@ class Tags extends Component
             $tagGroup->uid = Db::uidById(Table::TAGGROUPS, $tagGroup->id);
         }
 
-        $projectConfig = Craft::$app->getProjectConfig();
-        $configData = [
-            'name' => $tagGroup->name,
-            'handle' => $tagGroup->handle,
-        ];
-
-        $fieldLayout = $tagGroup->getFieldLayout();
-        $fieldLayoutConfig = $fieldLayout->getConfig();
-
-        if ($fieldLayoutConfig) {
-            if (empty($fieldLayout->id)) {
-                $layoutUid = StringHelper::UUID();
-                $fieldLayout->uid = $layoutUid;
-            } else {
-                $layoutUid = Db::uidById(Table::FIELDLAYOUTS, $fieldLayout->id);
-            }
-
-            $configData['fieldLayouts'] = [
-                $layoutUid => $fieldLayoutConfig
-            ];
-        }
-
         $configPath = self::CONFIG_TAGGROUP_KEY . '.' . $tagGroup->uid;
-        $projectConfig->set($configPath, $configData, "Save the “{$tagGroup->handle}” tag group");
+        $configData = $tagGroup->getConfig();
+        Craft::$app->getProjectConfig()->set($configPath, $configData, "Save the “{$tagGroup->handle}” tag group");
 
         if ($isNewTagGroup) {
             $tagGroup->id = Db::idByUid(Table::TAGGROUPS, $tagGroup->uid);
@@ -285,6 +263,9 @@ class Tags extends Component
                 'isNew' => $isNewTagGroup,
             ]));
         }
+
+        // Invalidate tag caches
+        Craft::$app->getElements()->invalidateCachesForElementType(Tag::class);
     }
 
     /**
@@ -397,6 +378,9 @@ class Tags extends Component
                 'tagGroup' => $tagGroup
             ]));
         }
+
+        // Invalidate tag caches
+        Craft::$app->getElements()->invalidateCachesForElementType(Tag::class);
     }
 
     /**
@@ -406,7 +390,6 @@ class Tags extends Component
      */
     public function pruneDeletedField(FieldEvent $event)
     {
-        /** @var Field $field */
         $field = $event->field;
         $fieldUid = $field->uid;
 
@@ -432,7 +415,9 @@ class Tags extends Component
         }
 
         // Nuke all the layout fields from the DB
-        Craft::$app->getDb()->createCommand()->delete('{{%fieldlayoutfields}}', ['fieldId' => $field->id])->execute();
+        Db::delete(Table::FIELDLAYOUTFIELDS, [
+            'fieldId' => $field->id,
+        ]);
 
         // Allow events again
         $projectConfig->muteEvents = false;

@@ -202,7 +202,7 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml($value, ElementInterface $element = null): string
     {
         // If decimals is 0 (or null, empty for whatever reason), don't run this
         if ($value !== null && $this->decimals) {
@@ -248,5 +248,18 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
     public function getContentGqlType()
     {
         return NumberType::getType();
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.5.0
+     */
+    public function getContentGqlMutationArgumentType()
+    {
+        return [
+            'name' => $this->handle,
+            'type' => NumberType::getType(),
+            'description' => $this->instructions,
+        ];
     }
 }

@@ -2,9 +2,9 @@
 
 namespace craft\migrations;
 
-use Craft;
 use craft\db\Migration;
 use craft\db\Table;
+use craft\helpers\Queue;
 use craft\queue\jobs\ConvertEntryRevisions;
 
 /**
@@ -66,7 +66,7 @@ class m190312_152740_element_revisions extends Migration
         $this->addForeignKey(null, '{{%entryversionerrors}}', ['versionId'], Table::ENTRYVERSIONS, ['id'], 'CASCADE');
 
         // Queue up a ConvertEntryRevisions job
-        Craft::$app->getQueue()->push(new ConvertEntryRevisions());
+        Queue::push(new ConvertEntryRevisions());
     }
 
     /**

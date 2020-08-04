@@ -1,0 +1,43 @@
+@charset "UTF-8";
+@import "../../../../../node_modules/craftcms-sass/mixins";
+
+/* Utilities */
+form.utility .utility-status {
+  display: block;
+  @include floatleft;
+  position: relative;
+  width: 100px;
+  height: 40px;
+  @include margin-left(10px);
+}
+
+form.utility .utility-status .alldone {
+  margin-top: 11px;
+  opacity: 0;
+}
+
+form.utility .utility-status .progressbar {
+  width: 100%;
+  top: 14px;
+  @include left(0);
+  opacity: 0;
+}
+
+form.utility .utility-status .progressbar.has-status {
+  top: 6px;
+}
+
+form.utility .utility-status .progressbar-status {
+  margin-top: 17px;
+  @include left(0);
+  font-size: 12px;
+  color: $mediumTextColor;
+  text-align: center;
+  @include padding-left(10px);
+}
+
+/* Asset Index */
+.confirmmodal .body {
+  max-height: 200px;
+  overflow: auto;
+}

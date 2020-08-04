@@ -35,11 +35,10 @@ class DraftsController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $request = Craft::$app->getRequest();
         /** @var ElementInterface|string $elementType */
-        $elementType = $request->getRequiredBodyParam('elementType');
-        $draftId = $request->getRequiredBodyParam('draftId');
-        $siteId = $request->getBodyParam('siteId');
+        $elementType = $this->request->getRequiredBodyParam('elementType');
+        $draftId = $this->request->getRequiredBodyParam('draftId');
+        $siteId = $this->request->getBodyParam('siteId');
         $this->requireAuthorization('mergeDraftSourceChanges:' . $draftId);
 
         /** @var ElementInterface|DraftBehavior $elementType */
@@ -56,7 +55,7 @@ class DraftsController extends Controller
         Craft::$app->getDrafts()->mergeSourceChanges($draft);
 
         // Redirect to the requested URL to reload the draft
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'Recent {type} changes merged.', [
+        $this->setSuccessFlash(Craft::t('app', 'Recent {type} changes merged.', [
             'type' => $elementType::lowerDisplayName(),
         ]));
 

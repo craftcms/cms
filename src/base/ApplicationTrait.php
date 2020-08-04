@@ -14,30 +14,34 @@ use craft\db\Connection;
 use craft\db\MigrationManager;
 use craft\db\Query;
 use craft\db\Table;
+use craft\elements\Asset;
+use craft\elements\Category;
+use craft\elements\Entry;
 use craft\errors\DbConnectException;
 use craft\errors\SiteNotFoundException;
 use craft\errors\WrongEditionException;
+use craft\events\DefineFieldLayoutFieldsEvent;
 use craft\events\EditionChangeEvent;
+use craft\fieldlayoutelements\EntryTitleField;
+use craft\fieldlayoutelements\TitleField;
 use craft\helpers\App;
 use craft\helpers\Db;
 use craft\i18n\Formatter;
 use craft\i18n\I18N;
 use craft\i18n\Locale;
+use craft\models\FieldLayout;
 use craft\models\Info;
 use craft\queue\Queue;
 use craft\queue\QueueInterface;
 use craft\services\AssetTransforms;
 use craft\services\Categories;
-use craft\services\Elements;
 use craft\services\Fields;
 use craft\services\Globals;
 use craft\services\Gql;
 use craft\services\Matrix;
-use craft\services\ProjectConfig;
 use craft\services\Sections;
 use craft\services\Security;
 use craft\services\Sites;
-use craft\services\Structures;
 use craft\services\Tags;
 use craft\services\UserGroups;
 use craft\services\Users;
@@ -346,13 +350,13 @@ trait ApplicationTrait
             // 1 or "more than 1" rows, and this is the fastest way to do it.
             // (https://stackoverflow.com/a/14916838/1688568)
             return $this->_isMultiSiteWithTrashed = (new Query())
-                ->from([
-                    'x' => (new Query)
-                        ->select([new Expression('1')])
-                        ->from([Table::SITES])
-                        ->limit(2)
-                ])
-                ->count() != 1;
+                    ->from([
+                        'x' => (new Query)
+                            ->select([new Expression('1')])
+                            ->from([Table::SITES])
+                            ->limit(2)
+                    ])
+                    ->count() != 1;
         }
 
         if (!$refresh && $this->_isMultiSite !== null) {
@@ -601,12 +605,12 @@ trait ApplicationTrait
     /**
      * Returns the info model, or just a particular attribute.
      *
-     * @param $throwException Whether an exception should be thrown if the `info` table doesn't exist
+     * @param bool $throwException Whether an exception should be thrown if the `info` table doesn't exist
      * @return Info
      * @throws DbException if the `info` table doesn’t exist yet and `$throwException` is `true`
      * @throws ServerErrorHttpException if the info table is missing its row
      */
-    public function getInfo($throwException = false): Info
+    public function getInfo(bool $throwException = false): Info
     {
         /** @var WebApplication|ConsoleApplication $this */
         if ($this->_info !== null) {
@@ -653,7 +657,7 @@ trait ApplicationTrait
 
             $row['version'] = $version;
         }
-        unset($row['edition'], $row['name'], $row['timezone'], $row['on'], $row['siteName'], $row['siteUrl'], $row['build'], $row['releaseDate'], $row['track'], $row['config']);
+        unset($row['edition'], $row['name'], $row['timezone'], $row['on'], $row['siteName'], $row['siteUrl'], $row['build'], $row['releaseDate'], $row['track'], $row['config'], $row['configMap']);
 
         return $this->_info = new Info($row);
     }
@@ -708,7 +712,7 @@ trait ApplicationTrait
         /** @var WebApplication|ConsoleApplication $this */
 
         if ($attributeNames === null) {
-            $attributeNames = ['version', 'schemaVersion', 'maintenance', 'configMap', 'fieldVersion'];
+            $attributeNames = ['version', 'schemaVersion', 'maintenance', 'fieldVersion'];
         }
 
         if (!$info->validate($attributeNames)) {
@@ -727,23 +731,19 @@ trait ApplicationTrait
             unset($attributes['fieldVersion']);
         }
 
-        if (isset($attributes['configMap'])) {
-            $attributes['configMap'] = Db::prepareValueForDb($attributes['configMap']);
-        }
-
         $infoRowExists = (new Query())
             ->from([Table::INFO])
             ->where(['id' => 1])
             ->exists();
 
         if ($infoRowExists) {
-            $this->getDb()->createCommand()
-                ->update(Table::INFO, $attributes, ['id' => 1])
-                ->execute();
+            Db::update(Table::INFO, $attributes, [
+                'id' => 1,
+            ]);
         } else {
-            $this->getDb()->createCommand()
-                ->insert(Table::INFO, $attributes + ['id' => 1])
-                ->execute();
+            Db::insert(Table::INFO, $attributes + [
+                    'id' => 1,
+                ]);
         }
 
         $this->setIsInstalled();
@@ -1393,11 +1393,11 @@ trait ApplicationTrait
      */
     private function _postInit()
     {
+        // Register field layout listeners
+        $this->_registerFieldLayoutListener();
+
         // Register all the listeners for config items
         $this->_registerConfigListeners();
-
-        // Register all the listeners for invalidating GraphQL Cache.
-        $this->_registerGraphQlListeners();
 
         // Load the plugins
         $this->getPlugins()->loadPlugins();
@@ -1492,20 +1492,24 @@ trait ApplicationTrait
     }
 
     /**
-     * Register listeners for GraphQL
+     * Register event listeners for field layouts.
      */
-    private function _registerGraphQlListeners()
+    private function _registerFieldLayoutListener()
     {
-        $invalidate = [$this->getGql(), 'invalidateCaches'];
+        Event::on(FieldLayout::class, FieldLayout::EVENT_DEFINE_STANDARD_FIELDS, function(DefineFieldLayoutFieldsEvent $event) {
+            /** @var FieldLayout $fieldLayout */
+            $fieldLayout = $event->sender;
 
-        $this->getProjectConfig()->on(ProjectConfig::EVENT_ADD_ITEM, $invalidate);
-        $this->getProjectConfig()->on(ProjectConfig::EVENT_REMOVE_ITEM, $invalidate);
-        $this->getProjectConfig()->on(ProjectConfig::EVENT_UPDATE_ITEM, $invalidate);
-        $this->getProjectConfig()->on(ProjectConfig::EVENT_REBUILD, $invalidate);
-        $this->getProjectConfig()->on(ProjectConfig::EVENT_AFTER_APPLY_CHANGES, $invalidate);
-        $this->getElements()->on(Elements::EVENT_AFTER_SAVE_ELEMENT, $invalidate);
-        $this->getElements()->on(Elements::EVENT_AFTER_DELETE_ELEMENT, $invalidate);
-        $this->getStructures()->on(Structures::EVENT_AFTER_MOVE_ELEMENT, $invalidate);
+            switch ($fieldLayout->type) {
+                case Asset::class:
+                case Category::class:
+                    $event->fields[] = TitleField::class;
+                    break;
+                case Entry::class:
+                    $event->fields[] = EntryTitleField::class;
+                    break;
+            }
+        });
     }
 
     /**
@@ -1528,7 +1532,7 @@ trait ApplicationTrait
             ->onUpdate(Fields::CONFIG_FIELDS_KEY . '.{uid}', [$fieldsService, 'handleChangedField'])
             ->onRemove(Fields::CONFIG_FIELDS_KEY . '.{uid}', [$fieldsService, 'handleDeletedField']);
 
-        // Block Types
+        // Block types
         $matrixService = $this->getMatrix();
         $projectConfigService
             ->onAdd(Matrix::CONFIG_BLOCKTYPE_KEY . '.{uid}', [$matrixService, 'handleChangedBlockType'])
@@ -1621,18 +1625,23 @@ trait ApplicationTrait
             ->onRemove(Sections::CONFIG_SECTIONS_KEY . '.{uid}', [$sectionsService, 'handleDeletedSection']);
         Event::on(Sites::class, Sites::EVENT_AFTER_DELETE_SITE, [$sectionsService, 'pruneDeletedSite']);
 
-        // Entry Types
+        // Entry types
         $projectConfigService
-            ->onAdd(Sections::CONFIG_SECTIONS_KEY . '.{uid}.' . Sections::CONFIG_ENTRYTYPES_KEY . '.{uid}', [$sectionsService, 'handleChangedEntryType'])
-            ->onUpdate(Sections::CONFIG_SECTIONS_KEY . '.{uid}.' . Sections::CONFIG_ENTRYTYPES_KEY . '.{uid}', [$sectionsService, 'handleChangedEntryType'])
-            ->onRemove(Sections::CONFIG_SECTIONS_KEY . '.{uid}.' . Sections::CONFIG_ENTRYTYPES_KEY . '.{uid}', [$sectionsService, 'handleDeletedEntryType']);
+            ->onAdd(Sections::CONFIG_ENTRYTYPES_KEY . '.{uid}', [$sectionsService, 'handleChangedEntryType'])
+            ->onUpdate(Sections::CONFIG_ENTRYTYPES_KEY . '.{uid}', [$sectionsService, 'handleChangedEntryType'])
+            ->onRemove(Sections::CONFIG_ENTRYTYPES_KEY . '.{uid}', [$sectionsService, 'handleDeletedEntryType']);
         Event::on(Fields::class, Fields::EVENT_AFTER_DELETE_FIELD, [$sectionsService, 'pruneDeletedField']);
 
-        // GraphQL Scopes
+        // GraphQL schemas
         $gqlService = $this->getGql();
         $projectConfigService
             ->onAdd(Gql::CONFIG_GQL_SCHEMAS_KEY . '.{uid}', [$gqlService, 'handleChangedSchema'])
             ->onUpdate(Gql::CONFIG_GQL_SCHEMAS_KEY . '.{uid}', [$gqlService, 'handleChangedSchema'])
             ->onRemove(Gql::CONFIG_GQL_SCHEMAS_KEY . '.{uid}', [$gqlService, 'handleDeletedSchema']);
+
+        // GraphQL public token
+        $projectConfigService
+            ->onAdd(Gql::CONFIG_GQL_PUBLIC_TOKEN_KEY, [$gqlService, 'handleChangedPublicToken'])
+            ->onUpdate(Gql::CONFIG_GQL_PUBLIC_TOKEN_KEY, [$gqlService, 'handleChangedPublicToken']);
     }
 }

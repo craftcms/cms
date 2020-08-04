@@ -48,7 +48,7 @@ class MultiSelect extends BaseOptionsField
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml($value, ElementInterface $element = null): string
     {
         return Craft::$app->getView()->renderTemplate('_includes/forms/multiselect', [
             'name' => $this->handle,

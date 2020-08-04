@@ -19,26 +19,30 @@ class EditUserAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public function init()
-    {
-        $this->sourcePath = __DIR__ . '/dist';
+    public $sourcePath = __DIR__ . '/dist';
 
-        $this->depends = [
-            CpAsset::class,
-        ];
+    /**
+     * @inheritdoc
+     */
+    public $depends = [
+        CpAsset::class,
+    ];
 
-        $this->css = [
-            'account.css',
-            'profile.css',
-        ];
+    /**
+     * @inheritdoc
+     */
+    public $css = [
+        'account.css',
+        'profile.css',
+    ];
 
-        $this->js = [
-            'AccountSettingsForm' . $this->dotJs(),
-            'profile' . $this->dotJs(),
-        ];
-
-        parent::init();
-    }
+    /**
+     * @inheritdoc
+     */
+    public $js = [
+        'AccountSettingsForm.min.js',
+        'profile.min.js',
+    ];
 
     /**
      * @inheritdoc
@@ -49,6 +53,7 @@ class EditUserAsset extends AssetBundle
 
         if ($view instanceof View) {
             $view->registerTranslations('app', [
+                'Copy the activation URL',
                 'Please enter your current password.',
                 'Please enter your password.',
             ]);

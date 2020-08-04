@@ -64,20 +64,15 @@ class UserGroups extends Component
      */
     public function getAllGroups(): array
     {
-        $groups = UserGroupRecord::find()
+        $results = $this->_createUserGroupsQuery()
             ->orderBy(['name' => SORT_ASC])
             ->all();
 
-        foreach ($groups as $key => $value) {
-            $groups[$key] = new UserGroup($value->toArray([
-                'id',
-                'name',
-                'handle',
-                'uid'
-            ]));
+        foreach ($results as $key => $result) {
+            $results[$key] = new UserGroup($result);
         }
 
-        return $groups;
+        return $results;
     }
 
     /**
@@ -175,8 +170,8 @@ class UserGroups extends Component
                 'g.handle',
                 'g.uid'
             ])
-            ->from(['{{%usergroups}} g'])
-            ->innerJoin('{{%usergroups_users}} gu', '[[gu.groupId]] = [[g.id]]')
+            ->from(['g' => Table::USERGROUPS])
+            ->innerJoin(['gu' => Table::USERGROUPS_USERS], '[[gu.groupId]] = [[g.id]]')
             ->where(['gu.userId' => $userId])
             ->all();
 
@@ -223,13 +218,7 @@ class UserGroups extends Component
         }
 
         $configPath = self::CONFIG_USERPGROUPS_KEY . '.' . $group->uid;
-
-        // Save everything except permissions. Not ours to touch.
-        $configData = [
-            'name' => $group->name,
-            'handle' => $group->handle
-        ];
-
+        $configData = $group->getConfig(false);
         $projectConfig->set($configPath, $configData, "Save user group “{$group->handle}”");
 
         // Now that we have a group ID, save it on the model
@@ -257,6 +246,11 @@ class UserGroups extends Component
         $groupRecord->handle = $data['handle'];
         $groupRecord->uid = $uid;
 
+        // todo: remove schema version conditions after next beakpoint
+        if (version_compare(Craft::$app->getInstalledSchemaVersion(), '3.5.5', '>=')) {
+            $groupRecord->description = $data['description'] ?? null;
+        }
+
         $groupRecord->save(false);
 
         // Prevent permission information from being saved. Allowing it would prevent the appropriate event from firing.
@@ -269,6 +263,9 @@ class UserGroups extends Component
                 'isNew' => $isNewGroup,
             ]));
         }
+
+        // Invalidate user caches
+        Craft::$app->getElements()->invalidateCachesForElementType(User::class);
     }
 
     /**
@@ -289,9 +286,9 @@ class UserGroups extends Component
             ]));
         }
 
-        Craft::$app->getDb()->createCommand()
-            ->delete(Table::USERGROUPS, ['uid' => $uid])
-            ->execute();
+        Db::delete(Table::USERGROUPS, [
+            'uid' => $uid,
+        ]);
 
         // Fire an 'afterDeleteUserGroup' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_USER_GROUP)) {
@@ -299,6 +296,9 @@ class UserGroups extends Component
                 'userGroup' => $group,
             ]));
         }
+
+        // Invalidate user caches
+        Craft::$app->getElements()->invalidateCachesForElementType(User::class);
     }
 
     /**
@@ -353,7 +353,7 @@ class UserGroups extends Component
      */
     private function _createUserGroupsQuery(): Query
     {
-        return (new Query())
+        $query = (new Query())
             ->select([
                 'id',
                 'name',
@@ -361,5 +361,13 @@ class UserGroups extends Component
                 'uid'
             ])
             ->from([Table::USERGROUPS]);
+
+        // todo: remove schema version conditions after next beakpoint
+        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
+        if (version_compare($schemaVersion, '3.5.5', '>=')) {
+            $query->addSelect(['description']);
+        }
+
+        return $query;
     }
 }

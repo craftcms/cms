@@ -25,6 +25,7 @@ use yii\db\Connection;
  * @method User|array|null nth(int $n, Connection $db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @doc-path users.md
  * @supports-status-param
  * @replace {element} user
  * @replace {elements} users
@@ -70,6 +71,12 @@ class UserQuery extends ElementQuery
      * @used-by admin()
      */
     public $admin;
+
+    /**
+     * @var bool|null Whether to only return users that have (or don’t have) user photos.
+     * @used-by hasPhoto()
+     */
+    public $hasPhoto;
 
     /**
      * @var string|int|false|null The permission that the resulting users must have.
@@ -195,9 +202,38 @@ class UserQuery extends ElementQuery
     }
 
     /**
+     * Narrows the query results to only users that have (or don’t have) a user photo.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch users with photos #}
+     * {% set {elements-var} = {twig-method}
+     *     .hasPhoto()
+     *     .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch users without photos
+     * ${elements-var} = {element-class}::find()
+     *     ->hasPhoto()
+     *     ->all();
+     * ```
+     *
+     * @param bool $value The property value (defaults to true)
+     * @return static self reference
+     * @uses $hasPhoto
+     */
+    public function hasPhoto(bool $value = true)
+    {
+        $this->hasPhoto = $value;
+        return $this;
+    }
+
+    /**
      * Narrows the query results to only users that have a certain user permission, either directly on the user account or through one of their user groups.
      *
-     * See [Users](https://docs.craftcms.com/v3/users.html) for a full list of available user permissions defined by Craft.
+     * See [User Management](https://craftcms.com/docs/3.x/user-management.html) for a full list of available user permissions defined by Craft.
      *
      * ---
      *
@@ -582,6 +618,15 @@ class UserQuery extends ElementQuery
             $this->subQuery->andWhere(['users.admin' => $this->admin]);
         }
 
+        if (is_bool($this->hasPhoto)) {
+            if ($this->hasPhoto) {
+                $hasPhotoCondition = ['not', ['users.photoId' => null]];
+            } else {
+                $hasPhotoCondition = ['users.photoId' => null];
+            }
+            $this->subQuery->andWhere($hasPhotoCondition);
+        }
+
         if ($this->admin !== true) {
             $this->_applyCanParam();
         }
@@ -680,8 +725,8 @@ class UserQuery extends ElementQuery
             // Get the users that have that permission via a user group
             $permittedUserIdsViaGroups = (new Query())
                 ->select(['g_u.userId'])
-                ->from(['{{%usergroups_users}} g_u'])
-                ->innerJoin('{{%userpermissions_usergroups}} p_g', '[[p_g.groupId]] = [[g_u.groupId]]')
+                ->from(['g_u' => Table::USERGROUPS_USERS])
+                ->innerJoin(['p_g' => Table::USERPERMISSIONS_USERGROUPS], '[[p_g.groupId]] = [[g_u.groupId]]')
                 ->where(['p_g.permissionId' => $this->can])
                 ->column();
 

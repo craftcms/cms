@@ -55,8 +55,7 @@ class GeneralConfig extends BaseObject
      * If this is disabled, the Settings and Plugin Store sections will be hidden,
      * the Craft edition and Craft/plugin versions will be locked, and the project config will become read-only.
      *
-     * Therefore you should only disable this in production environments when <config:useProjectConfigFile> is enabled,
-     * and you have a deployment workflow that runs `composer install` automatically on deploy.
+     * Therefore you should only disable this in production environments when you have a deployment workflow that runs `composer install` automatically on deploy.
      *
      * ::: warning
      * Don’t disable this setting until **all** environments have been updated to Craft 3.1.0 or later.
@@ -66,9 +65,22 @@ class GeneralConfig extends BaseObject
      */
     public $allowAdminChanges = true;
     /**
+     * @var string[]|false|null The Ajax origins that should be allowed to access the GraphQL API, if enabled.
+     *
+     * If this is set to an array, then `graphql/api` requests will only include the current request’s
+     * [[\yii\web\Request::getOrigin()|origin]] in the `Access-Control-Allow-Origin` response header if
+     * it’s listed here.
+     *
+     * If this is set to `false`, then the `Access-Control-Allow-Origin` response header
+     * will never be sent.
+     *
+     * @since 3.5.0
+     */
+    public $allowedGraphqlOrigins;
+    /**
      * @var bool Whether Craft should allow system and plugin updates in the control panel, and plugin installation from the Plugin Store.
      *
-     * This setting will automatically be disabled if <config:allowAdminChanges> is disabled.
+     * This setting will automatically be disabled if <config3:allowAdminChanges> is disabled.
      */
     public $allowUpdates = true;
     /**
@@ -118,7 +130,7 @@ class GeneralConfig extends BaseObject
      * It will be determined automatically if left blank.
      *
      * ::: tip
-     * The base control panel URL should **not** include the [control panel trigger word](config:cpTrigger) (e.g. `/admin`).
+     * The base control panel URL should **not** include the [control panel trigger word](config3:cpTrigger) (e.g. `/admin`).
      * :::
      */
     public $baseCpUrl;
@@ -135,9 +147,13 @@ class GeneralConfig extends BaseObject
      */
     public $blowfishHashCost = 13;
     /**
-     * @var bool Whether Craft should cache element queries that fall inside `{% cache %}` tags.
+     * @var string|null The server path to an image file that should be sent when responding to an image request with a
+     * 404 status code.
+     *
+     * This can be set to an aliased path such as `@webroot/assets/404.svg`.
+     * @since 3.5.0
      */
-    public $cacheElementQueries = true;
+    public $brokenImagePath;
     /**
      * @var mixed The default length of time Craft will store data, RSS feed, and template caches.
      *
@@ -164,12 +180,49 @@ class GeneralConfig extends BaseObject
      */
     public $cooldownDuration = 300;
     /**
-     * @var string The URI segment Craft should look for when determining if the current request should route to the control panel rather than
+     * @var array List of additional HTML tags that should be included in the `<head>` of control panel pages.
+     *
+     * Each tag can be specified as an array of the tag name and its attributes.
+     *
+     * For example, you can give the control panel a custom favicon (etc.) like this:
+     *
+     * ```php
+     * 'cpHeadTags' => [
+     *     // Traditional favicon
+     *     ['link', ['rel' => 'icon', 'href' => '/icons/favicon.ico']],
+     *     // Scalable favicon for browsers that support them
+     *     ['link', ['rel' => 'icon', 'type' => 'image/svg+xml', 'sizes' => 'any', 'href' => '/icons/favicon.svg']],
+     *     // Touch icon for mobile devices
+     *     ['link', ['rel' => 'apple-touch-icon', 'sizes' => '180x180', 'href' => '/icons/touch-icon.svg']],
+     *     // Pinned tab icon for Safari
+     *     ['link', ['rel' => 'mask-icon', 'href' => '/icons/mask-icon.svg', 'color' => '#663399']],
+     * ],
+     * ```
+     *
+     * @since 3.5.0
+     */
+    public $cpHeadTags = [];
+    /**
+     * @var string|null The URI segment Craft should look for when determining if the current request should route to the control panel rather than
      * the front-end website.
+     *
+     * This can be set to `null` if you have a dedicated host name for the control panel (e.g. `cms.example.com`),
+     * or you are running Craft in [Headless Mode](config3:headlessMode). If you do that, you will need to ensure
+     * that the control panel is being served from its own webroot directory on your server, with an `index.php`
+     * file that defines the `CRAFT_CP` PHP constant.
+     *
+     * ```php
+     * define('CRAFT_CP', true);
+     * ```
+     *
+     * Alternatively, you can set the <config3:baseCpUrl> config setting, but then you will run the risk of losing
+     * access to portions of your control panel due to URI conflicts with actual folders/files in your main webroot.
+     * (For example, if you have an `assets/` folder, that would conflict with the `/assets` page in the control
+     * panel.)
      */
     public $cpTrigger = 'admin';
     /**
-     * @var string The name of CSRF token used for CSRF validation if <config:enableCsrfProtection> is set to `true`.
+     * @var string The name of CSRF token used for CSRF validation if <config3:enableCsrfProtection> is set to `true`.
      * @see enableCsrfProtection
      */
     public $csrfTokenName = 'CRAFT_CSRF_TOKEN';
@@ -198,6 +251,16 @@ class GeneralConfig extends BaseObject
      * @var string|null The default language the control panel should use for users who haven’t set a preferred language yet.
      */
     public $defaultCpLanguage;
+    /**
+     * @var string|null The default locale the control panel should use for date/number formatting,
+     * for users who haven’t set a preferred language or preferred formatting locale yet.
+     *
+     * If this is `null`, then the <config3:defaultCpLanguage> config setting will determine which locale is used for
+     * date/number formatting by default.
+     *
+     * @since 3.5.0
+     */
+    public $defaultCpLocale;
     /**
      * @var mixed The default permission to be set for newly generated directories.
      *
@@ -276,7 +339,12 @@ class GeneralConfig extends BaseObject
      */
     public $disabledPlugins = [];
     /**
-     * @var bool Whether to use a cookie to persist the CSRF token if <config:enableCsrfProtection> is enabled. If false, the CSRF token
+     * @var bool Whether front-end web requests should support basic HTTP authentication.
+     * @since 3.5.0
+     */
+    public $enableBasicHttpAuth = false;
+    /**
+     * @var bool Whether to use a cookie to persist the CSRF token if <config3:enableCsrfProtection> is enabled. If false, the CSRF token
      * will be stored in session under the `csrfTokenName` config setting name. Note that while storing CSRF tokens in
      * session increases security, it requires starting a session for every page that a CSRF token is needed, which may
      * degrade site performance.
@@ -330,7 +398,7 @@ class GeneralConfig extends BaseObject
      */
     public $errorTemplatePrefix = '';
     /**
-     * @var string[]|null List of file extensions that will be merged into the <config:allowedFileExtensions> config setting.
+     * @var string[]|null List of file extensions that will be merged into the <config3:allowedFileExtensions> config setting.
      * @see allowedFileExtensions
      */
     public $extraAllowedFileExtensions;
@@ -363,7 +431,7 @@ class GeneralConfig extends BaseObject
      *
      * ::: tip
      * File extensions listed here won’t immediately be allowed to be uploaded. You will also need to list them with
-     * the <config:extraAllowedFileExtensions> config setting.
+     * the <config3:extraAllowedFileExtensions> config setting.
      * :::
      *
      * @since 3.0.37
@@ -378,7 +446,11 @@ class GeneralConfig extends BaseObject
      */
     public $generateTransformsBeforePageLoad = false;
     /**
-     * @var bool bool Whether the system should run in Headless Mode, which
+     * @var string Prefix to use for all type names returned by GraphQL.
+     */
+    public $gqlTypePrefix = '';
+    /**
+     * @var bool Whether the system should run in Headless Mode, which
      * optimizes the system and control panel for headless CMS implementations.
      *
      * When this is enabled, the following changes will take place:
@@ -389,8 +461,12 @@ class GeneralConfig extends BaseObject
      * - Front-end responses will be JSON-formatted rather than HTML by default.
      * - Twig will be configured to escape unsafe strings for JavaScript/JSON
      *   rather than HTML by default for front-end requests.
-     * - The <config:loginPath>, <config:logoutPath>, <config:setPasswordPath>, and
-     *   <config:verifyEmailPath> settings will be ignored.
+     * - The <config3:loginPath>, <config3:logoutPath>, <config3:setPasswordPath>, and
+     *   <config3:verifyEmailPath> settings will be ignored.
+     *
+     * ::: tip
+     * When Headless Mode is enabled, users will not be able to set an initial password, set a new password, or verify their email address unless they have the "Access the control panel" permission. Make sure to grant this permission to content editors and administrators who should be able to log into the control panel.
+     * :::
      *
      * @since 3.3.0
      */
@@ -400,6 +476,21 @@ class GeneralConfig extends BaseObject
      * either `'imagick'` or `'gd'` here to override that behavior.
      */
     public $imageDriver = self::IMAGE_DRIVER_AUTO;
+    /**
+     * @var array An array containing the selectable image aspect ratios for image editor. The array must be in the format of `label` => `ratio`, where ratio must be a float or a string.
+     * For string values, only values of "none" and "original" are allowed.
+     */
+    public $imageEditorRatios = [
+        'Unconstrained' => 'none',
+        'Original' => 'original',
+        'Square' => 1,
+        '16:9' => 1.78,
+        '10:8' => 1.25,
+        '7:5' => 1.4,
+        '4:3' => 1.33,
+        '5:3' => 1.67,
+        '3:2' => 1.5,
+    ];
     /**
      * @var string[] The template filenames Craft will look for within a directory to represent the directory’s “index” template when
      * matching a template path to a file on the front end.
@@ -523,7 +614,7 @@ class GeneralConfig extends BaseObject
      * `?page` | `/news?page=5`
      *
      * ::: tip
-     * If you want to set this to `?p` (e.g. `/news?p=5`), you will need to change your <config:pathParam> setting as well,
+     * If you want to set this to `?p` (e.g. `/news?p=5`), you will need to change your <config3:pathParam> setting as well,
      * which is set to `p` by default, and if your server is running Apache, you will need to update the redirect code
      * in your `.htaccess` file to match your new `pathParam` value.
      * :::
@@ -532,12 +623,13 @@ class GeneralConfig extends BaseObject
      */
     public $pageTrigger = 'p';
     /**
-     * @var string The query string param that Craft will check when determining the request's path.
+     * @var string|null The query string param that Craft will check when determining the request's path.
      *
-     * ::: tip
-     * If you change this and your server is running Apache, don’t forget to update the redirect code in your
-     * `.htaccess` file to match the new value.
-     * :::
+     * This can be set to `null` if your web server is capable of directing traffic to `index.php` without a query
+     * string param. If you’re using Apache, that means you’ll need to change the `RewriteRule` line in your `.htaccess`
+     * file to:
+     *
+     *     RewriteRule (.+) index.php [QSA,L]
      */
     public $pathParam = 'p';
     /**
@@ -618,6 +710,20 @@ class GeneralConfig extends BaseObject
      * `true`, you will always get a successful response even if there was an error making it difficult to enumerate users.
      */
     public $preventUserEnumeration = false;
+    /**
+     * @var array|false Custom [iFrame Resizer options](http://davidjbradshaw.github.io/iframe-resizer/#options) that should be used for preview iframes.
+     *
+     * Set this to `false` to disable the iFrame Resizer altogether.
+     *
+     * ```php
+     * 'previewIframeResizerOptions' => [
+     *     'autoResize' => false,
+     * ],
+     * ```
+     *
+     * @since 3.5.0
+     */
+    public $previewIframeResizerOptions = [];
     /**
      * @var mixed The amount of time to wait before Craft purges pending users from the system that have not activated.
      *
@@ -756,7 +862,7 @@ class GeneralConfig extends BaseObject
      * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      *
      * ::: tip
-     * You might also want to set <config:invalidUserTokenPath> in case a user clicks on an expired password reset link.
+     * You might also want to set <config3:invalidUserTokenPath> in case a user clicks on an expired password reset link.
      * :::
      *
      * @see getSetPasswordPath()
@@ -776,11 +882,16 @@ class GeneralConfig extends BaseObject
      */
     public $siteName;
     /**
+     * @var string The query string parameter name that site tokens should be set to.
+     * @since 3.5.0
+     */
+    public $siteToken = 'siteToken';
+    /**
      * @var string|string[] The base URL to the site(s). If set, it will take precedence over the Base URL settings in Settings → Sites → [Site Name].
      *
      * This can be set to a string, which will override the primary site’s base URL only, or an array with site handles used as the keys.
      *
-     * The URL(s) must begin with either `http://`, `https://`, `//` (protocol-relative), or an [alias](config:aliases).
+     * The URL(s) must begin with either `http://`, `https://`, `//` (protocol-relative), or an [alias](config3:aliases).
      *
      * ```php
      * 'siteUrl' => [
@@ -876,6 +987,7 @@ class GeneralConfig extends BaseObject
     /**
      * @var bool Whether Craft should include minified JavaScript files whenever possible, and minify JavaScript code
      * passed to [[\craft\web\View::includeJs()]] or `{% js %}` Twig tags.
+     * @deprecated in 3.5.0
      */
     public $useCompressedJs = true;
     /**
@@ -885,7 +997,7 @@ class GeneralConfig extends BaseObject
     /**
      * @var bool Whether Craft should specify the path using `PATH_INFO` or as a query string parameter when generating URLs.
      *
-     * Note that this setting only takes effect if <config:omitScriptNameInUrls> is set to false.
+     * Note that this setting only takes effect if <config3:omitScriptNameInUrls> is set to false.
      */
     public $usePathInfo = false;
     /**
@@ -924,20 +1036,11 @@ class GeneralConfig extends BaseObject
      */
     public $useFileLocks;
     /**
-     * @var bool Whether the project config should be saved out to `config/project.yaml`.
-     *
-     * If set to `true`, a hard copy of your system’s project config will be saved in `config/project.yaml`,
-     * and any changes to `config/project.yaml` will be applied back to the system, making it possible for
-     * multiple environments to share the same project config despite having separate databases.
-     *
-     * ::: warning
-     * Make sure you’ve read the entire [Project Config](https://docs.craftcms.com/v3/project-config.html)
-     * documentation, and carefully follow the “Enabling the Project Config File” steps when enabling this setting.
-     * :::
-     *
+     * @var bool Whether the project config should be saved to the `config/` folder.
      * @since 3.1.0
+     * @deprecated since 3.5.0. Craft now always saves the project config out to the `config/` folder.
      */
-    public $useProjectConfigFile = false;
+    public $useProjectConfigFile = true;
     /**
      * @var mixed The amount of time a user verification code can be used before expiring.
      *
@@ -1095,6 +1198,9 @@ class GeneralConfig extends BaseObject
         if ($this->suppressTemplateErrors) {
             Craft::$app->getDeprecator()->log('suppressTemplateErrors', "The suppressTemplateErrors config setting has been deprecated because it relies on a deprecated Twig feature.");
         }
+
+        // Always use project config files
+        $this->useProjectConfigFile = true;
     }
 
     /**
@@ -1268,5 +1374,24 @@ class GeneralConfig extends BaseObject
         }
 
         return $pageTrigger;
+    }
+
+    /**
+     * Returns the normalized test email addresses.
+     *
+     * @return array
+     * @since 3.5.0
+     */
+    public function getTestToEmailAddress(): array
+    {
+        $to = [];
+        foreach ((array)$this->testToEmailAddress as $key => $value) {
+            if (is_numeric($key)) {
+                $to[$value] = Craft::t('app', 'Test Recipient');
+            } else {
+                $to[$key] = $value;
+            }
+        }
+        return $to;
     }
 }

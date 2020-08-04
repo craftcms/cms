@@ -18,6 +18,7 @@ use yii\helpers\Inflector;
 /**
  * Base console controller
  *
+ * @property Request $request
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2.0

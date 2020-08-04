@@ -47,10 +47,8 @@ class RemoveController extends BaseUpdaterController
      */
     protected function initialData(): array
     {
-        $request = Craft::$app->getRequest();
-
         return [
-            'packageName' => strip_tags($request->getRequiredBodyParam('packageName')),
+            'packageName' => strip_tags($this->request->getRequiredBodyParam('packageName')),
         ];
     }
 

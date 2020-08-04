@@ -100,6 +100,7 @@ Craft.BaseInputGenerator = Garnish.Base.extend(
 
             this.$target.val(targetVal);
             this.$target.trigger('change');
+            this.$target.trigger('input');
 
             // If the target already has focus, select its whole value to mimic
             // the behavior if the value had already been generated and they just tabbed in

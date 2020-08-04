@@ -50,7 +50,7 @@ class User extends ElementResolver
         }
 
         if (!GqlHelper::canSchema('usergroups.everyone')) {
-            $query->innerJoin(Table::USERGROUPS_USERS . ' usergroups_users',
+            $query->innerJoin(['usergroups_users' => Table::USERGROUPS_USERS],
                 [
                     'and',
                     '[[users.id]] = [[usergroups_users.userId]]',

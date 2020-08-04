@@ -10,40 +10,36 @@
 
     {% if globalSet.id %}{{ hiddenInput('setId', globalSet.id) }}{% endif %}
 
-    <div id="set-settings">
-        {{ forms.textField({
-            first: true,
-            label: "Name"|t('app'),
-            instructions: "What this global set will be called in the control panel."|t('app'),
-            id: 'name',
-            name: 'name',
-            value: globalSet.name,
-            errors: globalSet.getErrors('name'),
-            autofocus: true,
-            required: true,
-        }) }}
+    {{ forms.textField({
+        first: true,
+        label: "Name"|t('app'),
+        instructions: "What this global set will be called in the control panel."|t('app'),
+        id: 'name',
+        name: 'name',
+        value: globalSet.name,
+        errors: globalSet.getErrors('name'),
+        autofocus: true,
+        required: true,
+    }) }}
 
-        {{ forms.textField({
-            label: "Handle"|t('app'),
-            instructions: "How you’ll refer to this global set in the templates."|t('app'),
-            id: 'handle',
-            name: 'handle',
-            class: 'code',
-            autocorrect: false,
-            autocapitalize: false,
-            value: globalSet.handle,
-            errors: globalSet.getErrors('handle'),
-            required: true
-        }) }}
+    {{ forms.textField({
+        label: "Handle"|t('app'),
+        instructions: "How you’ll refer to this global set in the templates."|t('app'),
+        id: 'handle',
+        name: 'handle',
+        class: 'code',
+        autocorrect: false,
+        autocapitalize: false,
+        value: globalSet.handle,
+        errors: globalSet.getErrors('handle'),
+        required: true
+    }) }}
 
-    </div>
+    <hr>
 
-    <div id="set-fieldlayout" class="hidden">
-        {% include "_includes/fieldlayoutdesigner" with {
-            fieldLayout: globalSet.getFieldLayout(),
-            tab: 'fieldlayout'
-        } only %}
-    </div>
+    {{ forms.fieldLayoutDesignerField({
+        fieldLayout: globalSet.getFieldLayout(),
+    }) }}
 {% endblock %}
 
 

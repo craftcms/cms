@@ -68,28 +68,30 @@
                 <a class="fieldtoggle" data-target="{{ idPrefix }}-support-more">{{ "More"|t('app') }}</a>
 
                 <div id="{{ idPrefix }}-support-more" class="cs-support-more hidden">
-                    {{ forms.checkboxField({
-                        label: "Attach error logs?"|t('app'),
-                        name: 'attachLogs',
-                        checked: true
-                    }) }}
-
-                    {% if showBackupOption %}
+                    <fieldset>
                         {{ forms.checkboxField({
-                            label: "Attach a database backup?"|t('app'),
-                            name: 'attachDbBackup',
+                            label: 'Attach error logs'|t('app'),
+                            name: 'attachLogs',
                             checked: true
                         }) }}
-                    {% endif %}
 
-                    {{ forms.checkboxField({
-                        name: 'attachTemplates',
-                        checked: true,
-                        label: "Include your template files?"|t('app'),
-                    }) }}
+                        {% if showBackupOption %}
+                            {{ forms.checkboxField({
+                                label: 'Attach a database backup'|t('app'),
+                                name: 'attachDbBackup',
+                                checked: true
+                            }) }}
+                        {% endif %}
+
+                        {{ forms.checkboxField({
+                            name: 'attachTemplates',
+                            checked: true,
+                            label: 'Include your template files'|t('app'),
+                        }) }}
+                    </fieldset>
 
                     {{ forms.fileField({
-                        label: "Attach an additional file?"|t('app'),
+                        label: 'Attach an additional file'|t('app'),
                         class: 'cs-support-attachment',
                         name: 'attachAdditionalFile',
                     }) }}

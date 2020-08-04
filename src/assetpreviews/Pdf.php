@@ -7,9 +7,7 @@
 
 namespace craft\assetpreviews;
 
-use Craft;
 use craft\base\AssetPreviewHandler;
-use craft\base\Volume;
 use craft\helpers\Html;
 use yii\base\NotSupportedException;
 

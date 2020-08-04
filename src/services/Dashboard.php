@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\Widget;
 use craft\base\WidgetInterface;
 use craft\db\Query;
 use craft\db\Table;
@@ -17,6 +16,7 @@ use craft\errors\WidgetNotFoundException;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\WidgetEvent;
 use craft\helpers\Component as ComponentHelper;
+use craft\helpers\Db;
 use craft\records\Widget as WidgetRecord;
 use craft\widgets\CraftSupport as CraftSupportWidget;
 use craft\widgets\Feed as FeedWidget;
@@ -42,7 +42,7 @@ class Dashboard extends Component
      *
      * Dashboard widgets must implement [[WidgetInterface]]. [[Widget]] provides a base implementation.
      *
-     * See [Widget Types](https://docs.craftcms.com/v3/widget-types.html) for documentation on creating Dashboard widgets.
+     * See [Widget Types](https://craftcms.com/docs/3.x/extend/widget-types.html) for documentation on creating Dashboard widgets.
      * ---
      * ```php
      * use craft\events\RegisterComponentTypesEvent;
@@ -116,7 +116,6 @@ class Dashboard extends Component
         }
 
         try {
-            /** @var Widget $widget */
             $widget = ComponentHelper::createComponent($config, WidgetInterface::class);
         } catch (MissingComponentException $e) {
             $config['errorMessage'] = $e->getMessage();
@@ -189,7 +188,6 @@ class Dashboard extends Component
      */
     public function saveWidget(WidgetInterface $widget, bool $runValidation = true): bool
     {
-        /** @var Widget $widget */
         $isNewWidget = $widget->getIsNew();
 
         // Fire a 'beforeSaveWidget' event
@@ -277,7 +275,6 @@ class Dashboard extends Component
      */
     public function deleteWidget(WidgetInterface $widget): bool
     {
-        /** @var Widget $widget */
         // Fire a 'beforeDeleteWidget' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_WIDGET)) {
             $this->trigger(self::EVENT_BEFORE_DELETE_WIDGET, new WidgetEvent([
@@ -384,9 +381,11 @@ class Dashboard extends Component
 
         // Update the user record
         $user->hasDashboard = true;
-        Craft::$app->getDb()->createCommand()
-            ->update(Table::USERS, ['hasDashboard' => true], ['id' => $user->id])
-            ->execute();
+        Db::update(Table::USERS, [
+            'hasDashboard' => true,
+        ], [
+            'id' => $user->id,
+        ]);
     }
 
     /**

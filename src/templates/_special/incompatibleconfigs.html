@@ -1,8 +1,14 @@
 {% extends "_layouts/message" %}
-{% set title = "Unable to apply project.yaml changes"|t('app') %}
+{% set title = 'Unable to apply {file} changes'|t('app', {
+    file: 'project.yaml',
+}) %}
 
 {% block message %}
-<p>{{ 'Your `project.yaml` file was created for different versions of Craft and/or plugins than what’s currently installed.'|t('app')|md(inlineOnly=true) }}</p>
+<p>
+    {{ 'Your `{file}` file was created for different versions of Craft and/or plugins than what’s currently installed.'|t('app', {
+        file: 'project.yaml',
+    })|md(inlineOnly=true) }}
+</p>
 {% if issues is defined and issues|length > 0 %}
 <ul>
     {% for details in issues %}

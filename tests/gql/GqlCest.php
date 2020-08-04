@@ -8,7 +8,6 @@
 namespace tests\gql;
 
 use Craft;
-use crafttests\fixtures\AssetsFixture;
 use crafttests\fixtures\EntryWithFieldsFixture;
 use crafttests\fixtures\GlobalSetFixture;
 use crafttests\fixtures\GqlSchemasFixture;
@@ -117,7 +116,7 @@ class GqlCest
             list ($query, $response) = explode('-----RESPONSE DELIMITER-----', $case);
             list ($schemaId, $query) = explode('-----TOKEN DELIMITER-----', $query);
             $schema = $this->_setSchema(trim($schemaId));
-            $I->amOnPage('?action=graphql/api&query='.urlencode(trim($query)));
+            $I->amOnPage('?action=graphql/api&query=' . urlencode(trim($query)));
             $I->see(trim($response));
             $gqlService = Craft::$app->getGql();
             $gqlService->flushCaches();

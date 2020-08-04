@@ -7,7 +7,6 @@
 
 namespace craft\web\assets\queuemanager;
 
-use craft\helpers\Json;
 use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
 use craft\web\assets\momentjs\MomentJsAsset;
@@ -26,21 +25,22 @@ class QueueManagerAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public function init()
-    {
-        $this->sourcePath = __DIR__ . '/dist';
+    public $sourcePath = __DIR__ . '/dist';
 
-        $this->depends = [
-            CpAsset::class,
-            VueAsset::class,
-        ];
+    /**
+     * @inheritdoc
+     */
+    public $depends = [
+        CpAsset::class,
+        VueAsset::class,
+    ];
 
-        $this->js = [
-            'queue-manager' . $this->dotJs(),
-        ];
-
-        parent::init();
-    }
+    /**
+     * @inheritdoc
+     */
+    public $js = [
+        'queue-manager.min.js',
+    ];
 
     /**
      * @inheritdoc

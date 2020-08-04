@@ -196,10 +196,17 @@ class Connection extends \yii\db\Connection
     public function getBackupFilePath(): string
     {
         // Determine the backup file path
-        $currentVersion = 'v' . Craft::$app->getVersion();
-        $systemName = FileHelper::sanitizeFilename($this->_getFixedSystemName(), ['asciiOnly' => true]);
-        $filename = ($systemName ? $systemName . '_' : '') . gmdate('ymd_His') . '_' . strtolower(StringHelper::randomString(10)) . '_' . $currentVersion . '.sql';
-        return Craft::$app->getPath()->getDbBackupPath() . '/' . mb_strtolower($filename);
+        $systemName = mb_strtolower(FileHelper::sanitizeFilename($this->_getFixedSystemName(), [
+            'asciiOnly' => true,
+        ]));
+        $filename = ($systemName ? $systemName . '--' : '') . gmdate('Y-m-d-His') . '--v' . Craft::$app->getVersion();
+        $backupPath = Craft::$app->getPath()->getDbBackupPath();
+        $path = $backupPath . '/' . $filename . '.sql';
+        $i = 0;
+        while (file_exists($path)) {
+            $path = $backupPath . '/' . $filename . '--' . ++$i . '.sql';
+        }
+        return $path;
     }
 
     /**

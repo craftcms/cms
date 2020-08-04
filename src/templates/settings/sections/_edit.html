@@ -38,7 +38,7 @@
     }) }}
 
     {{ forms.checkboxField({
-        label: "Enable versioning for entries in this section?"|t('app'),
+        label: 'Enable versioning for entries in this section'|t('app'),
         id: 'enableVersioning',
         name: 'enableVersioning',
         checked: section.enableVersioning
@@ -127,6 +127,7 @@
                 type: 'singleline',
                 heading: "URI"|t('app'),
                 info: "What the entry URI should be for the site. Leave blank if the entry doesn’t have a URL."|t('app'),
+                placeholder: 'Leave blank if the entry doesn’t have a URL'|t('app'),
                 code: true,
                 width: headlessMode ? 500,
                 class: ['single-uri', 'type-single', section.type != 'single' ? 'hidden']|filter
@@ -135,6 +136,7 @@
                 type: 'singleline',
                 heading: "Entry URI Format"|t('app'),
                 info: "What entry URIs should look like for the site. Leave blank if entries don’t have URLs."|t('app'),
+                placeholder: 'Leave blank if entries don’t have URLs'|t('app'),
                 code: true,
                 width: headlessMode ? 500,
                 class: ['type-channel', 'type-structure', section.type == 'single' ? ' hidden']|filter
@@ -171,6 +173,7 @@
                     { value: 'siteGroup', label: 'Save entries to other sites in the same site group'|t('app') },
                     { value: 'language', label: 'Save entries to other sites with the same language'|t('app') },
                     { value: 'all', label: 'Save entries to all sites enabled for this section'|t('app') },
+                    { value: 'custom', label: 'Let each entry choose which sites it should be saved to'|t('app') },
                 ],
                 value: section.propagationMethod
             }) }}

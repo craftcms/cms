@@ -8,17 +8,20 @@
 namespace craft\fields;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\fields\data\ColorData;
+use craft\gql\GqlEntityRegistry;
 use craft\gql\types\generators\TableRowType as TableRowTypeGenerator;
+use craft\gql\types\TableRow;
 use craft\helpers\DateTimeHelper;
+use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\validators\ColorValidator;
 use craft\validators\UrlValidator;
 use craft\web\assets\tablesettings\TableSettingsAsset;
 use craft\web\assets\timepicker\TimepickerAsset;
+use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
 use yii\db\Schema;
 use yii\validators\EmailValidator;
@@ -318,7 +321,7 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml($value, ElementInterface $element = null): string
     {
         Craft::$app->getView()->registerAssetBundle(TimepickerAsset::class);
         return $this->_getInputHtml($value, $element, false);
@@ -339,7 +342,6 @@ class Table extends Field
      */
     public function validateTableData(ElementInterface $element)
     {
-        /** @var Element $element */
         $value = $element->getFieldValue($this->handle);
 
         if (!empty($value) && !empty($this->columns)) {
@@ -430,8 +432,32 @@ class Table extends Field
      */
     public function getContentGqlType()
     {
-        $typeArray = TableRowTypeGenerator::generateTypes($this);
-        return Type::listOf(array_pop($typeArray));
+        $type = TableRowTypeGenerator::generateType($this);
+        return Type::listOf($type);
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.5.0
+     */
+    public function getContentGqlMutationArgumentType()
+    {
+        $typeName = $this->handle . '_TableRowInput';
+
+        if ($argumentType = GqlEntityRegistry::getEntity($typeName)) {
+            return $argumentType;
+        }
+
+        $contentFields = TableRow::prepareRowFieldDefinition($this->columns, $typeName, false);
+
+        $argumentType = GqlEntityRegistry::createEntity($typeName, new InputObjectType([
+            'name' => $typeName,
+            'fields' => function() use ($contentFields) {
+                return $contentFields;
+            }
+        ]));
+
+        return Type::listOf($argumentType);
     }
 
     /**
@@ -519,7 +545,6 @@ class Table extends Field
      */
     private function _getInputHtml($value, ElementInterface $element = null, bool $static): string
     {
-        /** @var Element $element */
         if (empty($this->columns)) {
             return '';
         }
@@ -558,11 +583,8 @@ class Table extends Field
             }
         }
 
-        $view = Craft::$app->getView();
-        $id = $view->formatInputId($this->handle);
-
-        return $view->renderTemplate('_includes/forms/editableTable', [
-            'id' => $id,
+        return Craft::$app->getView()->renderTemplate('_includes/forms/editableTable', [
+            'id' => Html::id($this->handle),
             'name' => $this->handle,
             'cols' => $this->columns,
             'rows' => $value,

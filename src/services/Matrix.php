@@ -8,9 +8,7 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\base\Field;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\db\MatrixBlockQuery;
@@ -26,7 +24,6 @@ use craft\helpers\MigrationHelper;
 use craft\helpers\StringHelper;
 use craft\migrations\CreateMatrixContentTable;
 use craft\models\FieldLayout;
-use craft\models\FieldLayoutTab;
 use craft\models\MatrixBlockType;
 use craft\models\Site;
 use craft\records\MatrixBlockType as MatrixBlockTypeRecord;
@@ -116,7 +113,7 @@ class Matrix extends Component
     public function getAllBlockTypes(): array
     {
         $results = $this->_createBlockTypeQuery()
-            ->innerJoin(Table::FIELDS . ' f', '[[f.id]] = [[bt.fieldId]]')
+            ->innerJoin(['f' => Table::FIELDS], '[[f.id]] = [[bt.fieldId]]')
             ->where(['f.type' => MatrixField::class])
             ->all();
 
@@ -186,7 +183,6 @@ class Matrix extends Component
         $contentService->fieldColumnPrefix = 'field_' . $blockType->handle . '_';
 
         foreach ($blockType->getFields() as $field) {
-            /** @var Field $field */
             // Hack to allow blank field names
             if (!$field->name) {
                 $field->name = '__blank__';
@@ -243,60 +239,12 @@ class Matrix extends Component
             return false;
         }
 
-        $fieldsService = Craft::$app->getFields();
-
-        /** @var Field $parentField */
-        $parentField = $fieldsService->getFieldById($blockType->fieldId);
         $isNewBlockType = $blockType->getIsNew();
-        $projectConfig = Craft::$app->getProjectConfig();
-
-        $configData = [
-            'field' => $parentField->uid,
-            'name' => $blockType->name,
-            'handle' => $blockType->handle,
-            'sortOrder' => (int)$blockType->sortOrder,
-        ];
-
-        // Now, take care of the field layout for this block type
-        // -------------------------------------------------------------
-        $fieldLayoutFields = [];
-        $sortOrder = 0;
-
-        $configData['fields'] = [];
-
-        foreach ($blockType->getFields() as $field) {
-            /** @var Field $field */
-            $configData['fields'][$field->uid] = $fieldsService->createFieldConfig($field);
-
-            $field->sortOrder = ++$sortOrder;
-            $fieldLayoutFields[] = $field;
-        }
-
-        $fieldLayoutTab = new FieldLayoutTab();
-        $fieldLayoutTab->name = 'Content';
-        $fieldLayoutTab->sortOrder = 1;
-        $fieldLayoutTab->setFields($fieldLayoutFields);
-
-        $fieldLayout = $blockType->getFieldLayout();
-
-        if ($fieldLayout->uid) {
-            $layoutUid = $fieldLayout->uid;
-        } else {
-            $layoutUid = StringHelper::UUID();
-            $fieldLayout->uid = $layoutUid;
-        }
-
-        $fieldLayout->setTabs([$fieldLayoutTab]);
-        $fieldLayout->setFields($fieldLayoutFields);
-
-        $fieldLayoutConfig = $fieldLayout->getConfig();
-
-        $configData['fieldLayouts'] = [
-            $layoutUid => $fieldLayoutConfig
-        ];
-
         $configPath = self::CONFIG_BLOCKTYPE_KEY . '.' . $blockType->uid;
-        $projectConfig->set($configPath, $configData, "Save matrix block type “{$blockType->handle}” for parent field “{$parentField->handle}”");
+        $configData = $blockType->getConfig();
+        $field = $blockType->getField();
+
+        Craft::$app->getProjectConfig()->set($configPath, $configData, "Save matrix block type “{$blockType->handle}” for parent field “{$field->handle}”");
 
         if ($isNewBlockType) {
             $blockType->id = Db::idByUid(Table::MATRIXBLOCKTYPES, $blockType->uid);
@@ -378,9 +326,12 @@ class Matrix extends Component
                 // Refresh the schema cache
                 Craft::$app->getDb()->getSchema()->refresh();
 
-                if (!empty($data['fieldLayouts'])) {
+                if (
+                    !empty($data['fieldLayouts']) &&
+                    ($layoutConfig = reset($data['fieldLayouts']))
+                ) {
                     // Save the field layout
-                    $layout = FieldLayout::createFromConfig(reset($data['fieldLayouts']));
+                    $layout = FieldLayout::createFromConfig($layoutConfig);
                     $layout->id = $blockTypeRecord->fieldLayoutId;
                     $layout->type = MatrixBlock::class;
                     $layout->uid = key($data['fieldLayouts']);
@@ -414,6 +365,9 @@ class Matrix extends Component
             $this->_blockTypesByFieldId[$blockTypeRecord->fieldId]
         );
         $this->_fetchedAllBlockTypesForFieldId[$blockTypeRecord->fieldId] = false;
+
+        // Invalidate Matrix block caches
+        Craft::$app->getElements()->invalidateCachesForElementType(MatrixBlock::class);
     }
 
     /**
@@ -447,8 +401,7 @@ class Matrix extends Component
             return;
         }
 
-        $db = Craft::$app->getDb();
-        $transaction = $db->beginTransaction();
+        $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
             $blockType = $this->getBlockTypeById($blockTypeRecord->id);
@@ -505,9 +458,9 @@ class Matrix extends Component
                 Craft::$app->getFields()->deleteLayoutById($fieldLayoutId);
 
                 // Finally delete the actual block type
-                $db->createCommand()
-                    ->delete(Table::MATRIXBLOCKTYPES, ['id' => $blockTypeRecord->id])
-                    ->execute();
+                Db::delete(Table::MATRIXBLOCKTYPES, [
+                    'id' => $blockTypeRecord->id,
+                ]);
             }
 
             $transaction->commit();
@@ -523,6 +476,9 @@ class Matrix extends Component
             $this->_blockTypeRecordsById[$blockTypeRecord->id]
         );
         $this->_fetchedAllBlockTypesForFieldId[$blockTypeRecord->fieldId] = false;
+
+        // Invalidate Matrix block caches
+        Craft::$app->getElements()->invalidateCachesForElementType(MatrixBlock::class);
     }
 
     /**
@@ -747,7 +703,6 @@ class Matrix extends Component
      */
     public function saveField(MatrixField $field, ElementInterface $owner)
     {
-        /** @var Element $owner */
         $elementsService = Craft::$app->getElements();
         /** @var MatrixBlockQuery $query */
         $query = $owner->getFieldValue($field->handle);
@@ -762,7 +717,6 @@ class Matrix extends Component
         $blockIds = [];
         $collapsedBlockIds = [];
         $sortOrder = 0;
-        $db = Craft::$app->getDb();
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
@@ -775,10 +729,11 @@ class Matrix extends Component
                 } else if ((int)$block->sortOrder !== $sortOrder) {
                     // Just update its sortOrder
                     $block->sortOrder = $sortOrder;
-                    $db->createCommand()->update(Table::MATRIXBLOCKS,
-                        ['sortOrder' => $sortOrder],
-                        ['id' => $block->id], [], false)
-                        ->execute();
+                    Db::update(Table::MATRIXBLOCKS, [
+                        'sortOrder' => $sortOrder,
+                    ], [
+                        'id' => $block->id,
+                    ], [], false);
                 }
 
                 $blockIds[] = $block->id;
@@ -812,7 +767,6 @@ class Matrix extends Component
 
                 if (!empty($otherSiteIds)) {
                     // Get the owner element across each of those sites
-                    /** @var Element[] $localizedOwners */
                     $localizedOwners = $owner::find()
                         ->drafts($owner->getIsDraft())
                         ->revisions($owner->getIsRevision())
@@ -892,8 +846,6 @@ class Matrix extends Component
      */
     public function duplicateBlocks(MatrixField $field, ElementInterface $source, ElementInterface $target, bool $checkOtherSites = false)
     {
-        /** @var Element $source */
-        /** @var Element $target */
         $elementsService = Craft::$app->getElements();
         /** @var MatrixBlockQuery $query */
         $query = $source->getFieldValue($field->handle);
@@ -935,7 +887,6 @@ class Matrix extends Component
 
             if (!empty($otherSiteIds)) {
                 // Get the original element and duplicated element for each of those sites
-                /** @var Element[] $otherSources */
                 $otherSources = $target::find()
                     ->drafts($source->getIsDraft())
                     ->revisions($source->getIsRevision())
@@ -943,7 +894,6 @@ class Matrix extends Component
                     ->siteId($otherSiteIds)
                     ->anyStatus()
                     ->all();
-                /** @var Element[] $otherTargets */
                 $otherTargets = $target::find()
                     ->drafts($target->getIsDraft())
                     ->revisions($target->getIsRevision())
@@ -1001,7 +951,6 @@ class Matrix extends Component
      */
     public function getSupportedSiteIds(string $propagationMethod, ElementInterface $owner): array
     {
-        /** @var Element $owner */
         /** @var Site[] $allSites */
         $allSites = ArrayHelper::index(Craft::$app->getSites()->getAllSites(), 'id');
         $ownerSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($owner), 'siteId');
@@ -1113,7 +1062,6 @@ class Matrix extends Component
      */
     private function _deleteOtherBlocks(MatrixField $field, ElementInterface $owner, array $except)
     {
-        /** @var Element $owner */
         $deleteBlocks = MatrixBlock::find()
             ->anyStatus()
             ->ownerId($owner->id)

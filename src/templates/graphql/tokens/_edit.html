@@ -58,22 +58,22 @@
         {% block input %}
             {% import '_includes/forms' as forms %}
             <div class="flex">
-                {{ forms.text({
+                {% embed '_includes/forms/copytext' with {
                     id: 'auth-header',
+                    buttonId: 'copy-btn',
                     value: 'Authorization: Bearer ' ~ (accessToken ?? '••••••••••••••••••••••••••••••••'),
                     errors: token.getErrors('accessToken'),
-                    readonly: true,
-                    class: 'code' ~ (not accessToken ? ' disabled'),
-                    size: 54
-                }) }}
+                    class: ['code', not accessToken ? 'disabled']|filter,
+                    size: 54,
+                } %}
+                    {# don't register the default JS #}
+                    {% block js %}{% endblock %}
+                {% endembed %}
                 {{ hiddenInput('accessToken', accessToken, {
                     id: 'access-token',
                     disabled: not accessToken,
                 }) }}
-                <div class="btngroup">
-                    <div id="copy-btn" class="btn">{{ 'Copy'|t('app') }}</div>
-                    <div id="regen-btn" class="btn">{{ 'Regenerate'|t('app') }}</div>
-                </div>
+                <div id="regen-btn" class="btn">{{ 'Regenerate'|t('app') }}</div>
                 <div id="token-spinner" class="spinner hidden"></div>
             </div>
         {% endblock %}
@@ -102,6 +102,8 @@
 {% js %}
     var $headerInput = $('#auth-header');
     var $tokenInput = $('#access-token');
+    var $regenBtn = $('#regen-btn');
+    var regenerating = false;
 
     function copyHeader() {
         $headerInput[0].select();
@@ -134,8 +136,14 @@
             });
         }
     });
-    $('#regen-btn').on('click', function() {
+
+    $regenBtn.on('click', function() {
+        if (regenerating) {
+            return;
+        }
+        regenerating = true;
         $('#token-spinner').removeClass('hidden');
+        $regenBtn.addClass('active');
         Craft.postActionRequest('graphql/generate-token', function(response, textStatus) {
             $('#token-spinner').addClass('hidden');
             if (textStatus === 'success') {
@@ -145,6 +153,8 @@
                 $tokenInput
                     .val(response.accessToken)
                     .prop('disabled', false);
+                $regenBtn.removeClass('active');
+                regenerating = false;
             }
         });
     });

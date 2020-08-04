@@ -9,13 +9,14 @@ namespace craft\web;
 
 use Craft;
 use craft\base\ApplicationTrait;
-use craft\base\Plugin;
 use craft\db\Query;
 use craft\db\Table;
 use craft\debug\DeprecatedPanel;
+use craft\debug\Module as DebugModule;
 use craft\debug\RequestPanel;
 use craft\debug\UserPanel;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Path;
 use craft\helpers\UrlHelper;
@@ -26,7 +27,6 @@ use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidRouteException;
 use yii\db\Exception as DbException;
-use yii\debug\Module as DebugModule;
 use yii\debug\panels\AssetPanel;
 use yii\debug\panels\DbPanel;
 use yii\debug\panels\LogPanel;
@@ -38,6 +38,7 @@ use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
+use yii\web\UnauthorizedHttpException;
 
 /**
  * Craft Web Application class
@@ -101,6 +102,7 @@ class Application extends \yii\web\Application
         parent::init();
         $this->ensureResourcePathExists();
         $this->_postInit();
+        $this->authenticate();
         $this->debugBootstrap();
     }
 
@@ -161,6 +163,7 @@ class Application extends \yii\web\Application
         $this->_processResourceRequest($request);
 
         $headers = $this->getResponse()->getHeaders();
+        $generalConfig = $this->getConfig()->getGeneral();
 
         // Tell bots not to index/follow CP and tokenized pages
         if ($request->getIsCpRequest() || $request->getToken() !== null) {
@@ -174,7 +177,7 @@ class Application extends \yii\web\Application
         }
 
         // Send the X-Powered-By header?
-        if ($this->getConfig()->getGeneral()->sendPoweredByHeader) {
+        if ($generalConfig->sendPoweredByHeader) {
             $original = $headers->get('X-Powered-By');
             $headers->set('X-Powered-By', $original . ($original ? ',' : '') . $this->name);
         } else {
@@ -209,11 +212,12 @@ class Application extends \yii\web\Application
             throw new ServiceUnavailableHttpException();
         }
 
+        // If Dev Mode is enabled and this is a CP request, check if there are any pending project config changes
         $projectConfig = $this->getProjectConfig();
+        $areProjectConfigChangesPending = $generalConfig->devMode && $request->getIsCpRequest() && $projectConfig->areChangesPending();
 
         // Make sure schema required by config files aligns with what we have.
-        $issues = [];
-        if ($projectConfig->areChangesPending() && !$projectConfig->getAreConfigSchemaVersionsCompatible($issues)) {
+        if ($areProjectConfigChangesPending && !$projectConfig->getAreConfigSchemaVersionsCompatible($issues)) {
             return $this->_handleIncompatibleConfig($request, $issues);
         }
 
@@ -243,8 +247,8 @@ class Application extends \yii\web\Application
             return $this->_processUpdateLogic($request) ?: $this->getResponse();
         }
 
-        // Check if there are any pending changes in project.yaml
-        if ($projectConfig->areChangesPending()) {
+        // If project config changes are pending, give them a chance to process them now
+        if ($areProjectConfigChangesPending) {
             return $this->_processConfigSyncLogic($request) ?: $this->getResponse();
         }
 
@@ -256,7 +260,6 @@ class Application extends \yii\web\Application
             ($firstSeg = $request->getSegment(1)) !== null &&
             ($plugin = $this->getPlugins()->getPlugin($firstSeg)) !== null
         ) {
-            /** @var Plugin $plugin */
             $user = $this->getUser();
             if ($user->getIsGuest()) {
                 return $user->loginRequired();
@@ -371,21 +374,55 @@ class Application extends \yii\web\Application
     }
 
     /**
+     * Authenticates the request.
+     *
+     * @throws UnauthorizedHttpException
+     * @since 3.5.0
+     */
+    protected function authenticate()
+    {
+        if (!Craft::$app->getConfig()->getGeneral()->enableBasicHttpAuth) {
+            return;
+        }
+
+        // Did the request include user credentials?
+        list($username, $password) = $this->getRequest()->getAuthCredentials();
+
+        if (!$username || !$password) {
+            return;
+        }
+
+        $user = Craft::$app->getUsers()->getUserByUsernameOrEmail(Db::escapeParam($username));
+
+        if (!$user) {
+            throw new UnauthorizedHttpException('Your request was made with invalid credentials.');
+        }
+
+        if (!$user->authenticate($password)) {
+            throw new UnauthorizedHttpException('Your request was made with invalid credentials.');
+        }
+
+        $this->getUser()->setIdentity($user);
+    }
+
+    /**
      * Bootstraps the Debug Toolbar if necessary.
      */
     protected function debugBootstrap()
     {
-        $session = $this->getSession();
-        if (!$session->getHasSessionId() && !$session->getIsActive()) {
+        $request = $this->getRequest();
+
+        if ($request->getIsLivePreview() || $request->getIsPreview()) {
             return;
         }
 
-        $request = $this->getRequest();
-        if (
-            $request->getIsLivePreview() ||
-            ($request->getIsCpRequest() && !$session->get('enableDebugToolbarForCp')) ||
-            (!$request->getIsCpRequest() && !$session->get('enableDebugToolbarForSite'))
-        ) {
+        $user = $this->getUser()->getIdentity();
+        if (!$user || !$user->admin) {
+            return;
+        }
+
+        $pref = $request->getIsCpRequest() ? 'enableDebugToolbarForCp' : 'enableDebugToolbarForSite';
+        if (!$user->getPreference($pref)) {
             return;
         }
 
@@ -394,6 +431,7 @@ class Application extends \yii\web\Application
 
         $this->setModule('debug', [
             'class' => DebugModule::class,
+            'basePath' => '@vendor/yiisoft/yii2-debug/src',
             'allowedIPs' => ['*'],
             'panels' => [
                 'config' => false,
@@ -679,6 +717,7 @@ class Application extends \yii\web\Application
             if (
                 $firstSegment === 'updater' ||
                 $firstSegment === 'config-sync' ||
+                $firstSegment === 'project-config' ||
                 $actionSegments === ['app', 'migrate'] ||
                 $actionSegments === ['pluginstore', 'install', 'migrate']
             ) {

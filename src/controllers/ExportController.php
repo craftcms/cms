@@ -73,22 +73,21 @@ class ExportController extends Controller
         $exporter = Craft::$app->getElements()->createExporter($exporter);
         $exporter->setElementType($elementType);
 
-        $response = Craft::$app->getResponse();
-        $response->data = $exporter->export($query);
-        $response->format = $format;
-        $response->setDownloadHeaders($exporter->getFilename() . ".{$format}");
+        $this->response->data = $exporter->export($query);
+        $this->response->format = $format;
+        $this->response->setDownloadHeaders($exporter->getFilename() . ".{$format}");
 
         switch ($format) {
             case Response::FORMAT_JSON:
-                $response->formatters[Response::FORMAT_JSON]['prettyPrint'] = true;
+                $this->response->formatters[Response::FORMAT_JSON]['prettyPrint'] = true;
                 break;
             case Response::FORMAT_XML:
                 Craft::$app->language = 'en-US';
-                $response->formatters[Response::FORMAT_XML]['rootTag'] = $elementType::pluralLowerDisplayName();
-                $response->formatters[Response::FORMAT_XML]['itemTag'] = $elementType::lowerDisplayName();
+                $this->response->formatters[Response::FORMAT_XML]['rootTag'] = $elementType::pluralLowerDisplayName();
+                $this->response->formatters[Response::FORMAT_XML]['itemTag'] = $elementType::lowerDisplayName();
                 break;
         }
 
-        return $response;
+        return $this->response;
     }
 }

@@ -3,8 +3,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\Field;
-use craft\base\Volume;
 use craft\base\VolumeInterface;
 use craft\db\Query;
 use craft\db\Table;
@@ -45,7 +43,7 @@ class Volumes extends Component
      *
      * Volume types must implement [[VolumeInterface]]. [[Volume]] provides a base implementation.
      *
-     * See [Volume Types](https://docs.craftcms.com/v3/volume-types.html) for documentation on creating volume types.
+     * See [Volume Types](https://craftcms.com/docs/3.x/extend/volume-types.html) for documentation on creating volume types.
      * ---
      * ```php
      * use craft\events\RegisterComponentTypesEvent;
@@ -156,7 +154,6 @@ class Volumes extends Component
 
         $userSession = Craft::$app->getUser();
         return ArrayHelper::where($this->getAllVolumes(), function(VolumeInterface $volume) use ($userSession) {
-            /** @var Volume $volume */
             return $userSession->checkPermission('viewVolume:' . $volume->uid);
         });
     }
@@ -257,6 +254,40 @@ class Volumes extends Component
     }
 
     /**
+     * Returns the field layout config for the given volume.
+     *
+     * @param VolumeInterface $volume
+     * @return array
+     * @since 3.5.0
+     */
+    public function createVolumeConfig(VolumeInterface $volume): array
+    {
+        $config = [
+            'name' => $volume->name,
+            'handle' => $volume->handle,
+            'type' => get_class($volume),
+            'hasUrls' => (bool)$volume->hasUrls,
+            'url' => $volume->url,
+            'settings' => ProjectConfigHelper::packAssociativeArrays($volume->getSettings()),
+            'sortOrder' => (int)$volume->sortOrder,
+        ];
+
+        if (
+            ($fieldLayout = $volume->getFieldLayout()) &&
+            ($fieldLayoutConfig = $fieldLayout->getConfig())
+        ) {
+            if (!$fieldLayout->uid) {
+                $fieldLayout->uid = $fieldLayout->id ? Db::uidById(Table::FIELDLAYOUTS, $fieldLayout->id) : StringHelper::UUID();
+            }
+            $config['fieldLayouts'] = [
+                $fieldLayout->uid => $fieldLayoutConfig,
+            ];
+        }
+
+        return $config;
+    }
+
+    /**
      * Creates or updates a volume.
      *
      * ---
@@ -284,7 +315,6 @@ class Volumes extends Component
      */
     public function saveVolume(VolumeInterface $volume, bool $runValidation = true): bool
     {
-        /** @var Volume $volume */
         $isNewVolume = $volume->getIsNew();
 
         // Fire a 'beforeSaveVolume' event
@@ -313,37 +343,9 @@ class Volumes extends Component
             $volume->uid = Db::uidById(Table::VOLUMES, $volume->id);
         }
 
-        $projectConfig = Craft::$app->getProjectConfig();
-
-        $configData = [
-            'name' => $volume->name,
-            'handle' => $volume->handle,
-            'type' => \get_class($volume),
-            'hasUrls' => (bool)$volume->hasUrls,
-            'url' => $volume->url,
-            'settings' => ProjectConfigHelper::packAssociativeArrays($volume->getSettings()),
-            'sortOrder' => (int)$volume->sortOrder,
-        ];
-
-        $fieldLayout = $volume->getFieldLayout();
-        $fieldLayoutConfig = $fieldLayout->getConfig();
-
-        if ($fieldLayoutConfig) {
-            if (empty($fieldLayout->id)) {
-                $layoutUid = StringHelper::UUID();
-                $fieldLayout->uid = $layoutUid;
-            } else {
-                $layoutUid = Db::uidById(Table::FIELDLAYOUTS, $fieldLayout->id);
-            }
-
-            $configData['fieldLayouts'] = [
-                $layoutUid => $fieldLayoutConfig
-            ];
-        }
-
-
         $configPath = self::CONFIG_VOLUME_KEY . '.' . $volume->uid;
-        $projectConfig->set($configPath, $configData, "Save the “{$volume->handle}” volume");
+        $configData = $this->createVolumeConfig($volume);
+        Craft::$app->getProjectConfig()->set($configPath, $configData, "Save the “{$volume->handle}” volume");
 
         if ($isNewVolume) {
             $volume->id = Db::idByUid(Table::VOLUMES, $volume->uid);
@@ -429,7 +431,6 @@ class Volumes extends Component
         // Clear caches
         $this->_volumes = null;
 
-        /** @var Volume $volume */
         $volume = $this->getVolumeById($volumeRecord->id);
         $volume->afterSave($isNewVolume);
 
@@ -450,6 +451,9 @@ class Volumes extends Component
                 'isNew' => $isNewVolume
             ]));
         }
+
+        // Invalidate asset caches
+        Craft::$app->getElements()->invalidateCachesForElementType(Asset::class);
     }
 
     /**
@@ -517,7 +521,6 @@ class Volumes extends Component
         }
 
         try {
-            /** @var Volume $volume */
             $volume = ComponentHelper::createComponent($config, VolumeInterface::class);
         } catch (UnknownPropertyException $e) {
             // Special case for Local volumes that are being converted to something else
@@ -553,7 +556,6 @@ class Volumes extends Component
      */
     public function ensureTopFolder(VolumeInterface $volume): int
     {
-        /** @var Volume $volume */
         $folder = VolumeFolder::findOne(
             [
                 'name' => $volume->name,
@@ -600,7 +602,6 @@ class Volumes extends Component
      */
     public function deleteVolume(VolumeInterface $volume): bool
     {
-        /** @var Volume $volume */
         // Fire a 'beforeDeleteVolume' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_VOLUME)) {
             $this->trigger(self::EVENT_BEFORE_DELETE_VOLUME, new VolumeEvent([
@@ -630,7 +631,6 @@ class Volumes extends Component
             return;
         }
 
-        /** @var Volume $volume */
         $volume = $this->getVolumeById($volumeRecord->id);
 
         // Fire a 'beforeApplyVolumeDelete' event
@@ -686,6 +686,9 @@ class Volumes extends Component
                 'volume' => $volume
             ]));
         }
+
+        // Invalidate asset caches
+        Craft::$app->getElements()->invalidateCachesForElementType(Asset::class);
     }
 
     /**
@@ -695,7 +698,6 @@ class Volumes extends Component
      */
     public function pruneDeletedField(FieldEvent $event)
     {
-        /** @var Field $field */
         $field = $event->field;
         $fieldUid = $field->uid;
 
@@ -721,7 +723,9 @@ class Volumes extends Component
         }
 
         // Nuke all the layout fields from the DB
-        Craft::$app->getDb()->createCommand()->delete('{{%fieldlayoutfields}}', ['fieldId' => $field->id])->execute();
+        Db::delete(Table::FIELDLAYOUTFIELDS, [
+            'fieldId' => $field->id,
+        ]);
 
         // Allow events again
         $projectConfig->muteEvents = false;

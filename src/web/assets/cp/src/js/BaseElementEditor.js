@@ -98,7 +98,7 @@ Craft.BaseElementEditor = Garnish.Base.extend(
                     var $header = $('<div class="hud-header"/>');
 
                     if (response.sites.length === 1) {
-                        $('<h5/>', {text: response.sites[0].name}).appendTo($header);;
+                        $('<h5/>', {text: response.sites[0].name}).appendTo($header);
                     } else {
                         var $siteSelectContainer = $('<div class="select"/>').appendTo($header);
 
@@ -168,6 +168,14 @@ Craft.BaseElementEditor = Garnish.Base.extend(
         },
 
         switchSite: function() {
+            if (
+                this.hud.$body.serialize() !== this.initialData &&
+                !confirm(Craft.t('app', 'Switching sites will lose unsaved changes. Are you sure you want to switch sites?'))
+            ) {
+                this.$siteSelect.val(this.siteId);
+                return;
+            }
+
             var newSiteId = this.$siteSelect.val();
 
             if (newSiteId == this.siteId) {

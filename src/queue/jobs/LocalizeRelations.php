@@ -10,6 +10,7 @@ namespace craft\queue\jobs;
 use Craft;
 use craft\db\Query;
 use craft\db\Table;
+use craft\helpers\Db;
 use craft\queue\BaseJob;
 
 /**
@@ -42,32 +43,26 @@ class LocalizeRelations extends BaseJob
         $totalRelations = count($relations);
         $allSiteIds = Craft::$app->getSites()->getAllSiteIds();
         $primarySiteId = array_shift($allSiteIds);
-        $db = Craft::$app->getDb();
 
         foreach ($relations as $i => $relation) {
             $this->setProgress($queue, $i / $totalRelations);
 
             // Set the existing relation to the primary site
-            $db->createCommand()
-                ->update(
-                    Table::RELATIONS,
-                    ['sourceSiteId' => $primarySiteId],
-                    ['id' => $relation['id']])
-                ->execute();
+            Db::update(Table::RELATIONS, [
+                'sourceSiteId' => $primarySiteId,
+            ], [
+                'id' => $relation['id'],
+            ]);
 
             // Duplicate it for the other sites
             foreach ($allSiteIds as $siteId) {
-                $db->createCommand()
-                    ->insert(
-                        Table::RELATIONS,
-                        [
-                            'fieldId' => $this->fieldId,
-                            'sourceId' => $relation['sourceId'],
-                            'sourceSiteId' => $siteId,
-                            'targetId' => $relation['targetId'],
-                            'sortOrder' => $relation['sortOrder'],
-                        ])
-                    ->execute();
+                Db::insert(Table::RELATIONS, [
+                    'fieldId' => $this->fieldId,
+                    'sourceId' => $relation['sourceId'],
+                    'sourceSiteId' => $siteId,
+                    'targetId' => $relation['targetId'],
+                    'sortOrder' => $relation['sortOrder'],
+                ]);
             }
         }
     }

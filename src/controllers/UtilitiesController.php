@@ -9,12 +9,12 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\UtilityInterface;
-use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
 use craft\errors\MigrationException;
+use craft\helpers\Db;
 use craft\helpers\FileHelper;
-use craft\helpers\Path;
+use craft\helpers\Queue;
 use craft\queue\jobs\FindAndReplace;
 use craft\utilities\ClearCaches;
 use craft\utilities\Updates;
@@ -22,10 +22,11 @@ use craft\web\assets\utilities\UtilitiesAsset;
 use craft\web\Controller;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
+use yii\caching\TagDependency;
+use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
-use ZipArchive;
 
 class UtilitiesController extends Controller
 {
@@ -141,12 +142,44 @@ class UtilitiesController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $logId = Craft::$app->getRequest()->getRequiredBodyParam('logId');
+        $logId = $this->request->getRequiredBodyParam('logId');
         Craft::$app->deprecator->deleteLogById($logId);
 
         return $this->asJson([
             'success' => true
         ]);
+    }
+
+    /**
+     * Performs a project config action
+     *
+     * @return Response
+     * @throws ForbiddenHttpException if the user doesn't have access to the Asset Indexes utility
+     */
+    public function actionProjectConfigPerformAction(): Response
+    {
+        $this->requireAdmin(false);
+        $projectConfig = Craft::$app->getProjectConfig();
+
+        switch ($this->request->getRequiredBodyParam('performAction')) {
+            case 'force-apply':
+                $forceUpdate = $projectConfig->forceUpdate;
+                $projectConfig->forceUpdate = true;
+                $projectConfig->applyYamlChanges();
+                $this->setSuccessFlash(Craft::t('app', 'Project config changes applied successfully.'));
+                $projectConfig->forceUpdate = $forceUpdate;
+                break;
+            case 'apply':
+                $projectConfig->applyYamlChanges();
+                $this->setSuccessFlash(Craft::t('app', 'Project config changes applied successfully.'));
+                break;
+            case 'rebuild':
+                $projectConfig->rebuild();
+                $this->setSuccessFlash(Craft::t('app', 'Project config rebuilt successfully.'));
+                break;
+        }
+
+        return $this->redirect('utilities/project-config');
     }
 
     /**
@@ -159,7 +192,7 @@ class UtilitiesController extends Controller
     {
         $this->requirePermission('utility:asset-indexes');
 
-        $params = Craft::$app->getRequest()->getRequiredBodyParam('params');
+        $params = $this->request->getRequiredBodyParam('params');
 
         // Initial request
         $assetIndexerService = Craft::$app->getAssetIndexer();
@@ -237,9 +270,9 @@ class UtilitiesController extends Controller
             $assetIndexerService->deleteStaleIndexingData();
         } else if (!empty($params['finish'])) {
             if (!empty($params['deleteAsset']) && is_array($params['deleteAsset'])) {
-                Craft::$app->getDb()->createCommand()
-                    ->delete(Table::ASSETTRANSFORMINDEX, ['assetId' => $params['deleteAsset']])
-                    ->execute();
+                Db::delete(Table::ASSETTRANSFORMINDEX, [
+                    'assetId' => $params['deleteAsset'],
+                ]);
 
                 /** @var Asset[] $assets */
                 $assets = Asset::find()
@@ -268,18 +301,13 @@ class UtilitiesController extends Controller
      *
      * @return Response
      * @throws ForbiddenHttpException if the user doesn't have access to the Clear Caches utility
+     * @throws BadRequestHttpException
      */
     public function actionClearCachesPerformAction(): Response
     {
         $this->requirePermission('utility:clear-caches');
 
-        $caches = Craft::$app->getRequest()->getRequiredBodyParam('caches');
-
-        if (!isset($caches)) {
-            return $this->asJson([
-                'success' => true
-            ]);
-        }
+        $caches = $this->request->getRequiredBodyParam('caches');
 
         foreach (ClearCaches::cacheOptions() as $cacheOption) {
             if (is_array($caches) && !in_array($cacheOption['key'], $caches, true)) {
@@ -309,6 +337,30 @@ class UtilitiesController extends Controller
     }
 
     /**
+     * Performs an Invalidate Data Caches action.
+     *
+     * @return Response
+     * @throws ForbiddenHttpException if the user doesn't have access to the Clear Caches utility
+     * @throws BadRequestHttpException
+     * @since 3.5.0
+     */
+    public function actionInvalidateTags(): Response
+    {
+        $this->requirePermission('utility:clear-caches');
+
+        $tags = $this->request->getRequiredBodyParam('tags');
+        $cache = Craft::$app->getCache();
+
+        foreach ($tags as $tag) {
+            TagDependency::invalidate($cache, $tag);
+        }
+
+        return $this->asJson([
+            'success' => true
+        ]);
+    }
+
+    /**
      * Performs a DB Backup action
      *
      * @return Response|null
@@ -329,52 +381,17 @@ class UtilitiesController extends Controller
             throw new Exception("Could not create backup: the backup file doesn't exist.");
         }
 
-        if (!Craft::$app->getRequest()->getBodyParam('downloadBackup')) {
+        // Zip it up and delete the SQL file
+        $zipPath = FileHelper::zip($backupPath);
+        unlink($backupPath);
+
+        if (!$this->request->getBodyParam('downloadBackup')) {
             return $this->asJson(['success' => true]);
         }
 
-        $zipPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . pathinfo($backupPath, PATHINFO_FILENAME) . '.zip';
-
-        if (is_file($zipPath) && !FileHelper::unlink($zipPath)) {
-            Craft::warning("Unable to delete the file \"{$zipPath}\": " . $e->getMessage(), __METHOD__);
-        }
-
-        $zip = new ZipArchive();
-
-        if ($zip->open($zipPath, ZipArchive::CREATE) !== true) {
-            throw new Exception('Cannot create zip at ' . $zipPath);
-        }
-
-        $filename = pathinfo($backupPath, PATHINFO_BASENAME);
-        $zip->addFile($backupPath, $filename);
-        $zip->close();
-
-        return Craft::$app->getResponse()->sendFile($zipPath, null, [
+        return $this->response->sendFile($zipPath, null, [
             'mimeType' => 'application/zip',
         ]);
-    }
-
-    /**
-     * Returns a database backup zip file to the browser.
-     *
-     * @return Response
-     * @throws ForbiddenHttpException if the user doesn't have access to the DB Backup utility
-     * @throws NotFoundHttpException if the requested backup cannot be found
-     */
-    public function actionDownloadBackupFile(): Response
-    {
-        $this->requirePermission('utility:db-backup');
-
-        $filename = Craft::$app->getRequest()->getRequiredQueryParam('filename');
-        $filePath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $filename . '.zip';
-
-        if (!is_file($filePath) || !Path::ensurePathIsContained($filePath)) {
-            throw new NotFoundHttpException(Craft::t('app', 'Invalid backup name: {filename}', [
-                'filename' => $filename
-            ]));
-        }
-
-        return Craft::$app->getResponse()->sendFile($filePath);
     }
 
     /**
@@ -387,10 +404,10 @@ class UtilitiesController extends Controller
     {
         $this->requirePermission('utility:find-replace');
 
-        $params = Craft::$app->getRequest()->getRequiredBodyParam('params');
+        $params = $this->request->getRequiredBodyParam('params');
 
         if (!empty($params['find']) && !empty($params['replace'])) {
-            Craft::$app->getQueue()->push(new FindAndReplace([
+            Queue::push(new FindAndReplace([
                 'find' => $params['find'],
                 'replace' => $params['replace'],
             ]));
@@ -415,9 +432,9 @@ class UtilitiesController extends Controller
 
         try {
             $migrator->up();
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'Applied new migrations successfully.'));
+            $this->setSuccessFlash(Craft::t('app', 'Applied new migrations successfully.'));
         } catch (MigrationException $e) {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t apply new migrations.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t apply new migrations.'));
         }
 
         return $this->redirect('utilities/migrations');

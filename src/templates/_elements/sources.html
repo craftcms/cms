@@ -1,37 +1,56 @@
 {% spaceless %}
 {% set keyPrefix = keyPrefix ?? '' %}
+
+{% macro sourceLink(key, source, isTopLevel, elementType) %}
+    {% from _self import sourceInnerHtml %}
+    {{ tag('a', {
+        data: {
+            key: key,
+            'has-thumbs': (source.hasThumbs ?? false) ? true : false,
+            'has-structure': (source.structureId ?? false) ? true : false,
+            'default-sort': (source.defaultSort ?? false)
+                ? (source.defaultSort is iterable ? source.defaultSort|join(':') : source.defaultSort)
+                : false,
+            'sort-options': isTopLevel
+                ? craft.app.elementIndexes.getSourceSortOptions(elementType, key)
+                    |map(o => [o.label, o.attribute ?? o.orderBy])
+                    |json_encode
+                : false,
+            sites: (source.sites ?? false) ? source.sites|join(',') : false,
+            'override-status': (source.criteria.status ?? false) ? true : false,
+        }|merge(source.data ?? {}),
+        html: sourceInnerHtml(source)
+    }) }}
+{% endmacro %}
+
+{% macro sourceInnerHtml(source) %}
+    {% if source.status is defined %}
+        <span class="status {{ source.status }}"></span>
+    {% elseif source.icon is defined %}
+        <span class="icon">
+            {{ (svg(source.icon, sanitize=true, namespace=true) ?: "<span data-icon='#{source.icon}'></span>")|raw }}
+        </span>
+    {% elseif source.iconMask is defined %}
+        <span class="icon icon-mask">
+            {{ (svg(source.iconMask, sanitize=true, namespace=true) ?: "<span data-icon='#{source.iconMask}'></span>")|raw }}
+        </span>
+    {% endif %}
+    <span class="label">{{ source.label }}</span>
+    {% if source.badgeCount is defined %}
+        <span class="badge">{{ source.badgeCount|number(decimals=0) }}</span>
+    {% endif %}
+{% endmacro %}
+
+{% from _self import sourceLink %}
+
 <ul>
     {% for source in sources %}
         {% if source.heading is defined %}
             <li class="heading"><span>{{ source.heading|t('site') }}</span></li>
         {% else %}
             {% set key = source.keyPath ?? (keyPrefix ~ source.key) %}
-            <li>{% spaceless %}
-                <a data-key="{{ key }}"
-                    {%- if source.hasThumbs is defined and source.hasThumbs %} data-has-thumbs{% endif %}
-                    {%- if source.structureId is defined %} data-has-structure{% endif %}
-                    {%- if source.defaultSort is defined %}{% set defaultSort = source.defaultSort %} data-default-sort="{{ defaultSort is iterable ? defaultSort|join(':') : defaultSort }}"{% endif %}
-                    {%- if source.sites is defined %} data-sites="{{ source.sites|join(',') }}"{% endif %}
-                    {%- if source.criteria.status is defined %} data-override-status{% endif %}
-                    {%- if source.data is defined -%}
-                        {% for dataKey, dataVal in source.data %} data-{{ dataKey }}="{{ dataVal }}"{% endfor %}
-                    {%- endif %}>
-                        {% if source.status is defined %}
-                            <span class="status {{ source.status }}"></span>
-                        {% elseif source.icon is defined %}
-                            <span class="icon">
-                                {{ (svg(source.icon, sanitize=true, namespace=true) ?: "<span data-icon='#{source.icon}'></span>")|raw }}
-                            </span>
-                        {% elseif source.iconMask is defined %}
-                            <span class="icon icon-mask">
-                                {{ (svg(source.iconMask, sanitize=true, namespace=true) ?: "<span data-icon='#{source.iconMask}'></span>")|raw }}
-                            </span>
-                        {% endif %}
-                        <span class="label">{{ source.label }}</span>
-                        {% if source.badgeCount is defined %}
-                            <span class="badge">{{ source.badgeCount|number(decimals=0) }}</span>
-                        {% endif %}
-                </a>
+            <li>
+                {{ sourceLink(key, source, not keyPrefix, elementType) }}
                 {% if source.nested is defined and source.nested is not empty %}
                     <div class="toggle"></div>
                     {% include "_elements/sources" with {
@@ -39,7 +58,7 @@
                         sources: source.nested
                     } %}
                 {% endif %}
-            {% endspaceless %}</li>
+            </li>
         {% endif %}
     {% endfor %}
 </ul>

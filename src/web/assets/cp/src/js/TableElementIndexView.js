@@ -355,7 +355,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend(
                     continue;
                 }
 
-                $tr.children('td[data-attr="' + attr + '"]:first').html(tableAttributes[attr]);
+                $tr.children('[data-attr="' + attr + '"]:first').html(tableAttributes[attr]);
             }
         }
     });

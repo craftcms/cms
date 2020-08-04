@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
+use voku\helper\ASCII;
 
 /**
  * The entire purpose of this class is so we can get at the charsArray in Stringy, which is a protected method
@@ -15,6 +16,7 @@ use Craft;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated in 3.5.0
  */
 class Stringy extends \Stringy\Stringy
 {
@@ -27,7 +29,11 @@ class Stringy extends \Stringy\Stringy
      */
     public static function getLangSpecificCharsArray(string $language = 'en'): array
     {
-        return static::langSpecificCharsArray($language);
+        $array = ASCII::charsArrayWithOneLanguage($language);
+        return [
+            $array['orig'],
+            $array['replace'],
+        ];
     }
 
     /**
@@ -42,7 +48,7 @@ class Stringy extends \Stringy\Stringy
 
     /**
      * Returns the replacements for the toAscii() method, including any custom
-     * mappings provided by the <config:customAsciiCharMappings> config setting.
+     * mappings provided by the <config3:customAsciiCharMappings> config setting.
      *
      * @return array
      */
@@ -50,7 +56,7 @@ class Stringy extends \Stringy\Stringy
     {
         static $charsArray;
         return $charsArray ?? $charsArray = array_merge(
-                parent::charsArray(),
+                ASCII::charsArrayWithMultiLanguageValues(),
                 Craft::$app->getConfig()->getGeneral()->customAsciiCharMappings
             );
     }

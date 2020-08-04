@@ -8,7 +8,6 @@
 namespace craft\console\controllers;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\console\Controller;
 use craft\elements\Asset;
@@ -284,7 +283,6 @@ class ResaveController extends Controller
 
         $beforeCallback = function(BatchElementActionEvent $e) use ($query) {
             if ($e->query === $query) {
-                /** @var Element $element */
                 $element = $e->element;
                 $this->stdout("    - Resaving {$element} ({$element->id}) ... ");
             }
@@ -292,7 +290,6 @@ class ResaveController extends Controller
 
         $afterCallback = function(BatchElementActionEvent $e) use ($query, &$fail) {
             if ($e->query === $query) {
-                /** @var Element $element */
                 $element = $e->element;
                 if ($e->exception) {
                     $this->stderr('error: ' . $e->exception->getMessage() . PHP_EOL, Console::FG_RED);

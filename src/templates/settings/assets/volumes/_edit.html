@@ -6,94 +6,90 @@
 
 
 {% block content %}
-        {{ actionInput('volumes/save-volume') }}
-        {{ redirectInput('settings/assets') }}
-        {% if not isNewVolume %}{{ hiddenInput('volumeId', volume.id) }}{% endif %}
+    {{ actionInput('volumes/save-volume') }}
+    {{ redirectInput('settings/assets') }}
+    {% if not isNewVolume %}{{ hiddenInput('volumeId', volume.id) }}{% endif %}
 
-        <div id="assetvolume-settings">
-            {{ forms.textField({
-                first: true,
-                label: "Name"|t('app'),
-                id: 'name',
-                name: 'name',
-                value: (volume is defined ? volume.name : null),
-                errors: (volume is defined ? volume.getErrors('name') : null),
-                autofocus: true,
-                required: true,
-            }) }}
+    {{ forms.textField({
+        first: true,
+        label: "Name"|t('app'),
+        id: 'name',
+        name: 'name',
+        value: (volume is defined ? volume.name : null),
+        errors: (volume is defined ? volume.getErrors('name') : null),
+        autofocus: true,
+        required: true,
+    }) }}
 
-            {{ forms.textField({
-                first: true,
-                label: "Handle"|t('app'),
-                id: 'handle',
-                name: 'handle',
-                class: 'code',
-                autocorrect: false,
-                autocapitalize: false,
-                value: (volume is defined ? volume.handle : null),
-                errors: (volume is defined ? volume.getErrors('handle') : null),
-                required: true,
-            }) }}
+    {{ forms.textField({
+        first: true,
+        label: "Handle"|t('app'),
+        id: 'handle',
+        name: 'handle',
+        class: 'code',
+        autocorrect: false,
+        autocapitalize: false,
+        value: (volume is defined ? volume.handle : null),
+        errors: (volume is defined ? volume.getErrors('handle') : null),
+        required: true,
+    }) }}
 
-            {{ forms.lightswitchField({
-                label: "Assets in this volume have public URLs"|t('app'),
-                name: 'hasUrls',
-                on:   volume.hasUrls,
-                toggle: "url-field"
-            }) }}
+    {{ forms.lightswitchField({
+        label: "Assets in this volume have public URLs"|t('app'),
+        name: 'hasUrls',
+        on:   volume.hasUrls,
+        toggle: "url-field"
+    }) }}
 
-            <div id="url-field" class="{% if not volume.hasUrls %}hidden{% endif %}">
-                {{ forms.autosuggestField({
-                    label: "Base URL"|t('app'),
-                    instructions: "The base URL to the assets in this volume."|t('app'),
-                    id: 'url',
-                    class: 'ltr volume-url',
-                    name: 'url',
-                    suggestEnvVars: true,
-                    suggestAliases: true,
-                    value: (volume is defined ? volume.url : null),
-                    errors: (volume is defined ? volume.getErrors('url') : null),
-                    required: true,
-                    placeholder: "//example.com/path/to/folder"
-                }) }}
-            </div>
+    <div id="url-field" class="{% if not volume.hasUrls %}hidden{% endif %}">
+        {{ forms.autosuggestField({
+            label: "Base URL"|t('app'),
+            instructions: "The base URL to the assets in this volume."|t('app'),
+            id: 'url',
+            class: ['ltr', 'volume-url'],
+            name: 'url',
+            suggestEnvVars: true,
+            suggestAliases: true,
+            value: (volume is defined ? volume.url : null),
+            errors: (volume is defined ? volume.getErrors('url') : null),
+            required: true,
+            placeholder: "//example.com/path/to/folder"
+        }) }}
+    </div>
 
-            <hr>
+    <hr>
 
-            {{ forms.selectField({
-                label: "Volume Type"|t('app'),
-                instructions: "What type of volume is this?"|t('app'),
-                id: 'type',
-                name: 'type',
-                options: volumeTypeOptions,
-                value: className(volume),
-                toggle: true
-            }) }}
+    {{ forms.selectField({
+        label: "Volume Type"|t('app'),
+        instructions: "What type of volume is this?"|t('app'),
+        id: 'type',
+        name: 'type',
+        options: volumeTypeOptions,
+        value: className(volume),
+        toggle: true
+    }) }}
 
-            {{ missingVolumePlaceholder|raw }}
+    {{ missingVolumePlaceholder|raw }}
 
-            {% for volumeType in volumeTypes %}
-                {% set isCurrent = (volumeType == className(volume)) %}
+    {% for volumeType in volumeTypes %}
+        {% set isCurrent = (volumeType == className(volume)) %}
 
-                <div id="{{ volumeType|id }}"{% if not isCurrent %} class="hidden"{% endif %}>
-                    {% namespace 'types['~volumeType~']' %}
-                        {% if isCurrent %}
-                            {{ volume.getSettingsHtml()|raw }}
-                        {% else %}
-                            {{ volumeInstances[volumeType].getSettingsHtml()|raw }}
-                        {% endif %}
-                    {% endnamespace %}
-                </div>
-            {% endfor %}
+        <div id="{{ volumeType|id }}"{% if not isCurrent %} class="hidden"{% endif %}>
+            {% namespace 'types['~volumeType~']' %}
+                {% if isCurrent %}
+                    {{ volume.getSettingsHtml()|raw }}
+                {% else %}
+                    {{ volumeInstances[volumeType].getSettingsHtml()|raw }}
+                {% endif %}
+            {% endnamespace %}
         </div>
+    {% endfor %}
 
-        <div id="assetvolume-fieldlayout" class="hidden">
-            {% include "_includes/fieldlayoutdesigner" with {
-                fieldLayout: volume.getFieldLayout(),
-                customizableTabs: true,
-                tab: 'fieldlayout'
-            } only %}
-        </div>
+    <hr>
+
+    {{ forms.fieldLayoutDesignerField({
+        fieldLayout: volume.getFieldLayout(),
+    }) }}
 {% endblock %}
 
 

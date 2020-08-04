@@ -12,6 +12,7 @@ namespace craft\elements\actions;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.30
+ * @deprecated in 3.5.0. [[Duplicate]] should be used instead.
  */
 class DeepDuplicate extends Duplicate
 {

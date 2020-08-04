@@ -1,11 +1,14 @@
 @charset "UTF-8";
-@import "../../../../../lib/craftcms-sass/mixins";
+@import "../../../../../node_modules/craftcms-sass/mixins";
+
+body,
+#graphiql {
+  width: 100vw;
+  height: 100vh;
+}
 
 #graphiql {
-  width: 100%;
   display: flex;
-  height: calc(100vh - #{60px + 14 + 24});
-  min-height: 500px;
   align-items: center;
   justify-content: center;
   font-size: 14px;
@@ -21,6 +24,7 @@
   .graphiql-container .variable-editor-title,
   .graphiql-container .footer,
   .result-window .CodeMirror,
+  .graphiql-container .resultWrap,
   .graphiql-container .result-window .CodeMirror-gutters,
   .graphiql-container .toolbar-button,
   .graphiql-container .toolbar-button:active,
@@ -34,23 +38,28 @@
   .graphiql-container .toolbar-select-options > li.hover,
   .graphiql-container .toolbar-select-options > li:active,
   .graphiql-container .toolbar-select-options > li:hover,
-  .graphiql-container .history-contents > p:hover,
-  .graphiql-container .history-contents > p:active,
   .CodeMirror-gutters{
     background: none;
     border: none;
   }
 
+  .graphiql-container .history-contents > p:hover,
+  .graphiql-container .history-contents > p:active {
+    color: $textColor;
+    background-color: $grey050;
+
+    span:not(.history-label) {
+      font-size: 14px;
+    }
+  }
   .graphiql-container,
   .graphiql-container .editorWrap {
     overflow: visible;
   }
 
   .topBarWrap {
-    margin-bottom: 14px;
-
     .topBar {
-      padding: 13px 0;
+      padding: 14px 24px;
 
       .title {
         @include sans-serif-font;
@@ -60,21 +69,36 @@
         color: $textColor;
       }
     }
+
+    .docExplorerShow {
+      padding: 14px 24px;
+    }
   }
 
-  .docExplorerShow {
-    @include margin-right(-24px);
-    @include padding-right(24px);
+  .doc-explorer-title-bar,
+  .history-title-bar {
+    background: $white;
   }
 
   .queryWrap,
-  .docExplorerWrap {
+  .docExplorerWrap,
+  .historyPaneWrap, {
     @include pane;
-    border-radius: $largeBorderRadius;
     overflow: hidden;
   }
 
+  .docExplorerWrap {
+    z-index: 8 !important;
+
+    .doc-explorer-contents {
+      overflow-y: auto !important;
+    }
+  }
+
   .queryWrap {
+    margin: 0 0 24px 24px;
+    border-radius: $largeBorderRadius;
+
     .CodeMirror-gutters {
       background: $grey050;
       box-shadow: inset -1px 0 0 $hairlineColor;
@@ -100,34 +124,33 @@
     .toolbar {
       margin-left: 16px;
     }
-    .toolbar-menu {
-      &.toolbar-button {
-        display: inline-block;
-        background-color: $grey200;
-        border-radius: $largeBorderRadius;
-        padding: 7px 14px;
-        border: none;
-        text-align: center;
-        white-space: nowrap;
-        user-select: none;
-        cursor: pointer;
-        box-sizing: border-box;
-        appearance: none;
-        color: $textColor;
-        height: 34px;
-        max-width: 100%;
-        box-shadow: none;
+    .toolbar-button {
+      display: inline-block;
+      background-color: $grey200;
+      border-radius: $largeBorderRadius;
+      padding: 7px 14px;
+      border: none;
+      text-align: center;
+      white-space: nowrap;
+      user-select: none;
+      cursor: pointer;
+      box-sizing: border-box;
+      appearance: none;
+      color: $textColor;
+      height: 34px;
+      max-width: 100%;
+      box-shadow: none;
 
-        &:focus,
-        &:hover {
-          background-color: darken($grey200, 5%);
-        }
+      &:focus,
+      &:hover {
+        background-color: darken($grey200, 5%);
+      }
 
-        svg {
-          margin-left: 5px;
-        }
+      svg {
+        margin-left: 5px;
       }
     }
+
     .execute-options, .toolbar-menu-items {
       min-width: 100%;
       margin-top: 0;
@@ -146,6 +169,7 @@
         &.selected-schema {
           cursor: default;
           background: none;
+
           &:before {
             @include icon;
             content: 'check';
@@ -154,13 +178,14 @@
             font-size: 14px;
             color: $lightTextColor;
           }
+
           &:hover {
             background-color: $white;
           }
         }
       }
     }
-
+    
     .execute-options li {
       padding-left: 14px;
     }
@@ -168,6 +193,48 @@
     .execute-button {
       background: linear-gradient(#fdfdfd, #CFD6DC);
       border: 1px solid #CFD6DC;
+    }
+
+    .graphiql-explorer-root {
+      padding: 0 !important;
+
+      & > div:first-child {
+        padding: 7px 14px;
+
+        div:focus {
+          outline: none;
+        }
+      }
+
+      .graphiql-explorer-actions {
+        margin: 0 !important;
+        padding: 14px !important;
+        box-sizing: border-box;
+        @include sans-serif-font;
+        font-weight: normal;
+        font-variant-caps: normal;
+        text-transform: none;
+        letter-spacing: normal;
+
+        & > span {
+          margin-right: 7px;
+        }
+
+        .toolbar-button {
+          margin: 0 !important;
+          padding: 0 4px;
+
+          &:before {
+            @include icon;
+            content: 'plus';
+            font-size: 14.4px;
+          }
+
+          span {
+            display: none;
+          }
+        }
+      }
     }
 
     .spinner {

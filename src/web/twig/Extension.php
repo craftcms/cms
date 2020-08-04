@@ -23,9 +23,9 @@ use craft\helpers\HtmlPurifier;
 use craft\helpers\Json;
 use craft\helpers\Sequence;
 use craft\helpers\StringHelper;
+use craft\helpers\Template as TemplateHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
-use craft\image\SvgAllowedAttributes;
 use craft\web\twig\nodevisitors\EventTagAdder;
 use craft\web\twig\nodevisitors\EventTagFinder;
 use craft\web\twig\nodevisitors\GetAttrAdjuster;
@@ -52,7 +52,7 @@ use DateInterval;
 use DateTime;
 use DateTimeInterface;
 use DateTimeZone;
-use enshrined\svgSanitize\Sanitizer;
+use Twig\Environment;
 use Twig\Environment as TwigEnvironment;
 use Twig\Error\RuntimeError;
 use Twig\Extension\AbstractExtension;
@@ -122,6 +122,10 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new RegisterResourceTokenParser('css', 'registerCss', [
                 'allowTagPair' => true,
                 'allowOptions' => true,
+            ]),
+            new RegisterResourceTokenParser('html', 'registerHtml', [
+                'allowTagPair' => true,
+                'allowPosition' => true,
             ]),
             new RegisterResourceTokenParser('js', 'registerJs', [
                 'allowTagPair' => true,
@@ -213,14 +217,17 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('currency', [$formatter, 'asCurrency']),
             new TwigFilter('date', [$this, 'dateFilter'], ['needs_environment' => true]),
             new TwigFilter('datetime', [$this, 'datetimeFilter'], ['needs_environment' => true]),
+            new TwigFilter('diff', 'array_diff'),
             new TwigFilter('duration', [DateTimeHelper::class, 'humanDurationFromInterval']),
             new TwigFilter('encenc', [$this, 'encencFilter']),
+            new TwigFilter('explodeClass', [Html::class, 'explodeClass']),
+            new TwigFilter('explodeStyle', [Html::class, 'explodeStyle']),
             new TwigFilter('filesize', [$formatter, 'asShortSize']),
             new TwigFilter('filter', [$this, 'filterFilter']),
-            new TwigFilter('filterByValue', [ArrayHelper::class, 'where']),
+            new TwigFilter('filterByValue', [ArrayHelper::class, 'where'], ['deprecated' => '3.5.0', 'alternative' => 'where']),
             new TwigFilter('group', [$this, 'groupFilter']),
             new TwigFilter('hash', [$security, 'hashData']),
-            new TwigFilter('id', [$this->view, 'formatInputId']),
+            new TwigFilter('id', [Html::class, 'id']),
             new TwigFilter('index', [ArrayHelper::class, 'index']),
             new TwigFilter('indexOf', [$this, 'indexOfFilter']),
             new TwigFilter('intersect', 'array_intersect'),
@@ -233,8 +240,9 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('md', [$this, 'markdownFilter'], ['is_safe' => ['html']]),
             new TwigFilter('merge', [$this, 'mergeFilter']),
             new TwigFilter('multisort', [$this, 'multisortFilter']),
-            new TwigFilter('namespace', [$this->view, 'namespaceInputs']),
-            new TwigFilter('ns', [$this->view, 'namespaceInputs']),
+            new TwigFilter('namespace', [$this->view, 'namespaceInputs'], ['is_safe' => ['html']]),
+            new TwigFilter('namespaceAttributes', [Html::class, 'namespaceAttributes'], ['is_safe' => ['html']]),
+            new TwigFilter('ns', [$this->view, 'namespaceInputs'], ['is_safe' => ['html']]),
             new TwigFilter('namespaceInputName', [$this->view, 'namespaceInputName']),
             new TwigFilter('namespaceInputId', [$this->view, 'namespaceInputId']),
             new TwigFilter('number', [$formatter, 'asDecimal']),
@@ -244,6 +252,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('percentage', [$formatter, 'asPercent']),
             new TwigFilter('prepend', [$this, 'prependFilter'], ['is_safe' => ['html']]),
             new TwigFilter('purify', [$this, 'purifyFilter'], ['is_safe' => ['html']]),
+            new TwigFilter('push', [$this, 'pushFilter']),
             new TwigFilter('replace', [$this, 'replaceFilter']),
             new TwigFilter('rss', [$this, 'rssFilter'], ['needs_environment' => true]),
             new TwigFilter('snake', [$this, 'snakeFilter']),
@@ -252,9 +261,11 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('translate', [$this, 'translateFilter']),
             new TwigFilter('t', [$this, 'translateFilter']),
             new TwigFilter('ucfirst', [$this, 'ucfirstFilter']),
-            new TwigFilter('ucwords', 'ucwords'),
+            new TwigFilter('ucwords', [$this, 'ucwordsFilter'], ['needs_environment' => true]),
             new TwigFilter('unique', 'array_unique'),
+            new TwigFilter('unshift', [$this, 'unshiftFilter']),
             new TwigFilter('values', 'array_values'),
+            new TwigFilter('where', [ArrayHelper::class, 'where']),
             new TwigFilter('without', [$this, 'withoutFilter']),
             new TwigFilter('withoutKey', [$this, 'withoutKeyFilter']),
         ];
@@ -319,6 +330,22 @@ class Extension extends AbstractExtension implements GlobalsInterface
     public function ucfirstFilter($string): string
     {
         return StringHelper::upperCaseFirst((string)$string);
+    }
+
+    /**
+     * Uppercases the first character of each word in a string.
+     *
+     * @param Environment $env
+     * @param string $string
+     * @return string
+     */
+    public function ucwordsFilter(Environment $env, string $string): string
+    {
+        Craft::$app->getDeprecator()->log('ucwords', 'The |ucwords filter has been deprecated. Use |title instead.');
+        if (($charset = $env->getCharset()) !== null) {
+            return mb_convert_case($string, MB_CASE_TITLE, $charset);
+        }
+        return ucwords(strtolower($string));
     }
 
     /**
@@ -522,6 +549,36 @@ class Extension extends AbstractExtension implements GlobalsInterface
         }
 
         return HtmlPurifier::process($html, $config);
+    }
+
+    /**
+     * Pushes one or more items onto the end of an array.
+     *
+     * @param array $array
+     * @return array
+     * @since 3.5.0
+     */
+    public function pushFilter(array $array): array
+    {
+        $args = func_get_args();
+        array_shift($args);
+        array_push($array, ...$args);
+        return $array;
+    }
+
+    /**
+     * Prepends one or more items to the beginning of an array.
+     *
+     * @param array $array
+     * @return array
+     * @since 3.5.0
+     */
+    public function unshiftFilter(array $array): array
+    {
+        $args = func_get_args();
+        array_shift($args);
+        array_unshift($array, ...$args);
+        return $array;
     }
 
     /**
@@ -906,6 +963,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('gql', [$this, 'gqlFunction']),
             new TwigFunction('parseEnv', [Craft::class, 'parseEnv']),
             new TwigFunction('plugin', [$this, 'pluginFunction']),
+            new TwigFunction('raw', [TemplateHelper::class, 'raw']),
             new TwigFunction('renderObjectTemplate', [$this, 'renderObjectTemplate']),
             new TwigFunction('round', [$this, 'roundFunction']),
             new TwigFunction('seq', [$this, 'seqFunction']),
@@ -1061,6 +1119,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * should be namespaced to avoid conflicts with other elements in the DOM.
      * By default the SVG will only be namespaced if an asset or markup is passed in.
      * @param string|null $class A CSS class name that should be added to the `<svg>` element.
+     * (This argument is deprecated. The `|attr` filter should be used instead.)
      * @return string
      */
     public function svgFunction($svg, bool $sanitize = null, bool $namespace = null, string $class = null)
@@ -1093,52 +1152,26 @@ class Extension extends AbstractExtension implements GlobalsInterface
 
         // Sanitize?
         if ($sanitize) {
-            $sanitizer = new Sanitizer();
-            $sanitizer->setAllowedAttrs(new SvgAllowedAttributes());
-            $svg = $sanitizer->sanitize($svg);
-            // Remove comments, title & desc
-            $svg = preg_replace('/<!--.*?-->\s*/s', '', $svg);
-            $svg = preg_replace('/<title>.*?<\/title>\s*/is', '', $svg);
-            $svg = preg_replace('/<desc>.*?<\/desc>\s*/is', '', $svg);
+            $svg = Html::sanitizeSvg($svg);
         }
 
         // Remove the XML declaration
         $svg = preg_replace('/<\?xml.*?\?>/', '', $svg);
 
         // Namespace class names and IDs
-        if (
-            $namespace && (
-                strpos($svg, 'id=') !== false || strpos($svg, 'class=') !== false)
-        ) {
-            $ns = StringHelper::randomStringWithChars('abcdefghijklmnopqrstuvwxyz', 10) . '-';
-            $ids = [];
-            $classes = [];
-            $svg = preg_replace_callback('/\bid=([\'"])([^\'"]+)\\1/i', function($matches) use ($ns, &$ids) {
-                $ids[] = $matches[2];
-                return "id={$matches[1]}{$ns}{$matches[2]}{$matches[1]}";
-            }, $svg);
-            $svg = preg_replace_callback('/\bclass=([\'"])([^\'"]+)\\1/i', function($matches) use ($ns, &$classes) {
-                $newClasses = [];
-                foreach (preg_split('/\s+/', $matches[2]) as $c) {
-                    $classes[] = $c;
-                    $newClasses[] = $ns . $c;
-                }
-                return 'class=' . $matches[1] . implode(' ', $newClasses) . $matches[1];
-            }, $svg);
-            foreach ($ids as $id) {
-                $quotedId = preg_quote($id, '/');
-                $svg = preg_replace("/#{$quotedId}\b(?!\-)/", "#{$ns}{$id}", $svg);
-            }
-            foreach ($classes as $c) {
-                $quotedClass = preg_quote($c, '/');
-                $svg = preg_replace("/\.{$quotedClass}\b(?!\-)/", ".{$ns}{$c}", $svg);
-            }
+        if ($namespace) {
+            $ns = StringHelper::randomString(10);
+            $svg = Html::namespaceAttributes($svg, $ns, true);
         }
 
         if ($class !== null) {
-            $svg = preg_replace('/(<svg\b[^>]+\bclass=([\'"])[^\'"]+)(\\2)/i', "$1 {$class}$3", $svg, 1, $count);
-            if ($count === 0) {
-                $svg = preg_replace('/<svg\b/i', "$0 class=\"{$class}\"", $svg, 1);
+            Craft::$app->getDeprecator()->log('svg()-class', 'The `class` argument of the svg() Twig function has been deprecated. The |attr filter should be used instead.');
+            try {
+                $svg = Html::modifyTagAttributes($svg, [
+                    'class' => $class,
+                ]);
+            } catch (InvalidArgumentException $e) {
+                Craft::warning('Unable to add a class to the SVG: ' . $e->getMessage(), __METHOD__);
             }
         }
 

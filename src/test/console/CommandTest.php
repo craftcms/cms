@@ -22,7 +22,8 @@ use yii\base\InvalidConfigException;
  * @since 3.2.0
  */
 class CommandTest
-{    const STD_OUT = 'stdOut';
+{
+    const STD_OUT = 'stdOut';
     const STD_ERR = 'stderr';
     const PROMPT = 'prompt';
     const CONFIRM = 'confirm';

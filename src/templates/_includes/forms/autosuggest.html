@@ -7,12 +7,11 @@
 {%- set id = (id is defined and id ? id : 'autosuggest'~random()) %}
 {%- set containerId = id ~ '-container' %}
 
-{%- set class = [
+{%- set class = (class ?? [])|explodeClass|merge([
     'text',
-    (class is defined and class ? class : null),
-    (disabled is defined and disabled ? 'disabled' : null),
-    (size is defined and size ? null : 'fullwidth')
-]|filter|join(' ') %}
+    (disabled ?? false) ? 'disabled',
+    not (size ?? false) ? 'fullwidth',
+]|filter) %}
 
 <div id="{{ containerId }}" class="autosuggest-container">
     {% verbatim %}
@@ -41,7 +40,7 @@ new Vue({
             filteredOptions: [],
             suggestions: suggestions ?? [],
             inputProps: {
-                class: class,
+                class: class|join(' '),
                 initialValue: value ?? '',
                 style: style ?? '',
                 id: id|namespaceInputId,

@@ -35,9 +35,9 @@ class ExecuteGqlQueryEvent extends Event
     public $query;
 
     /**
-     * @var array The variables used for this query.
+     * @var array|null The variables used for this query.
      */
-    public $variables = [];
+    public $variables;
 
     /**
      * @var string|null The name of the operation to use if requestString contains multiple possible operations.

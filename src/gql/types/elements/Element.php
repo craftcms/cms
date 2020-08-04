@@ -7,7 +7,7 @@
 
 namespace craft\gql\types\elements;
 
-use craft\base\Element as CraftElement;
+use craft\base\ElementInterface as BaseElementInterface;
 use craft\gql\base\ObjectType;
 use craft\gql\interfaces\Element as ElementInterface;
 use craft\services\Gql;
@@ -40,11 +40,15 @@ class Element extends ObjectType
      */
     protected function resolve($source, $arguments, $context, ResolveInfo $resolveInfo)
     {
-        /** @var CraftElement $source */
+        /** @var BaseElementInterface $source */
         $fieldName = $resolveInfo->fieldName;
 
-        if ($fieldName == Gql::GRAPHQL_COUNT_FIELD && !empty($arguments['field'])) {
+        if ($fieldName === Gql::GRAPHQL_COUNT_FIELD && !empty($arguments['field'])) {
             return $source->getEagerLoadedElementCount($arguments['field']);
+        }
+
+        if (in_array($fieldName, ['prev', 'next'])) {
+            return $source->{'get' . ucfirst($fieldName)}(empty($arguments) ? false : $arguments);
         }
 
         return parent::resolve($source, $arguments, $context, $resolveInfo);

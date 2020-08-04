@@ -28,7 +28,7 @@
 
             <li>
                 {{ checkbox({
-                    label: props.label|e,
+                    label: props.label,
                     name: 'permissions[]',
                     value: permissionName,
                     checked: checked,
@@ -81,11 +81,11 @@
         <hr>
     {% endif %}
 
-    <h2>{{ 'Choose which content should be available with this schema:'|t('app') }}</h2>
+    <h2>{{ 'Choose the available content for querying with this schema:'|t('app') }}</h2>
 
-    {% set gqlPermissions = craft.app.gql.allPermissions %}
+    {% set schemaComponents = craft.app.gql.getAllSchemaComponents %}
 
-    {% for category, catPermissions in craft.app.gql.allPermissions %}
+    {% for category, catPermissions in schemaComponents.queries %}
         <div class="user-permissions">
             <h3>{{ category }}</h3>
             <div class="select-all"></div>
@@ -93,6 +93,20 @@
             {{ permissionList(schema, catPermissions) }}
         </div>
     {% endfor %}
+
+    <hr/>
+    <h2>{{ 'Choose the available mutations for this schema:'|t('app') }}</h2>
+
+    {% for category, catPermissions in schemaComponents.mutations %}
+        <div class="user-permissions">
+            <h3>{{ category }}</h3>
+            <div class="select-all"></div>
+
+            {{ permissionList(schema, catPermissions) }}
+        </div>
+    {% endfor %}
+
+
 {% endblock %}
 
 {% block details %}

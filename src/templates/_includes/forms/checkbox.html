@@ -1,10 +1,9 @@
 {%- spaceless %}
 
-{% set class = [
-    (class is defined ? class : null),
-    ((toggle is defined and toggle is not empty) or (reverseToggle is defined and reverseToggle is not empty) ? 'fieldtoggle' : null),
+{% set class = (class ?? [])|explodeClass|merge([
+    (toggle ?? reverseToggle ?? false) ? 'fieldtoggle',
     'checkbox'
-]|filter|join(' ') %}
+]|filter) %}
 
 {% set value = (value is defined ? value : 1) %}
 {% set id = (id is defined and id ? id : 'checkbox'~random()) %}
@@ -14,7 +13,7 @@
     {{ hiddenInput(name, '') }}
 {% endif %}
 
-<input type="checkbox" value="{{ value }}" class="{{ class }}"
+<input type="checkbox" value="{{ value }}" class="{{ class|join(' ') }}"
     {%- if id %} id="{{ id }}"{% endif %}
     {%- if name is defined %} name="{{ name }}"{% endif %}
     {%- if checked is defined and checked %} checked{% endif %}
@@ -25,7 +24,7 @@
     {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
 
 <label for="{{ id }}">
-    {{ label|raw }}
+    {{ label }}
     {% if info ?? null %}
         <span class="info">{{ info|md|raw }}</span>
     {% endif %}
