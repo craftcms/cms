@@ -209,8 +209,7 @@ class GeneralConfig extends BaseObject
      * This can be set to `null` if you have a dedicated host name for the control panel (e.g. `cms.example.com`),
      * or you are running Craft in [Headless Mode](config:headlessMode). If you do that, you will need to ensure
      * that the control panel is being served from its own webroot directory on your server, with an `index.php`
-     * file that defines the [CRAFT_CP](https://docs.craftcms.com/v3/config/php-constants.html#craft-cp) PHP
-     * constant.
+     * file that defines the `CRAFT_CP` PHP constant.
      *
      * ```php
      * define('CRAFT_CP', true);

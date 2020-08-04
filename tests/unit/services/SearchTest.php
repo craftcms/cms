@@ -23,7 +23,7 @@ use UnitTester;
  * @todo There are MySQL and PostgreSQL specific search tests that need to be performed.
  *
  * Searching and some of the commands run in this test are documented here:
- * https://docs.craftcms.com/v3/searching.html#supported-syntaxes
+ * https://craftcms.com/docs/3.x/searching.html
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>

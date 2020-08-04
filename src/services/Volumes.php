@@ -43,7 +43,7 @@ class Volumes extends Component
      *
      * Volume types must implement [[VolumeInterface]]. [[Volume]] provides a base implementation.
      *
-     * See [Volume Types](https://docs.craftcms.com/v3/volume-types.html) for documentation on creating volume types.
+     * See [Volume Types](https://craftcms.com/docs/3.x/extend/volume-types.html) for documentation on creating volume types.
      * ---
      * ```php
      * use craft\events\RegisterComponentTypesEvent;
