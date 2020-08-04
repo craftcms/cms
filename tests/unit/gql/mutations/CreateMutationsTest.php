@@ -341,7 +341,7 @@ class CreateMutationsTest extends Unit
         list($saveMutation, $draftMutation) = EntryMutations::createSaveMutations($structure, true);
         $this->assertInstanceOf(EntryGqlType::class, $saveMutation['type']);
         $this->assertInstanceOf(EntryGqlType::class, $draftMutation['type']);
-        $this->assertContains('draft', $draftMutation['description']);
+        $this->assertStringContainsString('draft', $draftMutation['description']);
         $this->assertArrayHasKey('appendTo', $saveMutation['args']);
         $this->assertArrayHasKey('appendToRoot', $saveMutation['args']);
         $this->assertArrayNotHasKey('appendToRoot', $draftMutation['args']);

@@ -276,7 +276,7 @@ class ResolveAssetMutationsTest extends TestCase
                 ],
                 true,
                 [
-                    'newFilename' => 'Upload.svg',
+                    'filename' => 'Upload.svg',
                     'avoidFilenameConflicts' => true
                 ],
                 null
@@ -289,7 +289,7 @@ class ResolveAssetMutationsTest extends TestCase
                 ],
                 true,
                 [
-                    'newFilename' => 'file.jpg',
+                    'filename' => 'file.jpg',
                     'avoidFilenameConflicts' => true
                 ],
                 null
@@ -313,7 +313,7 @@ class ResolveAssetMutationsTest extends TestCase
                 ['url' => 'http://testtest.test/file.jpg?something&different=fine#hash',],
                 true,
                 [
-                    'newFilename' => 'file.jpg',
+                    'filename' => 'file.jpg',
                     'avoidFilenameConflicts' => true
                 ],
                 null
@@ -326,7 +326,7 @@ class ResolveAssetMutationsTest extends TestCase
                 ],
                 true,
                 [
-                    'newFilename' => 'otherFile.gif',
+                    'filename' => 'otherFile.gif',
                     'avoidFilenameConflicts' => true
                 ],
                 null
