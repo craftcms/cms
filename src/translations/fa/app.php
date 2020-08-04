@@ -1031,7 +1031,7 @@ return [
     'Warning' => 'هشدار',
     'on {day}' => 'در {day}',
     'Global sets' => 'مجموعه های سراسری',
-    'Reply-To Address' => 'Reply-To Address',
+    'Reply-To Address' => 'پاسخ-به آدرس پست الکترونیکی',
     'Use this field’s values as search keywords' => 'استفاده از مقادیر این فیلد به عنوان کلمات کلیدی جستجو',
     'yesterday' => 'دیروز',
     'Project config changes applied successfully.' => 'تغییرات پیکربندی پروژه با موفقیت اعمال شد.',
