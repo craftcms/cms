@@ -736,6 +736,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             this._autoSelectElements = selectedElementIds;
 
             if (action.download) {
+                if (Craft.csrfTokenName) {
+                    params[Craft.csrfTokenName] = Craft.csrfTokenValue;
+                }
                 Craft.downloadFromUrl('POST', Craft.getActionUrl(this.settings.submitActionsAction), params).then(response => {
                     this.setIndexAvailable();
                 }).catch(e => {
