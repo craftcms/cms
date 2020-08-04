@@ -10,7 +10,7 @@
 
 {% macro configWarning(setting, file) -%}
     {{ "This is being overridden by the {setting} config setting."|t('app', {
-        setting: '<a href="https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#property-'~setting|lower~'" rel="noopener" target="_blank">'~setting~'</a>'
+        setting: '<a href="https://craftcms.com/docs/3.x/config/config-settings.html#-'~setting|lower~'" rel="noopener" target="_blank">'~setting~'</a>'
     })|raw }}
 {%- endmacro %}
 
