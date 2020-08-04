@@ -6,7 +6,7 @@
 .gitignore export-ignore
 .lando.yml export-ignore
 .travis.yml export-ignore
-CHANGELOG-v3.md export-ignore
+CHANGELOG.md export-ignore
 codeception.yml export-ignore
 codeception.yml.example export-ignore
 composer.lock export-ignore
