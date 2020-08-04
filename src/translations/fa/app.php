@@ -961,7 +961,7 @@ return [
     'Raw data (fastest)' => 'داده خام (سریع‌ترین)',
     'Copied to clipboard.' => 'به کلیپ‌برد کپی شد.',
     'Matrix blocks' => 'بلوک‌های ماتریس',
-    'The asset you’re trying to download does not exist.' => 'دارایی‌هایی که در حال تلاش برای بارگیری آن هستید وجود ندارد.',
+    'The asset you’re trying to download does not exist.' => 'فایل پروژه ای که در حال تلاش برای دانلود آن هستید وجود ندارد.',
     'Recent {type} changes merged.' => 'تغییرات {type} اخیر ادغام شد.',
     'Edit GraphQL Token' => 'ویرایش توکن GraphQL',
     'When someone replaces a file, the record of who uploaded the file will be updated as well.' => 'در صورتی که فردی فایلی را جایگزین کند، سابقه فردی که فایل را بارگذاری می‌کند نیز به روز رسانی می‌شود.',
