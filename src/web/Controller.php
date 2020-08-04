@@ -279,7 +279,7 @@ abstract class Controller extends \yii\web\Controller
     /**
      * Throws a 403 error if the current user is not an admin.
      *
-     * @param bool $requireAdminChanges Whether the <config:allowAdminChanges>
+     * @param bool $requireAdminChanges Whether the <config3:allowAdminChanges>
      * config setting must also be enabled.
      * @throws ForbiddenHttpException if the current user is not an admin
      */

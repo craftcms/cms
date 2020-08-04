@@ -38,7 +38,7 @@ class Gc extends Component
     /**
      * @var bool whether [[hardDelete()]] should delete *all* soft-deleted rows,
      * rather than just the ones that were deleted long enough ago to be ready
-     * for hard-deletion per the <config:softDeleteDuration> config setting.
+     * for hard-deletion per the <config3:softDeleteDuration> config setting.
      */
     public $deleteAllTrashed = false;
 
