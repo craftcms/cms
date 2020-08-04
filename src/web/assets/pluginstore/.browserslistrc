@@ -1,0 +1,8 @@
+defaults
+Edge >= 15
+Chrome >= 29
+Safari >= 9
+ie >= 11
+Firefox >= 28
+iOS >= 9.1
+Android >= 4.4
