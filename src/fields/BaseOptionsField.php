@@ -16,10 +16,12 @@ use craft\fields\data\MultiOptionsFieldData;
 use craft\fields\data\OptionData;
 use craft\fields\data\SingleOptionFieldData;
 use craft\gql\arguments\OptionField as OptionFieldArguments;
+use craft\gql\GqlEntityRegistry;
 use craft\gql\resolvers\OptionField as OptionFieldResolver;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\Json;
+use GraphQL\Type\Definition\EnumType;
 use GraphQL\Type\Definition\Type;
 use yii\db\Schema;
 
@@ -415,6 +417,41 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             'type' => $this->multi ? Type::listOf(Type::string()) : Type::string(),
             'args' => OptionFieldArguments::getArguments(),
             'resolve' => OptionFieldResolver::class . '::resolve'
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.5.0
+     */
+    public function getContentGqlMutationArgumentType()
+    {
+        $typeName = $this->handle . '_FieldEnum';
+
+        if ($enumType = GqlEntityRegistry::getEntity($typeName)) {
+            return $enumType;
+        }
+
+        $values = [];
+
+        foreach ($this->options as $option) {
+            if (!isset($option['optgroup'])) {
+                $values[] = $option['value'];
+            }
+        }
+
+        $enumType = GqlEntityRegistry::createEntity($typeName, new EnumType([
+            'name' => $typeName,
+            'values' => $values,
+        ]));
+
+
+        $type = $this->multi ? Type::listOf($enumType) : $enumType;
+
+        return [
+            'name' => $this->handle,
+            'type' => $type,
+            'description' => $this->instructions,
         ];
     }
 

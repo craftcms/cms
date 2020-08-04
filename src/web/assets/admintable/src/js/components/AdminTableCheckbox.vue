@@ -1,7 +1,10 @@
 <template>
     <div
         class="checkbox"
-        :class="{ checked: isChecked }"
+        :class="{
+          checked: isChecked,
+          'table-disabled-checkbox': !status
+        }"
         v-on:click.prevent="handleClick"
         :title="title"></div>
 </template>
@@ -13,7 +16,11 @@
         props: {
             id: Number,
             selectAll: Boolean,
-            checks: Array
+            checks: Array,
+            status: {
+                type: Boolean,
+                default: true,
+            }
         },
 
         data() {
@@ -32,16 +39,22 @@
 
         methods: {
             handleClick() {
+                if (!this.status) {
+                    return;
+                }
+
                 if (this.isChecked) {
                     this.$emit('removeCheck', this.id);
                 } else {
                     this.$emit('addCheck', this.id);
                 }
             }
-        }
+        },
     }
 </script>
 
 <style scoped>
-
+  .table-disabled-checkbox {
+      opacity: 0.25;
+  }
 </style>

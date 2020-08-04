@@ -9,7 +9,6 @@ namespace craft\utilities;
 
 use Craft;
 use craft\base\Utility;
-use craft\base\Volume;
 use craft\helpers\Html;
 use craft\web\assets\assetindexes\AssetIndexesAsset;
 
@@ -50,7 +49,6 @@ class AssetIndexes extends Utility
      */
     public static function contentHtml(): string
     {
-        /** @var Volume[] $volumes */
         $volumes = Craft::$app->getVolumes()->getAllVolumes();
         $volumeOptions = [];
 

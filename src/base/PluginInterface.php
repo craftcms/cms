@@ -9,11 +9,14 @@ namespace craft\base;
 
 use craft\db\MigrationManager;
 use craft\web\twig\variables\Cp;
+use yii\base\Module;
 
 /**
  * PluginInterface defines the common interface to be implemented by plugin classes.
  * A class implementing this interface should also use [[PluginTrait]].
  *
+ * @mixin PluginTrait
+ * @mixin Module
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */

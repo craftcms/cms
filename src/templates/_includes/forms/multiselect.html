@@ -1,8 +1,4 @@
-{%- set class = [
-    'multiselect',
-    (class is defined ? class : null)
-]|filter|join(' ') %}
-
+{%- set class = (class ?? [])|explodeClass|push('multiselect') %}
 {%- set options = (options is defined ? options : []) %}
 {%- set values = (values is defined ? values : []) -%}
 {%- set hasOptgroups = false -%}
@@ -11,7 +7,7 @@
     {{ hiddenInput(name, '') }}
 {% endif -%}
 
-<div class="{{ class }}"
+<div class="{{ class|join(' ') }}"
         {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
     <select multiple
             {%- if id is defined %} id="{{ id }}"{% endif %}

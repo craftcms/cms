@@ -77,7 +77,7 @@
 
 {% set showHeader = showHeader ?? true %}
 {% if not showHeader %}
-    {% set bodyClass = (bodyClass is defined ? bodyClass~' ' : '') ~ 'no-header' -%}
+    {% set bodyClass = (bodyClass ?? [])|explodeClass|push('no-header') -%}
 {% endif %}
 
 {% set mainAttributes = {
@@ -92,11 +92,26 @@
     'novalidate': true,
     'data': {
         'saveshortcut': saveShortcut ?? true,
-        'saveshortcut-redirect': saveShortcutRedirect is defined ? saveShortcutRedirect|hash : false,
+        'saveshortcut-redirect': (saveShortcutRedirect ?? false) ? saveShortcutRedirect|hash : false,
+        'saveshortcut-scroll': retainScrollOnSaveShortcut ?? false,
+        'actions': formActions ?? false,
         'confirm-unload': true,
         'delta': view.getIsDeltaRegistrationActive(),
     },
 }|merge(mainFormAttributes ?? [], recursive=true) %}
+
+{% set userPhoto %}
+    <div class="header-photo">
+        {{ tag('img', {
+            width: 30,
+            height: 30,
+            sizes: '30px',
+            srcset: "#{currentUser.getThumbUrl(30)} 30w, #{currentUser.getThumbUrl(60)} 60w",
+            alt: currentUser.getName(),
+            title: currentUser.getName(),
+        }) }}
+    </div>
+{% endset %}
 
 {% block body %}
     <div id="global-container">
@@ -110,21 +125,27 @@
                 <div class="flex">
                     {% include '_layouts/components/crumbs' %}
                     <div class="flex-grow"></div>
-                    <div id="user-info" class="btn menubtn" data-menu-anchor="#user-photo" role="button">
-                        <div id="user-photo">
-                            {{ tag('img', {
-                                width: 30,
-                                height: 30,
-                                sizes: '30px',
-                                srcset: "#{currentUser.getThumbUrl(30)} 30w, #{currentUser.getThumbUrl(60)} 60w",
-                                alt: currentUser.getName(),
-                                title: currentUser.getName(),
-                            }) }}
-                        </div>
+                    <div id="user-info" class="btn menubtn" data-menu-anchor=".header-photo" role="button">
+                        {{ userPhoto }}
                     </div>
                     <div class="menu" data-align="right">
                         <ul>
-                            <li><a href="{{ url('myaccount') }}">{{ 'My Account'|t('app') }}</a></li>
+                            <li>
+                                <a href="{{ url('myaccount') }}" class="flex flex-nowrap">
+                                    {% if currentUser.photoId %}
+                                        {{ userPhoto }}
+                                    {% endif %}
+                                    <div class="flex-grow">
+                                        <div>{{ currentUser.username }}</div>
+                                        {% if not craft.app.config.general.useEmailAsUsername %}
+                                            <div class="light smalltext">{{ currentUser.email }}</div>
+                                        {% endif %}
+                                    </div>
+                                </a>
+                            </li>
+                        </ul>
+                        <hr>
+                        <ul>
                             <li><a href="{{ url('logout') }}">{{ "Sign out"|t('app') }}</a></li>
                         </ul>
                     </div>
@@ -224,7 +245,13 @@
 
 {% block actionButton %}
     {% if fullPageForm %}
-        <input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
+        <div class="btngroup">
+            <input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
+            {% if formActions ?? false %}
+                <div class="btn submit menubtn"></div>
+                {% include '_layouts/components/form-action-menu' %}
+            {% endif %}
+        </div>
     {% endif %}
 {% endblock %}
 

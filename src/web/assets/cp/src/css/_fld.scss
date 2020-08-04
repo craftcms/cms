@@ -1,0 +1,288 @@
+@charset "UTF-8";
+@import "../../../../../../node_modules/craftcms-sass/mixins";
+
+$base: 24px;
+$tabPadding: 14px;
+$tabWidth: $base * 10;
+$gridColor: hsl(212, 50%, 95%);
+
+@mixin workspaceBg {
+  background-color: $grey050;
+  background-image: linear-gradient(to right, $gridColor 1px, transparent 0px),
+  linear-gradient(to bottom, $gridColor 1px, transparent 1px);
+  background-size: $base $base;
+}
+
+.layoutdesigner {
+  display: flex;
+  align-items: stretch;
+  position: relative;
+  @include input-styles;
+  overflow: hidden;
+  box-shadow: none;
+  @include padding-right($tabWidth + 1);
+  min-height: 500px;
+
+  .fld-workspace {
+    flex: 1;
+    @include border-radius($smallBorderRadius, 0, 0, $smallBorderRadius);
+    @include padding($base, 0, $base, $base);
+    @include workspaceBg;
+    background-position: -1px -1px;
+    box-shadow: inset 0 1px 3px -1px darken($grey200, 10%);
+
+    .fld-tabs {
+      display: flex;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+  }
+
+  .fld-sidebar {
+    position: absolute;
+    top: 0;
+    @include right(0);
+    height: 100%;
+    width: $tabWidth + 1;
+    padding: $tabPadding;
+    overflow: auto;
+    box-sizing: border-box;
+
+    .btngroup {
+      margin-bottom: $tabPadding;
+    }
+
+    .fld-field-library {
+      .fld-field-group {
+        margin-top: $tabPadding;
+
+        h6 {
+          margin-bottom: 7px;
+        }
+      }
+    }
+
+    .filtered {
+      display: none;
+    }
+  }
+
+  .fld-new-tab-btn:active {
+    background-color: $grey050;
+  }
+}
+
+.fld-sidebar,
+.fld-tab .tabs .tab,
+.fld-tab .fld-tabcontent,
+.fld-new-tab-btn,
+.fld-new-tab-btn:hover {
+  background-color: $white;
+  box-shadow: 0 0 0 1px transparentize($grey900, 0.9), 0 2px 5px -2px transparentize($grey900, 0.8);
+}
+
+.fld-tab .settings,
+.fld-element .slide-picker{
+  @include margin-left(7px);
+}
+
+.fld-tab .settings:before,
+.fld-field .settings:before {
+  margin-top: -2px;
+  font-size: 16px;
+  opacity: 0.5;
+}
+
+.fld-tab .settings:hover:before,
+.fld-tab .settings.active:before,
+.fld-field .settings:hover:before,
+.fld-field .settings.active:before {
+  opacity: 1;
+}
+
+.fld-tab {
+  width: $tabWidth + $base;
+  @include padding(0, $base + 1, $base, 0);
+  box-sizing: border-box;
+
+  .tabs {
+    margin: -10px -12px 0;
+    padding: 10px 12px 0;
+    overflow: hidden;
+    display: flex;
+
+    .tab {
+      display: flex;
+      padding: 8px $tabPadding;
+      border-radius: $mediumBorderRadius $mediumBorderRadius 0 0;
+
+      body:not(.dragging) &.draggable {
+        cursor: move;
+        cursor: grab;
+      }
+    }
+  }
+
+  .fld-tabcontent {
+    padding: $tabPadding;
+    @include border-radius(0, $mediumBorderRadius, $mediumBorderRadius, $mediumBorderRadius);
+  }
+
+  &.fld-insertion {
+    .tabs .tab,
+    .fld-tabcontent {
+      margin: -2px;
+      border: 2px dashed $hairlineColor;
+      box-shadow: none;
+      @include workspaceBg;
+    }
+    .tabs .tab {
+      background-position: -1px -1px;
+    }
+    .fld-tabcontent {
+      background-position: -1px -13px;
+    }
+  }
+}
+
+.fld-tab-caboose {
+  min-height: 24px;
+}
+
+.fld-element {
+  position: relative;
+  padding: 7px 10px;
+  box-shadow: inset 0 0 0 1px $hairlineColor;
+  background-color: $white;
+  border-radius: $mediumBorderRadius;
+
+  body:not(.dragging) & {
+    cursor: move;
+    cursor: grab;
+  }
+
+  & + .fld-element {
+    margin-top: 7px;
+  }
+
+  &.fld-insertion {
+    box-sizing: border-box;
+    border: 2px dashed $hairlineColor;
+    border-radius: $mediumBorderRadius;
+    background: none;
+    box-shadow: none;
+  }
+
+  &.draghelper {
+    @include shadow;
+  }
+
+  &.fld-field {
+    display: flex;
+    align-items: center;
+    background-color: $grey100;
+
+    &:not(.draghelper) {
+      box-shadow: none;
+    }
+
+    .fld-field-hidden:not(.hidden) {
+      margin-top: -3px;
+      @include margin-right(5px);
+
+      &:before {
+        @include icon;
+        content: 'shuteye';
+      }
+
+      &,
+      & + .field-name h4 {
+        color: $mediumTextColor;
+      }
+    }
+
+    .field-name {
+      flex: 1;
+      overflow: hidden;
+
+      h4 {
+        margin-bottom: 2px;
+      }
+    }
+
+    &.fld-required .field-name h4:after {
+      @include icon;
+      @include margin(-2px, 0, 0, 4px);
+      content: 'asterisk';
+      font-size: 8px;
+    }
+  }
+
+  .fld-element-label {
+    font-weight: normal;
+    color: $textColor;
+  }
+
+  .fld-element-label,
+  &.fld-field .field-name .smalltext {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+body.dragging {
+  cursor: move !important;
+  cursor: grabbing !important;
+}
+
+.fld-hr {
+  display: flex;
+  justify-content: center;
+  padding: 9px 10px;
+
+  &:before {
+    position: absolute;
+    display: block;
+    top: calc(50% - 2px);
+    left: 10px;
+    width: calc(100% - 20px);
+    height: 4px;
+    content: '.';
+    font-size: 0;
+    background-color: $grey100;
+    border-radius: 2px;
+  }
+
+  .smalltext {
+    position: relative;
+    background-color: $grey100;
+    border-radius: 8px;
+    padding: 1px 7px;
+  }
+}
+
+.fld-ui-element {
+  display: flex;
+  align-items: center;
+
+  .fld-element-icon {
+    @include margin-right(5px);
+    text-align: center;
+
+    &,
+    svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    svg {
+      @include svg-mask($lightTextColor);
+    }
+  }
+}
+
+.fld-element-settings {
+  width: $tabWidth;
+}

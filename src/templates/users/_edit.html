@@ -59,6 +59,7 @@
         'data': {
             'saveshortcut': true,
             'saveshortcut-redirect':  (user.getIsCurrent() ? 'myaccount' : (CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users/{id}' : 'dashboard'))|hash,
+            'saveshortcut-scroll': true,
             'confirm-unload': true,
             'delta': true,
         },
@@ -68,7 +69,7 @@
         {{ redirectInput(CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users' : 'dashboard') }}
         {{ hiddenInputs }}
 
-        <div id="account">
+        <div id="account" class="flex-fields">
             {% include "users/_accountfields" %}
 
             {% if not isNewUser %}
@@ -91,13 +92,11 @@
                     errors: user.getErrors('email')|merge(user.getErrors('unverifiedEmail'))
                 }) }}
 
-                {% if requireEmailVerification %}
-                    {{ forms.checkboxField({
-                        label: "Send an activation email now?"|t('app'),
-                        name: 'sendVerificationEmail',
-                        checked: true
-                    }) }}
-                {% endif %}
+                {{ forms.checkboxField({
+                    label: 'Send an activation email now'|t('app'),
+                    name: 'sendVerificationEmail',
+                    checked: true
+                }) }}
 
             {% elseif user.getIsCurrent() or canAdministrateUsers %}
                 <hr>
@@ -115,11 +114,10 @@
                 }) }}
 
                 {% if user.getIsCurrent() %}
-                    {{ forms.textField({
+                    {{ forms.passwordField({
                         label: "New Password"|t('app'),
                         id: 'newPassword',
                         name: 'newPassword',
-                        type: 'password',
                         autocomplete: 'new-password',
                         errors: user.getErrors('newPassword')
                     }) }}
@@ -140,51 +138,40 @@
             {% endif %}
         </div>
 
-        {% for tab in user.getFieldLayout().getTabs() %}
-            <div id="profile-{{ tab.getHtmlId() }}" class="hidden">
-                {% include "_includes/fields" with {
-                    fields:  tab.getFields(),
-                    element: user,
-                    registerDeltas: true,
-                } only %}
-            </div>
-        {% endfor %}
+        {{ fieldsHtml|raw }}
 
         {% if CraftEdition == CraftPro and (currentUser.can('assignUserGroups') or currentUser.can('assignUserPermissions')) %}
-            <div id="perms" class="hidden">
+            <div id="perms" class="flex-fields hidden">
 
                 {% if CraftEdition == CraftPro and currentUser.can('assignUserGroups') %}
-                    <h2>{{ "User Groups"|t('app') }}</h2>
+                    <fieldset>
+                        <h2>{{ "User Groups"|t('app') }}</h2>
 
-                    {% do view.registerDeltaName('groups') %}
-                    {% set assignableGroups = craft.app.userGroups.getAssignableGroups(user) %}
+                        {% do view.registerDeltaName('groups') %}
+                        {% set assignableGroups = craft.app.userGroups.getAssignableGroups(user) %}
 
-                    {% embed '_includes/forms/field' with {
-                        fieldId: 'user-groups',
-                    } %}
-                        {% block input %}
-                            {% from '_includes/forms' import checkbox %}
-                            {{ hiddenInput('groups', '') }}
-                            {% if assignableGroups %}
-                                <ul>
+                        {% embed '_includes/forms/field' with {
+                            fieldId: 'user-groups',
+                        } %}
+                            {% block input %}
+                                {% from '_includes/forms' import checkboxField %}
+                                {{ hiddenInput('groups', '') }}
+                                {% if assignableGroups %}
                                     {% for group in assignableGroups %}
-                                        <li>
-                                            {{ checkbox({
-                                                label: group.name|t('site')|e,
-                                                name: 'groups[]',
-                                                value: group.id,
-                                                checked: (group.id in currentGroupIds)
-                                            }) }}
-                                        </li>
+                                        {{ checkboxField({
+                                            label: group.name|t('site')|e,
+                                            instructions: group.description|t('site')|e,
+                                            name: 'groups[]',
+                                            value: group.id,
+                                            checked: (group.id in currentGroupIds)
+                                        }) }}
                                     {% endfor %}
-                                </ul>
-                            {% else %}
-                                <p>{{ "No user groups exist yet."|t('app') }}</p>
-                            {% endif %}
-                        {% endblock %}
-                    {% endembed %}
-
-                    <hr>
+                                {% else %}
+                                    <p>{{ "No user groups exist yet."|t('app') }}</p>
+                                {% endif %}
+                            {% endblock %}
+                        {% endembed %}
+                    </fieldset>
                 {% endif %}
 
                 {% if currentUser.can('assignUserPermissions') %}
@@ -192,7 +179,7 @@
 
                     {% if currentUser.admin and CraftEdition == CraftPro %}
                         {{ forms.checkboxField({
-                            label: '<strong>' ~ "Admin"|t('app') ~ '</strong>',
+                            label: raw("<b>#{'Admin'|t('app')}</b>"),
                             name: 'admin',
                             id: 'admin',
                             checked: user.admin,
@@ -215,31 +202,24 @@
         {% endif %}
 
         {% if user.getIsCurrent() %}
-            <div id="prefs" class="hidden">
-                {% embed '_includes/forms/field' with {
-                    id: 'language',
+            <div id="prefs" class="flex-fields hidden">
+                {{ forms.selectField({
+                    id: 'preferredLanguage',
+                    name: 'preferredLanguage',
                     label: "Language"|t('app'),
-                } %}
-                    {% block input %}
-                        <div class="select">
-                            <select id="language" name="preferredLanguage">
-                                {% set allAppLocales = craft.app.i18n.getAppLocales()|multisort('displayName')|index('id') %}
-                                {% set userLanguage = user.getPreferredLanguage() ?: craft.app.language %}
+                    instructions: 'The language that the control panel should use.'|t('app'),
+                    options: localeOptions,
+                    value: userLanguage,
+                }) }}
 
-                                {% if allAppLocales[userLanguage] is not defined %}
-                                    {% set userLanguage = userLanguage|replace('/-.*/', '') %}
-                                    {% if allAppLocales[userLanguage] is not defined %}
-                                        {% set userLanguage = 'en' %}
-                                    {% endif %}
-                                {% endif %}
-
-                                {% for locale in allAppLocales %}
-                                    <option value="{{ locale.id }}" {% if locale.id == userLanguage %}selected{% endif %}>{{ locale.getDisplayName() }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                    {% endblock %}
-                {% endembed %}
+                {{ forms.selectField({
+                    id: 'preferredLocale',
+                    name: 'preferredLocale',
+                    label: "Formatting Locale"|t('app'),
+                    instructions: 'The locale that should be used for date and number formatting.'|t('app'),
+                    options: localeOptions|unshift({label: 'Same as language'|t('app'), value: ''}),
+                    value: userLocale,
+                }) }}
 
                 {{ forms.selectField({
                     label: "Week Start Day"|t('app'),
@@ -249,48 +229,76 @@
                     value: user.getPreference('weekStartDay', craft.app.config.general.defaultWeekStartDay)
                 }) }}
 
+                <hr>
+
+                <fieldset>
+                    {% embed '_includes/forms/field' with {
+                        label: 'Accessibility'|t('app'),
+                    } %}
+                        {% block input %}
+                            {% from '_includes/forms' import checkboxField %}
+                            {{ checkboxField({
+                                label: 'Use shapes to represent statuses'|t('app'),
+                                name: 'useShapes',
+                                id: 'useShapes',
+                                checked: user.getPreference('useShapes')
+                            }) }}
+                            {{ checkboxField({
+                                label: 'Underline links'|t('app'),
+                                name: 'underlineLinks',
+                                id: 'underlineLinks',
+                                checked: user.getPreference('underlineLinks')
+                            }) }}
+                        {% endblock %}
+                    {% endembed %}
+                </fieldset>
+
                 {% if user.admin %}
                     <hr>
 
-                    {% embed '_includes/forms/field' with {
-                        label: 'Debug Toolbar'|t('app'),
-                    } %}
-                        {% block input %}
-                            {% from '_includes/forms' import checkboxField %}
-                            {{ checkboxField({
-                                label: "Show the debug toolbar on the front end"|t('app'),
-                                name: 'enableDebugToolbarForSite',
-                                id: 'enableDebugToolbarForSite',
-                                checked: user.getPreference('enableDebugToolbarForSite')
-                            }) }}
-                            {{ checkboxField({
-                                label: "Show the debug toolbar in the control panel"|t('app'),
-                                name: 'enableDebugToolbarForCp',
-                                id: 'enableDebugToolbarForCp',
-                                checked: user.getPreference('enableDebugToolbarForCp')
-                            }) }}
-                            {{ checkboxField({
-                                label: 'Profile Twig templates when Dev Mode is disabled'|t('app'),
-                                name: 'profileTemplates',
-                                id: 'profileTemplates',
-                                checked: user.getPreference('profileTemplates')
-                            }) }}
-                        {% endblock %}
-                    {% endembed %}
+                    <fieldset>
+                        {% embed '_includes/forms/field' with {
+                            label: 'Debug Toolbar'|t('app'),
+                        } %}
+                            {% block input %}
+                                {% from '_includes/forms' import checkboxField %}
+                                {{ checkboxField({
+                                    label: "Show the debug toolbar on the front end"|t('app'),
+                                    name: 'enableDebugToolbarForSite',
+                                    id: 'enableDebugToolbarForSite',
+                                    checked: user.getPreference('enableDebugToolbarForSite')
+                                }) }}
+                                {{ checkboxField({
+                                    label: "Show the debug toolbar in the control panel"|t('app'),
+                                    name: 'enableDebugToolbarForCp',
+                                    id: 'enableDebugToolbarForCp',
+                                    checked: user.getPreference('enableDebugToolbarForCp')
+                                }) }}
+                                {{ checkboxField({
+                                    label: 'Profile Twig templates when Dev Mode is disabled'|t('app'),
+                                    name: 'profileTemplates',
+                                    id: 'profileTemplates',
+                                    checked: user.getPreference('profileTemplates')
+                                }) }}
+                            {% endblock %}
+                        {% endembed %}
+                    </fieldset>
 
-                    {% embed '_includes/forms/field' with {
-                        label: 'Exception Views'|t('app'),
-                    } %}
-                        {% block input %}
-                            {% from '_includes/forms' import checkboxField %}
-                            {{ checkboxField({
-                                label: 'Show full exception views when Dev Mode is disabled'|t('app'),
-                                name: 'showExceptionView',
-                                id: 'showExceptionView',
-                                checked: user.getPreference('showExceptionView')
-                            }) }}
-                        {% endblock %}
-                    {% endembed %}
+                    <fieldset>
+                        {% embed '_includes/forms/field' with {
+                            label: 'Exception Views'|t('app'),
+                        } %}
+                            {% block input %}
+                                {% from '_includes/forms' import checkboxField %}
+                                {{ checkboxField({
+                                    label: 'Show full exception views when Dev Mode is disabled'|t('app'),
+                                    name: 'showExceptionView',
+                                    id: 'showExceptionView',
+                                    checked: user.getPreference('showExceptionView')
+                                }) }}
+                            {% endblock %}
+                        {% endembed %}
+                    </fieldset>
                 {% endif %}
 
                 {% hook 'cp.users.edit.prefs' %}

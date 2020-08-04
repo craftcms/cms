@@ -1,16 +1,49 @@
 {% import "_includes/forms" as forms %}
 
+{% set targetPrefix = "datetime#{random()}-" %}
+
 {{ forms.radioGroupField({
     id: 'dateTime',
     name: 'dateTime',
     options: options,
-    value: value
+    value: value,
+    toggle: true,
+    targetPrefix: ".#{targetPrefix}",
 }) }}
 
 {{ forms.selectField({
+    fieldClass: [
+        "#{targetPrefix}showTime",
+        "#{targetPrefix}showBoth",
+        value == 'showDate' ? 'hidden',
+    ]|filter,
     label: "Minute Increment"|t('app'),
     id: 'minuteIncrement',
     name: 'minuteIncrement',
     options: incrementOptions,
     value: field.minuteIncrement ? field.minuteIncrement : 30,
+}) }}
+
+{{ forms.dateField({
+    fieldClass: [
+        "#{targetPrefix}showDate",
+        "#{targetPrefix}showBoth",
+        value == 'showTime' ? 'hidden',
+    ]|filter,
+    label: 'Min Date'|t('app'),
+    id: 'min',
+    name: 'min',
+    value: field.min,
+}) }}
+
+{{ forms.dateField({
+    fieldClass: [
+        "#{targetPrefix}showDate",
+        "#{targetPrefix}showBoth",
+        value == 'showTime' ? 'hidden',
+    ]|filter,
+    label: 'Max Date'|t('app'),
+    id: 'max',
+    name: 'max',
+    value: field.max,
 }) }}

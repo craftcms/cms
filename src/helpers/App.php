@@ -36,6 +36,8 @@ use yii\i18n\PhpMessageSource;
 use yii\log\Dispatcher;
 use yii\log\Logger;
 use yii\mutex\FileMutex;
+use yii\mutex\MysqlMutex;
+use yii\mutex\PgsqlMutex;
 use yii\web\JsonParser;
 
 /**
@@ -297,7 +299,7 @@ class App
 
     /**
      * Sets PHP’s memory limit to the maximum specified by the
-     * <config:phpMaxMemoryLimit> config setting, and gives the script an
+     * <config3:phpMaxMemoryLimit> config setting, and gives the script an
      * unlimited amount of time to execute.
      */
     public static function maxPowerCaptain()
@@ -512,6 +514,7 @@ class App
      *
      * @return array
      * @since 3.0.18
+     * @deprecated in 3.5.0. Use [[dbMutexConfig()]] instead.
      */
     public static function mutexConfig(): array
     {
@@ -521,6 +524,26 @@ class App
             'class' => FileMutex::class,
             'fileMode' => $generalConfig->defaultFileMode,
             'dirMode' => $generalConfig->defaultDirMode,
+        ];
+    }
+
+    /**
+     * Returns the `mutex` component config.
+     *
+     * @return array
+     * @since 3.5.18
+     */
+    public static function dbMutexConfig(): array
+    {
+        if (!Craft::$app->getIsInstalled()) {
+            return App::mutexConfig();
+        }
+
+        $db = Craft::$app->getDb();
+
+        return [
+            'class' => $db->getIsMysql() ? MysqlMutex::class : PgsqlMutex::class,
+            'db' => $db,
         ];
     }
 
@@ -681,6 +704,7 @@ class App
             'parsers' => [
                 'application/json' => JsonParser::class,
             ],
+            'isCpRequest' => defined('CRAFT_CP') ? (bool)CRAFT_CP : null,
         ];
 
         if ($generalConfig->trustedHosts !== null) {

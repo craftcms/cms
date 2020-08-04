@@ -47,12 +47,12 @@ class InstallController extends Controller
      */
     public function init()
     {
+        parent::init();
+
         // Return a 404 if Craft is already installed
         if (!YII_DEBUG && Craft::$app->getIsInstalled()) {
             throw new BadRequestHttpException('Craft is already installed');
         }
-
-        parent::init();
     }
 
     /**
@@ -185,10 +185,9 @@ class InstallController extends Controller
         $this->requireAcceptsJson();
 
         $user = new User(['scenario' => User::SCENARIO_REGISTRATION]);
-        $request = Craft::$app->getRequest();
-        $user->email = $request->getBodyParam('email');
-        $user->username = $request->getBodyParam('username', $user->email);
-        $user->newPassword = $request->getBodyParam('password');
+        $user->email = $this->request->getBodyParam('email');
+        $user->username = $this->request->getBodyParam('username', $user->email);
+        $user->newPassword = $this->request->getBodyParam('password');
 
         $validates = $user->validate();
         $errors = $user->getErrors();
@@ -210,11 +209,10 @@ class InstallController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $request = Craft::$app->getRequest();
         $site = new Site();
-        $site->name = $request->getBodyParam('name');
-        $site->baseUrl = $request->getBodyParam('baseUrl');
-        $site->language = $request->getBodyParam('language');
+        $site->name = $this->request->getBodyParam('name');
+        $site->baseUrl = $this->request->getBodyParam('baseUrl');
+        $site->language = $this->request->getBodyParam('language');
 
         $validates = $site->validate(['name', 'baseUrl', 'language']);
         $errors = $site->getErrors();
@@ -232,11 +230,10 @@ class InstallController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $request = Craft::$app->getRequest();
         $configService = Craft::$app->getConfig();
 
         // Should we set the new DB config values?
-        if ($request->getBodyParam('db-driver') !== null) {
+        if ($this->request->getBodyParam('db-driver') !== null) {
             // Set and save the new DB config values
             $dbConfig = Craft::$app->getConfig()->getDb();
             $this->_populateDbConfig($dbConfig, 'db-');
@@ -265,20 +262,20 @@ class InstallController extends Controller
         // Run the install migration
         $migrator = Craft::$app->getMigrator();
 
-        $email = $request->getBodyParam('account-email');
-        $username = $request->getBodyParam('account-username', $email);
-        $siteUrl = $request->getBodyParam('site-baseUrl');
+        $email = $this->request->getBodyParam('account-email');
+        $username = $this->request->getBodyParam('account-username', $email);
+        $siteUrl = $this->request->getBodyParam('site-baseUrl');
 
         // Don't save @web even if they chose it
         if ($siteUrl === '@web') {
             $siteUrl = Craft::getAlias($siteUrl);
         }
 
-        // Try to save the site URL to a DEFAULT_SITE_URL environment variable
+        // Try to save the site URL to a PRIMARY_SITE_URL environment variable
         // if it's not already set to an alias or environment variable
         if ($siteUrl[0] !== '@' && $siteUrl[0] !== '$' && !App::isEphemeral()) {
             try {
-                $configService->setDotEnvVar('DEFAULT_SITE_URL', $siteUrl);
+                $configService->setDotEnvVar('PRIMARY_SITE_URL', $siteUrl);
                 $siteUrl = '$DEFAULT_SITE_URL';
             } catch (Exception $e) {
                 // that's fine, we'll just store the entered URL
@@ -286,16 +283,16 @@ class InstallController extends Controller
         }
 
         $site = new Site([
-            'name' => $request->getBodyParam('site-name'),
+            'name' => $this->request->getBodyParam('site-name'),
             'handle' => 'default',
             'hasUrls' => true,
             'baseUrl' => $siteUrl,
-            'language' => $request->getBodyParam('site-language'),
+            'language' => $this->request->getBodyParam('site-language'),
         ]);
 
         $migration = new Install([
             'username' => $username,
-            'password' => $request->getBodyParam('account-password'),
+            'password' => $this->request->getBodyParam('account-password'),
             'email' => $email,
             'site' => $site,
         ]);
@@ -391,12 +388,10 @@ class InstallController extends Controller
      */
     private function _populateDbConfig(DbConfig $dbConfig, string $prefix = '')
     {
-        $request = Craft::$app->getRequest();
-
-        $driver = $request->getRequiredBodyParam("{$prefix}driver");
-        $server = $request->getBodyParam("{$prefix}server") ?: '127.0.0.1';
-        $database = $request->getBodyParam("{$prefix}database");
-        $port = $request->getBodyParam("{$prefix}port");
+        $driver = $this->request->getRequiredBodyParam("{$prefix}driver");
+        $server = $this->request->getBodyParam("{$prefix}server") ?: '127.0.0.1';
+        $database = $this->request->getBodyParam("{$prefix}database");
+        $port = $this->request->getBodyParam("{$prefix}port");
         if ($port === null || $port === '') {
             $port = $driver === Connection::DRIVER_MYSQL ? 3306 : 5432;
         }
@@ -406,9 +401,9 @@ class InstallController extends Controller
         $dbConfig->port = $port;
         $dbConfig->database = $database;
         $dbConfig->dsn = "{$driver}:host={$server};port={$port};dbname={$database}";
-        $dbConfig->user = $request->getBodyParam("{$prefix}user") ?: 'root';
-        $dbConfig->password = $request->getBodyParam("{$prefix}password");
-        $dbConfig->schema = $request->getBodyParam("{$prefix}schema") ?: 'public';
-        $dbConfig->tablePrefix = $request->getBodyParam("{$prefix}tablePrefix");
+        $dbConfig->user = $this->request->getBodyParam("{$prefix}user") ?: 'root';
+        $dbConfig->password = $this->request->getBodyParam("{$prefix}password");
+        $dbConfig->schema = $this->request->getBodyParam("{$prefix}schema") ?: 'public';
+        $dbConfig->tablePrefix = $this->request->getBodyParam("{$prefix}tablePrefix");
     }
 }

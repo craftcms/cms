@@ -88,4 +88,17 @@ class SiteGroup extends Model
     {
         return ArrayHelper::getColumn($this->getSites(), 'id');
     }
+
+    /**
+     * Returns the field layout config for this site group.
+     *
+     * @return array
+     * @since 3.5.0
+     */
+    public function getConfig(): array
+    {
+        return [
+            'name' => $this->name,
+        ];
+    }
 }

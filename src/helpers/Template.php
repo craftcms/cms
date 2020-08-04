@@ -8,8 +8,6 @@
 namespace craft\helpers;
 
 use Craft;
-use craft\base\Element;
-use craft\base\ElementInterface;
 use craft\db\Paginator;
 use craft\i18n\Locale;
 use craft\web\twig\variables\Paginate;
@@ -68,10 +66,6 @@ class Template
      */
     public static function attribute(Environment $env, Source $source, $object, $item, array $arguments = [], string $type = TwigTemplate::ANY_CALL, bool $isDefinedTest = false, bool $ignoreStrictCheck = false)
     {
-        if ($object instanceof ElementInterface) {
-            self::_includeElementInTemplateCaches($object);
-        }
-
         if (
             $type !== TwigTemplate::METHOD_CALL &&
             $object instanceof BaseObject &&
@@ -209,22 +203,6 @@ class Template
     private static function _profileToken(string $type, string $name, int $count): string
     {
         return "render {$type}: {$name}" . ($count === 1 ? '' : " ({$count})");
-    }
-
-    /**
-     * Includes an element in any active template caches.
-     *
-     * @param ElementInterface $element
-     */
-    private static function _includeElementInTemplateCaches(ElementInterface $element)
-    {
-        /** @var Element $element */
-        $elementId = $element->id;
-
-        // Don't initialize the TemplateCaches service if we don't have to
-        if ($elementId && Craft::$app->has('templateCaches', true)) {
-            Craft::$app->getTemplateCaches()->includeElementInTemplateCaches($elementId);
-        }
     }
 
     /**

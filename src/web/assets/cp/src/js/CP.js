@@ -113,13 +113,61 @@ Craft.CP = Garnish.Base.extend(
 
             // Does the primary form support the save shortcut?
             if (this.$primaryForm.length && Garnish.hasAttr(this.$primaryForm, 'data-saveshortcut')) {
-                Garnish.shortcutManager.registerShortcut({
-                    keyCode: Garnish.S_KEY,
-                    ctrl: true,
-                }, this.submitPrimaryForm.bind(this));
+                let shortcuts = [];
+                let actions = this.$primaryForm.data('actions');
+                if (typeof actions === 'undefined') {
+                    shortcuts.push([
+                        {
+                            keyCode: Garnish.S_KEY,
+                            ctrl: true,
+                        },
+                        {
+                            redirect: this.$primaryForm.data('saveshortcut-redirect'),
+                            retainScroll: Garnish.hasAttr(this.$primaryForm, 'saveshortcut-scroll'),
+                        }
+                    ]);
+                } else {
+                    for (let i = 0; i < actions.length; i++) {
+                        let action = actions[i];
+                        if (!action.shortcut) {
+                            continue;
+                        }
+                        shortcuts.push([
+                            {
+                                keyCode: Garnish.S_KEY,
+                                ctrl: true,
+                                shift: !!action.shift,
+                            },
+                            {
+                                action: action.action,
+                                redirect: action.redirect,
+                                confirm: action.confirm,
+                                params: action.params,
+                                data: action.data,
+                                retainScroll: action.retainScroll,
+                            }
+                        ]);
+                    }
+                }
+                for (let i = 0; i < shortcuts.length; i++) {
+                    Garnish.shortcutManager.registerShortcut(shortcuts[i][0], () => {
+                        this.submitPrimaryForm(shortcuts[i][1]);
+                    });
+                }
             }
 
             this.initTabs();
+
+            // Should we match the previous scroll position?
+            let scrollY = Craft.getLocalStorage('scrollY');
+            if (typeof scrollY !== 'undefined') {
+                Craft.removeLocalStorage('scrollY');
+                Garnish.$doc.ready(() => {
+                    Garnish.requestAnimationFrame(() => {
+                        window.scrollTo(0, scrollY);
+                    });
+                });
+            }
 
             if (this.$edition.hasClass('hot')) {
                 this.addListener(this.$edition, 'click', function() {
@@ -137,6 +185,18 @@ Craft.CP = Garnish.Base.extend(
             $('a').each(function() {
                 if (this.hostname.length && this.hostname !== location.hostname && typeof $(this).attr('target') === 'undefined') {
                     $(this).attr('rel', 'noopener').attr('target', '_blank')
+                }
+            });
+
+            // Listen for Option/ALT presses
+            this.addListener(Garnish.$win, 'keydown', function(ev) {
+                if (ev.keyCode === Garnish.ALT_KEY) {
+                    Garnish.$bod.addClass('altkeydown');
+                }
+            });
+            this.addListener(Garnish.$win, 'keyup', function(ev) {
+                if (ev.keyCode === Garnish.ALT_KEY) {
+                    Garnish.$bod.removeClass('altkeydown');
                 }
             });
         },
@@ -226,18 +286,34 @@ Craft.CP = Garnish.Base.extend(
             this.updateFixedHeader();
         },
 
-        submitPrimaryForm: function() {
+        /**
+         * Submits a form.
+         * @param {Object} [options]
+         * @param {string} [options.action] The `action` param value override
+         * @param {string} [options.redirect] The `redirect` param value override
+         * @param {string} [options.confirm] A confirmation message that should be shown to the user before submit
+         * @param {Object} [options.params] Additional params that should be added to the form, defined as name/value pairs
+         * @param {Object} [options.data] Additional data to be passed to the submit event
+         * @param {boolean} [options.retainScroll] Whether the scroll position should be stored and reapplied on the next page load
+         */
+        submitPrimaryForm: function(options) {
             // Give other stuff on the page a chance to prepare
             this.trigger('beforeSaveShortcut');
 
-            if (this.$primaryForm.data('saveshortcut-redirect')) {
-                $('<input type="hidden" name="redirect" value="' + this.$primaryForm.data('saveshortcut-redirect') + '"/>').appendTo(this.$primaryForm);
+            if (typeof options !== 'object' || !$.isPlainObject(options)) {
+                options = {};
             }
 
-            this.$primaryForm.trigger({
-                type: 'submit',
-                saveShortcut: true,
-            });
+            if (!options.redirect) {
+                options.redirect = this.$primaryForm.data('saveshortcut-redirect');
+            }
+
+            if (!options.data) {
+                options.data = {};
+            }
+            options.data.saveShortcut = true;
+
+            Craft.submitForm(this.$primaryForm, options);
         },
 
         updateSidebarMenuLabel: function() {
@@ -862,6 +938,32 @@ Craft.CP = Garnish.Base.extend(
                     delete this.jobProgressIcon;
                 }
             }
+        },
+
+        /**
+         * Returns the active site for the control panel
+         *
+         * @return {number}
+         */
+        getSiteId: function() {
+            // If the old BaseElementIndex.siteId value is in localStorage, go aheand and remove & return that
+            let siteId = Craft.getLocalStorage('BaseElementIndex.siteId');
+            if (typeof siteId !== 'undefined') {
+                Craft.removeLocalStorage('BaseElementIndex.siteId');
+                this.setSiteId(siteId);
+                return siteId;
+            }
+            return Craft.getCookie('siteId');
+        },
+
+        /**
+         * Sets the active site for the control panel
+         * @param {number} siteId
+         */
+        setSiteId: function(siteId) {
+            Craft.setCookie('siteId', siteId, {
+                maxAge: 31536000 // 1 year
+            });
         }
     },
     {

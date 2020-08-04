@@ -8,9 +8,13 @@
 namespace craft\models;
 
 use Craft;
+use craft\base\Field;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
+use craft\db\Table;
 use craft\elements\Entry;
+use craft\helpers\Db;
+use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\records\EntryType as EntryTypeRecord;
 use craft\validators\HandleValidator;
@@ -52,14 +56,27 @@ class EntryType extends Model
     public $handle;
 
     /**
+     * @var int|null Sort order
+     * @since 3.5.0
+     */
+    public $sortOrder;
+
+    /**
      * @var bool Has title field
      */
     public $hasTitleField = true;
 
     /**
-     * @var string Title label
+     * @var string Title translation method
+     * @since 3.5.0
      */
-    public $titleLabel = 'Title';
+    public $titleTranslationMethod = Field::TRANSLATION_METHOD_SITE;
+
+    /**
+     * @var string|null Title translation key format
+     * @since 3.5.0
+     */
+    public $titleTranslationKeyFormat;
 
     /**
      * @var string|null Title format
@@ -93,7 +110,6 @@ class EntryType extends Model
             'handle' => Craft::t('app', 'Handle'),
             'name' => Craft::t('app', 'Name'),
             'titleFormat' => Craft::t('app', 'Title Format'),
-            'titleLabel' => Craft::t('app', 'Title Field Label'),
         ];
     }
 
@@ -126,9 +142,7 @@ class EntryType extends Model
             'comboNotUnique' => Craft::t('yii', '{attribute} "{value}" has already been taken.'),
         ];
 
-        if ($this->hasTitleField) {
-            $rules[] = [['titleLabel'], 'required'];
-        } else {
+        if (!$this->hasTitleField) {
             $rules[] = [['titleFormat'], 'required'];
         }
 
@@ -172,5 +186,38 @@ class EntryType extends Model
         }
 
         return $section;
+    }
+
+    /**
+     * Returns the field layout config for this entry type.
+     *
+     * @return array
+     * @since 3.5.0
+     */
+    public function getConfig(): array
+    {
+        $config = [
+            'name' => $this->name,
+            'handle' => $this->handle,
+            'hasTitleField' => (bool)$this->hasTitleField,
+            'titleTranslationMethod' => $this->titleTranslationMethod,
+            'titleTranslationKeyFormat' => $this->titleTranslationKeyFormat ?: null,
+            'titleFormat' => $this->titleFormat ?: null,
+            'sortOrder' => (int)$this->sortOrder,
+            'section' => $this->getSection()->uid,
+        ];
+
+        $fieldLayout = $this->getFieldLayout();
+
+        if ($fieldLayoutConfig = $fieldLayout->getConfig()) {
+            if (!$fieldLayout->uid) {
+                $fieldLayout->uid = $fieldLayout->id ? Db::uidById(Table::FIELDLAYOUTS, $fieldLayout->id) : StringHelper::UUID();
+            }
+            $config['fieldLayouts'] = [
+                $fieldLayout->uid => $fieldLayoutConfig,
+            ];
+        }
+
+        return $config;
     }
 }

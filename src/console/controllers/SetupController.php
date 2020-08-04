@@ -471,7 +471,7 @@ EOD;
      */
     private function _outputCommand(string $command)
     {
-        $script = FileHelper::normalizePath(Craft::$app->getRequest()->getScriptFile());
+        $script = FileHelper::normalizePath($this->request->getScriptFile());
         if (!Platform::isWindows() && ($home = App::env('HOME')) !== false) {
             $home = FileHelper::normalizePath($home);
             if (strpos($script, $home . DIRECTORY_SEPARATOR) === 0) {

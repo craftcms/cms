@@ -122,23 +122,17 @@ class Deprecator extends Component
         $db = Craft::$app->getDb();
 
         foreach ($this->_requestLogs as $log) {
-            $command = $db->createCommand()
-                ->upsert(
-                    Table::DEPRECATIONERRORS,
-                    [
-                        'key' => $log->key,
-                        'fingerprint' => $log->fingerprint
-                    ],
-                    [
-                        'lastOccurrence' => Db::prepareDateForDb($log->lastOccurrence),
-                        'file' => $log->file,
-                        'line' => $log->line,
-                        'message' => $log->message,
-                        'traces' => Json::encode($log->traces),
-                    ]);
-
             try {
-                $command->execute();
+                Db::upsert(Table::DEPRECATIONERRORS, [
+                    'key' => $log->key,
+                    'fingerprint' => $log->fingerprint,
+                ], [
+                    'lastOccurrence' => Db::prepareDateForDb($log->lastOccurrence),
+                    'file' => $log->file,
+                    'line' => $log->line,
+                    'message' => $log->message,
+                    'traces' => Json::encode($log->traces),
+                ]);
                 $log->id = $db->getLastInsertID();
             } catch (IntegrityException $e) {
                 // todo: remove this try/catch after the next breakpoint
@@ -218,9 +212,9 @@ class Deprecator extends Component
      */
     public function deleteLogById(int $id): bool
     {
-        $affectedRows = Craft::$app->getDb()->createCommand()
-            ->delete(Table::DEPRECATIONERRORS, ['id' => $id])
-            ->execute();
+        $affectedRows = Db::delete(Table::DEPRECATIONERRORS, [
+            'id' => $id,
+        ]);
 
         return (bool)$affectedRows;
     }
@@ -232,9 +226,7 @@ class Deprecator extends Component
      */
     public function deleteAllLogs(): bool
     {
-        $affectedRows = Craft::$app->getDb()->createCommand()
-            ->delete(Table::DEPRECATIONERRORS)
-            ->execute();
+        $affectedRows = Db::delete(Table::DEPRECATIONERRORS);
 
         return (bool)$affectedRows;
     }

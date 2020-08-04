@@ -1,5 +1,6 @@
 /* global Craft */
 /* global Garnish */
+/* global $ */
 
 import Vue from 'vue'
 import App from './App'
@@ -32,6 +33,7 @@ Craft.VueAdminTable = Garnish.Base.extend({
     defaults: {
         actions: [],
         checkboxes: false,
+        checkboxStatus: $.noop,
         columns: [],
         container: null,
         deleteAction: null,
@@ -42,5 +44,10 @@ Craft.VueAdminTable = Garnish.Base.extend({
         searchPlaceholder: Craft.t('app', 'Search'),
         tableData: [],
         tableDataEndpoint: null,
+        onLoaded: $.noop,
+        onLoading: $.noop,
+        onData: $.noop,
+        onPagination: $.noop,
+        onSelect: $.noop
     }
 });

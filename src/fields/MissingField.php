@@ -33,7 +33,7 @@ class MissingField extends Field implements MissingComponentInterface
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml($value, ElementInterface $element = null): string
     {
         return $this->getPlaceholderHtml();
     }

@@ -17,7 +17,12 @@
 
 
 {% macro password(config) %}
-    {% include "_includes/forms/text" with config|merge({ type: 'password' }) only %}
+    {% include "_includes/forms/password" with config only %}
+{% endmacro %}
+
+
+{% macro copytext(config) %}
+    {% include "_includes/forms/copytext" with config only %}
 {% endmacro %}
 
 
@@ -101,6 +106,11 @@
 {% endmacro %}
 
 
+{% macro fieldLayoutDesigner(config) %}
+    {% include "_includes/forms/fieldLayoutDesigner" with config only %}
+{% endmacro %}
+
+
 {# Fields #}
 
 
@@ -110,84 +120,79 @@
 
 
 {% macro textField(config) %}
-    {% import _self as forms %}
     {% if config.unit is defined %}
         {% set input %}
             <div class="flex">
-                <div class="textwrapper">{{ forms.text(config) }}</div>
+                <div class="textwrapper">{{ _self.text(config) }}</div>
                 <div class="label light">{{ config.unit }}</div>
             </div>
         {% endset %}
     {% else %}
-        {% set input = forms.text(config) %}
+        {% set input = _self.text(config) %}
     {% endif %}
-    {{ forms.field(config, input) }}
+    {{ _self.field(config, input) }}
+{% endmacro %}
+
+
+{% macro copytextField(config) %}
+    {{ _self.field(config, _self.copytext(config)) }}
 {% endmacro %}
 
 
 {% macro passwordField(config) %}
-    {% import _self as forms %}
-    {{ forms.field(config, forms.password(config)) }}
+    {{ _self.field(config, _self.password(config)) }}
 {% endmacro %}
 
 
 {% macro dateField(config) %}
-    {% import _self as forms %}
-    {{ forms.field(config, forms.date(config)) }}
+    {{ _self.field(config, _self.date(config)) }}
 {% endmacro %}
 
 
 {% macro timeField(config) %}
-    {% import _self as forms %}
-    {{ forms.field(config, forms.time(config)) }}
+    {{ _self.field(config, _self.time(config)) }}
 {% endmacro %}
 
 
 {% macro colorField(config) %}
-    {% import _self as forms %}
-    {{ forms.field(config, forms.color(config)) }}
+    {{ _self.field(config, _self.color(config)) }}
 {% endmacro %}
 
 
 {% macro dateTimeField(config) %}
-    {% import _self as forms %}
     {% set input %}
         <div class="datetimewrapper">
-            {{ forms.date(config) }}
-            {{ forms.time(config) }}
+            {{ _self.date(config) }}
+            {{ _self.time(config) }}
         </div>
     {% endset %}
-    {{ forms.field(config, input) }}
+    {{ _self.field(config, input) }}
 {% endmacro %}
 
 
 {% macro textareaField(config) %}
-    {% import _self as forms %}
-    {{ forms.field(config, forms.textarea(config)) }}
+    {{ _self.field(config, _self.textarea(config)) }}
 {% endmacro %}
 
 
 {% macro selectField(config) %}
-    {% import _self as forms %}
-    {{ forms.field(config, forms.select(config)) }}
+    {{ _self.field(config, _self.select(config)) }}
 {% endmacro %}
 
 
 {% macro multiselectField(config) %}
-    {% import _self as forms %}
-    {{ forms.field(config, forms.multiselect(config)) }}
+    {{ _self.field(config, _self.multiselect(config)) }}
 {% endmacro %}
 
 
 {% macro checkboxField(config) %}
-    {% import _self as forms %}
     {% if config.fieldLabel is defined %}
-        {{ forms.field(config|merge({label: config.fieldLabel}), forms.checkbox(config)) }}
+        {{ _self.field(config|merge({label: config.fieldLabel}), _self.checkbox(config)) }}
     {% else %}
         {% set instructions = config.instructions ?? null -%}
         {% set warning = config.warning ?? null -%}
         <div class="field checkboxfield{% if config.first is defined and config.first %} first{% endif %}{% if instructions %} has-instructions{% endif %}"{% if config.id is defined and config.id %} id="{{ config.id }}-field"{% endif %}>
-            {{ forms.checkbox(config) }}
+            {{ _self.checkbox(config) }}
             {% if instructions %}
                 <div class="instructions">{{ instructions|md }}</div>
             {% endif %}
@@ -200,54 +205,46 @@
 
 
 {% macro checkboxGroupField(config) %}
-    {% import _self as forms %}
-    {{ forms.field(config, forms.checkboxGroup(config)) }}
+    {{ _self.field(config, _self.checkboxGroup(config)) }}
 {% endmacro %}
 
 
 {% macro checkboxSelectField(config) %}
-    {% import _self as forms %}
-    {{ forms.field(config, forms.checkboxSelect(config)) }}
+    {{ _self.field(config, _self.checkboxSelect(config)) }}
 {% endmacro %}
 
 
 {% macro radioGroupField(config) %}
-    {% import _self as forms %}
-    {{ forms.field(config, forms.radioGroup(config)) }}
+    {{ _self.field(config, _self.radioGroup(config)) }}
 {% endmacro %}
 
 
 {% macro fileField(config) %}
-    {% import _self as forms %}
-    {{ forms.field(config, forms.file(config)) }}
+    {{ _self.field(config, _self.file(config)) }}
 {% endmacro %}
 
 
 {% macro lightswitchField(config) %}
-    {% import _self as forms %}
     {% if config.labelId is not defined or not config.labelId %}
         {% set config = config|merge({ labelId: 'label'~random() }) %}
     {% endif %}
     {% set config = config|merge({ fieldClass: 'lightswitch-field ' ~ (config.fieldClass ?? '') }) %}
-    {{ forms.field(config, forms.lightswitch(config)) }}
+    {{ _self.field(config, _self.lightswitch(config|withoutKey('label'))) }}
 {% endmacro %}
 
 
 {% macro editableTableField(config) %}
-    {% import _self as forms %}
     {% set input %}{% include "_includes/forms/editableTable" with config only %}{% endset %}
-    {{ forms.field(config, input) }}
+    {{ _self.field(config, input) }}
 {% endmacro %}
 
 
 {% macro elementSelectField(config) %}
-    {% import _self as forms %}
-    {{ forms.field(config, forms.elementSelect(config)) }}
+    {{ _self.field(config, _self.elementSelect(config)) }}
 {% endmacro %}
 
 
 {% macro autosuggestField(config) %}
-    {% import _self as forms %}
 
     {# Suggest an environment variable / alias? #}
     {% if (config.suggestEnvVars ?? false) %}
@@ -266,7 +263,14 @@
         {% endif %}
     {% endif %}
 
-    {{ forms.field(config, forms.autosuggest(config)) }}
+    {{ _self.field(config, _self.autosuggest(config)) }}
+{% endmacro %}
+
+
+{% macro fieldLayoutDesignerField(config) %}
+    {{ _self.field({
+        label: 'Field Layout'|t('app'),
+    }|merge(config), _self.fieldLayoutDesigner(config)) }}
 {% endmacro %}
 
 

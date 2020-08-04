@@ -10,7 +10,6 @@ namespace craft\records;
 use craft\db\ActiveRecord;
 use craft\db\Table;
 use craft\validators\DateTimeValidator;
-use yii\db\ActiveQueryInterface;
 
 /**
  * Class Plugin record.
@@ -20,7 +19,6 @@ use yii\db\ActiveQueryInterface;
  * @property string $version Version
  * @property bool $enabled Enabled
  * @property \DateTime $installDate Install date
- * @property Migration[] $migrations Migrations
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
@@ -46,15 +44,5 @@ class Plugin extends ActiveRecord
     public static function tableName(): string
     {
         return Table::PLUGINS;
-    }
-
-    /**
-     * Returns the plugin’s migrations.
-     *
-     * @return ActiveQueryInterface The relational query object.
-     */
-    public function getMigrations(): ActiveQueryInterface
-    {
-        return $this->hasMany(Migration::class, ['pluginId' => 'id']);
     }
 }

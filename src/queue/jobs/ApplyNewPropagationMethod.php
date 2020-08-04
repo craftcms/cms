@@ -8,12 +8,9 @@
 namespace craft\queue\jobs;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\elements\MatrixBlock;
 use craft\errors\UnsupportedSiteException;
 use craft\events\BatchElementActionEvent;
-use craft\fields\Matrix;
 use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
 use craft\queue\BaseJob;
@@ -45,9 +42,6 @@ class ApplyNewPropagationMethod extends BaseJob
      */
     public function execute($queue)
     {
-        // Let's save ourselves some trouble and just clear all the caches for this element class
-        Craft::$app->getTemplateCaches()->deleteCachesByElementType($this->elementType);
-
         /** @var string|ElementInterface $elementType */
         $elementType = $this->elementType;
         $query = $elementType::find()
@@ -81,7 +75,6 @@ class ApplyNewPropagationMethod extends BaseJob
                 }
 
                 // Load the element in any sites that it's about to be deleted for
-                /** @var Element $element */
                 $element = $e->element;
                 $otherSiteElements = $elementType::find()
                     ->id($element->id)

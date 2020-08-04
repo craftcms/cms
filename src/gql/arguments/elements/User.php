@@ -48,6 +48,11 @@ class User extends ElementArguments
                 'type' => Type::listOf(Type::string()),
                 'description' => 'Narrows the query results based on the users’ last names.'
             ],
+            'hasPhoto' => [
+                'name' => 'hasPhoto',
+                'type' => Type::boolean(),
+                'description' => 'Narrows the query results to only users that have (or don’t have) a user photo.',
+            ],
             'groupId' => [
                 'name' => 'groupId',
                 'type' => Type::listOf(QueryArgument::getType()),

@@ -9,6 +9,8 @@ namespace craftunit\gql;
 
 use Codeception\Test\Unit;
 use Craft;
+use craft\config\GeneralConfig;
+use craft\console\Application;
 use craft\elements\Asset;
 use craft\gql\directives\FormatDateTime;
 use craft\gql\directives\Markdown;
@@ -18,6 +20,7 @@ use craft\gql\types\elements\Asset as GqlAssetType;
 use craft\gql\types\elements\Entry as GqlEntryType;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
+use craft\services\Config;
 use craft\test\mockclasses\elements\ExampleElement;
 use craft\test\mockclasses\gql\MockDirective;
 use DateTime;
@@ -79,7 +82,7 @@ class DirectiveTest extends Unit
             Craft::$app,
             'assets',
             [
-                'getAssetUrl' => function ($asset, $parameters, $generateNow) {
+                'getAssetUrl' => function($asset, $parameters, $generateNow) {
                     $transformed = is_array($parameters) ? implode('-', $parameters) : $parameters;
                     return $transformed . ($generateNow ? ($asset->filename . '-generateNow') : ($asset->filename . 'generateLater'));
                 }
@@ -215,13 +218,21 @@ class DirectiveTest extends Unit
      *
      * @param $className
      */
-    private function _registerDirective($className) {
+    private function _registerDirective($className)
+    {
         // Make sure the mock directive is available in the entity registry
         $directiveName = $className::name();
+
+        Craft::$app = $this->make(Application::class, [
+            'getConfig' => $this->make(Config::class, [
+                'getGeneral' => $this->make(GeneralConfig::class, [
+                    'gqlTypePrefix' => 'test'
+                ])
+            ])
+        ]);
 
         if (!GqlEntityRegistry::getEntity($directiveName)) {
             GqlEntityRegistry::createEntity($directiveName, $className::create());
         }
-
     }
 }

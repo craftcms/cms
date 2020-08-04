@@ -67,7 +67,7 @@
 
         {% if (craft.app.isMultiSite or not site.id) and not site.primary %}
             {{ forms.lightswitchField({
-                label: "Make this the primary site?"|t('app'),
+                label: 'Make this the primary site'|t('app'),
                 instructions: "The primary site will be loaded by default on the front end."|t('app'),
                 id: 'primary',
                 name: 'primary',
@@ -101,6 +101,21 @@
             }) }}
         </div>
     </div>
+{% endblock %}
+
+{% block details %}
+    {% if (craft.app.isMultiSite or not site.id) %}
+        <div class="meta">
+            {{ forms.lightswitchField({
+                label: 'Enable on the front end'|t('app'),
+                id: 'enabled',
+                name: 'enabled',
+                on: site.primary or site.enabled,
+                disabled: site.primary,
+                errors: site.getErrors('enabled'),
+            }) }}
+        </div>
+    {% endif %}
 {% endblock %}
 
 

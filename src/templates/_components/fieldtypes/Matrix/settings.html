@@ -1,22 +1,26 @@
 {% import "_includes/forms" as forms %}
 
-
 {% set blockTypeInput %}
     <div class="mc-sidebar block-types">
-        <div class="col-inner-container">
-            <div class="heading">
+        <div class="mc-col-inner-container">
+            <div class="mc-col-heading">
                 <h5>{{ "Block Types"|t('app') }}</h5>
             </div>
-            <div class="items">
-                <div class="blocktypes">
+            <div class="mc-col-items">
+                <div class="mc-blocktypes">
                     {% for blockTypeId, blockType in blockTypes %}
                         <div class="matrixconfigitem mci-blocktype{% if blockType.hasFieldErrors %} error{% endif %}" data-id="{{ blockTypeId }}"{% if blockType.hasErrors() %} data-errors="{{ blockType.getErrors() | json_encode }}"{% endif %}>
-                            <div class="name">{% if blockType.name %}{{ blockType.name }}{% else %}&nbsp;{% endif %}</div>
-                            <div class="handle code">{% if blockType.handle %}{{ blockType.handle }}{% else %}&nbsp;{% endif %}</div>
-                            <div class="actions">
-                                <a class="move icon" title="{{ 'Reorder'|t('app') }}" role="button"></a>
-                                <a class="settings icon{% if blockType.hasErrors() %} error{% endif %}" title="{{ 'Settings'|t('app') }}" role="button"></a>
+                            <div class="mci-name">
+                                <h4>
+                                    {{ blockType.name }}
+                                    {% if blockType.hasFieldErrors %}
+                                        <span data-icon="alert"></span>
+                                    {% endif %}
+                                </h4>
+                                <div class="smalltext light code">{{ blockType.handle }}</div>
                             </div>
+                            <a class="settings icon{% if blockType.hasErrors() %} error{% endif %}" title="{{ 'Settings'|t('app') }}" role="button"></a>
+                            <a class="move icon" title="{{ 'Reorder'|t('app') }}" role="button"></a>
                             <input class="hidden" name="blockTypes[{{ blockTypeId }}][name]" value="{{ blockType.name }}">
                             <input class="hidden" name="blockTypes[{{ blockTypeId }}][handle]" value="{{ blockType.handle }}">
                         </div>
@@ -26,23 +30,29 @@
             </div>
         </div>
     </div>
-    <div class="mc-sidebar fields">
-        <div class="col-inner-container hidden">
-            <div class="heading">
+    <div class="mc-sidebar mc-fields">
+        <div class="mc-col-inner-container hidden">
+            <div class="mc-col-heading">
                 <h5>{{ "Fields"|t('app') }}</h5>
             </div>
-            <div class="items">
+            <div class="mc-col-items">
                 {% for blockTypeId, blockType in blockTypes %}
                     <div data-id="{{ blockTypeId }}" class="hidden">
-                        {% for fieldId, field in blockTypeFields[blockTypeId] %}
+                        {% for fieldId, layoutElement in blockTypeFields[blockTypeId] %}
+                            {% set field = layoutElement.getField() %}
                             <div class="matrixconfigitem mci-field{% if field.hasErrors() %} error{% endif %}" data-id="{{ fieldId }}">
-                                <div class="name{% if field.required %} required{% endif %}">
-                                    {%- if field.name and field.name != '__blank__' %}{{ field.name }}{% else %}<em class="light">{{ '(blank)'|t('app') }}</em>{% endif -%}
-                                &nbsp;</div>
-                                <div class="handle code">{{ field.handle }}&nbsp;</div>
-                                <div class="actions">
-                                    <a class="move icon" title="{{ 'Reorder'|t('app') }}" role="button"></a>
+                                <div class="mci-name">
+                                    <h4{% if layoutElement.required %} class="mci-required"{% endif %}>
+                                        {%- if field.name and field.name != '__blank__' -%}
+                                            {{ field.name }}
+                                        {%- else -%}
+                                            <em class="light">{{ '(blank)'|t('app') }}</em>
+                                        {%- endif -%}
+                                        {%- if field.hasErrors() %} <span data-icon="alert"></span>{% endif -%}
+                                    </h4>
+                                    <div class="smalltext light code">{{ field.handle }}</div>
                                 </div>
+                                <a class="move icon" title="{{ 'Reorder'|t('app') }}" role="button"></a>
                             </div>
                         {% endfor %}
                     </div>
@@ -51,15 +61,16 @@
             </div>
         </div>
     </div>
-    <div class="field-settings">
-        <div class="col-inner-container hidden">
-            <div class="heading">
+    <div class="mc-field-settings">
+        <div class="mc-col-inner-container hidden">
+            <div class="mc-col-heading">
                 <h5>{{ "Field Settings"|t('app') }}</h5>
             </div>
-            <div class="items">
+            <div class="mc-col-items">
                 {% for blockTypeId, blockType in blockTypes %}
                     <div data-id="{{ blockTypeId }}">
-                        {% for fieldId, field in blockTypeFields[blockTypeId] %}
+                        {% for fieldId, layoutElement in blockTypeFields[blockTypeId] %}
+                            {% set field = layoutElement.getField() %}
                             <div data-id="{{ fieldId }}" class="hidden">
                                 {% namespace 'blockTypes['~blockTypeId~'][fields]['~fieldId~']' %}
                                     {{ forms.textField({
@@ -93,19 +104,21 @@
                                         errors: field.getErrors('instructions'),
                                     }) }}
 
-                                    {{ forms.checkboxField({
-                                        label: "This field is required"|t('app'),
-                                        id: 'required',
-                                        name: 'required',
-                                        checked: field.required
-                                    }) }}
+                                    <fieldset>
+                                        {{ forms.checkboxField({
+                                            label: "This field is required"|t('app'),
+                                            id: 'required',
+                                            name: 'required',
+                                            checked: layoutElement.required
+                                        }) }}
 
-                                    {{ forms.checkboxField({
-                                        label: "Use this field’s values as search keywords?"|t('app'),
-                                        id: 'searchable',
-                                        name: 'searchable',
-                                        checked: field.searchable
-                                    }) }}
+                                        {{ forms.checkboxField({
+                                            label: 'Use this field’s values as search keywords'|t('app'),
+                                            id: 'searchable',
+                                            name: 'searchable',
+                                            checked: field.searchable
+                                        }) }}
+                                    </fieldset>
 
                                     {{ forms.selectField({
                                         label: "Field Type"|t('app'),
@@ -149,11 +162,15 @@
                                             {% endif %}
                                         </div>
                                     {% endif %}
+
+                                    {{ hiddenInput('width', layoutElement.width, {
+                                        id: 'width',
+                                    }) }}
                                 {% endnamespace %}
 
                                 <hr>
 
-                                <div class="fieldtype-settings">
+                                <div class="mc-fieldtype-settings">
                                     <div>
                                         {% namespace 'blockTypes['~blockTypeId~'][fields]['~fieldId~'][typesettings]' %}
                                             {{ field.getSettingsHtml()|raw  }}

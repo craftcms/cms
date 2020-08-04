@@ -27,8 +27,8 @@ class m181211_143040_fix_entry_type_uids extends Migration
         // Get all entry types from the DB
         $dbEntryTypes = (new Query())
             ->select(['et.id', 'et.uid', 'et.handle', 's.uid as sectionUid'])
-            ->from(['{{%entrytypes}} et'])
-            ->innerJoin('{{%sections}} s', '[[s.id]] = [[et.sectionId]]')
+            ->from(['et' => Table::ENTRYTYPES])
+            ->innerJoin(['s' => Table::SECTIONS], '[[s.id]] = [[et.sectionId]]')
             ->all();
 
         // Index by section UID, handle

@@ -9,9 +9,11 @@ namespace craft\base;
 
 use Craft;
 use craft\events\DefineBehaviorsEvent;
+use craft\events\DefineFieldsEvent;
 use craft\events\DefineRulesEvent;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\StringHelper;
+use yii\validators\Validator;
 
 /**
  * Model base class.
@@ -41,6 +43,20 @@ abstract class Model extends \yii\base\Model
      * @since 3.1.0
      */
     const EVENT_DEFINE_RULES = 'defineRules';
+
+    /**
+     * @event DefineRulesEvent The event that is triggered when defining the arrayable fields
+     * @see fields()
+     * @since 3.5.0
+     */
+    const EVENT_DEFINE_FIELDS = 'defineFields';
+
+    /**
+     * @event DefineRulesEvent The event that is triggered when defining the extra arrayable fields
+     * @see extraFields()
+     * @since 3.5.0
+     */
+    const EVENT_DEFINE_EXTRA_FIELDS = 'defineExtraFields';
 
     /**
      * @inheritdoc
@@ -85,7 +101,27 @@ abstract class Model extends \yii\base\Model
         ]);
         $this->trigger(self::EVENT_DEFINE_RULES, $event);
 
+        foreach ($event->rules as &$rule) {
+            $this->_normalizeRule($rule);
+        }
+
         return $event->rules;
+    }
+
+    /**
+     * Normalizes a validation rule.
+     *
+     * @param Validator|array $rule
+     */
+    private function _normalizeRule(&$rule)
+    {
+        if (is_array($rule) && isset($rule[1]) && $rule[1] instanceof \Closure) {
+            // Wrap the closure in another one, so InlineValidator doesn’t bind it to the model
+            $method = $rule[1];
+            $rule[1] = function($attribute, $params, $validator, $current) use ($method) {
+                $method($attribute, $params, $validator, $current);
+            };
+        }
     }
 
     /**
@@ -148,7 +184,24 @@ abstract class Model extends \yii\base\Model
             };
         }
 
-        return $fields;
+        $event = new DefineFieldsEvent([
+            'fields' => $fields,
+        ]);
+        $this->trigger(self::EVENT_DEFINE_FIELDS, $event);
+        return $event->fields;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function extraFields()
+    {
+        $fields = parent::extraFields();
+        $event = new DefineFieldsEvent([
+            'fields' => $fields,
+        ]);
+        $this->trigger(self::EVENT_DEFINE_EXTRA_FIELDS, $event);
+        return $event->fields;
     }
 
     /**

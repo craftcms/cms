@@ -13,19 +13,27 @@
 .user-permissions input.checkbox:disabled + label:before, .user-permissions div.checkbox.disabled:before { opacity: 0.5; }
 
 body.ltr .user-permissions h3 { padding-right: 0.5em; }
+
 body.rtl .user-permissions h3 { padding-left: 0.5em; }
+
 body.ltr .user-permissions h3 { border-right: 1px solid #eee; }
+
 body.rtl .user-permissions h3 { border-left: 1px solid #eee; }
+
 body.ltr .user-permissions h3 { margin-right: 0.5em; }
+
 body.rtl .user-permissions h3 { margin-left: 0.5em; }
 
 body.ltr .user-permissions h3, body.ltr .user-permissions .select-all { float: left; }
+
 body.rtl .user-permissions h3, body.rtl .user-permissions .select-all { float: right; }
 
 .user-permissions ul { clear: both; }
 
 .user-permissions ul ul li:before { display: block; position: absolute; margin-top: 8px; content: '.'; font-size: 0; width: 10px; height: 0; border-top: 1px solid #eee; }
+
 body.ltr .user-permissions ul ul li:before { left: 20px; }
+
 body.rtl .user-permissions ul ul li:before { right: 20px; }
 
 .user-permissions ul ul ul li:before { width: 30px; }
@@ -39,18 +47,23 @@ body.rtl .user-permissions ul ul li:before { right: 20px; }
 .user-permissions ul ul ul ul ul ul ul li:before { width: 90px; }
 
 body.ltr .user-permissions ul ul li .checkbox + label { padding-left: 35px; }
+
 body.rtl .user-permissions ul ul li .checkbox + label { padding-right: 35px; }
 
 body.ltr .user-permissions ul ul ul li .checkbox + label { padding-left: 55px; }
+
 body.rtl .user-permissions ul ul ul li .checkbox + label { padding-right: 55px; }
 
 body.ltr .user-permissions ul ul ul ul li .checkbox + label { padding-left: 70px; }
+
 body.rtl .user-permissions ul ul ul ul li .checkbox + label { padding-right: 70px; }
 
 body.ltr .user-permissions ul ul ul ul ul li .checkbox + label { padding-left: 85px; }
+
 body.rtl .user-permissions ul ul ul ul ul li .checkbox + label { padding-right: 85px; }
 
 body.ltr .user-permissions ul ul ul ul ul ul li .checkbox + label { padding-left: 100px; }
+
 body.rtl .user-permissions ul ul ul ul ul ul li .checkbox + label { padding-right: 100px; }
 
 /*# sourceMappingURL=user-permissions.css.map */

@@ -7,6 +7,7 @@
 
 namespace craft\gql\types;
 
+use craft\errors\GqlException;
 use craft\gql\directives\FormatDateTime;
 use craft\gql\GqlEntityRegistry;
 use GraphQL\Language\AST\StringValueNode;
@@ -85,7 +86,7 @@ class DateTime extends ScalarType
             return (string)$valueNode->value;
         }
 
-        // Intentionally without message, as all information already in wrapped Exception
-        throw new \Exception();
+        // This message will be lost by the wrapping exception, but it feels good to provide one.
+        throw new GqlException("DateTime must be a string");
     }
 }

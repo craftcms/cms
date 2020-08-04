@@ -1,0 +1,142 @@
+@charset "UTF-8";
+@import "../../../../../node_modules/craftcms-sass/mixins";
+
+#content {
+  #graphic {
+    display: block;
+    margin: 200px auto 0;
+
+    &.success {
+      background-image: url(images/success.png);
+    }
+
+    &.error {
+      background-image: url(images/error.png);
+    }
+  }
+
+  #status {
+    margin: 20px auto 250px;
+    text-align: center;
+    font-size: 16px;
+    line-height: 20px;
+    color: $grey500;
+  }
+
+  .update {
+    & + .update {
+      margin-top: 24px;
+    }
+
+    .update-header {
+      display: flex;
+      align-items: center;
+      padding-bottom: 10px;
+      border-bottom: 1px solid $hairlineColor;
+      margin-bottom: 16px;
+
+      .readable {
+        flex-grow: 1;
+        margin: 0;
+      }
+
+      .buttons {
+        margin: 0;
+      }
+    }
+
+    blockquote.ineligible {
+      border: none;
+      background: $warningColor;
+      color: #110902;
+      &:before {
+        content: 'ban';
+        color: #110902;
+      }
+    }
+
+    .releases {
+      position: relative;
+
+      .release {
+        padding: 0;
+
+        &.critical {
+          h2 {
+            color: $red600;
+          }
+
+          .critical {
+            display: inline-block;
+            vertical-align: text-bottom;
+            @include margin-left(7px);
+            border-radius: 3px;
+            padding: 0 5px;
+            font-size: 14px;
+            line-height: 24px;
+            color: $white;
+            font-weight: normal;
+            background: $red500;
+            text-transform: uppercase;
+          }
+        }
+
+        .release-info {
+          display: flex;
+          margin: 0;
+          padding: 20px 24px;
+
+          &.fieldtoggle {
+            @include padding-left(44px);
+
+            &:before {
+              @include left(20px);
+              top: 23px;
+              font-size: 23px;
+              color: $mediumTextColor;
+            }
+          }
+
+          h2 {
+            margin: 0;
+            line-height: 24px;
+          }
+
+          .date {
+            flex-grow: 1;
+            @include margin-left(14px);
+            font-size: 24px;
+            line-height: 24px;
+            color: $lightTextColor;
+          }
+        }
+
+        .release-notes {
+          // Keep this LTR since the actual release notes are only LTR
+          direction: ltr;
+          padding: 0 24px 20px;
+        }
+      }
+    }
+  }
+}
+
+@media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+only screen and (-moz-min-device-pixel-ratio: 1.5),
+only screen and (-o-min-device-pixel-ratio: 3/2),
+only screen and (min-device-pixel-ratio: 1.5),
+only screen and (min-resolution: 1.5dppx) {
+  #content {
+    #graphic {
+      &.success {
+        background-image: url(images/success_2x.png);
+        background-size: 48px;
+      }
+
+      &.error {
+        background-image: url(images/error_2x.png);
+        background-size: 48px;
+      }
+    }
+  }
+}

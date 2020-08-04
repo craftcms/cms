@@ -9,6 +9,7 @@ namespace craft\helpers;
 
 use Craft;
 use Stringy\Stringy as BaseStringy;
+use voku\helper\ASCII;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 
@@ -112,7 +113,7 @@ class StringHelper extends \yii\helpers\StringHelper
 
     /**
      * Returns ASCII character mappings, merging in any custom defined mappings
-     * from the <config:customAsciiCharMappings> config setting.
+     * from the <config3:customAsciiCharMappings> config setting.
      *
      * @param bool $flat Whether the mappings should be returned as a flat array (é => e)
      * @param string|null $language Whether to include language-specific mappings (only applied if $flat is true)
@@ -140,15 +141,13 @@ class StringHelper extends \yii\helpers\StringHelper
 
         // Include language specific replacements (unless the ASCII chars have custom mappings)
         if ($language !== null) {
-            $langSpecific = Stringy::getLangSpecificCharsArray($language);
-            if (!empty($langSpecific)) {
-                $generalConfig = Craft::$app->getConfig()->getGeneral();
-                $customChars = !empty($generalConfig->customAsciiCharMappings) ? call_user_func_array('array_merge', $generalConfig->customAsciiCharMappings) : [];
-                $customChars = array_flip($customChars);
-                foreach ($langSpecific[0] as $i => $char) {
-                    if (!isset($customChars[$char])) {
-                        $flatMap[$char] = $langSpecific[1][$i];
-                    }
+            $langSpecific = ASCII::charsArrayWithOneLanguage($language);
+            $generalConfig = Craft::$app->getConfig()->getGeneral();
+            $customChars = !empty($generalConfig->customAsciiCharMappings) ? call_user_func_array('array_merge', $generalConfig->customAsciiCharMappings) : [];
+            $customChars = array_flip($customChars);
+            foreach ($langSpecific['orig'] as $i => $char) {
+                if (!isset($customChars[$char])) {
+                    $flatMap[$char] = $langSpecific['replace'][$i];
                 }
             }
         }
@@ -1017,14 +1016,13 @@ class StringHelper extends \yii\helpers\StringHelper
      * @param int $length The length of the random string. Defaults to 36.
      * @param bool $extendedChars Whether to include symbols in the random string.
      * @return string The randomly generated string.
-     * @throws \Exception
      */
     public static function randomString(int $length = 36, bool $extendedChars = false): string
     {
         if ($extendedChars) {
             $validChars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890`~!@#$%^&*()-_=+[]\{}|;:\'",./<>?"';
         } else {
-            $validChars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
+            $validChars = 'abcdefghijklmnopqrstuvwxyz';
         }
 
         return static::randomStringWithChars($validChars, $length);
@@ -1038,7 +1036,6 @@ class StringHelper extends \yii\helpers\StringHelper
      * @param string $validChars A string containing the valid characters
      * @param int $length The length of the random string
      * @return string The randomly generated string.
-     * @throws \Exception
      */
     public static function randomStringWithChars(string $validChars, int $length): string
     {
@@ -1050,10 +1047,14 @@ class StringHelper extends \yii\helpers\StringHelper
         // repeat the steps until we've created a string of the right length
         for ($i = 0; $i < $length; $i++) {
             // pick a random number from 1 up to the number of valid chars
-            $randomPick = random_int(1, $numValidChars);
+            try {
+                $randomPick = random_int(0, $numValidChars - 1);
+            } catch (\Exception $e) {
+                $randomPick = rand(0, $numValidChars - 1);
+            }
 
             // take the random character out of the string of valid chars
-            $randomChar = $validChars[$randomPick - 1];
+            $randomChar = $validChars[$randomPick];
 
             // add the randomly-chosen char onto the end of our string
             $randomString .= $randomChar;
@@ -1087,7 +1088,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function removeHtml(string $str, string $allowableTags = null): string
     {
-        return (string)BaseStringy::create($str)->removeHtml($allowableTags);
+        return (string)BaseStringy::create($str)->removeHtml($allowableTags ?? '');
     }
 
     /**

@@ -39,6 +39,7 @@ new Craft.VueAdminTable({...options...});
 | actions                   | Array    | `[]`                                        | Array of action options to create action buttons in the table toolbar. |
 | allowMultipleSelections | Bool | true | When using checkboxes, determines whether or not multiple selections are allowed. When set to `false` the select all checkbox is hidden. |
 | checkboxes                | Bool     | `false`                                     | Whether to show the checkbox column or not.                  |
+| checkboxStatus            | Function | `true`                                      | Callback function to determine if the row's checkbox should be disabled. [See example below](#checkboxstatus-example) |
 | columns                   | Array    | `[]`                                        | Used to define the table columns. See column definition.     |
 | container                 | String   | `null`                                      | CSS selector for which element the table should mounted on.     |
 | deleteAction              | String   | `null`                                      | The action URL used to post to for deleting an item. Enables the delete buttons when not `null`. |
@@ -59,7 +60,46 @@ new Craft.VueAdminTable({...options...});
 | tableData                 | Array    | `null`                                      | Array of objects used to populate the table data for data mode. |
 | tableDataEndpoint         | String   | `null`                                      | Endpoint for api mode to retrieve table data, pagination and table metadata (e.g. total count). |
 
+#### `checkboxStatus` example
+
+Below is a simple example of how to use the `checkboxStatus` callback, if you have a `boolean` piece of data each row to determine the status.
+
+Although if you require further logic (calling other data etc) this is also the place it will live.
+
+```js
+new Craft.VueAdminTable({
+    // ... 
+    checkboxStatus: function(row) {
+        return row.isCheckboxEnabled
+    }
+    // ...
+});
+```
+
 ### Events
+
+#### JS Events
+
+| Name         | Data             | Scenario                                                                                                                             |
+| ------------ | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| onSelect     | Array of IDs     | When a checkbox or select all is selected or de-selected.                                                                            |
+| onData       | Array of objects | On successful load or page change.                                                                                                   |
+| onLoaded     | -                | When the table has loaded (regardless of data loading).                                                                              |
+| onLoading    | -                | When the table is in a loading state.                                                                                                |
+| onPagination | Object           | When pagination has loaded (also occurs on first load). Object contains pagination information (e.g. current page, total pages etc). |
+
+Example usage:
+
+```js
+new Craft.VueAdminTable({
+  // ...
+  onLoaded: function() { console.log('LOADED!'); },
+  onData: function(data) { console.log('Data:', data); }
+  // ...
+});
+```
+
+#### Vue Events
 
 | Name     | Data             | Scenario                                                  |
 | -------- | ---------------- | --------------------------------------------------------- |

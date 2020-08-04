@@ -9,10 +9,11 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
+use craft\base\Field;
+use craft\behaviors\RevisionBehavior;
 use craft\controllers\ElementIndexesController;
 use craft\db\Query;
 use craft\db\Table;
-use craft\elements\actions\DeepDuplicate;
 use craft\elements\actions\Delete;
 use craft\elements\actions\Duplicate;
 use craft\elements\actions\Edit;
@@ -23,8 +24,11 @@ use craft\elements\actions\View;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
+use craft\errors\UnsupportedSiteException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
+use craft\helpers\Db;
+use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\UrlHelper;
 use craft\models\EntryType;
@@ -255,6 +259,34 @@ class Entry extends Element
 
     /**
      * @inheritdoc
+     * @since 3.5.0
+     */
+    protected static function defineFieldLayouts(string $source): array
+    {
+        // Get all the sections covered by this source
+        $sections = [];
+        if ($source === '*') {
+            $sections = Craft::$app->getSections()->getAllSections();
+        } else if ($source === 'singles') {
+            $sections = Craft::$app->getSections()->getSectionsByType(Section::TYPE_SINGLE);
+        } else if (
+            preg_match('/^section:(.+)$/', $source, $matches) &&
+            $section = Craft::$app->getSections()->getSectionByUid($matches[1])
+        ) {
+            $sections = [$section];
+        }
+
+        $fieldLayouts = [];
+        foreach ($sections as $section) {
+            foreach ($section->getEntryTypes() as $entryType) {
+                $fieldLayouts[] = $entryType->getFieldLayout();
+            }
+        }
+        return $fieldLayouts;
+    }
+
+    /**
+     * @inheritdoc
      */
     protected static function defineActions(string $source = null): array
     {
@@ -385,7 +417,10 @@ class Entry extends Element
                     $actions[] = Duplicate::class;
 
                     if ($section->type === Section::TYPE_STRUCTURE && $section->maxLevels != 1) {
-                        $actions[] = DeepDuplicate::class;
+                        $actions[] = [
+                            'type' => Duplicate::class,
+                            'deep' => true,
+                        ];
                     }
                 }
 
@@ -394,11 +429,14 @@ class Entry extends Element
                     $userSession->checkPermission('deleteEntries:' . $section->uid) &&
                     $userSession->checkPermission('deletePeerEntries:' . $section->uid)
                 ) {
-                    $actions[] = $elementsService->createAction([
-                        'type' => Delete::class,
-                        'confirmationMessage' => Craft::t('app', 'Are you sure you want to delete the selected entries?'),
-                        'successMessage' => Craft::t('app', 'Entries deleted.'),
-                    ]);
+                    $actions[] = Delete::class;
+
+                    if ($section->type === Section::TYPE_STRUCTURE) {
+                        $actions[] = [
+                            'type' => Delete::class,
+                            'withDescendants' => true,
+                        ];
+                    }
                 }
             }
         }
@@ -462,11 +500,13 @@ class Entry extends Element
             'uid' => ['label' => Craft::t('app', 'UID')],
             'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
             'dateUpdated' => ['label' => Craft::t('app', 'Date Updated')],
+            'revisionNotes' => ['label' => Craft::t('app', 'Revision Notes')],
+            'revisionCreator' => ['label' => Craft::t('app', 'Last Edited By')],
         ];
 
-        // Hide Author from Craft Solo
+        // Hide Author & Last Edited By from Craft Solo
         if (Craft::$app->getEdition() !== Craft::Pro) {
-            unset($attributes['author']);
+            unset($attributes['author'], $attributes['revisionCreator']);
         }
 
         return $attributes;
@@ -520,17 +560,25 @@ class Entry extends Element
 
     /**
      * @inheritdoc
-     * @since 3.3.0
      */
     public static function gqlTypeNameByContext($context): string
     {
         /** @var EntryType $context */
-        return $context->getSection()->handle . '_' . $context->handle . '_Entry';
+        return self::_getGqlIdentifierByContext($context) . '_Entry';
     }
 
     /**
      * @inheritdoc
-     * @since 3.3.0
+     * @since 3.5.0
+     */
+    public static function gqlMutationNameByContext($context): string
+    {
+        /** @var EntryType $context */
+        return 'save_' . self::_getGqlIdentifierByContext($context) . '_Entry';
+    }
+
+    /**
+     * @inheritdoc
      */
     public static function gqlScopesByContext($context): array
     {
@@ -546,10 +594,18 @@ class Entry extends Element
      */
     protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute)
     {
-        if ($attribute === 'author') {
-            $elementQuery->andWith('author');
-        } else {
-            parent::prepElementQueryForTableAttribute($elementQuery, $attribute);
+        switch ($attribute) {
+            case 'author':
+                $elementQuery->andWith('author');
+                break;
+            case 'revisionNotes':
+                $elementQuery->andWith('currentRevision');
+                break;
+            case 'revisionCreator':
+                $elementQuery->andWith('currentRevision.revisionCreator');
+                break;
+            default:
+                parent::prepElementQueryForTableAttribute($elementQuery, $attribute);
         }
     }
 
@@ -636,6 +692,11 @@ class Entry extends Element
     private $_author;
 
     /**
+     * @var int|null
+     */
+    private $_oldTypeId;
+
+    /**
      * @var bool|null
      * @see _hasNewParent()
      */
@@ -648,6 +709,16 @@ class Entry extends Element
     {
         parent::__clone();
         $this->_hasNewParent = null;
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.5.0
+     */
+    public function init()
+    {
+        parent::init();
+        $this->_oldTypeId = $this->typeId;
     }
 
     /**
@@ -676,21 +747,6 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function attributeLabels()
-    {
-        $labels = parent::attributeLabels();
-
-        // Use the entry type's title label
-        if ($titleLabel = $this->getType()->titleLabel) {
-            $labels['title'] = Craft::t('site', $titleLabel);
-        }
-
-        return $labels;
-    }
-
-    /**
-     * @inheritdoc
-     */
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
@@ -714,31 +770,99 @@ class Entry extends Element
         $allSites = ArrayHelper::index(Craft::$app->getSites()->getAllSites(), 'id');
         $sites = [];
 
+        // If the section is leaving it up to entries to decide which sites to be propagated to,
+        // figure out which sites the entry is currently saved in
+        if (
+            ($this->duplicateOf->id ?? $this->id) &&
+            $section->propagationMethod === Section::PROPAGATION_METHOD_CUSTOM
+        ) {
+            if ($this->id) {
+                $currentSites = static::find()
+                    ->anyStatus()
+                    ->id($this->id)
+                    ->siteId('*')
+                    ->select('elements_sites.siteId')
+                    ->drafts($this->getIsDraft())
+                    ->revisions($this->getIsRevision())
+                    ->column();
+            } else {
+                $currentSites = [];
+            }
+
+            // If this is being duplicated from another element (e.g. a draft), include any sites the source element is saved to as well
+            if (!empty($this->duplicateOf->id)) {
+                array_push($currentSites, ...static::find()
+                    ->anyStatus()
+                    ->id($this->duplicateOf->id)
+                    ->siteId('*')
+                    ->select('elements_sites.siteId')
+                    ->drafts($this->duplicateOf->getIsDraft())
+                    ->revisions($this->duplicateOf->getIsRevision())
+                    ->column()
+                );
+            }
+
+            $currentSites = array_flip($currentSites);
+        }
+
         foreach ($section->getSiteSettings() as $siteSettings) {
             switch ($section->propagationMethod) {
                 case Section::PROPAGATION_METHOD_NONE:
                     $include = $siteSettings->siteId == $this->siteId;
+                    $propagate = true;
                     break;
                 case Section::PROPAGATION_METHOD_SITE_GROUP:
                     $include = $allSites[$siteSettings->siteId]->groupId == $allSites[$this->siteId]->groupId;
+                    $propagate = true;
                     break;
                 case Section::PROPAGATION_METHOD_LANGUAGE:
                     $include = $allSites[$siteSettings->siteId]->language == $allSites[$this->siteId]->language;
+                    $propagate = true;
+                    break;
+                case Section::PROPAGATION_METHOD_CUSTOM:
+                    $include = true;
+                    // Only actually propagate to this site if it's the current site, or the entry has been assigned
+                    // a status for this site, or the entry already exists for this site
+                    $propagate = (
+                        $siteSettings->siteId == $this->siteId ||
+                        $this->getEnabledForSite($siteSettings->siteId) !== null ||
+                        isset($currentSites[$siteSettings->siteId])
+                    );
                     break;
                 default:
-                    $include = true;
+                    $include = $propagate = true;
                     break;
             }
 
             if ($include) {
                 $sites[] = [
                     'siteId' => $siteSettings->siteId,
+                    'propagate' => $propagate,
                     'enabledByDefault' => $siteSettings->enabledByDefault
                 ];
             }
         }
 
         return $sites;
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.5.0
+     */
+    public function getCacheTags(): array
+    {
+        $tags = [
+            "entryType:$this->typeId",
+            "section:$this->sectionId",
+        ];
+
+        // Did the entry type just change?
+        if ($this->typeId != $this->_oldTypeId) {
+            $tags[] = "entryType:$this->_oldTypeId";
+        }
+
+        return $tags;
     }
 
     /**
@@ -803,6 +927,31 @@ class Entry extends Element
     public function getRef()
     {
         return $this->getSection()->handle . '/' . $this->slug;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getIsTitleTranslatable(): bool
+    {
+        return ($this->getType()->titleTranslationMethod !== Field::TRANSLATION_METHOD_NONE);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getTitleTranslationDescription()
+    {
+        return ElementHelper::translationDescription($this->getType()->titleTranslationMethod);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getTitleTranslationKey(): string
+    {
+        $type = $this->getType();
+        return ElementHelper::translationKey($this, $type->titleTranslationMethod, $type->titleTranslationKeyFormat);
     }
 
     /**
@@ -1072,6 +1221,29 @@ class Entry extends Element
                 } catch (InvalidConfigException $e) {
                     return Craft::t('app', 'Unknown');
                 }
+
+            case 'revisionNotes':
+                /** @var Entry|null $revision */
+                /** @var RevisionBehavior|null $behavior */
+                if (
+                    ($revision = $this->getCurrentRevision()) === null ||
+                    ($behavior = $revision->getBehavior('revision')) === null
+                ) {
+                    return '';
+                }
+                return Html::encode($behavior->revisionNotes);
+
+            case 'revisionCreator':
+                /** @var Entry|null $revision */
+                /** @var RevisionBehavior|null $behavior */
+                if (
+                    ($revision = $this->getCurrentRevision()) === null ||
+                    ($behavior = $revision->getBehavior('revision')) === null ||
+                    ($creator = $behavior->getCreator()) === null
+                ) {
+                    return '';
+                }
+                return Craft::$app->getView()->renderTemplate('_elements/element', ['element' => $creator]);
         }
 
         return parent::tableAttributeHtml($attribute);
@@ -1121,16 +1293,6 @@ $('#{$typeInputId}').on('change', function(ev) {
 EOD;
                 $view->registerJs($js);
             }
-        }
-
-        // Get the entry type
-        $entryType = $this->getType();
-
-        // Show the Title field?
-        if ($entryType->hasTitleField) {
-            $html .= $view->renderTemplate('entries/_titlefield', [
-                'entry' => $this
-            ]);
         }
 
         // Render the custom fields
@@ -1187,7 +1349,7 @@ EOD;
         // Verify that the section supports this site
         $sectionSiteSettings = $section->getSiteSettings();
         if (!isset($sectionSiteSettings[$this->siteId])) {
-            throw new Exception("The section '{$section->name}' is not enabled for the site '{$this->siteId}'");
+            throw new UnsupportedSiteException($this, $this->siteId, "The section '{$section->name}' is not enabled for the site '{$this->siteId}'");
         }
 
         // Make sure the entry has at least one revision if the section has versioning enabled
@@ -1216,7 +1378,9 @@ EOD;
         // Has the entry been assigned to a new parent?
         if ($this->_hasNewParent()) {
             if ($this->newParentId) {
-                $parentEntry = Craft::$app->getEntries()->getEntryById($this->newParentId, $this->siteId);
+                $parentEntry = Craft::$app->getEntries()->getEntryById($this->newParentId, '*', [
+                    'preferSites' => [$this->siteId],
+                ]);
 
                 if (!$parentEntry) {
                     throw new Exception('Invalid entry ID: ' . $this->newParentId);
@@ -1339,9 +1503,9 @@ EOD;
             }
         }
 
-        Craft::$app->getDb()->createCommand()
-            ->update(Table::ENTRIES, $data, ['id' => $this->id], [], false)
-            ->execute();
+        Db::update(Table::ENTRIES, $data, [
+            'id' => $this->id,
+        ], [], false);
 
         return true;
     }
@@ -1356,7 +1520,7 @@ EOD;
             // Add the entry back into its structure
             $parent = self::find()
                 ->structureId($section->structureId)
-                ->innerJoin('{{%entries}} j', '[[j.parentId]] = [[elements.id]]')
+                ->innerJoin(['j' => Table::ENTRIES], '[[j.parentId]] = [[elements.id]]')
                 ->andWhere(['j.id' => $this->id])
                 ->one();
 
@@ -1461,5 +1625,17 @@ EOD;
             !$this->getIsRevision() &&
             $this->getSection()->enableVersioning
         );
+    }
+
+    /**
+     * Get the GraphQL identifier by context.
+     *
+     * @param EntryType $context
+     * @return string
+     */
+    private static function _getGqlIdentifierByContext(EntryType $context): string
+    {
+        $gqlIdentifier = $context->getSection()->handle . '_' . $context->handle;
+        return $gqlIdentifier;
     }
 }

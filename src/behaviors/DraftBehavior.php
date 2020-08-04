@@ -7,38 +7,21 @@
 
 namespace craft\behaviors;
 
-use Craft;
 use craft\base\Element;
-use craft\base\ElementInterface;
 use craft\db\Query;
 use craft\db\Table;
-use craft\elements\User;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
-use craft\helpers\ElementHelper;
-use yii\base\Behavior;
 
 /**
  * DraftBehavior is applied to element drafts.
  *
- * @property Element $owner
- * @property-read ElementInterface|Element $source
- * @property-read User|null $creator
+ * @property-read string $draftName The draft’s name
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.2.0
  */
-class DraftBehavior extends Behavior
+class DraftBehavior extends BaseRevisionBehavior
 {
-    /**
-     * @var int|null The source element’s ID
-     */
-    public $sourceId;
-
-    /**
-     * @var int|null The draft creator’s ID
-     */
-    public $creatorId;
-
     /**
      * @var string The draft name
      */
@@ -64,12 +47,6 @@ class DraftBehavior extends Behavior
      * @since 3.4.0
      */
     public $mergingChanges = false;
-
-    /**
-     * @var ElementInterface|null
-     * @see _source()
-     */
-    private $_source;
 
     /**
      * @var array|null
@@ -123,13 +100,13 @@ class DraftBehavior extends Behavior
      */
     public function handleSave()
     {
-        Craft::$app->getDb()->createCommand()
-            ->update(Table::DRAFTS, [
-                'name' => $this->draftName,
-                'notes' => $this->draftNotes,
-                'dateLastMerged' => Db::prepareDateForDb($this->dateLastMerged),
-            ], ['id' => $this->owner->draftId], [], false)
-            ->execute();
+        Db::update(Table::DRAFTS, [
+            'name' => $this->draftName,
+            'notes' => $this->draftNotes,
+            'dateLastMerged' => Db::prepareDateForDb($this->dateLastMerged),
+        ], [
+            'id' => $this->owner->draftId,
+        ], [], false);
     }
 
     /**
@@ -137,9 +114,9 @@ class DraftBehavior extends Behavior
      */
     public function handleDelete()
     {
-        Craft::$app->getDb()->createCommand()
-            ->delete(Table::DRAFTS, ['id' => $this->owner->draftId])
-            ->execute();
+        Db::delete(Table::DRAFTS, [
+            'id' => $this->owner->draftId,
+        ]);
     }
 
     /**
@@ -154,43 +131,6 @@ class DraftBehavior extends Behavior
     }
 
     /**
-     * Returns the draft’s source element.
-     *
-     * @return ElementInterface|null
-     * @deprecated in 3.2.9. Use [[ElementHelper::sourceElement()]] instead.
-     */
-    public function getSource()
-    {
-        if (!$this->sourceId) {
-            return null;
-        }
-
-        $owner = $this->owner;
-        return $owner::find()
-            ->id($this->sourceId)
-            ->siteId($this->owner->siteId)
-            ->anyStatus()
-            ->one();
-    }
-
-    /**
-     * Returns the draft’s creator.
-     *
-     * @return User|null
-     */
-    public function getCreator()
-    {
-        if (!$this->creatorId) {
-            return null;
-        }
-
-        return User::find()
-            ->id($this->creatorId)
-            ->anyStatus()
-            ->one();
-    }
-
-    /**
      * Returns whether the source element has been saved since the time this draft was
      * created or last merged.
      *
@@ -199,7 +139,7 @@ class DraftBehavior extends Behavior
      */
     public function getIsOutdated(): bool
     {
-        if (($source = $this->_source()) === null) {
+        if (($source = $this->source()) === null) {
             return false;
         }
 
@@ -285,25 +225,6 @@ class DraftBehavior extends Behavior
     }
 
     /**
-     * Returns the source element.
-     *
-     * @return ElementInterface|Element|null
-     * @since 3.4.0
-     */
-    private function _source()
-    {
-        if (!$this->sourceId) {
-            return null;
-        }
-
-        if ($this->_source !== null) {
-            return $this->_source;
-        }
-
-        return $this->_source = ElementHelper::sourceElement($this->owner);
-    }
-
-    /**
      * @return array The attribute names that have been modified for this draft
      */
     private function _outdatedAttributes(): array
@@ -361,7 +282,7 @@ class DraftBehavior extends Behavior
      */
     private function _outdatedFields(): array
     {
-        if (!$this->sourceId || !$this->trackChanges) {
+        if ($this->source() === null || !$this->trackChanges) {
             return [];
         }
 
@@ -372,7 +293,7 @@ class DraftBehavior extends Behavior
         $query = (new Query())
             ->select(['f.handle'])
             ->from(['f' => Table::FIELDS])
-            ->innerJoin(Table::CHANGEDFIELDS . ' cf', '[[cf.fieldId]] = [[f.id]]')
+            ->innerJoin(['cf' => Table::CHANGEDFIELDS], '[[cf.fieldId]] = [[f.id]]')
             ->where([
                 'cf.elementId' => $this->sourceId,
                 'cf.siteId' => $this->owner->siteId,
@@ -403,7 +324,7 @@ class DraftBehavior extends Behavior
         return $this->_modifiedFields = array_flip((new Query())
             ->select(['f.handle'])
             ->from(['f' => Table::FIELDS])
-            ->innerJoin(Table::CHANGEDFIELDS . ' cf', '[[cf.fieldId]] = [[f.id]]')
+            ->innerJoin(['cf' => Table::CHANGEDFIELDS], '[[cf.fieldId]] = [[f.id]]')
             ->where([
                 'cf.elementId' => $this->owner->id,
                 'cf.siteId' => $this->owner->siteId,

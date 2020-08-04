@@ -97,7 +97,7 @@ class Component
             }
 
             $class = $config['type'];
-            unset($config['type']);
+            unset($config['type'], $config['__class']);
         }
 
         // Validate the component class
@@ -107,7 +107,8 @@ class Component
         $config = self::mergeSettings($config);
 
         // Instantiate and return
-        return new $class($config);
+        $config['class'] = $class;
+        return Craft::createObject($config);
     }
 
     /**
@@ -130,5 +131,51 @@ class Component
         }
 
         return array_merge($config, $settings);
+    }
+
+    /**
+     * Returns an SVG icon’s contents.
+     *
+     * @param string|null $icon The path to the SVG icon, or the actual SVG contents
+     * @param string $label The label of the component
+     * @return string
+     * @since 3.5.0
+     */
+    public static function iconSvg(string $icon = null, string $label)
+    {
+        if ($icon === null) {
+            return self::_defaultIconSvg($label);
+        }
+
+        if (stripos($icon, '<svg') !== false) {
+            return $icon;
+        }
+
+        $icon = Craft::getAlias($icon);
+
+        if (!is_file($icon)) {
+            Craft::warning("Icon file doesn't exist: {$icon}", __METHOD__);
+            return self::_defaultIconSvg($label);
+        }
+
+        if (!FileHelper::isSvg($icon)) {
+            Craft::warning("Icon file is not an SVG: {$icon}", __METHOD__);
+            return self::_defaultIconSvg($label);
+        }
+
+        return file_get_contents($icon);
+    }
+
+    /**
+     * Returns the default icon SVG for a given widget type.
+     *
+     * @param string $label
+     * @return string
+     */
+    private static function _defaultIconSvg(string $label): string
+    {
+        return Craft::$app->getView()->renderTemplate('_includes/defaulticon.svg', [
+            'label' => $label,
+        ]);
     }
 }

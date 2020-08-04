@@ -8,6 +8,8 @@
 namespace craft\web;
 
 use Craft;
+use yii\web\Cookie;
+use yii\web\CookieCollection;
 use yii\web\HttpException;
 
 /**
@@ -26,6 +28,12 @@ class Response extends \yii\web\Response
      * @var bool whether the response has been prepared.
      */
     private $_isPrepared = false;
+
+    /**
+     * @var CookieCollection Collection of raw cookies
+     * @see getRawCookies()
+     */
+    private $_rawCookies;
 
     /**
      * Returns the Content-Type header (sans `charset=X`) that the response will most likely include.
@@ -74,7 +82,21 @@ class Response extends \yii\web\Response
             ->set('Expires', gmdate('D, d M Y H:i:s', time() + $cacheTime) . ' GMT')
             ->set('Pragma', 'cache')
             ->set('Cache-Control', 'max-age=' . $cacheTime);
+        return $this;
+    }
 
+    /**
+     * Sets headers that will instruct the client to not cache this response.
+     *
+     * @return static self reference
+     * @since 3.5.0
+     */
+    public function setNoCacheHeaders()
+    {
+        $this->getHeaders()
+            ->set('Expires', '0')
+            ->set('Pragma', 'no-cache')
+            ->set('Cache-Control', 'no-cache, no-store, must-revalidate');
         return $this;
     }
 
@@ -93,6 +115,56 @@ class Response extends \yii\web\Response
         }
 
         return $this;
+    }
+
+    /**
+     * Returns the “raw” cookie collection.
+     *
+     * Works similar to [[getCookies()]], but these cookies won’t go through validation, and their values won’t
+     * be hashed.
+     *
+     * @return CookieCollection the cookie collection.
+     * @since 3.5.0
+     */
+    public function getRawCookies()
+    {
+        if ($this->_rawCookies === null) {
+            $this->_rawCookies = new CookieCollection();
+        }
+        return $this->_rawCookies;
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.5.0
+     */
+    protected function sendCookies()
+    {
+        parent::sendCookies();
+
+        if ($this->_rawCookies === null) {
+            return;
+        }
+        foreach ($this->getRawCookies() as $cookie) {
+            /** @var Cookie $cookie */
+            if (PHP_VERSION_ID >= 70300) {
+                setcookie($cookie->name, $cookie->value, [
+                    'expires' => $cookie->expire,
+                    'path' => $cookie->path,
+                    'domain' => $cookie->domain,
+                    'secure' => $cookie->secure,
+                    'httpOnly' => $cookie->httpOnly,
+                    'sameSite' => !empty($cookie->sameSite) ? $cookie->sameSite : null,
+                ]);
+            } else {
+                // Work around for setting sameSite cookie prior PHP 7.3
+                // https://stackoverflow.com/questions/39750906/php-setcookie-samesite-strict/46971326#46971326
+                if (!is_null($cookie->sameSite)) {
+                    $cookie->path .= '; samesite=' . $cookie->sameSite;
+                }
+                setcookie($cookie->name, $cookie->value, $cookie->expire, $cookie->path, $cookie->domain, $cookie->secure, $cookie->httpOnly);
+            }
+        }
     }
 
     /**

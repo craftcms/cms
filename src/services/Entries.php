@@ -9,6 +9,7 @@ namespace craft\services;
 
 use Craft;
 use craft\db\Query;
+use craft\db\Table;
 use craft\elements\Entry;
 use yii\base\Component;
 
@@ -29,26 +30,28 @@ class Entries extends Component
      * ```
      *
      * @param int $entryId The entry’s ID.
-     * @param int|null $siteId The site to fetch the entry in. Defaults to the current site.
+     * @param int|int[]|string|null $siteId The site(s) to fetch the entry in.
+     * Defaults to the current site.
+     * @param array $criteria
      * @return Entry|null The entry with the given ID, or `null` if an entry could not be found.
      */
-    public function getEntryById(int $entryId, int $siteId = null)
+    public function getEntryById(int $entryId, $siteId = null, array $criteria = [])
     {
         if (!$entryId) {
             return null;
         }
 
         // Get the structure ID
-        $structureId = (new Query())
-            ->select(['sections.structureId'])
-            ->from(['{{%entries}} entries'])
-            ->innerJoin('{{%sections}} sections', '[[sections.id]] = [[entries.sectionId]]')
-            ->where(['entries.id' => $entryId])
-            ->scalar();
+        if (!isset($criteria['structureId'])) {
+            $criteria['structureId'] = (new Query())
+                ->select(['sections.structureId'])
+                ->from(['entries' => Table::ENTRIES])
+                ->innerJoin(['sections' => Table::SECTIONS], '[[sections.id]] = [[entries.sectionId]]')
+                ->where(['entries.id' => $entryId])
+                ->scalar();
+        }
 
         /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return Craft::$app->getElements()->getElementById($entryId, Entry::class, $siteId, [
-            'structureId' => $structureId,
-        ]);
+        return Craft::$app->getElements()->getElementById($entryId, Entry::class, $siteId, $criteria);
     }
 }

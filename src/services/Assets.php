@@ -13,7 +13,7 @@ use craft\assetpreviews\Pdf;
 use craft\assetpreviews\Text;
 use craft\assetpreviews\Video;
 use craft\base\AssetPreviewHandlerInterface;
-use craft\base\Volume;
+use craft\base\LocalVolumeInterface;
 use craft\base\VolumeInterface;
 use craft\db\Query;
 use craft\db\Table;
@@ -38,6 +38,7 @@ use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\Json;
+use craft\helpers\Queue;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\image\Raster;
@@ -317,7 +318,6 @@ class Assets extends Component
                     $volume = $folder->getVolume();
                     $volume->deleteDir($folder->path);
                 }
-
             }
         }
 
@@ -479,7 +479,7 @@ class Assets extends Component
      * @param string $orderBy
      * @return array
      */
-    public function  getAllDescendantFolders(VolumeFolder $parentFolder, string $orderBy = 'path'): array
+    public function getAllDescendantFolders(VolumeFolder $parentFolder, string $orderBy = 'path'): array
     {
         /** @var $query Query */
         $query = $this->_createFolderQuery()
@@ -600,7 +600,15 @@ class Assets extends Component
 
         // Does the file actually exist?
         if ($index->fileExists) {
-            return $assetTransforms->getUrlForTransformByAssetAndTransformIndex($asset, $index);
+            // For local volumes, really make sure
+            $volume = $asset->getVolume();
+            $transformPath = $asset->getFolder()->path . $assetTransforms->getTransformSubpath($asset, $index);
+
+            if ($volume instanceof LocalVolumeInterface && !$volume->fileExists($transformPath)) {
+                $index->fileExists = false;
+            } else {
+                return $assetTransforms->getUrlForTransformByAssetAndTransformIndex($asset, $index);
+            }
         }
 
         if ($generateNow === null) {
@@ -618,7 +626,7 @@ class Assets extends Component
 
         // Queue up a new Generate Pending Transforms job
         if (!$this->_queuedGeneratePendingTransformsJob) {
-            Craft::$app->getQueue()->push(new GeneratePendingTransforms());
+            Queue::push(new GeneratePendingTransforms());
             $this->_queuedGeneratePendingTransformsJob = true;
         }
 
@@ -636,7 +644,6 @@ class Assets extends Component
      * @param bool $fallbackToIcon whether to return the URL to a generic icon if a thumbnail can't be generated
      * @return string
      * @throws NotSupportedException if the asset can't have a thumbnail, and $fallbackToIcon is `false`
-     * @see Asset::getThumbUrl()
      */
     public function getThumbUrl(Asset $asset, int $width, int $height = null, bool $generate = false, bool $fallbackToIcon = true): string
     {
@@ -813,8 +820,8 @@ class Assets extends Component
 
         $dbFileList = (new Query())
             ->select(['assets.filename'])
-            ->from(['{{%assets}} assets'])
-            ->innerJoin(['{{%elements}} elements'], '[[assets.id]] = [[elements.id]]')
+            ->from(['assets' => Table::ASSETS])
+            ->innerJoin(['elements' => Table::ELEMENTS], '[[elements.id]] = [[assets.id]]')
             ->where([
                 'assets.folderId' => $folderId,
                 'elements.dateDeleted' => null,
@@ -881,7 +888,6 @@ class Assets extends Component
      */
     public function ensureFolderByFullPathAndVolume(string $fullPath, VolumeInterface $volume, bool $justRecord = true): int
     {
-        /** @var Volume $volume */
         $parentId = Craft::$app->getVolumes()->ensureTopFolder($volume);
         $folderId = $parentId;
 
@@ -995,7 +1001,6 @@ class Assets extends Component
             if (!$volume) {
                 throw new VolumeException(Craft::t('app', 'The volume set for temp asset storage is not valid.'));
             }
-            /** @var Volume $volume */
             $path = (isset($assetSettings['tempSubpath']) ? $assetSettings['tempSubpath'] . '/' : '') .
                 $folderName;
             $folderId = $this->ensureFolderByFullPathAndVolume($path, $volume, false);

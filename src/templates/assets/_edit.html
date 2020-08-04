@@ -24,21 +24,6 @@
 {% endblock %}
 
 {% block content %}
-    {{ forms.textField({
-        label: 'Title'|t('app'),
-        siteId: element.siteId,
-        translationDescription: 'This field is translated for each site.'|t('app'),
-        id: 'title',
-        name: 'title',
-        value: element.title,
-        errors: canEdit and element.getErrors('title'),
-        first: true,
-        autofocus: true,
-        required: canEdit,
-        disabled: not canEdit,
-        maxlength: 255
-    }) }}
-
     {{ parent() }}
 
     {# Give plugins a chance to add other things here #}

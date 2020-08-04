@@ -21,6 +21,7 @@ use yii\db\ActiveQueryInterface;
  * @property string $handle Handle
  * @property string $language Language
  * @property bool $primary Primary
+ * @property bool $enabled Enabled
  * @property bool $hasUrls Has URLs
  * @property bool $baseUrl Base URL
  * @property int $sortOrder Sort order

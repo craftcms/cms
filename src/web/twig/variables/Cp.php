@@ -8,7 +8,6 @@
 namespace craft\web\twig\variables;
 
 use Craft;
-use craft\base\Plugin;
 use craft\base\UtilityInterface;
 use craft\events\RegisterCpNavItemsEvent;
 use craft\events\RegisterCpSettingsEvent;
@@ -144,7 +143,6 @@ class Cp extends Component
         }
 
         // Add any Plugin nav items
-        /** @var Plugin[] $plugins */
         $plugins = Craft::$app->getPlugins()->getAllPlugins();
 
         foreach ($plugins as $plugin) {
@@ -159,12 +157,7 @@ class Cp extends Component
 
         if ($isAdmin) {
             if ($craftPro && $generalConfig->enableGql) {
-                $subNavItems = [
-                    'explore' => [
-                        'label' => Craft::t('app', 'Explore'),
-                        'url' => 'graphql',
-                    ],
-                ];
+                $subNavItems = [];
 
                 if ($generalConfig->allowAdminChanges) {
                     $subNavItems['schemas'] = [
@@ -176,6 +169,12 @@ class Cp extends Component
                 $subNavItems['tokens'] = [
                     'label' => Craft::t('app', 'Tokens'),
                     'url' => 'graphql/tokens',
+                ];
+
+                $subNavItems['graphiql'] = [
+                    'label' => 'GraphiQL',
+                    'url' => 'graphiql',
+                    'external' => true,
                 ];
 
                 $navItems[] = [
@@ -239,9 +238,13 @@ class Cp extends Component
         foreach ($navItems as &$item) {
             if (!$foundSelectedItem && ($item['url'] == $path || StringHelper::startsWith($path, $item['url'] . '/'))) {
                 $item['sel'] = true;
+                if (!isset($item['subnav'])) {
+                    $item['subnav'] = false;
+                }
                 $foundSelectedItem = true;
             } else {
                 $item['sel'] = false;
+                $item['subnav'] = false;
             }
 
             if (!isset($item['id'])) {
@@ -249,6 +252,10 @@ class Cp extends Component
             }
 
             $item['url'] = UrlHelper::url($item['url']);
+
+            if (!isset($item['external'])) {
+                $item['external'] = false;
+            }
 
             if (!isset($item['badgeCount'])) {
                 $item['badgeCount'] = 0;
@@ -270,58 +277,58 @@ class Cp extends Component
         $label = Craft::t('app', 'System');
 
         $settings[$label]['general'] = [
-            'icon' => '@app/icons/sliders.svg',
+            'iconMask' => '@app/icons/sliders.svg',
             'label' => Craft::t('app', 'General')
         ];
         $settings[$label]['sites'] = [
-            'icon' => '@app/icons/world.svg',
+            'iconMask' => '@app/icons/world.svg',
             'label' => Craft::t('app', 'Sites')
         ];
 
         if (!Craft::$app->getConfig()->getGeneral()->headlessMode) {
             $settings[$label]['routes'] = [
-                'icon' => '@app/icons/routes.svg',
+                'iconMask' => '@app/icons/routes.svg',
                 'label' => Craft::t('app', 'Routes')
             ];
         }
 
         $settings[$label]['users'] = [
-            'icon' => '@app/icons/users.svg',
+            'iconMask' => '@app/icons/users.svg',
             'label' => Craft::t('app', 'Users')
         ];
         $settings[$label]['email'] = [
-            'icon' => '@app/icons/envelope.svg',
+            'iconMask' => '@app/icons/envelope.svg',
             'label' => Craft::t('app', 'Email')
         ];
         $settings[$label]['plugins'] = [
-            'icon' => '@app/icons/plugin.svg',
+            'iconMask' => '@app/icons/plugin.svg',
             'label' => Craft::t('app', 'Plugins')
         ];
 
         $label = Craft::t('app', 'Content');
 
         $settings[$label]['fields'] = [
-            'icon' => '@app/icons/field.svg',
+            'iconMask' => '@app/icons/field.svg',
             'label' => Craft::t('app', 'Fields')
         ];
         $settings[$label]['sections'] = [
-            'icon' => '@app/icons/newspaper.svg',
+            'iconMask' => '@app/icons/newspaper.svg',
             'label' => Craft::t('app', 'Sections')
         ];
         $settings[$label]['assets'] = [
-            'icon' => '@app/icons/photo.svg',
+            'iconMask' => '@app/icons/photo.svg',
             'label' => Craft::t('app', 'Assets')
         ];
         $settings[$label]['globals'] = [
-            'icon' => '@app/icons/globe.svg',
+            'iconMask' => '@app/icons/globe.svg',
             'label' => Craft::t('app', 'Globals')
         ];
         $settings[$label]['categories'] = [
-            'icon' => '@app/icons/folder-open.svg',
+            'iconMask' => '@app/icons/folder-open.svg',
             'label' => Craft::t('app', 'Categories')
         ];
         $settings[$label]['tags'] = [
-            'icon' => '@app/icons/tags.svg',
+            'iconMask' => '@app/icons/tags.svg',
             'label' => Craft::t('app', 'Tags')
         ];
 
@@ -330,7 +337,6 @@ class Cp extends Component
         $pluginsService = Craft::$app->getPlugins();
 
         foreach ($pluginsService->getAllPlugins() as $plugin) {
-            /** @var Plugin $plugin */
             if ($plugin->hasCpSettings) {
                 $settings[$label][$plugin->id] = [
                     'url' => 'settings/plugins/' . $plugin->id,

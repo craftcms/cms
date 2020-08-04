@@ -3,7 +3,6 @@
 namespace craft\migrations;
 
 use craft\db\Migration;
-use craft\db\MigrationManager;
 use craft\db\Table;
 use craft\helpers\MigrationHelper;
 
@@ -22,12 +21,8 @@ class m150403_183908_migrations_table_changes extends Migration
         }
 
         if (!$this->db->columnExists(Table::MIGRATIONS, 'type')) {
-            $values = [
-                MigrationManager::TYPE_APP,
-                MigrationManager::TYPE_PLUGIN,
-                MigrationManager::TYPE_CONTENT,
-            ];
-            $this->addColumn(Table::MIGRATIONS, 'type', $this->enum('type', $values)->after('pluginId')->notNull()->defaultValue(MigrationManager::TYPE_APP));
+            $values = ['app', 'plugin', 'content'];
+            $this->addColumn(Table::MIGRATIONS, 'type', $this->enum('type', $values)->after('pluginId')->notNull()->defaultValue('app'));
             $this->createIndex(null, Table::MIGRATIONS, ['type', 'pluginId']);
         }
 

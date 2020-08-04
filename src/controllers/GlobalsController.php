@@ -9,9 +9,11 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\Element;
-use craft\base\Field;
 use craft\elements\GlobalSet;
+use craft\helpers\UrlHelper;
 use craft\web\Controller;
+use yii\web\BadRequestHttpException;
+use yii\web\Cookie;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -48,27 +50,27 @@ class GlobalsController extends Controller
      *
      * @return Response|null
      * @throws NotFoundHttpException if the requested global set cannot be found
+     * @throws BadRequestHttpException
      */
     public function actionSaveSet()
     {
         $this->requirePostRequest();
         $this->requireAdmin();
 
-        $globalSetId = Craft::$app->getRequest()->getBodyParam('setId');
+        $globalSetId = $this->request->getBodyParam('setId');
 
         if ($globalSetId) {
             $globalSet = Craft::$app->getGlobals()->getSetById($globalSetId);
-
             if (!$globalSet) {
-                throw new NotFoundHttpException('Global set not found');
+                throw new BadRequestHttpException("Invalid global set ID: $globalSetId");
             }
         } else {
             $globalSet = new GlobalSet();
         }
 
         // Set the simple stuff
-        $globalSet->name = Craft::$app->getRequest()->getBodyParam('name');
-        $globalSet->handle = Craft::$app->getRequest()->getBodyParam('handle');
+        $globalSet->name = $this->request->getBodyParam('name');
+        $globalSet->handle = $this->request->getBodyParam('handle');
 
         // Set the field layout
         $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
@@ -77,7 +79,7 @@ class GlobalsController extends Controller
 
         // Save it
         if (!Craft::$app->getGlobals()->saveSet($globalSet)) {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save global set.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t save global set.'));
 
             // Send the global set back to the template
             Craft::$app->getUrlManager()->setRouteParams([
@@ -87,8 +89,7 @@ class GlobalsController extends Controller
             return null;
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'Global set saved.'));
-
+        $this->setSuccessFlash(Craft::t('app', 'Global set saved.'));
         return $this->redirectToPostedUrl($globalSet);
     }
 
@@ -103,7 +104,7 @@ class GlobalsController extends Controller
         $this->requireAcceptsJson();
         $this->requireAdmin();
 
-        $globalSetId = Craft::$app->getRequest()->getRequiredBodyParam('id');
+        $globalSetId = $this->request->getRequiredBodyParam('id');
 
         Craft::$app->getGlobals()->deleteGlobalSetById($globalSetId);
 
@@ -130,29 +131,51 @@ class GlobalsController extends Controller
                 throw new ForbiddenHttpException('User not permitted to edit content in any sites');
             }
 
-            // Editing a specific site?
-            if ($siteHandle !== null) {
-                $site = Craft::$app->getSites()->getSiteByHandle($siteHandle);
+            $siteCookieName = 'Craft-' . Craft::$app->getSystemUid() . ':siteId';
 
-                if (!$site) {
-                    throw new NotFoundHttpException('Invalid site handle: ' . $siteHandle);
-                }
-
-                // Make sure the user has permission to edit that site
-                if (!in_array($site->id, $editableSiteIds, false)) {
-                    throw new ForbiddenHttpException('User not permitted to edit content in this site');
-                }
-            } else {
-                // Are they allowed to edit the current site?
-                /** @noinspection PhpUnhandledExceptionInspection */
-                $currentSite = Craft::$app->getSites()->getCurrentSite();
-                if (in_array($currentSite->id, $editableSiteIds, false)) {
-                    $site = $currentSite;
+            // Make sure a specific site was requested
+            if ($siteHandle === null) {
+                // See if they have a cookie for it
+                $siteId = $this->request->getRawCookies()->getValue($siteCookieName);
+                if ($siteId && in_array($siteId, $editableSiteIds, false)) {
+                    $site = Craft::$app->getSites()->getSiteById($siteId);
                 } else {
-                    // Just use the first site they are allowed to edit
-                    $site = Craft::$app->getSites()->getSiteById($editableSiteIds[0]);
+                    // Are they allowed to edit the current site?
+                    /** @noinspection PhpUnhandledExceptionInspection */
+                    $currentSite = Craft::$app->getSites()->getCurrentSite();
+                    if (in_array($currentSite->id, $editableSiteIds, false)) {
+                        $site = $currentSite;
+                    } else {
+                        // Just use the first site they are allowed to edit
+                        $site = Craft::$app->getSites()->getSiteById($editableSiteIds[0]);
+                    }
                 }
+
+                // Redirect to the site-specific URL
+                return $this->redirect(UrlHelper::cpUrl("globals/$site->handle/$globalSetHandle"));
             }
+
+            $site = Craft::$app->getSites()->getSiteByHandle($siteHandle);
+
+            if (!$site) {
+                throw new NotFoundHttpException('Invalid site handle: ' . $siteHandle);
+            }
+
+            // Make sure the user has permission to edit that site
+            if (!in_array($site->id, $editableSiteIds, false)) {
+                throw new ForbiddenHttpException('User not permitted to edit content in this site');
+            }
+
+            // Set the siteId cookie
+            /** @var Cookie $cookie */
+            $cookie = Craft::createObject(Craft::cookieConfig([
+                'class' => Cookie::class,
+                'name' => $siteCookieName,
+                'value' => $site->id,
+                'httpOnly' => false,
+                'expire' => (new \DateTime('+1 year'))->getTimestamp(),
+            ]));
+            $this->response->getRawCookies()->add($cookie);
         } else {
             /** @noinspection PhpUnhandledExceptionInspection */
             $site = Craft::$app->getSites()->getPrimarySite();
@@ -179,41 +202,17 @@ class GlobalsController extends Controller
             $globalSet = $editableGlobalSets[$globalSetHandle];
         }
 
-        // Body class
-        $bodyClass = 'edit-global-set site--' . $site->handle;
-
-        // Define the content tabs
-        // ---------------------------------------------------------------------
-
-        $tabs = [];
-
-        foreach ($globalSet->getFieldLayout()->getTabs() as $index => $tab) {
-            // Do any of the fields on this tab have errors?
-            $hasErrors = false;
-
-            if ($globalSet->hasErrors()) {
-                foreach ($tab->getFields() as $field) {
-                    /** @var Field $field */
-                    if ($hasErrors = $globalSet->hasErrors($field->handle . '.*')) {
-                        break;
-                    }
-                }
-            }
-
-            $tabs[] = [
-                'label' => Craft::t('site', $tab->name),
-                'url' => '#' . $tab->getHtmlId(),
-                'class' => $hasErrors ? 'error' : null
-            ];
-        }
+        // Prep the form tabs & content
+        $form = $globalSet->getFieldLayout()->createForm($globalSet);
 
         // Render the template!
-        return $this->renderTemplate('globals/_edit', compact(
-            'bodyClass',
-            'editableGlobalSets',
-            'globalSet',
-            'tabs'
-        ));
+        return $this->renderTemplate('globals/_edit', [
+            'bodyClass' => 'edit-global-set site--' . $site->handle,
+            'editableGlobalSets' => $editableGlobalSets,
+            'globalSet' => $globalSet,
+            'tabs' => $form->getTabMenu(),
+            'fieldsHtml' => $form->render(),
+        ]);
     }
 
     /**
@@ -226,8 +225,8 @@ class GlobalsController extends Controller
     {
         $this->requirePostRequest();
 
-        $globalSetId = Craft::$app->getRequest()->getRequiredBodyParam('setId');
-        $siteId = Craft::$app->getRequest()->getBodyParam('siteId') ?: Craft::$app->getSites()->getPrimarySite()->id;
+        $globalSetId = $this->request->getRequiredBodyParam('setId');
+        $siteId = $this->request->getBodyParam('siteId') ?: Craft::$app->getSites()->getPrimarySite()->id;
 
         $site = Craft::$app->getSites()->getSiteById($siteId);
         $globalSet = Craft::$app->getGlobals()->getSetById($globalSetId, $siteId);
@@ -251,7 +250,7 @@ class GlobalsController extends Controller
         $globalSet->setScenario(Element::SCENARIO_LIVE);
 
         if (!Craft::$app->getElements()->saveElement($globalSet)) {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save global set.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t save global set.'));
 
             // Send the global set back to the template
             Craft::$app->getUrlManager()->setRouteParams([
@@ -261,8 +260,7 @@ class GlobalsController extends Controller
             return null;
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'Global set saved.'));
-
+        $this->setSuccessFlash(Craft::t('app', 'Global set saved.'));
         return $this->redirectToPostedUrl();
     }
 }

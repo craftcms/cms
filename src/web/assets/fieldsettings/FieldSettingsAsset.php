@@ -32,12 +32,7 @@ class FieldSettingsAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public function init()
-    {
-        $this->js = [
-            'fieldsettings' . $this->dotJs(),
-        ];
-
-        parent::init();
-    }
+    public $js = [
+        'fieldsettings.min.js',
+    ];
 }

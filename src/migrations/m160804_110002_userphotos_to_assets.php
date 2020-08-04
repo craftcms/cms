@@ -193,9 +193,7 @@ class m160804_110002_userphotos_to_assets extends Migration
         ];
 
         $db = Craft::$app->getDb();
-        $db->createCommand()
-            ->insert(Table::VOLUMES, $volumeData)
-            ->execute();
+        Db::insert(Table::VOLUMES, $volumeData);
 
         $volumeId = $db->getLastInsertID();
 
@@ -205,9 +203,7 @@ class m160804_110002_userphotos_to_assets extends Migration
             'name' => $name,
             'path' => null
         ];
-        $db->createCommand()
-            ->insert(Table::VOLUMEFOLDERS, $folderData)
-            ->execute();
+        Db::insert(Table::VOLUMEFOLDERS, $folderData);
 
         return $volumeId;
     }
@@ -266,8 +262,8 @@ class m160804_110002_userphotos_to_assets extends Migration
 
             $assetExists = (new Query())
                 ->select(['assets.id'])
-                ->from(['{{%assets}} assets'])
-                ->innerJoin('{{%volumefolders}} volumefolders', '[[volumefolders.id]] = [[assets.folderId]]')
+                ->from(['assets' => Table::ASSETS])
+                ->innerJoin(['volumefolders' => Table::VOLUMEFOLDERS], '[[volumefolders.id]] = [[assets.folderId]]')
                 ->where([
                     'assets.folderId' => $folderId,
                     'filename' => $user['photo']
@@ -280,9 +276,7 @@ class m160804_110002_userphotos_to_assets extends Migration
                     'enabled' => 1,
                     'archived' => 0
                 ];
-                $db->createCommand()
-                    ->insert(Table::ELEMENTS, $elementData)
-                    ->execute();
+                Db::insert(Table::ELEMENTS, $elementData);
 
                 $elementId = $db->getLastInsertID();
 
@@ -290,22 +284,18 @@ class m160804_110002_userphotos_to_assets extends Migration
                     $elementI18nData = [
                         'elementId' => $elementId,
                         'locale' => $locale,
-                        'slug' => ElementHelper::createSlug($user['photo']),
+                        'slug' => ElementHelper::generateSlug($user['photo']),
                         'uri' => null,
                         'enabled' => 1
                     ];
-                    $db->createCommand()
-                        ->insert('{{%elements_i18n}}', $elementI18nData)
-                        ->execute();
+                    Db::insert('{{%elements_i18n}}', $elementI18nData);
 
                     $contentData = [
                         'elementId' => $elementId,
                         'locale' => $locale,
                         'title' => AssetsHelper::filename2Title(pathinfo($user['photo'], PATHINFO_FILENAME))
                     ];
-                    $db->createCommand()
-                        ->insert(Table::CONTENT, $contentData)
-                        ->execute();
+                    Db::insert(Table::CONTENT, $contentData);
                 }
 
                 $imageSize = Image::imageSize($filePath);
@@ -320,9 +310,7 @@ class m160804_110002_userphotos_to_assets extends Migration
                     'height' => $imageSize[1],
                     'dateModified' => Db::prepareDateForDb(filemtime($filePath))
                 ];
-                $db->createCommand()
-                    ->insert(Table::ASSETS, $assetData)
-                    ->execute();
+                Db::insert(Table::ASSETS, $assetData);
 
                 $changes[$user['id']] = $elementId;
             }
@@ -339,11 +327,12 @@ class m160804_110002_userphotos_to_assets extends Migration
     private function _setPhotoIdValues(array $userlist)
     {
         if (is_array($userlist)) {
-            $db = Craft::$app->getDb();
             foreach ($userlist as $userId => $assetId) {
-                $db->createCommand()
-                    ->update(Table::USERS, ['photoId' => $assetId], ['id' => $userId])
-                    ->execute();
+                Db::update(Table::USERS, [
+                    'photoId' => $assetId,
+                ], [
+                    'id' => $userId,
+                ], [], true, $this->db);
             }
         }
     }

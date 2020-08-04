@@ -15,9 +15,16 @@
     <nav id="nav">
         <ul>
             {% for item in craft.cp.nav() %}
-                {% set hasSubnav = (item.subnav is defined and item.subnav) %}
-                <li id="{{ item.id }}" {% if item.sel and hasSubnav %} class="has-subnav"{% endif %}>
-                    <a{% if item.sel %} class="sel"{% endif %} href="{{ item.url }}">
+                {% set itemAttributes = {
+                    id: item.id,
+                    class: item.subnav ? 'has-subnav',
+                } %}
+                {% set linkAttributes = {
+                    href: url(item.url),
+                    class: item.sel ? 'sel'
+                } %}
+                <li {{ attr(itemAttributes) }}>
+                    <a {{ attr(linkAttributes) }}>
                         <span class="icon icon-mask">
                             {%- if item.icon is defined -%}
                                 {{ svg(item.icon, sanitize=true, namespace=true) }}
@@ -34,16 +41,24 @@
                             <span class="badge">{{ item.badgeCount|number(decimals=0) }}</span>
                         {%- endif -%}
                     </a>
-                    {% if item.sel and hasSubnav %}
+                    {% if item.subnav %}
                         <ul class="subnav">
                             {% for itemId, item in item.subnav %}
                                 {% set itemIsSelected = (
                                     (selectedSubnavItem is defined and selectedSubnavItem == itemId) or
                                     (selectedSubnavItem is not defined and loop.first)
-                                    ) -%}
+                                ) -%}
+                                {% set linkAttributes = {
+                                    href: url(item.url),
+                                    class: [
+                                        itemIsSelected ? 'sel',
+                                        (item.external ?? false) ? 'external',
+                                    ],
+                                    target: (item.external ?? false) ? '_blank',
+                                } %}
 
                                 <li>
-                                    <a href="{{ url(item.url) }}"{% if itemIsSelected %} class="sel"{% endif %}>
+                                    <a {{ attr(linkAttributes) }}>
                                         {{ item.label }}
 
                                         {%- if not itemIsSelected and item.badgeCount is defined -%}

@@ -127,7 +127,7 @@ class Categories extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml($value, ElementInterface $element = null): string
     {
         // Make sure the field is set to a valid category group
         if ($this->source) {
@@ -138,7 +138,7 @@ class Categories extends BaseRelationField
             return '<p class="error">' . Craft::t('app', 'This field is not set to a valid category group.') . '</p>';
         }
 
-        return parent::getInputHtml($value, $element);
+        return parent::inputHtml($value, $element);
     }
 
     /**
@@ -165,6 +165,7 @@ class Categories extends BaseRelationField
             'resolve' => CategoryResolver::class . '::resolve',
         ];
     }
+
 
     /**
      * @inheritdoc

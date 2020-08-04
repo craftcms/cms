@@ -87,24 +87,11 @@ class TagsController extends Controller
             ]
         ];
 
-        // Tabs
-        $tabs = [
-            'settings' => [
-                'label' => Craft::t('app', 'Settings'),
-                'url' => '#taggroup-settings'
-            ],
-            'fieldLayout' => [
-                'label' => Craft::t('app', 'Field Layout'),
-                'url' => '#taggroup-fieldlayout'
-            ]
-        ];
-
         return $this->renderTemplate('settings/tags/_edit', [
             'tagGroupId' => $tagGroupId,
             'tagGroup' => $tagGroup,
             'title' => $title,
             'crumbs' => $crumbs,
-            'tabs' => $tabs
         ]);
     }
 
@@ -112,39 +99,48 @@ class TagsController extends Controller
      * Save a tag group.
      *
      * @return Response|null
+     * @throws BadRequestHttpException
      */
     public function actionSaveTagGroup()
     {
         $this->requirePostRequest();
         $this->requireAdmin();
 
-        $tagGroup = new TagGroup();
+        $tagsService = Craft::$app->getTags();
+        $groupId = $this->request->getBodyParam('tagGroupId');
+
+        if ($groupId) {
+            $group = $tagsService->getTagGroupById($groupId);
+            if (!$group) {
+                throw new BadRequestHttpException("Invalid tag group ID: $groupId");
+            }
+        } else {
+            $group = new TagGroup();
+        }
 
         // Set the simple stuff
-        $tagGroup->id = Craft::$app->getRequest()->getBodyParam('tagGroupId');
-        $tagGroup->name = Craft::$app->getRequest()->getBodyParam('name');
-        $tagGroup->handle = Craft::$app->getRequest()->getBodyParam('handle');
+        $group->name = $this->request->getBodyParam('name');
+        $group->handle = $this->request->getBodyParam('handle');
 
         // Set the field layout
         $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
         $fieldLayout->type = Tag::class;
-        $tagGroup->setFieldLayout($fieldLayout);
+        $group->setFieldLayout($fieldLayout);
 
         // Save it
-        if (!Craft::$app->getTags()->saveTagGroup($tagGroup)) {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save the tag group.'));
+        if (!Craft::$app->getTags()->saveTagGroup($group)) {
+            $this->setFailFlash(Craft::t('app', 'Couldn’t save the tag group.'));
 
             // Send the tag group back to the template
             Craft::$app->getUrlManager()->setRouteParams([
-                'tagGroup' => $tagGroup
+                'tagGroup' => $group
             ]);
 
             return null;
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'Tag group saved.'));
-
-        return $this->redirectToPostedUrl($tagGroup);
+        $this->setSuccessFlash(Craft::t('app', 'Tag group saved.'));
+        return $this->redirectToPostedUrl($group);
     }
 
     /**
@@ -158,7 +154,7 @@ class TagsController extends Controller
         $this->requireAcceptsJson();
         $this->requireAdmin();
 
-        $groupId = Craft::$app->getRequest()->getRequiredBodyParam('id');
+        $groupId = $this->request->getRequiredBodyParam('id');
 
         Craft::$app->getTags()->deleteTagGroupById($groupId);
 
@@ -175,9 +171,9 @@ class TagsController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $search = trim(Craft::$app->getRequest()->getBodyParam('search'));
-        $tagGroupId = Craft::$app->getRequest()->getBodyParam('tagGroupId');
-        $excludeIds = Craft::$app->getRequest()->getBodyParam('excludeIds', []);
+        $search = trim($this->request->getBodyParam('search'));
+        $tagGroupId = $this->request->getBodyParam('tagGroupId');
+        $excludeIds = $this->request->getBodyParam('excludeIds', []);
         $allowSimilarTags = Craft::$app->getConfig()->getGeneral()->allowSimilarTags;
 
         $tags = Tag::find()
@@ -242,14 +238,14 @@ class TagsController extends Controller
     {
         $this->requireAcceptsJson();
 
-        $groupId = Craft::$app->getRequest()->getRequiredBodyParam('groupId');
+        $groupId = $this->request->getRequiredBodyParam('groupId');
         if (($group = Craft::$app->getTags()->getTagGroupById($groupId)) === null) {
             throw new BadRequestHttpException('Invalid tag group ID: ' . $groupId);
         }
 
         $tag = new Tag();
         $tag->groupId = $group->id;
-        $tag->title = trim(Craft::$app->getRequest()->getRequiredBodyParam('title'));
+        $tag->title = trim($this->request->getRequiredBodyParam('title'));
 
         // Don't validate required custom fields
         if (!Craft::$app->getElements()->saveElement($tag)) {

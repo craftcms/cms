@@ -2,8 +2,9 @@
 
 {%- set class = [
     'nicetext',
-    (field.code ? 'code' : null)
-]|filter|join(' ') %}
+    field.code ? 'code',
+    field.uiMode == 'enlarged' ? 'readable',
+]|filter %}
 
 {% set config = {
     id: name,

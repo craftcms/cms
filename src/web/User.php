@@ -361,31 +361,20 @@ class User extends \yii\web\User
 
     /**
      * Saves the logged-in user’s Debug toolbar preferences to the session.
+     *
+     * @deprecated in 3.5.0
      */
     public function saveDebugPreferencesToSession()
     {
-        $identity = $this->getIdentity();
-        $session = Craft::$app->getSession();
-
-        $this->destroyDebugPreferencesInSession();
-
-        if ($identity->admin && $identity->getPreference('enableDebugToolbarForSite')) {
-            $session->set('enableDebugToolbarForSite', true);
-        }
-
-        if ($identity->admin && $identity->getPreference('enableDebugToolbarForCp')) {
-            $session->set('enableDebugToolbarForCp', true);
-        }
     }
 
     /**
      * Removes the debug preferences from the session.
+     *
+     * @deprecated in 3.5.0
      */
     public function destroyDebugPreferencesInSession()
     {
-        $session = Craft::$app->getSession();
-        $session->remove('enableDebugToolbarForSite');
-        $session->remove('enableDebugToolbarForCp');
     }
 
     /**
@@ -414,9 +403,6 @@ class User extends \yii\web\User
         if (!$impersonating) {
             $this->sendUsernameCookie($identity);
         }
-
-        // Save the Debug preferences to the session
-        $this->saveDebugPreferencesToSession();
 
         // Clear out the elevated session, if there is one
         $session->remove($this->elevatedSessionTimeoutParam);
@@ -458,12 +444,10 @@ class User extends \yii\web\User
     {
         $token = Craft::$app->getSecurity()->generateRandomString(100);
 
-        Craft::$app->getDb()->createCommand()
-            ->insert(Table::SESSIONS, [
-                'userId' => $userId,
-                'token' => $token,
-            ])
-            ->execute();
+        Db::insert(Table::SESSIONS, [
+            'userId' => $userId,
+            'token' => $token,
+        ]);
 
         Craft::$app->getSession()->set($this->tokenParam, $token);
     }
@@ -517,12 +501,10 @@ class User extends \yii\web\User
         $token = $session->get($this->tokenParam);
         if ($token !== null) {
             $session->remove($this->tokenParam);
-            Craft::$app->getDb()->createCommand()
-                ->delete(Table::SESSIONS, [
-                    'token' => $token,
-                    'userId' => $identity->id,
-                ])
-                ->execute();
+            Db::delete(Table::SESSIONS, [
+                'token' => $token,
+                'userId' => $identity->id,
+            ]);
         }
 
         return true;
@@ -537,8 +519,6 @@ class User extends \yii\web\User
         // Delete the impersonation session, if there is one
         $session = Craft::$app->getSession();
         $session->remove(UserElement::IMPERSONATE_KEY);
-
-        $this->destroyDebugPreferencesInSession();
 
         if (Craft::$app->getConfig()->getGeneral()->enableCsrfProtection) {
             // Let's keep the current nonce around.

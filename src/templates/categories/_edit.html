@@ -3,6 +3,7 @@
 
 {% set fullPageForm = true %}
 {% set saveShortcutRedirect = continueEditingUrl %}
+{% set retainScrollOnSaveShortcut = true %}
 {% do view.setIsDeltaRegistrationActive(true) %}
 
 {% set groupHandle = group.handle %}
@@ -79,30 +80,7 @@
     {% if craft.app.getIsMultiSite() %}{{ hiddenInput('siteId', category.siteId) }}{% endif %}
 
     <div id="fields">
-        {{ forms.textField({
-            label: "Title"|t('app'),
-            siteId: category.siteId,
-            id: 'title',
-            name: 'title',
-            value: category.title,
-            errors: category.getErrors('title'),
-            first: true,
-            autofocus: true,
-            required: true,
-            maxlength: 255
-        }) }}
-
-        <div>
-            {% for tab in group.getFieldLayout().getTabs() %}
-                <div id="{{ tab.getHtmlId() }}"{% if not loop.first %} class="hidden"{% endif %}>
-                    {% include "_includes/fields" with {
-                        fields:  tab.getFields(),
-                        element: category,
-                        registerDeltas: true,
-                    } only %}
-                </div>
-            {% endfor %}
-        </div>
+        {{ fieldsHtml|raw }}
     </div>
 
     {# Give plugins a chance to add other things here #}

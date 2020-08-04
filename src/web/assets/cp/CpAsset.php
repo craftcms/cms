@@ -26,6 +26,7 @@ use craft\web\assets\elementresizedetector\ElementResizeDetectorAsset;
 use craft\web\assets\fabric\FabricAsset;
 use craft\web\assets\fileupload\FileUploadAsset;
 use craft\web\assets\garnish\GarnishAsset;
+use craft\web\assets\iframeresizer\IframeResizerAsset;
 use craft\web\assets\jquerypayment\JqueryPaymentAsset;
 use craft\web\assets\jquerytouchevents\JqueryTouchEventsAsset;
 use craft\web\assets\jqueryui\JqueryUiAsset;
@@ -44,37 +45,44 @@ class CpAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public function init()
-    {
-        $this->sourcePath = __DIR__ . '/dist';
+    public $sourcePath = __DIR__ . '/dist';
 
-        $this->depends = [
-            AxiosAsset::class,
-            D3Asset::class,
-            ElementResizeDetectorAsset::class,
-            GarnishAsset::class,
-            JqueryAsset::class,
-            JqueryTouchEventsAsset::class,
-            JqueryUiAsset::class,
-            JqueryPaymentAsset::class,
-            DatepickerI18nAsset::class,
-            PicturefillAsset::class,
-            SelectizeAsset::class,
-            VelocityAsset::class,
-            FileUploadAsset::class,
-            XregexpAsset::class,
-            FabricAsset::class,
-        ];
+    /**
+     * @inheritdoc
+     */
+    public $depends = [
+        AxiosAsset::class,
+        D3Asset::class,
+        ElementResizeDetectorAsset::class,
+        GarnishAsset::class,
+        JqueryAsset::class,
+        JqueryTouchEventsAsset::class,
+        JqueryUiAsset::class,
+        JqueryPaymentAsset::class,
+        DatepickerI18nAsset::class,
+        PicturefillAsset::class,
+        SelectizeAsset::class,
+        VelocityAsset::class,
+        FileUploadAsset::class,
+        XregexpAsset::class,
+        FabricAsset::class,
+        IframeResizerAsset::class,
+    ];
 
-        $this->css = [
-            'css/craft.css',
-            'css/charts.css',
-        ];
+    /**
+     * @inheritdoc
+     */
+    public $css = [
+        'css/craft.css',
+        'css/charts.css',
+    ];
 
-        $this->js[] = 'js/Craft' . $this->dotJs();
-
-        parent::init();
-    }
+    /**
+     * @inheritdoc
+     */
+    public $js = [
+        'js/Craft.min.js',
+    ];
 
     /**
      * @inheritdoc
@@ -111,11 +119,16 @@ JS;
             'Buy {name}',
             'Cancel',
             'Choose a user',
+            'Switching sites will lose unsaved changes. Are you sure you want to switch sites?',
             'Choose which table columns should be visible for this source, and in which order.',
             'Clear',
             'Close Preview',
             'Close',
             'Continue',
+            'Copied to clipboard.',
+            'Copy the reference tag',
+            'Copy the URL',
+            'Copy to clipboard',
             'Couldn’t delete “{name}”.',
             'Couldn’t save new order.',
             'Create',
@@ -149,6 +162,7 @@ JS;
             'From',
             'Give your tab a name.',
             'Handle',
+            'Header Column Heading',
             'Heading',
             'Hide sidebar',
             'Hide',
@@ -166,6 +180,8 @@ JS;
             'Merge the folder (any conflicting files will be replaced)',
             'More',
             'Move',
+            'Move up',
+            'Move down',
             'Name',
             'New category',
             'New child',
@@ -237,8 +253,10 @@ JS;
             'hours',
             'minute',
             'minutes',
+            'saved {timestamp} by {creator}',
             'second',
             'seconds',
+            'updated {timestamp}',
             'week',
             'weeks',
             '{ctrl}C to copy.',
@@ -288,7 +306,8 @@ JS;
             'canAccessQueueManager' => $userSession->checkPermission('utility:queue-manager'),
             'cpTrigger' => $generalConfig->cpTrigger,
             'datepickerOptions' => $this->_datepickerOptions($locale, $currentUser, $generalConfig),
-            'defaultIndexCriteria' => ['enabledForSite' => null],
+            'defaultCookieOptions' => $this->_defaultCookieOptions(),
+            'defaultIndexCriteria' => [],
             'deltaNames' => $view->getDeltaNames(),
             'editableCategoryGroups' => $upToDate ? $this->_editableCategoryGroups() : [],
             'edition' => Craft::$app->getEdition(),
@@ -308,6 +327,7 @@ JS;
             'pageTrigger' => $generalConfig->getPageTrigger(),
             'path' => $request->getPathInfo(),
             'pathParam' => $generalConfig->pathParam,
+            'previewIframeResizerOptions' => $generalConfig->previewIframeResizerOptions !== [] ? $generalConfig->previewIframeResizerOptions : null,
             'primarySiteId' => $primarySite ? (int)$primarySite->id : null,
             'primarySiteLanguage' => $primarySite->language ?? null,
             'Pro' => Craft::Pro,
@@ -320,6 +340,7 @@ JS;
             'scriptName' => basename($request->getScriptFile()),
             'siteId' => $upToDate ? (int)$sitesService->currentSite->id : null,
             'sites' => $this->_sites($sitesService),
+            'siteToken' => $generalConfig->siteToken,
             'slugWordSeparator' => $generalConfig->slugWordSeparator,
             'Solo' => Craft::Solo,
             'systemUid' => Craft::$app->getSystemUid(),
@@ -353,6 +374,17 @@ JS;
             'monthNamesShort' => $locale->getMonthNames(Locale::LENGTH_ABBREVIATED),
             'nextText' => Craft::t('app', 'Next'),
             'prevText' => Craft::t('app', 'Prev'),
+        ];
+    }
+
+    private function _defaultCookieOptions(): array
+    {
+        $config = Craft::cookieConfig();
+        return [
+            'path' => $config['path'] ?? '/',
+            'domain' => $config['domain'] ?? null,
+            'secure' => $config['secure'] ?? false,
+            'sameSite' => $config['sameSite'] ?? 'strict',
         ];
     }
 

@@ -1,0 +1,58 @@
+@charset "UTF-8";
+@import "../../../../../node_modules/craftcms-sass/mixins";
+
+#graphic {
+  display: block;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  @include margin(-48px, 0, 0, -24px);
+  background-repeat: no-repeat;
+  background-position: 50% 50%;
+}
+
+#graphic.error {
+  background-image: url(images/error.png);
+}
+
+#graphic.success {
+  background-image: url(images/success.png);
+}
+
+#status {
+  position: absolute;
+  top: 50%;
+  margin-top: 20px;
+  width: 100%;
+  text-align: center;
+  font-size: 16px;
+  line-height: 20px;
+  color: $grey500;
+}
+
+#status #error {
+  margin: 24px auto;
+  border-radius: 3px;
+  border: 1px solid $hairlineColor;
+  padding: 24px;
+  width: 600px;
+  max-width: calc(100% - 96px);
+  max-height: 100px;
+  overflow: auto;
+  text-align: left;
+}
+
+@media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+only screen and (-moz-min-device-pixel-ratio: 1.5),
+only screen and (-o-min-device-pixel-ratio: 3/2),
+only screen and (min-device-pixel-ratio: 1.5),
+only screen and (min-resolution: 1.5dppx) {
+  #graphic.error {
+    background-image: url(images/error_2x.png);
+    background-size: 48px;
+  }
+  #graphic.success {
+    background-image: url(images/success_2x.png);
+    background-size: 48px;
+  }
+}

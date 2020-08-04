@@ -151,17 +151,9 @@ class Mailer extends \yii\swiftmailer\Mailer
         }
 
         // Apply the testToEmailAddress config setting
-        $testToEmailAddress = Craft::$app->getConfig()->getGeneral()->testToEmailAddress;
+        $testToEmailAddress = Craft::$app->getConfig()->getGeneral()->getTestToEmailAddress();
         if (!empty($testToEmailAddress)) {
-            $to = [];
-            foreach ((array)$testToEmailAddress as $emailAddress => $name) {
-                if (is_numeric($emailAddress)) {
-                    $to[$name] = Craft::t('app', 'Test Recipient');
-                } else {
-                    $to[$emailAddress] = $name;
-                }
-            }
-            $message->setTo($to);
+            $message->setTo($testToEmailAddress);
             $message->setCc(null);
             $message->setBcc(null);
         }

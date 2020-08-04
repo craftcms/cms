@@ -77,7 +77,6 @@ class Security extends \yii\base\Security
      */
     public function getValidationKey(): string
     {
-        Craft::$app->getDeprecator()->log(__METHOD__, 'Craft::$app->security->getValidationKey() has been deprecated. Use Craft::$app->config->general->securityKey instead.');
         return Craft::$app->getConfig()->getGeneral()->securityKey;
     }
 

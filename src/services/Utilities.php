@@ -18,6 +18,7 @@ use craft\utilities\DeprecationErrors;
 use craft\utilities\FindAndReplace;
 use craft\utilities\Migrations;
 use craft\utilities\PhpInfo;
+use craft\utilities\ProjectConfig as ProjectConfigUtility;
 use craft\utilities\QueueManager;
 use craft\utilities\SystemMessages as SystemMessagesUtility;
 use craft\utilities\SystemReport;
@@ -38,7 +39,7 @@ class Utilities extends Component
      *
      * Utility types must implement [[UtilityInterface]]. [[\craft\base\Utility]] provides a base implementation.
      *
-     * See [Utility Types](https://docs.craftcms.com/v3/utility-types.html) for documentation on creating utility types.
+     * See [Utility Types](https://craftcms.com/docs/3.x/extend/utility-types.html) for documentation on creating utility types.
      * ---
      * ```php
      * use craft\events\RegisterComponentTypesEvent;
@@ -65,6 +66,7 @@ class Utilities extends Component
         $utilityTypes = [
             UpdatesUtility::class,
             SystemReport::class,
+            ProjectConfigUtility::class,
             PhpInfo::class,
         ];
 
@@ -122,7 +124,10 @@ class Utilities extends Component
     public function checkAuthorization(string $class): bool
     {
         /** @var string|UtilityInterface $class */
-        return Craft::$app->getUser()->checkPermission('utility:' . $class::id());
+        $utilityId = $class::id();
+        $user = Craft::$app->getUser();
+
+        return $utilityId === ProjectConfigUtility::id() ? $user->getIsAdmin() : $user->checkPermission('utility:' . $utilityId);
     }
 
     /**

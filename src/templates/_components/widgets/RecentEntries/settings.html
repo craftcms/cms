@@ -1,25 +1,5 @@
 {% import "_includes/forms" as forms %}
 
-
-{% set sectionInput %}
-    <div class="select">
-        <select id="section" name="section">
-            <option value="*">{{ "All"|t('app') }}</option>
-            {% for section in craft.app.sections.getAllSections() %}
-                {% if section.type != 'single' %}
-                    <option value="{{ section.id }}"{% if section.id == widget.section %} selected{% endif %}>{{ section.name|t('site') }}</option>
-                {% endif %}
-            {% endfor %}
-        </select>
-    </div>
-{% endset %}
-
-{{ forms.field({
-    label: "Section"|t('app'),
-    instructions: "Which section do you want to pull recent entries from?"|t('app'),
-    id: 'section',
-}, sectionInput) }}
-
 {% if craft.app.getIsMultiSite() %}
     {% set editableSites = craft.app.sites.getEditableSites() %}
 
@@ -41,6 +21,24 @@
     {% endif %}
 {% endif %}
 
+{% set sectionInput %}
+    <div class="select">
+        <select id="section" name="section">
+            <option value="*">{{ "All"|t('app') }}</option>
+            {% for section in craft.app.sections.getAllSections() %}
+                {% if section.type != 'single' %}
+                    <option value="{{ section.id }}"{% if section.id == widget.section %} selected{% endif %}>{{ section.name|t('site') }}</option>
+                {% endif %}
+            {% endfor %}
+        </select>
+    </div>
+{% endset %}
+
+{{ forms.field({
+    label: "Section"|t('app'),
+    instructions: "Which section do you want to pull recent entries from?"|t('app'),
+    id: 'section',
+}, sectionInput) }}
 
 {{ forms.textField({
     label: "Limit"|t('app'),

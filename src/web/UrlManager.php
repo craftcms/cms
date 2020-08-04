@@ -8,7 +8,6 @@
 namespace craft\web;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\events\RegisterUrlRulesEvent;
 use craft\helpers\App;
@@ -380,7 +379,6 @@ class UrlManager extends \yii\web\UrlManager
         }
 
         $path = $request->getPathInfo();
-        /** @var Element $element */
         /** @noinspection PhpUnhandledExceptionInspection */
         $element = Craft::$app->getElements()->getElementByUri($path, Craft::$app->getSites()->getCurrentSite()->id, true);
         $this->setMatchedElement($element ?: false);

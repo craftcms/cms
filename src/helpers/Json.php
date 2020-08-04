@@ -18,6 +18,18 @@ use yii\base\InvalidArgumentException;
 class Json extends \yii\helpers\Json
 {
     /**
+     * Returns whether a string value looks like a JSON object or array.
+     *
+     * @param string $str
+     * @return bool
+     * @since 3.5.0
+     */
+    public static function isJsonObject(string $str): bool
+    {
+        return (bool)preg_match('/^(?:\{.*\}|\[.*\])$/', $str);
+    }
+
+    /**
      * Decodes the given JSON string into a PHP data structure, only if the string is valid JSON.
      *
      * @param mixed $str The string to be decoded, if it's valid JSON.

@@ -8,14 +8,14 @@
     {%- set allChecked = (values == allValue) %}
 {%- endif %}
 
-<div class="checkbox-select{% if class is defined %} {{ class }}{% endif %}"
+<fieldset class="checkbox-select{% if class is defined %} {{ class }}{% endif %}"
         {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
     {%- if showAllOption %}
         <div>
             {% include "_includes/forms/checkbox" with {
                 id:        (id is defined ? id : null),
                 class:     'all',
-                label:     '<b>' ~ allLabel ~ '</b>',
+                label:     raw("<b>#{allLabel}</b>"),
                 name:      (name is defined ? name : null),
                 value:     allValue,
                 checked:   allChecked,
@@ -37,4 +37,4 @@
             </div>
         {% endif %}
     {% endfor %}
-</div>
+</fieldset>

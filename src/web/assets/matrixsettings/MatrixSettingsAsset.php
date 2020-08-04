@@ -19,20 +19,21 @@ class MatrixSettingsAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public function init()
-    {
-        $this->sourcePath = __DIR__ . '/dist';
+    public $sourcePath = __DIR__ . '/dist';
 
-        $this->depends = [
-            CpAsset::class,
-        ];
+    /**
+     * @inheritdoc
+     */
+    public $depends = [
+        CpAsset::class,
+    ];
 
-        $this->js = [
-            'MatrixConfigurator' . $this->dotJs(),
-        ];
-
-        parent::init();
-    }
+    /**
+     * @inheritdoc
+     */
+    public $js = [
+        'MatrixConfigurator.min.js',
+    ];
 
     /**
      * @inheritdoc
@@ -54,8 +55,9 @@ class MatrixSettingsAsset extends AssetBundle
                 'Translate for each site',
                 'Translation Key Format',
                 'Translation Method',
-                'Use this field’s values as search keywords?',
+                'Use this field’s values as search keywords',
                 'What this block type will be called in the control panel.',
+                '{pct} width',
             ]);
         }
     }

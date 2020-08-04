@@ -6,7 +6,7 @@
 {%- set values = (values is defined ? values : []) %}
 {%- set name = (name is defined and name ? name~'[]' : null) %}
 
-<div class="checkbox-group"
+<fieldset class="checkbox-group"
         {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
     {%- for key, option in options %}
         {%- if option is not iterable %}
@@ -21,4 +21,4 @@
             }|merge(option) only %}
         </div>
     {%- endfor %}
-</div>
+</fieldset>

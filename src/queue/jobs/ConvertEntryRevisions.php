@@ -9,16 +9,15 @@ namespace craft\queue\jobs;
 
 use Craft;
 use craft\base\Element;
-use craft\base\Field;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
-use craft\db\Connection;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Entry;
 use craft\elements\User;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
+use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\queue\BaseJob;
 use craft\services\Drafts;
@@ -38,8 +37,6 @@ use yii\db\Expression;
 class ConvertEntryRevisions extends BaseJob
 {
     private $queue;
-    /** @var Connection */
-    private $db;
     /** @var Elements */
     private $elementsService;
     /** @var Entries */
@@ -61,7 +58,6 @@ class ConvertEntryRevisions extends BaseJob
     public function execute($queue)
     {
         $this->queue = $queue;
-        $this->db = Craft::$app->getDb();
         $this->elementsService = Craft::$app->getElements();
         $this->entriesService = Craft::$app->getEntries();
         $this->fieldsService = Craft::$app->getFields();
@@ -106,7 +102,6 @@ class ConvertEntryRevisions extends BaseJob
         }
 
         foreach ($fieldValues as $id => $value) {
-            /** @var Field $field */
             $field = $this->fieldsService->getFieldById($id);
             if ($field) {
                 $entry->setFieldValue($field->handle, $value);
@@ -116,7 +111,7 @@ class ConvertEntryRevisions extends BaseJob
 
     private function convertDrafts()
     {
-        if (!$this->db->tableExists(Table::ENTRYDRAFTS)) {
+        if (!Craft::$app->getDb()->tableExists(Table::ENTRYDRAFTS)) {
             return;
         }
 
@@ -133,17 +128,15 @@ class ConvertEntryRevisions extends BaseJob
             try {
                 $this->convertDraft($result);
             } catch (\Throwable $e) {
-                $this->db->createCommand()
-                    ->insert('{{%entrydrafterrors}}', [
-                        'draftId' => $result['id'],
-                        'error' => $e->getMessage(),
-                    ], false)
-                    ->execute();
+                Db::insert('{{%entrydrafterrors}}', [
+                    'draftId' => $result['id'],
+                    'error' => $e->getMessage(),
+                ], false);
                 continue;
             }
-            $this->db->createCommand()
-                ->delete(Table::ENTRYDRAFTS, ['id' => $result['id']])
-                ->execute();
+            Db::delete(Table::ENTRYDRAFTS, [
+                'id' => $result['id'],
+            ], []);
         }
     }
 
@@ -197,7 +190,7 @@ class ConvertEntryRevisions extends BaseJob
         // If maxRevisions is set, filter out versions that would have been deleted by now
         $maxRevisions = Craft::$app->getConfig()->getGeneral()->maxRevisions;
         if ($maxRevisions > 0) {
-            $numSql = $this->db->getIsMysql() ? 'cast([[num]] as signed)' : '[[num]]';
+            $numSql = Craft::$app->getDb()->getIsMysql() ? 'cast([[num]] as signed)' : '[[num]]';
             $query->andWhere([
                 '>', 'num', (new Query())
                     ->select(new Expression("max({$numSql})" . ($maxRevisions ? " - {$maxRevisions}" : '')))
@@ -213,17 +206,15 @@ class ConvertEntryRevisions extends BaseJob
             try {
                 $this->convertVersion($result);
             } catch (\Throwable $e) {
-                $this->db->createCommand()
-                    ->insert('{{%entryversionerrors}}', [
-                        'versionId' => $result['id'],
-                        'error' => $e->getMessage(),
-                    ], false)
-                    ->execute();
+                Db::insert('{{%entryversionerrors}}', [
+                    'versionId' => $result['id'],
+                    'error' => $e->getMessage(),
+                ], false);
                 continue;
             }
-            $this->db->createCommand()
-                ->delete(Table::ENTRYVERSIONS, ['id' => $result['id']])
-                ->execute();
+            Db::delete(Table::ENTRYVERSIONS, [
+                'id' => $result['id'],
+            ], []);
         }
     }
 
@@ -240,7 +231,7 @@ class ConvertEntryRevisions extends BaseJob
         $lowestNum = (new Query())
             ->select(['min([[num]])'])
             ->from(['r' => Table::REVISIONS])
-            ->innerJoin(Table::ELEMENTS . ' e', '[[e.revisionId]] = [[r.id]]')
+            ->innerJoin(['e' => Table::ELEMENTS], '[[e.revisionId]] = [[r.id]]')
             ->where(['sourceId' => $entry->id])
             ->andWhere(['>=', 'e.dateCreated', $result['dateCreated']])
             ->scalar();
@@ -248,13 +239,13 @@ class ConvertEntryRevisions extends BaseJob
         if ($lowestNum) {
             $diff = ($result['num'] - $lowestNum) + 1;
             if ($diff) {
-                $this->db->createCommand()->update(Table::REVISIONS, [
-                    'num' => new Expression('[[num]]' . ($diff > 0 ? '+' : '-') . abs($diff))
+                Db::update(Table::REVISIONS, [
+                    'num' => new Expression('[[num]]' . ($diff > 0 ? '+' : '-') . abs($diff)),
                 ], [
                     'and',
                     ['sourceId' => $entry->id],
                     ['>=', 'num', $lowestNum],
-                ], [], false)->execute();
+                ], [], false);
             }
         }
 

@@ -10,8 +10,12 @@ namespace craftunit\helpers;
 use Codeception\Test\Unit;
 use Craft;
 use craft\errors\GqlException;
+use craft\gql\arguments\elements\Asset as AssetArguments;
+use craft\gql\interfaces\elements\Asset as AssetInterface;
+use craft\gql\resolvers\elements\Asset as AssetResolver;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\GqlSchema;
+use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Definition\UnionType;
 
 class GqlHelperTest extends Unit
@@ -109,7 +113,9 @@ class GqlHelperTest extends Unit
      */
     public function testUnionTypes()
     {
-        $unionType = GqlHelper::getUnionType('someUnion', ['one', 'two'], function () {return 'one';});
+        $unionType = GqlHelper::getUnionType('someUnion', ['one', 'two'], function() {
+            return 'one';
+        });
         $this->assertInstanceOf(UnionType::class, $unionType);
     }
 
@@ -122,6 +128,98 @@ class GqlHelperTest extends Unit
 
         // Not very realistic to test *everything* without duplicating logic in the helper method
         $this->assertNotEmpty($schema->scope);
+    }
+
+    /**
+     * Test if entity actions are extracted correctly
+     *
+     * @dataProvider actionExtractionDataProvider
+     */
+    public function testEntityActionExtraction($scope, $entity, $result)
+    {
+        $this->_setSchemaWithPermissions($scope);
+
+        $this->assertEquals($result, GqlHelper::extractEntityAllowedActions($entity));
+    }
+
+    /**
+     * Test GQL types correctly wrapped in NonNull type.
+     * @param $input
+     * @param $expected
+     * @dataProvider wrapInNonNullProvider
+     */
+    public function testWrapInNonNull($input, $expected)
+    {
+        $this->assertEquals($expected, GqlHelper::wrapInNonNull($input));
+    }
+
+    public function wrapInNonNullProvider()
+    {
+        $typeDef = [
+            'name' => 'mock',
+            'type' => Type::listOf(Type::string()),
+            'args' => []
+        ];
+
+        $nonNulledTypeDef = [
+            'name' => 'mock',
+            'type' => Type::nonNull(Type::listOf(Type::string())),
+            'args' => []
+        ];
+
+        return [
+            [Type::boolean(), Type::nonNull(Type::boolean())],
+            [Type::string(),Type::nonNull(Type::string())],
+            [Type::id(),Type::nonNull(Type::id())],
+            [Type::nonNull(Type::int()),Type::nonNull(Type::int())],
+            [$typeDef, $nonNulledTypeDef],
+        ];
+    }
+
+
+    public function actionExtractionDataProvider()
+    {
+        return [
+            [
+                [
+                    'entity-one:read',
+                    'entity-two:read',
+                    'entity-two:write',
+                    'entity-two:observe',
+                ],
+                'entity-one',
+                ['read'],
+            ],
+            [
+                [
+                    'entity-one:read',
+                    'entity-two:read',
+                    'entity-two:write',
+                    'entity-two:observe',
+                ],
+                'entity-two',
+                ['read', 'write', 'observe'],
+            ],            [
+                [
+                    'entity-one:read',
+                    'entity-two:read',
+                    'entity-two:read',
+                    'entity-two:observe',
+                ],
+                'entity-two',
+                ['read', 'observe'],
+            ],
+            [
+                [
+                    'entity-one:read',
+                    'entity-two:read',
+                    'entity-two:write',
+                    'entity-two:observe',
+                ],
+                'entity-three',
+                [],
+            ],
+        ];
     }
 
     public function schemaPermissionDataProvider()
@@ -189,7 +287,7 @@ class GqlHelperTest extends Unit
                 [
                     'usergroups' => ['allUsers', 'otherGroup'],
                 ]
-            ],[
+            ], [
                 [
                     'usergroups.allUsers:read',
                     'usergroups.otherGroup:write',

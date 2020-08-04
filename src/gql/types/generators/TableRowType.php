@@ -9,12 +9,10 @@ namespace craft\gql\types\generators;
 
 use craft\fields\Table as TableField;
 use craft\gql\base\GeneratorInterface;
+use craft\gql\base\ObjectType;
+use craft\gql\base\SingleGeneratorInterface;
 use craft\gql\GqlEntityRegistry;
-use craft\gql\TypeManager;
-use craft\gql\types\DateTime;
-use craft\gql\types\Number;
 use craft\gql\types\TableRow;
-use GraphQL\Type\Definition\Type;
 
 /**
  * Class TableRowType
@@ -22,49 +20,14 @@ use GraphQL\Type\Definition\Type;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0
  */
-class TableRowType implements GeneratorInterface
+class TableRowType implements GeneratorInterface, SingleGeneratorInterface
 {
     /**
      * @inheritdoc
      */
     public static function generateTypes($context = null): array
     {
-        /** @var TableField $context */
-        $typeName = self::getName($context);
-
-        $contentFields = [];
-
-        foreach ($context->columns as $columnKey => $columnDefinition) {
-            switch ($columnDefinition['type']){
-                case 'date':
-                case 'time':
-                    $cellType = DateTime::getType();
-                    break;
-                case 'number':
-                    $cellType = Number::getType();
-                    break;
-                case 'lightswitch':
-                    $cellType = Type::boolean();
-                    break;
-                default:
-                    $cellType = Type::string();
-            }
-
-            $contentFields[$columnKey] = $cellType;
-            $contentFields[$columnDefinition['handle']] = $cellType;
-        }
-
-        $contentFields = TypeManager::prepareFieldDefinitions($contentFields, $typeName);
-
-        // Generate a type for each entry type
-        $tableRowType = GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new TableRow([
-            'name' => $typeName,
-            'fields' => function() use ($contentFields) {
-                return $contentFields;
-            }
-        ]));
-
-        return [$tableRowType];
+        return [static::generateType($context)];
     }
 
     /**
@@ -74,5 +37,22 @@ class TableRowType implements GeneratorInterface
     {
         /** @var TableField $context */
         return $context->handle . '_TableRow';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function generateType($context): ObjectType
+    {
+        /** @var TableField $context */
+        $typeName = self::getName($context);
+        $contentFields = TableRow::prepareRowFieldDefinition($context->columns, $typeName);
+
+        return GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new TableRow([
+            'name' => $typeName,
+            'fields' => function() use ($contentFields) {
+                return $contentFields;
+            }
+        ]));
     }
 }

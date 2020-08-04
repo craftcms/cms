@@ -7,6 +7,7 @@
 
 namespace craft\behaviors;
 
+use Craft;
 use craft\web\Session;
 use craft\web\View;
 use yii\base\Behavior;
@@ -54,7 +55,11 @@ class SessionBehavior extends Behavior
      */
     public function setNotice(string $message)
     {
-        $this->owner->setFlash('notice', $message);
+        if (Craft::$app->getRequest()->getIsCpRequest()) {
+            $this->owner->setFlash('cp-notice', $message);
+        } else {
+            $this->owner->setFlash('notice', $message);
+        }
     }
 
     /**
@@ -68,7 +73,11 @@ class SessionBehavior extends Behavior
      */
     public function setError(string $message)
     {
-        $this->owner->setFlash('error', $message);
+        if (Craft::$app->getRequest()->getIsCpRequest()) {
+            $this->owner->setFlash('cp-error', $message);
+        } else {
+            $this->owner->setFlash('error', $message);
+        }
     }
 
     /**

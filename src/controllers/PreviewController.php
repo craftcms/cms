@@ -8,7 +8,6 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\web\Controller;
 use yii\web\BadRequestHttpException;
@@ -53,12 +52,11 @@ class PreviewController extends Controller
      */
     public function actionCreateToken(): Response
     {
-        $request = Craft::$app->getRequest();
-        $elementType = $request->getRequiredBodyParam('elementType');
-        $sourceId = $request->getRequiredBodyParam('sourceId');
-        $siteId = $request->getRequiredBodyParam('siteId');
-        $draftId = $request->getBodyParam('draftId');
-        $revisionId = $request->getBodyParam('revisionId');
+        $elementType = $this->request->getRequiredBodyParam('elementType');
+        $sourceId = $this->request->getRequiredBodyParam('sourceId');
+        $siteId = $this->request->getRequiredBodyParam('siteId');
+        $draftId = $this->request->getBodyParam('draftId');
+        $revisionId = $this->request->getBodyParam('revisionId');
 
         if ($draftId) {
             $this->requireAuthorization('previewDraft:' . $draftId);
@@ -121,22 +119,18 @@ class PreviewController extends Controller
         $element = $query->one();
 
         if ($element) {
-            /** @var Element $element */
             $element->previewing = true;
             Craft::$app->getElements()->setPlaceholderElement($element);
         }
 
         // Prevent the browser from caching the response
-        Craft::$app->getResponse()->getHeaders()
-            ->set('Cache-Control', 'no-cache, no-store, must-revalidate')
-            ->set('Pragma', 'no-cache')
-            ->set('Expires', '0');
+        $this->response->setNoCacheHeaders();
 
         // Re-route the request, this time ignoring the token
         $urlManager = Craft::$app->getUrlManager();
         $urlManager->checkToken = false;
         $urlManager->setRouteParams([], false);
         $urlManager->setMatchedElement(null);
-        return Craft::$app->handleRequest(Craft::$app->getRequest(), true);
+        return Craft::$app->handleRequest($this->request, true);
     }
 }

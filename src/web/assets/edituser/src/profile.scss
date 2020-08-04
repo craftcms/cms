@@ -1,0 +1,63 @@
+@charset "UTF-8";
+@import "../../../../../node_modules/craftcms-sass/mixins";
+
+div.user-photo {
+  height: 100px;
+}
+
+div.user-photo #current-photo {
+  position: relative;
+  @include floatleft;
+}
+
+div.user-photo #current-photo:after {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: block;
+  content: '.';
+  font-size: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: $largeBorderRadius;
+  box-shadow: inset 0 0 0 1px $hairlineColor;
+}
+
+div.user-photo #current-photo img {
+  max-width: 100px;
+  max-height: 100px;
+  display: block;
+  border-radius: $largeBorderRadius;
+}
+
+div.user-photo div.user-photo-controls {
+  @include margin-left(15px);
+  @include floatleft;
+  position: relative;
+}
+
+div.user-photo-controls .progress-shade {
+  background: transparentize($white, 0.2);
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  @include left(0);
+  display: none;
+}
+
+div.user-photo-controls.uploading .progress-shade {
+  display: block;
+}
+
+div.user-photo div.user-photo-controls .upload-photo ul {
+  display: none;
+}
+
+div.user-photo div.user-photo-controls .QqUploader-uploader {
+  display: inline-block;
+}
+
+div.profile-image-modal {
+  width: 500px;
+}

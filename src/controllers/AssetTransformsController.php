@@ -30,10 +30,10 @@ class AssetTransformsController extends Controller
      */
     public function init()
     {
+        parent::init();
+
         // All asset transform actions require an admin
         $this->requireAdmin();
-
-        parent::init();
     }
 
     /**
@@ -98,17 +98,16 @@ class AssetTransformsController extends Controller
         $this->requirePostRequest();
 
         $transform = new AssetTransform();
-        $request = Craft::$app->getRequest();
-        $transform->id = $request->getBodyParam('transformId');
-        $transform->name = $request->getBodyParam('name');
-        $transform->handle = $request->getBodyParam('handle');
-        $transform->width = $request->getBodyParam('width');
-        $transform->height = $request->getBodyParam('height');
-        $transform->mode = $request->getBodyParam('mode');
-        $transform->position = $request->getBodyParam('position');
-        $transform->quality = $request->getBodyParam('quality');
-        $transform->interlace = $request->getBodyParam('interlace');
-        $transform->format = $request->getBodyParam('format');
+        $transform->id = $this->request->getBodyParam('transformId');
+        $transform->name = $this->request->getBodyParam('name');
+        $transform->handle = $this->request->getBodyParam('handle');
+        $transform->width = $this->request->getBodyParam('width');
+        $transform->height = $this->request->getBodyParam('height');
+        $transform->mode = $this->request->getBodyParam('mode');
+        $transform->position = $this->request->getBodyParam('position');
+        $transform->quality = $this->request->getBodyParam('quality');
+        $transform->interlace = $this->request->getBodyParam('interlace');
+        $transform->format = $this->request->getBodyParam('format');
 
         if (empty($transform->format)) {
             $transform->format = null;
@@ -117,14 +116,13 @@ class AssetTransformsController extends Controller
         // TODO: This validation should be handled on the transform object
         $errors = false;
 
-        $session = Craft::$app->getSession();
         if (empty($transform->width) && empty($transform->height)) {
-            $session->setError(Craft::t('app', 'You must set at least one of the dimensions.'));
+            $this->setFailFlash(Craft::t('app', 'You must set at least one of the dimensions.'));
             $errors = true;
         }
 
         if (!empty($transform->quality) && (!is_numeric($transform->quality) || $transform->quality > 100 || $transform->quality < 1)) {
-            $session->setError(Craft::t('app', 'Quality must be a number between 1 and 100 (included).'));
+            $this->setFailFlash(Craft::t('app', 'Quality must be a number between 1 and 100 (included).'));
             $errors = true;
         }
 
@@ -133,7 +131,7 @@ class AssetTransformsController extends Controller
         }
 
         if (!empty($transform->format) && !in_array($transform->format, Image::webSafeFormats(), true)) {
-            $session->setError(Craft::t('app', 'That is not an allowed format.'));
+            $this->setFailFlash(Craft::t('app', 'That is not an allowed format.'));
             $errors = true;
         }
 
@@ -152,8 +150,7 @@ class AssetTransformsController extends Controller
             return null;
         }
 
-        $session->setNotice(Craft::t('app', 'Transform saved.'));
-
+        $this->setSuccessFlash(Craft::t('app', 'Transform saved.'));
         return $this->redirectToPostedUrl($transform);
     }
 
@@ -167,7 +164,7 @@ class AssetTransformsController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $transformId = Craft::$app->getRequest()->getRequiredBodyParam('id');
+        $transformId = $this->request->getRequiredBodyParam('id');
 
         Craft::$app->getAssetTransforms()->deleteTransformById($transformId);
 

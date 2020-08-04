@@ -8,7 +8,7 @@
 namespace craft\test\fixtures\elements;
 
 use Craft;
-use craft\base\Element;
+use craft\base\ElementInterface;
 use craft\elements\Asset;
 use craft\helpers\FileHelper;
 use craft\records\VolumeFolder;
@@ -73,8 +73,8 @@ abstract class AssetFixture extends ElementFixture
             ])->id;
         }
 
-        $this->sourceAssetPath = Craft::$app->getPath()->getTestsPath().'/_craft/assets/';
-        $this->destinationAssetPath = Craft::$app->getPath()->getStoragePath().'/runtime/temp/';
+        $this->sourceAssetPath = Craft::$app->getPath()->getTestsPath() . '/_craft/assets/';
+        $this->destinationAssetPath = Craft::$app->getPath()->getStoragePath() . '/runtime/temp/';
 
         if (!is_dir($this->destinationAssetPath)) {
             FileHelper::createDirectory($this->destinationAssetPath);
@@ -91,7 +91,7 @@ abstract class AssetFixture extends ElementFixture
      * Get asset model.
      *
      * @param array $data
-     * @return Element
+     * @return ElementInterface
      */
     public function getElement(array $data = null)
     {

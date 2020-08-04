@@ -39,14 +39,14 @@ class RecentEntries extends Widget
     }
 
     /**
+     * @var int|null The site ID that the widget should pull entries from
+     */
+    public $siteId;
+
+    /**
      * @var string|int[] The section IDs that the widget should pull entries from
      */
     public $section = '*';
-
-    /**
-     * @var string The site ID that the widget should pull entries from
-     */
-    public $siteId;
 
     /**
      * @var int The total number of entries that the widget should show

@@ -1,5 +1,16 @@
 {% import "_includes/forms" as forms %}
 
+{{ forms.selectField({
+    label: 'UI Mode'|t('app'),
+    instructions: 'How the field should be presented in the control panel'|t('app'),
+    id: 'ui-mode',
+    name: 'uiMode',
+    options: [
+        {label: 'Normal'|t('app'), value: 'normal'},
+        {label: 'Enlarged'|t('app'), value: 'enlarged'},
+    ],
+    value: field.uiMode,
+}) }}
 
 {{ forms.textField({
     label: "Placeholder Text"|t('app'),
@@ -38,20 +49,20 @@
     {% endblock %}
 {% endembed %}
 
+<fieldset>
+    {{ forms.checkboxField({
+        label: "Use a monospaced font"|t('app'),
+        name: 'code',
+        checked: field.code,
+    }) }}
 
-{{ forms.checkboxField({
-    label: "Use a monospaced font"|t('app'),
-    name: 'code',
-    checked: field.code,
-}) }}
-
-{{ forms.checkboxField({
-    label: "Allow line breaks"|t('app'),
-    name: 'multiline',
-    checked: field.multiline,
-    toggle: 'initialRowsContainer'
-}) }}
-
+    {{ forms.checkboxField({
+        label: "Allow line breaks"|t('app'),
+        name: 'multiline',
+        checked: field.multiline,
+        toggle: 'initialRowsContainer'
+    }) }}
+</fieldset>
 
 <div id="initialRowsContainer" class="nested-fields{% if not field.multiline %} hidden{% endif %}">
     {{ forms.textField({

@@ -14,6 +14,7 @@ use yii\base\Event;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.4.0
+ * @deprecated in 3.5.0. Use [[RegisterGqlSchemaComponentsEvent]] instead.
  */
 class RegisterGqlPermissionsEvent extends Event
 {

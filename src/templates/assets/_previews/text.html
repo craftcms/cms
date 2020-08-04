@@ -1,6 +1,7 @@
 <div class="highlight {{ asset.kind }}">
     <pre><code class="language-{{ language }}">{{ contents|raw }}</code></pre>
 </div>
+{% do view.registerAssetBundle("craft\\web\\assets\\prismjs\\PrismJsAsset") %}
 {% js %}
 var instance = Craft.PreviewFileModal.openInstance;
 var $highlight = instance.$container.find('.highlight');

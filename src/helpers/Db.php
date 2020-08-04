@@ -15,6 +15,7 @@ use craft\db\Query;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\NotSupportedException;
+use yii\db\Exception as DbException;
 use yii\db\Schema;
 
 /**
@@ -233,7 +234,7 @@ class Db
     public static function getTextualColumnStorageCapacity(string $columnType, Connection $db = null)
     {
         if ($db === null) {
-            $db = Craft::$app->getDb();
+            $db = self::db();
         }
 
         $shortColumnType = self::parseColumnType($columnType);
@@ -285,7 +286,7 @@ class Db
     public static function getTextualColumnTypeByContentLength(int $contentLength, Connection $db = null): string
     {
         if ($db === null) {
-            $db = Craft::$app->getDb();
+            $db = self::db();
         }
 
         if ($db->getIsMysql()) {
@@ -432,7 +433,7 @@ class Db
      * `'='` will be assumed.
      *
      * Values can also be set to either `':empty:'` or `':notempty:'` if you want to search for empty or non-empty
-     * database values. (An “empty” value is either NULL or an empty string of text).
+     * database values. (An “empty” value is either `NULL` or an empty string of text).
      *
      * @param string $column The database column that the param is targeting.
      * @param string|int|array $value The param value(s).
@@ -473,7 +474,7 @@ class Db
         }
 
         $condition = [$glue];
-        $isMysql = Craft::$app->getDb()->getIsMysql();
+        $isMysql = self::db()->getIsMysql();
 
         // Only PostgreSQL supports case-sensitive strings
         if ($isMysql) {
@@ -674,7 +675,7 @@ class Db
     public static function isTypeSupported(string $type, Connection $db = null): bool
     {
         if ($db === null) {
-            $db = Craft::$app->getDb();
+            $db = self::db();
         }
 
         /** @var \craft\db\mysql\Schema|\craft\db\pgsql\Schema $schema */
@@ -684,21 +685,181 @@ class Db
     }
 
     /**
-     * Executes a DELETE command, but only if there are any rows to delete.
+     * Creates and executes an `INSERT` SQL statement.
      *
-     * @param string $table the table where the data will be deleted from.
-     * @param string|array $condition the condition that will be put in the WHERE part. Please
+     * The method will properly escape the column names, and bind the values to be inserted.
+     *
+     * @param string $table The table that new rows will be inserted into
+     * @param array $columns The column data (name=>value) to be inserted into the table
+     * @param bool $includeAuditColumns Whether to include the data for the audit columns
+     * (`dateCreated`, `dateUpdated`, and `uid`)
+     * @param Connection|null $db The database connection to use
+     * @return int The number of rows affected by the execution
+     * @throws DbException if execution failed
+     * @since 3.5.0
+     */
+    public static function insert(string $table, array $columns, bool $includeAuditColumns = true, Connection $db = null): int
+    {
+        if ($db === null) {
+            $db = self::db();
+        }
+
+        return $db->createCommand()
+            ->insert($table, $columns, $includeAuditColumns)
+            ->execute();
+    }
+
+    /**
+     * Creates and executes a batch `INSERT` SQL statement.
+     *
+     * The method will properly escape the column names, and bind the values to be inserted.
+     *
+     * @param string $table The table that new rows will be inserted into
+     * @param array $columns The column names
+     * @param array $rows The rows to be batch inserted into the table
+     * @param bool $includeAuditColumns Whether `dateCreated`, `dateUpdated`, and `uid` values should be added to $columns
+     * @param Connection|null $db The database connection to use
+     * @return int The number of rows affected by the execution
+     * @throws DbException if execution failed
+     * @since 3.5.0
+     */
+    public static function batchInsert(string $table, array $columns, array $rows, bool $includeAuditColumns = true, Connection $db = null): int
+    {
+        if ($db === null) {
+            $db = self::db();
+        }
+
+        return $db->createCommand()
+            ->batchInsert($table, $columns, $rows, $includeAuditColumns)
+            ->execute();
+    }
+
+    /**
+     * Creates and executes a command to insert rows into a database table if
+     * they do not already exist (matching unique constraints),
+     * or update them if they do.
+     *
+     * The method will properly escape the column names, and bind the values to be inserted.
+     *
+     * @param string $table the table that new rows will be inserted into/updated in
+     * @param array|Query $insertColumns the column data (name => value) to be inserted into the table or instance
+     * of [[Query]] to perform `INSERT INTO ... SELECT` SQL statement
+     * @param array|bool $updateColumns the column data (name => value) to be updated if they already exist
+     *
+     * - If `true` is passed, the column data will be updated to match the insert column data.
+     * - If `false` is passed, no update will be performed if the column data already exists.
+     *
+     * @param array $params the parameters to be bound to the command
+     * @param bool $includeAuditColumns Whether `dateCreated`, `dateUpdated`, and `uid` values should be added to $columns
+     * @param Connection|null $db The database connection to use
+     * @return int The number of rows affected by the execution
+     * @throws DbException if execution failed
+     * @since 3.5.0
+     */
+    public static function upsert(string $table, $insertColumns, $updateColumns = true, array $params = [], bool $includeAuditColumns = true, Connection $db = null): int
+    {
+        if ($db === null) {
+            $db = self::db();
+        }
+
+        return $db->createCommand()
+            ->upsert($table, $insertColumns, $updateColumns, $params, $includeAuditColumns)
+            ->execute();
+    }
+
+    /**
+     * Creates and executes an `UPDATE` SQL statement.
+     *
+     * The method will properly escape the column names and bind the values to be updated.
+     *
+     * @param string $table The table to be updated
+     * @param array $columns The column data (name => value) to be updated
+     * @param string|array $condition The condition that will be put in the `WHERE` part. Please
+     * refer to [[Query::where()]] on how to specify condition
+     * @param array $params The parameters to be bound to the command
+     * @param bool $includeAuditColumns Whether the `dateUpdated` value should be added to $columns
+     * @param Connection|null $db The database connection to use
+     * @return int The number of rows affected by the execution
+     * @throws DbException if execution failed
+     * @since 3.5.0
+     */
+    public static function update(string $table, array $columns, $condition = '', array $params = [], bool $includeAuditColumns = true, Connection $db = null): int
+    {
+        if ($db === null) {
+            $db = self::db();
+        }
+
+        return $db->createCommand()
+            ->update($table, $columns, $condition, $params, $includeAuditColumns)
+            ->execute();
+    }
+
+    /**
+     * Creates and executes a SQL statement for replacing some text with other text in a given table column.
+     *
+     * @param string $table The table to be updated
+     * @param string $column The column to be searched
+     * @param string $find The text to be searched for
+     * @param string $replace The replacement text
+     * @param string|array $condition The condition that will be put in the `WHERE` part. Please
+     * refer to [[Query::where()]] on how to specify condition.
+     * @param array $params The parameters to be bound to the command
+     * @param Connection|null $db The database connection to use
+     * @return int The number of rows affected by the execution
+     * @throws DbException if execution failed
+     * @since 3.5.0
+     */
+    public static function replace(string $table, string $column, string $find, string $replace, $condition = '', array $params = [], Connection $db = null): int
+    {
+        if ($db === null) {
+            $db = self::db();
+        }
+
+        return $db->createCommand()
+            ->replace($table, $column, $find, $replace, $condition, $params)
+            ->execute();
+    }
+
+    /**
+     * Creates and executes a `DELETE` SQL statement.
+     *
+     * @param string $table the table where the data will be deleted from
+     * @param array|string $condition the conditions that will be put in the `WHERE` part. Please
+     * refer to [[Query::where()]] on how to specify conditions.
+     * @param array $params the parameters to be bound to the query.
+     * @param Connection|null $db The database connection to use
+     * @return int The number of rows affected by the execution
+     * @throws DbException if execution failed
+     * @since 3.5.0
+     */
+    public static function delete(string $table, $condition = '', array $params = [], Connection $db = null)
+    {
+        if ($db === null) {
+            $db = self::db();
+        }
+
+        return $db->createCommand()
+            ->delete($table, $condition, $params)
+            ->execute();
+    }
+
+    /**
+     * Creates and executes a `DELETE` SQL statement, but only if there are any rows to delete, avoiding deadlock issues
+     * when deleting data from large tables.
+     *
+     * @param string $table the table where the data will be deleted from
+     * @param string|array $condition the condition that will be put in the `WHERE` part. Please
      * refer to [[Query::where()]] on how to specify condition.
      * @param array $params the parameters to be bound to the command
-     * @param Connection|null $db
-     * @return int number of rows affected by the execution.
-     * @throws \yii\db\Exception execution failed
+     * @param Connection|null $db The database connection to use
+     * @return int number of rows affected by the execution
+     * @throws DbException execution failed
      * @since 3.0.12
      */
     public static function deleteIfExists(string $table, $condition = '', array $params = [], Connection $db = null): int
     {
         if ($db === null) {
-            $db = Craft::$app->getDb();
+            $db = self::db();
         }
 
         $exists = (new Query())
@@ -706,13 +867,7 @@ class Db
             ->where($condition, $params)
             ->exists($db);
 
-        if (!$exists) {
-            return 0;
-        }
-
-        return $db->createCommand()
-            ->delete($table, $condition, $params)
-            ->execute();
+        return $exists ? static::delete($table, $condition, $params, $db) : 0;
     }
 
     /**
@@ -885,6 +1040,21 @@ class Db
 
         return $config;
     }
+
+    /**
+     * Returns the main application's DB connection.
+     *
+     * @return Connection
+     */
+    private static function db(): Connection
+    {
+        return self::$_db ?? (self::$_db = Craft::$app->getDb());
+    }
+
+    /**
+     * @var Connection|null;
+     */
+    private static $_db;
 
     /**
      * Converts a given param value to an array.

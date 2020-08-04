@@ -9,33 +9,18 @@ namespace craft\behaviors;
 
 use Craft;
 use craft\base\Element;
-use craft\base\ElementInterface;
 use craft\db\Table;
-use craft\elements\User;
-use yii\base\Behavior;
+use craft\helpers\Db;
 
 /**
  * RevisionBehavior is applied to element revisions.
  *
- * @property ElementInterface|Element $owner
- * @property-read ElementInterface|Element $source
- * @property-read User|null $creator
- * @property-read string $revisionLabel
+ * @property-read string $revisionLabel The revision label
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.2.0
  */
-class RevisionBehavior extends Behavior
+class RevisionBehavior extends BaseRevisionBehavior
 {
-    /**
-     * @var int The source element’s ID
-     */
-    public $sourceId;
-
-    /**
-     * @var int|null The revision creator’s ID
-     */
-    public $creatorId;
-
     /**
      * @var int The revision number
      */
@@ -61,42 +46,9 @@ class RevisionBehavior extends Behavior
      */
     public function handleDelete()
     {
-        Craft::$app->getDb()->createCommand()
-            ->delete(Table::REVISIONS, ['id' => $this->owner->revisionId])
-            ->execute();
-    }
-
-    /**
-     * Returns the revision’s source element.
-     *
-     * @return ElementInterface
-     * @deprecated in 3.2.9. Use [[\craft\helpers\ElementHelper::sourceElement()]] instead.
-     */
-    public function getSource(): ElementInterface
-    {
-        $owner = $this->owner;
-        return $owner::find()
-            ->id($this->sourceId)
-            ->siteId($this->owner->siteId)
-            ->anyStatus()
-            ->one();
-    }
-
-    /**
-     * Returns the revision’s creator.
-     *
-     * @return User|null
-     */
-    public function getCreator()
-    {
-        if (!$this->creatorId) {
-            return null;
-        }
-
-        return User::find()
-            ->id($this->creatorId)
-            ->anyStatus()
-            ->one();
+        Db::delete(Table::REVISIONS, [
+            'id' => $this->owner->revisionId,
+        ]);
     }
 
     /**

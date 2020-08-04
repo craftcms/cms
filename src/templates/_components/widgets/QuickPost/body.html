@@ -1,15 +1,18 @@
 {% import "_includes/forms" as forms %}
 {% set fieldNamespace = 'fields'~random() %}
-
+{% set fieldLayout = entryType.getFieldLayout() %}
 
 <form method="post" accept-charset="UTF-8">
     {{ hiddenInput('fieldsLocation', fieldNamespace) }}
     {{ csrfInput() }}
 
     {% if section.type != 'single' and entryType.hasTitleField %}
+        {% set titleField = fieldLayout.getField('title') %}
         {{ forms.textField({
-            label: entryType.titleLabel|t('app'),
-            id: 'title-'~random(),
+            label: titleField.label|t('site') ?: 'Title'|t('app'),
+            instructions: titleField.instructions|t('site'),
+            altLabel: tag('code', {text: 'title'}),
+            id: 'title',
             name: 'title',
             required: true,
             first: true
@@ -17,7 +20,7 @@
     {% endif %}
 
     {% namespace fieldNamespace %}
-        {% for field in entryType.getFieldLayout().getFields() %}
+        {% for field in fieldLayout.getFields() %}
             {% if field.required or field.id in widget.fields %}
                 {% include "_includes/field" with {
                     field: field,

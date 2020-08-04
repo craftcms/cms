@@ -240,7 +240,7 @@ class UrlHelper
         $request = Craft::$app->getRequest();
 
         if ($request->getIsCpRequest()) {
-            $path = Craft::$app->getConfig()->getGeneral()->cpTrigger . ($path ? '/' . $path : '');
+            $path = static::prependCpTrigger($path);
             $cpUrl = true;
         } else {
             $cpUrl = false;
@@ -270,7 +270,7 @@ class UrlHelper
         }
 
         $path = trim($path, '/');
-        $path = Craft::$app->getConfig()->getGeneral()->cpTrigger . ($path ? '/' . $path : '');
+        $path = static::prependCpTrigger($path);
 
         return self::_createUrl($path, $params, $scheme, true);
     }
@@ -337,12 +337,13 @@ class UrlHelper
      */
     public static function actionUrl(string $path = '', $params = null, string $scheme = null): string
     {
-        $path = Craft::$app->getConfig()->getGeneral()->actionTrigger . '/' . trim($path, '/');
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $path = $generalConfig->actionTrigger . '/' . trim($path, '/');
 
         $request = Craft::$app->getRequest();
 
         if ($request->getIsCpRequest()) {
-            $path = Craft::$app->getConfig()->getGeneral()->cpTrigger . ($path ? '/' . $path : '');
+            $path = static::prependCpTrigger($path);
             $cpUrl = true;
         } else {
             $cpUrl = false;
@@ -353,7 +354,7 @@ class UrlHelper
             $scheme = 'https';
         }
 
-        return self::_createUrl($path, $params, $scheme, $cpUrl, true, false);
+        return self::_createUrl($path, $params, $scheme, $cpUrl, (bool)$generalConfig->pathParam, false);
     }
 
     /**
@@ -541,6 +542,18 @@ class UrlHelper
         return $host;
     }
 
+    /**
+     * Prepends the CP trigger onto the given path.
+     *
+     * @param string $path
+     * @return string
+     * @since 3.5.0
+     */
+    public static function prependCpTrigger(string $path): string
+    {
+        return implode('/', array_filter([Craft::$app->getConfig()->getGeneral()->cpTrigger, $path]));
+    }
+
     // Deprecated Methods
     // -------------------------------------------------------------------------
 
@@ -554,7 +567,6 @@ class UrlHelper
      */
     public static function urlWithProtocol(string $url, string $scheme): string
     {
-        Craft::$app->getDeprecator()->log('UrlHelper::urlWithProtocol()', 'UrlHelper::urlWithProtocol() is deprecated. Use urlWithScheme() instead.');
         return static::urlWithScheme($url, $scheme);
     }
 
@@ -568,7 +580,6 @@ class UrlHelper
      */
     public static function getProtocolForTokenizedUrl(): string
     {
-        Craft::$app->getDeprecator()->log('UrlHelper::getProtocolForTokenizedUrl()', 'UrlHelper::getProtocolForTokenizedUrl() is deprecated. Use getSchemeForTokenizedUrl() instead.');
         return static::getSchemeForTokenizedUrl();
     }
 
@@ -639,7 +650,7 @@ class UrlHelper
         }
 
         // Put it all together
-        if (!$showScriptName || $generalConfig->usePathInfo) {
+        if (!$showScriptName || $generalConfig->usePathInfo || !$generalConfig->pathParam) {
             if ($path) {
                 $url = rtrim($baseUrl, '/') . '/' . trim($path, '/');
 

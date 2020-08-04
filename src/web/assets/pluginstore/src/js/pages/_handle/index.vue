@@ -53,7 +53,7 @@
                                         <icon icon="book"></icon> {{ "Documentation"|t('app') }}
                                     </a>
                                 </li>
-                                
+
                                 <li><a :href="plugin.repository" rel="noopener" target="_blank"><icon icon="link" /> Repository</a></li>
                             </ul>
 
@@ -257,7 +257,7 @@
 
 <style lang="scss">
     @import "../../../sass/variables";
-    @import "../../../../../../../../lib/craftcms-sass/mixins";
+    @import "../../../../../../../../node_modules/craftcms-sass/mixins";
 
     .plugin-icon {
         @apply .relative;
@@ -271,7 +271,7 @@
             height: 32px;
             background: no-repeat 0 0 url(~@/images/invalid-icon.svg);
             background-size: 100% 100%;
-            
+
             &.valid {
                 background-image: url(~@/images/valid-icon.svg);
             }

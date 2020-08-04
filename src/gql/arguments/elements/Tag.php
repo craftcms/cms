@@ -39,7 +39,7 @@ class Tag extends ElementArguments
             ],
         ]);
     }
-    
+
     /**
      * @inheritdoc
      */

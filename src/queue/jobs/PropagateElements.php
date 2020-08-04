@@ -45,9 +45,6 @@ class PropagateElements extends BaseJob
      */
     public function execute($queue)
     {
-        // Let's save ourselves some trouble and just clear all the caches for this element class
-        Craft::$app->getTemplateCaches()->deleteCachesByElementType($this->elementType);
-
         /** @var ElementQuery $query */
         $query = $this->_query();
         $total = $query->count();

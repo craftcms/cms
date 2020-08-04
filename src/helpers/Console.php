@@ -119,4 +119,19 @@ class Console extends \yii\helpers\Console
 
         static::output();
     }
+
+    /**
+     * Ensures that the project.yaml file exists if it's supposed to.
+     *
+     * @since 3.5.0
+     */
+    public static function ensureProjectConfigFileExists()
+    {
+        if (!file_exists(Craft::$app->getPath()->getProjectConfigFilePath())) {
+            $projectConfig = Craft::$app->getProjectConfig();
+            static::stdout('Generating project config files from the loaded project config ... ', static::FG_YELLOW);
+            $projectConfig->regenerateYamlFromConfig();
+            static::stdout('done' . PHP_EOL, static::FG_GREEN);
+        }
+    }
 }

@@ -10,6 +10,7 @@ namespace craft\elements\db;
 use ArrayAccess;
 use Countable;
 use craft\base\ElementInterface;
+use craft\db\Query;
 use craft\models\Site;
 use craft\search\SearchQuery;
 use IteratorAggregate;
@@ -21,6 +22,7 @@ use yii\db\QueryInterface;
  * ElementQueryInterface defines the common interface to be implemented by element query classes.
  * The default implementation of this interface is provided by [[ElementQuery]].
  *
+ * @mixin Query
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
@@ -601,6 +603,15 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *
      * The current site will be used by default.
      *
+     * Possible values include:
+     *
+     * | Value | Fetches {elements}…
+     * | - | -
+     * | `1` | from the site with an ID of `1`.
+     * | `[1, 2]` | from a site with an ID of `1` or `2`.
+     * | `['not', 1, 2]` | not in a site with an ID of `1` or `2`.
+     * | `'*'` | from any site.
+     *
      * ---
      *
      * ```twig
@@ -715,13 +726,14 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *
      * @param bool $value The property value (defaults to true)
      * @return static self reference
+     * @deprecated in 3.5.0. [[status()]] should be used instead.
      */
     public function enabledForSite(bool $value = true);
 
     /**
      * Narrows the query results to only {elements} that are related to certain other elements.
      *
-     * See [Relations](https://docs.craftcms.com/v3/relations.html) for a full explanation of how to work with this parameter.
+     * See [Relations](https://craftcms.com/docs/3.x/relations.html) for a full explanation of how to work with this parameter.
      *
      * ---
      *
@@ -867,7 +879,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     /**
      * Narrows the query results to only {elements} that match a search query.
      *
-     * See [Searching](https://docs.craftcms.com/v3/searching.html) for a full explanation of how to work with this parameter.
+     * See [Searching](https://craftcms.com/docs/3.x/searching.html) for a full explanation of how to work with this parameter.
      *
      * ---
      *
@@ -907,7 +919,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     /**
      * Causes the query to return matching {elements} eager-loaded with related elements.
      *
-     * See [Eager-Loading Elements](https://docs.craftcms.com/v3/dev/eager-loading-elements.html) for a full explanation of how to work with this parameter.
+     * See [Eager-Loading Elements](https://craftcms.com/docs/3.x/dev/eager-loading-elements.html) for a full explanation of how to work with this parameter.
      *
      * ---
      *
@@ -1324,7 +1336,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function positionedAfter($value);
 
     /**
-     * Clears out the [[status()]] and [[enabledForSite()]] parameters.
+     * Removes element filters based on their statuses.
      *
      * ---
      *

@@ -57,6 +57,12 @@ class Composer extends Component
     public $maxBackups = 50;
 
     /**
+     * @var callable|null The previous error handler.
+     * @see run()
+     */
+    private $_errorHandler;
+
+    /**
      * @var string[]|null
      */
     private $_composerClasses;
@@ -165,7 +171,7 @@ class Composer extends Component
 
         try {
             // Run the installer
-            $status = $installer->run();
+            $status = $this->run($installer);
         } catch (\Throwable $exception) {
             $status = 1;
         }
@@ -189,7 +195,7 @@ class Composer extends Component
             $contents = "<?php\n\nreturn [\n";
             sort($this->_composerClasses);
             foreach ($this->_composerClasses as $class) {
-                $contents .= "    '{$class}',\n";
+                $contents .= "    $class::class,\n";
             }
             $contents .= "];\n";
             FileHelper::writeToFile(dirname(__DIR__) . '/config/composer-classes.php', $contents);
@@ -259,7 +265,7 @@ class Composer extends Component
                 ->setOptimizeAutoloader(true)
                 ->setClassMapAuthoritative($config->get('classmap-authoritative'));
 
-            $status = $installer->run();
+            $status = $this->run($installer);
         } catch (\Throwable $exception) {
             $status = 1;
         }
@@ -551,5 +557,41 @@ class Composer extends Component
                 ],
             ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
         }
+    }
+
+    /**
+     * @param Installer $installer
+     * @return int The response status
+     * @throws \Exception
+     * @since 3.5.0
+     */
+    protected function run(Installer $installer): int
+    {
+        $this->_errorHandler = set_error_handler([$this, 'handleError'], E_USER_DEPRECATED);
+        $status = $installer->run();
+        set_error_handler($this->_errorHandler);
+        return $status;
+    }
+
+    /**
+     * Handles an error triggered by Composer
+     *
+     * @param int $code the level of the error raised.
+     * @param string $message the error message.
+     * @param string $file the filename that the error was raised in.
+     * @param int $line the line number the error was raised at.
+     * @return bool whether the normal error handler continues.
+     * @since 3.5.0
+     */
+    public function handleError(int $code, string $message, string $file, int $line): bool
+    {
+        // Ignore deprecated errors
+        if ($code === E_USER_DEPRECATED) {
+            return true;
+        }
+        if ($this->_errorHandler !== null) {
+            return ($this->_errorHandler)($code, $message, $file, $line);
+        }
+        return false;
     }
 }

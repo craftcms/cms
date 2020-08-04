@@ -12,11 +12,13 @@ use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\elements\Entry;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use craft\models\EntryType;
 use craft\models\Section;
 use craft\models\UserGroup;
+use yii\base\InvalidConfigException;
 use yii\db\Connection;
 
 /**
@@ -30,9 +32,9 @@ use yii\db\Connection;
  * @method Entry|array|null nth(int $n, Connection $db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @doc-path entries.md
  * @supports-structure-params
  * @supports-site-params
- * @supports-enabledforsite-param
  * @supports-title-param
  * @supports-slug-param
  * @supports-status-param
@@ -199,7 +201,9 @@ class EntryQuery extends ElementQuery
     {
         // Default status
         if (!isset($config['status'])) {
-            $config['status'] = ['live'];
+            $config['status'] = [
+                Entry::STATUS_LIVE,
+            ];
         }
 
         parent::__construct($elementType, $config);
@@ -291,7 +295,7 @@ class EntryQuery extends ElementQuery
         }
 
         if ($value instanceof Section) {
-            $this->sectionId = $value->id;
+            $this->sectionId = [$value->id];
             if ($value->structureId) {
                 $this->structureId = $value->structureId;
             } else {
@@ -386,7 +390,7 @@ class EntryQuery extends ElementQuery
     public function type($value)
     {
         if ($value instanceof EntryType) {
-            $this->typeId = $value->id;
+            $this->typeId = [$value->id];
         } else if ($value !== null) {
             $this->typeId = (new Query())
                 ->select(['id'])
@@ -799,8 +803,9 @@ class EntryQuery extends ElementQuery
             $this->subQuery->andWhere(Db::parseDateParam('entries.expiryDate', $this->expiryDate));
         }
 
+        $this->_normalizeTypeId();
         if ($this->typeId) {
-            $this->subQuery->andWhere(Db::parseParam('entries.typeId', $this->typeId));
+            $this->subQuery->andWhere(['entries.typeId' => $this->typeId]);
         }
 
         if (Craft::$app->getEdition() === Craft::Pro) {
@@ -810,7 +815,7 @@ class EntryQuery extends ElementQuery
 
             if ($this->authorGroupId) {
                 $this->subQuery
-                    ->innerJoin('{{%usergroups_users}} usergroups_users', '[[usergroups_users.userId]] = [[entries.authorId]]')
+                    ->innerJoin(['usergroups_users' => Table::USERGROUPS_USERS], '[[usergroups_users.userId]] = [[entries.authorId]]')
                     ->andWhere(Db::parseParam('usergroups_users.groupId', $this->authorGroupId));
             }
         }
@@ -903,13 +908,32 @@ class EntryQuery extends ElementQuery
     }
 
     /**
+     * Normalizes the typeId param to an array of IDs or null
+     *
+     * @throws InvalidConfigException
+     */
+    private function _normalizeTypeId()
+    {
+        if (empty($this->typeId)) {
+            $this->typeId = null;
+        } else if (is_numeric($this->typeId)) {
+            $this->typeId = [$this->typeId];
+        } else if (!is_array($this->typeId) || !ArrayHelper::isNumeric($this->typeId)) {
+            throw new InvalidConfigException('Invalid typeId param value');
+        }
+    }
+
+    /**
      * Applies the 'sectionId' param to the query being prepared.
      */
     private function _applySectionIdParam()
     {
+        $this->_normalizeSectionId();
         if ($this->sectionId) {
+            $this->subQuery->andWhere(['entries.sectionId' => $this->sectionId]);
+
             // Should we set the structureId param?
-            if ($this->structureId === null && (!is_array($this->sectionId) || count($this->sectionId) === 1)) {
+            if ($this->structureId === null && count($this->sectionId) === 1) {
                 $structureId = (new Query())
                     ->select(['structureId'])
                     ->from([Table::SECTIONS])
@@ -918,8 +942,24 @@ class EntryQuery extends ElementQuery
                     ->scalar();
                 $this->structureId = (int)$structureId ?: false;
             }
+        }
+    }
 
-            $this->subQuery->andWhere(Db::parseParam('entries.sectionId', $this->sectionId));
+    /**
+     * Normalizes the groupId param to an array of IDs or null
+     */
+    private function _normalizeSectionId()
+    {
+        if (empty($this->sectionId)) {
+            $this->sectionId = null;
+        } else if (is_numeric($this->sectionId)) {
+            $this->sectionId = [$this->sectionId];
+        } else if (!is_array($this->sectionId) || !ArrayHelper::isNumeric($this->sectionId)) {
+            $this->sectionId = (new Query())
+                ->select(['id'])
+                ->from([Table::SECTIONS])
+                ->where(Db::parseParam('id', $this->sectionId))
+                ->column();
         }
     }
 
@@ -960,7 +1000,27 @@ class EntryQuery extends ElementQuery
         $this->subQuery->andWhere($condition);
 
         if ($joinSections) {
-            $this->subQuery->innerJoin('{{%sections}} sections', '[[sections.id]] = [[entries.sectionId]]');
+            $this->subQuery->innerJoin(['sections' => Table::SECTIONS], '[[sections.id]] = [[entries.sectionId]]');
         }
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.5.0
+     */
+    protected function cacheTags(): array
+    {
+        $tags = [];
+        // If the type is set, go with that instead of the section
+        if ($this->typeId) {
+            foreach ($this->typeId as $typeId) {
+                $tags[] = "entryType:$typeId";
+            }
+        } else if ($this->sectionId) {
+            foreach ($this->sectionId as $sectionId) {
+                $tags[] = "section:$sectionId";
+            }
+        }
+        return $tags;
     }
 }

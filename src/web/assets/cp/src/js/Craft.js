@@ -359,7 +359,7 @@ $.extend(Craft,
             if (baseUrl) {
                 url = baseUrl;
 
-                if (path) {
+                if (path && Craft.pathParam) {
                     // Does baseUrl already contain a path?
                     var pathMatch = url.match(new RegExp('[&\?]' + Craft.escapeRegex(Craft.pathParam) + '=[^&]+'));
                     if (pathMatch) {
@@ -379,7 +379,7 @@ $.extend(Craft,
             }
 
             if (!Craft.omitScriptNameInUrls && path) {
-                if (Craft.usePathInfo) {
+                if (Craft.usePathInfo || !Craft.pathParam) {
                     // Make sure that the script name is in the URL
                     if (url.search(Craft.scriptName) === -1) {
                         url = Craft.rtrim(url, '/') + '/' + Craft.scriptName;
@@ -666,8 +666,7 @@ $.extend(Craft,
                             ) {
                                 // The request didn't send headers. Go ahead and resolve the next request on the
                                 // header waitlist.
-                                let item = this._apiHeaderWaitlist.shift()
-                                item[0](this._apiHeaders);
+                                this._apiHeaderWaitlist.shift()[0](this._apiHeaders);
                             }
                         }
                     }).catch(reject);
@@ -1341,7 +1340,7 @@ $.extend(Craft,
 
             for (var i = 0; i < str.length; i++) {
                 char = str.charAt(i);
-                asciiStr += (charMap || Craft.asciiCharMap)[char] || char;
+                asciiStr += typeof (charMap || Craft.asciiCharMap)[char] === 'string' ? (charMap || Craft.asciiCharMap)[char] : char;
             }
 
             return asciiStr;
@@ -1615,6 +1614,67 @@ $.extend(Craft,
         },
 
         /**
+         * Removes a value from localStorage.
+         * @param key
+         */
+        removeLocalStorage: function(key) {
+            if (typeof localStorage !== 'undefined') {
+                localStorage.removeItem(`Craft-${Craft.systemUid}.${key}`);
+            }
+        },
+
+        /**
+         * Returns a cookie value, if it exists, otherwise returns `false`
+         * @return {(string|boolean)}
+         */
+        getCookie: function(name) {
+            // Adapted from https://developer.mozilla.org/en-US/docs/Web/API/Document/cookie
+            return document.cookie.replace(new RegExp(`(?:(?:^|.*;\\s*)Craft-${Craft.systemUid}:${name}\\s*\\=\\s*([^;]*).*$)|^.*$`), "$1");
+        },
+
+        /**
+         * Sets a cookie value.
+         * @param {string} name
+         * @param {string} value
+         * @param {Object} [options]
+         * @param {string} [options.path] The cookie path.
+         * @param {string} [options.domain] The cookie domain. Defaults to the `defaultCookieDomain` config setting.
+         * @param {number} [options.maxAge] The max age of the cookie (in seconds)
+         * @param {Date} [options.expires] The expiry date of the cookie. Defaults to none (session-based cookie).
+         * @param {boolean} [options.secure] Whether this is a secure cookie. Defaults to the `useSecureCookies`
+         * config setting.
+         * @param {string} [options.sameSite] The SameSite value (`lax` or `strict`). Defaults to the
+         * `sameSiteCookieValue` config setting.
+         */
+        setCookie: function(name, value, options) {
+            options = $.extend({}, this.defaultCookieOptions, options);
+            let cookie = `Craft-${Craft.systemUid}:${name}=${encodeURIComponent(value)}`;
+            if (options.path) {
+                cookie += `;path=${options.path}`;
+            }
+            if (options.domain) {
+                cookie += `;domain=${options.domain}`;
+            }
+            if (options.maxAge) {
+                cookie += `;max-age-in-seconds=${options.maxAge}`;
+            } else if (options.expires) {
+                cookie += `;expires=${options.expires.toUTCString()}`;
+            }
+            if (options.secure) {
+                cookie += ';secure';
+            }
+            document.cookie = cookie;
+        },
+
+        /**
+         * Removes a cookie
+         * @param {string} name
+         */
+        removeCookie: function(name) {
+            this.setCookie(name, '', new Date('1970-01-01T00:00:00'));
+        },
+
+        /**
          * Returns element information from it's HTML.
          *
          * @param element
@@ -1675,7 +1735,64 @@ $.extend(Craft,
                     elements: [$newImg[0]]
                 });
             }
-        }
+        },
+
+        /**
+         * Submits a form.
+         * @param {Object} $form
+         * @param {Object} [options]
+         * @param {string} [options.action] The `action` param value override
+         * @param {string} [options.redirect] The `redirect` param value override
+         * @param {string} [options.confirm] A confirmation message that should be shown to the user before submit
+         * @param {Object} [options.params] Additional params that should be added to the form, defined as name/value pairs
+         * @param {Object} [options.data] Additional data to be passed to the submit event
+         * @param {boolean} [options.retainScroll] Whether the scroll position should be stored and reapplied on the next page load
+         */
+        submitForm: function($form, options) {
+            if (typeof options === 'undefined') {
+                options = {};
+            }
+
+            if (options.confirm && !confirm(options.confirm)) {
+                return;
+            }
+
+            if (options.action) {
+                $('<input/>', {
+                    type: 'hidden',
+                    name: 'action',
+                    val: options.action,
+                })
+                    .appendTo($form);
+            }
+
+            if (options.redirect) {
+                $('<input/>', {
+                    type: 'hidden',
+                    name: 'redirect',
+                    val: options.redirect,
+                })
+                    .appendTo($form);
+            }
+
+            if (options.params) {
+                for (let name in options.params) {
+                    let value = options.params[name];
+                    $('<input/>', {
+                        type: 'hidden',
+                        name: name,
+                        val: value,
+                    })
+                        .appendTo($form);
+                }
+            }
+
+            if (options.retainScroll) {
+                this.setLocalStorage('scrollY', window.scrollY);
+            }
+
+            $form.trigger($.extend({type: 'submit'}, options.data));
+        },
     });
 
 
@@ -1851,42 +1968,24 @@ $.extend($.fn,
 
         formsubmit: function() {
             // Secondary form submit buttons
-            this.on('click', function(ev) {
-                var $btn = $(ev.currentTarget);
-
-                if ($btn.attr('data-confirm')) {
-                    if (!confirm($btn.attr('data-confirm'))) {
-                        return;
-                    }
-                }
-
-                var $anchor = $btn.data('menu') ? $btn.data('menu').$anchor : $btn;
-                var $form = $anchor.attr('data-form') ? $('#' + $anchor.attr('data-form')) : $anchor.closest('form');
-
-                if ($btn.data('action')) {
-                    $('<input type="hidden" name="action"/>')
-                        .val($btn.data('action'))
-                        .appendTo($form);
-                }
-
-                if ($btn.data('redirect')) {
-                    $('<input type="hidden" name="redirect"/>')
-                        .val($btn.data('redirect'))
-                        .appendTo($form);
-                }
-
+            return this.on('click', function(ev) {
+                let $btn = $(ev.currentTarget);
+                let params = $btn.data('params') || {};
                 if ($btn.data('param')) {
-                    $('<input type="hidden"/>')
-                        .attr({
-                            name: $btn.data('param'),
-                            value: $btn.data('value')
-                        })
-                        .appendTo($form);
+                    params[$btn.data('param')] = $btn.data('value');
                 }
 
-                $form.trigger({
-                    type: 'submit',
-                    customTrigger: $btn,
+                let $anchor = $btn.data('menu') ? $btn.data('menu').$anchor : $btn;
+                let $form = $anchor.attr('data-form') ? $('#' + $anchor.attr('data-form')) : $anchor.closest('form');
+
+                Craft.submitForm($form, {
+                    confirm: $btn.data('confirm'),
+                    action: $btn.data('action'),
+                    redirect: $btn.data('redirect'),
+                    params: params,
+                    data: {
+                        customTrigger: $btn,
+                    }
                 });
             });
         },
@@ -1942,10 +2041,6 @@ $.extend($.fn,
                 checkValue();
             });
         },
-
-        checkDatetimeValue: function() {
-
-        }
     });
 
 

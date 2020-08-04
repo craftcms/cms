@@ -8,9 +8,8 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\base\Field;
+use craft\base\FieldInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\errors\SiteNotFoundException;
@@ -107,7 +106,6 @@ class Search extends Component
     {
         // Acquire a lock for this element/site ID
         $mutex = Craft::$app->getMutex();
-        /** @var Element $element */
         $lockKey = "searchindex:{$element->id}:{$element->siteId}";
 
         if (!$mutex->acquire($lockKey)) {
@@ -116,7 +114,7 @@ class Search extends Component
         }
 
         // Figure out which fields to update, and which to ignore
-        /** @var Field[] $updateFields */
+        /** @var FieldInterface[] $updateFields */
         $updateFields = [];
         /** @var string[] $ignoreFieldIds */
         $ignoreFieldIds = [];
@@ -125,7 +123,6 @@ class Search extends Component
                 $fieldHandles = array_flip($fieldHandles);
             }
             foreach ($fieldLayout->getFields() as $field) {
-                /** @var Field $field */
                 if ($field->searchable) {
                     // Are we updating this field's keywords?
                     if ($fieldHandles === null || isset($fieldHandles[$field->handle])) {
@@ -146,9 +143,7 @@ class Search extends Component
         if (!empty($ignoreFieldIds)) {
             $deleteCondition = ['and', $deleteCondition, ['not', ['fieldId' => $ignoreFieldIds]]];
         }
-        Craft::$app->getDb()->createCommand()
-            ->delete(Table::SEARCHINDEX, $deleteCondition)
-            ->execute();
+        Db::delete(Table::SEARCHINDEX, $deleteCondition);
 
         // Update the element attributes' keywords
         $searchableAttributes = array_flip($element::searchableAttributes());
@@ -337,17 +332,20 @@ class Search extends Component
     public function deleteOrphanedIndexes()
     {
         $db = Craft::$app->getDb();
+        $searchIndexTable = Table::SEARCHINDEX;
+        $elementsTable = Table::ELEMENTS;
+
         if ($db->getIsMysql()) {
             $sql = <<<SQL
-DELETE s.* FROM {{%searchindex}} s
-LEFT JOIN {{%elements}} e ON e.id = s.elementId
+DELETE s.* FROM $searchIndexTable s
+LEFT JOIN $elementsTable e ON e.id = s.elementId
 WHERE e.id IS NULL
 SQL;
         } else {
             $sql = <<<SQL
-DELETE FROM {{%searchindex}} s
+DELETE FROM $searchIndexTable s
 WHERE NOT EXISTS (
-    SELECT * FROM {{%elements}}
+    SELECT * FROM $elementsTable
     WHERE id = s."elementId"
 )
 SQL;
@@ -406,9 +404,7 @@ SQL;
         }
 
         // Insert/update the row in searchindex
-        $db->createCommand()
-            ->insert(Table::SEARCHINDEX, $columns, false)
-            ->execute();
+        Db::insert(Table::SEARCHINDEX, $columns, false);
     }
 
     /**
@@ -734,7 +730,6 @@ SQL;
     private function _getFieldIdFromAttribute(string $attribute): int
     {
         // Get field id from service
-        /** @var Field $field */
         $field = Craft::$app->getFields()->getFieldByHandle($attribute);
 
         // Fallback to 0
