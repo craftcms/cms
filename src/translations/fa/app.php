@@ -1022,7 +1022,7 @@ return [
     'Replace files' => 'جایگزینی فایل ها',
     'Copy the activation URL' => 'کپی کردن آدرس اینترنتی فعالسازی',
     'Copy the reference tag' => 'کپی برچسب مرجع',
-    'Horizontal Rule' => 'قاعده افقی',
+    'Horizontal Rule' => 'خط افقی',
     'Delete categories from the “{categoryGroup}” category group' => 'حذف دسته بندی ها از گروه دسته بندی "{categoryGroup}"',
     'Applying new propagation method to elements' => 'اعمال روش انتشار جدید به عناصر',
     'Create entries with the “{entryType}” entry type' => 'ایجاد محتواها با نوع محتوای "{entryType}"',
