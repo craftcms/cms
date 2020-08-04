@@ -1,4 +1,5 @@
 # Do not export those files in the Composer archive (lighter dependency)
+.browserslistrc export-ignore
 .codecov.yml export-ignore
 .gitattributes export-ignore
 .github/ export-ignore
