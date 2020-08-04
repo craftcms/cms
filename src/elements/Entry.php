@@ -1242,6 +1242,9 @@ class Entry extends Element
                     ($creator = $behavior->getCreator()) === null
                 ) {
                     return '';
+                    if (!$creator = $this->getAuthor()) {
+                        return '';
+                    }
                 }
                 return Craft::$app->getView()->renderTemplate('_elements/element', ['element' => $creator]);
         }
