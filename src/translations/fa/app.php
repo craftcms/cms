@@ -914,7 +914,7 @@ return [
     'Delete them' => 'حذفشان کن',
     'Keep them' => 'نگهشان دار',
     'View tag group - {tagGroup}' => 'مشاهده گروه برچسب - {tagGroup}',
-    'Single' => 'مجزا',
+    'Single' => 'صفحه مجزا',
     'Channel' => 'کانال',
     'This week' => 'این هفته',
     'Edit files uploaded by other users' => 'ویرایش فایل‌های بارگذاری‌شده به وسیله کاربرها',
