@@ -5,7 +5,7 @@
 
 ### Fixed
 - Fixed errors in fixtures that prevented them from being used in tests.
-
+- Fixed an error where it was impossible to allow mutation only Single entry type when using GraphQL. ([#6554](https://github.com/craftcms/cms/issues/6554))
 
 ## 3.5.0 - 2020-08-04
 
