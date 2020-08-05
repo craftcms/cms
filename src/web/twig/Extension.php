@@ -52,7 +52,6 @@ use DateInterval;
 use DateTime;
 use DateTimeInterface;
 use DateTimeZone;
-use Twig\Environment;
 use Twig\Environment as TwigEnvironment;
 use Twig\Error\RuntimeError;
 use Twig\Extension\AbstractExtension;
@@ -335,11 +334,11 @@ class Extension extends AbstractExtension implements GlobalsInterface
     /**
      * Uppercases the first character of each word in a string.
      *
-     * @param Environment $env
+     * @param TwigEnvironment $env
      * @param string $string
      * @return string
      */
-    public function ucwordsFilter(Environment $env, string $string): string
+    public function ucwordsFilter(TwigEnvironment $env, string $string): string
     {
         Craft::$app->getDeprecator()->log('ucwords', 'The |ucwords filter has been deprecated. Use |title instead.');
         if (($charset = $env->getCharset()) !== null) {

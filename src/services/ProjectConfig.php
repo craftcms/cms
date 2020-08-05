@@ -1256,9 +1256,19 @@ class ProjectConfig extends Component
             return $this->_appliedConfig;
         }
 
+        $path = Craft::$app->getPath();
+
+        // If the file does not exist, just use the loaded config
+        if (
+            $this->getHadFileWriteIssues() ||
+            !file_exists($path->getProjectConfigFilePath())
+        ) {
+            return $this->_getLoadedConfig();
+        }
+
         $fileList = $this->_getConfigFileList();
         $generatedConfig = [];
-        $projectConfigPathLength = strlen(Craft::$app->getPath()->getProjectConfigPath(false));
+        $projectConfigPathLength = strlen($path->getProjectConfigPath(false));
 
         foreach ($fileList as $filePath) {
             $yamlConfig = Yaml::parse(file_get_contents($filePath));
