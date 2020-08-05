@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed errors in fixtures that prevented them from being used.
+
 ## 3.5.0 - 2020-08-04
 
 > {warning} Read through the [Upgrading to Craft 3.5](https://craftcms.com/knowledge-base/upgrading-to-craft-3-5) guide before updating.
