@@ -1,7 +1,7 @@
 
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.5.1 - 2020-08-05
 
 ### Fixed
 - Fixed an error where it wasn’t possible to create a GraphQL schema that had write-only access to a Single entry. ([#6554](https://github.com/craftcms/cms/issues/6554))
