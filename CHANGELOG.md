@@ -534,6 +534,7 @@
 - Fixed a bug where Craft was exiting with a 200 status code if the `license.key` file didn’t contain a valid license key, and wasn’t writable. ([#6475](https://github.com/craftcms/cms/issues/6475))
 - Fixed a PHP error that would occur when calling `craft\web\User::guestRequired()` if a user was logged in. ([#6497](https://github.com/craftcms/cms/issues/6497))
 - Fixed an error that occurred if a user photo was deleted and replaced in the same request. ([#6491](https://github.com/craftcms/cms/issues/6491))
+- Fixed a bug where `craft\web\Request::getFullPath()` wasn’t including any URI segments defined by the site’s base URL. ([#6546](https://github.com/craftcms/cms/issues/6546))
 
 ### Security
 - The `_includes/forms/checkbox.html`, `checkboxGroup.html`, and `checkboxSelect.html` control panel templates now HTML-encode checkbox labels by default, preventing possible XSS vulnerabilities. If HTML code was desired, it must be passed through the new `raw()` function first.
