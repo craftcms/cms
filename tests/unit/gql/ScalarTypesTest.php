@@ -10,6 +10,7 @@ namespace craftunit\gql;
 use Codeception\Test\Unit;
 use craft\errors\GqlException;
 use craft\gql\directives\FormatDateTime;
+use craft\gql\GqlEntityRegistry;
 use craft\gql\types\DateTime;
 use craft\gql\types\Number;
 use craft\gql\types\QueryArgument;
@@ -71,6 +72,8 @@ class ScalarTypesTest extends Unit
     {
         $now = new \DateTime();
 
+        GqlEntityRegistry::setPrefix('');
+
         return [
             [DateTime::getType(), 'testString', 'testString'],
             [DateTime::getType(), null, null],
@@ -95,6 +98,8 @@ class ScalarTypesTest extends Unit
 
     public function parsingValueDataProvider()
     {
+        GqlEntityRegistry::setPrefix('');
+
         return [
             [DateTime::getType(), $time = time(), (string)$time, false],
 
@@ -113,6 +118,8 @@ class ScalarTypesTest extends Unit
 
     public function parsingLiteralDataProvider()
     {
+        GqlEntityRegistry::setPrefix('');
+
         return [
             [DateTime::getType(), new StringValueNode(['value' => $time = time()]), (string)$time, false],
             [DateTime::getType(), new IntValueNode(['value' => 2]), null, GqlException::class],
