@@ -40,9 +40,10 @@ class GqlEntityRegistry
     }
 
     /**
-     * Get the type prefix.
+     * Returns the type prefix.
      *
      * @return string|null
+     * @since 3.6.0
      */
     public static function getPrefix()
     {
@@ -54,10 +55,10 @@ class GqlEntityRegistry
     }
 
     /**
-     * Set the type prefix.
+     * Sets the type prefix.
      *
      * @param string $prefix
-     * @return null
+     * @since 3.6.0
      */
     public static function setPrefix(string $prefix)
     {
