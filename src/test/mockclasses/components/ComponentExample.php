@@ -8,7 +8,6 @@
 namespace craft\test\mockclasses\components;
 
 use craft\base\Component;
-use craft\base\ComponentInterface;
 
 /**
  * Class ComponentExample.
