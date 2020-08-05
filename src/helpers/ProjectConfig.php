@@ -144,7 +144,7 @@ class ProjectConfig
     /**
      * Resets the static memoization variables.
      *
-     * @return void
+     * @return null
      */
     public static function reset()
     {

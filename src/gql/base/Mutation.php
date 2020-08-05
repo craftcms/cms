@@ -29,7 +29,7 @@ abstract class Mutation
      *
      * @param MutationResolver $resolver
      * @param array $contentFields
-     * @return void
+     * @return null
      */
     protected static function prepareResolver(MutationResolver $resolver, array $contentFields)
     {
