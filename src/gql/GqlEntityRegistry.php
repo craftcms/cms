@@ -36,7 +36,7 @@ class GqlEntityRegistry
      */
     public static function prefixTypeName(string $typeName): string
     {
-        return self::_getPrefix() . $typeName;
+        return self::getPrefix() . $typeName;
     }
 
     /**
@@ -44,13 +44,24 @@ class GqlEntityRegistry
      *
      * @return string|null
      */
-    private static function _getPrefix()
+    public static function getPrefix()
     {
         if (self::$_prefix === null) {
             self::$_prefix = Craft::$app->getConfig()->getGeneral()->gqlTypePrefix;
         }
 
         return self::$_prefix;
+    }
+
+    /**
+     * Set the type prefix.
+     *
+     * @param string $prefix
+     * @return null
+     */
+    public static function setPrefix(string $prefix)
+    {
+        self::$_prefix = $prefix;
     }
 
     /**
@@ -62,7 +73,7 @@ class GqlEntityRegistry
     public static function getEntity(string $entityName)
     {
         // Check if we need to apply the prefix.
-        $prefix = self::_getPrefix();
+        $prefix = self::getPrefix();
         if ($prefix && !StringHelper::startsWith($entityName, $prefix)) {
             $entityName = self::prefixTypeName($entityName);
         }
