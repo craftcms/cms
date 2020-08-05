@@ -6,6 +6,7 @@
 ### Fixed
 - Fixed an error where it wasn’t possible to create a GraphQL schema that had write-only access to a Single entry. ([#6554](https://github.com/craftcms/cms/issues/6554))
 - Fixed a PHP error that could occur with certain versions of PHP. ([#6544](https://github.com/craftcms/cms/issues/6544))
+- Fixed an error that could occur when updating to Craft 3.5. ([#6464](https://github.com/craftcms/cms/issues/6464))
 - Fixed errors in fixtures that prevented them from being used in tests.
 
 ## 3.5.0 - 2020-08-04
