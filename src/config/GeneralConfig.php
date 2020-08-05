@@ -80,7 +80,7 @@ class GeneralConfig extends BaseObject
     /**
      * @var bool Whether Craft should allow system and plugin updates in the control panel, and plugin installation from the Plugin Store.
      *
-     * This setting will automatically be disabled if <config:allowAdminChanges> is disabled.
+     * This setting will automatically be disabled if <config3:allowAdminChanges> is disabled.
      */
     public $allowUpdates = true;
     /**
@@ -130,7 +130,7 @@ class GeneralConfig extends BaseObject
      * It will be determined automatically if left blank.
      *
      * ::: tip
-     * The base control panel URL should **not** include the [control panel trigger word](config:cpTrigger) (e.g. `/admin`).
+     * The base control panel URL should **not** include the [control panel trigger word](config3:cpTrigger) (e.g. `/admin`).
      * :::
      */
     public $baseCpUrl;
@@ -207,23 +207,22 @@ class GeneralConfig extends BaseObject
      * the front-end website.
      *
      * This can be set to `null` if you have a dedicated host name for the control panel (e.g. `cms.example.com`),
-     * or you are running Craft in [Headless Mode](config:headlessMode). If you do that, you will need to ensure
+     * or you are running Craft in [Headless Mode](config3:headlessMode). If you do that, you will need to ensure
      * that the control panel is being served from its own webroot directory on your server, with an `index.php`
-     * file that defines the [CRAFT_CP](https://docs.craftcms.com/v3/config/php-constants.html#craft-cp) PHP
-     * constant.
+     * file that defines the `CRAFT_CP` PHP constant.
      *
      * ```php
      * define('CRAFT_CP', true);
      * ```
      *
-     * Alternatively, you can set the <config:baseCpUrl> config setting, but then you will run the risk of losing
+     * Alternatively, you can set the <config3:baseCpUrl> config setting, but then you will run the risk of losing
      * access to portions of your control panel due to URI conflicts with actual folders/files in your main webroot.
      * (For example, if you have an `assets/` folder, that would conflict with the `/assets` page in the control
      * panel.)
      */
     public $cpTrigger = 'admin';
     /**
-     * @var string The name of CSRF token used for CSRF validation if <config:enableCsrfProtection> is set to `true`.
+     * @var string The name of CSRF token used for CSRF validation if <config3:enableCsrfProtection> is set to `true`.
      * @see enableCsrfProtection
      */
     public $csrfTokenName = 'CRAFT_CSRF_TOKEN';
@@ -256,7 +255,7 @@ class GeneralConfig extends BaseObject
      * @var string|null The default locale the control panel should use for date/number formatting,
      * for users who haven’t set a preferred language or preferred formatting locale yet.
      *
-     * If this is `null`, then the <config:defaultCpLanguage> config setting will determine which locale is used for
+     * If this is `null`, then the <config3:defaultCpLanguage> config setting will determine which locale is used for
      * date/number formatting by default.
      *
      * @since 3.5.0
@@ -345,7 +344,7 @@ class GeneralConfig extends BaseObject
      */
     public $enableBasicHttpAuth = false;
     /**
-     * @var bool Whether to use a cookie to persist the CSRF token if <config:enableCsrfProtection> is enabled. If false, the CSRF token
+     * @var bool Whether to use a cookie to persist the CSRF token if <config3:enableCsrfProtection> is enabled. If false, the CSRF token
      * will be stored in session under the `csrfTokenName` config setting name. Note that while storing CSRF tokens in
      * session increases security, it requires starting a session for every page that a CSRF token is needed, which may
      * degrade site performance.
@@ -399,7 +398,7 @@ class GeneralConfig extends BaseObject
      */
     public $errorTemplatePrefix = '';
     /**
-     * @var string[]|null List of file extensions that will be merged into the <config:allowedFileExtensions> config setting.
+     * @var string[]|null List of file extensions that will be merged into the <config3:allowedFileExtensions> config setting.
      * @see allowedFileExtensions
      */
     public $extraAllowedFileExtensions;
@@ -432,7 +431,7 @@ class GeneralConfig extends BaseObject
      *
      * ::: tip
      * File extensions listed here won’t immediately be allowed to be uploaded. You will also need to list them with
-     * the <config:extraAllowedFileExtensions> config setting.
+     * the <config3:extraAllowedFileExtensions> config setting.
      * :::
      *
      * @since 3.0.37
@@ -462,8 +461,8 @@ class GeneralConfig extends BaseObject
      * - Front-end responses will be JSON-formatted rather than HTML by default.
      * - Twig will be configured to escape unsafe strings for JavaScript/JSON
      *   rather than HTML by default for front-end requests.
-     * - The <config:loginPath>, <config:logoutPath>, <config:setPasswordPath>, and
-     *   <config:verifyEmailPath> settings will be ignored.
+     * - The <config3:loginPath>, <config3:logoutPath>, <config3:setPasswordPath>, and
+     *   <config3:verifyEmailPath> settings will be ignored.
      *
      * ::: tip
      * When Headless Mode is enabled, users will not be able to set an initial password, set a new password, or verify their email address unless they have the "Access the control panel" permission. Make sure to grant this permission to content editors and administrators who should be able to log into the control panel.
@@ -615,7 +614,7 @@ class GeneralConfig extends BaseObject
      * `?page` | `/news?page=5`
      *
      * ::: tip
-     * If you want to set this to `?p` (e.g. `/news?p=5`), you will need to change your <config:pathParam> setting as well,
+     * If you want to set this to `?p` (e.g. `/news?p=5`), you will need to change your <config3:pathParam> setting as well,
      * which is set to `p` by default, and if your server is running Apache, you will need to update the redirect code
      * in your `.htaccess` file to match your new `pathParam` value.
      * :::
@@ -863,7 +862,7 @@ class GeneralConfig extends BaseObject
      * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      *
      * ::: tip
-     * You might also want to set <config:invalidUserTokenPath> in case a user clicks on an expired password reset link.
+     * You might also want to set <config3:invalidUserTokenPath> in case a user clicks on an expired password reset link.
      * :::
      *
      * @see getSetPasswordPath()
@@ -892,7 +891,7 @@ class GeneralConfig extends BaseObject
      *
      * This can be set to a string, which will override the primary site’s base URL only, or an array with site handles used as the keys.
      *
-     * The URL(s) must begin with either `http://`, `https://`, `//` (protocol-relative), or an [alias](config:aliases).
+     * The URL(s) must begin with either `http://`, `https://`, `//` (protocol-relative), or an [alias](config3:aliases).
      *
      * ```php
      * 'siteUrl' => [
@@ -998,7 +997,7 @@ class GeneralConfig extends BaseObject
     /**
      * @var bool Whether Craft should specify the path using `PATH_INFO` or as a query string parameter when generating URLs.
      *
-     * Note that this setting only takes effect if <config:omitScriptNameInUrls> is set to false.
+     * Note that this setting only takes effect if <config3:omitScriptNameInUrls> is set to false.
      */
     public $usePathInfo = false;
     /**

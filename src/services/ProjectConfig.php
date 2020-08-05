@@ -1238,11 +1238,11 @@ class ProjectConfig extends Component
      */
     private function _getConfigFileModifiedTime(): int
     {
-        $path = Craft::$app->getPath()->getProjectConfigPath(false);
-        if (!is_dir($path)) {
+        $path = Craft::$app->getPath()->getProjectConfigFilePath();
+        if (!file_exists($path)) {
             return 0;
         }
-        return FileHelper::lastModifiedTime($path);
+        return filemtime($path);
     }
 
     /**

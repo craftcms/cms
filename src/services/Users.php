@@ -221,7 +221,7 @@ class Users extends Component
      * Returns whether a verification code is valid for the given user.
      *
      * This method first checks if the code has expired past the
-     * <config:verificationCodeDuration> config setting. If it is still valid,
+     * <config3:verificationCodeDuration> config setting. If it is still valid,
      * then, the checks the validity of the contents of the code.
      *
      * @param User $user The user to check the code for.
@@ -468,7 +468,13 @@ class Users extends Component
      */
     public function deleteUserPhoto(User $user): bool
     {
-        return Craft::$app->getElements()->deleteElementById($user->photoId, Asset::class);
+        $result = Craft::$app->getElements()->deleteElementById($user->photoId, Asset::class);
+
+        if ($result) {
+            $user->setPhoto(null);
+        }
+
+        return $result;
     }
 
     /**
@@ -852,7 +858,7 @@ class Users extends Component
      * Deletes any pending users that have shown zero sense of urgency and are
      * just taking up space.
      *
-     * This method will check the <config:purgePendingUsersDuration> config
+     * This method will check the <config3:purgePendingUsersDuration> config
      * setting, and if it is set to a valid duration, it will delete any user
      * accounts that were created that duration ago, and have still not
      * activated their account.

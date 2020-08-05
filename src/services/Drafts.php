@@ -445,7 +445,7 @@ class Drafts extends Component
     /**
      * Deletes any sourceless drafts that were never formally saved.
      *
-     * This method will check the <config:purgeUnsavedDraftsDuration> config
+     * This method will check the <config3:purgeUnsavedDraftsDuration> config
      * setting, and if it is set to a valid duration, it will delete any
      * sourceless drafts that were created that duration ago, and have still not
      * been formally saved.

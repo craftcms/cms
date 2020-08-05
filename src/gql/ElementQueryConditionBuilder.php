@@ -54,9 +54,9 @@ class ElementQueryConditionBuilder extends Component
      * use craft\gql\ElementQueryConditionBuilder;
      * use yii\base\Event;
      *
-     * Event::on(ElementQueryConditionBuilder::class, Gql::EVENT_REGISTER_GQL_EAGERLOADABLE_FIELDS, function(RegisterGqlEagerLoadableFields $event) {
+     * Event::on(ElementQueryConditionBuilder::class, ElementQueryConditionBuilder::EVENT_REGISTER_GQL_EAGERLOADABLE_FIELDS, function(RegisterGqlEagerLoadableFields $event) {
      *     // Add my fields
-     *     $event->queries['fieldList']['myEagerLoadableField'] = ['*'];
+     *     $event->fieldList['myEagerLoadableField'] = ['*'];
      * });
      * ```
      *
@@ -76,13 +76,21 @@ class ElementQueryConditionBuilder extends Component
     private $_additionalEagerLoadableNodes = null;
 
 
-    public function __construct(ResolveInfo $resolveInfo)
+    /**
+     * @inheritdoc
+     */
+    public function __construct($config = [])
     {
-        $this->_resolveInfo = $resolveInfo;
-        $this->_fragments = $resolveInfo->fragments;
+        $this->_resolveInfo = $config['resolveInfo'];
+        unset($config['resolveInfo']);
+
+        parent::__construct($config);
+
+        $this->_fragments = $this->_resolveInfo->fragments;
 
         // Cache all eager-loadable fields by context
         $allFields = Craft::$app->getFields()->getAllFields(false);
+
         foreach ($allFields as $field) {
             if ($field instanceof EagerLoadingFieldInterface) {
                 $this->_eagerLoadableFieldsByContext[$field->context][$field->handle] = $field;

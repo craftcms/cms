@@ -121,6 +121,12 @@ class Gql
     public static function canMutateEntries(): bool
     {
         $allowedEntities = self::extractAllowedEntitiesFromSchema('edit');
+
+        // Singles don't have the `edit` action.
+        if (!isset($allowedEntities['entrytypes'])) {
+            $allowedEntities = self::extractAllowedEntitiesFromSchema('save');
+        }
+
         return isset($allowedEntities['entrytypes']);
     }
 

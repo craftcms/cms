@@ -29,6 +29,7 @@ use yii\db\Connection;
  * @method Asset|array|null nth(int $n, Connection $db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @doc-path assets.md
  * @supports-site-params
  * @supports-title-param
  * @replace {element} asset

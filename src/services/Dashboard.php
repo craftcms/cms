@@ -42,7 +42,7 @@ class Dashboard extends Component
      *
      * Dashboard widgets must implement [[WidgetInterface]]. [[Widget]] provides a base implementation.
      *
-     * See [Widget Types](https://docs.craftcms.com/v3/widget-types.html) for documentation on creating Dashboard widgets.
+     * See [Widget Types](https://craftcms.com/docs/3.x/extend/widget-types.html) for documentation on creating Dashboard widgets.
      * ---
      * ```php
      * use craft\events\RegisterComponentTypesEvent;

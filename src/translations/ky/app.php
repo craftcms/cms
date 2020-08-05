@@ -3,7 +3,7 @@
 return [
     '"{filename}" is not allowed in this field.' => '"{filename}" is not allowed in this field.',
     '"{filename}" is too large.' => '"{filename}" is too large.',
-    '(blank)' => '(blank)',
+    '(blank)' => '(бош)',
     '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.' => '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.',
     '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.' => '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.',
     'A critical update is available.' => 'A critical update is available.',
@@ -687,7 +687,7 @@ return [
     'You’re running Craft {edition} with a Craft {licensedEdition} license.' => 'You’re running Craft {edition} with a Craft {licensedEdition} license.',
     'account_activation_body' => 'Hey {{user.friendlyName}},
 
-Thanks for creating an account with {{siteName}}! To activate your account, click the following link:
+Thanks for creating an account with {{systemName}}! To activate your account, click the following link:
 
 <{{link}}>
 
@@ -702,7 +702,7 @@ If you were not expecting this email, just ignore it.',
     'five' => 'five',
     'forgot_password_body' => 'Hey {{user.friendlyName}},
 
-To reset your {{siteName}} password, click on this link:
+To reset your {{systemName}} password, click on this link:
 
 <{{link}}>
 
@@ -1055,7 +1055,6 @@ If you were not expecting this email, just ignore it.',
     'Edit “{entryType}”' => 'Edit “{entryType}”',
     'Project config rebuilt successfully.' => 'Project config rebuilt successfully.',
     'Whether the site menu should be shown for {type} selection modals.' => 'Whether the site menu should be shown for {type} selection modals.',
-    'not an existing translation23131321313' => 'not an existing translation23131321313',
     'Couldn’t delete asset.' => 'Couldn’t delete asset.',
     'Delete entries with the “{entryType}” entry type' => 'Delete entries with the “{entryType}” entry type',
     'at {time}' => 'at {time}',

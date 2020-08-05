@@ -270,7 +270,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @var int|array|ElementInterface|null The element relation criteria.
      *
-     * See [Relations](https://docs.craftcms.com/v3/relations.html) for supported syntax options.
+     * See [Relations](https://craftcms.com/docs/3.x/relations.html) for supported syntax options.
      *
      * @used-by relatedTo()
      */
@@ -297,7 +297,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @var string|array|SearchQuery|null The search term to filter the resulting elements by.
      *
-     * See [Searching](https://docs.craftcms.com/v3/searching.html) for supported syntax options.
+     * See [Searching](https://craftcms.com/docs/3.x/searching.html) for supported syntax options.
      *
      * @used-by ElementQuery::search()
      */
@@ -315,7 +315,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @var string|array|null The eager-loading declaration.
      *
-     * See [Eager-Loading Elements](https://docs.craftcms.com/v3/eager-loading-elements.html) for supported syntax options.
+     * See [Eager-Loading Elements](https://craftcms.com/docs/3.x/dev/eager-loading-elements.html) for supported syntax options.
      *
      * @used-by with()
      * @used-by andWith()

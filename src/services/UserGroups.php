@@ -244,8 +244,12 @@ class UserGroups extends Component
 
         $groupRecord->name = $data['name'];
         $groupRecord->handle = $data['handle'];
-        $groupRecord->description = $data['description'] ?? null;
         $groupRecord->uid = $uid;
+
+        // todo: remove schema version conditions after next beakpoint
+        if (version_compare(Craft::$app->getInstalledSchemaVersion(), '3.5.5', '>=')) {
+            $groupRecord->description = $data['description'] ?? null;
+        }
 
         $groupRecord->save(false);
 

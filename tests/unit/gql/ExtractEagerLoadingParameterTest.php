@@ -114,8 +114,11 @@ class ExtractEagerLoadingParameterTest extends Unit
         $documentNode = Parser::parse(new Source($query ?: '', 'GraphQL'));
         $resolveInfo = $this->_buildResolveInfo($documentNode, $variables, $returnType);
 
-        $eagerLoadBuilder = new ElementQueryConditionBuilder($resolveInfo);
-        $extractedConditions = $eagerLoadBuilder->extractQueryConditions();
+        $conditionBuilder = Craft::createObject([
+            'class' => ElementQueryConditionBuilder::class,
+            'resolveInfo' => $resolveInfo
+        ]);
+        $extractedConditions = $conditionBuilder->extractQueryConditions();
 
         $this->assertEquals($expectedParameters, $extractedConditions);
     }

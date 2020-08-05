@@ -90,7 +90,7 @@ class ElementIndexesController extends BaseElementsController
             return false;
         }
 
-        if ($action->id !== 'export') {
+        if (!in_array($action->id, ['export', 'perform-action'], true)) {
             $this->requireAcceptsJson();
         }
 
@@ -244,6 +244,10 @@ class ElementIndexesController extends BaseElementsController
         }
 
         // Respond
+        if ($action->isDownload()) {
+            return $this->response;
+        }
+
         $responseData = [
             'success' => $success,
             'message' => $message,
@@ -645,6 +649,7 @@ class ElementIndexesController extends BaseElementsController
             $actionData[] = [
                 'type' => get_class($action),
                 'destructive' => $action->isDestructive(),
+                'download' => $action->isDownload(),
                 'name' => $action->getTriggerLabel(),
                 'trigger' => $action->getTriggerHtml(),
                 'confirm' => $action->getConfirmationMessage(),

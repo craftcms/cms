@@ -73,7 +73,8 @@ class GqlEntityRegistry
     public static function getEntity(string $entityName)
     {
         // Check if we need to apply the prefix.
-        if (!StringHelper::startsWith($entityName, self::getPrefix())) {
+        $prefix = self::getPrefix();
+        if ($prefix && !StringHelper::startsWith($entityName, $prefix)) {
             $entityName = self::prefixTypeName($entityName);
         }
 
