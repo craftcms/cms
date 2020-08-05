@@ -1,9 +1,11 @@
+
 # Release Notes for Craft CMS 3.x
 
 ## Unreleased
 
 ### Fixed
-- Fixed errors in fixtures that prevented them from being used.
+- Fixed errors in fixtures that prevented them from being used in tests.
+
 
 ## 3.5.0 - 2020-08-04
 
