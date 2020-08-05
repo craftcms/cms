@@ -13,7 +13,7 @@
     class: class,
     maxlength: field.charLimit,
     showCharsLeft: true,
-    placeholder: field.placeholder|t('site'),
+    placeholder: field.placeholder ? field.placeholder|t('site'),
     rows: field.initialRows
 } %}
 
