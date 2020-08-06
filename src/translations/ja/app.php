@@ -528,7 +528,7 @@ return [
     'Stretch to fit' => 'フィットまでのストレッチ',
     'Structure' => 'ストラクチャー',
     'Structures' => 'ストラクチャ',
-    'Submit' => '提出',
+    'Submit' => '送信',
     'Successfully activated the user.' => 'ユーザーの有効化が成功しました。',
     'Suspend' => '停止',
     'Suspended' => '停止',
