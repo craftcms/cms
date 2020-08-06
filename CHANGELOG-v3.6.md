@@ -7,3 +7,4 @@
 ### Changed
 - Craft now requires PHP 7.2 or later.
 - Updated Twig to 2.13.
+- Updated `webonyx/graphql-php` to 14.1.1.
