@@ -8,6 +8,9 @@
 - `craft\base\Element::__get()` now prioritizes field handles over getter methods. ([#6564](https://github.com/craftcms/cms/issues/6564))
 - Data caches stored in `storage/runtime/cache/` now get a cache key prefix based on the application ID.
 
+### Fixed
+- Fixed a PHP error that occurred when setting a `relatedTo` param to an array that began with `'and'`. ([#6573](https://github.com/craftcms/cms/issues/6573))
+
 ## 3.5.1 - 2020-08-05
 
 ### Fixed
