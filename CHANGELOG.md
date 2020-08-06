@@ -1,6 +1,11 @@
 
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Changed
+- `language` and `localized` are now reserved field handles. ([#6564](https://github.com/craftcms/cms/issues/6564))
+
 ## 3.5.1 - 2020-08-05
 
 ### Fixed
