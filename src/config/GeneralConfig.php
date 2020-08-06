@@ -339,6 +339,10 @@ class GeneralConfig extends BaseObject
      */
     public $disabledPlugins = [];
     /**
+     * @var bool Whether the `transform` directive should be disabled for the GraphQL API.
+     */
+    public $disableGraphqlTransformDirective = false;
+    /**
      * @var bool Whether front-end web requests should support basic HTTP authentication.
      * @since 3.5.0
      */
@@ -351,6 +355,10 @@ class GeneralConfig extends BaseObject
      * @see enableCsrfProtection
      */
     public $enableCsrfCookie = true;
+    /**
+     * @var bool Whether GraphQL introspection queries are allowed. Defaults to `true` and is always allowed in the CP.
+     */
+    public $enableGraphqlIntrospection = true;
     /**
      * @var bool Whether the GraphQL API should be enabled.
      *
@@ -554,6 +562,18 @@ class GeneralConfig extends BaseObject
      * never cache them.
      */
     public $maxCachedCloudImageSize = 2000;
+    /**
+     * @var int The maximum allowed complexity a GraphQL query is allowed to have. Set to `0` to allow any complexity.
+     */
+    public $maxGraphqlComplexity = 0;
+    /**
+     * @var int The maximum allowed depth a GraphQL query is allowed to reach. Set to `0` to allow any depth.
+     */
+    public $maxGraphqlDepth = 0;
+    /**
+     * @var int The maximum allowed results for a single GraphQL query. Set to `0` to disable any limits.
+     */
+    public $maxGraphqlResults = 0;
     /**
      * @var int The number of invalid login attempts Craft will allow within the specified duration before the account gets
      * locked.

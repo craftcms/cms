@@ -69,6 +69,7 @@ class Users extends BaseRelationField
             'type' => Type::listOf(UserInterface::getType()),
             'args' => UserArguments::getArguments(),
             'resolve' => UserResolver::class . '::resolve',
+            'complexity' => Gql::eagerLoadComplexity()
         ];
     }
 
