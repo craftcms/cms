@@ -413,6 +413,7 @@ class App
 
         return [
             'class' => FileCache::class,
+            'keyPrefix' => Craft::$app->id,
             'cachePath' => Craft::$app->getPath()->getCachePath(),
             'fileMode' => $generalConfig->defaultFileMode,
             'dirMode' => $generalConfig->defaultDirMode,
