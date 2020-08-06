@@ -556,6 +556,7 @@ class Install extends Migration
         $this->createTable(Table::SITEGROUPS, [
             'id' => $this->primaryKey(),
             'name' => $this->string()->notNull(),
+            'handle' => $this->string()->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'dateDeleted' => $this->dateTime()->null(),
@@ -841,6 +842,7 @@ class Install extends Migration
         $this->createIndex(null, Table::SITES, ['handle'], false);
         $this->createIndex(null, Table::SITES, ['sortOrder'], false);
         $this->createIndex(null, Table::SITEGROUPS, ['name'], false);
+        $this->createIndex(null, Table::SITEGROUPS, ['handle'], true);
         $this->createIndex(null, Table::STRUCTUREELEMENTS, ['structureId', 'elementId'], true);
         $this->createIndex(null, Table::STRUCTUREELEMENTS, ['root'], false);
         $this->createIndex(null, Table::STRUCTUREELEMENTS, ['lft'], false);

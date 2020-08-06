@@ -14,6 +14,7 @@ use craft\models\Site;
 use craft\models\SiteGroup;
 use craft\web\assets\sites\SitesAsset;
 use craft\web\Controller;
+use yii\helpers\Inflector;
 use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
