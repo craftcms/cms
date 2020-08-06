@@ -2146,7 +2146,7 @@ abstract class Element extends Component implements ElementInterface
             return self::STATUS_ARCHIVED;
         }
 
-        if (!$this->enabled || !$this->enabledForSite) {
+        if (!$this->enabled || !$this->getEnabledForSite()) {
             return self::STATUS_DISABLED;
         }
 
