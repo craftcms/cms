@@ -5,6 +5,7 @@
 
 ### Changed
 - `language` and `localized` are now reserved field handles. ([#6564](https://github.com/craftcms/cms/issues/6564))
+- `craft\base\Element::__get()` now prioritizes field handles over getter methods. ([#6564](https://github.com/craftcms/cms/issues/6564))
 
 ## 3.5.1 - 2020-08-05
 
