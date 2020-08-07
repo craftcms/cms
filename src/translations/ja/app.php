@@ -1533,7 +1533,7 @@ return [
     'Item' => 'アイテム',
     'No pending jobs.' => '保留中のジョブはありません。',
     'Which section do you want to publish entries to?' => 'エントリはどのセクションに投稿しますか？',
-    'Standard Fields' => 'Standard Fields',
+    'Standard Fields' => '標準フィールド',
     'Briefly describe your issue or idea.' => '問題やアイデアを簡単に説明してください。',
     'Upload logo' => 'ロゴをアップロード',
     'Max Value' => '最大値',
