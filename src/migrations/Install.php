@@ -64,7 +64,6 @@ class Install extends Migration
         $this->createTables();
         $this->createIndexes();
         $this->addForeignKeys();
-        $this->db->getSchema()->refresh();
         $this->insertDefaultData();
     }
 

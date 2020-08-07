@@ -8,6 +8,7 @@
 - `language` and `localized` are now reserved field handles. ([#6564](https://github.com/craftcms/cms/issues/6564))
 - `craft\base\Element::__get()` now prioritizes field handles over getter methods. ([#6564](https://github.com/craftcms/cms/issues/6564))
 - Data caches stored in `storage/runtime/cache/` now get a cache key prefix based on the application ID.
+- Craft now clears the schema cache before running each migration, in addition to after. ([#6552](https://github.com/craftcms/cms/issues/6552))
 
 ### Fixed
 - Fixed a PHP error that occurred when setting a `relatedTo` param to an array that began with `'and'`. ([#6573](https://github.com/craftcms/cms/issues/6573))
