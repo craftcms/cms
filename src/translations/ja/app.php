@@ -1136,7 +1136,7 @@ return [
     'Upload icon' => 'アイコンをアップロード',
     'No deprecation errors to report!' => '報告する非推奨エラーはありません!',
     'Apply' => '適用',
-    'Restrict allowed file types' => 'Restrict allowed file types',
+    'Restrict allowed file types' => '許可されるファイルの種類を制限する',
     'Pay' => 'を支払う',
     'Suspend users by default' => 'Suspend users by default',
     'Global' => 'グローバル',
