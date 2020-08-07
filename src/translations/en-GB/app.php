@@ -11,7 +11,7 @@ return [
     'A file with the name “{filename}” already exists.' => 'A file with the name “{filename}” already exists.',
     'A folder with the name “{folderName}” already exists in the folder.' => 'A folder with the name “{folderName}” already exists in the folder.',
     'A folder with the name “{folderName}” already exists in the volume.' => 'A folder with the name “{folderName}” already exists in the volume.',
-    'A license key is required.' => 'A licence key is required.',
+    'A license key is required.' => 'A licence key is required..',
     'A server error occurred.' => 'A server error occurred.',
     'A template name cannot contain NUL bytes.' => 'A template name cannot contain NUL bytes.',
     'Abort the update' => 'Abort the update',
