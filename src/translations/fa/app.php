@@ -1450,7 +1450,7 @@ return [
     'folders' => 'پوشه ها',
     'Whether remotely-stored images should be downloaded and stored locally, to speed up transform generation.' => 'که ایا تصاویر نگهداری شده در راه دور به جهت افزایش سرعت تولید تغییر شکل تصویر باید دانلود و به صورت محلی نگهداری شوند',
     '{total} jobs' => '{total} کار',
-    'The Reply-To email address Craft CMS should use when sending email.' => 'آدرس پاسخ-به پست الکترونیکی که Craft CMS در هنگام ارسال پست الکترونیکی استفاده خواهد نمود.',
+    'The Reply-To email address Craft CMS should use when sending email.' => 'آدرس پاسخ-به پست الکترونیکی که Craft CMS در هنگام ارسال پست الکترونیکی باید استفاده نماید.',
     'The type of column this field should get in the database.' => 'نوع ستون این فیلد در پایگاه داده.',
     'Photo' => 'تصویر',
     'Caches' => 'حافظه های نهان',
