@@ -20,13 +20,12 @@ $gridColor: hsl(212, 50%, 95%);
   @include input-styles;
   overflow: hidden;
   box-shadow: none;
-  @include padding-right($tabWidth + 1);
+  @include padding-left($tabWidth + 1);
   min-height: 500px;
 
   .fld-workspace {
     flex: 1;
-    @include border-radius($smallBorderRadius, 0, 0, $smallBorderRadius);
-    @include padding($base, 0, $base, $base);
+    @include padding($base, $base, $base, $base);
     @include workspaceBg;
     background-position: -1px -1px;
     box-shadow: inset 0 1px 3px -1px darken($grey200, 10%);
@@ -41,7 +40,7 @@ $gridColor: hsl(212, 50%, 95%);
   .fld-sidebar {
     position: absolute;
     top: 0;
-    @include right(0);
+    @include left(0);
     height: 100%;
     width: $tabWidth + 1;
     padding: $tabPadding;
