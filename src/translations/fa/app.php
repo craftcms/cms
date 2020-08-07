@@ -1609,7 +1609,7 @@ return [
     'How you’ll refer to this global set in the templates.' => 'چطور به این مجموعه سراسری در قالب ها ارجاع می دهید؟',
     'Default Status' => 'وضعیت های پیش فرض',
     'Create your account' => 'حساب کاربری خودتان را بسازید',
-    'Layout element types' => 'Layout element types',
+    'Layout element types' => 'چیدمان انواع عنصر',
     'Please set a volume for storing the user photos in user settings page first.' => 'لطفا اول یک مخزن برای نگهداری تصاویر در صفحه تنظیمات کاربر تنظیم نمایید.',
     'Send' => 'ارسال',
     'Bytes' => 'بایت',
