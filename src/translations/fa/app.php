@@ -1350,7 +1350,6 @@ return [
     'No tag groups exist yet.' => 'گروه بندی برچسبی وجود ندارد.',
     'No content migrations.' => 'تغییر ساختاری برای محتوا وجود ندارد.',
     'Profile Twig templates when Dev Mode is disabled' => 'ثبت قالب های Twig در هنگامی که حالت توسعه غیر فعال است.',
-    'not an existing translation23131321313' => 'not an existing translation23131321313',
     'New schema' => 'طرح جدید',
     'Only save blocks to the site they were created in' => 'بلوک ها را تنها در سایتی که در آن ساخته شده اند ذخیره کن',
     'Prefix Text' => 'متن پیشوند',
