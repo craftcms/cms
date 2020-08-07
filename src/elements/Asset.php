@@ -1157,8 +1157,8 @@ class Asset extends Element
      */
     public function getThumbUrl(int $size)
     {
-        if ($this->width && $this->height) {
-            list($width, $height) = Assets::scaledDimensions($this->width, $this->height, $size, $size);
+        if ($this->getWidth() && $this->getHeight()) {
+            list($width, $height) = Assets::scaledDimensions($this->getWidth(), $this->getHeight(), $size, $size);
         } else {
             $width = $height = $size;
         }
@@ -1179,7 +1179,7 @@ class Asset extends Element
     {
         $assetsService = Craft::$app->getAssets();
         $srcsets = [];
-        list($width, $height) = Assets::scaledDimensions($this->width ?? 0, $this->height ?? 0, $width, $height);
+        list($width, $height) = Assets::scaledDimensions($this->getWidth() ?? 0, $this->getHeight() ?? 0, $width, $height);
         $thumbSizes = [
             [$width, $height],
             [$width * 2, $height * 2],
@@ -1848,8 +1848,8 @@ class Asset extends Element
         $attributes = [];
 
         if ($this->kind === self::KIND_IMAGE) {
-            $attributes['data-image-width'] = $this->width;
-            $attributes['data-image-height'] = $this->height;
+            $attributes['data-image-width'] = $this->getWidth();
+            $attributes['data-image-height'] = $this->getHeight();
         }
 
         $userSession = Craft::$app->getUser();

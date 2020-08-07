@@ -319,7 +319,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         $errorCount = 0;
 
         foreach ($query->all() as $i => $related) {
-            if ($related->enabled && $related->enabledForSite) {
+            if ($related->enabled && $related->getEnabledForSite()) {
                 if (!self::_validateRelatedElement($related)) {
                     $element->addModelErrors($related, "{$this->handle}[{$i}]");
                     $errorCount++;
@@ -933,7 +933,7 @@ JS;
         if ($this->validateRelatedElements) {
             // Pre-validate related elements
             foreach ($value as $related) {
-                if ($related->enabled && $related->enabledForSite) {
+                if ($related->enabled && $related->getEnabledForSite()) {
                     $related->setScenario(Element::SCENARIO_LIVE);
                     $related->validate();
                 }

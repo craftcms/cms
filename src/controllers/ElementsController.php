@@ -150,7 +150,7 @@ class ElementsController extends BaseElementsController
         $element->setFieldValuesFromRequest($namespace . '.fields');
 
         // Now save it
-        if ($element->enabled && $element->enabledForSite) {
+        if ($element->enabled && $element->getEnabledForSite()) {
             $element->setScenario(Element::SCENARIO_LIVE);
         }
 
@@ -335,7 +335,7 @@ class ElementsController extends BaseElementsController
         }
 
         // Prevalidate?
-        if ($this->request->getBodyParam('prevalidate') && $element->enabled && $element->enabledForSite) {
+        if ($this->request->getBodyParam('prevalidate') && $element->enabled && $element->getEnabledForSite()) {
             $element->setScenario(Element::SCENARIO_LIVE);
             $element->validate();
         }
