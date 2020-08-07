@@ -1553,7 +1553,7 @@ return [
     'Changing this may result in data loss.' => 'تغییر دادن ممکن است منجر به از دست دادن داده شود.',
     'Decimal Points' => 'تعداد اعشار',
     'Attach an additional file' => 'ضمیمه کردن یک فایل اضافه',
-    'Should users who register their own accounts be suspended by default? This will prevent them from receiving an activation email.' => 'آیا کاربرانی که حساب های کاربری خودشان را ثبت می کنند به طور پیش فرض تعلیق گردند؟ این کار از دریافت پست الکترونیکی فعالسازی برای آن ها جلوگیری می نماید.',
+    'Should users who register their own accounts be suspended by default? This will prevent them from receiving an activation email.' => 'آیا کاربرانی که حساب های کاربری خودشان را ثبت می کنند به طور پیش فرض تعلیق گردند؟ این کار از دریافت پست الکترونیکی فعالسازی توسط آن ها جلوگیری می نماید.',
     'Low' => 'پایین',
     'What this field will be called in the control panel.' => 'نام این فیلد در صفحه کنترل.',
     'Reapply everything' => 'اعمال دوباره همه',
