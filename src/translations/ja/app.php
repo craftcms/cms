@@ -1693,7 +1693,7 @@ return [
     'Post on GitHub' => 'GitHub に投稿',
     'Email Settings' => 'メールの設定',
     'Max Rows' => '最大行数',
-    'Title Translation Key Format' => 'Title Translation Key Format',
+    'Title Translation Key Format' => 'タイトルの翻訳キーの形式',
     'Asset Settings' => 'アセット設定',
     'For when you’re building a website for yourself or a friend.' => '自分または友だちのためのウェブサイトを構築しているとき。',
     'Only save entries to the site they were created in' => '作成したサイトにのみエントリを保存する',
