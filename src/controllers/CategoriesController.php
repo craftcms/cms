@@ -479,7 +479,7 @@ class CategoriesController extends Controller
         $this->_populateCategoryModel($category);
 
         // Save the category
-        if ($category->enabled && $category->enabledForSite) {
+        if ($category->enabled && $category->getEnabledForSite()) {
             $category->setScenario(Element::SCENARIO_LIVE);
         }
 

@@ -253,7 +253,7 @@
                     (canEditMultipleSites ? '<a id="expand-status-btn" data-icon="ellipsis" class="btn" role="button"></a>'),
                 id: "enabledForSite-#{element.siteId}",
                 name: "enabledForSite[#{element.siteId}]",
-                on: element.enabled and element.enabledForSite,
+                on: element.enabled and element.getEnabledForSite(),
                 disabled: isRevision,
             }) }}
         </div>
@@ -369,8 +369,8 @@
     siteStatuses: siteStatuses,
     addlSiteIds: addlEditableSiteIds|values,
     enabled: element.enabled ? true : false,
-    enabledForSite: element.enabled and element.enabledForSite,
-    isLive: isCurrent and element.enabled and element.enabledForSite and element.getRoute(),
+    enabledForSite: element.enabled and element.getEnabledForSite(),
+    isLive: isCurrent and element.enabled and element.getEnabledForSite() and element.getRoute(),
     cpEditUrl: element.cpEditUrl,
     hashedRedirectUrl: (isUnsavedDraft ? redirectUrl : '{cpEditUrl}')|hash,
     draftId: element.draftId,

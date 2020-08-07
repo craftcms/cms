@@ -115,10 +115,10 @@ class EntryRevisionsController extends BaseEntriesController
         }
         if (Craft::$app->getIsMultiSite() && count($entry->getSupportedSites()) > 1) {
             $entry->enabled = true;
-            $entry->enabledForSite = $enabled;
+            $entry->setEnabledForSite($enabled);
         } else {
             $entry->enabled = $enabled;
-            $entry->enabledForSite = true;
+            $entry->setEnabledForSite(true);
         }
 
         // Structure parent
@@ -430,7 +430,7 @@ class EntryRevisionsController extends BaseEntriesController
         $draft->updateTitle();
 
         // Validate and save the draft
-        if ($draft->enabled && $draft->enabledForSite) {
+        if ($draft->enabled && $draft->getEnabledForSite()) {
             $draft->setScenario(Element::SCENARIO_LIVE);
         }
 

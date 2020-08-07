@@ -2500,7 +2500,7 @@ class Elements extends Component
             $siteElement->siteId = $siteInfo['siteId'];
             $siteElement->elementSiteId = null;
             $siteElement->contentId = null;
-            $siteElement->enabledForSite = $siteInfo['enabledByDefault'];
+            $siteElement->setEnabledForSite($siteInfo['enabledByDefault']);
 
             // Keep track of this new site ID
             $element->newSiteIds[] = $siteInfo['siteId'];
@@ -2509,7 +2509,7 @@ class Elements extends Component
             $siteElement = clone $element;
             $siteElement->siteId = $oldSiteElement->siteId;
             $siteElement->contentId = $oldSiteElement->contentId;
-            $siteElement->enabledForSite = $oldSiteElement->enabledForSite;
+            $siteElement->setEnabledForSite($oldSiteElement->enabledForSite);
         } else {
             $siteElement->enabled = $element->enabled;
             $siteElement->resaving = $element->resaving;

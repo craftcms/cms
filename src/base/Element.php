@@ -1408,7 +1408,7 @@ abstract class Element extends Component implements ElementInterface
 
         // If this is a field, make sure the value has been normalized before returning the CustomFieldBehavior value
         if ($this->fieldByHandle($name) !== null) {
-            $this->normalizeFieldValue($name);
+            return $this->getFieldValue($name);
         }
 
         return parent::__get($name);
@@ -2146,7 +2146,7 @@ abstract class Element extends Component implements ElementInterface
             return self::STATUS_ARCHIVED;
         }
 
-        if (!$this->enabled || !$this->enabledForSite) {
+        if (!$this->enabled || !$this->getEnabledForSite()) {
             return self::STATUS_DISABLED;
         }
 
