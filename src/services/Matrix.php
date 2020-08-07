@@ -24,7 +24,6 @@ use craft\helpers\MigrationHelper;
 use craft\helpers\StringHelper;
 use craft\migrations\CreateMatrixContentTable;
 use craft\models\FieldLayout;
-use craft\models\FieldLayoutTab;
 use craft\models\MatrixBlockType;
 use craft\models\Site;
 use craft\records\MatrixBlockType as MatrixBlockTypeRecord;
@@ -240,58 +239,12 @@ class Matrix extends Component
             return false;
         }
 
-        $fieldsService = Craft::$app->getFields();
-
-        $parentField = $fieldsService->getFieldById($blockType->fieldId);
         $isNewBlockType = $blockType->getIsNew();
-        $projectConfig = Craft::$app->getProjectConfig();
-
-        $configData = [
-            'field' => $parentField->uid,
-            'name' => $blockType->name,
-            'handle' => $blockType->handle,
-            'sortOrder' => (int)$blockType->sortOrder,
-        ];
-
-        // Now, take care of the field layout for this block type
-        // -------------------------------------------------------------
-        $fieldLayoutFields = [];
-        $sortOrder = 0;
-
-        $configData['fields'] = [];
-
-        foreach ($blockType->getFields() as $field) {
-            $configData['fields'][$field->uid] = $fieldsService->createFieldConfig($field);
-
-            $field->sortOrder = ++$sortOrder;
-            $fieldLayoutFields[] = $field;
-        }
-
-        $fieldLayoutTab = new FieldLayoutTab();
-        $fieldLayoutTab->name = 'Content';
-        $fieldLayoutTab->sortOrder = 1;
-        $fieldLayoutTab->setFields($fieldLayoutFields);
-
-        $fieldLayout = $blockType->getFieldLayout();
-
-        if ($fieldLayout->uid) {
-            $layoutUid = $fieldLayout->uid;
-        } else {
-            $layoutUid = StringHelper::UUID();
-            $fieldLayout->uid = $layoutUid;
-        }
-
-        $fieldLayout->setTabs([$fieldLayoutTab]);
-        $fieldLayout->setFields($fieldLayoutFields);
-
-        $fieldLayoutConfig = $fieldLayout->getConfig();
-
-        $configData['fieldLayouts'] = [
-            $layoutUid => $fieldLayoutConfig
-        ];
-
         $configPath = self::CONFIG_BLOCKTYPE_KEY . '.' . $blockType->uid;
-        $projectConfig->set($configPath, $configData, "Save matrix block type “{$blockType->handle}” for parent field “{$parentField->handle}”");
+        $configData = $blockType->getConfig();
+        $field = $blockType->getField();
+
+        Craft::$app->getProjectConfig()->set($configPath, $configData, "Save matrix block type “{$blockType->handle}” for parent field “{$field->handle}”");
 
         if ($isNewBlockType) {
             $blockType->id = Db::idByUid(Table::MATRIXBLOCKTYPES, $blockType->uid);
@@ -373,9 +326,12 @@ class Matrix extends Component
                 // Refresh the schema cache
                 Craft::$app->getDb()->getSchema()->refresh();
 
-                if (!empty($data['fieldLayouts'])) {
+                if (
+                    !empty($data['fieldLayouts']) &&
+                    ($layoutConfig = reset($data['fieldLayouts']))
+                ) {
                     // Save the field layout
-                    $layout = FieldLayout::createFromConfig(reset($data['fieldLayouts']));
+                    $layout = FieldLayout::createFromConfig($layoutConfig);
                     $layout->id = $blockTypeRecord->fieldLayoutId;
                     $layout->type = MatrixBlock::class;
                     $layout->uid = key($data['fieldLayouts']);
@@ -803,12 +759,15 @@ class Matrix extends Component
 
                 // If propagateAll isn't set, only deal with sites that the element was just propagated to for the first time
                 if (!$owner->propagateAll) {
+                    $preexistingOtherSiteIds = array_diff($otherSiteIds, $owner->newSiteIds);
                     $otherSiteIds = array_intersect($otherSiteIds, $owner->newSiteIds);
+                } else {
+                    $preexistingOtherSiteIds = [];
                 }
 
                 if (!empty($otherSiteIds)) {
-                    // Get the original element and duplicated element for each of those sites
-                    $otherTargets = $owner::find()
+                    // Get the owner element across each of those sites
+                    $localizedOwners = $owner::find()
                         ->drafts($owner->getIsDraft())
                         ->revisions($owner->getIsRevision())
                         ->id($owner->id)
@@ -824,16 +783,34 @@ class Matrix extends Component
                     $cachedQuery->setCachedResult($blocks);
                     $owner->setFieldValue($field->handle, $cachedQuery);
 
-                    foreach ($otherTargets as $otherTarget) {
+                    foreach ($localizedOwners as $localizedOwner) {
                         // Make sure we haven't already duplicated blocks for this site, via propagation from another site
-                        if (isset($handledSiteIds[$otherTarget->siteId])) {
+                        if (isset($handledSiteIds[$localizedOwner->siteId])) {
                             continue;
                         }
 
-                        $this->duplicateBlocks($field, $owner, $otherTarget);
+                        // Find all of the field’s supported sites shared with this target
+                        $sourceSupportedSiteIds = $this->getSupportedSiteIds($field->propagationMethod, $localizedOwner);
+
+                        // Do blocks in this target happen to share supported sites with a preexisting site?
+                        if (
+                            !empty($preexistingOtherSiteIds) &&
+                            !empty($sharedPreexistingOtherSiteIds = array_intersect($preexistingOtherSiteIds, $sourceSupportedSiteIds)) &&
+                            $preexistingLocalizedOwner = $owner::find()
+                                ->drafts($owner->getIsDraft())
+                                ->revisions($owner->getIsRevision())
+                                ->id($owner->id)
+                                ->siteId($sharedPreexistingOtherSiteIds)
+                                ->anyStatus()
+                                ->one()
+                        ) {
+                            // Just resave Matrix blocks for that one site, and let them propagate over to the new site(s) from there
+                            $this->saveField($field, $preexistingLocalizedOwner);
+                        } else {
+                            $this->duplicateBlocks($field, $owner, $localizedOwner);
+                        }
 
                         // Make sure we don't duplicate blocks for any of the sites that were just propagated to
-                        $sourceSupportedSiteIds = $this->getSupportedSiteIds($field->propagationMethod, $otherTarget);
                         $handledSiteIds = array_merge($handledSiteIds, array_flip($sourceSupportedSiteIds));
                     }
 

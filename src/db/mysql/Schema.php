@@ -7,11 +7,14 @@
 
 namespace craft\db\mysql;
 
+use Composer\Util\Platform;
 use Craft;
 use craft\db\Connection;
 use craft\db\TableSchema;
+use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
+use mikehaertl\shellcommand\Command as ShellCommand;
 use yii\base\ErrorException;
 use yii\db\Exception;
 
@@ -150,7 +153,32 @@ class Schema extends \yii\db\mysql\Schema
             ' --routines' .
             ' --default-character-set=' . Craft::$app->getConfig()->getDb()->charset .
             ' --set-charset' .
-            ' --triggers';
+            ' --triggers' .
+            ' --no-tablespaces';
+
+        // If the server is MySQL 5.x, we need to see what version of mysqldump is installed (5.x or 8.x)
+        if (version_compare(App::normalizeVersion(Craft::$app->getDb()->getSchema()->getServerVersion()), "8", "<")) {
+            // Find out if the db supports column-statistics
+            $shellCommand = new ShellCommand();
+
+            if (Platform::isWindows()) {
+                $shellCommand->setCommand('mysqldump --help | findstr "column-statistics"');
+            } else {
+                $shellCommand->setCommand('mysqldump --help | grep "column-statistics"');
+            }
+
+            // If we don't have proc_open, maybe we've got exec
+            if (!function_exists('proc_open') && function_exists('exec')) {
+                $shellCommand->useExec = true;
+            }
+
+            $success = $shellCommand->execute();
+
+            // if there was output, then they're running mysqldump 8.x against a 5.x database.
+            if ($success && $shellCommand->getOutput()) {
+                $defaultArgs .= ' --skip-column-statistics';
+            }
+        }
 
         if ($ignoreTables === null) {
             $ignoreTables = $this->db->getIgnoredBackupTables();
@@ -259,38 +287,78 @@ class Schema extends \yii\db\mysql\Schema
      */
     protected function findConstraints($table)
     {
-        parent::findConstraints($table);
-
-        // Modified from parent to get extended FK information.
-        $tableName = $this->quoteValue($table->name);
+        // This is almost directly copied from yii\db\mysql\Schema::findConstraints() (Yii 2.0.37) except:
+        // - addition of DELETE_RULE & UPDATE_RULE in the SELECT clause
+        // - addition of ON DELETE & ON UPDATE subpatterns in fallback regex
+        // - calls to $table->addExtendedForeignKey()
 
         $sql = <<<SQL
 SELECT
-    kcu.constraint_name,
-    kcu.column_name,
-    kcu.referenced_table_name,
-    kcu.referenced_column_name,
-    rc.UPDATE_RULE,
-    rc.DELETE_RULE
-FROM information_schema.referential_constraints AS rc
-JOIN information_schema.key_column_usage AS kcu ON
+    `kcu`.`CONSTRAINT_NAME` AS `constraint_name`,
+    `kcu`.`COLUMN_NAME` AS `column_name`,
+    `kcu`.`REFERENCED_TABLE_NAME` AS `referenced_table_name`,
+    `kcu`.`REFERENCED_COLUMN_NAME` AS `referenced_column_name`,
+    `rc`.`DELETE_RULE`,
+    `rc`.`UPDATE_RULE`
+FROM `information_schema`.`REFERENTIAL_CONSTRAINTS` AS `rc`
+JOIN `information_schema`.`KEY_COLUMN_USAGE` AS `kcu` ON
     (
-        kcu.constraint_catalog = rc.constraint_catalog OR
-        (kcu.constraint_catalog IS NULL AND rc.constraint_catalog IS NULL)
+        `kcu`.`CONSTRAINT_CATALOG` = `rc`.`CONSTRAINT_CATALOG` OR
+        (`kcu`.`CONSTRAINT_CATALOG` IS NULL AND `rc`.`CONSTRAINT_CATALOG` IS NULL)
     ) AND
-    kcu.constraint_schema = rc.constraint_schema AND
-    kcu.constraint_name = rc.constraint_name
-WHERE rc.constraint_schema = database() AND kcu.table_schema = database()
-AND rc.table_name = {$tableName} AND kcu.table_name = {$tableName}
+    `kcu`.`CONSTRAINT_SCHEMA` = `rc`.`CONSTRAINT_SCHEMA` AND
+    `kcu`.`CONSTRAINT_NAME` = `rc`.`CONSTRAINT_NAME`
+WHERE `rc`.`CONSTRAINT_SCHEMA` = database() AND `kcu`.`TABLE_SCHEMA` = database()
+AND `rc`.`TABLE_NAME` = :tableName AND `kcu`.`TABLE_NAME` = :tableName1
 SQL;
 
-        $extendedConstraints = $this->db->createCommand($sql)->queryAll();
+        try {
+            $rows = $this->db->createCommand($sql, [':tableName' => $table->name, ':tableName1' => $table->name])->queryAll();
+            $constraints = [];
 
-        foreach ($extendedConstraints as $key => $extendedConstraint) {
-            $table->addExtendedForeignKey($key, [
-                'updateType' => $extendedConstraint['UPDATE_RULE'],
-                'deleteType' => $extendedConstraint['DELETE_RULE']
-            ]);
+            foreach ($rows as $i => $row) {
+                $constraints[$row['constraint_name']]['referenced_table_name'] = $row['referenced_table_name'];
+                $constraints[$row['constraint_name']]['columns'][$row['column_name']] = $row['referenced_column_name'];
+
+                $table->addExtendedForeignKey($i, [
+                    'deleteType' => $row['DELETE_RULE'],
+                    'updateType' => $row['UPDATE_RULE'],
+                ]);
+            }
+
+            $table->foreignKeys = [];
+            foreach ($constraints as $name => $constraint) {
+                $table->foreignKeys[$name] = array_merge(
+                    [$constraint['referenced_table_name']],
+                    $constraint['columns']
+                );
+            }
+        } catch (\Exception $e) {
+            $previous = $e->getPrevious();
+            if (!$previous instanceof \PDOException || strpos($previous->getMessage(), 'SQLSTATE[42S02') === false) {
+                throw $e;
+            }
+
+            // table does not exist, try to determine the foreign keys using the table creation sql
+            $sql = $this->getCreateTableSql($table);
+            $regexp = '/FOREIGN KEY\s+\(([^\)]+)\)\s+REFERENCES\s+([^\(^\s]+)\s*\(([^\)]+)\)(?:\s+ON DELETE (\w+))?(?:\s+ON UPDATE (\w+))?/mi';
+            if (preg_match_all($regexp, $sql, $matches, PREG_SET_ORDER)) {
+                foreach ($matches as $i => $match) {
+                    $fks = array_map('trim', explode(',', str_replace('`', '', $match[1])));
+                    $pks = array_map('trim', explode(',', str_replace('`', '', $match[3])));
+                    $constraint = [str_replace('`', '', $match[2])];
+                    foreach ($fks as $k => $name) {
+                        $constraint[$name] = $pks[$k];
+                    }
+                    $table->foreignKeys[md5(serialize($constraint))] = $constraint;
+
+                    $table->addExtendedForeignKey($i, [
+                        'deleteType' => $match[4] ?? 'RESTRICT',
+                        'updateType' => $match[5] ?? 'RESTRICT',
+                    ]);
+                }
+                $table->foreignKeys = array_values($table->foreignKeys);
+            }
         }
     }
 

@@ -117,8 +117,14 @@ Craft.CP = Garnish.Base.extend(
                 let actions = this.$primaryForm.data('actions');
                 if (typeof actions === 'undefined') {
                     shortcuts.push([
-                        {keyCode: Garnish.S_KEY, ctrl: true},
-                        {redirect: this.$primaryForm.data('saveshortcut-redirect')}
+                        {
+                            keyCode: Garnish.S_KEY,
+                            ctrl: true,
+                        },
+                        {
+                            redirect: this.$primaryForm.data('saveshortcut-redirect'),
+                            retainScroll: Garnish.hasAttr(this.$primaryForm, 'saveshortcut-scroll'),
+                        }
                     ]);
                 } else {
                     for (let i = 0; i < actions.length; i++) {
@@ -138,6 +144,7 @@ Craft.CP = Garnish.Base.extend(
                                 confirm: action.confirm,
                                 params: action.params,
                                 data: action.data,
+                                retainScroll: action.retainScroll,
                             }
                         ]);
                     }
@@ -150,6 +157,17 @@ Craft.CP = Garnish.Base.extend(
             }
 
             this.initTabs();
+
+            // Should we match the previous scroll position?
+            let scrollY = Craft.getLocalStorage('scrollY');
+            if (typeof scrollY !== 'undefined') {
+                Craft.removeLocalStorage('scrollY');
+                Garnish.$doc.ready(() => {
+                    Garnish.requestAnimationFrame(() => {
+                        window.scrollTo(0, scrollY);
+                    });
+                });
+            }
 
             if (this.$edition.hasClass('hot')) {
                 this.addListener(this.$edition, 'click', function() {
@@ -276,6 +294,7 @@ Craft.CP = Garnish.Base.extend(
          * @param {string} [options.confirm] A confirmation message that should be shown to the user before submit
          * @param {Object} [options.params] Additional params that should be added to the form, defined as name/value pairs
          * @param {Object} [options.data] Additional data to be passed to the submit event
+         * @param {boolean} [options.retainScroll] Whether the scroll position should be stored and reapplied on the next page load
          */
         submitPrimaryForm: function(options) {
             // Give other stuff on the page a chance to prepare

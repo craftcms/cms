@@ -16,8 +16,6 @@ use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\User as UserInterface;
 use craft\gql\TypeManager;
 use craft\gql\types\elements\User;
-use craft\helpers\Gql;
-use GraphQL\Type\Definition\Type;
 
 /**
  * Class UserType
@@ -47,8 +45,7 @@ class UserType implements GeneratorInterface, SingleGeneratorInterface
         $contentFieldGqlTypes = [];
 
         foreach ($contentFields as $contentField) {
-            $gqlType = $contentField->getContentGqlType();
-            $contentFieldGqlTypes[$contentField->handle] = $contentField->required ? Gql::wrapInNonNull($gqlType) : $gqlType;
+            $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
         }
 
         $userFields = TypeManager::prepareFieldDefinitions(array_merge(UserInterface::getFieldDefinitions(), $contentFieldGqlTypes), $typeName);

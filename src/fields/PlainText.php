@@ -41,6 +41,12 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
     }
 
     /**
+     * @var string The UI mode of the field.
+     * @since 3.5.0
+     */
+    public $uiMode = 'normal';
+
+    /**
      * @var string|null The input’s placeholder text
      */
     public $placeholder;
@@ -186,12 +192,11 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
      */
     protected function inputHtml($value, ElementInterface $element = null): string
     {
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/PlainText/input',
-            [
-                'name' => $this->handle,
-                'value' => $value,
-                'field' => $this,
-            ]);
+        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/PlainText/input', [
+            'name' => $this->handle,
+            'value' => $value,
+            'field' => $this,
+        ]);
     }
 
     /**

@@ -277,58 +277,58 @@ class Cp extends Component
         $label = Craft::t('app', 'System');
 
         $settings[$label]['general'] = [
-            'icon' => '@app/icons/sliders.svg',
+            'iconMask' => '@app/icons/sliders.svg',
             'label' => Craft::t('app', 'General')
         ];
         $settings[$label]['sites'] = [
-            'icon' => '@app/icons/world.svg',
+            'iconMask' => '@app/icons/world.svg',
             'label' => Craft::t('app', 'Sites')
         ];
 
         if (!Craft::$app->getConfig()->getGeneral()->headlessMode) {
             $settings[$label]['routes'] = [
-                'icon' => '@app/icons/routes.svg',
+                'iconMask' => '@app/icons/routes.svg',
                 'label' => Craft::t('app', 'Routes')
             ];
         }
 
         $settings[$label]['users'] = [
-            'icon' => '@app/icons/users.svg',
+            'iconMask' => '@app/icons/users.svg',
             'label' => Craft::t('app', 'Users')
         ];
         $settings[$label]['email'] = [
-            'icon' => '@app/icons/envelope.svg',
+            'iconMask' => '@app/icons/envelope.svg',
             'label' => Craft::t('app', 'Email')
         ];
         $settings[$label]['plugins'] = [
-            'icon' => '@app/icons/plugin.svg',
+            'iconMask' => '@app/icons/plugin.svg',
             'label' => Craft::t('app', 'Plugins')
         ];
 
         $label = Craft::t('app', 'Content');
 
         $settings[$label]['fields'] = [
-            'icon' => '@app/icons/field.svg',
+            'iconMask' => '@app/icons/field.svg',
             'label' => Craft::t('app', 'Fields')
         ];
         $settings[$label]['sections'] = [
-            'icon' => '@app/icons/newspaper.svg',
+            'iconMask' => '@app/icons/newspaper.svg',
             'label' => Craft::t('app', 'Sections')
         ];
         $settings[$label]['assets'] = [
-            'icon' => '@app/icons/photo.svg',
+            'iconMask' => '@app/icons/photo.svg',
             'label' => Craft::t('app', 'Assets')
         ];
         $settings[$label]['globals'] = [
-            'icon' => '@app/icons/globe.svg',
+            'iconMask' => '@app/icons/globe.svg',
             'label' => Craft::t('app', 'Globals')
         ];
         $settings[$label]['categories'] = [
-            'icon' => '@app/icons/folder-open.svg',
+            'iconMask' => '@app/icons/folder-open.svg',
             'label' => Craft::t('app', 'Categories')
         ];
         $settings[$label]['tags'] = [
-            'icon' => '@app/icons/tags.svg',
+            'iconMask' => '@app/icons/tags.svg',
             'label' => Craft::t('app', 'Tags')
         ];
 

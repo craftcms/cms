@@ -9,12 +9,10 @@ namespace craft\services;
 
 use Craft;
 use craft\base\Element;
-use craft\base\Field;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Entry;
 use craft\errors\EntryTypeNotFoundException;
-use craft\errors\InvalidElementException;
 use craft\errors\SectionNotFoundException;
 use craft\events\ConfigEvent;
 use craft\events\DeleteSiteEvent;
@@ -454,57 +452,6 @@ class Sections extends Component
         // Assemble the section config
         // -----------------------------------------------------------------
 
-        $projectConfig = Craft::$app->getProjectConfig();
-
-        $configData = [
-            'name' => $section->name,
-            'handle' => $section->handle,
-            'type' => $section->type,
-            'enableVersioning' => (bool)$section->enableVersioning,
-            'propagationMethod' => $section->propagationMethod,
-            'siteSettings' => [],
-        ];
-
-        if (!empty($section->previewTargets)) {
-            $configData['previewTargets'] = ProjectConfigHelper::packAssociativeArray($section->previewTargets);
-        }
-
-        if ($section->type === Section::TYPE_STRUCTURE) {
-            $sectionRecord = $this->_getSectionRecord($section->uid);
-            if ($sectionRecord->structureId) {
-                $structureUid = Db::uidById(Table::STRUCTURES, $sectionRecord->structureId);
-            } else {
-                $structureUid = StringHelper::UUID();
-            }
-
-            $configData['structure'] = [
-                'uid' => $structureUid,
-                'maxLevels' => (int)$section->maxLevels ?: null,
-            ];
-        }
-
-        // Load the existing entry type info
-        if (!$isNewSection) {
-            $configData[self::CONFIG_ENTRYTYPES_KEY] = $projectConfig->get(self::CONFIG_SECTIONS_KEY . '.' . $section->uid . '.' . self::CONFIG_ENTRYTYPES_KEY);
-        }
-
-        // Get the site settings
-        $allSiteSettings = $section->getSiteSettings();
-
-        if (empty($allSiteSettings)) {
-            throw new Exception('Tried to save a section without any site settings');
-        }
-
-        foreach ($allSiteSettings as $siteId => $settings) {
-            $siteUid = Db::uidById(Table::SITES, $siteId);
-            $configData['siteSettings'][$siteUid] = [
-                'enabledByDefault' => (bool)$settings['enabledByDefault'],
-                'hasUrls' => (bool)$settings['hasUrls'],
-                'uriFormat' => $settings['uriFormat'],
-                'template' => $settings['template'],
-            ];
-        }
-
         // Do everything that follows in a transaction so no DB changes will be
         // saved if an exception occurs that ends up preventing the project config
         // changes from getting saved
@@ -515,7 +462,8 @@ class Sections extends Component
             // -----------------------------------------------------------------
 
             $configPath = self::CONFIG_SECTIONS_KEY . '.' . $section->uid;
-            $projectConfig->set($configPath, $configData, "Save section “{$section->handle}”");
+            $configData = $section->getConfig();
+            Craft::$app->getProjectConfig()->set($configPath, $configData, "Save section “{$section->handle}”");
 
             if ($isNewSection) {
                 $section->id = Db::idByUid(Table::SECTIONS, $section->uid);
@@ -542,12 +490,9 @@ class Sections extends Component
 
                 if ($section->type === Section::TYPE_SINGLE) {
                     $entryType->hasTitleField = false;
-                    $entryType->titleLabel = null;
-                    $entryType->titleInstructions = null;
                     $entryType->titleFormat = '{section.name|raw}';
                 } else {
                     $entryType->hasTitleField = true;
-                    $entryType->titleLabel = Craft::t('app', 'Title');
                     $entryType->titleFormat = null;
                 }
 
@@ -668,6 +613,7 @@ class Sections extends Component
             }
 
             $siteIdMap = Db::idsByUids(Table::SITES, array_keys($siteSettingData));
+            $hasNewSite = false;
 
             foreach ($siteSettingData as $siteUid => $siteSettings) {
                 $siteId = $siteIdMap[$siteUid];
@@ -680,6 +626,7 @@ class Sections extends Component
                     $siteSettingsRecord->sectionId = $sectionRecord->id;
                     $siteSettingsRecord->siteId = $siteId;
                     $resaveEntries = true;
+                    $hasNewSite = true;
                 }
 
                 $siteSettingsRecord->enabledByDefault = $siteSettings['enabledByDefault'];
@@ -755,8 +702,8 @@ class Sections extends Component
                             'siteId' => array_values($siteIdMap),
                             'unique' => true,
                             'status' => null,
-                            'enabledForSite' => false,
                         ],
+                        'updateSearchIndex' => $hasNewSite,
                     ]));
                 }
             }
@@ -778,7 +725,7 @@ class Sections extends Component
         if (
             !$isNewSection &&
             $section->type === Section::TYPE_SINGLE &&
-            !Craft::$app->getProjectConfig()->areChangesPending($event->path . '.' . self::CONFIG_ENTRYTYPES_KEY)
+            !Craft::$app->getProjectConfig()->areChangesPending(self::CONFIG_ENTRYTYPES_KEY)
         ) {
             $this->_ensureSingleEntry($section, $siteSettingData);
         }
@@ -952,23 +899,19 @@ class Sections extends Component
         $fieldUid = $field->uid;
 
         $projectConfig = Craft::$app->getProjectConfig();
-        $sections = $projectConfig->get(self::CONFIG_SECTIONS_KEY);
+        $entryTypes = $projectConfig->get(self::CONFIG_ENTRYTYPES_KEY);
 
         // Engage stealth mode
         $projectConfig->muteEvents = true;
 
         // Loop through the tag groups and prune the UID from field layouts.
-        if (is_array($sections)) {
-            foreach ($sections as $sectionUid => $section) {
-                if (!empty($section['entryTypes'])) {
-                    foreach ($section['entryTypes'] as $entryTypeUid => $entryType) {
-                        if (!empty($entryType['fieldLayouts'])) {
-                            foreach ($entryType['fieldLayouts'] as $layoutUid => $layout) {
-                                if (!empty($layout['tabs'])) {
-                                    foreach ($layout['tabs'] as $tabUid => $tab) {
-                                        $projectConfig->remove(self::CONFIG_SECTIONS_KEY . '.' . $sectionUid . '.' . self::CONFIG_ENTRYTYPES_KEY . '.' . $entryTypeUid . '.fieldLayouts.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid, 'Prune deleted field');
-                                    }
-                                }
+        if (is_array($entryTypes)) {
+            foreach ($entryTypes as $entryTypeUid => $entryType) {
+                if (!empty($entryType['fieldLayouts'])) {
+                    foreach ($entryType['fieldLayouts'] as $layoutUid => $layout) {
+                        if (!empty($layout['tabs'])) {
+                            foreach ($layout['tabs'] as $tabUid => $tab) {
+                                $projectConfig->remove(self::CONFIG_ENTRYTYPES_KEY . '.' . $entryTypeUid . '.fieldLayouts.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid, 'Prune deleted field');
                             }
                         }
                     }
@@ -1143,53 +1086,17 @@ class Sections extends Component
 
             $maxSortOrder = (new Query())
                 ->from([Table::ENTRYTYPES])
-                ->where(['sectionId' => $entryType->sectionId])
+                ->where([
+                    'sectionId' => $entryType->sectionId,
+                    'dateDeleted' => null,
+                ])
                 ->max('[[sortOrder]]');
-            $sortOrder = $maxSortOrder ? $maxSortOrder + 1 : 1;
-        } else {
-            $entryTypeRecord = EntryTypeRecord::findOne($entryType->id);
-
-            if (!$entryTypeRecord) {
-                throw new EntryTypeNotFoundException("No entry type exists with the ID '{$entryType->id}'");
-            }
-
-            $entryType->uid = $entryTypeRecord->uid;
-            $sortOrder = $entryTypeRecord->sortOrder;
+            $entryType->sortOrder = $maxSortOrder ? $maxSortOrder + 1 : 1;
         }
 
-        $section = $entryType->getSection();
-
-        $projectConfig = Craft::$app->getProjectConfig();
-        $configData = [
-            'name' => $entryType->name,
-            'handle' => $entryType->handle,
-            'hasTitleField' => (bool)$entryType->hasTitleField,
-            'titleLabel' => $entryType->titleLabel,
-            'titleInstructions' => $entryType->titleInstructions,
-            'titleTranslationMethod' => $entryType->titleTranslationMethod,
-            'titleTranslationKeyFormat' => $entryType->titleTranslationKeyFormat,
-            'titleFormat' => $entryType->titleFormat,
-            'sortOrder' => (int)$sortOrder,
-        ];
-
-        $fieldLayout = $entryType->getFieldLayout();
-        $fieldLayoutConfig = $fieldLayout->getConfig();
-
-        if ($fieldLayoutConfig) {
-            if (empty($fieldLayout->id)) {
-                $layoutUid = StringHelper::UUID();
-                $fieldLayout->uid = $layoutUid;
-            } else {
-                $layoutUid = Db::uidById(Table::FIELDLAYOUTS, $fieldLayout->id);
-            }
-
-            $configData['fieldLayouts'] = [
-                $layoutUid => $fieldLayoutConfig
-            ];
-        }
-
-        $configPath = self::CONFIG_SECTIONS_KEY . '.' . $section->uid . '.' . self::CONFIG_ENTRYTYPES_KEY . '.' . $entryType->uid;
-        $projectConfig->set($configPath, $configData, "Save entry type “{$entryType->handle}”");
+        $configPath = self::CONFIG_ENTRYTYPES_KEY . '.' . $entryType->uid;
+        $configData = $entryType->getConfig();
+        Craft::$app->getProjectConfig()->set($configPath, $configData, "Save entry type “{$entryType->handle}”");
 
         if ($isNewEntryType) {
             $entryType->id = Db::idByUid(Table::ENTRYTYPES, $entryType->uid);
@@ -1205,16 +1112,14 @@ class Sections extends Component
      */
     public function handleChangedEntryType(ConfigEvent $event)
     {
-        list($sectionUid, $entryTypeUid) = $event->tokenMatches;
+        $entryTypeUid = $event->tokenMatches[0];
         $data = $event->newValue;
 
         // Make sure fields are processed
         ProjectConfigHelper::ensureAllSitesProcessed();
         ProjectConfigHelper::ensureAllFieldsProcessed();
 
-        Craft::$app->getProjectConfig()->processConfigChanges(self::CONFIG_SECTIONS_KEY . '.' . $sectionUid);
-
-        $section = $this->getSectionByUid($sectionUid);
+        $section = $this->getSectionByUid($data['section']);
         $entryTypeRecord = $this->_getEntryTypeRecord($entryTypeUid, true);
 
         if (!$section || !$entryTypeRecord) {
@@ -1229,10 +1134,8 @@ class Sections extends Component
             $entryTypeRecord->name = $data['name'];
             $entryTypeRecord->handle = $data['handle'];
             $entryTypeRecord->hasTitleField = $data['hasTitleField'];
-            $entryTypeRecord->titleLabel = $data['titleLabel'];
-            $entryTypeRecord->titleInstructions = $data['titleInstructions'];
-            $entryTypeRecord->titleTranslationMethod = $data['titleTranslationMethod'];
-            $entryTypeRecord->titleTranslationKeyFormat = $data['titleTranslationKeyFormat'];
+            $entryTypeRecord->titleTranslationMethod = $data['titleTranslationMethod'] ?? '';
+            $entryTypeRecord->titleTranslationKeyFormat = $data['titleTranslationKeyFormat'] ?? null;
             $entryTypeRecord->titleFormat = $data['titleFormat'];
             $entryTypeRecord->sortOrder = $data['sortOrder'];
             $entryTypeRecord->sectionId = $section->id;
@@ -1306,7 +1209,6 @@ class Sections extends Component
                     'siteId' => '*',
                     'unique' => true,
                     'status' => null,
-                    'enabledForSite' => false,
                 ]
             ]));
         }
@@ -1347,8 +1249,8 @@ class Sections extends Component
                     $sectionRecord = SectionRecord::findOne($entryTypeRecord->sectionId);
                 }
 
-                $configPath = self::CONFIG_SECTIONS_KEY . '.' . $sectionRecord->uid . '.' . self::CONFIG_ENTRYTYPES_KEY . '.' . $entryTypeUid;
-                $projectConfig->set($configPath . '.sortOrder', $entryTypeOrder + 1, 'Reorder entry types');
+                $configPath = self::CONFIG_ENTRYTYPES_KEY . '.' . $entryTypeUid . '.sortOrder';
+                $projectConfig->set($configPath, $entryTypeOrder + 1, 'Reorder entry types');
             }
         }
 
@@ -1401,11 +1303,7 @@ class Sections extends Component
             ]));
         }
 
-        $entryTypeUid = $entryType->uid;
-        $section = $entryType->getSection();
-        $sectionUid = $section->uid;
-
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_SECTIONS_KEY . '.' . $sectionUid . '.' . self::CONFIG_ENTRYTYPES_KEY . '.' . $entryTypeUid, "Delete the “{$entryType->handle}” entry type");
+        Craft::$app->getProjectConfig()->remove(self::CONFIG_ENTRYTYPES_KEY . '.' . $entryType->uid, "Delete the “{$entryType->handle}” entry type");
         return true;
     }
 
@@ -1416,7 +1314,7 @@ class Sections extends Component
      */
     public function handleDeletedEntryType(ConfigEvent $event)
     {
-        $uid = $event->tokenMatches[1];
+        $uid = $event->tokenMatches[0];
         $entryTypeRecord = $this->_getEntryTypeRecord($uid);
 
         if (!$entryTypeRecord->id) {
@@ -1660,8 +1558,8 @@ class Sections extends Component
                 'fieldLayoutId',
                 'name',
                 'handle',
+                'sortOrder',
                 'hasTitleField',
-                'titleLabel',
                 'titleFormat',
                 'uid',
             ])
@@ -1674,7 +1572,6 @@ class Sections extends Component
         }
         if (version_compare($schemaVersion, '3.5.4', '>=')) {
             $query->addSelect([
-                'titleInstructions',
                 'titleTranslationMethod',
                 'titleTranslationKeyFormat',
             ]);

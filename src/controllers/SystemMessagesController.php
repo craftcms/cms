@@ -29,10 +29,10 @@ class SystemMessagesController extends Controller
      */
     public function init()
     {
+        parent::init();
+
         // Make sure they have access to the System Messages utility
         $this->requirePermission('utility:system-messages');
-
-        parent::init();
     }
 
     /**
@@ -44,9 +44,8 @@ class SystemMessagesController extends Controller
     {
         $this->requireAcceptsJson();
 
-        $request = Craft::$app->getRequest();
-        $key = $request->getRequiredBodyParam('key');
-        $language = $request->getBodyParam('language');
+        $key = $this->request->getRequiredBodyParam('key');
+        $language = $this->request->getBodyParam('language');
 
         if (!$language) {
             $language = Craft::$app->getSites()->getPrimarySite()->language;
@@ -73,12 +72,12 @@ class SystemMessagesController extends Controller
         $this->requireAcceptsJson();
 
         $message = new SystemMessage();
-        $message->key = Craft::$app->getRequest()->getRequiredBodyParam('key');
-        $message->subject = Craft::$app->getRequest()->getRequiredBodyParam('subject');
-        $message->body = Craft::$app->getRequest()->getRequiredBodyParam('body');
+        $message->key = $this->request->getRequiredBodyParam('key');
+        $message->subject = $this->request->getRequiredBodyParam('subject');
+        $message->body = $this->request->getRequiredBodyParam('body');
 
         if (Craft::$app->getIsMultiSite()) {
-            $language = Craft::$app->getRequest()->getBodyParam('language');
+            $language = $this->request->getBodyParam('language');
         } else {
             $language = Craft::$app->getSites()->getPrimarySite()->language;
         }

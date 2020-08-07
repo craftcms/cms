@@ -20,6 +20,7 @@ use craft\helpers\UrlHelper;
 use craft\helpers\User as UserHelper;
 use craft\validators\UserPasswordValidator;
 use yii\web\Cookie;
+use yii\web\ForbiddenHttpException;
 
 /**
  * The User component provides APIs for managing the user authentication status.
@@ -360,31 +361,20 @@ class User extends \yii\web\User
 
     /**
      * Saves the logged-in user’s Debug toolbar preferences to the session.
+     *
+     * @deprecated in 3.5.0
      */
     public function saveDebugPreferencesToSession()
     {
-        $identity = $this->getIdentity();
-        $session = Craft::$app->getSession();
-
-        $this->destroyDebugPreferencesInSession();
-
-        if ($identity->admin && $identity->getPreference('enableDebugToolbarForSite')) {
-            $session->set('enableDebugToolbarForSite', true);
-        }
-
-        if ($identity->admin && $identity->getPreference('enableDebugToolbarForCp')) {
-            $session->set('enableDebugToolbarForCp', true);
-        }
     }
 
     /**
      * Removes the debug preferences from the session.
+     *
+     * @deprecated in 3.5.0
      */
     public function destroyDebugPreferencesInSession()
     {
-        $session = Craft::$app->getSession();
-        $session->remove('enableDebugToolbarForSite');
-        $session->remove('enableDebugToolbarForCp');
     }
 
     /**
@@ -413,9 +403,6 @@ class User extends \yii\web\User
         if (!$impersonating) {
             $this->sendUsernameCookie($identity);
         }
-
-        // Save the Debug preferences to the session
-        $this->saveDebugPreferencesToSession();
 
         // Clear out the elevated session, if there is one
         $session->remove($this->elevatedSessionTimeoutParam);
@@ -532,8 +519,6 @@ class User extends \yii\web\User
         // Delete the impersonation session, if there is one
         $session = Craft::$app->getSession();
         $session->remove(UserElement::IMPERSONATE_KEY);
-
-        $this->destroyDebugPreferencesInSession();
 
         if (Craft::$app->getConfig()->getGeneral()->enableCsrfProtection) {
             // Let's keep the current nonce around.

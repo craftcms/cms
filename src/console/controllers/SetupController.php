@@ -206,7 +206,6 @@ EOD;
      */
     public function actionDbCreds(): int
     {
-        $firstTime = true;
         $badUserCredentials = false;
         $isNitro = App::isNitro();
 
@@ -237,19 +236,13 @@ EOD;
         }
 
         // port
-        if ($firstTime) {
-            $defaultPort = $this->driver === Connection::DRIVER_MYSQL ? 3306 : 5432;
-        } else {
-            $defaultPort = $this->port;
-        }
-        $this->port = $this->prompt('Database port:', [
+        $this->port = (int)$this->prompt('Database port:', [
             'required' => true,
-            'default' => $defaultPort,
+            'default' => $this->port ?: ($this->driver === Connection::DRIVER_MYSQL ? 3306 : 5432),
             'validator' => function(string $input): bool {
                 return is_numeric($input);
             }
         ]);
-        $this->port = (int)$this->port;
 
         userCredentials:
 
@@ -380,7 +373,6 @@ EOD;
                 return ExitCode::UNSPECIFIED_ERROR;
             }
 
-            $firstTime = false;
             goto top;
         }
 
@@ -479,7 +471,7 @@ EOD;
      */
     private function _outputCommand(string $command)
     {
-        $script = FileHelper::normalizePath(Craft::$app->getRequest()->getScriptFile());
+        $script = FileHelper::normalizePath($this->request->getScriptFile());
         if (!Platform::isWindows() && ($home = App::env('HOME')) !== false) {
             $home = FileHelper::normalizePath($home);
             if (strpos($script, $home . DIRECTORY_SEPARATOR) === 0) {

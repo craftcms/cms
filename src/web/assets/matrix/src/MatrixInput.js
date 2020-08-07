@@ -229,6 +229,8 @@
         <li class="hidden"><a data-icon="expand" data-action="expand">${Craft.t('app', 'Expand')}</a></li>
         <li><a data-icon="disabled" data-action="disable">${Craft.t('app', 'Disable')}</a></li>
         <li class="hidden"><a data-icon="enabled" data-action="enable">${Craft.t('app', 'Enable')}</a></li>
+        <li><a data-icon="uarr" data-action="moveUp">${Craft.t('app', 'Move up')}</a></li>
+        <li><a data-icon="darr" data-action="moveDown">${Craft.t('app', 'Move down')}</a></li>
       </ul>`;
 
                 if (!this.settings.staticBlocks) {
@@ -351,7 +353,7 @@
 
             getParsedBlockHtml: function(html, id) {
                 if (typeof html === 'string') {
-                    return html.replace(/__BLOCK__/g, id);
+                    return html.replace(new RegExp(`__BLOCK_${this.settings.placeholderKey}__`, 'g'), id);
                 }
                 else {
                     return '';
@@ -364,6 +366,7 @@
         },
         {
             defaults: {
+                placeholderKey: null,
                 maxBlocks: null,
                 staticBlocks: false,
             },
@@ -444,6 +447,16 @@
 
                 menuBtn.menu.on('show', () => {
                     this.$container.addClass('active');
+                    if (this.$container.prev('.matrixblock').length) {
+                        this.$actionMenu.find('a[data-action=moveUp]:first').parent().removeClass('hidden');
+                    } else {
+                        this.$actionMenu.find('a[data-action=moveUp]:first').parent().addClass('hidden');
+                    }
+                    if (this.$container.next('.matrixblock').length) {
+                        this.$actionMenu.find('a[data-action=moveDown]:first').parent().removeClass('hidden');
+                    } else {
+                        this.$actionMenu.find('a[data-action=moveDown]:first').parent().addClass('hidden');
+                    }
                 });
                 menuBtn.menu.on('hide', () => {
                     this.$container.removeClass('active');
@@ -479,7 +492,7 @@
                 this.$container.addClass('collapsed');
 
                 var previewHtml = '',
-                    $fields = this.$fieldsContainer.children();
+                    $fields = this.$fieldsContainer.children().children();
 
                 for (var i = 0; i < $fields.length; i++) {
                     var $field = $($fields[i]),
@@ -634,6 +647,22 @@
                 }, this), 200);
             },
 
+            moveUp: function() {
+                let $prev = this.$container.prev('.matrixblock');
+                if ($prev.length) {
+                    this.$container.insertBefore($prev);
+                    this.matrix.blockSelect.resetItemOrder();
+                }
+            },
+
+            moveDown: function() {
+                let $next = this.$container.next('.matrixblock');
+                if ($next.length) {
+                    this.$container.insertAfter($next);
+                    this.matrix.blockSelect.resetItemOrder();
+                }
+            },
+
             onMenuOptionSelect: function(option) {
                 var batchAction = (this.matrix.blockSelect.totalSelected > 1 && this.matrix.blockSelect.isSelected(this.$container)),
                     $option = $(option);
@@ -681,6 +710,16 @@
                             this.expand();
                         }
 
+                        break;
+                    }
+
+                    case 'moveUp': {
+                        this.moveUp();
+                        break;
+                    }
+
+                    case 'moveDown': {
+                        this.moveDown();
                         break;
                     }
 

@@ -11,6 +11,7 @@ use Craft;
 use craft\base\WidgetInterface;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Component;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
@@ -153,14 +154,13 @@ class DashboardController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $request = Craft::$app->getRequest();
         $dashboardService = Craft::$app->getDashboard();
 
-        $type = $request->getRequiredBodyParam('type');
-        $settingsNamespace = $request->getBodyParam('settingsNamespace');
+        $type = $this->request->getRequiredBodyParam('type');
+        $settingsNamespace = $this->request->getBodyParam('settingsNamespace');
 
         if ($settingsNamespace) {
-            $settings = $request->getBodyParam($settingsNamespace);
+            $settings = $this->request->getBodyParam($settingsNamespace);
         } else {
             $settings = null;
         }
@@ -184,9 +184,8 @@ class DashboardController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $request = Craft::$app->getRequest();
         $dashboardService = Craft::$app->getDashboard();
-        $widgetId = $request->getRequiredBodyParam('widgetId');
+        $widgetId = $this->request->getRequiredBodyParam('widgetId');
 
         // Get the existing widget
         $widget = $dashboardService->getWidgetById($widgetId);
@@ -196,7 +195,7 @@ class DashboardController extends Controller
         }
 
         // Create a new widget model with the new settings
-        $settings = $request->getBodyParam('widget' . $widget->id . '-settings');
+        $settings = $this->request->getBodyParam('widget' . $widget->id . '-settings');
 
         $widget = $dashboardService->createWidget([
             'id' => $widget->id,
@@ -220,7 +219,7 @@ class DashboardController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $widgetId = Json::decode(Craft::$app->getRequest()->getRequiredBodyParam('id'));
+        $widgetId = Json::decode($this->request->getRequiredBodyParam('id'));
         Craft::$app->getDashboard()->deleteWidgetById($widgetId);
 
         return $this->asJson(['success' => true]);
@@ -236,9 +235,8 @@ class DashboardController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $request = Craft::$app->getRequest();
-        $widgetId = $request->getRequiredBodyParam('id');
-        $colspan = $request->getRequiredBodyParam('colspan');
+        $widgetId = $this->request->getRequiredBodyParam('id');
+        $colspan = $this->request->getRequiredBodyParam('colspan');
 
         Craft::$app->getDashboard()->changeWidgetColspan($widgetId, $colspan);
 
@@ -255,7 +253,7 @@ class DashboardController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $widgetIds = Json::decode(Craft::$app->getRequest()->getRequiredBodyParam('ids'));
+        $widgetIds = Json::decode($this->request->getRequiredBodyParam('ids'));
         Craft::$app->getDashboard()->reorderWidgets($widgetIds);
 
         return $this->asJson(['success' => true]);
@@ -271,11 +269,10 @@ class DashboardController extends Controller
     {
         $this->requireAcceptsJson();
 
-        $request = Craft::$app->getRequest();
         $formatter = Craft::$app->getFormatter();
 
-        $url = $request->getRequiredParam('url');
-        $limit = $request->getParam('limit');
+        $url = $this->request->getRequiredParam('url');
+        $limit = $this->request->getParam('limit');
 
         $feed = Craft::$app->getFeeds()->getFeed($url);
 
@@ -317,9 +314,8 @@ class DashboardController extends Controller
      */
     public function actionCacheFeedData(): Response
     {
-        $request = Craft::$app->getRequest();
-        $url = $request->getRequiredBodyParam('url');
-        $data = $request->getRequiredBodyParam('data');
+        $url = $this->request->getRequiredBodyParam('url');
+        $data = $this->request->getRequiredBodyParam('data');
         Craft::$app->getCache()->set("feed:$url", $data);
         return $this->asJson(['success' => true]);
     }
@@ -337,17 +333,16 @@ class DashboardController extends Controller
 
         App::maxPowerCaptain();
 
-        $request = Craft::$app->getRequest();
-        $widgetId = $request->getBodyParam('widgetId');
-        $namespace = $request->getBodyParam('namespace');
+        $widgetId = $this->request->getBodyParam('widgetId');
+        $namespace = $this->request->getBodyParam('namespace');
         $namespace = $namespace ? $namespace . '.' : '';
 
         $getHelpModel = new CraftSupport();
-        $getHelpModel->fromEmail = $request->getBodyParam($namespace . 'fromEmail');
-        $getHelpModel->message = trim($request->getBodyParam($namespace . 'message'));
-        $getHelpModel->attachLogs = (bool)$request->getBodyParam($namespace . 'attachLogs');
-        $getHelpModel->attachDbBackup = (bool)$request->getBodyParam($namespace . 'attachDbBackup');
-        $getHelpModel->attachTemplates = (bool)$request->getBodyParam($namespace . 'attachTemplates');
+        $getHelpModel->fromEmail = $this->request->getBodyParam($namespace . 'fromEmail');
+        $getHelpModel->message = trim($this->request->getBodyParam($namespace . 'message'));
+        $getHelpModel->attachLogs = (bool)$this->request->getBodyParam($namespace . 'attachLogs');
+        $getHelpModel->attachDbBackup = (bool)$this->request->getBodyParam($namespace . 'attachDbBackup');
+        $getHelpModel->attachTemplates = (bool)$this->request->getBodyParam($namespace . 'attachTemplates');
         $getHelpModel->attachment = UploadedFile::getInstanceByName($namespace . 'attachAdditionalFile');
 
         if (!$getHelpModel->validate()) {
@@ -552,40 +547,7 @@ class DashboardController extends Controller
      */
     private function _getWidgetIconSvg(WidgetInterface $widget): string
     {
-        $icon = $widget::icon();
-
-        if ($icon === null) {
-            return $this->_getDefaultWidgetIconSvg($widget);
-        }
-
-        if (stripos($icon, '<svg') !== false) {
-            return $icon;
-        }
-
-        if (!is_file($icon)) {
-            Craft::warning("Widget icon file doesn't exist: {$icon}", __METHOD__);
-            return $this->_getDefaultWidgetIconSvg($widget);
-        }
-
-        if (!FileHelper::isSvg($icon)) {
-            Craft::warning("Widget icon file is not an SVG: {$icon}", __METHOD__);
-            return $this->_getDefaultWidgetIconSvg($widget);
-        }
-
-        return file_get_contents($icon);
-    }
-
-    /**
-     * Returns the default icon SVG for a given widget type.
-     *
-     * @param WidgetInterface $widget
-     * @return string
-     */
-    private function _getDefaultWidgetIconSvg(WidgetInterface $widget): string
-    {
-        return $this->getView()->renderTemplate('_includes/defaulticon.svg', [
-            'label' => $widget::displayName()
-        ]);
+        return Component::iconSvg($widget::icon(), $widget::displayName());
     }
 
     /**

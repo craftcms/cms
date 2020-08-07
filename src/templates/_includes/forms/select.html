@@ -7,8 +7,15 @@
 {%- set value = (value is defined ? value : null) %}
 {%- set hasOptgroups = false -%}
 
-<div class="{{ class|join(' ') }}"
-        {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
+{%- set containerAttributes = {
+  class: class,
+}|merge(containerAttributes ?? [], recursive=true) %}
+
+{%- if block('attr') is defined %}
+  {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
+{% endif %}
+
+<div {{ attr(containerAttributes) }}>
     <select
         {%- if id is defined %} id="{{ id }}"{% endif %}
         {%- if toggle is defined and toggle %} class="fieldtoggle" data-target-prefix="{{ targetPrefix ?? '' }}"{% endif %}

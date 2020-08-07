@@ -39,6 +39,11 @@ class QuickPost extends Widget
     }
 
     /**
+     * @var string The site ID that the widget should pull entries from
+     */
+    public $siteId;
+
+    /**
      * @var int|null The ID of the section that the widget should post to
      */
     public $section;
@@ -155,6 +160,7 @@ class QuickPost extends Widget
         $entryType = $entryTypes[$entryTypeId];
 
         $params = [
+            'siteId' => $this->siteId ?? Craft::$app->getSites()->getPrimarySite()->id,
             'sectionId' => $section->id,
             'typeId' => $entryTypeId,
         ];

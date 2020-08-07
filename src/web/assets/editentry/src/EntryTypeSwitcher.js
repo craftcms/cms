@@ -23,10 +23,16 @@
                         this.trigger('beforeTypeChange');
 
                         var $tabs = $('#tabs');
-                        if ($tabs.length) {
-                            $tabs.replaceWith(response.tabsHtml);
+                        if (response.tabsHtml) {
+                            if ($tabs.length) {
+                                $tabs.replaceWith(response.tabsHtml);
+                            } else {
+                                $(response.tabsHtml).insertBefore($('#content'))
+                            }
+                            Craft.cp.$mainContent.addClass('has-tabs');
                         } else {
-                            $(response.tabsHtml).insertBefore($('#content'))
+                            $tabs.remove();
+                            Craft.cp.$mainContent.removeClass('has-tabs');
                         }
 
                         $('#fields').html(response.fieldsHtml);

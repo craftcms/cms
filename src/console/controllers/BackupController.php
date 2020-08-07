@@ -27,6 +27,29 @@ class BackupController extends Controller
     public $defaultAction = 'db';
 
     /**
+     * @var bool Whether the backup should be saved as a zip file.
+     * @since 3.5.0
+     */
+    public $zip = false;
+
+    /**
+     * @var bool Whether to overwrite an existing backup file, if a specific file path is given.
+     * @since 3.5.0
+     */
+    public $overwrite = false;
+
+    /**
+     * @inheritdoc
+     */
+    public function options($actionID)
+    {
+        $options = parent::options($actionID);
+        $options[] = 'zip';
+        $options[] = 'overwrite';
+        return $options;
+    }
+
+    /**
      * Creates a new database backup.
      *
      * @param string|null The path the database backup should be created at.
@@ -54,19 +77,41 @@ class BackupController extends Controller
 
             if (is_dir($path)) {
                 $path .= DIRECTORY_SEPARATOR . basename($db->getBackupFilePath());
-            } else if (is_file($path)) {
-                if (!$this->confirm("{$path} already exists. Overwrite?")) {
-                    $this->stdout('Aborting' . PHP_EOL);
-                    return ExitCode::OK;
-                }
-                unlink($path);
+            } else if ($this->zip) {
+                $path = preg_replace('/\.zip$/', '', $path);
             }
         } else {
             $path = $db->getBackupFilePath();
         }
 
+        $checkPaths = [$path];
+        if ($this->zip) {
+            $checkPaths[] = "$path.zip";
+        }
+
+        foreach ($checkPaths as $checkPath) {
+            if (is_file($checkPath)) {
+                if (!$this->overwrite) {
+                    if (!$this->confirm("$checkPath already exists. Overwrite?")) {
+                        if ($this->interactive) {
+                            $this->stdout('Aborting' . PHP_EOL);
+                            return ExitCode::OK;
+                        }
+                        $this->stderr("$checkPath already exists. Retry with the --overwire flag to overwrite it." . PHP_EOL, Console::FG_RED);
+                        return ExitCode::UNSPECIFIED_ERROR;
+                    }
+                }
+                unlink($checkPath);
+            }
+        }
+
         try {
             $db->backupTo($path);
+            if ($this->zip) {
+                $zipPath = FileHelper::zip($path);
+                unlink($path);
+                $path = $zipPath;
+            }
         } catch (\Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);
             $this->stderr('error: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);

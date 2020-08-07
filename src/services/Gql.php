@@ -58,9 +58,11 @@ use craft\gql\types\Mutation;
 use craft\gql\types\Number;
 use craft\gql\types\Query;
 use craft\gql\types\QueryArgument;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Gql as GqlHelper;
 use craft\helpers\Json;
+use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\models\GqlSchema;
 use craft\models\GqlToken;
@@ -89,7 +91,7 @@ class Gql extends Component
      * @event RegisterGqlTypesEvent The event that is triggered when registering GraphQL types.
      *
      * Plugins get a chance to add their own GraphQL types.
-     * See [GraphQL](https://docs.craftcms.com/v3/graphql.html) for documentation on adding GraphQL support.
+     * See [GraphQL API](https://craftcms.com/docs/3.x/graphql.html) for documentation on adding GraphQL support.
      *
      * ---
      * ```php
@@ -109,7 +111,7 @@ class Gql extends Component
      * @event RegisterGqlQueriesEvent The event that is triggered when registering GraphQL queries.
      *
      * Plugins get a chance to add their own GraphQL queries.
-     * See [GraphQL](https://docs.craftcms.com/v3/graphql.html) for documentation on adding GraphQL support.
+     * See [GraphQL API](https://craftcms.com/docs/3.x/graphql.html) for documentation on adding GraphQL support.
      *
      * ---
      * ```php
@@ -135,7 +137,7 @@ class Gql extends Component
      * @event RegisterGqlMutationsEvent The event that is triggered when registering GraphQL mutations.
      *
      * Plugins get a chance to add their own GraphQL mutations.
-     * See [GraphQL](https://docs.craftcms.com/v3/graphql.html) for documentation on adding GraphQL support.
+     * See [GraphQL API](https://craftcms.com/docs/3.x/graphql.html) for documentation on adding GraphQL support.
      *
      * ---
      * ```php
@@ -160,7 +162,7 @@ class Gql extends Component
      * @event RegisterGqlDirectivesEvent The event that is triggered when registering GraphQL directives.
      *
      * Plugins get a chance to add their own GraphQL directives.
-     * See [GraphQL](https://docs.craftcms.com/v3/graphql.html) for documentation on adding GraphQL support.
+     * See [GraphQL API](https://craftcms.com/docs/3.x/graphql.html) for documentation on adding GraphQL support.
      *
      * ---
      * ```php
@@ -265,9 +267,19 @@ class Gql extends Component
     const CACHE_TAG = 'graphql';
 
     /**
+     * @since 3.5.0
+     */
+    const CONFIG_GQL_KEY = 'graphql';
+
+    /**
      * @since 3.4.0
      */
-    const CONFIG_GQL_SCHEMAS_KEY = 'graphql.schemas';
+    const CONFIG_GQL_SCHEMAS_KEY = self::CONFIG_GQL_KEY . '.' . 'schemas';
+
+    /**
+     * @since 3.5.0
+     */
+    const CONFIG_GQL_PUBLIC_TOKEN_KEY = self::CONFIG_GQL_KEY . '.' . 'publicToken';
 
     /**
      * The field name to use when fetching count of related elements
@@ -275,6 +287,36 @@ class Gql extends Component
      * @since 3.4.0
      */
     const GRAPHQL_COUNT_FIELD = '_count';
+
+    /**
+     * Save a GQL Token record based on the model.
+     *
+     * @param GqlToken $token
+     */
+    private function _saveTokenInternal(GqlToken $token)
+    {
+        $isNewToken = !$token->id;
+
+        if ($isNewToken) {
+            $tokenRecord = new GqlTokenRecord();
+        } else {
+            $tokenRecord = GqlTokenRecord::findOne($token->id) ?: new GqlTokenRecord();
+        }
+
+        $tokenRecord->name = $token->name;
+        $tokenRecord->enabled = (bool)$token->enabled;
+        $tokenRecord->expiryDate = $token->expiryDate;
+        $tokenRecord->lastUsed = $token->lastUsed;
+        $tokenRecord->schemaId = $token->schemaId;
+
+        if ($token->accessToken) {
+            $tokenRecord->accessToken = $token->accessToken;
+        }
+
+        $tokenRecord->save();
+        $token->id = $tokenRecord->id;
+        $token->uid = $tokenRecord->uid;
+    }
 
     /**
      * @var Schema Currently loaded schema definition
@@ -305,7 +347,6 @@ class Gql extends Component
         if ($schema) {
             $this->setActiveSchema($schema);
         }
-
         if (!$this->_schemaDef || $prebuildSchema) {
             // Either cached version was not found or we need a pre-built schema.
             $registeredTypes = $this->_registerGqlTypes();
@@ -551,20 +592,8 @@ class Gql extends Component
      */
     public function getPublicSchema()
     {
-        $result = $this->_createTokenQuery()
-            ->where(['accessToken' => GqlToken::PUBLIC_TOKEN])
-            ->one();
-
-        if ($result && $result['schemaId']) {
-            return (new GqlToken($result))->getSchema();
-        }
-
-        // If admin changes aren't currently supported, return null
-        if (!Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
-            return null;
-        }
-
-        return $this->_createPublicSchema($result ? $result['id'] : null);
+        $token = $this->getPublicToken();
+        return $token ? $token->getSchema() : null;
     }
 
     /**
@@ -659,8 +688,6 @@ class Gql extends Component
 
     /**
      * Flush all GraphQL caches, registries and loaders.
-     *
-     * @return void
      */
     public function flushCaches()
     {
@@ -748,6 +775,44 @@ class Gql extends Component
     }
 
     /**
+     * Returns the public token. If it does not exist and admin changes are allowed, it will be created.
+     *
+     * @return GqlToken|null
+     * @since 3.5.0
+     */
+    public function getPublicToken()
+    {
+        $result = $this->_createTokenQuery()
+            ->where(['accessToken' => GqlToken::PUBLIC_TOKEN])
+            ->one();
+
+        // If we don't have it and admin changes aren't currently supported, return null
+        if (
+            (!$result || !$result['schemaId']) &&
+            !Craft::$app->getConfig()->getGeneral()->allowAdminChanges
+        ) {
+            return null;
+        }
+
+        $token = $result ? new GqlToken($result) : new GqlToken([
+            'name' => 'Public Token',
+            'accessToken' => GqlToken::PUBLIC_TOKEN,
+            'enabled' => true,
+        ]);
+
+        if (!$token->schemaId) {
+            $schema = $this->_createPublicSchema();
+            $token->setSchema($schema);
+
+            if (!$this->saveToken($token)) {
+                throw new Exception('Couldn’t save the public token.');
+            }
+        }
+
+        return $token;
+    }
+
+    /**
      * Saves a GraphQL token.
      *
      * @param GqlToken $token the schema to save
@@ -762,34 +827,60 @@ class Gql extends Component
             return false;
         }
 
-        $isNewToken = !$token->id;
+        // Public token information is stored in the project config
+        if ($token->accessToken === GqlToken::PUBLIC_TOKEN) {
+            $data = [
+                'expiryDate' => $token->expiryDate ? $token->expiryDate->getTimestamp() : null,
+                'enabled' => (bool)$token->enabled
+            ];
+
+            Craft::$app->getProjectConfig()->set(self::CONFIG_GQL_PUBLIC_TOKEN_KEY, $data);
+
+            return true;
+        }
 
         if ($runValidation && !$token->validate()) {
             Craft::info('Token not saved due to validation error.', __METHOD__);
             return false;
         }
 
-        if ($isNewToken) {
-            $tokenRecord = new GqlTokenRecord();
-        } else {
-            $tokenRecord = GqlTokenRecord::findOne($token->id) ?: new GqlTokenRecord();
-        }
-
-        $tokenRecord->name = $token->name;
-        $tokenRecord->enabled = (bool)$token->enabled;
-        $tokenRecord->expiryDate = $token->expiryDate;
-        $tokenRecord->lastUsed = $token->lastUsed;
-        $tokenRecord->schemaId = $token->schemaId;
-
-        if ($token->accessToken) {
-            $tokenRecord->accessToken = $token->accessToken;
-        }
-
-        $tokenRecord->save();
-        $token->id = $tokenRecord->id;
-        $token->uid = $tokenRecord->uid;
+        $this->_saveTokenInternal($token);
 
         return true;
+    }
+
+    /**
+     * Handle public token settings being updated.
+     *
+     * @param ConfigEvent $event
+     *
+     * @since 3.5.0
+     */
+    public function handleChangedPublicToken(ConfigEvent $event)
+    {
+        $data = $event->newValue;
+
+        // If we're just adding a public schema, ensure it makes it in.
+        ProjectConfigHelper::ensureAllGqlSchemasProcessed();
+
+        try {
+            $token = $this->getTokenByAccessToken(GqlToken::PUBLIC_TOKEN);
+        } catch (InvalidArgumentException $exception) {
+            $token = new GqlToken([
+                'name' => 'Public Token',
+                'accessToken' => GqlToken::PUBLIC_TOKEN,
+            ]);
+        }
+
+        $publicSchema = $this->_createSchemaQuery()
+            ->where(['isPublic' => true])
+            ->one();
+
+        $token->schemaId = $publicSchema ? $publicSchema['id'] : null;
+        $token->expiryDate = $data['expiryDate'] ? DateTimeHelper::toDateTime($data['expiryDate']) : null;
+        $token->enabled = $data['enabled'] ?: false;
+
+        $this->_saveTokenInternal($token);
     }
 
     /**
@@ -811,38 +902,36 @@ class Gql extends Component
     }
 
     /**
-     * Saves a GraphQL scope.
+     * Saves a GraphQL schema.
      *
      * @param GqlSchema $schema the schema to save
-     * @param bool $runValidation Whether the scope should be validated
-     * @return bool Whether the scope was saved successfully
+     * @param bool $runValidation Whether the schema should be validated
+     * @return bool Whether the schema was saved successfully
      * @throws Exception
      * @since 3.4.0
      */
     public function saveSchema(GqlSchema $schema, $runValidation = true): bool
     {
-        $isNewScope = !$schema->id;
+        $isNewSchema = !$schema->id;
 
         if ($runValidation && !$schema->validate()) {
             Craft::info('Schema not saved due to validation error.', __METHOD__);
             return false;
         }
 
-        if ($isNewScope && empty($schema->uid)) {
+        if ($isNewSchema && empty($schema->uid)) {
             $schema->uid = StringHelper::UUID();
         } else if (empty($schema->uid)) {
             $schema->uid = Db::uidById(Table::GQLSCHEMAS, $schema->id);
         }
 
-        $projectConfig = Craft::$app->getProjectConfig();
-        $configData = [
-            'name' => $schema->name,
-            'scope' => $schema->scope,
-            'isPublic' => $schema->isPublic
-        ];
-
         $configPath = self::CONFIG_GQL_SCHEMAS_KEY . '.' . $schema->uid;
-        $projectConfig->set($configPath, $configData, "Save GraphQL schema “{$schema->name}”");
+        $configData = $schema->getConfig();
+        Craft::$app->getProjectConfig()->set($configPath, $configData, "Save GraphQL schema “{$schema->name}”");
+
+        if ($isNewSchema) {
+            $schema->id = Db::idByUid(Table::GQLSCHEMAS, $schema->uid);
+        }
 
         return true;
     }
@@ -924,9 +1013,9 @@ class Gql extends Component
      * @return bool
      * @since 3.4.0
      */
-    public function deleteSchema(GqlSchema $scope): bool
+    public function deleteSchema(GqlSchema $schema): bool
     {
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_GQL_SCHEMAS_KEY . '.' . $scope->uid, "Delete the “{$scope->name}” GraphQL schema");
+        Craft::$app->getProjectConfig()->remove(self::CONFIG_GQL_SCHEMAS_KEY . '.' . $schema->uid, "Delete the “{$schema->name}” GraphQL schema");
         return true;
     }
 
@@ -950,7 +1039,7 @@ class Gql extends Component
         $transaction = $db->beginTransaction();
 
         try {
-            // Delete the scope
+            // Delete the schema
             Db::delete(Table::GQLSCHEMAS, [
                 'id' => $schemaRecord->id,
             ]);
@@ -1006,13 +1095,13 @@ class Gql extends Component
         $rows = $this->_createSchemaQuery()
             ->all();
 
-        $scopes = [];
+        $schemas = [];
 
         foreach ($rows as $row) {
-            $scopes[] = new GqlSchema($row);
+            $schemas[] = new GqlSchema($row);
         }
 
-        return $scopes;
+        return $schemas;
     }
 
 
@@ -1073,6 +1162,11 @@ class Gql extends Component
             return null;
         }
 
+        // Do not cache mutations
+        if (preg_match('/^\s*mutation(?P<operationName>\s+\w+)?\s*(?P<variables>\(.*\))?\s*{/si', $query)) {
+            return null;
+        }
+
         // No cache key if we have placeholder elements
         if (!empty(Craft::$app->getElements()->getPlaceholderElements())) {
             return null;
@@ -1129,8 +1223,6 @@ class Gql extends Component
 
     /**
      * Get GraphQL query definitions
-     *
-     * @return void
      */
     private function _registerGqlQueries()
     {
@@ -1159,8 +1251,6 @@ class Gql extends Component
 
     /**
      * Get GraphQL mutation definitions
-     *
-     * @return void
      */
     private function _registerGqlMutations()
     {
@@ -1463,16 +1553,15 @@ class Gql extends Component
     /**
      * Creates the public schema.
      *
-     * @param int $tokenId Token id, if one exists already for the public schema
      * @return GqlSchema
-     * @throws Exception if the schema couldn't be created.
      */
-    private function _createPublicSchema(int $tokenId = null): GqlSchema
+    private function _createPublicSchema(): GqlSchema
     {
-        $existingSchema = $this->_createSchemaQuery()->where(['isPublic' => true])->one();
+        // See if it already exists, and is just missing its token
+        $result = $this->_createSchemaQuery()->where(['isPublic' => true])->one();
 
-        if ($existingSchema) {
-            $schema = new GqlSchema($existingSchema);
+        if ($result) {
+            $schema = new GqlSchema($result);
         } else {
             $schemaUid = StringHelper::UUID();
             $schema = new GqlSchema([
@@ -1482,20 +1571,7 @@ class Gql extends Component
             ]);
         }
 
-        $this->saveSchema($schema);
-
-        $token = $tokenId ? $this->getTokenById($tokenId) : new GqlToken([
-            'name' => 'Public Token',
-            'accessToken' => GqlToken::PUBLIC_TOKEN,
-            'enabled' => true,
-        ]);
-
-        $token->schemaId = $existingSchema ? $schema->id : Db::idByUid(Table::GQLSCHEMAS, $schemaUid);
-
-        if (!$this->saveToken($token)) {
-            throw new Exception('Couldn’t create public schema.');
-        }
-
+        $this->saveSchema($schema, false);
         return $schema;
     }
 

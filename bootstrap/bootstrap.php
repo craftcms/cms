@@ -96,6 +96,7 @@ $contentMigrationsPath = $findConfigPath('CRAFT_CONTENT_MIGRATIONS_PATH', 'conte
 $storagePath = $findConfigPath('CRAFT_STORAGE_PATH', 'storagePath') ?: $rootPath . DIRECTORY_SEPARATOR . 'storage';
 $templatesPath = $findConfigPath('CRAFT_TEMPLATES_PATH', 'templatesPath') ?: $rootPath . DIRECTORY_SEPARATOR . 'templates';
 $translationsPath = $findConfigPath('CRAFT_TRANSLATIONS_PATH', 'translationsPath') ?: $rootPath . DIRECTORY_SEPARATOR . 'translations';
+$testsPath = $findConfigPath('CRAFT_TESTS_PATH', 'testsPath') ?: $rootPath . DIRECTORY_SEPARATOR . 'tests';
 
 // Set the environment
 $environment = $findConfig('CRAFT_ENVIRONMENT', 'env') ?: ($_SERVER['SERVER_NAME'] ?? null);
@@ -130,6 +131,8 @@ if (!defined('CRAFT_LICENSE_KEY')) {
 
             // See if it worked.
             if (!file_exists($licenseFullPath) || (file_exists($licenseFullPath) && file_get_contents($licenseFullPath) !== 'temp')) {
+                // Set a 503 response header so things like Varnish won't cache a bad page.
+                http_response_code(503);
                 exit($licensePath . ' isn\'t writable by PHP. Please fix that.' . PHP_EOL);
             }
         }
@@ -208,6 +211,7 @@ Craft::setAlias('@contentMigrations', $contentMigrationsPath);
 Craft::setAlias('@storage', $storagePath);
 Craft::setAlias('@templates', $templatesPath);
 Craft::setAlias('@translations', $translationsPath);
+Craft::setAlias('@tests', $testsPath);
 
 // Set any custom aliases
 $customAliases = $generalConfig['aliases'] ?? $generalConfig['environmentVariables'] ?? null;

@@ -58,7 +58,7 @@ class ElementHelper
      *
      * @param string $str The string
      * @param bool|null $ascii Whether the slug should be converted to ASCII. If null, it will depend on
-     * the <config:limitAutoSlugsToAscii> config setting value.
+     * the <config3:limitAutoSlugsToAscii> config setting value.
      * @param string|null $language The language to pull ASCII character mappings for, if needed
      * @return string
      * @since 3.5.0
@@ -542,6 +542,10 @@ class ElementHelper
             case Field::TRANSLATION_METHOD_LANGUAGE:
                 return $element->getSite()->language;
             default:
+                // Translate for each site if a translation key format wasn’t specified
+                if ($translationKeyFormat === null) {
+                    return (string)$element->siteId;
+                }
                 return Craft::$app->getView()->renderObjectTemplate($translationKeyFormat, $element);
         }
     }

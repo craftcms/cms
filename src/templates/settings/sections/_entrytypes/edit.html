@@ -49,33 +49,13 @@
         first: (section.type == 'single'),
         label: "Show the Title field"|t('app'),
         name: 'hasTitleField',
-        toggle: 'titleLabel-container',
-        reverseToggle: 'titleFormat-container',
+        toggle: 'title-container',
+        reverseToggle: '#titleFormat-container, .fld-title-field-icon',
         checked: entryType.hasTitleField
     }) }}
 
-    <div id="titleLabel-container"{% if not entryType.hasTitleField %} class="hidden"{% endif %}>
-        {{ forms.textField({
-            label: "Title Field Label"|t('app'),
-            instructions: "What do you want the Title field to be called?"|t('app'),
-            id: 'titleLabel',
-            name: 'titleLabel',
-            value: entryType.titleLabel,
-            errors: entryType.getErrors('titleLabel'),
-            required: true
-        }) }}
-
-        {{ forms.textareaField({
-            label: "Title Field Instructions"|t('app'),
-            instructions: "Helper text to guide the author."|t('app'),
-            id: 'titleInstructions',
-            class: 'nicetext',
-            name: 'titleInstructions',
-            value: entryType.titleInstructions,
-            errors: entryType.getErrors('titleInstructions'),
-        }) }}
-
-        {% if craft.app.getIsMultiSite() %}
+    {% if craft.app.getIsMultiSite() %}
+        <div id="title-container"{% if not entryType.hasTitleField %} class="hidden"{% endif %}>
             {{ forms.selectField({
                 label: 'Title Translation Method'|t('app'),
                 instructions: 'How should entry titles be translated?'|t('app'),
@@ -103,8 +83,8 @@
                     errors: entryType.getErrors('titleTranslationKeyFormat')
                 }) }}
             </div>
-        {% endif %}
-    </div>
+        </div>
+    {% endif %}
 
     <div id="titleFormat-container"{% if entryType.hasTitleField %} class="hidden"{% endif %}>
         {{ forms.textField({
@@ -121,9 +101,9 @@
 
     <hr>
 
-    {% include "_includes/fieldlayoutdesigner" with {
+    {{ forms.fieldLayoutDesignerField({
         fieldLayout: entryType.getFieldLayout(),
-    } only %}
+    }) }}
 {% endblock %}
 
 

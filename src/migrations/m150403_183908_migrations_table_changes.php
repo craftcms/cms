@@ -3,7 +3,6 @@
 namespace craft\migrations;
 
 use craft\db\Migration;
-use craft\db\MigrationManager;
 use craft\db\Table;
 use craft\helpers\MigrationHelper;
 

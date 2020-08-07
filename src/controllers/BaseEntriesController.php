@@ -148,7 +148,7 @@ abstract class BaseEntriesController extends Controller
      */
     protected function enabledForSiteValue()
     {
-        $enabledForSite = Craft::$app->getRequest()->getBodyParam('enabledForSite');
+        $enabledForSite = $this->request->getBodyParam('enabledForSite');
         if (is_array($enabledForSite)) {
             // Make sure they are allowed to edit all of the posted site IDs
             $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();

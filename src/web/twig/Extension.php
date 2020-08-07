@@ -26,7 +26,6 @@ use craft\helpers\StringHelper;
 use craft\helpers\Template as TemplateHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
-use craft\image\SvgAllowedAttributes;
 use craft\web\twig\nodevisitors\EventTagAdder;
 use craft\web\twig\nodevisitors\EventTagFinder;
 use craft\web\twig\nodevisitors\GetAttrAdjuster;
@@ -53,8 +52,6 @@ use DateInterval;
 use DateTime;
 use DateTimeInterface;
 use DateTimeZone;
-use enshrined\svgSanitize\Sanitizer;
-use Twig\Environment;
 use Twig\Environment as TwigEnvironment;
 use Twig\Error\RuntimeError;
 use Twig\Extension\AbstractExtension;
@@ -243,6 +240,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('merge', [$this, 'mergeFilter']),
             new TwigFilter('multisort', [$this, 'multisortFilter']),
             new TwigFilter('namespace', [$this->view, 'namespaceInputs'], ['is_safe' => ['html']]),
+            new TwigFilter('namespaceAttributes', [Html::class, 'namespaceAttributes'], ['is_safe' => ['html']]),
             new TwigFilter('ns', [$this->view, 'namespaceInputs'], ['is_safe' => ['html']]),
             new TwigFilter('namespaceInputName', [$this->view, 'namespaceInputName']),
             new TwigFilter('namespaceInputId', [$this->view, 'namespaceInputId']),
@@ -336,11 +334,11 @@ class Extension extends AbstractExtension implements GlobalsInterface
     /**
      * Uppercases the first character of each word in a string.
      *
-     * @param Environment $env
+     * @param TwigEnvironment $env
      * @param string $string
      * @return string
      */
-    public function ucwordsFilter(Environment $env, string $string): string
+    public function ucwordsFilter(TwigEnvironment $env, string $string): string
     {
         Craft::$app->getDeprecator()->log('ucwords', 'The |ucwords filter has been deprecated. Use |title instead.');
         if (($charset = $env->getCharset()) !== null) {
@@ -1120,6 +1118,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * should be namespaced to avoid conflicts with other elements in the DOM.
      * By default the SVG will only be namespaced if an asset or markup is passed in.
      * @param string|null $class A CSS class name that should be added to the `<svg>` element.
+     * (This argument is deprecated. The `|attr` filter should be used instead.)
      * @return string
      */
     public function svgFunction($svg, bool $sanitize = null, bool $namespace = null, string $class = null)
@@ -1152,13 +1151,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
 
         // Sanitize?
         if ($sanitize) {
-            $sanitizer = new Sanitizer();
-            $sanitizer->setAllowedAttrs(new SvgAllowedAttributes());
-            $svg = $sanitizer->sanitize($svg);
-            // Remove comments, title & desc
-            $svg = preg_replace('/<!--.*?-->\s*/s', '', $svg);
-            $svg = preg_replace('/<title>.*?<\/title>\s*/is', '', $svg);
-            $svg = preg_replace('/<desc>.*?<\/desc>\s*/is', '', $svg);
+            $svg = Html::sanitizeSvg($svg);
         }
 
         // Remove the XML declaration
@@ -1171,9 +1164,13 @@ class Extension extends AbstractExtension implements GlobalsInterface
         }
 
         if ($class !== null) {
-            $svg = preg_replace('/(<svg\b[^>]+\bclass=([\'"])[^\'"]+)(\\2)/i', "$1 {$class}$3", $svg, 1, $count);
-            if ($count === 0) {
-                $svg = preg_replace('/<svg\b/i', "$0 class=\"{$class}\"", $svg, 1);
+            Craft::$app->getDeprecator()->log('svg()-class', 'The `class` argument of the svg() Twig function has been deprecated. The |attr filter should be used instead.');
+            try {
+                $svg = Html::modifyTagAttributes($svg, [
+                    'class' => $class,
+                ]);
+            } catch (InvalidArgumentException $e) {
+                Craft::warning('Unable to add a class to the SVG: ' . $e->getMessage(), __METHOD__);
             }
         }
 

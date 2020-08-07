@@ -16,6 +16,7 @@ use craft\helpers\UrlHelper;
 use craft\volumes\Local;
 use craft\volumes\MissingVolume;
 use craft\web\Controller;
+use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -35,10 +36,10 @@ class VolumesController extends Controller
      */
     public function init()
     {
+        parent::init();
+
         // All asset volume actions require an admin
         $this->requireAdmin();
-
-        parent::init();
     }
 
     /**
@@ -136,17 +137,6 @@ class VolumesController extends Controller
             ],
         ];
 
-        $tabs = [
-            'settings' => [
-                'label' => Craft::t('app', 'Settings'),
-                'url' => '#assetvolume-settings'
-            ],
-            'fieldlayout' => [
-                'label' => Craft::t('app', 'Field Layout'),
-                'url' => '#assetvolume-fieldlayout'
-            ],
-        ];
-
         return $this->renderTemplate('settings/assets/volumes/_edit', [
             'volumeId' => $volumeId,
             'volume' => $volume,
@@ -157,7 +147,6 @@ class VolumesController extends Controller
             'volumeInstances' => $volumeInstances,
             'title' => $title,
             'crumbs' => $crumbs,
-            'tabs' => $tabs
         ]);
     }
 
@@ -165,43 +154,43 @@ class VolumesController extends Controller
      * Saves an asset volume.
      *
      * @return Response|null
+     * @throws BadRequestHttpException
      */
     public function actionSaveVolume()
     {
         $this->requirePostRequest();
 
-        $request = Craft::$app->getRequest();
-        $volumes = Craft::$app->getVolumes();
+        $volumesService = Craft::$app->getVolumes();
+        $type = $this->request->getBodyParam('type');
+        $volumeId = $this->request->getBodyParam('volumeId') ?: null;
 
-        $type = $request->getBodyParam('type');
-
-        $volumeId = $request->getBodyParam('volumeId');
+        if ($volumeId) {
+            $savedVolume = $volumesService->getVolumeById($volumeId);
+            if (!$savedVolume) {
+                throw new BadRequestHttpException("Invalid volume ID: $volumeId");
+            }
+        }
 
         $volumeData = [
             'id' => $volumeId,
+            'uid' => $savedVolume->uid ?? null,
+            'sortOrder' => $savedVolume->sortOrder ?? null,
             'type' => $type,
-            'name' => $request->getBodyParam('name'),
-            'handle' => $request->getBodyParam('handle'),
-            'hasUrls' => (bool)$request->getBodyParam('hasUrls'),
-            'url' => $request->getBodyParam('url'),
-            'settings' => $request->getBodyParam('types.' . $type)
+            'name' => $this->request->getBodyParam('name'),
+            'handle' => $this->request->getBodyParam('handle'),
+            'hasUrls' => (bool)$this->request->getBodyParam('hasUrls'),
+            'url' => $this->request->getBodyParam('url'),
+            'settings' => $this->request->getBodyParam('types.' . $type)
         ];
 
-        // If this is an existing volume, populate with properties unchangeable by this action.
-        if ($volumeId) {
-            $savedVolume = $volumes->getVolumeById($volumeId);
-            $volumeData['uid'] = $savedVolume->uid;
-            $volumeData['sortOrder'] = $savedVolume->sortOrder;
-        }
-
-        $volume = $volumes->createVolume($volumeData);
+        $volume = $volumesService->createVolume($volumeData);
 
         // Set the field layout
         $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
         $fieldLayout->type = Asset::class;
         $volume->setFieldLayout($fieldLayout);
 
-        if (!$volumes->saveVolume($volume)) {
+        if (!$volumesService->saveVolume($volume)) {
             $this->setFailFlash(Craft::t('app', 'Couldn’t save volume.'));
 
             // Send the volume back to the template
@@ -226,7 +215,7 @@ class VolumesController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $volumeIds = Json::decode(Craft::$app->getRequest()->getRequiredBodyParam('ids'));
+        $volumeIds = Json::decode($this->request->getRequiredBodyParam('ids'));
         Craft::$app->getVolumes()->reorderVolumes($volumeIds);
 
         return $this->asJson(['success' => true]);
@@ -242,7 +231,7 @@ class VolumesController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $volumeId = Craft::$app->getRequest()->getRequiredBodyParam('id');
+        $volumeId = $this->request->getRequiredBodyParam('id');
 
         Craft::$app->getVolumes()->deleteVolumeById($volumeId);
 

@@ -52,6 +52,12 @@ Craft.LightSwitch = Garnish.Base.extend(
                 onDrag: $.proxy(this, '_onDrag'),
                 onDragStop: $.proxy(this, '_onDragStop')
             });
+
+            if (this.$outerContainer.attr('id')) {
+                $(`label[for="${this.$outerContainer.attr('id')}"`).on('click', () => {
+                    this.$outerContainer.focus();
+                });
+            }
         },
 
         turnOn: function(muteEvent) {
@@ -127,7 +133,7 @@ Craft.LightSwitch = Garnish.Base.extend(
 
         onChange: function() {
             this.trigger('change');
-            this.settings.onChange();
+            this.settings.onChange(this.on);
             this.$outerContainer.trigger('change');
         },
 

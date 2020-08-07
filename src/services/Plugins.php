@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\Plugin;
 use craft\base\PluginInterface;
 use craft\db\MigrationManager;
 use craft\db\Query;
@@ -468,7 +467,11 @@ class Plugins extends Component
             return true;
         }
 
+        // Temporarily allow changes to the project config even if it's supposed to be read only
         $projectConfig = Craft::$app->getProjectConfig();
+        $readOnly = $projectConfig->readOnly;
+        $projectConfig->readOnly = false;
+
         $configKey = self::CONFIG_PLUGINS_KEY . '.' . $handle;
 
         $plugin = $this->createPlugin($handle);
@@ -548,6 +551,8 @@ class Plugins extends Component
             ]));
         }
 
+        $projectConfig->readOnly = $readOnly;
+
         return true;
     }
 
@@ -573,6 +578,10 @@ class Plugins extends Component
             // It's already uninstalled
             return true;
         }
+        // Temporarily allow changes to the project config even if it's supposed to be read only
+        $projectConfig = Craft::$app->getProjectConfig();
+        $readOnly = $projectConfig->readOnly;
+        $projectConfig->readOnly = false;
 
         if (($plugin = $this->getPlugin($handle)) === null) {
             throw new InvalidPluginException($handle);
@@ -613,9 +622,8 @@ class Plugins extends Component
         }
 
         // Remove the plugin from the project config
-        $projectConfig = Craft::$app->getProjectConfig();
         if ($projectConfig->get(self::CONFIG_PLUGINS_KEY . '.' . $handle, true)) {
-            Craft::$app->getProjectConfig()->remove(self::CONFIG_PLUGINS_KEY . '.' . $handle, "Uninstall the “{$handle}” plugin");
+            $projectConfig->remove(self::CONFIG_PLUGINS_KEY . '.' . $handle, "Uninstall the “{$handle}” plugin");
         }
 
         $this->_unregisterPlugin($plugin);
@@ -627,6 +635,8 @@ class Plugins extends Component
                 'plugin' => $plugin
             ]));
         }
+
+        $projectConfig->readOnly = $readOnly;
 
         return true;
     }
@@ -1122,10 +1132,6 @@ class Plugins extends Component
      */
     public function setPluginLicenseKey(string $handle, string $licenseKey = null): bool
     {
-        if (($plugin = $this->getPlugin($handle)) === null) {
-            throw new InvalidPluginException($handle);
-        }
-
         // Validate the license key
         $normalizedLicenseKey = $this->normalizePluginLicenseKey($licenseKey);
 

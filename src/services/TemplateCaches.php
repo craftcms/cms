@@ -14,7 +14,6 @@ use craft\helpers\StringHelper;
 use DateTime;
 use yii\base\Component;
 use yii\base\Event;
-use yii\caching\TagDependency;
 
 /**
  * Template Caches service.
@@ -130,6 +129,9 @@ class TemplateCaches extends Component
         }
 
         $dep = Craft::$app->getElements()->stopCollectingCacheTags();
+
+        // Always add a `template` tag
+        $dep->tags[] = 'template';
 
         // If there are any transform generation URLs in the body, don't cache it.
         // stripslashes($body) in case the URL has been JS-encoded or something.

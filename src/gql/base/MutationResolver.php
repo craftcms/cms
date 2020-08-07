@@ -7,6 +7,7 @@
 
 namespace craft\gql\base;
 
+use craft\base\Component;
 use craft\helpers\Gql;
 use GraphQL\Error\Error;
 
@@ -16,7 +17,7 @@ use GraphQL\Error\Error;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0
  */
-abstract class MutationResolver
+abstract class MutationResolver extends Component
 {
     /**
      * @var array Data that might be useful during mutation resolution.

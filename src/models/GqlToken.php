@@ -186,6 +186,18 @@ class GqlToken extends Model
     }
 
     /**
+     * Sets the schema for this token.
+     *
+     * @param GqlSchema $schema
+     * @since 3.5.0
+     */
+    public function setSchema(GqlSchema $schema)
+    {
+        $this->_schema = $schema;
+        $this->schemaId = $schema->id;
+    }
+
+    /**
      * Return the schema's scope for this token.
      *
      * @return array|mixed

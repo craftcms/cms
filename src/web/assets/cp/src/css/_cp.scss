@@ -1,7 +1,7 @@
 @charset "UTF-8";
 @import "../../../../../../node_modules/craftcms-sass/mixins";
 
-$sidebarWidth: 225px;
+$sidebarWidth: 226px;
 $detailsWidth: 350px;
 $minFullUiWidth: 1200px;
 $minHorizontalUiWidth: $minFullUiWidth - $sidebarWidth;
@@ -35,7 +35,6 @@ $sidebarLinkSecondaryColor: $grey200;
     color: $sidebarLinkStaticColor;
     transition: color linear 100ms;
     text-decoration: none;
-    margin-bottom: 0 !important;
   }
 
   & > a,
@@ -50,7 +49,7 @@ $sidebarLinkSecondaryColor: $grey200;
         color: $white;
       }
 
-      &:hover {
+      &:not(.sel):hover {
         background-color: darken($grey800, 5%);
         transition: none;
 
@@ -85,8 +84,8 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
 #system-info {
   display: grid;
-  grid-template-columns: 32px auto;
-  grid-gap: 14px;
+  grid-template-columns: 30px auto;
+  grid-gap: 10px;
   padding: 0 10px;
   position: relative;
   flex: 0 0 60px;
@@ -105,13 +104,13 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 }
 
 #site-icon {
-  height: 32px;
+  height: 30px;
 
   img,
   svg {
     display: block;
-    width: 32px;
-    height: 32px;
+    width: 30px;
+    height: 30px;
     border-radius: 4px;
   }
 
@@ -208,7 +207,6 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
     &:not(.has-subnav) > a.sel {
       color: $white;
       background-color: $grey900;
-      border-color: $primaryColor;
       opacity: 1;
 
       .icon {
@@ -217,12 +215,8 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
     }
 
     a {
-      @include padding-left(18px);
-      border-left: 0 solid transparent;
-
-      &.active {
-        color: $white;
-      }
+      padding-left: 14px;
+      padding-right: 14px;
 
       &.menubtn {
         line-height: 26px;
@@ -239,7 +233,6 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
       }
 
       .icon {
-        @include margin(0, 22px, 0, 0);
         opacity: 0.5;
 
         &.icon-mask {
@@ -274,7 +267,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
       margin-bottom: 10px;
 
       li a {
-        @include padding(3px, 14px, 3px, 56px, !important);
+        @include padding(3px, 14px, 3px, 42px, !important);
         font-size: 12px;
 
         &:not(.active) {
@@ -547,7 +540,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   }
 }
 
-#user-photo {
+.header-photo {
   padding: 5px 0;
 
   img {
@@ -603,7 +596,8 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
 #crumbs,
 #header {
-  padding: 0 24px;
+  @include padding-left(30px);
+  @include padding-right(24px);
 }
 
 #global-header,
@@ -688,7 +682,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 #page-title {
   &.has-toolbar {
     @media only screen and (min-width: $minHorizontalUiWidth) {
-      min-width: #{$sidebarWidth + 24 - 7} !important;
+      min-width: #{$sidebarWidth - 30 - 7} !important;
     }
   }
 }
@@ -773,16 +767,16 @@ $toolbarIconColor: darken($inputColor, 10%);
 }
 
 #sidebar-container {
-  flex: 0 0 $sidebarWidth + 48;
-  width: $sidebarWidth + 48;
+  flex: 0 0 $sidebarWidth;
+  width: $sidebarWidth;
   box-sizing: border-box;
   @include margin-left(-24px);
 }
 
 #sidebar {
   box-sizing: border-box;
-  padding: 0 48px;
-  width: $sidebarWidth + 48px;
+  padding: 0 31px;
+  width: $sidebarWidth;
   background-color: transparent;
 
   &.fixed {
@@ -793,10 +787,11 @@ $toolbarIconColor: darken($inputColor, 10%);
   }
 
   nav {
+    margin-left: -31px;
+    margin-right: -31px;
+
     li {
       a {
-        border-radius: $largeBorderRadius;
-
         &:not(.sel) {
           &:hover {
             background-color: $grey200;
@@ -815,8 +810,8 @@ $toolbarIconColor: darken($inputColor, 10%);
   flex: 1;
 
   #main-content.has-sidebar & {
-    width: calc(100% - #{$sidebarWidth} - 24px);
-    max-width: calc(100% - #{$sidebarWidth} - 24px);
+    width: calc(100% - #{$sidebarWidth - 24});
+    max-width: calc(100% - #{$sidebarWidth - 24});
   }
 
   #main-content.has-details & {
@@ -1040,10 +1035,6 @@ $toolbarIconColor: darken($inputColor, 10%);
       .status-badge {
         @include left(4px);
         top: calc(50% - 8px);
-      }
-
-      & + .field {
-        border-top-color: $hairlineColor;
       }
     }
 
@@ -1349,7 +1340,7 @@ $toolbarIconColor: darken($inputColor, 10%);
 
 /* Sidebar */
 .sidebar {
-  padding: 14px 24px;
+  padding: 14px 0;
   width: $sidebarWidth;
   box-sizing: border-box;
   font-size: 13px;
@@ -1357,8 +1348,7 @@ $toolbarIconColor: darken($inputColor, 10%);
 
   .heading {
     position: relative;
-    @include margin(14px, 0, 2px, -24px);
-    padding: 0 24px;
+    margin: 14px 24px 2px;
 
     span {
       display: inline-block;
@@ -1373,33 +1363,30 @@ $toolbarIconColor: darken($inputColor, 10%);
     }
   }
 
-  @mixin nav-padding($level) {
-    $padding: 24px + 20 * $level;
-    @include padding-left($padding);
+  @mixin nav-level($level) {
+    & > a {
+      @include padding-left(24px + 14 * $level);
+    }
+
+    & > .toggle {
+      @include left(14px * $level);
+    }
   }
 
   nav {
-    margin-left: -24px;
-    margin-right: -24px;
-    padding: 0 24px;
+    padding: 0 7px;
 
-    & > ul > li > ul > li {
-      & > a {
-        @include nav-padding(1);
-      }
-
+    & > ul > li {
+      @include nav-level(0);
       & > ul > li {
-        & > a {
-          @include nav-padding(2);
-        }
-
+        @include nav-level(1);
         & > ul > li {
-          & > a {
-            @include nav-padding(3);
-          }
-
-          & > ul > li a {
-            @include nav-padding(4);
+          @include nav-level(2);
+          & > ul > li {
+            @include nav-level(3);
+            & > ul > li {
+              @include nav-level(4);
+            }
           }
         }
       }
@@ -1423,16 +1410,18 @@ $toolbarIconColor: darken($inputColor, 10%);
       }
 
       a {
-        margin: 0 -24px 4px;
+        position: relative;
+        margin-bottom: 1px;
         display: flex;
         flex-direction: row;
         align-items: center;
-        @include padding(7px, 14px, 7px, 24px);
+        padding: 7px 24px;
         min-height: 24px;
         box-sizing: border-box;
         color: $textColor;
         user-select: none;
         outline: none;
+        border-radius: $largeBorderRadius;
 
         .status {
           flex-shrink: 1;
@@ -1441,8 +1430,8 @@ $toolbarIconColor: darken($inputColor, 10%);
         .icon {
           @include margin-right(10px);
           flex-shrink: 1;
-          width: 16px;
-          height: 16px;
+          width: 18px;
+          height: 18px;
           transition: margin-left linear 150ms, margin-right linear 150ms;
 
           &.icon-mask {
@@ -1520,24 +1509,57 @@ $toolbarIconColor: darken($inputColor, 10%);
   @include margin-left($sidebarWidth);
 }
 
-nav > ul > li > .toggle {
-  @include left(-20px);
-}
+/* flexbox field layouts */
+#content :not(.meta) > .flex-fields {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  margin: 0 -14px -24px 0;
+  width: calc(100% + 14px);
 
-nav > ul > li > ul > li > .toggle {
-  @include left(0px);
-}
+  & > h2 {
+    margin: 0 -10px 24px -24px !important;
+    padding: 0 10px 0 24px;
+    width: calc(100% + 34px);
 
-nav > ul > li > ul > li > ul > li > .toggle {
-  @include left(20px);
-}
+    &:not(:first-child) {
+      padding-top: 24px;
+      border-top: 1px solid $hairlineColor;
+    }
+  }
 
-nav > ul > li > ul > li > ul > li > ul > li > .toggle {
-  @include left(40px);
-}
+  & > hr {
+    margin: 0 -10px 24px -24px;
+    width: calc(100% + 34px);
+  }
 
-nav > ul > li > ul > li > ul > li > ul > li > ul > li .toggle {
-  @include left(60px);
+  & > :not(h2):not(hr) {
+    &, &:last-child {
+      margin: 0 14px 24px 0 !important;
+      width: calc(100% - 14px);
+
+      // 4 cols for >= 1200
+      @media only screen and (min-width: $minFullUiWidth + $sidebarWidth) {
+        &.width-25 {
+          width: calc(25% - 14px);
+        }
+        &.width-50 {
+          width: calc(50% - 14px);
+        }
+        &.width-75 {
+          width: calc(75% - 14px);
+        }
+      }
+
+      // 2 cols fol 712 - 1200
+      @media only screen and (min-width: 500px) and (max-width: $minFullUiWidth + $sidebarWidth - 1px) {
+        &.width-25,
+        &.width-50 {
+          width: calc(50% - 14px);
+        }
+      }
+    }
+  }
 }
 
 /* retina */

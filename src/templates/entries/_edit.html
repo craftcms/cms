@@ -39,18 +39,8 @@
 
 
 {% block content %}
-    {% if not isRevision %}
-        {{ hiddenInput('sectionId', section.id) }}
-        {{ hiddenInput('entryId', entry.sourceId) }}
-    {% else %}
-        {{ hiddenInput('revisionId', entry.revisionId) }}
-    {% endif %}
-
-    <div id="fields">
-        {% include "entries/_fields" with {
-            static: isRevision
-        } %}
-    </div>
+    {{ hiddenInput('sectionId', section.id) }}
+    {{ parent() }}
 
     {# Give plugins a chance to add other things here #}
     {% hook "cp.entries.edit.content" %}

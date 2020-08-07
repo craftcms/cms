@@ -140,8 +140,14 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
             this._deleting = true;
 
             // Let the onSubmit callback prevent the form from getting submitted
-            if (this.settings.onSubmit() === false) {
+            try {
+                if (this.settings.onSubmit() === false) {
+                    ev.preventDefault();
+                }
+            } catch (e) {
                 ev.preventDefault();
+                this.$deleteSpinner.addClass('hidden');
+                throw e;
             }
         },
 

@@ -12,7 +12,6 @@ use craft\base\Element;
 use craft\controllers\ElementIndexesController;
 use craft\db\Query;
 use craft\db\Table;
-use craft\elements\actions\DeepDuplicate;
 use craft\elements\actions\Delete;
 use craft\elements\actions\Duplicate;
 use craft\elements\actions\Edit;
@@ -271,11 +270,18 @@ class Category extends Element
             $actions[] = Duplicate::class;
 
             if ($group->maxLevels != 1) {
-                $actions[] = DeepDuplicate::class;
+                $actions[] = [
+                    'type' => Duplicate::class,
+                    'deep' => true,
+                ];
             }
 
             // Delete
             $actions[] = Delete::class;
+            $actions[] = [
+                'type' => Delete::class,
+                'withDescendants' => true,
+            ];
         }
 
         // Restore
@@ -487,43 +493,6 @@ class Category extends Element
 
     // Indexes, etc.
     // -------------------------------------------------------------------------
-
-    /**
-     * @inheritdoc
-     */
-    public function getEditorHtml(): string
-    {
-        $html = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField', [
-            [
-                'label' => Craft::t('app', 'Title'),
-                'siteId' => $this->siteId,
-                'id' => 'title',
-                'name' => 'title',
-                'value' => $this->title,
-                'errors' => $this->getErrors('title'),
-                'first' => true,
-                'autofocus' => true,
-                'required' => true
-            ]
-        ]);
-
-        $html .= Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField', [
-            [
-                'label' => Craft::t('app', 'Slug'),
-                'siteId' => $this->siteId,
-                'id' => 'slug',
-                'name' => 'slug',
-                'value' => $this->slug,
-                'errors' => $this->getErrors('slug'),
-                'required' => true
-            ]
-        ]);
-
-        // Render the custom fields
-        $html .= parent::getEditorHtml();
-
-        return $html;
-    }
 
     /**
      * @inheritdoc

@@ -36,10 +36,10 @@ class SectionsController extends Controller
      */
     public function init()
     {
+        parent::init();
+
         // All section actions require an admin
         $this->requireAdmin();
-
-        parent::init();
     }
 
     /**
@@ -129,28 +129,34 @@ class SectionsController extends Controller
     {
         $this->requirePostRequest();
 
-        $request = Craft::$app->getRequest();
-
-        $section = new Section();
+        $sectionsService = Craft::$app->getSections();
+        $sectionId = $this->request->getBodyParam('sectionId');
+        if ($sectionId) {
+            $section = $sectionsService->getSectionById($sectionId);
+            if (!$section) {
+                throw new BadRequestHttpException("Invalid section ID: $sectionId");
+            }
+        } else {
+            $section = new Section();
+        }
 
         // Main section settings
-        $section->id = $request->getBodyParam('sectionId');
-        $section->name = $request->getBodyParam('name');
-        $section->handle = $request->getBodyParam('handle');
-        $section->type = $request->getBodyParam('type');
-        $section->enableVersioning = $request->getBodyParam('enableVersioning', true);
-        $section->propagationMethod = $request->getBodyParam('propagationMethod', Section::PROPAGATION_METHOD_ALL);
-        $section->previewTargets = $request->getBodyParam('previewTargets') ?: [];
+        $section->name = $this->request->getBodyParam('name');
+        $section->handle = $this->request->getBodyParam('handle');
+        $section->type = $this->request->getBodyParam('type');
+        $section->enableVersioning = $this->request->getBodyParam('enableVersioning', true);
+        $section->propagationMethod = $this->request->getBodyParam('propagationMethod', Section::PROPAGATION_METHOD_ALL);
+        $section->previewTargets = $this->request->getBodyParam('previewTargets') ?: [];
 
         if ($section->type === Section::TYPE_STRUCTURE) {
-            $section->maxLevels = $request->getBodyParam('maxLevels');
+            $section->maxLevels = $this->request->getBodyParam('maxLevels');
         }
 
         // Site-specific settings
         $allSiteSettings = [];
 
         foreach (Craft::$app->getSites()->getAllSites() as $site) {
-            $postedSettings = $request->getBodyParam('sites.' . $site->handle);
+            $postedSettings = $this->request->getBodyParam('sites.' . $site->handle);
 
             // Skip disabled sites if this is a multi-site install
             if (Craft::$app->getIsMultiSite() && empty($postedSettings['enabled'])) {
@@ -177,7 +183,7 @@ class SectionsController extends Controller
         $section->setSiteSettings($allSiteSettings);
 
         // Save it
-        if (!Craft::$app->getSections()->saveSection($section)) {
+        if (!$sectionsService->saveSection($section)) {
             $this->setFailFlash(Craft::t('app', 'Couldn’t save section.'));
 
             // Send the section back to the template
@@ -202,7 +208,7 @@ class SectionsController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $sectionId = Craft::$app->getRequest()->getRequiredBodyParam('id');
+        $sectionId = $this->request->getRequiredBodyParam('id');
 
         Craft::$app->getSections()->deleteSectionById($sectionId);
 
@@ -327,34 +333,32 @@ class SectionsController extends Controller
      * Saves an entry type.
      *
      * @return Response|null
-     * @throws NotFoundHttpException if the requested entry type cannot be found
+     * @throws BadRequestHttpException
      */
     public function actionSaveEntryType()
     {
         $this->requirePostRequest();
 
-        $entryTypeId = Craft::$app->getRequest()->getBodyParam('entryTypeId');
+        $sectionsService = Craft::$app->getSections();
+        $entryTypeId = $this->request->getBodyParam('entryTypeId');
 
         if ($entryTypeId) {
-            $entryType = Craft::$app->getSections()->getEntryTypeById($entryTypeId);
-
+            $entryType = $sectionsService->getEntryTypeById($entryTypeId);
             if (!$entryType) {
-                throw new NotFoundHttpException('Entry type not found');
+                throw new BadRequestHttpException("Invalid entry type ID: $entryTypeId");
             }
         } else {
             $entryType = new EntryType();
         }
 
         // Set the simple stuff
-        $entryType->sectionId = Craft::$app->getRequest()->getRequiredBodyParam('sectionId');
-        $entryType->name = Craft::$app->getRequest()->getBodyParam('name', $entryType->name);
-        $entryType->handle = Craft::$app->getRequest()->getBodyParam('handle', $entryType->handle);
-        $entryType->hasTitleField = (bool)Craft::$app->getRequest()->getBodyParam('hasTitleField', $entryType->hasTitleField);
-        $entryType->titleLabel = Craft::$app->getRequest()->getBodyParam('titleLabel', $entryType->titleLabel);
-        $entryType->titleInstructions = Craft::$app->getRequest()->getBodyParam('titleInstructions', $entryType->titleInstructions);
-        $entryType->titleTranslationMethod = Craft::$app->getRequest()->getBodyParam('titleTranslationMethod', $entryType->titleTranslationMethod);
-        $entryType->titleTranslationKeyFormat = Craft::$app->getRequest()->getBodyParam('titleTranslationKeyFormat', $entryType->titleTranslationKeyFormat);
-        $entryType->titleFormat = Craft::$app->getRequest()->getBodyParam('titleFormat', $entryType->titleFormat);
+        $entryType->sectionId = $this->request->getRequiredBodyParam('sectionId');
+        $entryType->name = $this->request->getBodyParam('name', $entryType->name);
+        $entryType->handle = $this->request->getBodyParam('handle', $entryType->handle);
+        $entryType->hasTitleField = (bool)$this->request->getBodyParam('hasTitleField', $entryType->hasTitleField);
+        $entryType->titleTranslationMethod = $this->request->getBodyParam('titleTranslationMethod', $entryType->titleTranslationMethod);
+        $entryType->titleTranslationKeyFormat = $this->request->getBodyParam('titleTranslationKeyFormat', $entryType->titleTranslationKeyFormat);
+        $entryType->titleFormat = $this->request->getBodyParam('titleFormat', $entryType->titleFormat);
 
         // Set the field layout
         $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
@@ -362,7 +366,7 @@ class SectionsController extends Controller
         $entryType->setFieldLayout($fieldLayout);
 
         // Save it
-        if (!Craft::$app->getSections()->saveEntryType($entryType)) {
+        if (!$sectionsService->saveEntryType($entryType)) {
             $this->setFailFlash(Craft::t('app', 'Couldn’t save entry type.'));
 
             // Send the entry type back to the template
@@ -387,7 +391,7 @@ class SectionsController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $entryTypeIds = Json::decode(Craft::$app->getRequest()->getRequiredBodyParam('ids'));
+        $entryTypeIds = Json::decode($this->request->getRequiredBodyParam('ids'));
         Craft::$app->getSections()->reorderEntryTypes($entryTypeIds);
 
         return $this->asJson(['success' => true]);
@@ -403,10 +407,9 @@ class SectionsController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $entryTypeId = Craft::$app->getRequest()->getRequiredBodyParam('id');
+        $entryTypeId = $this->request->getRequiredBodyParam('id');
 
-        Craft::$app->getSections()->deleteEntryTypeById($entryTypeId);
-
-        return $this->asJson(['success' => true]);
+        $success = Craft::$app->getSections()->deleteEntryTypeById($entryTypeId);
+        return $this->asJson(['success' => $success]);
     }
 }

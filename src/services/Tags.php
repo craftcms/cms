@@ -183,30 +183,9 @@ class Tags extends Component
             $tagGroup->uid = Db::uidById(Table::TAGGROUPS, $tagGroup->id);
         }
 
-        $projectConfig = Craft::$app->getProjectConfig();
-        $configData = [
-            'name' => $tagGroup->name,
-            'handle' => $tagGroup->handle,
-        ];
-
-        $fieldLayout = $tagGroup->getFieldLayout();
-        $fieldLayoutConfig = $fieldLayout->getConfig();
-
-        if ($fieldLayoutConfig) {
-            if (empty($fieldLayout->id)) {
-                $layoutUid = StringHelper::UUID();
-                $fieldLayout->uid = $layoutUid;
-            } else {
-                $layoutUid = Db::uidById(Table::FIELDLAYOUTS, $fieldLayout->id);
-            }
-
-            $configData['fieldLayouts'] = [
-                $layoutUid => $fieldLayoutConfig
-            ];
-        }
-
         $configPath = self::CONFIG_TAGGROUP_KEY . '.' . $tagGroup->uid;
-        $projectConfig->set($configPath, $configData, "Save the “{$tagGroup->handle}” tag group");
+        $configData = $tagGroup->getConfig();
+        Craft::$app->getProjectConfig()->set($configPath, $configData, "Save the “{$tagGroup->handle}” tag group");
 
         if ($isNewTagGroup) {
             $tagGroup->id = Db::idByUid(Table::TAGGROUPS, $tagGroup->uid);

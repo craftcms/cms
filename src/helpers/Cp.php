@@ -145,14 +145,14 @@ class Cp
         }
 
         // Display a warning if admin changes are allowed, and project.yaml is being used but not writable
+        $projectConfig = Craft::$app->getProjectConfig();
         if (
             $user->admin &&
             $generalConfig->allowAdminChanges &&
-            $generalConfig->useProjectConfigFile &&
-            !FileHelper::isWritable(Craft::$app->getPath()->getProjectConfigFilePath())
+            $projectConfig->getHadFileWriteIssues()
         ) {
-            $alerts[] = Craft::t('app', 'Your {file} file isn’t writable.', [
-                'file' => Craft::$app->getProjectConfig()->filename,
+            $alerts[] = Craft::t('app', 'Your {folder} folder isn’t writable.', [
+                'folder' => "config/$projectConfig->folderName/",
             ]);
         }
 

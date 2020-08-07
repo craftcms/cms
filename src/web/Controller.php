@@ -22,11 +22,14 @@ use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
 use yii\web\JsonResponseFormatter;
 use yii\web\Response as YiiResponse;
+use yii\web\UnauthorizedHttpException;
 
 /**
  * Controller is a base class that all controllers in Craft extend.
  * It extends Yii’s [[\yii\web\Controller]], overwriting specific methods as required.
  *
+ * @property Request $request
+ * @property Response $response
  * @property View $view The view object that can be used to render views or view files
  * @method View getView() Returns the view object that can be used to render views or view files
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -122,13 +125,12 @@ abstract class Controller extends \yii\web\Controller
      * @throws BadRequestHttpException if the request is missing a valid CSRF token
      * @throws ForbiddenHttpException if the user is not logged in or lacks the necessary permissions
      * @throws ServiceUnavailableHttpException if the system is offline and the user isn't allowed to access it
+     * @throws UnauthorizedHttpException
      */
     public function beforeAction($action)
     {
-        $request = Craft::$app->getRequest();
-
         // Don't enable CSRF validation for Live Preview requests
-        if ($request->getIsLivePreview()) {
+        if ($this->request->getIsLivePreview()) {
             $this->enableCsrfValidation = false;
         }
 
@@ -148,7 +150,7 @@ abstract class Controller extends \yii\web\Controller
 
         if (!($test & $allowAnonymous)) {
             // If this is a CP request, make sure they have access to the CP
-            if ($request->getIsCpRequest()) {
+            if ($this->request->getIsCpRequest()) {
                 $this->requireLogin();
                 $this->requirePermission('accessCp');
             } else if (Craft::$app->getUser()->getIsGuest()) {
@@ -157,9 +159,9 @@ abstract class Controller extends \yii\web\Controller
 
             // If the system is offline, make sure they have permission to access the CP/site
             if (!$isLive) {
-                $permission = $request->getIsCpRequest() ? 'accessCpWhenSystemIsOff' : 'accessSiteWhenSystemIsOff';
+                $permission = $this->request->getIsCpRequest() ? 'accessCpWhenSystemIsOff' : 'accessSiteWhenSystemIsOff';
                 if (!Craft::$app->getUser()->checkPermission($permission)) {
-                    $error = $request->getIsCpRequest()
+                    $error = $this->request->getIsCpRequest()
                         ? Craft::t('app', 'Your account doesn’t have permission to access the control panel when the system is offline.')
                         : Craft::t('app', 'Your account doesn’t have permission to access the site when the system is offline.');
                     throw new ServiceUnavailableHttpException($error);
@@ -178,7 +180,7 @@ abstract class Controller extends \yii\web\Controller
         try {
             return parent::runAction($id, $params);
         } catch (\Throwable $e) {
-            if (Craft::$app->getRequest()->getAcceptsJson()) {
+            if ($this->request->getAcceptsJson()) {
                 Craft::$app->getErrorHandler()->logException($e);
                 if (!YII_DEBUG && !$e instanceof UserException) {
                     $message = Craft::t('app', 'A server error occurred.');
@@ -216,8 +218,7 @@ abstract class Controller extends \yii\web\Controller
      */
     public function renderTemplate(string $template, array $variables = [], string $templateMode = null): YiiResponse
     {
-        $response = Craft::$app->getResponse();
-        $headers = $response->getHeaders();
+        $headers = $this->response->getHeaders();
         $view = $this->getView();
 
         // Set the MIME type for the request based on the matched template's file extension (unless the
@@ -230,21 +231,21 @@ abstract class Controller extends \yii\web\Controller
                 $mimeType = 'text/html';
             }
 
-            $headers->set('content-type', $mimeType . '; charset=' . $response->charset);
+            $headers->set('content-type', $mimeType . '; charset=' . $this->response->charset);
         }
 
         // If this is a preview request, register the iframe resizer script
-        if (Craft::$app->getRequest()->getIsPreview()) {
+        if ($this->request->getIsPreview()) {
             $view->registerAssetBundle(ContentWindowAsset::class);
         }
 
         // Render and return the template
-        $response->data = $view->renderPageTemplate($template, $variables, $templateMode);
+        $this->response->data = $view->renderPageTemplate($template, $variables, $templateMode);
 
         // Prevent a response formatter from overriding the content-type header
-        $response->format = YiiResponse::FORMAT_RAW;
+        $this->response->format = YiiResponse::FORMAT_RAW;
 
-        return $response;
+        return $this->response;
     }
 
     /**
@@ -278,7 +279,7 @@ abstract class Controller extends \yii\web\Controller
     /**
      * Throws a 403 error if the current user is not an admin.
      *
-     * @param bool $requireAdminChanges Whether the <config:allowAdminChanges>
+     * @param bool $requireAdminChanges Whether the <config3:allowAdminChanges>
      * config setting must also be enabled.
      * @throws ForbiddenHttpException if the current user is not an admin
      */
@@ -343,7 +344,7 @@ abstract class Controller extends \yii\web\Controller
      */
     public function requirePostRequest()
     {
-        if (!Craft::$app->getRequest()->getIsPost()) {
+        if (!$this->request->getIsPost()) {
             throw new BadRequestHttpException('Post request required');
         }
     }
@@ -355,7 +356,7 @@ abstract class Controller extends \yii\web\Controller
      */
     public function requireAcceptsJson()
     {
-        if (!Craft::$app->getRequest()->getAcceptsJson()) {
+        if (!$this->request->getAcceptsJson() && !$this->request->getIsOptions()) {
             throw new BadRequestHttpException('Request must accept JSON in response');
         }
     }
@@ -368,7 +369,7 @@ abstract class Controller extends \yii\web\Controller
      */
     public function requireToken()
     {
-        if (Craft::$app->getRequest()->getToken() === null) {
+        if ($this->request->getToken() === null) {
             throw new BadRequestHttpException('Valid token required');
         }
     }
@@ -381,7 +382,7 @@ abstract class Controller extends \yii\web\Controller
      */
     public function requireCpRequest()
     {
-        if (!Craft::$app->getRequest()->getIsCpRequest()) {
+        if (!$this->request->getIsCpRequest()) {
             throw new BadRequestHttpException('Request must be a control panel request');
         }
     }
@@ -394,7 +395,7 @@ abstract class Controller extends \yii\web\Controller
      */
     public function requireSiteRequest()
     {
-        if (!Craft::$app->getRequest()->getIsSiteRequest()) {
+        if (!$this->request->getIsSiteRequest()) {
             throw new BadRequestHttpException('Request must be a site request');
         }
     }
@@ -409,7 +410,7 @@ abstract class Controller extends \yii\web\Controller
      */
     public function setSuccessFlash(string $default = null)
     {
-        $message = Craft::$app->getRequest()->getValidatedBodyParam('successMessage') ?? $default;
+        $message = $this->request->getValidatedBodyParam('successMessage') ?? $default;
         if ($message !== null) {
             Craft::$app->getSession()->setNotice($message);
         }
@@ -425,7 +426,7 @@ abstract class Controller extends \yii\web\Controller
      */
     public function setFailFlash(string $default = null)
     {
-        $message = Craft::$app->getRequest()->getValidatedBodyParam('failMessage') ?? $default;
+        $message = $this->request->getValidatedBodyParam('failMessage') ?? $default;
         if ($message !== null) {
             Craft::$app->getSession()->setError($message);
         }
@@ -442,13 +443,13 @@ abstract class Controller extends \yii\web\Controller
      */
     public function redirectToPostedUrl($object = null, string $default = null): YiiResponse
     {
-        $url = Craft::$app->getRequest()->getValidatedBodyParam('redirect');
+        $url = $this->request->getValidatedBodyParam('redirect');
 
         if ($url === null) {
             if ($default !== null) {
                 $url = $default;
             } else {
-                $url = Craft::$app->getRequest()->getPathInfo();
+                $url = $this->request->getPathInfo();
             }
         } else if ($object) {
             $url = $this->getView()->renderObjectTemplate($url, $object);
@@ -469,11 +470,9 @@ abstract class Controller extends \yii\web\Controller
      */
     public function asJsonP($data): YiiResponse
     {
-        $response = Craft::$app->getResponse();
-        $response->data = $data;
-        $response->format = YiiResponse::FORMAT_JSONP;
-
-        return $response;
+        $this->response->data = $data;
+        $this->response->format = YiiResponse::FORMAT_JSONP;
+        return $this->response;
     }
 
     /** @noinspection ArrayTypeOfParameterByDefaultValueInspection */
@@ -487,11 +486,9 @@ abstract class Controller extends \yii\web\Controller
      */
     public function asRaw($data): YiiResponse
     {
-        $response = Craft::$app->getResponse();
-        $response->data = $data;
-        $response->format = YiiResponse::FORMAT_RAW;
-
-        return $response;
+        $this->response->data = $data;
+        $this->response->format = YiiResponse::FORMAT_RAW;
+        return $this->response;
     }
 
     /**
@@ -516,7 +513,7 @@ abstract class Controller extends \yii\web\Controller
         }
 
         if ($url !== null) {
-            return Craft::$app->getResponse()->redirect($url, $statusCode);
+            return $this->response->redirect($url, $statusCode);
         }
 
         return $this->goHome();

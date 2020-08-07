@@ -1,7 +1,7 @@
 {
   "name": "craftcms/cms",
   "description": "Craft CMS",
-  "version": "3.5.0-beta.3",
+  "version": "3.5.1",
   "keywords": [
     "cms",
     "craftcms",
@@ -14,7 +14,7 @@
     "issues": "https://github.com/craftcms/cms/issues?state=open",
     "forum": "https://craftcms.stackexchange.com/",
     "source": "https://github.com/craftcms/cms",
-    "docs": "https://docs.craftcms.com/v3/",
+    "docs": "https://craftcms.com/docs/3.x/",
     "rss": "https://github.com/craftcms/cms/releases.atom"
   },
   "require": {
@@ -27,7 +27,7 @@
     "ext-pcre": "*",
     "ext-pdo": "*",
     "ext-zip": "*",
-    "composer/composer": "1.10.5",
+    "composer/composer": "1.10.10",
     "craftcms/oauth2-craftid": "~1.0.0",
     "craftcms/plugin-installer": "~1.5.3",
     "craftcms/server-check": "~1.1.0",
@@ -49,7 +49,7 @@
     "voku/stringy": "^6.2.2",
     "webonyx/graphql-php": "^0.12.0",
     "yii2tech/ar-softdelete": "^1.0.2",
-    "yiisoft/yii2": "~2.0.35.0",
+    "yiisoft/yii2": "~2.0.36.0",
     "yiisoft/yii2-debug": "^2.1.0",
     "yiisoft/yii2-queue": "~2.3.0",
     "yiisoft/yii2-swiftmailer": "^2.1.0",

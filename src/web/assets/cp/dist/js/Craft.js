@@ -22,7 +22,7 @@ function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len 
 
 function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-/*!   - 2020-06-23 */
+/*!   - 2020-07-17 */
 (function ($) {
   /** global: Craft */
 
@@ -4293,8 +4293,13 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       return this.elementSelect.$selectedItems;
     },
     getSelectedElementIds: function getSelectedElementIds() {
-      var $selectedElements = this.getSelectedElements(),
-          ids = [];
+      var $selectedElements;
+
+      try {
+        $selectedElements = this.getSelectedElements();
+      } catch (e) {}
+
+      var ids = [];
 
       if ($selectedElements) {
         for (var i = 0; i < $selectedElements.length; i++) {
@@ -13475,7 +13480,12 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
             this.checkMetaValues();
           }
 
-          $.extend(this.duplicatedElements, response.duplicatedElements);
+          for (var oldId in response.duplicatedElements) {
+            if (oldId != this.settings.sourceId && response.duplicatedElements.hasOwnProperty(oldId)) {
+              this.duplicatedElements[oldId] = response.duplicatedElements[oldId];
+            }
+          }
+
           resolve();
         }.bind(this));
       }.bind(this));
@@ -13493,13 +13503,21 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       return Craft.findDeltaData(initialData, data, this.getDeltaNames());
     },
     swapDuplicatedElementIds: function swapDuplicatedElementIds(data) {
-      for (var oldId in this.duplicatedElements) {
-        if (this.duplicatedElements.hasOwnProperty(oldId)) {
-          data = data.replace(new RegExp(Craft.escapeRegex(encodeURIComponent('][' + oldId + ']')), 'g'), '][' + this.duplicatedElements[oldId] + ']').replace(new RegExp('=' + oldId + '\\b', 'g'), '=' + this.duplicatedElements[oldId]);
-        }
+      var _this12 = this;
+
+      var idsRE = Object.keys(this.duplicatedElements).join('|');
+
+      if (idsRE === '') {
+        return data;
       }
 
-      return data;
+      var lb = encodeURIComponent('[');
+      var rb = encodeURIComponent(']');
+      return data.replace(new RegExp("(&fields".concat(lb, "[^=]+").concat(rb).concat(lb, ")(").concat(idsRE, ")(").concat(rb, ")"), 'g'), function (m, pre, id, post) {
+        return pre + _this12.duplicatedElements[id] + post;
+      }).replace(new RegExp("(&fields".concat(lb, "[^=]+=)(").concat(idsRE, ")\\b"), 'g'), function (m, pre, id) {
+        return pre + _this12.duplicatedElements[id];
+      });
     },
     getDeltaNames: function getDeltaNames() {
       var deltaNames = Craft.deltaNames.slice(0);
@@ -13530,6 +13548,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     },
     afterUpdate: function afterUpdate(data) {
       Craft.cp.$primaryForm.data('initialSerializedValue', data);
+      Craft.initialDeltaValues = {};
       this.statusIcons().removeClass('hidden').addClass('checkmark-icon').attr('title', Craft.t('app', 'The draft has been saved.'));
       this.trigger('update');
       this.nextInQueue();
@@ -14500,7 +14519,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       }
     },
     load: function load($elements) {
-      var _this12 = this;
+      var _this13 = this;
 
       // Only immediately load the visible images
       var $thumbs = $elements.find('.elementthumb');
@@ -14509,21 +14528,21 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         var $thumb = $thumbs.eq(_i7);
         var $scrollParent = $thumb.scrollParent();
 
-        if (_this12.isVisible($thumb, $scrollParent)) {
-          _this12.addToQueue($thumb[0]);
+        if (_this13.isVisible($thumb, $scrollParent)) {
+          _this13.addToQueue($thumb[0]);
         } else {
           var key = 'thumb' + Math.floor(Math.random() * 1000000);
-          Craft.ElementThumbLoader.invisibleThumbs[key] = [_this12, $thumb, $scrollParent];
+          Craft.ElementThumbLoader.invisibleThumbs[key] = [_this13, $thumb, $scrollParent];
           $scrollParent.on("scroll.".concat(key), {
             $thumb: $thumb,
             $scrollParent: $scrollParent,
             key: key
           }, function (ev) {
-            if (_this12.isVisible(ev.data.$thumb, ev.data.$scrollParent)) {
+            if (_this13.isVisible(ev.data.$thumb, ev.data.$scrollParent)) {
               delete Craft.ElementThumbLoader.invisibleThumbs[ev.data.key];
               $scrollParent.off("scroll.".concat(ev.data.key));
 
-              _this12.addToQueue(ev.data.$thumb[0]);
+              _this13.addToQueue(ev.data.$thumb[0]);
             }
           });
         }
@@ -16442,7 +16461,10 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       this.$icon = $(icon);
       this.addListener(this.$icon, 'click', 'showHud');
     },
-    showHud: function showHud() {
+    showHud: function showHud(ev) {
+      ev.preventDefault();
+      ev.stopPropagation();
+
       if (!this.hud) {
         this.hud = new Garnish.HUD(this.$icon, this.$icon.html(), {
           hudClass: 'hud info-hud',
@@ -17227,6 +17249,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     $tempInput: null,
     $fieldPlaceholder: null,
     isActive: false,
+    isVisible: false,
     activeTarget: 0,
     draftId: null,
     url: null,
@@ -17235,7 +17258,6 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     scrollTop: null,
     dragger: null,
     dragStartEditorWidth: null,
-    _slideInOnIframeLoad: false,
     _updateIframeProxy: null,
     _editorWidth: null,
     _editorWidthInPx: null,
@@ -17401,7 +17423,6 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         }
       }
 
-      this._slideInOnIframeLoad = true;
       this.updateIframe();
       this.draftEditor.on('update', this._updateIframeProxy);
       Garnish.on(Craft.BaseElementEditor, 'saveElement', this._updateIframeProxy);
@@ -17426,6 +17447,10 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       this.updateWidths();
     },
     slideIn: function slideIn() {
+      if (!this.isActive || this.isVisible) {
+        return;
+      }
+
       $('html').addClass('noscroll');
       this.$shade.velocity('fadeIn');
       this.$editorContainer.show().velocity('stop').animateLeft(0, 'slow', $.proxy(function () {
@@ -17439,9 +17464,10 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           }
         });
       }, this));
+      this.isVisible = true;
     },
     close: function close() {
-      if (!this.isActive) {
+      if (!this.isActive || !this.isVisible) {
         return;
       }
 
@@ -17469,6 +17495,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       Garnish.off(Craft.AssetImageEditor, 'save', this._updateIframeProxy);
       Craft.ElementThumbLoader.retryAll();
       this.isActive = false;
+      this.isVisible = false;
       this.trigger('close');
     },
     moveFieldsBack: function moveFieldsBack() {
@@ -17508,6 +17535,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
       }); // If this is an existing preview target, make sure it wants to be refreshed automatically
 
       if (!refresh) {
+        this.slideIn();
         return;
       }
 
@@ -17552,19 +17580,12 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 
         this.url = url;
         this.$iframe = $iframe;
-        this.afterUpdateIframe();
-      }.bind(this));
-    },
-    afterUpdateIframe: function afterUpdateIframe() {
-      this.trigger('afterUpdateIframe', {
-        target: this.draftEditor.settings.previewTargets[this.activeTarget],
-        $iframe: this.$iframe
-      });
-
-      if (this._slideInOnIframeLoad) {
+        this.trigger('afterUpdateIframe', {
+          target: this.draftEditor.settings.previewTargets[this.activeTarget],
+          $iframe: this.$iframe
+        });
         this.slideIn();
-        this._slideInOnIframeLoad = false;
-      }
+      }.bind(this));
     },
     _getClone: function _getClone($field) {
       var $clone = $field.clone(); // clone() won't account for input values that have changed since the original HTML set them

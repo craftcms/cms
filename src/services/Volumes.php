@@ -43,7 +43,7 @@ class Volumes extends Component
      *
      * Volume types must implement [[VolumeInterface]]. [[Volume]] provides a base implementation.
      *
-     * See [Volume Types](https://docs.craftcms.com/v3/volume-types.html) for documentation on creating volume types.
+     * See [Volume Types](https://craftcms.com/docs/3.x/extend/volume-types.html) for documentation on creating volume types.
      * ---
      * ```php
      * use craft\events\RegisterComponentTypesEvent;
@@ -254,6 +254,40 @@ class Volumes extends Component
     }
 
     /**
+     * Returns the field layout config for the given volume.
+     *
+     * @param VolumeInterface $volume
+     * @return array
+     * @since 3.5.0
+     */
+    public function createVolumeConfig(VolumeInterface $volume): array
+    {
+        $config = [
+            'name' => $volume->name,
+            'handle' => $volume->handle,
+            'type' => get_class($volume),
+            'hasUrls' => (bool)$volume->hasUrls,
+            'url' => $volume->url,
+            'settings' => ProjectConfigHelper::packAssociativeArrays($volume->getSettings()),
+            'sortOrder' => (int)$volume->sortOrder,
+        ];
+
+        if (
+            ($fieldLayout = $volume->getFieldLayout()) &&
+            ($fieldLayoutConfig = $fieldLayout->getConfig())
+        ) {
+            if (!$fieldLayout->uid) {
+                $fieldLayout->uid = $fieldLayout->id ? Db::uidById(Table::FIELDLAYOUTS, $fieldLayout->id) : StringHelper::UUID();
+            }
+            $config['fieldLayouts'] = [
+                $fieldLayout->uid => $fieldLayoutConfig,
+            ];
+        }
+
+        return $config;
+    }
+
+    /**
      * Creates or updates a volume.
      *
      * ---
@@ -309,37 +343,9 @@ class Volumes extends Component
             $volume->uid = Db::uidById(Table::VOLUMES, $volume->id);
         }
 
-        $projectConfig = Craft::$app->getProjectConfig();
-
-        $configData = [
-            'name' => $volume->name,
-            'handle' => $volume->handle,
-            'type' => \get_class($volume),
-            'hasUrls' => (bool)$volume->hasUrls,
-            'url' => $volume->url,
-            'settings' => ProjectConfigHelper::packAssociativeArrays($volume->getSettings()),
-            'sortOrder' => (int)$volume->sortOrder,
-        ];
-
-        if (
-            ($fieldLayout = $volume->getFieldLayout()) &&
-            ($fieldLayoutConfig = $fieldLayout->getConfig())
-        ) {
-            if (empty($fieldLayout->id)) {
-                $layoutUid = StringHelper::UUID();
-                $fieldLayout->uid = $layoutUid;
-            } else {
-                $layoutUid = Db::uidById(Table::FIELDLAYOUTS, $fieldLayout->id);
-            }
-
-            $configData['fieldLayouts'] = [
-                $layoutUid => $fieldLayoutConfig
-            ];
-        }
-
-
         $configPath = self::CONFIG_VOLUME_KEY . '.' . $volume->uid;
-        $projectConfig->set($configPath, $configData, "Save the “{$volume->handle}” volume");
+        $configData = $this->createVolumeConfig($volume);
+        Craft::$app->getProjectConfig()->set($configPath, $configData, "Save the “{$volume->handle}” volume");
 
         if ($isNewVolume) {
             $volume->id = Db::idByUid(Table::VOLUMES, $volume->uid);

@@ -29,6 +29,7 @@ use yii\db\Connection;
  * @method Asset|array|null nth(int $n, Connection $db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @doc-path assets.md
  * @supports-site-params
  * @supports-title-param
  * @replace {element} asset
@@ -65,7 +66,7 @@ class AssetQuery extends ElementQuery
     // -------------------------------------------------------------------------
 
     /**
-     * @var int|int[]|null The volume ID(s) that the resulting assets must be in.
+     * @var int|int[]|string|null The volume ID(s) that the resulting assets must be in.
      * ---
      * ```php
      * // fetch assets in the Logos volume
@@ -332,7 +333,7 @@ class AssetQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param int|int[]|null $value The property value
+     * @param int|int[]|string|null $value The property value
      * @return static self reference
      * @uses $volumeId
      */
@@ -814,7 +815,7 @@ class AssetQuery extends ElementQuery
      */
     protected function beforePrepare(): bool
     {
-        // See if 'source' was set to an invalid handle
+        // See if 'volume' was set to an invalid handle
         if ($this->volumeId === []) {
             return false;
         }
@@ -842,7 +843,11 @@ class AssetQuery extends ElementQuery
 
         $this->_normalizeVolumeId();
         if ($this->volumeId) {
-            $this->subQuery->andWhere(['assets.volumeId' => $this->volumeId]);
+            if ($this->volumeId === ':empty:') {
+                $this->subQuery->andWhere(['assets.volumeId' => null]);
+            } else {
+                $this->subQuery->andWhere(['assets.volumeId' => $this->volumeId]);
+            }
         }
 
         if ($this->folderId) {

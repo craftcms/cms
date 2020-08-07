@@ -1,0 +1,43 @@
+{% import "_includes/forms" as forms %}
+
+<form method="post" accept-charset="UTF-8">
+    <h2>{{ 'Apply File Changes'|t('app') }}</h2>
+    {{ csrfInput() }}
+    {{ actionInput('utilities/project-config-perform-action') }}
+    {% if changesPending %}
+        <p>{{ 'Apply changes in your project config files to the stored project config.'|t('app') }}</p>
+        <div class="buttons">
+            <button type="submit" class="btn secondary" name="performAction" value="apply">{{ 'Apply changes only'|t('app') }}</button>
+            <button type="submit" class="btn" name="performAction" value="force-apply">{{ 'Reapply everything'|t('app') }}</button>
+        </div>
+    {% else %}
+        <div class="pane">
+            <p>
+                <span class="checkmark-icon"></span>
+                {{ 'There aren’t any pending project config changes to apply.'|t('app') }}
+            </p>
+        </div>
+        <div class="buttons">
+            <button type="submit" class="btn" name="performAction" value="force-apply">{{ 'Reapply everything'|t('app') }}</button>
+        </div>
+    {% endif %}
+</form>
+
+<hr>
+
+<form method="post" accept-charset="UTF-8">
+    <h2>{{ 'Rebuild the Config'|t('app') }}</h2>
+    <p>{{ 'Rebuild the project config based on the data stored throughout the database.'|t('app') }}</p>
+    {{ actionInput('utilities/project-config-perform-action') }}
+    {{ csrfInput() }}
+    <div class="buttons">
+        <button class="btn secondary" name="performAction" value="rebuild">{{ 'Rebuild'|t('app') }}</button>
+    </div>
+</form>
+
+<hr>
+
+<h2>{{ 'Project Config Data'|t('app') }}</h2>
+<div id="config-container" class="pane highlight">
+    <pre><code id="config" class="language-yaml">{{ entireConfig }}</code></pre>
+</div>

@@ -8,7 +8,6 @@
 namespace craft\gql\interfaces\elements;
 
 use Craft;
-use craft\elements\User as UserElement;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\Element;
 use craft\gql\TypeManager;

@@ -17,7 +17,6 @@ use craft\elements\User;
 use craft\errors\InvalidPluginException;
 use craft\helpers\App;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\Json;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\mail\transportadapters\Sendmail;
@@ -124,6 +123,7 @@ class Install extends Migration
             'volumeId' => $this->integer(),
             'fileExists' => $this->boolean()->notNull()->defaultValue(false),
             'inProgress' => $this->boolean()->notNull()->defaultValue(false),
+            'error' => $this->boolean()->defaultValue(false)->notNull(),
             'dateIndexed' => $this->dateTime(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
@@ -315,8 +315,6 @@ class Install extends Migration
             'name' => $this->string()->notNull(),
             'handle' => $this->string()->notNull(),
             'hasTitleField' => $this->boolean()->defaultValue(true)->notNull(),
-            'titleLabel' => $this->string()->defaultValue('Title'),
-            'titleInstructions' => $this->text(),
             'titleTranslationMethod' => $this->string()->notNull()->defaultValue(Field::TRANSLATION_METHOD_SITE),
             'titleTranslationKeyFormat' => $this->text(),
             'titleFormat' => $this->string(),
@@ -356,6 +354,7 @@ class Install extends Migration
             'id' => $this->primaryKey(),
             'layoutId' => $this->integer()->notNull(),
             'name' => $this->string()->notNull(),
+            'elements' => $this->text(),
             'sortOrder' => $this->smallInteger()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
@@ -412,7 +411,6 @@ class Install extends Migration
             'version' => $this->string(50)->notNull(),
             'schemaVersion' => $this->string(15)->notNull(),
             'maintenance' => $this->boolean()->defaultValue(false)->notNull(),
-            'configMap' => $this->mediumText()->null(),
             'fieldVersion' => $this->char(12)->notNull()->defaultValue('000000000000'),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
@@ -755,8 +753,8 @@ class Install extends Migration
         $this->createIndex(null, Table::ASSETS, ['folderId'], false);
         $this->createIndex(null, Table::ASSETS, ['volumeId'], false);
         $this->createIndex(null, Table::ASSETTRANSFORMINDEX, ['volumeId', 'assetId', 'location'], false);
-        $this->createIndex(null, Table::ASSETTRANSFORMS, ['name'], true);
-        $this->createIndex(null, Table::ASSETTRANSFORMS, ['handle'], true);
+        $this->createIndex(null, Table::ASSETTRANSFORMS, ['name']);
+        $this->createIndex(null, Table::ASSETTRANSFORMS, ['handle']);
         $this->createIndex(null, Table::CATEGORIES, ['groupId'], false);
         $this->createIndex(null, Table::CATEGORYGROUPS, ['name'], false);
         $this->createIndex(null, Table::CATEGORYGROUPS, ['handle'], false);
@@ -794,7 +792,7 @@ class Install extends Migration
         $this->createIndex(null, Table::ENTRYTYPES, ['sectionId'], false);
         $this->createIndex(null, Table::ENTRYTYPES, ['fieldLayoutId'], false);
         $this->createIndex(null, Table::ENTRYTYPES, ['dateDeleted'], false);
-        $this->createIndex(null, Table::FIELDGROUPS, ['name'], true);
+        $this->createIndex(null, Table::FIELDGROUPS, ['name']);
         $this->createIndex(null, Table::FIELDLAYOUTFIELDS, ['layoutId', 'fieldId'], true);
         $this->createIndex(null, Table::FIELDLAYOUTFIELDS, ['sortOrder'], false);
         $this->createIndex(null, Table::FIELDLAYOUTFIELDS, ['tabId'], false);
@@ -803,7 +801,7 @@ class Install extends Migration
         $this->createIndex(null, Table::FIELDLAYOUTS, ['type'], false);
         $this->createIndex(null, Table::FIELDLAYOUTTABS, ['sortOrder'], false);
         $this->createIndex(null, Table::FIELDLAYOUTTABS, ['layoutId'], false);
-        $this->createIndex(null, Table::FIELDS, ['handle', 'context'], true);
+        $this->createIndex(null, Table::FIELDS, ['handle', 'context']);
         $this->createIndex(null, Table::FIELDS, ['groupId'], false);
         $this->createIndex(null, Table::FIELDS, ['context'], false);
         $this->createIndex(null, Table::GLOBALSETS, ['name'], false);
@@ -815,8 +813,8 @@ class Install extends Migration
         $this->createIndex(null, Table::MATRIXBLOCKS, ['fieldId'], false);
         $this->createIndex(null, Table::MATRIXBLOCKS, ['typeId'], false);
         $this->createIndex(null, Table::MATRIXBLOCKS, ['sortOrder'], false);
-        $this->createIndex(null, Table::MATRIXBLOCKTYPES, ['name', 'fieldId'], true);
-        $this->createIndex(null, Table::MATRIXBLOCKTYPES, ['handle', 'fieldId'], true);
+        $this->createIndex(null, Table::MATRIXBLOCKTYPES, ['name', 'fieldId']);
+        $this->createIndex(null, Table::MATRIXBLOCKTYPES, ['handle', 'fieldId']);
         $this->createIndex(null, Table::MATRIXBLOCKTYPES, ['fieldId'], false);
         $this->createIndex(null, Table::MATRIXBLOCKTYPES, ['fieldLayoutId'], false);
         $this->createIndex(null, Table::MIGRATIONS, ['track', 'name'], true);
@@ -863,8 +861,8 @@ class Install extends Migration
         $this->createIndex(null, Table::TEMPLATECACHES, ['siteId'], false);
         $this->createIndex(null, Table::TOKENS, ['token'], true);
         $this->createIndex(null, Table::TOKENS, ['expiryDate'], false);
-        $this->createIndex(null, Table::USERGROUPS, ['handle'], true);
-        $this->createIndex(null, Table::USERGROUPS, ['name'], true);
+        $this->createIndex(null, Table::USERGROUPS, ['handle']);
+        $this->createIndex(null, Table::USERGROUPS, ['name']);
         $this->createIndex(null, Table::USERGROUPS_USERS, ['groupId', 'userId'], true);
         $this->createIndex(null, Table::USERGROUPS_USERS, ['userId'], false);
         $this->createIndex(null, Table::USERPERMISSIONS, ['name'], true);
@@ -1033,7 +1031,6 @@ class Install extends Migration
             'schemaVersion' => Craft::$app->schemaVersion,
             'maintenance' => false,
             'fieldVersion' => StringHelper::randomString(12),
-            'configMap' => Json::encode([]),
         ]));
         echo "done\n";
 
@@ -1042,36 +1039,34 @@ class Install extends Migration
 
         $applyExistingProjectConfig = false;
 
-        if ($generalConfig->useProjectConfigFile) {
-            $configFile = Craft::$app->getPath()->getProjectConfigFilePath();
-            if (file_exists($configFile)) {
-                try {
-                    $expectedSchemaVersion = (string)$projectConfig->get(ProjectConfig::CONFIG_SCHEMA_VERSION_KEY, true);
-                    $craftSchemaVersion = (string)Craft::$app->schemaVersion;
+        $configFile = Craft::$app->getPath()->getProjectConfigFilePath();
+        if (file_exists($configFile)) {
+            try {
+                $expectedSchemaVersion = (string)$projectConfig->get(ProjectConfig::CONFIG_SCHEMA_VERSION_KEY, true);
+                $craftSchemaVersion = (string)Craft::$app->schemaVersion;
 
-                    // Compare existing Craft schema version with the one that is being applied.
-                    if (!version_compare($craftSchemaVersion, $expectedSchemaVersion, '=')) {
-                        throw new InvalidConfigException("Craft is installed at the wrong schema version ({$craftSchemaVersion}, but $projectConfig->filename lists {$expectedSchemaVersion}).");
-                    }
-
-                    // Make sure at least sites are processed
-                    ProjectConfigHelper::ensureAllSitesProcessed();
-
-                    $this->_installPlugins();
-                    $applyExistingProjectConfig = true;
-                } catch (\Throwable $e) {
-                    echo "    > can't apply existing project config: {$e->getMessage()}\n";
-                    Craft::$app->getErrorHandler()->logException($e);
-
-                    // Rename project.yaml so we can create a new one
-                    $backupFile = pathinfo($projectConfig->filename, PATHINFO_FILENAME) . date('-Ymh-His') . '.yaml';
-                    echo "    > renaming $projectConfig->filename to $backupFile and moving to config backup folder ... ";
-                    rename($configFile, Craft::$app->getPath()->getConfigBackupPath() . '/' . $backupFile);
-                    echo "done\n";
-
-                    // Forget everything we knew about the old config
-                    $projectConfig->reset();
+                // Compare existing Craft schema version with the one that is being applied.
+                if (!version_compare($craftSchemaVersion, $expectedSchemaVersion, '=')) {
+                    throw new InvalidConfigException("Craft is installed at the wrong schema version ({$craftSchemaVersion}, but project.yaml lists {$expectedSchemaVersion}).");
                 }
+
+                // Make sure at least sites are processed
+                ProjectConfigHelper::ensureAllSitesProcessed();
+
+                $this->_installPlugins();
+                $applyExistingProjectConfig = true;
+            } catch (\Throwable $e) {
+                echo "    > can't apply existing project config: {$e->getMessage()}\n";
+                Craft::$app->getErrorHandler()->logException($e);
+
+                // Rename project.yaml so we can create a new one
+                $backupFile = pathinfo(ProjectConfig::CONFIG_FILENAME, PATHINFO_FILENAME) . date('-Y-m-d-His') . '.yaml';
+                echo "    > renaming project.yaml to $backupFile and moving to config backup folder ... ";
+                rename($configFile, Craft::$app->getPath()->getConfigBackupPath() . '/' . $backupFile);
+                echo "done\n";
+
+                // Forget everything we knew about the old config
+                $projectConfig->reset();
             }
         }
 
@@ -1145,7 +1140,7 @@ class Install extends Migration
             $expectedSchemaVersion = $projectConfig->get(Plugins::CONFIG_PLUGINS_KEY . '.' . $handle . '.schemaVersion', true);
 
             if ($plugin->schemaVersion && $expectedSchemaVersion && $plugin->schemaVersion != $expectedSchemaVersion) {
-                throw new InvalidPluginException($handle, "{$handle} is installed at the wrong schema version ({$plugin->schemaVersion}, but $projectConfig->filename lists {$expectedSchemaVersion}).");
+                throw new InvalidPluginException($handle, "{$handle} is installed at the wrong schema version ({$plugin->schemaVersion}, but project.yaml lists {$expectedSchemaVersion}).");
             }
         }
 
@@ -1223,7 +1218,7 @@ class Install extends Migration
                 'allowPublicRegistration' => false,
                 'defaultGroup' => null,
                 'photoVolumeUid' => null,
-                'photoSubpath' => '',
+                'photoSubpath' => null,
             ],
         ];
     }

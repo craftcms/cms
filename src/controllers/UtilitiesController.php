@@ -9,7 +9,6 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\UtilityInterface;
-use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
 use craft\errors\MigrationException;
@@ -23,6 +22,8 @@ use craft\web\assets\utilities\UtilitiesAsset;
 use craft\web\Controller;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
+use yii\caching\TagDependency;
+use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -141,12 +142,44 @@ class UtilitiesController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $logId = Craft::$app->getRequest()->getRequiredBodyParam('logId');
+        $logId = $this->request->getRequiredBodyParam('logId');
         Craft::$app->deprecator->deleteLogById($logId);
 
         return $this->asJson([
             'success' => true
         ]);
+    }
+
+    /**
+     * Performs a project config action
+     *
+     * @return Response
+     * @throws ForbiddenHttpException if the user doesn't have access to the Asset Indexes utility
+     */
+    public function actionProjectConfigPerformAction(): Response
+    {
+        $this->requireAdmin(false);
+        $projectConfig = Craft::$app->getProjectConfig();
+
+        switch ($this->request->getRequiredBodyParam('performAction')) {
+            case 'force-apply':
+                $forceUpdate = $projectConfig->forceUpdate;
+                $projectConfig->forceUpdate = true;
+                $projectConfig->applyYamlChanges();
+                $this->setSuccessFlash(Craft::t('app', 'Project config changes applied successfully.'));
+                $projectConfig->forceUpdate = $forceUpdate;
+                break;
+            case 'apply':
+                $projectConfig->applyYamlChanges();
+                $this->setSuccessFlash(Craft::t('app', 'Project config changes applied successfully.'));
+                break;
+            case 'rebuild':
+                $projectConfig->rebuild();
+                $this->setSuccessFlash(Craft::t('app', 'Project config rebuilt successfully.'));
+                break;
+        }
+
+        return $this->redirect('utilities/project-config');
     }
 
     /**
@@ -159,11 +192,13 @@ class UtilitiesController extends Controller
     {
         $this->requirePermission('utility:asset-indexes');
 
-        $params = Craft::$app->getRequest()->getRequiredBodyParam('params');
+        $params = $this->request->getRequiredBodyParam('params');
 
         // Initial request
+        $assetIndexerService = Craft::$app->getAssetIndexer();
+        $userSession = Craft::$app->getSession();
         if (!empty($params['start'])) {
-            $sessionId = Craft::$app->getAssetIndexer()->getIndexingSessionId();
+            $sessionId = $assetIndexerService->getIndexingSessionId();
 
             $response = [
                 'volumes' => [],
@@ -182,7 +217,7 @@ class UtilitiesController extends Controller
 
             foreach ($volumeIds as $volumeId) {
                 // Get the indexing list
-                $indexList = Craft::$app->getAssetIndexer()->prepareIndexList($sessionId, $volumeId);
+                $indexList = $assetIndexerService->prepareIndexList($sessionId, $volumeId);
 
                 if (!empty($indexList['error'])) {
                     return $this->asJson($indexList);
@@ -202,9 +237,9 @@ class UtilitiesController extends Controller
                 ];
             }
 
-            Craft::$app->getSession()->set('assetsVolumesBeingIndexed', $volumeIds);
-            Craft::$app->getSession()->set('assetsMissingFolders', $missingFolders);
-            Craft::$app->getSession()->set('assetsSkippedFiles', $skippedFiles);
+            $userSession->set('assetsVolumesBeingIndexed', $volumeIds);
+            $userSession->set('assetsMissingFolders', $missingFolders);
+            $userSession->set('assetsSkippedFiles', $skippedFiles);
 
             return $this->asJson([
                 'indexingData' => $response,
@@ -213,7 +248,7 @@ class UtilitiesController extends Controller
 
         if (!empty($params['process'])) {
             // Index the file
-            Craft::$app->getAssetIndexer()->processIndexForVolume($params['sessionId'], $params['volumeId'], $params['cacheImages']);
+            $assetIndexerService->processIndexForVolume($params['sessionId'], $params['volumeId'], $params['cacheImages']);
 
             return $this->asJson([
                 'success' => true
@@ -221,29 +256,18 @@ class UtilitiesController extends Controller
         }
 
         if (!empty($params['overview'])) {
-            $missingFiles = Craft::$app->getAssetIndexer()->getMissingFiles($params['sessionId']);
-            $missingFolders = Craft::$app->getSession()->get('assetsMissingFolders', []);
-            $skippedFiles = Craft::$app->getSession()->get('assetsSkippedFiles', []);
+            $missingFiles = $assetIndexerService->getMissingFiles($params['sessionId']);
+            $missingFolders = $userSession->get('assetsMissingFolders', []);
+            $skippedFiles = $userSession->get('assetsSkippedFiles', []);
 
             if (!empty($missingFiles) || !empty($missingFolders) || !empty($skippedFiles)) {
                 return $this->asJson([
                     'confirm' => $this->getView()->renderTemplate('assets/_missing_items', compact('missingFiles', 'missingFolders', 'skippedFiles')),
+                    'showDelete' => !empty($missingFiles) || !empty($missingFolders)
                 ]);
             }
 
-            // Clean up stale indexing data (all sessions that have all recordIds set)
-            $sessionsInProgress = (new Query())
-                ->select(['sessionId'])
-                ->from([Table::ASSETINDEXDATA])
-                ->where(['recordId' => null])
-                ->groupBy(['sessionId'])
-                ->scalar();
-
-            if (empty($sessionsInProgress)) {
-                Db::delete(Table::ASSETINDEXDATA);
-            } else {
-                Db::delete(Table::ASSETINDEXDATA, ['not', ['sessionId' => $sessionsInProgress]]);
-            }
+            $assetIndexerService->deleteStaleIndexingData();
         } else if (!empty($params['finish'])) {
             if (!empty($params['deleteAsset']) && is_array($params['deleteAsset'])) {
                 Db::delete(Table::ASSETTRANSFORMINDEX, [
@@ -277,18 +301,13 @@ class UtilitiesController extends Controller
      *
      * @return Response
      * @throws ForbiddenHttpException if the user doesn't have access to the Clear Caches utility
+     * @throws BadRequestHttpException
      */
     public function actionClearCachesPerformAction(): Response
     {
         $this->requirePermission('utility:clear-caches');
 
-        $caches = Craft::$app->getRequest()->getRequiredBodyParam('caches');
-
-        if (!isset($caches)) {
-            return $this->asJson([
-                'success' => true
-            ]);
-        }
+        $caches = $this->request->getRequiredBodyParam('caches');
 
         foreach (ClearCaches::cacheOptions() as $cacheOption) {
             if (is_array($caches) && !in_array($cacheOption['key'], $caches, true)) {
@@ -310,6 +329,30 @@ class UtilitiesController extends Controller
             } else {
                 $action();
             }
+        }
+
+        return $this->asJson([
+            'success' => true
+        ]);
+    }
+
+    /**
+     * Performs an Invalidate Data Caches action.
+     *
+     * @return Response
+     * @throws ForbiddenHttpException if the user doesn't have access to the Clear Caches utility
+     * @throws BadRequestHttpException
+     * @since 3.5.0
+     */
+    public function actionInvalidateTags(): Response
+    {
+        $this->requirePermission('utility:clear-caches');
+
+        $tags = $this->request->getRequiredBodyParam('tags');
+        $cache = Craft::$app->getCache();
+
+        foreach ($tags as $tag) {
+            TagDependency::invalidate($cache, $tag);
         }
 
         return $this->asJson([
@@ -342,11 +385,11 @@ class UtilitiesController extends Controller
         $zipPath = FileHelper::zip($backupPath);
         unlink($backupPath);
 
-        if (!Craft::$app->getRequest()->getBodyParam('downloadBackup')) {
+        if (!$this->request->getBodyParam('downloadBackup')) {
             return $this->asJson(['success' => true]);
         }
 
-        return Craft::$app->getResponse()->sendFile($zipPath, null, [
+        return $this->response->sendFile($zipPath, null, [
             'mimeType' => 'application/zip',
         ]);
     }
@@ -361,7 +404,7 @@ class UtilitiesController extends Controller
     {
         $this->requirePermission('utility:find-replace');
 
-        $params = Craft::$app->getRequest()->getRequiredBodyParam('params');
+        $params = $this->request->getRequiredBodyParam('params');
 
         if (!empty($params['find']) && !empty($params['replace'])) {
             Queue::push(new FindAndReplace([

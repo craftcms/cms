@@ -297,7 +297,7 @@ Craft.ui =
         },
 
         createCheckboxSelect: function(config) {
-            var $container = $('<div class="checkbox-select"/>');
+            var $container = $('<fieldset class="checkbox-select"/>');
 
             if (config.class) {
                 $container.addClass(config.class);
@@ -404,7 +404,11 @@ Craft.ui =
                 new Craft.FieldToggle($container);
             }
 
-            return $container.lightswitch();
+            new Craft.LightSwitch($container, {
+                onChange: config.onChange || $.noop,
+            });
+
+            return $container;
         },
 
         createLightswitchField: function(config) {

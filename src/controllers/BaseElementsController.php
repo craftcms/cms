@@ -7,7 +7,6 @@
 
 namespace craft\controllers;
 
-use Craft;
 use craft\base\ElementInterface;
 use craft\errors\InvalidTypeException;
 use craft\web\Controller;
@@ -29,8 +28,8 @@ abstract class BaseElementsController extends Controller
      */
     public function init()
     {
-        $this->requireCpRequest();
         parent::init();
+        $this->requireCpRequest();
     }
 
     /**
@@ -41,7 +40,7 @@ abstract class BaseElementsController extends Controller
      */
     protected function elementType(): string
     {
-        $class = Craft::$app->getRequest()->getRequiredParam('elementType');
+        $class = $this->request->getRequiredParam('elementType');
 
         // TODO: should probably move the code inside try{} to a helper method
         try {
@@ -62,6 +61,6 @@ abstract class BaseElementsController extends Controller
      */
     protected function context()
     {
-        return Craft::$app->getRequest()->getParam('context');
+        return $this->request->getParam('context');
     }
 }

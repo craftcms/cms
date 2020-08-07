@@ -16,7 +16,7 @@ use craft\db\Table;
  * @property int $id ID
  * @property int|null $draftId Draft ID
  * @property int|null $revisionId Revision ID
- * @property int $fieldLayoutId ID
+ * @property int|null $fieldLayoutId Field layout ID
  * @property string $type Type
  * @property bool $enabled Enabled
  * @property bool $archived Archived

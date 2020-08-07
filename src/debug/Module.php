@@ -6,6 +6,7 @@
  */
 
 namespace craft\debug;
+
 use Craft;
 use craft\web\View;
 

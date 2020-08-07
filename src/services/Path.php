@@ -34,6 +34,11 @@ class Path extends Component
     /**
      * @var
      */
+    private $_testsPath;
+
+    /**
+     * @var
+     */
     private $_siteTranslationsPath;
 
     /**
@@ -63,14 +68,33 @@ class Path extends Component
     }
 
     /**
-     * Returns the path to `config/project.yaml`.
+     * Returns the path to `config/project/project.yaml`.
      *
      * @return string
      * @since 3.1.2
      */
     public function getProjectConfigFilePath(): string
     {
-        return $this->getConfigPath() . DIRECTORY_SEPARATOR . Craft::$app->getProjectConfig()->filename;
+        return $this->getProjectConfigPath(false) . DIRECTORY_SEPARATOR . ProjectConfig::CONFIG_FILENAME;
+    }
+
+    /**
+     * Returns the path to `config/project/` directory.
+     *
+     * @param bool $create Whether the directory should be created if it doesn't exist
+     * @return string
+     * @throws Exception
+     * @since 3.5.0
+     */
+    public function getProjectConfigPath(bool $create = true): string
+    {
+        $path = $this->getConfigPath() . DIRECTORY_SEPARATOR . Craft::$app->getProjectConfig()->folderName;
+
+        if ($create) {
+            FileHelper::createDirectory($path);
+        }
+
+        return $path;
     }
 
     /**
@@ -97,6 +121,28 @@ class Path extends Component
         }
 
         return $this->_storagePath;
+    }
+
+    /**
+     * Returns the path to the `tests/` directory.
+     *
+     * @return string
+     * @throws Exception
+     * @since 3.4.29
+     */
+    public function getTestsPath(): string
+    {
+        if ($this->_testsPath !== null) {
+            return $this->_testsPath;
+        }
+
+        $path = Craft::getAlias('@tests');
+
+        if ($path === false) {
+            throw new Exception('There was a problem getting the tests path.');
+        }
+
+        return $this->_testsPath = FileHelper::normalizePath($path);
     }
 
     /**

@@ -23,6 +23,7 @@ Craft.Preview = Garnish.Base.extend(
         $fieldPlaceholder: null,
 
         isActive: false,
+        isVisible: false,
         activeTarget: 0,
         draftId: null,
         url: null,
@@ -34,7 +35,6 @@ Craft.Preview = Garnish.Base.extend(
         dragger: null,
         dragStartEditorWidth: null,
 
-        _slideInOnIframeLoad: false,
         _updateIframeProxy: null,
 
         _editorWidth: null,
@@ -179,7 +179,6 @@ Craft.Preview = Garnish.Base.extend(
                 }
             }
 
-            this._slideInOnIframeLoad = true;
             this.updateIframe();
 
             this.draftEditor.on('update', this._updateIframeProxy);
@@ -211,6 +210,10 @@ Craft.Preview = Garnish.Base.extend(
         },
 
         slideIn: function() {
+            if (!this.isActive || this.isVisible) {
+                return;
+            }
+
             $('html').addClass('noscroll');
             this.$shade.velocity('fadeIn');
 
@@ -226,10 +229,12 @@ Craft.Preview = Garnish.Base.extend(
                     }
                 });
             }, this));
+
+            this.isVisible = true;
         },
 
         close: function() {
-            if (!this.isActive) {
+            if (!this.isActive || !this.isVisible) {
                 return;
             }
 
@@ -265,6 +270,7 @@ Craft.Preview = Garnish.Base.extend(
             Craft.ElementThumbLoader.retryAll();
 
             this.isActive = false;
+            this.isVisible = false;
             this.trigger('close');
         },
 
@@ -318,6 +324,7 @@ Craft.Preview = Garnish.Base.extend(
 
             // If this is an existing preview target, make sure it wants to be refreshed automatically
             if (!refresh) {
+                this.slideIn();
                 return;
             }
 
@@ -348,34 +355,30 @@ Craft.Preview = Garnish.Base.extend(
                 }
 
                 // Keep the iframe height consistent with its content
-                iFrameResize({
-                    checkOrigin: false,
-                    // Allow iframe scrolling until we've successfully initialized the resizer
-                    scrolling: true,
-                    onInit: iframe => {
-                        this.iframeLoaded = true;
-                        this.iframeHeight = null;
-                        this.scrollTop = null;
-                        iframe.scrolling = 'no';
-                    },
-                }, $iframe[0])
+                if (Craft.previewIframeResizerOptions !== false) {
+                    iFrameResize($.extend({
+                        checkOrigin: false,
+                        // Allow iframe scrolling until we've successfully initialized the resizer
+                        scrolling: true,
+                        onInit: iframe => {
+                            this.iframeLoaded = true;
+                            this.iframeHeight = null;
+                            this.scrollTop = null;
+                            iframe.scrolling = 'no';
+                        },
+                    }, Craft.previewIframeResizerOptions || {}), $iframe[0]);
+                }
 
                 this.url = url;
                 this.$iframe = $iframe;
-                this.afterUpdateIframe();
-            }.bind(this));
-        },
 
-        afterUpdateIframe: function() {
-            this.trigger('afterUpdateIframe', {
-                target: this.draftEditor.settings.previewTargets[this.activeTarget],
-                $iframe: this.$iframe,
-            });
+                this.trigger('afterUpdateIframe', {
+                    target: this.draftEditor.settings.previewTargets[this.activeTarget],
+                    $iframe: this.$iframe,
+                });
 
-            if (this._slideInOnIframeLoad) {
                 this.slideIn();
-                this._slideInOnIframeLoad = false;
-            }
+            }.bind(this));
         },
 
         _getClone: function($field) {

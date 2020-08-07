@@ -24,22 +24,31 @@ use yii\console\ExitCode;
 class ProjectConfigController extends Controller
 {
     /**
-     * @var bool Whether every entry change should be force-synced.
+     * @var bool Whether every entry change should be force-applied.
      */
     public $force = false;
 
     /**
-     * Syncs the project config.
+     * @inheritdoc
+     */
+    public function options($actionID)
+    {
+        $options = parent::options($actionID);
+
+        if (in_array($actionID, ['apply', 'sync'], true)) {
+            $options[] = 'force';
+        }
+
+        return $options;
+    }
+
+    /**
+     * Applies project config file changes.
      *
      * @return int
      */
-    public function actionSync(): int
+    public function actionApply(): int
     {
-        if (!Craft::$app->getConfig()->getGeneral()->useProjectConfigFile) {
-            $this->stdout('Craft is not configured to use project.yaml. Please enable the \'useProjectConfigFile\' config setting in config/general.php.' . PHP_EOL, Console::FG_YELLOW);
-            return ExitCode::UNSPECIFIED_ERROR;
-        }
-
         $updatesService = Craft::$app->getUpdates();
 
         if ($updatesService->getIsCraftDbMigrationNeeded() || $updatesService->getIsPluginDbUpdateNeeded()) {
@@ -51,7 +60,7 @@ class ProjectConfigController extends Controller
 
         $issues = [];
         if (!$projectConfig->getAreConfigSchemaVersionsCompatible($issues)) {
-            $this->stderr("Your $projectConfig->filename file was created for different versions of Craft and/or plugins than what’s currently installed." . PHP_EOL . PHP_EOL, Console::FG_YELLOW);
+            $this->stderr("Your project config files were created for different versions of Craft and/or plugins than what’s currently installed." . PHP_EOL . PHP_EOL, Console::FG_YELLOW);
 
             foreach ($issues as $issue) {
                 $this->stderr($issue['cause'], Console::FG_RED);
@@ -68,7 +77,7 @@ class ProjectConfigController extends Controller
 
         // Do we need to create a new config file?
         if (!file_exists(Craft::$app->getPath()->getProjectConfigFilePath())) {
-            $this->stdout("No $projectConfig->filename file found. Generating one from internal config ... ", Console::FG_YELLOW);
+            $this->stdout("No project config files found. Generating them from internal config ... ", Console::FG_YELLOW);
             $projectConfig->regenerateYamlFromConfig();
         } else {
             // Any plugins need to be installed/uninstalled?
@@ -77,11 +86,11 @@ class ProjectConfigController extends Controller
             $this->_uninstallPlugins(array_diff($loadedConfigPlugins, $yamlPlugins));
 
             if (!$this->_installPlugins(array_diff($yamlPlugins, $loadedConfigPlugins))) {
-                $this->stdout('Aborting config sync' . PHP_EOL, Console::FG_RED);
+                $this->stdout('Aborting config apply process' . PHP_EOL, Console::FG_RED);
                 return ExitCode::UNSPECIFIED_ERROR;
             }
 
-            $this->stdout("Applying changes from $projectConfig->filename ... ", Console::FG_YELLOW);
+            $this->stdout("Applying changes from your project config files ... ", Console::FG_YELLOW);
             try {
                 $forceUpdate = $projectConfig->forceUpdate;
                 $projectConfig->forceUpdate = $this->force;
@@ -99,6 +108,18 @@ class ProjectConfigController extends Controller
     }
 
     /**
+     * Alias for `apply`.
+     *
+     * @return int
+     * @deprecated in 3.5.0. Use [[actionApply()]] instead.
+     */
+    public function actionSync(): int
+    {
+        $this->stderr('project-config/sync has been renamed to project-config/apply. Running that instead...' . PHP_EOL, Console::FG_RED);
+        return $this->runAction('apply');
+    }
+
+    /**
      * Rebuilds the project config.
      *
      * @return int
@@ -109,7 +130,7 @@ class ProjectConfigController extends Controller
         $projectConfig = Craft::$app->getProjectConfig();
 
         if (!file_exists(Craft::$app->getPath()->getProjectConfigFilePath())) {
-            $this->stdout("No $projectConfig->filename file found. Generating one from internal config ... ", Console::FG_YELLOW);
+            $this->stdout("No project config files found. Generating them from internal config ... ", Console::FG_YELLOW);
             $projectConfig->regenerateYamlFromConfig();
         }
 
@@ -190,19 +211,5 @@ class ProjectConfigController extends Controller
         }
 
         return true;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function options($actionID)
-    {
-        $options = parent::options($actionID);
-
-        if ($actionID == 'sync') {
-            $options[] = 'force';
-        }
-
-        return $options;
     }
 }

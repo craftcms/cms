@@ -90,17 +90,16 @@ class ElementIndexesController extends BaseElementsController
             return false;
         }
 
-        if ($action->id !== 'export') {
+        if (!in_array($action->id, ['export', 'perform-action'], true)) {
             $this->requireAcceptsJson();
         }
 
-        $request = Craft::$app->getRequest();
         $this->elementType = $this->elementType();
         $this->context = $this->context();
-        $this->sourceKey = $request->getParam('source') ?: null;
+        $this->sourceKey = $this->request->getParam('source') ?: null;
         $this->source = $this->source();
         $this->viewState = $this->viewState();
-        $this->paginated = (bool)$request->getParam('paginated');
+        $this->paginated = (bool)$this->request->getParam('paginated');
         $this->elementQuery = $this->elementQuery();
 
         if ($this->includeActions() && $this->sourceKey !== null) {
@@ -158,7 +157,7 @@ class ElementIndexesController extends BaseElementsController
     public function actionCountElements(): Response
     {
         return $this->asJson([
-            'resultSet' => Craft::$app->getRequest()->getParam('resultSet'),
+            'resultSet' => $this->request->getParam('resultSet'),
             'count' => (int)$this->elementQuery
                 ->select(new Expression('1'))
                 ->count(),
@@ -175,18 +174,17 @@ class ElementIndexesController extends BaseElementsController
     {
         $this->requirePostRequest();
 
-        $requestService = Craft::$app->getRequest();
         $elementsService = Craft::$app->getElements();
 
-        $actionClass = $requestService->getRequiredBodyParam('elementAction');
-        $elementIds = $requestService->getRequiredBodyParam('elementIds');
+        $actionClass = $this->request->getRequiredBodyParam('elementAction');
+        $elementIds = $this->request->getRequiredBodyParam('elementIds');
 
         // Find that action from the list of available actions for the source
         if (!empty($this->actions)) {
             /** @var ElementAction $availableAction */
             foreach ($this->actions as $availableAction) {
                 if ($actionClass === get_class($availableAction)) {
-                    $action = $availableAction;
+                    $action = clone $availableAction;
                     break;
                 }
             }
@@ -199,7 +197,7 @@ class ElementIndexesController extends BaseElementsController
 
         // Check for any params in the post data
         foreach ($action->settingsAttributes() as $paramName) {
-            $paramValue = $requestService->getBodyParam($paramName);
+            $paramValue = $this->request->getBodyParam($paramName);
 
             if ($paramValue !== null) {
                 $action->$paramName = $paramValue;
@@ -246,6 +244,10 @@ class ElementIndexesController extends BaseElementsController
         }
 
         // Respond
+        if ($action->isDownload()) {
+            return $this->response;
+        }
+
         $responseData = [
             'success' => $success,
             'message' => $message,
@@ -290,26 +292,23 @@ class ElementIndexesController extends BaseElementsController
         $exporter = $this->_exporter();
         $exporter->setElementType($this->elementType);
 
-        $request = Craft::$app->getRequest();
-        $response = Craft::$app->getResponse();
+        $this->response->data = $exporter->export($this->elementQuery);
+        $this->response->format = $this->request->getBodyParam('format', 'csv');
+        $this->response->setDownloadHeaders($exporter->getFilename() . ".{$this->response->format}");
 
-        $response->data = $exporter->export($this->elementQuery);
-        $response->format = $request->getBodyParam('format', 'csv');
-        $response->setDownloadHeaders($exporter->getFilename() . ".{$response->format}");
-
-        switch ($response->format) {
+        switch ($this->response->format) {
             case Response::FORMAT_JSON:
-                $response->formatters[Response::FORMAT_JSON]['prettyPrint'] = true;
+                $this->response->formatters[Response::FORMAT_JSON]['prettyPrint'] = true;
                 break;
             case Response::FORMAT_XML:
                 Craft::$app->language = 'en-US';
                 /** @var string|ElementInterface $elementType */
                 $elementType = $this->elementType;
-                $response->formatters[Response::FORMAT_XML]['rootTag'] = $elementType::pluralLowerDisplayName();
+                $this->response->formatters[Response::FORMAT_XML]['rootTag'] = $elementType::pluralLowerDisplayName();
                 break;
         }
 
-        return $response;
+        return $this->response;
     }
 
     /**
@@ -324,16 +323,14 @@ class ElementIndexesController extends BaseElementsController
     public function actionCreateExportToken(): Response
     {
         $exporter = $this->_exporter();
-        $request = Craft::$app->getRequest();
-
         $token = Craft::$app->getTokens()->createToken([
             'export/export',
             [
                 'elementType' => $this->elementType,
                 'sourceKey' => $this->sourceKey,
-                'criteria' => $request->getBodyParam('criteria', []),
+                'criteria' => $this->request->getBodyParam('criteria', []),
                 'exporter' => get_class($exporter),
-                'format' => $request->getBodyParam('format', 'csv'),
+                'format' => $this->request->getBodyParam('format', 'csv'),
             ]
         ], 1, (new \DateTime())->add(new \DateInterval('PT1H')));
 
@@ -361,7 +358,7 @@ class ElementIndexesController extends BaseElementsController
         }
 
         // Find that exporter from the list of available exporters for the source
-        $exporterClass = Craft::$app->getRequest()->getBodyParam('type', Raw::class);
+        $exporterClass = $this->request->getBodyParam('type', Raw::class);
         if (!empty($this->exporters)) {
             foreach ($this->exporters as $exporter) {
                 if ($exporterClass === get_class($exporter)) {
@@ -412,7 +409,7 @@ class ElementIndexesController extends BaseElementsController
      */
     protected function viewState(): array
     {
-        $viewState = Craft::$app->getRequest()->getParam('viewState', []);
+        $viewState = $this->request->getParam('viewState', []);
 
         if (empty($viewState['mode'])) {
             $viewState['mode'] = 'table';
@@ -432,15 +429,13 @@ class ElementIndexesController extends BaseElementsController
         $elementType = $this->elementType;
         $query = $elementType::find();
 
-        $request = Craft::$app->getRequest();
-
         // Does the source specify any criteria attributes?
         if (isset($this->source['criteria'])) {
             Craft::configure($query, $this->source['criteria']);
         }
 
         // Override with the request's params
-        if ($criteria = $request->getBodyParam('criteria')) {
+        if ($criteria = $this->request->getBodyParam('criteria')) {
             if (isset($criteria['trashed'])) {
                 $criteria['trashed'] = (bool)$criteria['trashed'];
             }
@@ -452,7 +447,7 @@ class ElementIndexesController extends BaseElementsController
         }
 
         // Exclude descendants of the collapsed element IDs
-        $collapsedElementIds = $request->getParam('collapsedElementIds');
+        $collapsedElementIds = $this->request->getParam('collapsedElementIds');
 
         if ($collapsedElementIds) {
             $descendantQuery = clone $query;
@@ -519,7 +514,7 @@ class ElementIndexesController extends BaseElementsController
             $responseData['exporters'] = $this->exporterData();
         }
 
-        $disabledElementIds = Craft::$app->getRequest()->getParam('disabledElementIds', []);
+        $disabledElementIds = $this->request->getParam('disabledElementIds', []);
         $showCheckboxes = !empty($this->actions);
 
         if ($this->sourceKey) {
@@ -549,7 +544,7 @@ class ElementIndexesController extends BaseElementsController
      */
     protected function availableActions()
     {
-        if (Craft::$app->getRequest()->isMobileBrowser()) {
+        if ($this->request->isMobileBrowser()) {
             return null;
         }
 
@@ -608,7 +603,7 @@ class ElementIndexesController extends BaseElementsController
      */
     protected function availableExporters()
     {
-        if (Craft::$app->getRequest()->isMobileBrowser()) {
+        if ($this->request->isMobileBrowser()) {
             return null;
         }
 
@@ -654,9 +649,11 @@ class ElementIndexesController extends BaseElementsController
             $actionData[] = [
                 'type' => get_class($action),
                 'destructive' => $action->isDestructive(),
+                'download' => $action->isDownload(),
                 'name' => $action->getTriggerLabel(),
                 'trigger' => $action->getTriggerHtml(),
                 'confirm' => $action->getConfirmationMessage(),
+                'settings' => $action->getSettings() ?: null,
             ];
         }
 

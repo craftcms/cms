@@ -25,6 +25,7 @@ use yii\db\Connection;
  * @method User|array|null nth(int $n, Connection $db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @doc-path users.md
  * @supports-status-param
  * @replace {element} user
  * @replace {elements} users
@@ -232,7 +233,7 @@ class UserQuery extends ElementQuery
     /**
      * Narrows the query results to only users that have a certain user permission, either directly on the user account or through one of their user groups.
      *
-     * See [Users](https://docs.craftcms.com/v3/users.html) for a full list of available user permissions defined by Craft.
+     * See [User Management](https://craftcms.com/docs/3.x/user-management.html) for a full list of available user permissions defined by Craft.
      *
      * ---
      *

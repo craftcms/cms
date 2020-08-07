@@ -114,11 +114,14 @@ class ElementIndexes extends Component
             // Prune out any settings for sources that don't exist
             $indexedBaseSources = $this->_indexSourcesByKey($baseSources);
 
-            foreach ($settings['sources'] as $key => $source) {
+            foreach ($settings['sources'] as $key => &$source) {
                 if (!isset($indexedBaseSources[$key])) {
                     unset($settings['sources'][$key]);
+                } else if (empty($source['headerColHeading'])) {
+                    unset($source['headerColHeading']);
                 }
             }
+            unset($source);
         }
 
         $success = (bool)Db::upsert(Table::ELEMENTINDEXSETTINGS, [
@@ -233,18 +236,24 @@ class ElementIndexes extends Component
             $this->getSourceTableAttributes($elementType, $sourceKey)
         );
 
+        // Get the source settings
+        $settings = $this->getSettings($elementType);
+
         $attributes = [];
 
         // Start with the first available attribute, no matter what
         $firstKey = null;
         foreach ($availableAttributes as $key => $attributeInfo) {
             $firstKey = $key;
+            if (isset($settings['sources'][$sourceKey]['headerColHeading'])) {
+                $attributeInfo['defaultLabel'] = $attributeInfo['label'];
+                $attributeInfo['label'] = $settings['sources'][$sourceKey]['headerColHeading'];
+            }
             $attributes[] = [$key, $attributeInfo];
             break;
         }
 
         // Is there a custom attributes list?
-        $settings = $this->getSettings($elementType);
         if (isset($settings['sources'][$sourceKey]['tableAttributes'])) {
             $attributeKeys = $settings['sources'][$sourceKey]['tableAttributes'];
         } else {

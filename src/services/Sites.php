@@ -40,6 +40,7 @@ use yii\db\Exception as DbException;
  * Sites service.
  * An instance of the Sites service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getSites()|`Craft::$app->sites`]].
  *
+ * @property-read Site[] $allSites all of the sites
  * @property int[] $allSiteIds all of the site IDs
  * @property Site|null $currentSite the current site
  * @property int[] $editableSiteIds all of the site IDs that are editable by the current user
@@ -232,18 +233,15 @@ class Sites extends Component
             return false;
         }
 
-        $projectConfig = Craft::$app->getProjectConfig();
-        $configData = [
-            'name' => $group->name
-        ];
-
         if ($isNewGroup) {
             $group->uid = StringHelper::UUID();
         } else if (!$group->uid) {
             $group->uid = Db::uidById(Table::SITEGROUPS, $group->id);
         }
 
-        $projectConfig->set(self::CONFIG_SITEGROUP_KEY . '.' . $group->uid, $configData, "Save the “{$group->name}” site group");
+        $configPath = self::CONFIG_SITEGROUP_KEY . '.' . $group->uid;
+        $configData = $group->getConfig();
+        Craft::$app->getProjectConfig()->set($configPath, $configData, "Save the “{$group->name}” site group");
 
         // Now that we have an ID, save it on the model
         if ($isNewGroup) {
@@ -453,9 +451,9 @@ class Sites extends Component
         if ($site instanceof Site) {
             $this->_currentSite = $site;
         } else if (is_numeric($site)) {
-            $this->_currentSite = $this->getSiteById($site);
+            $this->_currentSite = $this->getSiteById($site, false);
         } else {
-            $this->_currentSite = $this->getSiteByHandle($site);
+            $this->_currentSite = $this->getSiteByHandle($site, false);
         }
 
         // Did something go wrong?
@@ -641,24 +639,9 @@ class Sites extends Component
             return false;
         }
 
-        $groupRecord = $this->_getGroupRecord($site->groupId);
-
-        $projectConfig = Craft::$app->getProjectConfig();
-        $configData = [
-            'siteGroup' => $groupRecord->uid,
-            'name' => $site->name,
-            'handle' => $site->handle,
-            'language' => $site->language,
-            'hasUrls' => (bool)$site->hasUrls,
-            'baseUrl' => $site->baseUrl,
-            'sortOrder' => (int)$site->sortOrder,
-            'primary' => (bool)$site->primary,
-            'enabled' => (bool)$site->enabled,
-        ];
-
         if ($isNewSite) {
             $site->uid = StringHelper::UUID();
-            $configData['sortOrder'] = ((int)(new Query())
+            $site->sortOrder = ((int)(new Query())
                     ->from([Table::SITES])
                     ->where(['dateDeleted' => null])
                     ->max('[[sortOrder]]')) + 1;
@@ -667,7 +650,8 @@ class Sites extends Component
         }
 
         $configPath = self::CONFIG_SITES_KEY . '.' . $site->uid;
-        $projectConfig->set($configPath, $configData, "Save the “{$site->handle}” site");
+        $configData = $site->getConfig();
+        Craft::$app->getProjectConfig()->set($configPath, $configData, "Save the “{$site->handle}” site");
 
         // Now that we have a site ID, save it on the model
         if ($isNewSite) {
@@ -715,8 +699,12 @@ class Sites extends Component
             $siteRecord->hasUrls = $data['hasUrls'];
             $siteRecord->baseUrl = $data['baseUrl'];
             $siteRecord->primary = $data['primary'];
-            $siteRecord->enabled = $data['enabled'] ?? true;
             $siteRecord->sortOrder = $data['sortOrder'];
+
+            // todo: remove schema version conditions after next beakpoint
+            if (version_compare(Craft::$app->getInstalledSchemaVersion(), '3.5.0', '>=')) {
+                $siteRecord->enabled = $data['enabled'] ?? true;
+            }
 
             if ($siteRecord->dateDeleted) {
                 $siteRecord->restore();
@@ -778,7 +766,6 @@ class Sites extends Component
                     'criteria' => [
                         'siteId' => $oldPrimarySiteId,
                         'status' => null,
-                        'enabledForSite' => false
                     ],
                     'siteId' => $site->id,
                 ]));

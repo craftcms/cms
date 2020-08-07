@@ -126,6 +126,13 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     public $targetSiteId;
 
     /**
+     * @var bool Whether the site menu should be shown in element selector modals.
+     *
+     * @since 3.5.0
+     */
+    public $showSiteMenu = false;
+
+    /**
      * @var string|null The view mode
      */
     public $viewMode;
@@ -209,6 +216,11 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             unset($config['useTargetSite']);
         }
 
+        // If showSiteMenu isn't set, default it to true, to avoid a change in behavior
+        if (!isset($config['showSiteMenu'])) {
+            $config['showSiteMenu'] = true;
+        }
+
         parent::__construct($config);
     }
 
@@ -223,6 +235,11 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         if (!$this->sources) {
             $this->sources = '*';
         }
+
+        $this->validateRelatedElements = (bool)$this->validateRelatedElements;
+        $this->allowSelfRelations = (bool)$this->allowSelfRelations;
+        $this->showSiteMenu = (bool)$this->showSiteMenu;
+        $this->localizeRelations = (bool)$this->localizeRelations;
     }
 
     /**
@@ -248,6 +265,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         $attributes[] = 'viewMode';
         $attributes[] = 'limit';
         $attributes[] = 'selectionLabel';
+        $attributes[] = 'showSiteMenu';
         $attributes[] = 'localizeRelations';
         $attributes[] = 'validateRelatedElements';
         $attributes[] = 'allowSelfRelations';
@@ -504,7 +522,6 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     {
         $criteria = [
             'status' => null,
-            'enabledForSite' => false,
         ];
 
         if (!$this->targetSiteId) {
@@ -790,26 +807,17 @@ JS;
      */
     public function getTargetSiteFieldHtml()
     {
+        /** @var ElementInterface|string $class */
         $class = static::elementType();
 
         if (!Craft::$app->getIsMultiSite() || !$class::isLocalized()) {
             return null;
         }
 
-        $type = $class::pluralLowerDisplayName();
+        $view = Craft::$app->getView();
+        $type = $class::lowerDisplayName();
+        $pluralType = $class::pluralLowerDisplayName();
         $showTargetSite = !empty($this->targetSiteId);
-
-        $html = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'checkboxField',
-                [
-                    [
-                        'label' => Craft::t('app', 'Relate {type} from a specific site?', ['type' => $type]),
-                        'name' => 'useTargetSite',
-                        'checked' => $showTargetSite,
-                        'toggle' => 'target-site-container'
-                    ]
-                ]) .
-            '<div id="target-site-container"' . (!$showTargetSite ? ' class="hidden"' : '') . '>';
-
         $siteOptions = [];
 
         foreach (Craft::$app->getSites()->getAllSites() as $site) {
@@ -819,20 +827,41 @@ JS;
             ];
         }
 
-        $html .= Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'selectField',
-            [
+        return
+            $view->renderTemplateMacro('_includes/forms', 'checkboxField', [
                 [
-                    'label' => Craft::t('app', 'Which site should {type} be related from?', ['type' => $type]),
-                    'id' => 'targetSiteId',
+                    'label' => Craft::t('app', 'Relate {type} from a specific site?', ['type' => $pluralType]),
+                    'name' => 'useTargetSite',
+                    'checked' => $showTargetSite,
+                    'toggle' => 'target-site-field',
+                    'reverseToggle' => 'show-site-menu-field',
+                ]
+            ]) .
+            $view->renderTemplateMacro('_includes/forms', 'selectField', [
+                [
+                    'fieldClass' => !$showTargetSite ? 'hidden' : null,
+                    'label' => Craft::t('app', 'Which site should {type} be related from?', ['type' => $pluralType]),
+                    'id' => 'target-site',
                     'name' => 'targetSiteId',
                     'options' => $siteOptions,
-                    'value' => $this->targetSiteId
+                    'value' => $this->targetSiteId,
+                ]
+            ]) .
+            $view->renderTemplateMacro('_includes/forms', 'checkboxField', [
+                [
+                    'fieldClass' => $showTargetSite ? 'hidden' : null,
+                    'label' => Craft::t('app', 'Show the site menu'),
+                    'instructions' => Craft::t('app', 'Whether the site menu should be shown for {type} selection modals.', [
+                        'type' => $type,
+                    ]),
+                    'warning' => Craft::t('app', 'Relations don’t store the selected site, so this should only be enabled if some {type} aren’t propagated to all sites.', [
+                        'type' => $pluralType,
+                    ]),
+                    'id' => 'show-site-menu',
+                    'name' => 'showSiteMenu',
+                    'checked' => $this->showSiteMenu,
                 ]
             ]);
-
-        $html .= '</div>';
-
-        return $html;
     }
 
     /**
@@ -912,7 +941,6 @@ JS;
         }
 
         $selectionCriteria = $this->inputSelectionCriteria();
-        $selectionCriteria['enabledForSite'] = null;
         if (($siteId = $this->inputSiteId($element)) !== null) {
             $selectionCriteria['siteId'] = $siteId;
         }
@@ -946,7 +974,7 @@ JS;
             'elements' => $value,
             'sources' => $this->inputSources($element),
             'criteria' => $selectionCriteria,
-            'showSiteMenu' => $this->targetSiteId ? false : 'auto',
+            'showSiteMenu' => ($this->targetSiteId || !$this->showSiteMenu) ? false : 'auto',
             'allowSelfRelations' => (bool)$this->allowSelfRelations,
             'sourceElementId' => !empty($element->id) ? $element->id : null,
             'disabledElementIds' => $disabledElementIds,

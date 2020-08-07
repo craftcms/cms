@@ -160,6 +160,7 @@ trait ElementTrait
 
     /**
      * @var int[] The site IDs that the element was just propagated to for the first time.
+     * @since 3.2.9
      */
     public $newSiteIds = [];
 

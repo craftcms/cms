@@ -74,7 +74,7 @@ class ClearCachesController extends Controller
      */
     protected function defineActions(): array
     {
-        $actions = [];
+        $actions = parent::defineActions();
 
         foreach (ClearCaches::cacheOptions() as $option) {
             $actions[$option['key']] = [
@@ -88,6 +88,6 @@ class ClearCachesController extends Controller
             ];
         }
 
-        return array_merge($actions, parent::defineActions());
+        return $actions;
     }
 }

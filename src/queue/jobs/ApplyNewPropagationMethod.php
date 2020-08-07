@@ -9,6 +9,7 @@ namespace craft\queue\jobs;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\errors\UnsupportedSiteException;
 use craft\events\BatchElementActionEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
@@ -87,7 +88,16 @@ class ApplyNewPropagationMethod extends BaseJob
                 // Duplicate those blocks so their content can live on
                 while (!empty($otherSiteElements)) {
                     $otherSiteElement = array_pop($otherSiteElements);
-                    $newElement = $elementsService->duplicateElement($otherSiteElement);
+                    try {
+                        /** @var Element $newElement */
+                        $newElement = $elementsService->duplicateElement($otherSiteElement);
+                    } catch (UnsupportedSiteException $e) {
+                        // Just log it and move along
+                        Craft::warning("Unable to duplicate “{$otherSiteElement}” to site $otherSiteElement->siteId: " . $e->getMessage());
+                        Craft::$app->getErrorHandler()->logException($e);
+                        continue;
+                    }
+
                     // This may support more than just the site it was saved in
                     $newElementSiteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($newElement), 'siteId');
                     foreach ($newElementSiteIds as $newBlockSiteId) {

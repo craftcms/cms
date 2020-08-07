@@ -239,4 +239,25 @@ class Site extends Model
         $this->originalBaseUrl = (string)$this->baseUrl;
         $this->baseUrl = $baseUrl;
     }
+
+    /**
+     * Returns the field layout config for this site.
+     *
+     * @return array
+     * @since 3.5.0
+     */
+    public function getConfig(): array
+    {
+        return [
+            'siteGroup' => $this->getGroup()->uid,
+            'name' => $this->name,
+            'handle' => $this->handle,
+            'language' => $this->language,
+            'hasUrls' => (bool)$this->hasUrls,
+            'baseUrl' => $this->baseUrl ?: null,
+            'sortOrder' => (int)$this->sortOrder,
+            'primary' => (bool)$this->primary,
+            'enabled' => (bool)$this->enabled,
+        ];
+    }
 }

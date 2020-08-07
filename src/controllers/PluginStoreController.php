@@ -34,10 +34,10 @@ class PluginStoreController extends Controller
      */
     public function init()
     {
+        parent::init();
+
         // All plugin store actions require an admin
         $this->requireAdmin();
-
-        parent::init();
     }
 
     /**
@@ -94,7 +94,7 @@ class PluginStoreController extends Controller
         ]);
 
         if (!$redirectUrl) {
-            $redirect = Craft::$app->getRequest()->getPathInfo();
+            $redirect = $this->request->getPathInfo();
             $redirectUrl = UrlHelper::url($redirect);
         }
 
@@ -158,8 +158,8 @@ class PluginStoreController extends Controller
 
         $options = [
             'redirectUrl' => $redirectUrl,
-            'error' => Craft::$app->getRequest()->getParam('error'),
-            'message' => Craft::$app->getRequest()->getParam('message')
+            'error' => $this->request->getParam('error'),
+            'message' => $this->request->getParam('message')
         ];
 
         $this->getView()->registerJs('new Craft.PluginStoreOauthCallback(' . Json::encode($options) . ');');
@@ -193,9 +193,9 @@ class PluginStoreController extends Controller
         $this->requirePostRequest();
 
         try {
-            $token_type = Craft::$app->getRequest()->getParam('token_type');
-            $access_token = Craft::$app->getRequest()->getParam('access_token');
-            $expires_in = Craft::$app->getRequest()->getParam('expires_in');
+            $token_type = $this->request->getParam('token_type');
+            $access_token = $this->request->getParam('access_token');
+            $expires_in = $this->request->getParam('expires_in');
 
             $token = [
                 'access_token' => $access_token,
@@ -256,7 +256,7 @@ class PluginStoreController extends Controller
      */
     public function actionSavePluginLicenseKeys()
     {
-        $payload = Json::decode(Craft::$app->getRequest()->getRawBody(), true);
+        $payload = Json::decode($this->request->getRawBody(), true);
         $pluginLicenseKeys = (isset($payload['pluginLicenseKeys']) ? $payload['pluginLicenseKeys'] : []);
         $plugins = Craft::$app->getPlugins()->getAllPlugins();
 

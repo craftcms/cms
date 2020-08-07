@@ -8,12 +8,17 @@
 namespace craft\gql;
 
 use Craft;
+use craft\base\Component;
 use craft\base\EagerLoadingFieldInterface;
 use craft\base\FieldInterface;
 use craft\base\GqlInlineFragmentFieldInterface;
+use craft\events\RegisterGqlEagerLoadableFields;
 use craft\fields\Assets as AssetField;
 use craft\fields\BaseRelationField;
+use craft\fields\Categories as CategoryField;
+use craft\fields\Entries as EntryField;
 use craft\fields\Users as UserField;
+use craft\gql\base\ElementResolver;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\helpers\StringHelper;
 use craft\services\Gql;
@@ -24,6 +29,7 @@ use GraphQL\Language\AST\InlineFragmentNode;
 use GraphQL\Language\AST\Node;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\WrappingType;
+use yii\base\InvalidArgumentException;
 
 /**
  * Class ElementQueryConditionBuilder.
@@ -34,8 +40,32 @@ use GraphQL\Type\Definition\WrappingType;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0
  */
-class ElementQueryConditionBuilder
+class ElementQueryConditionBuilder extends Component
 {
+
+    /**
+     * @event RegisterGqlEagerLoadableFields The event that is triggered when registering additional eager-loading nodes.
+     *
+     * Plugins get a chance to add their own eager-loadable fields.
+     *
+     * ---
+     * ```php
+     * use craft\events\RegisterGqlEagerLoadableFields;
+     * use craft\gql\ElementQueryConditionBuilder;
+     * use yii\base\Event;
+     *
+     * Event::on(ElementQueryConditionBuilder::class, ElementQueryConditionBuilder::EVENT_REGISTER_GQL_EAGERLOADABLE_FIELDS, function(RegisterGqlEagerLoadableFields $event) {
+     *     // Add my fields
+     *     $event->fieldList['myEagerLoadableField'] = ['*'];
+     * });
+     * ```
+     *
+     * @since 3.5.0
+     */
+    const EVENT_REGISTER_GQL_EAGERLOADABLE_FIELDS = 'registerGqlEagerLoadableFields';
+
+    const LOCALIZED_NODENAME = 'localized';
+
     /**
      * @var ResolveInfo
      */
@@ -43,16 +73,24 @@ class ElementQueryConditionBuilder
     private $_fragments;
     private $_eagerLoadableFieldsByContext = [];
     private $_transformableAssetProperties = ['url', 'width', 'height'];
-    private $_eagerLoadableProperties = ['children', 'localized', 'parent'];
+    private $_additionalEagerLoadableNodes = null;
 
 
-    public function __construct(ResolveInfo $resolveInfo)
+    /**
+     * @inheritdoc
+     */
+    public function __construct($config = [])
     {
-        $this->_resolveInfo = $resolveInfo;
-        $this->_fragments = $resolveInfo->fragments;
+        $this->_resolveInfo = $config['resolveInfo'];
+        unset($config['resolveInfo']);
+
+        parent::__construct($config);
+
+        $this->_fragments = $this->_resolveInfo->fragments;
 
         // Cache all eager-loadable fields by context
         $allFields = Craft::$app->getFields()->getAllFields(false);
+
         foreach ($allFields as $field) {
             if ($field instanceof EagerLoadingFieldInterface) {
                 $this->_eagerLoadableFieldsByContext[$field->context][$field->handle] = $field;
@@ -83,10 +121,8 @@ class ElementQueryConditionBuilder
 
         // Figure out which routes should be loaded using `withCount`
         foreach ($eagerLoadingRules as $element => $parameters) {
-            if (StringHelper::endsWith($element, '@' . Gql::GRAPHQL_COUNT_FIELD)) {
-                if (isset($parameters['field'])) {
-                    $relationCountFields[$parameters['field']] = true;
-                }
+            if (isset($parameters['field']) && StringHelper::endsWith($element, '@' . Gql::GRAPHQL_COUNT_FIELD)) {
+                $relationCountFields[$parameters['field']] = true;
             }
         }
 
@@ -140,21 +176,111 @@ class ElementQueryConditionBuilder
      * Extract the value from an argument node, even if it's an array or a GraphQL variable.
      *
      * @param Node $argumentNode
-     * @param string $nodeName
      */
-    private function _extractArgumentValue(Node $argumentNode, $nodeName = null)
+    private function _extractArgumentValue(Node $argumentNode)
     {
-        if (isset($argumentNode->value->values)) {
+        $argumentNodeValue = $argumentNode->value;
+
+        if (isset($argumentNodeValue->values)) {
             $extractedValue = [];
-            foreach ($argumentNode->value->values as $value) {
-                $extractedValue[] = $this->_extractArgumentValue($value, $argumentNode->name->value);
+            foreach ($argumentNodeValue->values as $value) {
+                $extractedValue[] = $this->_extractArgumentValue($value);
             }
         } else {
-            $nodeName = $nodeName ?? $argumentNode->name->value;
-            $extractedValue = $argumentNode->kind === 'Variable' ? $this->_resolveInfo->variableValues[$nodeName] : ($argumentNode->value->value ?? ($argumentNode->value ?? null));
+            if (in_array($argumentNode->kind, ['Argument', 'Variable'], true)) {
+                $extractedValue = $argumentNodeValue->kind === 'Variable' ? $this->_resolveInfo->variableValues[$argumentNodeValue->name->value] : $argumentNodeValue->value;
+            } else {
+                $extractedValue = $argumentNodeValue;
+            }
         }
 
         return $extractedValue;
+    }
+
+    /**
+     * Figure out whether a node in the parentfield is a special eager-loadable field.
+     *
+     * @param string $nodeName
+     * @param $parentField
+     *
+     * @return bool
+     */
+    private function _isAdditionalEagerLoadableNode(string $nodeName, $parentField): bool
+    {
+        $nodeList = $this->_getKnownSpecialEagerLoadNodes();
+
+        if (isset($nodeList[$nodeName])) {
+            // Top level - anything goes
+            if ($parentField === null) {
+                return true;
+            }
+
+            foreach ($nodeList[$nodeName] as $key => $value) {
+                if ($key === '*' || $value === '*') {
+                    return true;
+                }
+
+                if (is_string($value) && is_a($parentField, $value)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Return true if the special field can be aliased when eager-loading.
+     *
+     * @param string $nodeName
+     * @return bool
+     */
+    private function _canSpecialFieldBeAliased(string $nodeName): bool
+    {
+        $nodeList = $this->_getKnownSpecialEagerLoadNodes();
+
+        if (isset($nodeList[$nodeName])) {
+            if (!isset($nodeList[$nodeName]['canBeAliased']) || $nodeList[$nodeName]['canBeAliased']) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Get a list of all the known special eager load nodes and their allowed locations.
+     *
+     * @return array
+     */
+    private function _getKnownSpecialEagerLoadNodes(): array
+    {
+        if ($this->_additionalEagerLoadableNodes === null) {
+            $list = [
+                'photo' => [UserField::class, 'canBeAliased' => false],
+                'author' => [EntryField::class, 'canBeAliased' => false],
+                'uploader' => [AssetField::class, 'canBeAliased' => false],
+                'parent' => [BaseRelationField::class, 'canBeAliased' => false],
+                'children' => [BaseRelationField::class, 'canBeAliased' => false],
+                'currentRevision' => [BaseRelationField::class, 'canBeAliased' => false],
+                'draftCreator' => [BaseRelationField::class, 'canBeAliased' => false],
+                'revisionCreator' => [BaseRelationField::class, 'canBeAliased' => false],
+                self::LOCALIZED_NODENAME => [CategoryField::class, EntryField::class],
+            ];
+
+            if ($this->hasEventHandlers(self::EVENT_REGISTER_GQL_EAGERLOADABLE_FIELDS)) {
+                $event = new RegisterGqlEagerLoadableFields([
+                    'fieldList' => $list
+                ]);
+                $this->trigger(self::EVENT_REGISTER_GQL_EAGERLOADABLE_FIELDS, $event);
+
+                $list = $event->fieldList;
+            }
+
+            $this->_additionalEagerLoadableNodes = $list;
+        }
+
+        return (array)$this->_additionalEagerLoadableNodes;
     }
 
     /**
@@ -253,13 +379,14 @@ class ElementQueryConditionBuilder
 
                 $transformableAssetProperty = ($rootOfAssetQuery || $parentField) && in_array($nodeName, $this->_transformableAssetProperties, true);
                 $isAssetField = $craftContentField instanceof AssetField;
-                $isUserPhoto = $nodeName === 'photo' && ($parentField === null || $parentField instanceof UserField);
+                $isSpecialField = $this->_isAdditionalEagerLoadableNode($nodeName, $parentField);
+                $canBeAliased = $isSpecialField && $this->_canSpecialFieldBeAliased($nodeName);
 
                 // That is a Craft field that can be eager-loaded or is the special `children` property
                 $possibleTransforms = $transformableAssetProperty || $isAssetField;
-                $otherEagerLoadableNode = $nodeName === Gql::GRAPHQL_COUNT_FIELD || in_array($nodeName, $this->_eagerLoadableProperties, true);
+                $otherEagerLoadableNode = $nodeName === Gql::GRAPHQL_COUNT_FIELD;
 
-                if ($possibleTransforms || $craftContentField || $otherEagerLoadableNode || $isUserPhoto) {
+                if ($possibleTransforms || $craftContentField || $otherEagerLoadableNode || $isSpecialField) {
                     // Any arguments?
                     $arguments = $this->_extractArguments($subNode->arguments ?? []);
 
@@ -335,9 +462,15 @@ class ElementQueryConditionBuilder
                                 }
                             }
                         }
+
+                        // For relational fields, prepare the arguments.
+                        if ($craftContentField instanceof BaseRelationField) {
+                            $arguments = ElementResolver::prepareArguments($arguments);
+                        }
                     }
 
-                    $alias = (!(empty($subNode->alias)) && !empty($subNode->alias->value)) ? $subNode->alias->value : null;
+                    // See if the field was aliased in the query
+                    $alias = ($canBeAliased && !(empty($subNode->alias)) && !empty($subNode->alias->value)) ? $subNode->alias->value : null;
 
                     // If they're angling for the count field, alias it so each count field gets their own eager-load arguments.
                     if ($nodeName === Gql::GRAPHQL_COUNT_FIELD) {
@@ -361,7 +494,7 @@ class ElementQueryConditionBuilder
                         if ($alias) {
                             $traversePrefix = $prefix . $alias;
                         } else {
-                            $traversePrefix = $prefix . ($craftContentField ? $craftContentField->handle : 'children');
+                            $traversePrefix = $prefix . ($craftContentField ? $craftContentField->handle : $nodeName);
                         }
 
                         if ($craftContentField) {
@@ -375,27 +508,33 @@ class ElementQueryConditionBuilder
                             $traverseContext = $context;
                         }
 
-                        $eagerLoadNodes = array_merge_recursive($eagerLoadNodes, $this->_traverseAndExtractRules($subNode, $traversePrefix . '.', $traverseContext, $craftContentField));
+                        $eagerLoadNodes = array_merge_recursive($eagerLoadNodes, $this->_traverseAndExtractRules($subNode, $traversePrefix . '.', $traverseContext, $nodeName === self::LOCALIZED_NODENAME ? $parentField : $craftContentField));
                     }
                 }
-                // If not, see if it's an inline fragment
-            } else if ($subNode instanceof InlineFragmentNode) {
+                // If not, see if it's a fragment
+            } else if ($subNode instanceof InlineFragmentNode || $subNode instanceof FragmentSpreadNode) {
+                // For named fragments, replace the node with the actual fragment.
+                if ($subNode instanceof FragmentSpreadNode) {
+                    $subNode = $this->_fragments[$nodeName];
+                }
+
                 $nodeName = $subNode->typeCondition->name->value;
 
                 // If we are inside a field that supports different subtypes, it should implement the appropriate interface
                 if ($parentField instanceof GqlInlineFragmentFieldInterface) {
                     // Get the Craft entity that correlates to the fragment
                     // Build the prefix, load the context and proceed in a recursive manner
-                    $gqlFragmentEntity = $parentField->getGqlFragmentEntityByName($nodeName);
-                    $eagerLoadNodes = array_merge_recursive($eagerLoadNodes, $this->_traverseAndExtractRules($subNode, $prefix . $gqlFragmentEntity->getEagerLoadingPrefix() . ':', $gqlFragmentEntity->getFieldContext(), $parentField));
+                    try {
+                        $gqlFragmentEntity = $parentField->getGqlFragmentEntityByName($nodeName);
+                        $eagerLoadNodes = array_merge_recursive($eagerLoadNodes, $this->_traverseAndExtractRules($subNode, $prefix . $gqlFragmentEntity->getEagerLoadingPrefix() . ':', $gqlFragmentEntity->getFieldContext(), $parentField));
+                        // This is to be expected, depending on whether the fragment is targeted towards the field itself instead of its subtypes.
+                    } catch (InvalidArgumentException $exception) {
+                        $eagerLoadNodes = array_merge_recursive($eagerLoadNodes, $this->_traverseAndExtractRules($subNode, $prefix, $context, $parentField));
+                    }
                     // If we are not, just expand the fragment and traverse it as if on the same level in the query tree
                 } else {
                     $eagerLoadNodes = array_merge_recursive($eagerLoadNodes, $this->_traverseAndExtractRules($subNode, $prefix, $context, $parentField));
                 }
-                // Finally, if this is a named fragment, expand it and traverse it as if on the same level in the query tree
-            } else if ($subNode instanceof FragmentSpreadNode) {
-                $fragmentDefinition = $this->_fragments[$nodeName];
-                $eagerLoadNodes = array_merge_recursive($eagerLoadNodes, $this->_traverseAndExtractRules($fragmentDefinition, $prefix, $context, $parentField));
             }
         }
 

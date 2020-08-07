@@ -40,6 +40,15 @@ class ProjectConfigHelperTest extends Unit
         $this->assertSame($expectedResult, ProjectConfigHelper::cleanupConfig($inputData));
     }
 
+    /**
+     * @dataProvider splitIntoComponentsProvider
+     * @param $inputData
+     * @param $expectedResult
+     */
+    public function testSplitIntoComponents($inputData, $expectedResult)
+    {
+        $this->assertSame($expectedResult, ProjectConfigHelper::splitConfigIntoComponents($inputData));
+    }
 
     /**
      * @return array
@@ -67,6 +76,40 @@ class ProjectConfigHelperTest extends Unit
                     'randomArray' => [1, 7, 2, 'ok']
                 ]
             ],
+            [
+                [
+                    'test' => [
+                        'rootA' => [
+                            'label' => 'childA'
+                        ],
+                        'rootB' => [
+                            'label' => 'childB'
+                        ]
+                    ]
+                ],
+                [
+                    'test' => [
+                        ProjectConfig::CONFIG_ASSOC_KEY => [
+                            [
+                                'rootA',
+                                [
+                                    ProjectConfig::CONFIG_ASSOC_KEY => [
+                                        ['label', 'childA']
+                                    ]
+                                ]
+                            ],
+                            [
+                                'rootB',
+                                [
+                                    ProjectConfig::CONFIG_ASSOC_KEY => [
+                                        ['label', 'childB']
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ]
         ];
     }
 
@@ -104,6 +147,158 @@ class ProjectConfigHelperTest extends Unit
                     'randomArray' => [1, 7, 2, 'ok']
                 ],
             ]
+        ];
+    }
+
+    public function splitIntoComponentsProvider()
+    {
+        return [
+            [
+                [
+                    'dateModified' => 1,
+                    'email' => [
+                        'provider' => 'gmail'
+                    ]
+                ],
+                [
+                    'project.yaml' => [
+                        'dateModified' => 1,
+                        'email' => [
+                            'provider' => 'gmail'
+                        ]
+                    ]
+                ],
+            ],
+            [
+                [
+                    'dateModified' => 2,
+                    'email' => [
+                        'provider' => 'gmail',
+                        'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa' => [
+                            'key' => 'value'
+                        ]
+                    ]
+                ],
+                [
+                    'project.yaml' => [
+                        'dateModified' => 2,
+                        'email' => [
+                            'provider' => 'gmail',
+                            'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa' => [
+                                'key' => 'value'
+                            ]
+                        ]
+                    ]
+                ],
+            ],
+            [
+                [
+                    'dateModified' => 3,
+                    'email' => [
+                        'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa' => [
+                            'key' => 'value'
+                        ]
+                    ]
+                ],
+                [
+                    'email/aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa.yaml' => [
+                        'key' => 'value'
+                    ],
+                    'project.yaml' => [
+                        'dateModified' => 3
+                    ]
+                ],
+            ],
+            [
+                [
+                    'dateModified' => 4,
+                    'email' => [
+                        'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa' => [
+                            'key' => 'value'
+                        ],
+                        'bbbbbbbb-aaaa-4aaa-aaaa-aaaaaaaaaaaa' => [
+                            'key2' => 'value'
+                        ]
+                    ]
+                ],
+                [
+                    'email/aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa.yaml' => [
+                        'key' => 'value'
+                    ],
+                    'email/bbbbbbbb-aaaa-4aaa-aaaa-aaaaaaaaaaaa.yaml' => [
+                        'key2' => 'value'
+                    ],
+                    'project.yaml' => [
+                        'dateModified' => 4
+                    ]
+                ],
+            ],
+            [
+                [
+                    'dateModified' => 4,
+                    'email' => [
+                        'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa' => [
+                            'handle' => 'fooBar'
+                        ],
+                    ]
+                ],
+                [
+                    'email/fooBar--aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa.yaml' => [
+                        'handle' => 'fooBar'
+                    ],
+                    'project.yaml' => [
+                        'dateModified' => 4
+                    ]
+                ],
+            ],
+            [
+                [
+                    'dateModified' => 4,
+                    'email' => [
+                        'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa' => [
+                            'handle' => 'foo-bar'
+                        ],
+                    ]
+                ],
+                [
+                    'email/aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa.yaml' => [
+                        'handle' => 'foo-bar'
+                    ],
+                    'project.yaml' => [
+                        'dateModified' => 4
+                    ]
+                ],
+            ],
+            [
+                [
+                    'dateModified' => 4,
+                    'commerce' => [
+                        'provider' => 'gmail',
+                        'productTypes' => [
+                            'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa' => [
+                                'key' => 'value'
+                            ],
+                            'bbbbbbbb-aaaa-4aaa-aaaa-aaaaaaaaaaaa' => [
+                                'key2' => 'value'
+                            ]
+                        ]
+                    ],
+                ],
+                [
+                    'commerce/productTypes/aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa.yaml' => [
+                        'key' => 'value'
+                    ],
+                    'commerce/productTypes/bbbbbbbb-aaaa-4aaa-aaaa-aaaaaaaaaaaa.yaml' => [
+                        'key2' => 'value'
+                    ],
+                    'commerce/commerce.yaml' => [
+                        'provider' => 'gmail',
+                    ],
+                    'project.yaml' => [
+                        'dateModified' => 4
+                    ]
+                ],
+            ],
         ];
     }
 }

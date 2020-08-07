@@ -57,6 +57,7 @@ class MatrixSettingsAsset extends AssetBundle
                 'Translation Method',
                 'Use this field’s values as search keywords',
                 'What this block type will be called in the control panel.',
+                '{pct} width',
             ]);
         }
     }

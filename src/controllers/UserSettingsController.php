@@ -10,7 +10,7 @@ namespace craft\controllers;
 use Craft;
 use craft\models\UserGroup;
 use craft\web\Controller;
-use yii\web\NotFoundHttpException;
+use yii\web\BadRequestHttpException;
 use yii\web\Response;
 
 /**
@@ -42,28 +42,26 @@ class UserSettingsController extends Controller
      * Saves a user group.
      *
      * @return Response|null
-     * @throws NotFoundHttpException if the requested user group cannot be found
+     * @throws BadRequestHttpException
      */
     public function actionSaveGroup()
     {
         $this->requirePostRequest();
 
-        $request = Craft::$app->getRequest();
-        $groupId = $request->getBodyParam('groupId');
+        $groupId = $this->request->getBodyParam('groupId');
 
         if ($groupId) {
             $group = Craft::$app->getUserGroups()->getGroupById($groupId);
-
             if (!$group) {
-                throw new NotFoundHttpException('User group not found');
+                throw new BadRequestHttpException('User group not found');
             }
         } else {
             $group = new UserGroup();
         }
 
-        $group->name = $request->getBodyParam('name');
-        $group->handle = $request->getBodyParam('handle');
-        $group->description = $request->getBodyParam('description');
+        $group->name = $this->request->getBodyParam('name');
+        $group->handle = $this->request->getBodyParam('handle');
+        $group->description = $this->request->getBodyParam('description');
 
         // Did it save?
         if (!Craft::$app->getUserGroups()->saveGroup($group)) {
@@ -78,7 +76,7 @@ class UserSettingsController extends Controller
         }
 
         // Save the new permissions
-        $permissions = $request->getBodyParam('permissions', []);
+        $permissions = $this->request->getBodyParam('permissions', []);
 
         // See if there are any new permissions in here
         if ($groupId && is_array($permissions)) {
@@ -107,7 +105,7 @@ class UserSettingsController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $groupId = Craft::$app->getRequest()->getRequiredBodyParam('id');
+        $groupId = $this->request->getRequiredBodyParam('id');
 
         Craft::$app->getUserGroups()->deleteGroupById($groupId);
 
@@ -125,14 +123,14 @@ class UserSettingsController extends Controller
         $projectConfig = Craft::$app->getProjectConfig();
         $settings = $projectConfig->get('users') ?? [];
 
-        $settings['photoVolumeUid'] = Craft::$app->getRequest()->getBodyParam('photoVolumeUid') ?: null;
-        $settings['photoSubpath'] = Craft::$app->getRequest()->getBodyParam('photoSubpath');
+        $settings['photoVolumeUid'] = $this->request->getBodyParam('photoVolumeUid') ?: null;
+        $settings['photoSubpath'] = $this->request->getBodyParam('photoSubpath') ?: null;
 
         if (Craft::$app->getEdition() === Craft::Pro) {
-            $settings['requireEmailVerification'] = (bool)Craft::$app->getRequest()->getBodyParam('requireEmailVerification');
-            $settings['allowPublicRegistration'] = (bool)Craft::$app->getRequest()->getBodyParam('allowPublicRegistration');
-            $settings['suspendByDefault'] = (bool)Craft::$app->getRequest()->getBodyParam('suspendByDefault');
-            $settings['defaultGroup'] = Craft::$app->getRequest()->getBodyParam('defaultGroup');
+            $settings['requireEmailVerification'] = (bool)$this->request->getBodyParam('requireEmailVerification');
+            $settings['allowPublicRegistration'] = (bool)$this->request->getBodyParam('allowPublicRegistration');
+            $settings['suspendByDefault'] = (bool)$this->request->getBodyParam('suspendByDefault');
+            $settings['defaultGroup'] = $this->request->getBodyParam('defaultGroup');
         }
 
         $projectConfig->set('users', $settings, 'Update user settings');

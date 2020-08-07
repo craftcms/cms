@@ -202,7 +202,9 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @var string|string[]|null The status(es) that the resulting elements must have.
      * @used-by status()
      */
-    public $status = ['enabled'];
+    public $status = [
+        Element::STATUS_ENABLED,
+    ];
 
     /**
      * @var bool Whether to return only archived elements.
@@ -255,8 +257,9 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @var bool Whether the elements must be enabled for the chosen site.
      * @used-by enabledForSite()
+     * @deprecated in 3.5.0
      */
-    public $enabledForSite = true;
+    public $enabledForSite = false;
 
     /**
      * @var bool Whether the elements must be “leaves” in the structure.
@@ -267,7 +270,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @var int|array|ElementInterface|null The element relation criteria.
      *
-     * See [Relations](https://docs.craftcms.com/v3/relations.html) for supported syntax options.
+     * See [Relations](https://craftcms.com/docs/3.x/relations.html) for supported syntax options.
      *
      * @used-by relatedTo()
      */
@@ -294,7 +297,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @var string|array|SearchQuery|null The search term to filter the resulting elements by.
      *
-     * See [Searching](https://docs.craftcms.com/v3/searching.html) for supported syntax options.
+     * See [Searching](https://craftcms.com/docs/3.x/searching.html) for supported syntax options.
      *
      * @used-by ElementQuery::search()
      */
@@ -312,7 +315,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @var string|array|null The eager-loading declaration.
      *
-     * See [Eager-Loading Elements](https://docs.craftcms.com/v3/eager-loading-elements.html) for supported syntax options.
+     * See [Eager-Loading Elements](https://craftcms.com/docs/3.x/dev/eager-loading-elements.html) for supported syntax options.
      *
      * @used-by with()
      * @used-by andWith()
@@ -511,8 +514,8 @@ class ElementQuery extends Query implements ElementQueryInterface
                 $this->site($value);
                 break;
             case 'localeEnabled':
-                Craft::$app->getDeprecator()->log('ElementQuery::localeEnabled()', 'The “localeEnabled” element query param has been deprecated. Use “enabledForSite” instead.');
-                $this->enabledForSite($value);
+                Craft::$app->getDeprecator()->log('ElementQuery::localeEnabled()', 'The `localeEnabled` element query param has been deprecated. `status()` should be used instead.');
+                $this->enabledForSite = $value;
                 break;
             case 'locale':
                 Craft::$app->getDeprecator()->log('ElementQuery::locale()', 'The “locale” element query param has been deprecated. Use “site” or “siteId” instead.');
@@ -1018,6 +1021,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function enabledForSite(bool $value = true)
     {
+        Craft::$app->getDeprecator()->log('ElementQuery::enabledForSite()', 'The `enabledForSite` element query param has been deprecated. `status()` should be used instead.');
         $this->enabledForSite = $value;
         return $this;
     }
@@ -1027,11 +1031,11 @@ class ElementQuery extends Query implements ElementQueryInterface
      *
      * @param mixed $value The property value (defaults to true)
      * @return static self reference
-     * @deprecated in 3.0.0. Use [[enabledForSite]] instead.
+     * @deprecated in 3.0.0. [[status()]] should be used instead.
      */
     public function localeEnabled($value = true)
     {
-        Craft::$app->getDeprecator()->log('ElementQuery::localeEnabled()', 'The “localeEnabled” element query param has been deprecated. Use “enabledForSite” instead.');
+        Craft::$app->getDeprecator()->log('ElementQuery::localeEnabled()', 'The “localeEnabled” element query param has been deprecated. `status()` should be used instead.');
         $this->enabledForSite = $value;
         return $this;
     }
@@ -2013,7 +2017,10 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         switch ($status) {
             case Element::STATUS_ENABLED:
-                return ['elements.enabled' => true];
+                return [
+                    'elements.enabled' => true,
+                    'elements_sites.enabled' => true,
+                ];
             case Element::STATUS_DISABLED:
                 return [
                     'or',

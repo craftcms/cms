@@ -41,7 +41,7 @@ class RebrandController extends Controller
     {
         $this->requireAcceptsJson();
         $this->requireAdmin();
-        $type = Craft::$app->getRequest()->getRequiredBodyParam('type');
+        $type = $this->request->getRequiredBodyParam('type');
 
         if (!in_array($type, $this->_allowedTypes, true)) {
             return $this->asErrorJson(Craft::t('app', 'That is not an allowed image type.'));
@@ -88,7 +88,7 @@ class RebrandController extends Controller
     public function actionDeleteSiteImage(): Response
     {
         $this->requireAdmin();
-        $type = Craft::$app->getRequest()->getRequiredBodyParam('type');
+        $type = $this->request->getRequiredBodyParam('type');
 
         if (!in_array($type, $this->_allowedTypes, true)) {
             $this->asErrorJson(Craft::t('app', 'That is not an allowed image type.'));

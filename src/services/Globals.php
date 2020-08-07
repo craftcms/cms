@@ -332,30 +332,9 @@ class Globals extends Component
             $globalSet->uid = Db::uidById(Table::GLOBALSETS, $globalSet->id);
         }
 
-        $projectConfig = Craft::$app->getProjectConfig();
-        $configData = [
-            'name' => $globalSet->name,
-            'handle' => $globalSet->handle,
-        ];
-
-        $fieldLayout = $globalSet->getFieldLayout();
-        $fieldLayoutConfig = $fieldLayout->getConfig();
-
-        if ($fieldLayoutConfig) {
-            if (empty($fieldLayout->id)) {
-                $layoutUid = StringHelper::UUID();
-                $fieldLayout->uid = $layoutUid;
-            } else {
-                $layoutUid = Db::uidById(Table::FIELDLAYOUTS, $fieldLayout->id);
-            }
-
-            $configData['fieldLayouts'] = [
-                $layoutUid => $fieldLayoutConfig
-            ];
-        }
-
         $configPath = self::CONFIG_GLOBALSETS_KEY . '.' . $globalSet->uid;
-        $projectConfig->set($configPath, $configData, "Save global set “{$globalSet->handle}”");
+        $configData = $globalSet->getConfig();
+        Craft::$app->getProjectConfig()->set($configPath, $configData, "Save global set “{$globalSet->handle}”");
 
         if ($isNewSet) {
             $globalSet->id = Db::idByUid(Table::GLOBALSETS, $globalSet->uid);

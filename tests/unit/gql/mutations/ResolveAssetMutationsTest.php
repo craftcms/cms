@@ -36,20 +36,23 @@ class ResolveAssetMutationsTest extends TestCase
     /**
      * For given arguments, ensure that exceptions are thrown correctly.
      *
-     * @param $arguments
-     * @param $exception
-     * @param bool $wrongVolume whether saving an asset in the wrong volume should be attempted
+     * @param array $arguments
+     * @param string $exception
+     * @param bool $rootFolderUsed whether the root folder of a volume should be used
+     * @param bool $volumeChanged whether the volume changed for the asset
      * @throws \Exception
      * @dataProvider saveAssetDataProvider
      */
-    public function testSaveAsset($arguments = [], $exception = '', $wrongVolume = false)
+    public function testSaveAsset($arguments = [], $exception = '', $rootFolderUsed = false, $volumeChanged = false)
     {
         $volumeId = random_int(1, 1000);
         $assetId = random_int(1, 1000);
+        $folderId = random_int(1, 1000);
+        $rootFolderId = random_int(1, 1000);
 
         $asset = new Asset([
-            'volumeId' => $volumeId + (int)$wrongVolume,
-            'id' => $assetId
+            'volumeId' => $volumeId,
+            'id' => $assetId,
         ]);
 
         $canIdentify = !empty($arguments['id']) || !empty($arguments['uid']);
@@ -73,23 +76,22 @@ class ResolveAssetMutationsTest extends TestCase
                     return null;
                 }
 
-                if ($id > 10) {
-                    return new VolumeFolder();
-                }
-
                 return new VolumeFolder(['volumeId' => $volumeId]);
-            }
+            },
+            'getRootFolderByVolumeId' => $rootFolderUsed ? Expected::once(new VolumeFolder(['volumeId' => $volumeId, 'id' => $rootFolderId])) : null,
         ]);
+
+        $mockVolume = $this->make(Volume::class, [
+                'uid' => StringHelper::UUID(),
+                'id' => $volumeId + (int)$volumeChanged
+            ]
+        );
 
         $resolver = $this->make(AssetResolver::class, [
             'requireSchemaAction' => function($scope, $action) use ($canIdentify) {
                 $this->assertSame($canIdentify ? 'save' : 'create', $action);
             },
-            'getResolutionData' => $this->make(Volume::class, [
-                    'uid' => StringHelper::UUID(),
-                    'id' => $volumeId
-                ]
-            ),
+            'getResolutionData' => $mockVolume,
             'handleUpload' => true,
             'saveElement' => function($assetToSave) use ($assetId) {
                 $assetToSave->id = $assetToSave->id ?? $assetId;
@@ -101,7 +103,14 @@ class ResolveAssetMutationsTest extends TestCase
             $this->expectExceptionMessage($exception);
         }
 
-        $resolver->saveAsset(null, $arguments, null, $this->make(ResolveInfo::class));
+        $asset = $resolver->saveAsset(null, $arguments, null, $this->make(ResolveInfo::class));
+
+        // For identifiable assets, don't change the folder automatically, if the volume does not change
+        if ((!empty($arguments['id']) || !empty($arguments['uid'])) && !$volumeChanged) {
+            $this->assertEquals($asset->newFolderId, $arguments['newFolderId'] ?? null);
+        }
+
+        $this->assertSame($mockVolume->id, $asset->getVolumeId());
     }
 
     /**
@@ -267,7 +276,7 @@ class ResolveAssetMutationsTest extends TestCase
                 ],
                 true,
                 [
-                    'newFilename' => 'Upload.svg',
+                    'filename' => 'Upload.svg',
                     'avoidFilenameConflicts' => true
                 ],
                 null
@@ -280,7 +289,7 @@ class ResolveAssetMutationsTest extends TestCase
                 ],
                 true,
                 [
-                    'newFilename' => 'file.jpg',
+                    'filename' => 'file.jpg',
                     'avoidFilenameConflicts' => true
                 ],
                 null
@@ -304,7 +313,7 @@ class ResolveAssetMutationsTest extends TestCase
                 ['url' => 'http://testtest.test/file.jpg?something&different=fine#hash',],
                 true,
                 [
-                    'newFilename' => 'file.jpg',
+                    'filename' => 'file.jpg',
                     'avoidFilenameConflicts' => true
                 ],
                 null
@@ -317,7 +326,7 @@ class ResolveAssetMutationsTest extends TestCase
                 ],
                 true,
                 [
-                    'newFilename' => 'otherFile.gif',
+                    'filename' => 'otherFile.gif',
                     'avoidFilenameConflicts' => true
                 ],
                 null
@@ -329,39 +338,61 @@ class ResolveAssetMutationsTest extends TestCase
     {
         return [
             [
+                // Save asset
                 ['id' => 7],
+                '',
+                true
             ],
             [
+                // Attempt to save a missing asset
                 ['id' => -7],
                 'No such asset exists',
             ],
             [
+                // Create a new asset without file
                 ['title' => 'someAsset'],
                 'Impossible to create an asset without providing a file',
             ],
             [
-                ['title' => 'someAsset', '_file' => ['something']],
-                'Impossible to create an asset without providing a folder'
+                // Provide a folder id from a different volume
+                ['title' => 'someAsset', '_file' => ['something'], 'newFolderId' => 5],
+                'Invalid folder id provided',
+                false,
+                true
             ],
             [
+                // Provide a folder id for a non-existing folder
                 ['title' => 'someAsset', '_file' => ['something'], 'newFolderId' => -5],
                 'Invalid folder id provided'
             ],
             [
-                ['uid' => 'uid', 'title' => 'someAsset', 'volumeId' => -5],
-                'A folder id must be provided to change the asset\'s volume.',
-                true
-            ],
-            [
-                ['id' => 7, 'newFolderId' => 15],
-                'Invalid folder id provided'
-            ],
-            [
+                // Move to a new folder
                 ['id' => 7, 'newFolderId' => 7],
             ],
             [
+                // Move to a folder that is in a different volume
+                ['id' => 7, 'newFolderId' => 5],
+                'Invalid folder id provided',
+                false,
+                true
+            ],
+            [
+                // Upload and provide target folder
                 ['title' => 'someAsset', '_file' => ['something'], 'newFolderId' => 5],
-            ]
+            ],
+            [
+                // Create a new asset in the root folder
+                ['title' => 'someAsset', '_file' => ['something']],
+                '',
+                true
+            ],
+            [
+                // Move to a root folder that is in a different volume
+                ['id' => 7],
+                '',
+                true,
+                true
+            ],
         ];
     }
 

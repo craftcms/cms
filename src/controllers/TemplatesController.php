@@ -51,17 +51,16 @@ class TemplatesController extends Controller
      */
     public function beforeAction($action)
     {
-        $request = Craft::$app->getRequest();
-        $actionSegments = $request->getActionSegments();
+        $actionSegments = $this->request->getActionSegments();
         if (isset($actionSegments[0]) && strtolower($actionSegments[0]) === 'templates') {
             throw new ForbiddenHttpException();
         }
 
         if ($action->id === 'render') {
             // Allow anonymous access to the Login template even if the site is offline
-            if ($request->getIsLoginRequest()) {
+            if ($this->request->getIsLoginRequest()) {
                 $this->allowAnonymous = self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE;
-            } else if ($request->getIsSiteRequest()) {
+            } else if ($this->request->getIsSiteRequest()) {
                 $this->allowAnonymous = self::ALLOW_ANONYMOUS_LIVE;
             }
         }
@@ -83,7 +82,7 @@ class TemplatesController extends Controller
         if (
             (
                 Craft::$app->getConfig()->getGeneral()->headlessMode &&
-                Craft::$app->getRequest()->getIsSiteRequest()
+                $this->request->getIsSiteRequest()
             ) ||
             !$this->getView()->doesTemplateExist($template)
         ) {
@@ -106,7 +105,7 @@ class TemplatesController extends Controller
     public function actionOffline(): Response
     {
         // If this is a site request, make sure the offline template exists
-        if (Craft::$app->getRequest()->getIsSiteRequest() && !$this->getView()->doesTemplateExist('offline')) {
+        if ($this->request->getIsSiteRequest() && !$this->getView()->doesTemplateExist('offline')) {
             $templateMode = View::TEMPLATE_MODE_CP;
         }
 
@@ -162,7 +161,7 @@ class TemplatesController extends Controller
 
         if ($reqCheck->result['summary']['errors'] > 0) {
             // Coming from Updater.php
-            if (Craft::$app->getRequest()->getAcceptsJson()) {
+            if ($this->request->getAcceptsJson()) {
                 $message = '<br /><br />';
 
                 foreach ($reqCheck->getResult()['requirements'] as $req) {
@@ -208,7 +207,7 @@ class TemplatesController extends Controller
             $message = $exception->getMessage();
         }
 
-        if (Craft::$app->getRequest()->getIsSiteRequest()) {
+        if ($this->request->getIsSiteRequest()) {
             $prefix = Craft::$app->getConfig()->getGeneral()->errorTemplatePrefix;
 
             if ($this->getView()->doesTemplateExist($prefix . $statusCode)) {

@@ -60,7 +60,7 @@ class Tag extends Mutation
             $mutationList['deleteTag'] = [
                 'name' => 'deleteTag',
                 'args' => ['id' => Type::nonNull(Type::int())],
-                'resolve' => [new TagResolver(), 'deleteTag'],
+                'resolve' => [Craft::createObject(TagResolver::class), 'deleteTag'],
                 'description' => 'Delete a tag.',
                 'type' => Type::boolean()
             ];
@@ -82,7 +82,7 @@ class Tag extends Mutation
         $mutationArguments = ElementMutationArguments::getArguments();
         $generatedType = TagType::generateType($tagGroup);
 
-        $resolver = new TagResolver();
+        $resolver = Craft::createObject(TagResolver::class);
         $resolver->setResolutionData('tagGroup', $tagGroup);
         static::prepareResolver($resolver, $tagGroup->getFields());
 

@@ -23,12 +23,14 @@ class MockElementQuery extends ElementQuery
 
     /**
      * The "elements" to return when invoking `one()` or `all()`
+     *
      * @var array
      */
     protected $returnValues = [];
 
     /**
      * The element query properties
+     *
      * @var array
      */
     protected $properties = [];
@@ -46,21 +48,22 @@ class MockElementQuery extends ElementQuery
      *
      * @param $elementClass
      */
-    public static function generateSpecificQueryClass($elementClass): ElementQuery {
+    public static function generateSpecificQueryClass($elementClass): ElementQuery
+    {
         $parts = explode('\\', $elementClass);
 
         // Split out the relevant parts and generate a prefix
         $element = array_pop($parts);
         $namespace = implode('\\', $parts);
         $prefix = StringHelper::randomStringWithChars('abcdefghijklmnopqrstuvwxyz', 20);
-        $className = $prefix.'MockElementQuery';
+        $className = $prefix . 'MockElementQuery';
 
         // Load template and fill it with the relevant values
-        $template = file_get_contents(__DIR__ .'/' . self::CLASS_TEMPLATE_FILE);
+        $template = file_get_contents(__DIR__ . '/' . self::CLASS_TEMPLATE_FILE);
         $classData = str_replace(['{element}', '{namespace}', '{className}'], [$element, $namespace, $className], $template);
 
         // Include the class and return an instance of it
-        $tempPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $prefix.'.php';
+        $tempPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $prefix . '.php';
         file_put_contents($tempPath, $classData);
         include($tempPath);
         $instance = new $className;
@@ -75,7 +78,8 @@ class MockElementQuery extends ElementQuery
      * @param array $values
      * @return static
      */
-    public function setReturnValues(array $values = []) {
+    public function setReturnValues(array $values = [])
+    {
         $this->returnValues = $values;
 
         return $this;
@@ -87,7 +91,8 @@ class MockElementQuery extends ElementQuery
      * @param $name
      * @param $value
      */
-    public function __set($name, $value) {
+    public function __set($name, $value)
+    {
         $this->properties[$name] = $value;
     }
 
@@ -107,7 +112,8 @@ class MockElementQuery extends ElementQuery
      *
      * @param $name
      */
-    public function __get($name) {
+    public function __get($name)
+    {
         return $this->properties[$name] ?? null;
     }
 
@@ -118,7 +124,8 @@ class MockElementQuery extends ElementQuery
      * @param $arguments
      * @return static
      */
-    public function __call($method, $arguments) {
+    public function __call($method, $arguments)
+    {
         $this->properties[$method] = reset($arguments);
 
         return $this;
@@ -129,7 +136,8 @@ class MockElementQuery extends ElementQuery
      *
      * @return array
      */
-    public function all($db = null): array {
+    public function all($db = null): array
+    {
         return $this->returnValues;
     }
 
@@ -138,7 +146,8 @@ class MockElementQuery extends ElementQuery
      *
      * @return mixed|null
      */
-    public function one($db = null) {
+    public function one($db = null)
+    {
         return !empty($this->returnValues) ? reset($this->returnValues) : null;
     }
 }

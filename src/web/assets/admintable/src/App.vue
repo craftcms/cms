@@ -58,6 +58,7 @@
                             <admin-table-checkbox
                                 :id="props.rowData.id"
                                 :checks="checks"
+                                :status="checkboxStatus(props.rowData)"
                                 v-on:addCheck="addCheck"
                                 v-on:removeCheck="removeCheck"
                             ></admin-table-checkbox>
@@ -153,6 +154,10 @@
                 type: Boolean,
                 default: false,
             },
+            checkboxStatus: {
+                type: Function,
+                default: function() { return true; }
+            },
             columns: {
                 type: Array,
                 default: () => { return [] },
@@ -227,6 +232,23 @@
             tableDataEndpoint: {
                 type: String,
             },
+
+            // Events
+            onLoaded: {
+                default: function() {}
+            },
+            onLoading: {
+                default: function() {}
+            },
+            onData: {
+                default: function() {}
+            },
+            onPagination: {
+                default: function() {}
+            },
+            onSelect: {
+                default: function() {}
+            }
         },
 
         data() {
@@ -276,10 +298,23 @@
                 }
 
                 this.isLoading = false;
+
+                if (this.onLoaded instanceof Function) {
+                    this.onLoaded();
+                }
+
+                // call data load success for non-endpoint implementations
+                if (!this.tableDataEndpoint && this.onData instanceof Function) {
+                    this.onData(this.tableData);
+                }
             },
 
             loading() {
               this.isLoading = true;
+
+              if (this.onLoading instanceof Function) {
+                  this.onLoading();
+              }
             },
 
             startReorder() {
@@ -321,7 +356,8 @@
 
                     this.checks.push(id);
                 }
-                this.$emit('onSelect', this.checks);
+
+                this.handleOnSelectCallback(this.checks);
             },
 
             removeCheck(id) {
@@ -329,7 +365,8 @@
                 if (key >= 0) {
                     this.checks.splice(key, 1);
                 }
-                this.$emit('onSelect', this.checks);
+
+                this.handleOnSelectCallback(this.checks);
             },
 
             handleSearch: debounce(function() {
@@ -342,14 +379,19 @@
 
             handleSelectAll() {
                 var tableData = this.$refs.vuetable.tableData;
-                if (this.checks.length != tableData.length) {
+                let tableLength = tableData.length - this.disabledCheckboxesCount;
+                if (this.checks.length != tableLength) {
                     tableData.forEach(row => {
-                        this.addCheck(row.id);
+                        if (this.checkboxStatus instanceof Function && this.checkboxStatus(row)) {
+                          this.addCheck(row.id);
+                        }
                     });
                 } else {
                     this.checks = [];
                 }
-                this.$emit('onSelect', this.checks);
+
+                this.handleOnSelectCallback(this.checks);
+
             },
 
             handleDetailRow(id) {
@@ -358,7 +400,8 @@
 
             deselectAll() {
                 this.checks = [];
-                this.$emit('onSelect', this.checks);
+
+                this.handleOnSelectCallback(this.checks);
             },
 
             reload() {
@@ -388,7 +431,11 @@
 
             onLoadSuccess(data) {
                 if (data && data.data && data.data.data) {
-                    this.$emit('data', data.data.data);
+                    let emitData = data.data.data;
+                    this.$emit('data', emitData);
+                    if (this.onData instanceof Function) {
+                        this.onData(emitData);
+                    }
                 }
             },
 
@@ -396,12 +443,22 @@
                 this.currentPage = paginationData.current_page;
                 this.$refs.pagination.setPaginationData(paginationData)
                 this.deselectAll();
+                if (this.onPagination instanceof Function) {
+                    this.onPagination(paginationData);
+                }
             },
 
             onChangePage(page) {
                 this.$refs.vuetable.changePage(page)
                 this.deselectAll();
             },
+
+            handleOnSelectCallback(checks) {
+                this.$emit('onSelect', checks);
+                if (this.onSelect instanceof Function) {
+                    this.onSelect(checks);
+                }
+            }
         },
 
         computed: {
@@ -438,6 +495,18 @@
 
             canReorder() {
                 return (this.$refs.vuetable.tableData.length > 1 && this.reorderAction && this.$el.querySelector(this.tableBodySelector) && (!this.$refs.vuetable.tablePagination))
+            },
+
+            disabledCheckboxesCount() {
+                let checkboxCount = 0;
+
+                if (this.$refs.vuetable.tableData.length) {
+                    let disabledRows = this.$refs.vuetable.tableData.filter(row => !this.checkboxStatus(row));
+
+                    checkboxCount = disabledRows.length;
+                }
+
+                return checkboxCount;
             },
 
             fields() {

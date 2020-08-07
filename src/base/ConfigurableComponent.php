@@ -7,6 +7,8 @@
 
 namespace craft\base;
 
+use craft\helpers\DateTimeHelper;
+
 /**
  * Component is the base class for classes representing Craft components that are configurable.
  *
@@ -39,9 +41,14 @@ abstract class ConfigurableComponent extends Component implements ConfigurableCo
     public function getSettings(): array
     {
         $settings = [];
+        $datetimeAttributes = array_flip($this->datetimeAttributes());
 
         foreach ($this->settingsAttributes() as $attribute) {
-            $settings[$attribute] = $this->$attribute;
+            if (isset($datetimeAttributes[$attribute])) {
+                $settings[$attribute] = DateTimeHelper::toIso8601($this->$attribute) ?: null;
+            } else {
+                $settings[$attribute] = $this->$attribute;
+            }
         }
 
         return $settings;
