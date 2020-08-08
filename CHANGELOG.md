@@ -3,6 +3,12 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\db\Command::deleteDuplicates()`.
+- Added `craft\db\Migration::deleteDuplicates()`.
+- Added `craft\db\mysql\QueryBuilder::deleteDuplicates()`.
+- Added `craft\db\pgsql\QueryBuilder::deleteDuplicates()`.
+
 ### Changed
 - Live Preview now attempts to maintain the iframe scroll position between page reloads even if the `previewIframeResizerOptions` config setting is set to `false`. ([#6569](https://github.com/craftcms/cms/issues/6569))
 - `language` and `localized` are now reserved field handles. ([#6564](https://github.com/craftcms/cms/issues/6564))
@@ -12,6 +18,7 @@
 
 ### Fixed
 - Fixed a PHP error that occurred when setting a `relatedTo` param to an array that began with `'and'`. ([#6573](https://github.com/craftcms/cms/issues/6573))
+- Fixed a SQL error that could occur when updating to Craft 3.5 if the `migrations` table contained duplicate migration rows. ([#6580](https://github.com/craftcms/cms/issues/6580))
 
 ## 3.5.1 - 2020-08-05
 
