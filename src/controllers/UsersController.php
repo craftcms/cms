@@ -984,7 +984,7 @@ class UsersController extends Controller
 
             $user = new User();
 
-            if ($isPublicRegistration && $userSettings['suspendByDefault'] ?? false) {
+            if ($isPublicRegistration && ($userSettings['suspendByDefault'] ?? false)) {
                 $user->suspended = true;
             }
         }

@@ -19,6 +19,7 @@
 ### Fixed
 - Fixed a PHP error that occurred when setting a `relatedTo` param to an array that began with `'and'`. ([#6573](https://github.com/craftcms/cms/issues/6573))
 - Fixed a SQL error that could occur when updating to Craft 3.5 if the `migrations` table contained duplicate migration rows. ([#6580](https://github.com/craftcms/cms/issues/6580))
+- Fixed a PHP error that could occur during public registration. ([#6499](https://github.com/craftcms/cms/issues/6499))
 
 ## 3.5.1 - 2020-08-05
 
