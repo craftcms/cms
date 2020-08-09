@@ -1350,7 +1350,6 @@ return [
     'No tag groups exist yet.' => 'لا توجد مجموعات علامات بعد.',
     'No content migrations.' => 'لا توجد أية ترحيلات محتويات.',
     'Profile Twig templates when Dev Mode is disabled' => 'تشكيل قوالب Twig عندما يكون وضع التطوير معطلًا',
-    'not an existing translation23131321313' => 'not an existing translation23131321313',
     'New schema' => 'New schema',
     'Only save blocks to the site they were created in' => 'حفظ الكتل على الموقع الذي تم إنشاؤها فيه فقط',
     'Prefix Text' => 'بادئة النص',
