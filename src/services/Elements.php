@@ -893,7 +893,7 @@ class Elements extends Component
         $mainClone = clone $element;
         $mainClone->id = null;
         $mainClone->uid = null;
-        $mainClone->elementSiteId = null;
+        $mainClone->siteSettingsId = null;
         $mainClone->contentId = null;
         $mainClone->root = null;
         $mainClone->lft = null;
@@ -1012,7 +1012,7 @@ class Elements extends Component
                     $siteClone->id = $mainClone->id;
                     $siteClone->uid = $mainClone->uid;
                     $siteClone->enabled = $mainClone->enabled;
-                    $siteClone->elementSiteId = null;
+                    $siteClone->siteSettingsId = null;
                     $siteClone->contentId = null;
                     $siteClone->dateCreated = $mainClone->dateCreated;
                     $siteClone->dateUpdated = $mainClone->dateUpdated;
@@ -2142,7 +2142,7 @@ class Elements extends Component
         // todo: remove the tableExists condition after the next breakpoint
         $trackChanges = (
             !$isNewElement &&
-            $element->elementSiteId &&
+            $element->siteSettingsId &&
             $element->duplicateOf === null &&
             $element::trackChanges() &&
             ($draftBehavior->trackChanges ?? true) &&
@@ -2335,7 +2335,7 @@ class Elements extends Component
                 throw new Exception('Couldn’t save elements’ site settings record.');
             }
 
-            $element->elementSiteId = $siteSettingsRecord->id;
+            $element->siteSettingsId = $siteSettingsRecord->id;
 
             // Save the content
             if ($element::hasContent()) {
@@ -2498,7 +2498,7 @@ class Elements extends Component
         if ($isNewSiteForElement = ($siteElement === null)) {
             $siteElement = clone $element;
             $siteElement->siteId = $siteInfo['siteId'];
-            $siteElement->elementSiteId = null;
+            $siteElement->siteSettingsId = null;
             $siteElement->contentId = null;
             $siteElement->setEnabledForSite($siteInfo['enabledByDefault']);
 
