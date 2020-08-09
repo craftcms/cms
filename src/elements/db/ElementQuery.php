@@ -2704,7 +2704,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 'elements.archived' => 'elements.archived',
                 'elements.dateCreated' => 'elements.dateCreated',
                 'elements.dateUpdated' => 'elements.dateUpdated',
-                'elementSiteId' => 'elements_sites.id',
+                'siteSettingsId' => 'elements_sites.id',
                 'elements_sites.slug' => 'elements_sites.slug',
                 'elements_sites.siteId' => 'elements_sites.siteId',
                 'elements_sites.uri' => 'elements_sites.uri',

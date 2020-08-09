@@ -214,6 +214,10 @@ class MigrationManager extends Component
         /** @noinspection CallableParameterUseCaseInTypeContextInspection */
         $migration = Instance::ensure($migration, MigrationInterface::class);
 
+        // Clear the schema cache
+        $schema = $this->db->getSchema();
+        $schema->refresh();
+
         Craft::info("Applying $migrationName", __METHOD__);
 
         $isConsoleRequest = Craft::$app->getRequest()->getIsConsoleRequest();
@@ -235,7 +239,7 @@ class MigrationManager extends Component
         $time = microtime(true) - $start;
 
         // Clear the schema cache
-        $this->db->getSchema()->refresh();
+        $schema->refresh();
 
         $log = ($success ? 'Applied ' : 'Failed to apply ') . $migrationName . ' (time: ' . sprintf('%.3f', $time) . 's).';
         if (!$isConsoleRequest) {
@@ -271,6 +275,10 @@ class MigrationManager extends Component
         /** @noinspection CallableParameterUseCaseInTypeContextInspection */
         $migration = Instance::ensure($migration, MigrationInterface::class);
 
+        // Clear the schema cache
+        $schema = $this->db->getSchema();
+        $schema->refresh();
+
         Craft::info("Reverting $migrationName", __METHOD__);
 
         $isConsoleRequest = Craft::$app->getRequest()->getIsConsoleRequest();
@@ -292,7 +300,7 @@ class MigrationManager extends Component
         $time = microtime(true) - $start;
 
         // Clear the schema cache
-        $this->db->getSchema()->refresh();
+        $schema->refresh();
 
         $log = ($success ? 'Reverted ' : 'Failed to revert ') . $migrationName . ' (time: ' . sprintf('%.3f', $time) . 's).';
         if (!$isConsoleRequest) {

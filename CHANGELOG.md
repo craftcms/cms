@@ -1,6 +1,27 @@
 
 # Release Notes for Craft CMS 3.x
 
+## 3.5.2 - 2020-08-09
+
+### Added
+- Added `craft\db\Command::deleteDuplicates()`.
+- Added `craft\db\Migration::deleteDuplicates()`.
+- Added `craft\db\mysql\QueryBuilder::deleteDuplicates()`.
+- Added `craft\db\pgsql\QueryBuilder::deleteDuplicates()`.
+
+### Changed
+- Live Preview now attempts to maintain the iframe scroll position between page reloads even if the `previewIframeResizerOptions` config setting is set to `false`. ([#6569](https://github.com/craftcms/cms/issues/6569))
+- `language` and `localized` are now reserved field handles. ([#6564](https://github.com/craftcms/cms/issues/6564))
+- `craft\base\Element::__get()` now prioritizes field handles over getter methods. ([#6564](https://github.com/craftcms/cms/issues/6564))
+- Data caches stored in `storage/runtime/cache/` now get a cache key prefix based on the application ID.
+- Craft now clears the schema cache before running each migration, in addition to after. ([#6552](https://github.com/craftcms/cms/issues/6552))
+- Renamed `craft\base\ElementTrait::$elementSiteId` to `$siteSettingsId`. ([verbb/navigation#179](https://github.com/verbb/navigation/issues/179), [verbb/wishlist#56](https://github.com/verbb/wishlist/issues/56))
+
+### Fixed
+- Fixed a PHP error that occurred when setting a `relatedTo` param to an array that began with `'and'`. ([#6573](https://github.com/craftcms/cms/issues/6573))
+- Fixed a SQL error that could occur when updating to Craft 3.5 if the `migrations` table contained duplicate migration rows. ([#6580](https://github.com/craftcms/cms/issues/6580))
+- Fixed a PHP error that could occur during public registration. ([#6499](https://github.com/craftcms/cms/issues/6499))
+
 ## 3.5.1 - 2020-08-05
 
 ### Fixed

@@ -1408,7 +1408,7 @@ abstract class Element extends Component implements ElementInterface
 
         // If this is a field, make sure the value has been normalized before returning the CustomFieldBehavior value
         if ($this->fieldByHandle($name) !== null) {
-            $this->normalizeFieldValue($name);
+            return $this->getFieldValue($name);
         }
 
         return parent::__get($name);
@@ -1459,7 +1459,7 @@ abstract class Element extends Component implements ElementInterface
         $this->id = (int)$this->id ?: null;
         $this->draftId = (int)$this->draftId ?: null;
         $this->revisionId = (int)$this->revisionId ?: null;
-        $this->elementSiteId = (int)$this->elementSiteId ?: null;
+        $this->siteSettingsId = (int)$this->siteSettingsId ?: null;
         $this->fieldLayoutId = (int)$this->fieldLayoutId ?: null;
         $this->structureId = (int)$this->structureId ?: null;
         $this->contentId = (int)$this->contentId ?: null;
@@ -2146,7 +2146,7 @@ abstract class Element extends Component implements ElementInterface
             return self::STATUS_ARCHIVED;
         }
 
-        if (!$this->enabled || !$this->enabledForSite) {
+        if (!$this->enabled || !$this->getEnabledForSite()) {
             return self::STATUS_DISABLED;
         }
 

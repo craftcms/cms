@@ -94,4 +94,32 @@ class QueryBuilder extends \yii\db\pgsql\QueryBuilder
 
         return $sql;
     }
+
+    /**
+     * Builds the SQL expression used to delete duplicate rows from a table.
+     *
+     * @param string $table The table where the data will be deleted from
+     * @param string[] $columns The column names that contain duplicate data
+     * @param string $pk The primary key column name
+     * @return string The SQL expression
+     * @since 3.5.2
+     */
+    public function deleteDuplicates(string $table, array $columns, string $pk = 'id'): string
+    {
+        $table = $this->db->quoteTableName($table);
+        $pk = $this->db->quoteColumnName($pk);
+        $a = $this->db->quoteColumnName('a');
+        $b = $this->db->quoteColumnName('b');
+
+        $sql = "DELETE FROM $table $a" .
+            " USING $table $b" .
+            " WHERE $a.$pk > $b.$pk";
+
+        foreach ($columns as $column) {
+            $column = $this->db->quoteColumnName($column);
+            $sql .= " AND $a.$column = $b.$column";
+        }
+
+        return $sql;
+    }
 }

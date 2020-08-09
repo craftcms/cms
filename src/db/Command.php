@@ -144,6 +144,31 @@ class Command extends \yii\db\Command
     }
 
     /**
+     * Creates a DELETE command that will only delete duplicate rows from a table.
+     *
+     * For example,
+     *
+     * ```php
+     * $connection->createCommand()->deleteDuplicates('user', ['email'])->execute();
+     * ```
+     *
+     * The method will properly escape the table and column names.
+     *
+     * Note that the created command is not executed until [[execute()]] is called.
+     *
+     * @param string $table The table where the data will be deleted from
+     * @param string[] $columns The column names that contain duplicate data
+     * @param string $pk The primary key column name
+     * @return $this the command object itself
+     * @since 3.5.2
+     */
+    public function deleteDuplicates(string $table, array $columns, string $pk = 'id'): self
+    {
+        $sql = $this->db->getQueryBuilder()->deleteDuplicates($table, $columns, $pk);
+        return $this->setSql($sql);
+    }
+
+    /**
      * Creates a SQL statement for replacing some text with other text in a given table column.
      *
      * @param string $table The table to be updated.
