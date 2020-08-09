@@ -1350,7 +1350,6 @@ return [
     'No tag groups exist yet.' => '아직 태그 그룹이 없습니다.',
     'No content migrations.' => '콘텐츠 마이그레이션이 없습니다.',
     'Profile Twig templates when Dev Mode is disabled' => '프로필 트윅 템플릿(개발자 모드가 비활성화 상태인 경우)',
-    'not an existing translation23131321313' => '기존 번역에 없는 23131321313',
     'New schema' => 'New schema',
     'Only save blocks to the site they were created in' => '생성된 사이트에 블록 저장',
     'Prefix Text' => '접두사 텍스트',

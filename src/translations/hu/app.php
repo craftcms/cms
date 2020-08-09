@@ -1348,7 +1348,6 @@ Amennyiben nem neked szól ez a levél, egyszerűen csak hagyd figyelmen kívül
     'No tag groups exist yet.' => 'Nem létezik még címke csoport.',
     'No content migrations.' => 'Nincs tartalomáttelepítés.',
     'Profile Twig templates when Dev Mode is disabled' => 'Twig profilsablonok kikapcsolt fejlesztői módban',
-    'not an existing translation23131321313' => 'nem meglévő fordítás23131321313',
     'New schema' => 'New schema',
     'Only save blocks to the site they were created in' => 'Csak arra a webhelyre mentse a blokkokat, amelyben létrejöttek',
     'Prefix Text' => 'Előtag szövege',

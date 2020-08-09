@@ -1350,7 +1350,6 @@ return [
     'No tag groups exist yet.' => 'טרם נוצרו קבוצות תגיות.',
     'No content migrations.' => 'אין העברות תוכן.',
     'Profile Twig templates when Dev Mode is disabled' => 'צור תבניות פרופיל Twig כאשר מצב Dev מנוטרל',
-    'not an existing translation23131321313' => 'ignored',
     'New schema' => 'New schema',
     'Only save blocks to the site they were created in' => 'שמור בלוקים רק באתר שבו הם נוצרו',
     'Prefix Text' => 'טקסט קידומת',
