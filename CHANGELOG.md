@@ -1,7 +1,7 @@
 
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.5.2 - 2020-08-09
 
 ### Added
 - Added `craft\db\Command::deleteDuplicates()`.
