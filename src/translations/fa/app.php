@@ -1427,7 +1427,7 @@ return [
     'You don’t have the proper credentials to access this page.' => 'شما اطلاعات کاربری صحیح را برای دسترسی به این صفحه ندارید.',
     'Passed with warning' => 'پاس شده با اخطار',
     'Release all jobs' => 'آزاد کردن همه کارها',
-    'How the field should be presented in the control panel.' => 'How the field should be presented in the control panel.',
+    'How the field should be presented in the control panel.' => 'چطور فیلد باید در صفحه کنترل نمایش داده شود.',
     'No category groups exist yet.' => 'گروه دسته بندی ای وجود ندارد.',
     'Rotate Right' => 'چرخش به راست',
     'Job Data' => 'اطلاعات کار',
