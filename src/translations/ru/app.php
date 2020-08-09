@@ -1351,7 +1351,6 @@ return [
     'No tag groups exist yet.' => 'Пока что не существует ни одной группы тегов.',
     'No content migrations.' => 'Нет переносов контента.',
     'Profile Twig templates when Dev Mode is disabled' => 'Профилировать шаблоны Twig при отключенном режиме разработчика',
-    'not an existing translation23131321313' => 'not an existing translation23131321313',
     'New schema' => 'New schema',
     'Only save blocks to the site they were created in' => 'Сохранять блоки только на том сайте, где они были созданы',
     'Prefix Text' => 'Текст префикса',
