@@ -1426,7 +1426,7 @@ Amennyiben nem neked szól ez a levél, egyszerűen csak hagyd figyelmen kívül
     'You don’t have the proper credentials to access this page.' => 'Nincsen megfelelő jogosultságod az oldal eléréséhez.',
     'Passed with warning' => 'Sikeres, de figyelmeztetéssel',
     'Release all jobs' => 'Összes feladat feloldása',
-    'How the field should be presented in the control panel' => 'How the field should be presented in the control panel',
+    'How the field should be presented in the control panel.' => 'How the field should be presented in the control panel.',
     'No category groups exist yet.' => 'Nem létezik még kategória csoport.',
     'Rotate Right' => 'Forgatás jobbra',
     'Job Data' => 'Feladat adatai',

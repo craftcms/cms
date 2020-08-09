@@ -1428,7 +1428,7 @@ return [
     'You don’t have the proper credentials to access this page.' => '権限がないため、このページにアクセスすることができません。',
     'Passed with warning' => '注意が必要なパス',
     'Release all jobs' => 'すべてのジョブを解放',
-    'How the field should be presented in the control panel' => 'コントロールパネルでのフィールドの表示方法',
+    'How the field should be presented in the control panel.' => 'コントロールパネルでのフィールドの表示方法',
     'No category groups exist yet.' => 'カテゴリグループがまだありません。',
     'Rotate Right' => '右に回転',
     'Job Data' => 'ジョブデータ',

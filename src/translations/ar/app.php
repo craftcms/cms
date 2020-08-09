@@ -1428,7 +1428,7 @@ return [
     'You don’t have the proper credentials to access this page.' => 'ليس لديك بيانات اعتماد صحيحة للوصول إلى هذه الصفحة.',
     'Passed with warning' => 'تم الاجتياز مع وجود تحذير',
     'Release all jobs' => 'تحرير جميع المهام',
-    'How the field should be presented in the control panel' => 'How the field should be presented in the control panel',
+    'How the field should be presented in the control panel.' => 'How the field should be presented in the control panel.',
     'No category groups exist yet.' => 'لا توجد مجموعات فئات بعد.',
     'Rotate Right' => 'استدارة إلى اليمين',
     'Job Data' => 'بيانات المهمة',

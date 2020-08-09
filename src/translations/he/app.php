@@ -1428,7 +1428,7 @@ return [
     'You don’t have the proper credentials to access this page.' => 'אין לך את ההרשאות המתאימות להיכנס לעמוד זה.',
     'Passed with warning' => 'עבר עם אזהרה',
     'Release all jobs' => 'שחרר את כל העבודות',
-    'How the field should be presented in the control panel' => 'How the field should be presented in the control panel',
+    'How the field should be presented in the control panel.' => 'How the field should be presented in the control panel.',
     'No category groups exist yet.' => 'עדיין לא קיימות קבוצות קטגוריות.',
     'Rotate Right' => 'סובב ימינה',
     'Job Data' => 'נתוני העבודה',

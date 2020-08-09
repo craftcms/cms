@@ -1429,7 +1429,7 @@ return [
     'You don’t have the proper credentials to access this page.' => 'У вашей учетной записи нет прав для доступа к этой странице',
     'Passed with warning' => 'Пройдено с предупреждением',
     'Release all jobs' => 'Высвободить все задания',
-    'How the field should be presented in the control panel' => 'How the field should be presented in the control panel',
+    'How the field should be presented in the control panel.' => 'How the field should be presented in the control panel.',
     'No category groups exist yet.' => 'Пока что не существует ни одной группы категорий.',
     'Rotate Right' => 'Повернуть вправо',
     'Job Data' => 'Данные по заданию',

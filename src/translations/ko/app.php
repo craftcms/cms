@@ -1428,7 +1428,7 @@ return [
     'You don’t have the proper credentials to access this page.' => '이 페이지에 접근할 수 있는 적합한 자격인증이 없습니다.',
     'Passed with warning' => '경고와 함께 통과',
     'Release all jobs' => '모든 작업 릴리스',
-    'How the field should be presented in the control panel' => 'How the field should be presented in the control panel',
+    'How the field should be presented in the control panel.' => 'How the field should be presented in the control panel.',
     'No category groups exist yet.' => '카테고리 그룹이 아직 없습니다.',
     'Rotate Right' => '오른쪽으로 회전',
     'Job Data' => '작업 데이터',

@@ -1428,7 +1428,7 @@ return [
     'You don’t have the proper credentials to access this page.' => '您没有合适的凭证用于访问该页。',
     'Passed with warning' => '通过，但有警告',
     'Release all jobs' => '发布所有作业',
-    'How the field should be presented in the control panel' => 'How the field should be presented in the control panel',
+    'How the field should be presented in the control panel.' => 'How the field should be presented in the control panel.',
     'No category groups exist yet.' => '暂无分类群组。',
     'Rotate Right' => '向右旋转',
     'Job Data' => '作业数据',
