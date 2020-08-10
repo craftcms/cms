@@ -10,6 +10,7 @@
 
 ### Fixed
 - Fixed a bug where it was impossible to use the `transform` argument for transforms when using the GraphQL API.
+- Fixed a bug where Craft was routing requests based on the full requested URI rather than just the URI segments that came after `index.php`. ([#6579](https://github.com/craftcms/cms/issues/6579))
 
 ## 3.5.2 - 2020-08-09
 
