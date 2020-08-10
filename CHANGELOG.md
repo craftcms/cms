@@ -1,6 +1,14 @@
 
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Added
+- Added `craft\helpers\Gql::prepareTransformArguments()`.
+
+### Fixed
+- Fixed a bug where it was impossible to use the `transform` argument for transforms when using the GraphQL API.
+
 ## 3.5.2 - 2020-08-09
 
 ### Added

@@ -20,6 +20,7 @@ use craft\fields\Entries as EntryField;
 use craft\fields\Users as UserField;
 use craft\gql\base\ElementResolver;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
+use craft\helpers\Gql as GqlHelper;
 use craft\helpers\StringHelper;
 use craft\services\Gql;
 use GraphQL\Language\AST\ArgumentNode;
@@ -297,7 +298,6 @@ class ElementQueryConditionBuilder extends Component
         foreach ($directives as $directive) {
             if ($directive->name->value === 'transform') {
                 $arguments = $this->_extractArguments($directive->arguments ?? []);
-                unset($arguments['immediately']);
                 break;
             }
         }
@@ -316,14 +316,7 @@ class ElementQueryConditionBuilder extends Component
             return [];
         }
 
-        // `handle` arguments are just strings on their own.
-        if (!empty($arguments['handle'])) {
-            $arguments += [$arguments['handle']];
-            unset($arguments['handle']);
-        } else {
-            // If there's no handle, then it's a key => value pair that we need to encapsulate.
-            $arguments = [$arguments];
-        }
+        $arguments = [GqlHelper::prepareTransformArguments($arguments)];
 
         return $arguments;
     }
