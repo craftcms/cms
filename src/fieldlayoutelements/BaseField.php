@@ -199,7 +199,7 @@ abstract class BaseField extends FieldLayoutElement
             'labelAttributes' => $this->labelAttributes($element, $static),
             'status' => $statusClass ? [$statusClass, $this->statusLabel($element, $static) ?? ucfirst($statusClass)] : null,
             'label' => $this->label ? Craft::t('site', $this->label) : $this->defaultLabel($element, $static),
-            'altLabel' => Html::tag('code', $this->attribute()),
+            'attribute' => $this->attribute(),
             'required' => !$static && $this->required,
             'instructions' => $this->_instructions($element, $static),
             'input' => $inputHtml,

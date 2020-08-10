@@ -3,7 +3,6 @@
 {%- set instructionsId = instructionsId ?? "#{fieldId}-instructions"  %}
 {%- set status = status ?? null %}
 {%- set label = label is defined and label != '__blank__' ? label : (block('label') ?? null) %}
-{%- set altLabel = altLabel ?? false %}
 {%- set siteId = ((craft.app.getIsMultiSite() and siteId is defined) ? siteId : null) %}
 {%- set site = (siteId ? craft.app.sites.getSiteById(siteId) : null) %}
 {%- set required = required ?? false %}
@@ -49,27 +48,27 @@
             {% if label %}
                 {%- set labelAttributes = {
                     id: labelId,
-                    class: required ? ['required'],
                     for: id ?? null,
                 }|merge(labelAttributes ?? [], recursive=true) %}
                 <label {{ attr(labelAttributes) }}>
-                    {%- if altLabel and currentUser.admin ?? false %}
-                        {%- apply spaceless %}
-                            <span class="primary-label">{{- label|raw -}}</span>
-                            <span class="alt-label">{{- altLabel|raw -}}</span>
-                        {% endapply %}
-                    {%- else %}
-                        {{- label|raw }}
-                    {%- endif %}
+                    <span class="label{% if required %} required{% endif %}">{{- label|raw }}</span>
                     {%- if translatable %}
                         {{ tag('span', {
-                            class: ['extralight'],
+                            class: ['t9n-indicator extralight'],
                             data: {
                                 icon: 'language',
                             },
                             title: translationDescription ?? 'This field is translatable.'|t('app'),
                         }) }}
                     {% endif -%}
+                    {% if devMode and (attribute ?? false) %}
+                        <div class="flex-grow"></div>
+                        {% include '_includes/forms/copytextbtn' with {
+                            id: "#{fieldId}-attribute",
+                            class: ['code', 'small'],
+                            value: attribute,
+                        } only %}
+                    {% endif %}
                 </label>
             {% endif %}
             {% if instructions %}
