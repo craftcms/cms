@@ -12,7 +12,7 @@
 - It’s now possible to change a revision’s creator and source via `craft\services\Revisions::EVENT_BEFORE_CREATE_REVISION`. ([#6600](https://github.com/craftcms/cms/pull/6600))
 
 ### Fixed
-- Fixed a bug where it was impossible to use the `transform` argument for transforms when using the GraphQL API.
+- Fixed a bug where it wasn’t possible to use the `transform` argument in some cases via the GraphQL API.
 - Fixed a bug where Craft was routing requests based on the full requested URI rather than just the URI segments that came after `index.php`. ([#6579](https://github.com/craftcms/cms/issues/6579))
 - Fixed a bug where `data-target-prefix` attributes that specified a class name were getting namespaced. ([#6604](https://github.com/craftcms/cms/issues/6604))
 - Fixed a bug where `craft\helpers\Json::isJsonObject()` was returning `false` if the JSON string spanned multiple lines. ([#6607](https://github.com/craftcms/cms/issues/6607))
