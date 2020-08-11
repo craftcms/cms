@@ -17,6 +17,7 @@
 - Fixed a bug where `data-target-prefix` attributes that specified a class name were getting namespaced. ([#6604](https://github.com/craftcms/cms/issues/6604))
 - Fixed a bug where `craft\helpers\Json::isJsonObject()` was returning `false` if the JSON string spanned multiple lines.
 - Fixed a bug where the `limit` param wasn’t working when applied to eager-loaded elements. ([#6596](https://github.com/craftcms/cms/issues/6596))
+- Fixed an error that would occur if Craft tried to make a database backup in a VM with Windows as the host OS.
 
 ## 3.5.2 - 2020-08-09
 
