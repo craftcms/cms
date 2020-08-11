@@ -11,7 +11,7 @@
         {{ forms.textField({
             label: titleField.label ? titleField.label|t('site') : 'Title'|t('app'),
             instructions: titleField.instructions ? titleField.instructions|t('site'),
-            altLabel: tag('code', {text: 'title'}),
+            attribute: 'title',
             id: 'title',
             name: 'title',
             required: true,

@@ -2068,7 +2068,7 @@ class Elements extends Component
                                 }
                                 $targetElementsForSource[] = $targetElements[$targetSiteId][$elementId];
                                 if ($limit && ++$count == $limit) {
-                                    break;
+                                    break 2;
                                 }
                             }
                         }

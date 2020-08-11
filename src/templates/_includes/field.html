@@ -27,7 +27,7 @@
     {{ field({
         status: element ? element.getFieldStatus(field.handle),
         label: field.name|t('site')|e,
-        altLabel: tag('code', {text: field.handle}),
+        attribute: field.handle,
         translatable: translatable,
         translationDescription: field.getTranslationDescription(element),
         siteId: siteId,

@@ -345,4 +345,26 @@ class Gql
         }
         return $value;
     }
+
+
+    /**
+     * Prepare arguments intended for Asset transforms.
+     *
+     * @param array $arguments
+     * @return array|string
+     */
+    public static function prepareTransformArguments(array $arguments)
+    {
+        unset($arguments['immediately']);
+
+        if (!empty($arguments['handle'])) {
+            $transform = $arguments['handle'];
+        } else if (!empty($arguments['transform'])) {
+            $transform = $arguments['transform'];
+        } else {
+            $transform = $arguments;
+        }
+
+        return $transform;
+    }
 }

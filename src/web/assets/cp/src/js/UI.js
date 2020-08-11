@@ -87,6 +87,7 @@ Craft.ui =
                 document.execCommand('copy');
                 Craft.cp.displayNotice(Craft.t('app', 'Copied to clipboard.'));
                 $container.trigger('copy');
+                $input[0].setSelectionRange(0, 0);
             });
 
             return $container;

@@ -635,6 +635,28 @@ body.rtl .copytext .text { border-top-left-radius: 0; border-bottom-left-radius:
 
 body.rtl .copytext .btn { border-top-right-radius: 0; border-bottom-right-radius: 0; }
 
+.copytextbtn { display: -webkit-flex; display: flex; -webkit-flex-wrap: nowrap; flex-wrap: nowrap; -webkit-align-items: center; align-items: center; border: 1px solid rgba(51, 64, 77, 0.1); border-radius: 3px; -o-transition: border-color linear 100ms; transition: border-color linear 100ms; padding: 0 9px; cursor: pointer; outline: none; }
+
+.copytextbtn input { border: 0; padding: 0; height: 32px; box-shadow: none; background-color: transparent; border: none; cursor: pointer; color: #3f4d5a; text-align: center; outline: none; }
+
+.copytextbtn span { opacity: 0; padding: 0; width: 13px; background: none; -o-transition: opacity linear 100ms, margin-left linear 100ms, margin-right linear 100ms; transition: opacity linear 100ms, margin-left linear 100ms, margin-right linear 100ms; }
+
+body.ltr .copytextbtn span { margin-left: -13px; }
+
+body.rtl .copytextbtn span { margin-right: -13px; }
+
+.copytextbtn:hover, .copytextbtn:focus { border-color: rgba(81, 95, 108, 0.25); }
+
+.copytextbtn:hover span, .copytextbtn:focus span { opacity: 1; }
+
+body.ltr .copytextbtn:hover span, body.ltr .copytextbtn:focus span { margin-left: 3px; }
+
+body.rtl .copytextbtn:hover span, body.rtl .copytextbtn:focus span { margin-right: 3px; }
+
+.copytextbtn.small { padding: 0 5px; }
+
+.copytextbtn.small input { font-size: 11px !important; height: 20px; }
+
 /* menu buttons */
 .menubtn { -webkit-user-select: none; user-select: none; }
 
@@ -2048,17 +2070,13 @@ body.rtl .field > .status-badge { right: -19px; }
 
 .field > .heading { margin-top: -5px; margin-bottom: 5px; }
 
-.field > .heading > label { position: relative; font-weight: bold; color: #606d7b; }
+.field > .heading > label { display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; position: relative; font-weight: bold; color: #606d7b; }
 
 .field > .heading > label code { font-size: 1em !important; }
 
-body:not(.altkeydown) .field > .heading > label > .alt-label, body.altkeydown .field > .heading > label > .primary-label { display: none; }
+body.ltr .field > .heading > label .t9n-indicator { margin-left: 7px; }
 
-.field > .heading > label > .site { display: inline-block; border-radius: 4px; padding: 0 4px; font-size: 11px; color: #7b8793; background-color: #e4edf6; }
-
-body.ltr .field > .heading > label > .site { margin-left: 7px; }
-
-body.rtl .field > .heading > label > .site { margin-right: 7px; }
+body.rtl .field > .heading > label .t9n-indicator { margin-right: 7px; }
 
 .field > .notice, .field > .warning { margin: 5px 0 0; }
 

@@ -126,6 +126,8 @@ class Revisions extends Component
         ]);
         $this->trigger(self::EVENT_BEFORE_CREATE_REVISION, $event);
         $notes = $event->revisionNotes;
+        $creatorId = $event->creatorId;
+        $source = $event->source;
 
         $elementsService = Craft::$app->getElements();
 

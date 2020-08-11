@@ -256,7 +256,7 @@ class Request extends \yii\web\Request
         }
 
         // Determine the request path
-        $this->_path = $this->_normalizePath($this->getFullUri());
+        $this->_path = $this->_normalizePath($this->getFullPath());
 
         // Trim off any leading path segments that are part of the base URL
         if ($this->_path !== '' && isset($baseUrl) && ($basePath = parse_url($baseUrl, PHP_URL_PATH)) !== null) {
