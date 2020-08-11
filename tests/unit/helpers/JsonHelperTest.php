@@ -64,6 +64,7 @@ class JsonHelperTest extends Test
     {
         return [
             [true, '{"foo":true}'],
+            [true, "{\n  \"foo\": true\n}"],
             [false, '{"foo":true'],
         ];
     }
