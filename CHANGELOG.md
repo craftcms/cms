@@ -16,6 +16,7 @@
 - Fixed a bug where Craft was routing requests based on the full requested URI rather than just the URI segments that came after `index.php`. ([#6579](https://github.com/craftcms/cms/issues/6579))
 - Fixed a bug where `data-target-prefix` attributes that specified a class name were getting namespaced. ([#6604](https://github.com/craftcms/cms/issues/6604))
 - Fixed a bug where `craft\helpers\Json::isJsonObject()` was returning `false` if the JSON string spanned multiple lines.
+- Fixed a bug where the `limit` param wasn’t working when applied to eager-loaded elements. ([#6596](https://github.com/craftcms/cms/issues/6596))
 
 ## 3.5.2 - 2020-08-09
 
