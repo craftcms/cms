@@ -1,7 +1,7 @@
 
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.5.3 - 2020-08-11
 
 ### Added
 - Fields in the control panel now always display their attribute without needing to press the <kbd>Option</kbd>/<kbd>ALT</kbd> key, when Dev Mode is enabled, and they will be copied to the clipboard when clicked on. ([#6532](https://github.com/craftcms/cms/issues/6532))
