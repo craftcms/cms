@@ -3,6 +3,9 @@
 
 ## Unreleased
 
+### Added
+- Edit Category pages now support a <kbd>Shift</kbd> + <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>S</kbd> keyboard shortcut for saving the category and creating a new one.
+
 ### Fixed
 - Fixed an infinite redirect that could occur if Craft was installed within a subdirectory of the webroot. ([#6579](https://github.com/craftcms/cms/issues/6579))
 - Fixed a bug where all Title fields within Quick Post widgets had the same input ID.
