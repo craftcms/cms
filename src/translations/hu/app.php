@@ -1067,7 +1067,7 @@ Amennyiben nem neked szól ez a levél, egyszerűen csak hagyd figyelmen kívül
     'Server' => 'Szerver',
     'Size' => 'Méret',
     'Connecting to CraftCMS.com…' => 'Kapcsolódás a CraftCMS.com webhelyhez…',
-    'Formatting Locale' => 'Formatting Locale',
+    'Formatting Locale' => 'Helyi formázás',
     'Apply File Changes' => 'Apply File Changes',
     'GraphQL Tokens' => 'GraphQL tokenek',
     'Release job' => 'Feladat feloldása',
