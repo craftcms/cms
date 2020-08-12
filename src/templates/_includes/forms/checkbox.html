@@ -9,7 +9,7 @@
         (toggle ?? reverseToggle ?? false) ? 'fieldtoggle',
         'checkbox'
     ]|filter),
-    'checked': checked ?? false,
+    'checked': (checked ?? false) and checked,
     'autofocus': (autofocus ?? false) and not craft.app.request.isMobileBrowser(true),
     'disabled': disabled ?? false,
     'data': {
