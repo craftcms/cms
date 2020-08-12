@@ -1,6 +1,11 @@
 
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed an infinite redirect that could occur if Craft was installed within a subdirectory of the webroot. ([#6579](https://github.com/craftcms/cms/issues/6579))
+
 ## 3.5.3 - 2020-08-11
 
 ### Added
