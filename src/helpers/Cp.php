@@ -32,7 +32,7 @@ class Cp
      */
     public static function alerts(string $path = null, bool $fetch = false): array
     {
-        $alerts = ['WTF'];
+        $alerts = [];
         $user = Craft::$app->getUser()->getIdentity();
         $generalConfig = Craft::$app->getConfig()->getGeneral();
 
