@@ -247,12 +247,6 @@ class Request extends \yii\web\Request
                         $this->_isCpRequest = true;
                         $baseUrl = $testUrl;
                         $site = null;
-
-                        // If the path begins with the CP trigger, remove it
-                        if ($generalConfig->cpTrigger && strpos($this->_path . '/', $generalConfig->cpTrigger . '/') === 0) {
-                            $this->_path = ltrim(substr($this->_path, strlen($generalConfig->cpTrigger)), '/');
-                        }
-
                         break;
                     }
                 }
@@ -262,6 +256,11 @@ class Request extends \yii\web\Request
         // Set the current site for the request
         if (isset($sitesService)) {
             $sitesService->setCurrentSite($site ?? null);
+        }
+
+        // If this is a CP request and the path begins with the CP trigger, remove it
+        if ($this->_isCpRequest && $generalConfig->cpTrigger && strpos($this->_path . '/', $generalConfig->cpTrigger . '/') === 0) {
+            $this->_path = ltrim(substr($this->_path, strlen($generalConfig->cpTrigger)), '/');
         }
 
         // Trim off any leading path segments that are part of the base URL
