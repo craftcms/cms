@@ -1,4 +1,3 @@
-
 # Release Notes for Craft CMS 3.x
 
 ## Unreleased
