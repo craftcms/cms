@@ -17,6 +17,7 @@
 ### Fixed
 - Fixed an infinite redirect that could occur if Craft was installed within a subdirectory of the webroot. ([#6579](https://github.com/craftcms/cms/issues/6579))
 - Fixed a bug where all Title fields within Quick Post widgets had the same input ID.
+- Fixed a bug where Title fields weren’t showing change status badges when editing an entry draft.
 
 ## 3.5.3 - 2020-08-11
 
