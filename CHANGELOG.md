@@ -10,6 +10,7 @@
 
 ### Changed
 - All admin-only user preferences are now grouped under a single “Development” heading.
+- Improved system performance.
 - The `_includes/forms/checkbox.html` control panel template now supports an `inputAttributes` variable.
 - The `_includes/forms/field.html` control panel template now supports overriding the heading HTML via a `heading` block.
 - `craft\helpers\Db::idByUid()` now has a `$db` argument.
