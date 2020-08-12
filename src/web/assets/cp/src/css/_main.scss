@@ -1271,6 +1271,10 @@ ul.icons {
     outline: none;
   }
 
+  &.light input {
+    color: $mediumTextColor;
+  }
+
   span {
     opacity: 0;
     padding: 0;

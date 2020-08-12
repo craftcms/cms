@@ -639,6 +639,8 @@ body.rtl .copytext .btn { border-top-right-radius: 0; border-bottom-right-radius
 
 .copytextbtn input { border: 0; padding: 0; height: 32px; box-shadow: none; background-color: transparent; border: none; cursor: pointer; color: #3f4d5a; text-align: center; outline: none; }
 
+.copytextbtn.light input { color: #7b8793; }
+
 .copytextbtn span { opacity: 0; padding: 0; width: 13px; background: none; -o-transition: opacity linear 100ms, margin-left linear 100ms, margin-right linear 100ms; transition: opacity linear 100ms, margin-left linear 100ms, margin-right linear 100ms; }
 
 body.ltr .copytextbtn span { margin-left: -13px; }
