@@ -51,6 +51,16 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
     /**
      * @inheritdoc
      */
+    public function init()
+    {
+        parent::init();
+
+        $this->default = (bool)$this->default;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getContentColumnType(): string
     {
         return Schema::TYPE_BOOLEAN;
