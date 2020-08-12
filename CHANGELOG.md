@@ -5,6 +5,13 @@
 
 ### Added
 - Edit Category pages now support a <kbd>Shift</kbd> + <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>S</kbd> keyboard shortcut for saving the category and creating a new one.
+- Added `craft\services\AssetTransforms::$db`. ([#6549](https://github.com/craftcms/cms/issues/6549))
+
+### Changed
+- `craft\helpers\Db::idByUid()` now has a `$db` argument.
+- `craft\helpers\Db::idsByUids()` now has a `$db` argument.
+- `craft\helpers\Db::uidById()` now has a `$db` argument.
+- `craft\helpers\Db::uidsByIds()` now has a `$db` argument.
 
 ### Fixed
 - Fixed an infinite redirect that could occur if Craft was installed within a subdirectory of the webroot. ([#6579](https://github.com/craftcms/cms/issues/6579))
