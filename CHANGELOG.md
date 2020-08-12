@@ -3,12 +3,15 @@
 ## Unreleased
 
 ### Added
+- It’s now possible to hide field labels from within field layout designers. ([#6608](https://github.com/craftcms/cms/issues/6608)) 
 - Edit Category pages now support a <kbd>Shift</kbd> + <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>S</kbd> keyboard shortcut for saving the category and creating a new one.
 - Added the “Show field handles in edit forms” admin user preference. ([#6610](https://github.com/craftcms/cms/issues/6610))
 - Added `craft\services\AssetTransforms::$db`. ([#6549](https://github.com/craftcms/cms/issues/6549))
 
 ### Changed
 - All admin-only user preferences are now grouped under a single “Development” heading.
+- The `_includes/forms/checkbox.html` control panel template now supports an `inputAttributes` variable.
+- The `_includes/forms/field.html` control panel template now supports overriding the heading HTML via a `heading` block.
 - `craft\helpers\Db::idByUid()` now has a `$db` argument.
 - `craft\helpers\Db::idsByUids()` now has a `$db` argument.
 - `craft\helpers\Db::uidById()` now has a `$db` argument.
