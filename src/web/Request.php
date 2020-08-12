@@ -194,6 +194,9 @@ class Request extends \yii\web\Request
             $this->isWebAliasSetDynamically = true;
         }
 
+        // Determine the request path
+        $this->_path = $this->_normalizePath($this->getFullPath());
+
         // Figure out whether a site or the control panel were requested
         // ---------------------------------------------------------------------
 
@@ -244,6 +247,12 @@ class Request extends \yii\web\Request
                         $this->_isCpRequest = true;
                         $baseUrl = $testUrl;
                         $site = null;
+
+                        // If the path begins with the CP trigger, remove it
+                        if ($generalConfig->cpTrigger && strpos($this->_path . '/', $generalConfig->cpTrigger . '/') === 0) {
+                            $this->_path = ltrim(substr($this->_path, strlen($generalConfig->cpTrigger)), '/');
+                        }
+
                         break;
                     }
                 }
@@ -254,9 +263,6 @@ class Request extends \yii\web\Request
         if (isset($sitesService)) {
             $sitesService->setCurrentSite($site ?? null);
         }
-
-        // Determine the request path
-        $this->_path = $this->_normalizePath($this->getFullPath());
 
         // Trim off any leading path segments that are part of the base URL
         if ($this->_path !== '' && isset($baseUrl) && ($basePath = parse_url($baseUrl, PHP_URL_PATH)) !== null) {
