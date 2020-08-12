@@ -256,7 +256,7 @@
                 {% if user.admin %}
                     <fieldset>
                         {% embed '_includes/forms/field' with {
-                            label: 'Debug Toolbar'|t('app'),
+                            label: 'Development'|t('app'),
                         } %}
                             {% block input %}
                                 {% from '_includes/forms' import checkboxField %}
@@ -278,16 +278,6 @@
                                     id: 'profileTemplates',
                                     checked: user.getPreference('profileTemplates')
                                 }) }}
-                            {% endblock %}
-                        {% endembed %}
-                    </fieldset>
-
-                    <fieldset>
-                        {% embed '_includes/forms/field' with {
-                            label: 'Exception Views'|t('app'),
-                        } %}
-                            {% block input %}
-                                {% from '_includes/forms' import checkboxField %}
                                 {{ checkboxField({
                                     label: 'Show full exception views when Dev Mode is disabled'|t('app'),
                                     name: 'showExceptionView',

@@ -8,6 +8,7 @@
 - Added `craft\services\AssetTransforms::$db`. ([#6549](https://github.com/craftcms/cms/issues/6549))
 
 ### Changed
+- All admin-only user preferences are now grouped under a single “Development” heading.
 - `craft\helpers\Db::idByUid()` now has a `$db` argument.
 - `craft\helpers\Db::idsByUids()` now has a `$db` argument.
 - `craft\helpers\Db::uidById()` now has a `$db` argument.
