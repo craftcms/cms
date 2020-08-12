@@ -61,7 +61,7 @@
                             title: translationDescription ?? 'This field is translatable.'|t('app'),
                         }) }}
                     {% endif -%}
-                    {% if devMode and (attribute ?? false) %}
+                    {% if (attribute ?? false) and (currentUser.admin ?? false) and currentUser.getPreference('showFieldHandles') %}
                         <div class="flex-grow"></div>
                         {% include '_includes/forms/copytextbtn' with {
                             id: "#{fieldId}-attribute",

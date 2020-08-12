@@ -261,6 +261,12 @@
                             {% block input %}
                                 {% from '_includes/forms' import checkboxField %}
                                 {{ checkboxField({
+                                    label: 'Show field handles in edit forms'|t('app'),
+                                    name: 'showFieldHandles',
+                                    id: 'showFieldHandles',
+                                    checked: user.getPreference('showFieldHandles')
+                                }) }}
+                                {{ checkboxField({
                                     label: "Show the debug toolbar on the front end"|t('app'),
                                     name: 'enableDebugToolbarForSite',
                                     id: 'enableDebugToolbarForSite',

@@ -5,6 +5,7 @@
 
 ### Added
 - Edit Category pages now support a <kbd>Shift</kbd> + <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>S</kbd> keyboard shortcut for saving the category and creating a new one.
+- Added the “Show field handles in edit forms” admin user preference. ([#6610](https://github.com/craftcms/cms/issues/6610))
 - Added `craft\services\AssetTransforms::$db`. ([#6549](https://github.com/craftcms/cms/issues/6549))
 
 ### Changed

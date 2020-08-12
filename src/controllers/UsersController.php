@@ -1169,6 +1169,7 @@ class UsersController extends Controller
 
         if ($user->admin) {
             $preferences = array_merge($preferences, [
+                'showFieldHandles' => (bool)$this->request->getBodyParam('showFieldHandles', $user->getPreference('showFieldHandles')),
                 'enableDebugToolbarForSite' => (bool)$this->request->getBodyParam('enableDebugToolbarForSite', $user->getPreference('enableDebugToolbarForSite')),
                 'enableDebugToolbarForCp' => (bool)$this->request->getBodyParam('enableDebugToolbarForCp', $user->getPreference('enableDebugToolbarForCp')),
                 'showExceptionView' => (bool)$this->request->getBodyParam('showExceptionView', $user->getPreference('showExceptionView')),
