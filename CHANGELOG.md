@@ -21,6 +21,7 @@
 - `craft\helpers\Db::idsByUids()` now has a `$db` argument.
 - `craft\helpers\Db::uidById()` now has a `$db` argument.
 - `craft\helpers\Db::uidsByIds()` now has a `$db` argument.
+- `craft\models\FieldLayout::createForm()` now supports passing a `namespace` key into the `$config` argument, to namespace the tab contents.
 
 ### Fixed
 - Fixed an infinite redirect that could occur if Craft was installed within a subdirectory of the webroot. ([##6616](https://github.com/craftcms/cms/issues/6616))
