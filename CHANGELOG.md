@@ -26,6 +26,7 @@
 - Fixed a bug where all Title fields within Quick Post widgets had the same input ID.
 - Fixed a bug where Title fields weren’t showing change status badges when editing an entry draft.
 - Fixed an error that could occur when using the `formatDateTime` directive on system that did not have the `Intl` PHP extension installed. ([#6614](https://github.com/craftcms/cms/issues/6614))
+- Fixed a bug where template profiling was interfering with Twig’s ability to guess offending template lines in error reports.
 
 ## 3.5.3 - 2020-08-11
 
