@@ -2080,6 +2080,10 @@ body.rtl .field > .status-badge { right: -19px; }
 
 .field > .heading > label code { font-size: 1em !important; }
 
+body.ltr .field > .heading > label .info { margin-left: 5px; }
+
+body.rtl .field > .heading > label .info { margin-right: 5px; }
+
 .field > .heading > .t9n-indicator { color: #9aa5b1; }
 
 body.ltr .field > .heading > .t9n-indicator { margin-left: 7px; }

@@ -4127,6 +4127,10 @@ fieldset {
       code {
         font-size: 1em !important;
       }
+
+      .info {
+        @include margin-left(5px);
+      }
     }
 
     & > .t9n-indicator {
