@@ -29,7 +29,7 @@
 - Fixed an infinite redirect that could occur if Craft was installed within a subdirectory of the webroot. ([#6616](https://github.com/craftcms/cms/issues/6616))
 - Fixed a bug where all Title fields within Quick Post widgets had the same input ID.
 - Fixed a bug where Title fields weren’t showing change status badges when editing an entry draft.
-- Fixed an error that could occur when using the `formatDateTime` directive on system that did not have the `Intl` PHP extension installed. ([#6614](https://github.com/craftcms/cms/issues/6614))
+- Fixed an error that could occur when using the `formatDateTime` GraphQL directive on environments that didn’t have the `Intl` PHP extension installed. ([#6614](https://github.com/craftcms/cms/issues/6614))
 - Fixed a bug where template profiling was interfering with Twig’s ability to guess offending template lines in error reports.
 - Fixed a bug where soft-deleted categories and entries within Structure sections had two “Delete permanently” actions. ([#6619](https://github.com/craftcms/cms/issues/6619))
 - Fixed a bug where field handles were being displayed within element editor HUDs. ([#6620](https://github.com/craftcms/cms/issues/6620))
