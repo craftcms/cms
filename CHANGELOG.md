@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.5.4 - 2020-08-13
 
 ### Added
 - It’s now possible to hide field labels from within field layout designers. ([#6608](https://github.com/craftcms/cms/issues/6608))
