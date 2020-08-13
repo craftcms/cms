@@ -1,10 +1,43 @@
-
 # Release Notes for Craft CMS 3.x
+
+## 3.5.4 - 2020-08-13
+
+### Added
+- It’s now possible to hide field labels from within field layout designers. ([#6608](https://github.com/craftcms/cms/issues/6608))
+- Lightswitch fields now have an “ON Label” and “OFF Label” settings. ([#3741](https://github.com/craftcms/cms/issues/3741))
+- Edit Category pages now support a <kbd>Shift</kbd> + <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>S</kbd> keyboard shortcut for saving the category and creating a new one.
+- Added the “Show field handles in edit forms” admin user preference. ([#6610](https://github.com/craftcms/cms/issues/6610))
+- Added `craft\fields\Lightswitch::$offLabel`.
+- Added `craft\fields\Lightswitch::$onLabel`.
+- Added `craft\services\AssetTransforms::$db`. ([#6549](https://github.com/craftcms/cms/issues/6549))
+
+### Changed
+- All admin-only user preferences are now grouped under a single “Development” heading.
+- Improved system performance.
+- Stack traces within exception views now show source Twig templates rather than the compiled PHP classes.
+- The “Enabled everywhere” entry status label has been renamed to “Enabled”. ([#6623](https://github.com/craftcms/cms/issues/6623))
+- `error` is now a reserved handle. ([#6626](https://github.com/craftcms/cms/issues/6626))
+- The `_includes/forms/checkbox.html` control panel template now supports an `inputAttributes` variable.
+- The `_includes/forms/field.html` control panel template now supports overriding the heading HTML via a `heading` block.
+- `craft\helpers\Db::idByUid()` now has a `$db` argument.
+- `craft\helpers\Db::idsByUids()` now has a `$db` argument.
+- `craft\helpers\Db::uidById()` now has a `$db` argument.
+- `craft\helpers\Db::uidsByIds()` now has a `$db` argument.
+- `craft\models\FieldLayout::createForm()` now supports passing a `namespace` key into the `$config` argument, to namespace the tab contents.
+
+### Fixed
+- Fixed an infinite redirect that could occur if Craft was installed within a subdirectory of the webroot. ([##6616](https://github.com/craftcms/cms/issues/6616))
+- Fixed a bug where all Title fields within Quick Post widgets had the same input ID.
+- Fixed a bug where Title fields weren’t showing change status badges when editing an entry draft.
+- Fixed an error that could occur when using the `formatDateTime` directive on system that did not have the `Intl` PHP extension installed. ([#6614](https://github.com/craftcms/cms/issues/6614))
+- Fixed a bug where template profiling was interfering with Twig’s ability to guess offending template lines in error reports.
+- Fixed a bug where soft-deleted categories and entries within Structure sections had two “Delete permanently” actions. ([#6619](https://github.com/craftcms/cms/issues/6619))
+- Fixed a bug where field handles were being displayed within element editor HUDs. ([#6620](https://github.com/craftcms/cms/issues/6620))
 
 ## 3.5.3 - 2020-08-11
 
 ### Added
-- Fields in the control panel now always display their attribute without needing to press the <kbd>Option</kbd>/<kbd>ALT</kbd> key, when Dev Mode is enabled, and they will be copied to the clipboard when clicked on. ([#6532](https://github.com/craftcms/cms/issues/6532))
+- Fields in the control panel now always display their handle without needing to press the <kbd>Option</kbd>/<kbd>ALT</kbd> key, when Dev Mode is enabled, and they will be copied to the clipboard when clicked on. ([#6532](https://github.com/craftcms/cms/issues/6532))
 - Added `craft\helpers\Gql::prepareTransformArguments()`.
 - Added the `_includes/forms/copytextbtn.html` control panel template.
 
