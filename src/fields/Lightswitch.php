@@ -49,6 +49,12 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
     public $default = false;
 
     /**
+     * @var string|null The label text to display beside the lightswitch
+     * @since 3.5.4
+     */
+    public $label;
+
+    /**
      * @inheritdoc
      */
     public function init()
@@ -56,6 +62,9 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
         parent::init();
 
         $this->default = (bool)$this->default;
+        if ($this->label === '') {
+            $this->label = null;
+        }
     }
 
     /**
@@ -71,13 +80,24 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
      */
     public function getSettingsHtml()
     {
-        return Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'lightswitchField',
-            [
+        $view = Craft::$app->getView();
+
+        return
+            $view->renderTemplateMacro('_includes/forms', 'lightswitchField', [
                 [
                     'label' => Craft::t('app', 'Default Value'),
                     'id' => 'default',
                     'name' => 'default',
                     'on' => $this->default,
+                ]
+            ]) .
+            $view->renderTemplateMacro('_includes/forms', 'textField', [
+                [
+                    'label' => Craft::t('app', 'Input Label'),
+                    'instructions' => Craft::t('app', 'Label text that should be displayed beside the lightswitch input.'),
+                    'id' => 'label',
+                    'name' => 'label',
+                    'value' => $this->label,
                 ]
             ]);
     }
@@ -95,6 +115,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
                 'labelId' => $id . '-label',
                 'name' => $this->handle,
                 'on' => (bool)$value,
+                'label' => $this->label,
             ]);
     }
 
