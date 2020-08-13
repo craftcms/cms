@@ -4,7 +4,7 @@
 
 ### Added
 - It’s now possible to hide field labels from within field layout designers. ([#6608](https://github.com/craftcms/cms/issues/6608))
-- Lightswitch fields now have an “ON Label” and “OFF Label” settings. ([#3741](https://github.com/craftcms/cms/issues/3741))
+- Lightswitch fields now have an “ON Label” and “OFF Label” settings. ([#3741](https://github.com/craftcms/cms/issues/3741))
 - Edit Category pages now support a <kbd>Shift</kbd> + <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>S</kbd> keyboard shortcut for saving the category and creating a new one.
 - Added the “Show field handles in edit forms” admin user preference. ([#6610](https://github.com/craftcms/cms/issues/6610))
 - Added `craft\fields\Lightswitch::$offLabel`.
