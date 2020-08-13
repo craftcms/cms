@@ -1568,6 +1568,8 @@ body.rtl .meta > .field > .heading, body.rtl .meta > .data > .heading, body.rtl 
 
 .meta > .field > .heading, .meta > .flex-fields > .field > .heading { padding: 14px 0; }
 
+.meta > .field > .heading > .copytextbtn, .meta > .flex-fields > .field > .heading > .copytextbtn { display: none; }
+
 .meta > .data > .heading, .meta > .flex-fields > .data > .heading { padding: 7px 0; }
 
 .meta > .field > .heading > label, .meta > .data > .heading, .meta > .flex-fields > .field > .heading > label, .meta > .flex-fields > .data > .heading { color: #7b8793; }

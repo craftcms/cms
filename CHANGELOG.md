@@ -30,11 +30,12 @@
 - Fixed an error that could occur when using the `formatDateTime` directive on system that did not have the `Intl` PHP extension installed. ([#6614](https://github.com/craftcms/cms/issues/6614))
 - Fixed a bug where template profiling was interfering with Twig’s ability to guess offending template lines in error reports.
 - Fixed a bug where soft-deleted categories and entries within Structure sections had two “Delete permanently” actions. ([#6619](https://github.com/craftcms/cms/issues/6619))
+- Fixed a bug where field handles were being displayed within element editor HUDs. ([#6620](https://github.com/craftcms/cms/issues/6620))
 
 ## 3.5.3 - 2020-08-11
 
 ### Added
-- Fields in the control panel now always display their attribute without needing to press the <kbd>Option</kbd>/<kbd>ALT</kbd> key, when Dev Mode is enabled, and they will be copied to the clipboard when clicked on. ([#6532](https://github.com/craftcms/cms/issues/6532))
+- Fields in the control panel now always display their handle without needing to press the <kbd>Option</kbd>/<kbd>ALT</kbd> key, when Dev Mode is enabled, and they will be copied to the clipboard when clicked on. ([#6532](https://github.com/craftcms/cms/issues/6532))
 - Added `craft\helpers\Gql::prepareTransformArguments()`.
 - Added the `_includes/forms/copytextbtn.html` control panel template.
 

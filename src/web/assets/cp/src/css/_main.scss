@@ -3014,6 +3014,10 @@ ul.tree,
 
     & > .field > .heading {
       padding: 14px 0;
+
+      & > .copytextbtn {
+        display: none;
+      }
     }
 
     & > .data > .heading {
