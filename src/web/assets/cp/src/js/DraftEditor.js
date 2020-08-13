@@ -221,7 +221,7 @@ Craft.DraftEditor = Garnish.Base.extend(
             $enabledForSiteField.addClass('nested');
             var $globalField = Craft.ui.createLightswitchField({
                 id: 'enabled',
-                label: Craft.t('app', 'Enabled everywhere'),
+                label: Craft.t('app', 'Enabled'),
                 name: 'enabled',
             }).insertBefore($enabledForSiteField);
             $globalField.find('label').css('font-weight', 'bold');
