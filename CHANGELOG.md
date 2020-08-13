@@ -26,7 +26,7 @@
 - `craft\models\FieldLayout::createForm()` now supports passing a `namespace` key into the `$config` argument, to namespace the tab contents.
 
 ### Fixed
-- Fixed an infinite redirect that could occur if Craft was installed within a subdirectory of the webroot. ([##6616](https://github.com/craftcms/cms/issues/6616))
+- Fixed an infinite redirect that could occur if Craft was installed within a subdirectory of the webroot. ([#6616](https://github.com/craftcms/cms/issues/6616))
 - Fixed a bug where all Title fields within Quick Post widgets had the same input ID.
 - Fixed a bug where Title fields weren’t showing change status badges when editing an entry draft.
 - Fixed an error that could occur when using the `formatDateTime` directive on system that did not have the `Intl` PHP extension installed. ([#6614](https://github.com/craftcms/cms/issues/6614))
