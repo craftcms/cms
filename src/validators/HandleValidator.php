@@ -35,6 +35,7 @@ class HandleValidator extends Validator
         'content',
         'dateCreated',
         'dateUpdated',
+        'errors',
         'false',
         'fields',
         'handle',

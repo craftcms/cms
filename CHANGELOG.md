@@ -16,6 +16,7 @@
 - Improved system performance.
 - Stack traces within exception views now show source Twig templates rather than the compiled PHP classes.
 - The “Enabled everywhere” entry status label has been renamed to “Enabled”. ([#6623](https://github.com/craftcms/cms/issues/6623))
+- `error` is now a reserved handle. ([#6626](https://github.com/craftcms/cms/issues/6626))
 - The `_includes/forms/checkbox.html` control panel template now supports an `inputAttributes` variable.
 - The `_includes/forms/field.html` control panel template now supports overriding the heading HTML via a `heading` block.
 - `craft\helpers\Db::idByUid()` now has a `$db` argument.
