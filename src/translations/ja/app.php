@@ -448,6 +448,7 @@ return [
     'Prefix must be 5 or less characters long.' => 'プレフィックスは 5 文字以内である必要があります。',
     'Prev' => '前',
     'Preview file' => 'ファイルをプレビュー',
+    'Publish' => 'Publish',
     'Publish live changes' => 'ライブの変更を発表する',
     'Publish live changes for other authors’ entries' => '他の作成者の入力のためライブを変更する',
     'Publish other authors’ drafts' => '他の投稿者の下書きを投稿する',
