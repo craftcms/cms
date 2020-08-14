@@ -1588,16 +1588,6 @@ body.rtl .meta > .field > .heading, body.rtl .meta > .data > .heading, body.rtl 
 
 .meta > .field > .heading > label, .meta > .flex-fields > .field > .heading > label { font-weight: normal; }
 
-.meta > .field > .heading > label.required:after, .meta > .flex-fields > .field > .heading > label.required:after { position: absolute; top: 6px; }
-
-body.ltr .meta > .field > .heading > label.required:after, body.ltr .meta > .flex-fields > .field > .heading > label.required:after { left: -13px; }
-
-body.rtl .meta > .field > .heading > label.required:after, body.rtl .meta > .flex-fields > .field > .heading > label.required:after { right: -13px; }
-
-body.ltr .meta > .field > .heading > label.required:after, body.ltr .meta > .flex-fields > .field > .heading > label.required:after { margin-left: 0; }
-
-body.rtl .meta > .field > .heading > label.required:after, body.rtl .meta > .flex-fields > .field > .heading > label.required:after { margin-right: 0; }
-
 .meta > .field > .input > .text, .meta > .field > .input > .flex > .text, .meta > .field > .input > .flex > .textwrapper > .text, .meta > .field > .input > .datewrapper > .text, .meta > .field > .input > .timewrapper > .text, .meta > .field > .input > .datetimewrapper > .datewrapper > .text, .meta > .field > .input > .datetimewrapper > .timewrapper > .text, .meta > .flex-fields > .field > .input > .text, .meta > .flex-fields > .field > .input > .flex > .text, .meta > .flex-fields > .field > .input > .flex > .textwrapper > .text, .meta > .flex-fields > .field > .input > .datewrapper > .text, .meta > .flex-fields > .field > .input > .timewrapper > .text, .meta > .flex-fields > .field > .input > .datetimewrapper > .datewrapper > .text, .meta > .flex-fields > .field > .input > .datetimewrapper > .timewrapper > .text { display: block; margin: -7px 0; padding: 14px 0; border-radius: 0; box-shadow: none; background-color: transparent; border: none !important; }
 
 .meta > .field > .input > .datewrapper, .meta > .field > .input > .timewrapper, .meta > .field > .input > .datetimewrapper > .datewrapper, .meta > .field > .input > .datetimewrapper > .timewrapper, .meta > .flex-fields > .field > .input > .datewrapper, .meta > .flex-fields > .field > .input > .timewrapper, .meta > .flex-fields > .field > .input > .datetimewrapper > .datewrapper, .meta > .flex-fields > .field > .input > .datetimewrapper > .timewrapper { background-color: transparent; }
@@ -1784,7 +1774,7 @@ body.rtl .preview-thumb-container .buttons { left: 10px; }
 
 .hud .elementeditor .main { padding: 8px 0; }
 
-.hud .elementeditor .main .meta .preview-thumb-container { margin: -8px 0 8px; }
+.hud .elementeditor .main .meta .preview-thumb-container { margin: -8px -24px 8px; }
 
 .hud .elementeditor .main .meta .field { padding-left: 24px; padding-right: 24px; }
 

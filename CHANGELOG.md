@@ -5,6 +5,9 @@
 ### Changed
 - Tightened up the top control panel headers.
 
+### Fixed
+- Fixed a couple styling issues with element editor HUDs.
+
 ## 3.5.4 - 2020-08-13
 
 ### Added
