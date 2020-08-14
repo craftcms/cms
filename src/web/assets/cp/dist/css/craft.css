@@ -1578,7 +1578,7 @@ body.rtl .meta > .field > .heading, body.rtl .meta > .data > .heading, body.rtl 
 
 .meta > .field.lightswitch-field > .input, .meta > .flex-fields > .field.lightswitch-field > .input { -webkit-flex: 0; flex: 0; width: auto; }
 
-.meta > .field.has-errors, .meta > .flex-fields > .field.has-errors { margin: 0 -1px !important; border: 1px solid #EF4E4E !important; }
+.meta > .field.has-errors, .meta > .flex-fields > .field.has-errors { border: 1px solid #EF4E4E !important; }
 
 .meta > .field.has-errors:first-child, .meta > .flex-fields > .field.has-errors:first-child { border-top-left-radius: 5px; border-top-right-radius: 5px; }
 
@@ -1608,7 +1608,7 @@ body.rtl .meta > .field > .input > .datetimewrapper > .clear-btn, body.rtl .meta
 
 .meta > .field > ul.errors, .meta > .flex-fields > .field > ul.errors { margin: 0; padding: 0 0 6px; width: 100%; list-style-type: none; }
 
-.meta > .field + .field, .meta > .field + .flex-fields, .meta > .flex-fields + .flex-fields, .meta > .flex-fields + .field, .meta > .flex-fields > .field + .field, .meta > .flex-fields > .field + .flex-fields, .meta > .flex-fields > .flex-fields + .flex-fields, .meta > .flex-fields > .flex-fields + .field { border-top: 1px solid rgba(51, 64, 77, 0.1); }
+.meta > .field:not(:first-child), .meta > .flex-fields + .field { border-top: 1px solid rgba(51, 64, 77, 0.1); }
 
 .meta > .flex-fields h2, .meta > .flex-fields blockquote.note { margin: 0 -24px !important; padding: 14px 24px; background-color: #ebf2fa; }
 
@@ -1777,6 +1777,8 @@ body.rtl .preview-thumb-container .buttons { left: 10px; }
 .hud .elementeditor .main .meta .preview-thumb-container { margin: -8px -24px 8px; }
 
 .hud .elementeditor .main .meta .field { padding-left: 24px; padding-right: 24px; }
+
+.hud .elementeditor .main .meta .field.has-errors { border-radius: 0; }
 
 /* element selector modals */
 .elementselectormodal { padding-bottom: 62px; -webkit-user-select: none; user-select: none; }
@@ -3150,8 +3152,6 @@ body.rtl #details { padding-right: 14px; }
 #details .meta > .field:last-child, #details .meta > .data:last-child { border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; }
 
 #details .meta > .field > .heading > label, #details .meta > .field > .heading, #details .meta > .data > .heading > label, #details .meta > .data > .heading { color: #515f6c; }
-
-#details .meta > .field.has-errors { margin: 0 -24px !important; padding: 0 24px; }
 
 #details .meta > .field .status-badge { top: calc(50% - 8px); }
 

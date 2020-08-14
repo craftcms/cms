@@ -3089,7 +3089,7 @@ abstract class Element extends Component implements ElementInterface
             return '';
         }
 
-        $html = Html::hiddenInput('fieldLayoutId', $fieldLayout->id);
+        $html = '';
 
         foreach ($fieldLayout->getTabs() as $tab) {
             foreach ($tab->elements as $element) {
@@ -3098,6 +3098,8 @@ abstract class Element extends Component implements ElementInterface
                 }
             }
         }
+
+        $html .= Html::hiddenInput('fieldLayoutId', $fieldLayout->id);
 
         return $html;
     }

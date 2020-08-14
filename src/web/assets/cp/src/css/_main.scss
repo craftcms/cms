@@ -2966,6 +2966,7 @@ ul.tree,
     & > .field,
     & > .data {
       display: flex;
+      flex-warp: wrap; // for error lists
       justify-content: space-between;
       align-items: center;
       flex-wrap: nowrap;
@@ -3042,7 +3043,6 @@ ul.tree,
 
     & > .field {
       &.has-errors {
-        margin: 0 -1px !important;
         border: 1px solid $errorColor !important;
 
         &:first-child {
@@ -3123,13 +3123,11 @@ ul.tree,
         list-style-type: none;
       }
     }
+  }
 
-    & > .field + .field,
-    & > .field + .flex-fields,
-    & > .flex-fields + .flex-fields,
-    & > .flex-fields + .field {
-      border-top: 1px solid $hairlineColor;
-    }
+  & > .field:not(:first-child),
+  & > .flex-fields + .field {
+    border-top: 1px solid $hairlineColor;
   }
 
   & > .flex-fields {
@@ -3526,6 +3524,10 @@ ul.tree,
       .field {
         padding-left: 24px;
         padding-right: 24px;
+
+        &.has-errors {
+          border-radius: 0;
+        }
       }
     }
   }

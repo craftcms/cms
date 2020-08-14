@@ -1026,10 +1026,6 @@ $toolbarIconColor: darken($inputColor, 10%);
         color: $grey600;
       }
     }
-    & > .field.has-errors {
-      margin: 0 -24px !important;
-      padding: 0 24px;
-    }
 
     & > .field {
       .status-badge {
