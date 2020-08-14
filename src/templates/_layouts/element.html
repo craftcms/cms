@@ -71,9 +71,9 @@
 
 {# If this is an unsaved draft, then we should only show status toggles if the
    user actually has permission to publish chanegs #}
-{% set showStatusToggles = element.hasStatuses() and
-    (not isUnsavedDraft or canUpdateSource) and
-    (showStatusToggles ?? true) %}
+{% set showStatusToggles = (showStatusToggles ?? true) and
+    element.hasStatuses() and
+    (not isUnsavedDraft or canUpdateSource) %}
 
 {% if not isDraft and not canUpdateSource %}
     {% set saveShortcut = false %}
