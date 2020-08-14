@@ -7,6 +7,7 @@ Craft.ui =
                 attr: {
                     'class': 'text',
                     type: (config.type || 'text'),
+                    inputmode: config.inputmode,
                     id: config.id,
                     size: config.size,
                     name: config.name,

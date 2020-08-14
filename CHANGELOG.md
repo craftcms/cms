@@ -3,7 +3,11 @@
 ## Unreleased
 
 ### Changed
+- Email fields now set `inputmode="email"` on their input.
+- URL fields now set `inputmode="url"` on their input.
+- Number fields now set `inputmode="numeric"` or `inputmode="decimal"` on their input, depending on whether they allow decimals.
 - Tightened up the top control panel headers.
+- The `_includes/forms/text.html` control panel template now supports passing an `inputmode` variable.
 
 ### Fixed
 - Fixed a couple styling issues with element editor HUDs.

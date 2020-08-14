@@ -107,6 +107,7 @@ class Url extends Field implements PreviewableFieldInterface
             'type' => 'url',
             'id' => $this->handle,
             'name' => $this->handle,
+            'inputmode' => 'url',
             'placeholder' => Craft::t('site', $this->placeholder),
             'value' => $value,
         ]);
