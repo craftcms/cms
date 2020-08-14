@@ -88,7 +88,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   grid-gap: 10px;
   padding: 0 10px;
   position: relative;
-  flex: 0 0 60px;
+  flex: 0 0 50px;
   flex-direction: row;
   align-items: center;
   background-color: $systemInfoBgColor;
@@ -441,7 +441,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   background: $grey050;
 
   .flex {
-    height: 60px;
+    height: 50px;
     align-items: center;
   }
 }
@@ -622,8 +622,8 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   align-content: stretch;
   flex-wrap: nowrap;
   justify-content: space-between;
-  padding-top: 13px;
-  padding-bottom: 13px;
+  padding-top: 8px;
+  padding-bottom: 8px;
   position: relative;
   z-index: 2;
   width: calc(100vw - #{$sidebarWidth});
@@ -1250,7 +1250,7 @@ $toolbarIconColor: darken($inputColor, 10%);
   z-index: 100;
 
   header {
-    padding: 10px 24px;
+    padding: 8px 24px;
     background-color: $grey100;
     box-shadow: 0 1px 0 transparentize($grey700, 0.8);
     box-sizing: border-box;
@@ -1322,7 +1322,7 @@ $toolbarIconColor: darken($inputColor, 10%);
     justify-content: center;
 
     & + .lp-iframe-container {
-      padding-top: 54px;
+      padding-top: 50px;
     }
   }
 

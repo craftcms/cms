@@ -2782,7 +2782,7 @@ html { -webkit-text-size-adjust: 100%; }
 
 #global-sidebar .light { color: #7b8793; }
 
-#system-info { display: grid; grid-template-columns: 30px auto; grid-gap: 10px; padding: 0 10px; position: relative; -webkit-flex: 0 0 60px; flex: 0 0 60px; -webkit-flex-direction: row; flex-direction: row; -webkit-align-items: center; align-items: center; background-color: #29333d; }
+#system-info { display: grid; grid-template-columns: 30px auto; grid-gap: 10px; padding: 0 10px; position: relative; -webkit-flex: 0 0 50px; flex: 0 0 50px; -webkit-flex-direction: row; flex-direction: row; -webkit-align-items: center; align-items: center; background-color: #29333d; }
 
 #system-info:after { display: none; }
 
@@ -2928,7 +2928,7 @@ body.rtl #alerts li:before { margin: -1px 0 0 3px ; }
 
 #global-header { margin-bottom: 14px; background: #fff; box-shadow: 0 0 0 1px rgba(205, 216, 228, 0.25), 0 2px 12px rgba(205, 216, 228, 0.5); background: #f3f7fc; }
 
-#global-header .flex { height: 60px; -webkit-align-items: center; align-items: center; }
+#global-header .flex { height: 50px; -webkit-align-items: center; align-items: center; }
 
 #crumbs { display: -webkit-flex; display: flex; -webkit-flex-direction: row; flex-direction: row; -webkit-align-items: stretch; align-items: stretch; font-size: 13px; }
 
@@ -3007,7 +3007,7 @@ body.rtl #crumbs, body.rtl #header { padding-left: 24px; }
 
 #global-header .flex > *, #header .flex > * { margin-bottom: 0; }
 
-#header { display: -webkit-flex; display: flex; -webkit-align-items: flex-start; align-items: flex-start; -webkit-align-content: stretch; align-content: stretch; -webkit-flex-wrap: nowrap; flex-wrap: nowrap; -webkit-justify-content: space-between; justify-content: space-between; padding-top: 13px; padding-bottom: 13px; position: relative; z-index: 2; width: calc(100vw - 226px); box-sizing: border-box; background-color: rgba(154, 165, 177, 0); box-shadow: 0 1px 0 rgba(51, 64, 77, 0); -o-transition: background-color linear 100ms, box-shadow linear 100ms; transition: background-color linear 100ms, box-shadow linear 100ms; }
+#header { display: -webkit-flex; display: flex; -webkit-align-items: flex-start; align-items: flex-start; -webkit-align-content: stretch; align-content: stretch; -webkit-flex-wrap: nowrap; flex-wrap: nowrap; -webkit-justify-content: space-between; justify-content: space-between; padding-top: 8px; padding-bottom: 8px; position: relative; z-index: 2; width: calc(100vw - 226px); box-sizing: border-box; background-color: rgba(154, 165, 177, 0); box-shadow: 0 1px 0 rgba(51, 64, 77, 0); -o-transition: background-color linear 100ms, box-shadow linear 100ms; transition: background-color linear 100ms, box-shadow linear 100ms; }
 
 body.fixed-header #header { position: fixed; z-index: 12; top: 0; background-color: #e4edf6; box-shadow: inset 0 -1px 0 rgba(63, 77, 90, 0.1); }
 
@@ -3242,7 +3242,7 @@ body.rtl #settingsmenu ul li a:before { margin: 1px -22px 0 0 ; }
 
 .lp-editor-container, .lp-preview-container { position: fixed; top: 0; height: 100%; background-color: #fff; z-index: 100; }
 
-.lp-editor-container header, .lp-preview-container header { padding: 10px 24px; background-color: #e4edf6; box-shadow: 0 1px 0 rgba(63, 77, 90, 0.2); box-sizing: border-box; }
+.lp-editor-container header, .lp-preview-container header { padding: 8px 24px; background-color: #e4edf6; box-shadow: 0 1px 0 rgba(63, 77, 90, 0.2); box-sizing: border-box; }
 
 @supports ((-webkit-backdrop-filter: blur(10px)) or (backdrop-filter: blur(10px))) { .lp-editor-container header, .lp-preview-container header { position: absolute; z-index: 2; top: 0; left: 0; width: 100%; background-color: rgba(228, 237, 246, 0.75); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
   .lp-editor-container header + .lp-editor, .lp-preview-container header + .lp-editor { padding-top: 78px; } }
@@ -3267,7 +3267,7 @@ body.rtl .lp-editor-container .lp-draghandle { left: -2px; }
 
 .lp-preview-container .lp-preview-header { -webkit-justify-content: center; justify-content: center; }
 
-.lp-preview-container .lp-preview-header + .lp-iframe-container { padding-top: 54px; }
+.lp-preview-container .lp-preview-header + .lp-iframe-container { padding-top: 50px; }
 
 .lp-preview-container .lp-iframe-container { -webkit-flex: 1; flex: 1; overflow: auto; }
 
