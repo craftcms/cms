@@ -448,7 +448,7 @@ return [
     'Prefix must be 5 or less characters long.' => 'Prefiks må bestå av 5 eller færre tegn.',
     'Prev' => 'Forrige',
     'Preview file' => 'Forhåndsvis fil',
-    'Publish' => 'Publish',
+    'Publish' => 'Publiser',
     'Publish live changes' => 'Publiser sanntidsendringene',
     'Publish live changes for other authors’ entries' => 'Publiser sanntidsendringer for andre forfatteres artikler',
     'Publish other authors’ drafts' => 'Publiser andre forfatteres utkast',
