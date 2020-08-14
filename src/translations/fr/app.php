@@ -448,6 +448,7 @@ return [
     'Prefix must be 5 or less characters long.' => 'Le préfixe doit faire au moins 5 caractères de long.',
     'Prev' => 'Préc',
     'Preview file' => 'Afficher l’aperçu du fichier',
+    'Publish' => 'Publish',
     'Publish live changes' => 'Publier en "Live" des modifications',
     'Publish live changes for other authors’ entries' => 'Publier en "Live" des modifications sur des entrées d’autres auteurs',
     'Publish other authors’ drafts' => 'Publier les brouillons d’autres auteurs',
