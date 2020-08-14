@@ -448,7 +448,7 @@ return [
     'Prefix must be 5 or less characters long.' => 'Předpona musí být dlouhá 5 nebo méně znaků.',
     'Prev' => 'Předchozí',
     'Preview file' => 'Náhled souboru',
-    'Publish' => 'Publish',
+    'Publish' => 'Publikovat',
     'Publish live changes' => 'Publikovat změny živě',
     'Publish live changes for other authors’ entries' => 'Publikovat změny záznamů jiných autorů.',
     'Publish other authors’ drafts' => 'Publikovat koncepty jiných autorů',
