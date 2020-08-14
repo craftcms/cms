@@ -448,6 +448,7 @@ return [
     'Prefix must be 5 or less characters long.' => 'طول کاراکترهای پیشوند باید کمتر مساوی 5 کاراکتر باشد.',
     'Prev' => 'قبلی',
     'Preview file' => 'پیش نمایش فایل',
+    'Publish' => 'Publish',
     'Publish live changes' => 'انتشار تغییرات به صورت زنده',
     'Publish live changes for other authors’ entries' => 'انتشار تغییرات برای محتواهای دیگر نویسندگان به صورت زنده',
     'Publish other authors’ drafts' => 'انتشار پیش نویس های سایر نویسندگان',
