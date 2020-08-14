@@ -448,6 +448,7 @@ return [
     'Prefix must be 5 or less characters long.' => 'La extensión del prefijo no puede superar los 5 caracteres.',
     'Prev' => 'Anterior',
     'Preview file' => 'Vista preliminar de archivo',
+    'Publish' => 'Publish',
     'Publish live changes' => 'Publicar cambios en directo',
     'Publish live changes for other authors’ entries' => 'Publicar cambios en directo para las entradas de otros autores',
     'Publish other authors’ drafts' => 'Publicar borradores de otros autores',
