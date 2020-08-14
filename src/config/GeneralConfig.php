@@ -1385,11 +1385,13 @@ class GeneralConfig extends BaseObject
     public function getTestToEmailAddress(): array
     {
         $to = [];
-        foreach ((array)$this->testToEmailAddress as $key => $value) {
-            if (is_numeric($key)) {
-                $to[$value] = Craft::t('app', 'Test Recipient');
-            } else {
-                $to[$key] = $value;
+        if ($this->testToEmailAddress) {
+            foreach ((array)$this->testToEmailAddress as $key => $value) {
+                if (is_numeric($key)) {
+                    $to[$value] = Craft::t('app', 'Test Recipient');
+                } else {
+                    $to[$key] = $value;
+                }
             }
         }
         return $to;
