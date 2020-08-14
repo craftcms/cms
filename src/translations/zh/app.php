@@ -448,7 +448,7 @@ return [
     'Prefix must be 5 or less characters long.' => '前缀长度不得超过 5 个字符。',
     'Prev' => '上一个',
     'Preview file' => '预览文件',
-    'Publish' => 'Publish',
+    'Publish' => '发布',
     'Publish live changes' => '发布即时更改',
     'Publish live changes for other authors’ entries' => '对其他作者的条目发布即时更改',
     'Publish other authors’ drafts' => '发表其他作者的草稿',
