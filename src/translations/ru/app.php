@@ -448,6 +448,7 @@ return [
     'Prefix must be 5 or less characters long.' => 'Префикс должен быть длиной не более 5 символов.',
     'Prev' => 'Предыдущая',
     'Preview file' => 'Просмотреть файл',
+    'Publish' => 'Publish',
     'Publish live changes' => 'Публиковать изменения в реальном времени',
     'Publish live changes for other authors’ entries' => 'Публиковать изменения в реальном времени записей других авторов',
     'Publish other authors’ drafts' => 'Публиковать черновики других авторов',
