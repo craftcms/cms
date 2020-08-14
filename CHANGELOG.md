@@ -7,7 +7,7 @@
 
 ### Fixed
 - Fixed a couple styling issues with element editor HUDs.
-- Fixed a bug where the quality setting was being ignored for all transforms that were not in either jpg or png format. ([#6629](https://github.com/craftcms/cms/issues/6629))
+- Fixed a bug where the quality setting was being ignored for image transforms that were not in either JPG or PNG format. ([#6629](https://github.com/craftcms/cms/issues/6629))
 
 ## 3.5.4 - 2020-08-13
 
