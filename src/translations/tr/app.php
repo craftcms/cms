@@ -448,7 +448,7 @@ return [
     'Prefix must be 5 or less characters long.' => 'Ön ek uzunluğu en fazla 5 karakter olabilir.',
     'Prev' => 'Önceki',
     'Preview file' => 'Dosyayı önizle',
-    'Publish' => 'Publish',
+    'Publish' => 'Yayınla',
     'Publish live changes' => 'Canlı değişiklikleri yayınlama',
     'Publish live changes for other authors’ entries' => 'Diğer yazarların kayıtları için canlı yayın yapabilme',
     'Publish other authors’ drafts' => 'Diğer yazarların taslaklarını yayınlayabilme',
