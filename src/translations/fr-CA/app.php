@@ -448,7 +448,7 @@ return [
     'Prefix must be 5 or less characters long.' => 'Le préfixe ne peut pas comporter plus de 5 caractères.',
     'Prev' => 'Préc',
     'Preview file' => 'Aperçu du fichier',
-    'Publish' => 'Publish',
+    'Publish' => 'Publier',
     'Publish live changes' => 'Publier les modifications en direct',
     'Publish live changes for other authors’ entries' => 'Publier les modifications en direct pour les entrées des autres auteurs',
     'Publish other authors’ drafts' => 'Publier les brouillons des autres auteurs',
