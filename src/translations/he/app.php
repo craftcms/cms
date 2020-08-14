@@ -448,6 +448,7 @@ return [
     'Prefix must be 5 or less characters long.' => 'על הקידומת להיות באורך 5 תווים או פחות.',
     'Prev' => 'קודם',
     'Preview file' => 'תצוגה מקדימה של הקובץ',
+    'Publish' => 'Publish',
     'Publish live changes' => 'פרסם שינויים חיים',
     'Publish live changes for other authors’ entries' => 'פרסם שינויים חיים עבור הערכים של הכותב.',
     'Publish other authors’ drafts' => 'פרסם טיוטות של עורכים אחרים',
