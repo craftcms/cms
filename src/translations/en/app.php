@@ -448,6 +448,7 @@ return [
     'Prefix must be 5 or less characters long.' => 'Prefix must be 5 or less characters long.',
     'Prev' => 'Prev',
     'Preview file' => 'Preview file',
+    'Publish' => 'Publish',
     'Publish live changes' => 'Publish live changes',
     'Publish live changes for other authors’ entries' => 'Publish live changes for other authors’ entries',
     'Publish other authors’ drafts' => 'Publish other authors’ drafts',
