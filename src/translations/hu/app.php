@@ -448,7 +448,7 @@ return [
     'Prefix must be 5 or less characters long.' => 'Az előtag legfeljebb 5 karakter hosszúságú lehet.',
     'Prev' => 'Előző',
     'Preview file' => 'Fájl előnézete',
-    'Publish' => 'Publish',
+    'Publish' => 'Közzétesz',
     'Publish live changes' => 'Változtatások közzététele',
     'Publish live changes for other authors’ entries' => 'Változtatások közzététele más írók bejegyzéseihez',
     'Publish other authors’ drafts' => 'Közölje más szerzők tervezeteit',
