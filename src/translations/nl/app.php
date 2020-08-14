@@ -448,7 +448,7 @@ return [
     'Prefix must be 5 or less characters long.' => 'Prefix moet 5 of minder karakters bevatten.',
     'Prev' => 'Vorig',
     'Preview file' => 'Preview van bestand',
-    'Publish' => 'Publish',
+    'Publish' => 'Publiceren',
     'Publish live changes' => 'Publiceer levensverandereringen.',
     'Publish live changes for other authors’ entries' => 'Publiceer live veranderingen voor vermeldingen van andere schrijvers',
     'Publish other authors’ drafts' => 'Concepten van andere auteurs publiceren',
