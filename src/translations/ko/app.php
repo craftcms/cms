@@ -448,6 +448,7 @@ return [
     'Prefix must be 5 or less characters long.' => '접두사는 5자 이하여야 합니다.',
     'Prev' => '이전',
     'Preview file' => '미리보기 파일',
+    'Publish' => 'Publish',
     'Publish live changes' => '라이브 변경 사항 게시',
     'Publish live changes for other authors’ entries' => '다른 작가 항목에 대한 라이브 변경 사항 게시',
     'Publish other authors’ drafts' => '다른 저자의 드래프트를 발행하기',
