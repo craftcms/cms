@@ -448,7 +448,7 @@ return [
     'Prefix must be 5 or less characters long.' => 'Prefiks musi mieć 5 lub mniej znaków.',
     'Prev' => 'Poprzedni',
     'Preview file' => 'Podgląd pliku',
-    'Publish' => 'Publish',
+    'Publish' => 'Opublikuj',
     'Publish live changes' => 'Publikowanie zmian',
     'Publish live changes for other authors’ entries' => 'Publikowanie zmian wpisów innych autorów',
     'Publish other authors’ drafts' => 'Publikacja szkiców innych autorów',
