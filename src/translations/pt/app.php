@@ -448,6 +448,7 @@ return [
     'Prefix must be 5 or less characters long.' => 'O prefixo tem de ter 5 ou menos caracteres.',
     'Prev' => 'Anterior',
     'Preview file' => 'Pré-visualizar ficheiro',
+    'Publish' => 'Publish',
     'Publish live changes' => 'Publicar as alterações',
     'Publish live changes for other authors’ entries' => 'Publicar as alterações ao vivo para as entradas de outros autores',
     'Publish other authors’ drafts' => 'Publicar rascunhos de outros autores',
