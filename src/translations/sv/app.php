@@ -448,6 +448,7 @@ return [
     'Prefix must be 5 or less characters long.' => 'Prefix måste vara 5 eller färre tecken långt.',
     'Prev' => 'Föregående',
     'Preview file' => 'Förhandsgranska fil',
+    'Publish' => 'Publish',
     'Publish live changes' => 'Publicera aktuella förändringar',
     'Publish live changes for other authors’ entries' => 'Publicera aktuella förändringar för andra upphovsmäns poster',
     'Publish other authors’ drafts' => 'Publicera andra författares utkast',
