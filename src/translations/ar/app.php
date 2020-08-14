@@ -448,7 +448,7 @@ return [
     'Prefix must be 5 or less characters long.' => 'يجب أن يكون طول البادئة 5 أحرف أو أقل',
     'Prev' => 'السابق',
     'Preview file' => 'ملف المعاينة',
-    'Publish' => 'Publish',
+    'Publish' => 'نشر',
     'Publish live changes' => 'نشر التغييرات مباشرة',
     'Publish live changes for other authors’ entries' => 'نشر التغييرات مباشرة لإدخالات المؤلفين الآخرين',
     'Publish other authors’ drafts' => 'نشر مسودات المؤلفين الآخرين',
