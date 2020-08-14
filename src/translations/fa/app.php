@@ -1118,7 +1118,7 @@ return [
     'Propagation Method' => 'روش منتشر کردن',
     'Our site is temporarily unavailable. Please try again later.' => 'سایت ما به طور موقت در دسترس نیست. لطفا بعدا تلاش نمایید.',
     'The locale that should be used for date and number formatting.' => 'تنظیمات محلی که باید برای فرمت تاریخ و اعداد مورد استفاده قرار گیرد.',
-    'Whether {type} should be allowed to relate themselves.' => '{type} اجازه ارتباط با خودش را داشته باشد.',
+    'Whether {type} should be allowed to relate themselves.' => 'آیا {type} باید اجازه ارتباط با خودش را داشته باشد.',
     'Username or Email' => 'نام کاربری یا پست الکترونیکی',
     'What the entry URI should be for the site. Leave blank if the entry doesn’t have a URL.' => 'چگونه بودن URI محتوا برای سایت. اگر محتوا آدرس اینترنتی ندارد خالی بگذارید.',
     'Define the columns your table should have.' => 'ستون هایی که جدول شما باید داشته باشد تعریف نمایید.',
