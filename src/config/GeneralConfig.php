@@ -166,7 +166,7 @@ class GeneralConfig extends BaseObject
      * @var bool Whether uploaded filenames with non-ASCII characters should be converted to ASCII (i.e. `ñ` → `n`).
      *
      * ::: tip
-     * You can run `./craft utils/ascii-filenames` in your terminal to apply ASCII filenames to all existing assets.
+     * You can run `php craft utils/ascii-filenames` in your terminal to apply ASCII filenames to all existing assets.
      * :::
      */
     public $convertFilenamesToAscii = false;
@@ -1405,11 +1405,13 @@ class GeneralConfig extends BaseObject
     public function getTestToEmailAddress(): array
     {
         $to = [];
-        foreach ((array)$this->testToEmailAddress as $key => $value) {
-            if (is_numeric($key)) {
-                $to[$value] = Craft::t('app', 'Test Recipient');
-            } else {
-                $to[$key] = $value;
+        if ($this->testToEmailAddress) {
+            foreach ((array)$this->testToEmailAddress as $key => $value) {
+                if (is_numeric($key)) {
+                    $to[$value] = Craft::t('app', 'Test Recipient');
+                } else {
+                    $to[$key] = $value;
+                }
             }
         }
         return $to;

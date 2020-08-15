@@ -7,6 +7,7 @@ Craft.ui =
                 attr: {
                     'class': 'text',
                     type: (config.type || 'text'),
+                    inputmode: config.inputmode,
                     id: config.id,
                     size: config.size,
                     name: config.name,
@@ -87,6 +88,7 @@ Craft.ui =
                 document.execCommand('copy');
                 Craft.cp.displayNotice(Craft.t('app', 'Copied to clipboard.'));
                 $container.trigger('copy');
+                $input[0].setSelectionRange(0, 0);
             });
 
             return $container;
@@ -787,30 +789,19 @@ Craft.ui =
                 $field.addClass('first');
             }
 
-            if (label || config.instructions) {
+            if (label) {
                 var $heading = $('<div class="heading"/>').appendTo($field);
 
-                if (label) {
-                    var $label = $('<label/>', {
-                        'id': config.labelId || (config.id ? config.id + '-label' : null),
-                        'class': (config.required ? 'required' : null),
-                        'for': config.id,
-                        text: label
-                    }).appendTo($heading);
+                var $label = $('<label/>', {
+                    'id': config.labelId || (config.id ? `${config.id}-label` : null),
+                    'class': (config.required ? 'required' : null),
+                    'for': config.id,
+                    text: label
+                }).appendTo($heading);
+            }
 
-                    if (siteId) {
-                        for (var i = 0; i < Craft.sites.length; i++) {
-                            if (Craft.sites[i].id == siteId) {
-                                $('<span class="site"/>').text(Craft.sites[i].name).appendTo($label);
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                if (config.instructions) {
-                    $('<div class="instructions"/>').text(config.instructions).appendTo($heading);
-                }
+            if (config.instructions) {
+                $('<div class="instructions"/>').text(config.instructions).appendTo($field);
             }
 
             $('<div class="input"/>').append(input).appendTo($field);

@@ -48,4 +48,24 @@ class JsonHelperTest extends Test
             [null, '']
         ];
     }
+
+    /**
+     * @dataProvider isJsonObjectDataProvider
+     *
+     * @param bool $result
+     * @param string $input
+     */
+    public function testIsJsonObject(bool $result, string $input)
+    {
+        $this->assertSame($result, Json::isJsonObject($input));
+    }
+
+    public function isJsonObjectDataProvider(): array
+    {
+        return [
+            [true, '{"foo":true}'],
+            [true, "{\n  \"foo\": true\n}"],
+            [false, '{"foo":true'],
+        ];
+    }
 }

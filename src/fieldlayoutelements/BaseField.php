@@ -10,6 +10,7 @@ namespace craft\fieldlayoutelements;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutElement;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Html;
 
 /**
@@ -44,6 +45,18 @@ abstract class BaseField extends FieldLayoutElement
      * @var bool Whether the field is required.
      */
     public $required = false;
+
+    /**
+     * @inheritdoc
+     */
+    public function __construct($config = [])
+    {
+        if (ArrayHelper::remove($config, 'labelHidden')) {
+            $config['label'] = '__blank__';
+        }
+
+        parent::__construct($config);
+    }
 
     /**
      * Returns the element attribute this field is for.
@@ -112,15 +125,19 @@ abstract class BaseField extends FieldLayoutElement
      */
     protected function selectorInnerHtml(): string
     {
-        $innerHtml =
-            Html::tag('h4', $this->label(), [
+        $innerHtml = '';
+
+        if (($label = $this->label()) !== '__blank__') {
+            $innerHtml .= Html::tag('h4', $this->label(), [
                 'class' => 'fld-element-label',
                 'title' => $this->label(),
-            ]) .
-            Html::tag('div', $this->attribute(), [
-                'class' => ['smalltext', 'light', 'code'],
-                'title' => $this->attribute(),
             ]);
+        }
+
+        $innerHtml .= Html::tag('div', $this->attribute(), [
+            'class' => ['smalltext', 'light', 'code'],
+            'title' => $this->attribute(),
+        ]);
 
         return Html::tag('div', $innerHtml, [
             'class' => ['field-name'],
@@ -157,27 +174,12 @@ abstract class BaseField extends FieldLayoutElement
      */
     public function settingsHtml()
     {
-        $view = Craft::$app->getView();
-        return
-            $view->renderTemplateMacro('_includes/forms', 'textField', [
-                [
-                    'label' => Craft::t('app', 'Label'),
-                    'id' => 'label',
-                    'name' => 'label',
-                    'value' => $this->label,
-                    'placeholder' => $this->defaultLabel(),
-                ],
-            ]) .
-            $view->renderTemplateMacro('_includes/forms', 'textareaField', [
-                [
-                    'label' => Craft::t('app', 'Instructions'),
-                    'class' => 'nicetext',
-                    'id' => 'instructions',
-                    'name' => 'instructions',
-                    'value' => $this->instructions,
-                    'placeholder' => $this->defaultInstructions(),
-                ],
-            ]);
+        return Craft::$app->getView()->renderTemplate('_includes/forms/fld/field-settings', [
+            'field' => $this,
+            'defaultLabel' => $this->defaultLabel(),
+            'defaultInstructions' => $this->defaultInstructions(),
+            'labelHidden' => $this->label === '__blank__',
+        ]);
     }
 
     /**
@@ -199,7 +201,7 @@ abstract class BaseField extends FieldLayoutElement
             'labelAttributes' => $this->labelAttributes($element, $static),
             'status' => $statusClass ? [$statusClass, $this->statusLabel($element, $static) ?? ucfirst($statusClass)] : null,
             'label' => $this->label ? Craft::t('site', $this->label) : $this->defaultLabel($element, $static),
-            'altLabel' => Html::tag('code', $this->attribute()),
+            'attribute' => $this->attribute(),
             'required' => !$static && $this->required,
             'instructions' => $this->_instructions($element, $static),
             'input' => $inputHtml,

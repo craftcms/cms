@@ -60,4 +60,26 @@ class TitleField extends StandardTextField
     {
         return Craft::t('app', 'Title');
     }
+
+    /**
+     * @inheritdoc
+     */
+    protected function statusClass(ElementInterface $element = null, bool $static = false)
+    {
+        if ($element && ($status = $element->getAttributeStatus('title'))) {
+            return $status[0];
+        }
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function statusLabel(ElementInterface $element = null, bool $static = false)
+    {
+        if ($element && ($status = $element->getAttributeStatus('title'))) {
+            return $status[1];
+        }
+        return null;
+    }
 }

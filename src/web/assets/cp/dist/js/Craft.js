@@ -13040,7 +13040,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
         $enabledForSiteField.addClass('nested');
         var $globalField = Craft.ui.createLightswitchField({
           id: 'enabled',
-          label: Craft.t('app', 'Enabled everywhere'),
+          label: Craft.t('app', 'Enabled'),
           name: 'enabled'
         }).insertBefore($enabledForSiteField);
         $globalField.find('label').css('font-weight', 'bold');
@@ -16459,6 +16459,11 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
     hud: null,
     init: function init(icon) {
       this.$icon = $(icon);
+      if (this.$icon.data('info')) {
+        Garnish.log('Double-instantiating an info icon on an element');
+        this.$icon.data('info').destroy();
+      }
+      this.$icon.data('info', this);
       this.addListener(this.$icon, 'click', 'showHud');
     },
     showHud: function showHud(ev) {

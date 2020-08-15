@@ -1,11 +1,99 @@
-
 # Release Notes for Craft CMS 3.x
 
 ## Unreleased
 
+### Changed
+- Email fields now set `inputmode="email"` on their input.
+- URL fields now set `inputmode="url"` on their input.
+- Number fields now set `inputmode="numeric"` or `inputmode="decimal"` on their input, depending on whether they allow decimals.
+- Tightened up the top control panel headers.
+- The `_includes/forms/text.html` control panel template now supports passing an `inputmode` variable.
+
 ### Fixed
+- Fixed a couple styling issues with element editor HUDs.
+- Fixed a bug where the quality setting was being ignored for image transforms that were not in either JPG or PNG format. ([#6629](https://github.com/craftcms/cms/issues/6629))
+- Fixed a bug where mail wouldn’t send if the `testToEmailAddress` config setting was set to `false`.
+
+## 3.5.4 - 2020-08-13
+
+### Added
+- It’s now possible to hide field labels from within field layout designers. ([#6608](https://github.com/craftcms/cms/issues/6608))
+- Lightswitch fields now have an “ON Label” and “OFF Label” settings. ([#3741](https://github.com/craftcms/cms/issues/3741))
+- Edit Category pages now support a <kbd>Shift</kbd> + <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>S</kbd> keyboard shortcut for saving the category and creating a new one.
+- Added the “Show field handles in edit forms” admin user preference. ([#6610](https://github.com/craftcms/cms/issues/6610))
+- Added `craft\fields\Lightswitch::$offLabel`.
+- Added `craft\fields\Lightswitch::$onLabel`.
+- Added `craft\services\AssetTransforms::$db`. ([#6549](https://github.com/craftcms/cms/issues/6549))
+
+### Changed
+- All admin-only user preferences are now grouped under a single “Development” heading.
+- Improved system performance.
+- Stack traces within exception views now show source Twig templates rather than the compiled PHP classes.
+- The “Enabled everywhere” entry status label has been renamed to “Enabled”. ([#6623](https://github.com/craftcms/cms/issues/6623))
+- `error` is now a reserved handle. ([#6626](https://github.com/craftcms/cms/issues/6626))
+- The `_includes/forms/checkbox.html` control panel template now supports an `inputAttributes` variable.
+- The `_includes/forms/field.html` control panel template now supports overriding the heading HTML via a `heading` block.
+- `craft\helpers\Db::idByUid()` now has a `$db` argument.
+- `craft\helpers\Db::idsByUids()` now has a `$db` argument.
+- `craft\helpers\Db::uidById()` now has a `$db` argument.
+- `craft\helpers\Db::uidsByIds()` now has a `$db` argument.
+- `craft\models\FieldLayout::createForm()` now supports passing a `namespace` key into the `$config` argument, to namespace the tab contents.
+
+### Fixed
+- Fixed an infinite redirect that could occur if Craft was installed within a subdirectory of the webroot. ([#6616](https://github.com/craftcms/cms/issues/6616))
+- Fixed a bug where all Title fields within Quick Post widgets had the same input ID.
+- Fixed a bug where Title fields weren’t showing change status badges when editing an entry draft.
+- Fixed an error that could occur when using the `formatDateTime` GraphQL directive on environments that didn’t have the `Intl` PHP extension installed. ([#6614](https://github.com/craftcms/cms/issues/6614))
+- Fixed a bug where template profiling was interfering with Twig’s ability to guess offending template lines in error reports.
+- Fixed a bug where soft-deleted categories and entries within Structure sections had two “Delete permanently” actions. ([#6619](https://github.com/craftcms/cms/issues/6619))
+- Fixed a bug where field handles were being displayed within element editor HUDs. ([#6620](https://github.com/craftcms/cms/issues/6620))
+
+## 3.5.3 - 2020-08-11
+
+### Added
+- Fields in the control panel now always display their handle without needing to press the <kbd>Option</kbd>/<kbd>ALT</kbd> key, when Dev Mode is enabled, and they will be copied to the clipboard when clicked on. ([#6532](https://github.com/craftcms/cms/issues/6532))
+- Added `craft\helpers\Gql::prepareTransformArguments()`.
+- Added the `_includes/forms/copytextbtn.html` control panel template.
+
+### Changed
+- It’s now possible to change a revision’s creator and source via `craft\services\Revisions::EVENT_BEFORE_CREATE_REVISION`. ([#6600](https://github.com/craftcms/cms/pull/6600))
+
+### Fixed
+- Fixed a bug where it wasn’t possible to use the `transform` argument in some cases via the GraphQL API.
+- Fixed a bug where Craft was routing requests based on the full requested URI rather than just the URI segments that came after `index.php`. ([#6579](https://github.com/craftcms/cms/issues/6579))
+- Fixed a bug where `data-target-prefix` attributes that specified a class name were getting namespaced. ([#6604](https://github.com/craftcms/cms/issues/6604))
+- Fixed a bug where `craft\helpers\Json::isJsonObject()` was returning `false` if the JSON string spanned multiple lines. ([#6607](https://github.com/craftcms/cms/issues/6607))
+- Fixed a bug where the `limit` param wasn’t working when applied to eager-loaded elements. ([#6596](https://github.com/craftcms/cms/issues/6596))
+- Fixed an error that would occur if Craft tried to make a database backup in a VM with Windows as the host OS.
+
+## 3.5.2 - 2020-08-09
+
+### Added
+- Added `craft\db\Command::deleteDuplicates()`.
+- Added `craft\db\Migration::deleteDuplicates()`.
+- Added `craft\db\mysql\QueryBuilder::deleteDuplicates()`.
+- Added `craft\db\pgsql\QueryBuilder::deleteDuplicates()`.
+
+### Changed
+- Live Preview now attempts to maintain the iframe scroll position between page reloads even if the `previewIframeResizerOptions` config setting is set to `false`. ([#6569](https://github.com/craftcms/cms/issues/6569))
+- `language` and `localized` are now reserved field handles. ([#6564](https://github.com/craftcms/cms/issues/6564))
+- `craft\base\Element::__get()` now prioritizes field handles over getter methods. ([#6564](https://github.com/craftcms/cms/issues/6564))
+- Data caches stored in `storage/runtime/cache/` now get a cache key prefix based on the application ID.
+- Craft now clears the schema cache before running each migration, in addition to after. ([#6552](https://github.com/craftcms/cms/issues/6552))
+- Renamed `craft\base\ElementTrait::$elementSiteId` to `$siteSettingsId`. ([verbb/navigation#179](https://github.com/verbb/navigation/issues/179), [verbb/wishlist#56](https://github.com/verbb/wishlist/issues/56))
+
+### Fixed
+- Fixed a PHP error that occurred when setting a `relatedTo` param to an array that began with `'and'`. ([#6573](https://github.com/craftcms/cms/issues/6573))
+- Fixed a SQL error that could occur when updating to Craft 3.5 if the `migrations` table contained duplicate migration rows. ([#6580](https://github.com/craftcms/cms/issues/6580))
+- Fixed a PHP error that could occur during public registration. ([#6499](https://github.com/craftcms/cms/issues/6499))
+
+## 3.5.1 - 2020-08-05
+
+### Fixed
+- Fixed an error where it wasn’t possible to create a GraphQL schema that had write-only access to a Single entry. ([#6554](https://github.com/craftcms/cms/issues/6554))
+- Fixed a PHP error that could occur with certain versions of PHP. ([#6544](https://github.com/craftcms/cms/issues/6544))
+- Fixed an error that could occur when updating to Craft 3.5. ([#6464](https://github.com/craftcms/cms/issues/6464))
 - Fixed errors in fixtures that prevented them from being used in tests.
-- Fixed an error where it was impossible to allow mutation only Single entry type when using GraphQL. ([#6554](https://github.com/craftcms/cms/issues/6554))
 
 ## 3.5.0 - 2020-08-04
 
@@ -532,6 +620,7 @@
 - Fixed a bug where Craft was exiting with a 200 status code if the `license.key` file didn’t contain a valid license key, and wasn’t writable. ([#6475](https://github.com/craftcms/cms/issues/6475))
 - Fixed a PHP error that would occur when calling `craft\web\User::guestRequired()` if a user was logged in. ([#6497](https://github.com/craftcms/cms/issues/6497))
 - Fixed an error that occurred if a user photo was deleted and replaced in the same request. ([#6491](https://github.com/craftcms/cms/issues/6491))
+- Fixed a bug where `craft\web\Request::getFullPath()` wasn’t including any URI segments defined by the site’s base URL. ([#6546](https://github.com/craftcms/cms/issues/6546))
 
 ### Security
 - The `_includes/forms/checkbox.html`, `checkboxGroup.html`, and `checkboxSelect.html` control panel templates now HTML-encode checkbox labels by default, preventing possible XSS vulnerabilities. If HTML code was desired, it must be passed through the new `raw()` function first.

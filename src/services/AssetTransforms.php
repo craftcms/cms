@@ -9,6 +9,7 @@ namespace craft\services;
 
 use Craft;
 use craft\base\LocalVolumeInterface;
+use craft\db\Connection;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
@@ -37,6 +38,7 @@ use DateTime;
 use yii\base\Application;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
+use yii\di\Instance;
 
 /**
  * Asset Transforms service.
@@ -91,6 +93,12 @@ class AssetTransforms extends Component
     const CONFIG_TRANSFORM_KEY = 'imageTransforms';
 
     /**
+     * @var Connection|array|string The database connection to use
+     * @since 3.5.4
+     */
+    public $db = 'db';
+
+    /**
      * @var AssetTransform[]
      */
     private $_transforms;
@@ -109,6 +117,15 @@ class AssetTransforms extends Component
      * @var AssetTransformIndex|null
      */
     private $_activeTransformIndex;
+
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        parent::init();
+        $this->db = Instance::ensure($this->db, Connection::class);
+    }
 
     /**
      * Returns all named asset transforms.
@@ -192,7 +209,7 @@ class AssetTransforms extends Component
         if ($isNewTransform) {
             $transform->uid = StringHelper::UUID();
         } else if (!$transform->uid) {
-            $transform->uid = Db::uidById(Table::ASSETTRANSFORMS, $transform->id);
+            $transform->uid = Db::uidById(Table::ASSETTRANSFORMS, $transform->id, $this->db);
         }
 
         $projectConfig = Craft::$app->getProjectConfig();
@@ -213,7 +230,7 @@ class AssetTransforms extends Component
         $projectConfig->set($configPath, $configData, "Saving transform “{$transform->handle}”");
 
         if ($isNewTransform) {
-            $transform->id = Db::idByUid(Table::ASSETTRANSFORMS, $transform->uid);
+            $transform->id = Db::idByUid(Table::ASSETTRANSFORMS, $transform->uid, $this->db);
         }
 
         return true;
@@ -229,7 +246,7 @@ class AssetTransforms extends Component
         $transformUid = $event->tokenMatches[0];
         $data = $event->newValue;
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        $transaction = $this->db->beginTransaction();
         $deleteTransformIndexes = false;
 
         try {
@@ -269,7 +286,7 @@ class AssetTransforms extends Component
         if ($deleteTransformIndexes) {
             Db::delete(Table::ASSETTRANSFORMINDEX, [
                 'location' => $this->_getNamedTransformFolderName($transformRecord->handle),
-            ]);
+            ], [], $this->db);
         }
 
         // Clear caches
@@ -360,7 +377,7 @@ class AssetTransforms extends Component
 
         Db::delete(Table::ASSETTRANSFORMS, [
             'uid' => $transformUid,
-        ]);
+        ], [], $this->db);
 
         // Clear caches
         $this->_transforms = null;
@@ -508,7 +525,7 @@ class AssetTransforms extends Component
         if (!empty($invalidIndexIds)) {
             Db::delete(Table::ASSETTRANSFORMINDEX, [
                 'id' => $invalidIndexIds,
-            ]);
+            ], [], $this->db);
         }
     }
 
@@ -563,7 +580,7 @@ class AssetTransforms extends Component
             // Delete the out-of-date record
             Db::delete(Table::ASSETTRANSFORMINDEX, [
                 'id' => $result['id'],
-            ]);
+            ], [], $this->db);
 
             // And the file.
             $transformUri = $asset->folderPath . $this->getTransformSubpath($asset, new AssetTransformIndex($result));
@@ -897,10 +914,10 @@ class AssetTransforms extends Component
         if ($index->id !== null) {
             Db::update(Table::ASSETTRANSFORMINDEX, $values, [
                 'id' => $index->id,
-            ]);
+            ], [], true, $this->db);
         } else {
-            Db::insert(Table::ASSETTRANSFORMINDEX, $values);
-            $index->id = Craft::$app->getDb()->getLastInsertID(Table::ASSETTRANSFORMINDEX);
+            Db::insert(Table::ASSETTRANSFORMINDEX, $values, true, $this->db);
+            $index->id = $this->db->getLastInsertID(Table::ASSETTRANSFORMINDEX);
         }
 
         return $index;
@@ -989,7 +1006,7 @@ class AssetTransforms extends Component
     {
         Db::delete(Table::ASSETTRANSFORMINDEX, [
             'assetId' => $assetId,
-        ]);
+        ], [], $this->db);
     }
 
     /**
@@ -1001,7 +1018,7 @@ class AssetTransforms extends Component
     {
         Db::delete(Table::ASSETTRANSFORMINDEX, [
             'id' => $indexId,
-        ]);
+        ], [], $this->db);
     }
 
     /**

@@ -279,6 +279,20 @@ abstract class Migration extends \yii\db\Migration
     }
 
     /**
+     * Creates and executes a DELETE SQL statement that will only delete duplicate rows from a table.
+     * @param string $table The table where the data will be deleted from
+     * @param string[] $columns The column names that contain duplicate data
+     * @param string $pk The primary key column name
+     * @since 3.5.2
+     */
+    public function deleteDuplicates(string $table, array $columns, string $pk = 'id')
+    {
+        $time = $this->beginCommand("delete duplicates from $table");
+        $this->db->createCommand()->deleteDuplicates($table, $columns, $pk)->execute();
+        $this->endCommand($time);
+    }
+
+    /**
      * Creates and executes a SQL statement for replacing some text with other text in a given table column.
      *
      * @param string $table The table to be updated.

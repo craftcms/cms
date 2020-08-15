@@ -14,6 +14,7 @@ use Twig\Error\LoaderError as TwigLoaderError;
 use Twig\Error\RuntimeError as TwigRuntimeError;
 use Twig\Error\SyntaxError as TwigSyntaxError;
 use Twig\Template;
+use yii\base\Exception;
 use yii\log\FileTarget;
 use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
@@ -160,6 +161,53 @@ class ErrorHandler extends \yii\web\ErrorHandler
         }
 
         return $url;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function renderCallStackItem($file, $line, $class, $method, $args, $index)
+    {
+        if (strpos($file, 'compiled_templates') !== false) {
+            try {
+                list($file, $line) = $this->_resolveTemplateTrace($file, $line);
+            } catch (\Throwable $e) {
+                // oh well, we tried
+            }
+        }
+
+        return parent::renderCallStackItem($file, $line, $class, $method, $args, $index);
+    }
+
+    /**
+     * Attempts to swap out debug trace info with template info.
+     *
+     * @throws \Throwable
+     */
+    private function _resolveTemplateTrace(string $traceFile, int $traceLine = null)
+    {
+        $contents = file_get_contents($traceFile);
+        if (!preg_match('/^class (\w+)/m', $contents, $match)) {
+            throw new Exception("Unable to determine template class in $traceFile");
+        }
+        $class = $match[1];
+        /** @var Template $template */
+        $template = new $class(Craft::$app->getView()->getTwig());
+        $src = $template->getSourceContext();
+        //                $this->sourceCode = $src->getCode();
+        $file = $src->getPath();
+        $line = null;
+
+        if ($traceLine !== null) {
+            foreach ($template->getDebugInfo() as $codeLine => $templateLine) {
+                if ($codeLine <= $traceLine) {
+                    $line = $templateLine;
+                    break;
+                }
+            }
+        }
+
+        return [$file, $line];
     }
 
     /**

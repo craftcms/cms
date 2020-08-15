@@ -7,7 +7,8 @@
 {%- set toggle = toggle ?? null %}
 {%- set reverseToggle = reverseToggle ?? null %}
 {%- set disabled = (disabled ?? false) ? true : false %}
-{%- set label = label ?? false %}
+{%- set onLabel = onLabel ?? label ?? false %}
+{%- set offLabel = offLabel ?? false %}
 
 {%- set containerAttributes = {
     id: id,
@@ -48,10 +49,15 @@
     </div>
 {% endset %}
 
-{% if label -%}
+{% if onLabel is not same as(false) or offLabel is not same as(false) -%}
     <div class="lightswitch-outer-container">
+        {% if offLabel is not same as(false) %}
+            <label for="{{ id }}" data-toggle="off">{{ offLabel }}</label>
+        {% endif %}
         {{ input }}
-        <label for="{{ id }}">{{ label }}</label>
+        {% if onLabel is not same as(false) %}
+            <label for="{{ id }}" data-toggle="on">{{ onLabel }}</label>
+        {% endif %}
     </div>
 {% else %}
     {{ input }}

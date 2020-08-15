@@ -372,7 +372,7 @@ class EntriesController extends BaseEntriesController
         }
 
         // Save the entry (finally!)
-        if ($entry->enabled && $entry->enabledForSite) {
+        if ($entry->enabled && $entry->getEnabledForSite()) {
             $entry->setScenario(Element::SCENARIO_LIVE);
         }
 

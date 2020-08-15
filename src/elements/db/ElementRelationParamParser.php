@@ -134,6 +134,10 @@ class ElementRelationParamParser extends BaseObject
      */
     private function _subparse($relCriteria)
     {
+        if (!is_array($relCriteria)) {
+            $relCriteria = ['element' => $relCriteria];
+        }
+
         // Merge in default criteria params
         $relCriteria = array_merge([
             'field' => null,
@@ -159,10 +163,6 @@ class ElementRelationParamParser extends BaseObject
                 }
                 $relCriteria['sourceSite'] = $site->id;
             }
-        }
-
-        if (!is_array($relCriteria)) {
-            $relCriteria = ['element' => $relCriteria];
         }
 
         // Get the element IDs, wherever they are

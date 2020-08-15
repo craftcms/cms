@@ -6,6 +6,7 @@ use craft\db\Migration;
 use craft\db\Query;
 use craft\db\Table;
 use craft\helpers\MigrationHelper;
+use yii\db\Expression;
 
 /**
  * m200606_231117_migration_tracks migration.
@@ -52,6 +53,9 @@ class m200606_231117_migration_tracks extends Migration
         } else {
             $this->alterColumn(Table::MIGRATIONS, 'track', $this->string()->notNull());
         }
+
+        // Delete any duplicate rows
+        $this->deleteDuplicates(Table::MIGRATIONS, ['track', 'name']);
 
         $this->createIndex(null, Table::MIGRATIONS, ['track', 'name'], true);
         MigrationHelper::dropForeignKeyIfExists(Table::MIGRATIONS, ['pluginId'], $this);
