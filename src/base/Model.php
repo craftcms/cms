@@ -168,6 +168,22 @@ abstract class Model extends \yii\base\Model
 
     /**
      * @inheritdoc
+     * @since 3.6.0
+     */
+    public function setAttributes($values, $safeOnly = true)
+    {
+        // Normalize the date/time attributes
+        foreach ($this->datetimeAttributes() as $name) {
+            if (isset($values[$name])) {
+                $values[$name] = DateTimeHelper::toDateTime($values[$name]) ?: null;
+            }
+        }
+
+        parent::setAttributes($values, $safeOnly);
+    }
+
+    /**
+     * @inheritdoc
      */
     public function fields()
     {
