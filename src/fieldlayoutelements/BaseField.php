@@ -203,7 +203,7 @@ abstract class BaseField extends FieldLayoutElement
             'label' => $this->label ? Craft::t('site', $this->label) : $this->defaultLabel($element, $static),
             'attribute' => $this->attribute(),
             'required' => !$static && $this->required,
-            'instructions' => $this->_instructions($element, $static),
+            'instructions' => Html::encode($this->instructions ? Craft::t('site', $this->instructions) : $this->defaultInstructions($element, $static)),
             'input' => $inputHtml,
             'tip' => $this->tip($element, $static),
             'warning' => $this->warning($element, $static),
@@ -306,18 +306,6 @@ abstract class BaseField extends FieldLayoutElement
     protected function statusLabel(ElementInterface $element = null, bool $static = false)
     {
         return null;
-    }
-
-    /**
-     * Returns the field’s instructions.
-     *
-     * @param ElementInterface|null $element The element the form is being rendered for
-     * @param bool $static Whether the form should be static (non-interactive)
-     * @return string|null
-     */
-    private function _instructions(ElementInterface $element = null, bool $static = false)
-    {
-        return $this->instructions ? Craft::t('site', $this->instructions) : $this->defaultInstructions($element, $static);
     }
 
     /**
