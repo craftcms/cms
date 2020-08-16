@@ -14,6 +14,7 @@
 - Fixed a bug where the quality setting was being ignored for image transforms that were not in either JPG or PNG format. ([#6629](https://github.com/craftcms/cms/issues/6629))
 - Fixed a bug where mail wouldn’t send if the `testToEmailAddress` config setting was set to `false`.
 - Fixed a JavaScript error that could occur in Safari 12. ([#6635](https://github.com/craftcms/cms/issues/6635))
+- Fixed a bug where `craft\services\Globals::getAllSets()`, `getEditableSets()`, `getSetById()`, and `getSetByHandle()` could return global sets in the wrong site, if the current site had been changed since the first time the global sets had been memoized. ([#6636](https://github.com/craftcms/cms/issues/6636))
 
 ## 3.5.4 - 2020-08-13
 
