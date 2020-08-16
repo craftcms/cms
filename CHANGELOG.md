@@ -2,11 +2,15 @@
 
 ## Unreleased
 
+### Added
+- Added the `useIframeResizer` config setting, which defaults to `false`. ([#6645](https://github.com/craftcms/cms/issues/6645))
+
 ### Changed
 - Email fields now set `inputmode="email"` on their input.
 - URL fields now set `inputmode="url"` on their input.
 - Number fields now set `inputmode="numeric"` or `inputmode="decimal"` on their input, depending on whether they allow decimals.
 - Tightened up the top control panel headers.
+- Setting the `previewIframeResizerOptions` config setting to `false` is no longer a way to disable iFrame Resizer, now that `useIframeResizer` exists. ([#6645](https://github.com/craftcms/cms/issues/6645))
 - The `_includes/forms/text.html` control panel template now supports passing an `inputmode` variable.
 
 ### Fixed
