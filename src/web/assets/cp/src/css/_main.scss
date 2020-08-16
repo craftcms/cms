@@ -2046,7 +2046,7 @@ $elementInnerSpacing: 5px;
     display: inline-block;
   }
 
-  &.small,
+  &.small:not(.hasthumb),
   &.large:not(.hasthumb) {
     display: inline-block;
     padding: $baseElementSidePadding;
