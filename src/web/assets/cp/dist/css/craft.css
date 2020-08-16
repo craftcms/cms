@@ -1536,7 +1536,7 @@ body.rtl .missing-component .install-plugin .icon { right: 0; }
 /* meta panes */
 .meta { padding: 0 24px; overflow: visible; }
 
-.meta > .field, .meta > .data, .meta > .flex-fields > .field, .meta > .flex-fields > .data { display: -webkit-flex; display: flex; -webkit-justify-content: space-between; justify-content: space-between; -webkit-align-items: center; align-items: center; -webkit-flex-wrap: nowrap; flex-wrap: nowrap; margin: 0 -24px !important; padding: 0 24px; -o-transition: padding-left linear 100ms, padding-right linear 100ms; transition: padding-left linear 100ms, padding-right linear 100ms; }
+.meta > .field, .meta > .data, .meta > .flex-fields > .field, .meta > .flex-fields > .data { display: -webkit-flex; display: flex; flex-warp: wrap; -webkit-justify-content: space-between; justify-content: space-between; -webkit-align-items: center; align-items: center; -webkit-flex-wrap: nowrap; flex-wrap: nowrap; margin: 0 -24px !important; padding: 0 24px; -o-transition: padding-left linear 100ms, padding-right linear 100ms; transition: padding-left linear 100ms, padding-right linear 100ms; }
 
 body.ltr .meta > .field.nested, body.ltr .meta > .data.nested, body.ltr .meta > .flex-fields > .field.nested, body.ltr .meta > .flex-fields > .data.nested { padding-left: 38px; }
 
@@ -2068,7 +2068,7 @@ body.rtl .field > .status-badge { right: -19px; }
 
 .field > .status-badge.conflicted { background-color: #CF1124; color: #fff; -moz-osx-font-smoothing: grayscale; -webkit-font-smoothing: antialiased; font-weight: 500; }
 
-.field > .heading { display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; position: relative; margin-top: -5px; margin-bottom: 5px; }
+.field > .heading { display: -webkit-flex; display: flex; -webkit-flex-wrap: wrap; flex-wrap: wrap; -webkit-align-items: center; align-items: center; position: relative; margin-top: -5px; margin-bottom: 5px; }
 
 .field > .heading > label { font-weight: bold; color: #606d7b; }
 
@@ -2086,6 +2086,8 @@ body.rtl .field > .heading > .t9n-indicator { margin-right: 7px; }
 
 .field > .heading + .instructions { margin-top: -3px; }
 
+.field > .heading > .instructions { width: 100%; }
+
 .field > .instructions { margin-bottom: 5px; }
 
 .field > .notice, .field > .warning { margin: 5px 0 0; }
@@ -2094,19 +2096,19 @@ body.rtl .field > .heading > .t9n-indicator { margin-right: 7px; }
 
 .field > .input:after { content: '.'; display: block; height: 0; clear: both; visibility: hidden; }
 
-.field > .instructions, .checkboxfield .instructions { color: #7b8793; }
+.field > .instructions, .field > .heading > .instructions, .checkboxfield .instructions { color: #7b8793; }
 
-.field > .instructions img, .checkboxfield .instructions img { max-width: 100%; }
+.field > .instructions img, .field > .heading > .instructions img, .checkboxfield .instructions img { max-width: 100%; }
 
-.field > .instructions ul, .field > .instructions ol, .checkboxfield .instructions ul, .checkboxfield .instructions ol { margin: 1em 0; }
+.field > .instructions ul, .field > .instructions ol, .field > .heading > .instructions ul, .field > .heading > .instructions ol, .checkboxfield .instructions ul, .checkboxfield .instructions ol { margin: 1em 0; }
 
-body.ltr .field > .instructions ul, body.ltr .field > .instructions ol, body.ltr .checkboxfield .instructions ul, body.ltr .checkboxfield .instructions ol { padding-left: 2em; }
+body.ltr .field > .instructions ul, body.ltr .field > .instructions ol, body.ltr .field > .heading > .instructions ul, body.ltr .field > .heading > .instructions ol, body.ltr .checkboxfield .instructions ul, body.ltr .checkboxfield .instructions ol { padding-left: 2em; }
 
-body.rtl .field > .instructions ul, body.rtl .field > .instructions ol, body.rtl .checkboxfield .instructions ul, body.rtl .checkboxfield .instructions ol { padding-right: 2em; }
+body.rtl .field > .instructions ul, body.rtl .field > .instructions ol, body.rtl .field > .heading > .instructions ul, body.rtl .field > .heading > .instructions ol, body.rtl .checkboxfield .instructions ul, body.rtl .checkboxfield .instructions ol { padding-right: 2em; }
 
-.field > .instructions ul li, .checkboxfield .instructions ul li { list-style-type: disc; }
+.field > .instructions ul li, .field > .heading > .instructions ul li, .checkboxfield .instructions ul li { list-style-type: disc; }
 
-.field > .instructions li + li, .checkboxfield .instructions li + li { margin-top: 0.25em; }
+.field > .instructions li + li, .field > .heading > .instructions li + li, .checkboxfield .instructions li + li { margin-top: 0.25em; }
 
 #expand-status-btn { margin-left: 5px; width: 30px; height: 17px; padding: 0; line-height: 16px; border-radius: 3px; color: #606d7b; }
 

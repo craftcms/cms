@@ -4114,6 +4114,7 @@ fieldset {
 
   & > .heading {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     position: relative;
     margin-top: -5px;
@@ -4140,6 +4141,11 @@ fieldset {
     & + .instructions {
       margin-top: -3px;
     }
+
+    // BC
+    & > .instructions {
+      width: 100%;
+    }
   }
 
   & > .instructions {
@@ -4161,6 +4167,8 @@ fieldset {
 }
 
 .field > .instructions,
+// BC
+.field > .heading > .instructions,
 .checkboxfield .instructions {
   color: $mediumTextColor;
 
