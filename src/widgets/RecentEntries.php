@@ -180,6 +180,7 @@ class RecentEntries extends Widget
         $query->sectionId($targetSectionId);
         $query->editable(true);
         $query->limit($this->limit ?: 100);
+        $query->with(['author']);
         $query->orderBy('elements.dateCreated desc');
 
         return $query->all();
