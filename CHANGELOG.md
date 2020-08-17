@@ -22,6 +22,7 @@
 - Fixed a bug where `craft\services\Globals::getAllSets()`, `getEditableSets()`, `getSetById()`, and `getSetByHandle()` could return global sets in the wrong site, if the current site had been changed since the first time the global sets had been memoized. ([#6636](https://github.com/craftcms/cms/issues/6636))
 - Fixed the styling of some control panel field instructions. ([#6640](https://github.com/craftcms/cms/issues/6640))
 - Fixed a bug where field instructions weren’t getting escaped. ([#6642](https://github.com/craftcms/cms/issues/6642))
+- Fixed a bug where the initial site created by the installer was still getting saved with its base URL set to `$DEFAULT_SITE_URL`, despite the base URL provided to the installer getting stored as an environment variable named `PRIMARY_SITE_URL`. ([#6650](https://github.com/craftcms/cms/issues/6650))
 
 ## 3.5.4 - 2020-08-13
 
