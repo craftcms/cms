@@ -703,6 +703,22 @@ interface ElementInterface extends ComponentInterface
     public function getThumbUrl(int $size);
 
     /**
+     * Returns whether the element’s thumbnail should have a checkered background.
+     *
+     * @return bool
+     * @since 3.5.5
+     */
+    public function getHasCheckeredThumb(): bool;
+
+    /**
+     * Returns whether the element’s thumbnail should be rounded.
+     *
+     * @return bool
+     * @since 3.5.5
+     */
+    public function getHasRoundedThumb(): bool;
+
+    /**
      * Returns whether the element is enabled for the current site.
      *
      * This can also be set to an array of site ID/site-enabled mappings.

@@ -1167,6 +1167,14 @@ class Asset extends Element
     }
 
     /**
+     * @inheritdoc
+     */
+    public function getHasCheckeredThumb(): bool
+    {
+        return in_array(strtolower($this->getExtension()), ['png', 'gif', 'svg'], true);
+    }
+
+    /**
      * Returns preview thumb image HTML.
      *
      * @param int $width

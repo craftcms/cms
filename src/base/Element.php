@@ -2108,6 +2108,22 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function getHasCheckeredThumb(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getHasRoundedThumb(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getEnabledForSite(int $siteId = null)
     {
         if ($siteId === null) {

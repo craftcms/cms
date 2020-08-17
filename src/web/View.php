@@ -2034,9 +2034,11 @@ JS;
             $sizesHtml = "{$thumbSize}px";
             $srcsetHtml = implode(', ', $srcsets);
             $imgHtml = Html::tag('div', '', [
-                'class' => [
+                'class' => array_filter([
                     'elementthumb',
-                ],
+                    $element->getHasCheckeredThumb() ? 'checkered' : null,
+                    $elementSize === 'small' && $element->getHasRoundedThumb() ? 'rounded' : null,
+                ]),
                 'data' => [
                     'sizes' => $sizesHtml,
                     'srcset' => $srcsetHtml,

@@ -1013,6 +1013,8 @@ body.rtl .datatablesorthelper .tableview .toggle { -webkit-transform: rotate(90d
 
 .element.hasthumb .elementthumb img { display: block; -webkit-flex-shrink: 0; flex-shrink: 0; pointer-events: none; border-radius: 3px; max-width: 100%; max-height: 100%; }
 
+.element.hasthumb .elementthumb.rounded img { border-radius: 50%; }
+
 .element .label { display: inline-block; }
 
 .element.small, .element.large:not(.hasthumb) { display: inline-block; padding: 7px; box-sizing: border-box; }
@@ -1037,7 +1039,7 @@ body.ltr .element.small.hasthumb .elementthumb, body.ltr .element.large:not(.has
 
 body.rtl .element.small.hasthumb .elementthumb, body.rtl .element.large:not(.hasthumb).hasthumb .elementthumb { right: 0; }
 
-.element.small.hasthumb .elementthumb img, .element.large:not(.hasthumb).hasthumb .elementthumb img { background-image: -o-linear-gradient(45deg, #e4edf6 25%, transparent 25%), -o-linear-gradient(315deg, #e4edf6 25%, transparent 25%), -o-linear-gradient(45deg, transparent 75%, #e4edf6 75%), -o-linear-gradient(315deg, transparent 75%, #e4edf6 75%); background-image: linear-gradient(45deg, #e4edf6 25%, transparent 25%), linear-gradient(135deg, #e4edf6 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #e4edf6 75%), linear-gradient(135deg, transparent 75%, #e4edf6 75%); -o-background-size: 8px 8px; background-size: 8px 8px; background-position: 0 0, 4px 0, 4px -4px, 0 4px; }
+.element.small.hasthumb .elementthumb.checkered img, .element.large:not(.hasthumb).hasthumb .elementthumb.checkered img { background-image: -o-linear-gradient(45deg, #e4edf6 25%, transparent 25%), -o-linear-gradient(315deg, #e4edf6 25%, transparent 25%), -o-linear-gradient(45deg, transparent 75%, #e4edf6 75%), -o-linear-gradient(315deg, transparent 75%, #e4edf6 75%); background-image: linear-gradient(45deg, #e4edf6 25%, transparent 25%), linear-gradient(135deg, #e4edf6 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #e4edf6 75%), linear-gradient(135deg, transparent 75%, #e4edf6 75%); -o-background-size: 8px 8px; background-size: 8px 8px; background-position: 0 0, 4px 0, 4px -4px, 0 4px; }
 
 body.ltr .element.small.hasthumb.hasstatus, body.ltr .element.large:not(.hasthumb).hasthumb.hasstatus { padding-left: 54px; }
 
@@ -1046,8 +1048,6 @@ body.rtl .element.small.hasthumb.hasstatus, body.rtl .element.large:not(.hasthum
 body.ltr .element.small.hasthumb.hasstatus .status, body.ltr .element.large:not(.hasthumb).hasthumb.hasstatus .status { left: 39px; }
 
 body.rtl .element.small.hasthumb.hasstatus .status, body.rtl .element.large:not(.hasthumb).hasthumb.hasstatus .status { right: 39px; }
-
-.element.small.hasthumb[data-type="craft\\elements\\User"] .elementthumb img, .element.large:not(.hasthumb).hasthumb[data-type="craft\\elements\\User"] .elementthumb img { background: #fff; border-radius: 50%; }
 
 .element.large.hasthumb { display: block; padding: 132px 7px 7px; width: 134px; box-sizing: border-box; }
 
@@ -1067,7 +1067,7 @@ body.ltr .element.large.hasthumb .elementthumb { left: 7px; }
 
 body.rtl .element.large.hasthumb .elementthumb { right: 7px; }
 
-.element.large.hasthumb .elementthumb img { background-image: -o-linear-gradient(45deg, #e4edf6 25%, transparent 25%), -o-linear-gradient(315deg, #e4edf6 25%, transparent 25%), -o-linear-gradient(45deg, transparent 75%, #e4edf6 75%), -o-linear-gradient(315deg, transparent 75%, #e4edf6 75%); background-image: linear-gradient(45deg, #e4edf6 25%, transparent 25%), linear-gradient(135deg, #e4edf6 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #e4edf6 75%), linear-gradient(135deg, transparent 75%, #e4edf6 75%); -o-background-size: 15px 15px; background-size: 15px 15px; background-position: 0 0, 7.5px 0, 7.5px -7.5px, 0 7.5px; }
+.element.large.hasthumb .elementthumb.checkered img { background-image: -o-linear-gradient(45deg, #e4edf6 25%, transparent 25%), -o-linear-gradient(315deg, #e4edf6 25%, transparent 25%), -o-linear-gradient(45deg, transparent 75%, #e4edf6 75%), -o-linear-gradient(315deg, transparent 75%, #e4edf6 75%); background-image: linear-gradient(45deg, #e4edf6 25%, transparent 25%), linear-gradient(135deg, #e4edf6 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #e4edf6 75%), linear-gradient(135deg, transparent 75%, #e4edf6 75%); -o-background-size: 15px 15px; background-size: 15px 15px; background-position: 0 0, 7.5px 0, 7.5px -7.5px, 0 7.5px; }
 
 .element.large.hasthumb .label { display: block; white-space: nowrap; overflow: hidden; -o-text-overflow: ellipsis; text-overflow: ellipsis; word-wrap: normal; }
 

@@ -4,13 +4,16 @@
 
 ### Added
 - Added the `useIframeResizer` config setting, which defaults to `false`. ([#6645](https://github.com/craftcms/cms/issues/6645))
+- Added `craft\base\ElementInterface::getHasCheckeredThumb()`.
+- Added `craft\base\ElementInterface::getHasRoundedThumb()`.
 
 ### Changed
 - Email fields now set `inputmode="email"` on their input.
 - URL fields now set `inputmode="url"` on their input.
 - Number fields now set `inputmode="numeric"` or `inputmode="decimal"` on their input, depending on whether they allow decimals.
 - Tightened up the top control panel headers.
-- User photos are now circular, and no longer have checkered backgrounds, except within the thumbnail view. ([#6646](https://github.com/craftcms/cms/pull/6646))
+- Element thumbnails no longer have checkered backgrounds, except for PNG, GIF, and SVG assets. ([#6646](https://github.com/craftcms/cms/pull/6646))
+- User photos are now circular, except in thumbnail view. ([#6646](https://github.com/craftcms/cms/pull/6646))
 - Setting the `previewIframeResizerOptions` config setting to `false` is no longer a way to disable iFrame Resizer, now that `useIframeResizer` exists. ([#6645](https://github.com/craftcms/cms/issues/6645))
 - The `_includes/forms/text.html` control panel template now supports passing an `inputmode` variable.
 - `craft\models\FieldLayout::setFields()` now accepts `null` to clear the currently memoized fields.

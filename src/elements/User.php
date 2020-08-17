@@ -1030,6 +1030,14 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
+    public function getHasRoundedThumb(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getIsEditable(): bool
     {
         return Craft::$app->getUser()->checkPermission('editUsers');

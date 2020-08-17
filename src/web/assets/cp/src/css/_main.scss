@@ -2039,6 +2039,10 @@ $elementInnerSpacing: 5px;
         max-width: 100%;
         max-height: 100%;
       }
+
+      &.rounded img {
+        border-radius: 50%;
+      }
     }
   }
 
@@ -2071,7 +2075,7 @@ $elementInnerSpacing: 5px;
         width: $smallThumbSize;
         height: $smallThumbSize;
 
-        img {
+        &.checkered img {
           @include checkered-bg(8px);
         }
       }
@@ -2082,12 +2086,6 @@ $elementInnerSpacing: 5px;
         .status {
           @include left($smallThumbSize + $elementInnerSpacing);
         }
-      }
-
-      // Custom styling for user photos
-      &[data-type="craft\\elements\\User"] .elementthumb img {
-        background: #fff;
-        border-radius: 50%;
       }
     }
   }
@@ -2114,7 +2112,7 @@ $elementInnerSpacing: 5px;
       width: $largeThumbSize;
       height: $largeThumbSize;
 
-      img {
+      &.checkered img {
         @include checkered-bg(15px);
       }
     }
