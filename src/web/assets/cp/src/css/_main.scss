@@ -2070,6 +2070,10 @@ $elementInnerSpacing: 5px;
         @include left(0);
         width: $smallThumbSize;
         height: $smallThumbSize;
+
+        img {
+          @include checkered-bg(8px);
+        }
       }
 
       &.hasstatus {
