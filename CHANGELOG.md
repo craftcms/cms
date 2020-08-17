@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.5.5 - 2020-08-17
 
 ### Added
 - Added the `useIframeResizer` config setting, which defaults to `false`. ([#6645](https://github.com/craftcms/cms/issues/6645))
