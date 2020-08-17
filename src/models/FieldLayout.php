@@ -436,9 +436,9 @@ class FieldLayout extends Model
     /**
      * Sets the custom fields included in this layout.
      *
-     * @param FieldInterface[] $fields
+     * @param FieldInterface[]|null $fields
      */
-    public function setFields(array $fields)
+    public function setFields(array $fields = null)
     {
         $this->_customFields = $fields;
     }

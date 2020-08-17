@@ -13,6 +13,7 @@
 - User photos are now circular, and no longer have checkered backgrounds, except within the thumbnail view. ([#6646](https://github.com/craftcms/cms/pull/6646))
 - Setting the `previewIframeResizerOptions` config setting to `false` is no longer a way to disable iFrame Resizer, now that `useIframeResizer` exists. ([#6645](https://github.com/craftcms/cms/issues/6645))
 - The `_includes/forms/text.html` control panel template now supports passing an `inputmode` variable.
+- `craft\models\FieldLayout::setFields()` now accepts `null` to clear the currently memoized fields.
 
 ### Fixed
 - Fixed a couple styling issues with element editor HUDs.
@@ -23,6 +24,7 @@
 - Fixed the styling of some control panel field instructions. ([#6640](https://github.com/craftcms/cms/issues/6640))
 - Fixed a bug where field instructions weren’t getting escaped. ([#6642](https://github.com/craftcms/cms/issues/6642))
 - Fixed a bug where the initial site created by the installer was still getting saved with its base URL set to `$DEFAULT_SITE_URL`, despite the base URL provided to the installer getting stored as an environment variable named `PRIMARY_SITE_URL`. ([#6650](https://github.com/craftcms/cms/issues/6650))
+- Fixed a bug where it wasn’t possible to add a new custom field to a field layout and set a value on an element for that field in the same request. ([#6651](https://github.com/craftcms/cms/issues/6651))
 
 ## 3.5.4 - 2020-08-13
 
