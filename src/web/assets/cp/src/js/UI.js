@@ -7,6 +7,7 @@ Craft.ui =
                 attr: {
                     'class': 'text',
                     type: (config.type || 'text'),
+                    inputmode: config.inputmode,
                     id: config.id,
                     size: config.size,
                     name: config.name,
@@ -59,6 +60,9 @@ Craft.ui =
         },
 
         createTextField: function(config) {
+            if (!config.id) {
+                config.id = 'text' + Math.floor(Math.random() * 1000000000);
+            }
             return this.createField(this.createTextInput(config), config);
         },
 
@@ -94,6 +98,9 @@ Craft.ui =
         },
 
         createCopyTextField: function(config) {
+            if (!config.id) {
+                config.id = 'copytext' + Math.floor(Math.random() * 1000000000);
+            }
             return this.createField(this.createCopyTextInput(config), config);
         },
 
@@ -146,6 +153,9 @@ Craft.ui =
         },
 
         createTextareaField: function(config) {
+            if (!config.id) {
+                config.id = 'textarea' + Math.floor(Math.random() * 1000000000);
+            }
             return this.createField(this.createTextarea(config), config);
         },
 
@@ -223,6 +233,9 @@ Craft.ui =
         },
 
         createSelectField: function(config) {
+            if (!config.id) {
+                config.id = 'select' + Math.floor(Math.random() * 1000000000);
+            }
             return this.createField(this.createSelect(config), config);
         },
 
@@ -277,8 +290,12 @@ Craft.ui =
         },
 
         createCheckboxField: function(config) {
+            if (!config.id) {
+                config.id = 'checkbox' + Math.floor(Math.random() * 1000000000);
+            }
+
             var $field = $('<div class="field checkboxfield"/>', {
-                id: (config.id ? config.id + '-field' : null)
+                id: `${config.id}-field`,
             });
 
             if (config.first) {
@@ -351,6 +368,9 @@ Craft.ui =
         },
 
         createCheckboxSelectField: function(config) {
+            if (!config.id) {
+                config.id = 'checkboxselect' + Math.floor(Math.random() * 1000000000);
+            }
             return this.createField(this.createCheckboxSelect(config), config);
         },
 
@@ -413,6 +433,9 @@ Craft.ui =
         },
 
         createLightswitchField: function(config) {
+            if (!config.id) {
+                config.id = 'lightswitch' + Math.floor(Math.random() * 1000000000);
+            }
             return this.createField(this.createLightswitch(config), config)
                 .addClass('lightswitch-field');
         },
@@ -455,6 +478,9 @@ Craft.ui =
         },
 
         createColorField: function(config) {
+            if (!config.id) {
+                config.id = 'color' + Math.floor(Math.random() * 1000000000);
+            }
             return this.createField(this.createColorInput(config), config);
         },
 
@@ -499,6 +525,9 @@ Craft.ui =
         },
 
         createDateField: function(config) {
+            if (!config.id) {
+                config.id = 'date' + Math.floor(Math.random() * 1000000000);
+            }
             return this.createField(this.createDateInput(config), config);
         },
 
@@ -772,6 +801,9 @@ Craft.ui =
         },
 
         createTimeField: function(config) {
+            if (!config.id) {
+                config.id = 'time' + Math.floor(Math.random() * 1000000000);
+            }
             return this.createField(this.createTimeInput(config), config);
         },
 

@@ -2108,6 +2108,22 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function getHasCheckeredThumb(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getHasRoundedThumb(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getEnabledForSite(int $siteId = null)
     {
         if ($siteId === null) {
@@ -3089,7 +3105,7 @@ abstract class Element extends Component implements ElementInterface
             return '';
         }
 
-        $html = Html::hiddenInput('fieldLayoutId', $fieldLayout->id);
+        $html = '';
 
         foreach ($fieldLayout->getTabs() as $tab) {
             foreach ($tab->elements as $element) {
@@ -3098,6 +3114,8 @@ abstract class Element extends Component implements ElementInterface
                 }
             }
         }
+
+        $html .= Html::hiddenInput('fieldLayoutId', $fieldLayout->id);
 
         return $html;
     }

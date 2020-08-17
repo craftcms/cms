@@ -54,7 +54,7 @@ Craft.LightSwitch = Garnish.Base.extend(
             });
 
             if (this.$outerContainer.attr('id')) {
-                $(`label[for="${this.$outerContainer.attr('id')}"`).on('click', () => {
+                $(`label[for="${this.$outerContainer.attr('id')}"]`).on('click', () => {
                     this.$outerContainer.focus();
                 });
             }

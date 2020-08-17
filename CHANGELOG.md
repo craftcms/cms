@@ -1,5 +1,34 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.5.5 - 2020-08-17
+
+### Added
+- Added the `useIframeResizer` config setting, which defaults to `false`. ([#6645](https://github.com/craftcms/cms/issues/6645))
+- Added `craft\base\ElementInterface::getHasCheckeredThumb()`.
+- Added `craft\base\ElementInterface::getHasRoundedThumb()`.
+
+### Changed
+- Email fields now set `inputmode="email"` on their input.
+- URL fields now set `inputmode="url"` on their input.
+- Number fields now set `inputmode="numeric"` or `inputmode="decimal"` on their input, depending on whether they allow decimals.
+- Tightened up the top control panel headers.
+- Element thumbnails no longer have checkered backgrounds, except for PNG, GIF, and SVG assets. ([#6646](https://github.com/craftcms/cms/pull/6646))
+- User photos are now circular, except in thumbnail view. ([#6646](https://github.com/craftcms/cms/pull/6646))
+- Setting the `previewIframeResizerOptions` config setting to `false` is no longer a way to disable iFrame Resizer, now that `useIframeResizer` exists. ([#6645](https://github.com/craftcms/cms/issues/6645))
+- The `_includes/forms/text.html` control panel template now supports passing an `inputmode` variable.
+- `craft\models\FieldLayout::setFields()` now accepts `null` to clear the currently memoized fields.
+
+### Fixed
+- Fixed a couple styling issues with element editor HUDs.
+- Fixed a bug where the quality setting was being ignored for image transforms that were not in either JPG or PNG format. ([#6629](https://github.com/craftcms/cms/issues/6629))
+- Fixed a bug where mail wouldn’t send if the `testToEmailAddress` config setting was set to `false`.
+- Fixed a JavaScript error that could occur in Safari 12. ([#6635](https://github.com/craftcms/cms/issues/6635))
+- Fixed a bug where `craft\services\Globals::getAllSets()`, `getEditableSets()`, `getSetById()`, and `getSetByHandle()` could return global sets in the wrong site, if the current site had been changed since the first time the global sets had been memoized. ([#6636](https://github.com/craftcms/cms/issues/6636))
+- Fixed the styling of some control panel field instructions. ([#6640](https://github.com/craftcms/cms/issues/6640))
+- Fixed a bug where field instructions weren’t getting escaped. ([#6642](https://github.com/craftcms/cms/issues/6642))
+- Fixed a bug where the initial site created by the installer was still getting saved with its base URL set to `$DEFAULT_SITE_URL`, despite the base URL provided to the installer getting stored as an environment variable named `PRIMARY_SITE_URL`. ([#6650](https://github.com/craftcms/cms/issues/6650))
+- Fixed a bug where it wasn’t possible to add a new custom field to a field layout and set a value on an element for that field in the same request. ([#6651](https://github.com/craftcms/cms/issues/6651))
+
 ## 3.5.4 - 2020-08-13
 
 ### Added
@@ -26,10 +55,10 @@
 - `craft\models\FieldLayout::createForm()` now supports passing a `namespace` key into the `$config` argument, to namespace the tab contents.
 
 ### Fixed
-- Fixed an infinite redirect that could occur if Craft was installed within a subdirectory of the webroot. ([##6616](https://github.com/craftcms/cms/issues/6616))
+- Fixed an infinite redirect that could occur if Craft was installed within a subdirectory of the webroot. ([#6616](https://github.com/craftcms/cms/issues/6616))
 - Fixed a bug where all Title fields within Quick Post widgets had the same input ID.
 - Fixed a bug where Title fields weren’t showing change status badges when editing an entry draft.
-- Fixed an error that could occur when using the `formatDateTime` directive on system that did not have the `Intl` PHP extension installed. ([#6614](https://github.com/craftcms/cms/issues/6614))
+- Fixed an error that could occur when using the `formatDateTime` GraphQL directive on environments that didn’t have the `Intl` PHP extension installed. ([#6614](https://github.com/craftcms/cms/issues/6614))
 - Fixed a bug where template profiling was interfering with Twig’s ability to guess offending template lines in error reports.
 - Fixed a bug where soft-deleted categories and entries within Structure sections had two “Delete permanently” actions. ([#6619](https://github.com/craftcms/cms/issues/6619))
 - Fixed a bug where field handles were being displayed within element editor HUDs. ([#6620](https://github.com/craftcms/cms/issues/6620))

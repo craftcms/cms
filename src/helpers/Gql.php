@@ -346,12 +346,12 @@ class Gql
         return $value;
     }
 
-
     /**
      * Prepare arguments intended for Asset transforms.
      *
      * @param array $arguments
      * @return array|string
+     * @since 3.5.3
      */
     public static function prepareTransformArguments(array $arguments)
     {

@@ -2039,6 +2039,10 @@ $elementInnerSpacing: 5px;
         max-width: 100%;
         max-height: 100%;
       }
+
+      &.rounded img {
+        border-radius: 50%;
+      }
     }
   }
 
@@ -2071,7 +2075,7 @@ $elementInnerSpacing: 5px;
         width: $smallThumbSize;
         height: $smallThumbSize;
 
-        img {
+        &.checkered img {
           @include checkered-bg(8px);
         }
       }
@@ -2108,7 +2112,7 @@ $elementInnerSpacing: 5px;
       width: $largeThumbSize;
       height: $largeThumbSize;
 
-      img {
+      &.checkered img {
         @include checkered-bg(15px);
       }
     }
@@ -2966,6 +2970,7 @@ ul.tree,
     & > .field,
     & > .data {
       display: flex;
+      flex-warp: wrap; // for error lists
       justify-content: space-between;
       align-items: center;
       flex-wrap: nowrap;
@@ -3042,7 +3047,6 @@ ul.tree,
 
     & > .field {
       &.has-errors {
-        margin: 0 -1px !important;
         border: 1px solid $errorColor !important;
 
         &:first-child {
@@ -3063,13 +3067,6 @@ ul.tree,
       & > .heading {
         & > label {
           font-weight: normal;
-
-          &.required:after {
-            position: absolute;
-            top: 6px;
-            @include left(-13px);
-            @include margin-left(0);
-          }
         }
       }
 
@@ -3130,13 +3127,11 @@ ul.tree,
         list-style-type: none;
       }
     }
+  }
 
-    & > .field + .field,
-    & > .field + .flex-fields,
-    & > .flex-fields + .flex-fields,
-    & > .flex-fields + .field {
-      border-top: 1px solid $hairlineColor;
-    }
+  & > .field:not(:first-child),
+  & > .flex-fields + .field {
+    border-top: 1px solid $hairlineColor;
   }
 
   & > .flex-fields {
@@ -3527,12 +3522,16 @@ ul.tree,
 
     .meta {
       .preview-thumb-container {
-        margin: -8px 0 8px;
+        margin: -8px -24px 8px;
       }
 
       .field {
         padding-left: 24px;
         padding-right: 24px;
+
+        &.has-errors {
+          border-radius: 0;
+        }
       }
     }
   }
@@ -4119,6 +4118,7 @@ fieldset {
 
   & > .heading {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     position: relative;
     margin-top: -5px;
@@ -4145,6 +4145,11 @@ fieldset {
     & + .instructions {
       margin-top: -3px;
     }
+
+    // BC
+    & > .instructions {
+      width: 100%;
+    }
   }
 
   & > .instructions {
@@ -4166,6 +4171,8 @@ fieldset {
 }
 
 .field > .instructions,
+// BC
+.field > .heading > .instructions,
 .checkboxfield .instructions {
   color: $mediumTextColor;
 

@@ -2033,7 +2033,17 @@ JS;
             ];
             $sizesHtml = "{$thumbSize}px";
             $srcsetHtml = implode(', ', $srcsets);
-            $imgHtml = "<div class='elementthumb' data-sizes='{$sizesHtml}' data-srcset='{$srcsetHtml}'></div>";
+            $imgHtml = Html::tag('div', '', [
+                'class' => array_filter([
+                    'elementthumb',
+                    $element->getHasCheckeredThumb() ? 'checkered' : null,
+                    $elementSize === 'small' && $element->getHasRoundedThumb() ? 'rounded' : null,
+                ]),
+                'data' => [
+                    'sizes' => $sizesHtml,
+                    'srcset' => $srcsetHtml,
+                ],
+            ]);
         } else {
             $imgHtml = '';
         }

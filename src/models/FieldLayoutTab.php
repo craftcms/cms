@@ -267,6 +267,11 @@ class FieldLayoutTab extends Model
                 $field,
             ]);
         }
+
+        // Clear the field layout's field cache
+        if ($this->_layout !== null) {
+            $this->_layout->setFields(null);
+        }
     }
 
     /**

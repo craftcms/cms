@@ -145,7 +145,7 @@ class InstallController extends Controller
         if ($siteUrl[0] !== '@' && $siteUrl[0] !== '$') {
             try {
                 Craft::$app->getConfig()->setDotEnvVar('PRIMARY_SITE_URL', $siteUrl);
-                $siteUrl = '$DEFAULT_SITE_URL';
+                $siteUrl = '$PRIMARY_SITE_URL';
             } catch (Exception $e) {
                 // that's fine, we'll just store the entered URL
             }

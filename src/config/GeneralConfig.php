@@ -711,9 +711,7 @@ class GeneralConfig extends BaseObject
      */
     public $preventUserEnumeration = false;
     /**
-     * @var array|false Custom [iFrame Resizer options](http://davidjbradshaw.github.io/iframe-resizer/#options) that should be used for preview iframes.
-     *
-     * Set this to `false` to disable the iFrame Resizer altogether.
+     * @var array Custom [iFrame Resizer options](http://davidjbradshaw.github.io/iframe-resizer/#options) that should be used for preview iframes.
      *
      * ```php
      * 'previewIframeResizerOptions' => [
@@ -994,6 +992,27 @@ class GeneralConfig extends BaseObject
      * @var bool Whether Craft should set users’ usernames to their email addresses, rather than let them set their username separately.
      */
     public $useEmailAsUsername = false;
+    /**
+     * @var bool Whether [iFrame Resizer options](http://davidjbradshaw.github.io/iframe-resizer/#options) should be used for Live Preview.
+     *
+     * Using iFrame Resizer makes it possible for Craft to retain the preview’s scroll position between page loads, for cross-origin web pages.
+     *
+     * It works by setting the height of the iframe to match the height of the inner web page, and the iframe’s container will
+     * be scrolled rather than the iframe document itself. This can lead to some unexpected CSS issues, however, because the previewed viewport height
+     * will be taller than the visible portion of the iframe.
+     *
+     * If you have a [decoupled front-end](https://craftcms.com/docs/3.x/entries.html#previewing-decoupled-front-ends), you will need to include
+     * [iframeResizer.contentWindow.min.js](https://raw.github.com/davidjbradshaw/iframe-resizer/master/js/iframeResizer.contentWindow.min.js) on your
+     * page as well for this to work. You can conditionally include it for only Live Preview requests by checking if the requested URL contains a
+     * `x-craft-live-preview` query string parameter.
+     *
+     * ::: tip
+     * You can customize the behavior of iFrame Resizer via the <config3:previewIframeResizerOptions> config setting.
+     * :::
+     *
+     * @since 3.5.5
+     */
+    public $useIframeResizer = false;
     /**
      * @var bool Whether Craft should specify the path using `PATH_INFO` or as a query string parameter when generating URLs.
      *
@@ -1385,11 +1404,13 @@ class GeneralConfig extends BaseObject
     public function getTestToEmailAddress(): array
     {
         $to = [];
-        foreach ((array)$this->testToEmailAddress as $key => $value) {
-            if (is_numeric($key)) {
-                $to[$value] = Craft::t('app', 'Test Recipient');
-            } else {
-                $to[$key] = $value;
+        if ($this->testToEmailAddress) {
+            foreach ((array)$this->testToEmailAddress as $key => $value) {
+                if (is_numeric($key)) {
+                    $to[$value] = Craft::t('app', 'Test Recipient');
+                } else {
+                    $to[$key] = $value;
+                }
             }
         }
         return $to;
