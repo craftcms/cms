@@ -1037,8 +1037,6 @@ body.ltr .element.small.hasthumb .elementthumb, body.ltr .element.large:not(.has
 
 body.rtl .element.small.hasthumb .elementthumb, body.rtl .element.large:not(.hasthumb).hasthumb .elementthumb { right: 0; }
 
-.element.small.hasthumb .elementthumb img, .element.large:not(.hasthumb).hasthumb .elementthumb img { background-image: -o-linear-gradient(45deg, #e4edf6 25%, transparent 25%), -o-linear-gradient(315deg, #e4edf6 25%, transparent 25%), -o-linear-gradient(45deg, transparent 75%, #e4edf6 75%), -o-linear-gradient(315deg, transparent 75%, #e4edf6 75%); background-image: linear-gradient(45deg, #e4edf6 25%, transparent 25%), linear-gradient(135deg, #e4edf6 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #e4edf6 75%), linear-gradient(135deg, transparent 75%, #e4edf6 75%); -o-background-size: 8px 8px; background-size: 8px 8px; background-position: 0 0, 4px 0, 4px -4px, 0 4px; }
-
 body.ltr .element.small.hasthumb.hasstatus, body.ltr .element.large:not(.hasthumb).hasthumb.hasstatus { padding-left: 54px; }
 
 body.rtl .element.small.hasthumb.hasstatus, body.rtl .element.large:not(.hasthumb).hasthumb.hasstatus { padding-right: 54px; }
@@ -1046,6 +1044,8 @@ body.rtl .element.small.hasthumb.hasstatus, body.rtl .element.large:not(.hasthum
 body.ltr .element.small.hasthumb.hasstatus .status, body.ltr .element.large:not(.hasthumb).hasthumb.hasstatus .status { left: 39px; }
 
 body.rtl .element.small.hasthumb.hasstatus .status, body.rtl .element.large:not(.hasthumb).hasthumb.hasstatus .status { right: 39px; }
+
+.element.small.hasthumb[data-type="craft\\elements\\User"] .elementthumb img, .element.large:not(.hasthumb).hasthumb[data-type="craft\\elements\\User"] .elementthumb img { background: #fff; border-radius: 50%; }
 
 .element.large.hasthumb { display: block; padding: 132px 7px 7px; width: 134px; box-sizing: border-box; }
 

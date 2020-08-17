@@ -10,6 +10,7 @@
 - URL fields now set `inputmode="url"` on their input.
 - Number fields now set `inputmode="numeric"` or `inputmode="decimal"` on their input, depending on whether they allow decimals.
 - Tightened up the top control panel headers.
+- User photos are now circular, and no longer have checkered backgrounds, except within the thumbnail view. ([#6646](https://github.com/craftcms/cms/pull/6646))
 - Setting the `previewIframeResizerOptions` config setting to `false` is no longer a way to disable iFrame Resizer, now that `useIframeResizer` exists. ([#6645](https://github.com/craftcms/cms/issues/6645))
 - The `_includes/forms/text.html` control panel template now supports passing an `inputmode` variable.
 

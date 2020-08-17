@@ -2070,10 +2070,6 @@ $elementInnerSpacing: 5px;
         @include left(0);
         width: $smallThumbSize;
         height: $smallThumbSize;
-
-        img {
-          @include checkered-bg(8px);
-        }
       }
 
       &.hasstatus {
@@ -2082,6 +2078,12 @@ $elementInnerSpacing: 5px;
         .status {
           @include left($smallThumbSize + $elementInnerSpacing);
         }
+      }
+
+      // Custom styling for user photos
+      &[data-type="craft\\elements\\User"] .elementthumb img {
+        background: #fff;
+        border-radius: 50%;
       }
     }
   }
