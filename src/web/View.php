@@ -2033,7 +2033,15 @@ JS;
             ];
             $sizesHtml = "{$thumbSize}px";
             $srcsetHtml = implode(', ', $srcsets);
-            $imgHtml = "<div class='elementthumb' data-sizes='{$sizesHtml}' data-srcset='{$srcsetHtml}'></div>";
+            $imgHtml = Html::tag('div', '', [
+                'class' => [
+                    'elementthumb',
+                ],
+                'data' => [
+                    'sizes' => $sizesHtml,
+                    'srcset' => $srcsetHtml,
+                ],
+            ]);
         } else {
             $imgHtml = '';
         }
