@@ -33,7 +33,7 @@
 {% if craft.app.config.general.pathParam %}
     {% set baseParams = baseParams|withoutKey(craft.app.config.general.pathParam) %}
 {% endif %}
-{% set supportedSiteIds = supportedSiteIds ?? (craft.app.isMultiSite ? element.getSupportedSites()|where(s => s.propagate ?? true) : [element.siteId])|column(s => s.siteId ?? s) %}
+{% set supportedSiteIds = supportedSiteIds ?? (craft.app.isMultiSite ? element.getSupportedSites()|filter(s => s.propagate ?? true) : [element.siteId])|column(s => s.siteId ?? s) %}
 {% set editableSiteIds = editableSiteIds ?? supportedSiteIds|intersect(craft.app.sites.getEditableSiteIds()) %}
 {% set isMultiSiteElement = supportedSiteIds|length > 1 %}
 {% set canEditMultipleSites = editableSiteIds|length > 1 %}

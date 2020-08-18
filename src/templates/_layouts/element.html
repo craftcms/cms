@@ -31,7 +31,7 @@
 {% set isCurrent = not isDraft and not isRevision %}
 {% set allSites = craft.app.isMultiSite ? element.getSupportedSites() : [element.siteId] %}
 {% set allEditableSiteIds = craft.app.sites.getEditableSiteIds() %}
-{% set propSiteIds = allSites|where(s => s.propagate ?? true)|column(s => s.siteId ?? s) %}
+{% set propSiteIds = allSites|filter(s => s.propagate ?? true)|column(s => s.siteId ?? s) %}
 {% set propEditableSiteIds = propSiteIds|intersect(allEditableSiteIds) %}
 {% set isMultiSiteElement = craft.app.isMultiSite and allSites|length > 1 %}
 {% set addlEditableSiteIds = allSites|column(s => s.siteId ?? s)|diff(propSiteIds)|intersect(allEditableSiteIds) %}
