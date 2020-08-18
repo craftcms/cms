@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed a bug where nested block content wasn’t getting updated properly when editing an entry draft, if the draft had been created since the initial page load. ([#6480](https://github.com/craftcms/cms/issues/6480))
+- Fixed a bug where entry revision menus could show site group headings even if the user didn’t have permission to edit any sites within that group. ([#6615](https://github.com/craftcms/cms/issues/6615))
 
 ## 3.5.5 - 2020-08-17
 
