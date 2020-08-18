@@ -822,13 +822,23 @@ Craft.DraftEditor = Garnish.Base.extend(
             }
             let lb = encodeURIComponent('[');
             let rb = encodeURIComponent(']');
-            return data
-                .replace(new RegExp(`(&fields${lb}[^=]+${rb}${lb})(${idsRE})(${rb})`, 'g'), (m, pre, id, post) => {
-                    return pre + this.duplicatedElements[id] + post;
-                })
-                .replace(new RegExp(`(&fields${lb}[^=]+=)(${idsRE})\\b`, 'g'), (m, pre, id) => {
-                    return pre + this.duplicatedElements[id];
-                });
+            // Keep replacing field IDs until data stops changing
+            while (true) {
+                if (data === (
+                    data = data
+                        // &fields[...][X]
+                        .replace(new RegExp(`(&fields${lb}[^=]+${rb}${lb})(${idsRE})(${rb})`, 'g'), (m, pre, id, post) => {
+                            return pre + this.duplicatedElements[id] + post;
+                        })
+                        // &fields[...=X
+                        .replace(new RegExp(`(&fields${lb}[^=]+=)(${idsRE})\\b`, 'g'), (m, pre, id) => {
+                            return pre + this.duplicatedElements[id];
+                        })
+                )) {
+                    break;
+                }
+            }
+            return data;
         },
 
         getDeltaNames: function() {

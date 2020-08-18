@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where nested block content wasn’t getting updated properly when editing an entry draft, if the draft had been created since the initial page load. ([#6480](https://github.com/craftcms/cms/issues/6480))
+
 ## 3.5.5 - 2020-08-17
 
 ### Added
