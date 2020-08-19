@@ -1401,7 +1401,8 @@ ul.icons {
 }
 
 .btn.submit:not(.disabled):not(.inactive):hover,
-.btn.submit:not(.disabled):not(.inactive).hover {
+.btn.submit:not(.disabled):not(.inactive).hover,
+.btn.submit:not(.disabled):not(.inactive):focus {
   background-color: darken($primaryColor, 5%) !important;
 }
 
@@ -1417,8 +1418,10 @@ ul.icons {
 
 .secondary-buttons .btn.submit:not(.disabled):not(.inactive):hover,
 .secondary-buttons .btn.submit:not(.disabled):not(.inactive).hover,
+.secondary-buttons .btn.submit:not(.disabled):not(.inactive):focus,
 .btn.secondary:not(.disabled):not(.inactive):hover,
-.btn.secondary:not(.disabled):not(.inactive).hover {
+.btn.secondary:not(.disabled):not(.inactive).hover,
+.btn.secondary:not(.disabled):not(.inactive):focus {
   background-color: darken($secondaryColor, 5%) !important;
 }
 
