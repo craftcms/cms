@@ -12,7 +12,8 @@
 - Fixed a bug where entry revision menus could show site group headings even if the user didn’t have permission to edit any sites within that group. ([#6615](https://github.com/craftcms/cms/issues/6615))
 - Fixed a bug where it was possible to triger the “Clear Caches” and “Invalidate Data Caches” actions of the Caches utility, even if no options were selected. ([#6661](https://github.com/craftcms/cms/issues/6661))
 - Fixed a bug where it was possible to select parent entries that didn’t belong to the same site. ([#6667](https://github.com/craftcms/cms/issues/6667))
-- Fixed a bug where it was impossible to apply transforms via arguments to the `width` and `height` fields on an asset using GraphQL API. ([#6660](https://github.com/craftcms/cms/issues/6660))
+- Fixed a bug where it wasn’t possible to apply transform arguments to the `width` and `height` fields on assets via GraphQL. ([#6660](https://github.com/craftcms/cms/issues/6660))
+- Fixed a bug where the “Save and continue editing” Save button option wasn’t working within Quick Post widgets.
 
 ## 3.5.5 - 2020-08-17
 
