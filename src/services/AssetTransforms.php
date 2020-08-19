@@ -1238,11 +1238,7 @@ class AssetTransforms extends Component
      */
     public function getTransformFilename(Asset $asset, AssetTransformIndex $index): string
     {
-        if (empty($index->filename)) {
-            return $asset->filename;
-        }
-
-        return $index->filename;
+        return $index->filename ?: $asset->filename;
     }
 
     /**
