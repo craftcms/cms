@@ -14,6 +14,7 @@
 - Fixed a bug where it was possible to select parent entries that didn’t belong to the same site. ([#6667](https://github.com/craftcms/cms/issues/6667))
 - Fixed a bug where it wasn’t possible to apply transform arguments to the `width` and `height` fields on assets via GraphQL. ([#6660](https://github.com/craftcms/cms/issues/6660))
 - Fixed a bug where the “Save and continue editing” Save button option wasn’t working within Quick Post widgets.
+- Fixed a bug where the “Select all” checkbox wouldn’t select all checkboxes in the list. ([#6678](https://github.com/craftcms/cms/issues/6678))
 
 ## 3.5.5 - 2020-08-17
 
