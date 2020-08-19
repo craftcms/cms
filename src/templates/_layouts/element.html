@@ -151,7 +151,7 @@
                 {% if canUpdateSource and saveSourceAction %}
                     <div id="save-draft-btn" class="btn">{{ 'Save as a draft'|t('app') }}</div>
                 {% else %}
-                    <input type="submit" id="save-draft-btn" class="btn submit" value="{{ 'Save as a draft'|t('app') }}">
+                    <button type="submit" id="save-draft-btn" class="btn submit">{{ 'Save as a draft'|t('app') }}</button>
                 {% endif %}
             </div>
         {% endif %}
@@ -186,7 +186,7 @@
     {% elseif isDraft %}
         {% if canUpdateSource and saveSourceAction and (applyDraftAction ?? false) %}
             <div id="publish-changes-btn-container">
-                <input type="button" class="btn secondary formsubmit" data-action="{{ applyDraftAction }}" value="{{ 'Publish changes'|t('app') }}">
+                <button type="button" class="btn secondary formsubmit" data-action="{{ applyDraftAction }}">{{ 'Publish changes'|t('app') }}</button>
             </div>
         {% endif %}
     {% elseif isRevision %}
@@ -197,7 +197,7 @@
                 {{ redirectInput('{cpEditUrl}') }}
                 {{ hiddenInput('revisionId', element.revisionId) }}
                 <div class="secondary-buttons">
-                    <input type="button" class="btn submit formsubmit" value="{{ 'Revert {type} to this revision'|t('app', { type: element.lowerDisplayName() }) }}">
+                    <button type="button" class="btn submit formsubmit">{{ 'Revert {type} to this revision'|t('app', { type: element.lowerDisplayName() }) }}</button>
                 </div>
             </form>
         {% endif %}
