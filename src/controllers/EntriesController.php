@@ -132,9 +132,7 @@ class EntriesController extends BaseEntriesController
             $excludeIds[] = $entry->getSourceId();
 
             $variables['parentOptionCriteria'] = [
-                'siteId' => '*',
-                'preferSites' => [$site->id],
-                'unique' => true,
+                'siteId' => $site->id,
                 'sectionId' => $section->id,
                 'status' => null,
                 'where' => ['not in', 'elements.id', $excludeIds]
