@@ -125,9 +125,9 @@
                 <div class="flex">
                     {% include '_layouts/components/crumbs' %}
                     <div class="flex-grow"></div>
-                    <div id="user-info" class="btn menubtn" data-menu-anchor=".header-photo" role="button">
+                    <button type="button" id="user-info" class="btn menubtn" data-menu-anchor=".header-photo" role="button">
                         {{ userPhoto }}
-                    </div>
+                    </button>
                     <div class="menu" data-align="right">
                         <ul>
                             <li>
@@ -191,7 +191,7 @@
                         {# sidebar #}
                         {% if sidebar %}
                             <div id="sidebar-toggle-container">
-                                <a id="sidebar-toggle" class="btn"><span id="selected-sidebar-item-label"></span></a>
+                                <button type="button" id="sidebar-toggle" class="btn"><span id="selected-sidebar-item-label"></span></button>
                             </div>
                             <div id="sidebar-container">
                                 <div id="sidebar" class="sidebar">
@@ -248,7 +248,7 @@
         <div class="btngroup">
             <button type="submit" class="btn submit">{{ 'Save'|t('app') }}</button>
             {% if formActions ?? false %}
-                <div class="btn submit menubtn"></div>
+                <button type="button" class="btn submit menubtn"></button>
                 {% include '_layouts/components/form-action-menu' %}
             {% endif %}
         </div>

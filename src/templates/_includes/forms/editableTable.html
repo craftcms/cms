@@ -146,7 +146,7 @@
     </tbody>
 </table>
 {% if not staticRows and not fixedRows %}
-    <div class="btn add icon">{{ addRowLabel is defined ? addRowLabel : "Add a row"|t('app') }}</div>
+    <button type="button" class="btn add icon">{{ addRowLabel is defined ? addRowLabel : "Add a row"|t('app') }}</button>
 {% endif %}
 
 {% if initJs %}

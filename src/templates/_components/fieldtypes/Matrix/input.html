@@ -81,11 +81,11 @@
         <div class="buttons">
             <div class="btngroup">
                 {% for blockType in blockTypes %}
-                    <div class="btn dashed{% if loop.first %} add icon{% endif %}" data-type="{{ blockType.handle }}">{{ blockType.name|t('site') }}</div>
+                    <button type="button" class="btn dashed{% if loop.first %} add icon{% endif %}" data-type="{{ blockType.handle }}">{{ blockType.name|t('site') }}</button>
                 {% endfor %}
             </div>
 
-            <div class="btn dashed add icon menubtn hidden">{{ "Add a block"|t('app') }}</div>
+            <button type="button" class="btn dashed add icon menubtn hidden">{{ "Add a block"|t('app') }}</button>
             <div class="menu">
                 <ul>
                     {% for blockType in blockTypes %}

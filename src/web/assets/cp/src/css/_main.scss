@@ -2700,6 +2700,7 @@ table.editable {
 
   & + .btn.add {
     display: block;
+    width: 100%;
     border-radius: 0 0 $mediumBorderRadius $mediumBorderRadius;
     border: 1px dashed $mediumHairlineColor;
     border-top-width: 0;
