@@ -331,7 +331,7 @@ return [
     'Invalid transform handle: {handle}' => '유효하지 않은 변환 핸들: {handle}',
     'Invalid username or email.' => '유효하지 않은 사용자명 또는 이메일.',
     'Invalid username or password.' => '유효하지 않은 사용자명 또는 비밀번호',
-    'It looks like someone is currently performing a system update.<br>Only continue if you’re sure that’s not the case.' => '다른 사용자가 현재 시스템 업데이트를 수행 중인 것 같습니다.<br/>그러한 경우가 아님이 확실할 경우에만 계속하십시오.',
+    'It looks like someone is currently performing a system update.<br>Only continue if you’re sure that’s not the case.' => '다른 사용자가 현재 시스템 업데이트를 수행 중인 것 같습니다.<br>그러한 경우가 아님이 확실할 경우에만 계속하십시오.',
     'It’s not possible to rename the top folder of a Volume.' => '볼륨의 최상위 폴더 이름은 바꿀 수 없습니다.',
     'JSON' => 'JSON',
     'JavaScript' => 'JavaScript',

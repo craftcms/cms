@@ -331,7 +331,7 @@ return [
     'Invalid transform handle: {handle}' => 'Ugyldigt transform-nøgle: {handle}',
     'Invalid username or email.' => 'Ugyldigt brugernavn eller email.',
     'Invalid username or password.' => 'Forkert brugernavn eller kodeord.',
-    'It looks like someone is currently performing a system update.<br>Only continue if you’re sure that’s not the case.' => 'Det ser ud til, at en systemopdatering er ved at blive udført.<br/>Fortsæt kun, hvis du er sikker på, at det ikke er tilfældet.',
+    'It looks like someone is currently performing a system update.<br>Only continue if you’re sure that’s not the case.' => 'Det ser ud til, at en systemopdatering er ved at blive udført.<br>Fortsæt kun, hvis du er sikker på, at det ikke er tilfældet.',
     'It’s not possible to rename the top folder of a Volume.' => 'Den øverste mappe på en diskenhed kan ikke omdøbes.',
     'JSON' => 'JSON',
     'JavaScript' => 'JavaScript',

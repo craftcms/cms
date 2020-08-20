@@ -331,7 +331,7 @@ return [
     'Invalid transform handle: {handle}' => 'Ungültiger Transformations-Handle: {handle}',
     'Invalid username or email.' => 'Der Benutzername oder die E-Mail-Adresse ist ungültig.',
     'Invalid username or password.' => 'Der Benutzername oder das Passwort ist ungültig.',
-    'It looks like someone is currently performing a system update.<br>Only continue if you’re sure that’s not the case.' => 'Es sieht aus, als ob gerade ein System-Update durchgeführt würde.<br/>Fahren Sie nur fort, wenn Sie sicher sind, dass dies nicht der Fall ist.',
+    'It looks like someone is currently performing a system update.<br>Only continue if you’re sure that’s not the case.' => 'Es sieht aus, als ob gerade ein System-Update durchgeführt würde.<br>Fahren Sie nur fort, wenn Sie sicher sind, dass dies nicht der Fall ist.',
     'It’s not possible to rename the top folder of a Volume.' => 'Der oberste Ordner eines Volumen kann nicht umbenannt werden.',
     'JSON' => 'JSON',
     'JavaScript' => 'JavaScript',
