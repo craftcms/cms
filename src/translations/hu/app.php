@@ -331,7 +331,7 @@ return [
     'Invalid transform handle: {handle}' => 'Érvénytelen átvitelkezelő: {handle}',
     'Invalid username or email.' => 'Érvénytelen felhasználónév vagy email.',
     'Invalid username or password.' => 'Hibás felhasználónév vagy jelszó.',
-    'It looks like someone is currently performing a system update.<br>Only continue if you’re sure that’s not the case.' => 'Úgy tűnik, valaki épp rendszerfrissítést végez.<br/>Csak akkor folytassa, ha biztos benne, hogy nem ez a helyzet.',
+    'It looks like someone is currently performing a system update.<br>Only continue if you’re sure that’s not the case.' => 'Úgy tűnik, valaki épp rendszerfrissítést végez.<br>Csak akkor folytassa, ha biztos benne, hogy nem ez a helyzet.',
     'It’s not possible to rename the top folder of a Volume.' => 'A kötet legfelső szintű mappáját nem lehet átnevezni.',
     'JSON' => 'JSON',
     'JavaScript' => 'Java script',

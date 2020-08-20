@@ -331,7 +331,7 @@ return [
     'Invalid transform handle: {handle}' => 'Nesprávný identifikátor transformace: {handle}',
     'Invalid username or email.' => 'Neplatné jméno nebo heslo.',
     'Invalid username or password.' => 'Neplatné jméno nebo heslo.',
-    'It looks like someone is currently performing a system update.<br>Only continue if you’re sure that’s not the case.' => 'Vypadá to, že někdo právě provádí aktualizaci systému.<br/>Pokračujte, pouze pokud máte jistotu, že k tomu nedochází.',
+    'It looks like someone is currently performing a system update.<br>Only continue if you’re sure that’s not the case.' => 'Vypadá to, že někdo právě provádí aktualizaci systému.<br>Pokračujte, pouze pokud máte jistotu, že k tomu nedochází.',
     'It’s not possible to rename the top folder of a Volume.' => 'Nelze přejmenovat složku na nejvyšší úrovni svazku.',
     'JSON' => 'JSON',
     'JavaScript' => 'JavaScript',
