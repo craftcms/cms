@@ -34,7 +34,7 @@ class RestoreController extends Controller
     public function actionDb(string $path = null): int
     {
         if (!is_file($path)) {
-            $this->stderr('Backup file doesn\'t exist: ' . $path);
+            $this->stderr("Backup file doesn't exist: $path" . PHP_EOL);
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
