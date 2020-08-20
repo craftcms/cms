@@ -1401,7 +1401,8 @@ ul.icons {
 }
 
 .btn.submit:not(.disabled):not(.inactive):hover,
-.btn.submit:not(.disabled):not(.inactive).hover {
+.btn.submit:not(.disabled):not(.inactive).hover,
+.btn.submit:not(.disabled):not(.inactive):focus {
   background-color: darken($primaryColor, 5%) !important;
 }
 
@@ -1417,8 +1418,10 @@ ul.icons {
 
 .secondary-buttons .btn.submit:not(.disabled):not(.inactive):hover,
 .secondary-buttons .btn.submit:not(.disabled):not(.inactive).hover,
+.secondary-buttons .btn.submit:not(.disabled):not(.inactive):focus,
 .btn.secondary:not(.disabled):not(.inactive):hover,
-.btn.secondary:not(.disabled):not(.inactive).hover {
+.btn.secondary:not(.disabled):not(.inactive).hover,
+.btn.secondary:not(.disabled):not(.inactive):focus {
   background-color: darken($secondaryColor, 5%) !important;
 }
 
@@ -2697,6 +2700,7 @@ table.editable {
 
   & + .btn.add {
     display: block;
+    width: 100%;
     border-radius: 0 0 $mediumBorderRadius $mediumBorderRadius;
     border: 1px dashed $mediumHairlineColor;
     border-top-width: 0;
@@ -4468,6 +4472,9 @@ fieldset {
     @include margin-left(4px);
     cursor: pointer;
     color: $darkHairlineColor;
+    border: none;
+    padding: 0;
+    background: transparent;
 
     &:before {
       @include icon;

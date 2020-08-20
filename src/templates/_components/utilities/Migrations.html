@@ -2,9 +2,11 @@
 
 {% if newMigrations or migrationHistory %}
     {% if newMigrations %}
-        <div class="buttons">
-            <a href="{{ actionUrl('utilities/apply-new-migrations') }}" class="btn submit">{{ 'Apply new migrations'|t('app') }}</a>
-        </div>
+        <form method="post" accept-charset="UTF-8" action="" class="buttons">
+            {{ csrfInput() }}
+            {{ actionInput('utilities/apply-new-migrations') }}
+            <button type="submit" class="btn submit">{{ 'Apply new migrations'|t('app') }}</button>
+        </form>
     {% else %}
         <p>{{ 'No pending content migrations.'|t('app') }}</p>
     {% endif %}

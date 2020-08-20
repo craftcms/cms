@@ -212,8 +212,8 @@
                     '</div>' + // .body
                     '<div class="footer">' +
                     '<div class="buttons right last">' +
-                    '<input type="button" class="btn cancel" value="' + Craft.t('app', 'Cancel') + '">' +
-                    '<input type="submit" class="btn submit" value="' + Craft.t('app', 'Save') + '"> ' +
+                    '<button type="button" class="btn cancel">' + Craft.t('app', 'Cancel') + '</button>' +
+                    '<button type="submit" class="btn submit">' + Craft.t('app', 'Save') + '</button>' +
                     '<div class="spinner" style="display: none;"></div>' +
                     '</div>' +
                     '<a class="delete">' + Craft.t('app', 'Delete') + '</a>' +

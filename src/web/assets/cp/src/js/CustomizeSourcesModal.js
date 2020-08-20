@@ -44,10 +44,22 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend(
 
             this.$footer = $('<div class="footer"/>').appendTo($container);
             this.$footerBtnContainer = $('<div class="buttons right"/>').appendTo(this.$footer);
-            this.$cancelBtn = $('<div class="btn" role="button"/>').text(Craft.t('app', 'Cancel')).appendTo(this.$footerBtnContainer);
-            this.$saveBtn = $('<div class="btn submit disabled" role="button"/>').text(Craft.t('app', 'Save')).appendTo(this.$footerBtnContainer);
+            this.$cancelBtn = $('<button/>', {
+                type: 'button',
+                class: 'btn',
+                text: Craft.t('app', 'Cancel'),
+            }).appendTo(this.$footerBtnContainer);
+            this.$saveBtn = $('<button/>', {
+                type: 'button',
+                class: 'btn submit disabled',
+                text: Craft.t('app', 'Save'),
+            }).appendTo(this.$footerBtnContainer);
             this.$saveSpinner = $('<div class="spinner hidden"/>').appendTo(this.$footerBtnContainer);
-            this.$newHeadingBtn = $('<div class="btn submit add icon"/>').text(Craft.t('app', 'New heading')).appendTo($('<div class="buttons left secondary-buttons"/>').appendTo(this.$footer));
+            this.$newHeadingBtn = $('<button/>', {
+                type: 'button',
+                class: 'btn submit add icon',
+                text: Craft.t('app', 'New heading'),
+            }).appendTo($('<div class="buttons left secondary-buttons"/>').appendTo(this.$footer));
 
             this.$loadingSpinner = $('<div class="spinner"/>').appendTo($container);
 

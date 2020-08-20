@@ -186,7 +186,8 @@
                                     .append(
                                         $('<div/>', {'class': 'btngroup'})
                                             .append(
-                                                $('<div/>', {
+                                                $('<button/>', {
+                                                    type: 'button',
                                                     'class': 'btn menubtn',
                                                     'data-icon': 'settings'
                                                 })
@@ -201,7 +202,8 @@
                                                             .append(
                                                                 $('<li/>')
                                                                     .append(
-                                                                        $('<a/>', {
+                                                                        $('<button/>', {
+                                                                            type: 'button',
                                                                             'class': 'formsubmit',
                                                                             text: Craft.t('app', 'Install')
                                                                         })
@@ -349,7 +351,7 @@
                             case 'wrong_edition':
                                 message = Craft.t('app', 'This license is for the {name} edition.', {
                                     name: info.licensedEdition.charAt(0).toUpperCase() + info.licensedEdition.substring(1)
-                                }) + ' <a class="btn submit small formsubmit">' + Craft.t('app', 'Switch') + '</a>';
+                                }) + ' <button type="button" class="btn submit small formsubmit">' + Craft.t('app', 'Switch') + '</button>';
                                 break;
                             case 'mismatched':
                                 message = Craft.t('app', 'This license is tied to another Craft install. Visit {url} to resolve.', {

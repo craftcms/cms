@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Changed
+- All buttons in the control panel are now actual `<button>` elements. ([#6670](https://github.com/craftcms/cms/issues/6670))
 - Title fields now get autofocused if they are positioned on the first tab. ([#6662](https://github.com/craftcms/cms/issues/6662))
 - The `install` command no longer prompts for a username if the `useEmailAsUsername` config setting is enabled. ([#6669](https://github.com/craftcms/cms/issues/6669))
 - Spaces in asset URLs are now URL-encoded, avoiding parsing conflicts with `srcset` attributes. ([#6668](https://github.com/craftcms/cms/issues/6668))

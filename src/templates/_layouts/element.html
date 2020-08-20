@@ -140,18 +140,18 @@
         {% if previewTargets %}
             <div class="btngroup">
                 {% if enablePreview %}
-                    <div id="preview-btn" class="btn">{{ "Preview"|t('app') }}</div>
+                    <button type="button" id="preview-btn" class="btn">{{ "Preview"|t('app') }}</button>
                 {% endif %}
-                <div id="share-btn" class="btn">{{ 'Share'|t('app') }}</div>
+                <button type="button" id="share-btn" class="btn">{{ 'Share'|t('app') }}</button>
             </div>
         {% endif %}
 
         {% if isCurrent and saveDraftAction %}
             <div id="save-draft-btn-container">
                 {% if canUpdateSource and saveSourceAction %}
-                    <div id="save-draft-btn" class="btn">{{ 'Save as a draft'|t('app') }}</div>
+                    <button type="button" id="save-draft-btn" class="btn">{{ 'Save as a draft'|t('app') }}</button>
                 {% else %}
-                    <input type="submit" id="save-draft-btn" class="btn submit" value="{{ 'Save as a draft'|t('app') }}">
+                    <button type="submit" id="save-draft-btn" class="btn submit">{{ 'Save as a draft'|t('app') }}</button>
                 {% endif %}
             </div>
         {% endif %}
@@ -174,19 +174,19 @@
         {# Can they save the source element, and do we know how to save it? #}
         {% if isUnsavedDraft or (canUpdateSource and saveSourceAction) %}
             <div id="save-btn-container" class="btngroup submit">
-                {{ tag('input', {
+                {{ tag('button', {
                     type: 'submit',
                     class: ['btn', 'submit'],
-                    value: isUnsavedDraft ? 'Create'|t('app') : 'Save'|t('app'),
+                    text: isUnsavedDraft ? 'Create'|t('app') : 'Save'|t('app'),
                 }) }}
-                <div class="btn submit menubtn"></div>
+                <button type="button" class="btn submit menubtn"></button>
                 {% include '_layouts/components/form-action-menu' %}
             </div>
         {% endif %}
     {% elseif isDraft %}
         {% if canUpdateSource and saveSourceAction and (applyDraftAction ?? false) %}
             <div id="publish-changes-btn-container">
-                <input type="button" class="btn secondary formsubmit" data-action="{{ applyDraftAction }}" value="{{ 'Publish changes'|t('app') }}">
+                <button type="button" class="btn secondary formsubmit" data-action="{{ applyDraftAction }}">{{ 'Publish changes'|t('app') }}</button>
             </div>
         {% endif %}
     {% elseif isRevision %}
@@ -197,7 +197,7 @@
                 {{ redirectInput('{cpEditUrl}') }}
                 {{ hiddenInput('revisionId', element.revisionId) }}
                 <div class="secondary-buttons">
-                    <input type="button" class="btn submit formsubmit" value="{{ 'Revert {type} to this revision'|t('app', { type: element.lowerDisplayName() }) }}">
+                    <button type="button" class="btn submit formsubmit">{{ 'Revert {type} to this revision'|t('app', { type: element.lowerDisplayName() }) }}</button>
                 </div>
             </form>
         {% endif %}
@@ -250,7 +250,14 @@
             {{ forms.lightswitchField({
                 status: element.getAttributeStatus('enabled'),
                 label: 'Enabled for {site}'|t('app', { site: element.site.name|t('site')|e }) ~
-                    (canEditMultipleSites ? '<a id="expand-status-btn" data-icon="ellipsis" class="btn" role="button"></a>'),
+                    (canEditMultipleSites ? tag('button', {
+                        type: 'button',
+                        id: 'expand-status-btn',
+                        class: ['btn'],
+                        data: {
+                            icon: 'ellipsis',
+                        },
+                    })),
                 id: "enabledForSite-#{element.siteId}",
                 name: "enabledForSite[#{element.siteId}]",
                 on: element.enabled and element.getEnabledForSite(),
@@ -306,10 +313,10 @@
             <p>{{ 'The source {type} has been updated recently.'|t('app', {type: element.lowerDisplayName()}) }}</p>
             <div class="flex flex-nowrap">
                 {% if element.trackChanges %}
-                    {{ tag('div', {
+                    {{ tag('button', {
+                        type: 'button',
                         id: 'merge-changes-btn',
                         class: ['btn'],
-                        role: 'button',
                         text: 'Merge changes into draft'|t('app'),
                     }) }}
                     <div id="merge-changes-spinner" class="spinner hidden"></div>

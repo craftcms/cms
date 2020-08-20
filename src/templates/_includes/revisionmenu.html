@@ -55,7 +55,7 @@
 {% set showMenu = editableSiteIds|length > 1 or showRevisions %}
 
 <div id="revision-btngroup" class="btngroup">
-    <div id="revision-btn" class="btn {% if showMenu %}menubtn{% else %}disabled{% endif %}"{% if showSiteLabel %} data-icon="world"{% endif %}>
+    <button type="button" id="revision-btn" class="btn {% if showMenu %}menubtn{% else %}disabled{% endif %}"{% if showSiteLabel %} data-icon="world"{% endif %}>
         {% if showSiteLabel %}
             {{ element.getSite().name|t('site') }}
         {% endif %}
@@ -71,7 +71,7 @@
                 {%- endif -%}
             </span>
         {% endif %}
-    </div>
+    </button>
 
     <div class="menu{% if not showMenu %} hidden{% endif %}">
         {% set enabledSiteIds = craft.app.elements.getEnabledSiteIdsForElement(element.id) %}

@@ -93,11 +93,18 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
                     }
 
                     if (this.editableGroups.length > 1) {
-                        $menuBtn = $('<div class="btn submit menubtn"></div>').appendTo(this.$newCategoryBtnGroup);
+                        $menuBtn = $('<button/>', {
+                            type: 'button',
+                            class: 'btn submit menubtn',
+                        }).appendTo(this.$newCategoryBtnGroup);
                     }
                 }
                 else {
-                    this.$newCategoryBtn = $menuBtn = $('<div class="btn submit add icon menubtn">' + Craft.t('app', 'New category') + '</div>').appendTo(this.$newCategoryBtnGroup);
+                    this.$newCategoryBtn = $menuBtn = $('<button/>', {
+                        type: 'button',
+                        class: 'btn submit add icon menubtn',
+                        text: Craft.t('app', 'New category'),
+                    }).appendTo(this.$newCategoryBtnGroup);
                 }
 
                 if ($menuBtn) {

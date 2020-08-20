@@ -714,13 +714,13 @@ body.rtl .btn.big[data-icon]:before, body.rtl #preview-btn:before, body.rtl #sha
 
 .btn.submit { background-color: #E5422B !important; }
 
-.btn.submit:not(.disabled):not(.inactive):hover, .btn.submit:not(.disabled):not(.inactive).hover { background-color: #dc331b !important; }
+.btn.submit:not(.disabled):not(.inactive):hover, .btn.submit:not(.disabled):not(.inactive).hover, .btn.submit:not(.disabled):not(.inactive):focus { background-color: #dc331b !important; }
 
 .btn.submit:not(.disabled):not(.inactive):active, .btn.submit:not(.disabled):not(.inactive).active { background-color: #c52e18 !important; }
 
 .secondary-buttons .btn.submit, .btn.secondary { background-color: #8b96a2 !important; }
 
-.secondary-buttons .btn.submit:not(.disabled):not(.inactive):hover, .secondary-buttons .btn.submit:not(.disabled):not(.inactive).hover, .btn.secondary:not(.disabled):not(.inactive):hover, .btn.secondary:not(.disabled):not(.inactive).hover { background-color: #7d8997 !important; }
+.secondary-buttons .btn.submit:not(.disabled):not(.inactive):hover, .secondary-buttons .btn.submit:not(.disabled):not(.inactive).hover, .secondary-buttons .btn.submit:not(.disabled):not(.inactive):focus, .btn.secondary:not(.disabled):not(.inactive):hover, .btn.secondary:not(.disabled):not(.inactive).hover, .btn.secondary:not(.disabled):not(.inactive):focus { background-color: #7d8997 !important; }
 
 .secondary-buttons .btn.submit:not(.disabled):not(.inactive):active, .secondary-buttons .btn.submit:not(.disabled):not(.inactive).active, .btn.secondary:not(.disabled):not(.inactive):active, .btn.secondary:not(.disabled):not(.inactive).active { background-color: #6f7c8b !important; }
 
@@ -1402,7 +1402,7 @@ body.rtl table.editable tbody .datewrapper .text:placeholder-shown + div[data-ic
 
 table.editable:not(.static) td.textual { cursor: text; }
 
-table.editable + .btn.add { display: block; border-radius: 0 0 4px 4px; border: 1px dashed rgba(81, 95, 108, 0.25); border-top-width: 0; background-color: transparent; box-shadow: none; }
+table.editable + .btn.add { display: block; width: 100%; border-radius: 0 0 4px 4px; border: 1px dashed rgba(81, 95, 108, 0.25); border-top-width: 0; background-color: transparent; box-shadow: none; }
 
 table.editable + .btn.add:focus { border-style: solid; border-color: #1992D4; }
 
@@ -2232,7 +2232,7 @@ body.ltr .datetimewrapper > .datewrapper + .timewrapper { margin-left: 5px; }
 
 body.rtl .datetimewrapper > .datewrapper + .timewrapper { margin-right: 5px; }
 
-.datetimewrapper .clear-btn { width: 20px; cursor: pointer; color: rgba(123, 135, 147, 0.5); }
+.datetimewrapper .clear-btn { width: 20px; cursor: pointer; color: rgba(123, 135, 147, 0.5); border: none; padding: 0; background: transparent; }
 
 body.ltr .datetimewrapper .clear-btn { margin-left: 4px; }
 

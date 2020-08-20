@@ -424,7 +424,8 @@ Craft.DraftEditor = Garnish.Base.extend(
         },
 
         createEditMetaBtn: function() {
-            this.$editMetaBtn = $('<a/>', {
+            this.$editMetaBtn = $('<button/>', {
+                type: 'button',
                 'class': 'btn edit icon',
                 title: Craft.t('app', 'Edit draft settings'),
             }).appendTo($('#revision-btngroup'));
@@ -706,10 +707,10 @@ Craft.DraftEditor = Garnish.Base.extend(
                         // Otherwise, the user must not have permission to update the source element
                         var $saveBtnContainer = $('#save-btn-container');
                         if ($saveBtnContainer.length) {
-                            $saveBtnContainer.replaceWith($('<input/>', {
+                            $saveBtnContainer.replaceWith($('<button/>', {
                                 type: 'button',
                                 'class': 'btn secondary formsubmit',
-                                value: Craft.t('app', 'Publish changes'),
+                                text: Craft.t('app', 'Publish changes'),
                                 data: {
                                     action: this.settings.applyDraftAction,
                                 },
@@ -922,7 +923,11 @@ Craft.DraftEditor = Garnish.Base.extend(
             }
 
             $('<div class="flex-grow"></div>').appendTo($footer);
-            this.$saveMetaBtn = $('<input type="submit" class="btn submit disabled" value="' + Craft.t('app', 'Save') + '"/>').appendTo($footer);
+            this.$saveMetaBtn = $('<button/>', {
+                type: 'submit',
+                class: 'btn submit disabled',
+                text: Craft.t('app', 'Save'),
+            }).appendTo($footer);
 
             this.metaHud = new Garnish.HUD(this.$editMetaBtn, $hudBody, {
                 onSubmit: this.saveMeta.bind(this)

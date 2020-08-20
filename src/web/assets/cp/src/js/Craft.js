@@ -2020,9 +2020,9 @@ $.extend($.fn,
                     }
                     if (hasValue) {
                         if (!$wrapper.children('.clear-btn').length) {
-                            let $btn = $('<div/>', {
+                            let $btn = $('<button/>', {
+                                type: 'button',
                                 class: 'clear-btn',
-                                role: 'button',
                                 title: Craft.t('app', 'Clear'),
                             })
                                 .appendTo($wrapper)
