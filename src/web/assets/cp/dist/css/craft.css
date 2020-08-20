@@ -2232,7 +2232,7 @@ body.ltr .datetimewrapper > .datewrapper + .timewrapper { margin-left: 5px; }
 
 body.rtl .datetimewrapper > .datewrapper + .timewrapper { margin-right: 5px; }
 
-.datetimewrapper .clear-btn { width: 20px; cursor: pointer; color: rgba(123, 135, 147, 0.5); }
+.datetimewrapper .clear-btn { width: 20px; cursor: pointer; color: rgba(123, 135, 147, 0.5); border: none; padding: 0; background: transparent; }
 
 body.ltr .datetimewrapper .clear-btn { margin-left: 4px; }
 

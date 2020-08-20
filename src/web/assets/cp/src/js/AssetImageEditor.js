@@ -88,11 +88,23 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             this.base(this.$container, this.settings);
 
             this.$buttons = $('<div class="buttons right"/>').appendTo(this.$footer);
-            this.$cancelBtn = $('<div class="btn cancel">' + Craft.t('app', 'Cancel') + '</div>').appendTo(this.$buttons);
-            this.$replaceBtn = $('<div class="btn submit save replace">' + Craft.t('app', 'Save') + '</div>').appendTo(this.$buttons);
+            this.$cancelBtn = $('<button/>', {
+                type: 'button',
+                class: 'btn cancel',
+                text: Craft.t('app', 'Cancel'),
+            }).appendTo(this.$buttons);
+            this.$replaceBtn = $('<button/>', {
+                type: 'button',
+                class: 'btn submit save replace',
+                text: Craft.t('app', 'Save'),
+            }).appendTo(this.$buttons);
 
             if (this.settings.allowSavingAsNew) {
-                this.$saveBtn = $('<div class="btn submit save copy">' + Craft.t('app', 'Save as a new asset') + '</div>').appendTo(this.$buttons);
+                this.$saveBtn = $('<button/>', {
+                    type: 'button',
+                    class: 'btn submit save copy',
+                    text: Craft.t('app', 'Save as a new asset'),
+                }).appendTo(this.$buttons);
                 this.addListener(this.$saveBtn, 'activate', this.saveImage);
             }
 
@@ -2363,7 +2375,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
             return this._calculateNewCropperSizeByDeltas._.rectangle;
         },
-        
+
         /**
          * Set mouse cursor by it's position over cropper.
          *

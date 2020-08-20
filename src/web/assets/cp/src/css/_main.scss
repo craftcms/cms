@@ -4472,6 +4472,9 @@ fieldset {
     @include margin-left(4px);
     cursor: pointer;
     color: $darkHairlineColor;
+    border: none;
+    padding: 0;
+    background: transparent;
 
     &:before {
       @include icon;

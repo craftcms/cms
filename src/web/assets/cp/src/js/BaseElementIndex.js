@@ -1003,14 +1003,14 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 this.$viewModeBtnContainer = $('<div class="btngroup"/>').appendTo(this.$toolbar);
 
                 for (var i = 0; i < this.sourceViewModes.length; i++) {
-                    var sourceViewMode = this.sourceViewModes[i];
+                    let sourceViewMode = this.sourceViewModes[i];
 
-                    var $viewModeBtn = $('<div data-view="' + sourceViewMode.mode + '" role="button"' +
-                        ' class="btn' + (typeof sourceViewMode.className !== 'undefined' ? ' ' + sourceViewMode.className : '') + '"' +
-                        ' title="' + sourceViewMode.title + '"' +
-                        (typeof sourceViewMode.icon !== 'undefined' ? ' data-icon="' + sourceViewMode.icon + '"' : '') +
-                        '/>'
-                    ).appendTo(this.$viewModeBtnContainer);
+                    let $viewModeBtn = $('<button/>', {
+                        type: 'button',
+                        class: 'btn' + (typeof sourceViewMode.className !== 'undefined' ? ` ${sourceViewMode.className}` : ''),
+                        'data-view': sourceViewMode.mode,
+                        'data-icon': sourceViewMode.icon,
+                    }).appendTo(this.$viewModeBtnContainer);
 
                     this.viewModeBtns[sourceViewMode.mode] = $viewModeBtn;
 
@@ -1827,7 +1827,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             if (safeMenuActions.length || destructiveMenuActions.length) {
                 var $menuTrigger = $('<form/>');
 
-                $btn = $('<div class="btn menubtn" data-icon="settings" title="' + Craft.t('app', 'Actions') + '"/>').appendTo($menuTrigger);
+                $btn = $('<button/>', {
+                    type: 'button',
+                    class: 'btn menubtn',
+                    'data-icon': 'settings',
+                    title: Craft.t('app', 'Actions'),
+                }).appendTo($menuTrigger);
 
                 var $menu = $('<ul class="menu"/>').appendTo($menuTrigger),
                     $safeList = this._createMenuTriggerList(safeMenuActions, false),
@@ -1905,10 +1910,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 }).appendTo($form);
             }
 
-            $('<input/>', {
+            $('<button/>', {
                 type: 'submit',
                 'class': 'btn submit fullwidth',
-                value: Craft.t('app', 'Export')
+                text: Craft.t('app', 'Export')
             }).appendTo($form)
 
             var $spinner = $('<div/>', {
