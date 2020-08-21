@@ -77,15 +77,15 @@
         {% set enabledSiteIds = craft.app.elements.getEnabledSiteIdsForElement(element.id) %}
         {% set siteGroups = craft.app.sites.getAllGroups() %}
         {% for group in siteGroups %}
-            {% set groupSites = group.getSites()|filter(s => s.id in editableSiteIds) %}
+            {% set groupSites = group.getSites() %}
             {% if groupSites|length %}
-                {% set groupIsVisible = canEditMultipleSites and groupSites|column('id')|intersect(enabledSiteIds)|length %}
+                {% set groupIsVisible = canEditMultipleSites and groupSites|column('id')|intersect(editableSiteIds)|length %}
                 <div class="site-group{% if not groupIsVisible %} hidden{% endif %}">
                     {% if siteGroups|length > 1 %}<h6>{{ group.name|t('site') }}</h6>{% endif %}
                     <ul class="padded">
                         {% for site in groupSites %}
                             {% set status = element.enabled and site.id in enabledSiteIds ? 'enabled' : 'disabled' %}
-                            <li>
+                            <li{% if site.id not in editableSiteIds %} class="hidden"{% endif %}>
                                 {% if site.id == element.siteId %}
                                     <a class="site-option sel">
                                         <div class="status {{ status }}"></div>{{ site.name|t('site') }}
