@@ -29,6 +29,7 @@
 - Fixed a bug where it wasn’t possible to apply transform arguments to the `width` and `height` fields on assets via GraphQL. ([#6660](https://github.com/craftcms/cms/issues/6660))
 - Fixed a bug where the “Save and continue editing” Save button option wasn’t working within Quick Post widgets.
 - Fixed a bug where the “Select all” checkbox within admin tables wouldn’t select all rows. ([#6678](https://github.com/craftcms/cms/issues/6678))
+- Fixed a bug where `craft\i18n\Formatter::asDatetime()` and `asTime()` were ignoring certain formatting characters that aren’t supported by ICU, if the format string began with `php:`. ([#6691](https://github.com/craftcms/cms/issues/6691))
 
 ## 3.5.5 - 2020-08-17
 
