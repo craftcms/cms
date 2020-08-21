@@ -8,6 +8,8 @@
 - Added the `app/health-check` action, which will return a 200 status code even if an update is pending.
 - Added `craft\helpers\Template::css()`.
 - Added `craft\helpers\Template::js()`.
+- Added `craft\services\Content::$db`. ([#6549](https://github.com/craftcms/cms/issues/6549))
+- Added `craft\services\Drafts::$db`. ([#6549](https://github.com/craftcms/cms/issues/6549))
 
 ### Changed
 - All buttons in the control panel are now actual `<button>` elements. ([#6670](https://github.com/craftcms/cms/issues/6670))
