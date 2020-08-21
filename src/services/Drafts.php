@@ -509,13 +509,14 @@ class Drafts extends Component
      */
     private function _insertDraftRow(int $sourceId = null, int $creatorId, string $name = null, string $notes = null, bool $trackChanges = false): int
     {
+        $db = Craft::$app->getDb();
         Db::insert(Table::DRAFTS, [
             'sourceId' => $sourceId,
             'creatorId' => $creatorId,
             'name' => $name,
             'notes' => $notes,
             'trackChanges' => $trackChanges,
-        ], false);
-        return Craft::$app->getDb()->getLastInsertID(Table::DRAFTS);
+        ], false, $db);
+        return $db->getLastInsertID(Table::DRAFTS);
     }
 }
