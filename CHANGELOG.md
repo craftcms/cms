@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Added the `app/health-check` action, which will return a 200 status code even if an update is pending.
+
 ### Changed
 - All buttons in the control panel are now actual `<button>` elements. ([#6670](https://github.com/craftcms/cms/issues/6670))
 - Title fields now get autofocused if they are positioned on the first tab. ([#6662](https://github.com/craftcms/cms/issues/6662))

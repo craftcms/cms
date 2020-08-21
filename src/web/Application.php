@@ -678,6 +678,7 @@ class Application extends \yii\web\Application
             $actionSegments = $request->getActionSegments();
             if (
                 ArrayHelper::firstValue($actionSegments) === 'updater' ||
+                $actionSegments === ['app', 'health-check'] ||
                 $actionSegments === ['app', 'migrate'] ||
                 $actionSegments === ['pluginstore', 'install', 'migrate']
             ) {

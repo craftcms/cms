@@ -44,6 +44,7 @@ class AppController extends Controller
     public $allowAnonymous = [
         'migrate' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'broken-image' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+        'health-check' => self::ALLOW_ANONYMOUS_LIVE,
     ];
 
     /**
@@ -56,6 +57,19 @@ class AppController extends Controller
         }
 
         return parent::beforeAction($action);
+    }
+
+    /**
+     * Returns an empty response.
+     *
+     * @since 3.5.0
+     */
+    public function actionHealthCheck(): Response
+    {
+        // All that matters is the 200 response
+        $this->response->format = Response::FORMAT_RAW;
+        $this->response->data = '';
+        return $this->response;
     }
 
     /**
