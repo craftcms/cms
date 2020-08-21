@@ -190,8 +190,9 @@ class Content extends Component
             ]);
         } else {
             // Insert a new row and store its ID on the element
-            Db::insert($this->contentTable, $values);
-            $element->contentId = Craft::$app->getDb()->getLastInsertID($this->contentTable);
+            $db = Craft::$app->getDb();
+            Db::insert($this->contentTable, $values, true, $db);
+            $element->contentId = $db->getLastInsertID($this->contentTable);
         }
 
         // Fire an 'afterSaveContent' event
