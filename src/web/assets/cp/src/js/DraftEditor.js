@@ -45,7 +45,7 @@ Craft.DraftEditor = Garnish.Base.extend(
 
             this.duplicatedElements = {};
 
-            this.$revisionBtn = $('#revision-btn');
+            this.$revisionBtn = $('#context-btn');
             this.$revisionLabel = $('#revision-label');
             this.$spinner = $('#revision-spinner');
             this.$expandSiteStatusesBtn = $('#expand-status-btn');
@@ -428,7 +428,7 @@ Craft.DraftEditor = Garnish.Base.extend(
                 type: 'button',
                 'class': 'btn edit icon',
                 title: Craft.t('app', 'Edit draft settings'),
-            }).appendTo($('#revision-btngroup'));
+            }).appendTo($('#context-btngroup'));
             this.addListener(this.$editMetaBtn, 'click', 'showMetaHud');
         },
 

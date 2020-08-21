@@ -340,10 +340,10 @@ li.sel a {
 }
 
 /* revision button */
-#revision-btngroup {
+#context-btngroup {
   @include margin-right(7px);
 }
-#revision-btn.disabled {
+#context-btn.disabled {
   opacity: 1;
   color: $mediumDarkTextColor;
   background-color: transparentize($grey200, 0.5) !important;

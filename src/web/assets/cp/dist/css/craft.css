@@ -171,11 +171,11 @@ body.rtl .go:after { content: 'circlelarr'; }
 .go:hover:after { color: #0B69A3; }
 
 /* revision button */
-body.ltr #revision-btngroup { margin-right: 7px; }
+body.ltr #context-btngroup { margin-right: 7px; }
 
-body.rtl #revision-btngroup { margin-left: 7px; }
+body.rtl #context-btngroup { margin-left: 7px; }
 
-#revision-btn.disabled { opacity: 1; color: #606d7b; background-color: rgba(205, 216, 228, 0.5) !important; }
+#context-btn.disabled { opacity: 1; color: #606d7b; background-color: rgba(205, 216, 228, 0.5) !important; }
 
 /* status icons */
 .checkmark-icon, .alert-icon { padding: 5px; margin-bottom: 0 !important; line-height: 10px; border-radius: 20px; cursor: pointer; }

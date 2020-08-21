@@ -54,8 +54,8 @@
 {% set showRevisions = showRevisionLabel and not isUnsavedDraft %}
 {% set showMenu = editableSiteIds|length > 1 or showRevisions %}
 
-<div id="revision-btngroup" class="btngroup">
-    <button type="button" id="revision-btn" class="btn {% if showMenu %}menubtn{% else %}disabled{% endif %}"{% if showSiteLabel %} data-icon="world"{% endif %}>
+<div id="context-btngroup" class="btngroup">
+    <button type="button" id="context-btn" class="btn {% if showMenu %}menubtn{% else %}disabled{% endif %}"{% if showSiteLabel %} data-icon="world"{% endif %}>
         {% if showSiteLabel %}
             {{ element.getSite().name|t('site') }}
         {% endif %}
