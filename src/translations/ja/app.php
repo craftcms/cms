@@ -331,7 +331,7 @@ return [
     'Invalid transform handle: {handle}' => '無効な変換ハンドル: {handle}',
     'Invalid username or email.' => 'ユーザ名もしくはメールアドレスが正しくありません。',
     'Invalid username or password.' => 'ユーザ名もしくはパスワードが正しくありません。',
-    'It looks like someone is currently performing a system update.<br>Only continue if you’re sure that’s not the case.' => '現在他のユーザーによってシステムアップデートが実行されている可能性があります。<br/>そうでないことが確認できる場合にのみ続行してください。',
+    'It looks like someone is currently performing a system update.<br>Only continue if you’re sure that’s not the case.' => '現在他のユーザーによってシステムアップデートが実行されている可能性があります。<br>そうでないことが確認できる場合にのみ続行してください。',
     'It’s not possible to rename the top folder of a Volume.' => 'ボリュームのトップフォルダーの名前は変更できません。',
     'JSON' => 'JSON',
     'JavaScript' => 'JavaScript',
