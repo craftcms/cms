@@ -335,8 +335,7 @@ class Gql
 
                 if (isset($directive->arguments[0])) {
                     foreach ($directive->arguments as $argument) {
-                        $argumentValue = (!empty($argument->value->kind) && $argument->value->kind === 'Variable') ? $resolveInfo->variableValues[$argument->value->name->value] : $argument->value->value;
-                        $arguments[$argument->name->value] = $argumentValue;
+                        $arguments[$argument->name->value] = self::_convertArgumentValue($argument->value, $resolveInfo->variableValues);
                     }
                 }
 
@@ -366,5 +365,25 @@ class Gql
         }
 
         return $transform;
+    }
+    
+    /**
+     * @param ValueNode|VariableNode $value
+     * @param array $variableValues
+     * @return array|array[]|mixed
+     */
+    private static function _convertArgumentValue($value, array $variableValues = [])
+    {
+        if ($value instanceof VariableNode) {
+            return $variableValues[$value->name->value];
+        }
+
+        if ($value instanceof ListValueNode) {
+            return array_map(function($node) {
+                return self::_convertArgumentValue($node);
+            }, iterator_to_array($value->values));
+        }
+
+        return $value->value;
     }
 }
