@@ -413,8 +413,6 @@ Craft.CP = Garnish.Base.extend(
                     }
                 }
             }
-
-            // if ($tab && $tab.attr('href') && $tab.attr('href'))
         },
 
         deselectTab: function() {
