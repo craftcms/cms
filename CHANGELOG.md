@@ -3,7 +3,11 @@
 ## Unreleased
 
 ### Added
+- It’s now possible to pass a CSS file URL to the `{% css %}` tag. ([#6672](https://github.com/craftcms/cms/issues/6672))
+- It’s now possible to pass a JavaScript file URL to the `{% js %}` tag. ([#6671](https://github.com/craftcms/cms/issues/6671))
 - Added the `app/health-check` action, which will return a 200 status code even if an update is pending.
+- Added `craft\helpers\Template::css()`.
+- Added `craft\helpers\Template::js()`.
 
 ### Changed
 - All buttons in the control panel are now actual `<button>` elements. ([#6670](https://github.com/craftcms/cms/issues/6670))

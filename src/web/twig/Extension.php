@@ -118,18 +118,19 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new ExitTokenParser(),
             new HeaderTokenParser(),
             new HookTokenParser(),
-            new RegisterResourceTokenParser('css', 'registerCss', [
+            new RegisterResourceTokenParser('css', TemplateHelper::class . '::css', [
                 'allowTagPair' => true,
                 'allowOptions' => true,
             ]),
-            new RegisterResourceTokenParser('html', 'registerHtml', [
+            new RegisterResourceTokenParser('html', 'Craft::$app->getView()->registerHtml', [
                 'allowTagPair' => true,
                 'allowPosition' => true,
             ]),
-            new RegisterResourceTokenParser('js', 'registerJs', [
+            new RegisterResourceTokenParser('js', TemplateHelper::class . '::js', [
                 'allowTagPair' => true,
                 'allowPosition' => true,
                 'allowRuntimePosition' => true,
+                'allowOptions' => true,
             ]),
             new NamespaceTokenParser(),
             new NavTokenParser(),
@@ -143,56 +144,56 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new SwitchTokenParser(),
 
             // Deprecated tags
-            new RegisterResourceTokenParser('includeCss', 'registerCss', [
+            new RegisterResourceTokenParser('includeCss', 'Craft::$app->getView()->registerCss', [
                 'allowTagPair' => true,
                 'allowOptions' => true,
                 'newCode' => '{% css %}',
             ]),
-            new RegisterResourceTokenParser('includeHiResCss', 'registerHiResCss', [
+            new RegisterResourceTokenParser('includeHiResCss', 'Craft::$app->getView()->registerHiResCss', [
                 'allowTagPair' => true,
                 'allowOptions' => true,
                 'newCode' => '{% css %}',
             ]),
-            new RegisterResourceTokenParser('includeCssFile', 'registerCssFile', [
+            new RegisterResourceTokenParser('includeCssFile', 'Craft::$app->getView()->registerCssFile', [
                 'allowOptions' => true,
-                'newCode' => '{% do view.registerCssFile("/url/to/file.css") %}',
+                'newCode' => '{% css "/url/to/file.css" %}',
             ]),
-            new RegisterResourceTokenParser('includeJs', 'registerJs', [
+            new RegisterResourceTokenParser('includeJs', 'Craft::$app->getView()->registerJs', [
                 'allowTagPair' => true,
                 'allowPosition' => true,
                 'allowRuntimePosition' => true,
                 'newCode' => '{% js %}',
             ]),
-            new RegisterResourceTokenParser('includeJsFile', 'registerJsFile', [
+            new RegisterResourceTokenParser('includeJsFile', 'Craft::$app->getView()->registerJsFile', [
                 'allowPosition' => true,
                 'allowOptions' => true,
-                'newCode' => '{% do view.registerJsFile("/url/to/file.js") %}',
+                'newCode' => '{% js "/url/to/file.js" %}',
             ]),
 
-            new RegisterResourceTokenParser('includecss', 'registerCss', [
+            new RegisterResourceTokenParser('includecss', 'Craft::$app->getView()->registerCss', [
                 'allowTagPair' => true,
                 'allowOptions' => true,
                 'newCode' => '{% css %}',
             ]),
-            new RegisterResourceTokenParser('includehirescss', 'registerHiResCss', [
+            new RegisterResourceTokenParser('includehirescss', 'Craft::$app->getView()->registerHiResCss', [
                 'allowTagPair' => true,
                 'allowOptions' => true,
                 'newCode' => '{% css %}',
             ]),
-            new RegisterResourceTokenParser('includecssfile', 'registerCssFile', [
+            new RegisterResourceTokenParser('includecssfile', 'Craft::$app->getView()->registerCssFile', [
                 'allowOptions' => true,
-                'newCode' => '{% do view.registerCssFile("/url/to/file.css") %}',
+                'newCode' => '{% css "/url/to/file.css" %}',
             ]),
-            new RegisterResourceTokenParser('includejs', 'registerJs', [
+            new RegisterResourceTokenParser('includejs', 'Craft::$app->getView()->registerJs', [
                 'allowTagPair' => true,
                 'allowPosition' => true,
                 'allowRuntimePosition' => true,
                 'newCode' => '{% js %}',
             ]),
-            new RegisterResourceTokenParser('includejsfile', 'registerJsFile', [
+            new RegisterResourceTokenParser('includejsfile', 'Craft::$app->getView()->registerJsFile', [
                 'allowPosition' => true,
                 'allowOptions' => true,
-                'newCode' => '{% do view.registerJsFile("/url/to/file.js") %}',
+                'newCode' => '{% js "/url/to/file.js" %}',
             ]),
         ];
     }
