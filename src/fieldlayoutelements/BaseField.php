@@ -197,7 +197,7 @@ abstract class BaseField extends FieldLayoutElement
         return Craft::$app->getView()->renderTemplate('_includes/forms/field', [
             'id' => $this->id(),
             'fieldAttributes' => $this->containerAttributes($element, $static),
-            'inputAttributes' => $this->inputContainerAttributes($element, $static),
+            'inputContainerAttributes' => $this->inputContainerAttributes($element, $static),
             'labelAttributes' => $this->labelAttributes($element, $static),
             'status' => $statusClass ? [$statusClass, $this->statusLabel($element, $static) ?? ucfirst($statusClass)] : null,
             'label' => $this->showLabel() ? $this->label() : null,

@@ -32,9 +32,9 @@
     {%- set fieldAttributes = fieldAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
 {% endif %}
 
-{%- set inputAttributes = {
+{%- set inputContainerAttributes = {
     class: ['input', orientation, errors ? 'errors']|filter,
-}|merge(inputAttributes ?? [], recursive=true) %}
+}|merge(inputContainerAttributes ?? [], recursive=true) %}
 
 <div {{ attr(fieldAttributes) }}>
     {% if status %}
@@ -82,7 +82,7 @@
             html: instructions|md('gfm-comment')|replace('/&amp;(\\w+);/', '&$1;'),
         }) }}
     {% endif %}
-    <div {{ attr(inputAttributes) }}>
+    <div {{ attr(inputContainerAttributes) }}>
         {% block input %}
             {{ input|raw }}
         {% endblock %}
