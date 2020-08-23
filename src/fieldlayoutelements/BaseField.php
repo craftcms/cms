@@ -270,7 +270,7 @@ abstract class BaseField extends FieldLayoutElement
     public function label()
     {
         if ($this->label !== null && $this->label !== '' && $this->label !== '__blank__') {
-            return $this->label;
+            return Craft::t('site', $this->label);
         }
         return $this->defaultLabel();
     }
