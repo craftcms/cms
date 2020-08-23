@@ -161,7 +161,26 @@ class CustomField extends BaseField
      */
     protected function defaultLabel(ElementInterface $element = null, bool $static = false)
     {
-        return Craft::t('site', $this->_field->name);
+        if ($this->_field->name !== '' && $this->_field->name !== null && $this->_field->name !== '__blank__') {
+            return Craft::t('site', $this->_field->name);
+        }
+        return null;
+    }
+
+    /**
+     * Returns whether the label should be shown in form inputs.
+     *
+     * @return bool
+     * @since 3.5.6
+     */
+    protected function showLabel(): bool
+    {
+        // Does the field have a custom label?
+        if ($this->label !== null && $this->label !== '') {
+            return parent::showLabel();
+        }
+
+        return $this->_field->name !== '__blank__';
     }
 
     /**

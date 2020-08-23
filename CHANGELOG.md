@@ -6,6 +6,7 @@
 - It’s now possible to pass a CSS file URL to the `{% css %}` tag. ([#6672](https://github.com/craftcms/cms/issues/6672))
 - It’s now possible to pass a JavaScript file URL to the `{% js %}` tag. ([#6671](https://github.com/craftcms/cms/issues/6671))
 - Added the `app/health-check` action, which will return a 200 status code even if an update is pending.
+- Added `craft\fieldlayoutelements\BaseField::showLabel()`.
 - Added `craft\helpers\Template::css()`.
 - Added `craft\helpers\Template::js()`.
 - Added `craft\services\Content::$db`. ([#6549](https://github.com/craftcms/cms/issues/6549))
@@ -31,6 +32,7 @@
 - Fixed a bug where the “Select all” checkbox within admin tables wouldn’t select all rows. ([#6678](https://github.com/craftcms/cms/issues/6678))
 - Fixed a bug where `craft\i18n\Formatter::asDatetime()` and `asTime()` were ignoring certain formatting characters that aren’t supported by ICU, if the format string began with `php:`. ([#6691](https://github.com/craftcms/cms/issues/6691))
 - Fixed an error that could occur when downloading an asset. ([#6692](https://github.com/craftcms/cms/pull/6692))
+- Fixed a bug where fields with hidden labels would refer to themselves as `__blank__` in validation errors. ([#6699](https://github.com/craftcms/cms/issues/6699))
 
 ## 3.5.5 - 2020-08-17
 
