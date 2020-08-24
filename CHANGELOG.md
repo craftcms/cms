@@ -43,6 +43,7 @@
 - Fixed a bug where it was impossible to use lists in directive arguments. ([#6693](https://github.com/craftcms/cms/issues/6693))
 - Fixed a bug where asset indexing utility would not work correctly if no files were found on the selected volumes. ([#6658](https://github.com/craftcms/cms/issues/6658))
 - Fixed a bug where project config files could get deleted if the casing of a component’s handle was changed, on case-insensitive file systems. ([#6708](https://github.com/craftcms/cms/issues/6708))
+- Fixed an error that could occur when applying project config changes from the Project Config utility, if the logged-in user wasn’t an admin.
 
 ## 3.5.5 - 2020-08-17
 
