@@ -249,7 +249,7 @@ class Application extends \yii\web\Application
 
         // If project config changes are pending, give them a chance to process them now
         if ($areProjectConfigChangesPending) {
-            return $this->_processConfigSyncLogic($request) ?: $this->getResponse();
+            return $this->_processConfigApplyLogic($request) ?: $this->getResponse();
         }
 
         // If this is a plugin template request, make sure the user has access to the plugin
@@ -698,7 +698,7 @@ class Application extends \yii\web\Application
      * @throws ServiceUnavailableHttpException
      * @throws \yii\base\ExitException
      */
-    private function _processConfigSyncLogic(Request $request)
+    private function _processConfigApplyLogic(Request $request)
     {
         $this->_unregisterDebugModule();
 
