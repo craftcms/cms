@@ -17,12 +17,15 @@
 - All buttons in the control panel are now actual `<button>` elements. ([#6670](https://github.com/craftcms/cms/issues/6670))
 - Title fields now get autofocused if they are positioned on the first tab. ([#6662](https://github.com/craftcms/cms/issues/6662))
 - Element edit pages now remember the selected tab when switching to a different site/revision. ([#4018](https://github.com/craftcms/cms/issues/4018), [#4164](https://github.com/craftcms/cms/issues/4164))
+- Craft no longer requires the installed Craft and plugin versions to be compatible with the versions listed in the project config YAML files, except when applying changes.
 - The `install` command no longer prompts for a username if the `useEmailAsUsername` config setting is enabled. ([#6669](https://github.com/craftcms/cms/issues/6669))
 - Spaces in asset URLs are now URL-encoded, avoiding parsing conflicts with `srcset` attributes. ([#6668](https://github.com/craftcms/cms/issues/6668))
 - `graphql/api` requests now set the `Access-Control-Allow-Headers` header on non-preflight requests. ([#6674](https://github.com/craftcms/cms/issues/6674))
 - The `_includes/forms/field.html` template now supports an `inputContainerAttributes` variable, rather than `inputAttributes`, as `inputAttributes` was conflicting with variables of the same name in `_includes/forms/text.html` and `_includes/forms/checkbox.html`.
 - The `_includes/forms/select.html` template now supports an `inputAttributes` variable. ([#6696](https://github.com/craftcms/cms/issues/6696))
-- Project config schema version compatibility is now only checked if applying changes.
+
+### Removed
+- Removed `craft\controllers\TemplatesController::actionIncompatibleConfigAlert()`.
 
 ### Fixed
 - Fixed a bug where nested block content wasn’t getting updated properly when editing an entry draft, if the draft had been created since the initial page load. ([#6480](https://github.com/craftcms/cms/issues/6480))

@@ -725,30 +725,4 @@ class Application extends \yii\web\Application
         // TemplatesController->actionRenderError() take care of it.
         throw new ServiceUnavailableHttpException();
     }
-
-    /**
-     * @param Request $request
-     * @param array $issues An array of schema incompatibility issues
-     * @return Response
-     * @throws HttpException
-     * @throws ServiceUnavailableHttpException
-     * @throws \yii\base\ExitException
-     */
-    private function _handleIncompatibleConfig(Request $request, array $issues): Response
-    {
-        $this->_unregisterDebugModule();
-
-        // Let all non-action CP requests through.
-        if (
-            $request->getIsCpRequest() &&
-            (!$request->getIsActionRequest() || $request->getActionSegments() == ['users', 'login'])
-        ) {
-            // Show the manual update notification template
-            return $this->runAction('templates/incompatible-config-alert', ['issues' => $issues]);
-        }
-
-        // If an exception gets throw during the rendering of the 503 template, let
-        // TemplatesController->actionRenderError() take care of it.
-        throw new ServiceUnavailableHttpException();
-    }
 }

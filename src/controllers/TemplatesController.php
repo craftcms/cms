@@ -41,7 +41,6 @@ class TemplatesController extends Controller
         'offline' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'manual-update-notification' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'config-sync-kickoff' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
-        'incompatible-config-alert' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'requirements-check' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'render-error' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
     ];
@@ -131,16 +130,6 @@ class TemplatesController extends Controller
     public function actionConfigSyncKickoff(): Response
     {
         return $this->renderTemplate('_special/configsync');
-    }
-
-    /**
-     * Renders the incompatible project config alert template.
-     *
-     * @return Response
-     */
-    public function actionIncompatibleConfigAlert(array $issues = []): Response
-    {
-        return $this->renderTemplate('_special/incompatibleconfigs', ['issues' => $issues]);
     }
 
     /**
