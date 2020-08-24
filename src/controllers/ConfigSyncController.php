@@ -49,25 +49,6 @@ class ConfigSyncController extends BaseUpdaterController
      */
     public function actionApplyYamlChanges(): Response
     {
-        // Make sure schema required by config files aligns with what we have.
-        $issues = [];
-        if (!Craft::$app->getProjectConfig()->getAreConfigSchemaVersionsCompatible($issues)) {
-            $errorString = <<<ERR
-Your project config files were created for different versions of Craft and/or plugins than what’s currently installed.
-
-Try running “composer install” to resolve it and then try again.
-ERR;
-
-            $error = Craft::t('app', $errorString);
-
-            return $this->send([
-                'error' => $error,
-                'options' => [
-                    $this->actionOption(Craft::t('app', 'Try again'), self::ACTION_RETRY, ['submit' => true]),
-                ]
-            ]);
-        }
-
         Craft::$app->getProjectConfig()->applyYamlChanges();
 
         return $this->sendFinished();
@@ -178,10 +159,18 @@ ERR;
     protected function initialState(): array
     {
         $projectConfig = Craft::$app->getProjectConfig();
+        $badPlugins = [];
+
+        // Make sure schema required by config files aligns with what we have.
+        $issues = [];
+        if (!$projectConfig->getAreConfigSchemaVersionsCompatible($issues)) {
+            foreach ($issues as $issue) {
+                $badPlugins[] = "`{$issue['cause']}`";
+            }
+        }
 
         if (!empty($this->data['installPlugins'])) {
             $pluginsService = Craft::$app->getPlugins();
-            $badPlugins = [];
 
             // Make sure that all to-be-installed plugins actually exist,
             // and that they have the same schema as project.yaml
@@ -199,19 +188,19 @@ ERR;
                     $badPlugins[] = "`{$handle}`";
                 }
             }
+        }
 
-            if (!empty($badPlugins)) {
-                $error = Craft::t('app', "The following plugins are listed in your project config files, but appear to be missing or installed at the wrong version:") .
-                    ' ' . implode(', ', $badPlugins) .
-                    "\n\n" . Craft::t('app', 'Try running `composer install` from your terminal to resolve.');
+        if (!empty($badPlugins)) {
+            $error = Craft::t('app', "The following plugins are listed in your project config files, but appear to be missing or installed at the wrong version:") .
+                ' ' . implode(', ', $badPlugins) .
+                "\n\n" . Craft::t('app', 'Try running `composer install` from your terminal to resolve.');
 
-                return [
-                    'error' => $error,
-                    'options' => [
-                        $this->actionOption(Craft::t('app', 'Try again'), self::ACTION_RETRY, ['submit' => true]),
-                    ]
-                ];
-            }
+            return [
+                'error' => $error,
+                'options' => [
+                    $this->actionOption(Craft::t('app', 'Try again'), self::ACTION_RETRY, ['submit' => true]),
+                ]
+            ];
         }
 
         // Is the loaded project config newer than project.yaml?
