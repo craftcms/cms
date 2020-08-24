@@ -1586,23 +1586,29 @@ class ProjectConfig extends Component
         try {
             $basePath = Craft::$app->getPath()->getProjectConfigPath();
 
+            // Delete everything except hidden files/folders
+            FileHelper::clearDirectory($basePath, [
+                'except' => ['.*', '.*/'],
+            ]);
+
             foreach ($config as $relativeFile => $configData) {
                 $configData = ProjectConfigHelper::cleanupConfig($configData);
                 ksort($configData);
                 $filePath = $basePath . DIRECTORY_SEPARATOR . $relativeFile;
                 FileHelper::writeToFile($filePath, Yaml::dump($configData, 20, 2));
             }
-
-            // See if there are any files that shouldn’t be around anymore
-            $basePathLength = strlen(FileHelper::normalizePath($basePath, '/'));
-            foreach ($this->_findConfigFiles($basePath) as $file) {
-                $path = substr(FileHelper::normalizePath($file, '/'), $basePathLength + 1);
-                if (!isset($config[$path])) {
-                    FileHelper::unlink($file);
-                }
-            }
         } catch (\Throwable $e) {
             Craft::$app->getCache()->set(self::FILE_ISSUES_CACHE_KEY, true, self::CACHE_DURATION);
+            if (isset($basePath)) {
+                // Try to delete everything (again?) so Craft doesn't apply half-baked project config data
+                try {
+                    FileHelper::clearDirectory($basePath, [
+                        'except' => ['.*', '.*/'],
+                    ]);
+                } catch (\Throwable $e) {
+                    // oh well
+                }
+            }
             throw new Exception('Unable to write new project config files', 0, $e);
         }
 
