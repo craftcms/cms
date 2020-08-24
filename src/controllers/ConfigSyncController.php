@@ -198,6 +198,7 @@ class ConfigSyncController extends BaseUpdaterController
             return [
                 'error' => $error,
                 'options' => [
+                    $this->finishedState(['label' => Craft::t('app', 'Cancel')]),
                     $this->actionOption(Craft::t('app', 'Try again'), self::ACTION_RETRY, ['submit' => true]),
                 ]
             ];
