@@ -73,7 +73,7 @@
                                         if (this.totalActions > 0) {
                                             this.processIndexing();
                                         } else {
-                                            this.onComplete();
+                                            this.finishIndexing();
                                         }
                                     }
                                 }.bind(this));
