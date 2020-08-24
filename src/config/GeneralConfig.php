@@ -102,6 +102,14 @@ class GeneralConfig extends BaseObject
      */
     public $autoLoginAfterAccountActivation = false;
     /**
+     * @var bool Whether drafts should be saved automatically as they are edited.
+     *
+     * Note that drafts *will* be autosaved while Live Preview is open, regardless of this setting.
+     *
+     * @since 3.5.6
+     */
+    public $autosaveDrafts = true;
+    /**
      * @var bool Whether Craft should create a database backup before applying a new system update.
      * @see backupCommand
      */

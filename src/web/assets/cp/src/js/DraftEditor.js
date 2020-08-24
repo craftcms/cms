@@ -23,6 +23,7 @@ Craft.DraftEditor = Garnish.Base.extend(
         $addlSiteField: null,
         newSites: null,
 
+        enableAutosave: null,
         lastSerializedValue: null,
         listeningForChanges: false,
         pauseLevel: 0,
@@ -44,6 +45,8 @@ Craft.DraftEditor = Garnish.Base.extend(
             this.queue = [];
 
             this.duplicatedElements = {};
+
+            this.enableAutosave = Craft.autosaveDrafts;
 
             this.$revisionBtn = $('#context-btn');
             this.$revisionLabel = $('#revision-label');
@@ -107,7 +110,7 @@ Craft.DraftEditor = Garnish.Base.extend(
         },
 
         listenForChanges: function() {
-            if (this.listeningForChanges || this.pauseLevel > 0) {
+            if (this.listeningForChanges || this.pauseLevel > 0 || !this.enableAutosave) {
                 return;
             }
 
@@ -166,7 +169,9 @@ Craft.DraftEditor = Garnish.Base.extend(
 
             this.addListener($('#merge-changes-btn'), 'click', this.mergeChanges);
 
-            this.listenForChanges();
+            if (Craft.autosaveDrafts) {
+                this.listenForChanges();
+            }
         },
 
         mergeChanges: function() {
@@ -512,12 +517,22 @@ Craft.DraftEditor = Garnish.Base.extend(
             if (!this.preview) {
                 this.preview = new Craft.Preview(this);
                 this.preview.on('open', function() {
-                    if (!this.settings.draftId) {
+                    if (!this.settings.draftId || !Craft.autosaveDrafts) {
+                        if (!Craft.autosaveDrafts) {
+                            this.enableAutosave = true;
+                        }
                         this.listenForChanges();
                     }
                 }.bind(this));
                 this.preview.on('close', function() {
-                    if (!this.settings.draftId) {
+                    if (!this.settings.draftId || !Craft.autosaveDrafts) {
+                        if (!Craft.autosaveDrafts) {
+                            this.enableAutosave = false;
+                            let $statusIcons = this.statusIcons();
+                            if ($statusIcons.hasClass('checkmark-icon')) {
+                                $statusIcons.addClass('hidden');
+                            }
+                        }
                         this.stopListeningForChanges();
                     }
                 }.bind(this));
@@ -622,7 +637,11 @@ Craft.DraftEditor = Garnish.Base.extend(
                 this.lastSerializedValue = data;
                 this.saving = true;
                 var $spinners = this.spinners().removeClass('hidden');
-                var $statusIcons = this.statusIcons().removeClass('invisible checkmark-icon alert-icon').addClass('hidden');
+                var $statusIcons = this.statusIcons()
+                    .velocity('stop')
+                    .css('opacity', '')
+                    .removeClass('invisible checkmark-icon alert-icon fade-out')
+                    .addClass('hidden');
                 if (this.$saveMetaBtn) {
                     this.$saveMetaBtn.addClass('active');
                 }
@@ -645,6 +664,8 @@ Craft.DraftEditor = Garnish.Base.extend(
                     if (textStatus !== 'success' || response.errors) {
                         this.errors = (response ? response.errors : null) || [];
                         $statusIcons
+                            .velocity('stop')
+                            .css('opacity', '')
                             .removeClass('hidden checkmark-icon')
                             .addClass('alert-icon')
                             .attr('title', Craft.t('app', 'The draft could not be saved.'));
@@ -703,23 +724,32 @@ Craft.DraftEditor = Garnish.Base.extend(
                         }
                         history.replaceState({}, '', newHref);
 
-                        // Replace the Save button with an Update button, if there is one.
-                        // Otherwise, the user must not have permission to update the source element
-                        var $saveBtnContainer = $('#save-btn-container');
-                        if ($saveBtnContainer.length) {
-                            $saveBtnContainer.replaceWith($('<button/>', {
+                        // Remove the "Save as a Draft" and "Save" buttons
+                        $('#save-draft-btn-container').remove();
+                        $('#save-btn-container').remove();
+
+                        let $actionButtonContainer = $('#action-buttons');
+
+                        // If they're allowed to update the source, add a "Publish changes" button
+                        if (this.settings.canUpdateSource) {
+                            $('<button/>', {
                                 type: 'button',
-                                'class': 'btn secondary formsubmit',
+                                class: 'btn secondary formsubmit',
                                 text: Craft.t('app', 'Publish changes'),
                                 data: {
                                     action: this.settings.applyDraftAction,
                                 },
-                            }).formsubmit());
+                            }).appendTo($actionButtonContainer).formsubmit();
                         }
 
-                        // Remove the "Save as a Draft" button
-                        var $saveDraftBtn = $('#save-draft-btn-container');
-                        $saveDraftBtn.add($saveDraftBtn.prev('.spacer')).remove();
+                        // If autosaving is disabled, add a "Save draft" button
+                        if (!Craft.autosaveDrafts) {
+                            $('<button/>', {
+                                type: 'submit',
+                                class: 'btn submit',
+                                text: Craft.t('app', 'Save draft'),
+                            }).appendTo($actionButtonContainer);
+                        }
 
                         // Update the editor settings
                         this.settings.draftId = response.draftId;
@@ -870,10 +900,26 @@ Craft.DraftEditor = Garnish.Base.extend(
         afterUpdate: function(data) {
             Craft.cp.$primaryForm.data('initialSerializedValue', data);
             Craft.initialDeltaValues = {};
-            this.statusIcons()
+            let $statusIcons = this.statusIcons()
+                .velocity('stop')
+                .css('opacity', '')
                 .removeClass('hidden')
                 .addClass('checkmark-icon')
                 .attr('title', Craft.t('app', 'The draft has been saved.'));
+
+            if (!this.enableAutosave) {
+                // Fade the icon out after a couple seconds, since it won't be accurate as content continues to change
+                $statusIcons
+                    .velocity('stop')
+                    .velocity({
+                        opacity: 0,
+                    }, {
+                        delay: 2000,
+                        complete: () => {
+                            $statusIcons.addClass('hidden');
+                        },
+                    });
+            }
 
             this.trigger('update');
 
@@ -1021,15 +1067,9 @@ Craft.DraftEditor = Garnish.Base.extend(
                 return;
             }
 
-            // If we're editing a (saved) draft and the shortcut was used, just force-check the form immediately
-            if (ev.saveShortcut && !this.settings.isUnsavedDraft && this.settings.draftId) {
+            // Is this a normal draft, and was this a normal save (either via submit button or save shortcut)?
+            if (this.settings.draftId && !this.settings.isUnsavedDraft && !ev.customTrigger) {
                 this.checkForm(true);
-                return;
-            }
-
-            // If we're editing a draft, this isn't a custom trigger, and the user isn't allowed to update the source,
-            // then ignore the submission
-            if (!ev.customTrigger && !this.settings.isUnsavedDraft && this.settings.draftId && !this.settings.canUpdateSource) {
                 return;
             }
 

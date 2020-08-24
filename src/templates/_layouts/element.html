@@ -136,7 +136,7 @@
         {{ block('pageTitle') }}
         {{ block('contextMenu') }}
     </div>
-    <div class="flex">
+    <div class="flex" id="action-buttons">
         {% if previewTargets %}
             <div class="btngroup">
                 {% if enablePreview %}
@@ -187,6 +187,11 @@
         {% if canUpdateSource and saveSourceAction and (applyDraftAction ?? false) %}
             <div id="publish-changes-btn-container">
                 <button type="button" class="btn secondary formsubmit" data-action="{{ applyDraftAction }}">{{ 'Publish changes'|t('app') }}</button>
+            </div>
+        {% endif %}
+        {% if not craft.app.config.general.autosaveDrafts %}
+            <div id="save-btn-container">
+                <button type="submit" class="btn submit">{{ 'Save draft'|t('app') }}</button>
             </div>
         {% endif %}
     {% elseif isRevision %}

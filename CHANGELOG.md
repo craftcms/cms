@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Added the `autosaveDrafts` config setting. ([#6704](https://github.com/craftcms/cms/issues/6704))
 - It’s now possible to pass a CSS file URL to the `{% css %}` tag. ([#6672](https://github.com/craftcms/cms/issues/6672))
 - It’s now possible to pass a JavaScript file URL to the `{% js %}` tag. ([#6671](https://github.com/craftcms/cms/issues/6671))
 - Added the `app/health-check` action, which will return a 200 status code even if an update is pending.
