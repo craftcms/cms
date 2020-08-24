@@ -49,6 +49,25 @@ class ConfigSyncController extends BaseUpdaterController
      */
     public function actionApplyYamlChanges(): Response
     {
+        // Make sure schema required by config files aligns with what we have.
+        $issues = [];
+        if (!Craft::$app->getProjectConfig()->getAreConfigSchemaVersionsCompatible($issues)) {
+            $errorString = <<<ERR
+Your project config files were created for different versions of Craft and/or plugins than what’s currently installed.
+
+Try running “composer install” to resolve it and then try again.
+ERR;
+
+            $error = Craft::t('app', $errorString);
+
+            return $this->send([
+                'error' => $error,
+                'options' => [
+                    $this->actionOption(Craft::t('app', 'Try again'), self::ACTION_RETRY, ['submit' => true]),
+                ]
+            ]);
+        }
+
         Craft::$app->getProjectConfig()->applyYamlChanges();
 
         return $this->sendFinished();

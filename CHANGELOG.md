@@ -21,6 +21,7 @@
 - `graphql/api` requests now set the `Access-Control-Allow-Headers` header on non-preflight requests. ([#6674](https://github.com/craftcms/cms/issues/6674))
 - The `_includes/forms/field.html` template now supports an `inputContainerAttributes` variable, rather than `inputAttributes`, as `inputAttributes` was conflicting with variables of the same name in `_includes/forms/text.html` and `_includes/forms/checkbox.html`.
 - The `_includes/forms/select.html` template now supports an `inputAttributes` variable. ([#6696](https://github.com/craftcms/cms/issues/6696))
+- Project config schema version compatibility is now only checked if applying changes.
 
 ### Fixed
 - Fixed a bug where nested block content wasn’t getting updated properly when editing an entry draft, if the draft had been created since the initial page load. ([#6480](https://github.com/craftcms/cms/issues/6480))

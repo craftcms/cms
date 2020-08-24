@@ -216,11 +216,6 @@ class Application extends \yii\web\Application
         $projectConfig = $this->getProjectConfig();
         $areProjectConfigChangesPending = $generalConfig->devMode && $request->getIsCpRequest() && $projectConfig->areChangesPending();
 
-        // Make sure schema required by config files aligns with what we have.
-        if ($areProjectConfigChangesPending && !$projectConfig->getAreConfigSchemaVersionsCompatible($issues)) {
-            return $this->_handleIncompatibleConfig($request, $issues);
-        }
-
         // getIsCraftDbMigrationNeeded will return true if we're in the middle of a manual or auto-update for Craft itself.
         // If we're in maintenance mode and it's not a site request, show the manual update template.
         if ($this->getUpdates()->getIsCraftDbMigrationNeeded()) {
