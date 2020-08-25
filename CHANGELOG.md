@@ -59,6 +59,7 @@
 - Fixed a bug where changes to the `dateModified` project config value weren’t getting applied.
 - Fixed a bug where rebuilding the project config would pull in any pending changes in the YAML files unexpectedly.
 - Fixed a bug where the “Localizing relations” job wouldn’t run if a relational field’s “Manage relations on a per-site basis” setting was enabled via the project config. ([#6711](https://github.com/craftcms/cms/issues/6711))
+- Fixed a bug where autosuggest menus weren’t getting closed when the input was blurred via the keyboard. ([#6710](https://github.com/craftcms/cms/issues/6710))
 
 ## 3.5.5 - 2020-08-17
 
