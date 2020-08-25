@@ -8,9 +8,11 @@
 - It’s now possible to pass a JavaScript file URL to the `{% js %}` tag. ([#6671](https://github.com/craftcms/cms/issues/6671))
 - The Project Config utility now shows a comparison of the pending project config YAML changes and the loaded project project config.
 - The Project Config utility now has a “Discard changes” button, which will regenerate the project config YAML files based on the loaded project config, discarding any pending changes in them.
+- The Project Config utility now has a “Download” button. ([#3979](https://github.com/craftcms/cms/issues/3979))
 - Added the `app/health-check` action, which will return a 200 status code even if an update is pending.
 - Added the `project-config/diff` command, which outputs a comparison of the pending project config YAML changes and the loaded project config.
 - Added `craft\controllers\ProjectConfigController::actionDiscard()`.
+- Added `craft\controllers\ProjectConfigController::actionDownload()`.
 - Added `craft\controllers\ProjectConfigController::actionRebuild()`.
 - Added `craft\fieldlayoutelements\BaseField::showLabel()`.
 - Added `craft\helpers\ProjectConfig::diff()`.

@@ -93,3 +93,25 @@
 <div class="pane highlight">
     <pre><code class="language-yaml">{{ entireConfig }}</code></pre>
 </div>
+<div class="buttons">
+    <button type="button" id="download" class="btn" data-icon="download">{{ 'Download'|t('app') }}</button>
+    <div id="download-spinner" class="spinner hidden"></div>
+</div>
+
+{% js %}
+    $('#download').on('click', () => {
+        $('#download-spinner').removeClass('hidden');
+        let params = {};
+        if (Craft.csrfTokenName) {
+            params[Craft.csrfTokenName] = Craft.csrfTokenValue;
+        }
+        Craft.downloadFromUrl("post", "{{ actionUrl('project-config/download') }}", params)
+            .then(() => {
+                $('#download-spinner').addClass('hidden');
+            })
+            .catch(e => {
+                $('#download-spinner').addClass('hidden');
+                throw e;
+            });
+    });
+{% endjs %}
