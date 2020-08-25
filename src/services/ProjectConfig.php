@@ -266,6 +266,12 @@ class ProjectConfig extends Component
     private $_applyingYamlChanges = false;
 
     /**
+     * @var bool Whether project config is currently being rebuilt.
+     * @see rebuild()
+     */
+    private $_rebuildingConfig = false;
+
+    /**
      * @var bool Whether the config's dateModified timestamp has been updated by this request.
      */
     private $_timestampUpdated = false;
@@ -472,7 +478,9 @@ class ProjectConfig extends Component
             $this->_saveConfig($config);
         }
 
-        $this->processConfigChanges($path, true, $message);
+        if (!$this->_rebuildingConfig) {
+            $this->processConfigChanges($path, true, $message);
+        }
     }
 
     /**
@@ -1158,9 +1166,17 @@ class ProjectConfig extends Component
         $readOnly = $this->readOnly;
         $this->readOnly = false;
 
+        // Make sure Craft doesn't react to anything while rebuilding
+        $this->_rebuildingConfig = true;
+
         foreach ($event->config as $path => $value) {
             $this->set($path, $value, 'Project config rebuild');
         }
+
+        $this->_rebuildingConfig = false;
+
+        // Make sure the `dateModified` is set to the new value.
+        $this->processConfigChanges('dateModified');
 
         $this->_appliedConfig = $event->config;
 

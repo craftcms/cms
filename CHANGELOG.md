@@ -57,6 +57,7 @@
 - Fixed a bug where project config files could get deleted if the casing of a component’s handle was changed, on case-insensitive file systems. ([#6708](https://github.com/craftcms/cms/issues/6708))
 - Fixed an error that could occur when applying project config changes from the Project Config utility, if the logged-in user wasn’t an admin.
 - Fixed a bug where changes to `dateModified` project config value would not get applied.
+- Fixed a bug where re-building Project Config when changes were pending could make the internal state wonky.
 
 ## 3.5.5 - 2020-08-17
 
