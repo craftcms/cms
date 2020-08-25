@@ -16,11 +16,12 @@
 <div id="{{ containerId }}" class="autosuggest-container">
     {% verbatim %}
     <vue-autosuggest
-            :suggestions="filteredOptions"
-            :get-suggestion-value="getSuggestionValue"
-            :input-props="inputProps"
-            :limit="limit"
-            @selected="onSelected">
+        :suggestions="filteredOptions"
+        :get-suggestion-value="getSuggestionValue"
+        :input-props="inputProps"
+        :limit="limit"
+        @selected="onSelected"
+    >
         <template slot-scope="{suggestion}">
             {{suggestion.item.name || suggestion.item}}
             <span v-if="suggestion.item.hint" class="light">– {{suggestion.item.hint}}</span>
