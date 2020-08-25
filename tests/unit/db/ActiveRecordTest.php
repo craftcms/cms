@@ -52,6 +52,8 @@ class ActiveRecordTest extends Unit
         $session = $this->ensureSession();
 
         $this->tester->assertEqualDates($this, $session->dateCreated, $date->format('Y-m-d H:i:s'), 2);
+
+        $session->delete();
     }
 
     /**
@@ -78,6 +80,8 @@ class ActiveRecordTest extends Unit
         $session->token = 'test2';
         $session->save();
         $this->tester->assertEqualDates($this, $session->dateUpdated, $date->format('Y-m-d H:i:s'), 1);
+
+        $session->delete();
     }
 
     /**
@@ -88,6 +92,8 @@ class ActiveRecordTest extends Unit
         $session = $this->ensureSession();
 
         $this->assertTrue(StringHelper::isUUID($session->uid));
+
+        $session->delete();
     }
 
     /**
@@ -109,6 +115,8 @@ class ActiveRecordTest extends Unit
 
         $this->assertTrue($save);
         $this->assertSame($result, $vol->settings);
+
+        $vol->delete();
     }
 
     /**
@@ -149,6 +157,8 @@ class ActiveRecordTest extends Unit
 
         $this->assertTrue($save);
         $this->assertSame('00000000|0000|0000|0000|000000000000', $session->uid);
+
+        $session->delete();
     }
 
     /**
@@ -163,6 +173,8 @@ class ActiveRecordTest extends Unit
 
         $this->assertTrue($save);
         $this->assertTrue(StringHelper::isUUID($session->uid));
+
+        $session->delete();
     }
 
     /**
