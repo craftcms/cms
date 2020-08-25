@@ -1329,7 +1329,6 @@ class ProjectConfig extends Component
 
         if ($configData === null) {
             $configData = $this->_getConfigurationFromYaml() ?? [];
-            unset($configData['dateModified'], $currentConfig['dateModified']);
         }
 
         unset($configData['imports'], $currentConfig['imports']);
