@@ -52,12 +52,12 @@
 - Fixed a bug where `craft\i18n\Formatter::asDatetime()` and `asTime()` were ignoring certain formatting characters that aren’t supported by ICU, if the format string began with `php:`. ([#6691](https://github.com/craftcms/cms/issues/6691))
 - Fixed an error that could occur when downloading an asset. ([#6692](https://github.com/craftcms/cms/pull/6692))
 - Fixed a bug where fields with hidden labels would refer to themselves as `__blank__` in validation errors. ([#6699](https://github.com/craftcms/cms/issues/6699))
-- Fixed a bug where it was impossible to use lists in directive arguments. ([#6693](https://github.com/craftcms/cms/issues/6693))
-- Fixed a bug where asset indexing utility would not work correctly if no files were found on the selected volumes. ([#6658](https://github.com/craftcms/cms/issues/6658))
+- Fixed a bug where it wasn’t possible to pass lists to GraphQL directive arguments. ([#6693](https://github.com/craftcms/cms/issues/6693))
+- Fixed a bug where asset indexing didn’t work properly if no files were found on the selected volumes. ([#6658](https://github.com/craftcms/cms/issues/6658))
 - Fixed a bug where project config files could get deleted if the casing of a component’s handle was changed, on case-insensitive file systems. ([#6708](https://github.com/craftcms/cms/issues/6708))
 - Fixed an error that could occur when applying project config changes from the Project Config utility, if the logged-in user wasn’t an admin.
-- Fixed a bug where changes to `dateModified` project config value would not get applied.
-- Fixed a bug where re-building Project Config when changes were pending could make the internal state wonky.
+- Fixed a bug where changes to the `dateModified` project config value weren’t getting applied.
+- Fixed a bug where rebuilding the project config would pull in any pending changes in the YAML files unexpectedly.
 
 ## 3.5.5 - 2020-08-17
 
