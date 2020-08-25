@@ -58,6 +58,7 @@
 - Fixed an error that could occur when applying project config changes from the Project Config utility, if the logged-in user wasn’t an admin.
 - Fixed a bug where changes to the `dateModified` project config value weren’t getting applied.
 - Fixed a bug where rebuilding the project config would pull in any pending changes in the YAML files unexpectedly.
+- Fixed a bug where the “Localizing relations” job wouldn’t run if a relational field’s “Manage relations on a per-site basis” setting was enabled via the project config. ([#6711](https://github.com/craftcms/cms/issues/6711))
 
 ## 3.5.5 - 2020-08-17
 
