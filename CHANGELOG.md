@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.5.6 - 2020-08-25
 
 ### Added
 - Added the `autosaveDrafts` config setting. ([#6704](https://github.com/craftcms/cms/issues/6704))
