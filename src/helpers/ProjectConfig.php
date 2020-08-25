@@ -13,6 +13,9 @@ use craft\services\Gql as GqlService;
 use craft\services\ProjectConfig as ProjectConfigService;
 use craft\services\Sites;
 use craft\services\UserGroups;
+use SebastianBergmann\Diff\Differ;
+use SebastianBergmann\Diff\Output\UnifiedDiffOutputBuilder;
+use Symfony\Component\Yaml\Yaml;
 use yii\base\InvalidConfigException;
 
 /**
@@ -430,5 +433,31 @@ class ProjectConfig
         }
 
         return true;
+    }
+
+    /**
+     * Returns a diff of the pending project config YAML changes, compared to the currently loaded project config.
+     *
+     * @return string
+     * @since 3.5.6
+     */
+    public static function diff(): string
+    {
+        $projectConfig = Craft::$app->getProjectConfig();
+        $currentConfig = $projectConfig->get();
+        $pendingConfig = $projectConfig->get(null, true);
+        $currentYaml = Yaml::dump(static::cleanupConfig($currentConfig), 20, 2);
+        $pendingYaml = Yaml::dump(static::cleanupConfig($pendingConfig), 20, 2);
+        $builder = new UnifiedDiffOutputBuilder('');
+        $differ = new Differ($builder);
+        $diff = $differ->diff($currentYaml, $pendingYaml);
+
+        // Cleanup
+        $diff = preg_replace("/^@@ @@\n/", '', $diff);
+        $diff = preg_replace('/^[\+\-]?/m', '$0 ', $diff);
+        $diff = str_replace(' @@ @@', '...', $diff);
+        $diff = rtrim($diff);
+
+        return $diff;
     }
 }

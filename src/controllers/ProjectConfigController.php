@@ -9,7 +9,6 @@ namespace craft\controllers;
 
 use Craft;
 use craft\web\Controller;
-use yii\base\Exception;
 use yii\base\Response;
 
 /**
@@ -25,25 +24,38 @@ class ProjectConfigController extends Controller
      */
     public function beforeAction($action)
     {
-        // This controller is only available to the CP
-        if (!$this->request->getIsCpRequest()) {
-            throw new NotFoundHttpException();
+        if (!parent::beforeAction($action)) {
+            return false;
         }
 
         $this->requirePostRequest();
-
+        $this->requirePermission('utility:project-config');
         return true;
     }
 
     /**
-     * Ignore any changes to project config files by
+     * Discards any changes to the project config files.
      *
      * @return Response
-     * @throws Exception
+     * @since 3.5.6
      */
-    public function actionIgnore(): Response
+    public function actionDiscard(): Response
     {
-        Craft::$app->getProjectConfig()->ignorePendingChanges();
-        return $this->redirectToPostedUrl($this->data['returnUrl'] ?? Craft::$app->getConfig()->getGeneral()->getPostCpLoginRedirect());
+        Craft::$app->getProjectConfig()->regenerateYamlFromConfig();
+        $this->setSuccessFlash(Craft::t('app', 'Project config YAML changes discarded.'));
+        return $this->redirectToPostedUrl();
+    }
+
+    /**
+     * Rebuilds the project config.
+     *
+     * @return Response
+     * @since 3.5.6
+     */
+    public function actionRebuild(): Response
+    {
+        Craft::$app->getProjectConfig()->rebuild();
+        $this->setSuccessFlash(Craft::t('app', 'Project config rebuilt successfully.'));
+        return $this->redirectToPostedUrl();
     }
 }

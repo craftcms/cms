@@ -144,8 +144,18 @@ class Cp
             }
         }
 
-        // Display a warning if admin changes are allowed, and project.yaml is being used but not writable
+        // Display an alert if there are pending project config YAML changes
         $projectConfig = Craft::$app->getProjectConfig();
+        if (
+            $path !== 'utilities/project-config' &&
+            $user->can('utility:project-config') &&
+            $projectConfig->areChangesPending()
+        ) {
+            $alerts[] = Craft::t('app', 'Your project config YAML files contain pending changes.') .
+                ' ' . '<a class="go" href="' . UrlHelper::url('utilities/project-config') . '">' . Craft::t('app', 'Review') . '</a>';
+        }
+
+        // Display a warning if admin changes are allowed, and project.yaml is being used but not writable
         if (
             $user->admin &&
             $generalConfig->allowAdminChanges &&

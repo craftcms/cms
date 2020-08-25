@@ -212,10 +212,6 @@ class Application extends \yii\web\Application
             throw new ServiceUnavailableHttpException();
         }
 
-        // If Dev Mode is enabled and this is a CP request, check if there are any pending project config changes
-        $projectConfig = $this->getProjectConfig();
-        $areProjectConfigChangesPending = $generalConfig->devMode && $request->getIsCpRequest() && $projectConfig->areChangesPending();
-
         // getIsCraftDbMigrationNeeded will return true if we're in the middle of a manual or auto-update for Craft itself.
         // If we're in maintenance mode and it's not a site request, show the manual update template.
         if ($this->getUpdates()->getIsCraftDbMigrationNeeded()) {
@@ -240,11 +236,6 @@ class Application extends \yii\web\Application
         // Check if a plugin needs to update the database.
         if ($this->getUpdates()->getIsPluginDbUpdateNeeded()) {
             return $this->_processUpdateLogic($request) ?: $this->getResponse();
-        }
-
-        // If project config changes are pending, give them a chance to process them now
-        if ($areProjectConfigChangesPending) {
-            return $this->_processConfigApplyLogic($request) ?: $this->getResponse();
         }
 
         // If this is a plugin template request, make sure the user has access to the plugin
@@ -674,46 +665,6 @@ class Application extends \yii\web\Application
             if (
                 ArrayHelper::firstValue($actionSegments) === 'updater' ||
                 $actionSegments === ['app', 'health-check'] ||
-                $actionSegments === ['app', 'migrate'] ||
-                $actionSegments === ['pluginstore', 'install', 'migrate']
-            ) {
-                return $this->runAction(implode('/', $actionSegments));
-            }
-        }
-
-        // If an exception gets throw during the rendering of the 503 template, let
-        // TemplatesController->actionRenderError() take care of it.
-        throw new ServiceUnavailableHttpException();
-    }
-
-    /**
-     * @param Request $request
-     * @return Response|null
-     * @throws HttpException
-     * @throws ServiceUnavailableHttpException
-     * @throws \yii\base\ExitException
-     */
-    private function _processConfigApplyLogic(Request $request)
-    {
-        $this->_unregisterDebugModule();
-
-        // Let all non-action CP requests through.
-        if (
-            $request->getIsCpRequest() &&
-            (!$request->getIsActionRequest() || $request->getActionSegments() == ['users', 'login'])
-        ) {
-            // Show the config sync kickoff template
-            return $this->runAction('templates/config-sync-kickoff');
-        }
-
-        // We'll also let update actions go through
-        if ($request->getIsActionRequest()) {
-            $actionSegments = $request->getActionSegments();
-            $firstSegment = ArrayHelper::firstValue($actionSegments);
-            if (
-                $firstSegment === 'updater' ||
-                $firstSegment === 'config-sync' ||
-                $firstSegment === 'project-config' ||
                 $actionSegments === ['app', 'migrate'] ||
                 $actionSegments === ['pluginstore', 'install', 'migrate']
             ) {

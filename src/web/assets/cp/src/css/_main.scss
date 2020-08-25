@@ -555,7 +555,7 @@ td.right {
   width: 100%;
 }
 
-*:not(.highlight) > * > * > .token {
+.token {
   @include token-styles;
 }
 
@@ -585,6 +585,32 @@ td.right {
   box-shadow: 0 0 0 1px transparentize($grey500, 0.75);;
   background-color: $white;
   outline: none;
+}
+
+// Override .token for Prism
+.highlight {
+  .token {
+    display: inline;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    font-size: inherit;
+    line-height: inherit;
+    text-shadow: none;
+    background: transparent;
+    box-shadow: none;
+  }
+}
+
+.pane.highlight {
+  pre[class*="language-"] {
+    overflow: visible;
+
+    & > code.diff-highlight .token:not(.prefix) {
+      margin: 0 -24px;
+      padding: 0 24px;
+    }
+  }
 }
 
 .success {

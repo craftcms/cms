@@ -344,7 +344,7 @@ body.rtl th.right, body.rtl td.right { text-align: left; }
 
 .fullwidth { width: 100%; }
 
-*:not(.highlight) > * > * > .token { display: inline-block; border-radius: 10px; padding: 2px 7px; font-size: 12px; line-height: 14px; color: #3f4d5a; background-color: rgba(255, 255, 255, 0.5); box-shadow: 0 0 0 1px rgba(123, 135, 147, 0.5); }
+.token { display: inline-block; border-radius: 10px; padding: 2px 7px; font-size: 12px; line-height: 14px; color: #3f4d5a; background-color: rgba(255, 255, 255, 0.5); box-shadow: 0 0 0 1px rgba(123, 135, 147, 0.5); }
 
 .token[data-name='*'] { position: relative; width: 10px; }
 
@@ -353,6 +353,12 @@ body.rtl th.right, body.rtl td.right { text-align: left; }
 .token[data-name='*']:before { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; user-select: none; opacity: 0.8; display: block; position: absolute; top: 0; left: 0; width: 100%; font-size: 9px; line-height: 17px; content: 'asterisk'; text-indent: 0; }
 
 .token:focus { box-shadow: 0 0 0 1px rgba(96, 109, 123, 0.25); background-color: #fff; outline: none; }
+
+.highlight .token { display: inline; border: none; border-radius: 0; padding: 0; font-size: inherit; line-height: inherit; text-shadow: none; background: transparent; box-shadow: none; }
+
+.pane.highlight pre[class*="language-"] { overflow: visible; }
+
+.pane.highlight pre[class*="language-"] > code.diff-highlight .token:not(.prefix) { margin: 0 -24px; padding: 0 24px; }
 
 .success { color: #27AB83 !important; }
 

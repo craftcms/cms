@@ -6,8 +6,14 @@
 - Added the `autosaveDrafts` config setting. ([#6704](https://github.com/craftcms/cms/issues/6704))
 - It’s now possible to pass a CSS file URL to the `{% css %}` tag. ([#6672](https://github.com/craftcms/cms/issues/6672))
 - It’s now possible to pass a JavaScript file URL to the `{% js %}` tag. ([#6671](https://github.com/craftcms/cms/issues/6671))
+- The Project Config utility now shows a comparison of the pending project config YAML changes and the loaded project project config.
+- The Project Config utility now has a “Discard changes” button, which will regenerate the project config YAML files based on the loaded project config, discarding any pending changes in them.
 - Added the `app/health-check` action, which will return a 200 status code even if an update is pending.
+- Added the `project-config/diff` command, which outputs a comparison of the pending project config YAML changes and the loaded project config.
+- Added `craft\controllers\ProjectConfigController::actionDiscard()`.
+- Added `craft\controllers\ProjectConfigController::actionRebuild()`.
 - Added `craft\fieldlayoutelements\BaseField::showLabel()`.
+- Added `craft\helpers\ProjectConfig::diff()`.
 - Added `craft\helpers\Template::css()`.
 - Added `craft\helpers\Template::js()`.
 - Added `craft\services\Content::$db`. ([#6549](https://github.com/craftcms/cms/issues/6549))
@@ -17,6 +23,7 @@
 - All buttons in the control panel are now actual `<button>` elements. ([#6670](https://github.com/craftcms/cms/issues/6670))
 - Title fields now get autofocused if they are positioned on the first tab. ([#6662](https://github.com/craftcms/cms/issues/6662))
 - Element edit pages now remember the selected tab when switching to a different site/revision. ([#4018](https://github.com/craftcms/cms/issues/4018), [#4164](https://github.com/craftcms/cms/issues/4164))
+- Craft now shows an alert at the top of the control panel if there are pending changes in the project config YAML files, rather than blocking access to the entire control panel.
 - Craft no longer requires the installed Craft and plugin versions to be compatible with the versions listed in the project config YAML files, except when applying changes.
 - The `install` command no longer prompts for a username if the `useEmailAsUsername` config setting is enabled. ([#6669](https://github.com/craftcms/cms/issues/6669))
 - Spaces in asset URLs are now URL-encoded, avoiding parsing conflicts with `srcset` attributes. ([#6668](https://github.com/craftcms/cms/issues/6668))
@@ -25,7 +32,10 @@
 - The `_includes/forms/select.html` template now supports an `inputAttributes` variable. ([#6696](https://github.com/craftcms/cms/issues/6696))
 
 ### Removed
+- Removed `craft\controllers\ProjectConfigController::actionIgnore()`.
+- Removed `craft\controllers\TemplatesController::actionConfigSyncKickoff()`.
 - Removed `craft\controllers\TemplatesController::actionIncompatibleConfigAlert()`.
+- Removed `craft\controllers\UtilitiesController::actionProjectConfigPerformAction()`.
 
 ### Fixed
 - Fixed a bug where nested block content wasn’t getting updated properly when editing an entry draft, if the draft had been created since the initial page load. ([#6480](https://github.com/craftcms/cms/issues/6480))
