@@ -151,38 +151,6 @@ class UtilitiesController extends Controller
     }
 
     /**
-     * Performs a project config action
-     *
-     * @return Response
-     * @throws ForbiddenHttpException if the user doesn't have access to the Asset Indexes utility
-     */
-    public function actionProjectConfigPerformAction(): Response
-    {
-        $this->requireAdmin(false);
-        $projectConfig = Craft::$app->getProjectConfig();
-
-        switch ($this->request->getRequiredBodyParam('performAction')) {
-            case 'force-apply':
-                $forceUpdate = $projectConfig->forceUpdate;
-                $projectConfig->forceUpdate = true;
-                $projectConfig->applyYamlChanges();
-                $this->setSuccessFlash(Craft::t('app', 'Project config changes applied successfully.'));
-                $projectConfig->forceUpdate = $forceUpdate;
-                break;
-            case 'apply':
-                $projectConfig->applyYamlChanges();
-                $this->setSuccessFlash(Craft::t('app', 'Project config changes applied successfully.'));
-                break;
-            case 'rebuild':
-                $projectConfig->rebuild();
-                $this->setSuccessFlash(Craft::t('app', 'Project config rebuilt successfully.'));
-                break;
-        }
-
-        return $this->redirect('utilities/project-config');
-    }
-
-    /**
      * Performs an Asset Index action
      *
      * @return Response

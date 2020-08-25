@@ -9,7 +9,11 @@ namespace craft\utilities;
 
 use Craft;
 use craft\base\Utility;
+use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\web\assets\prismjs\PrismJsAsset;
+use SebastianBergmann\Diff\Differ;
+use SebastianBergmann\Diff\Output\DiffOnlyOutputBuilder;
+use SebastianBergmann\Diff\Output\UnifiedDiffOutputBuilder;
 use Symfony\Component\Yaml\Yaml;
 
 /**
@@ -50,11 +54,11 @@ class ProjectConfig extends Utility
     public static function contentHtml(): string
     {
         $css = <<<CSS
-#config-container {
+.pane.highlight {
   max-height: 500px;
   overflow: auto;
 }
-#config-container pre {
+.pane.highlight pre {
   margin: 0;
   padding: 0;
   background-color: transparent;
@@ -65,10 +69,9 @@ CSS;
         $view->registerAssetBundle(PrismJsAsset::class);
         $view->registerCss($css);
 
-        $projectConfig = Craft::$app->getProjectConfig();
         return $view->renderTemplate('_components/utilities/ProjectConfig', [
-            'changesPending' => $projectConfig->areChangesPending(null, true),
-            'entireConfig' => Yaml::dump($projectConfig->get(), 20, 2),
+            'diff' => ProjectConfigHelper::diff(),
+            'entireConfig' => Yaml::dump(Craft::$app->getProjectConfig()->get(), 20, 2),
         ]);
     }
 }

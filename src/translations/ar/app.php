@@ -331,7 +331,7 @@ return [
     'Invalid transform handle: {handle}' => 'مؤشر التحويل غير صالح: {handle}',
     'Invalid username or email.' => 'اسم المستخدم أو البريد الإلكتروني غير صالح.',
     'Invalid username or password.' => 'اسم المستخدم أو كلمة المرور غير صالحة.',
-    'It looks like someone is currently performing a system update.<br>Only continue if you’re sure that’s not the case.' => 'يبدو أن هناك شخص يقوم حاليًا بإجراء تحديث للنظام.<br/>قم بالمتابعة فقط إذا كنت متأكدًا من أن هذه ليست الحالة.',
+    'It looks like someone is currently performing a system update.<br>Only continue if you’re sure that’s not the case.' => 'يبدو أن هناك شخص يقوم حاليًا بإجراء تحديث للنظام.<br>قم بالمتابعة فقط إذا كنت متأكدًا من أن هذه ليست الحالة.',
     'It’s not possible to rename the top folder of a Volume.' => 'لا يمكن إعادة تسمية المجلد العلوي لوحدة التخزين.',
     'JSON' => 'JSON',
     'JavaScript' => 'جافاسكريبت',

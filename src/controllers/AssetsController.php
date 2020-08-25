@@ -1054,7 +1054,10 @@ class AssetsController extends Controller
         if (count($assets) === 1) {
             $asset = reset($assets);
             return $this->response
-                ->sendStreamAsFile($asset->stream, $asset->filename);
+                ->sendStreamAsFile($asset->stream, $asset->filename, [
+                    'fileSize' => $asset->size,
+                    'mimeType' => $asset->mimeType,
+                ]);
         }
 
         // Otherwise create a zip of all the selected assets

@@ -340,10 +340,10 @@ li.sel a {
 }
 
 /* revision button */
-#revision-btngroup {
+#context-btngroup {
   @include margin-right(7px);
 }
-#revision-btn.disabled {
+#context-btn.disabled {
   opacity: 1;
   color: $mediumDarkTextColor;
   background-color: transparentize($grey200, 0.5) !important;
@@ -555,7 +555,7 @@ td.right {
   width: 100%;
 }
 
-*:not(.highlight) > * > * > .token {
+.token {
   @include token-styles;
 }
 
@@ -585,6 +585,32 @@ td.right {
   box-shadow: 0 0 0 1px transparentize($grey500, 0.75);;
   background-color: $white;
   outline: none;
+}
+
+// Override .token for Prism
+.highlight {
+  .token {
+    display: inline;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    font-size: inherit;
+    line-height: inherit;
+    text-shadow: none;
+    background: transparent;
+    box-shadow: none;
+  }
+}
+
+.pane.highlight {
+  pre[class*="language-"] {
+    overflow: visible;
+
+    & > code.diff-highlight .token:not(.prefix) {
+      margin: 0 -24px;
+      padding: 0 24px;
+    }
+  }
 }
 
 .success {
@@ -1401,7 +1427,8 @@ ul.icons {
 }
 
 .btn.submit:not(.disabled):not(.inactive):hover,
-.btn.submit:not(.disabled):not(.inactive).hover {
+.btn.submit:not(.disabled):not(.inactive).hover,
+.btn.submit:not(.disabled):not(.inactive):focus {
   background-color: darken($primaryColor, 5%) !important;
 }
 
@@ -1417,8 +1444,10 @@ ul.icons {
 
 .secondary-buttons .btn.submit:not(.disabled):not(.inactive):hover,
 .secondary-buttons .btn.submit:not(.disabled):not(.inactive).hover,
+.secondary-buttons .btn.submit:not(.disabled):not(.inactive):focus,
 .btn.secondary:not(.disabled):not(.inactive):hover,
-.btn.secondary:not(.disabled):not(.inactive).hover {
+.btn.secondary:not(.disabled):not(.inactive).hover,
+.btn.secondary:not(.disabled):not(.inactive):focus {
   background-color: darken($secondaryColor, 5%) !important;
 }
 
@@ -2697,6 +2726,7 @@ table.editable {
 
   & + .btn.add {
     display: block;
+    width: 100%;
     border-radius: 0 0 $mediumBorderRadius $mediumBorderRadius;
     border: 1px dashed $mediumHairlineColor;
     border-top-width: 0;
@@ -4468,6 +4498,9 @@ fieldset {
     @include margin-left(4px);
     cursor: pointer;
     color: $darkHairlineColor;
+    border: none;
+    padding: 0;
+    background: transparent;
 
     &:before {
       @include icon;

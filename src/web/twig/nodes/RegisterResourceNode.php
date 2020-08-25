@@ -37,10 +37,10 @@ class RegisterResourceNode extends Node implements NodeCaptureInterface
             $compiler
                 ->write("ob_start();\n")
                 ->subcompile($value)
-                ->write("Craft::\$app->getView()->{$method}(ob_get_clean()");
+                ->write("$method(ob_get_clean()");
         } else {
             $compiler
-                ->write("Craft::\$app->getView()->{$method}(")
+                ->write("$method(")
                 ->subcompile($value);
         }
 

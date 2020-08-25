@@ -127,10 +127,10 @@ abstract class BaseField extends FieldLayoutElement
     {
         $innerHtml = '';
 
-        if (($label = $this->label()) !== '__blank__') {
-            $innerHtml .= Html::tag('h4', $this->label(), [
+        if ($this->showLabel() && ($label = $this->label()) !== null) {
+            $innerHtml .= Html::tag('h4', $label, [
                 'class' => 'fld-element-label',
-                'title' => $this->label(),
+                'title' => $label,
             ]);
         }
 
@@ -178,7 +178,7 @@ abstract class BaseField extends FieldLayoutElement
             'field' => $this,
             'defaultLabel' => $this->defaultLabel(),
             'defaultInstructions' => $this->defaultInstructions(),
-            'labelHidden' => $this->label === '__blank__',
+            'labelHidden' => !$this->showLabel(),
         ]);
     }
 
@@ -197,10 +197,10 @@ abstract class BaseField extends FieldLayoutElement
         return Craft::$app->getView()->renderTemplate('_includes/forms/field', [
             'id' => $this->id(),
             'fieldAttributes' => $this->containerAttributes($element, $static),
-            'inputAttributes' => $this->inputContainerAttributes($element, $static),
+            'inputContainerAttributes' => $this->inputContainerAttributes($element, $static),
             'labelAttributes' => $this->labelAttributes($element, $static),
             'status' => $statusClass ? [$statusClass, $this->statusLabel($element, $static) ?? ucfirst($statusClass)] : null,
-            'label' => $this->label ? Craft::t('site', $this->label) : $this->defaultLabel($element, $static),
+            'label' => $this->showLabel() ? $this->label() : null,
             'attribute' => $this->attribute(),
             'required' => !$static && $this->required,
             'instructions' => Html::encode($this->instructions ? Craft::t('site', $this->instructions) : $this->defaultInstructions($element, $static)),
@@ -269,7 +269,10 @@ abstract class BaseField extends FieldLayoutElement
      */
     public function label()
     {
-        return $this->label ?: $this->defaultLabel();
+        if ($this->label !== null && $this->label !== '' && $this->label !== '__blank__') {
+            return Craft::t('site', $this->label);
+        }
+        return $this->defaultLabel();
     }
 
     /**
@@ -282,6 +285,17 @@ abstract class BaseField extends FieldLayoutElement
     protected function defaultLabel(ElementInterface $element = null, bool $static = false)
     {
         return null;
+    }
+
+    /**
+     * Returns whether the label should be shown in form inputs.
+     *
+     * @return bool
+     * @since 3.5.6
+     */
+    protected function showLabel(): bool
+    {
+        return $this->label !== '__blank__';
     }
 
     /**

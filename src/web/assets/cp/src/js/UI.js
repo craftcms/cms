@@ -686,16 +686,16 @@ Craft.ui =
 
             $dateInputs.on('change', function() {
                 // Do the start & end dates match one of our options?
-                var startDate = $startDate.datepicker('getDate');
-                var endDate = $endDate.datepicker('getDate');
-                var startTime = startDate ? startDate.getTime() : null;
-                var endTime = endDate ? endDate.getTime() : null;
+                let startDate = $startDate.datepicker('getDate');
+                let endDate = $endDate.datepicker('getDate');
+                let startTime = startDate ? startDate.getTime() : null;
+                let endTime = endDate ? endDate.getTime() : null;
 
-                var $options = $ul.find('a');
-                var $option;
-                var foundOption = false;
+                let $options = $ul.find('a');
+                let $option;
+                let foundOption = false;
 
-                for (var i = 0; i < $options.length; i++) {
+                for (let i = 0; i < $options.length; i++) {
                     $option = $options.eq(i);
                     if (
                         startTime === ($option.data('startTime') || null) &&
@@ -732,13 +732,17 @@ Craft.ui =
                 $endDate.datepicker('hide');
             });
 
-            var btnClasses = 'btn menubtn';
+            let btnClasses = 'btn menubtn';
             if (config.class) {
                 btnClasses = btnClasses + ' ' + config.class;
             }
 
-            var $btn = $('<div class="'+btnClasses+'" data-icon="date"/>')
-                .text(Craft.t('app', 'All'));
+            let $btn = $('<button/>', {
+                type: 'button',
+                class: btnClasses,
+                'data-icon': 'date',
+                text: Craft.t('app', 'All'),
+            });
 
             new Garnish.MenuBtn($btn, menu);
 

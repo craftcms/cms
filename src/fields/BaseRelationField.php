@@ -199,11 +199,6 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     protected $sortable = true;
 
     /**
-     * @var bool Whether existing relations should be made translatable after the field is saved
-     */
-    private $_makeExistingRelationsTranslatable = false;
-
-    /**
      * @inheritdoc
      */
     public function __construct(array $config = [])
@@ -712,30 +707,16 @@ JS;
     /**
      * @inheritdoc
      */
-    public function beforeSave(bool $isNew): bool
-    {
-        $this->_makeExistingRelationsTranslatable = false;
-
-        if (!$this->getIsNew() && $this->localizeRelations) {
-            $existingField = Craft::$app->getFields()->getFieldById($this->id);
-
-            if ($existingField && $existingField instanceof self && !$existingField->localizeRelations) {
-                $this->_makeExistingRelationsTranslatable = true;
-            }
-        }
-
-        return parent::beforeSave($isNew);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function afterSave(bool $isNew)
     {
-        if ($this->_makeExistingRelationsTranslatable) {
-            Queue::push(new LocalizeRelations([
-                'fieldId' => $this->id,
-            ]));
+        // If the propagation method just changed, resave all the Matrix blocks
+        if ($this->oldSettings !== null) {
+            $oldLocalizeRelations = (bool)($this->oldSettings['localizeRelations'] ?? false);
+            if ($this->localizeRelations !== $oldLocalizeRelations) {
+                Queue::push(new LocalizeRelations([
+                    'fieldId' => $this->id,
+                ]));
+            }
         }
 
         parent::afterSave($isNew);

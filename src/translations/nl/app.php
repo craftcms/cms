@@ -331,7 +331,7 @@ return [
     'Invalid transform handle: {handle}' => 'Ongeldige transformatie-ingang: {handle}',
     'Invalid username or email.' => 'Gebruikersnaam of e-mail ongeldig.',
     'Invalid username or password.' => 'Gebruikersnaam of wachtwoord ongeldig.',
-    'It looks like someone is currently performing a system update.<br>Only continue if you’re sure that’s not the case.' => 'Het lijkt erop dat iemand momenteel een systeemupdate aan het uitvoeren is.<br/>Ga alleen door als u er zeker van bent dat dit niet het geval is.',
+    'It looks like someone is currently performing a system update.<br>Only continue if you’re sure that’s not the case.' => 'Het lijkt erop dat iemand momenteel een systeemupdate aan het uitvoeren is.<br>Ga alleen door als u er zeker van bent dat dit niet het geval is.',
     'It’s not possible to rename the top folder of a Volume.' => 'U kunt de naam van de hoogste map van een volume niet wijzigen.',
     'JSON' => 'JSON',
     'JavaScript' => 'JavaScript',

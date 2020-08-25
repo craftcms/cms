@@ -331,7 +331,7 @@ return [
     'Invalid transform handle: {handle}' => 'Dönüşüm tanıtıcısı geçersiz: {handle}',
     'Invalid username or email.' => 'Geçersiz kullanıcı adı veya eposta.',
     'Invalid username or password.' => 'Geçersiz kullanıcı adı veya şifre',
-    'It looks like someone is currently performing a system update.<br>Only continue if you’re sure that’s not the case.' => 'Şu anda birinin bir sistem güncellemesi yaptığı anlaşılıyor.<br/>Sadece güncelleme yapılmadığından eminseniz devam edin.',
+    'It looks like someone is currently performing a system update.<br>Only continue if you’re sure that’s not the case.' => 'Şu anda birinin bir sistem güncellemesi yaptığı anlaşılıyor.<br>Sadece güncelleme yapılmadığından eminseniz devam edin.',
     'It’s not possible to rename the top folder of a Volume.' => 'Birimin en üst klasörü yeniden adlandırılamaz.',
     'JSON' => 'JSON',
     'JavaScript' => 'JavaScript',

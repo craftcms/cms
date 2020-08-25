@@ -45,6 +45,12 @@ class Info extends Model
 
     /**
      * @var string Field version
+     * @since 3.5.6
+     */
+    public $configVersion = '000000000000';
+
+    /**
+     * @var string Field version
      */
     public $fieldVersion = '000000000000';
 

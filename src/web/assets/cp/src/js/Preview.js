@@ -99,17 +99,21 @@ Craft.Preview = Garnish.Base.extend(
                 var $editorHeader = $('<header/>', {'class': 'flex'}).appendTo(this.$editorContainer);
                 this.$editor = $('<form/>', {'class': 'lp-editor'}).appendTo(this.$editorContainer);
                 this.$dragHandle = $('<div/>', {'class': 'lp-draghandle'}).appendTo(this.$editorContainer);
-                var $closeBtn = $('<div/>', {'class': 'btn', text: Craft.t('app', 'Close Preview')}).appendTo($editorHeader);
+                var $closeBtn = $('<button/>', {
+                    type: 'button',
+                    class: 'btn',
+                    text: Craft.t('app', 'Close Preview'),
+                }).appendTo($editorHeader);
                 $('<div/>', {'class': 'flex-grow'}).appendTo($editorHeader);
                 this.$spinner = $('<div/>', {'class': 'spinner hidden', title: Craft.t('app', 'Saving')}).appendTo($editorHeader);
                 this.$statusIcon = $('<div/>', {'class': 'invisible'}).appendTo($editorHeader);
 
                 if (this.draftEditor.settings.previewTargets.length > 1) {
                     var $previewHeader = $('<header/>', {'class': 'lp-preview-header flex'}).appendTo(this.$previewContainer);
-                    this.$targetBtn = $('<div/>', {
+                    this.$targetBtn = $('<button/>', {
+                        type: 'button',
                         'class': 'btn menubtn',
                         text: this.draftEditor.settings.previewTargets[0].label,
-                        role: 'btn',
                     }).appendTo($previewHeader);
                     this.$targetMenu = $('<div/>', {'class': 'menu lp-target-menu'}).insertAfter(this.$targetBtn);
                     var $ul = $('<ul/>', {'class': 'padded'}).appendTo(this.$targetMenu);

@@ -384,6 +384,10 @@ Craft.CP = Garnish.Base.extend(
         },
 
         _selectTab: function($tab, index) {
+            if ($tab === this.$selectedTab) {
+                return;
+            }
+
             this.$selectedTab = $tab;
             this.selectedTabIndex = index;
             if (index === 0) {
@@ -395,6 +399,20 @@ Craft.CP = Garnish.Base.extend(
             Garnish.$win.trigger('resize');
             // Fixes Redactor fixed toolbars on previously hidden panes
             Garnish.$doc.trigger('scroll');
+
+            // If there is a revision menu, set its links to this tab ID
+            let href = $tab && $tab.attr('href');
+            if (href && href.charAt(0) === '#') {
+                let menubtn = $('#context-btn').menubtn().data('menubtn');
+                if (menubtn) {
+                    for (let i = 0; i < menubtn.menu.$options.length; i++) {
+                        let a = menubtn.menu.$options[i];
+                        if (a.href) {
+                            a.href = a.href.match(/^[^#]*/)[0] + href;
+                        }
+                    }
+                }
+            }
         },
 
         deselectTab: function() {

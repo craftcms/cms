@@ -2,11 +2,30 @@
     Craft.ClearCachesUtility = Garnish.Base.extend(
         {
             init: function(formId) {
-                this.addListener($('form.utility'), 'submit', 'onSubmit');
+                let $forms = $('form.utility');
+                for (let i = 0; i < $forms.length; i++) {
+                    let $form = $forms.eq(i);
+                    let $checkboxes = $form.find('input[type=checkbox]');
+                    let $btn = $form.find('.btn');
+                    let checkInputs = function() {
+                        if ($checkboxes.filter(':checked').length) {
+                            $btn.removeClass('disabled');
+                        } else {
+                            $btn.addClass('disabled');
+                        }
+                    };
+                    $checkboxes.on('change', checkInputs);
+                    checkInputs();
+                    this.addListener($form, 'submit', ev => {
+                        ev.preventDefault();
+                        if (!$btn.hasClass('disabled')) {
+                            this.onSubmit(ev);
+                        }
+                    });
+                }
             },
 
             onSubmit: function(ev) {
-                ev.preventDefault();
                 let $form = $(ev.currentTarget);
                 let $trigger = $form.find('button.submit');
                 let $status = $form.find('.utility-status');

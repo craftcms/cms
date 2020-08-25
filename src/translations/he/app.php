@@ -331,7 +331,7 @@ return [
     'Invalid transform handle: {handle}' => 'מזהה ייחודי של שינוי אינו חוקי: {handle}',
     'Invalid username or email.' => 'שם משתמש או אימייל לא חוקיים.',
     'Invalid username or password.' => 'שם משתמש או סיסמה לא תקינים.',
-    'It looks like someone is currently performing a system update.<br>Only continue if you’re sure that’s not the case.' => 'נראה שמישהו מבצע כעת עדכון מערכת.<br/>המשך רק אם אתה בטוח שזה לא המקרה.',
+    'It looks like someone is currently performing a system update.<br>Only continue if you’re sure that’s not the case.' => 'נראה שמישהו מבצע כעת עדכון מערכת.<br>המשך רק אם אתה בטוח שזה לא המקרה.',
     'It’s not possible to rename the top folder of a Volume.' => 'לא ניתן לשנות את שם התיקייה העליונה של אמצעי אחסון.',
     'JSON' => 'JSON',
     'JavaScript' => 'JavaScript',

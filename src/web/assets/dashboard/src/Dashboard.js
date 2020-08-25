@@ -109,16 +109,16 @@
                               .append(
                                 $('<div/>', {'class': 'buttons clearafter'})
                                   .append(
-                                    $('<input/>', {
+                                    $('<button/>', {
                                       type: 'submit',
                                       'class': 'btn submit',
-                                      value: Craft.t('app', 'Save'),
+                                      text: Craft.t('app', 'Save'),
                                     })
                                   )
                                   .append(
-                                    $('<div/>', {
+                                    $('<button/>', {
+                                      type: 'button',
                                       'class': 'btn',
-                                      role: 'button',
                                       text: Craft.t('app', 'Cancel')
                                     })
                                   )

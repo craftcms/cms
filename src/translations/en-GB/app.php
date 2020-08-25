@@ -331,7 +331,7 @@ return [
     'Invalid transform handle: {handle}' => 'Invalid transform handle: {handle}',
     'Invalid username or email.' => 'Invalid username or email.',
     'Invalid username or password.' => 'Invalid username or password.',
-    'It looks like someone is currently performing a system update.<br>Only continue if you’re sure that’s not the case.' => 'It looks like someone is currently performing a system update.<br/>Only continue if you’re sure that’s not the case.',
+    'It looks like someone is currently performing a system update.<br>Only continue if you’re sure that’s not the case.' => 'It looks like someone is currently performing a system update.<br>Only continue if you’re sure that’s not the case.',
     'It’s not possible to rename the top folder of a Volume.' => 'It’s not possible to rename the top folder of a Volume.',
     'JSON' => 'JSON',
     'JavaScript' => 'JavaScript',

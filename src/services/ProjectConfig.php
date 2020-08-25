@@ -27,7 +27,7 @@ use yii\base\Component;
 use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\base\NotSupportedException;
-use yii\caching\DbQueryDependency;
+use yii\caching\ExpressionDependency;
 use yii\web\ServerErrorHttpException;
 
 /**
@@ -266,6 +266,12 @@ class ProjectConfig extends Component
     private $_applyingYamlChanges = false;
 
     /**
+     * @var bool Whether project config is currently being rebuilt.
+     * @see rebuild()
+     */
+    private $_rebuildingConfig = false;
+
+    /**
      * @var bool Whether the config's dateModified timestamp has been updated by this request.
      */
     private $_timestampUpdated = false;
@@ -472,7 +478,9 @@ class ProjectConfig extends Component
             $this->_saveConfig($config);
         }
 
-        $this->processConfigChanges($path, true, $message);
+        if (!$this->_rebuildingConfig) {
+            $this->processConfigChanges($path, true, $message);
+        }
     }
 
     /**
@@ -715,7 +723,12 @@ class ProjectConfig extends Component
      */
     public function ignorePendingChanges()
     {
-        return Craft::$app->getCache()->set(self::IGNORE_CACHE_KEY, $this->_getConfigFileModifiedTime(), self::CACHE_DURATION);
+        return Craft::$app->getCache()->set(
+            self::IGNORE_CACHE_KEY,
+            $this->_getConfigFileModifiedTime(),
+            self::CACHE_DURATION,
+            $this->_cacheDependency()
+        );
     }
 
     /**
@@ -740,6 +753,7 @@ class ProjectConfig extends Component
     public function saveModifiedConfigData()
     {
         if ($this->_isConfigModified) {
+            $this->_updateConfigVersion();
             $this->_updateYamlFiles();
         }
 
@@ -1152,9 +1166,17 @@ class ProjectConfig extends Component
         $readOnly = $this->readOnly;
         $this->readOnly = false;
 
+        // Make sure Craft doesn't react to anything while rebuilding
+        $this->_rebuildingConfig = true;
+
         foreach ($event->config as $path => $value) {
             $this->set($path, $value, 'Project config rebuild');
         }
+
+        $this->_rebuildingConfig = false;
+
+        // Make sure the `dateModified` is set to the new value.
+        $this->processConfigChanges('dateModified');
 
         $this->_appliedConfig = $event->config;
 
@@ -1323,7 +1345,6 @@ class ProjectConfig extends Component
 
         if ($configData === null) {
             $configData = $this->_getConfigurationFromYaml() ?? [];
-            unset($configData['dateModified'], $currentConfig['dateModified']);
         }
 
         unset($configData['imports'], $currentConfig['imports']);
@@ -1575,6 +1596,16 @@ class ProjectConfig extends Component
     }
 
     /**
+     * Updates the config version used for cache invalidation.
+     */
+    private function _updateConfigVersion()
+    {
+        $info = Craft::$app->getInfo();
+        $info->configVersion = StringHelper::randomString(12);
+        Craft::$app->saveInfo($info, ['configVersion']);
+    }
+
+    /**
      * Update the config Yaml files with the buffered changes.
      *
      * @throws Exception if something goes wrong
@@ -1586,23 +1617,29 @@ class ProjectConfig extends Component
         try {
             $basePath = Craft::$app->getPath()->getProjectConfigPath();
 
+            // Delete everything except hidden files/folders
+            FileHelper::clearDirectory($basePath, [
+                'except' => ['.*', '.*/'],
+            ]);
+
             foreach ($config as $relativeFile => $configData) {
                 $configData = ProjectConfigHelper::cleanupConfig($configData);
                 ksort($configData);
                 $filePath = $basePath . DIRECTORY_SEPARATOR . $relativeFile;
                 FileHelper::writeToFile($filePath, Yaml::dump($configData, 20, 2));
             }
-
-            // See if there are any files that shouldn’t be around anymore
-            $basePathLength = strlen(FileHelper::normalizePath($basePath, '/'));
-            foreach ($this->_findConfigFiles($basePath) as $file) {
-                $path = substr(FileHelper::normalizePath($file, '/'), $basePathLength + 1);
-                if (!isset($config[$path])) {
-                    FileHelper::unlink($file);
-                }
-            }
         } catch (\Throwable $e) {
             Craft::$app->getCache()->set(self::FILE_ISSUES_CACHE_KEY, true, self::CACHE_DURATION);
+            if (isset($basePath)) {
+                // Try to delete everything (again?) so Craft doesn't apply half-baked project config data
+                try {
+                    FileHelper::clearDirectory($basePath, [
+                        'except' => ['.*', '.*/'],
+                    ]);
+                } catch (\Throwable $e) {
+                    // oh well
+                }
+            }
             throw new Exception('Unable to write new project config files', 0, $e);
         }
 
@@ -1707,14 +1744,6 @@ class ProjectConfig extends Component
         }
 
         // See if we can get away with using the cached data
-        $dependency = new DbQueryDependency([
-            'db' => 'db',
-            'query' => $this->_createProjectConfigQuery()
-                ->select(['value'])
-                ->where(['path' => 'dateModified']),
-            'method' => 'scalar'
-        ]);
-
         return Craft::$app->getCache()->getOrSet(self::STORED_CACHE_KEY, function() {
             $data = [];
             // Load the project config data
@@ -1735,7 +1764,19 @@ class ProjectConfig extends Component
                 $current = Json::decode(StringHelper::decdec($value));
             }
             return ProjectConfigHelper::cleanupConfig($data);
-        }, null, $dependency);
+        }, null, $this->_cacheDependency());
+    }
+
+    /**
+     * Returns the cache dependency that should be used for project config caches.
+     *
+     * @return ExpressionDependency
+     */
+    private function _cacheDependency(): ExpressionDependency
+    {
+        return new ExpressionDependency([
+            'expression' => Craft::class . '::$app->getInfo()->configVersion',
+        ]);
     }
 
     /**
