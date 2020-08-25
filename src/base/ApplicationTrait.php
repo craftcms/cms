@@ -731,14 +731,17 @@ trait ApplicationTrait
 
         $attributes = $info->getAttributes($attributeNames);
 
-        // TODO: Remove this after the next breakpoint
-        if (version_compare($info['version'], '3.1', '<')) {
-            unset($attributes['config'], $attributes['configMap']);
-        }
+        // TODO: Remove these after the next breakpoint
+        if (version_compare($info['version'], '3.5.6', '<')) {
+            unset($attributes['configVersion']);
 
-        // TODO: Remove this after the next breakpoint
-        if (version_compare($info['version'], '3.0', '<')) {
-            unset($attributes['fieldVersion']);
+            if (version_compare($info['version'], '3.1', '<')) {
+                unset($attributes['config'], $attributes['configMap']);
+
+                if (version_compare($info['version'], '3.0', '<')) {
+                    unset($attributes['fieldVersion']);
+                }
+            }
         }
 
         $infoRowExists = (new Query())

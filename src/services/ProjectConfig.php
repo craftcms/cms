@@ -27,7 +27,7 @@ use yii\base\Component;
 use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\base\NotSupportedException;
-use yii\caching\DbQueryDependency;
+use yii\caching\ExpressionDependency;
 use yii\web\ServerErrorHttpException;
 
 /**
@@ -715,7 +715,12 @@ class ProjectConfig extends Component
      */
     public function ignorePendingChanges()
     {
-        return Craft::$app->getCache()->set(self::IGNORE_CACHE_KEY, $this->_getConfigFileModifiedTime(), self::CACHE_DURATION);
+        return Craft::$app->getCache()->set(
+            self::IGNORE_CACHE_KEY,
+            $this->_getConfigFileModifiedTime(),
+            self::CACHE_DURATION,
+            $this->_cacheDependency()
+        );
     }
 
     /**
@@ -740,6 +745,7 @@ class ProjectConfig extends Component
     public function saveModifiedConfigData()
     {
         if ($this->_isConfigModified) {
+            $this->_updateConfigVersion();
             $this->_updateYamlFiles();
         }
 
@@ -1575,6 +1581,16 @@ class ProjectConfig extends Component
     }
 
     /**
+     * Updates the config version used for cache invalidation.
+     */
+    private function _updateConfigVersion()
+    {
+        $info = Craft::$app->getInfo();
+        $info->configVersion = StringHelper::randomString(12);
+        Craft::$app->saveInfo($info, ['configVersion']);
+    }
+
+    /**
      * Update the config Yaml files with the buffered changes.
      *
      * @throws Exception if something goes wrong
@@ -1713,14 +1729,6 @@ class ProjectConfig extends Component
         }
 
         // See if we can get away with using the cached data
-        $dependency = new DbQueryDependency([
-            'db' => 'db',
-            'query' => $this->_createProjectConfigQuery()
-                ->select(['value'])
-                ->where(['path' => 'dateModified']),
-            'method' => 'scalar'
-        ]);
-
         return Craft::$app->getCache()->getOrSet(self::STORED_CACHE_KEY, function() {
             $data = [];
             // Load the project config data
@@ -1741,7 +1749,19 @@ class ProjectConfig extends Component
                 $current = Json::decode(StringHelper::decdec($value));
             }
             return ProjectConfigHelper::cleanupConfig($data);
-        }, null, $dependency);
+        }, null, $this->_cacheDependency());
+    }
+
+    /**
+     * Returns the cache dependency that should be used for project config caches.
+     *
+     * @return ExpressionDependency
+     */
+    private function _cacheDependency(): ExpressionDependency
+    {
+        return new ExpressionDependency([
+            'expression' => Craft::class . '::$app->getInfo()->configVersion',
+        ]);
     }
 
     /**
