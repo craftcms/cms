@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.5.7 - 2020-08-26
 
 ### Changed
 - Improved the warning that is output for console commands if Craft can’t connect to the database, or isn’t installed yet. ([#6718](https://github.com/craftcms/cms/issues/6718))
