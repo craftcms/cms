@@ -100,10 +100,13 @@ export class CraftGraphiQL extends React.Component {
         this.graphiql = React.createRef();
         this.explorer = React.createRef();
 
+        const params = new URLSearchParams(window.location.search);
+
         // And initial state.
         this.state = {
             schema: null,
             explorerIsOpen: false,
+            query: params.get('query') ?? undefined
         }
     }
 
@@ -188,9 +191,6 @@ export class CraftGraphiQL extends React.Component {
         ];
 
         let toolBar = elem(GraphiQL.Toolbar, {}, toolbarElements);
-
-        const params = new URLSearchParams(window.location.search);
-        this.state.query = params.get('query') ?? (this.state.query ?? undefined);
 
         // Render explorer and GraphiQL components side-to-side.
         return elem('div', {className: "graphiql-container"},
