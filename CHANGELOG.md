@@ -7,6 +7,9 @@
 - `craft\helpers\Console::outputWarning()` now has a `$center` argument.
 - The GraphiQL IDE now automatically loads the query passed by the URL, if present. ([#6583](https://github.com/craftcms/cms/issues/6583))
 
+### Fixed
+- Fixed a bug where table field column handles were not correctly validated. ([#6714](https://github.com/craftcms/cms/issues/6714))
+
 ## 3.5.6 - 2020-08-25
 
 ### Added

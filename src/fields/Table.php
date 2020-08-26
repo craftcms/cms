@@ -18,6 +18,7 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\validators\ColorValidator;
+use craft\validators\HandleValidator;
 use craft\validators\UrlValidator;
 use craft\web\assets\tablesettings\TableSettingsAsset;
 use craft\web\assets\timepicker\TimepickerAsset;
@@ -161,7 +162,7 @@ class Table extends Field
     {
         $hasErrors = false;
         foreach ($this->columns as &$col) {
-            if ($col['handle'] && preg_match('/^col\d+$/', $col['handle'])) {
+            if ($col['handle'] && (preg_match('/^col\d+$/', $col['handle']) || !preg_match('/^' . HandleValidator::$handlePattern . '$/', $col['handle']))) {
                 $col['handle'] = [
                     'value' => $col['handle'],
                     'hasErrors' => true,
@@ -169,8 +170,9 @@ class Table extends Field
                 $hasErrors = true;
             }
         }
+
         if ($hasErrors) {
-            $this->addError('columns', Craft::t('app', 'Column handles can’t be in the format “{format}”.', [
+            $this->addError('columns', Craft::t('app', 'Column handles can’t be in the format “{format}” and must begin with a letter.', [
                 'format' => 'colX',
             ]));
         }
@@ -296,6 +298,7 @@ class Table extends Field
         $columnsField = $view->renderTemplate('_components/fieldtypes/Table/columntable', [
             'cols' => $columnSettings,
             'rows' => $this->columns,
+            'errors' => $this->getErrors('columns'),
         ]);
 
         $defaultsField = $view->renderTemplateMacro('_includes/forms', 'editableTableField', [
@@ -307,7 +310,6 @@ class Table extends Field
                 'cols' => $this->columns,
                 'rows' => $this->defaults,
                 'initJs' => false,
-                'errors' => $this->getErrors('columns'),
             ]
         ]);
 
