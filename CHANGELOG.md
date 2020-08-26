@@ -1,5 +1,11 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Changed
+- Improved the warning that is output for console commands if Craft can’t connect to the database, or isn’t installed yet. ([#6718](https://github.com/craftcms/cms/issues/6718))
+- `craft\helpers\Console::outputWarning()` now has a `$center` argument.
+
 ## 3.5.6 - 2020-08-25
 
 ### Added
