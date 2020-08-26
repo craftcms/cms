@@ -5,6 +5,7 @@
 ### Changed
 - Improved the warning that is output for console commands if Craft can’t connect to the database, or isn’t installed yet. ([#6718](https://github.com/craftcms/cms/issues/6718))
 - `craft\helpers\Console::outputWarning()` now has a `$center` argument.
+- The GraphiQL IDE now automatically loads the query passed by the URL, if present. ([#6583](https://github.com/craftcms/cms/issues/6583))
 
 ## 3.5.6 - 2020-08-25
 

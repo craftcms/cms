@@ -189,6 +189,9 @@ export class CraftGraphiQL extends React.Component {
 
         let toolBar = elem(GraphiQL.Toolbar, {}, toolbarElements);
 
+        const params = new URLSearchParams(window.location.search);
+        this.state.query = params.get('query') ?? (this.state.query ?? undefined);
+
         // Render explorer and GraphiQL components side-to-side.
         return elem('div', {className: "graphiql-container"},
             elem(GraphiQLExplorer, {
