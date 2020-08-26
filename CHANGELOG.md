@@ -9,6 +9,7 @@
 
 ### Fixed
 - Fixed a bug where table field column handles were not correctly validated. ([#6714](https://github.com/craftcms/cms/issues/6714))
+- Fixed a bug where it was impossible to use GraphQL if there were any table fields with empty column handles. ([#6714](https://github.com/craftcms/cms/issues/6714)))
 
 ## 3.5.6 - 2020-08-25
 
