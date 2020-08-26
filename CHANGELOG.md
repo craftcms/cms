@@ -5,6 +5,9 @@
 ### Changed
 - The GraphQL API now supports `variables` and `operationName` query string parameters. ([#6728](https://github.com/craftcms/cms/issues/6728))
 
+### Fixed
+- Fixed a bug where a user trying to access globals that does not have access to the alphabetical first global set would throw an `Undefined offset: 0` exception
+
 ## 3.5.7 - 2020-08-26
 
 ### Changed

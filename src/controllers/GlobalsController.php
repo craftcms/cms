@@ -42,7 +42,7 @@ class GlobalsController extends Controller
             throw new ForbiddenHttpException('User not permitted to edit any global content');
         }
 
-        return $this->redirect('globals/' . $editableSets[0]->handle);
+        return $this->redirect('globals/' . array_values($editableSets)[0]->handle);
     }
 
     /**
