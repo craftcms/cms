@@ -24,7 +24,7 @@
   autofocus: (autofocus ?? false) and not craft.app.request.isMobileBrowser(true),
   disabled: disabled ?? false,
   data: {
-    'data-target-prefix': ((toggle ?? false) and (targetPrefix ?? false)) ? targetPrefix : false,
+    'target-prefix': ((toggle ?? false) and (targetPrefix ?? false)) ? targetPrefix : false,
   }|filter,
 }|merge(inputAttributes ?? [], recursive=true) %}
 

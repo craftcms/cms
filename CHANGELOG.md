@@ -12,6 +12,7 @@
 - Fixed a bug where Table fields were allowing columns to be defined with invalid handles. ([#6714](https://github.com/craftcms/cms/issues/6714))
 - Fixed a bug where GraphQL schemas weren’t getting generated properly if there were any Table fields with empty column handles. ([#6714](https://github.com/craftcms/cms/issues/6714)))
 - Fixed a bug where it wasn’t possible to access entry drafts or revisions within Structure sections, if they were created before the section type was changed to Structure. ([#4866](https://github.com/craftcms/cms/issues/4866))
+- Fixed a bug where the `_includes/forms/select.html` template wasn’t setting the `data-target-prefix` attribute properly. ([#6721](https://github.com/craftcms/cms/issues/6721))
 
 ## 3.5.6 - 2020-08-25
 
