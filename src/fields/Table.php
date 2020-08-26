@@ -18,6 +18,7 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\validators\ColorValidator;
+use craft\validators\HandleValidator;
 use craft\validators\UrlValidator;
 use craft\web\assets\tablesettings\TableSettingsAsset;
 use craft\web\assets\timepicker\TimepickerAsset;
@@ -159,20 +160,28 @@ class Table extends Field
      */
     public function validateColumns()
     {
-        $hasErrors = false;
         foreach ($this->columns as &$col) {
-            if ($col['handle'] && preg_match('/^col\d+$/', $col['handle'])) {
-                $col['handle'] = [
-                    'value' => $col['handle'],
-                    'hasErrors' => true,
-                ];
-                $hasErrors = true;
+            if ($col['handle']) {
+                $error = null;
+
+                if (!preg_match('/^' . HandleValidator::$handlePattern . '$/', $col['handle'])) {
+                    $error = Craft::t('app', '“{handle}” isn’t a valid handle.', [
+                        'handle' => $col['handle'],
+                    ]);
+                } else if (preg_match('/^col\d+$/', $col['handle'])) {
+                    $error = Craft::t('app', 'Column handles can’t be in the format “{format}”.', [
+                        'format' => 'colX',
+                    ]);
+                }
+
+                if ($error) {
+                    $col['handle'] = [
+                        'value' => $col['handle'],
+                        'hasErrors' => true,
+                    ];
+                    $this->addError('columns', $error);
+                }
             }
-        }
-        if ($hasErrors) {
-            $this->addError('columns', Craft::t('app', 'Column handles can’t be in the format “{format}”.', [
-                'format' => 'colX',
-            ]));
         }
     }
 
@@ -296,6 +305,7 @@ class Table extends Field
         $columnsField = $view->renderTemplate('_components/fieldtypes/Table/columntable', [
             'cols' => $columnSettings,
             'rows' => $this->columns,
+            'errors' => $this->getErrors('columns'),
         ]);
 
         $defaultsField = $view->renderTemplateMacro('_includes/forms', 'editableTableField', [
@@ -307,7 +317,6 @@ class Table extends Field
                 'cols' => $this->columns,
                 'rows' => $this->defaults,
                 'initJs' => false,
-                'errors' => $this->getErrors('columns'),
             ]
         ]);
 

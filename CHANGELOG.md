@@ -1,5 +1,20 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.5.7 - 2020-08-26
+
+### Changed
+- Improved the warning that is output for console commands if Craft can’t connect to the database, or isn’t installed yet. ([#6718](https://github.com/craftcms/cms/issues/6718))
+- `craft\helpers\Console::outputWarning()` now has a `$center` argument.
+- The GraphiQL IDE now automatically loads the query passed by the URL, if present. ([#6583](https://github.com/craftcms/cms/issues/6583))
+
+### Fixed
+- Fixed a bug where Table field settings were displaying validation errors for the “Table Columns” setting under the “Default Values” setting.
+- Fixed a bug where Table fields were allowing columns to be defined with invalid handles. ([#6714](https://github.com/craftcms/cms/issues/6714))
+- Fixed a bug where GraphQL schemas weren’t getting generated properly if there were any Table fields with empty column handles. ([#6714](https://github.com/craftcms/cms/issues/6714)))
+- Fixed a bug where it wasn’t possible to access entry drafts or revisions within Structure sections, if they were created before the section type was changed to Structure. ([#4866](https://github.com/craftcms/cms/issues/4866))
+- Fixed a bug where the `_includes/forms/select.html` template wasn’t setting the `data-target-prefix` attribute properly. ([#6721](https://github.com/craftcms/cms/issues/6721))
+- Fixed various SQL errors that could occur when running tests. ([#6549](https://github.com/craftcms/cms/issues/6549))
+
 ## 3.5.6 - 2020-08-25
 
 ### Added
