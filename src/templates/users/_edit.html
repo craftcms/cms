@@ -159,7 +159,7 @@
                                 {% if assignableGroups %}
                                     {% for group in assignableGroups %}
                                         {{ checkboxField({
-                                            label: group.name|t('site')|e,
+                                            label: group.name|t('site'),
                                             instructions: group.description ? group.description|t('site')|e,
                                             name: 'groups[]',
                                             value: group.id,
