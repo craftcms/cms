@@ -31,7 +31,6 @@
     }) }}
 
     {{ forms.lightswitchField({
-        first: true,
         label: "System Status"|t('app'),
         warning: (craft.app.config.general.isSystemLive is same as(true) or craft.app.config.general.isSystemLive is same as(false) ? configWarning('isSystemLive')),
         id: 'live',
