@@ -127,17 +127,28 @@ abstract class BaseField extends FieldLayoutElement
     {
         $innerHtml = '';
 
-        if ($this->showLabel() && ($label = $this->label()) !== null) {
-            $innerHtml .= Html::tag('h4', $label, [
-                'class' => 'fld-element-label',
-                'title' => $label,
-            ]);
+        $label = $this->showLabel() ? $this->label() : null;
+        $requiredHtml = $this->required ? Html::tag('span', '', [
+            'class' => 'fld-required-indicator',
+            'title' => Craft::t('app', 'This field is required'),
+        ]) : '';
+
+        if ($label !== null) {
+            $innerHtml .= Html::tag('div',
+                Html::tag('h4', $label, [
+                    'title' => $label,
+                ]) . $requiredHtml, [
+                    'class' => 'fld-element-label',
+                ]);
         }
 
-        $innerHtml .= Html::tag('div', $this->attribute(), [
-            'class' => ['smalltext', 'light', 'code'],
-            'title' => $this->attribute(),
-        ]);
+        $innerHtml .= Html::tag('div',
+            Html::tag('div', $this->attribute(), [
+                'class' => ['smalltext', 'light', 'code'],
+                'title' => $this->attribute(),
+            ]) . ($label === null ? $requiredHtml : ''), [
+                'class' => 'fld-attribute',
+            ]);
 
         return Html::tag('div', $innerHtml, [
             'class' => ['field-name'],

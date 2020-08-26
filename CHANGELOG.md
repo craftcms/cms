@@ -5,6 +5,9 @@
 ### Changed
 - The GraphQL API now supports `variables` and `operationName` query string parameters. ([#6728](https://github.com/craftcms/cms/issues/6728))
 
+### Fixed
+- Fixed a bug where the required field indicator wasn’t visible within the field layout designer, for fields with overflowing labels or hidden labels. ([#6725](https://github.com/craftcms/cms/issues/6725))
+
 ## 3.5.7 - 2020-08-26
 
 ### Changed
