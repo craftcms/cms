@@ -8,7 +8,8 @@
 - The GraphiQL IDE now automatically loads the query passed by the URL, if present. ([#6583](https://github.com/craftcms/cms/issues/6583))
 
 ### Fixed
-- Fixed a bug where table field column handles were not correctly validated. ([#6714](https://github.com/craftcms/cms/issues/6714))
+- Fixed a bug where Table field settings were displaying validation errors for the “Table Columns” setting under the “Default Values” setting.
+- Fixed a bug where Table fields were allowing columns to be defined with invalid handles. ([#6714](https://github.com/craftcms/cms/issues/6714))
 
 ## 3.5.6 - 2020-08-25
 

@@ -160,21 +160,28 @@ class Table extends Field
      */
     public function validateColumns()
     {
-        $hasErrors = false;
         foreach ($this->columns as &$col) {
-            if ($col['handle'] && (preg_match('/^col\d+$/', $col['handle']) || !preg_match('/^' . HandleValidator::$handlePattern . '$/', $col['handle']))) {
-                $col['handle'] = [
-                    'value' => $col['handle'],
-                    'hasErrors' => true,
-                ];
-                $hasErrors = true;
-            }
-        }
+            if ($col['handle']) {
+                $error = null;
 
-        if ($hasErrors) {
-            $this->addError('columns', Craft::t('app', 'Column handles can’t be in the format “{format}” and must begin with a letter.', [
-                'format' => 'colX',
-            ]));
+                if (!preg_match('/^' . HandleValidator::$handlePattern . '$/', $col['handle'])) {
+                    $error = Craft::t('app', '“{handle}” isn’t a valid handle.', [
+                        'handle' => $col['handle'],
+                    ]);
+                } else if (preg_match('/^col\d+$/', $col['handle'])) {
+                    $error = Craft::t('app', 'Column handles can’t be in the format “{format}”.', [
+                        'format' => 'colX',
+                    ]);
+                }
+
+                if ($error) {
+                    $col['handle'] = [
+                        'value' => $col['handle'],
+                        'hasErrors' => true,
+                    ];
+                    $this->addError('columns', $error);
+                }
+            }
         }
     }
 
