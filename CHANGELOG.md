@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Changed
+- The GraphQL API now supports `variables` and `operationName` query string parameters. ([#6728](https://github.com/craftcms/cms/issues/6728))
+
 ## 3.5.7 - 2020-08-26
 
 ### Changed

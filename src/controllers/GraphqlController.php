@@ -12,6 +12,7 @@ use craft\errors\GqlException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Gql as GqlHelper;
+use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\models\GqlSchema;
 use craft\models\GqlToken;
@@ -117,8 +118,23 @@ class GraphqlController extends Controller
             }
         }
 
-        // 'query' GET param supersedes all others though
-        $query = $this->request->getQueryParam('query', $query);
+        // query/variables/operationName GET params supersede BODY params
+        if (($qQuery = $this->request->getQueryParam('query')) !== null) {
+            $query = $qQuery;
+        }
+
+        if (($qVariables = $this->request->getQueryParam('variables')) !== null) {
+            // Must be valid JSON
+            try {
+                $variables = Json::decode($qVariables);
+            } catch (InvalidArgumentException $e) {
+                throw new BadRequestHttpException('The variables param must be valid JSON', 0, $e);
+            }
+        }
+
+        if (($qOperationName = $this->request->getQueryParam('operationName')) !== null) {
+            $operationName = $qOperationName;
+        }
 
         $queries = [];
         if ($singleQuery = ($query !== null)) {
