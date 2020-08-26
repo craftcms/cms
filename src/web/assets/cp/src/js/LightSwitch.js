@@ -60,7 +60,7 @@ Craft.LightSwitch = Garnish.Base.extend(
             }
 
             // Does the input have on/off labels?
-            let $wrapper = this.$outerContainer.parent('.lightswitch-outer-container');
+            let $wrapper = this.$outerContainer.parent('.lightswitch-inner-container');
             if ($wrapper.length) {
                 this.addListener($wrapper.children('label[data-toggle="off"]'), 'click', this.turnOff);
                 this.addListener($wrapper.children('label[data-toggle="on"]'), 'click', this.turnOn);
