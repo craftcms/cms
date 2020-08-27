@@ -335,7 +335,7 @@ class AssetTransforms extends Component
     {
         // todo: remove this code in 3.0 & hardcode the $transform type
         if (is_int($transform)) {
-            Craft::$app->getDeprecator()->log(self::class . '::deleteTransform(id)', self::class . '::deleteTransform() should only be called with a ' . AssetTransform::class . ' reference. Use ' . self::class . '::deleteTransformById() to get a transform by its ID.');
+            Craft::$app->getDeprecator()->log(self::class . '::deleteTransform(id)', '`' . self::class . '::deleteTransform()` should only be called with a `' . AssetTransform::class . '` reference. Use `' . self::class . '::deleteTransformById()` to get a transform by its ID.');
             return $this->deleteTransformById($transform);
         }
         if (!$transform instanceof AssetTransform) {

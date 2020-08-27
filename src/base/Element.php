@@ -1391,7 +1391,7 @@ abstract class Element extends Component implements ElementInterface
     public function __get($name)
     {
         if ($name === 'locale') {
-            Craft::$app->getDeprecator()->log('Element::locale', 'The “locale” element property has been deprecated. Use “siteId” instead.');
+            Craft::$app->getDeprecator()->log('Element::locale', 'The `locale` element property has been deprecated. Use `siteId` instead.');
 
             return $this->getSite()->handle;
         }

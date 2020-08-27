@@ -1376,7 +1376,7 @@ class Asset extends Element
      */
     public function getUri(string $filename = null): string
     {
-        Craft::$app->getDeprecator()->log(self::class . '::getUri()', self::class . '::getUri() has been deprecated. Use getPath() instead.');
+        Craft::$app->getDeprecator()->log(self::class . '::getUri()', '`' . self::class . '::getUri()` has been deprecated. Use `getPath()` instead.');
 
         return $this->getPath($filename);
     }
@@ -1455,7 +1455,7 @@ class Asset extends Element
      */
     public function getHasUrls(): bool
     {
-        Craft::$app->getDeprecator()->log(self::class . '::getHasUrls()', self::class . '::getHasUrls() has been deprecated. Use getVolume()->hasUrls instead.');
+        Craft::$app->getDeprecator()->log(self::class . '::getHasUrls()', '`' . self::class . '::getHasUrls()` has been deprecated. Use `getVolume()->hasUrls` instead.');
 
         $volume = $this->getVolume();
         return $volume && $volume->hasUrls;
@@ -1480,7 +1480,7 @@ class Asset extends Element
      */
     public function getSupportsPreview(): bool
     {
-        Craft::$app->getDeprecator()->log(self::class . '::getSupportsPreview()', self::class . '::getSupportsPreview() has been deprecated. Use \craft\services\Assets::getAssetPreview() instead.');
+        Craft::$app->getDeprecator()->log(self::class . '::getSupportsPreview()', '`' . self::class . '::getSupportsPreview()` has been deprecated. Use `craft\services\Assets::getAssetPreview()` instead.');
 
         return \in_array($this->kind, [self::KIND_IMAGE, self::KIND_HTML, self::KIND_JAVASCRIPT, self::KIND_JSON], true);
     }

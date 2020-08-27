@@ -960,7 +960,7 @@ class View extends \yii\web\View
      */
     public function registerHiResCss(string $css, array $options = [], string $key = null)
     {
-        Craft::$app->getDeprecator()->log('registerHiResCss', 'craft\\web\\View::registerHiResCss() has been deprecated. Use registerCss() instead, and type your own media selector.');
+        Craft::$app->getDeprecator()->log('registerHiResCss', '`craft\\web\\View::registerHiResCss()` has been deprecated. Use `registerCss()` instead, and type your own media selector.');
 
         $css = "@media only screen and (-webkit-min-device-pixel-ratio: 1.5),\n" .
             "only screen and (   -moz-min-device-pixel-ratio: 1.5),\n" .

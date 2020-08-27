@@ -341,7 +341,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function ucwordsFilter(TwigEnvironment $env, string $string): string
     {
-        Craft::$app->getDeprecator()->log('ucwords', 'The |ucwords filter has been deprecated. Use |title instead.');
+        Craft::$app->getDeprecator()->log('ucwords', 'The `|ucwords` filter has been deprecated. Use `|title` instead.');
         if (($charset = $env->getCharset()) !== null) {
             return mb_convert_case($string, MB_CASE_TITLE, $charset);
         }
@@ -809,7 +809,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     public function groupFilter($arr, $arrow): array
     {
         if ($arr instanceof ElementQuery) {
-            Craft::$app->getDeprecator()->log('ElementQuery::getIterator()', 'Looping through element queries directly has been deprecated. Use the all() function to fetch the query results before looping over them.');
+            Craft::$app->getDeprecator()->log('ElementQuery::getIterator()', 'Looping through element queries directly has been deprecated. Use the `all()` function to fetch the query results before looping over them.');
             $arr = $arr->all();
         }
 
@@ -1054,7 +1054,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function roundFunction($value, int $precision = 0, int $mode = PHP_ROUND_HALF_UP)
     {
-        Craft::$app->getDeprecator()->log('round()', 'The round() function has been deprecated. Use Twig’s |round filter instead.');
+        Craft::$app->getDeprecator()->log('round()', 'The `round()` function has been deprecated. Use Twig’s `|round` filter instead.');
 
         return round($value, $precision, $mode);
     }
@@ -1165,7 +1165,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         }
 
         if ($class !== null) {
-            Craft::$app->getDeprecator()->log('svg()-class', 'The `class` argument of the svg() Twig function has been deprecated. The |attr filter should be used instead.');
+            Craft::$app->getDeprecator()->log('svg()-class', 'The `class` argument of the `svg()` Twig function has been deprecated. The `|attr` filter should be used instead.');
             try {
                 $svg = Html::modifyTagAttributes($svg, [
                     'class' => $class,
@@ -1284,7 +1284,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function getCsrfInput(): string
     {
-        Craft::$app->getDeprecator()->log('getCsrfInput', 'getCsrfInput() has been deprecated. Use csrfInput() instead.');
+        Craft::$app->getDeprecator()->log('getCsrfInput', '`getCsrfInput()` has been deprecated. Use `csrfInput()` instead.');
         return Html::csrfInput();
     }
 
@@ -1294,7 +1294,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function getHeadHtml(): string
     {
-        Craft::$app->getDeprecator()->log('getHeadHtml', 'getHeadHtml() has been deprecated. Use head() instead.');
+        Craft::$app->getDeprecator()->log('getHeadHtml', '`getHeadHtml()` has been deprecated. Use `head()` instead.');
 
         ob_start();
         ob_implicit_flush(false);
@@ -1309,7 +1309,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function getFootHtml(): string
     {
-        Craft::$app->getDeprecator()->log('getFootHtml', 'getFootHtml() has been deprecated. Use endBody() instead.');
+        Craft::$app->getDeprecator()->log('getFootHtml', '`getFootHtml()` has been deprecated. Use `endBody()` instead.');
 
         ob_start();
         ob_implicit_flush(false);

@@ -115,10 +115,10 @@ class Config extends Component
                     }
                     $config->securityKey = $key;
                 }
-                Craft::$app->getDeprecator()->log('validation.key', "The auto-generated validation key stored at {$keyPath} has been deprecated. Copy its value to the “securityKey” config setting in config/general.php.");
+                Craft::$app->getDeprecator()->log('validation.key', "The auto-generated validation key stored at `{$keyPath}` has been deprecated. Copy its value to the `securityKey` config setting in `config/general.php`.");
             }
             if ($config->siteUrl === null && defined('CRAFT_SITE_URL')) {
-                Craft::$app->getDeprecator()->log('CRAFT_SITE_URL', 'The CRAFT_SITE_URL constant has been deprecated. Set the “siteUrl” config setting in config/general.php instead.');
+                Craft::$app->getDeprecator()->log('CRAFT_SITE_URL', 'The `CRAFT_SITE_URL` constant has been deprecated. Set the `siteUrl` config setting in `config/general.php` instead.');
                 $config->siteUrl = CRAFT_SITE_URL;
             }
         }

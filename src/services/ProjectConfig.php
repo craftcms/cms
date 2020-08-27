@@ -348,7 +348,7 @@ class ProjectConfig extends Component
     {
         if (isset($config['maxBackups'])) {
             $config['maxDeltas'] = ArrayHelper::remove($config, 'maxBackups');
-            Craft::$app->getDeprecator()->log(__CLASS__ . '::maxBackups', __CLASS__ . '::maxBackups has been deprecated. Use \'maxDeltas\' instead.');
+            Craft::$app->getDeprecator()->log(__CLASS__ . '::maxBackups', '`' . __CLASS__ . '::maxBackups` has been deprecated. Use `maxDeltas` instead.');
         }
 
         parent::__construct($config);

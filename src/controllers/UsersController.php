@@ -210,7 +210,7 @@ class UsersController extends Controller
      */
     public function actionGetRemainingSessionTime(): Response
     {
-        Craft::$app->getDeprecator()->log(__METHOD__, 'The users/get-remaining-session-time action is deprecated. Use users/session-info instead.');
+        Craft::$app->getDeprecator()->log(__METHOD__, 'The `users/get-remaining-session-time` action is deprecated. Use `users/session-info` instead.');
         return $this->runAction('session-info');
     }
 

@@ -299,7 +299,7 @@ class AssetQuery extends ElementQuery
      */
     public function source($value)
     {
-        Craft::$app->getDeprecator()->log('AssetQuery::source()', 'The “source” asset query param has been deprecated. Use “volume” instead.');
+        Craft::$app->getDeprecator()->log('AssetQuery::source()', 'The `source` asset query param has been deprecated. Use `volume` instead.');
 
         return $this->volume($value);
     }
@@ -352,7 +352,7 @@ class AssetQuery extends ElementQuery
      */
     public function sourceId($value)
     {
-        Craft::$app->getDeprecator()->log('AssetQuery::sourceId()', 'The “sourceId” asset query param has been deprecated. Use “volumeId” instead.');
+        Craft::$app->getDeprecator()->log('AssetQuery::sourceId()', 'The `sourceId` asset query param has been deprecated. Use `volumeId` instead.');
 
         return $this->volumeId($value);
     }

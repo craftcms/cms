@@ -470,7 +470,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function __isset($name)
     {
         if ($name === 'order') {
-            Craft::$app->getDeprecator()->log('ElementQuery::order()', 'The “order” element query param has been deprecated. Use “orderBy” instead.');
+            Craft::$app->getDeprecator()->log('ElementQuery::order()', 'The `order` element query param has been deprecated. Use `orderBy` instead.');
 
             return $this->orderBy !== null;
         }
@@ -487,7 +487,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         // (https://stackoverflow.com/a/8146455)
         switch ((string)$name) {
             case 'locale':
-                Craft::$app->getDeprecator()->log('ElementQuery::locale()', 'The “locale” element query param has been deprecated. Use “site” or “siteId” instead.');
+                Craft::$app->getDeprecator()->log('ElementQuery::locale()', 'The `locale` element query param has been deprecated. Use `site` or `siteId` instead.');
                 if ($this->siteId && is_numeric($this->siteId) && ($site = Craft::$app->getSites()->getSiteById($this->siteId))) {
                     return $site->handle;
                 }
@@ -495,7 +495,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 return null;
 
             case 'order':
-                Craft::$app->getDeprecator()->log('ElementQuery::order()', 'The “order” element query param has been deprecated. Use “orderBy” instead.');
+                Craft::$app->getDeprecator()->log('ElementQuery::order()', 'The `order` element query param has been deprecated. Use `orderBy` instead.');
 
                 return $this->orderBy;
 
@@ -518,11 +518,11 @@ class ElementQuery extends Query implements ElementQueryInterface
                 $this->enabledForSite = $value;
                 break;
             case 'locale':
-                Craft::$app->getDeprecator()->log('ElementQuery::locale()', 'The “locale” element query param has been deprecated. Use “site” or “siteId” instead.');
+                Craft::$app->getDeprecator()->log('ElementQuery::locale()', 'The `locale` element query param has been deprecated. Use `site` or `siteId` instead.');
                 $this->site($value);
                 break;
             case 'order':
-                Craft::$app->getDeprecator()->log('ElementQuery::order()', 'The “order” element query param has been deprecated. Use “orderBy” instead.');
+                Craft::$app->getDeprecator()->log('ElementQuery::order()', 'The `order` element query param has been deprecated. Use `orderBy` instead.');
                 $this->orderBy = $value;
                 break;
             default:
@@ -536,7 +536,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function __call($name, $params)
     {
         if ($name === 'order') {
-            Craft::$app->getDeprecator()->log('ElementQuery::order()', 'The “order” element query param has been deprecated. Use “orderBy” instead.');
+            Craft::$app->getDeprecator()->log('ElementQuery::order()', 'The `order` element query param has been deprecated. Use `orderBy` instead.');
 
             if (count($params) == 1) {
                 $this->orderBy = $params[0];
@@ -557,7 +557,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function getIterator(): ArrayIterator
     {
-        Craft::$app->getDeprecator()->log('ElementQuery::getIterator()', 'Looping through element queries directly has been deprecated. Use the all() function to fetch the query results before looping over them.');
+        Craft::$app->getDeprecator()->log('ElementQuery::getIterator()', 'Looping through element queries directly has been deprecated. Use the `all()` function to fetch the query results before looping over them.');
         return new ArrayIterator($this->all());
     }
 
@@ -988,7 +988,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function locale(string $value)
     {
-        Craft::$app->getDeprecator()->log('ElementQuery::locale()', 'The “locale” element query param has been deprecated. Use “site” or “siteId” instead.');
+        Craft::$app->getDeprecator()->log('ElementQuery::locale()', 'The `locale` element query param has been deprecated. Use `site` or `siteId` instead.');
         $this->site($value);
         return $this;
     }
@@ -1035,7 +1035,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function localeEnabled($value = true)
     {
-        Craft::$app->getDeprecator()->log('ElementQuery::localeEnabled()', 'The “localeEnabled” element query param has been deprecated. `status()` should be used instead.');
+        Craft::$app->getDeprecator()->log('ElementQuery::localeEnabled()', 'The `localeEnabled` element query param has been deprecated. `status()` should be used instead.');
         $this->enabledForSite = $value;
         return $this;
     }
@@ -1553,7 +1553,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         // TODO: Remove this in Craft 4
         // Make sure $db is not a list of attributes
         if ($this->_setAttributes($db)) {
-            Craft::$app->getDeprecator()->log('ElementQuery::ids($criteria)', 'Passing new criteria params to the ids() element query function is now deprecated. Set the parameters before calling ids().');
+            Craft::$app->getDeprecator()->log('ElementQuery::ids($criteria)', 'Passing new criteria params to the `ids()` element query function is now deprecated. Set the parameters before calling `ids()`.');
             $db = null;
         }
 
@@ -1820,7 +1820,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function order(string $value)
     {
-        Craft::$app->getDeprecator()->log('ElementQuery::order()', 'The “order” element query param has been deprecated. Use “orderBy” instead.');
+        Craft::$app->getDeprecator()->log('ElementQuery::order()', 'The `order` element query param has been deprecated. Use `orderBy` instead.');
 
         return $this->orderBy($value);
     }
@@ -1834,7 +1834,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function find(array $attributes = null): array
     {
-        Craft::$app->getDeprecator()->log('ElementQuery::find()', 'The find() function used to query for elements is now deprecated. Use all() instead.');
+        Craft::$app->getDeprecator()->log('ElementQuery::find()', 'The `find()` function used to query for elements is now deprecated. Use `all()` instead.');
         $this->_setAttributes($attributes);
 
         return $this->all();
@@ -1849,7 +1849,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function first(array $attributes = null)
     {
-        Craft::$app->getDeprecator()->log('ElementQuery::first()', 'The first() function used to query for elements is now deprecated. Use one() instead.');
+        Craft::$app->getDeprecator()->log('ElementQuery::first()', 'The `first()` function used to query for elements is now deprecated. Use `one()` instead.');
         $this->_setAttributes($attributes);
 
         return $this->one();
@@ -1864,7 +1864,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function last(array $attributes = null)
     {
-        Craft::$app->getDeprecator()->log('ElementQuery::last()', 'The last() function used to query for elements is now deprecated. Use inReverse().one() instead.');
+        Craft::$app->getDeprecator()->log('ElementQuery::last()', 'The `last()` function used to query for elements is now deprecated. Use `inReverse().one()` instead.');
         $this->_setAttributes($attributes);
         $count = $this->count();
         $offset = $this->offset;
@@ -1884,7 +1884,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function total(array $attributes = null): int
     {
-        Craft::$app->getDeprecator()->log('ElementQuery::total()', 'The total() function used to query for elements is now deprecated. Use count() instead.');
+        Craft::$app->getDeprecator()->log('ElementQuery::total()', 'The `total()` function used to query for elements is now deprecated. Use `count()` instead.');
         $this->_setAttributes($attributes);
 
         return $this->count();

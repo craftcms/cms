@@ -1118,7 +1118,7 @@ class GeneralConfig extends BaseObject
         foreach ($renamedSettings as $old => $new) {
             if (array_key_exists($old, $config)) {
                 $configFilePath = $configFilePath ?? Craft::$app->getConfig()->getConfigFilePath(Config::CATEGORY_GENERAL);
-                Craft::$app->getDeprecator()->log($old, "The {$old} config setting has been renamed to {$new}.", $configFilePath);
+                Craft::$app->getDeprecator()->log($old, "The `{$old}` config setting has been renamed to `{$new}`.", $configFilePath);
                 $config[$new] = $config[$old];
                 unset($config[$old]);
             }
@@ -1126,7 +1126,7 @@ class GeneralConfig extends BaseObject
 
         // Check for environmentVariables, but don't actually rename it in case a template is referencing it
         if (array_key_exists('environmentVariables', $config)) {
-            Craft::$app->getDeprecator()->log('environmentVariables', "The environmentVariables config setting has been renamed to aliases.");
+            Craft::$app->getDeprecator()->log('environmentVariables', "The `environmentVariables` config setting has been renamed to `aliases`.");
         }
 
         parent::__construct($config);
@@ -1223,7 +1223,7 @@ class GeneralConfig extends BaseObject
         }
 
         if ($this->suppressTemplateErrors) {
-            Craft::$app->getDeprecator()->log('suppressTemplateErrors', "The suppressTemplateErrors config setting has been deprecated because it relies on a deprecated Twig feature.");
+            Craft::$app->getDeprecator()->log('suppressTemplateErrors', "The `suppressTemplateErrors` config setting has been deprecated because it relies on a deprecated Twig feature.");
         }
 
         // Always use project config files
