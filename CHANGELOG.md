@@ -12,6 +12,9 @@
 - The “System Status” setting now has “Offline” and “Online” labels.
 - Deprecation warnings can now contain Markdown formatting.
 
+### Deprecated
+- Deprecated support for overriding volume settings via `config/volumes.php`. [Environment variables](https://craftcms.com/docs/3.x/config/#environmental-configuration) or [dependency injection](https://craftcms.com/knowledge-base/using-local-volumes-for-development) should be used instead.
+
 ### Fixed
 - Fixed a bug where the required field indicator wasn’t visible within the field layout designer, for fields with overflowing labels or hidden labels. ([#6725](https://github.com/craftcms/cms/issues/6725))
 - Fixed a bug where user group names were getting double-encoded within the User Groups setting on Edit User pages. ([#6727](https://github.com/craftcms/cms/issues/6727))

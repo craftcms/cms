@@ -484,11 +484,18 @@ class Volumes extends Component
      *
      * @param string $handle The volume handle
      * @return array|null
+     * @deprecated in 3.5.8. [Environment variables](https://craftcms.com/docs/3.x/config/#environmental-configuration) or [dependency injection](https://craftcms.com/knowledge-base/using-local-volumes-for-development)
+     * should be used instead.
      */
     public function getVolumeOverrides(string $handle)
     {
         if ($this->_overrides === null) {
             $this->_overrides = Craft::$app->getConfig()->getConfigFromFile('volumes');
+            if (!empty($this->_overrides)) {
+                Craft::$app->getDeprecator()->log('volumes.php', 'Support for overriding volume configs in `config/volumes.php` has been ' .
+                    'deprecated. [Environment variables](https://craftcms.com/docs/3.x/config/#environmental-configuration) or ' .
+                    '[dependency injection](https://craftcms.com/knowledge-base/using-local-volumes-for-development) should be used instead.');
+            }
         }
 
         return $this->_overrides[$handle] ?? null;
