@@ -24,7 +24,7 @@
 - Fixed a bug where GraphQL API queries could sometimes break down when using complex fields that do not support eager-loading. ([#6723](https://github.com/craftcms/cms/issues/6723))
 - Fixed an error that could occur when accessing the “Globals” section in the control panel, for users that didn’t have permission to edit the first global set. ([#6730](https://github.com/craftcms/cms/pull/6730))
 - Fixed a bug where various array-returning methods could return arrays with nonsequential keys beginning with `0`.
-- Fixed a bug where entry drafts would get autosaved after creating new Matrix/Neo/Super Table blocks even if the `autosaveDrafts` config setting was disabled. ([#autosaveDrafts](https://github.com/craftcms/cms/issues/6704))
+- Fixed a bug where entry drafts would get autosaved after creating new Matrix/Neo/Super Table blocks even if the `autosaveDrafts` config setting was disabled. ([#6704](https://github.com/craftcms/cms/issues/6704))
 
 ## 3.5.7 - 2020-08-26
 
