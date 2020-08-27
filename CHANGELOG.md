@@ -9,11 +9,12 @@
 ### Changed
 - The GraphQL API now supports `variables` and `operationName` query string parameters. ([#6728](https://github.com/craftcms/cms/issues/6728))
 - Improved the styling of Lightswitch fields that have ON/OFF labels. ([#6666](https://github.com/craftcms/cms/issues/6666))
-- The “System Status” setting now has “Offline” and “Online” labels.
+- The “System Status” setting now has “Offline” and “Online” labels.
 
 ### Fixed
 - Fixed a bug where the required field indicator wasn’t visible within the field layout designer, for fields with overflowing labels or hidden labels. ([#6725](https://github.com/craftcms/cms/issues/6725))
 - Fixed a bug where user group names were getting double-encoded within the User Groups setting on Edit User pages. ([#6727](https://github.com/craftcms/cms/issues/6727))
+- Fixed a bug where using aliases sometimes would break eager-loading when using the GraphQL API.
 
 ## 3.5.7 - 2020-08-26
 

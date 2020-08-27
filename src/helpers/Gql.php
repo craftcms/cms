@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
+use craft\base\ElementInterface;
 use craft\errors\GqlException;
 use craft\gql\base\Directive;
 use craft\gql\GqlEntityRegistry;
@@ -369,7 +370,7 @@ class Gql
 
         return $transform;
     }
-    
+
     /**
      * @param ValueNode|VariableNode $value
      * @param array $variableValues
@@ -388,5 +389,24 @@ class Gql
         }
 
         return $value->value;
+    }
+
+    /**
+     * Looking at the resolve information and the source queried, return the field name or it's alias, if used.
+     *
+     * @param ResolveInfo $resolveInfo
+     * @param $source
+     * @return string
+     */
+    public static function getFieldNameWithAlias(ResolveInfo $resolveInfo, $source): string
+    {
+        $fieldName = is_array($resolveInfo->path) ? array_slice($resolveInfo->path, -1)[0] : $resolveInfo->fieldName;
+        $isAlias = $fieldName !== $resolveInfo->fieldName;
+
+        if ($isAlias && !($source instanceof ElementInterface && $source->getEagerLoadedElements($fieldName))) {
+            $fieldName = $resolveInfo->fieldName;
+        }
+
+        return $fieldName;
     }
 }

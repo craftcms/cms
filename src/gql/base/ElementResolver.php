@@ -86,7 +86,7 @@ abstract class ElementResolver extends Resolver
     protected static function prepareElementQuery($source, array $arguments, $context, ResolveInfo $resolveInfo)
     {
         $arguments = self::prepareArguments($arguments);
-        $fieldName = $resolveInfo->fieldName;
+        $fieldName = GqlHelper::getFieldNameWithAlias($resolveInfo, $source);
 
         $query = static::prepareQuery($source, $arguments, $fieldName);
 
