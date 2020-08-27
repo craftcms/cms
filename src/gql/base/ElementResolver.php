@@ -8,6 +8,7 @@
 namespace craft\gql\base;
 
 use Craft;
+use craft\base\EagerLoadingFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\GqlInlineFragmentFieldInterface;
 use craft\elements\db\ElementQuery;
@@ -99,15 +100,8 @@ abstract class ElementResolver extends Resolver
 
         // This will happen if something is either dynamically added or is inside an block element that didn't support eager-loading
         // and broke the eager-loading chain. In this case Craft has to provide the relevant context so the condition builder knows where it's at.
-        if ($source instanceof ElementInterface) {
-            $context = $source->getFieldContext();
-
-            if ($context !== 'global') {
-                $field = Craft::$app->getFields()->getFieldByHandle($fieldName, $context);
-                if ($field instanceof GqlInlineFragmentFieldInterface) {
-                    $parentField = $field;
-                }
-            }
+        if (($context !== 'global' && $field instanceof GqlInlineFragmentFieldInterface) || $field instanceof EagerLoadingFieldInterface) {
+            $parentField = $field;
         }
 
         $conditionBuilder = Craft::createObject([

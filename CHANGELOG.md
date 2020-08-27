@@ -15,6 +15,7 @@
 - Fixed a bug where the required field indicator wasn’t visible within the field layout designer, for fields with overflowing labels or hidden labels. ([#6725](https://github.com/craftcms/cms/issues/6725))
 - Fixed a bug where user group names were getting double-encoded within the User Groups setting on Edit User pages. ([#6727](https://github.com/craftcms/cms/issues/6727))
 - Fixed a bug where using aliases sometimes would break eager-loading when using the GraphQL API.
+- Fixed a bug where GraphQL API queries could sometimes break down when using complex fields that do not support eager-loading. ([#6723](https://github.com/craftcms/cms/issues/6723))
 
 ## 3.5.7 - 2020-08-26
 
