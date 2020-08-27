@@ -14,11 +14,11 @@ echo $this->render('../table', [
     'values' => [
         [
             Craft::t('app', 'Message'),
-            $log->message
+            \yii\helpers\Markdown::processParagraph(\craft\helpers\Html::encode($log->message))
         ],
         [
             Craft::t('app', 'Origin'),
-            '<code>' . str_replace('/', '/<wbr>', htmlentities($log->file, null, 'UTF-8')) . ($log->line ? ':' . $log->line : '') . '</code>'
+            '<code>' . str_replace('/', '/<wbr>', \craft\helpers\Html::encode($log->file)) . ($log->line ? ':' . $log->line : '') . '</code>'
         ],
         [
             Craft::t('app', 'Last Occurrence'),
@@ -33,13 +33,13 @@ $totalTraces = count($log->traces);
 
 foreach ($log->traces as $i => $trace) {
     if ($i === 0) {
-        $info = '<strong>Deprecation error:</strong> ' . htmlentities($log->message, null, 'UTF-8');
+        $info = '<strong>Deprecation error:</strong> ' . \craft\helpers\Html::encode($log->message);
     } else {
-        $info = '<code>' . ($trace['objectClass'] || $trace['class'] ? str_replace('\\', '\\<wbr>', htmlentities($trace['objectClass'] ?: $trace['class'], null, 'UTF-8')) . '::<wbr>' : '') . htmlentities($trace['method'] . '(' . $trace['args'] . ')', null, 'UTF-8') . '</code>';
+        $info = '<code>' . ($trace['objectClass'] || $trace['class'] ? str_replace('\\', '\\<wbr>', \craft\helpers\Html::encode($trace['objectClass'] ?: $trace['class'])) . '::<wbr>' : '') . \craft\helpers\Html::encode($trace['method'] . '(' . $trace['args'] . ')') . '</code>';
     }
 
     if (!empty($trace['file'])) {
-        $info .= '<br><strong>From:</strong> ' . str_replace('/', '/<wbr>', htmlentities($trace['file'], null, 'UTF-8')) . ' (' . $trace['line'] . ')';
+        $info .= '<br><strong>From:</strong> ' . str_replace('/', '/<wbr>', \craft\helpers\Html::encode($trace['file'])) . ' (' . $trace['line'] . ')';
     }
 
     $values[] = [$totalTraces - $i, $info];
