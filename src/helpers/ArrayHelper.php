@@ -136,9 +136,11 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      * @param string|\Closure $key the column name or anonymous function which result will be used to index the array
      * @param mixed $value the value that $key should be compared with
      * @param bool $strict whether a strict type comparison should be used when checking array element values against $value
+     * @param bool $keepKeys whether to maintain the array keys. If false, the resulting array
+     * will be re-indexed with integers.
      * @return array the filtered array
      */
-    public static function where($array, $key, $value = true, bool $strict = false): array
+    public static function where($array, $key, $value = true, bool $strict = false, $keepKeys = true): array
     {
         $result = [];
 
@@ -146,7 +148,11 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
             $elementValue = static::getValue($element, $key);
             /** @noinspection TypeUnsafeComparisonInspection */
             if (($strict && $elementValue === $value) || (!$strict && $elementValue == $value)) {
-                $result[$i] = $element;
+                if ($keepKeys) {
+                    $result[$i] = $element;
+                } else {
+                    $result[] = $element;
+                }
             }
         }
 

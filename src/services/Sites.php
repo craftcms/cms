@@ -554,7 +554,7 @@ class Sites extends Component
      */
     public function getSitesByGroupId(int $groupId, bool $withDisabled = null): array
     {
-        $sites = ArrayHelper::where($this->_allSites($withDisabled), 'groupId', $groupId);
+        $sites = ArrayHelper::where($this->_allSites($withDisabled), 'groupId', $groupId, false, false);
 
         // Using array_multisort threw a nesting error for no obvious reason, so don't use it here.
         ArrayHelper::multisort($sites, 'sortOrder', SORT_ASC, SORT_NUMERIC);

@@ -137,7 +137,7 @@ class Categories extends Component
         $userSession = Craft::$app->getUser();
         return ArrayHelper::where($this->getAllGroups(), function(CategoryGroup $group) use ($userSession) {
             return $userSession->checkPermission('editCategories:' . $group->uid);
-        });
+        }, true, true, false);
     }
 
     /**

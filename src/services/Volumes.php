@@ -155,7 +155,7 @@ class Volumes extends Component
         $userSession = Craft::$app->getUser();
         return ArrayHelper::where($this->getAllVolumes(), function(VolumeInterface $volume) use ($userSession) {
             return $userSession->checkPermission('viewVolume:' . $volume->uid);
-        });
+        }, true, true, false);
     }
 
     /**
@@ -175,7 +175,7 @@ class Volumes extends Component
      */
     public function getPublicVolumes(): array
     {
-        return ArrayHelper::where($this->getAllVolumes(), 'hasUrls');
+        return ArrayHelper::where($this->getAllVolumes(), 'hasUrls', true, false, false);
     }
 
     /**

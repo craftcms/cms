@@ -233,7 +233,7 @@ class Sections extends Component
         $userSession = Craft::$app->getUser();
         return ArrayHelper::where($this->getAllSections(), function(Section $section) use ($userSession) {
             return $userSession->checkPermission('editEntries:' . $section->uid);
-        });
+        }, true, true, false);
     }
 
     /**
@@ -255,7 +255,7 @@ class Sections extends Component
      */
     public function getSectionsByType(string $type): array
     {
-        return ArrayHelper::where($this->getAllSections(), 'type', $type, true);
+        return ArrayHelper::where($this->getAllSections(), 'type', $type, true, false);
     }
 
     /**
@@ -1451,9 +1451,9 @@ class Sections extends Component
         $sites = ArrayHelper::where(Craft::$app->getSites()->getAllSites(), function(Site $site) use ($siteSettings) {
             // Only include it if it's one of this section's sites
             return isset($siteSettings[$site->uid]);
-        });
+        }, true, true, false);
 
-        $siteIds = ArrayHelper::getColumn($sites, 'id', false);
+        $siteIds = ArrayHelper::getColumn($sites, 'id');
 
         // Get the section's entry types
         // ---------------------------------------------------------------------

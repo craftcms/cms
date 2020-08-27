@@ -619,7 +619,7 @@ class Assets extends BaseRelationField
                 $folder = $assetsService->getFolderByUid(explode(':', $source)[1]);
                 $volume = $folder ? $folder->getVolume() : null;
                 return $volume && $userService->checkPermission("viewVolume:{$volume->uid}");
-            });
+            }, true, true, false);
         }
 
         return $sources;

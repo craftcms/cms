@@ -11,6 +11,7 @@
 - Improved the styling of Lightswitch fields that have ON/OFF labels. ([#6666](https://github.com/craftcms/cms/issues/6666))
 - The “System Status” setting now has “Offline” and “Online” labels.
 - Deprecation warnings can now contain Markdown formatting.
+- `craft\helpers\ArrayHelper::where()` now has a `$keepKeys` argument, which defaults to `true`.
 
 ### Deprecated
 - Deprecated support for overriding volume settings via `config/volumes.php`. [Environment variables](https://craftcms.com/docs/3.x/config/#environmental-configuration) or [dependency injection](https://craftcms.com/knowledge-base/using-local-volumes-for-development) should be used instead.
@@ -20,6 +21,8 @@
 - Fixed a bug where user group names were getting double-encoded within the User Groups setting on Edit User pages. ([#6727](https://github.com/craftcms/cms/issues/6727))
 - Fixed a bug where using aliases sometimes would break eager-loading when using the GraphQL API.
 - Fixed a bug where GraphQL API queries could sometimes break down when using complex fields that do not support eager-loading. ([#6723](https://github.com/craftcms/cms/issues/6723))
+- Fixed an error that could occur when accessing the “Globals” section in the control panel, for users that didn’t have permission to edit the first global set. ([#6730](https://github.com/craftcms/cms/pull/6730))
+- Fixed a bug where various array-returning methods could return arrays with nonsequential keys beginning with `0`.
 
 ## 3.5.7 - 2020-08-26
 

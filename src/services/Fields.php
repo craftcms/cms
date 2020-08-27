@@ -583,12 +583,12 @@ class Fields extends Component
         }
 
         if (is_string($context)) {
-            return ArrayHelper::where($this->_fields, 'context', $context, true);
+            return ArrayHelper::where($this->_fields, 'context', $context, true, false);
         }
 
         return ArrayHelper::where($this->_fields, function(FieldInterface $field) use ($context) {
             return in_array($field->context, $context, true);
-        });
+        }, true, true, false);
     }
 
     /**
@@ -600,7 +600,7 @@ class Fields extends Component
     {
         return ArrayHelper::where($this->getAllFields(), function(FieldInterface $field) {
             return $field::hasContentColumn();
-        });
+        }, true, true, false);
     }
 
     /**
@@ -668,7 +668,7 @@ class Fields extends Component
      */
     public function getFieldsByGroupId(int $groupId): array
     {
-        return ArrayHelper::where($this->getAllFields(false), 'groupId', $groupId);
+        return ArrayHelper::where($this->getAllFields(false), 'groupId', $groupId, false, false);
     }
 
     /**
