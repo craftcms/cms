@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+- Added the “Retry Duration” general setting, which defines the number of seconds that the `Retry-After` header should be set to for 503 responses when the system is offline.
+- Added the `off` and `on` commands, for toggling the system status. ([#6729](https://github.com/craftcms/cms/issues/6729))
+
 ### Changed
 - The GraphQL API now supports `variables` and `operationName` query string parameters. ([#6728](https://github.com/craftcms/cms/issues/6728))
 - Improved the styling of Lightswitch fields that have ON/OFF labels. ([#6666](https://github.com/craftcms/cms/issues/6666))
