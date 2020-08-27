@@ -154,7 +154,9 @@ Craft.DraftEditor = Garnish.Base.extend(
             // number of times that pause() was called
             this.pauseLevel--;
             if (this.pauseLevel === 0) {
-                this.checkForm();
+                if (this.enableAutosave) {
+                    this.checkForm();
+                }
                 this.listenForChanges();
             }
         },
