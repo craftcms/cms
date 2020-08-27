@@ -14,6 +14,7 @@
 - The “System Status” setting now has “Offline” and “Online” labels.
 - Deprecation warnings can now contain Markdown formatting.
 - `craft\helpers\ArrayHelper::where()` now has a `$keepKeys` argument, which defaults to `true`.
+- `craft\services\Config::setDotEnvVar()` no longer surrounds the value with quotes unless it contains a space. ([craftcms/docker#5](https://github.com/craftcms/docker/issues/5))
 
 ### Deprecated
 - Deprecated support for overriding volume settings via `config/volumes.php`. [Environment variables](https://craftcms.com/docs/3.x/config/#environmental-configuration) or [dependency injection](https://craftcms.com/knowledge-base/using-local-volumes-for-development) should be used instead.
