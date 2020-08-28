@@ -36,7 +36,7 @@ class OffController extends Controller
     }
 
     /**
-     * Turns the system on
+     * Turns the system off.
      *
      * @return int
      */
