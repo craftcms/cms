@@ -20,7 +20,7 @@ use yii\db\Exception;
 use yii\helpers\Console;
 
 /**
- * Allows you to re-indexes assets in volumes.
+ * Allows you to re-index assets in volumes.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.1.2
