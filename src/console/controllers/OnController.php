@@ -21,7 +21,7 @@ use yii\console\ExitCode;
 class OnController extends Controller
 {
     /**
-     * Turns the system on
+     * Turns the system on.
      *
      * @return int
      */
