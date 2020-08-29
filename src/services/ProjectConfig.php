@@ -390,7 +390,7 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Returns a config item value value by its path.
+     * Returns a config item value by its path.
      *
      * ---
      *
