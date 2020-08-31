@@ -248,9 +248,9 @@ class ProjectConfig extends Component
     private $_isConfigModified = false;
 
     /**
-     * @var bool Whether the config should be saved to yaml file at the end of request
+     * @var bool Whether the config should be saved to DB after request
      */
-    private $_updateConfig = false;
+    private $_updateInternalConfig = false;
 
     /**
      * @var bool Whether we’re listening for the request end, to update the Yaml caches.
@@ -264,12 +264,6 @@ class ProjectConfig extends Component
      * @see getIsApplyingYamlChanges()
      */
     private $_applyingYamlChanges = false;
-
-    /**
-     * @var bool Whether project config is currently being rebuilt.
-     * @see rebuild()
-     */
-    private $_rebuildingConfig = false;
 
     /**
      * @var bool Whether the config's dateModified timestamp has been updated by this request.
@@ -381,7 +375,7 @@ class ProjectConfig extends Component
         $this->_appliedConfig = [];
         $this->_configFileList = [];
         $this->_isConfigModified = false;
-        $this->_updateConfig = false;
+        $this->_updateInternalConfig = false;
         $this->_applyingYamlChanges = false;
         $this->_timestampUpdated = false;
         $this->_changesBeingApplied = null;
@@ -478,9 +472,7 @@ class ProjectConfig extends Component
             $this->_saveConfig($config);
         }
 
-        if (!$this->_rebuildingConfig) {
-            $this->processConfigChanges($path, true, $message);
-        }
+        $this->processConfigChanges($path, true, $message);
     }
 
     /**
@@ -700,7 +692,7 @@ class ProjectConfig extends Component
      */
     public function updateStoredConfigAfterRequest()
     {
-        $this->_updateConfig = true;
+        $this->_updateInternalConfig = true;
     }
 
     /**
@@ -757,7 +749,7 @@ class ProjectConfig extends Component
             $this->_updateYamlFiles();
         }
 
-        if (!$this->_updateConfig) {
+        if (!$this->_updateInternalConfig) {
             return;
         }
 
@@ -1166,19 +1158,19 @@ class ProjectConfig extends Component
         $readOnly = $this->readOnly;
         $this->readOnly = false;
 
-        // Make sure Craft doesn't react to anything while rebuilding
-        $this->_rebuildingConfig = true;
+        // Flush it out to yaml files first.
+        $this->_saveConfig($event->config);
+        $this->_updateYamlFiles();
+        $this->_updateConfigVersion();
 
+        // Now we can process the changes
         foreach ($event->config as $path => $value) {
             $this->set($path, $value, 'Project config rebuild');
         }
 
-        $this->_rebuildingConfig = false;
-
-        // Make sure the `dateModified` is set to the new value.
-        $this->processConfigChanges('dateModified');
-
-        $this->_appliedConfig = $event->config;
+        // And now ensure that Project Config doesn't attempt to save to yaml files again
+        $this->_isConfigModified = false;
+        $this->_updateInternalConfig = true;
 
         $this->readOnly = $readOnly;
         $this->muteEvents = false;

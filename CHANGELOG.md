@@ -30,6 +30,7 @@
 - Fixed a bug where field checkboxes in Quick Post widget settings were all disabled. ([#6738](https://github.com/craftcms/cms/issues/6738))
 - Fixed a bug where assets uploaded by front-end entry forms weren’t getting saved with the `uploaderId` attribute. ([#6456](https://github.com/craftcms/cms/issues/6456))
 - Fixed a bug where Live Preview wasn’t showing custom fields for categories.
+- Fixed a bug where rebuilding Project Config would not persist the config data to the internal config storage.
 
 ## 3.5.7 - 2020-08-26
 
