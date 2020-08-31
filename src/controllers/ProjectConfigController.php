@@ -34,7 +34,6 @@ class ProjectConfigController extends Controller
             return false;
         }
 
-        $this->requirePostRequest();
         $this->requirePermission('utility:project-config');
         return true;
     }
@@ -47,6 +46,7 @@ class ProjectConfigController extends Controller
      */
     public function actionDiscard(): Response
     {
+        $this->requirePostRequest();
         Craft::$app->getProjectConfig()->regenerateYamlFromConfig();
         $this->setSuccessFlash(Craft::t('app', 'Project config YAML changes discarded.'));
         return $this->redirectToPostedUrl();
@@ -60,6 +60,7 @@ class ProjectConfigController extends Controller
      */
     public function actionRebuild(): Response
     {
+        $this->requirePostRequest();
         Craft::$app->getProjectConfig()->rebuild();
         $this->setSuccessFlash(Craft::t('app', 'Project config rebuilt successfully.'));
         return $this->redirectToPostedUrl();
