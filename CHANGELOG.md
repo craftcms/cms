@@ -32,6 +32,7 @@
 - Fixed a bug where Live Preview wasn’t showing custom fields for categories.
 - Fixed a bug where rebuilding Project Config would not persist the config data to the internal config storage.
 - Fixed a JavaScript error when showing a prompt to the user. ([#6753](https://github.com/craftcms/cms/issues/6753))
+- Fixed a bug where the `system.schemaVersion` was not getting set when rebuilding the project config.
 
 ## 3.5.7 - 2020-08-26
 
