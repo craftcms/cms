@@ -31,6 +31,7 @@
 - Fixed a bug where assets uploaded by front-end entry forms weren’t getting saved with the `uploaderId` attribute. ([#6456](https://github.com/craftcms/cms/issues/6456))
 - Fixed a bug where Live Preview wasn’t showing custom fields for categories.
 - Fixed a bug where rebuilding Project Config would not persist the config data to the internal config storage.
+- Fixed a JavaScript error when showing a prompt to the user. ([#6753](https://github.com/craftcms/cms/issues/6753))
 
 ## 3.5.7 - 2020-08-26
 
