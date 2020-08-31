@@ -98,6 +98,7 @@ abstract class ElementResolver extends Resolver
 
         $parentField = null;
 
+        $field = Craft::$app->getFields()->getFieldByHandle($fieldName, $context);
         // This will happen if something is either dynamically added or is inside an block element that didn't support eager-loading
         // and broke the eager-loading chain. In this case Craft has to provide the relevant context so the condition builder knows where it's at.
         if (($context !== 'global' && $field instanceof GqlInlineFragmentFieldInterface) || $field instanceof EagerLoadingFieldInterface) {
