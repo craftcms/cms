@@ -881,6 +881,10 @@ class UsersController extends Controller
             $localeOptions = $userLanguage = $userLocale = null;
         }
 
+        // Determine whether user photo uploading should be possible
+        $volumeUid = Craft::$app->getProjectConfig()->get('users.photoVolumeUid');
+        $showPhotoField = $volumeUid && Craft::$app->getVolumes()->getVolumeByUid($volumeUid);
+
         // Load the resources and render the page
         // ---------------------------------------------------------------------
 
@@ -908,6 +912,7 @@ class UsersController extends Controller
             'title',
             'tabs',
             'selectedTab',
+            'showPhotoField',
             'fieldsHtml'
         ));
     }

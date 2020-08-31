@@ -72,7 +72,7 @@
         <div id="account" class="flex-fields">
             {% include "users/_accountfields" %}
 
-            {% if not isNewUser %}
+            {% if not isNewUser and showPhotoField %}
                 {{ forms.field({
                     label: "Photo"|t('app'),
                     id: 'photo'
