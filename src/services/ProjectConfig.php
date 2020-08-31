@@ -83,9 +83,15 @@ class ProjectConfig extends Component
      */
     const CONFIG_DELTA_FILENAME = 'delta.yaml';
     /**
+     * The project config key that Craft system info is stored at.
+     *
+     * @since 3.5.8
+     */
+    const CONFIG_SYSTEM = 'system';
+    /**
      * The project config key that the Craft schema version is stored at.
      */
-    const CONFIG_SCHEMA_VERSION_KEY = 'system.schemaVersion';
+    const CONFIG_SCHEMA_VERSION_KEY = self::CONFIG_SYSTEM . '.schemaVersion';
     /**
      * The array key to use for signaling ordered-to-associative array conversion.
      *
@@ -384,7 +390,7 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Returns a config item value value by its path.
+     * Returns a config item value by its path.
      *
      * ---
      *
@@ -1132,6 +1138,7 @@ class ProjectConfig extends Component
 
         $config = $this->get();
         $config['dateModified'] = DateTimeHelper::currentTimeStamp();
+        $config[self::CONFIG_SYSTEM] = $this->_systemConfig($config[self::CONFIG_SYSTEM] ?? []);
         $config[Sites::CONFIG_SITEGROUP_KEY] = $this->_getSiteGroupData();
         $config[Sites::CONFIG_SITES_KEY] = $this->_getSiteData();
         $config[Sections::CONFIG_SECTIONS_KEY] = $this->_getSectionData();
@@ -1769,6 +1776,18 @@ class ProjectConfig extends Component
         return new ExpressionDependency([
             'expression' => Craft::class . '::$app->getInfo()->configVersion',
         ]);
+    }
+
+    /**
+     * Returns the system config array.
+     *
+     * @param array $data
+     * @return array
+     */
+    private function _systemConfig(array $data): array
+    {
+        $data['schemaVersion'] = Craft::$app->schemaVersion;
+        return $data;
     }
 
     /**
