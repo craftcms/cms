@@ -39,6 +39,16 @@ class ProjectConfigController extends Controller
     }
 
     /**
+     * Returns a diff of the pending project config YAML changes, compared to the currently loaded project config.
+     *
+     * @since 3.5.8
+     */
+    public function actionDiff(): string
+    {
+        return ProjectConfig::diff();
+    }
+
+    /**
      * Discards any changes to the project config files.
      *
      * @return Response

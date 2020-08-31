@@ -15,6 +15,7 @@
 - Improved the styling of Lightswitch fields that have ON/OFF labels. ([#6666](https://github.com/craftcms/cms/issues/6666))
 - The “System Status” setting now has “Offline” and “Online” labels.
 - Deprecation warnings can now contain Markdown formatting.
+- The Project Config utility now loads the comparison data over Ajax, and will only show the first 20 lines by default. ([#6736](https://github.com/craftcms/cms/issues/6736))
 - `craft\helpers\ArrayHelper::where()` now has a `$keepKeys` argument, which defaults to `true`.
 - `craft\helpers\ProjectConfig::diff()` now caches its results. ([#6736](https://github.com/craftcms/cms/issues/6736))
 - `craft\services\Config::setDotEnvVar()` no longer surrounds the value with quotes unless it contains a space. ([craftcms/docker#5](https://github.com/craftcms/docker/issues/5))

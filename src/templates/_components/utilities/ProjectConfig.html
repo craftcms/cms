@@ -4,10 +4,8 @@
     <h2>{{ 'Apply YAML Changes'|t('app') }}</h2>
     {{ csrfInput() }}
     <p>{{ 'Apply changes in your project config YAML files to the loaded project config.'|t('app') }}</p>
-    {% if diff %}
-        <div class="pane highlight">
-            <pre><code class="language-diff diff-highlight language-diff-yaml">{{ diff }}</code></pre>
-        </div>
+    {% if areChangesPending %}
+        <div id="diff" class="pane loading"></div>
         <div class="readable">
             <blockquote class="note $noteClass">
                 <p>
@@ -90,13 +88,88 @@
 <hr>
 
 <h2>{{ 'Loaded Project Config Data'|t('app') }}</h2>
-<div class="pane highlight">
-    <pre><code class="language-yaml">{{ entireConfig }}</code></pre>
+<div class="pane">
+    <pre><code>{{ entireConfig }}</code></pre>
 </div>
 <div class="buttons">
     <button type="button" id="download" class="btn" data-icon="download">{{ 'Download'|t('app') }}</button>
     <div id="download-spinner" class="spinner hidden"></div>
 </div>
+
+{% css %}
+    .pane {
+        max-height: 500px;
+        overflow: auto;
+    }
+    .pane pre {
+        margin: 0;
+        padding: 0;
+        background-color: transparent;
+    }
+{% endcss %}
+
+{% if areChangesPending %}
+    {% js %}
+        let cancelToken = axios.CancelToken.source();
+        Craft.sendActionRequest('GET', Craft.getActionUrl('project-config/diff'), {
+            cancelToken: cancelToken.token,
+        }).then(response => {
+            cancelToken = null;
+            let maxLines = 20;
+            let lines = response.data.split(/\n/);
+            let $diffPane = $('#diff')
+                .removeClass('loading')
+                .addClass('highlight');
+            let $pre = $('<pre/>', {
+                class: 'language-diff',
+            }).appendTo($diffPane);
+            let $code = $('<code/>', {
+                class: 'language-diff diff-highlight',
+                html: Prism.highlight(lines.slice(0, maxLines).join("\n"), Prism.languages.diff, 'diff'),
+            }).appendTo($pre);
+
+            if (lines.length > maxLines) {
+                let $p = $('<p/>', {
+                    class: 'centeralign',
+                }).appendTo($diffPane);
+                let $a = $('<a/>', {
+                    class: 'largetext',
+                    text: Craft.t('app', 'Show all changes'),
+                }).appendTo($p);
+                $a.on('click', () => {
+                    $code.html(Prism.highlight(response.data, Prism.languages.diff, 'diff'));
+                    $p.remove();
+                });
+            }
+
+            // // Only show the diff right away if it's less than 100 lines long
+            // if ((response.data.match(/\n/g) || []).length < 2) {
+            //     showDiff();
+            // } else {
+            //     $diffPane.append(
+            //         $('<p/>', {
+            //             class: 'centeralign',
+            //         }).append(
+            //             $('<a/>', {
+            //                 class: 'largetext g',
+            //                 text: Craft.t('app', 'View changes'),
+            //             })
+            //         )
+            //     );
+            // }
+        });
+        Garnish.$win.on('beforeunload', () => {
+            if (cancelToken) {
+                cancelToken.cancel();
+            }
+        });
+    {% endjs %}
+    {% css %}
+        #diff.loading {
+            height: 200px;
+        }
+    {% endcss %}
+{% endif %}
 
 {% js %}
     $('#download').on('click', () => {
