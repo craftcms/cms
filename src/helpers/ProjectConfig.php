@@ -17,6 +17,8 @@ use SebastianBergmann\Diff\Differ;
 use SebastianBergmann\Diff\Output\UnifiedDiffOutputBuilder;
 use Symfony\Component\Yaml\Yaml;
 use yii\base\InvalidConfigException;
+use yii\caching\ChainedDependency;
+use yii\caching\ExpressionDependency;
 
 /**
  * Class ProjectConfig
@@ -444,20 +446,30 @@ class ProjectConfig
     public static function diff(): string
     {
         $projectConfig = Craft::$app->getProjectConfig();
-        $currentConfig = $projectConfig->get();
-        $pendingConfig = $projectConfig->get(null, true);
-        $currentYaml = Yaml::dump(static::cleanupConfig($currentConfig), 20, 2);
-        $pendingYaml = Yaml::dump(static::cleanupConfig($pendingConfig), 20, 2);
-        $builder = new UnifiedDiffOutputBuilder('');
-        $differ = new Differ($builder);
-        $diff = $differ->diff($currentYaml, $pendingYaml);
 
-        // Cleanup
-        $diff = preg_replace("/^@@ @@\n/", '', $diff);
-        $diff = preg_replace('/^[\+\-]?/m', '$0 ', $diff);
-        $diff = str_replace(' @@ @@', '...', $diff);
-        $diff = rtrim($diff);
+        return Craft::$app->getCache()->getOrSet(ProjectConfigService::DIFF_CACHE_KEY, function() use ($projectConfig): string {
+            $currentConfig = $projectConfig->get();
+            $pendingConfig = $projectConfig->get(null, true);
+            $currentYaml = Yaml::dump(static::cleanupConfig($currentConfig), 20, 2);
+            $pendingYaml = Yaml::dump(static::cleanupConfig($pendingConfig), 20, 2);
+            $builder = new UnifiedDiffOutputBuilder('');
+            $differ = new Differ($builder);
+            $diff = $differ->diff($currentYaml, $pendingYaml);
 
-        return $diff;
+            // Cleanup
+            $diff = preg_replace("/^@@ @@\n/", '', $diff);
+            $diff = preg_replace('/^[\+\-]?/m', '$0 ', $diff);
+            $diff = str_replace(' @@ @@', '...', $diff);
+            $diff = rtrim($diff);
+
+            return $diff;
+        }, null, new ChainedDependency([
+            'dependencies' => [
+                $projectConfig->getCacheDependency(),
+                new ExpressionDependency([
+                    'expression' => 'md5(' . Json::class . '::encode('. Craft::class . '::$app->getProjectConfig()->get(null, true)))',
+                ]),
+            ],
+        ]));
     }
 }

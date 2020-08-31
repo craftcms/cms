@@ -302,6 +302,8 @@ body.rtl .rightalign { text-align: left; }
 
 .smalltext { font-size: 12px; line-height: 1.2; }
 
+.largetext { font-size: 16px; line-height: 1.2; }
+
 .zilch { padding: 100px 0; text-align: center; font-size: 20px; line-height: 24px; color: #9aa5b1; }
 
 input.checkbox + label.smalltext { padding-top: 2px; }
@@ -1552,6 +1554,10 @@ body.rtl .missing-component .install-plugin .icon { right: 0; }
 .pane { background: #fff; box-shadow: 0 0 0 1px rgba(205, 216, 228, 0.25), 0 2px 12px rgba(205, 216, 228, 0.5); position: relative; margin: 14px 0; padding: 24px; border-radius: 5px; word-wrap: break-word; box-sizing: border-box; }
 
 .pane .pane, #content .pane { background-color: #f3f7fc; border: 1px solid rgba(51, 64, 77, 0.1); box-shadow: none; }
+
+.pane.loading { min-height: 200px; }
+
+.pane.loading:after { display: block; content: '.'; font-size: 0; position: absolute; top: 0; left: -24px; width: calc(100% + 48px); height: 100%; background: url(../images/spinner.gif) no-repeat 50% 50%; }
 
 /* meta panes */
 .meta { padding: 0 24px; overflow: visible; }
