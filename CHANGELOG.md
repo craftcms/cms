@@ -40,6 +40,7 @@
 - Fixed a JavaScript error when showing a prompt to the user. ([#6753](https://github.com/craftcms/cms/issues/6753))
 - Fixed a bug where the `system.schemaVersion` was not getting set when rebuilding the project config.
 - Fixed a bug where all file caches were being saved inside a single subdirectory of `storage/runtime/cache/` based on the cache key prefix. ([#6746](https://github.com/craftcms/cms/issues/6746))
+- Fixed a bug where field handles would get jumpy on hover if their increased size caused them to be too large to fit on the same line as the field name. ([#6742](https://github.com/craftcms/cms/issues/6742))
 
 ## 3.5.7 - 2020-08-26
 

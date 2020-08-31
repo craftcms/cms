@@ -1288,6 +1288,7 @@ ul.icons {
   padding: 0 9px;
   cursor: pointer;
   outline: none;
+  transition: margin-left linear 100ms, margin-right linear 100ms;
 
   input {
     border: 0;
@@ -1317,6 +1318,8 @@ ul.icons {
 
   &:hover,
   &:focus {
+    // Prevent the button from jumping if the added width would otherwise bump it down to the next line
+    @include margin-left(-16px);
     border-color: $mediumHairlineColor;
 
     span {
