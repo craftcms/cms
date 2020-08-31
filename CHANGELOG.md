@@ -7,6 +7,7 @@
 - Added the `off` and `on` commands, for toggling the system status. ([#6729](https://github.com/craftcms/cms/issues/6729))
 - Added the `utils/update-usernames` command, for ensuring all usernames match users’ email addresses, if the `useEmailAsUsername` config setting is enabled. ([#6312](https://github.com/craftcms/cms/issues/6312))
 - Added the `configure()` Twig function. ([#6731](https://github.com/craftcms/cms/pull/6731))
+- Matrix input type blocks now have an `id` field to allow modifying existing matrix blocks when using mutations with the GraphQL API.
 
 ### Changed
 - The GraphQL API now supports `variables` and `operationName` query string parameters. ([#6728](https://github.com/craftcms/cms/issues/6728))
@@ -18,6 +19,7 @@
 
 ### Deprecated
 - Deprecated support for overriding volume settings via `config/volumes.php`. [Environment variables](https://craftcms.com/docs/3.x/config/#environmental-configuration) or [dependency injection](https://craftcms.com/knowledge-base/using-local-volumes-for-development) should be used instead.
+- Adding a matrix block with a mutation over GraphQL without providing a value for the `id` field is now deprecated.
 
 ### Fixed
 - Fixed a bug where the required field indicator wasn’t visible within the field layout designer, for fields with overflowing labels or hidden labels. ([#6725](https://github.com/craftcms/cms/issues/6725))
