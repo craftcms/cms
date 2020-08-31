@@ -8,6 +8,7 @@
 - Added the `utils/update-usernames` command, for ensuring all usernames match users’ email addresses, if the `useEmailAsUsername` config setting is enabled. ([#6312](https://github.com/craftcms/cms/issues/6312))
 - Added the `configure()` Twig function. ([#6731](https://github.com/craftcms/cms/pull/6731))
 - Matrix input type blocks now have an `id` field to allow modifying existing matrix blocks when using mutations with the GraphQL API.
+- Added `craft\cache\FileCache`.
 - Added `craft\services\ProjectConfig::DIFF_CACHE_KEY`.
 
 ### Changed
@@ -38,6 +39,7 @@
 - Fixed a bug where rebuilding Project Config would not persist the config data to the internal config storage.
 - Fixed a JavaScript error when showing a prompt to the user. ([#6753](https://github.com/craftcms/cms/issues/6753))
 - Fixed a bug where the `system.schemaVersion` was not getting set when rebuilding the project config.
+- Fixed a bug where all file caches were being saved inside a single subdirectory of `storage/runtime/cache/` based on the cache key prefix. ([#6746](https://github.com/craftcms/cms/issues/6746))
 
 ## 3.5.7 - 2020-08-26
 

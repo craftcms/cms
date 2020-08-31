@@ -9,6 +9,7 @@ namespace craft\helpers;
 
 use Craft;
 use craft\behaviors\SessionBehavior;
+use craft\cache\FileCache;
 use craft\config\DbConfig;
 use craft\db\Command;
 use craft\db\Connection;
@@ -30,7 +31,6 @@ use craft\web\Session;
 use craft\web\User as WebUser;
 use craft\web\View;
 use yii\base\InvalidArgumentException;
-use yii\caching\FileCache;
 use yii\helpers\Inflector;
 use yii\i18n\PhpMessageSource;
 use yii\log\Dispatcher;
