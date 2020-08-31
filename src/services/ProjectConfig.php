@@ -64,6 +64,12 @@ class ProjectConfig extends Component
      */
     const FILE_ISSUES_CACHE_KEY = 'projectConfig:fileIssues';
     /**
+     * The cache key that is used to store the current project config diff
+     *
+     * @since 3.5.8
+     */
+    const DIFF_CACHE_KEY = 'projectConfig:diff';
+    /**
      * The duration that project config caches should be cached.
      */
     const CACHE_DURATION = 31536000; // 1 year
@@ -725,7 +731,7 @@ class ProjectConfig extends Component
             self::IGNORE_CACHE_KEY,
             $this->_getConfigFileModifiedTime(),
             self::CACHE_DURATION,
-            $this->_cacheDependency()
+            $this->getCacheDependency()
         );
     }
 
@@ -1763,15 +1769,16 @@ class ProjectConfig extends Component
                 $current = Json::decode(StringHelper::decdec($value));
             }
             return ProjectConfigHelper::cleanupConfig($data);
-        }, null, $this->_cacheDependency());
+        }, null, $this->getCacheDependency());
     }
 
     /**
      * Returns the cache dependency that should be used for project config caches.
      *
      * @return ExpressionDependency
+     * @since 3.5.8
      */
-    private function _cacheDependency(): ExpressionDependency
+    public function getCacheDependency(): ExpressionDependency
     {
         return new ExpressionDependency([
             'expression' => Craft::class . '::$app->getInfo()->configVersion',
