@@ -43,6 +43,7 @@
 - Fixed a bug where field handles would get jumpy on hover if their increased size caused them to be too large to fit on the same line as the field name. ([#6742](https://github.com/craftcms/cms/issues/6742))
 - Fixed a bug where the “Photo” field was shown on Edit User pages, even if the User Photos volume had been deleted. ([#6752](https://github.com/craftcms/cms/issues/6752))
 - Fixed an error that occurred when passing an array to an entry query’s `typeId` param, with the first item set to `'not'`. ([#6754](https://github.com/craftcms/cms/issues/6754))
+- Fixed a bug where element queries with the `siteId` param set to `*` would query for elements in soft-deleted sites. ([#6756](https://github.com/craftcms/cms/issues/6756))
 
 ## 3.5.7 - 2020-08-26
 

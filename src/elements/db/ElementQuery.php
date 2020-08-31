@@ -930,8 +930,10 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function site($value)
     {
-        if ($value === '*' || $value === null) {
-            $this->siteId = $value;
+        if ($value === null) {
+            $this->siteId = null;
+        } else if ($value === '*') {
+            $this->siteId = Craft::$app->getSites()->getAllSiteIds();
         } else if ($value instanceof Site) {
             $this->siteId = $value->id;
         } else if (is_string($value)) {
@@ -1297,9 +1299,8 @@ class ElementQuery extends Query implements ElementQueryInterface
             if (!$class::isLocalized()) {
                 // The criteria *must* be set to the primary site ID
                 $this->siteId = Craft::$app->getSites()->getPrimarySite()->id;
-            } else if (!$this->siteId) {
-                // Default to the current site
-                $this->siteId = Craft::$app->getSites()->getCurrentSite()->id;
+            } else {
+                $this->_normalizeSiteId();
             }
         } catch (SiteNotFoundException $e) {
             // Fail silently if Craft isn't installed yet or is in the middle of updating
@@ -1343,8 +1344,10 @@ class ElementQuery extends Query implements ElementQueryInterface
             ->limit($this->limit)
             ->addParams($this->params);
 
-        if ($this->siteId !== '*' && Craft::$app->getIsMultiSite(false, true)) {
+        if (Craft::$app->getIsMultiSite(false, true)) {
             $this->subQuery->andWhere(['elements_sites.siteId' => $this->siteId]);
+        } else {
+            $this->subQuery->andWhere(['elements_sites.dateDeleted' => null]);
         }
 
         if ($class::hasContent() && $this->contentTable !== null) {
@@ -2075,12 +2078,9 @@ class ElementQuery extends Query implements ElementQueryInterface
             $placeholderSourceIds = [];
             $placeholderElements = Craft::$app->getElements()->getPlaceholderElements();
             if (!empty($placeholderElements)) {
-                $siteIds = $this->siteId !== '*' ? array_flip((array)$this->siteId) : null;
+                $siteIds = array_flip((array)$this->siteId);
                 foreach ($placeholderElements as $element) {
-                    if (
-                        $element instanceof $this->elementType &&
-                        ($siteIds === null || isset($siteIds[$element->siteId]))
-                    ) {
+                    if ($element instanceof $this->elementType && isset($siteIds[$element->siteId])) {
                         $placeholderSourceIds[] = $element->getSourceId();
                     }
                 }
@@ -2505,6 +2505,19 @@ class ElementQuery extends Query implements ElementQueryInterface
     }
 
     /**
+     * Normalizes the siteId param value.
+     */
+    private function _normalizeSiteId()
+    {
+        if (!$this->siteId) {
+            // Default to the current site
+            $this->siteId = Craft::$app->getSites()->getCurrentSite()->id;
+        } else if ($this->siteId === '*') {
+            $this->siteId = Craft::$app->getSites()->getAllSiteIds();
+        }
+    }
+
+    /**
      * Normalizes a structure param value to either an Element object or false.
      *
      * @param string $property The parameter’s property name.
@@ -2554,8 +2567,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 ->limit(null)
                 ->ids();
 
-            $siteId = $this->siteId === '*' ? null : $this->siteId;
-            $searchResults = Craft::$app->getSearch()->filterElementIdsByQuery($elementIds, $this->search, true, $siteId, true);
+            $searchResults = Craft::$app->getSearch()->filterElementIdsByQuery($elementIds, $this->search, true, $this->siteId, true);
 
             // No results?
             if (empty($searchResults)) {
@@ -2750,7 +2762,6 @@ class ElementQuery extends Query implements ElementQueryInterface
             !Craft::$app->getIsMultiSite(false, true) ||
             (
                 $this->siteId &&
-                $this->siteId !== '*' &&
                 (!is_array($this->siteId) || count($this->siteId) === 1)
             )
         ) {
