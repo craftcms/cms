@@ -348,6 +348,7 @@ class GeneralConfig extends BaseObject
     public $disabledPlugins = [];
     /**
      * @var bool Whether the `transform` directive should be disabled for the GraphQL API.
+     * @since 4.0.0
      */
     public $disableGraphqlTransformDirective = false;
     /**
@@ -365,6 +366,7 @@ class GeneralConfig extends BaseObject
     public $enableCsrfCookie = true;
     /**
      * @var bool Whether GraphQL introspection queries are allowed. Defaults to `true` and is always allowed in the CP.
+     * @since 4.0.0
      */
     public $enableGraphqlIntrospection = true;
     /**
@@ -572,14 +574,17 @@ class GeneralConfig extends BaseObject
     public $maxCachedCloudImageSize = 2000;
     /**
      * @var int The maximum allowed complexity a GraphQL query is allowed to have. Set to `0` to allow any complexity.
+     * @since 4.0.0
      */
     public $maxGraphqlComplexity = 0;
     /**
      * @var int The maximum allowed depth a GraphQL query is allowed to reach. Set to `0` to allow any depth.
+     * @since 4.0.0
      */
     public $maxGraphqlDepth = 0;
     /**
      * @var int The maximum allowed results for a single GraphQL query. Set to `0` to disable any limits.
+     * @since 4.0.0
      */
     public $maxGraphqlResults = 0;
     /**

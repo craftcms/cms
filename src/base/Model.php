@@ -168,7 +168,7 @@ abstract class Model extends \yii\base\Model
 
     /**
      * @inheritdoc
-     * @since 3.6.0
+     * @since 4.0.0
      */
     public function setAttributes($values, $safeOnly = true)
     {
