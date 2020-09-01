@@ -1346,8 +1346,6 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         if (Craft::$app->getIsMultiSite(false, true)) {
             $this->subQuery->andWhere(['elements_sites.siteId' => $this->siteId]);
-        } else {
-            $this->subQuery->andWhere(['elements_sites.dateDeleted' => null]);
         }
 
         if ($class::hasContent() && $this->contentTable !== null) {
