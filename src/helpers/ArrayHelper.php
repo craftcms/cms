@@ -130,7 +130,8 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
     /**
      * Filters an array to only the values where a given key (the name of a
      * sub-array key or sub-object property) is set to a given value.
-     * Array keys are preserved.
+     *
+     * Array keys are preserved by default.
      *
      * @param array|\Traversable $array the array that needs to be indexed or grouped
      * @param string|\Closure $key the column name or anonymous function which result will be used to index the array
