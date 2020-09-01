@@ -366,7 +366,7 @@ class Cp
             $errors ? 'has-errors' : null,
         ]), Html::explodeClass($config['fieldClass'] ?? []));
         if (isset($config['attribute']) && ($currentUser = Craft::$app->getUser()->getIdentity())) {
-            $showAttribute = $currentUser->admin && $currentUser->can('showFieldHandles');
+            $showAttribute = $currentUser->admin && $currentUser->getPreference('showFieldHandles');
         } else {
             $showAttribute = false;
         }
