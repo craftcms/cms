@@ -632,7 +632,7 @@ class Fields extends Component
      */
     public function getFieldById(int $fieldId)
     {
-        return $this->_fields()->firstWhere('id', $fieldId);
+        return $this->_fields(false)->firstWhere('id', $fieldId);
     }
 
     /**
@@ -643,7 +643,7 @@ class Fields extends Component
      */
     public function getFieldByUid(string $fieldUid)
     {
-        return $this->_fields()->firstWhere('uid', $fieldUid, true);
+        return $this->_fields(false)->firstWhere('uid', $fieldUid, true);
     }
 
     /**
@@ -689,7 +689,7 @@ class Fields extends Component
      */
     public function getFieldsByGroupId(int $groupId): array
     {
-        return $this->_fields()->where('groupId', $groupId)->all();
+        return $this->_fields(false)->where('groupId', $groupId)->all();
     }
 
     /**
