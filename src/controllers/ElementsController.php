@@ -229,6 +229,7 @@ class ElementsController extends BaseElementsController
      * Returns the HTML for a single element
      *
      * @return Response
+     * @throws BadRequestHttpException
      */
     public function actionGetElementHtml(): Response
     {
@@ -238,6 +239,10 @@ class ElementsController extends BaseElementsController
         $viewMode = $this->request->getBodyParam('viewMode', null);
         $context = $this->request->getBodyParam('context', 'field');
         $element = Craft::$app->getElements()->getElementById($elementId, null, $siteId);
+
+        if (!$element) {
+            throw new BadRequestHttpException('Invalid element ID or site ID');
+        }
 
         $view = $this->getView();
         $html = $view->renderTemplate('_elements/element', compact(
