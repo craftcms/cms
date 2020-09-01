@@ -115,6 +115,8 @@ class Command extends \yii\queue\cli\Command
     }
 
     /**
+     * Releases job(s) from the queue.
+     *
      * @param string $job The job ID to release. Pass `all` to release all jobs.
      * @return int
      * @throws YiiDbException

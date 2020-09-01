@@ -80,7 +80,7 @@ class RegisterResourceTokenParser extends AbstractTokenParser
     {
         // Is this the deprecated version?
         if ($this->newCode !== null) {
-            \Craft::$app->getDeprecator()->log($this->tag, "{% {$this->tag} %} is now deprecated. Use {$this->newCode} instead.");
+            \Craft::$app->getDeprecator()->log($this->tag, "`{% {$this->tag}` %} is now deprecated. Use `{$this->newCode}` instead.");
         }
 
         $lineno = $token->getLine();

@@ -165,13 +165,16 @@ class ConfigSyncController extends BaseUpdaterController
     protected function initialState(): array
     {
         $projectConfig = Craft::$app->getProjectConfig();
-        $badPlugins = [];
+
+        $incompatibilities = [];
+        $missingPlugins = [];
+        $error = null;
 
         // Make sure schema required by config files aligns with what we have.
-        $issues = [];
-        if (!$projectConfig->getAreConfigSchemaVersionsCompatible($issues)) {
-            foreach ($issues as $issue) {
-                $badPlugins[] = "`{$issue['cause']}`";
+        $compatibilityIssues = [];
+        if (!$projectConfig->getAreConfigSchemaVersionsCompatible($compatibilityIssues)) {
+            foreach ($compatibilityIssues as $issue) {
+                $incompatibilities[] = $issue['cause'];
             }
         }
 
@@ -180,6 +183,7 @@ class ConfigSyncController extends BaseUpdaterController
 
             // Make sure that all to-be-installed plugins actually exist,
             // and that they have the same schema as project.yaml
+            $missingPlugins = [];
             foreach ($this->data['installPlugins'] as $handle) {
                 try {
                     $plugin = $pluginsService->createPlugin($handle);
@@ -187,22 +191,25 @@ class ConfigSyncController extends BaseUpdaterController
                     $plugin = null;
                 }
 
-                if (
-                    !$plugin ||
-                    $plugin->schemaVersion != $projectConfig->get(Plugins::CONFIG_PLUGINS_KEY . '.' . $handle . '.schemaVersion', true)
-                ) {
-                    $badPlugins[] = "`{$handle}`";
+                if (!$plugin) {
+                    $missingPlugins[] = "`$handle`";
+                } else if ($plugin->schemaVersion != $projectConfig->get(Plugins::CONFIG_PLUGINS_KEY . '.' . $handle . '.schemaVersion', true)) {
+                    $incompatibilities[] = $plugin->name;
                 }
             }
         }
 
-        if (!empty($badPlugins)) {
-            $error = Craft::t('app', "The following plugins are listed in your project config YAML files, but appear to be missing or installed at the wrong version:") .
-                ' ' . implode(', ', $badPlugins) .
-                "\n\n" . Craft::t('app', 'Try running `composer install` from your terminal to resolve.');
+        if (!empty($incompatibilities)) {
+            $error = Craft::t('app', "Your project config YAML files are expecting different versions to be installed for the following:") .
+                ' ' . implode(', ', $incompatibilities);
+        } else if (!empty($missingPlugins)) {
+            $error = Craft::t('app', "Your project config YAML files are expecting the following plugins to be installed:") .
+                ' ' . implode(', ', $missingPlugins);
+        }
 
+        if ($error) {
             return [
-                'error' => $error,
+                'error' => $error . "\n\n" . Craft::t('app', 'Try running `composer install` from your terminal to resolve.'),
                 'options' => [
                     $this->finishedState(['label' => Craft::t('app', 'Cancel')]),
                     $this->actionOption(Craft::t('app', 'Try again'), self::ACTION_RETRY, ['submit' => true]),

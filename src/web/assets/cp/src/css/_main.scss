@@ -485,6 +485,11 @@ strong, b, i em {
   line-height: 1.2;
 }
 
+.largetext {
+  font-size: 16px;
+  line-height: 1.2;
+}
+
 .zilch {
   padding: 100px 0;
   text-align: center;
@@ -1283,6 +1288,7 @@ ul.icons {
   padding: 0 9px;
   cursor: pointer;
   outline: none;
+  transition: margin-left linear 100ms, margin-right linear 100ms;
 
   input {
     border: 0;
@@ -1312,6 +1318,8 @@ ul.icons {
 
   &:hover,
   &:focus {
+    // Prevent the button from jumping if the added width would otherwise bump it down to the next line
+    @include margin-left(-16px);
     border-color: $mediumHairlineColor;
 
     span {
@@ -1550,14 +1558,27 @@ div.btn.submit input {
 /* lightswitch */
 .lightswitch-outer-container {
   display: flex;
-  align-items: center;
 
-  label[data-toggle=on] {
-    @include margin-left(7px);
-  }
+  .lightswitch-inner-container {
+    border: 1px solid $hairlineColor;
+    border-radius: $smallBorderRadius;
+    display: flex;
+    align-items: center;
 
-  label[data-toggle=off] {
-    @include margin-right(7px);
+    label {
+      padding: 7px 0;
+      color: $mediumTextColor;
+
+      &[data-toggle=on] {
+        @include padding-right(10px);
+        @include margin-left(7px);
+      }
+
+      &[data-toggle=off] {
+        @include padding-left(10px);
+        @include margin-right(7px);
+      }
+    }
   }
 }
 
@@ -2987,6 +3008,22 @@ ul.tree,
     background-color: $grey050;
     border: 1px solid $hairlineColor;
     box-shadow: none;
+  }
+
+  &.loading {
+    min-height: 200px;
+
+    &:after {
+      display: block;
+      content: '.';
+      font-size: 0;
+      position: absolute;
+      top: 0;
+      left: -24px;
+      width: calc(100% + #{24 + 24}px);
+      height: 100%;
+      background: url(../images/spinner.gif) no-repeat 50% 50%;;
+    }
   }
 }
 

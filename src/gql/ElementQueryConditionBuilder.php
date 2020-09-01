@@ -373,7 +373,7 @@ class ElementQueryConditionBuilder extends Component
                 $transformableAssetProperty = ($rootOfAssetQuery || $parentField) && in_array($nodeName, $this->_transformableAssetProperties, true);
                 $isAssetField = $craftContentField instanceof AssetField;
                 $isSpecialField = $this->_isAdditionalEagerLoadableNode($nodeName, $parentField);
-                $canBeAliased = $isSpecialField && $this->_canSpecialFieldBeAliased($nodeName);
+                $canBeAliased = !$isSpecialField || $this->_canSpecialFieldBeAliased($nodeName);
 
                 // That is a Craft field that can be eager-loaded or is the special `children` property
                 $possibleTransforms = $transformableAssetProperty || $isAssetField;

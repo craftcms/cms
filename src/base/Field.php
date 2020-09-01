@@ -405,7 +405,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     {
         $reflection = new \ReflectionMethod($this, 'isEmpty');
         if ($reflection->getDeclaringClass()->getName() !== self::class) {
-            Craft::$app->getDeprecator()->log('Field::isEmpty()', 'Fields’ isEmpty() method has been deprecated. Use isValueEmpty() instead.');
+            Craft::$app->getDeprecator()->log('Field::isEmpty()', 'Fields’ `isEmpty()` method has been deprecated. Use `isValueEmpty()` instead.');
         }
 
         return $this->isEmpty($value);

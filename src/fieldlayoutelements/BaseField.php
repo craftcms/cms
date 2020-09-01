@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutElement;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Cp;
 use craft\helpers\Html;
 
 /**
@@ -127,17 +128,28 @@ abstract class BaseField extends FieldLayoutElement
     {
         $innerHtml = '';
 
-        if ($this->showLabel() && ($label = $this->label()) !== null) {
-            $innerHtml .= Html::tag('h4', $label, [
-                'class' => 'fld-element-label',
-                'title' => $label,
-            ]);
+        $label = $this->showLabel() ? $this->label() : null;
+        $requiredHtml = $this->required ? Html::tag('span', '', [
+            'class' => 'fld-required-indicator',
+            'title' => Craft::t('app', 'This field is required'),
+        ]) : '';
+
+        if ($label !== null) {
+            $innerHtml .= Html::tag('div',
+                Html::tag('h4', $label, [
+                    'title' => $label,
+                ]) . $requiredHtml, [
+                    'class' => 'fld-element-label',
+                ]);
         }
 
-        $innerHtml .= Html::tag('div', $this->attribute(), [
-            'class' => ['smalltext', 'light', 'code'],
-            'title' => $this->attribute(),
-        ]);
+        $innerHtml .= Html::tag('div',
+            Html::tag('div', $this->attribute(), [
+                'class' => ['smalltext', 'light', 'code'],
+                'title' => $this->attribute(),
+            ]) . ($label === null ? $requiredHtml : ''), [
+                'class' => 'fld-attribute',
+            ]);
 
         return Html::tag('div', $innerHtml, [
             'class' => ['field-name'],
@@ -194,7 +206,7 @@ abstract class BaseField extends FieldLayoutElement
 
         $statusClass = $this->statusClass($element, $static);
 
-        return Craft::$app->getView()->renderTemplate('_includes/forms/field', [
+        return Cp::fieldHtml($inputHtml, [
             'id' => $this->id(),
             'fieldAttributes' => $this->containerAttributes($element, $static),
             'inputContainerAttributes' => $this->inputContainerAttributes($element, $static),
@@ -204,7 +216,6 @@ abstract class BaseField extends FieldLayoutElement
             'attribute' => $this->attribute(),
             'required' => !$static && $this->required,
             'instructions' => Html::encode($this->instructions ? Craft::t('site', $this->instructions) : $this->defaultInstructions($element, $static)),
-            'input' => $inputHtml,
             'tip' => $this->tip($element, $static),
             'warning' => $this->warning($element, $static),
             'orientation' => $this->orientation($element, $static),

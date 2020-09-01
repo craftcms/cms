@@ -554,8 +554,8 @@ trait ApplicationTrait
     public function getIsLive(): bool
     {
         /** @var WebApplication|ConsoleApplication $this */
-        if (is_bool($on = $this->getConfig()->getGeneral()->isSystemLive)) {
-            return $on;
+        if (is_bool($live = $this->getConfig()->getGeneral()->isSystemLive)) {
+            return $live;
         }
 
         return (bool)$this->getProjectConfig()->get('system.live');

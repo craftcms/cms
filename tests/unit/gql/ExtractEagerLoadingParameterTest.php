@@ -144,7 +144,7 @@ class ExtractEagerLoadingParameterTest extends Unit
           text
         }
         ... on articleBody_imageBlock_BlockType {
-          image (volumeId: 2) {
+          im: image (volumeId: 2) {
             filename
           }
           caption
@@ -175,7 +175,7 @@ GQL;
             'with' => [
                 ['neverAllowed', ['id' => 0]],
                 'matrixField',
-                ['matrixField.mockedBlockHandle:image', ['volumeId' => 2]],
+                ['matrixField.mockedBlockHandle:image as im', ['volumeId' => 2]],
                 ['matrixField.mockedBlockHandle:entriesInMatrix', ['id' => 80]],
                 ['matrixField.mockedBlockHandle:entriesInMatrix.linkedEntriesThroughMatrix', ['id' => 99]],
                 ['entryField', ['sectionId' => [5], 'typeId' => [2]]],

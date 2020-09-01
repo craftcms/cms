@@ -31,12 +31,22 @@
     }) }}
 
     {{ forms.lightswitchField({
-        first: true,
         label: "System Status"|t('app'),
         warning: (craft.app.config.general.isSystemLive is same as(true) or craft.app.config.general.isSystemLive is same as(false) ? configWarning('isSystemLive')),
         id: 'live',
         name: 'live',
+        onLabel: 'Online'|t('app'),
+        offLabel: 'Offline'|t('app'),
         on: system.live
+    }) }}
+
+    {{ forms.textField({
+        label: 'Retry Duration'|t('app'),
+        instructions: 'The number of seconds that the `Retry-After` HTTP header should be set to for 503 responses when the system is offline.'|t('app'),
+        name: 'retryDuration',
+        value: system.retryDuration ?? null,
+        inputmode: 'numeric',
+        size: 4,
     }) }}
 
     {{ forms.selectField({

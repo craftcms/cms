@@ -41,6 +41,11 @@ class TitleField extends StandardTextField
     /**
      * @inheritdoc
      */
+    public $required = true;
+
+    /**
+     * @inheritdoc
+     */
     public $autofocus = true;
 
     /**
@@ -49,7 +54,14 @@ class TitleField extends StandardTextField
     public function __construct($config = [])
     {
         // We didn't start removing autofocus from fields() until 3.5.6
-        unset($config['autofocus']);
+        unset(
+            $config['mandatory'],
+            $config['attribute'],
+            $config['translatable'],
+            $config['maxlength'],
+            $config['required'],
+            $config['autofocus']
+        );
 
         parent::__construct($config);
     }
@@ -65,6 +77,7 @@ class TitleField extends StandardTextField
             $fields['attribute'],
             $fields['translatable'],
             $fields['maxlength'],
+            $fields['required'],
             $fields['autofocus']
         );
         return $fields;

@@ -99,7 +99,7 @@ class Command extends \yii\db\Command
         if (is_bool($params)) {
             $includeAuditColumns = $params;
             $params = [];
-            Craft::$app->getDeprecator()->log('craft\\db\\Command::upsert($includeAuditColumns)', 'The $includeAuditColumns argument on craft\\db\\Command::upsert() has been moved to the 5th position');
+            Craft::$app->getDeprecator()->log('craft\\db\\Command::upsert($includeAuditColumns)', 'The `$includeAuditColumns` argument on `craft\\db\\Command::upsert()` has been moved to the 5th position');
         }
 
         if ($includeAuditColumns && $updateColumns !== false) {

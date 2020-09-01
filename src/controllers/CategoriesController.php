@@ -362,7 +362,7 @@ class CategoriesController extends Controller
         // Enable Live Preview?
         if (!$this->request->isMobileBrowser(true) && Craft::$app->getCategories()->isGroupTemplateValid($variables['group'], $category->siteId)) {
             $this->getView()->registerJs('Craft.LivePreview.init(' . Json::encode([
-                    'fields' => '#title-field, #fields > div > div > .field',
+                    'fields' => '#fields > .flex-fields > .field',
                     'extraFields' => '#settings',
                     'previewUrl' => $category->getUrl(),
                     'previewAction' => Craft::$app->getSecurity()->hashData('categories/preview-category'),

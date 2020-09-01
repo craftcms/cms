@@ -23,6 +23,7 @@ use craft\errors\SiteNotFoundException;
 use craft\events\ElementCriteriaEvent;
 use craft\events\ElementEvent;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
@@ -588,9 +589,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         $html = "<div id='{$id}' class='elementselect'><div class='elements'>";
 
         foreach ($value as $relatedElement) {
-            $html .= Craft::$app->getView()->renderTemplate('_elements/element', [
-                'element' => $relatedElement
-            ]);
+            $html .= Cp::elementHtml($relatedElement);
         }
 
         $html .= '</div></div>';
@@ -618,17 +617,12 @@ JS;
         }
 
         $first = array_shift($value);
-
-        $html = Craft::$app->getView()->renderTemplate('_elements/element', [
-            'element' => $first,
-        ]);
+        $html = Cp::elementHtml($first);
 
         if (!empty($value)) {
             $otherHtml = '';
             foreach ($value as $other) {
-                $otherHtml .= Craft::$app->getView()->renderTemplate('_elements/element', [
-                    'element' => $other,
-                ]);
+                $otherHtml .= Cp::elementHtml($other);
             }
             $html .= Html::tag('span', '+' . Craft::$app->getFormatter()->asDecimal(count($value)), [
                 'title' => implode(', ', ArrayHelper::getColumn($value, 'title')),

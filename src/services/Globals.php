@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\MemoizableArray;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\GlobalSet;
@@ -46,7 +47,7 @@ class Globals extends Component
     const CONFIG_GLOBALSETS_KEY = 'globalSets';
 
     /**
-     * @var GlobalSet[][]|null
+     * @var MemoizableArray[]|null
      * @see _allSets()
      */
     private $_allGlobalSets;
@@ -112,7 +113,7 @@ class Globals extends Component
     public function getAllSets(): array
     {
         /** @noinspection PhpUnhandledExceptionInspection */
-        return $this->_allSets(Craft::$app->getSites()->getCurrentSite()->id);
+        return $this->_allSets(Craft::$app->getSites()->getCurrentSite()->id)->all();
     }
 
     /**
@@ -136,12 +137,10 @@ class Globals extends Component
 
         if (!isset($this->_editableGlobalSets[$currentSiteId])) {
             $session = Craft::$app->getUser();
-            $this->_editableGlobalSets[$currentSiteId] = ArrayHelper::where(
-                $this->_allSets($currentSiteId),
+            $this->_editableGlobalSets[$currentSiteId] = ArrayHelper::where($this->_allSets($currentSiteId),
                 function(GlobalSet $globalSet) use ($session): bool {
                     return $session->checkPermission("editGlobalSet:$globalSet->uid");
-                }
-            );
+                }, true, true, false);
         }
 
         return $this->_editableGlobalSets[$currentSiteId];
@@ -211,7 +210,7 @@ class Globals extends Component
         }
 
         if ($siteId == $currentSiteId) {
-            return ArrayHelper::firstWhere($this->_allSets($siteId), 'id', $globalSetId);
+            return $this->_allSets($siteId)->firstWhere('id', $globalSetId);
         }
 
         return GlobalSet::find()
@@ -246,7 +245,7 @@ class Globals extends Component
         }
 
         if ($siteId == $currentSiteId) {
-            return ArrayHelper::firstWhere($this->_allSets($siteId), 'handle', $globalSetHandle);
+            return $this->_allSets($siteId)->firstWhere('handle', $globalSetHandle, true);
         }
 
         return GlobalSet::find()
@@ -499,16 +498,17 @@ class Globals extends Component
     }
 
     /**
-     * Returns all global sets for the given site.
+     * Returns a memoizable array of all global sets for the given site.
      *
      * @param int $siteId
-     * @return GlobalSet[]
+     * @return MemoizableArray
      */
-    private function _allSets(int $siteId): array
+    private function _allSets(int $siteId): MemoizableArray
     {
         if (!isset($this->_allGlobalSets[$siteId])) {
-            $this->_allGlobalSets[$siteId] = GlobalSet::find()->siteId($siteId)->all();
+            $this->_allGlobalSets[$siteId] = new MemoizableArray(GlobalSet::find()->siteId($siteId)->all());
         }
+
         return $this->_allGlobalSets[$siteId];
     }
 

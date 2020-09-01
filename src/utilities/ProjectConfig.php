@@ -53,25 +53,20 @@ class ProjectConfig extends Utility
      */
     public static function contentHtml(): string
     {
-        $css = <<<CSS
-.pane.highlight {
-  max-height: 500px;
-  overflow: auto;
-}
-.pane.highlight pre {
-  margin: 0;
-  padding: 0;
-  background-color: transparent;
-}
-CSS;
-
+        $projectConfig = Craft::$app->getProjectConfig();
+        $areChangesPending = $projectConfig->areChangesPending();
         $view = Craft::$app->getView();
-        $view->registerAssetBundle(PrismJsAsset::class);
-        $view->registerCss($css);
+
+        if ($areChangesPending) {
+            $view->registerAssetBundle(PrismJsAsset::class);
+            $view->registerTranslations('app', [
+                'Show all changes',
+            ]);
+        }
 
         return $view->renderTemplate('_components/utilities/ProjectConfig', [
-            'diff' => ProjectConfigHelper::diff(),
-            'entireConfig' => Yaml::dump(Craft::$app->getProjectConfig()->get(), 20, 2),
+            'areChangesPending' => $areChangesPending,
+            'entireConfig' => Yaml::dump($projectConfig->get(), 20, 2),
         ]);
     }
 }

@@ -147,7 +147,7 @@ Craft.PromptHandler = Garnish.Base.extend({
             this._selectPromptChoice(choice, applyToRemaining);
         });
 
-        this.addListener($cancelButton, 'activate', function() {
+        this.addListener($cancelBtn, 'activate', function() {
             var choice = 'cancel',
                 applyToRemaining = this.$promptApplyToRemainingCheckbox.prop('checked');
 
