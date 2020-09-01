@@ -7,7 +7,6 @@
 - Added the `off` and `on` commands, for toggling the system status. ([#6729](https://github.com/craftcms/cms/issues/6729))
 - Added the `utils/update-usernames` command, for ensuring all usernames match users’ email addresses, if the `useEmailAsUsername` config setting is enabled. ([#6312](https://github.com/craftcms/cms/issues/6312))
 - Added the `configure()` Twig function. ([#6731](https://github.com/craftcms/cms/pull/6731))
-- Matrix input type blocks now have an `id` field to allow modifying existing matrix blocks when using mutations with the GraphQL API.
 - Added `craft\base\MemoizableArray`.
 - Added `craft\cache\FileCache`.
 - Added `craft\helpers\ArrayHelper::whereIn()`.
@@ -17,12 +16,13 @@
 - Added `craft\services\Sites::getGroupByUid()`.
 
 ### Changed
-- The GraphQL API now supports `variables` and `operationName` query string parameters. ([#6728](https://github.com/craftcms/cms/issues/6728))
 - Improved the styling of Lightswitch fields that have ON/OFF labels. ([#6666](https://github.com/craftcms/cms/issues/6666))
 - The “System Status” setting now has “Offline” and “Online” labels.
 - Deprecation warnings can now contain Markdown formatting.
 - The Project Config utility now loads the comparison data over Ajax, and will only show the first 20 lines by default. ([#6736](https://github.com/craftcms/cms/issues/6736))
 - Improved the wording of version compatibility issues when applying project config YAML changes. ([#6755](https://github.com/craftcms/cms/issues/6755))
+- The GraphQL API now supports `variables` and `operationName` query string parameters. ([#6728](https://github.com/craftcms/cms/issues/6728))
+- Mutation GraphQL queries should now specify an `id` field when defining Matrix blocks, set to the existing Matrix block ID or a `newX` string.
 - Improved system performance.
 - `craft\helpers\ArrayHelper::where()` now has a `$keepKeys` argument, which defaults to `true`.
 - `craft\helpers\ProjectConfig::diff()` now caches its results. ([#6736](https://github.com/craftcms/cms/issues/6736))
@@ -30,21 +30,21 @@
 
 ### Deprecated
 - Deprecated support for overriding volume settings via `config/volumes.php`. [Environment variables](https://craftcms.com/docs/3.x/config/#environmental-configuration) or [dependency injection](https://craftcms.com/knowledge-base/using-local-volumes-for-development) should be used instead.
-- Adding a matrix block with a mutation over GraphQL without providing a value for the `id` field is now deprecated.
+- Mutating Matrix blocks via GraphQL without specifying an `id` field for each block is now deprecated.
 
 ### Fixed
 - Fixed a bug where the required field indicator wasn’t visible within the field layout designer, for fields with overflowing labels or hidden labels. ([#6725](https://github.com/craftcms/cms/issues/6725))
 - Fixed a bug where user group names were getting double-encoded within the User Groups setting on Edit User pages. ([#6727](https://github.com/craftcms/cms/issues/6727))
-- Fixed a bug where using aliases sometimes would break eager-loading when using the GraphQL API.
-- Fixed a bug where GraphQL API queries could sometimes break down when using complex fields that do not support eager-loading. ([#6723](https://github.com/craftcms/cms/issues/6723))
+- Fixed a bug where aliasing fields via GraphQL could break eager loading in some cases.
+- Fixed a bug where GraphQL API queries could break down when using complex fields that didn’t support eager loading. ([#6723](https://github.com/craftcms/cms/issues/6723))
 - Fixed an error that could occur when accessing the “Globals” section in the control panel, for users that didn’t have permission to edit the first global set. ([#6730](https://github.com/craftcms/cms/pull/6730))
 - Fixed a bug where various array-returning methods could return arrays with nonsequential keys beginning with `0`.
 - Fixed a bug where entry drafts would get autosaved after creating new Matrix/Neo/Super Table blocks even if the `autosaveDrafts` config setting was disabled. ([#6704](https://github.com/craftcms/cms/issues/6704))
 - Fixed a bug where field checkboxes in Quick Post widget settings were all disabled. ([#6738](https://github.com/craftcms/cms/issues/6738))
 - Fixed a bug where assets uploaded by front-end entry forms weren’t getting saved with the `uploaderId` attribute. ([#6456](https://github.com/craftcms/cms/issues/6456))
 - Fixed a bug where Live Preview wasn’t showing custom fields for categories.
-- Fixed a bug where rebuilding Project Config would not persist the config data to the internal config storage.
-- Fixed a JavaScript error when showing a prompt to the user. ([#6753](https://github.com/craftcms/cms/issues/6753))
+- Fixed a bug where rebuilding the Project Config would not persist the new config data to the loaded project config.
+- Fixed a JavaScript error that could occur when displaying certain prompts. ([#6753](https://github.com/craftcms/cms/issues/6753))
 - Fixed a bug where the `system.schemaVersion` was not getting set when rebuilding the project config.
 - Fixed a bug where all file caches were being saved inside a single subdirectory of `storage/runtime/cache/` based on the cache key prefix. ([#6746](https://github.com/craftcms/cms/issues/6746))
 - Fixed a bug where field handles would get jumpy on hover if their increased size caused them to be too large to fit on the same line as the field name. ([#6742](https://github.com/craftcms/cms/issues/6742))
@@ -291,8 +291,8 @@
 - Added the `|unshift` Twig filter, which returns a new array with one or more items prepended to it.
 - Added the `|where` Twig filter.
 - Added the `raw()` Twig function, which wraps the given string in a `Twig\Markup` object to prevent it from getting HTML-encoded.
-- Added support for eager-loading elements’ current revisions, via `currentRevision`.
-- Added support for eager-loading drafts’ and revisions’ creators, via `draftCreator` and `revisionCreator`.
+- Added support for eager loading elements’ current revisions, via `currentRevision`.
+- Added support for eager loading drafts’ and revisions’ creators, via `draftCreator` and `revisionCreator`.
 - Added support for the `CRAFT_CP` PHP constant. ([#5122](https://github.com/craftcms/cms/issues/5122))
 - Added support for [GraphQL mutations](https://craftcms.com/docs/3.x/graphql.html#mutations). ([#4835](https://github.com/craftcms/cms/issues/4835))
 - Added the `drafts`, `draftOf`, `draftId`, `draftCreator`, `revisions`, `revisionOf`, `revisionId` and `revisionCreator` arguments to element queries using GraphQL API. ([#5580](https://github.com/craftcms/cms/issues/5580))
@@ -611,8 +611,8 @@
 - Craft now supports running migrations for custom migration tracks. ([#6172](https://github.com/craftcms/cms/issues/6172))
 - Extra entry revisions (per the `maxRevisions` config setting) are now pruned via a background job. ([#5902](https://github.com/craftcms/cms/issues/5902))
 - Database backups created by the Database Backup utility are now saved as zip files. ([#5822](https://github.com/craftcms/cms/issues/5822))
-- It’s now possible to specify aliases when eager-loading elements via the `with` param. ([#5793](https://github.com/craftcms/cms/issues/5793))
-- It’s now possible to use aliases when eager-loading elements via GraphQL. ([#5481](https://github.com/craftcms/cms/issues/5481))
+- It’s now possible to specify aliases when eager loading elements via the `with` param. ([#5793](https://github.com/craftcms/cms/issues/5793))
+- It’s now possible to use aliases when eager loading elements via GraphQL. ([#5481](https://github.com/craftcms/cms/issues/5481))
 - It’s now possible to eager-load elements’ ancestors and parents. ([#1382](https://github.com/craftcms/cms/issues/1382))
 - The `cpTrigger` config setting can now be set to `null`. ([#5122](https://github.com/craftcms/cms/issues/5122))
 - The `pathParam` config setting can now be set to `null`. ([#5676](https://github.com/craftcms/cms/issues/5676))
@@ -634,7 +634,7 @@
 - Element queries’ `siteId` params can now be set to an array that begins with `'not'` to exclude specific site IDs.
 - The `withTransforms` asset query param can now include `srcset`-style sizes (e.g. `100w` or `2x`), following a normal transform definition.
 - The `QueryArgument` GraphQL type now also allows boolean values.
-- Improved eager-loading support when querying for image transforms via GraphQL.
+- Improved eager loading support when querying for image transforms via GraphQL.
 - Users’ photos are now eager-loaded when queried via GraphQL.
 - It’s now possible to register template roots without a template prefix. ([#6015](https://github.com/craftcms/cms/issues/6015))
 - It’s now possible to register multiple directories per template root. ([#6015](https://github.com/craftcms/cms/issues/6015))
@@ -643,7 +643,7 @@
 - Clicking on a Lightswitch field’s label will now set focus to the lightswitch.
 - Improved the focus styling for relational fields. ([#6002](https://github.com/craftcms/cms/issues/6002))
 - Matrix blocks’ action menus now include “Move up” and “Move down” options. ([#1035](https://github.com/craftcms/cms/issues/1035))
-- Improved support for eager-loading elements across multiple sites at once.
+- Improved support for eager loading elements across multiple sites at once.
 - All built-in success/fail flash messages are now customizable by passing a hashed `successMessage`/`failMessage` param with the request. ([#6192](https://github.com/craftcms/cms/issues/6192))
 - “Resaving elements” jobs no longer ignore the `offset`, `limit`, and `orderBy` params specified by the criteria.
 - Craft now uses `yii\mutex\MysqlMutex` or `yii\mutex\PgsqlMutex` for mutex locking by default.
@@ -820,7 +820,7 @@
 - Fixed compatibility with MySQL 8.0.21. ([#6379](https://github.com/craftcms/cms/issues/6379))
 - Fixed an error that would occur when backing up a MySQL 5 database using `mysqldump` v8. ([#6368](https://github.com/craftcms/cms/issues/6368))
 - Fixed a bug where rebuilding the project config without an existing `project.yaml` file could result in data loss. ([#6350](https://github.com/craftcms/cms/issues/6350))
-- Fixed a bug where eager-loading relations across multiple sites wasn’t working. ([#6366](https://github.com/craftcms/cms/issues/6366))
+- Fixed a bug where eager loading relations across multiple sites wasn’t working. ([#6366](https://github.com/craftcms/cms/issues/6366))
 - Fixed a bug where it was not always possible to use the `relatedToAll` argument with GraphQL queries. ([#6343](https://github.com/craftcms/cms/issues/6343))
 - Fixed a bug where orphan rows could be left in the `elements` table after deleting an asset folder. ([#6326](https://github.com/craftcms/cms/issues/6326))
 - Fixed a bug where the asset indexer would wasn’t skipping files with disallowed file extensions.
@@ -845,7 +845,7 @@
 ### Fixed
 - Fixed a bug where Structure section entries would get repositioned after a revision was reverted. ([#6313](https://github.com/craftcms/cms/issues/6313))
 - Fixed an unexpected PHP error that could occur if `craft\helpers\FileHelper::writeToFile()` was unable to acquire a lock. ([#6315](https://github.com/craftcms/cms/issues/6315))
-- Fixed a bug where eager-loading from GraphQL could break if using named fragments inside matrix fields. ([#6294](https://github.com/craftcms/cms/issues/6294))
+- Fixed a bug where eager loading from GraphQL could break if using named fragments inside matrix fields. ([#6294](https://github.com/craftcms/cms/issues/6294))
 - Fixed a bug where associative array values within the project config could get duplicated. ([#6317](https://github.com/craftcms/cms/issues/6317))
 
 ## 3.4.26 - 2020-07-01
@@ -1563,7 +1563,7 @@
 - It’s now possible to query for Matrix blocks by their field handle, via the new `field` param. ([#5218](https://github.com/craftcms/cms/issues/5218))
 - It’s now possible to filter element query results by their related elements using relational fields’ element query params (e.g. `publisher(100)` rather than `relatedTo({targetElement: 100, field: 'publisher'})`). ([#5200](https://github.com/craftcms/cms/issues/5200))
 - It’s now possible to query for elements by their custom field values via GraphQL. ([#5208](https://github.com/craftcms/cms/issues/5208))
-- It’s now possible to eager-load the *count* of related elements, by setting `'count' => true` on the eager-loading criteria.
+- It’s now possible to eager-load the *count* of related elements, by setting `'count' => true` on the eager loading criteria.
 - GraphQL access tokens are now managed separately from schema definitions, making it possible to create multiple tokens for the same schema.
 - GraphQL schemas are now stored in the project config (sans tokens). ([#4829]((https://github.com/craftcms/cms/issues/4829))
 - Added a new “Expanded” element exporter type, which includes expanded custom field values, including Matrix and relational fields. ([#4484](https://github.com/craftcms/cms/issues/4484))
@@ -2306,7 +2306,7 @@
 ## 3.3.1 - 2019-09-06
 
 ### Added
-- Added support for setting `offset` and `limit` params to individual paths’ criteria when eager-loading elements.
+- Added support for setting `offset` and `limit` params to individual paths’ criteria when eager loading elements.
 - Added the `enableGql` config setting. ([#4836](https://github.com/craftcms/cms/issues/4836))
 - Added the `children` field to the `EntryInterface` and `CategoryInterface` GraphQL types. ([#4843](https://github.com/craftcms/cms/issues/4843))
 - Added the `markdown` GraphQL directive. ([#4832](https://github.com/craftcms/cms/issues/4832))
@@ -2326,7 +2326,7 @@
 - Fixed an error that occurred when accessing the GraphQL section in the Control Panel if the `allowAdminChanges` config setting was disabled. ([#4884](https://github.com/craftcms/cms/issues/4884))
 - Fixed an error that could occur when executing a GraphQL query if a Matrix field had been converted to a different field type. ([#4848](https://github.com/craftcms/cms/issues/4848))
 - Fixed a deprecation warning when running tests in PhpStorm. ([#4772](https://github.com/craftcms/cms/pull/4772))
-- Fixed an SQL error that occurred when eager-loading children for an element that wasn’t in a structure.
+- Fixed an SQL error that occurred when eager loading children for an element that wasn’t in a structure.
 - Fixed a bug that could cause queue jobs to fail when they were run automatically by Craft, if the `enableCsrfProtection` config setting was disabled. ([#4854](https://github.com/craftcms/cms/issues/4854))
 - Fixed an error that could occur if the `select` clause had been completely overridden on an element query, but the `asArray` param wasn’t enabled. ([#4886](https://github.com/craftcms/cms/issues/4886))
 - Fixed a bug where Craft wasn’t always respecting the site-specific status when saving new entries. ([#4892](https://github.com/craftcms/cms/issues/4892))
@@ -2920,7 +2920,7 @@
 - Craft no longer warns about losing unsaved changes when leaving the page while previewing entries, if the changes were autosaved. ([#4439](https://github.com/craftcms/cms/issues/4439))
 - `fieldValues` is a now reserved field handle. ([#4453](https://github.com/craftcms/cms/issues/4453))
 - Improved the reliability of `craft\helpers\UrlHelper::rootRelativeUrl()` and `cpUrl()`.
-- `craft\base\ElementInterface::eagerLoadingMap()` and `craft\base\EagerLoadingFieldInterface::getEagerLoadingMap()` can now return `null` to opt out of eager-loading. ([#4220](https://github.com/craftcms/cms/pull/4220))
+- `craft\base\ElementInterface::eagerLoadingMap()` and `craft\base\EagerLoadingFieldInterface::getEagerLoadingMap()` can now return `null` to opt out of eager loading. ([#4220](https://github.com/craftcms/cms/pull/4220))
 - `craft\db\ActiveRecord` no longer sets the `uid`, `dateCreated`, or `dateUpdated` values for new records if they were already explicitly set.
 - `craft\db\ActiveRecord` no longer updates the `dateUpdated` value for existing records if nothing else changed or if `dateUpdated` had already been explicitly changed.
 - `craft\helpers\UrlHelper::siteUrl()` and `url()` will now include the current request’s token in the generated URL’s query string, for site URLs.
@@ -3155,7 +3155,7 @@
 - Fixed a PHP compile error that could occur when paginating a query. ([#4208](https://github.com/craftcms/cms/pull/4208))
 - Fixed an error that could occur on the Settings → Users → Settings page if the project config was missing its `users` key. ([#4206](https://github.com/craftcms/cms/issues/4206))
 - Fixed a bug where Craft wasn’t requiring email verification for new user accounts if the project config was missing its `users` key.
-- Fixed a bug where Craft wasn’t eager-loading elements in the same site as the source element, if that was different than the currently requested site. ([#3954](https://github.com/craftcms/cms/issues/3954))
+- Fixed a bug where Craft wasn’t eager loading elements in the same site as the source element, if that was different than the currently requested site. ([#3954](https://github.com/craftcms/cms/issues/3954))
 
 ## 3.1.25 - 2019-04-30
 
@@ -3708,7 +3708,7 @@
 ### Fixed
 - Fixed a bug where `craft\services\Volumes::getVolumeByHandle()` wasn’t working. ([#3633](https://github.com/craftcms/cms/pull/3633))
 - Fixed a bug where the `clear-caches/cp-resources` command could clear out the wrong directory if the `resourceBasePath` config setting began with `@webroot`. ([#3637](https://github.com/craftcms/cms/issues/3637))
-- Fixed a bug where eager-loading Matrix blocks would come up empty. ([#3644](https://github.com/craftcms/cms/issues/3644))
+- Fixed a bug where eager loading Matrix blocks would come up empty. ([#3644](https://github.com/craftcms/cms/issues/3644))
 - Fixed an error that occurred when updating to Craft 3.1 if there were any Matrix blocks without any sub-fields. ([#3635](https://github.com/craftcms/cms/pull/3635))
 - Fixed an error that occurred when updating to Craft 3.1 if there were any Matrix block types left over from a Matrix field that had been converted to something else.
 - Fixed an error that occurred when updating to Craft 3.1 if there were any Assets fields that were missing some expected field settings. ([#3641](https://github.com/craftcms/cms/issues/3641))
