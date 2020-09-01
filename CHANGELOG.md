@@ -52,6 +52,7 @@
 - Fixed an error that occurred when passing an array to an entry query’s `typeId` param, with the first item set to `'not'`. ([#6754](https://github.com/craftcms/cms/issues/6754))
 - Fixed a bug where element queries with the `siteId` param set to `*` would query for elements in soft-deleted sites. ([#6756](https://github.com/craftcms/cms/issues/6756))
 - Fixed a bug where Title fields weren’t identifying themselves as required. ([#6763](https://github.com/craftcms/cms/issues/6763))
+- Fixed a bug where inline JavaScript code could stop working if it contained the string `.js`. ([#6762](https://github.com/craftcms/cms/issues/6762))
 
 ## 3.5.7 - 2020-08-26
 
