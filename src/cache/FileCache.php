@@ -11,16 +11,14 @@ use craft\helpers\StringHelper;
 use yii\caching\FileCache as YiiFileCache;
 
 /**
- * AppPathDependency is used to determine if Craft’s base path has changed.
- *
+ * @inheritdoc
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
+ * @since 3.5.8
  */
 class FileCache extends YiiFileCache
 {
     /**
      * @inheritdoc
-     * @since 3.5.8
      */
     protected function getCacheFile($key)
     {
