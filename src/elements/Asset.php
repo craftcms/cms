@@ -32,6 +32,7 @@ use craft\events\AssetEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
 use craft\helpers\Assets as AssetsHelper;
+use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Html;
@@ -1557,7 +1558,7 @@ class Asset extends Element
         switch ($attribute) {
             case 'uploader':
                 $uploader = $this->getUploader();
-                return $uploader ? Craft::$app->getView()->renderTemplate('_elements/element', ['element' => $uploader]) : '';
+                return $uploader ? Cp::elementHtml($uploader) : '';
 
             case 'filename':
                 return Html::tag('span', Html::encode($this->filename), [

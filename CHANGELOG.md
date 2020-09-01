@@ -11,6 +11,7 @@
 - Added `craft\base\MemoizableArray`.
 - Added `craft\cache\FileCache`.
 - Added `craft\helpers\ArrayHelper::whereIn()`.
+- Added `craft\helpers\Cp::elementHtml()`.
 - Added `craft\services\ProjectConfig::DIFF_CACHE_KEY`.
 - Added `craft\services\Sites::getGroupByUid()`.
 

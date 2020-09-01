@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
+use craft\base\ElementInterface;
 use craft\enums\LicenseKeyStatus;
 use craft\events\RegisterCpAlertsEvent;
 use yii\base\Event;
@@ -24,6 +25,15 @@ class Cp
      * @event RegisterCpAlertsEvent The event that is triggered when registering control panel alerts.
      */
     const EVENT_REGISTER_ALERTS = 'registerAlerts';
+
+    /**
+     * @since 3.5.8
+     */
+    const ELEMENT_SIZE_SMALL = 'small';
+    /**
+     * @since 3.5.8
+     */
+    const ELEMENT_SIZE_LARGE = 'large';
 
     /**
      * @param string|null $path
@@ -172,5 +182,147 @@ class Cp
         $alerts = array_merge($alerts, $event->alerts);
 
         return $alerts;
+    }
+
+    /**
+     * Renders an element’s HTML.
+     *
+     * @param ElementInterface $element The element to be rendered
+     * @param string $context The context the element is going to be shown in (`index`, `field`, etc.)
+     * @param string $size The size of the element (`small` or `large`)
+     * @param string|null $inputName The `name` attribute that should be set on the hidden input, if `$context` is set to `field`
+     * @return string
+     * @since 3.5.8
+     */
+    public static function elementHtml(
+        ElementInterface $element,
+        string $context = 'index',
+        string $size = self::ELEMENT_SIZE_SMALL,
+        string $inputName = null
+    ): string {
+        $label = $element->getUiLabel();
+
+        // Create the thumb/icon image, if there is one
+        $thumbSize = $size === self::ELEMENT_SIZE_SMALL ? 34 : 120;
+        $thumbUrl = $element->getThumbUrl($thumbSize);
+
+        if ($thumbUrl !== null) {
+            $imageSize2x = $thumbSize * 2;
+            $thumbUrl2x = $element->getThumbUrl($imageSize2x);
+
+            $srcsets = [
+                "$thumbUrl {$thumbSize}w",
+                "$thumbUrl2x {$imageSize2x}w",
+            ];
+            $sizesHtml = "{$thumbSize}px";
+            $srcsetHtml = implode(', ', $srcsets);
+            $imgHtml = Html::tag('div', '', [
+                'class' => array_filter([
+                    'elementthumb',
+                    $element->getHasCheckeredThumb() ? 'checkered' : null,
+                    $size === self::ELEMENT_SIZE_SMALL && $element->getHasRoundedThumb() ? 'rounded' : null,
+                ]),
+                'data' => [
+                    'sizes' => $sizesHtml,
+                    'srcset' => $srcsetHtml,
+                ],
+            ]);
+        } else {
+            $imgHtml = '';
+        }
+
+        $htmlAttributes = array_merge(
+            $element->getHtmlAttributes($context),
+            [
+                'class' => 'element ' . $size,
+                'data-type' => get_class($element),
+                'data-id' => $element->id,
+                'data-site-id' => $element->siteId,
+                'data-status' => $element->getStatus(),
+                'data-label' => (string)$element,
+                'data-url' => $element->getUrl(),
+                'data-level' => $element->level,
+                'title' => $label . (Craft::$app->getIsMultiSite() ? ' – ' . $element->getSite()->name : ''),
+            ]);
+
+        if ($context === 'field') {
+            $htmlAttributes['class'] .= ' removable';
+        }
+
+        if ($element->hasErrors()) {
+            $htmlAttributes['class'] .= ' error';
+        }
+
+        if ($element::hasStatuses()) {
+            $htmlAttributes['class'] .= ' hasstatus';
+        }
+
+        if ($thumbUrl !== null) {
+            $htmlAttributes['class'] .= ' hasthumb';
+        }
+
+        $html = '<div';
+
+        // todo: swap this with Html::renderTagAttributse in 4.0
+        // (that will cause a couple breaking changes since `null` means "don't show" and `true` means "no value".)
+        foreach ($htmlAttributes as $attribute => $value) {
+            $html .= ' ' . $attribute . ($value !== null ? '="' . Html::encode($value) . '"' : '');
+        }
+
+        if (ElementHelper::isElementEditable($element)) {
+            $html .= ' data-editable';
+        }
+
+        if ($element->trashed) {
+            $html .= ' data-trashed';
+        }
+
+        $html .= '>';
+
+        if ($context === 'field' && $inputName !== null) {
+            $html .= Html::hiddenInput($inputName . '[]', $element->id) .
+                Html::tag('a', '', [
+                    'class' => ['delete', 'icon'],
+                    'title' => Craft::t('app', 'Remove'),
+                ]);
+        }
+
+        if ($element::hasStatuses()) {
+            $status = $element->getStatus();
+            $html .= Html::tag('span', '', [
+                'class' => array_filter([
+                    'status',
+                    $status,
+                    $status ? ($element::statuses()[$status]['color'] ?? null) : null,
+                ]),
+            ]);
+        }
+
+        $html .= $imgHtml;
+        $html .= '<div class="label">';
+        $html .= '<span class="title">';
+
+        $encodedLabel = Html::encode($label);
+
+        // Should we make the element a link?
+        if (
+            $context === 'index' &&
+            !$element->trashed &&
+            ($cpEditUrl = $element->getCpEditUrl())
+        ) {
+            if ($element->getIsDraft()) {
+                $cpEditUrl = UrlHelper::urlWithParams($cpEditUrl, ['draftId' => $element->draftId]);
+            } else if ($element->getIsRevision()) {
+                $cpEditUrl = UrlHelper::urlWithParams($cpEditUrl, ['revisionId' => $element->revisionId]);
+            }
+
+            $html .= Html::a($encodedLabel, $cpEditUrl);
+        } else {
+            $html .= $encodedLabel;
+        }
+
+        $html .= '</span></div></div>';
+
+        return $html;
     }
 }
