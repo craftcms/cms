@@ -8,7 +8,9 @@
 - Added the `utils/update-usernames` command, for ensuring all usernames match users’ email addresses, if the `useEmailAsUsername` config setting is enabled. ([#6312](https://github.com/craftcms/cms/issues/6312))
 - Added the `configure()` Twig function. ([#6731](https://github.com/craftcms/cms/pull/6731))
 - Matrix input type blocks now have an `id` field to allow modifying existing matrix blocks when using mutations with the GraphQL API.
+- Added `craft\base\MemoizableArray`.
 - Added `craft\cache\FileCache`.
+- Added `craft\helpers\ArrayHelper::whereIn()`.
 - Added `craft\services\ProjectConfig::DIFF_CACHE_KEY`.
 
 ### Changed
@@ -18,6 +20,7 @@
 - Deprecation warnings can now contain Markdown formatting.
 - The Project Config utility now loads the comparison data over Ajax, and will only show the first 20 lines by default. ([#6736](https://github.com/craftcms/cms/issues/6736))
 - Improved the wording of version compatibility issues when applying project config YAML changes. ([#6755](https://github.com/craftcms/cms/issues/6755))
+- Improved system performance.
 - `craft\helpers\ArrayHelper::where()` now has a `$keepKeys` argument, which defaults to `true`.
 - `craft\helpers\ProjectConfig::diff()` now caches its results. ([#6736](https://github.com/craftcms/cms/issues/6736))
 - `craft\services\Config::setDotEnvVar()` no longer surrounds the value with quotes unless it contains a space. ([craftcms/docker#5](https://github.com/craftcms/docker/issues/5))

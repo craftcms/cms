@@ -161,6 +161,39 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
     }
 
     /**
+     * Filters an array to only the values where a given key (the name of a
+     * sub-array key or sub-object property) is set to one of a given range of values.
+     *
+     * Array keys are preserved by default.
+     *
+     * @param array|\Traversable $array the array that needs to be indexed or grouped
+     * @param string|\Closure $key the column name or anonymous function which result will be used to index the array
+     * @param mixed[] $values the range of values that `$key` should be compared with
+     * @param bool $strict whether a strict type comparison should be used when checking array element values against `$values`
+     * @param bool $keepKeys whether to maintain the array keys. If false, the resulting array
+     * will be re-indexed with integers.
+     * @return array the filtered array
+     * @since 3.5.8
+     */
+    public static function whereIn($array, $key, array $values, bool $strict = false, $keepKeys = true): array
+    {
+        $result = [];
+
+        foreach ($array as $i => $element) {
+            $elementValue = static::getValue($element, $key);
+            if (in_array($elementValue, $values, $strict)) {
+                if ($keepKeys) {
+                    $result[$i] = $element;
+                } else {
+                    $result[] = $element;
+                }
+            }
+        }
+
+        return $result;
+    }
+
+    /**
      * Filters an array to only the values where a list of keys is set to given values.
      * Array keys are preserved.
      *

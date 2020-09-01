@@ -9,6 +9,7 @@ namespace craft\services;
 
 use Craft;
 use craft\base\Element;
+use craft\base\MemoizableArray;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Entry;
@@ -122,7 +123,8 @@ class Sections extends Component
     public $autoResaveEntries = true;
 
     /**
-     * @var Section[]
+     * @var MemoizableArray|null
+     * @see _sections()
      */
     private $_sections;
 
@@ -173,6 +175,29 @@ class Sections extends Component
     }
 
     /**
+     * Returns a memoizable array of all sections.
+     *
+     * @return MemoizableArray
+     */
+    private function _sections(): MemoizableArray
+    {
+        if ($this->_sections === null) {
+            $sections = [];
+            foreach ($this->_createSectionQuery()->all() as $result) {
+                if (!empty($result['previewTargets'])) {
+                    $result['previewTargets'] = Json::decode($result['previewTargets']);
+                } else {
+                    $result['previewTargets'] = [];
+                }
+                $sections[] = new Section($result);
+            }
+            $this->_sections = new MemoizableArray($sections);
+        }
+
+        return $this->_sections;
+    }
+
+    /**
      * Returns all sections.
      *
      * ---
@@ -188,26 +213,7 @@ class Sections extends Component
      */
     public function getAllSections(): array
     {
-        if ($this->_sections !== null) {
-            return $this->_sections;
-        }
-
-        $results = $this->_createSectionQuery()
-            ->all();
-
-        $this->_sections = [];
-
-        foreach ($results as $result) {
-            if (!empty($result['previewTargets'])) {
-                $result['previewTargets'] = Json::decode($result['previewTargets']);
-            } else {
-                $result['previewTargets'] = [];
-            }
-
-            $this->_sections[] = new Section($result);
-        }
-
-        return $this->_sections;
+        return $this->_sections()->all();
     }
 
     /**
@@ -255,7 +261,7 @@ class Sections extends Component
      */
     public function getSectionsByType(string $type): array
     {
-        return ArrayHelper::where($this->getAllSections(), 'type', $type, true, false);
+        return $this->_sections()->where('type', $type, true)->all();
     }
 
     /**
@@ -313,7 +319,7 @@ class Sections extends Component
      */
     public function getSectionById(int $sectionId)
     {
-        return ArrayHelper::firstWhere($this->getAllSections(), 'id', $sectionId);
+        return $this->_sections()->firstWhere('id', $sectionId);
     }
 
     /**
@@ -334,7 +340,7 @@ class Sections extends Component
      */
     public function getSectionByUid(string $uid)
     {
-        return ArrayHelper::firstWhere($this->getAllSections(), 'uid', $uid);
+        return $this->_sections()->firstWhere('uid', $uid, true);
     }
 
     /**
@@ -354,7 +360,7 @@ class Sections extends Component
      */
     public function getSectionByHandle(string $sectionHandle)
     {
-        return ArrayHelper::firstWhere($this->getAllSections(), 'handle', $sectionHandle);
+        return $this->_sections()->firstWhere('handle', $sectionHandle, true);
     }
 
     /**

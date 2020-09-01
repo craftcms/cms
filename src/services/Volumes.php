@@ -3,6 +3,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\MemoizableArray;
 use craft\base\VolumeInterface;
 use craft\db\Query;
 use craft\db\Table;
@@ -89,7 +90,8 @@ class Volumes extends Component
     const CONFIG_VOLUME_KEY = 'volumes';
 
     /**
-     * @var VolumeInterface[]
+     * @var MemoizableArray|null
+     * @see _volumes()
      */
     private $_volumes;
 
@@ -175,7 +177,7 @@ class Volumes extends Component
      */
     public function getPublicVolumes(): array
     {
-        return ArrayHelper::where($this->getAllVolumes(), 'hasUrls', true, false, false);
+        return $this->_volumes()->where('hasUrls')->all();
     }
 
     /**
@@ -199,25 +201,31 @@ class Volumes extends Component
     }
 
     /**
+     * Returns a memoizable array of all volumes.
+     *
+     * @return MemoizableArray
+     */
+    private function _volumes(): MemoizableArray
+    {
+        if ($this->_volumes === null) {
+            $volumes = [];
+            foreach ($this->_createVolumeQuery()->all() as $result) {
+                $volumes[] = $this->createVolume($result);
+            }
+            $this->_volumes = new MemoizableArray($volumes);
+        }
+
+        return $this->_volumes;
+    }
+
+    /**
      * Returns all volumes.
      *
      * @return VolumeInterface[]
      */
     public function getAllVolumes(): array
     {
-        if ($this->_volumes !== null) {
-            return $this->_volumes;
-        }
-
-        $this->_volumes = [];
-        $results = $this->_createVolumeQuery()
-            ->all();
-
-        foreach ($results as $result) {
-            $this->_volumes[] = $this->createVolume($result);
-        }
-
-        return $this->_volumes;
+        return $this->_volumes()->all();
     }
 
     /**
@@ -228,7 +236,7 @@ class Volumes extends Component
      */
     public function getVolumeById(int $volumeId)
     {
-        return ArrayHelper::firstWhere($this->getAllVolumes(), 'id', $volumeId);
+        return $this->_volumes()->firstWhere('id', $volumeId);
     }
 
     /**
@@ -239,7 +247,7 @@ class Volumes extends Component
      */
     public function getVolumeByUid(string $volumeUid)
     {
-        return ArrayHelper::firstWhere($this->getAllVolumes(), 'uid', $volumeUid);
+        return $this->_volumes()->firstWhere('uid', $volumeUid, true);
     }
 
     /**
@@ -250,7 +258,7 @@ class Volumes extends Component
      */
     public function getVolumeByHandle(string $handle)
     {
-        return ArrayHelper::firstWhere($this->getAllVolumes(), 'handle', $handle, true);
+        return $this->_volumes()->firstWhere('handle', $handle, true);
     }
 
     /**

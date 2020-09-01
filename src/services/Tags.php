@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\MemoizableArray;
 use craft\db\Table;
 use craft\elements\Tag;
 use craft\errors\TagGroupNotFoundException;
@@ -61,7 +62,8 @@ class Tags extends Component
     const CONFIG_TAGGROUP_KEY = 'tagGroups';
 
     /**
-     * @var TagGroup[]
+     * @var MemoizableArray|null
+     * @see _tagGroups()
      */
     private $_tagGroups;
 
@@ -79,32 +81,42 @@ class Tags extends Component
     }
 
     /**
+     * Returns a memoizable array of all tag groups.
+     *
+     * @return MemoizableArray
+     */
+    private function _tagGroups(): MemoizableArray
+    {
+        if ($this->_tagGroups === null) {
+            $groups = [];
+            $records = TagGroupRecord::find()
+                ->orderBy(['name' => SORT_ASC])
+                ->all();
+
+            foreach ($records as $record) {
+                $groups[] = new TagGroup($record->toArray([
+                    'id',
+                    'name',
+                    'handle',
+                    'fieldLayoutId',
+                    'uid',
+                ]));
+            }
+
+            $this->_tagGroups = new MemoizableArray($groups);
+        }
+
+        return $this->_tagGroups;
+    }
+
+    /**
      * Returns all tag groups.
      *
      * @return TagGroup[]
      */
     public function getAllTagGroups(): array
     {
-        if ($this->_tagGroups !== null) {
-            return $this->_tagGroups;
-        }
-
-        $this->_tagGroups = [];
-        $records = TagGroupRecord::find()
-            ->orderBy(['name' => SORT_ASC])
-            ->all();
-
-        foreach ($records as $record) {
-            $this->_tagGroups[] = new TagGroup($record->toArray([
-                'id',
-                'name',
-                'handle',
-                'fieldLayoutId',
-                'uid',
-            ]));
-        }
-
-        return $this->_tagGroups;
+        return $this->_tagGroups()->all();
     }
 
     /**
@@ -125,7 +137,7 @@ class Tags extends Component
      */
     public function getTagGroupById(int $groupId)
     {
-        return ArrayHelper::firstWhere($this->getAllTagGroups(), 'id', $groupId);
+        return $this->_tagGroups()->firstWhere('id', $groupId);
     }
 
     /**
@@ -136,7 +148,7 @@ class Tags extends Component
      */
     public function getTagGroupByUid(string $groupUid)
     {
-        return ArrayHelper::firstWhere($this->getAllTagGroups(), 'uid', $groupUid, true);
+        return $this->_tagGroups()->firstWhere('uid', $groupUid, true);
     }
 
 
@@ -148,7 +160,7 @@ class Tags extends Component
      */
     public function getTagGroupByHandle(string $groupHandle)
     {
-        return ArrayHelper::firstWhere($this->getAllTagGroups(), 'handle', $groupHandle, true);
+        return $this->_tagGroups()->firstWhere('handle', $groupHandle, true);
     }
 
     /**

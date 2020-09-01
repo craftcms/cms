@@ -9,6 +9,7 @@ namespace craft\services;
 
 use Craft;
 use craft\base\LocalVolumeInterface;
+use craft\base\MemoizableArray;
 use craft\db\Connection;
 use craft\db\Query;
 use craft\db\Table;
@@ -99,7 +100,8 @@ class AssetTransforms extends Component
     public $db = 'db';
 
     /**
-     * @var AssetTransform[]
+     * @var MemoizableArray|null
+     * @see _transforms()
      */
     private $_transforms;
 
@@ -128,23 +130,31 @@ class AssetTransforms extends Component
     }
 
     /**
+     * Returns a memoizable array of all named asset transforms.
+     *
+     * @return MemoizableArray
+     */
+    private function _transforms(): MemoizableArray
+    {
+        if ($this->_transforms === null) {
+            $transforms = [];
+            foreach ($this->_createTransformQuery()->all() as $result) {
+                $transforms[] = new AssetTransform($result);
+            }
+            $this->_transforms = new MemoizableArray($transforms);
+        }
+
+        return $this->_transforms;
+    }
+
+    /**
      * Returns all named asset transforms.
      *
      * @return AssetTransform[]
      */
     public function getAllTransforms(): array
     {
-        if ($this->_transforms !== null) {
-            return $this->_transforms;
-        }
-
-        $this->_transforms = [];
-
-        foreach ($this->_createTransformQuery()->all() as $result) {
-            $this->_transforms[] = new AssetTransform($result);
-        }
-
-        return $this->_transforms;
+        return $this->_transforms()->all();
     }
 
     /**
@@ -155,7 +165,7 @@ class AssetTransforms extends Component
      */
     public function getTransformByHandle(string $handle)
     {
-        return ArrayHelper::firstWhere($this->getAllTransforms(), 'handle', $handle, true);
+        return $this->_transforms()->firstWhere('handle', $handle, true);
     }
 
     /**
@@ -166,7 +176,7 @@ class AssetTransforms extends Component
      */
     public function getTransformById(int $id)
     {
-        return ArrayHelper::firstWhere($this->getAllTransforms(), 'id', $id);
+        return $this->_transforms()->firstWhere('id', $id);
     }
 
     /**
@@ -178,7 +188,7 @@ class AssetTransforms extends Component
      */
     public function getTransformByUid(string $uid)
     {
-        return ArrayHelper::firstWhere($this->getAllTransforms(), 'uid', $uid, true);
+        return $this->_transforms()->firstWhere('uid', $uid, true);
     }
 
     /**
