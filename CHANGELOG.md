@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.5.8 - 2020-09-01
 
 ### Added
 - Added the “Retry Duration” general setting, which defines the number of seconds that the `Retry-After` header should be set to for 503 responses when the system is offline.
