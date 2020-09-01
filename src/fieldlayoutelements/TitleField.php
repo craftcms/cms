@@ -41,6 +41,11 @@ class TitleField extends StandardTextField
     /**
      * @inheritdoc
      */
+    public $required = true;
+
+    /**
+     * @inheritdoc
+     */
     public $autofocus = true;
 
     /**
@@ -54,6 +59,7 @@ class TitleField extends StandardTextField
             $config['attribute'],
             $config['translatable'],
             $config['maxlength'],
+            $config['required'],
             $config['autofocus']
         );
 
@@ -71,6 +77,7 @@ class TitleField extends StandardTextField
             $fields['attribute'],
             $fields['translatable'],
             $fields['maxlength'],
+            $fields['required'],
             $fields['autofocus']
         );
         return $fields;
