@@ -12,6 +12,7 @@
 - Added `craft\cache\FileCache`.
 - Added `craft\helpers\ArrayHelper::whereIn()`.
 - Added `craft\services\ProjectConfig::DIFF_CACHE_KEY`.
+- Added `craft\services\Sites::getGroupByUid()`.
 
 ### Changed
 - The GraphQL API now supports `variables` and `operationName` query string parameters. ([#6728](https://github.com/craftcms/cms/issues/6728))

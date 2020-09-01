@@ -219,6 +219,18 @@ class Sites extends Component
     }
 
     /**
+     * Returns a site group by its UID.
+     *
+     * @param string $uid The site group’s UID
+     * @return SiteGroup|null The site group, or null if it doesn’t exist
+     * @since 3.5.8
+     */
+    public function getGroupByUid(string $uid)
+    {
+        return $this->_groups()->firstWhere('uid', $uid, true);
+    }
+
+    /**
      * Saves a site group.
      *
      * @param SiteGroup $group The site group to be saved
