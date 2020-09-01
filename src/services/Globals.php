@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\MemoizableArray;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\GlobalSet;
@@ -46,24 +47,16 @@ class Globals extends Component
     const CONFIG_GLOBALSETS_KEY = 'globalSets';
 
     /**
-     * @var
-     */
-    private $_allGlobalSetIds;
-
-    /**
-     * @var
-     */
-    private $_editableGlobalSetIds;
-
-    /**
-     * @var GlobalSet[]|null
+     * @var MemoizableArray[]|null
+     * @see _allSets()
      */
     private $_allGlobalSets;
 
     /**
-     * @var
+     * @var GlobalSet[][]|null
+     * @see getEditableSets()
      */
-    private $_globalSetsById;
+    private $_editableGlobalSets;
 
     /**
      * Returns all of the global set IDs.
@@ -81,14 +74,7 @@ class Globals extends Component
      */
     public function getAllSetIds(): array
     {
-        if ($this->_allGlobalSetIds !== null) {
-            return $this->_allGlobalSetIds;
-        }
-
-        return $this->_allGlobalSetIds = (new Query())
-            ->select(['id'])
-            ->from([Table::GLOBALSETS])
-            ->column();
+        return ArrayHelper::getColumn($this->getAllSets(), 'id');
     }
 
     /**
@@ -107,20 +93,7 @@ class Globals extends Component
      */
     public function getEditableSetIds(): array
     {
-        if ($this->_editableGlobalSetIds !== null) {
-            return $this->_editableGlobalSetIds;
-        }
-
-        $this->_editableGlobalSetIds = [];
-        $allGlobalSets = $this->getAllSets();
-
-        foreach ($allGlobalSets as $globalSet) {
-            if (Craft::$app->getUser()->checkPermission('editGlobalSet:' . $globalSet->uid)) {
-                $this->_editableGlobalSetIds[] = $globalSet->id;
-            }
-        }
-
-        return $this->_editableGlobalSetIds;
+        return ArrayHelper::getColumn($this->getEditableSets(), 'id');
     }
 
     /**
@@ -139,14 +112,8 @@ class Globals extends Component
      */
     public function getAllSets(): array
     {
-        if ($this->_allGlobalSets !== null) {
-            return $this->_allGlobalSets;
-        }
-
-        $this->_allGlobalSets = GlobalSet::findAll();
-        $this->_globalSetsById = ArrayHelper::index($this->_allGlobalSets, 'id');
-
-        return $this->_allGlobalSets;
+        /** @noinspection PhpUnhandledExceptionInspection */
+        return $this->_allSets(Craft::$app->getSites()->getCurrentSite()->id)->all();
     }
 
     /**
@@ -165,17 +132,18 @@ class Globals extends Component
      */
     public function getEditableSets(): array
     {
-        $globalSets = $this->getAllSets();
-        $editableGlobalSetIds = $this->getEditableSetIds();
-        $editableGlobalSets = [];
+        /** @noinspection PhpUnhandledExceptionInspection */
+        $currentSiteId = Craft::$app->getSites()->getCurrentSite()->id;
 
-        foreach ($globalSets as $globalSet) {
-            if (in_array($globalSet->id, $editableGlobalSetIds, false)) {
-                $editableGlobalSets[] = $globalSet;
-            }
+        if (!isset($this->_editableGlobalSets[$currentSiteId])) {
+            $session = Craft::$app->getUser();
+            $this->_editableGlobalSets[$currentSiteId] = ArrayHelper::where($this->_allSets($currentSiteId),
+                function(GlobalSet $globalSet) use ($session): bool {
+                    return $session->checkPermission("editGlobalSet:$globalSet->uid");
+                }, true, true, false);
         }
 
-        return $editableGlobalSets;
+        return $this->_editableGlobalSets[$currentSiteId];
     }
 
     /**
@@ -194,7 +162,7 @@ class Globals extends Component
      */
     public function getTotalSets(): int
     {
-        return count($this->getAllSetIds());
+        return count($this->getAllSets());
     }
 
     /**
@@ -213,7 +181,7 @@ class Globals extends Component
      */
     public function getTotalEditableSets(): int
     {
-        return count($this->getEditableSetIds());
+        return count($this->getEditableSets());
     }
 
     /**
@@ -234,26 +202,21 @@ class Globals extends Component
      */
     public function getSetById(int $globalSetId, int $siteId = null)
     {
-        if ($siteId === null) {
-            /** @noinspection PhpUnhandledExceptionInspection */
-            $siteId = Craft::$app->getSites()->getCurrentSite()->id;
-        }
-
         /** @noinspection PhpUnhandledExceptionInspection */
-        if ($siteId == Craft::$app->getSites()->getCurrentSite()->id) {
-            if ($this->_allGlobalSets === null) {
-                $this->getAllSets();
-            }
+        $currentSiteId = Craft::$app->getSites()->getCurrentSite()->id;
 
-            if (!isset($this->_globalSetsById[$globalSetId])) {
-                return null;
-            }
-
-            return $this->_globalSetsById[$globalSetId];
+        if ($siteId === null) {
+            $siteId = $currentSiteId;
         }
 
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return Craft::$app->getElements()->getElementById($globalSetId, GlobalSet::class, $siteId);
+        if ($siteId == $currentSiteId) {
+            return $this->_allSets($siteId)->firstWhere('id', $globalSetId);
+        }
+
+        return GlobalSet::find()
+            ->siteId($siteId)
+            ->id($globalSetId)
+            ->one();
     }
 
     /**
@@ -282,21 +245,13 @@ class Globals extends Component
         }
 
         if ($siteId == $currentSiteId) {
-            $globalSets = $this->getAllSets();
-
-            foreach ($globalSets as $globalSet) {
-                if ($globalSet->handle == $globalSetHandle) {
-                    return $globalSet;
-                }
-            }
-        } else {
-            return GlobalSet::find()
-                ->siteId($siteId)
-                ->handle($globalSetHandle)
-                ->one();
+            return $this->_allSets($siteId)->firstWhere('handle', $globalSetHandle, true);
         }
 
-        return null;
+        return GlobalSet::find()
+            ->siteId($siteId)
+            ->handle($globalSetHandle)
+            ->one();
     }
 
     /**
@@ -424,10 +379,8 @@ class Globals extends Component
         }
 
         // Clear caches
-        $this->_allGlobalSetIds = null;
-        $this->_editableGlobalSetIds = null;
         $this->_allGlobalSets = null;
-        unset($this->_globalSetsById[$globalSetRecord->id]);
+        $this->_editableGlobalSets = null;
 
         // Fire an 'afterSaveGlobalSet' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_GLOBAL_SET)) {
@@ -542,6 +495,21 @@ class Globals extends Component
 
         // Allow events again
         $projectConfig->muteEvents = false;
+    }
+
+    /**
+     * Returns a memoizable array of all global sets for the given site.
+     *
+     * @param int $siteId
+     * @return MemoizableArray
+     */
+    private function _allSets(int $siteId): MemoizableArray
+    {
+        if (!isset($this->_allGlobalSets[$siteId])) {
+            $this->_allGlobalSets[$siteId] = new MemoizableArray(GlobalSet::find()->siteId($siteId)->all());
+        }
+
+        return $this->_allGlobalSets[$siteId];
     }
 
     /**

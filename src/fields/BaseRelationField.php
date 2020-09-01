@@ -23,6 +23,7 @@ use craft\errors\SiteNotFoundException;
 use craft\events\ElementCriteriaEvent;
 use craft\events\ElementEvent;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
@@ -197,11 +198,6 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      * @var bool Whether the elements have a custom sort order
      */
     protected $sortable = true;
-
-    /**
-     * @var bool Whether existing relations should be made translatable after the field is saved
-     */
-    private $_makeExistingRelationsTranslatable = false;
 
     /**
      * @inheritdoc
@@ -593,9 +589,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         $html = "<div id='{$id}' class='elementselect'><div class='elements'>";
 
         foreach ($value as $relatedElement) {
-            $html .= Craft::$app->getView()->renderTemplate('_elements/element', [
-                'element' => $relatedElement
-            ]);
+            $html .= Cp::elementHtml($relatedElement);
         }
 
         $html .= '</div></div>';
@@ -623,17 +617,12 @@ JS;
         }
 
         $first = array_shift($value);
-
-        $html = Craft::$app->getView()->renderTemplate('_elements/element', [
-            'element' => $first,
-        ]);
+        $html = Cp::elementHtml($first);
 
         if (!empty($value)) {
             $otherHtml = '';
             foreach ($value as $other) {
-                $otherHtml .= Craft::$app->getView()->renderTemplate('_elements/element', [
-                    'element' => $other,
-                ]);
+                $otherHtml .= Cp::elementHtml($other);
             }
             $html .= Html::tag('span', '+' . Craft::$app->getFormatter()->asDecimal(count($value)), [
                 'title' => implode(', ', ArrayHelper::getColumn($value, 'title')),
@@ -712,30 +701,16 @@ JS;
     /**
      * @inheritdoc
      */
-    public function beforeSave(bool $isNew): bool
-    {
-        $this->_makeExistingRelationsTranslatable = false;
-
-        if (!$this->getIsNew() && $this->localizeRelations) {
-            $existingField = Craft::$app->getFields()->getFieldById($this->id);
-
-            if ($existingField && $existingField instanceof self && !$existingField->localizeRelations) {
-                $this->_makeExistingRelationsTranslatable = true;
-            }
-        }
-
-        return parent::beforeSave($isNew);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function afterSave(bool $isNew)
     {
-        if ($this->_makeExistingRelationsTranslatable) {
-            Queue::push(new LocalizeRelations([
-                'fieldId' => $this->id,
-            ]));
+        // If the propagation method just changed, resave all the Matrix blocks
+        if ($this->oldSettings !== null) {
+            $oldLocalizeRelations = (bool)($this->oldSettings['localizeRelations'] ?? false);
+            if ($this->localizeRelations !== $oldLocalizeRelations) {
+                Queue::push(new LocalizeRelations([
+                    'fieldId' => $this->id,
+                ]));
+            }
         }
 
         parent::afterSave($isNew);

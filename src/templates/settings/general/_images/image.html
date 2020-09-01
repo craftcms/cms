@@ -14,10 +14,10 @@
     <div class="cp-image-controls">
         <input type="file" name="image" class="hidden" />
         {% if craft.rebrand.isImageUploaded(imageType) %}
-            <div class="btn upload">{% if imageType == 'logo' %}{{ block('changeLogoLabel') }}{% else %}{{ block('changeIconLabel') }}{% endif %}</div>
-            <div class="btn delete">{% if imageType == 'logo' %}{{ block('deleteLogoLabel') }}{% else %}{{ block('deleteIconLabel') }}{% endif %}</div>
+            <button type="button" class="btn upload">{% if imageType == 'logo' %}{{ block('changeLogoLabel') }}{% else %}{{ block('changeIconLabel') }}{% endif %}</button>
+            <button type="button" class="btn delete">{% if imageType == 'logo' %}{{ block('deleteLogoLabel') }}{% else %}{{ block('deleteIconLabel') }}{% endif %}</button>
         {% else %}
-            <div class="btn upload">{% if imageType == 'logo' %}{{ block('uploadLogoLabel') }}{% else %}{{ block('uploadIconLabel') }}{% endif %}</div>
+            <button type="button" class="btn upload">{% if imageType == 'logo' %}{{ block('uploadLogoLabel') }}{% else %}{{ block('uploadIconLabel') }}{% endif %}</button>
         {% endif %}
     </div>
 </div>

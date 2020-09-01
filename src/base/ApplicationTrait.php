@@ -554,8 +554,8 @@ trait ApplicationTrait
     public function getIsLive(): bool
     {
         /** @var WebApplication|ConsoleApplication $this */
-        if (is_bool($on = $this->getConfig()->getGeneral()->isSystemLive)) {
-            return $on;
+        if (is_bool($live = $this->getConfig()->getGeneral()->isSystemLive)) {
+            return $live;
         }
 
         return (bool)$this->getProjectConfig()->get('system.live');
@@ -731,14 +731,17 @@ trait ApplicationTrait
 
         $attributes = $info->getAttributes($attributeNames);
 
-        // TODO: Remove this after the next breakpoint
-        if (version_compare($info['version'], '3.1', '<')) {
-            unset($attributes['config'], $attributes['configMap']);
-        }
+        // TODO: Remove these after the next breakpoint
+        if (version_compare($info['version'], '3.5.6', '<')) {
+            unset($attributes['configVersion']);
 
-        // TODO: Remove this after the next breakpoint
-        if (version_compare($info['version'], '3.0', '<')) {
-            unset($attributes['fieldVersion']);
+            if (version_compare($info['version'], '3.1', '<')) {
+                unset($attributes['config'], $attributes['configMap']);
+
+                if (version_compare($info['version'], '3.0', '<')) {
+                    unset($attributes['fieldVersion']);
+                }
+            }
         }
 
         $infoRowExists = (new Query())

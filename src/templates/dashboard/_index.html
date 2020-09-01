@@ -4,7 +4,7 @@
 {% block actionButton %}
     <div class="buttons">
         <div class="newwidget btngroup">
-            <div id="newwidgetmenubtn" class="btn menubtn add icon">{{ 'New widget'|t('app') }}</div>
+            <button type="button" id="newwidgetmenubtn" class="btn menubtn add icon">{{ 'New widget'|t('app') }}</button>
             <div class="menu newwidgetmenu">
                 <ul>
                     {% for type, info in widgetTypes if info.selectable %}
@@ -19,7 +19,7 @@
             </div>
         </div>
 
-        <div id="widgetManagerBtn" class="btn settings icon" title="{{ 'Settings'|t('app') }}"></div>
+        <button type="button" id="widgetManagerBtn" class="btn settings icon" title="{{ 'Settings'|t('app') }}"></button>
     </div>
 {% endblock %}
 
@@ -55,8 +55,8 @@
                             <div class="settings"></div>
                             <hr>
                             <div class="buttons clearafter">
-                                <input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
-                                <div class="btn" role="button">{{ 'Cancel'|t('app') }}</div>
+                                <button type="submit" class="btn submit">{{ 'Save'|t('app') }}</button>
+                                <button type="button" class="btn">{{ 'Cancel'|t('app') }}</button>
                                 <div class="spinner hidden"></div>
                             </div>
                         </form>

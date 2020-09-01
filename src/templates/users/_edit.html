@@ -31,11 +31,11 @@
 
 {% block actionButton %}
     {% if not currentUser.can('registerUsers') or CraftEdition != CraftPro %}
-        <div class="btn submit formsubmit" data-form="userform">{{ 'Save'|t('app') }}</div>
+        <button type="button" class="btn submit formsubmit" data-form="userform">{{ 'Save'|t('app') }}</button>
     {% else %}
         <div class="btngroup">
-            <div class="btn submit formsubmit" data-form="userform">{{ 'Save'|t('app') }}</div>
-            <div class="btn submit menubtn" data-form="userform"></div>
+            <button type="button" class="btn submit formsubmit" data-form="userform">{{ 'Save'|t('app') }}</button>
+            <button type="button" class="btn submit menubtn" data-form="userform"></button>
             <div class="menu">
                 <ul>
                     <li>
@@ -72,7 +72,7 @@
         <div id="account" class="flex-fields">
             {% include "users/_accountfields" %}
 
-            {% if not isNewUser %}
+            {% if not isNewUser and showPhotoField %}
                 {{ forms.field({
                     label: "Photo"|t('app'),
                     id: 'photo'
@@ -159,7 +159,7 @@
                                 {% if assignableGroups %}
                                     {% for group in assignableGroups %}
                                         {{ checkboxField({
-                                            label: group.name|t('site')|e,
+                                            label: group.name|t('site'),
                                             instructions: group.description ? group.description|t('site')|e,
                                             name: 'groups[]',
                                             value: group.id,
@@ -318,7 +318,7 @@
 
                         {% if actions|length %}
                             <div>
-                                <div id="action-menubtn" class="btn menubtn" data-icon="settings" title="{{ 'Actions'|t('app') }}"></div>
+                                <button type="button" id="action-menubtn" class="btn menubtn" data-icon="settings" title="{{ 'Actions'|t('app') }}"></button>
                                 <div class="menu">
                                     {% for actionList in actions %}
                                         {% if not loop.first %}<hr>{% endif %}

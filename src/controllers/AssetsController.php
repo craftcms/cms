@@ -213,7 +213,7 @@ class AssetsController extends Controller
     public function actionSaveAsset()
     {
         if (UploadedFile::getInstanceByName('assets-upload') !== null) {
-            Craft::$app->getDeprecator()->log(__METHOD__, 'Uploading new files via assets/save-asset has been deprecated. Use assets/upload instead.');
+            Craft::$app->getDeprecator()->log(__METHOD__, 'Uploading new files via `assets/save-asset` has been deprecated. Use `assets/upload` instead.');
             return $this->runAction('upload');
         }
 
@@ -1054,7 +1054,10 @@ class AssetsController extends Controller
         if (count($assets) === 1) {
             $asset = reset($assets);
             return $this->response
-                ->sendStreamAsFile($asset->stream, $asset->filename);
+                ->sendStreamAsFile($asset->stream, $asset->filename, [
+                    'fileSize' => $asset->size,
+                    'mimeType' => $asset->mimeType,
+                ]);
         }
 
         // Otherwise create a zip of all the selected assets
@@ -1089,7 +1092,7 @@ class AssetsController extends Controller
      */
     public function actionGenerateThumb(string $uid, int $width, int $height): Response
     {
-        Craft::$app->getDeprecator()->log(__METHOD__, 'The assets/generate-thumb action has been deprecated. Use assets/thumb instead.');
+        Craft::$app->getDeprecator()->log(__METHOD__, 'The `assets/generate-thumb` action has been deprecated. Use `assets/thumb` instead.');
         return $this->actionThumb($uid, $width, $height);
     }
 

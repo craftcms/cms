@@ -26,6 +26,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
 use craft\errors\UnsupportedSiteException;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
@@ -1210,7 +1211,7 @@ class Entry extends Element
         switch ($attribute) {
             case 'author':
                 $author = $this->getAuthor();
-                return $author ? Craft::$app->getView()->renderTemplate('_elements/element', ['element' => $author]) : '';
+                return $author ? Cp::elementHtml($author) : '';
 
             case 'section':
                 return Html::encode(Craft::t('site', $this->getSection()->name));
@@ -1243,7 +1244,7 @@ class Entry extends Element
                 ) {
                     return '';
                 }
-                return Craft::$app->getView()->renderTemplate('_elements/element', ['element' => $creator]);
+                return Cp::elementHtml($creator);
         }
 
         return parent::tableAttributeHtml($attribute);

@@ -59,10 +59,10 @@
     </nav>
 
     <div class="buttons">
-        <div id="newgroupbtn" class="btn add icon">{{ "New group"|t('app') }}</div>
+        <button type="button" id="newgroupbtn" class="btn add icon">{{ "New group"|t('app') }}</button>
 
         {% if groupId is defined %}
-            <div id="groupsettingsbtn" class="btn settings icon menubtn" title="{{ 'Settings'|t('app') }}"></div>
+            <button type="button" id="groupsettingsbtn" class="btn settings icon menubtn" title="{{ 'Settings'|t('app') }}"></button>
             <div class="menu">
                 <ul>
                     <li><a data-action="rename" role="button">{{ "Rename selected group"|t('app') }}</a></li>

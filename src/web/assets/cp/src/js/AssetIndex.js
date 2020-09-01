@@ -687,7 +687,13 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
          */
         afterInit: function() {
             if (!this.$uploadButton) {
-                this.$uploadButton = $('<div class="btn submit" data-icon="upload" style="position: relative; overflow: hidden;" role="button">' + Craft.t('app', 'Upload files') + '</div>');
+                this.$uploadButton = $('<button/>', {
+                    type: 'button',
+                    class: 'btn submit',
+                    'data-icon': 'upload',
+                    style: 'position: relative; overflow: hidden;',
+                    text: Craft.t('app', 'Upload files'),
+                });
                 this.addButton(this.$uploadButton);
 
                 this.$uploadInput = $('<input type="file" multiple="multiple" name="assets-upload" />').hide().insertBefore(this.$uploadButton);

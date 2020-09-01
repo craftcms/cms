@@ -1000,7 +1000,7 @@ class User extends Element implements IdentityInterface
      */
     public function getPhotoUrl(int $size = 100)
     {
-        Craft::$app->getDeprecator()->log('User::getPhotoUrl()', 'User::getPhotoUrl() has been deprecated. Use getPhoto() to access the photo asset (if there is one), and call its getUrl() method to access the photo URL.');
+        Craft::$app->getDeprecator()->log('User::getPhotoUrl()', '`User::getPhotoUrl()` has been deprecated. Use `getPhoto()` to access the photo asset (if there is one), and call its `getUrl()` method to access the photo URL.');
         $photo = $this->getPhoto();
 
         if ($photo) {
@@ -1025,6 +1025,14 @@ class User extends Element implements IdentityInterface
         }
 
         return Craft::$app->getAssetManager()->getPublishedUrl('@app/web/assets/cp/dist', true, 'images/user.svg');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getHasRoundedThumb(): bool
+    {
+        return true;
     }
 
     /**

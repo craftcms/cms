@@ -163,12 +163,6 @@ class Craft extends Yii2
         }
 
         $this->resetProjectConfig();
-
-        $db = \Craft::createObject(
-            App::dbConfig(self::createDbConfig())
-        );
-
-        \Craft::$app->set('db', $db);
     }
 
     /**
@@ -228,14 +222,6 @@ class Craft extends Yii2
 
             App::maxPowerCaptain();
 
-            $dbConnection = \Craft::createObject(App::dbConfig(self::createDbConfig()));
-
-            if (!$dbConnection instanceof Connection) {
-                throw new Exception('Unable to establish a DB connection to setup the DB');
-            }
-
-            \Craft::$app->set('db', $dbConnection);
-
             $dbSetupConfig = $this->_getConfig('dbSetup');
 
             // Setup the project config from the passed file.
@@ -245,12 +231,12 @@ class Craft extends Yii2
 
             // Get rid of everything.
             if (isset($dbSetupConfig['clean']) && $dbSetupConfig['clean'] === true) {
-                TestSetup::cleanseDb($dbConnection);
+                TestSetup::cleanseDb(\Craft::$app->getDb());
             }
 
             // Install the db from install.php
             if (isset($dbSetupConfig['setupCraft']) && $dbSetupConfig['setupCraft'] === true) {
-                TestSetup::setupCraftDb($dbConnection);
+                TestSetup::setupCraftDb(\Craft::$app->getDb());
             }
 
             // Ready to rock.

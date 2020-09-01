@@ -102,6 +102,14 @@ class GeneralConfig extends BaseObject
      */
     public $autoLoginAfterAccountActivation = false;
     /**
+     * @var bool Whether drafts should be saved automatically as they are edited.
+     *
+     * Note that drafts *will* be autosaved while Live Preview is open, regardless of this setting.
+     *
+     * @since 3.5.6
+     */
+    public $autosaveDrafts = true;
+    /**
      * @var bool Whether Craft should create a database backup before applying a new system update.
      * @see backupCommand
      */
@@ -731,9 +739,7 @@ class GeneralConfig extends BaseObject
      */
     public $preventUserEnumeration = false;
     /**
-     * @var array|false Custom [iFrame Resizer options](http://davidjbradshaw.github.io/iframe-resizer/#options) that should be used for preview iframes.
-     *
-     * Set this to `false` to disable the iFrame Resizer altogether.
+     * @var array Custom [iFrame Resizer options](http://davidjbradshaw.github.io/iframe-resizer/#options) that should be used for preview iframes.
      *
      * ```php
      * 'previewIframeResizerOptions' => [
@@ -1012,8 +1018,35 @@ class GeneralConfig extends BaseObject
     public $useCompressedJs = true;
     /**
      * @var bool Whether Craft should set users’ usernames to their email addresses, rather than let them set their username separately.
+     *
+     * If you enable this setting after user accounts already exist, run this terminal command to update existing usernames:
+     *
+     * ```bash
+     * php craft utils/update-usernames
+     * ```
      */
     public $useEmailAsUsername = false;
+    /**
+     * @var bool Whether [iFrame Resizer options](http://davidjbradshaw.github.io/iframe-resizer/#options) should be used for Live Preview.
+     *
+     * Using iFrame Resizer makes it possible for Craft to retain the preview’s scroll position between page loads, for cross-origin web pages.
+     *
+     * It works by setting the height of the iframe to match the height of the inner web page, and the iframe’s container will
+     * be scrolled rather than the iframe document itself. This can lead to some unexpected CSS issues, however, because the previewed viewport height
+     * will be taller than the visible portion of the iframe.
+     *
+     * If you have a [decoupled front-end](https://craftcms.com/docs/3.x/entries.html#previewing-decoupled-front-ends), you will need to include
+     * [iframeResizer.contentWindow.min.js](https://raw.github.com/davidjbradshaw/iframe-resizer/master/js/iframeResizer.contentWindow.min.js) on your
+     * page as well for this to work. You can conditionally include it for only Live Preview requests by checking if the requested URL contains a
+     * `x-craft-live-preview` query string parameter.
+     *
+     * ::: tip
+     * You can customize the behavior of iFrame Resizer via the <config3:previewIframeResizerOptions> config setting.
+     * :::
+     *
+     * @since 3.5.5
+     */
+    public $useIframeResizer = false;
     /**
      * @var bool Whether Craft should specify the path using `PATH_INFO` or as a query string parameter when generating URLs.
      *
@@ -1111,7 +1144,7 @@ class GeneralConfig extends BaseObject
         foreach ($renamedSettings as $old => $new) {
             if (array_key_exists($old, $config)) {
                 $configFilePath = $configFilePath ?? Craft::$app->getConfig()->getConfigFilePath(Config::CATEGORY_GENERAL);
-                Craft::$app->getDeprecator()->log($old, "The {$old} config setting has been renamed to {$new}.", $configFilePath);
+                Craft::$app->getDeprecator()->log($old, "The `{$old}` config setting has been renamed to `{$new}`.", $configFilePath);
                 $config[$new] = $config[$old];
                 unset($config[$old]);
             }
@@ -1119,7 +1152,7 @@ class GeneralConfig extends BaseObject
 
         // Check for environmentVariables, but don't actually rename it in case a template is referencing it
         if (array_key_exists('environmentVariables', $config)) {
-            Craft::$app->getDeprecator()->log('environmentVariables', "The environmentVariables config setting has been renamed to aliases.");
+            Craft::$app->getDeprecator()->log('environmentVariables', "The `environmentVariables` config setting has been renamed to `aliases`.");
         }
 
         parent::__construct($config);
@@ -1216,7 +1249,7 @@ class GeneralConfig extends BaseObject
         }
 
         if ($this->suppressTemplateErrors) {
-            Craft::$app->getDeprecator()->log('suppressTemplateErrors', "The suppressTemplateErrors config setting has been deprecated because it relies on a deprecated Twig feature.");
+            Craft::$app->getDeprecator()->log('suppressTemplateErrors', "The `suppressTemplateErrors` config setting has been deprecated because it relies on a deprecated Twig feature.");
         }
 
         // Always use project config files

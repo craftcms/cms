@@ -9,7 +9,7 @@
 {%- set instructions = instructions ?? block('instructions') ?? null %}
 {%- set tip = tip ?? block('tip') ?? null %}
 {%- set warning = warning ?? block('warning') ?? null %}
-{%- set orientation = orientation ?? (site ? craft.app.i18n.getLocaleById(site.language) : craft.app.locale).getOrientation() %}
+{%- set orientation = orientation ?? (site ? site.getLocale() : craft.app.locale).getOrientation() %}
 {%- set translatable = translatable ?? (site is not same as(null)) %}
 {%- set errors = (errors is defined ? errors : null) -%}
 {%- set fieldClass = (fieldClass ?? [])|explodeClass|merge([
@@ -32,9 +32,9 @@
     {%- set fieldAttributes = fieldAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
 {% endif %}
 
-{%- set inputAttributes = {
+{%- set inputContainerAttributes = {
     class: ['input', orientation, errors ? 'errors']|filter,
-}|merge(inputAttributes ?? [], recursive=true) %}
+}|merge(inputContainerAttributes ?? [], recursive=true) %}
 
 <div {{ attr(fieldAttributes) }}>
     {% if status %}
@@ -82,7 +82,7 @@
             html: instructions|md('gfm-comment')|replace('/&amp;(\\w+);/', '&$1;'),
         }) }}
     {% endif %}
-    <div {{ attr(inputAttributes) }}>
+    <div {{ attr(inputContainerAttributes) }}>
         {% block input %}
             {{ input|raw }}
         {% endblock %}

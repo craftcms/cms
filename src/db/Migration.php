@@ -248,7 +248,7 @@ abstract class Migration extends \yii\db\Migration
         if (is_bool($params)) {
             $includeAuditColumns = $params;
             $params = [];
-            Craft::$app->getDeprecator()->log('craft\\db\\Migration::upsert($includeAuditColumns)', 'The $includeAuditColumns argument on craft\\db\\Migration::upsert() has been moved to the 5th position');
+            Craft::$app->getDeprecator()->log('craft\\db\\Migration::upsert($includeAuditColumns)', 'The `$includeAuditColumns` argument on `craft\\db\\Migration::upsert()` has been moved to the 5th position');
         }
 
         $time = $this->beginCommand("upsert into $table");

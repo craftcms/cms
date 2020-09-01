@@ -9,12 +9,16 @@
 {%- set disabled = (disabled ?? false) ? true : false %}
 {%- set onLabel = onLabel ?? label ?? false %}
 {%- set offLabel = offLabel ?? false %}
+{%- set hasOnLabel = onLabel is not same as(false) %}
+{%- set hasOffLabel = offLabel is not same as(false) %}
+{%- set hasLabels = hasOnLabel or hasOffLabel %}
 
 {%- set containerAttributes = {
     id: id,
     class: [
         'lightswitch',
         on ? 'on',
+        hasLabels ? 'has-labels',
         indeterminate ? 'indeterminate',
         small ? 'small',
         toggle or reverseToggle ? 'fieldtoggle',
@@ -49,15 +53,17 @@
     </div>
 {% endset %}
 
-{% if onLabel is not same as(false) or offLabel is not same as(false) -%}
+{% if hasLabels -%}
     <div class="lightswitch-outer-container">
-        {% if offLabel is not same as(false) %}
-            <label for="{{ id }}" data-toggle="off">{{ offLabel }}</label>
-        {% endif %}
-        {{ input }}
-        {% if onLabel is not same as(false) %}
-            <label for="{{ id }}" data-toggle="on">{{ onLabel }}</label>
-        {% endif %}
+        <div class="lightswitch-inner-container">
+            {% if hasOffLabel %}
+                <label for="{{ id }}" data-toggle="off">{{ offLabel }}</label>
+            {% endif %}
+            {{ input }}
+            {% if hasOnLabel %}
+                <label for="{{ id }}" data-toggle="on">{{ onLabel }}</label>
+            {% endif %}
+        </div>
     </div>
 {% else %}
     {{ input }}

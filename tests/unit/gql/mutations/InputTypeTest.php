@@ -7,7 +7,9 @@
 
 namespace craftunit\gql\mutations;
 
+use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
+use Craft;
 use craft\fields\Matrix as MatrixField;
 use craft\fields\PlainText;
 use craft\gql\GqlEntityRegistry;
@@ -56,7 +58,7 @@ class InputTypeTest extends Unit
     /**
      * Test Matrix input type normalizing values
      *
-     * @dataProvider matrixInputValueNormalizerDataProvicer
+     * @dataProvider matrixInputValueNormalizerDataProvider
      */
     public function testMatrixInputValueNormalization($input, $normalized)
     {
@@ -97,7 +99,7 @@ class InputTypeTest extends Unit
         return $data;
     }
 
-    public function matrixInputValueNormalizerDataProvicer()
+    public function matrixInputValueNormalizerDataProvider()
     {
         return [
             [
@@ -112,7 +114,6 @@ class InputTypeTest extends Unit
                         2 => [
                             'type' => 'blockType',
                             'fields' => [
-                                'id' => 2,
                                 'one',
                                 'two'
                             ]
@@ -140,7 +141,6 @@ class InputTypeTest extends Unit
                         2 => [
                             'type' => 'blockType',
                             'fields' => [
-                                'id' => 2,
                                 'one',
                                 'two'
                             ]
@@ -148,12 +148,11 @@ class InputTypeTest extends Unit
                         88 => [
                             'type' => 'blockTypeB',
                             'fields' => [
-                                'id' => 88,
                                 'stuff' => 'ok',
                             ]
                         ]
                     ]
-                ]
+                ],
             ],
             [
                 ['blocks' =>
@@ -183,7 +182,7 @@ class InputTypeTest extends Unit
                             'fields' => ['four']
                         ]
                     ]
-                ]
+                ],
             ]
         ];
     }

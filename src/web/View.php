@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\events\RegisterTemplateRootsEvent;
 use craft\events\TemplateEvent;
+use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Html;
@@ -960,7 +961,7 @@ class View extends \yii\web\View
      */
     public function registerHiResCss(string $css, array $options = [], string $key = null)
     {
-        Craft::$app->getDeprecator()->log('registerHiResCss', 'craft\\web\\View::registerHiResCss() has been deprecated. Use registerCss() instead, and type your own media selector.');
+        Craft::$app->getDeprecator()->log('registerHiResCss', '`craft\\web\\View::registerHiResCss()` has been deprecated. Use `registerCss()` instead, and type your own media selector.');
 
         $css = "@media only screen and (-webkit-min-device-pixel-ratio: 1.5),\n" .
             "only screen and (   -moz-min-device-pixel-ratio: 1.5),\n" .
@@ -2000,129 +2001,17 @@ JS;
             return null;
         }
 
-        /** @var ElementInterface $element */
-        $element = $context['element'];
-        $label = $element->getUiLabel();
-
-        if (!isset($context['context'])) {
-            $context['context'] = 'index';
-        }
-
-        // How big is the element going to be?
-        if (isset($context['size']) && ($context['size'] === 'small' || $context['size'] === 'large')) {
-            $elementSize = $context['size'];
-        } else if (isset($context['viewMode']) && $context['viewMode'] === 'thumbs') {
-            $elementSize = 'large';
+        if (isset($context['size']) && in_array($context['size'], [Cp::ELEMENT_SIZE_SMALL, Cp::ELEMENT_SIZE_LARGE], true)) {
+            $size = $context['size'];
         } else {
-            $elementSize = 'small';
+            $size = (isset($context['viewMode']) && $context['viewMode'] === 'thumbs') ? Cp::ELEMENT_SIZE_LARGE : Cp::ELEMENT_SIZE_SMALL;
         }
 
-        // Create the thumb/icon image, if there is one
-        // ---------------------------------------------------------------------
-
-        $thumbSize = $elementSize === 'small' ? 34 : 120;
-        $thumbUrl = $element->getThumbUrl($thumbSize);
-
-        if ($thumbUrl !== null) {
-            $imageSize2x = $thumbSize * 2;
-            $thumbUrl2x = $element->getThumbUrl($imageSize2x);
-
-            $srcsets = [
-                "$thumbUrl {$thumbSize}w",
-                "$thumbUrl2x {$imageSize2x}w",
-            ];
-            $sizesHtml = "{$thumbSize}px";
-            $srcsetHtml = implode(', ', $srcsets);
-            $imgHtml = "<div class='elementthumb' data-sizes='{$sizesHtml}' data-srcset='{$srcsetHtml}'></div>";
-        } else {
-            $imgHtml = '';
-        }
-
-        $htmlAttributes = array_merge(
-            $element->getHtmlAttributes($context['context']),
-            [
-                'class' => 'element ' . $elementSize,
-                'data-type' => get_class($element),
-                'data-id' => $element->id,
-                'data-site-id' => $element->siteId,
-                'data-status' => $element->getStatus(),
-                'data-label' => (string)$element,
-                'data-url' => $element->getUrl(),
-                'data-level' => $element->level,
-                'title' => $label . (Craft::$app->getIsMultiSite() ? ' – ' . $element->getSite()->name : ''),
-            ]);
-
-        if ($context['context'] === 'field') {
-            $htmlAttributes['class'] .= ' removable';
-        }
-
-        if ($element->hasErrors()) {
-            $htmlAttributes['class'] .= ' error';
-        }
-
-        if ($element::hasStatuses()) {
-            $htmlAttributes['class'] .= ' hasstatus';
-        }
-
-        if ($thumbUrl !== null) {
-            $htmlAttributes['class'] .= ' hasthumb';
-        }
-
-        $html = '<div';
-
-        // todo: swap this with Html::renderTagAttributse in 4.0
-        // (that will cause a couple breaking changes since `null` means "don't show" and `true` means "no value".)
-        foreach ($htmlAttributes as $attribute => $value) {
-            $html .= ' ' . $attribute . ($value !== null ? '="' . Html::encode($value) . '"' : '');
-        }
-
-        if (ElementHelper::isElementEditable($element)) {
-            $html .= ' data-editable';
-        }
-
-        if ($element->trashed) {
-            $html .= ' data-trashed';
-        }
-
-        $html .= '>';
-
-        if ($context['context'] === 'field' && isset($context['name'])) {
-            $html .= '<input type="hidden" name="' . $context['name'] . '[]" value="' . $element->id . '">';
-            $html .= '<a class="delete icon" title="' . Craft::t('app', 'Remove') . '"></a> ';
-        }
-
-        if ($element::hasStatuses()) {
-            $status = $element->getStatus();
-            $statusClasses = $status . ' ' . ($element::statuses()[$status]['color'] ?? '');
-            $html .= '<span class="status ' . $statusClasses . '"></span>';
-        }
-
-        $html .= $imgHtml;
-        $html .= '<div class="label">';
-
-        $html .= '<span class="title">';
-
-        $encodedLabel = Html::encode($label);
-
-        if (
-            $context['context'] === 'index' &&
-            !$element->trashed &&
-            ($cpEditUrl = $element->getCpEditUrl())
-        ) {
-            if ($element->getIsDraft()) {
-                $cpEditUrl = UrlHelper::urlWithParams($cpEditUrl, ['draftId' => $element->draftId]);
-            } else if ($element->getIsRevision()) {
-                $cpEditUrl = UrlHelper::urlWithParams($cpEditUrl, ['revisionId' => $element->revisionId]);
-            }
-
-            $cpEditUrl = Html::encode($cpEditUrl);
-            $html .= "<a href=\"{$cpEditUrl}\">{$encodedLabel}</a>";
-        } else {
-            $html .= $encodedLabel;
-        }
-
-        $html .= '</span></div></div>';
-
-        return $html;
+        return Cp::elementHtml(
+            $context['element'],
+            $context['context'] ?? 'index',
+            $size,
+            $context['name'] ?? null
+        );
     }
 }

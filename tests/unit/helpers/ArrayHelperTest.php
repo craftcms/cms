@@ -241,6 +241,42 @@ class ArrayHelperTest extends Unit
     }
 
     /**
+     * Test `whereIn()`
+     */
+    public function testWhereIn()
+    {
+        $array = [
+            'foo' => [
+                'type' => 'apple',
+                'num' => '1',
+            ],
+            'bar' => [
+                'type' => 'banana',
+                'num' => '2',
+            ],
+            'baz' => [
+                'type' => 'orange',
+                'num' => '3',
+            ],
+        ];
+
+        $filtered = ArrayHelper::whereIn($array, 'type', ['apple', 'banana', 'pickle']);
+        $this->assertCount(2, $filtered);
+        $this->assertSame(['foo', 'bar'], array_keys($filtered));
+
+        $filtered = ArrayHelper::whereIn($array, 'num', [1, 2, 3], true);
+        $this->assertEmpty($filtered);
+
+        $filtered = ArrayHelper::whereIn($array, 'num', [1, 2]);
+        $this->assertCount(2, $filtered);
+        $this->assertSame(['foo', 'bar'], array_keys($filtered));
+
+        $filtered = ArrayHelper::whereIn($array, 'num', [1, 2], false, false);
+        $this->assertCount(2, $filtered);
+        $this->assertSame([0, 1], array_keys($filtered));
+    }
+
+    /**
      * Test `whereMultiple` func
      */
     public function testWhereMultiple()

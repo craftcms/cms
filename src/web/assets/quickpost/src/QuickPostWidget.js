@@ -29,7 +29,7 @@
                 this.initFields();
 
                 var $menuBtn = this.$form.find('> .buttons > .btngroup > .menubtn'),
-                    $saveAndContinueEditingBtn = $menuBtn.next().find('> ul > li > a');
+                    $saveAndContinueEditingBtn = $menuBtn.data('menubtn').menu.$container.find('> ul > li > a');
 
                 $menuBtn.menubtn();
 

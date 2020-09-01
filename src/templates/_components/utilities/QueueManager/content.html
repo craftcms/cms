@@ -57,10 +57,10 @@
                                 </template>
                             </td>
                             <td>
-                                <a v-if="isRetryable(job)" class="btn small" data-icon="play" role="button" @click="retryJob(job)">
+                                <button type="button" v-if="isRetryable(job)" class="btn small" data-icon="play" @click="retryJob(job)">
                                     <template v-if="job.status == 2">{{ 'Restart'|t('app') }}</template>
                                     <template v-else>{{ 'Retry'|t('app') }}</template>
-                                </a>
+                                </button>
                             </td>
                             <td>
                                 <a v-if="job.status != 3" class="delete icon" title="{{ 'Release'|t('app') }}" role="button" @click="releaseJob(job)"></a>

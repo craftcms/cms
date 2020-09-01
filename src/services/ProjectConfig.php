@@ -27,7 +27,7 @@ use yii\base\Component;
 use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\base\NotSupportedException;
-use yii\caching\DbQueryDependency;
+use yii\caching\ExpressionDependency;
 use yii\web\ServerErrorHttpException;
 
 /**
@@ -64,6 +64,12 @@ class ProjectConfig extends Component
      */
     const FILE_ISSUES_CACHE_KEY = 'projectConfig:fileIssues';
     /**
+     * The cache key that is used to store the current project config diff
+     *
+     * @since 3.5.8
+     */
+    const DIFF_CACHE_KEY = 'projectConfig:diff';
+    /**
      * The duration that project config caches should be cached.
      */
     const CACHE_DURATION = 31536000; // 1 year
@@ -83,9 +89,15 @@ class ProjectConfig extends Component
      */
     const CONFIG_DELTA_FILENAME = 'delta.yaml';
     /**
+     * The project config key that Craft system info is stored at.
+     *
+     * @since 3.5.8
+     */
+    const CONFIG_SYSTEM = 'system';
+    /**
      * The project config key that the Craft schema version is stored at.
      */
-    const CONFIG_SCHEMA_VERSION_KEY = 'system.schemaVersion';
+    const CONFIG_SCHEMA_VERSION_KEY = self::CONFIG_SYSTEM . '.schemaVersion';
     /**
      * The array key to use for signaling ordered-to-associative array conversion.
      *
@@ -248,9 +260,9 @@ class ProjectConfig extends Component
     private $_isConfigModified = false;
 
     /**
-     * @var bool Whether the config should be saved to yaml file at the end of request
+     * @var bool Whether the config should be saved to DB after request
      */
-    private $_updateConfig = false;
+    private $_updateInternalConfig = false;
 
     /**
      * @var bool Whether we’re listening for the request end, to update the Yaml caches.
@@ -342,7 +354,7 @@ class ProjectConfig extends Component
     {
         if (isset($config['maxBackups'])) {
             $config['maxDeltas'] = ArrayHelper::remove($config, 'maxBackups');
-            Craft::$app->getDeprecator()->log(__CLASS__ . '::maxBackups', __CLASS__ . '::maxBackups has been deprecated. Use \'maxDeltas\' instead.');
+            Craft::$app->getDeprecator()->log(__CLASS__ . '::maxBackups', '`' . __CLASS__ . '::maxBackups` has been deprecated. Use `maxDeltas` instead.');
         }
 
         parent::__construct($config);
@@ -375,7 +387,7 @@ class ProjectConfig extends Component
         $this->_appliedConfig = [];
         $this->_configFileList = [];
         $this->_isConfigModified = false;
-        $this->_updateConfig = false;
+        $this->_updateInternalConfig = false;
         $this->_applyingYamlChanges = false;
         $this->_timestampUpdated = false;
         $this->_changesBeingApplied = null;
@@ -384,7 +396,7 @@ class ProjectConfig extends Component
     }
 
     /**
-     * Returns a config item value value by its path.
+     * Returns a config item value by its path.
      *
      * ---
      *
@@ -692,7 +704,7 @@ class ProjectConfig extends Component
      */
     public function updateStoredConfigAfterRequest()
     {
-        $this->_updateConfig = true;
+        $this->_updateInternalConfig = true;
     }
 
     /**
@@ -715,7 +727,12 @@ class ProjectConfig extends Component
      */
     public function ignorePendingChanges()
     {
-        return Craft::$app->getCache()->set(self::IGNORE_CACHE_KEY, $this->_getConfigFileModifiedTime(), self::CACHE_DURATION);
+        return Craft::$app->getCache()->set(
+            self::IGNORE_CACHE_KEY,
+            $this->_getConfigFileModifiedTime(),
+            self::CACHE_DURATION,
+            $this->getCacheDependency()
+        );
     }
 
     /**
@@ -740,10 +757,11 @@ class ProjectConfig extends Component
     public function saveModifiedConfigData()
     {
         if ($this->_isConfigModified) {
+            $this->_updateConfigVersion();
             $this->_updateYamlFiles();
         }
 
-        if (!$this->_updateConfig) {
+        if (!$this->_updateInternalConfig) {
             return;
         }
 
@@ -1126,6 +1144,7 @@ class ProjectConfig extends Component
 
         $config = $this->get();
         $config['dateModified'] = DateTimeHelper::currentTimeStamp();
+        $config[self::CONFIG_SYSTEM] = $this->_systemConfig($config[self::CONFIG_SYSTEM] ?? []);
         $config[Sites::CONFIG_SITEGROUP_KEY] = $this->_getSiteGroupData();
         $config[Sites::CONFIG_SITES_KEY] = $this->_getSiteData();
         $config[Sections::CONFIG_SECTIONS_KEY] = $this->_getSectionData();
@@ -1152,11 +1171,19 @@ class ProjectConfig extends Component
         $readOnly = $this->readOnly;
         $this->readOnly = false;
 
+        // Flush it out to yaml files first.
+        $this->_saveConfig($event->config);
+        $this->_updateYamlFiles();
+        $this->_updateConfigVersion();
+
+        // Now we can process the changes
         foreach ($event->config as $path => $value) {
             $this->set($path, $value, 'Project config rebuild');
         }
 
-        $this->_appliedConfig = $event->config;
+        // And now ensure that Project Config doesn't attempt to save to yaml files again
+        $this->_isConfigModified = false;
+        $this->_updateInternalConfig = true;
 
         $this->readOnly = $readOnly;
         $this->muteEvents = false;
@@ -1323,7 +1350,6 @@ class ProjectConfig extends Component
 
         if ($configData === null) {
             $configData = $this->_getConfigurationFromYaml() ?? [];
-            unset($configData['dateModified'], $currentConfig['dateModified']);
         }
 
         unset($configData['imports'], $currentConfig['imports']);
@@ -1575,6 +1601,16 @@ class ProjectConfig extends Component
     }
 
     /**
+     * Updates the config version used for cache invalidation.
+     */
+    private function _updateConfigVersion()
+    {
+        $info = Craft::$app->getInfo();
+        $info->configVersion = StringHelper::randomString(12);
+        Craft::$app->saveInfo($info, ['configVersion']);
+    }
+
+    /**
      * Update the config Yaml files with the buffered changes.
      *
      * @throws Exception if something goes wrong
@@ -1586,23 +1622,29 @@ class ProjectConfig extends Component
         try {
             $basePath = Craft::$app->getPath()->getProjectConfigPath();
 
+            // Delete everything except hidden files/folders
+            FileHelper::clearDirectory($basePath, [
+                'except' => ['.*', '.*/'],
+            ]);
+
             foreach ($config as $relativeFile => $configData) {
                 $configData = ProjectConfigHelper::cleanupConfig($configData);
                 ksort($configData);
                 $filePath = $basePath . DIRECTORY_SEPARATOR . $relativeFile;
                 FileHelper::writeToFile($filePath, Yaml::dump($configData, 20, 2));
             }
-
-            // See if there are any files that shouldn’t be around anymore
-            $basePathLength = strlen(FileHelper::normalizePath($basePath, '/'));
-            foreach ($this->_findConfigFiles($basePath) as $file) {
-                $path = substr(FileHelper::normalizePath($file, '/'), $basePathLength + 1);
-                if (!isset($config[$path])) {
-                    FileHelper::unlink($file);
-                }
-            }
         } catch (\Throwable $e) {
             Craft::$app->getCache()->set(self::FILE_ISSUES_CACHE_KEY, true, self::CACHE_DURATION);
+            if (isset($basePath)) {
+                // Try to delete everything (again?) so Craft doesn't apply half-baked project config data
+                try {
+                    FileHelper::clearDirectory($basePath, [
+                        'except' => ['.*', '.*/'],
+                    ]);
+                } catch (\Throwable $e) {
+                    // oh well
+                }
+            }
             throw new Exception('Unable to write new project config files', 0, $e);
         }
 
@@ -1707,14 +1749,6 @@ class ProjectConfig extends Component
         }
 
         // See if we can get away with using the cached data
-        $dependency = new DbQueryDependency([
-            'db' => 'db',
-            'query' => $this->_createProjectConfigQuery()
-                ->select(['value'])
-                ->where(['path' => 'dateModified']),
-            'method' => 'scalar'
-        ]);
-
         return Craft::$app->getCache()->getOrSet(self::STORED_CACHE_KEY, function() {
             $data = [];
             // Load the project config data
@@ -1735,7 +1769,32 @@ class ProjectConfig extends Component
                 $current = Json::decode(StringHelper::decdec($value));
             }
             return ProjectConfigHelper::cleanupConfig($data);
-        }, null, $dependency);
+        }, null, $this->getCacheDependency());
+    }
+
+    /**
+     * Returns the cache dependency that should be used for project config caches.
+     *
+     * @return ExpressionDependency
+     * @since 3.5.8
+     */
+    public function getCacheDependency(): ExpressionDependency
+    {
+        return new ExpressionDependency([
+            'expression' => Craft::class . '::$app->getInfo()->configVersion',
+        ]);
+    }
+
+    /**
+     * Returns the system config array.
+     *
+     * @param array $data
+     * @return array
+     */
+    private function _systemConfig(array $data): array
+    {
+        $data['schemaVersion'] = Craft::$app->schemaVersion;
+        return $data;
     }
 
     /**

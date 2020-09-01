@@ -17,6 +17,7 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\UrlHelper;
 use craft\models\Section;
 use craft\models\Site;
+use craft\services\Structures;
 use craft\web\assets\editentry\EditEntryAsset;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
@@ -132,9 +133,7 @@ class EntriesController extends BaseEntriesController
             $excludeIds[] = $entry->getSourceId();
 
             $variables['parentOptionCriteria'] = [
-                'siteId' => '*',
-                'preferSites' => [$site->id],
-                'unique' => true,
+                'siteId' => $site->id,
                 'sectionId' => $section->id,
                 'status' => null,
                 'where' => ['not in', 'elements.id', $excludeIds]
@@ -542,28 +541,13 @@ class EntriesController extends BaseEntriesController
                 throw new BadRequestHttpException('Request missing required entryId param');
             }
 
-            if (!empty($variables['draftId'])) {
-                $variables['entry'] = Entry::find()
-                    ->draftId($variables['draftId'])
-                    ->structureId($variables['section']->structureId)
-                    ->siteId($site->id)
-                    ->anyStatus()
-                    ->one();
-            } else if (!empty($variables['revisionId'])) {
-                $variables['entry'] = Entry::find()
-                    ->revisionId($variables['revisionId'])
-                    ->structureId($variables['section']->structureId)
-                    ->siteId($site->id)
-                    ->anyStatus()
-                    ->one();
-            } else {
-                $variables['entry'] = Entry::find()
-                    ->id($variables['entryId'])
-                    ->structureId($variables['section']->structureId)
-                    ->siteId($site->id)
-                    ->anyStatus()
-                    ->one();
-            }
+            $variables['entry'] = $this->_loadEntry(
+                $site,
+                $variables['section'],
+                $variables['entryId'],
+                $variables['draftId'] ?? null,
+                $variables['revisionId'] ?? null
+            );
 
             if (!$variables['entry']) {
                 // If they're attempting to access adraft/revision, or if the entry may be available in another
@@ -619,6 +603,79 @@ class EntriesController extends BaseEntriesController
 
         // Prevent the last entry type's field layout from being used
         $variables['entry']->fieldLayoutId = null;
+
+        return null;
+    }
+
+    /**
+     * Loads the requested entry.
+     *
+     * @param Site $site
+     * @param Section $section
+     * @param int $entryId
+     * @param int|null $draftId
+     * @param int|null $revisionId
+     * @return Entry|null
+     */
+    private function _loadEntry(Site $site, Section $section, int $entryId, int $draftId = null, int $revisionId = null)
+    {
+        if ($draftId) {
+            $entry = Entry::find()
+                ->draftId($draftId)
+                ->structureId($section->structureId)
+                ->siteId($site->id)
+                ->anyStatus()
+                ->one();
+        } else if ($revisionId) {
+            $entry = Entry::find()
+                ->revisionId($revisionId)
+                ->structureId($section->structureId)
+                ->siteId($site->id)
+                ->anyStatus()
+                ->one();
+        } else {
+            $entry = Entry::find()
+                ->id($entryId)
+                ->structureId($section->structureId)
+                ->siteId($site->id)
+                ->anyStatus()
+                ->one();
+        }
+
+        if ($entry) {
+            return $entry;
+        }
+
+        // If a draft or revision was requested in a Structure section, see if it's just missing a `structureelements` record
+        if ($section->structureId) {
+            if ($draftId) {
+                $entry = Entry::find()
+                    ->draftId($draftId)
+                    ->siteId($site->id)
+                    ->anyStatus()
+                    ->one();
+            } else if ($revisionId) {
+                $entry = Entry::find()
+                    ->revisionId($revisionId)
+                    ->siteId($site->id)
+                    ->anyStatus()
+                    ->one();
+            }
+
+            if ($entry) {
+                // Get the source entry
+                $sourceEntry = Entry::find()
+                    ->id($entryId)
+                    ->siteId($site->id)
+                    ->anyStatus()
+                    ->one();
+                if ($sourceEntry) {
+                    // Insert the draft/revision alongside the source entry
+                    Craft::$app->getStructures()->moveAfter($section->structureId, $entry, $sourceEntry, Structures::MODE_INSERT);
+                    return $entry;
+                }
+            }
+        }
 
         return null;
     }
