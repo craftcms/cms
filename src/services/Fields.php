@@ -560,7 +560,7 @@ class Fields extends Component
     /**
      * Returns all fields within a field context(s).
      *
-     * @param string|string[]|false|null $context The field context(s) to fetch fields from. Defaults to {@link ContentService::$fieldContext}.
+     * @param string|string[]|false|null $context The field context(s) to fetch fields from. Defaults to [[\craft\services\Content::$fieldContext]].
      * Set to `false` to get all fields regardless of context.
      * @return FieldInterface[] The fields
      */
@@ -639,7 +639,7 @@ class Fields extends Component
      * ```
      *
      * @param string $handle The field’s handle
-     * @param string|string[]|false|null $context The field context(s) to fetch fields from. Defaults to {@link ContentService::$fieldContext}.
+     * @param string|string[]|false|null $context The field context(s) to fetch fields from. Defaults to [[\craft\services\Content::$fieldContext]].
      * Set to `false` to get all fields regardless of context.
      * @return FieldInterface|null The field, or null if it doesn’t exist
      */
@@ -652,7 +652,7 @@ class Fields extends Component
      * Returns whether a field exists with a given handle and context.
      *
      * @param string $handle The field handle
-     * @param string|null $context The field context (defauts to ContentService::$fieldContext)
+     * @param string|null $context The field context (defauts to [[\craft\services\Content::$fieldContext]])
      * @return bool Whether a field with that handle exists
      */
     public function doesFieldWithHandleExist(string $handle, string $context = null): bool
