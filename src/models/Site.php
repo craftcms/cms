@@ -10,6 +10,7 @@ namespace craft\models;
 use Craft;
 use craft\base\Model;
 use craft\behaviors\EnvAttributeParserBehavior;
+use craft\i18n\Locale;
 use craft\records\Site as SiteRecord;
 use craft\validators\HandleValidator;
 use craft\validators\LanguageValidator;
@@ -238,6 +239,20 @@ class Site extends Model
     {
         $this->originalBaseUrl = (string)$this->baseUrl;
         $this->baseUrl = $baseUrl;
+    }
+
+    /**
+     * Returns the locale for this site’s language.
+     *
+     * @return Locale
+     * @since 3.5.8
+     */
+    public function getLocale(): Locale
+    {
+        if ($this->language === Craft::$app->language) {
+            return Craft::$app->getLocale();
+        }
+        return new Locale($this->language);
     }
 
     /**
