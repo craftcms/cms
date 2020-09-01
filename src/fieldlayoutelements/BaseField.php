@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutElement;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Cp;
 use craft\helpers\Html;
 
 /**
@@ -205,7 +206,7 @@ abstract class BaseField extends FieldLayoutElement
 
         $statusClass = $this->statusClass($element, $static);
 
-        return Craft::$app->getView()->renderTemplate('_includes/forms/field', [
+        return Cp::fieldHtml($inputHtml, [
             'id' => $this->id(),
             'fieldAttributes' => $this->containerAttributes($element, $static),
             'inputContainerAttributes' => $this->inputContainerAttributes($element, $static),
@@ -215,7 +216,6 @@ abstract class BaseField extends FieldLayoutElement
             'attribute' => $this->attribute(),
             'required' => !$static && $this->required,
             'instructions' => Html::encode($this->instructions ? Craft::t('site', $this->instructions) : $this->defaultInstructions($element, $static)),
-            'input' => $inputHtml,
             'tip' => $this->tip($element, $static),
             'warning' => $this->warning($element, $static),
             'orientation' => $this->orientation($element, $static),

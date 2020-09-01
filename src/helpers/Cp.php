@@ -11,7 +11,9 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\enums\LicenseKeyStatus;
 use craft\events\RegisterCpAlertsEvent;
+use http\Exception\InvalidArgumentException;
 use yii\base\Event;
+use yii\helpers\Markdown;
 
 /**
  * Class Cp
@@ -324,5 +326,126 @@ class Cp
         $html .= '</span></div></div>';
 
         return $html;
+    }
+
+    /**
+     * Renders a field’s HTML.
+     *
+     * @param string $inputHtml
+     * @param array $config
+     * @return string
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 3.5.8
+     */
+    public static function fieldHtml(string $inputHtml, array $config = []): string
+    {
+        $fieldId = $config['fieldId'] ?? (isset($config['id']) ? "{$config['id']}-field" : ('field' . mt_rand()));
+        $labelId = $config['labelId'] ?? "$fieldId-label";
+        $instructionsId = $config['instructionsId'] ?? "$fieldId-instructions";
+        $status = $config['status'] ?? null;
+        $label = isset($config['label']) && $config['label'] !== '__blank__' ? $config['label'] : null;
+        $siteId = Craft::$app->getIsMultiSite() && isset($config['siteId']) ? (int)$config['siteId'] : null;
+        if ($siteId) {
+            $site = Craft::$app->getSites()->getSiteById($siteId);
+            if (!$site) {
+                throw new InvalidArgumentException("Invalid site ID: $siteId");
+            }
+        } else {
+            $site = null;
+        }
+        $required = (bool)($config['required'] ?? false);
+        $instructions = $config['instructions'] ?? null;
+        $tip = $config['tip'] ?? null;
+        $warning = $config['warning'] ?? null;
+        $orientation = $config['orientation'] ?? ($site ? $site->getLocale() : Craft::$app->getLocale())->getOrientation();
+        $translatable = $config['translatable'] ?? ($site !== null);
+        $errors = $config['errors'] ?? null;
+        $fieldClass = array_merge(array_filter([
+            'field',
+            ($config['first'] ?? false) ? 'first' : null,
+            $errors ? 'has-errors' : null,
+        ]), Html::explodeClass($config['fieldClass'] ?? []));
+        if (isset($config['attribute']) && ($currentUser = Craft::$app->getUser()->getIdentity())) {
+            $showAttribute = $currentUser->admin && $currentUser->can('showFieldHandles');
+        } else {
+            $showAttribute = false;
+        }
+        $fieldAttributes = ArrayHelper::merge([
+            'class' => $fieldClass,
+            'id' => $fieldId,
+            'aria' => [
+                'describedby' => $instructions ? $instructionsId : false,
+            ],
+        ], $config['fieldAttributes'] ?? []);
+        $inputContainerAttributes = ArrayHelper::merge([
+            'class' => array_filter([
+                'input',
+                $orientation,
+                $errors ? 'errors' : null,
+            ])
+        ], $config['inputContainerAttributes'] ?? []);
+
+        return Html::tag('div',
+            ($status
+                ? Html::tag('div', Html::encode(mb_strtoupper($status[1][0])), [
+                    'class' => ['status-badge', $status[0]],
+                    'title' => $status[1],
+                ])
+                : '') .
+            (($label || $showAttribute)
+                ? Html::tag('div',
+                    ($label
+                        ? Html::tag('label', $label, ArrayHelper::merge([
+                            'id' => $labelId,
+                            'class' => $required ? ['required'] : [],
+                            'for' => $config['id'] ?? null,
+                        ], $config['labelAttributes'] ?? []))
+                        : '') .
+                    ($translatable
+                        ? Html::tag('div', '', [
+                            'title' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
+                            'class' => ['t9n-indicator'],
+                            'data' => [
+                                'icon' => 'language',
+                            ],
+                        ])
+                        : '') .
+                    ($showAttribute
+                        ? Html::tag('div', '', [
+                            'class' => ['flex-grow'],
+                        ]) . Craft::$app->getView()->renderTemplate('_includes/forms/copytextbtn', [
+                            'id' => "$fieldId-attribute",
+                            'class' => ['code', 'small', 'light'],
+                            'value' => $config['attribute'],
+                        ])
+                        : ''),
+                    [
+                        'class' => ['heading'],
+                    ]
+                )
+                : '') .
+            ($instructions
+                ? Html::tag('div', preg_replace('/&amp;(\w+);/', '&$1;', Markdown::process($instructions, 'gfm-comment')), [
+                    'id' => $instructionsId,
+                    'class' => ['instructions'],
+                ])
+                : '') .
+            Html::tag('div', $inputHtml, $inputContainerAttributes) .
+            ($tip
+                ? Html::tag('p', preg_replace('/&amp;(\w+);/', '&$1;', Markdown::processParagraph($tip)), [
+                    'class' => ['notice', 'with-icon'],
+                ])
+                : '') .
+            ($warning
+                ? Html::tag('p', preg_replace('/&amp;(\w+);/', '&$1;', Markdown::processParagraph($warning)), [
+                    'class' => ['warning', 'with-icon'],
+                ])
+                : '') .
+            ($errors
+                ? Craft::$app->getView()->renderTemplate('_includes/forms/errorList', [
+                    'errors' => $errors,
+                ])
+                : ''),
+            $fieldAttributes);
     }
 }
