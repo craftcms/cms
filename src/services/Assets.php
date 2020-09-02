@@ -852,16 +852,12 @@ class Assets extends Component
             $base = $baseFileName . '_' . $timestamp;
         }
 
-        $newFilename = $base . '.' . $extension;
-
-        if ($canUse($newFilename)) {
-            return $newFilename;
-        }
-
         $increment = 0;
 
-        while (++$increment) {
-            $newFilename = $base . '_' . $increment . '.' . $extension;
+        while (true) {
+            // Add the increment (if > 0) and keep the full filename w/ increment & extension from going over 255 chars
+            $suffix = ($increment ? "_$increment" : '') . ".$extension";
+            $newFilename = substr($base, 0, 255 - mb_strlen($suffix)) . $suffix;
 
             if ($canUse($newFilename)) {
                 break;
@@ -872,6 +868,8 @@ class Assets extends Component
                     'filename' => $originalFilename,
                 ]));
             }
+
+            $increment++;
         }
 
         return $newFilename;

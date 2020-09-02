@@ -6,6 +6,9 @@
 - Added support for childless GraphQL schema components.
 - Added `craft\migrations\Install::$applyProjectConfigYaml`.
 
+### Changed
+- Asset filenames are now automatically shortened if they are longer than 255 characters. ([#6766](https://github.com/craftcms/cms/issues/6766))
+
 ## 3.5.8 - 2020-09-01
 
 ### Added
