@@ -478,6 +478,7 @@ class TestSetup
             'password' => 'craftcms2018!!',
             'email' => 'support@craftcms.com',
             'site' => $site,
+            'applyProjectConfigYaml' => false,
         ]);
 
         $migration->safeUp();

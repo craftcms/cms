@@ -4,6 +4,7 @@
 
 ### Added
 - Added support for childless GraphQL schema components.
+- Added `craft\migrations\Install::$applyProjectConfigYaml`.
 
 ## 3.5.8 - 2020-09-01
 
