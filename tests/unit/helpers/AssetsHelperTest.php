@@ -92,7 +92,7 @@ class AssetsHelperTest extends Unit
     public function testPrepareAssetNameAsciiRemove()
     {
         Craft::$app->getConfig()->getGeneral()->convertFilenamesToAscii = true;
-        $this->assertSame('test.text', Assets::prepareAssetName('tes§t.text'));
+        $this->assertSame('tesSSt.text', Assets::prepareAssetName('tes§t.text'));
     }
 
     /**
