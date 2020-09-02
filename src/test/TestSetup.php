@@ -252,6 +252,7 @@ class TestSetup
         return ArrayHelper::merge($config, [
             'class' => $class,
             'id' => 'craft-test',
+            'env' => 'test',
             'basePath' => $srcPath
         ]);
     }
