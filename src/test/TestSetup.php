@@ -477,7 +477,7 @@ class TestSetup
             'username' => 'craftcms',
             'password' => 'craftcms2018!!',
             'email' => 'support@craftcms.com',
-            'site' => $site
+            'site' => $site,
         ]);
 
         $migration->safeUp();
