@@ -868,9 +868,9 @@ class Assets extends Component
             }
 
             if ($increment === 50) {
-                throw new AssetLogicException(Craft::t('app',
-                    'Could not find a suitable replacement filename for “{filename}”.',
-                    ['filename' => $filename]));
+                throw new AssetLogicException(Craft::t('app', 'Could not find a suitable replacement filename for “{filename}”.', [
+                    'filename' => $originalFilename,
+                ]));
             }
         }
 
