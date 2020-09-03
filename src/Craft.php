@@ -181,9 +181,10 @@ class Craft extends Yii
     {
         $storedFieldVersion = static::$app->getInfo()->fieldVersion;
         $compiledClassesPath = static::$app->getPath()->getCompiledClassesPath();
-        $filePath = $compiledClassesPath . DIRECTORY_SEPARATOR . 'CustomFieldBehavior.php';
+        $filePath = $compiledClassesPath . DIRECTORY_SEPARATOR . "CustomFieldBehavior_$storedFieldVersion.php";
 
-        if (self::_loadFieldAttributesFile($filePath, $storedFieldVersion)) {
+        if (file_exists($filePath)) {
+            include $filePath;
             return;
         }
 
@@ -191,7 +192,7 @@ class Craft extends Yii
 
         if (empty($fields)) {
             // Write and load it simultaneously since there are no custom fields to worry about
-            self::_generateCustomFieldBehavior([], $filePath, $storedFieldVersion, true, true);
+            self::_generateCustomFieldBehavior([], $filePath, true, true);
             return;
         }
 
@@ -200,7 +201,7 @@ class Craft extends Yii
         foreach ($fields as $field) {
             $fieldHandles[$field['handle']]['mixed'] = true;
         }
-        self::_generateCustomFieldBehavior($fieldHandles, $filePath, $storedFieldVersion, false, true);
+        self::_generateCustomFieldBehavior($fieldHandles, $filePath, false, true);
 
         // Now generate it again, this time with the correct field value types
         $fieldHandles = [];
@@ -221,18 +222,17 @@ class Craft extends Yii
                 $fieldHandles[$field['handle']][$type] = true;
             }
         }
-        self::_generateCustomFieldBehavior($fieldHandles, $filePath, $storedFieldVersion, true, false);
+        self::_generateCustomFieldBehavior($fieldHandles, $filePath, true, false);
     }
 
     /**
      * @param array $fieldHandles
      * @param string $filePath
-     * @param string $storedFieldVersion
      * @param bool $write
      * @param bool $load
      * @throws \yii\base\ErrorException
      */
-    private static function _generateCustomFieldBehavior(array $fieldHandles, string $filePath, string $storedFieldVersion, bool $write, bool $load)
+    private static function _generateCustomFieldBehavior(array $fieldHandles, string $filePath, bool $write, bool $load)
     {
         $methods = [];
         $handles = [];
@@ -263,13 +263,11 @@ EOD;
         // Replace placeholders with generated code
         $fileContents = str_replace(
             [
-                '{VERSION}',
                 '{METHOD_DOCS}',
                 '/* HANDLES */',
                 '/* PROPERTIES */',
             ],
             [
-                $storedFieldVersion,
                 implode("\n", $methods),
                 implode("\n", $handles),
                 implode("\n\n", $properties),
@@ -277,13 +275,20 @@ EOD;
             $fileContents);
 
         if ($write) {
-            $tmpFile = dirname($filePath) . DIRECTORY_SEPARATOR . uniqid(pathinfo($filePath, PATHINFO_FILENAME), true) . '.php';
+            $dir = dirname($filePath);
+            $tmpFile = $dir . DIRECTORY_SEPARATOR . uniqid(pathinfo($filePath, PATHINFO_FILENAME), true) . '.php';
             FileHelper::writeToFile($tmpFile, $fileContents);
             rename($tmpFile, $filePath);
             FileHelper::invalidate($filePath);
             if ($load) {
                 include $filePath;
             }
+
+            // Delete any other CustomFieldBehavior files
+            FileHelper::clearDirectory($dir, [
+                'only' => ['CustomFieldBehavior*.php'],
+                'except' => [basename($filePath)],
+            ]);
         } else if ($load) {
             // Just evaluate the code
             eval(preg_replace('/^<\?php\s*/', '', $fileContents));
@@ -342,37 +347,6 @@ EOD;
         $guzzleConfig = array_replace_recursive($guzzleConfig, $config);
 
         return new Client($guzzleConfig);
-    }
-
-    /**
-     * Loads a field attribute file, if it’s valid.
-     *
-     * @param string $path
-     * @param string $storedFieldVersion
-     * @return bool
-     */
-    private static function _loadFieldAttributesFile(string $path, string $storedFieldVersion): bool
-    {
-        if (!file_exists($path)) {
-            return false;
-        }
-
-        // Make sure it's up-to-date
-        $f = fopen($path, 'rb');
-        $line = fgets($f);
-        fclose($f);
-
-        if (strpos($line, "// v{$storedFieldVersion}") === false) {
-            return false;
-        }
-
-        try {
-            include $path;
-        } catch (\Throwable $e) {
-            return false;
-        }
-
-        return true;
     }
 }
 

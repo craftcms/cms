@@ -7,6 +7,7 @@
 - Added `craft\migrations\Install::$applyProjectConfigYaml`.
 
 ### Changed
+- The `craft\behaviors\CustomFieldBehavior` class is now saved to a file with a name based on the current field version, avoiding OPcache issues.
 - Asset filenames are now automatically shortened if they are longer than 255 characters. ([#6766](https://github.com/craftcms/cms/issues/6766))
 - Improved the documentation of the `./craft index-assets/one` command. ([#2065](https://github.com/craftcms/cms/issues/2065))
 
