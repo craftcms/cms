@@ -67,11 +67,15 @@ abstract class ObjectType extends GqlObjectType
     {
         $fieldName = GqlHelper::getFieldNameWithAlias($resolveInfo, $source);
 
-        $result = $source->$fieldName;
+        $result = null;
 
-        if ($result instanceof ElementQueryInterface) {
-            return $result->all();
+        if (is_object($source)) {
+            $result = $source->$fieldName;
+        } else if (is_array($source)) {
+            $result = $source[$fieldName] ?? null;
         }
+
+        $result = $result instanceof ElementQueryInterface ? $result->all(): $result;
 
         return $result;
     }
