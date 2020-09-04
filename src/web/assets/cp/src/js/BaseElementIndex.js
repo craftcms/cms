@@ -863,7 +863,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 this.$sortMenuBtn.attr('title', Craft.t('app', 'Sort by {attribute}', {attribute: label}));
                 this.$sortMenuBtn.text(label);
 
-                this.setSortDirection(attr === 'score' ? 'desc' : 'asc');
+                if (attr === 'score') {
+                    this.setSortDirection('desc');
+                } else {
+                    this.setSortDirection($option.data('default-dir') || 'asc');
+                }
 
                 if (attr === 'structure') {
                     this.$sortDirectionsList.find('a').addClass('disabled');
@@ -1995,7 +1999,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             modal: null,
             storageKey: null,
             criteria: null,
-            batchSize: 5,
+            batchSize: 100,
             disabledElementIds: [],
             selectable: false,
             multiSelect: false,

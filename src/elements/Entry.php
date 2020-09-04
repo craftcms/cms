@@ -462,17 +462,27 @@ class Entry extends Element
             'title' => Craft::t('app', 'Title'),
             'slug' => Craft::t('app', 'Slug'),
             'uri' => Craft::t('app', 'URI'),
-            'postDate' => Craft::t('app', 'Post Date'),
-            'expiryDate' => Craft::t('app', 'Expiry Date'),
+            [
+                'label' => Craft::t('app', 'Post Date'),
+                'orderBy' => 'postDate',
+                'defaultDir' => 'desc',
+            ],
+            [
+                'label' => Craft::t('app', 'Expiry Date'),
+                'orderBy' => 'expiryDate',
+                'defaultDir' => 'desc',
+            ],
             [
                 'label' => Craft::t('app', 'Date Created'),
                 'orderBy' => 'elements.dateCreated',
-                'attribute' => 'dateCreated'
+                'attribute' => 'dateCreated',
+                'defaultDir' => 'desc',
             ],
             [
                 'label' => Craft::t('app', 'Date Updated'),
                 'orderBy' => 'elements.dateUpdated',
-                'attribute' => 'dateUpdated'
+                'attribute' => 'dateUpdated',
+                'defaultDir' => 'desc',
             ],
             [
                 'label' => Craft::t('app', 'ID'),

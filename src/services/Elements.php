@@ -1408,8 +1408,13 @@ class Elements extends Component
                 $record->deleteWithChildren();
             }
 
-            if (!ElementHelper::isDraftOrRevision($element)) {
-                // Invalidate any caches involving this element
+            // Invalidate any caches involving this element
+            try {
+                $invalidateCaches = !ElementHelper::isDraftOrRevision($element);
+            } catch (\Throwable $e) {
+                $invalidateCaches = true;
+            }
+            if ($invalidateCaches) {
                 $this->invalidateCachesForElement($element);
             }
 

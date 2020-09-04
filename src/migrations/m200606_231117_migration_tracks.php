@@ -45,6 +45,11 @@ class m200606_231117_migration_tracks extends Migration
             ], [], false);
         }
 
+        // Delete any rows that somehow still are missing a track (perhaps due to a missing FK on the old pluginId column)
+        $this->delete(Table::MIGRATIONS, [
+            'track' => null,
+        ]);
+
         // Now we can set the track column to NOT NULL
         if ($this->db->getIsPgsql()) {
             // Manually construct the SQL for Postgres

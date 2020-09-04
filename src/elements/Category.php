@@ -307,12 +307,14 @@ class Category extends Element
             [
                 'label' => Craft::t('app', 'Date Created'),
                 'orderBy' => 'elements.dateCreated',
-                'attribute' => 'dateCreated'
+                'attribute' => 'dateCreated',
+                'defaultDir' => 'desc',
             ],
             [
                 'label' => Craft::t('app', 'Date Updated'),
                 'orderBy' => 'elements.dateUpdated',
-                'attribute' => 'dateUpdated'
+                'attribute' => 'dateUpdated',
+                'defaultDir' => 'desc',
             ],
             [
                 'label' => Craft::t('app', 'ID'),
