@@ -423,7 +423,7 @@ class Asset extends Element
             'id' => ['label' => Craft::t('app', 'ID')],
             'uid' => ['label' => Craft::t('app', 'UID')],
             'dateModified' => ['label' => Craft::t('app', 'File Modified Date')],
-            'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
+            'dateCreated' => ['label' => Craft::t('app', 'Date Uploaded')],
             'dateUpdated' => ['label' => Craft::t('app', 'Date Updated')],
             'uploader' => ['label' => Craft::t('app', 'Uploaded By')],
         ];
