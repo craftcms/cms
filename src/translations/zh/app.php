@@ -1702,9 +1702,9 @@ return [
     'Applying changes from the project config YAML files…' => '正在应用项目配置 YAML 文件的更改…',
     'Apply YAML Changes' => '应用 YAML 更改',
     'The number of seconds that the `Retry-After` HTTP header should be set to for 503 responses when the system is offline.' => 'The number of seconds that the `Retry-After` HTTP header should be set to for 503 responses when the system is offline.',
-    'Save draft' => 'Save draft',
-    'The label text to display beside the lightswitch’s enabled state.' => 'The label text to display beside the lightswitch’s enabled state.',
-    'not an existing translation23131321313' => 'not an existing translation23131321313',
+    'Save draft' => '保存草稿',
+    'The label text to display beside the lightswitch’s enabled state.' => '要在 Lightswitch 的启用状态旁边显示的标签文本。',
+    'not an existing translation23131321313' => '不是现有翻译23131321313',
     'Discard changes' => 'Discard changes',
     'Retry Duration' => 'Retry Duration',
     'Online' => 'Online'
