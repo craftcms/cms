@@ -59,7 +59,13 @@ abstract class Api
         }
 
         // Craft license
-        $headers['X-Craft-License'] = App::licenseKey() ?? (defined('CRAFT_LICENSE_KEY') ? '__INVALID__' : '__REQUEST__');
+        if ($licenseKey = App::licenseKey()) {
+            $headers['X-Craft-License'] = $licenseKey;
+        } else if (defined('CRAFT_LICENSE_KEY')) {
+            $headers['X-Craft-License'] = '__INVALID__';
+        } else if ($user) {
+            $headers['X-Craft-License'] = '__REQUEST__';
+        }
 
         // plugin info
         $pluginLicenses = [];

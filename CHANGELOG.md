@@ -12,6 +12,7 @@
 - Improved the style of up/down/right/left angles in the control panel.
 
 ### Fixed
+- Fixed a bug where `update` commands weren’t working if there was no `config/license.key` file yet. ([#6777](https://github.com/craftcms/cms/issues/6777))
 - Fixed a bug where it wasn’t possible for GraphQL resolvers to return arrays.
 
 ## 3.5.8 - 2020-09-01
