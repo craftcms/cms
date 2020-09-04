@@ -38,7 +38,7 @@ class Template extends BaseUiElement
      */
     protected function selectorIcon()
     {
-        return '@app/icons/template.svg';
+        return '@appicons/template.svg';
     }
 
     /**

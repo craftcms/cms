@@ -772,7 +772,7 @@ class Assets extends Component
             return $path;
         }
 
-        $svg = file_get_contents(Craft::getAlias('@app/icons/file.svg'));
+        $svg = file_get_contents(Craft::getAlias('@appicons/file.svg'));
 
         $extLength = strlen($ext);
         if ($extLength <= 3) {
