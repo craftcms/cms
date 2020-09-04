@@ -271,16 +271,22 @@ class User extends Element implements IdentityInterface
                 'email' => Craft::t('app', 'Email'),
                 'firstName' => Craft::t('app', 'First Name'),
                 'lastName' => Craft::t('app', 'Last Name'),
-                'lastLoginDate' => Craft::t('app', 'Last Login'),
+                [
+                    'label' => Craft::t('app', 'Last Login'),
+                    'orderBy' => 'lastLoginDate',
+                    'defaultDir' => 'desc',
+                ],
                 [
                     'label' => Craft::t('app', 'Date Created'),
                     'orderBy' => 'elements.dateCreated',
                     'attribute' => 'dateCreated',
+                    'defaultDir' => 'desc',
                 ],
                 [
                     'label' => Craft::t('app', 'Date Updated'),
                     'orderBy' => 'elements.dateUpdated',
                     'attribute' => 'dateUpdated',
+                    'defaultDir' => 'desc',
                 ],
                 [
                     'label' => Craft::t('app', 'ID'),
@@ -294,16 +300,22 @@ class User extends Element implements IdentityInterface
                 'firstName' => Craft::t('app', 'First Name'),
                 'lastName' => Craft::t('app', 'Last Name'),
                 'email' => Craft::t('app', 'Email'),
-                'lastLoginDate' => Craft::t('app', 'Last Login'),
+                [
+                    'label' => Craft::t('app', 'Last Login'),
+                    'orderBy' => 'lastLoginDate',
+                    'defaultDir' => 'desc',
+                ],
                 [
                     'label' => Craft::t('app', 'Date Created'),
                     'orderBy' => 'elements.dateCreated',
                     'attribute' => 'dateCreated',
+                    'defaultDir' => 'desc',
                 ],
                 [
                     'label' => Craft::t('app', 'Date Updated'),
                     'orderBy' => 'elements.dateUpdated',
                     'attribute' => 'dateUpdated',
+                    'defaultDir' => 'desc',
                 ],
                 [
                     'label' => Craft::t('app', 'ID'),

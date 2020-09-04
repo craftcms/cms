@@ -10,6 +10,8 @@
 - The `craft\behaviors\CustomFieldBehavior` class is now saved to a file with a name based on the current field version, avoiding OPcache issues.
 - Asset filenames are now automatically shortened if they are longer than 255 characters. ([#6766](https://github.com/craftcms/cms/issues/6766))
 - Improved the style of up/down/right/left angles in the control panel.
+- Built-in element types’ date sort options are now sorted in descending order by default when selected. ([#1153](https://github.com/craftcms/cms/issues/1153))
+- It’s now possible for element sort options returned by `craft\base\ElementInterface::sortOptions()` and `craft\base\Element::defineSortOptions()` to include `defaultDir` keys, which specify the default sort direction that should be used when the option is selected. ([#1153](https://github.com/craftcms/cms/issues/1153))
 
 ### Fixed
 - Fixed a bug where `update` commands weren’t working if there was no `config/license.key` file yet. ([#6777](https://github.com/craftcms/cms/issues/6777))

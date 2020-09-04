@@ -387,16 +387,22 @@ class Asset extends Element
             'title' => Craft::t('app', 'Title'),
             'filename' => Craft::t('app', 'Filename'),
             'size' => Craft::t('app', 'File Size'),
-            'dateModified' => Craft::t('app', 'File Modification Date'),
+            [
+                'label' => Craft::t('app', 'File Modification Date'),
+                'orderBy' => 'dateModified',
+                'defaultDir' => 'desc',
+            ],
             [
                 'label' => Craft::t('app', 'Date Uploaded'),
                 'orderBy' => 'elements.dateCreated',
                 'attribute' => 'dateCreated',
+                'defaultDir' => 'desc',
             ],
             [
                 'label' => Craft::t('app', 'Date Updated'),
                 'orderBy' => 'elements.dateUpdated',
                 'attribute' => 'dateUpdated',
+                'defaultDir' => 'desc',
             ],
             [
                 'label' => Craft::t('app', 'ID'),
