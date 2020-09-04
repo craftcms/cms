@@ -370,6 +370,18 @@ class Request extends \yii\web\Request
     }
 
     /**
+     * @inheritdoc
+     *
+     * ::: warning
+     * Don’t include the results of this method in places that will be cached, to avoid a cache poisoning attack.
+     * :::
+     */
+    public function getAbsoluteUrl()
+    {
+        return parent::getAbsoluteUrl();
+    }
+
+    /**
      * Returns the segments of the requested path.
      *
      * ::: tip
