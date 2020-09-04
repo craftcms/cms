@@ -1697,15 +1697,15 @@ return [
     'Are you sure you want to discard the pending project config YAML changes?' => 'Are you sure you want to discard the pending project config YAML changes?',
     'Regenerating project config YAML files from the loaded project config…' => 'Regenerating project config YAML files from the loaded project config…',
     'Your project config YAML files contain pending changes.' => 'Your project config YAML files contain pending changes.',
-    'Show all changes' => 'Show all changes',
-    'Offline' => 'Offline',
+    'Show all changes' => 'إظهار كل التغييرات',
+    'Offline' => 'غير متصل',
     'Applying changes from the project config YAML files…' => 'Applying changes from the project config YAML files…',
-    'Apply YAML Changes' => 'Apply YAML Changes',
+    'Apply YAML Changes' => 'تطبيق تغييرات YAML',
     'The number of seconds that the `Retry-After` HTTP header should be set to for 503 responses when the system is offline.' => 'The number of seconds that the `Retry-After` HTTP header should be set to for 503 responses when the system is offline.',
-    'Save draft' => 'Save draft',
+    'Save draft' => 'حفظ المسودة',
     'The label text to display beside the lightswitch’s enabled state.' => 'The label text to display beside the lightswitch’s enabled state.',
     'not an existing translation23131321313' => 'not an existing translation23131321313',
     'Discard changes' => 'Discard changes',
     'Retry Duration' => 'Retry Duration',
-    'Online' => 'Online'
+    'Online' => 'متصل'
 ];
