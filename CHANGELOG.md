@@ -15,6 +15,7 @@
 - Fixed a bug where `update` commands weren’t working if there was no `config/license.key` file yet. ([#6777](https://github.com/craftcms/cms/issues/6777))
 - Fixed a bug where it wasn’t possible for GraphQL resolvers to return arrays.
 - Fixed an error that could occur when updating to Craft 3.5 if the `migrations` table had rows with broken `pluginId` foreign keys.
+- Fixed an error that could occur when deleting a Matrix block type, if it contained nested block-based fields that had existing content. ([#6780](https://github.com/craftcms/cms/issues/6780))
 
 ## 3.5.8 - 2020-09-01
 
