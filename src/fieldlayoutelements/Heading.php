@@ -37,7 +37,7 @@ class Heading extends BaseUiElement
      */
     protected function selectorIcon()
     {
-        return '@app/icons/hash.svg';
+        return '@appicons/hash.svg';
     }
 
     /**

@@ -50,7 +50,7 @@ class Tip extends BaseUiElement
      */
     protected function selectorIcon()
     {
-        return '@app/icons/' . ($this->_isTip() ? 'tip' : 'alert') . '.svg';
+        return '@appicons/' . ($this->_isTip() ? 'tip' : 'alert') . '.svg';
     }
 
     /**

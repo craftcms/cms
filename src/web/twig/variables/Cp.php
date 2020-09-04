@@ -180,7 +180,7 @@ class Cp extends Component
                 $navItems[] = [
                     'label' => Craft::t('app', 'GraphQL'),
                     'url' => 'graphql',
-                    'icon' => '@app/icons/graphql.svg',
+                    'icon' => '@appicons/graphql.svg',
                     'subnav' => $subNavItems
                 ];
             }
@@ -277,58 +277,58 @@ class Cp extends Component
         $label = Craft::t('app', 'System');
 
         $settings[$label]['general'] = [
-            'iconMask' => '@app/icons/sliders.svg',
+            'iconMask' => '@appicons/sliders.svg',
             'label' => Craft::t('app', 'General')
         ];
         $settings[$label]['sites'] = [
-            'iconMask' => '@app/icons/world.svg',
+            'iconMask' => '@appicons/world.svg',
             'label' => Craft::t('app', 'Sites')
         ];
 
         if (!Craft::$app->getConfig()->getGeneral()->headlessMode) {
             $settings[$label]['routes'] = [
-                'iconMask' => '@app/icons/routes.svg',
+                'iconMask' => '@appicons/routes.svg',
                 'label' => Craft::t('app', 'Routes')
             ];
         }
 
         $settings[$label]['users'] = [
-            'iconMask' => '@app/icons/users.svg',
+            'iconMask' => '@appicons/users.svg',
             'label' => Craft::t('app', 'Users')
         ];
         $settings[$label]['email'] = [
-            'iconMask' => '@app/icons/envelope.svg',
+            'iconMask' => '@appicons/envelope.svg',
             'label' => Craft::t('app', 'Email')
         ];
         $settings[$label]['plugins'] = [
-            'iconMask' => '@app/icons/plugin.svg',
+            'iconMask' => '@appicons/plugin.svg',
             'label' => Craft::t('app', 'Plugins')
         ];
 
         $label = Craft::t('app', 'Content');
 
         $settings[$label]['fields'] = [
-            'iconMask' => '@app/icons/field.svg',
+            'iconMask' => '@appicons/field.svg',
             'label' => Craft::t('app', 'Fields')
         ];
         $settings[$label]['sections'] = [
-            'iconMask' => '@app/icons/newspaper.svg',
+            'iconMask' => '@appicons/newspaper.svg',
             'label' => Craft::t('app', 'Sections')
         ];
         $settings[$label]['assets'] = [
-            'iconMask' => '@app/icons/photo.svg',
+            'iconMask' => '@appicons/photo.svg',
             'label' => Craft::t('app', 'Assets')
         ];
         $settings[$label]['globals'] = [
-            'iconMask' => '@app/icons/globe.svg',
+            'iconMask' => '@appicons/globe.svg',
             'label' => Craft::t('app', 'Globals')
         ];
         $settings[$label]['categories'] = [
-            'iconMask' => '@app/icons/folder-open.svg',
+            'iconMask' => '@appicons/folder-open.svg',
             'label' => Craft::t('app', 'Categories')
         ];
         $settings[$label]['tags'] = [
-            'iconMask' => '@app/icons/tags.svg',
+            'iconMask' => '@appicons/tags.svg',
             'label' => Craft::t('app', 'Tags')
         ];
 
