@@ -2,12 +2,12 @@
   <div v-if="tablePagination" class="vue-admin-table-pagination flex pagination">
     <div
             @click="loadPage('prev')"
-            class="page-link" data-icon="leftangle"
+            class="page-link prev-page"
             :class="[isOnFirstPage ? 'disabled' : '']"
             title="Previous Page"></div>
     <div
             @click="loadPage('next')"
-            class="page-link" data-icon="rightangle"
+            class="page-link next-page"
             :class="[isOnLastPage ? 'disabled' : '']"
             title="Next Page"></div>
     <div v-show="tablePagination" class="page-info">{{tablePagination.from}}-{{tablePagination.to}} of {{paginationTotal}} {{countWording}}</div>

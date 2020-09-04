@@ -92,7 +92,7 @@ class AssetsHelperTest extends Unit
     public function testPrepareAssetNameAsciiRemove()
     {
         Craft::$app->getConfig()->getGeneral()->convertFilenamesToAscii = true;
-        $this->assertSame('test.text', Assets::prepareAssetName('tes§t.text'));
+        $this->assertSame('tesSSt.text', Assets::prepareAssetName('tes§t.text'));
     }
 
     /**
@@ -225,6 +225,9 @@ class AssetsHelperTest extends Unit
             ['te-@st.notaf ile', 'te !@#$%^&*()st.notaf ile', true, false],
             ['', '', false, false],
             ['-.', '', true, false],
+
+            // Make sure the filenames are getting cut down to 255 chars
+            [str_repeat('o', 251) . '.jpg', str_repeat('o', 252) . '.jpg', true, false],
         ];
     }
 

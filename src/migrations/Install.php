@@ -57,6 +57,12 @@ class Install extends Migration
     public $site;
 
     /**
+     * @var bool Whether to apply the existing project config YAML files, if they exist
+     * @since 3.5.9
+     */
+    public $applyProjectConfigYaml = true;
+
+    /**
      * @inheritdoc
      */
     public function safeUp()
@@ -1040,8 +1046,10 @@ class Install extends Migration
 
         $applyExistingProjectConfig = false;
 
-        $configFile = Craft::$app->getPath()->getProjectConfigFilePath();
-        if (file_exists($configFile)) {
+        if (
+            $this->applyProjectConfigYaml &&
+            file_exists($configFile = Craft::$app->getPath()->getProjectConfigFilePath())
+        ) {
             try {
                 $expectedSchemaVersion = (string)$projectConfig->get(ProjectConfig::CONFIG_SCHEMA_VERSION_KEY, true);
                 $craftSchemaVersion = (string)Craft::$app->schemaVersion;

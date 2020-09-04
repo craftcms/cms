@@ -116,6 +116,8 @@ class GqlSchema extends Model
                 $parts = explode('.', $permission);
                 if (count($parts) === 2) {
                     $this->_cachedPairs[$action][$parts[0]][] = $parts[1];
+                } else if (count($parts) === 1) {
+                    $this->_cachedPairs[$action][$parts[0]] = true;
                 }
             }
         }

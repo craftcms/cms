@@ -1631,13 +1631,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                             let totalPages = Math.max(Math.ceil(total / this.settings.batchSize), 1);
 
                             let $prevBtn = $('<div/>', {
-                                'class': 'page-link' + (this.page > 1 ? '' : ' disabled'),
-                                'data-icon': 'leftangle',
+                                'class': 'page-link prev-page' + (this.page > 1 ? '' : ' disabled'),
                                 title: Craft.t('app', 'Previous Page')
                             }).appendTo($paginationContainer);
                             let $nextBtn = $('<div/>', {
-                                'class': 'page-link' + (this.page < totalPages ? '' : ' disabled'),
-                                'data-icon': 'rightangle',
+                                'class': 'page-link next-page' + (this.page < totalPages ? '' : ' disabled'),
                                 title: Craft.t('app', 'Next Page')
                             }).appendTo($paginationContainer);
 
@@ -1997,7 +1995,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             modal: null,
             storageKey: null,
             criteria: null,
-            batchSize: 100,
+            batchSize: 5,
             disabledElementIds: [],
             selectable: false,
             multiSelect: false,

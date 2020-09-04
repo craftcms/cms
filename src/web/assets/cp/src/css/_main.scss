@@ -103,12 +103,9 @@ table.editable textarea {
 .secure:before,
 .insecure:before,
 .go:after,
-.menubtn:after,
 .required:after,
 #preview-btn:before,
 #share-btn:before,
-.toggle:before,
-a.fieldtoggle:before,
 [data-icon]:before,
 [data-icon-after]:after {
   @include icon;
@@ -386,34 +383,17 @@ li.sel a {
 }
 
 /* toggles */
-.toggle,
+.toggle:before,
 a.fieldtoggle:before {
-  width: 20px;
-  height: 20px;
-  line-height: 20px;
-  text-align: center;
-  body.ltr & {
-    transform: rotate(-90deg);
-  }
-  body.rtl & {
-    transform: rotate(90deg);
-  }
-  -webkit-transition: -webkit-transform linear 100ms;
-  -moz-transition: -moz-transform linear 100ms;
-  -ms-transition: -ms-transform linear 100ms;
+  @include angle(right);
   transition: transform linear 100ms;
 }
 
-.toggle:before,
-a.fieldtoggle:before {
-  content: 'downangle';
-}
-
-.toggle.expanded,
+.toggle.expanded:before,
 a.fieldtoggle.expanded:before,
-.sidebar nav li.expanded > .toggle,
-.structure li:not(.collapsed) > .row > .toggle {
-  transform: rotate(0) !important;
+.sidebar nav li.expanded > .toggle:before,
+.structure li:not(.collapsed) > .row > .toggle:before {
+  transform: rotate(45deg) !important;
 }
 
 a.fieldtoggle {
@@ -428,8 +408,8 @@ a.fieldtoggle {
 a.fieldtoggle:before {
   display: block;
   position: absolute;
-  top: -2px;
-  @include left(-6px);
+  top: 7px;
+  @include left(-1px);
 }
 
 /* emphasis */
@@ -1043,7 +1023,8 @@ ul.icons {
 }
 
 .btn {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   border-radius: $largeBorderRadius;
   padding: 7px 14px;
   border: none;
@@ -1109,15 +1090,6 @@ ul.icons {
     outline: none;
   }
 
-  &:not(.small) {
-    &[data-icon]:before,
-    &.icon:before,
-    &.menubtn[data-icon]:before,
-    &.menubtn.icon:before {
-      margin-top: -3px;
-    }
-  }
-
   &[data-icon]:not(:empty):before,
   &.icon:not(:empty):before,
   &.menubtn[data-icon]:empty:before,
@@ -1152,15 +1124,13 @@ ul.icons {
 
 .btn[data-icon]:before,
 .btn[data-icon-after]:after,
-.btn.icon:before,
-.menubtn:after {
+.btn.icon:before {
   position: relative;
 }
 
 .btn.small[data-icon]:before,
 .btn.small[data-icon-after]:after,
-.btn.icon.small:before,
-.menubtn.small:after {
+.btn.icon.small:before {
   font-size: 10px;
 }
 
@@ -1340,10 +1310,54 @@ ul.icons {
 
 /* menu buttons */
 .menubtn {
+  display: inline-flex;
+  align-items: center;
   user-select: none;
 
   &:after {
-    content: 'downangle';
+    @include angle;
+    position: relative;
+  }
+
+  &.btn {
+    &:after {
+      top: -1px;
+    }
+
+    &:not(.disabled):not(.inactive) {
+      &:active,
+      &.active {
+        &:after {
+          border-color: $textColor;
+        }
+      }
+    }
+
+    &.submit {
+      &:after {
+        border-color: $white !important;
+        opacity: 0.8;
+      }
+
+      &:not(.disabled):not(.inactive) {
+        &:hover,
+        &.hover,
+        &:active,
+        &.active {
+          &:after {
+            opacity: 1;
+          }
+        }
+      }
+    }
+  }
+
+  &:not(.btn):not(.icon) {
+    height: 17px;
+    &:after {
+      top: 1px;
+      border-color: $linkColor;
+    }
   }
 
   &:empty {
@@ -1688,12 +1702,26 @@ div.btn.submit input {
   }
 
   .page-link {
-    padding: 4px 13px 8px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     border-radius: $mediumBorderRadius;
-    color: $textColor;
 
-    &:before {
-      font-size: 1.2em;
+    &:after {
+      position: relative;
+      transition: border-color linear 100ms;
+    }
+
+    &.prev-page:after {
+      @include angle(left, $lightTextColor);
+      @include right(-1px);
+    }
+
+    &.next-page:after {
+      @include angle(right, $lightTextColor);
+      @include left(-1px);
     }
 
     &:not(.disabled) {
@@ -1704,12 +1732,18 @@ div.btn.submit input {
       &:hover {
         text-decoration: none;
         box-shadow: inset 0 0 0 1px $linkColor;
+
+        &:after {
+          border-color: $linkColor;
+        }
       }
     }
 
     &.disabled {
       opacity: 1;
-      color: $lightTextColor;
+      &:after {
+        border-color: $hairlineColor;
+      }
     }
   }
 }
@@ -1859,34 +1893,29 @@ table {
         }
 
         &.ordered {
+          position: relative;
           @include padding-right(26px);
-          background-image: url(../images/listview_sort.png);
-          background-repeat: no-repeat;
 
           &:first-child {
             @include padding-left(10px);
           }
 
-          &:not(.desc) {
-            body.ltr & {
-              background-position: 100% 9px;
+          &:not(.loading) {
+            &:after {
+              @include angle(up);
+              position: absolute;
+              @include right(10px);
+              top: calc(50% - 3px);
             }
-            body.rtl & {
-              background-position: 0 9px;
-            }
-          }
 
-          &.desc {
-            body.ltr & {
-              background-position: 100% -22px;
-            }
-            body.rtl & {
-              background-position: 0 -22px;
+            &.desc:after {
+              transform: rotate(45deg);
             }
           }
 
           &.loading {
             background-image: url(../images/spinner_tableheader.gif);
+            background-repeat: no-repeat;
             body.ltr & {
               background-position: 100% 16px;
             }
@@ -2019,15 +2048,6 @@ table {
 .datatablesorthelper tr:last-child th,
 .datatablesorthelper tr:last-child td {
   border-bottom: none !important;
-}
-
-.datatablesorthelper .tableview .toggle {
-  body.ltr & {
-    transform: rotate(-90deg) !important;
-  }
-  body.rtl & {
-    transform: rotate(90deg) !important;
-  }
 }
 
 /* elements */
@@ -2286,8 +2306,9 @@ $checkboxPadding: $checkboxSize + 4;
     .toggle {
       display: block;
       position: absolute;
-      top: calc(50% - 8px);
-      @include margin-left(-20px);
+      top: calc(50% - 7px);
+      @include margin-left(-16px);
+      padding: 4px;
     }
 
     .move + .toggle {
@@ -2404,7 +2425,8 @@ $checkboxPadding: $checkboxSize + 4;
       position: relative;
       z-index: 1;
       @include floatleft;
-      @include margin(4px, -8px, 0, -12px);
+      @include margin(10px, -8px, 0, -12px);
+      padding: 4px;
     }
 
     .row:after {
@@ -4791,31 +4813,25 @@ body .selectize-dropdown .active {
   display: none;
 }
 
-.ui-datepicker-prev:after,
-.ui-datepicker-next:after {
-  @include icon;
+.ui-datepicker-prev,
+.ui-datepicker-next {
   width: 20px;
-  margin-top: -2px;
-  line-height: 20px !important;
-  text-align: center;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover:after {
+    border-color: $linkColor;
+  }
 }
 
 .ui-datepicker-prev:after {
-  body.ltr & {
-    content: 'leftangle';
-  }
-  body.rtl & {
-    content: 'rightangle';
-  }
+  @include angle(left);
 }
 
 .ui-datepicker-next:after {
-  body.ltr & {
-    content: 'rightangle';
-  }
-  body.rtl & {
-    content: 'leftangle';
-  }
+  @include angle(right);
 }
 
 .ui-datepicker-title {
@@ -5282,9 +5298,7 @@ $titlebarBorderRadius: $largeBorderRadius - 1;
     & > .actions {
       & > .status {
         &.off {
-          display: inline-block;
-          @include floatleft;
-          @include margin(6px, 10px, 0, 0);
+          display: block;
         }
       }
     }
@@ -5308,11 +5322,17 @@ $titlebarBorderRadius: $largeBorderRadius - 1;
   }
 
   & > .actions {
+    display: flex;
+    align-items: center;
     position: absolute;
     z-index: 1;
     top: 4px;
     @include right(14px);
     cursor: default;
+
+    & > * {
+      @include margin(0, 0, 0, 10px);
+    }
 
     & > .status {
       &.off {
@@ -5322,21 +5342,23 @@ $titlebarBorderRadius: $largeBorderRadius - 1;
 
     a {
       padding: 0 !important;
-      @include margin-right(2px);
-      width: 15px;
       height: 20px;
       text-align: center;
       color: $darkHairlineColor;
-
-      &:hover {
-        width: 15px;
-        height: 20px;
-        text-align: center;
-        color: $linkColor;
-      }
+      transform: color linear 100ms;
 
       &.settings:after {
         @include margin-left(3px);
+        border-color: $darkHairlineColor;
+        transform: border-color linear 100ms;
+      }
+
+      &:hover {
+        color: $linkColor;
+
+        &.settings:after {
+          border-color: $linkColor;
+        }
       }
     }
   }
@@ -5477,16 +5499,9 @@ only screen and (min-device-pixel-ratio: 1.5),
 only screen and (min-resolution: 1.5dppx) {
   table.data {
     thead {
-      th {
-        &.ordered {
-          background-image: url(../images/listview_sort_2x.png);
-          background-size: 26px;
-
-          &.loading {
-            background-image: url(../images/spinner_tableheader_2x.gif);
-            background-size: 26px;
-          }
-        }
+      th.ordered.loading {
+        background-image: url(../images/spinner_tableheader_2x.gif);
+        background-size: 26px;
       }
     }
   }
