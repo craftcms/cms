@@ -391,12 +391,12 @@ class Asset extends Element
             [
                 'label' => Craft::t('app', 'Date Uploaded'),
                 'orderBy' => 'elements.dateCreated',
-                'attribute' => 'dateCreated'
+                'attribute' => 'dateCreated',
             ],
             [
                 'label' => Craft::t('app', 'Date Updated'),
                 'orderBy' => 'elements.dateUpdated',
-                'attribute' => 'dateUpdated'
+                'attribute' => 'dateUpdated',
             ],
             [
                 'label' => Craft::t('app', 'ID'),

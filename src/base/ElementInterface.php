@@ -383,7 +383,7 @@ interface ElementInterface extends ComponentInterface
      *     [
      *         'label' => Craft::t('app', 'Attribute Label'),
      *         'orderBy' => 'columnName',
-     *         'attribute' => 'attributeName'
+     *         'attribute' => 'attributeName',
      *     ],
      * ];
      * ```
