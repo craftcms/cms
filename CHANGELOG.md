@@ -13,6 +13,7 @@
 - Built-in element types’ date sort options are now sorted in descending order by default when selected. ([#1153](https://github.com/craftcms/cms/issues/1153))
 - It’s now possible for element sort options returned by `craft\base\ElementInterface::sortOptions()` and `craft\base\Element::defineSortOptions()` to include `defaultDir` keys, which specify the default sort direction that should be used when the option is selected. ([#1153](https://github.com/craftcms/cms/issues/1153))
 - Replaced the icon that identifies translatable fields.
+- The Settings → Fields page now identifies which fields are searchable and translatable. ([#5453](https://github.com/craftcms/cms/issues/5453))
 
 ### Fixed
 - Fixed a bug where `update` commands weren’t working if there was no `config/license.key` file yet. ([#6777](https://github.com/craftcms/cms/issues/6777))

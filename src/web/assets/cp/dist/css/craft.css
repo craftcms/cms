@@ -52,6 +52,8 @@ body.ltr .rtl .text, body.ltr .rtl table.editable textarea { text-align: right !
 /* icons */
 .icon:before, .menu ul.padded li a.sel:before, .menu .flex.padded.sel:before, .texticon:before, .element:before, #help:before, .secure:before, .insecure:before, .go:after, .required:after, #preview-btn:before, #share-btn:before, [data-icon]:before, [data-icon-after]:after { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; user-select: none; opacity: 0.8; }
 
+.badge-icon { display: -webkit-inline-flex; display: inline-flex; -webkit-align-items: center; align-items: center; -webkit-justify-content: center; justify-content: center; width: 17px; height: 17px; box-sizing: border-box; border: 1px solid #F0B429; border-radius: 3px; color: #F0B429; font-size: 9px; }
+
 .secure:before, .insecure:before { margin-top: -3px; font-size: 14px; }
 
 [data-icon]:before { content: attr(data-icon); }

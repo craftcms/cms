@@ -111,6 +111,19 @@ table.editable textarea {
   @include icon;
 }
 
+.badge-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 17px;
+  height: 17px;
+  box-sizing: border-box;
+  border: 1px solid $yellow500;
+  border-radius: $smallBorderRadius;
+  color: $yellow500;
+  font-size: 9px;
+}
+
 .secure:before,
 .insecure:before {
   margin-top: -3px;
