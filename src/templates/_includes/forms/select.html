@@ -25,7 +25,7 @@
   disabled: disabled ?? false,
   data: {
     'target-prefix': (toggle ?? false) ? (targetPrefix ?? '') : false,
-  }|filter,
+  },
 }|merge(inputAttributes ?? [], recursive=true) %}
 
 <div {{ attr(containerAttributes) }}>
