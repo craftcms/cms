@@ -1691,7 +1691,7 @@ return [
     'Make sure you’ve followed the <a href="{url}" target="_blank">Environment Setup</a> instructions before applying project config YAML changes.' => 'اطمینان حاصل کنید که قبل از اعمال تغییرات YAML پیکربندی پروژه، دستورالعمل‌های <a href="{url}" target="_blank">آماده‌سازی محیط</a> را رعایت کرده باشید.',
     'The label text to display beside the lightswitch’s disabled state.' => 'متن برچسبی که باید کنار حالت غیرفعال کلید روشن و خاموش نمایش داده شود.',
     'Development' => 'توسعه',
-    'Loaded Project Config Data' => 'داده پیکربندی پروژه بارگیری شده',
+    'Loaded Project Config Data' => 'داده‌های پیکربندی پروژه بارگیری شده',
     'OFF Label' => 'برچسب «خاموش»',
     'Project config YAML changes discarded.' => 'تغییرات YAML پیکربندی پروژه لغو شد.',
     'Are you sure you want to discard the pending project config YAML changes?' => 'آیا مطمئن هستید که می‌خواهید تغییرات YAML پیکربندی پروژه را لغو کنید؟',
