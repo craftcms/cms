@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unrelease
+## Unreleased
 
 ### Added
 - Added support for childless GraphQL schema components.
@@ -2815,7 +2815,7 @@
 - Fixed a bug where Assets fields set to restrict uploads to a single folder could have empty selector modals. ([#4522](https://github.com/craftcms/cms/issues/4522))
 - Fixed an error that could occur if a template was accessing the deprecated `locale` property of an element query, but `siteId` wasn’t set to an integer. ([#4531](https://github.com/craftcms/cms/issues/4531))
 - Fixed a bug where users without the “Publish live changes” permission for a section weren’t able to create new entries. ([#4528](https://github.com/craftcms/cms/issues/4529))
-- Fixed a PHP error that could occur when uploading files to Assets fields on the front-end. ([#4382](https://github.com/craftcms/cms/issues/4382))
+- Fixed a PHP error that could occur when uploading files to Assets fields on the front end. ([#4382](https://github.com/craftcms/cms/issues/4382))
 - Fixed a bug where elements listed in a Structure view could show descendant toggles even if they had no descendants. ([#4504](https://github.com/craftcms/cms/issues/4504))
 - Fixed a backwards compatibility issue. ([#4523](https://github.com/craftcms/cms/issues/4523))
 
@@ -3421,7 +3421,7 @@
 
 ### Fixed
 - Fixed a bug where Control Panel content areas weren’t getting their bottom padding applied in Firefox. ([#3874](https://github.com/craftcms/cms/issues/3874))
-- Fixed a PHP error that occurred on the front-end if two routes defined in Settings → Routes had the same URI pattern. ([#3922](https://github.com/craftcms/cms/issues/3922))
+- Fixed a PHP error that occurred on the front end if two routes defined in Settings → Routes had the same URI pattern. ([#3922](https://github.com/craftcms/cms/issues/3922))
 - Fixed a bug where Craft wasn’t always preselecting the correct tab on Control Panel pages if the tab name contained non-ASCII characters. ([#3923](https://github.com/craftcms/cms/issues/3923))
 - Fixed a bug where the `--uid` option on `resave/*` console commands wasn’t working. ([#3941](https://github.com/craftcms/cms/issues/3941))
 - Fixed a SQL error that could occur when running `resave/*` console commands.
@@ -4803,7 +4803,7 @@
 - Fixed a bug where it was not possible to pass a `--table-prefix` argument to the `setup/db-creds` command. ([#2791](https://github.com/craftcms/cms/pull/2791))
 - Fixed an error that occurred for users without permission to perform updates, if available update info wasn’t cached.
 - Fixed an error that occurred when `craft\elements\Asset::sources()` was called in a console request. ([#2798](https://github.com/craftcms/cms/issues/2798))
-- Fixed JavaScript errors that could occur on the front-end after deleting Matrix blocks. ([#2799](https://github.com/craftcms/cms/pull/2799))
+- Fixed JavaScript errors that could occur on the front end after deleting Matrix blocks. ([#2799](https://github.com/craftcms/cms/pull/2799))
 
 ## 3.0.3.1 - 2018-04-18
 
