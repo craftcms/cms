@@ -1,8 +1,8 @@
 <?php
 
 return [
-    '"{filename}" is not allowed in this field.' => '该字段中不允许使用"{filename}" 。',
-    '"{filename}" is too large.' => '"{filename}" 太大。',
+    '“{filename}” is not allowed in this field.' => '该字段中不允许使用"{filename}" 。',
+    '“{filename}” is too large.' => '"{filename}" 太大。',
     '(blank)' => '（空）',
     '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.' => '<strong>您的许可证已过期！</strong> 将您的 {name} 许可证续约一年，获取惊喜更新。',
     '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.' => '<strong>您已达到断点！</strong>安装 {update} 后可获更多更新。',
@@ -742,7 +742,7 @@ return [
     'verify_new_email_subject' => '验证您的新电子邮件地址',
     'week' => '星期',
     'weeks' => '星期',
-    '{attribute} "{value}" has already been taken.' => '{attribute} "{value}" 已被占用。',
+    '{attribute} “{value}” has already been taken.' => '{attribute} "{value}" 已被占用。',
     '{attribute} cannot contain emoji.' => '{attribute} 不能包含表情符号。',
     '{attribute} is not a valid URI' => '{attribute} 不是有效的 URI',
     '{attribute} isn’t a valid hex color value.' => '{attribute} 不是有效的十六进制颜色值。',

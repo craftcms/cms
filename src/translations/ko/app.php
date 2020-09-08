@@ -1,8 +1,8 @@
 <?php
 
 return [
-    '"{filename}" is not allowed in this field.' => '"{filename}"(은)는 이 필드에서 허용되지 않습니다.',
-    '"{filename}" is too large.' => '"{filename}"의 용량이 너무 큽니다.',
+    '“{filename}” is not allowed in this field.' => '"{filename}"(은)는 이 필드에서 허용되지 않습니다.',
+    '“{filename}” is too large.' => '"{filename}"의 용량이 너무 큽니다.',
     '(blank)' => '(공백)',
     '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.' => '<strong>라이선스가 만료되었습니다!</strong> {name} 라이선스를 갱신하여 년간 우수한 업데이트를 제공받으십시오.',
     '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.' => '<strong>중단점에 도달했습니다!</strong> {update}을(를) 설치하면 추가 업데이트가 제공됩니다.',
@@ -742,7 +742,7 @@ return [
     'verify_new_email_subject' => '새로운 이메일 주소를 확인해 주세요',
     'week' => '주',
     'weeks' => '주',
-    '{attribute} "{value}" has already been taken.' => '{attribute} "{value}"(이)가 이미 사용 중입니다.',
+    '{attribute} “{value}” has already been taken.' => '{attribute} "{value}"(이)가 이미 사용 중입니다.',
     '{attribute} cannot contain emoji.' => '{attribute}에는 이모지를 포함할 수 없습니다.',
     '{attribute} is not a valid URI' => '{attribute}은(는) 유효한 URI가 아닙니다',
     '{attribute} isn’t a valid hex color value.' => '{attribute}은(는) 유효한 16진수 색상 값이 아닙니다.',

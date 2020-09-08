@@ -1,8 +1,8 @@
 <?php
 
 return [
-    '"{filename}" is not allowed in this field.' => '« {filename} » n’est pas autorisé dans ce champ.',
-    '"{filename}" is too large.' => '« {filename} » est trop grand.',
+    '“{filename}” is not allowed in this field.' => '« {filename} » n’est pas autorisé dans ce champ.',
+    '“{filename}” is too large.' => '« {filename} » est trop grand.',
     '(blank)' => '(vide)',
     '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.' => '<strong>Votre licence a expiré!</strong> Renouvelez votre licence {name} pour une année supplémentaire de mises à jour incroyables.',
     '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.' => '<strong>Vous avez atteint un point d’interruption!</strong> Des mises à jour supplémentaires seront disponibles une fois que vous aurez installé {update}.',
@@ -742,7 +742,7 @@ Si vous n’attendiez aucun courriel de ce type, ignorez-le, tout simplement.',
     'verify_new_email_subject' => 'Vérifiez votre nouveau courriel',
     'week' => 'semaine',
     'weeks' => 'semaines',
-    '{attribute} "{value}" has already been taken.' => '{attribute} “{value}” est déjà utilisé.',
+    '{attribute} “{value}” has already been taken.' => '{attribute} “{value}” est déjà utilisé.',
     '{attribute} cannot contain emoji.' => '{attribute} ne peut pas contenir d’émoji.',
     '{attribute} is not a valid URI' => '{attribute} n’est pas un URI valide',
     '{attribute} isn’t a valid hex color value.' => '{attribute} n’est pas une valeur hexadécimale de couleur valide.',

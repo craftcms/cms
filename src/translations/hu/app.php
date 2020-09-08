@@ -1,8 +1,8 @@
 <?php
 
 return [
-    '"{filename}" is not allowed in this field.' => '"{filename}" nem engedélyezett ebben a mezőben.',
-    '"{filename}" is too large.' => '"{filename}" túl nagy.',
+    '“{filename}” is not allowed in this field.' => '"{filename}" nem engedélyezett ebben a mezőben.',
+    '“{filename}” is too large.' => '"{filename}" túl nagy.',
     '(blank)' => '(üres)',
     '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.' => '<strong>Lejárt a licenced!</strong> Újítsd meg {name} licenced további egy évre a lenyűgöző frissítésekhez.',
     '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.' => '<strong>Fordulóponthoz érkeztél!</strong> További frissítések a következő telepítése után lesznek elérhetők: {update}.',
@@ -740,7 +740,7 @@ Amennyiben nem neked szól ez a levél, egyszerűen csak hagyd figyelmen kívül
     'verify_new_email_subject' => 'Ellenőrizze e-mail címét',
     'week' => 'hét',
     'weeks' => 'hetek',
-    '{attribute} "{value}" has already been taken.' => '{attribute} "{value}" már foglalt.',
+    '{attribute} “{value}” has already been taken.' => '{attribute} "{value}" már foglalt.',
     '{attribute} cannot contain emoji.' => 'A(z) {attribute} nem tartalmazhat hangulatjelet.',
     '{attribute} is not a valid URI' => '{attribute} nem egy érvényes URI',
     '{attribute} isn’t a valid hex color value.' => 'A(z) {attribute} nem érvényes hexadecimális színérték.',

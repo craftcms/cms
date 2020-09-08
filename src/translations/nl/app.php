@@ -1,8 +1,8 @@
 <?php
 
 return [
-    '"{filename}" is not allowed in this field.' => '"{filename}" is niet toegestaan in dit veld.',
-    '"{filename}" is too large.' => '"{filename}" is te groot.',
+    '“{filename}” is not allowed in this field.' => '"{filename}" is niet toegestaan in dit veld.',
+    '“{filename}” is too large.' => '"{filename}" is te groot.',
     '(blank)' => '(leeg)',
     '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.' => '<strong>Uw licentie is verlopen.</strong> Verleng uw {name}-licentie voor een jaar lang geweldige updates.',
     '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.' => '<strong>U heeft een breekpunt bereikt!</strong> Meer updates zijn beschikbaar nadat u {update} installeert.',
@@ -742,7 +742,7 @@ Als je deze email niet verwachtte, kun je hem gewoon negeren.',
     'verify_new_email_subject' => 'Bevestig je nieuwe email-adres',
     'week' => 'week',
     'weeks' => 'weken',
-    '{attribute} "{value}" has already been taken.' => '{attribute} “{value}” is al genomen.',
+    '{attribute} “{value}” has already been taken.' => '{attribute} “{value}” is al genomen.',
     '{attribute} cannot contain emoji.' => '{attribute} mag geen emoji bevatten.',
     '{attribute} is not a valid URI' => '{attribute} is geen geldige URI',
     '{attribute} isn’t a valid hex color value.' => '{attribute} is een ongeldige hex kleuren waarde.',

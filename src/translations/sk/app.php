@@ -1,8 +1,8 @@
 <?php
 
 return [
-    '"{filename}" is not allowed in this field.' => '„{filename}“ nie je v tomto poli povolený.',
-    '"{filename}" is too large.' => 'Súbor {filename} je príliš veľký.',
+    '“{filename}” is not allowed in this field.' => '„{filename}“ nie je v tomto poli povolený.',
+    '“{filename}” is too large.' => 'Súbor {filename} je príliš veľký.',
     '(blank)' => '(prázdne)',
     '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.' => '<strong>Platnosť licencie vypršala.</strong> Obnovte licenciu {name} na ďalší rok a získate úžasné aktualizácie.',
     '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.' => '<strong>Dosiahli ste zlomový bod!</strong> Ďalšie aktualizácie sa sprístupnia po inštalácii aktualizácie {update}.',
@@ -742,7 +742,7 @@ Ak si tento email neočakával, jednoducho ho ignoruj.',
     'verify_new_email_subject' => 'Overiť novú emailovú adresu',
     'week' => 'týždeň',
     'weeks' => 'týždne',
-    '{attribute} "{value}" has already been taken.' => '{attribute} „{value}“ je už obsadený.',
+    '{attribute} “{value}” has already been taken.' => '{attribute} „{value}“ je už obsadený.',
     '{attribute} cannot contain emoji.' => 'Atribút {attribute} nemôže obsahovať emoji.',
     '{attribute} is not a valid URI' => 'Atribút {attribute} nie je platný identifikátor URI',
     '{attribute} isn’t a valid hex color value.' => 'Atribút {attribute} nie je platná hexadecimálna hodnota farby.',

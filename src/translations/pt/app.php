@@ -1,8 +1,8 @@
 <?php
 
 return [
-    '"{filename}" is not allowed in this field.' => '"{filename}" não é permitido neste campo.',
-    '"{filename}" is too large.' => '"{filename}" é demasiado grande.',
+    '“{filename}” is not allowed in this field.' => '"{filename}" não é permitido neste campo.',
+    '“{filename}” is too large.' => '"{filename}" é demasiado grande.',
     '(blank)' => '(vazio)',
     '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.' => '<strong>A sua licença expirou!</strong> Renove a sua {name} licença para mais um ano de incríveis atualizações.',
     '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.' => '<strong>Atingiu um ponto de paragem!</strong> Estarão disponíveis mais atualizações após a instalação de {update}.',
@@ -742,7 +742,7 @@ Se você não solicitou este e-mail, simplesmente ignore.',
     'verify_new_email_subject' => 'Verifique o seu novo endereço de e-mail',
     'week' => 'semana',
     'weeks' => 'semanas',
-    '{attribute} "{value}" has already been taken.' => '{attribute} "{value}" já está em uso.',
+    '{attribute} “{value}” has already been taken.' => '{attribute} "{value}" já está em uso.',
     '{attribute} cannot contain emoji.' => '{attribute} não pode conter emojis.',
     '{attribute} is not a valid URI' => '{attribute} não é um URI válido',
     '{attribute} isn’t a valid hex color value.' => '{attribute} não é um valor de cor hexadecimal válido.',
