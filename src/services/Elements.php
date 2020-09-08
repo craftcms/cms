@@ -2158,6 +2158,7 @@ class Elements extends Component
 
         // Force propagation for new elements
         $propagate = $propagate && $element::isLocalized() && Craft::$app->getIsMultiSite();
+        $originalPropagateAll = $element->propagateAll;
 
         if ($isNewElement) {
             // Give it a UID right away
@@ -2180,17 +2181,20 @@ class Elements extends Component
         }
 
         if (!$element->beforeSave($isNewElement)) {
+            $element->propagateAll = $originalPropagateAll;
             return false;
         }
 
         // Get the sites supported by this element
         if (empty($supportedSites = ElementHelper::supportedSitesForElement($element))) {
+            $element->propagateAll = $originalPropagateAll;
             throw new UnsupportedSiteException($element, $element->siteId, 'All elements must have at least one site associated with them.');
         }
 
         // Make sure the element actually supports the site it's being saved in
         $supportedSiteIds = ArrayHelper::getColumn($supportedSites, 'siteId');
         if (!in_array($element->siteId, $supportedSiteIds, false)) {
+            $element->propagateAll = $originalPropagateAll;
             throw new UnsupportedSiteException($element, $element->siteId, 'Attempting to save an element in an unsupported site.');
         }
 
@@ -2212,6 +2216,7 @@ class Elements extends Component
         // Validate
         if ($runValidation && !$element->validate()) {
             Craft::info('Element not saved due to validation error: ' . print_r($element->errors, true), __METHOD__);
+            $element->propagateAll = $originalPropagateAll;
             return false;
         }
 
@@ -2230,6 +2235,7 @@ class Elements extends Component
                     $elementRecord = ElementRecord::findOne($element->id);
 
                     if (!$elementRecord) {
+                        $element->propagateAll = $originalPropagateAll;
                         throw new ElementNotFoundException("No element exists with the ID '{$element->id}'");
                     }
                 } else {
@@ -2276,12 +2282,14 @@ class Elements extends Component
                 $dateCreated = DateTimeHelper::toDateTime($elementRecord->dateCreated);
 
                 if ($dateCreated === false) {
+                    $element->propagateAll = $originalPropagateAll;
                     throw new Exception('There was a problem calculating dateCreated.');
                 }
 
                 $dateUpdated = DateTimeHelper::toDateTime($elementRecord->dateUpdated);
 
                 if ($dateUpdated === false) {
+                    $element->propagateAll = $originalPropagateAll;
                     throw new Exception('There was a problem calculating dateUpdated.');
                 }
 
@@ -2337,6 +2345,7 @@ class Elements extends Component
             }
 
             if (!$siteSettingsRecord->save(false)) {
+                $element->propagateAll = $originalPropagateAll;
                 throw new Exception('Couldn’t save elements’ site settings record.');
             }
 
@@ -2385,6 +2394,7 @@ class Elements extends Component
         $this->_updateSearchIndex = $oldUpdateSearchIndex;
 
         if ($e !== null) {
+            $element->propagateAll = $originalPropagateAll;
             throw $e;
         }
 
@@ -2478,6 +2488,7 @@ class Elements extends Component
 
         // Clear the element's record of dirty fields
         $element->markAsClean();
+        $element->propagateAll = $originalPropagateAll;
 
         return true;
     }
