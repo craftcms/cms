@@ -1,8 +1,8 @@
 <?php
 
 return [
-    '"{filename}" is not allowed in this field.' => '"{filename}" در این فیلد مجاز نیست.',
-    '"{filename}" is too large.' => '"{filename}" بیش از حد طولانی است.',
+    '“{filename}” is not allowed in this field.' => '"{filename}" در این فیلد مجاز نیست.',
+    '“{filename}” is too large.' => '"{filename}" بیش از حد طولانی است.',
     '(blank)' => '(خالی)',
     '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.' => '<strong>لایسنس شما منقضی شده است!</strong> لایسنس {name} خودتان را برای یکسال دیگر از بروزرسانی های بی نظیر تجدید نمایید.',
     '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.' => '<strong>شما به یک نقطه وقفه رسیده اید!</strong> بروزرسانی های بیشتر بعد از نصب {update} در دسترس قرار خواهند گرفت.',
@@ -742,7 +742,7 @@ return [
     'verify_new_email_subject' => 'پست الکترونیکی جدیدتان را تایید نمایید',
     'week' => 'هفته',
     'weeks' => 'هفته',
-    '{attribute} "{value}" has already been taken.' => '{attribute} "{value}" از قبل گرفته شده است.',
+    '{attribute} “{value}” has already been taken.' => '{attribute} "{value}" از قبل گرفته شده است.',
     '{attribute} cannot contain emoji.' => '{attribute} نمی تواند شامل شکلک باشد.',
     '{attribute} is not a valid URI' => '{attribute} یک URI معتبر نیست',
     '{attribute} isn’t a valid hex color value.' => '{attribute} یک مقدار هگزادسیمال معتبر برای رنگ نیست.',
