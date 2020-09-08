@@ -1,8 +1,8 @@
 <?php
 
 return [
-    '"{filename}" is not allowed in this field.' => '«{filename}» er ikke tillatt for dette feltet.',
-    '"{filename}" is too large.' => '«{filename}» er for stor.',
+    '“{filename}” is not allowed in this field.' => '«{filename}» er ikke tillatt for dette feltet.',
+    '“{filename}” is too large.' => '«{filename}» er for stor.',
     '(blank)' => '(tom)',
     '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.' => '<strong>Lisensen har utløpt!</strong> Forny {name}-lisensen din for et nytt år med fantastiske oppdateringer.',
     '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.' => '<strong>Du har nådd et stoppunkt!</strong> Flere oppdateringer blir tilgjengelige etter at du har installert {update}.',
@@ -738,7 +738,7 @@ Har du ikke bedt om denne e-posten, vennligst se bort fra den.',
     'verify_new_email_subject' => 'Bekreft din nye e-postadresse',
     'week' => 'uke',
     'weeks' => 'uker',
-    '{attribute} "{value}" has already been taken.' => '{attribute} «{value}» er allerede tatt.',
+    '{attribute} “{value}” has already been taken.' => '{attribute} «{value}» er allerede tatt.',
     '{attribute} cannot contain emoji.' => '{attribute} kan ikke inneholde emoji.',
     '{attribute} is not a valid URI' => '{attribute} er ikke en gyldig URI',
     '{attribute} isn’t a valid hex color value.' => '{attribute} er ikke en gyldig heksadesimal fargeverdi.',
