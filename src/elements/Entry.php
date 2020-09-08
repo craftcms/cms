@@ -911,7 +911,7 @@ class Entry extends Element
 
         return [
             'templates/render', [
-                'template' => $sectionSiteSettings[$siteId]->template,
+                'template' => (string)$sectionSiteSettings[$siteId]->template,
                 'variables' => [
                     'entry' => $this,
                 ]

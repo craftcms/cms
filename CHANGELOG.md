@@ -23,6 +23,7 @@
 - Fixed a bug where the `_includes/forms/select.html` template wasn’t always setting the `data-target-prefix` attribute if `toggle` was set.
 - Fixed a bug where Number fields could return incorrect values via GraphQL. ([#6743](https://github.com/craftcms/cms/issues/6743))
 - Fixe a bug where duplicating elements from their edit pages could result in the selected site’s content getting propagated to all other sites for the duplicated element. ([#6804](https://github.com/craftcms/cms/issues/6804))
+- Fixed a 400 error that could occur when a section’s Template setting was blank.
 
 ## 3.5.8 - 2020-09-01
 
