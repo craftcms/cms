@@ -1,8 +1,8 @@
 <?php
 
 return [
-    '"{filename}" is not allowed in this field.' => 'Pro toto pole není "{filename}" povolen.',
-    '"{filename}" is too large.' => 'Soubor {filename} je příliš velký.',
+    '“{filename}” is not allowed in this field.' => 'Pro toto pole není "{filename}" povolen.',
+    '“{filename}” is too large.' => 'Soubor {filename} je příliš velký.',
     '(blank)' => '(prázdné)',
     '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.' => '<strong>Platnost vaší licence vypršela!</strong> Obnovte si licenci {name} na další rok a získáte skvělé aktualizace.',
     '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.' => '<strong>Dosáhli jste koncového bodu!</strong> Více aktualizací bude k dispozici po instalaci {update}.',
@@ -738,7 +738,7 @@ Pokud nevíte, o co se jedná, tuto zprávu klidně ignorujte.',
     'verify_new_email_subject' => 'Ověřte svou novou emailovou adresu',
     'week' => 'týden',
     'weeks' => 'týdny',
-    '{attribute} "{value}" has already been taken.' => '{attribute} "{value}" je již obsazen.',
+    '{attribute} “{value}” has already been taken.' => '{attribute} "{value}" je již obsazen.',
     '{attribute} cannot contain emoji.' => '{attribute} nemůže obsahovat emoji.',
     '{attribute} is not a valid URI' => '{attribute} není platná URI',
     '{attribute} isn’t a valid hex color value.' => '{attribute} není platná hodnota hexadecimální barvy.',
