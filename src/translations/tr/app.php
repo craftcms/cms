@@ -1,8 +1,8 @@
 <?php
 
 return [
-    '"{filename}" is not allowed in this field.' => '"{filename}" bu alan adında kullanılamaz.',
-    '"{filename}" is too large.' => '"{filename}" çok büyük.',
+    '“{filename}” is not allowed in this field.' => '“{filename}” is not allowed in this field.',
+    '“{filename}” is too large.' => '“{filename}” is too large.',
     '(blank)' => '(boş)',
     '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.' => '<strong>Lisansınızın süresi doldu!</strong> Harika güncellemelerle dolu bir yıl daha geçirmek için {name} lisansınızı güncelleyin.',
     '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.' => '<strong>Bir ara noktaya ulaştınız!</strong> Siz {update} yükledikten sonra daha fazla güncelleme sunulacak.',
@@ -738,7 +738,7 @@ Bu epostayı beklemiyorduysanız, görmezden gelin.',
     'verify_new_email_subject' => 'Yeni e-posta adresinizi doğrulayın',
     'week' => 'hafta',
     'weeks' => 'haftalar',
-    '{attribute} "{value}" has already been taken.' => '{attribute} "{value}" zaten kullanılmış.',
+    '{attribute} “{value}” has already been taken.' => '{attribute} “{value}” has already been taken.',
     '{attribute} cannot contain emoji.' => '{attribute} emoji içeremez.',
     '{attribute} is not a valid URI' => '{attribute} geçerli bir URI değil',
     '{attribute} isn’t a valid hex color value.' => '{attribute} geçerli bir onaltılık renk değeri değil.',
