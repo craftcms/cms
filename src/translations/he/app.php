@@ -1,8 +1,8 @@
 <?php
 
 return [
-    '"{filename}" is not allowed in this field.' => '"{filename}" אסור לשימוש בשדה זה.',
-    '"{filename}" is too large.' => '"{filename}" גדול מדי.',
+    '“{filename}” is not allowed in this field.' => '"{filename}" אסור לשימוש בשדה זה.',
+    '“{filename}” is too large.' => '"{filename}" גדול מדי.',
     '(blank)' => '(ריק)',
     '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.' => '<strong dir="rtl">תוקף הרישיון שלך פג!</strong> חדש את רשיון {name} שלך לשנה נוספת של עדכונים מדהימים.',
     '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.' => '<strong dir="rtl">הגעת לנקודת עצירה!</strong> עדכונים נוספים יהיו זמינים לאחר התקנת {update}.',
@@ -742,7 +742,7 @@ return [
     'verify_new_email_subject' => 'אמת את כתובת האימייל שלך',
     'week' => 'שבוע',
     'weeks' => 'שבועות',
-    '{attribute} "{value}" has already been taken.' => '{attribute} "{value}" כבר תפוס.',
+    '{attribute} “{value}” has already been taken.' => '{attribute} "{value}" כבר תפוס.',
     '{attribute} cannot contain emoji.' => '{attribute} אינו יכול להכיל אימוג\'י.',
     '{attribute} is not a valid URI' => '{attribute} הוא לא URI תקין',
     '{attribute} isn’t a valid hex color value.' => '{attribute} אינו ערך צבע hex חוקי.',
