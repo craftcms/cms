@@ -1,8 +1,8 @@
 <?php
 
 return [
-    '"{filename}" is not allowed in this field.' => '「{filename}」はこのフィールドでは許可されていません。',
-    '"{filename}" is too large.' => '「{filename}」は大きすぎます。',
+    '“{filename}” is not allowed in this field.' => '「{filename}」はこのフィールドでは許可されていません。',
+    '“{filename}” is too large.' => '「{filename}」は大きすぎます。',
     '(blank)' => '(空白)',
     '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.' => '<strong>ライセンスの期限が切れました！</strong>有用なアップデートをもう 1 年受けられるよう、{name} のラインセンスを更新してください。',
     '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.' => '<strong>ブレークポイントに到達しました！</strong>今後のアップデートは {update} をインストールした後にご利用いただけます。',
@@ -742,7 +742,7 @@ return [
     'verify_new_email_subject' => '新しいメールアドレスを確認する',
     'week' => '週',
     'weeks' => '週',
-    '{attribute} "{value}" has already been taken.' => '{attribute} 「{value}」はすでに取得済みです。',
+    '{attribute} “{value}” has already been taken.' => '{attribute} 「{value}」はすでに取得済みです。',
     '{attribute} cannot contain emoji.' => '{attribute}に絵文字を含めることはできません。',
     '{attribute} is not a valid URI' => '{attribute}は無効なURIです。',
     '{attribute} isn’t a valid hex color value.' => '{attribute}は有効な 16 進数の色の値ではありません。',
