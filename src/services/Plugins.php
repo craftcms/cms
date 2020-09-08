@@ -995,7 +995,7 @@ class Plugins extends Component
                 $info['hasMultipleEditions'] &&
                 (
                     (!empty($pluginInfo['licensedEdition']) && $pluginInfo['licensedEdition'] !== end($editions)) ||
-                    $pluginInfo['edition'] !== end($editions)
+                    ($pluginInfo['edition'] ?? 'standard') !== end($editions)
                 )
             )
         );
