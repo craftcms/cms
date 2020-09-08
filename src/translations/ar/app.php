@@ -1,8 +1,8 @@
 <?php
 
 return [
-    '"{filename}" is not allowed in this field.' => '"{filename}" غير مسموح به في هذا الحقل.',
-    '"{filename}" is too large.' => '"{filename}" كبير للغاية.',
+    '“{filename}” is not allowed in this field.' => '"{filename}" غير مسموح به في هذا الحقل.',
+    '“{filename}” is too large.' => '"{filename}" كبير للغاية.',
     '(blank)' => '(فراغ)',
     '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.' => '<strong dir="rtl">لقد انتهت صلاحية ترخيصك!</strong> جدد ترخيص {name} لعام آخر من التحديثات المذهلة.',
     '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.' => '<strong dir="rtl">لقد وصلت إلى نقطة توقف!</strong> ستتوافر المزيد من التحديثات بعد تثبيت {update}.',
@@ -742,7 +742,7 @@ return [
     'verify_new_email_subject' => 'تأكيد صحة عنوان بريدك الإلكتروني الجديد',
     'week' => 'أسبوع',
     'weeks' => 'أسبوع/أسابيع',
-    '{attribute} "{value}" has already been taken.' => '"{attribute} "{value} تم أخذه بالفعل.',
+    '{attribute} “{value}” has already been taken.' => '"{attribute} "{value} تم أخذه بالفعل.',
     '{attribute} cannot contain emoji.' => 'لا يمكن أن تحتوي {attribute} على رموز المشاعر.',
     '{attribute} is not a valid URI' => '{attribute} ليس معرف URI صالح',
     '{attribute} isn’t a valid hex color value.' => '{attribute} هو قيمة لون hex غير صالحة.',
