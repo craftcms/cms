@@ -26,6 +26,7 @@
 - Fixed a 400 error that could occur when a section’s Template setting was blank.
 - Fixed a bug where GraphQL queries for entry drafts weren’t getting invalidated when drafts were saved or deleted. ([#6792](https://github.com/craftcms/cms/issues/6792))
 - Fixed an error that could occur when running the `project-config/apply` command, if there was a Single section that was enabled for a site that was disabled on the front end. ([#6799](https://github.com/craftcms/cms/issues/6799))
+- Fixed a bug where the `tests/setup` command wasn’t working. ([#6790](https://github.com/craftcms/cms/issues/6790))
 
 ## 3.5.8 - 2020-09-01
 
