@@ -429,9 +429,23 @@ class Elements extends Component
             "element::$elementType::*",
             "element::$elementType::$element->id",
         ];
-        foreach ($element->getCacheTags() as $tag) {
-            $tags[] = "element::$elementType::$tag";
+
+        try {
+            $rootElement = ElementHelper::rootElement($element);
+        } catch (\Throwable $e) {
+            $rootElement = $element;
         }
+
+        if ($rootElement->getIsDraft()) {
+            $tags[] = "element::$elementType::drafts";
+        } else if ($rootElement->getIsRevision()) {
+            $tags[] = "element::$elementType::revisions";
+        } else {
+            foreach ($element->getCacheTags() as $tag) {
+                $tags[] = "element::$elementType::$tag";
+            }
+        }
+
         TagDependency::invalidate(Craft::$app->getCache(), $tags);
     }
 
@@ -1409,14 +1423,7 @@ class Elements extends Component
             }
 
             // Invalidate any caches involving this element
-            try {
-                $invalidateCaches = !ElementHelper::isDraftOrRevision($element);
-            } catch (\Throwable $e) {
-                $invalidateCaches = true;
-            }
-            if ($invalidateCaches) {
-                $this->invalidateCachesForElement($element);
-            }
+            $this->invalidateCachesForElement($element);
 
             if ($element->hardDelete) {
                 Db::delete(Table::ELEMENTS, [
@@ -2424,10 +2431,8 @@ class Elements extends Component
                 }
             }
 
-            if (!$isDraftOrRevision) {
-                // Invalidate any caches involving this element
-                $this->invalidateCachesForElement($element);
-            }
+            // Invalidate any caches involving this element
+            $this->invalidateCachesForElement($element);
         }
 
         // Update search index
