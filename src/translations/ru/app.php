@@ -1,8 +1,8 @@
 <?php
 
 return [
-    '"{filename}" is not allowed in this field.' => '«{filename}» не допускается в этом поле.',
-    '"{filename}" is too large.' => 'Файл {filename} слишком большой.',
+    '“{filename}” is not allowed in this field.' => '«{filename}» не допускается в этом поле.',
+    '“{filename}” is too large.' => 'Файл {filename} слишком большой.',
     '(blank)' => '(пусто)',
     '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.' => '<strong>Срок действия вашей лицензии истек!</strong> Обновите лицензию {name} еще на год, чтобы иметь доступ ко всем обновлениям.',
     '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.' => '<strong>Вы достигли контрольной точки!</strong> Новые обновления будут доступны после установки {update}.',
@@ -742,7 +742,7 @@ return [
     'verify_new_email_subject' => 'Подтвердите свой новый адрес электронной почты',
     'week' => 'неделя',
     'weeks' => 'недели',
-    '{attribute} "{value}" has already been taken.' => '{attribute} «{value}» уже занято.',
+    '{attribute} “{value}” has already been taken.' => '{attribute} «{value}» уже занято.',
     '{attribute} cannot contain emoji.' => '{attribute} не может содержать эмотиконы.',
     '{attribute} is not a valid URI' => '{attribute} не является допустимым URI',
     '{attribute} isn’t a valid hex color value.' => '{attribute} не является допустимым шестнадцатеричным значением цвета.',
