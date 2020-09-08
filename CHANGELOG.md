@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.5.9 - 2020-09-08
 
 ### Added
 - Added support for childless GraphQL schema components.
