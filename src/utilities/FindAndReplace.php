@@ -40,7 +40,7 @@ class FindAndReplace extends Utility
      */
     public static function iconPath()
     {
-        return Craft::getAlias('@app/icons/wand.svg');
+        return Craft::getAlias('@appicons/wand.svg');
     }
 
     /**

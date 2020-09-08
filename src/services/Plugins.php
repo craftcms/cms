@@ -995,7 +995,7 @@ class Plugins extends Component
                 $info['hasMultipleEditions'] &&
                 (
                     (!empty($pluginInfo['licensedEdition']) && $pluginInfo['licensedEdition'] !== end($editions)) ||
-                    $pluginInfo['edition'] !== end($editions)
+                    ($pluginInfo['edition'] ?? 'standard') !== end($editions)
                 )
             )
         );
@@ -1101,7 +1101,7 @@ class Plugins extends Component
         $iconPath = ($basePath !== false) ? $basePath . DIRECTORY_SEPARATOR . 'icon.svg' : false;
 
         if ($iconPath === false || !is_file($iconPath) || !FileHelper::isSvg($iconPath)) {
-            $iconPath = Craft::getAlias('@app/icons/default-plugin.svg');
+            $iconPath = Craft::getAlias('@appicons/default-plugin.svg');
         }
 
         return file_get_contents($iconPath);

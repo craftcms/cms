@@ -40,7 +40,7 @@ class Updates extends Utility
      */
     public static function iconPath()
     {
-        return Craft::getAlias('@app/icons/excite.svg');
+        return Craft::getAlias('@appicons/excite.svg');
     }
 
     /**

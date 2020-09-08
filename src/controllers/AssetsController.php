@@ -1226,7 +1226,7 @@ class AssetsController extends Controller
     {
         $statusCode = $e instanceof HttpException && $e->statusCode ? $e->statusCode : 500;
         return $this->response
-            ->sendFile(Craft::getAlias('@app/icons/broken-image.svg'), 'nope.svg', [
+            ->sendFile(Craft::getAlias('@appicons/broken-image.svg'), 'nope.svg', [
                 'mimeType' => 'image/svg+xml',
                 'inline' => true,
             ])

@@ -278,7 +278,7 @@ class AppController extends Controller
                 }
             }
 
-            $error = 'An error occurred running nuw migrations.';
+            $error = 'An error occurred running new migrations.';
             if ($restored) {
                 $error .= ' The database has been restored to its previous state.';
             } else if (isset($restoreException)) {
@@ -521,7 +521,7 @@ class AppController extends Controller
 
         // Update our records & use all licensed plugins as a starting point
         if (!empty($pluginLicenses)) {
-            $defaultIconUrl = Craft::$app->getAssetManager()->getPublishedUrl('@app/icons/default-plugin.svg', true);
+            $defaultIconUrl = Craft::$app->getAssetManager()->getPublishedUrl('@appicons/default-plugin.svg', true);
             $formatter = Craft::$app->getFormatter();
             foreach ($pluginLicenses as $pluginLicenseInfo) {
                 if (isset($pluginLicenseInfo['plugin'])) {

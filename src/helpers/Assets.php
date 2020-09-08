@@ -166,7 +166,8 @@ class Assets
             $baseName = $baseNameSanitized;
         }
 
-        return $baseName . $extension;
+        // Put them back together, but keep the full filename w/ extension from going over 255 chars
+        return substr($baseName, 0, 255 - strlen($extension)) . $extension;
     }
 
     /**

@@ -70,6 +70,7 @@
                         text: sortOptionLabel(sortOption),
                         data: {
                             attr: sortOption.attribute ?? sortOption.orderBy ?? key,
+                            'default-dir': sortOption.defaultDir ?? false,
                         }
                     }) }}
                 </li>
