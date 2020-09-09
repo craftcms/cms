@@ -135,6 +135,25 @@ class RequestTest extends TestCase
         $this->assertEquals(false, $request->getIsCpRequest());
         $this->assertEquals('bar/baz', $request->getPathInfo());
 
+        // Site request w/ base URI - Craft installed in subfolder
+        // https://github.com/craftcms/cms/issues/6579
+        $_SERVER = array_merge($oldServer, [
+            'REQUEST_URI' => '/foo/bar/baz',
+            'SCRIPT_NAME' => '/foo/index.php',
+            'SERVER_NAME' => 'craft.test',
+        ]);
+        $sites = new Sites();
+        $sites->setCurrentSite(new Site([
+            'language' => 'en-US',
+            'baseUrl' => 'http://craft.test/foo/bar',
+        ]));
+        $request = new Request([
+            'isCpRequest' => false,
+            'sites' => $sites,
+        ]);
+        $this->assertEquals(false, $request->getIsCpRequest());
+        $this->assertEquals('baz', $request->getPathInfo());
+
         // Implicit CP request - Craft installed in subfolder
         $_SERVER = array_merge($oldServer, [
             'REQUEST_URI' => '/foo/bar/baz',

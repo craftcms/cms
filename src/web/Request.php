@@ -283,6 +283,15 @@ class Request extends \yii\web\Request
         // Trim off any leading path segments that are part of the base URL
         if ($this->_path !== '' && isset($baseUrl) && ($basePath = parse_url($baseUrl, PHP_URL_PATH)) !== null) {
             $basePath = $this->_normalizePath($basePath);
+
+            // If Craft is running from a subfolder, chop the subfolder path off of the base path first
+            if (
+                ($requestBaseUrl = $this->_normalizePath($this->getBaseUrl())) &&
+                strpos($basePath . '/', $requestBaseUrl . '/') === 0
+            ) {
+                $basePath = ltrim(substr($basePath, strlen($requestBaseUrl)), '/');
+            }
+
             if (strpos($this->_path . '/', $basePath . '/') === 0) {
                 $this->_path = ltrim(substr($this->_path, strlen($basePath)), '/');
             }
