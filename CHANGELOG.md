@@ -4,6 +4,8 @@
 
 ### Added
 - Added `craft\fields\data\OptionData::$valid`.
+- Added `craft\web\Request::$generalConfig`.
+- Added `craft\web\Request::$sites`.
 
 ### Fixed
 - Fixed a bug where all fields were showing as searchable on the Settings → Fields page on MySQL installs. ([#6808](https://github.com/craftcms/cms/issues/6808))
