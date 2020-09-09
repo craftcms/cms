@@ -10,6 +10,7 @@ namespace craft\fields;
 use Craft;
 use craft\base\ElementInterface;
 use craft\fields\data\MultiOptionsFieldData;
+use craft\helpers\ArrayHelper;
 
 /**
  * Checkboxes represents a Checkboxes field.
@@ -54,6 +55,11 @@ class Checkboxes extends BaseOptionsField
      */
     protected function inputHtml($value, ElementInterface $element = null): string
     {
+        /** @var MultiOptionsFieldData $value */
+        if (ArrayHelper::contains($value, 'valid', false, true)) {
+            Craft::$app->getView()->setInitialDeltaValue($this->handle, null);
+        }
+
         return Craft::$app->getView()->renderTemplate('_includes/forms/checkboxGroup', [
             'name' => $this->handle,
             'values' => $value,

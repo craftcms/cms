@@ -2,8 +2,12 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\fields\data\OptionData::$valid`.
+
 ### Fixed
 - Fixed a bug where all fields were showing as searchable on the Settings → Fields page on MySQL installs. ([#6808](https://github.com/craftcms/cms/issues/6808))
+- Fixed a bug where Dropdown, Radio Buttons, Checkboxes, and Multi-select fields weren’t getting validation errors if an invalid value was posted to them. ([#6535](https://github.com/craftcms/cms/issues/6535))
 
 ## 3.5.9 - 2020-09-08
 
