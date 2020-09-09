@@ -195,7 +195,7 @@ class Request extends \yii\web\Request
         }
 
         // Determine the request path
-        $this->_path = $this->_normalizePath($this->getFullPath());
+        $this->_path = $this->getFullPath();
 
         // Figure out whether a site or the control panel were requested
         // ---------------------------------------------------------------------
