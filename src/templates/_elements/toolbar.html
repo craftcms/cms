@@ -25,7 +25,7 @@
 
 {% if showStatusMenu or context == 'index' %}
     <div>
-        <div class="btn menubtn statusmenubtn"><span class="status"></span>{{ "All"|t('app') }}</div>
+        <button type="button" class="btn menubtn statusmenubtn"><span class="status"></span>{{ "All"|t('app') }}</button>
         <div class="menu">
             <ul class="padded">
                 <li><a data-status="" class="sel"><span class="status"></span>{{ "All"|t('app') }}</a></li>
@@ -60,7 +60,7 @@
     <div class="clear hidden" title="{{ 'Clear'|t('app') }}"></div>
 </div>
 <div>
-    <div class="btn menubtn sortmenubtn"{% if sortOptions %} title="{{ 'Sort by {attribute}'|t('app', { attribute: sortOptionLabel(sortOptions|first) }) }}"{% endif %} data-icon="asc">{{ sortOptions ? sortOptionLabel(sortOptions|first) }}</div>
+    <button type="button" class="btn menubtn sortmenubtn"{% if sortOptions %} title="{{ 'Sort by {attribute}'|t('app', { attribute: sortOptionLabel(sortOptions|first) }) }}"{% endif %} data-icon="asc">{{ sortOptions ? sortOptionLabel(sortOptions|first) }}</button>
     <div class="menu">
         <ul class="padded sort-attributes">
             {% for key, sortOption in sortOptions %}
@@ -70,6 +70,7 @@
                         text: sortOptionLabel(sortOption),
                         data: {
                             attr: sortOption.attribute ?? sortOption.orderBy ?? key,
+                            'default-dir': sortOption.defaultDir ?? false,
                         }
                     }) }}
                 </li>

@@ -199,7 +199,7 @@ class Matrix extends Component
                     // This error *might* not be entirely accurate, but it's such an edge case that it's probably better
                     // for the error to be worded for the common problem (two duplicate handles within the same block
                     // type).
-                    $error = Craft::t('app', '{attribute} "{value}" has already been taken.',
+                    $error = Craft::t('app', '{attribute} “{value}” has already been taken.',
                         [
                             'attribute' => Craft::t('app', 'Handle'),
                             'value' => $field->handle
@@ -513,7 +513,7 @@ class Matrix extends Component
                 if ($value && (!isset($uniqueAttributeValues[$attribute]) || !in_array($value, $uniqueAttributeValues[$attribute], true))) {
                     $uniqueAttributeValues[$attribute][] = $value;
                 } else {
-                    $blockType->addError($attribute, Craft::t('app', '{attribute} "{value}" has already been taken.',
+                    $blockType->addError($attribute, Craft::t('app', '{attribute} “{value}” has already been taken.',
                         [
                             'attribute' => $blockType->getAttributeLabel($attribute),
                             'value' => Html::encode($value)

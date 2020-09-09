@@ -397,6 +397,7 @@ class HtmlHelperTest extends Unit
             ['<div id="foo-bar"></div><div data-reverse-target="foo-bar">', '<div id="bar"></div><div data-reverse-target="bar">', 'foo', false],
             ['<div id="foo-bar"></div><div data-reverse-target="#foo-bar">', '<div id="bar"></div><div data-reverse-target="#bar">', 'foo', false],
             ['<div id="foo-bar-baz"></div><div data-target-prefix="foo-bar-">', '<div id="bar-baz"></div><div data-target-prefix="bar-">', 'foo', false],
+            ['<div id="foo-bar-baz"></div><div data-target-prefix=".bar-">', '<div id="bar-baz"></div><div data-target-prefix=".bar-">', 'foo', false],
             ['<div class="foo bar">', '<div class="foo bar">', 'foo', false],
             ['<div class="foo-bar foo-baz">', '<div class="bar baz">', 'foo', true],
             ['<div class="foo-bar-baz">', '<div class="bar-baz">', 'foo', true],

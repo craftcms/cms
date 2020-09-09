@@ -148,8 +148,8 @@ JS;
             'Edit',
             'Element',
             'Elements',
-            'Enabled everywhere',
             'Enabled for {site}',
+            'Enabled',
             'Enter the name of the folder',
             'Enter your password to continue.',
             'Enter your password to log back in.',
@@ -212,6 +212,7 @@ JS;
             'Replace it',
             'Replace the folder (all existing files will be deleted)',
             'Save as a new asset',
+            'Save draft',
             'Save',
             'Saving',
             'Score',
@@ -299,6 +300,7 @@ JS;
             'allowUppercaseInSlug' => (bool)$generalConfig->allowUppercaseInSlug,
             'apiParams' => Craft::$app->apiParams,
             'asciiCharMap' => StringHelper::asciiCharMap(true, Craft::$app->language),
+            'autosaveDrafts' => (bool)$generalConfig->autosaveDrafts,
             'baseApiUrl' => Craft::$app->baseApiUrl,
             'baseCpUrl' => UrlHelper::cpUrl(),
             'baseSiteUrl' => UrlHelper::siteUrl(),
@@ -327,7 +329,7 @@ JS;
             'pageTrigger' => $generalConfig->getPageTrigger(),
             'path' => $request->getPathInfo(),
             'pathParam' => $generalConfig->pathParam,
-            'previewIframeResizerOptions' => $generalConfig->previewIframeResizerOptions !== [] ? $generalConfig->previewIframeResizerOptions : null,
+            'previewIframeResizerOptions' => $this->_previewIframeResizerOptions($generalConfig),
             'primarySiteId' => $primarySite ? (int)$primarySite->id : null,
             'primarySiteLanguage' => $primarySite->language ?? null,
             'Pro' => Craft::Pro,
@@ -402,6 +404,24 @@ JS;
         }
 
         return $groups;
+    }
+
+    /**
+     * @param GeneralConfig $generalConfig
+     * @return array|false|null
+     */
+    private function _previewIframeResizerOptions(GeneralConfig $generalConfig)
+    {
+        if (!$generalConfig->useIframeResizer) {
+            return false;
+        }
+
+        // Treat false as [] as well now that useIframeResizer exists
+        if (empty($generalConfig->previewIframeResizerOptions)) {
+            return null;
+        }
+
+        return $generalConfig->previewIframeResizerOptions;
     }
 
     private function _publishableSections(User $currentUser): array

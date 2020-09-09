@@ -40,7 +40,7 @@ class DbBackup extends Utility
      */
     public static function iconPath()
     {
-        return Craft::getAlias('@app/icons/database.svg');
+        return Craft::getAlias('@appicons/database.svg');
     }
 
     /**

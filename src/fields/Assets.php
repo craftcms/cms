@@ -323,7 +323,7 @@ class Assets extends BaseRelationField
         $allowedExtensions = $this->_getAllowedExtensions();
         foreach ($filenames as $filename) {
             if (!in_array(mb_strtolower(pathinfo($filename, PATHINFO_EXTENSION)), $allowedExtensions, true)) {
-                $element->addError($this->handle, Craft::t('app', '"{filename}" is not allowed in this field.', [
+                $element->addError($this->handle, Craft::t('app', '“{filename}” is not allowed in this field.', [
                     'filename' => $filename
                 ]));
             }
@@ -356,7 +356,7 @@ class Assets extends BaseRelationField
         }
 
         foreach ($filenames as $filename) {
-            $element->addError($this->handle, Craft::t('app', '"{filename}" is too large.', [
+            $element->addError($this->handle, Craft::t('app', '“{filename}” is too large.', [
                 'filename' => $filename
             ]));
         }
@@ -482,6 +482,7 @@ class Assets extends BaseRelationField
                     $asset->filename = $file['filename'];
                     $asset->newFolderId = $targetFolderId;
                     $asset->setVolumeId($folder->volumeId);
+                    $asset->uploaderId = Craft::$app->getUser()->getId();
                     $asset->avoidFilenameConflicts = true;
                     $asset->setScenario(Asset::SCENARIO_CREATE);
                     Craft::$app->getElements()->saveElement($asset);
@@ -619,7 +620,7 @@ class Assets extends BaseRelationField
                 $folder = $assetsService->getFolderByUid(explode(':', $source)[1]);
                 $volume = $folder ? $folder->getVolume() : null;
                 return $volume && $userService->checkPermission("viewVolume:{$volume->uid}");
-            });
+            }, true, true, false);
         }
 
         return $sources;

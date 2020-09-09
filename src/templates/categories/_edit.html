@@ -9,6 +9,41 @@
 {% set groupHandle = group.handle %}
 {% set isNewCategory = category.id ? false : true %}
 
+{% set formActions = [
+    {
+        label: 'Save and continue editing'|t('app'),
+        redirect: continueEditingUrl|hash,
+        shortcut: true,
+        retainScroll: true,
+    },
+    {
+        label: 'Save and add another'|t('app'),
+        redirect: nextCategoryUrl|hash,
+        shortcut: true,
+        shift: true,
+    },
+    not isNewCategory ? {
+        label: 'Save as a new {type}'|t('app', {
+            type: category.lowerDisplayName(),
+        }),
+        params: {
+            duplicate: '1',
+        },
+        redirect: (continueEditingUrl~'#')|hash,
+    },
+    not isNewCategory ? {
+        destructive: true,
+        label: 'Delete {type}'|t('app', {
+            type: category.lowerDisplayName()
+        }),
+        action: 'categories/delete-category',
+        redirect: 'categories#'|hash,
+        confirm: 'Are you sure you want to delete this {type}?'|t('app', {
+            type: category.lowerDisplayName(),
+        }),
+    }
+]|filter %}
+
 {% hook "cp.categories.edit" %}
 
 {% block header %}
@@ -20,7 +55,7 @@
         {% if showPreviewBtn or shareUrl is defined %}
             <div class="btngroup">
                 {% if showPreviewBtn %}
-                    <div class="btn livepreviewbtn" data-icon="view">{{ "Preview"|t('app') }}</div>
+                    <button type="button" class="btn livepreviewbtn" data-icon="view">{{ "Preview"|t('app') }}</button>
                 {% endif %}
                 {% if shareUrl is defined %}
                     <a href="{{ shareUrl }}" class="btn sharebtn" data-icon="share" rel="noopener" target="_blank">{{ 'Share'|t('app') }}</a>
@@ -41,33 +76,6 @@
             urlFormat: urlFormat
         } only %}
     {% endif %}
-{% endblock %}
-
-{% block actionButton %}
-    <div class="btngroup">
-        <input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
-
-        <div class="btn submit menubtn"></div>
-        <div class="menu">
-            <ul>
-                <li><a class="formsubmit" data-redirect="{{ continueEditingUrl|hash }}">
-                        {{ forms.optionShortcutLabel('S') }}
-                        {{ "Save and continue editing"|t('app') }}
-                    </a></li>
-                <li><a class="formsubmit" data-redirect="{{ (nextCategoryUrl~'?parentId={parent.id}#')|hash }}">{{ "Save and add another"|t('app') }}</a></li>
-
-                {% if not isNewCategory %}
-                    <li><a class="formsubmit" data-param="duplicate" data-value="1" data-redirect="{{ (continueEditingUrl~'#')|hash }}">{{ "Save as a new category"|t('app') }}</a></li>
-                {% endif %}
-            </ul>
-            {% if not isNewCategory %}
-                <hr>
-                <ul>
-                    <li><a class="formsubmit error" data-action="categories/delete-category" data-confirm="{{ 'Are you sure you want to delete this category?'|t('app') }}" data-redirect="{{ 'categories#'|hash }}">{{ 'Delete'|t('app') }}</a></li>
-                </ul>
-            {% endif %}
-        </div>
-    </div>
 {% endblock %}
 
 

@@ -46,9 +46,9 @@ trait ElementTrait
 
     /**
      * @var int|null The ID of the element’s record in the `elements_sites` table
-     * @since 3.5.0
+     * @since 3.5.2
      */
-    public $elementSiteId;
+    public $siteSettingsId;
 
     /**
      * @var int|null The element’s field layout ID

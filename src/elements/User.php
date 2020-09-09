@@ -271,16 +271,22 @@ class User extends Element implements IdentityInterface
                 'email' => Craft::t('app', 'Email'),
                 'firstName' => Craft::t('app', 'First Name'),
                 'lastName' => Craft::t('app', 'Last Name'),
-                'lastLoginDate' => Craft::t('app', 'Last Login'),
+                [
+                    'label' => Craft::t('app', 'Last Login'),
+                    'orderBy' => 'lastLoginDate',
+                    'defaultDir' => 'desc',
+                ],
                 [
                     'label' => Craft::t('app', 'Date Created'),
                     'orderBy' => 'elements.dateCreated',
-                    'attribute' => 'dateCreated'
+                    'attribute' => 'dateCreated',
+                    'defaultDir' => 'desc',
                 ],
                 [
                     'label' => Craft::t('app', 'Date Updated'),
                     'orderBy' => 'elements.dateUpdated',
-                    'attribute' => 'dateUpdated'
+                    'attribute' => 'dateUpdated',
+                    'defaultDir' => 'desc',
                 ],
                 [
                     'label' => Craft::t('app', 'ID'),
@@ -294,16 +300,22 @@ class User extends Element implements IdentityInterface
                 'firstName' => Craft::t('app', 'First Name'),
                 'lastName' => Craft::t('app', 'Last Name'),
                 'email' => Craft::t('app', 'Email'),
-                'lastLoginDate' => Craft::t('app', 'Last Login'),
+                [
+                    'label' => Craft::t('app', 'Last Login'),
+                    'orderBy' => 'lastLoginDate',
+                    'defaultDir' => 'desc',
+                ],
                 [
                     'label' => Craft::t('app', 'Date Created'),
                     'orderBy' => 'elements.dateCreated',
-                    'attribute' => 'dateCreated'
+                    'attribute' => 'dateCreated',
+                    'defaultDir' => 'desc',
                 ],
                 [
                     'label' => Craft::t('app', 'Date Updated'),
                     'orderBy' => 'elements.dateUpdated',
-                    'attribute' => 'dateUpdated'
+                    'attribute' => 'dateUpdated',
+                    'defaultDir' => 'desc',
                 ],
                 [
                     'label' => Craft::t('app', 'ID'),
@@ -1000,7 +1012,7 @@ class User extends Element implements IdentityInterface
      */
     public function getPhotoUrl(int $size = 100)
     {
-        Craft::$app->getDeprecator()->log('User::getPhotoUrl()', 'User::getPhotoUrl() has been deprecated. Use getPhoto() to access the photo asset (if there is one), and call its getUrl() method to access the photo URL.');
+        Craft::$app->getDeprecator()->log('User::getPhotoUrl()', '`User::getPhotoUrl()` has been deprecated. Use `getPhoto()` to access the photo asset (if there is one), and call its `getUrl()` method to access the photo URL.');
         $photo = $this->getPhoto();
 
         if ($photo) {
@@ -1025,6 +1037,14 @@ class User extends Element implements IdentityInterface
         }
 
         return Craft::$app->getAssetManager()->getPublishedUrl('@app/web/assets/cp/dist', true, 'images/user.svg');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getHasRoundedThumb(): bool
+    {
+        return true;
     }
 
     /**

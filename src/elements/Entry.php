@@ -26,6 +26,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
 use craft\errors\UnsupportedSiteException;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
@@ -461,17 +462,27 @@ class Entry extends Element
             'title' => Craft::t('app', 'Title'),
             'slug' => Craft::t('app', 'Slug'),
             'uri' => Craft::t('app', 'URI'),
-            'postDate' => Craft::t('app', 'Post Date'),
-            'expiryDate' => Craft::t('app', 'Expiry Date'),
+            [
+                'label' => Craft::t('app', 'Post Date'),
+                'orderBy' => 'postDate',
+                'defaultDir' => 'desc',
+            ],
+            [
+                'label' => Craft::t('app', 'Expiry Date'),
+                'orderBy' => 'expiryDate',
+                'defaultDir' => 'desc',
+            ],
             [
                 'label' => Craft::t('app', 'Date Created'),
                 'orderBy' => 'elements.dateCreated',
-                'attribute' => 'dateCreated'
+                'attribute' => 'dateCreated',
+                'defaultDir' => 'desc',
             ],
             [
                 'label' => Craft::t('app', 'Date Updated'),
                 'orderBy' => 'elements.dateUpdated',
-                'attribute' => 'dateUpdated'
+                'attribute' => 'dateUpdated',
+                'defaultDir' => 'desc',
             ],
             [
                 'label' => Craft::t('app', 'ID'),
@@ -900,7 +911,7 @@ class Entry extends Element
 
         return [
             'templates/render', [
-                'template' => $sectionSiteSettings[$siteId]->template,
+                'template' => (string)$sectionSiteSettings[$siteId]->template,
                 'variables' => [
                     'entry' => $this,
                 ]
@@ -1210,7 +1221,7 @@ class Entry extends Element
         switch ($attribute) {
             case 'author':
                 $author = $this->getAuthor();
-                return $author ? Craft::$app->getView()->renderTemplate('_elements/element', ['element' => $author]) : '';
+                return $author ? Cp::elementHtml($author) : '';
 
             case 'section':
                 return Html::encode(Craft::t('site', $this->getSection()->name));
@@ -1243,7 +1254,7 @@ class Entry extends Element
                 ) {
                     return '';
                 }
-                return Craft::$app->getView()->renderTemplate('_elements/element', ['element' => $creator]);
+                return Cp::elementHtml($creator);
         }
 
         return parent::tableAttributeHtml($attribute);

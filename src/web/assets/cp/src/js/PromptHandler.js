@@ -120,8 +120,16 @@ Craft.PromptHandler = Garnish.Base.extend({
 
         this.$promptMessage.html(message);
 
-        var $cancelButton = $('<div class="btn">' + Craft.t('app', 'Cancel') + '</div>').appendTo(this.$promptButtons),
-            $submitBtn = $('<input type="submit" class="btn submit disabled" value="' + Craft.t('app', 'OK') + '" />').appendTo(this.$promptButtons);
+        let $cancelBtn = $('<button/>', {
+            type: 'button',
+            class: 'btn',
+            text: Craft.t('app', 'Cancel'),
+        }).appendTo(this.$promptButtons);
+        let $submitBtn = $('<button/>', {
+            type: 'submit',
+            class: 'btn submit disabled',
+            text: Craft.t('app', 'OK'),
+        }).appendTo(this.$promptButtons);
 
         for (var i = 0; i < choices.length; i++) {
             var $radioButtonHtml = $('<div><label><input type="radio" name="promptAction" value="' + choices[i].value + '"/> ' + choices[i].title + '</label></div>').appendTo(this.$promptChoices),
@@ -139,7 +147,7 @@ Craft.PromptHandler = Garnish.Base.extend({
             this._selectPromptChoice(choice, applyToRemaining);
         });
 
-        this.addListener($cancelButton, 'activate', function() {
+        this.addListener($cancelBtn, 'activate', function() {
             var choice = 'cancel',
                 applyToRemaining = this.$promptApplyToRemainingCheckbox.prop('checked');
 

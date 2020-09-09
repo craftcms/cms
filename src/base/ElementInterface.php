@@ -377,13 +377,16 @@ interface ElementInterface extends ComponentInterface
      * - `orderBy` – An array or comma-delimited string of columns to order the query by
      * - `attribute` _(optional)_ – The [[tableAttributes()|table attribute]] name that this option is associated
      *   with (required if `orderBy` is an array or more than one column name)
+     * - `defaultDir` _(optional)_ – The default sort direction that should be used when sorting by this option
+     *   (set to either `asc` or `desc`). Defaults to `asc` if not specified.
      *
      * ```php
      * return [
      *     [
      *         'label' => Craft::t('app', 'Attribute Label'),
      *         'orderBy' => 'columnName',
-     *         'attribute' => 'attributeName'
+     *         'attribute' => 'attributeName',
+     *         'defaultDir' => 'asc',
      *     ],
      * ];
      * ```
@@ -701,6 +704,22 @@ interface ElementInterface extends ComponentInterface
      * @return string|null
      */
     public function getThumbUrl(int $size);
+
+    /**
+     * Returns whether the element’s thumbnail should have a checkered background.
+     *
+     * @return bool
+     * @since 3.5.5
+     */
+    public function getHasCheckeredThumb(): bool;
+
+    /**
+     * Returns whether the element’s thumbnail should be rounded.
+     *
+     * @return bool
+     * @since 3.5.5
+     */
+    public function getHasRoundedThumb(): bool;
 
     /**
      * Returns whether the element is enabled for the current site.

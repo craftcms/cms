@@ -24,7 +24,7 @@ use yii\console\ExitCode;
 use yii\helpers\Console;
 
 /**
- * Allows you to bulk-saves elements.
+ * Allows you to bulk-save elements.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.1.15

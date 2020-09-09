@@ -54,9 +54,16 @@ Craft.LightSwitch = Garnish.Base.extend(
             });
 
             if (this.$outerContainer.attr('id')) {
-                $(`label[for="${this.$outerContainer.attr('id')}"`).on('click', () => {
+                $(`label[for="${this.$outerContainer.attr('id')}"]`).on('click', () => {
                     this.$outerContainer.focus();
                 });
+            }
+
+            // Does the input have on/off labels?
+            let $wrapper = this.$outerContainer.parent('.lightswitch-inner-container');
+            if ($wrapper.length) {
+                this.addListener($wrapper.children('label[data-toggle="off"]'), 'click', this.turnOff);
+                this.addListener($wrapper.children('label[data-toggle="on"]'), 'click', this.turnOn);
             }
         },
 

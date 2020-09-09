@@ -264,7 +264,7 @@ abstract class Model extends \yii\base\Model
      */
     public function getError(string $attribute)
     {
-        Craft::$app->getDeprecator()->log('Model::getError()', 'getError() has been deprecated. Use getFirstError() instead.');
+        Craft::$app->getDeprecator()->log('Model::getError()', '`getError()` has been deprecated. Use `getFirstError()` instead.');
 
         return $this->getFirstError($attribute);
     }

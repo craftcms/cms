@@ -13,6 +13,7 @@ use craft\base\ElementInterface;
 use craft\elements\Category;
 use craft\errors\InvalidTypeException;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use craft\helpers\StringHelper;
 use yii\web\BadRequestHttpException;
@@ -229,28 +230,30 @@ class ElementsController extends BaseElementsController
      * Returns the HTML for a single element
      *
      * @return Response
+     * @throws BadRequestHttpException
      */
     public function actionGetElementHtml(): Response
     {
         $elementId = $this->request->getRequiredBodyParam('elementId');
-        $siteId = $this->request->getBodyParam('siteId', null);
-        $size = $this->request->getBodyParam('size', null);
-        $viewMode = $this->request->getBodyParam('viewMode', null);
-        $context = $this->request->getBodyParam('context', 'field');
+        $siteId = $this->request->getBodyParam('siteId');
         $element = Craft::$app->getElements()->getElementById($elementId, null, $siteId);
 
-        $view = $this->getView();
-        $html = $view->renderTemplate('_elements/element', compact(
-            'element',
-            'size',
-            'viewMode',
-            'context'
-        ));
+        if (!$element) {
+            throw new BadRequestHttpException('Invalid element ID or site ID');
+        }
 
-        return $this->asJson([
-            'html' => $html,
-            'headHtml' => $view->getHeadHtml(),
-        ]);
+        $context = $this->request->getBodyParam('context', 'field');
+        $size = $this->request->getBodyParam('size');
+
+        if ($size === null || !in_array($size, [Cp::ELEMENT_SIZE_SMALL, Cp::ELEMENT_SIZE_LARGE], true)) {
+            $viewMode = $this->request->getBodyParam('viewMode');
+            $size = $viewMode === 'thumbs' ? Cp::ELEMENT_SIZE_LARGE : Cp::ELEMENT_SIZE_SMALL;
+        }
+
+        $html = Cp::elementHtml($element, $context, $size);
+        $headHtml = $this->getView()->getHeadHtml();
+
+        return $this->asJson(compact('html', 'headHtml'));
     }
 
     /**

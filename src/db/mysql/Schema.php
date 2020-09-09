@@ -370,7 +370,7 @@ SQL;
      */
     private function _createDumpConfigFile(): string
     {
-        $filePath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . 'my.cnf';
+        $filePath = FileHelper::normalizePath(sys_get_temp_dir()) . DIRECTORY_SEPARATOR . 'my.cnf';
 
         $parsed = Db::parseDsn($this->db->dsn);
         $username = $this->db->getIsPgsql() && !empty($parsed['user']) ? $parsed['user'] : $this->db->username;

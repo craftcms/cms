@@ -36,7 +36,7 @@ body.ltr #content .update .releases .release .release-info.fieldtoggle { padding
 
 body.rtl #content .update .releases .release .release-info.fieldtoggle { padding-right: 44px; }
 
-#content .update .releases .release .release-info.fieldtoggle:before { top: 23px; font-size: 23px; color: #7b8793; }
+#content .update .releases .release .release-info.fieldtoggle:before { top: 29px; border-color: #7b8793; }
 
 body.ltr #content .update .releases .release .release-info.fieldtoggle:before { left: 20px; }
 

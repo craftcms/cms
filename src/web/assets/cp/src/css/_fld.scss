@@ -82,7 +82,8 @@ $gridColor: hsl(212, 50%, 95%);
 }
 
 .fld-tab .settings,
-.fld-element .slide-picker{
+.fld-element .settings,
+.fld-element .slide-picker {
   @include margin-left(7px);
 }
 
@@ -180,6 +181,7 @@ $gridColor: hsl(212, 50%, 95%);
   &.fld-field {
     display: flex;
     align-items: center;
+    color: $mediumTextColor;
     background-color: $grey100;
 
     &:not(.draghelper) {
@@ -194,41 +196,55 @@ $gridColor: hsl(212, 50%, 95%);
         @include icon;
         content: 'shuteye';
       }
-
-      &,
-      & + .field-name h4 {
-        color: $mediumTextColor;
-      }
     }
 
     .field-name {
       flex: 1;
       overflow: hidden;
 
-      h4 {
+      .fld-element-label {
         margin-bottom: 2px;
       }
     }
 
-    &.fld-required .field-name h4:after {
-      @include icon;
-      @include margin(-2px, 0, 0, 4px);
-      content: 'asterisk';
-      font-size: 8px;
+    &.fld-required .fld-required-indicator {
+      @include margin-left(2px);
+      line-height: 1;
+
+      &:after {
+        @include icon;
+        content: 'asterisk';
+        font-size: 8px;
+        line-height: 1;
+      }
     }
   }
 
-  .fld-element-label {
-    font-weight: normal;
-    color: $textColor;
+  .fld-element-label,
+  .fld-attribute {
+    flex: 1;
+    display: flex;
   }
 
-  .fld-element-label,
-  &.fld-field .field-name .smalltext {
-    flex: 1;
+  .fld-element-label h4,
+  .fld-attribute .smalltext {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+
+  .fld-element-label h4 {
+    font-weight: normal;
+    color: $textColor;
+    margin: 0;
+
+    & + .fld-required-indicator {
+      color: $textColor;
+    }
+  }
+
+  .fld-attribute .fld-required-indicator {
+    margin-top: -1px;
   }
 }
 

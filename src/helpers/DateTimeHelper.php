@@ -275,7 +275,7 @@ class DateTimeHelper
      */
     public static function translateDate(string $str, string $language = null): string
     {
-        Craft::$app->getDeprecator()->log(__METHOD__, __METHOD__ . ' is deprecated. Use craft\i18n\Formatter::asDate() instead.');
+        Craft::$app->getDeprecator()->log(__METHOD__, '`' . __METHOD__ . '` is deprecated. Use `craft\i18n\Formatter::asDate()` instead.');
 
         if ($language === null) {
             $language = Craft::$app->language;

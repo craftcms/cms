@@ -1391,7 +1391,7 @@ abstract class Element extends Component implements ElementInterface
     public function __get($name)
     {
         if ($name === 'locale') {
-            Craft::$app->getDeprecator()->log('Element::locale', 'The “locale” element property has been deprecated. Use “siteId” instead.');
+            Craft::$app->getDeprecator()->log('Element::locale', 'The `locale` element property has been deprecated. Use `siteId` instead.');
 
             return $this->getSite()->handle;
         }
@@ -1459,7 +1459,7 @@ abstract class Element extends Component implements ElementInterface
         $this->id = (int)$this->id ?: null;
         $this->draftId = (int)$this->draftId ?: null;
         $this->revisionId = (int)$this->revisionId ?: null;
-        $this->elementSiteId = (int)$this->elementSiteId ?: null;
+        $this->siteSettingsId = (int)$this->siteSettingsId ?: null;
         $this->fieldLayoutId = (int)$this->fieldLayoutId ?: null;
         $this->structureId = (int)$this->structureId ?: null;
         $this->contentId = (int)$this->contentId ?: null;
@@ -2108,6 +2108,22 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function getHasCheckeredThumb(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getHasRoundedThumb(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getEnabledForSite(int $siteId = null)
     {
         if ($siteId === null) {
@@ -2268,7 +2284,7 @@ abstract class Element extends Component implements ElementInterface
             }
             return ArrayHelper::where($ancestors, function(self $element) use ($dist) {
                 return $element->level >= $this->level - $dist;
-            });
+            }, true, true, false);
         }
 
         return static::find()
@@ -2290,7 +2306,7 @@ abstract class Element extends Component implements ElementInterface
             }
             return ArrayHelper::where($descendants, function(self $element) use ($dist) {
                 return $element->level <= $this->level + $dist;
-            });
+            }, true, true, false);
         }
 
         return static::find()
@@ -3089,7 +3105,7 @@ abstract class Element extends Component implements ElementInterface
             return '';
         }
 
-        $html = Html::hiddenInput('fieldLayoutId', $fieldLayout->id);
+        $html = '';
 
         foreach ($fieldLayout->getTabs() as $tab) {
             foreach ($tab->elements as $element) {
@@ -3098,6 +3114,8 @@ abstract class Element extends Component implements ElementInterface
                 }
             }
         }
+
+        $html .= Html::hiddenInput('fieldLayoutId', $fieldLayout->id);
 
         return $html;
     }

@@ -10,6 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\base\ElementInterface;
 use craft\behaviors\DraftBehavior;
+use craft\db\Connection;
 use craft\db\Query;
 use craft\db\Table;
 use craft\errors\InvalidElementException;
@@ -22,6 +23,7 @@ use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\db\Exception as DbException;
+use yii\di\Instance;
 
 /**
  * Drafts service.
@@ -63,6 +65,21 @@ class Drafts extends Component
      * @event DraftEvent The event that is triggered after a draft is applied to its source element.
      */
     const EVENT_AFTER_APPLY_DRAFT = 'afterApplyDraft';
+
+    /**
+     * @var Connection|array|string The database connection to use
+     * @since 3.5.4
+     */
+    public $db = 'db';
+
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        parent::init();
+        $this->db = Instance::ensure($this->db, Connection::class);
+    }
 
     /**
      * Returns drafts for a given element ID that the current user is allowed to edit
@@ -133,7 +150,7 @@ class Drafts extends Component
             } while (isset($draftNames[$name]));
         }
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        $transaction = $this->db->beginTransaction();
         try {
             // Create the draft row
             $draftId = $this->_insertDraftRow($source->id, $creatorId, $name, $notes, $source::trackChanges());
@@ -248,7 +265,7 @@ class Drafts extends Component
             ]));
         }
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        $transaction = $this->db->beginTransaction();
         try {
             // Start with $draft's site
             if (isset($sourceElements[$draft->siteId])) {
@@ -371,7 +388,7 @@ class Drafts extends Component
 
         $elementsService = Craft::$app->getElements();
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        $transaction = $this->db->beginTransaction();
         try {
             if ($source !== $draft) {
                 // Merge in any attribute & field values that were updated in the source element, but not the draft
@@ -489,7 +506,7 @@ class Drafts extends Component
                 // still have rows for the draft.
                 Db::delete(Table::DRAFTS, [
                     'id' => $draftInfo['draftId'],
-                ]);
+                ], [], $this->db);
             }
 
             Craft::info("Just deleted unsaved draft ID {$draftInfo['draftId']}", __METHOD__);
@@ -515,7 +532,7 @@ class Drafts extends Component
             'name' => $name,
             'notes' => $notes,
             'trackChanges' => $trackChanges,
-        ], false);
-        return Craft::$app->getDb()->getLastInsertID(Table::DRAFTS);
+        ], false, $this->db);
+        return $this->db->getLastInsertID(Table::DRAFTS);
     }
 }

@@ -193,6 +193,12 @@ trait ApplicationTrait
     private $_isMultiSiteWithTrashed;
 
     /**
+     * @var int|null The Craft edition
+     * @see getEdition()
+     */
+    private $_edition;
+
+    /**
      * @var
      */
     private $_info;
@@ -373,8 +379,11 @@ trait ApplicationTrait
     public function getEdition(): int
     {
         /** @var WebApplication|ConsoleApplication $this */
-        $handle = $this->getProjectConfig()->get('system.edition') ?? 'solo';
-        return App::editionIdByHandle($handle);
+        if ($this->_edition === null) {
+            $handle = $this->getProjectConfig()->get('system.edition') ?? 'solo';
+            $this->_edition = App::editionIdByHandle($handle);
+        }
+        return $this->_edition;
     }
 
     /**
@@ -446,6 +455,7 @@ trait ApplicationTrait
         /** @var WebApplication|ConsoleApplication $this */
         $oldEdition = $this->getEdition();
         $this->getProjectConfig()->set('system.edition', App::editionHandle($edition), "Craft CMS edition change");
+        $this->_edition = $edition;
 
         // Fire an 'afterEditionChange' event
         /** @var WebRequest|ConsoleRequest $request */
@@ -544,8 +554,8 @@ trait ApplicationTrait
     public function getIsLive(): bool
     {
         /** @var WebApplication|ConsoleApplication $this */
-        if (is_bool($on = $this->getConfig()->getGeneral()->isSystemLive)) {
-            return $on;
+        if (is_bool($live = $this->getConfig()->getGeneral()->isSystemLive)) {
+            return $live;
         }
 
         return (bool)$this->getProjectConfig()->get('system.live');
@@ -721,14 +731,17 @@ trait ApplicationTrait
 
         $attributes = $info->getAttributes($attributeNames);
 
-        // TODO: Remove this after the next breakpoint
-        if (version_compare($info['version'], '3.1', '<')) {
-            unset($attributes['config'], $attributes['configMap']);
-        }
+        // TODO: Remove these after the next breakpoint
+        if (version_compare($info['version'], '3.5.6', '<')) {
+            unset($attributes['configVersion']);
 
-        // TODO: Remove this after the next breakpoint
-        if (version_compare($info['version'], '3.0', '<')) {
-            unset($attributes['fieldVersion']);
+            if (version_compare($info['version'], '3.1', '<')) {
+                unset($attributes['config'], $attributes['configMap']);
+
+                if (version_compare($info['version'], '3.0', '<')) {
+                    unset($attributes['fieldVersion']);
+                }
+            }
         }
 
         $infoRowExists = (new Query())

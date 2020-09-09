@@ -73,7 +73,7 @@ class ClearCaches extends Utility
      */
     public static function iconPath()
     {
-        return Craft::getAlias('@app/icons/trash.svg');
+        return Craft::getAlias('@appicons/trash.svg');
     }
 
     /**

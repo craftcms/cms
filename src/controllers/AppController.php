@@ -44,6 +44,7 @@ class AppController extends Controller
     public $allowAnonymous = [
         'migrate' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'broken-image' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+        'health-check' => self::ALLOW_ANONYMOUS_LIVE,
     ];
 
     /**
@@ -56,6 +57,19 @@ class AppController extends Controller
         }
 
         return parent::beforeAction($action);
+    }
+
+    /**
+     * Returns an empty response.
+     *
+     * @since 3.5.0
+     */
+    public function actionHealthCheck(): Response
+    {
+        // All that matters is the 200 response
+        $this->response->format = Response::FORMAT_RAW;
+        $this->response->data = '';
+        return $this->response;
     }
 
     /**
@@ -264,7 +278,7 @@ class AppController extends Controller
                 }
             }
 
-            $error = 'An error occurred running nuw migrations.';
+            $error = 'An error occurred running new migrations.';
             if ($restored) {
                 $error .= ' The database has been restored to its previous state.';
             } else if (isset($restoreException)) {
@@ -507,7 +521,7 @@ class AppController extends Controller
 
         // Update our records & use all licensed plugins as a starting point
         if (!empty($pluginLicenses)) {
-            $defaultIconUrl = Craft::$app->getAssetManager()->getPublishedUrl('@app/icons/default-plugin.svg', true);
+            $defaultIconUrl = Craft::$app->getAssetManager()->getPublishedUrl('@appicons/default-plugin.svg', true);
             $formatter = Craft::$app->getFormatter();
             foreach ($pluginLicenses as $pluginLicenseInfo) {
                 if (isset($pluginLicenseInfo['plugin'])) {

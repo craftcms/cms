@@ -863,7 +863,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 this.$sortMenuBtn.attr('title', Craft.t('app', 'Sort by {attribute}', {attribute: label}));
                 this.$sortMenuBtn.text(label);
 
-                this.setSortDirection(attr === 'score' ? 'desc' : 'asc');
+                if (attr === 'score') {
+                    this.setSortDirection('desc');
+                } else {
+                    this.setSortDirection($option.data('default-dir') || 'asc');
+                }
 
                 if (attr === 'structure') {
                     this.$sortDirectionsList.find('a').addClass('disabled');
@@ -1003,14 +1007,14 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 this.$viewModeBtnContainer = $('<div class="btngroup"/>').appendTo(this.$toolbar);
 
                 for (var i = 0; i < this.sourceViewModes.length; i++) {
-                    var sourceViewMode = this.sourceViewModes[i];
+                    let sourceViewMode = this.sourceViewModes[i];
 
-                    var $viewModeBtn = $('<div data-view="' + sourceViewMode.mode + '" role="button"' +
-                        ' class="btn' + (typeof sourceViewMode.className !== 'undefined' ? ' ' + sourceViewMode.className : '') + '"' +
-                        ' title="' + sourceViewMode.title + '"' +
-                        (typeof sourceViewMode.icon !== 'undefined' ? ' data-icon="' + sourceViewMode.icon + '"' : '') +
-                        '/>'
-                    ).appendTo(this.$viewModeBtnContainer);
+                    let $viewModeBtn = $('<button/>', {
+                        type: 'button',
+                        class: 'btn' + (typeof sourceViewMode.className !== 'undefined' ? ` ${sourceViewMode.className}` : ''),
+                        'data-view': sourceViewMode.mode,
+                        'data-icon': sourceViewMode.icon,
+                    }).appendTo(this.$viewModeBtnContainer);
 
                     this.viewModeBtns[sourceViewMode.mode] = $viewModeBtn;
 
@@ -1631,13 +1635,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                             let totalPages = Math.max(Math.ceil(total / this.settings.batchSize), 1);
 
                             let $prevBtn = $('<div/>', {
-                                'class': 'page-link' + (this.page > 1 ? '' : ' disabled'),
-                                'data-icon': 'leftangle',
+                                'class': 'page-link prev-page' + (this.page > 1 ? '' : ' disabled'),
                                 title: Craft.t('app', 'Previous Page')
                             }).appendTo($paginationContainer);
                             let $nextBtn = $('<div/>', {
-                                'class': 'page-link' + (this.page < totalPages ? '' : ' disabled'),
-                                'data-icon': 'rightangle',
+                                'class': 'page-link next-page' + (this.page < totalPages ? '' : ' disabled'),
                                 title: Craft.t('app', 'Next Page')
                             }).appendTo($paginationContainer);
 
@@ -1827,7 +1829,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             if (safeMenuActions.length || destructiveMenuActions.length) {
                 var $menuTrigger = $('<form/>');
 
-                $btn = $('<div class="btn menubtn" data-icon="settings" title="' + Craft.t('app', 'Actions') + '"/>').appendTo($menuTrigger);
+                $btn = $('<button/>', {
+                    type: 'button',
+                    class: 'btn menubtn',
+                    'data-icon': 'settings',
+                    title: Craft.t('app', 'Actions'),
+                }).appendTo($menuTrigger);
 
                 var $menu = $('<ul class="menu"/>').appendTo($menuTrigger),
                     $safeList = this._createMenuTriggerList(safeMenuActions, false),
@@ -1905,10 +1912,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 }).appendTo($form);
             }
 
-            $('<input/>', {
+            $('<button/>', {
                 type: 'submit',
                 'class': 'btn submit fullwidth',
-                value: Craft.t('app', 'Export')
+                text: Craft.t('app', 'Export')
             }).appendTo($form)
 
             var $spinner = $('<div/>', {

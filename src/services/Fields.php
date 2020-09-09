@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\base\FieldLayoutElementInterface;
+use craft\base\MemoizableArray;
 use craft\behaviors\CustomFieldBehavior;
 use craft\db\Query;
 use craft\db\Table;
@@ -178,12 +179,14 @@ class Fields extends Component
     public $ignoreProjectConfigChanges = false;
 
     /**
-     * @var FieldGroup[]
+     * @var MemoizableArray|null
+     * @see _groups()
      */
     private $_groups;
 
     /**
-     * @var FieldInterface[]
+     * @var MemoizableArray|null
+     * @see _fields()
      */
     private $_fields;
 
@@ -206,24 +209,31 @@ class Fields extends Component
     // -------------------------------------------------------------------------
 
     /**
+     * Returns a memoizable array of all field groups.
+     *
+     * @return MemoizableArray
+     */
+    private function _groups(): MemoizableArray
+    {
+        if ($this->_groups === null) {
+            $groups = [];
+            foreach ($this->_createGroupQuery()->all() as $result) {
+                $groups[] = new FieldGroup($result);
+            }
+            $this->_groups = new MemoizableArray($groups);
+        }
+
+        return $this->_groups;
+    }
+
+    /**
      * Returns all field groups.
      *
      * @return FieldGroup[] The field groups
      */
     public function getAllGroups(): array
     {
-        if ($this->_groups !== null) {
-            return $this->_groups;
-        }
-
-        $this->_groups = [];
-        $results = $this->_createGroupQuery()->all();
-
-        foreach ($results as $result) {
-            $this->_groups[] = new FieldGroup($result);
-        }
-
-        return $this->_groups;
+        return $this->_groups()->all();
     }
 
     /**
@@ -234,7 +244,7 @@ class Fields extends Component
      */
     public function getGroupById(int $groupId)
     {
-        return ArrayHelper::firstWhere($this->getAllGroups(), 'id', $groupId);
+        return $this->_groups()->firstWhere('id', $groupId);
     }
 
     /**
@@ -246,7 +256,7 @@ class Fields extends Component
      */
     public function getGroupByUid(string $groupUid)
     {
-        return ArrayHelper::firstWhere($this->getAllGroups(), 'uid', $groupUid);
+        return $this->_groups()->firstWhere('uid', $groupUid, true);
     }
 
     /**
@@ -558,20 +568,21 @@ class Fields extends Component
     }
 
     /**
-     * Returns all fields within a field context(s).
+     * Returns a memoizable array of all fields.
      *
-     * @param string|string[]|false|null $context The field context(s) to fetch fields from. Defaults to {@link ContentService::$fieldContext}.
+     * @param string|string[]|false|null $context The field context(s) to fetch fields from. Defaults to [[\craft\services\Content::$fieldContext]].
      * Set to `false` to get all fields regardless of context.
-     * @return FieldInterface[] The fields
+     *
+     * @return MemoizableArray
      */
-    public function getAllFields($context = null): array
+    private function _fields($context = null): MemoizableArray
     {
         if ($this->_fields === null) {
-            $this->_fields = [];
-            $results = $this->_createFieldQuery()->all();
-            foreach ($results as $result) {
-                $this->_fields[] = $this->createField($result);
+            $fields = [];
+            foreach ($this->_createFieldQuery()->all() as $result) {
+                $fields[] = $this->createField($result);
             }
+            $this->_fields = new MemoizableArray($fields);
         }
 
         if ($context === false) {
@@ -582,13 +593,23 @@ class Fields extends Component
             $context = Craft::$app->getContent()->fieldContext;
         }
 
-        if (is_string($context)) {
-            return ArrayHelper::where($this->_fields, 'context', $context, true);
+        if (is_array($context)) {
+            return $this->_fields->whereIn('context', $context, true);
         }
 
-        return ArrayHelper::where($this->_fields, function(FieldInterface $field) use ($context) {
-            return in_array($field->context, $context, true);
-        });
+        return $this->_fields->where('context', $context, true);
+    }
+
+    /**
+     * Returns all fields within a field context(s).
+     *
+     * @param string|string[]|false|null $context The field context(s) to fetch fields from. Defaults to [[\craft\services\Content::$fieldContext]].
+     * Set to `false` to get all fields regardless of context.
+     * @return FieldInterface[] The fields
+     */
+    public function getAllFields($context = null): array
+    {
+        return $this->_fields($context)->all();
     }
 
     /**
@@ -600,7 +621,7 @@ class Fields extends Component
     {
         return ArrayHelper::where($this->getAllFields(), function(FieldInterface $field) {
             return $field::hasContentColumn();
-        });
+        }, true, true, false);
     }
 
     /**
@@ -611,7 +632,7 @@ class Fields extends Component
      */
     public function getFieldById(int $fieldId)
     {
-        return ArrayHelper::firstWhere($this->getAllFields(false), 'id', $fieldId);
+        return $this->_fields(false)->firstWhere('id', $fieldId);
     }
 
     /**
@@ -622,7 +643,7 @@ class Fields extends Component
      */
     public function getFieldByUid(string $fieldUid)
     {
-        return ArrayHelper::firstWhere($this->getAllFields(false), 'uid', $fieldUid, true);
+        return $this->_fields(false)->firstWhere('uid', $fieldUid, true);
     }
 
     /**
@@ -639,20 +660,20 @@ class Fields extends Component
      * ```
      *
      * @param string $handle The field’s handle
-     * @param string|string[]|false|null $context The field context(s) to fetch fields from. Defaults to {@link ContentService::$fieldContext}.
+     * @param string|string[]|false|null $context The field context(s) to fetch fields from. Defaults to [[\craft\services\Content::$fieldContext]].
      * Set to `false` to get all fields regardless of context.
      * @return FieldInterface|null The field, or null if it doesn’t exist
      */
     public function getFieldByHandle(string $handle, $context = null)
     {
-        return ArrayHelper::firstWhere($this->getAllFields($context), 'handle', $handle, true);
+        return $this->_fields($context)->firstWhere('handle', $handle, true);
     }
 
     /**
      * Returns whether a field exists with a given handle and context.
      *
      * @param string $handle The field handle
-     * @param string|null $context The field context (defauts to ContentService::$fieldContext)
+     * @param string|null $context The field context (defauts to [[\craft\services\Content::$fieldContext]])
      * @return bool Whether a field with that handle exists
      */
     public function doesFieldWithHandleExist(string $handle, string $context = null): bool
@@ -668,7 +689,7 @@ class Fields extends Component
      */
     public function getFieldsByGroupId(int $groupId): array
     {
-        return ArrayHelper::where($this->getAllFields(false), 'groupId', $groupId);
+        return $this->_fields(false)->where('groupId', $groupId)->all();
     }
 
     /**

@@ -16,11 +16,14 @@
 <div id="{{ containerId }}" class="autosuggest-container">
     {% verbatim %}
     <vue-autosuggest
-            :suggestions="filteredOptions"
-            :get-suggestion-value="getSuggestionValue"
-            :input-props="inputProps"
-            :limit="limit"
-            @selected="onSelected">
+        :suggestions="filteredOptions"
+        :get-suggestion-value="getSuggestionValue"
+        :input-props="inputProps"
+        :limit="limit"
+        @selected="onSelected"
+        @focus="updateFilteredOptions"
+        @blur="onBlur"
+    >
         <template slot-scope="{suggestion}">
             {{suggestion.item.name || suggestion.item}}
             <span v-if="suggestion.item.hint" class="light">– {{suggestion.item.hint}}</span>
@@ -36,6 +39,7 @@ new Vue({
     data() {
         {% block data %}
         var data = {{ {
+            query: '',
             selected: '',
             filteredOptions: [],
             suggestions: suggestions ?? [],
@@ -61,13 +65,15 @@ new Vue({
 
     methods: {
         {% block methods %}
-        onInputChange(text) {
-            if (text === '' || text === undefined) {
+        onInputChange(q) {
+            this.query = (q || '').toLowerCase();
+            this.updateFilteredOptions();
+        },
+        updateFilteredOptions() {
+            if (this.query === '') {
                 this.filteredOptions = this.suggestions;
                 return;
             }
-
-            text = text.toLowerCase();
 
             var filtered = [];
             var i, j, sectionFilter, item, name;
@@ -78,16 +84,16 @@ new Vue({
                 for (j = 0; j < this.suggestions[i].data.length; j++) {
                     item = this.suggestions[i].data[j];
                     if (
-                        (item.name || item).toLowerCase().indexOf(text) !== -1 ||
-                        (item.hint && item.hint.toLowerCase().indexOf(text) !== -1)
+                        (item.name || item).toLowerCase().indexOf(this.query) !== -1 ||
+                        (item.hint && item.hint.toLowerCase().indexOf(this.query) !== -1)
                     ) {
                         sectionFilter.push(item.name ? item : {name: item});
                     }
                 }
                 if (sectionFilter.length) {
                     sectionFilter.sort(function(a, b) {
-                        var scoreA = that.scoreItem(a, text);
-                        var scoreB = that.scoreItem(b, text);
+                        var scoreA = that.scoreItem(a, this.query);
+                        var scoreB = that.scoreItem(b, this.query);
                         if (scoreA === scoreB) {
                             return 0;
                         }
@@ -102,13 +108,13 @@ new Vue({
 
             this.filteredOptions = filtered;
         },
-        scoreItem(item, text) {
+        scoreItem(item) {
             var score = 0;
-            if (item.name.toLowerCase().indexOf(text) !== -1) {
-                score += 100 + text.length / item.name.length;
+            if (item.name.toLowerCase().indexOf(this.query) !== -1) {
+                score += 100 + this.query.length / item.name.length;
             }
-            if (item.hint && item.hint.toLowerCase().indexOf(text) !== -1) {
-                score += text.length / item.hint.length;
+            if (item.hint && item.hint.toLowerCase().indexOf(this.query) !== -1) {
+                score += this.query.length / item.hint.length;
             }
             return score;
         },
@@ -124,6 +130,12 @@ new Vue({
         },
         getSuggestionValue(suggestion) {
             return suggestion.item.name || suggestion.item;
+        },
+        onBlur(e) {
+            // Clear out the autosuggestions if the focus has shifted to a new element
+            if (e.relatedTarget) {
+                this.filteredOptions = [];
+            }
         },
         {% endblock %}
     }

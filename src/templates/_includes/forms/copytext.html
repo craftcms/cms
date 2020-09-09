@@ -16,11 +16,14 @@
     }) -}}
 </div>
 
-{% block js %}
-    $('#{{ buttonId|namespaceInputId|e('js') }}').on('click', function() {
-        document.getElementById('{{ id|namespaceInputId|e('js') }}').select();
-        document.execCommand('copy');
-        Craft.cp.displayNotice("{{ 'Copied to clipboard.'|t('app')|e('js') }}");
-        $(this).parent().trigger('copy');
-    });
-{% endblock %}
+{% js %}
+    {% block js %}
+        $('#{{ buttonId|namespaceInputId|e('js') }}').on('click', function() {
+            document.getElementById('{{ id|namespaceInputId|e('js') }}').select();
+            document.execCommand('copy');
+            Craft.cp.displayNotice("{{ 'Copied to clipboard.'|t('app')|e('js') }}");
+            $(this).parent().trigger('copy');
+            document.getElementById('{{ id|namespaceInputId|e('js') }}').setSelectionRange(0, 0);
+        });
+    {% endblock %}
+{% endjs %}

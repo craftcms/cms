@@ -154,7 +154,15 @@ abstract class Controller extends \yii\web\Controller
                 $this->requireLogin();
                 $this->requirePermission('accessCp');
             } else if (Craft::$app->getUser()->getIsGuest()) {
-                throw $isLive ? new ForbiddenHttpException() : new ServiceUnavailableHttpException();
+                if ($isLive) {
+                    throw new ForbiddenHttpException();
+                } else {
+                    $retryDuration = Craft::$app->getProjectConfig()->get('system.retryDuration');
+                    if ($retryDuration) {
+                        $this->response->getHeaders()->setDefault('Retry-After', $retryDuration);
+                    }
+                    throw new ServiceUnavailableHttpException();
+                }
             }
 
             // If the system is offline, make sure they have permission to access the CP/site

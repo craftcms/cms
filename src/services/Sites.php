@@ -9,6 +9,7 @@ namespace craft\services;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\base\MemoizableArray;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
@@ -125,7 +126,8 @@ class Sites extends Component
     const CONFIG_SITES_KEY = 'sites';
 
     /**
-     * @var SiteGroup[]
+     * @var MemoizableArray|null
+     * @see _groups()
      */
     private $_groups;
 
@@ -167,7 +169,7 @@ class Sites extends Component
     {
         // No technical reason to put this here, but it's sortof related
         if (defined('CRAFT_LOCALE')) {
-            Craft::$app->getDeprecator()->log('CRAFT_LOCALE', 'The CRAFT_LOCALE constant has been deprecated. Use CRAFT_SITE instead, which can be set to a site ID or handle.');
+            Craft::$app->getDeprecator()->log('CRAFT_LOCALE', 'The `CRAFT_LOCALE` constant has been deprecated. Use `CRAFT_SITE` instead, which can be set to a site ID or handle.');
         }
 
         // Load all the sites up front
@@ -178,24 +180,31 @@ class Sites extends Component
     // -------------------------------------------------------------------------
 
     /**
+     * Returns a memoizable array of all site groups.
+     *
+     * @return MemoizableArray
+     */
+    private function _groups(): MemoizableArray
+    {
+        if ($this->_groups === null) {
+            $groups = [];
+            foreach ($this->_createGroupQuery()->all() as $result) {
+                $groups[] = new SiteGroup($result);
+            }
+            $this->_groups = new MemoizableArray($groups);
+        }
+
+        return $this->_groups;
+    }
+
+    /**
      * Returns all site groups.
      *
      * @return SiteGroup[] The site groups
      */
     public function getAllGroups(): array
     {
-        if ($this->_groups !== null) {
-            return $this->_groups;
-        }
-
-        $this->_groups = [];
-        $results = $this->_createGroupQuery()->all();
-
-        foreach ($results as $result) {
-            $this->_groups[] = new SiteGroup($result);
-        }
-
-        return $this->_groups;
+        return $this->_groups()->all();
     }
 
     /**
@@ -206,7 +215,19 @@ class Sites extends Component
      */
     public function getGroupById(int $groupId)
     {
-        return ArrayHelper::firstWhere($this->getAllGroups(), 'id', $groupId);
+        return $this->_groups()->firstWhere('id', $groupId);
+    }
+
+    /**
+     * Returns a site group by its UID.
+     *
+     * @param string $uid The site group’s UID
+     * @return SiteGroup|null The site group, or null if it doesn’t exist
+     * @since 3.5.8
+     */
+    public function getGroupByUid(string $uid)
+    {
+        return $this->_groups()->firstWhere('uid', $uid, true);
     }
 
     /**
@@ -554,7 +575,7 @@ class Sites extends Component
      */
     public function getSitesByGroupId(int $groupId, bool $withDisabled = null): array
     {
-        $sites = ArrayHelper::where($this->_allSites($withDisabled), 'groupId', $groupId);
+        $sites = ArrayHelper::where($this->_allSites($withDisabled), 'groupId', $groupId, false, false);
 
         // Using array_multisort threw a nesting error for no obvious reason, so don't use it here.
         ArrayHelper::multisort($sites, 'sortOrder', SORT_ASC, SORT_NUMERIC);
@@ -1238,7 +1259,8 @@ class Sites extends Component
     private function _allSites(bool $withDisabled = null)
     {
         if ($withDisabled === null) {
-            $withDisabled = Craft::$app->getRequest()->getIsCpRequest();
+            $request = Craft::$app->getRequest();
+            $withDisabled = !$request->getIsSiteRequest() || $request->getIsActionRequest();
         }
 
         return $withDisabled ? $this->_allSitesById : $this->_enabledSitesById;

@@ -9,6 +9,8 @@ namespace craft\services;
 
 use Craft;
 use craft\base\LocalVolumeInterface;
+use craft\base\MemoizableArray;
+use craft\db\Connection;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
@@ -37,6 +39,7 @@ use DateTime;
 use yii\base\Application;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
+use yii\di\Instance;
 
 /**
  * Asset Transforms service.
@@ -91,7 +94,14 @@ class AssetTransforms extends Component
     const CONFIG_TRANSFORM_KEY = 'imageTransforms';
 
     /**
-     * @var AssetTransform[]
+     * @var Connection|array|string The database connection to use
+     * @since 3.5.4
+     */
+    public $db = 'db';
+
+    /**
+     * @var MemoizableArray|null
+     * @see _transforms()
      */
     private $_transforms;
 
@@ -111,23 +121,40 @@ class AssetTransforms extends Component
     private $_activeTransformIndex;
 
     /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        parent::init();
+        $this->db = Instance::ensure($this->db, Connection::class);
+    }
+
+    /**
+     * Returns a memoizable array of all named asset transforms.
+     *
+     * @return MemoizableArray
+     */
+    private function _transforms(): MemoizableArray
+    {
+        if ($this->_transforms === null) {
+            $transforms = [];
+            foreach ($this->_createTransformQuery()->all() as $result) {
+                $transforms[] = new AssetTransform($result);
+            }
+            $this->_transforms = new MemoizableArray($transforms);
+        }
+
+        return $this->_transforms;
+    }
+
+    /**
      * Returns all named asset transforms.
      *
      * @return AssetTransform[]
      */
     public function getAllTransforms(): array
     {
-        if ($this->_transforms !== null) {
-            return $this->_transforms;
-        }
-
-        $this->_transforms = [];
-
-        foreach ($this->_createTransformQuery()->all() as $result) {
-            $this->_transforms[] = new AssetTransform($result);
-        }
-
-        return $this->_transforms;
+        return $this->_transforms()->all();
     }
 
     /**
@@ -138,7 +165,7 @@ class AssetTransforms extends Component
      */
     public function getTransformByHandle(string $handle)
     {
-        return ArrayHelper::firstWhere($this->getAllTransforms(), 'handle', $handle, true);
+        return $this->_transforms()->firstWhere('handle', $handle, true);
     }
 
     /**
@@ -149,7 +176,7 @@ class AssetTransforms extends Component
      */
     public function getTransformById(int $id)
     {
-        return ArrayHelper::firstWhere($this->getAllTransforms(), 'id', $id);
+        return $this->_transforms()->firstWhere('id', $id);
     }
 
     /**
@@ -161,7 +188,7 @@ class AssetTransforms extends Component
      */
     public function getTransformByUid(string $uid)
     {
-        return ArrayHelper::firstWhere($this->getAllTransforms(), 'uid', $uid, true);
+        return $this->_transforms()->firstWhere('uid', $uid, true);
     }
 
     /**
@@ -192,7 +219,7 @@ class AssetTransforms extends Component
         if ($isNewTransform) {
             $transform->uid = StringHelper::UUID();
         } else if (!$transform->uid) {
-            $transform->uid = Db::uidById(Table::ASSETTRANSFORMS, $transform->id);
+            $transform->uid = Db::uidById(Table::ASSETTRANSFORMS, $transform->id, $this->db);
         }
 
         $projectConfig = Craft::$app->getProjectConfig();
@@ -213,7 +240,7 @@ class AssetTransforms extends Component
         $projectConfig->set($configPath, $configData, "Saving transform “{$transform->handle}”");
 
         if ($isNewTransform) {
-            $transform->id = Db::idByUid(Table::ASSETTRANSFORMS, $transform->uid);
+            $transform->id = Db::idByUid(Table::ASSETTRANSFORMS, $transform->uid, $this->db);
         }
 
         return true;
@@ -229,7 +256,7 @@ class AssetTransforms extends Component
         $transformUid = $event->tokenMatches[0];
         $data = $event->newValue;
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        $transaction = $this->db->beginTransaction();
         $deleteTransformIndexes = false;
 
         try {
@@ -269,7 +296,7 @@ class AssetTransforms extends Component
         if ($deleteTransformIndexes) {
             Db::delete(Table::ASSETTRANSFORMINDEX, [
                 'location' => $this->_getNamedTransformFolderName($transformRecord->handle),
-            ]);
+            ], [], $this->db);
         }
 
         // Clear caches
@@ -318,7 +345,7 @@ class AssetTransforms extends Component
     {
         // todo: remove this code in 3.0 & hardcode the $transform type
         if (is_int($transform)) {
-            Craft::$app->getDeprecator()->log(self::class . '::deleteTransform(id)', self::class . '::deleteTransform() should only be called with a ' . AssetTransform::class . ' reference. Use ' . self::class . '::deleteTransformById() to get a transform by its ID.');
+            Craft::$app->getDeprecator()->log(self::class . '::deleteTransform(id)', '`' . self::class . '::deleteTransform()` should only be called with a `' . AssetTransform::class . '` reference. Use `' . self::class . '::deleteTransformById()` to get a transform by its ID.');
             return $this->deleteTransformById($transform);
         }
         if (!$transform instanceof AssetTransform) {
@@ -360,7 +387,7 @@ class AssetTransforms extends Component
 
         Db::delete(Table::ASSETTRANSFORMS, [
             'uid' => $transformUid,
-        ]);
+        ], [], $this->db);
 
         // Clear caches
         $this->_transforms = null;
@@ -508,7 +535,7 @@ class AssetTransforms extends Component
         if (!empty($invalidIndexIds)) {
             Db::delete(Table::ASSETTRANSFORMINDEX, [
                 'id' => $invalidIndexIds,
-            ]);
+            ], [], $this->db);
         }
     }
 
@@ -563,7 +590,7 @@ class AssetTransforms extends Component
             // Delete the out-of-date record
             Db::delete(Table::ASSETTRANSFORMINDEX, [
                 'id' => $result['id'],
-            ]);
+            ], [], $this->db);
 
             // And the file.
             $transformUri = $asset->folderPath . $this->getTransformSubpath($asset, new AssetTransformIndex($result));
@@ -897,10 +924,10 @@ class AssetTransforms extends Component
         if ($index->id !== null) {
             Db::update(Table::ASSETTRANSFORMINDEX, $values, [
                 'id' => $index->id,
-            ]);
+            ], [], true, $this->db);
         } else {
-            Db::insert(Table::ASSETTRANSFORMINDEX, $values);
-            $index->id = Craft::$app->getDb()->getLastInsertID(Table::ASSETTRANSFORMINDEX);
+            Db::insert(Table::ASSETTRANSFORMINDEX, $values, true, $this->db);
+            $index->id = $this->db->getLastInsertID(Table::ASSETTRANSFORMINDEX);
         }
 
         return $index;
@@ -989,7 +1016,7 @@ class AssetTransforms extends Component
     {
         Db::delete(Table::ASSETTRANSFORMINDEX, [
             'assetId' => $assetId,
-        ]);
+        ], [], $this->db);
     }
 
     /**
@@ -1001,7 +1028,7 @@ class AssetTransforms extends Component
     {
         Db::delete(Table::ASSETTRANSFORMINDEX, [
             'id' => $indexId,
-        ]);
+        ], [], $this->db);
     }
 
     /**
@@ -1221,11 +1248,7 @@ class AssetTransforms extends Component
      */
     public function getTransformFilename(Asset $asset, AssetTransformIndex $index): string
     {
-        if (empty($index->filename)) {
-            return $asset->filename;
-        }
-
-        return $index->filename;
+        return $index->filename ?: $asset->filename;
     }
 
     /**

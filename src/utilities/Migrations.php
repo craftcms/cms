@@ -39,7 +39,7 @@ class Migrations extends Utility
      */
     public static function iconPath()
     {
-        return Craft::getAlias('@app/icons/arrow-up.svg');
+        return Craft::getAlias('@appicons/arrow-up.svg');
     }
 
     /**

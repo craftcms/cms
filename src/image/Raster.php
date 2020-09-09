@@ -738,7 +738,9 @@ class Raster extends Image
                 return $options;
 
             default:
-                return [];
+                return [
+                    'quality' => $quality
+                ];
         }
     }
 }

@@ -569,7 +569,7 @@ class ElementIndexesController extends BaseElementsController
             }
 
             if ($this->elementQuery->trashed) {
-                if ($action instanceof Delete) {
+                if ($action instanceof Delete && !$action->withDescendants) {
                     $action->hard = true;
                 } else if (!$action instanceof Restore) {
                     unset($actions[$i]);

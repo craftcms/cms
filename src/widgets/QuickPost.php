@@ -35,7 +35,7 @@ class QuickPost extends Widget
      */
     public static function icon()
     {
-        return Craft::getAlias('@app/icons/newspaper.svg');
+        return Craft::getAlias('@appicons/newspaper.svg');
     }
 
     /**

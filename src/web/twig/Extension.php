@@ -118,18 +118,19 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new ExitTokenParser(),
             new HeaderTokenParser(),
             new HookTokenParser(),
-            new RegisterResourceTokenParser('css', 'registerCss', [
+            new RegisterResourceTokenParser('css', TemplateHelper::class . '::css', [
                 'allowTagPair' => true,
                 'allowOptions' => true,
             ]),
-            new RegisterResourceTokenParser('html', 'registerHtml', [
+            new RegisterResourceTokenParser('html', 'Craft::$app->getView()->registerHtml', [
                 'allowTagPair' => true,
                 'allowPosition' => true,
             ]),
-            new RegisterResourceTokenParser('js', 'registerJs', [
+            new RegisterResourceTokenParser('js', TemplateHelper::class . '::js', [
                 'allowTagPair' => true,
                 'allowPosition' => true,
                 'allowRuntimePosition' => true,
+                'allowOptions' => true,
             ]),
             new NamespaceTokenParser(),
             new NavTokenParser(),
@@ -143,56 +144,56 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new SwitchTokenParser(),
 
             // Deprecated tags
-            new RegisterResourceTokenParser('includeCss', 'registerCss', [
+            new RegisterResourceTokenParser('includeCss', 'Craft::$app->getView()->registerCss', [
                 'allowTagPair' => true,
                 'allowOptions' => true,
                 'newCode' => '{% css %}',
             ]),
-            new RegisterResourceTokenParser('includeHiResCss', 'registerHiResCss', [
+            new RegisterResourceTokenParser('includeHiResCss', 'Craft::$app->getView()->registerHiResCss', [
                 'allowTagPair' => true,
                 'allowOptions' => true,
                 'newCode' => '{% css %}',
             ]),
-            new RegisterResourceTokenParser('includeCssFile', 'registerCssFile', [
+            new RegisterResourceTokenParser('includeCssFile', 'Craft::$app->getView()->registerCssFile', [
                 'allowOptions' => true,
-                'newCode' => '{% do view.registerCssFile("/url/to/file.css") %}',
+                'newCode' => '{% css "/url/to/file.css" %}',
             ]),
-            new RegisterResourceTokenParser('includeJs', 'registerJs', [
+            new RegisterResourceTokenParser('includeJs', 'Craft::$app->getView()->registerJs', [
                 'allowTagPair' => true,
                 'allowPosition' => true,
                 'allowRuntimePosition' => true,
                 'newCode' => '{% js %}',
             ]),
-            new RegisterResourceTokenParser('includeJsFile', 'registerJsFile', [
+            new RegisterResourceTokenParser('includeJsFile', 'Craft::$app->getView()->registerJsFile', [
                 'allowPosition' => true,
                 'allowOptions' => true,
-                'newCode' => '{% do view.registerJsFile("/url/to/file.js") %}',
+                'newCode' => '{% js "/url/to/file.js" %}',
             ]),
 
-            new RegisterResourceTokenParser('includecss', 'registerCss', [
+            new RegisterResourceTokenParser('includecss', 'Craft::$app->getView()->registerCss', [
                 'allowTagPair' => true,
                 'allowOptions' => true,
                 'newCode' => '{% css %}',
             ]),
-            new RegisterResourceTokenParser('includehirescss', 'registerHiResCss', [
+            new RegisterResourceTokenParser('includehirescss', 'Craft::$app->getView()->registerHiResCss', [
                 'allowTagPair' => true,
                 'allowOptions' => true,
                 'newCode' => '{% css %}',
             ]),
-            new RegisterResourceTokenParser('includecssfile', 'registerCssFile', [
+            new RegisterResourceTokenParser('includecssfile', 'Craft::$app->getView()->registerCssFile', [
                 'allowOptions' => true,
-                'newCode' => '{% do view.registerCssFile("/url/to/file.css") %}',
+                'newCode' => '{% css "/url/to/file.css" %}',
             ]),
-            new RegisterResourceTokenParser('includejs', 'registerJs', [
+            new RegisterResourceTokenParser('includejs', 'Craft::$app->getView()->registerJs', [
                 'allowTagPair' => true,
                 'allowPosition' => true,
                 'allowRuntimePosition' => true,
                 'newCode' => '{% js %}',
             ]),
-            new RegisterResourceTokenParser('includejsfile', 'registerJsFile', [
+            new RegisterResourceTokenParser('includejsfile', 'Craft::$app->getView()->registerJsFile', [
                 'allowPosition' => true,
                 'allowOptions' => true,
-                'newCode' => '{% do view.registerJsFile("/url/to/file.js") %}',
+                'newCode' => '{% js "/url/to/file.js" %}',
             ]),
         ];
     }
@@ -340,7 +341,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function ucwordsFilter(TwigEnvironment $env, string $string): string
     {
-        Craft::$app->getDeprecator()->log('ucwords', 'The |ucwords filter has been deprecated. Use |title instead.');
+        Craft::$app->getDeprecator()->log('ucwords', 'The `|ucwords` filter has been deprecated. Use `|title` instead.');
         if (($charset = $env->getCharset()) !== null) {
             return mb_convert_case($string, MB_CASE_TITLE, $charset);
         }
@@ -808,7 +809,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     public function groupFilter($arr, $arrow): array
     {
         if ($arr instanceof ElementQuery) {
-            Craft::$app->getDeprecator()->log('ElementQuery::getIterator()', 'Looping through element queries directly has been deprecated. Use the all() function to fetch the query results before looping over them.');
+            Craft::$app->getDeprecator()->log('ElementQuery::getIterator()', 'Looping through element queries directly has been deprecated. Use the `all()` function to fetch the query results before looping over them.');
             $arr = $arr->all();
         }
 
@@ -954,6 +955,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('className', 'get_class'),
             new TwigFunction('clone', [$this, 'cloneFunction']),
             new TwigFunction('combine', 'array_combine'),
+            new TwigFunction('configure', [Craft::class, 'configure']),
             new TwigFunction('cpUrl', [UrlHelper::class, 'cpUrl']),
             new TwigFunction('create', [Craft::class, 'createObject']),
             new TwigFunction('expression', [$this, 'expressionFunction']),
@@ -1053,7 +1055,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function roundFunction($value, int $precision = 0, int $mode = PHP_ROUND_HALF_UP)
     {
-        Craft::$app->getDeprecator()->log('round()', 'The round() function has been deprecated. Use Twig’s |round filter instead.');
+        Craft::$app->getDeprecator()->log('round()', 'The `round()` function has been deprecated. Use Twig’s `|round` filter instead.');
 
         return round($value, $precision, $mode);
     }
@@ -1164,7 +1166,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         }
 
         if ($class !== null) {
-            Craft::$app->getDeprecator()->log('svg()-class', 'The `class` argument of the svg() Twig function has been deprecated. The |attr filter should be used instead.');
+            Craft::$app->getDeprecator()->log('svg()-class', 'The `class` argument of the `svg()` Twig function has been deprecated. The `|attr` filter should be used instead.');
             try {
                 $svg = Html::modifyTagAttributes($svg, [
                     'class' => $class,
@@ -1283,7 +1285,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function getCsrfInput(): string
     {
-        Craft::$app->getDeprecator()->log('getCsrfInput', 'getCsrfInput() has been deprecated. Use csrfInput() instead.');
+        Craft::$app->getDeprecator()->log('getCsrfInput', '`getCsrfInput()` has been deprecated. Use `csrfInput()` instead.');
         return Html::csrfInput();
     }
 
@@ -1293,7 +1295,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function getHeadHtml(): string
     {
-        Craft::$app->getDeprecator()->log('getHeadHtml', 'getHeadHtml() has been deprecated. Use head() instead.');
+        Craft::$app->getDeprecator()->log('getHeadHtml', '`getHeadHtml()` has been deprecated. Use `head()` instead.');
 
         ob_start();
         ob_implicit_flush(false);
@@ -1308,7 +1310,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function getFootHtml(): string
     {
-        Craft::$app->getDeprecator()->log('getFootHtml', 'getFootHtml() has been deprecated. Use endBody() instead.');
+        Craft::$app->getDeprecator()->log('getFootHtml', '`getFootHtml()` has been deprecated. Use `endBody()` instead.');
 
         ob_start();
         ob_implicit_flush(false);

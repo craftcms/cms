@@ -1,0 +1,40 @@
+{% set attributes = {
+  id: id ?? "copytext-#{random()}",
+  class: (class ?? [])|explodeClass|push('copytextbtn'),
+  role: 'button',
+  title: 'Copy to clipboard'|t('app'),
+  tabindex: '0',
+} %}
+
+<div {{ attr(attributes) }}>
+    {{ input('text', null, value, {
+        readonly: true,
+        size: value|length,
+        tabindex: '-1',
+    }) }}
+    <span data-icon="clipboard"></span>
+</div>
+
+{% js %}
+    {% block js %}
+        (() => {
+            let $btn = $('#{{ id|namespaceInputId|e('js') }}');
+            let $input = $btn.children('input');
+            let copyValue = function() {
+                $input[0].select();
+                document.execCommand('copy');
+                Craft.cp.displayNotice("{{ 'Copied to clipboard.'|t('app')|e('js') }}");
+                $btn.trigger('copy');
+                $input[0].setSelectionRange(0, 0);
+                $btn.focus();
+            };
+            $btn.on('click', copyValue);
+            $btn.on('keydown', ev => {
+                if (ev.keyCode === Garnish.SPACE_KEY) {
+                    copyValue();
+                    ev.preventDefault();
+                }
+            });
+        })();
+    {% endblock %}
+{% endjs %}

@@ -12,6 +12,7 @@ use craft\console\Controller;
 use craft\db\Table;
 use craft\helpers\Console;
 use craft\helpers\Db;
+use craft\helpers\ProjectConfig;
 use craft\services\Plugins;
 use yii\console\ExitCode;
 
@@ -40,6 +41,45 @@ class ProjectConfigController extends Controller
         }
 
         return $options;
+    }
+
+    /**
+     * See a diff of the pending project config YAML changes.
+     *
+     * @return int
+     * @since 3.5.6
+     */
+    public function actionDiff(): int
+    {
+        $diff = ProjectConfig::diff();
+
+        if ($diff === '') {
+            $this->stdout('No pending project config YAML changes.' . PHP_EOL, Console::FG_GREEN);
+            return ExitCode::OK;
+        }
+
+        if (!$this->isColorEnabled()) {
+            $this->stdout($diff . PHP_EOL . PHP_EOL);
+            return ExitCode::OK;
+        }
+
+        foreach (explode("\n", $diff) as $line) {
+            $firstChar = $line[0] ?? '';
+            switch ($firstChar) {
+                case '-':
+                    $this->stdout($line . PHP_EOL, Console::FG_RED);
+                    break;
+                case '+':
+                    $this->stdout($line . PHP_EOL, Console::FG_GREEN);
+                    break;
+                default:
+                    $this->stdout($line . PHP_EOL);
+                    break;
+            }
+        }
+
+        $this->stdout(PHP_EOL);
+        return ExitCode::OK;
     }
 
     /**

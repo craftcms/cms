@@ -210,7 +210,7 @@ class UsersController extends Controller
      */
     public function actionGetRemainingSessionTime(): Response
     {
-        Craft::$app->getDeprecator()->log(__METHOD__, 'The users/get-remaining-session-time action is deprecated. Use users/session-info instead.');
+        Craft::$app->getDeprecator()->log(__METHOD__, 'The `users/get-remaining-session-time` action is deprecated. Use `users/session-info` instead.');
         return $this->runAction('session-info');
     }
 
@@ -881,6 +881,10 @@ class UsersController extends Controller
             $localeOptions = $userLanguage = $userLocale = null;
         }
 
+        // Determine whether user photo uploading should be possible
+        $volumeUid = Craft::$app->getProjectConfig()->get('users.photoVolumeUid');
+        $showPhotoField = $volumeUid && Craft::$app->getVolumes()->getVolumeByUid($volumeUid);
+
         // Load the resources and render the page
         // ---------------------------------------------------------------------
 
@@ -908,6 +912,7 @@ class UsersController extends Controller
             'title',
             'tabs',
             'selectedTab',
+            'showPhotoField',
             'fieldsHtml'
         ));
     }
@@ -984,7 +989,7 @@ class UsersController extends Controller
 
             $user = new User();
 
-            if ($isPublicRegistration && $userSettings['suspendByDefault'] ?? false) {
+            if ($isPublicRegistration && ($userSettings['suspendByDefault'] ?? false)) {
                 $user->suspended = true;
             }
         }
@@ -1169,6 +1174,7 @@ class UsersController extends Controller
 
         if ($user->admin) {
             $preferences = array_merge($preferences, [
+                'showFieldHandles' => (bool)$this->request->getBodyParam('showFieldHandles', $user->getPreference('showFieldHandles')),
                 'enableDebugToolbarForSite' => (bool)$this->request->getBodyParam('enableDebugToolbarForSite', $user->getPreference('enableDebugToolbarForSite')),
                 'enableDebugToolbarForCp' => (bool)$this->request->getBodyParam('enableDebugToolbarForCp', $user->getPreference('enableDebugToolbarForCp')),
                 'showExceptionView' => (bool)$this->request->getBodyParam('showExceptionView', $user->getPreference('showExceptionView')),

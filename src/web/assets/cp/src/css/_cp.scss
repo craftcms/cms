@@ -88,7 +88,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   grid-gap: 10px;
   padding: 0 10px;
   position: relative;
-  flex: 0 0 60px;
+  flex: 0 0 50px;
   flex-direction: row;
   align-items: center;
   background-color: $systemInfoBgColor;
@@ -441,7 +441,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   background: $grey050;
 
   .flex {
-    height: 60px;
+    height: 50px;
     align-items: center;
   }
 }
@@ -475,24 +475,16 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
       align-items: stretch;
 
       li {
-        &:after {
-          @include icon;
-          margin: -1px 5px 0;
-          font-size: 11px;
-          color: $lightTextColor;
-
-          body.ltr & {
-            content: 'rightangle';
-          }
-
-          body.rtl & {
-            content: 'leftangle';
-          }
-        }
+        display: inline-flex;
+        align-items: center;
 
         a {
-          display: inline-block;
-          padding: 5px 0 1px;
+          padding: 15px 0;
+        }
+
+        &:after {
+          margin: 0 7px;
+          @include angle(right, $mediumHairlineColor);
         }
       }
     }
@@ -524,19 +516,21 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   display: flex;
   flex-direction: row;
   align-items: center;
-  @include padding(0, 24px, 0, 14px);
+  @include padding(0, 11px, 0, 14px);
   height: 100%;
   background-color: transparent;
   border-radius: 0;
 
   &:after {
-    @include margin(0, 0, 0, 5px, !important);
-    color: $lightTextColor;
-    transition: color linear 100ms;
+    border-color: $mediumHairlineColor;
+    transition: border-color linear 100ms;
   }
 
-  &:hover:after {
-    color: $mediumTextColor;
+  &:hover,
+  &.active {
+    &:after {
+      border-color: $darkHairlineColor;
+    }
   }
 }
 
@@ -622,8 +616,8 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   align-content: stretch;
   flex-wrap: nowrap;
   justify-content: space-between;
-  padding-top: 13px;
-  padding-bottom: 13px;
+  padding-top: 8px;
+  padding-bottom: 8px;
   position: relative;
   z-index: 2;
   width: calc(100vw - #{$sidebarWidth});
@@ -1026,10 +1020,6 @@ $toolbarIconColor: darken($inputColor, 10%);
         color: $grey600;
       }
     }
-    & > .field.has-errors {
-      margin: 0 -24px !important;
-      padding: 0 24px;
-    }
 
     & > .field {
       .status-badge {
@@ -1135,17 +1125,12 @@ $toolbarIconColor: darken($inputColor, 10%);
   }
 
   #sidebar-toggle {
-    &:after {
-      @include icon;
-      content: 'downangle';
-      @include margin-left(5px);
-    }
-
     body.showing-sidebar & {
       background-color: darken($grey200, 10%) !important;
 
       &:after {
-        content: 'upangle';
+        transform: rotate(225deg);
+        top: 1px;
       }
     }
   }
@@ -1250,7 +1235,7 @@ $toolbarIconColor: darken($inputColor, 10%);
   z-index: 100;
 
   header {
-    padding: 10px 24px;
+    padding: 8px 24px;
     background-color: $grey100;
     box-shadow: 0 1px 0 transparentize($grey700, 0.8);
     box-sizing: border-box;
@@ -1322,7 +1307,7 @@ $toolbarIconColor: darken($inputColor, 10%);
     justify-content: center;
 
     & + .lp-iframe-container {
-      padding-top: 54px;
+      padding-top: 50px;
     }
   }
 
@@ -1369,7 +1354,7 @@ $toolbarIconColor: darken($inputColor, 10%);
     }
 
     & > .toggle {
-      @include left(14px * $level);
+      @include left(5px + 14px * $level);
     }
   }
 
@@ -1476,7 +1461,14 @@ $toolbarIconColor: darken($inputColor, 10%);
 
       .toggle {
         position: absolute;
-        top: 7px;
+        height: 34px;
+        top: 0;
+        padding: 0 4px;
+
+        &:before {
+          position: relative;
+          top: 14px;
+        }
       }
 
       ul {

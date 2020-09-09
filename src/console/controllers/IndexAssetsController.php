@@ -20,7 +20,7 @@ use yii\db\Exception;
 use yii\helpers\Console;
 
 /**
- * Allows you to re-indexes assets in volumes.
+ * Allows you to re-index assets in volumes.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.1.2
@@ -79,7 +79,8 @@ class IndexAssetsController extends Controller
     /**
      * Re-indexes assets from the given volume handle ($startAt = 0).
      *
-     * @param string $handle The handle of the volume to index
+     * @param string $handle The handle of the volume to index.
+     * It is also possible to provide a volume sub-path to index, e.g. `./craft index-assets/one volume-handle/path/to/folder`.
      * @param int $startAt
      * @return int
      * @since 3.1.4

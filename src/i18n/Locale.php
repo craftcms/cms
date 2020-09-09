@@ -835,7 +835,7 @@ class Locale extends BaseObject
      */
     public function getId(): string
     {
-        Craft::$app->getDeprecator()->log('Locale::getId()', 'Locale::getId() has been deprecated. Use the id property instead.');
+        Craft::$app->getDeprecator()->log('Locale::getId()', '`Locale::getId()` has been deprecated. Use the `id` property instead.');
 
         return $this->id;
     }
@@ -849,7 +849,7 @@ class Locale extends BaseObject
      */
     public function getName(string $targetLocaleId = null)
     {
-        Craft::$app->getDeprecator()->log('Locale::getName()', 'Locale::getName() has been deprecated. Use getDisplayName() instead.');
+        Craft::$app->getDeprecator()->log('Locale::getName()', '`Locale::getName()` has been deprecated. Use `getDisplayName()` instead.');
 
         // In Craft 2, getName() with no $targetLocaleId would default to the active language
         if ($targetLocaleId === null) {
@@ -867,7 +867,7 @@ class Locale extends BaseObject
      */
     public function getNativeName()
     {
-        Craft::$app->getDeprecator()->log('Locale::getNativeName()', 'Locale::getNativeName() has been deprecated. Use getDisplayName() instead.');
+        Craft::$app->getDeprecator()->log('Locale::getNativeName()', '`Locale::getNativeName()` has been deprecated. Use `getDisplayName()` instead.');
 
         return $this->getDisplayName();
     }

@@ -17,7 +17,7 @@
         <div class="cs-forms">
             <form class="cs-search-form" action="{{ formAction }}" method="get" target="_blank">
                 <div class="cs-search-params"></div>
-                <input type="submit" class="btn submit fullwidth disabled" value="{{ submitText }}">
+                <button type="submit" class="btn submit fullwidth disabled">{{ submitText }}</button>
                 {% if CraftEdition == CraftPro %}
                     <p>{{ "or <a>send to Developer Support</a>"|t('app')|raw }}</p>
                 {% endif %}
@@ -39,11 +39,11 @@
                 </div>
                 <div class="cs-icon-resources">
                     <a href="https://craftcms.com/docs/3.x/" target="_blank">
-                        {{ svg('@app/icons/book.svg') }}
+                        {{ svg('@appicons/book.svg') }}
                         <span>{{ 'Documentation'|t('app') }}</span>
                     </a>
                     <a href="https://craftcms.com/guides" target="_blank">
-                        {{ svg('@app/icons/magnifying-glass.svg') }}
+                        {{ svg('@appicons/magnifying-glass.svg') }}
                         <span>{{ 'Guides'|t('app') }}</span>
                     </a>
                 </div>
@@ -97,7 +97,7 @@
                     }) }}
                 </div>
 
-                <input type="submit" class="btn submit fullwidth disabled" value="{{ 'Send'|t('app') }}">
+                <button type="submit" class="btn submit fullwidth disabled">{{ 'Send'|t('app') }}</button>
                 <div class="spinner hidden"></div>
             </form>
         </div>

@@ -772,7 +772,7 @@ class Assets extends Component
             return $path;
         }
 
-        $svg = file_get_contents(Craft::getAlias('@app/icons/file.svg'));
+        $svg = file_get_contents(Craft::getAlias('@appicons/file.svg'));
 
         $extLength = strlen($ext);
         if ($extLength <= 3) {
@@ -852,26 +852,24 @@ class Assets extends Component
             $base = $baseFileName . '_' . $timestamp;
         }
 
-        $newFilename = $base . '.' . $extension;
-
-        if ($canUse($newFilename)) {
-            return $newFilename;
-        }
-
         $increment = 0;
 
-        while (++$increment) {
-            $newFilename = $base . '_' . $increment . '.' . $extension;
+        while (true) {
+            // Add the increment (if > 0) and keep the full filename w/ increment & extension from going over 255 chars
+            $suffix = ($increment ? "_$increment" : '') . ".$extension";
+            $newFilename = substr($base, 0, 255 - mb_strlen($suffix)) . $suffix;
 
             if ($canUse($newFilename)) {
                 break;
             }
 
             if ($increment === 50) {
-                throw new AssetLogicException(Craft::t('app',
-                    'Could not find a suitable replacement filename for “{filename}”.',
-                    ['filename' => $filename]));
+                throw new AssetLogicException(Craft::t('app', 'Could not find a suitable replacement filename for “{filename}”.', [
+                    'filename' => $originalFilename,
+                ]));
             }
+
+            $increment++;
         }
 
         return $newFilename;

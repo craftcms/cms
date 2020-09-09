@@ -25,7 +25,7 @@ use yii\db\Expression;
 class AsciiFilenamesController extends Controller
 {
     /**
-     * Prunes excess element revisions.
+     * Converts all non-ASCII asset filenames to ASCII.
      *
      * @return int
      */

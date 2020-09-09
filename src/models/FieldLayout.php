@@ -20,6 +20,8 @@ use craft\fieldlayoutelements\Heading;
 use craft\fieldlayoutelements\HorizontalRule;
 use craft\fieldlayoutelements\Template;
 use craft\fieldlayoutelements\Tip;
+use craft\helpers\ArrayHelper;
+use craft\helpers\Html;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
@@ -434,15 +436,20 @@ class FieldLayout extends Model
     /**
      * Sets the custom fields included in this layout.
      *
-     * @param FieldInterface[] $fields
+     * @param FieldInterface[]|null $fields
      */
-    public function setFields(array $fields)
+    public function setFields(array $fields = null)
     {
         $this->_customFields = $fields;
     }
 
     /**
      * Creates a new [[FieldLayoutForm]] object for the given element.
+     *
+     * The `$config` array can contain the following keys:
+     *
+     * - `tabIdPrefix` – prefix that should be applied to the tab content containers’ `id` attributes
+     * - `namespace` – Namespace that should be applied to the tab contents
      *
      * @param ElementInterface|null $element The element the form is being rendered for
      * @param bool $static Whether the form should be static (non-interactive)
@@ -452,6 +459,14 @@ class FieldLayout extends Model
      */
     public function createForm(ElementInterface $element = null, bool $static = false, array $config = []): FieldLayoutForm
     {
+        $view = Craft::$app->getView();
+        // Calling this with an existing namespace isn’t fully supported,
+        // since the tab anchors’ `href` attributes won’t end up getting set properly
+        $oldNamespace = $view->getNamespace();
+        $namespace = ArrayHelper::remove($config, 'namespace');
+        if ($namespace !== null) {
+            $view->setNamespace($view->namespaceInputName($namespace));
+        }
         $form = new FieldLayoutForm($config);
 
         foreach ($this->getTabs() as $tab) {
@@ -460,6 +475,9 @@ class FieldLayout extends Model
             foreach ($tab->elements as $formElement) {
                 $elementHtml = $formElement->formHtml($element, $static);
                 if ($elementHtml !== null) {
+                    if ($namespace !== null) {
+                        $elementHtml = Html::namespaceHtml($elementHtml, $namespace);
+                    }
                     $tabHtml[] = $elementHtml;
                 }
             }
@@ -473,6 +491,8 @@ class FieldLayout extends Model
                 ]);
             }
         }
+
+        $view->setNamespace($oldNamespace);
 
         return $form;
     }

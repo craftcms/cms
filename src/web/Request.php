@@ -194,6 +194,9 @@ class Request extends \yii\web\Request
             $this->isWebAliasSetDynamically = true;
         }
 
+        // Determine the request path
+        $this->_path = $this->_normalizePath($this->getFullPath());
+
         // Figure out whether a site or the control panel were requested
         // ---------------------------------------------------------------------
 
@@ -255,8 +258,10 @@ class Request extends \yii\web\Request
             $sitesService->setCurrentSite($site ?? null);
         }
 
-        // Determine the request path
-        $this->_path = $this->_normalizePath($this->getFullUri());
+        // If this is a CP request and the path begins with the CP trigger, remove it
+        if ($this->_isCpRequest && $generalConfig->cpTrigger && strpos($this->_path . '/', $generalConfig->cpTrigger . '/') === 0) {
+            $this->_path = ltrim(substr($this->_path, strlen($generalConfig->cpTrigger)), '/');
+        }
 
         // Trim off any leading path segments that are part of the base URL
         if ($this->_path !== '' && isset($baseUrl) && ($basePath = parse_url($baseUrl, PHP_URL_PATH)) !== null) {
@@ -362,6 +367,18 @@ class Request extends \yii\web\Request
         $baseUrl = $this->_normalizePath($this->getBaseUrl());
         $path = $this->getFullPath();
         return $this->_fullUri = $baseUrl . ($baseUrl && $path ? '/' : '') . $path;
+    }
+
+    /**
+     * @inheritdoc
+     *
+     * ::: warning
+     * Don’t include the results of this method in places that will be cached, to avoid a cache poisoning attack.
+     * :::
+     */
+    public function getAbsoluteUrl()
+    {
+        return parent::getAbsoluteUrl();
     }
 
     /**

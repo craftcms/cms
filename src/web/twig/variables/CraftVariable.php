@@ -144,7 +144,7 @@ class CraftVariable extends ServiceLocator
     {
         // Are they calling one of the components as if it's still a function?
         if ($params === [] && $this->has($name)) {
-            Craft::$app->getDeprecator()->log("CraftVariable::{$name}()", "craft.{$name}() is no longer a function. Use “craft.{$name}” instead (without the parentheses).");
+            Craft::$app->getDeprecator()->log("CraftVariable::{$name}()", "`craft.{$name}()` is no longer a function. Use `craft.{$name}` instead (without the parentheses).");
             return $this->get($name);
         }
 
@@ -186,7 +186,7 @@ class CraftVariable extends ServiceLocator
      */
     public function locale(): string
     {
-        Craft::$app->getDeprecator()->log('craft.locale()', 'craft.locale() has been deprecated. Use craft.app.language instead.');
+        Craft::$app->getDeprecator()->log('craft.locale()', '`craft.locale()` has been deprecated. Use `craft.app.language` instead.');
         return Craft::$app->language;
     }
 
@@ -198,7 +198,7 @@ class CraftVariable extends ServiceLocator
      */
     public function isLocalized(): bool
     {
-        Craft::$app->getDeprecator()->log('craft.isLocalized', 'craft.isLocalized has been deprecated. Use craft.app.isMultiSite instead.');
+        Craft::$app->getDeprecator()->log('craft.isLocalized', '`craft.isLocalized` has been deprecated. Use `craft.app.isMultiSite` instead.');
         return Craft::$app->getIsMultiSite();
     }
 

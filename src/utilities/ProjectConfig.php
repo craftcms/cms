@@ -9,7 +9,11 @@ namespace craft\utilities;
 
 use Craft;
 use craft\base\Utility;
+use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\web\assets\prismjs\PrismJsAsset;
+use SebastianBergmann\Diff\Differ;
+use SebastianBergmann\Diff\Output\DiffOnlyOutputBuilder;
+use SebastianBergmann\Diff\Output\UnifiedDiffOutputBuilder;
 use Symfony\Component\Yaml\Yaml;
 
 /**
@@ -41,7 +45,7 @@ class ProjectConfig extends Utility
      */
     public static function iconPath()
     {
-        return Craft::getAlias('@app/icons/sliders.svg');
+        return Craft::getAlias('@appicons/sliders.svg');
     }
 
     /**
@@ -49,25 +53,19 @@ class ProjectConfig extends Utility
      */
     public static function contentHtml(): string
     {
-        $css = <<<CSS
-#config-container {
-  max-height: 500px;
-  overflow: auto;
-}
-#config-container pre {
-  margin: 0;
-  padding: 0;
-  background-color: transparent;
-}
-CSS;
-
-        $view = Craft::$app->getView();
-        $view->registerAssetBundle(PrismJsAsset::class);
-        $view->registerCss($css);
-
         $projectConfig = Craft::$app->getProjectConfig();
+        $areChangesPending = $projectConfig->areChangesPending();
+        $view = Craft::$app->getView();
+
+        if ($areChangesPending) {
+            $view->registerAssetBundle(PrismJsAsset::class);
+            $view->registerTranslations('app', [
+                'Show all changes',
+            ]);
+        }
+
         return $view->renderTemplate('_components/utilities/ProjectConfig', [
-            'changesPending' => $projectConfig->areChangesPending(null, true),
+            'areChangesPending' => $areChangesPending,
             'entireConfig' => Yaml::dump($projectConfig->get(), 20, 2),
         ]);
     }

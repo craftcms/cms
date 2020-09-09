@@ -103,9 +103,9 @@
                     }));
                 }
 
-                $form.append($('<input/>', {
+                $form.append($('<button/>', {
                     type: 'submit',
-                    value: label,
+                    text: label,
                     class: 'btn submit'
                 }));
 
