@@ -95,7 +95,7 @@
         id: field.id,
         title: field.name|t('site'),
         translatable: field.getTranslationDescription(),
-        searchable: field.searchable,
+        searchable: field.searchable ? true : false,
         url: url('settings/fields/edit/' ~ field.id),
         handle: field.handle,
         type: {
