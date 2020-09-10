@@ -11,6 +11,7 @@
 - Fixed a bug where all fields were showing as searchable on the Settings → Fields page on MySQL installs. ([#6808](https://github.com/craftcms/cms/issues/6808))
 - Fixed a bug where Dropdown, Radio Buttons, Checkboxes, and Multi-select fields weren’t getting validation errors if an invalid value was posted to them. ([#6535](https://github.com/craftcms/cms/issues/6535))
 - Fixed a bug where Craft wasn’t handling site requests properly if it was installed in a subfolder and the site’s base URL contained additional URI segments.
+- Fixed a bug where Dropdown, Radio Buttons, Checkboxes, and Multi-select fields that had values that were empty, numeric or contained special characters, couldn't be used in GraphQL mutations. ([#6535](https://github.com/craftcms/cms/issues/6535))
 
 ## 3.5.9 - 2020-09-08
 

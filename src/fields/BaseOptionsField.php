@@ -421,32 +421,18 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
      */
     public function getContentGqlMutationArgumentType()
     {
-        $typeName = $this->handle . '_FieldEnum';
-
-        if ($enumType = GqlEntityRegistry::getEntity($typeName)) {
-            return $enumType;
-        }
-
         $values = [];
 
         foreach ($this->options as $option) {
             if (!isset($option['optgroup'])) {
-                $values[] = $option['value'];
+                $values[] = '“' . $option['value'] . '”';
             }
         }
 
-        $enumType = GqlEntityRegistry::createEntity($typeName, new EnumType([
-            'name' => $typeName,
-            'values' => $values,
-        ]));
-
-
-        $type = $this->multi ? Type::listOf($enumType) : $enumType;
-
         return [
             'name' => $this->handle,
-            'type' => $type,
-            'description' => $this->instructions,
+            'type' => Type::string(),
+            'description' => Craft::t('app', 'The allowed values are [{values}]', ['values' => implode(', ', $values)]),
         ];
     }
 
