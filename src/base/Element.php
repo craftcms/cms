@@ -877,56 +877,75 @@ abstract class Element extends Component implements ElementInterface
                     $selectColumns[] = 'level';
                 }
 
-                $structureData = (new Query())
+                $elementStructureData = (new Query())
                     ->select($selectColumns)
                     ->from([Table::STRUCTUREELEMENTS])
                     ->where(['elementId' => $sourceElementIds])
                     ->all();
 
-                if (empty($structureData)) {
+                if (empty($elementStructureData)) {
                     return null;
                 }
 
-                $qb = Craft::$app->getDb()->getQueryBuilder();
-                $query = new Query();
-                $sourceSelectSql = '(CASE';
+                // Build the descendant condition & params
                 $condition = ['or'];
+                $params = [];
 
-                foreach ($structureData as $i => $elementStructureData) {
+                foreach ($elementStructureData as $i => $elementStructureDatum) {
                     $thisElementCondition = [
                         'and',
-                        ['structureId' => $elementStructureData['structureId']],
-                        ['>', 'lft', $elementStructureData['lft']],
-                        ['<', 'rgt', $elementStructureData['rgt']],
+                        ['structureId' => $elementStructureDatum['structureId']],
+                        ['>', 'lft', $elementStructureDatum['lft']],
+                        ['<', 'rgt', $elementStructureDatum['rgt']],
                     ];
 
                     if ($handle === 'children') {
-                        $thisElementCondition[] = ['level' => $elementStructureData['level'] + 1];
+                        $thisElementCondition[] = ['level' => $elementStructureDatum['level'] + 1];
                     }
 
                     $condition[] = $thisElementCondition;
-                    $sourceSelectSql .= ' WHEN ' .
-                        $qb->buildCondition(
-                            [
-                                'and',
-                                ['structureId' => $elementStructureData['structureId']],
-                                ['>', 'lft', $elementStructureData['lft']],
-                                ['<', 'rgt', $elementStructureData['rgt']]
-                            ],
-                            $query->params) .
-                        " THEN :sourceId{$i}";
-                    $query->params[':sourceId' . $i] = $elementStructureData['elementId'];
+                    $params[":sourceId$i"] = $elementStructureDatum['elementId'];
                 }
 
-                $sourceSelectSql .= ' END) as source';
-
-                // Return any child elements
-                $map = $query
-                    ->select([$sourceSelectSql, 'elementId as target'])
+                // Fetch the descendant data
+                $descendantStructureQuery = (new Query())
+                    ->select(['structureId', 'lft', 'rgt', 'elementId'])
                     ->from([Table::STRUCTUREELEMENTS])
-                    ->where($condition)
-                    ->orderBy(['structureId' => SORT_ASC, 'lft' => SORT_ASC])
-                    ->all();
+                    ->where($condition);
+
+                if ($handle === 'children') {
+                    $descendantStructureQuery->addSelect('level');
+                }
+
+                $descendantStructureData = $descendantStructureQuery->all();
+
+                // Map the elements to their descendants
+                $map = [];
+                foreach ($elementStructureData as $elementStructureDatum) {
+                    foreach ($descendantStructureData as $descendantStructureDatum) {
+                        if (
+                            $descendantStructureDatum['structureId'] === $elementStructureDatum['structureId'] &&
+                            $descendantStructureDatum['lft'] > $elementStructureDatum['lft'] &&
+                            $descendantStructureDatum['rgt'] < $elementStructureDatum['rgt'] &&
+                            (
+                                $handle === 'children' ||
+                                $descendantStructureDatum['level'] == $elementStructureDatum['level'] + 1
+                            )
+                        ) {
+                            if ($descendantStructureDatum['elementId']) {
+                                $map[] = [
+                                    'source' => $elementStructureDatum['elementId'],
+                                    'target' => $descendantStructureDatum['elementId'],
+                                ];
+                            }
+
+                            // If we're just fetching the parents, then we're done with this element
+                            if ($handle === 'children') {
+                                break;
+                            }
+                        }
+                    }
+                }
 
                 return [
                     'elementType' => static::class,
