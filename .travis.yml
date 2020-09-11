@@ -1,7 +1,7 @@
 language: php
 dist: bionic
-sudo: required
 group: edge
+os: linux
 env:
   global:
   - DEFAULT_COMPOSER_FLAGS="--no-interaction --no-ansi --no-progress --no-suggest"
@@ -11,7 +11,7 @@ branches:
 services:
 - mysql
 - postgresql
-matrix:
+jobs:
   fast_finish: true
   include:
   - php: 7.3
