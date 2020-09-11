@@ -1707,5 +1707,7 @@ Si vous n’attendiez aucun email de ce type, ignorez-le, tout simplement.',
     'not an existing translation23131321313' => 'traduction inexistante23131321313',
     'Discard changes' => 'Annuler les modifications',
     'Retry Duration' => 'Durée des tentatives successives',
-    'Online' => 'En ligne'
+    'Online' => 'En ligne',
+    'This field’s values are used as search keywords.' => 'This field’s values are used as search keywords.',
+    'The allowed values are [{values}]' => 'The allowed values are [{values}]'
 ];
