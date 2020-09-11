@@ -1703,5 +1703,7 @@ Wenn Sie diese E-Mail nicht erwartet haben, ignorieren Sie sie bitte einfach.',
     'not an existing translation23131321313' => 'not an existing translation23131321313',
     'Discard changes' => 'Änderungen verwerfen',
     'Retry Duration' => 'Wiederholungsdauer',
-    'Online' => 'Online'
+    'Online' => 'Online',
+    'This field’s values are used as search keywords.' => 'This field’s values are used as search keywords.',
+    'The allowed values are [{values}]' => 'The allowed values are [{values}]'
 ];
