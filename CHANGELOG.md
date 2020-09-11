@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Edit Field pages now have a “Save and continue editing” Save menu option, and the <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>S</kbd> keyboard shortcut is now assigned to that. ([#2872](https://github.com/craftcms/cms/issues/2872))
 - Added `craft\fields\data\OptionData::$valid`.
 - Added `craft\web\Request::$generalConfig`.
 - Added `craft\web\Request::$sites`.
