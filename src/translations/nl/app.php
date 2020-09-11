@@ -1707,5 +1707,7 @@ Als je deze email niet verwachtte, kun je hem gewoon negeren.',
     'not an existing translation23131321313' => 'geen bestaande vertaling23131321313',
     'Discard changes' => 'Wijzigingen annuleren',
     'Retry Duration' => 'Duur nieuwe poging',
-    'Online' => 'Online'
+    'Online' => 'Online',
+    'This field’s values are used as search keywords.' => 'This field’s values are used as search keywords.',
+    'The allowed values are [{values}]' => 'The allowed values are [{values}]'
 ];
