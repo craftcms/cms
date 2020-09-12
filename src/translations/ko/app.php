@@ -1709,5 +1709,6 @@ return [
     'Retry Duration' => '다시 시도 시간',
     'Online' => '온라인',
     'This field’s values are used as search keywords.' => 'This field’s values are used as search keywords.',
-    'The allowed values are [{values}]' => 'The allowed values are [{values}]'
+    'The allowed values are [{values}]' => 'The allowed values are [{values}]',
+    'Save and edit entry types' => 'Save and edit entry types',
 ];
