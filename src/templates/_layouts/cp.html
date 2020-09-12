@@ -246,7 +246,9 @@
 {% block actionButton %}
     {% if fullPageForm %}
         <div class="btngroup">
-            <button type="submit" class="btn submit">{{ 'Save'|t('app') }}</button>
+            {% block submitButton %}
+                <button type="submit" class="btn submit">{{ 'Save'|t('app') }}</button>
+            {% endblock %}
             {% if formActions ?? false %}
                 <button type="button" class="btn submit menubtn"></button>
                 {% include '_layouts/components/form-action-menu' %}
