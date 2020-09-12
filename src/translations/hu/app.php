@@ -1707,5 +1707,6 @@ Amennyiben nem neked szól ez a levél, egyszerűen csak hagyd figyelmen kívül
     'Retry Duration' => 'Újrapróbálkozás időtartama',
     'Online' => 'Online',
     'This field’s values are used as search keywords.' => 'This field’s values are used as search keywords.',
-    'The allowed values are [{values}]' => 'The allowed values are [{values}]'
+    'The allowed values are [{values}]' => 'The allowed values are [{values}]',
+    'Save and edit entry types' => 'Save and edit entry types',
 ];
