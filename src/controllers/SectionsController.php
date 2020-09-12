@@ -103,17 +103,6 @@ class SectionsController extends Controller
         $variables['section'] = $section;
         $variables['typeOptions'] = $typeOptions;
 
-        $variables['crumbs'] = [
-            [
-                'label' => Craft::t('app', 'Settings'),
-                'url' => UrlHelper::url('settings')
-            ],
-            [
-                'label' => Craft::t('app', 'Sections'),
-                'url' => UrlHelper::url('settings/sections')
-            ],
-        ];
-
         $this->getView()->registerAssetBundle(EditSectionAsset::class);
 
         return $this->renderTemplate('settings/sections/_edit', $variables);
@@ -232,28 +221,12 @@ class SectionsController extends Controller
             throw new NotFoundHttpException('Section not found');
         }
 
-        $crumbs = [
-            [
-                'label' => Craft::t('app', 'Settings'),
-                'url' => UrlHelper::url('settings')
-            ],
-            [
-                'label' => Craft::t('app', 'Sections'),
-                'url' => UrlHelper::url('settings/sections')
-            ],
-            [
-                'label' => Craft::t('site', $section->name),
-                'url' => UrlHelper::url('settings/sections/' . $section->id)
-            ],
-        ];
-
         $title = Craft::t('app', '{section} Entry Types',
             ['section' => Craft::t('site', $section->name)]);
 
         return $this->renderTemplate('settings/sections/_entrytypes/index', [
             'sectionId' => $sectionId,
             'section' => $section,
-            'crumbs' => $crumbs,
             'title' => $title,
         ]);
     }
