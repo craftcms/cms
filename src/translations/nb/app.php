@@ -1705,5 +1705,6 @@ Har du ikke bedt om denne e-posten, vennligst se bort fra den.',
     'Retry Duration' => 'Prøv varighet på nytt',
     'Online' => 'Online',
     'This field’s values are used as search keywords.' => 'This field’s values are used as search keywords.',
-    'The allowed values are [{values}]' => 'The allowed values are [{values}]'
+    'The allowed values are [{values}]' => 'The allowed values are [{values}]',
+    'Save and edit entry types' => 'Save and edit entry types',
 ];
