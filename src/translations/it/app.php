@@ -1703,5 +1703,8 @@ Se non aspettavi questa email, ignorala semplicemente.',
     'not an existing translation23131321313' => 'not an existing translation23131321313',
     'Discard changes' => 'Annulla modifiche',
     'Retry Duration' => 'Durata tentativi successivi',
-    'Online' => 'On-line'
+    'Online' => 'On-line',
+    'This field’s values are used as search keywords.' => 'This field’s values are used as search keywords.',
+    'The allowed values are [{values}]' => 'The allowed values are [{values}]',
+    'Save and edit entry types' => 'Save and edit entry types',
 ];
