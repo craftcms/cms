@@ -166,7 +166,7 @@ class Application extends \yii\web\Application
         $generalConfig = $this->getConfig()->getGeneral();
 
         // Tell bots not to index/follow CP and tokenized pages
-        if ($request->getIsCpRequest() || $request->getToken() !== null) {
+        if ($generalConfig->disallowRobots || $request->getIsCpRequest() || $request->getToken() !== null) {
             $headers->set('X-Robots-Tag', 'none');
         }
 
