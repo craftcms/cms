@@ -29,6 +29,7 @@ use craft\gql\directives\FormatDateTime;
 use craft\gql\directives\Markdown;
 use craft\gql\directives\ParseRefs;
 use craft\gql\directives\Transform;
+use craft\gql\ElementQueryConditionBuilder;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\Element as ElementInterface;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
@@ -442,6 +443,11 @@ class Gql extends Component
             'query' => $query,
             'variables' => $variables,
             'operationName' => $operationName,
+            'context' => [
+                'conditionBuilder' =>  Craft::createObject([
+                    'class' => ElementQueryConditionBuilder::class,
+                ])
+            ]
         ]);
 
         $this->trigger(self::EVENT_BEFORE_EXECUTE_GQL_QUERY, $event);

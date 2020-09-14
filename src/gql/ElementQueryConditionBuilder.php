@@ -82,12 +82,14 @@ class ElementQueryConditionBuilder extends Component
      */
     public function __construct($config = [])
     {
-        $this->_resolveInfo = $config['resolveInfo'];
+        $this->_resolveInfo = $config['resolveInfo'] ?? null;
         unset($config['resolveInfo']);
 
-        parent::__construct($config);
+        if ($this->_resolveInfo) {
+            $this->_fragments = $this->_resolveInfo->fragments;
+        }
 
-        $this->_fragments = $this->_resolveInfo->fragments;
+        parent::__construct($config);
 
         // Cache all eager-loadable fields by context
         $allFields = Craft::$app->getFields()->getAllFields(false);
@@ -97,6 +99,16 @@ class ElementQueryConditionBuilder extends Component
                 $this->_eagerLoadableFieldsByContext[$field->context][$field->handle] = $field;
             }
         }
+    }
+
+    /**
+     * Set the current ResolveInfo object.
+     *
+     * @param ResolveInfo $resolveInfo
+     */
+    public function setResolveInfo(ResolveInfo $resolveInfo) {
+        $this->_resolveInfo = $resolveInfo;
+        $this->_fragments = $this->_resolveInfo->fragments;
     }
 
     /**
@@ -532,5 +544,16 @@ class ElementQueryConditionBuilder extends Component
         }
 
         return $eagerLoadNodes;
+    }
+
+    /**
+     * @param string $nodeName
+     * @param null $parentField
+     * @return bool
+     */
+    public function canNodeBeAliased(string $nodeName, $parentField = null)
+    {
+        return !$this->_isAdditionalEagerLoadableNode($nodeName, $parentField) || $this->_canSpecialFieldBeAliased($nodeName);
+
     }
 }

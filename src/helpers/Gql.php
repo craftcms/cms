@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\errors\GqlException;
 use craft\gql\base\Directive;
+use craft\gql\ElementQueryConditionBuilder;
 use craft\gql\GqlEntityRegistry;
 use craft\models\GqlSchema;
 use GraphQL\Language\AST\ListValueNode;
@@ -396,14 +397,18 @@ class Gql
      *
      * @param ResolveInfo $resolveInfo
      * @param $source
+     * @param $context
      * @return string
      */
-    public static function getFieldNameWithAlias(ResolveInfo $resolveInfo, $source): string
+    public static function getFieldNameWithAlias(ResolveInfo $resolveInfo, $source, $context): string
     {
         $fieldName = is_array($resolveInfo->path) ? array_slice($resolveInfo->path, -1)[0] : $resolveInfo->fieldName;
         $isAlias = $fieldName !== $resolveInfo->fieldName;
 
-        if ($isAlias && !($source instanceof ElementInterface && $source->getEagerLoadedElements($fieldName))) {
+        /** @var ElementQueryConditionBuilder $conditionBuilder */
+        $conditionBuilder = $context['conditionBuilder'] ?? null;
+
+        if ($isAlias && (($conditionBuilder && $conditionBuilder->canNodeBeAliased($fieldName)) || (!($source instanceof ElementInterface && $source->getEagerLoadedElements($fieldName))))) {
             $fieldName = $resolveInfo->fieldName;
         }
 

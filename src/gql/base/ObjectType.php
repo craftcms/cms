@@ -65,7 +65,7 @@ abstract class ObjectType extends GqlObjectType
      */
     protected function resolve($source, $arguments, $context, ResolveInfo $resolveInfo)
     {
-        $fieldName = GqlHelper::getFieldNameWithAlias($resolveInfo, $source);
+        $fieldName = GqlHelper::getFieldNameWithAlias($resolveInfo, $source, $context);
 
         $result = null;
 

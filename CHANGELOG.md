@@ -7,10 +7,12 @@
 - Edit Section pages now have “Settings” and “Entry Types” tabs, providing quick access to edit a section’s entry types. ([#6826](https://github.com/craftcms/cms/issues/6826))
 - New sections’ “Save” button is now labeled “Save and edit entry types”, and the browser is redirected to the section’s entry type index after save.
 - Added `craft\fields\data\OptionData::$valid`.
+- Added `craft\gql\ElementQueryConditionBuilder::setResolveInfo()`.
 - Added `craft\web\Request::$generalConfig`.
 - Added `craft\web\Request::$sites`.
 
 ### Changed
+- `craft\helpers\Gql::getFieldNameWithAlias()` now has a `$context` argument to allow sharing context over a single GraphQL API call.
 - The `_layouts/cp.html` control panel template now defines a `submitButton` block.
 
 ### Fixed
@@ -19,6 +21,7 @@
 - Fixed a bug where Craft wasn’t handling site requests properly if it was installed in a subfolder and the site’s base URL contained additional URI segments.
 - Fixed a bug where Dropdown, Radio Buttons, Checkboxes, and Multi-select fields that had values that were empty, numeric or contained special characters, couldn't be used in GraphQL mutations. ([#6535](https://github.com/craftcms/cms/issues/6535))
 - Fixed a bug where eager loading elements’ children across multiple levels wasn’t working. ([#6820](https://github.com/craftcms/cms/issues/6820))
+- Fixed a bug where aliased fields would sometimes not be assigned correctly when using GraphQL API. ([#6811](https://github.com/craftcms/cms/issues/6811)))
 
 ## 3.5.9 - 2020-09-08
 
