@@ -232,11 +232,6 @@ class EntryRevisionsController extends BaseEntriesController
                 }
                 $this->enforceSitePermission($draft->getSite());
                 $this->enforceEditEntryPermissions($draft);
-
-                // Draft meta
-                /** @var Entry|DraftBehavior $draft */
-                $draft->draftName = $this->request->getBodyParam('draftName');
-                $draft->draftNotes = $this->request->getBodyParam('draftNotes');
             } else {
                 $entry = Entry::find()
                     ->id($entryId)
@@ -259,6 +254,12 @@ class EntryRevisionsController extends BaseEntriesController
             $this->_setDraftAttributesFromPost($draft);
             $draft->setFieldValuesFromRequest($fieldsLocation);
             $draft->updateTitle();
+
+            // Draft meta
+            /** @var Entry|DraftBehavior $draft */
+            $draft->draftName = $this->request->getBodyParam('draftName') ?? $draft->draftName;
+            $draft->draftNotes = $this->request->getBodyParam('draftNotes') ?? $draft->draftNotes;
+
             $draft->setScenario(Element::SCENARIO_ESSENTIALS);
 
             if ($draft->getIsUnsavedDraft() && $this->request->getBodyParam('propagateAll')) {

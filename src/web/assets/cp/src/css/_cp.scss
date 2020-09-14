@@ -1051,6 +1051,12 @@ $toolbarIconColor: darken($inputColor, 10%);
   .text {
     background-color: transparent;
   }
+
+  & > .text {
+    box-shadow: none;
+    border-radius: $largeBorderRadius;
+    margin-bottom: 14px;
+  }
 }
 
 // Hide the sidebar at < 1200

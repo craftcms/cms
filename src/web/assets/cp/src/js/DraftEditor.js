@@ -615,6 +615,7 @@ Craft.DraftEditor = Garnish.Base.extend(
 
         createDraft: function() {
             return new Promise(function(resolve, reject) {
+                this.settings.draftNotes = $('#revision-notes').val();
                 this.saveDraft(this.serializeForm(true))
                     .then(resolve)
                     .catch(reject);
@@ -753,6 +754,9 @@ Craft.DraftEditor = Garnish.Base.extend(
                             }).appendTo($actionButtonContainer);
                         }
 
+                        // Remove the revision notes field
+                        $('#revision-notes').remove();
+
                         // Update the editor settings
                         this.settings.draftId = response.draftId;
                         this.settings.isLive = false;
@@ -837,11 +841,16 @@ Craft.DraftEditor = Garnish.Base.extend(
 
             // Add the draft info
             if (this.settings.draftId) {
-                data += '&draftId=' + this.settings.draftId
-                    + '&draftName=' + encodeURIComponent(this.settings.draftName)
-                    + '&draftNotes=' + encodeURIComponent(this.settings.draftNotes || '');
+                data += `&draftId=${this.settings.draftId}`;
             }
 
+            if (this.settings.draftName !== null) {
+                data += `&draftName=${this.settings.draftName}`;
+            }
+
+            if (this.settings.draftNotes !== null) {
+                data += `&draftNotes=${this.settings.draftNotes}`;
+            }
 
             // Filter out anything that hasn't changed
             var initialData = this.swapDuplicatedElementIds(Craft.cp.$primaryForm.data('initialSerializedValue'));
