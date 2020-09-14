@@ -1707,4 +1707,5 @@ Se non aspettavi questa email, ignorala semplicemente.',
     'This field’s values are used as search keywords.' => 'I valori di questo campo vengono utilizzati come parole chiave di ricerca.',
     'The allowed values are [{values}]' => 'I valori consentiti sono [{values}]',
     'Save and edit entry types' => 'Salva e modifica i tipo di articolo',
+    'Notes about your changes' => 'Note sulle modifiche',
 ];
