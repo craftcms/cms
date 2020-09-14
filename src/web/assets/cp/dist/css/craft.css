@@ -556,7 +556,7 @@ body.rtl .buttons > .btn:not(.hidden) + .btn, body.rtl .buttons > .btn:not(.hidd
 
 .hud-footer > .buttons, .footer > .buttons { margin: 0; }
 
-.btn { display: -webkit-inline-flex; display: inline-flex; -webkit-align-items: center; align-items: center; border-radius: 5px; padding: 7px 14px; border: none; text-align: center; white-space: nowrap; -webkit-user-select: none; user-select: none; cursor: pointer; box-sizing: border-box; -webkit-appearance: none; appearance: none; outline: none; color: #3f4d5a; font-size: inherit; background-color: rgba(96, 125, 159, 0.25); }
+.btn { display: -webkit-inline-flex; display: inline-flex; -webkit-align-items: center; align-items: center; -webkit-justify-content: center; justify-content: center; border-radius: 5px; padding: 7px 14px; border: none; text-align: center; white-space: nowrap; -webkit-user-select: none; user-select: none; cursor: pointer; box-sizing: border-box; -webkit-appearance: none; appearance: none; outline: none; color: #3f4d5a; font-size: inherit; background-color: rgba(96, 125, 159, 0.25); }
 
 .btn.chromeless { background-color: transparent; height: auto; padding: 0; }
 
