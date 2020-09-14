@@ -12,6 +12,7 @@
 - Added `craft\web\Request::$sites`.
 
 ### Changed
+- The `_includes/forms/textarea.html` template now supports `disabled`, `inputAttributes`, `inputmode`, and `title` variables.
 - The `_layouts/cp.html` control panel template now defines a `submitButton` block.
 - `craft\helpers\Gql::getFieldNameWithAlias()` now has a `$context` argument to allow sharing context over a single GraphQL API call.
 
