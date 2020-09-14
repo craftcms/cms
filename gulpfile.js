@@ -27,6 +27,7 @@ const atAssetPath = `${cpAssetsPath}/admintable`;
 
 const cpSassGlob = [
     `${cpAssetsPath}/**/src/**/*.scss`,
+    `!${cpAssetsPath}/cp/src/craftui/**/*.scss`,
     `!${graphiqlAssetPath}/**/*.scss`,
     `!${psAssetPath}/**/*.scss`,
     `!${atAssetPath}/**/*.scss`,
