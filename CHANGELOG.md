@@ -7,6 +7,7 @@
 - Edit Field pages now have a “Save and continue editing” Save menu option, and the <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>S</kbd> keyboard shortcut is now assigned to that. ([#2872](https://github.com/craftcms/cms/issues/2872))
 - Edit Section pages now have “Settings” and “Entry Types” tabs, providing quick access to edit a section’s entry types. ([#6826](https://github.com/craftcms/cms/issues/6826))
 - New sections’ “Save” button is now labeled “Save and edit entry types”, and the browser is redirected to the section’s entry type index after save.
+- Added the `|truncate` Twig filter. ([#6838](https://github.com/craftcms/cms/issues/6838))
 - Added the `disallowRobots` config setting, which can be set to `true` for development and staging environments, indicating that front end pages should not be indexed, and links should not be followed, by web crawlers.
 - Added `craft\fields\data\OptionData::$valid`.
 - Added `craft\gql\ElementQueryConditionBuilder::setResolveInfo()`.

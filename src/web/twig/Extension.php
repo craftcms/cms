@@ -259,6 +259,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('time', [$this, 'timeFilter'], ['needs_environment' => true]),
             new TwigFilter('timestamp', [$formatter, 'asTimestamp']),
             new TwigFilter('translate', [$this, 'translateFilter']),
+            new TwigFilter('truncate', [$this, 'truncateFilter']),
             new TwigFilter('t', [$this, 'translateFilter']),
             new TwigFilter('ucfirst', [$this, 'ucfirstFilter']),
             new TwigFilter('ucwords', [$this, 'ucwordsFilter'], ['needs_environment' => true]),
@@ -319,6 +320,26 @@ class Extension extends AbstractExtension implements GlobalsInterface
         } catch (InvalidConfigException $e) {
             return $message;
         }
+    }
+
+    /**
+     * Truncates the string to a given length, while ensuring that it does not split words.
+     *
+     * @param string $string The string to truncate
+     * @param int $length The maximum number of characters for the truncated string
+     * @param string $suffix The string that should be appended to `$string`, if it must be truncated
+     * @param bool $splitSingleWord Whether to split up `$string` if it only contains one word
+     * @return string The truncated string
+     * @since 3.5.10
+     */
+    public function truncateFilter(string $string, int $length, string $suffix = '…', bool $splitSingleWord = true): string
+    {
+        // Override default behavior where the substring would be returned in this case
+        if ($string === '' || $length <= 0) {
+            return $string;
+        }
+
+        return StringHelper::safeTruncate($string, $length, $suffix, $splitSingleWord);
     }
 
     /**
