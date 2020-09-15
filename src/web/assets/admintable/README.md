@@ -127,7 +127,6 @@ Below is an example response from a controller required by the admin table
 
 ```php
 return $this->asJson([
-  'links' => [
     'pagination' => [
       'total' => (int)$total,
       'per_page' => (int)$limit,
@@ -137,9 +136,8 @@ return $this->asJson([
       'prev_page_url' => $prevPageUrl,
       'from' => (int)$from,
       'to' => (int)$to,
-    ]
-  ],
-  'data' => $rows
+    ],
+    'data' => $rows
 ]);
 ```
 
