@@ -11,10 +11,10 @@
 {% set username = craft.app.config.general.rememberUsernameDuration ? craft.app.user.getRememberedUsername(): '' %}
 
 {% if craft.app.config.general.useEmailAsUsername %}
-    {% set usernamePlaceholder = 'Email'|t('app') %}
+    {% set usernameLabel = 'Email'|t('app') %}
     {% set usernameType = 'email' %}
 {% else %}
-    {% set usernamePlaceholder = 'Username or Email'|t('app') %}
+    {% set usernameLabel = 'Username or Email'|t('app') %}
     {% set usernameType = 'text' %}
 {% endif %}
 
@@ -47,16 +47,26 @@
             {{ forms.textField({
                 id: 'loginName',
                 name: 'username',
-                placeholder: usernamePlaceholder,
+                placeholder: usernameLabel,
                 value: username,
                 autocomplete: 'username',
                 type: usernameType,
+                inputAttributes: {
+                    aria: {
+                        label: usernameLabel,
+                    },
+                },
             }) }}
             {{ forms.passwordField({
                 id: 'password',
                 name: 'password',
                 placeholder: 'Password'|t('app'),
                 autocomplete: 'current-password',
+                inputAttributes: {
+                    aria: {
+                        label: 'Password'|t('app'),
+                    },
+                },
             }) }}
         </div>
         <div id="password-fields">
