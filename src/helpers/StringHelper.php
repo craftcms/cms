@@ -1274,8 +1274,8 @@ class StringHelper extends \yii\helpers\StringHelper
 
     /**
      * Truncates the string to a given length, while ensuring that it does not split words. If $substring is provided,
-     * and truncating occurs, the string is further truncated so that the substring may be appended without exceeding t
-     * he desired length.
+     * and truncating occurs, the string is further truncated so that the substring may be appended without exceeding
+     * the desired length.
      *
      * @param string $str The string to truncate.
      * @param int $length The desired length of the truncated string.
