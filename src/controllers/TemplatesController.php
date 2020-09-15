@@ -47,6 +47,11 @@ class TemplatesController extends Controller
     /**
      * @inheritdoc
      */
+    public $enableCsrfValidation = false;
+
+    /**
+     * @inheritdoc
+     */
     public function beforeAction($action)
     {
         $actionSegments = $this->request->getActionSegments();
