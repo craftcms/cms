@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.5.10 - 2020-09-15
 
 ### Added
 - Edit Entry pages now have a field for entering revision notes, when editing the current revision.
