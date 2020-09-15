@@ -1707,5 +1707,9 @@ return [
     'not an existing translation23131321313' => '기존 번역에 없는 23131321313',
     'Discard changes' => '변경 사항 취소',
     'Retry Duration' => '다시 시도 시간',
-    'Online' => '온라인'
+    'Online' => '온라인',
+    'This field’s values are used as search keywords.' => 'This field’s values are used as search keywords.',
+    'The allowed values are [{values}]' => 'The allowed values are [{values}]',
+    'Save and edit entry types' => 'Save and edit entry types',
+    'Notes about your changes' => '변경 사항에 대한 주의',
 ];

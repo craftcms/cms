@@ -347,6 +347,16 @@ class GeneralConfig extends BaseObject
      */
     public $disabledPlugins = [];
     /**
+     * @var bool Whether front end requests should respond with `X-Robots-Tag: none` HTTP headers, indicating that pages should not be indexed,
+     * and links on the page should not be followed, by web crawlers.
+     *
+     * ::: tip
+     * This should be set to `true` for development and staging environments.
+     * :::
+     * @since 3.5.10
+     */
+    public $disallowRobots = false;
+    /**
      * @var bool Whether front-end web requests should support basic HTTP authentication.
      * @since 3.5.0
      */

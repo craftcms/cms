@@ -16,7 +16,6 @@ use craft\helpers\Db;
 /**
  * DraftBehavior is applied to element drafts.
  *
- * @property-read string $draftName The draft’s name
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.2.0
  */

@@ -1,5 +1,42 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.5.10 - 2020-09-15
+
+### Added
+- Edit Entry pages now have a field for entering revision notes, when editing the current revision.
+- Edit Field pages now have a “Save and continue editing” Save menu option, and the <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>S</kbd> keyboard shortcut is now assigned to that. ([#2872](https://github.com/craftcms/cms/issues/2872))
+- Edit Section pages now have “Settings” and “Entry Types” tabs, providing quick access to edit a section’s entry types. ([#6826](https://github.com/craftcms/cms/issues/6826))
+- New sections’ “Save” button is now labeled “Save and edit entry types”, and the browser is redirected to the section’s entry type index after save.
+- Added the `|truncate` Twig filter. ([#6838](https://github.com/craftcms/cms/issues/6838))
+- Added the `disallowRobots` config setting, which can be set to `true` for development and staging environments, indicating that front end pages should not be indexed, and links should not be followed, by web crawlers.
+- Added `craft\fields\data\OptionData::$valid`.
+- Added `craft\gql\ElementQueryConditionBuilder::setResolveInfo()`.
+- Added `craft\web\Request::$generalConfig`.
+- Added `craft\web\Request::$sites`.
+
+### Changed
+- The Username and Password inputs on the Login page now specify `aria-label` attributes.
+- The account menu button now specifies `aria-label` and `title` attributes.
+- The `_includes/forms/textarea.html` template now supports `disabled`, `inputAttributes`, `inputmode`, and `title` variables.
+- The `_layouts/cp.html` control panel template now defines a `submitButton` block.
+- `craft\helpers\Gql::getFieldNameWithAlias()` now has a `$context` argument to allow sharing context over a single GraphQL API call.
+- Updated Yii to 2.0.38.
+- Updated Twig to 2.13, for environments running PHP 7.1.3 or later, and where the `config.platform.php` value in `composer.json` is at least `7.1.3`.
+
+### Fixed
+- Fixed a bug where all fields were showing as searchable on the Settings → Fields page on MySQL installs. ([#6808](https://github.com/craftcms/cms/issues/6808))
+- Fixed a bug where Dropdown, Radio Buttons, Checkboxes, and Multi-select fields weren’t getting validation errors if an invalid value was posted to them. ([#6535](https://github.com/craftcms/cms/issues/6535))
+- Fixed a bug where Craft wasn’t handling site requests properly if it was installed in a subfolder and the site’s base URL contained additional URI segments.
+- Fixed a bug where Dropdown, Radio Buttons, Checkboxes, and Multi-select fields that had values that were empty, numeric or contained special characters, couldn't be used in GraphQL mutations. ([#6535](https://github.com/craftcms/cms/issues/6535))
+- Fixed a bug where eager loading elements’ children across multiple levels wasn’t working. ([#6820](https://github.com/craftcms/cms/issues/6820))
+- Fixed a bug where aliased fields would sometimes not be assigned correctly when using GraphQL API. ([#6811](https://github.com/craftcms/cms/issues/6811)))
+- Removed `vue`, `vue-router` and `vuex` Plugin Store dependencies as they are already handled by Craft. ([#6732](https://github.com/craftcms/cms/pull/6732), [#6815](https://github.com/craftcms/cms/pull/6815))
+- Fixed a bug where GraphQL API requests could return 400 responses on an empty cache.
+- Fixed a bug where GraphQL API queries weren’t getting cached based on the current site.
+
+### Security
+- Fixed a bug where custom field labels weren’t getting HTML-encoded.
+
 ## 3.5.9 - 2020-09-08
 
 ### Added

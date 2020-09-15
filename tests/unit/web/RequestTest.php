@@ -8,6 +8,8 @@
 namespace crafttests\unit\web;
 
 use Craft;
+use craft\models\Site;
+use craft\services\Sites;
 use craft\test\TestCase;
 use craft\web\Request;
 use crafttests\fixtures\SitesFixture;
@@ -41,6 +43,162 @@ class RequestTest extends TestCase
                 'class' => SitesFixture::class
             ]
         ];
+    }
+
+    /**
+     *
+     */
+    public function testInit()
+    {
+        $oldServer = $_SERVER;
+
+        // Site request - Craft installed at webroot
+        $_SERVER = array_merge($oldServer, [
+            'REQUEST_URI' => '/foo/bar/baz',
+            'SCRIPT_NAME' => '/index.php',
+            'SERVER_NAME' => 'craft.test',
+        ]);
+        $request = new Request();
+        $this->assertEquals(false, $request->getIsCpRequest());
+        $this->assertEquals('foo/bar/baz', $request->getPathInfo());
+
+        // Site request w/ base URI - Craft installed at webroot
+        $_SERVER = array_merge($oldServer, [
+            'REQUEST_URI' => '/foo/bar/baz',
+            'SCRIPT_NAME' => '/index.php',
+            'SERVER_NAME' => 'craft.test',
+        ]);
+        $sites = new Sites();
+        $sites->setCurrentSite(new Site([
+            'language' => 'en-US',
+            'baseUrl' => 'http://craft.test/foo',
+        ]));
+        $request = new Request([
+            'isCpRequest' => false,
+            'sites' => $sites,
+        ]);
+        $this->assertEquals(false, $request->getIsCpRequest());
+        $this->assertEquals('bar/baz', $request->getPathInfo());
+
+        // Implicit CP request - Craft installed at webroot
+        $_SERVER = array_merge($oldServer, [
+            'REQUEST_URI' => '/foo/bar/baz',
+            'SCRIPT_NAME' => '/index.php',
+            'SERVER_NAME' => 'craft.test',
+        ]);
+        $generalConfig = clone Craft::$app->getConfig()->getGeneral();
+        $generalConfig->cpTrigger = 'foo';
+        $request = new Request([
+            'generalConfig' => $generalConfig,
+        ]);
+        $this->assertEquals(true, $request->getIsCpRequest());
+        $this->assertEquals('bar/baz', $request->getPathInfo());
+
+        // Explicit CP request w/ CP trigger - Craft installed at webroot
+        $_SERVER = array_merge($oldServer, [
+            'REQUEST_URI' => '/foo/bar/baz',
+            'SCRIPT_NAME' => '/index.php',
+            'SERVER_NAME' => 'craft.test',
+        ]);
+        $generalConfig = clone Craft::$app->getConfig()->getGeneral();
+        $generalConfig->cpTrigger = 'foo';
+        $request = new Request([
+            'isCpRequest' => true,
+            'generalConfig' => $generalConfig,
+        ]);
+        $this->assertEquals(true, $request->getIsCpRequest());
+        $this->assertEquals('bar/baz', $request->getPathInfo());
+
+        // Explicit CP request w/out CP trigger - Craft installed at webroot
+        $_SERVER = array_merge($oldServer, [
+            'REQUEST_URI' => '/foo/bar/baz',
+            'SCRIPT_NAME' => '/index.php',
+            'SERVER_NAME' => 'craft.test',
+        ]);
+        $generalConfig = clone Craft::$app->getConfig()->getGeneral();
+        $generalConfig->cpTrigger = null;
+        $request = new Request([
+            'isCpRequest' => true,
+            'generalConfig' => $generalConfig,
+        ]);
+        $this->assertEquals(true, $request->getIsCpRequest());
+        $this->assertEquals('foo/bar/baz', $request->getPathInfo());
+
+        // Site request - Craft installed in subfolder
+        // https://github.com/craftcms/cms/issues/6579
+        $_SERVER = array_merge($oldServer, [
+            'REQUEST_URI' => '/foo/bar/baz',
+            'SCRIPT_NAME' => '/foo/index.php',
+            'SERVER_NAME' => 'craft.test',
+        ]);
+        $request = new Request();
+        $this->assertEquals(false, $request->getIsCpRequest());
+        $this->assertEquals('bar/baz', $request->getPathInfo());
+
+        // Site request w/ base URI - Craft installed in subfolder
+        // https://github.com/craftcms/cms/issues/6579
+        $_SERVER = array_merge($oldServer, [
+            'REQUEST_URI' => '/foo/bar/baz',
+            'SCRIPT_NAME' => '/foo/index.php',
+            'SERVER_NAME' => 'craft.test',
+        ]);
+        $sites = new Sites();
+        $sites->setCurrentSite(new Site([
+            'language' => 'en-US',
+            'baseUrl' => 'http://craft.test/foo/bar',
+        ]));
+        $request = new Request([
+            'isCpRequest' => false,
+            'sites' => $sites,
+        ]);
+        $this->assertEquals(false, $request->getIsCpRequest());
+        $this->assertEquals('baz', $request->getPathInfo());
+
+        // Implicit CP request - Craft installed in subfolder
+        $_SERVER = array_merge($oldServer, [
+            'REQUEST_URI' => '/foo/bar/baz',
+            'SCRIPT_NAME' => '/foo/index.php',
+            'SERVER_NAME' => 'craft.test',
+        ]);
+        $generalConfig = clone Craft::$app->getConfig()->getGeneral();
+        $generalConfig->cpTrigger = 'bar';
+        $request = new Request([
+            'generalConfig' => $generalConfig,
+        ]);
+        $this->assertEquals(true, $request->getIsCpRequest());
+        $this->assertEquals('baz', $request->getPathInfo());
+
+        // Explicit CP request w/ CP trigger - Craft installed in subfolder
+        $_SERVER = array_merge($oldServer, [
+            'REQUEST_URI' => '/foo/bar/baz',
+            'SCRIPT_NAME' => '/foo/index.php',
+            'SERVER_NAME' => 'craft.test',
+        ]);
+        $generalConfig = clone Craft::$app->getConfig()->getGeneral();
+        $generalConfig->cpTrigger = 'bar';
+        $request = new Request([
+            'isCpRequest' => true,
+            'generalConfig' => $generalConfig,
+        ]);
+        $this->assertEquals(true, $request->getIsCpRequest());
+        $this->assertEquals('baz', $request->getPathInfo());
+
+        // Explicit CP request w/out CP trigger - Craft installed in subfolder
+        $_SERVER = array_merge($oldServer, [
+            'REQUEST_URI' => '/foo/bar/baz',
+            'SCRIPT_NAME' => '/foo/index.php',
+            'SERVER_NAME' => 'craft.test',
+        ]);
+        $generalConfig = clone Craft::$app->getConfig()->getGeneral();
+        $generalConfig->cpTrigger = null;
+        $request = new Request([
+            'isCpRequest' => true,
+            'generalConfig' => $generalConfig,
+        ]);
+        $this->assertEquals(true, $request->getIsCpRequest());
+        $this->assertEquals('bar/baz', $request->getPathInfo());
+
+        $_SERVER = $oldServer;
     }
 
     /**

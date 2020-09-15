@@ -87,7 +87,7 @@ abstract class ElementResolver extends Resolver
     protected static function prepareElementQuery($source, array $arguments, $context, ResolveInfo $resolveInfo)
     {
         $arguments = self::prepareArguments($arguments);
-        $fieldName = GqlHelper::getFieldNameWithAlias($resolveInfo, $source);
+        $fieldName = GqlHelper::getFieldNameWithAlias($resolveInfo, $source, $context);
 
         $query = static::prepareQuery($source, $arguments, $fieldName);
 
@@ -105,10 +105,9 @@ abstract class ElementResolver extends Resolver
             $parentField = $field;
         }
 
-        $conditionBuilder = Craft::createObject([
-            'class' => ElementQueryConditionBuilder::class,
-            'resolveInfo' => $resolveInfo
-        ]);
+        /** @var ElementQueryConditionBuilder $conditionBuilder */
+        $conditionBuilder = empty($context['conditionBuilder']) ? Craft::createObject([ 'class' => ElementQueryConditionBuilder::class]) : $context['conditionBuilder'];
+        $conditionBuilder->setResolveInfo($resolveInfo);
 
         $conditions = $conditionBuilder->extractQueryConditions($parentField);
 

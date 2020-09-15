@@ -1703,5 +1703,9 @@ Bu epostayı beklemiyorduysanız, görmezden gelin.',
     'not an existing translation23131321313' => 'not an existing translation23131321313',
     'Discard changes' => 'Değişiklikleri yok say',
     'Retry Duration' => 'Yeniden Deneme Süresi',
-    'Online' => 'Çevrimiçi'
+    'Online' => 'Çevrimiçi',
+    'This field’s values are used as search keywords.' => 'This field’s values are used as search keywords.',
+    'The allowed values are [{values}]' => 'The allowed values are [{values}]',
+    'Save and edit entry types' => 'Save and edit entry types',
+    'Notes about your changes' => 'Değişikliklerinizle ilgili notlar',
 ];

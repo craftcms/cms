@@ -9,6 +9,7 @@ namespace craft\web;
 
 use Craft;
 use craft\base\RequestTrait;
+use craft\config\GeneralConfig;
 use craft\errors\SiteNotFoundException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\StringHelper;
@@ -16,6 +17,7 @@ use craft\models\Site;
 use craft\services\Sites;
 use yii\base\InvalidConfigException;
 use yii\db\Exception as DbException;
+use yii\di\Instance;
 use yii\web\BadRequestHttpException;
 use yii\web\Cookie;
 use yii\web\CookieCollection;
@@ -70,6 +72,18 @@ class Request extends \yii\web\Request
      * @since 3.1.14
      */
     public $maxPageNum = 100000;
+
+    /**
+     * @var GeneralConfig|array|string
+     * @since 3.5.10
+     */
+    public $generalConfig;
+
+    /**
+     * @var Sites|array|string|null
+     * @since 3.5.10
+     */
+    public $sites = 'sites';
 
     /**
      * @var string
@@ -183,6 +197,11 @@ class Request extends \yii\web\Request
     {
         parent::init();
 
+        if ($this->generalConfig === null) {
+            $this->generalConfig = Craft::$app->getConfig()->getGeneral();
+        }
+        $this->generalConfig = Instance::ensure($this->generalConfig, GeneralConfig::class);
+
         // Set the @webroot and @web aliases now (instead of from yii\web\Application::bootstrap())
         // in case a site's base URL requires @web, and so we can include the host info in @web
         if (Craft::getRootAlias('@webroot') === false) {
@@ -195,20 +214,20 @@ class Request extends \yii\web\Request
         }
 
         // Determine the request path
-        $this->_path = $this->_normalizePath($this->getFullPath());
+        $this->_path = $this->getFullPath();
 
         // Figure out whether a site or the control panel were requested
         // ---------------------------------------------------------------------
 
         try {
-            $sitesService = Craft::$app->getSites();
+            $this->sites = Instance::ensure($this->sites, Sites::class);
 
             // Only check if a site was requested if don't know for sure that it's a CP request
             if ($this->_isCpRequest !== true) {
-                if ($sitesService->getHasCurrentSite()) {
-                    $site = $sitesService->getCurrentSite();
+                if ($this->sites->getHasCurrentSite()) {
+                    $site = $this->sites->getCurrentSite();
                 } else {
-                    $site = $this->_requestedSite($sitesService, $siteScore);
+                    $site = $this->_requestedSite($siteScore);
                 }
 
                 if ($site->baseUrl) {
@@ -223,22 +242,20 @@ class Request extends \yii\web\Request
             }
         }
 
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
-
         // Is the jury still out on whether this is a CP request?
         if ($this->_isCpRequest === null) {
             $this->_isCpRequest = false;
             // Is it a possibility?
-            if ($generalConfig->cpTrigger || $generalConfig->baseCpUrl) {
+            if ($this->generalConfig->cpTrigger || $this->generalConfig->baseCpUrl) {
                 // Figure out the base URL the request must have if this is a CP request
                 $testBaseCpUrls = [];
-                if ($generalConfig->baseCpUrl) {
-                    $testBaseCpUrls[] = implode('/', array_filter([rtrim($generalConfig->baseCpUrl, '/'), $generalConfig->cpTrigger]));
+                if ($this->generalConfig->baseCpUrl) {
+                    $testBaseCpUrls[] = implode('/', array_filter([rtrim($this->generalConfig->baseCpUrl, '/'), $this->generalConfig->cpTrigger]));
                 } else {
                     if (isset($baseUrl)) {
-                        $testBaseCpUrls[] = "$baseUrl/{$generalConfig->cpTrigger}";
+                        $testBaseCpUrls[] = "$baseUrl/{$this->generalConfig->cpTrigger}";
                     }
-                    $testBaseCpUrls[] = $this->getBaseUrl() . "/{$generalConfig->cpTrigger}";
+                    $testBaseCpUrls[] = $this->getBaseUrl() . "/{$this->generalConfig->cpTrigger}";
                 }
                 $siteScore = $siteScore ?? (isset($site) ? $this->_scoreSite($site) : 0);
                 foreach ($testBaseCpUrls as $testUrl) {
@@ -254,18 +271,27 @@ class Request extends \yii\web\Request
         }
 
         // Set the current site for the request
-        if (isset($sitesService)) {
-            $sitesService->setCurrentSite($site ?? null);
+        if ($this->sites instanceof Sites) {
+            $this->sites->setCurrentSite($site ?? null);
         }
 
         // If this is a CP request and the path begins with the CP trigger, remove it
-        if ($this->_isCpRequest && $generalConfig->cpTrigger && strpos($this->_path . '/', $generalConfig->cpTrigger . '/') === 0) {
-            $this->_path = ltrim(substr($this->_path, strlen($generalConfig->cpTrigger)), '/');
+        if ($this->_isCpRequest && $this->generalConfig->cpTrigger && strpos($this->_path . '/', $this->generalConfig->cpTrigger . '/') === 0) {
+            $this->_path = ltrim(substr($this->_path, strlen($this->generalConfig->cpTrigger)), '/');
         }
 
         // Trim off any leading path segments that are part of the base URL
         if ($this->_path !== '' && isset($baseUrl) && ($basePath = parse_url($baseUrl, PHP_URL_PATH)) !== null) {
             $basePath = $this->_normalizePath($basePath);
+
+            // If Craft is running from a subfolder, chop the subfolder path off of the base path first
+            if (
+                ($requestBaseUrl = $this->_normalizePath($this->getBaseUrl())) &&
+                strpos($basePath . '/', $requestBaseUrl . '/') === 0
+            ) {
+                $basePath = ltrim(substr($basePath, strlen($requestBaseUrl)), '/');
+            }
+
             if (strpos($this->_path . '/', $basePath . '/') === 0) {
                 $this->_path = ltrim(substr($this->_path, strlen($basePath)), '/');
             }
@@ -274,11 +300,11 @@ class Request extends \yii\web\Request
         if ($this->_isCpRequest) {
             // Force 'p' pageTrigger
             // (all that really matters is that it doesn't have a trailing slash, but whatever.)
-            $generalConfig->pageTrigger = 'p';
+            $this->generalConfig->pageTrigger = 'p';
         }
 
         // Is this a paginated request?
-        $pageTrigger = $generalConfig->getPageTrigger();
+        $pageTrigger = $this->generalConfig->getPageTrigger();
 
         // Is this query string-based pagination?
         if (strpos($pageTrigger, '?') === 0) {
@@ -314,7 +340,7 @@ class Request extends \yii\web\Request
         }
 
         try {
-            if (Craft::$app->getConfig()->getGeneral()->usePathInfo) {
+            if ($this->generalConfig->usePathInfo) {
                 $this->_fullPath = $this->getPathInfo(true);
 
                 if (!$this->_fullPath) {
@@ -477,8 +503,7 @@ class Request extends \yii\web\Request
     public function getToken()
     {
         if ($this->_token === null) {
-            $param = Craft::$app->getConfig()->getGeneral()->tokenParam;
-            $this->_token = $this->getQueryParam($param)
+            $this->_token = $this->getQueryParam($this->generalConfig->tokenParam)
                 ?? $this->getHeaders()->get('X-Craft-Token')
                 ?? false;
             if ($this->_token && !preg_match('/^[A-Za-z0-9_-]+$/', $this->_token)) {
@@ -994,15 +1019,14 @@ class Request extends \yii\web\Request
         $queryString = $this->getQueryString();
 
         // If there's no path param, just return the full query string
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
-        if (!$generalConfig->pathParam) {
+        if (!$this->generalConfig->pathParam) {
             return $queryString;
         }
 
         // Tear it down and rebuild it without the path param
         $parts = explode('&', $queryString);
         foreach ($parts as $key => $part) {
-            if (strpos($part, $generalConfig->pathParam . '=') === 0) {
+            if (strpos($part, $this->generalConfig->pathParam . '=') === 0) {
                 unset($parts[$key]);
                 break;
             }
@@ -1345,16 +1369,15 @@ class Request extends \yii\web\Request
     /**
      * Returns the site that most closely matches the requested URL.
      *
-     * @param Sites $sitesService
      * @param int|null $siteScore
      * @return Site
      * @throws BadRequestHttpException if a site token was sent, but the site doesn’t exist
      * @throws SiteNotFoundException if no sites exist
      */
-    private function _requestedSite(Sites $sitesService, int &$siteScore = null): Site
+    private function _requestedSite(int &$siteScore = null): Site
     {
         // Was a site token provided?
-        $siteId = $this->getQueryParam(Craft::$app->getConfig()->getGeneral()->siteToken)
+        $siteId = $this->getQueryParam($this->generalConfig->siteToken)
             ?? $this->getHeaders()->get('X-Craft-Site-Token')
             ?? false;
         if ($siteId) {
@@ -1362,14 +1385,14 @@ class Request extends \yii\web\Request
             if ($siteId === false) {
                 throw new BadRequestHttpException('Invalid site token');
             }
-            $site = $sitesService->getSiteById($siteId, true);
+            $site = $this->sites->getSiteById($siteId, true);
             if (!$site) {
                 throw new BadRequestHttpException('Invalid site ID: ' . $siteId);
             }
             return $site;
         }
 
-        $sites = $sitesService->getAllSites(false);
+        $sites = $this->sites->getAllSites(false);
 
         if (empty($sites)) {
             throw new SiteNotFoundException('No sites exist');
@@ -1383,6 +1406,7 @@ class Request extends \yii\web\Request
         // Sort by scores descending
         arsort($scores, SORT_NUMERIC);
         $first = ArrayHelper::firstKey($scores);
+        $siteScore = reset($scores);
         return $sites[$first];
     }
 
@@ -1478,8 +1502,7 @@ class Request extends \yii\web\Request
      */
     private function _getQueryStringPath(): string
     {
-        $pathParam = Craft::$app->getConfig()->getGeneral()->pathParam;
-        $value = $this->getQueryParam($pathParam, '');
+        $value = $this->getQueryParam($this->generalConfig->pathParam, '');
         if (!is_string($value)) {
             return '';
         }
@@ -1495,9 +1518,6 @@ class Request extends \yii\web\Request
             return;
         }
 
-        $configService = Craft::$app->getConfig();
-        $generalConfig = $configService->getGeneral();
-
         // If there's a token on the request, then that should take precedence over everything else
         if ($this->getToken() === null) {
             $firstSegment = $this->getSegment(1);
@@ -1512,19 +1532,19 @@ class Request extends \yii\web\Request
                 $setPasswordPath = self::CP_PATH_SET_PASSWORD;
                 $verifyEmailPath = self::CP_PATH_VERIFY_EMAIL;
                 $updatePath = self::CP_PATH_UPDATE;
-            } else if (!$generalConfig->headlessMode) {
+            } else if (!$this->generalConfig->headlessMode) {
                 $checkSpecialPaths = true;
-                if (is_string($loginPath = $generalConfig->getLoginPath())) {
+                if (is_string($loginPath = $this->generalConfig->getLoginPath())) {
                     $loginPath = trim($loginPath, '/');
                 }
-                if (is_string($logoutPath = $generalConfig->getLogoutPath())) {
+                if (is_string($logoutPath = $this->generalConfig->getLogoutPath())) {
                     $logoutPath = trim($logoutPath, '/');
                 }
-                $setPasswordPath = trim($generalConfig->getSetPasswordPath(), '/');
-                $verifyEmailPath = trim($generalConfig->getVerifyEmailPath(), '/');
+                $setPasswordPath = trim($this->generalConfig->getSetPasswordPath(), '/');
+                $verifyEmailPath = trim($this->generalConfig->getVerifyEmailPath(), '/');
             }
 
-            $hasTriggerMatch = ($firstSegment === $generalConfig->actionTrigger && count($this->getSegments()) > 1);
+            $hasTriggerMatch = ($firstSegment === $this->generalConfig->actionTrigger && count($this->getSegments()) > 1);
             if ($this->getNormalizedContentType() !== 'application/json') {
                 $actionParam = $this->getParam('action');
             } else {

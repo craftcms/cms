@@ -93,6 +93,10 @@ table.editable textarea {
   }
 }
 
+textarea.nicetext {
+  resize: none;
+}
+
 /* icons */
 .icon:before,
 .menu ul.padded li a.sel:before,
@@ -1038,6 +1042,7 @@ ul.icons {
 .btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   border-radius: $largeBorderRadius;
   padding: 7px 14px;
   border: none;

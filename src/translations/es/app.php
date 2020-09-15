@@ -1707,5 +1707,9 @@ Si no estabas esperando este correo electrónico, ignóralo.',
     'not an existing translation23131321313' => 'no es una traducción existente23131321313',
     'Discard changes' => 'Descartar cambios',
     'Retry Duration' => 'Reintentar duración',
-    'Online' => 'En línea'
+    'Online' => 'En línea',
+    'This field’s values are used as search keywords.' => 'This field’s values are used as search keywords.',
+    'The allowed values are [{values}]' => 'The allowed values are [{values}]',
+    'Save and edit entry types' => 'Save and edit entry types',
+    'Notes about your changes' => 'Avisos sobre tus cambios',
 ];

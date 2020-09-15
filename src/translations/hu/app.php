@@ -1705,5 +1705,9 @@ Amennyiben nem neked szól ez a levél, egyszerűen csak hagyd figyelmen kívül
     'not an existing translation23131321313' => 'nem létező fordítás23131321313',
     'Discard changes' => 'Változtatások elvetése',
     'Retry Duration' => 'Újrapróbálkozás időtartama',
-    'Online' => 'Online'
+    'Online' => 'Online',
+    'This field’s values are used as search keywords.' => 'This field’s values are used as search keywords.',
+    'The allowed values are [{values}]' => 'The allowed values are [{values}]',
+    'Save and edit entry types' => 'Save and edit entry types',
+    'Notes about your changes' => 'Jegyzetek a változtatásról',
 ];

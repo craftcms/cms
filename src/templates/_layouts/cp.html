@@ -108,7 +108,6 @@
             sizes: '30px',
             srcset: "#{currentUser.getThumbUrl(30)} 30w, #{currentUser.getThumbUrl(60)} 60w",
             alt: currentUser.getName(),
-            title: currentUser.getName(),
         }) }}
     </div>
 {% endset %}
@@ -125,7 +124,7 @@
                 <div class="flex">
                     {% include '_layouts/components/crumbs' %}
                     <div class="flex-grow"></div>
-                    <button type="button" id="user-info" class="btn menubtn" data-menu-anchor=".header-photo">
+                    <button type="button" id="user-info" class="btn menubtn" aria-label="{{ 'My Account'|t('app') }}" title="{{ 'My Account'|t('app') }}" data-menu-anchor=".header-photo">
                         {{ userPhoto }}
                     </button>
                     <div class="menu" data-align="right">
@@ -246,7 +245,9 @@
 {% block actionButton %}
     {% if fullPageForm %}
         <div class="btngroup">
-            <button type="submit" class="btn submit">{{ 'Save'|t('app') }}</button>
+            {% block submitButton %}
+                <button type="submit" class="btn submit">{{ 'Save'|t('app') }}</button>
+            {% endblock %}
             {% if formActions ?? false %}
                 <button type="button" class="btn submit menubtn"></button>
                 {% include '_layouts/components/form-action-menu' %}

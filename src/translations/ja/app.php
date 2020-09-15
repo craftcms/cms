@@ -1707,5 +1707,9 @@ return [
     'not an existing translation23131321313' => '既存の翻訳ではありません23131321313',
     'Discard changes' => '変更を破棄',
     'Retry Duration' => '再試行時間',
-    'Online' => 'オンライン'
+    'Online' => 'オンライン',
+    'This field’s values are used as search keywords.' => 'This field’s values are used as search keywords.',
+    'The allowed values are [{values}]' => 'The allowed values are [{values}]',
+    'Save and edit entry types' => 'Save and edit entry types',
+    'Notes about your changes' => '変更通知',
 ];

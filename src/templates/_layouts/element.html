@@ -4,6 +4,7 @@
     The following variables should be defined by the sub-template:
 
     - element: the source element or one of its drafts/revisions
+    - hasRevisions: whether the element has revisions, which will determine whether the revision notes field should be displayed.
     - canDeleteDraft (optional): whether the current user is allowed to delete the draft (if it is one).
       If the current user created the draft, then it will be deletable regardless.
     - canUpdateSource (optional): whether the current user is allowed to update the source element
@@ -311,6 +312,21 @@
             {% endif %}
         {% endblock %}
     </div>
+
+    {% if isCurrent and (hasRevisions ?? false) %}
+        {{ forms.textarea({
+            id: 'revision-notes',
+            class: ['nicetext'],
+            name: 'revisionNotes',
+            placeholder: 'Notes about your changes'|t('app'),
+            value: revisionNotes ?? null,
+            inputAttributes: {
+                aria: {
+                    label: 'Notes about your changes'|t('app'),
+                },
+            },
+        }) }}
+    {% endif %}
 
     {% if isDraft and element.getIsOutdated() %}
         {% do craft.app.session.authorize('mergeDraftSourceChanges:' ~ element.draftId) %}

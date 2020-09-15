@@ -17,7 +17,7 @@
     "Handle",
     "Type",
     "Group",
-    "This field’s field’s values are used as search keywords.",
+    "This field’s values are used as search keywords.",
     "This group doesn’t have any fields yet.",
     "No fields exist yet.",
 ]) %}
@@ -95,7 +95,7 @@
         id: field.id,
         title: field.name|t('site'),
         translatable: field.getTranslationDescription(),
-        searchable: field.searchable,
+        searchable: field.searchable ? true : false,
         url: url('settings/fields/edit/' ~ field.id),
         handle: field.handle,
         type: {
@@ -117,7 +117,7 @@
                 if (!value) {
                     return null;
                 }
-                return `<div class="badge-icon" data-icon="search" title="${Craft.t('app', 'This field’s field’s values are used as search keywords.')}"></div>`;
+                return `<div class="badge-icon" data-icon="search" title="${Craft.t('app', 'This field’s values are used as search keywords.')}"></div>`;
             }
         },
         {% if craft.app.isMultiSite %}

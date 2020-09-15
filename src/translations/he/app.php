@@ -1707,5 +1707,9 @@ return [
     'not an existing translation23131321313' => 'ignored',
     'Discard changes' => 'בטל שינויים',
     'Retry Duration' => 'משך הניסוי מחדש',
-    'Online' => 'מקוון'
+    'Online' => 'מקוון',
+    'This field’s values are used as search keywords.' => 'This field’s values are used as search keywords.',
+    'The allowed values are [{values}]' => 'The allowed values are [{values}]',
+    'Save and edit entry types' => 'Save and edit entry types',
+    'Notes about your changes' => 'הערות אודות השינויים שלך',
 ];

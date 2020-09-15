@@ -1707,5 +1707,9 @@ Se você não solicitou este e-mail, simplesmente ignore.',
     'not an existing translation23131321313' => 'não é uma tradução existente23131321313',
     'Discard changes' => 'Rejeitar alterações',
     'Retry Duration' => 'Repetir duração',
-    'Online' => 'Online'
+    'Online' => 'Online',
+    'This field’s values are used as search keywords.' => 'This field’s values are used as search keywords.',
+    'The allowed values are [{values}]' => 'The allowed values are [{values}]',
+    'Save and edit entry types' => 'Save and edit entry types',
+    'Notes about your changes' => 'Notas sobre suas alterações',
 ];

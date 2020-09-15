@@ -6,6 +6,7 @@
 {% set isRevision = entry.getIsRevision() %}
 
 {% set element = entry %}
+{% set hasRevisions = section.enableVersioning %}
 {% set redirectUrl = 'entries/' ~ (isSingle ? 'singles' : section.handle) %}
 {% set saveSourceAction = 'entries/save-entry' %}
 {% set duplicateSourceAction = 'entries/duplicate-entry' %}

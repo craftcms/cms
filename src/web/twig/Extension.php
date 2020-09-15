@@ -223,7 +223,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('explodeClass', [Html::class, 'explodeClass']),
             new TwigFilter('explodeStyle', [Html::class, 'explodeStyle']),
             new TwigFilter('filesize', [$formatter, 'asShortSize']),
-            new TwigFilter('filter', [$this, 'filterFilter']),
+            new TwigFilter('filter', [$this, 'filterFilter'], ['needs_environment' => true]),
             new TwigFilter('filterByValue', [ArrayHelper::class, 'where'], ['deprecated' => '3.5.0', 'alternative' => 'where']),
             new TwigFilter('group', [$this, 'groupFilter']),
             new TwigFilter('hash', [$security, 'hashData']),
@@ -259,6 +259,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('time', [$this, 'timeFilter'], ['needs_environment' => true]),
             new TwigFilter('timestamp', [$formatter, 'asTimestamp']),
             new TwigFilter('translate', [$this, 'translateFilter']),
+            new TwigFilter('truncate', [$this, 'truncateFilter']),
             new TwigFilter('t', [$this, 'translateFilter']),
             new TwigFilter('ucfirst', [$this, 'ucfirstFilter']),
             new TwigFilter('ucwords', [$this, 'ucwordsFilter'], ['needs_environment' => true]),
@@ -319,6 +320,26 @@ class Extension extends AbstractExtension implements GlobalsInterface
         } catch (InvalidConfigException $e) {
             return $message;
         }
+    }
+
+    /**
+     * Truncates the string to a given length, while ensuring that it does not split words.
+     *
+     * @param string $string The string to truncate
+     * @param int $length The maximum number of characters for the truncated string
+     * @param string $suffix The string that should be appended to `$string`, if it must be truncated
+     * @param bool $splitSingleWord Whether to split up `$string` if it only contains one word
+     * @return string The truncated string
+     * @since 3.5.10
+     */
+    public function truncateFilter(string $string, int $length, string $suffix = '…', bool $splitSingleWord = true): string
+    {
+        // Override default behavior where the substring would be returned in this case
+        if ($string === '' || $length <= 0) {
+            return $string;
+        }
+
+        return StringHelper::safeTruncate($string, $length, $suffix, $splitSingleWord);
     }
 
     /**
@@ -779,17 +800,23 @@ class Extension extends AbstractExtension implements GlobalsInterface
     /**
      * Filters an array.
      *
+     * @param TwigEnvironment $env
      * @param array|\Traversable $arr
      * @param callable|null $arrow
      * @return array
      */
-    public function filterFilter($arr, $arrow = null)
+    public function filterFilter(TwigEnvironment $env, $arr, $arrow = null)
     {
         if ($arrow === null) {
             return array_filter($arr);
         }
 
-        $filtered = twig_array_filter($arr, $arrow);
+        // todo: remove this version check when we drop support for Twig < 2.13.1
+        if (version_compare(TwigEnvironment::VERSION, '2.13.1', '<')) {
+            $filtered = twig_array_filter($arr, $arrow);
+        } else {
+            $filtered = twig_array_filter($env, $arr, $arrow);
+        }
 
         if (is_array($filtered)) {
             return $filtered;
