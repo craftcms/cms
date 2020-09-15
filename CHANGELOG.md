@@ -19,6 +19,7 @@
 - The `_includes/forms/textarea.html` template now supports `disabled`, `inputAttributes`, `inputmode`, and `title` variables.
 - The `_layouts/cp.html` control panel template now defines a `submitButton` block.
 - `craft\helpers\Gql::getFieldNameWithAlias()` now has a `$context` argument to allow sharing context over a single GraphQL API call.
+- Updated Yii to 2.0.38.
 
 ### Fixed
 - Fixed a bug where all fields were showing as searchable on the Settings → Fields page on MySQL installs. ([#6808](https://github.com/craftcms/cms/issues/6808))
