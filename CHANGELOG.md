@@ -31,6 +31,9 @@
 - Fixed a bug where aliased fields would sometimes not be assigned correctly when using GraphQL API. ([#6811](https://github.com/craftcms/cms/issues/6811)))
 - Removed `vue`, `vue-router` and `vuex` Plugin Store dependencies as they are already handled by Craft. ([#6732](https://github.com/craftcms/cms/pull/6732), [#6815](https://github.com/craftcms/cms/pull/6815))
 
+### Security
+- Fixed a bug where custom field labels weren’t getting HTML-encoded.
+
 ## 3.5.9 - 2020-09-08
 
 ### Added

@@ -162,7 +162,7 @@ class CustomField extends BaseField
     protected function defaultLabel(ElementInterface $element = null, bool $static = false)
     {
         if ($this->_field->name !== '' && $this->_field->name !== null && $this->_field->name !== '__blank__') {
-            return Craft::t('site', $this->_field->name);
+            return Html::encode(Craft::t('site', $this->_field->name));
         }
         return null;
     }
