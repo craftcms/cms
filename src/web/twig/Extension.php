@@ -223,7 +223,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('explodeClass', [Html::class, 'explodeClass']),
             new TwigFilter('explodeStyle', [Html::class, 'explodeStyle']),
             new TwigFilter('filesize', [$formatter, 'asShortSize']),
-            new TwigFilter('filter', [$this, 'filterFilter']),
+            new TwigFilter('filter', [$this, 'filterFilter'], ['needs_environment' => true]),
             new TwigFilter('filterByValue', [ArrayHelper::class, 'where'], ['deprecated' => '3.5.0', 'alternative' => 'where']),
             new TwigFilter('group', [$this, 'groupFilter']),
             new TwigFilter('hash', [$security, 'hashData']),
@@ -779,17 +779,23 @@ class Extension extends AbstractExtension implements GlobalsInterface
     /**
      * Filters an array.
      *
+     * @param TwigEnvironment $env
      * @param array|\Traversable $arr
      * @param callable|null $arrow
      * @return array
      */
-    public function filterFilter($arr, $arrow = null)
+    public function filterFilter(TwigEnvironment $env, $arr, $arrow = null)
     {
         if ($arrow === null) {
             return array_filter($arr);
         }
 
-        $filtered = twig_array_filter($arr, $arrow);
+        // todo: remove this version check when we drop support for Twig < 2.13.1
+        if (version_compare(TwigEnvironment::VERSION, '2.13.1', '<')) {
+            $filtered = twig_array_filter($arr, $arrow);
+        } else {
+            $filtered = twig_array_filter($env, $arr, $arrow);
+        }
 
         if (is_array($filtered)) {
             return $filtered;
