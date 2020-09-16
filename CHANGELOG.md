@@ -3,7 +3,7 @@
 ## Unreleased
 
 ### Fixed
-- Fix a bug where sometimes Craft would try to access the incorrect field when using GraphQL API with aliases.
+- Fixed a bug where the wrong field values could be used when querying for elements via GraphQL, if an alias was used.
 
 ## 3.5.10.1 - 2020-09-15
 
