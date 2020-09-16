@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fix a bug where sometimes Craft would try to access the incorrect field when using GraphQL API with aliases.
+
 ## 3.5.10.1 - 2020-09-15
 
 ### Fixed
