@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed a bug where the wrong field values could be used when querying for elements via GraphQL, if an alias was used.
+- Fixed an error that could occur on the Dashboard if there was a custom field with the handle of `author`.
 
 ## 3.5.10.1 - 2020-09-15
 
