@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where eager loading `children` would return incomplete results.
+
 ## 3.5.10 - 2020-09-15
 
 ### Added
