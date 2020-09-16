@@ -32,6 +32,8 @@
 - `craft\helpers\Gql::getFieldNameWithAlias()` now has a `$context` argument to allow sharing context over a single GraphQL API call.
 - Updated Yii to 2.0.38.
 - Updated Twig to 2.13, for environments running PHP 7.1.3 or later, and where the `config.platform.php` value in `composer.json` is at least `7.1.3`.
+- Updated Garnish to 0.1.37.
+- Updated Vue to 2.6.12.
 
 ### Fixed
 - Fixed a bug where all fields were showing as searchable on the Settings → Fields page on MySQL installs. ([#6808](https://github.com/craftcms/cms/issues/6808))
