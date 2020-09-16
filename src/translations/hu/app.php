@@ -1710,4 +1710,10 @@ Amennyiben nem neked szól ez a levél, egyszerűen csak hagyd figyelmen kívül
     'The allowed values are [{values}]' => 'The allowed values are [{values}]',
     'Save and edit entry types' => 'Save and edit entry types',
     'Notes about your changes' => 'Jegyzetek a változtatásról',
+    'As decimal numbers' => 'As decimal numbers',
+    'As currency values' => 'As currency values',
+    'Unformatted' => 'Unformatted',
+    'Choose a currency…' => 'Choose a currency…',
+    'Preview Format' => 'Preview Format',
+    'How field values will be formatted within element indexes.' => 'How field values will be formatted within element indexes.',
 ];
