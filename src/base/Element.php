@@ -928,7 +928,7 @@ abstract class Element extends Component implements ElementInterface
                             $descendantStructureDatum['lft'] > $elementStructureDatum['lft'] &&
                             $descendantStructureDatum['rgt'] < $elementStructureDatum['rgt'] &&
                             (
-                                $handle === 'children' ||
+                                $handle === 'descendants' ||
                                 $descendantStructureDatum['level'] == $elementStructureDatum['level'] + 1
                             )
                         ) {
@@ -937,11 +937,6 @@ abstract class Element extends Component implements ElementInterface
                                     'source' => $elementStructureDatum['elementId'],
                                     'target' => $descendantStructureDatum['elementId'],
                                 ];
-                            }
-
-                            // If we're just fetching the parents, then we're done with this element
-                            if ($handle === 'children') {
-                                break;
                             }
                         }
                     }
