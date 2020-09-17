@@ -244,6 +244,7 @@ class EntriesController extends BaseEntriesController
             );
 
         // Render the template!
+        $variables['entry']->addError('slug', 'Bad slug');
         return $this->renderTemplate('entries/_edit', $variables);
     }
 

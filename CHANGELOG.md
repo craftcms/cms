@@ -13,6 +13,7 @@
 - Fixed a bug where the wrong field values could be used when querying for elements via GraphQL, if an alias was used.
 - Fixed an error that could occur on the Dashboard if there was a custom field with the handle of `author`.
 - Fixed a 400 error that could occur when a route config’s `template` key was set to `null`.
+- Fixed a bug where validation errors within element editor HUDs and detail pains were getting displayed beside the input instead of below it. ([#6853](https://github.com/craftcms/cms/issues/6853))
 
 ## 3.5.10.1 - 2020-09-15
 
