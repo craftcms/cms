@@ -57,12 +57,14 @@ class ProjectConfig
      */
     public static function ensureAllFieldsProcessed()
     {
-        if (static::$_processedFields) {
+        $projectConfig = Craft::$app->getProjectConfig();
+
+        if (static::$_processedFields || !$projectConfig->getIsApplyingYamlChanges()) {
             return;
         }
+
         static::$_processedFields = true;
 
-        $projectConfig = Craft::$app->getProjectConfig();
         $allGroups = $projectConfig->get(Fields::CONFIG_FIELDGROUP_KEY, true) ?? [];
         $allFields = $projectConfig->get(Fields::CONFIG_FIELDS_KEY, true) ?? [];
 
@@ -82,12 +84,14 @@ class ProjectConfig
      */
     public static function ensureAllSitesProcessed()
     {
-        if (static::$_processedSites) {
+        $projectConfig = Craft::$app->getProjectConfig();
+
+        if (static::$_processedSites || !$projectConfig->getIsApplyingYamlChanges()) {
             return;
         }
+
         static::$_processedSites = true;
 
-        $projectConfig = Craft::$app->getProjectConfig();
         $allGroups = $projectConfig->get(Sites::CONFIG_SITEGROUP_KEY, true) ?? [];
         $allSites = $projectConfig->get(Sites::CONFIG_SITES_KEY, true) ?? [];
 
@@ -107,12 +111,14 @@ class ProjectConfig
      */
     public static function ensureAllUserGroupsProcessed()
     {
-        if (static::$_processedUserGroups) {
+        $projectConfig = Craft::$app->getProjectConfig();
+
+        if (static::$_processedUserGroups || !$projectConfig->getIsApplyingYamlChanges()) {
             return;
         }
+
         static::$_processedUserGroups = true;
 
-        $projectConfig = Craft::$app->getProjectConfig();
         $allGroups = $projectConfig->get(UserGroups::CONFIG_USERPGROUPS_KEY, true);
 
         if (is_array($allGroups)) {
@@ -129,12 +135,14 @@ class ProjectConfig
      */
     public static function ensureAllGqlSchemasProcessed()
     {
-        if (static::$_processedGqlSchemas) {
+        $projectConfig = Craft::$app->getProjectConfig();
+
+        if (static::$_processedGqlSchemas || !$projectConfig->getIsApplyingYamlChanges()) {
             return;
         }
+
         static::$_processedGqlSchemas = true;
 
-        $projectConfig = Craft::$app->getProjectConfig();
         $allSchemas = $projectConfig->get(GqlService::CONFIG_GQL_SCHEMAS_KEY, true);
 
         if (is_array($allSchemas)) {
