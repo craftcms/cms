@@ -6,6 +6,7 @@
 - Number fields now have a “Preview Format” setting, which determines whether values should be displayed as decimal numbers, currency values, or without any formatting, on element indexes. ([#5873](https://github.com/craftcms/cms/issues/5873))
 
 ### Changed
+- Date/Time fields configured to only show the time now consistently set the date to 1970-01-01. ([#6842](https://github.com/craftcms/cms/issues/6842))
 - It’s now possible for `craft\elements\db\ElementQuery::EVENT_AFTER_POPULATE_ELEMENT` event handlers to replace the element that should be returned by `createElement()`.
 
 ### Fixed
