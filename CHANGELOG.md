@@ -5,6 +5,9 @@
 ### Added
 - Number fields now have a “Preview Format” setting, which determines whether values should be displayed as decimal numbers, currency values, or without any formatting, on element indexes. ([#5873](https://github.com/craftcms/cms/issues/5873))
 
+### Changed
+- It’s now possible for `craft\elements\db\ElementQuery::EVENT_AFTER_POPULATE_ELEMENT` event handlers to replace the element that should be returned by `createElement()`.
+
 ### Fixed
 - Fixed a bug where pending project config YAML changes could be unexpectedly applied rather than discarded when other project config changes were made.
 - Fixed a bug where the wrong field values could be used when querying for elements via GraphQL, if an alias was used.
