@@ -4,6 +4,7 @@
 
 ### Added
 - Number fields now have a “Preview Format” setting, which determines whether values should be displayed as decimal numbers, currency values, or without any formatting, on element indexes. ([#5873](https://github.com/craftcms/cms/issues/5873))
+- Edit Field pages now have a “Delete” menu option. ([#6846](https://github.com/craftcms/cms/issues/6846))
 
 ### Changed
 - Date/Time fields configured to only show the time now consistently set the date to 1970-01-01. ([#6842](https://github.com/craftcms/cms/issues/6842))
