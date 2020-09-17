@@ -9,6 +9,7 @@
 - Fixed a bug where pending project config YAML changes could be unexpectedly applied rather than discarded when other project config changes were made.
 - Fixed a bug where the wrong field values could be used when querying for elements via GraphQL, if an alias was used.
 - Fixed an error that could occur on the Dashboard if there was a custom field with the handle of `author`.
+- Fixed a 400 error that could occur when a route config’s `template` key was set to `null`.
 
 ## 3.5.10.1 - 2020-09-15
 
