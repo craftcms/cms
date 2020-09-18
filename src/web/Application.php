@@ -162,6 +162,11 @@ class Application extends \yii\web\Application
         // Process resource requests before anything else
         $this->_processResourceRequest($request);
 
+        // Disable read/write splitting for POST requests
+        if ($this->getRequest()->getIsPost()) {
+            Craft::$app->getDb()->enableReplicas = false;
+        }
+
         $headers = $this->getResponse()->getHeaders();
         $generalConfig = $this->getConfig()->getGeneral();
 

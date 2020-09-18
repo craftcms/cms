@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Changed
+- Craft now disables read/write splitting for all POST requests.
+
 ## 3.5.11 - 2020-09-18
 
 ### Added
