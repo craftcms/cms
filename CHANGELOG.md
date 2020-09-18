@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.5.11 - 2020-09-18
 
 ### Added
 - Number fields now have a “Preview Format” setting, which determines whether values should be displayed as decimal numbers, currency values, or without any formatting, on element indexes. ([#5873](https://github.com/craftcms/cms/issues/5873))
