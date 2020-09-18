@@ -20,8 +20,8 @@
 - Fixed a 400 error that could occur when a route config’s `template` key was set to `null`.
 - Fixed a bug where validation errors within element editor HUDs and detail pains were getting displayed beside the input instead of below it. ([#6853](https://github.com/craftcms/cms/issues/6853))
 - Fixed styling issues with UI elements within field layout designers. ([#6854](https://github.com/craftcms/cms/issues/6854))
-- Fix a bug where GraphQL could return incorrect results in some cases.
-- Fix a bug where it was impossible to submit DateTime values using GraphQL mutations.
+- Fixed a bug where GraphQL could return incorrect results in some cases.
+- Fixed a bug where it wasn’t possible to set date values via GraphQL mutations.
 
 ## 3.5.10.1 - 2020-09-15
 
