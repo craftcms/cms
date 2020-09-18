@@ -5,6 +5,9 @@
 ### Changed
 - Craft now disables read/write splitting for all POST requests.
 
+### Fixed
+- Fixed a bug where entries were getting a “Bad slug” validation error. ([#6866](https://github.com/craftcms/cms/issues/6866))
+
 ## 3.5.11 - 2020-09-18
 
 ### Added
