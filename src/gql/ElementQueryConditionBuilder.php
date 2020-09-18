@@ -20,6 +20,7 @@ use craft\fields\Entries as EntryField;
 use craft\fields\Users as UserField;
 use craft\gql\base\ElementResolver;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Gql as GqlHelper;
 use craft\helpers\StringHelper;
 use craft\services\Gql;
@@ -404,7 +405,7 @@ class ElementQueryConditionBuilder extends Component
                     }
 
                     if ($transformableAssetProperty) {
-                        $transformEagerLoadArguments = array_merge_recursive($this->_extractTransformDirectiveArguments($subNode), $arguments);
+                        $transformEagerLoadArguments = ArrayHelper::merge($this->_extractTransformDirectiveArguments($subNode), $arguments);
                         $transformArgumentInjectionPoint = StringHelper::removeRight($prefix, '.');
 
                         // Also, these can't have any arguments.
@@ -429,7 +430,7 @@ class ElementQueryConditionBuilder extends Component
                             $nodeArguments['withTransforms'] = [];
                         }
 
-                        $nodeArguments['withTransforms'] = array_merge_recursive($nodeArguments['withTransforms'], $transformEagerLoadArguments);
+                        $nodeArguments['withTransforms'] = ArrayHelper::merge($nodeArguments['withTransforms'], $transformEagerLoadArguments);
                     }
 
                     // If this a custom Craft content field
@@ -491,7 +492,7 @@ class ElementQueryConditionBuilder extends Component
 
                     // Add this to the eager loading list.
                     if (!$transformableAssetProperty) {
-                        $eagerLoadNodes[$prefix . $nodeKey] = array_key_exists($prefix . $nodeKey, $eagerLoadNodes) ? array_merge_recursive($eagerLoadNodes[$prefix . $nodeKey], $arguments) : $arguments;
+                        $eagerLoadNodes[$prefix . $nodeKey] = array_key_exists($prefix . $nodeKey, $eagerLoadNodes) ? ArrayHelper::merge($eagerLoadNodes[$prefix . $nodeKey], $arguments) : $arguments;
                     }
 
                     // If it has any more selections, build the prefix further and proceed in a recursive manner
@@ -513,7 +514,7 @@ class ElementQueryConditionBuilder extends Component
                             $traverseContext = $context;
                         }
 
-                        $eagerLoadNodes = array_merge_recursive($eagerLoadNodes, $this->_traverseAndExtractRules($subNode, $traversePrefix . '.', $traverseContext, $nodeName === self::LOCALIZED_NODENAME ? $parentField : $craftContentField));
+                        $eagerLoadNodes = ArrayHelper::merge($eagerLoadNodes, $this->_traverseAndExtractRules($subNode, $traversePrefix . '.', $traverseContext, $nodeName === self::LOCALIZED_NODENAME ? $parentField : $craftContentField));
                     }
                 }
                 // If not, see if it's a fragment
@@ -531,14 +532,14 @@ class ElementQueryConditionBuilder extends Component
                     // Build the prefix, load the context and proceed in a recursive manner
                     try {
                         $gqlFragmentEntity = $parentField->getGqlFragmentEntityByName($nodeName);
-                        $eagerLoadNodes = array_merge_recursive($eagerLoadNodes, $this->_traverseAndExtractRules($subNode, $prefix . $gqlFragmentEntity->getEagerLoadingPrefix() . ':', $gqlFragmentEntity->getFieldContext(), $parentField));
+                        $eagerLoadNodes = ArrayHelper::merge($eagerLoadNodes, $this->_traverseAndExtractRules($subNode, $prefix . $gqlFragmentEntity->getEagerLoadingPrefix() . ':', $gqlFragmentEntity->getFieldContext(), $parentField));
                         // This is to be expected, depending on whether the fragment is targeted towards the field itself instead of its subtypes.
                     } catch (InvalidArgumentException $exception) {
-                        $eagerLoadNodes = array_merge_recursive($eagerLoadNodes, $this->_traverseAndExtractRules($subNode, $prefix, $context, $parentField));
+                        $eagerLoadNodes = ArrayHelper::merge($eagerLoadNodes, $this->_traverseAndExtractRules($subNode, $prefix, $context, $parentField));
                     }
                     // If we are not, just expand the fragment and traverse it as if on the same level in the query tree
                 } else {
-                    $eagerLoadNodes = array_merge_recursive($eagerLoadNodes, $this->_traverseAndExtractRules($subNode, $prefix, $context, $parentField));
+                    $eagerLoadNodes = ArrayHelper::merge($eagerLoadNodes, $this->_traverseAndExtractRules($subNode, $prefix, $context, $parentField));
                 }
             }
         }
