@@ -26,19 +26,21 @@ abstract class BaseUiElement extends FieldLayoutElement
     public function selectorHtml(): string
     {
         $label = $this->selectorLabel();
-        $labelHtml = Html::tag('div', Html::encode($label), ArrayHelper::merge([
-            'class' => ['fld-element-label'],
-        ], $this->selectorLabelAttributes()));
+        $labelHtml = Html::tag('div',
+            Html::tag('h4', Html::encode($label)),
+            ArrayHelper::merge([
+                'class' => ['fld-element-label'],
+            ], $this->selectorLabelAttributes()));
         $icon = Component::iconSvg($this->selectorIcon(), $label);
 
-        return <<<HTML
-<div class="fld-ui-element">
-  <div class="fld-element-icon">
-    $icon
-  </div>
-  $labelHtml
-</div>
-HTML;
+        return Html::tag('div',
+            Html::tag('div', $icon, [
+                'class' => 'fld-element-icon'
+            ]) . Html::tag('div', $labelHtml, [
+                'class' => ['field-name'],
+            ]), [
+                'class' => ['fld-ui-element'],
+            ]);
     }
 
     /**

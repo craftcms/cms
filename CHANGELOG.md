@@ -1,12 +1,17 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.5.11 - 2020-09-18
 
 ### Added
 - Number fields now have a “Preview Format” setting, which determines whether values should be displayed as decimal numbers, currency values, or without any formatting, on element indexes. ([#5873](https://github.com/craftcms/cms/issues/5873))
+- Assets fields now have a “Preview Mode” setting, which can be set to “Show thumbnails only” to only display related assets’ thumbnails within element indexes. ([#6848](https://github.com/craftcms/cms/issues/6848))
+- Edit Field pages now have a “Delete” menu option. ([#6846](https://github.com/craftcms/cms/issues/6846))
+- Added `craft\fields\BaseRelationField::elementPreviewHtml()`.
 
 ### Changed
+- Date/Time fields configured to only show the time now consistently set the date to 1970-01-01. ([#6842](https://github.com/craftcms/cms/issues/6842))
 - It’s now possible for `craft\elements\db\ElementQuery::EVENT_AFTER_POPULATE_ELEMENT` event handlers to replace the element that should be returned by `createElement()`.
+- `craft\helpers\elementHtml()` now has `$showStatus`, `$showThumb`, and `$showLabel` arguments.
 
 ### Fixed
 - Fixed a bug where pending project config YAML changes could be unexpectedly applied rather than discarded when other project config changes were made.
@@ -14,6 +19,10 @@
 - Fixed an error that could occur on the Dashboard if there was a custom field with the handle of `author`.
 - Fixed a 400 error that could occur when a route config’s `template` key was set to `null`.
 - Fixed a bug where validation errors within element editor HUDs and detail pains were getting displayed beside the input instead of below it. ([#6853](https://github.com/craftcms/cms/issues/6853))
+- Fixed styling issues with UI elements within field layout designers. ([#6854](https://github.com/craftcms/cms/issues/6854))
+- Fixed a bug where GraphQL could return incorrect results in some cases.
+- Fixed a bug where it wasn’t possible to set date values via GraphQL mutations.
+- Fixed a SQL error that could occur when updating from Craft 2.
 
 ## 3.5.10.1 - 2020-09-15
 

@@ -344,16 +344,35 @@ JS;
      * Deletes a field.
      *
      * @return Response
+     * @throws BadRequestHttpException
+     * @throws ServerErrorHttpException
      */
     public function actionDeleteField(): Response
     {
         $this->requirePostRequest();
-        $this->requireAcceptsJson();
 
-        $fieldId = $this->request->getRequiredBodyParam('id');
-        $success = Craft::$app->getFields()->deleteFieldById($fieldId);
+        $fieldId = $this->request->getBodyParam('fieldId') ?? $this->request->getRequiredBodyParam('id');
+        $fieldsService = Craft::$app->getFields();
+        $field = $fieldsService->getFieldById($fieldId);
 
-        return $this->asJson(['success' => $success]);
+        if (!$field) {
+            throw new BadRequestHttpException("Invalid field ID: $fieldId");
+        }
+
+        $success = $fieldsService->deleteField($field);
+
+        if ($this->request->getAcceptsJson()) {
+            return $this->asJson(['success' => $success]);
+        }
+
+        if (!$success) {
+            throw new ServerErrorHttpException("Unable to delete field ID $fieldId");
+        }
+
+        Craft::$app->getSession()->setNotice(Craft::t('app', '“{name}” deleted.', [
+            'name' => $field->name,
+        ]));
+        return $this->redirectToPostedUrl();
     }
 
     // Field Layouts
