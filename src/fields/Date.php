@@ -259,6 +259,10 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     public function normalizeValue($value, ElementInterface $element = null)
     {
         if ($value && ($date = DateTimeHelper::toDateTime($value)) !== false) {
+            // If we're only storing the time, set the date to the Unix Epoch to be consistent
+            if (!$this->showDate) {
+                $date->setDate(1970, 1, 1);
+            }
             return $date;
         }
 

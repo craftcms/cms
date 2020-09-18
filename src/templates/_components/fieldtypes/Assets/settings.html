@@ -112,5 +112,23 @@
     {{ block('viewModeField') }}
     {{ block('selectionLabelField') }}
     {{ block('validateRelatedElementsField') }}
+
+    <hr>
+
+    {{ forms.selectField({
+        id: 'preview-mode',
+        name: 'previewMode',
+        label: 'Preview Mode'|t('app'),
+        instructions: 'How the related {type} should be displayed within element indexes.'|t('app', {
+            type: pluralElementType,
+        }),
+        options: [
+            {label: 'Show thumbnails and titles'|t('app'), value: 'full'},
+            {label: 'Show thumbnails only'|t('app'), value: 'thumbs'},
+        ],
+        value: field.previewMode,
+        errors: field.getErrors('previewMode'),
+    }) }}
+
     {{ block('advancedSettings') }}
 {% endblock %}

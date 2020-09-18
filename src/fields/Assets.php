@@ -22,6 +22,7 @@ use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\gql\resolvers\elements\Asset as AssetResolver;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets as AssetsHelper;
+use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\FileHelper;
@@ -39,6 +40,15 @@ use yii\base\InvalidConfigException;
  */
 class Assets extends BaseRelationField
 {
+    /**
+     * @since 3.5.11
+     */
+    const PREVIEW_MODE_FULL = 'full';
+    /**
+     * @since 3.5.11
+     */
+    const PREVIEW_MODE_THUMBS = 'thumbs';
+
     /**
      * @inheritdoc
      */
@@ -128,6 +138,12 @@ class Assets extends BaseRelationField
     public $showUnpermittedFiles = false;
 
     /**
+     * @var string How related assets should be presented within element index views.
+     * @since 3.5.11
+     */
+    public $previewMode = self::PREVIEW_MODE_FULL;
+
+    /**
      * @inheritdoc
      */
     protected $allowLargeThumbsView = true;
@@ -203,6 +219,8 @@ class Assets extends BaseRelationField
                 return (bool)$field->restrictFiles;
             }
         ];
+
+        $rules[] = [['previewMode'], 'in', 'range' => [self::PREVIEW_MODE_FULL, self::PREVIEW_MODE_THUMBS], 'skipOnEmpty' => false];
 
         return $rules;
     }
@@ -437,6 +455,13 @@ class Assets extends BaseRelationField
         ];
     }
 
+    /**
+     * @inheritdoc
+     */
+    protected function elementPreviewHtml(ElementInterface $element): string
+    {
+        return Cp::elementHtml($element, 'index', Cp::ELEMENT_SIZE_SMALL, null, false, true, $this->previewMode === self::PREVIEW_MODE_FULL);
+    }
 
     // Events
     // -------------------------------------------------------------------------

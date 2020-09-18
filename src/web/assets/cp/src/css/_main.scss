@@ -3077,10 +3077,9 @@ ul.tree,
     & > .field,
     & > .data {
       display: flex;
-      flex-warp: wrap; // for error lists
+      flex-wrap: wrap; // for error lists
       justify-content: space-between;
       align-items: center;
-      flex-wrap: nowrap;
       margin: 0 -24px !important;
       padding: 0 24px;
       transition: padding-left linear 100ms, padding-right linear 100ms;

@@ -408,8 +408,13 @@ class Gql
         /** @var ElementQueryConditionBuilder $conditionBuilder */
         $conditionBuilder = $context['conditionBuilder'] ?? null;
 
-        if ($isAlias && (($conditionBuilder && $conditionBuilder->canNodeBeAliased($fieldName)) || (!($source instanceof ElementInterface && $source->getEagerLoadedElements($fieldName))))) {
-            $fieldName = $resolveInfo->fieldName;
+        if ($isAlias) {
+            $cannotBeAliased = $conditionBuilder && !$conditionBuilder->canNodeBeAliased($fieldName);
+            $aliasNotEagerLoaded = !$source instanceof ElementInterface || $source->getEagerLoadedElements($fieldName) === null;
+
+            if ($cannotBeAliased || $aliasNotEagerLoaded) {
+                $fieldName = $resolveInfo->fieldName;
+            }
         }
 
         return $fieldName;

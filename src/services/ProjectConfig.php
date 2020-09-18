@@ -484,7 +484,7 @@ class ProjectConfig extends Component
             $this->_saveConfig($config);
         }
 
-        $this->processConfigChanges($path, true, $message);
+        $this->_processConfigChangesInternal($path, true, $message);
     }
 
     /**
@@ -633,12 +633,29 @@ class ProjectConfig extends Component
     /**
      * Processes changes in the project config files for a given config item path.
      *
+     * Note that this will only have an effect if project config YAML changes are currently getting [[getIsApplyingYamlChanges()|applied]].
+     *
      * @param string $path The config item path
      * @param bool $triggerUpdate is set to true and no changes are detected, an update event will be triggered, anyway.
      * @param string|null $message The message describing changes, if modifications are made.
      * @param bool $force Whether the config change should be processed regardless of previous records
      */
     public function processConfigChanges(string $path, bool $triggerUpdate = false, $message = null, bool $force = false)
+    {
+        if ($this->getIsApplyingYamlChanges()) {
+            $this->_processConfigChangesInternal($path, $triggerUpdate, $message, $force);
+        }
+    }
+
+    /**
+     * Processes changes in the project config files for a given config item path.
+     *
+     * @param string $path The config item path
+     * @param bool $triggerUpdate is set to true and no changes are detected, an update event will be triggered, anyway.
+     * @param string|null $message The message describing changes, if modifications are made.
+     * @param bool $force Whether the config change should be processed regardless of previous records
+     */
+    private function _processConfigChangesInternal(string $path, bool $triggerUpdate = false, $message = null, bool $force = false)
     {
         if (!$force && !empty($this->_parsedChanges[$path])) {
             return;
@@ -1094,7 +1111,7 @@ class ProjectConfig extends Component
             if (preg_match($pattern, $event->path, $matches)) {
                 // Is this a nested path?
                 if (isset($matches['extra'])) {
-                    $this->processConfigChanges($matches['path']);
+                    $this->_processConfigChangesInternal($matches['path']);
                     continue;
                 }
 
@@ -1203,21 +1220,21 @@ class ProjectConfig extends Component
         if (!empty($changes['removedItems'])) {
             Craft::info('Parsing ' . count($changes['removedItems']) . ' removed configuration items', __METHOD__);
             foreach ($changes['removedItems'] as $itemPath) {
-                $this->processConfigChanges($itemPath, false, null, true);
+                $this->_processConfigChangesInternal($itemPath, false, null, true);
             }
         }
 
         if (!empty($changes['changedItems'])) {
             Craft::info('Parsing ' . count($changes['changedItems']) . ' changed configuration items', __METHOD__);
             foreach ($changes['changedItems'] as $itemPath) {
-                $this->processConfigChanges($itemPath, false, null, true);
+                $this->_processConfigChangesInternal($itemPath, false, null, true);
             }
         }
 
         if (!empty($changes['newItems'])) {
             Craft::info('Parsing ' . count($changes['newItems']) . ' new configuration items', __METHOD__);
             foreach ($changes['newItems'] as $itemPath) {
-                $this->processConfigChanges($itemPath, false, null, true);
+                $this->_processConfigChangesInternal($itemPath, false, null, true);
             }
         }
 

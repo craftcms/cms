@@ -61,6 +61,8 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @event PopulateElementEvent The event that is triggered after an element is populated.
+     *
+     * If [[PopulateElementEvent::$element]] is replaced by an event handler, the replacement will be returned by [[createElement()]] instead.
      */
     const EVENT_AFTER_POPULATE_ELEMENT = 'afterPopulateElement';
 
@@ -1800,10 +1802,12 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         // Fire an 'afterPopulateElement' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_POPULATE_ELEMENT)) {
-            $this->trigger(self::EVENT_AFTER_POPULATE_ELEMENT, new PopulateElementEvent([
+            $event = new PopulateElementEvent([
                 'element' => $element,
                 'row' => $row
-            ]));
+            ]);
+            $this->trigger(self::EVENT_AFTER_POPULATE_ELEMENT, $event);
+            return $event->element;
         }
 
         return $element;
