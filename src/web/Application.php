@@ -164,7 +164,7 @@ class Application extends \yii\web\Application
 
         // Disable read/write splitting for POST requests
         if ($this->getRequest()->getIsPost()) {
-            Craft::$app->getDb()->enableReplicas = false;
+            $this->getDb()->enableReplicas = false;
         }
 
         $headers = $this->getResponse()->getHeaders();
