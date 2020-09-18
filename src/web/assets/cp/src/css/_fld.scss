@@ -88,7 +88,7 @@ $gridColor: hsl(212, 50%, 95%);
 }
 
 .fld-tab .settings:before,
-.fld-field .settings:before {
+.fld-element .settings:before {
   margin-top: -2px;
   font-size: 16px;
   opacity: 0.5;
@@ -96,8 +96,8 @@ $gridColor: hsl(212, 50%, 95%);
 
 .fld-tab .settings:hover:before,
 .fld-tab .settings.active:before,
-.fld-field .settings:hover:before,
-.fld-field .settings.active:before {
+.fld-element .settings:hover:before,
+.fld-element .settings.active:before {
   opacity: 1;
 }
 
@@ -152,6 +152,8 @@ $gridColor: hsl(212, 50%, 95%);
 
 .fld-element {
   position: relative;
+  display: flex;
+  align-items: center;
   padding: 7px 10px;
   box-shadow: inset 0 0 0 1px $hairlineColor;
   background-color: $white;
@@ -179,8 +181,6 @@ $gridColor: hsl(212, 50%, 95%);
   }
 
   &.fld-field {
-    display: flex;
-    align-items: center;
     color: $mediumTextColor;
     background-color: $grey100;
 
@@ -199,52 +199,69 @@ $gridColor: hsl(212, 50%, 95%);
     }
 
     .field-name {
-      flex: 1;
-      overflow: hidden;
-
       .fld-element-label {
         margin-bottom: 2px;
       }
     }
+  }
 
-    &.fld-required .fld-required-indicator {
-      @include margin-left(2px);
-      line-height: 1;
+  .fld-element-icon {
+    @include margin-right(5px);
+    text-align: center;
 
-      &:after {
-        @include icon;
-        content: 'asterisk';
-        font-size: 8px;
-        line-height: 1;
+    &,
+    svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    svg {
+      @include svg-mask($lightTextColor);
+    }
+  }
+
+  .field-name {
+    flex: 1;
+    overflow: hidden;
+
+    .fld-element-label,
+    .fld-attribute {
+      flex: 1;
+      display: flex;
+    }
+
+    .fld-element-label h4,
+    .fld-attribute .smalltext {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .fld-element-label h4 {
+      font-weight: normal;
+      color: $textColor;
+      margin: 0;
+
+      & + .fld-required-indicator {
+        color: $textColor;
       }
     }
-  }
 
-  .fld-element-label,
-  .fld-attribute {
-    flex: 1;
-    display: flex;
-  }
-
-  .fld-element-label h4,
-  .fld-attribute .smalltext {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .fld-element-label h4 {
-    font-weight: normal;
-    color: $textColor;
-    margin: 0;
-
-    & + .fld-required-indicator {
-      color: $textColor;
+    .fld-attribute .fld-required-indicator {
+      margin-top: -1px;
     }
   }
 
-  .fld-attribute .fld-required-indicator {
-    margin-top: -1px;
+  &.fld-required .fld-required-indicator {
+    @include margin-left(2px);
+    line-height: 1;
+
+    &:after {
+      @include icon;
+      content: 'asterisk';
+      font-size: 8px;
+      line-height: 1;
+    }
   }
 }
 
@@ -276,26 +293,6 @@ body.dragging {
     background-color: $grey100;
     border-radius: 8px;
     padding: 1px 7px;
-  }
-}
-
-.fld-ui-element {
-  display: flex;
-  align-items: center;
-
-  .fld-element-icon {
-    @include margin-right(5px);
-    text-align: center;
-
-    &,
-    svg {
-      width: 16px;
-      height: 16px;
-    }
-
-    svg {
-      @include svg-mask($lightTextColor);
-    }
   }
 }
 
