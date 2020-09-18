@@ -22,6 +22,7 @@
 - Fixed styling issues with UI elements within field layout designers. ([#6854](https://github.com/craftcms/cms/issues/6854))
 - Fixed a bug where GraphQL could return incorrect results in some cases.
 - Fixed a bug where it wasn’t possible to set date values via GraphQL mutations.
+- Fixed a SQL error that could occur when updating from Craft 2.
 
 ## 3.5.10.1 - 2020-09-15
 
