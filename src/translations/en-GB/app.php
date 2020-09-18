@@ -1718,4 +1718,8 @@ If you weren’t expecting this email, just ignore it.',
     'Choose a currency…' => 'Choose a currency…',
     'Preview Format' => 'Preview Format',
     'How field values will be formatted within element indexes.' => 'How field values will be formatted within element indexes.',
+    'Preview Mode' => 'Preview Mode',
+    'How the related {type} should be displayed within element indexes.' => 'How the related {type} should be displayed within element indexes.',
+    'Show thumbnails and titles' => 'Show thumbnails and titles',
+    'Show thumbnails only' => 'Show thumbnails only',
 ];
