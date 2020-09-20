@@ -252,7 +252,7 @@ class Config extends Component
         $qName = preg_quote($name, '/');
         $slashedValue = addslashes($value);
         // Only surround with quotes if the value contains a space
-        if (strpos($slashedValue, ' ') !== false) {
+        if (strpos($slashedValue, ' ') !== false || strpos($slashedValue, '#') !== false) {
             $slashedValue = "\"$slashedValue\"";
         }
         $qValue = str_replace('$', '\\$', $slashedValue);
