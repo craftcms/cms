@@ -624,7 +624,7 @@ JS;
             foreach ($value as $other) {
                 $otherHtml .= $this->elementPreviewHtml($other);
             }
-            $html .= Html::tag('span', '+' . Craft::$app->getFormatter()->asDecimal(count($value)), [
+            $html .= Html::tag('span', '+' . Craft::$app->getFormatter()->asInteger(count($value)), [
                 'title' => implode(', ', ArrayHelper::getColumn($value, 'title')),
                 'class' => 'btn small',
                 'role' => 'button',
