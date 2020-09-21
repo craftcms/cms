@@ -4,9 +4,10 @@
 
 ### Added
 - Added `craft\elements\db\EagerLoadPlan::$all`.
+- Added `craft\elements\db\EagerLoadPlan::$when`.
 
 ### Changed
-- It’s now possible to specify eager-loading plans as hashes with `path`, `criteria`, and `count` keys.
+- It’s now possible to specify eager-loading plans as hashes with `path`, `criteria`, `count`, and `when` keys.
 
 ### Fixed
 - Fixed a bug where `craft\services\Config::setDotEnvVar()` wasn’t surrounding values with quotes if they contained a `#` character. ([#6867](https://github.com/craftcms/cms/issues/6867))
