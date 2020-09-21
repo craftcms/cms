@@ -1,7 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
 ## Unreleased
+
+### Fixed
 - Fixed a bug where `craft\services\Config::setDotEnvVar()` wasn’t surrounding values with quotes if they contained a `#` character. ([#6867](https://github.com/craftcms/cms/issues/6867))
+- Fixed a bug where GraphQL API queries could sometimes produce an incorrect eager-loading argument set. ([#6849](https://github.com/craftcms/cms/issues/6849))
 
 ## 3.5.11.1 - 2020-09-18
 

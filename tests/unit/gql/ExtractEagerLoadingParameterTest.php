@@ -141,6 +141,9 @@ class ExtractEagerLoadingParameterTest extends Unit
           author
         }
         ... on articleBody_articleSegment_BlockType {
+          im: image (volumeId: 2) {
+            filename
+          }
           text
         }
         ... on articleBody_imageBlock_BlockType {
@@ -175,7 +178,7 @@ GQL;
             'with' => [
                 ['neverAllowed', ['id' => 0]],
                 'matrixField',
-                ['matrixField.mockedBlockHandle:image as im', ['volumeId' => 2]],
+                ['matrixField.mockedBlockHandle:image as im', ['volumeId' => [2]]], // Array because of the doubling-cleanup
                 ['matrixField.mockedBlockHandle:entriesInMatrix', ['id' => 80]],
                 ['matrixField.mockedBlockHandle:entriesInMatrix.linkedEntriesThroughMatrix', ['id' => 99]],
                 ['entryField', ['sectionId' => [5], 'typeId' => [2]]],

@@ -165,6 +165,22 @@ class ElementQueryConditionBuilder extends Component
             }
         }
 
+        $removeDuplicates = function (array &$array) use (&$removeDuplicates) {
+            foreach ($array as $key => &$value) {
+                if (is_array($value)) {
+                    if (is_string($key) && !is_numeric($key)) {
+                        $value = array_unique($value, SORT_REGULAR);
+                    } else {
+                        $removeDuplicates($value);
+                    }
+                }
+            }
+        };
+
+        foreach ($extractedConditions as $type => &$conditions) {
+            $removeDuplicates($conditions);
+        }
+
         return $extractedConditions;
     }
 
@@ -387,10 +403,10 @@ class ElementQueryConditionBuilder extends Component
                 $isSpecialField = $this->_isAdditionalEagerLoadableNode($nodeName, $parentField);
                 $canBeAliased = !$isSpecialField || $this->_canSpecialFieldBeAliased($nodeName);
 
-                // That is a Craft field that can be eager-loaded or is the special `children` property
                 $possibleTransforms = $transformableAssetProperty || $isAssetField;
                 $otherEagerLoadableNode = $nodeName === Gql::GRAPHQL_COUNT_FIELD;
 
+                // That is a Craft field that can be eager-loaded or is a special eager-loadable field
                 if ($possibleTransforms || $craftContentField || $otherEagerLoadableNode || $isSpecialField) {
                     // Any arguments?
                     $arguments = $this->_extractArguments($subNode->arguments ?? []);
