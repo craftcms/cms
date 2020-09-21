@@ -748,6 +748,10 @@ class GeneralConfig extends BaseObject
      * Set to `0` to disable this feature.
      *
      * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
+     * 
+     * ::: tip
+     * Users will only be purged when [garbage collection](https://craftcms.com/docs/3.x/gc.html) is run.
+     * :::
      */
     public $purgePendingUsersDuration = 0;
     /**
