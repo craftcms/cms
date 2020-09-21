@@ -33,7 +33,13 @@ class EagerLoadPlan extends BaseObject
     public $criteria = [];
 
     /**
-     * @var bool Whether to only eager-load the total results
+     * @var bool Whether to eager-load the matching elements
+     * @since 3.5.12
+     */
+    public $all = false;
+
+    /**
+     * @var bool Whether to eager-load the count of the matching elements
      */
     public $count = false;
 

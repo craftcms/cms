@@ -1860,10 +1860,12 @@ class Elements extends Component
 
             // Separate the path and the criteria
             if (is_array($path)) {
-                $criteria = $path[1] ?? null;
-                $path = $path[0];
+                $criteria = $path['criteria'] ?? $path[1] ?? null;
+                $count = $path['count'] ?? ArrayHelper::remove($criteria, 'count', false);
+                $path = $path['path'] ?? $path[0];
             } else {
                 $criteria = null;
+                $count = false;
             }
 
             // Split the path into the top segment and subpath
@@ -1895,14 +1897,24 @@ class Elements extends Component
             // Only set the criteria if there's no subpath
             if ($subpath === null) {
                 if ($criteria !== null) {
-                    if (ArrayHelper::remove($criteria, 'count', false)) {
-                        $plan->count = true;
-                    }
                     $plan->criteria = $criteria;
                 }
+
+                if ($count) {
+                    $plan->count = true;
+                } else {
+                    $plan->all = true;
+                }
             } else {
+                // We are for sure going to need to query the elements
+                $plan->all = true;
+
                 // Add this as a nested "with"
-                $nestedWiths[$alias][] = [$subpath, $criteria];
+                $nestedWiths[$alias][] = [
+                    'path' => $subpath,
+                    'criteria' => $criteria,
+                    'count' => $count,
+                ];
             }
         }
 
@@ -2010,7 +2022,7 @@ class Elements extends Component
                 }
 
                 // Do we just need the count?
-                if ($plan->count && empty($plan->nested)) {
+                if ($plan->count && !$plan->all) {
                     // Just fetch the target elements’ IDs
                     $targetElementIdCounts = [];
                     if ($query) {

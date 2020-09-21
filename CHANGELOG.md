@@ -2,9 +2,16 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\elements\db\EagerLoadPlan::$all`.
+
+### Changed
+- It’s now possible to specify eager-loading plans as hashes with `path`, `criteria`, and `count` keys.
+
 ### Fixed
 - Fixed a bug where `craft\services\Config::setDotEnvVar()` wasn’t surrounding values with quotes if they contained a `#` character. ([#6867](https://github.com/craftcms/cms/issues/6867))
 - Fixed a bug where GraphQL API queries could produce an incorrect eager-loading plan. ([#6849](https://github.com/craftcms/cms/issues/6849))
+- Fixed a bug where eager-loading elements wasn’t working if also eager-loading the count of related elements for the exact same path.
 
 ## 3.5.11.1 - 2020-09-18
 
