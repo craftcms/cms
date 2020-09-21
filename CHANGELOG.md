@@ -4,7 +4,7 @@
 
 ### Fixed
 - Fixed a bug where `craft\services\Config::setDotEnvVar()` wasn’t surrounding values with quotes if they contained a `#` character. ([#6867](https://github.com/craftcms/cms/issues/6867))
-- Fixed a bug where GraphQL API queries could sometimes produce an incorrect eager-loading argument set. ([#6849](https://github.com/craftcms/cms/issues/6849))
+- Fixed a bug where GraphQL API queries could produce an incorrect eager-loading plan. ([#6849](https://github.com/craftcms/cms/issues/6849))
 
 ## 3.5.11.1 - 2020-09-18
 
