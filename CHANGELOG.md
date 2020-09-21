@@ -14,6 +14,7 @@
 - Fixed a bug where eager-loading elements wasn’t working if also eager-loading the count of related elements for the exact same path.
 - Fixed a bug where the button to show all related elements for relational fields within element indexes was getting formatted with two decimal places on environments that didn’t have the Intl extension installed. ([#6869](https://github.com/craftcms/cms/issues/6869))
 - Fixed a bug where element selection modals would show the source sidebar even if there was only one selectable source, if a source heading came before it. ([#6871](https://github.com/craftcms/cms/issues/6871))
+- Fixed a bug where Plain Text fields with a limit set and line breaks allowed weren’t showing the remaining characters/bytes allowed indicator. ([#6872](https://github.com/craftcms/cms/issues/6872))
 
 ## 3.5.11.1 - 2020-09-18
 
