@@ -2572,6 +2572,10 @@ $checkboxPadding: $checkboxSize + 4;
   .caboose {
     @include floatleft;
   }
+
+  .flex .btn {
+    float: none !important;
+  }
 }
 
 /* editable tables */

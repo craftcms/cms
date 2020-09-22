@@ -1357,6 +1357,8 @@ body.ltr .elementselect .caboose { float: left; }
 
 body.rtl .elementselect .caboose { float: right; }
 
+.elementselect .flex .btn { float: none !important; }
+
 /* editable tables */
 table.editable { border-radius: 5px; border: 1px solid #cdd8e4; }
 
