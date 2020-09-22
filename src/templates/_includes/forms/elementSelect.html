@@ -24,7 +24,9 @@
         {% endfor %}
     </div>
 
-    <button type="button" class="btn add icon dashed">{{ selectionLabel is defined ? selectionLabel : "Choose"|t('app') }}</button>
+    <div class="flex">
+        <button type="button" class="btn add icon dashed">{{ selectionLabel is defined ? selectionLabel : "Choose"|t('app') }}</button>
+    </div>
 </div>
 
 {% set jsSettings = {

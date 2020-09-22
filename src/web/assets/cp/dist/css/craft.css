@@ -1345,7 +1345,7 @@ body.ltr .elementselect .element, body.ltr .elementselect .btn { margin: 7px 7px
 
 body.rtl .elementselect .element, body.rtl .elementselect .btn { margin: 7px 0 0 7px ; }
 
-.elementselect .element.small, .elementselect .btn { clear: both; }
+.elementselect .element.small, .elementselect .flex, .elementselect .btn { clear: both; }
 
 .elementselect .element { z-index: 1; }
 

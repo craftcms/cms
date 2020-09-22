@@ -97,7 +97,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         },
 
         getAddElementsBtn: function() {
-            return this.$container.children('.btn.add');
+            return this.$container.find('.btn.add:first');
         },
 
         initElementSelect: function() {

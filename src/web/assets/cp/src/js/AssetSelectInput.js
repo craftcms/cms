@@ -7,6 +7,8 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
     {
         requestId: 0,
         hud: null,
+        $uploadBtn: null,
+        $uploadFileInput: null,
         uploader: null,
         progressBar: null,
 
@@ -93,6 +95,38 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
             });
         },
 
+        disableAddElementsBtn: function() {
+            this.base();
+
+            if (this.$uploadBtn && !this.$uploadBtn.hasClass('disabled')) {
+                this.$uploadBtn.addClass('disabled');
+
+                if (this.settings.limit == 1) {
+                    if (this._initialized) {
+                        this.$uploadBtn.velocity('fadeOut', Craft.BaseElementSelectInput.ADD_FX_DURATION);
+                    } else {
+                        this.$uploadBtn.hide();
+                    }
+                }
+            }
+        },
+
+        enableAddElementsBtn: function() {
+            this.base();
+
+            if (this.$uploadBtn && this.$uploadBtn.hasClass('disabled')) {
+                this.$uploadBtn.removeClass('disabled');
+
+                if (this.settings.limit == 1) {
+                    if (this._initialized) {
+                        this.$uploadBtn.velocity('fadeIn', Craft.BaseElementSelectInput.REMOVE_FX_DURATION);
+                    } else {
+                        this.$uploadBtn.show();
+                    }
+                }
+            }
+        },
+
         /**
          * Attach the uploader with drag event handler
          */
@@ -102,11 +136,30 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
             var options = {
                 url: Craft.getActionUrl('assets/upload'),
                 dropZone: this.$container,
+                replaceFileInput: false, // https://stackoverflow.com/a/25034721/1688568
                 formData: {
                     fieldId: this.settings.fieldId,
                     elementId: this.settings.sourceElementId
                 }
             };
+
+            if (this.$addElementBtn) {
+                this.$uploadBtn = $('<button/>', {
+                    type: 'button',
+                    class: 'btn dashed',
+                    'data-icon': 'upload',
+                    text: this.settings.limit == 1 ? Craft.t('app', 'Upload a file') : Craft.t('app', 'Upload files'),
+                }).insertAfter(this.$addElementBtn);
+                this.$uploadFileInput = $('<input/>', {
+                    type: 'file',
+                    class: 'hidden',
+                    multiple: this.settings.limit != 1,
+                }).insertAfter(this.$uploadBtn);
+                this.$uploadBtn.on('click', $.proxy(function(ev) {
+                    this.$uploadFileInput.trigger('click');
+                }, this));
+                options.fileInput = this.$uploadFileInput;
+            }
 
             // If CSRF protection isn't enabled, these won't be defined.
             if (typeof Craft.csrfTokenName !== 'undefined' && typeof Craft.csrfTokenValue !== 'undefined') {

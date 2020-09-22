@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Assets fields now have an “Upload files” button, which will upload files to the field’s default upload location, just like files uploaded via drag-n-drop. ([#2778](https://github.com/craftcms/cms/issues/2778))
 - Added `craft\elements\db\EagerLoadPlan::$all`.
 
 ### Changed
