@@ -1719,4 +1719,5 @@ Se non aspettavi questa email, ignorala semplicemente.',
     'Show thumbnails and titles' => 'Mostra miniature e titoli',
     'Show thumbnails only' => 'Mostra solo le miniature',
     'Are you sure you want to close the editor? Any changes will be lost.' => 'Sei sicuro di voler chiudere l\'editor? Eventuali modifiche andranno perse.',
+    'Upload a file' => 'Upload a file',
 ];
