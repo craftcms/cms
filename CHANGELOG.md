@@ -6,6 +6,7 @@
 - Added `craft\elements\db\EagerLoadPlan::$all`.
 
 ### Changed
+- Element editor HUDs will now close when clicked out of, or if the <kbd>Esc</kbd> key is pressed. If any content has changed, a confirmation dialog will be shown first. ([#6877](https://github.com/craftcms/cms/issues/6877))
 - It’s now possible to specify eager-loading plans as hashes with `path`, `criteria`, and `count` keys.
 
 ### Fixed
