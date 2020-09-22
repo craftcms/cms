@@ -1878,7 +1878,7 @@ class Elements extends Component
             }
 
             // Get the handle & alias
-            if (preg_match('/^(' . HandleValidator::$handlePattern . ')\s+as\s+(' . HandleValidator::$handlePattern . ')$/', $handle, $match)) {
+            if (preg_match('/^([a-zA-Z][a-zA-Z0-9_:]*)\s+as\s+(' . HandleValidator::$handlePattern . ')$/', $handle, $match)) {
                 $handle = $match[1];
                 $alias = $match[2];
             } else {
