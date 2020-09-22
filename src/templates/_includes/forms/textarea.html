@@ -18,6 +18,9 @@
     title: title ?? false,
     placeholder: placeholder ?? false,
     html: value ?? '',
+    data: {
+        'show-chars-left': showCharsLeft ?? false,
+    },
 }|merge(inputAttributes ?? [], recursive=true) %}
 
 {%- if block('attr') is defined %}
