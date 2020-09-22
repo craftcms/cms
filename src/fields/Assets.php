@@ -169,7 +169,7 @@ class Assets extends BaseRelationField
     private $_uploadedDataFiles;
 
     /**
-     * @var int|null The default upload location for this field to open in modal
+     * @var string|null The default upload location for this field to open in modal
      */
     private $_defaultUploadLocation;
 
