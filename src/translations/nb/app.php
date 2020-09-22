@@ -1718,4 +1718,5 @@ Har du ikke bedt om denne e-posten, vennligst se bort fra den.',
     'How the related {type} should be displayed within element indexes.' => 'How the related {type} should be displayed within element indexes.',
     'Show thumbnails and titles' => 'Show thumbnails and titles',
     'Show thumbnails only' => 'Show thumbnails only',
+    'Are you sure you want to close the editor? Any changes will be lost.' => 'Are you sure you want to close the editor? Any changes will be lost.',
 ];
