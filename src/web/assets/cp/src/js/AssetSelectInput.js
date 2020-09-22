@@ -23,7 +23,10 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
             }
 
             this.base.apply(this, arguments);
-            this._attachUploader();
+
+            if (this.settings.canUpload) {
+                this._attachUploader();
+            }
 
             this.addListener(this.$elementsContainer, 'keydown', this._onKeyDown.bind(this));
             this.elementSelect.on('focusItem', this._onElementFocus.bind(this));

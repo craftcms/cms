@@ -657,8 +657,11 @@ class Assets extends BaseRelationField
     protected function inputTemplateVariables($value = null, ElementInterface $element = null): array
     {
         $variables = parent::inputTemplateVariables($value, $element);
+
+        $uploadVolume = $this->_uploadVolume();
         $variables['hideSidebar'] = $this->useSingleFolder;
-        $variables['defaultFieldLayoutId'] = $this->_uploadVolume()->fieldLayoutId ?? null;
+        $variables['canUpload'] = $uploadVolume && Craft::$app->getUser()->checkPermission("saveAssetInVolume:$uploadVolume->uid");
+        $variables['defaultFieldLayoutId'] = $uploadVolume->fieldLayoutId ?? null;
         $variables['defaultUploadLocation'] = $this->_defaultUploadLocation;
 
         return $variables;
