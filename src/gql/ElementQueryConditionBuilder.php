@@ -10,8 +10,10 @@ namespace craft\gql;
 use Craft;
 use craft\base\Component;
 use craft\base\EagerLoadingFieldInterface;
+use craft\base\Element;
 use craft\base\FieldInterface;
 use craft\base\GqlInlineFragmentFieldInterface;
+use craft\elements\db\EagerLoadPlan;
 use craft\events\RegisterGqlEagerLoadableFields;
 use craft\fields\Assets as AssetField;
 use craft\fields\BaseRelationField;
@@ -25,6 +27,7 @@ use craft\helpers\StringHelper;
 use craft\services\Gql;
 use GraphQL\Language\AST\ArgumentNode;
 use GraphQL\Language\AST\FieldNode;
+use GraphQL\Language\AST\FragmentDefinitionNode;
 use GraphQL\Language\AST\FragmentSpreadNode;
 use GraphQL\Language\AST\InlineFragmentNode;
 use GraphQL\Language\AST\Node;
@@ -106,7 +109,8 @@ class ElementQueryConditionBuilder extends Component
      *
      * @param ResolveInfo $resolveInfo
      */
-    public function setResolveInfo(ResolveInfo $resolveInfo) {
+    public function setResolveInfo(ResolveInfo $resolveInfo)
+    {
         $this->_resolveInfo = $resolveInfo;
         $this->_fragments = $this->_resolveInfo->fragments;
     }
@@ -121,64 +125,21 @@ class ElementQueryConditionBuilder extends Component
     public function extractQueryConditions(FieldInterface $startingParentField = null)
     {
         $startingNode = $this->_resolveInfo->fieldNodes[0];
-        $extractedConditions = [];
 
         if ($startingNode === null) {
             return [];
         }
 
         // Load up all eager loading rules.
-        $eagerLoadingRules = $this->_traverseAndExtractRules($startingNode, '', $startingParentField ? $startingParentField->context : 'global', $startingParentField);
+        $extractedConditions = [
+            'with' => $this->_traversAndBuildPlans($startingNode, $startingParentField ? $startingParentField->context : 'global', $startingParentField)
+        ];
 
-        $relationCountFields = [];
-
-        // Figure out which routes should be loaded using `withCount`
-        foreach ($eagerLoadingRules as $element => $parameters) {
-            if (isset($parameters['field']) && StringHelper::endsWith($element, '@' . Gql::GRAPHQL_COUNT_FIELD)) {
-                $relationCountFields[$parameters['field']] = true;
-            }
-        }
-
-        // Parse everything else
-        foreach ($eagerLoadingRules as $element => $parameters) {
-            // Don't need these anymore
-            if (StringHelper::endsWith($element, '@' . Gql::GRAPHQL_COUNT_FIELD)) {
-                continue;
-            }
-
-            // If this element was flagged for `withCount`, add it to parameters
-            if (!empty($relationCountFields[$element])) {
-                $parameters['count'] = true;
-            }
-
-            // `withTransforms` get loaded using the `withTransforms` method.
-            if ($element === 'withTransforms') {
-                $extractedConditions['withTransforms'] = $parameters;
-                continue;
-            }
-
-            // Just dump it all in where it belongs.
-            if (empty($parameters)) {
-                $extractedConditions['with'][] = $element;
-            } else {
-                $extractedConditions['with'][] = [$element, $parameters];
-            }
-        }
-
-        $removeDuplicates = function (array &$array) use (&$removeDuplicates) {
-            foreach ($array as $key => &$value) {
-                if (is_array($value)) {
-                    if (is_string($key) && !is_numeric($key)) {
-                        $value = array_unique($value, SORT_REGULAR);
-                    } else {
-                        $removeDuplicates($value);
-                    }
-                }
-            }
-        };
-
-        foreach ($extractedConditions as $type => &$conditions) {
-            $removeDuplicates($conditions);
+        $rootOfAssetQuery = $startingParentField === null && $this->_isInsideAssetQuery();
+        if ($rootOfAssetQuery) {
+            // If this is a root asset query that has transform directive defined
+            // We should eager-load transforms using the directive's arguments
+            $extractedConditions['withTransforms'] = $this->_prepareTransformArguments($this->_extractTransformDirectiveArguments($startingNode));
         }
 
         return $extractedConditions;
@@ -371,24 +332,16 @@ class ElementQueryConditionBuilder extends Component
      * for the resulting element query.
      *
      * @param Node $parentNode the parent node being traversed.
-     * @param string $prefix the current eager loading prefix to use
      * @param string $context the context in which to search fields
      * @param FieldInterface $parentField the current parent field, that we are in.
+     * @param Node|null $wrappingFragment the wrapping fragment node, if any
+     * @param EagerLoadPlan|null $parentPlan The parent eager-loading plan
      * @return array
      */
-    private function _traverseAndExtractRules(Node $parentNode, $prefix = '', $context = 'global', FieldInterface $parentField = null): array
+    private function _traversAndBuildPlans(Node $parentNode, $context = 'global', FieldInterface $parentField = null, Node $wrappingFragment = null, EagerLoadPlan $parentPlan = null): array
     {
-        $eagerLoadNodes = [];
         $subNodes = $parentNode->selectionSet->selections ?? [];
-
-        // If this is an Asset query
-        $rootOfAssetQuery = $parentField === null && $this->_isInsideAssetQuery();
-
-        if ($rootOfAssetQuery) {
-            // That has transform directive defined
-            // We should eager-load transforms using the directive's arguments
-            $eagerLoadNodes['withTransforms'] = $this->_prepareTransformArguments($this->_extractTransformDirectiveArguments($parentNode));
-        }
+        $plans = [];
 
         // For each subnode that is a direct descendant
         foreach ($subNodes as $subNode) {
@@ -397,8 +350,9 @@ class ElementQueryConditionBuilder extends Component
             // If that's a GraphQL field
             if ($subNode instanceof FieldNode) {
                 $craftContentField = $this->_eagerLoadableFieldsByContext[$context][$nodeName] ?? null;
+                $rootOfAssetQuery = $parentField === null && $this->_isInsideAssetQuery();
 
-                $transformableAssetProperty = ($rootOfAssetQuery || $parentField) && in_array($nodeName, $this->_transformableAssetProperties, true);
+                $transformableAssetProperty = ($rootOfAssetQuery || $parentField instanceof AssetField) && in_array($nodeName, $this->_transformableAssetProperties, true);
                 $isAssetField = $craftContentField instanceof AssetField;
                 $isSpecialField = $this->_isAdditionalEagerLoadableNode($nodeName, $parentField);
                 $canBeAliased = !$isSpecialField || $this->_canSpecialFieldBeAliased($nodeName);
@@ -408,44 +362,35 @@ class ElementQueryConditionBuilder extends Component
 
                 // That is a Craft field that can be eager-loaded or is a special eager-loadable field
                 if ($possibleTransforms || $craftContentField || $otherEagerLoadableNode || $isSpecialField) {
+                    $plan = new EagerLoadPlan();
+
                     // Any arguments?
                     $arguments = $this->_extractArguments($subNode->arguments ?? []);
 
                     $transformEagerLoadArguments = [];
 
+
                     // If it's a place where we can have transforms defined, grab the possible values from directive as well
                     if ($isAssetField) {
                         $transformEagerLoadArguments = $this->_extractTransformDirectiveArguments($subNode);
-                        $transformArgumentInjectionPoint = $prefix . $nodeName;
                     }
 
                     if ($transformableAssetProperty) {
                         $transformEagerLoadArguments = array_merge_recursive($this->_extractTransformDirectiveArguments($subNode), $arguments);
-                        $transformArgumentInjectionPoint = StringHelper::removeRight($prefix, '.');
 
                         // Also, these can't have any arguments.
                         $arguments = [];
                     }
 
-                    // If we've caught any eager-loadable transforms, massage the data.
+                    // If we've found any eager-loadable transforms, massage the data.
                     if (!empty($transformEagerLoadArguments)) {
                         $transformEagerLoadArguments = $this->_prepareTransformArguments($transformEagerLoadArguments);
-
-                        if (empty($transformArgumentInjectionPoint)) {
-                            $nodeArguments = &$eagerLoadNodes;
+                        // If the property is transformable, then merge into the _parent_ plan.
+                        if ($transformableAssetProperty) {
+                            $parentPlan->criteria['withTransforms'] = array_merge_recursive($parentPlan->criteria['withTransforms'] ?? [], $transformEagerLoadArguments);
                         } else {
-                            if (empty($eagerLoadNodes[$transformArgumentInjectionPoint])) {
-                                $eagerLoadNodes[$transformArgumentInjectionPoint] = [];
-                            }
-
-                            $nodeArguments = &$eagerLoadNodes[$transformArgumentInjectionPoint];
+                            $plan->criteria['withTransforms'] = array_merge_recursive($plan->criteria['withTransforms'] ?? [], $transformEagerLoadArguments);
                         }
-
-                        if (empty($nodeArguments['withTransforms'])) {
-                            $nodeArguments['withTransforms'] = [];
-                        }
-
-                        $nodeArguments['withTransforms'] = array_merge_recursive($nodeArguments['withTransforms'], $transformEagerLoadArguments);
                     }
 
                     // If this a custom Craft content field
@@ -495,29 +440,28 @@ class ElementQueryConditionBuilder extends Component
 
                     // If they're angling for the count field, alias it so each count field gets their own eager-load arguments.
                     if ($nodeName === Gql::GRAPHQL_COUNT_FIELD) {
-                        if ($alias) {
-                            $nodeName = $alias . '@' . Gql::GRAPHQL_COUNT_FIELD;
-                        } else {
-                            // Just re-use the node name, then.
-                            $nodeName .= '@' . Gql::GRAPHQL_COUNT_FIELD;
-                        }
+                        $plan->count = true;
                     }
 
-                    $nodeKey = $alias ? $nodeName . ' as ' . $alias : $nodeName;
+                    if (!$transformableAssetProperty) {
+                        $plan->handle = $nodeName;
+                        $plan->alias = $alias ?: $nodeName;
+                    }
 
                     // Add this to the eager loading list.
                     if (!$transformableAssetProperty) {
-                        $eagerLoadNodes[$prefix . $nodeKey] = array_key_exists($prefix . $nodeKey, $eagerLoadNodes) ? array_merge_recursive($eagerLoadNodes[$prefix . $nodeKey], $arguments) : $arguments;
+                        /** @var InlineFragmentNode|FragmentDefinitionNode $wrappingFragment */
+                        if ($wrappingFragment) {
+                            // TODO: In Craft 4, get rid of all closures
+                            $plan->when = function(Element $element) use ($wrappingFragment) {
+                                return $element->getGqlTypeName() === $wrappingFragment->typeCondition->name->value;
+                            };
+                        }
+                        $plan->criteria = array_merge_recursive($plan->criteria, $arguments);
                     }
 
-                    // If it has any more selections, build the prefix further and proceed in a recursive manner
+                    // If it has any more selections, build the plans recursively
                     if (!empty($subNode->selectionSet)) {
-                        if ($alias) {
-                            $traversePrefix = $prefix . $alias;
-                        } else {
-                            $traversePrefix = $prefix . ($craftContentField ? $craftContentField->handle : $nodeName);
-                        }
-
                         if ($craftContentField) {
                             // Relational fields should reset context to global.
                             if ($craftContentField instanceof BaseRelationField) {
@@ -529,15 +473,19 @@ class ElementQueryConditionBuilder extends Component
                             $traverseContext = $context;
                         }
 
-                        $eagerLoadNodes = array_merge_recursive($eagerLoadNodes, $this->_traverseAndExtractRules($subNode, $traversePrefix . '.', $traverseContext, $nodeName === self::LOCALIZED_NODENAME ? $parentField : $craftContentField));
+                        $plan->nested = $this->_traversAndBuildPlans($subNode, $traverseContext, $nodeName === self::LOCALIZED_NODENAME ? $parentField : $craftContentField, $wrappingFragment, $plan);
                     }
                 }
                 // If not, see if it's a fragment
             } else if ($subNode instanceof InlineFragmentNode || $subNode instanceof FragmentSpreadNode) {
+                $plan = new EagerLoadPlan();
+
                 // For named fragments, replace the node with the actual fragment.
                 if ($subNode instanceof FragmentSpreadNode) {
                     $subNode = $this->_fragments[$nodeName];
                 }
+
+                $wrappingFragment = $subNode;
 
                 $nodeName = $subNode->typeCondition->name->value;
 
@@ -547,19 +495,27 @@ class ElementQueryConditionBuilder extends Component
                     // Build the prefix, load the context and proceed in a recursive manner
                     try {
                         $gqlFragmentEntity = $parentField->getGqlFragmentEntityByName($nodeName);
-                        $eagerLoadNodes = array_merge_recursive($eagerLoadNodes, $this->_traverseAndExtractRules($subNode, $prefix . $gqlFragmentEntity->getEagerLoadingPrefix() . ':', $gqlFragmentEntity->getFieldContext(), $parentField));
+                        $plan->nested = $this->_traversAndBuildPlans($subNode, $gqlFragmentEntity->getFieldContext(), $parentField, $wrappingFragment, $plan);
                         // This is to be expected, depending on whether the fragment is targeted towards the field itself instead of its subtypes.
                     } catch (InvalidArgumentException $exception) {
-                        $eagerLoadNodes = array_merge_recursive($eagerLoadNodes, $this->_traverseAndExtractRules($subNode, $prefix, $context, $parentField));
+                        $plan->nested = $this->_traversAndBuildPlans($subNode, $context, $parentField, $wrappingFragment, $plan);
                     }
                     // If we are not, just expand the fragment and traverse it as if on the same level in the query tree
                 } else {
-                    $eagerLoadNodes = array_merge_recursive($eagerLoadNodes, $this->_traverseAndExtractRules($subNode, $prefix, $context, $parentField));
+                    $plan->nested = $this->_traversAndBuildPlans($subNode, $context, $parentField, $wrappingFragment, $plan);
+                }
+            }
+
+            if (isset($plan)) {
+                if (!empty($plan->handle)) {
+                    $plans[] = $plan;
+                } else if (!empty($plan->nested)){
+                    $plans = array_merge($plans, $plan->nested);
                 }
             }
         }
 
-        return $eagerLoadNodes;
+        return $plans;
     }
 
     /**
@@ -570,6 +526,5 @@ class ElementQueryConditionBuilder extends Component
     public function canNodeBeAliased(string $nodeName, $parentField = null)
     {
         return !$this->_isAdditionalEagerLoadableNode($nodeName, $parentField) || $this->_canSpecialFieldBeAliased($nodeName);
-
     }
 }
