@@ -100,7 +100,7 @@ class GeneralConfig extends BaseObject
     /**
      * @var string[] The file extensions Craft should allow when a user is uploading files.
      * @see extraAllowedFileExtensions
-     * @group Uploads
+     * @group Assets
      */
     public $allowedFileExtensions = ['7z', 'aiff', 'asf', 'avi', 'bmp', 'csv', 'doc', 'docx', 'fla', 'flv', 'gif', 'gz', 'gzip', 'htm', 'html', 'jp2', 'jpeg', 'jpg', 'jpx', 'js', 'json', 'm2t', 'mid', 'mov', 'mp3', 'mp4', 'm4a', 'm4v', 'mpc', 'mpeg', 'mpg', 'ods', 'odt', 'ogg', 'ogv', 'pdf', 'png', 'potx', 'pps', 'ppsm', 'ppsx', 'ppt', 'pptm', 'pptx', 'ppz', 'pxd', 'qt', 'ram', 'rar', 'rm', 'rmi', 'rmvb', 'rtf', 'sdc', 'sitd', 'svg', 'swf', 'sxc', 'sxw', 'tar', 'tgz', 'tif', 'tiff', 'txt', 'vob', 'vsd', 'wav', 'webm', 'webp', 'wma', 'wmv', 'xls', 'xlsx', 'zip'];
 
@@ -217,7 +217,7 @@ class GeneralConfig extends BaseObject
      * You can run `php craft utils/ascii-filenames` in your terminal to apply ASCII filenames to all existing assets.
      * :::
      *
-     * @group Uploads
+     * @group Assets
      */
     public $convertFilenamesToAscii = false;
 
@@ -561,13 +561,13 @@ class GeneralConfig extends BaseObject
      * :::
      *
      * @since 3.0.37
-     * @group Uploads
+     * @group Assets
      */
     public $extraFileKinds = [];
 
     /**
      * @var string|bool The string to use to separate words when uploading Assets. If set to `false`, spaces will be left alone.
-     * @group Uploads
+     * @group Assets
      */
     public $filenameWordSeparator = '-';
 
@@ -749,7 +749,7 @@ class GeneralConfig extends BaseObject
      * @var int|string The maximum upload file size allowed.
      *
      * See [[ConfigHelper::sizeInBytes()]] for a list of supported value types.
-     * @group Uploads
+     * @group Assets
      */
     public $maxUploadFileSize = 16777216;
 
