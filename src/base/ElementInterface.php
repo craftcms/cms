@@ -8,6 +8,7 @@
 namespace craft\base;
 
 use craft\elements\db\ElementQueryInterface;
+use craft\errors\InvalidFieldException;
 use craft\models\FieldLayout;
 use craft\models\Site;
 use Twig\Markup;
@@ -1031,6 +1032,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @param string $fieldHandle The field handle whose value needs to be returned
      * @return mixed The field value
+     * @throws InvalidFieldException if the element doesn’t have a field with the handle specified by `$fieldHandle`
      */
     public function getFieldValue(string $fieldHandle);
 

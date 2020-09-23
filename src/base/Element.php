@@ -18,6 +18,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\elements\exporters\Expanded;
 use craft\elements\exporters\Raw;
 use craft\elements\User;
+use craft\errors\InvalidFieldException;
 use craft\events\DefineAttributeKeywordsEvent;
 use craft\events\DefineEagerLoadingMapEvent;
 use craft\events\ElementStructureEvent;
@@ -3084,8 +3085,8 @@ abstract class Element extends Component implements ElementInterface
                                 // The field might not actually belong to this element
                                 try {
                                     $value = $this->getFieldValue($field->handle);
-                                } catch (\Throwable $e) {
-                                    $value = $field->normalizeValue(null);
+                                } catch (InvalidFieldException $e) {
+                                    return '';
                                 }
                             }
 
@@ -3308,7 +3309,7 @@ abstract class Element extends Component implements ElementInterface
      * Normalizes a field’s value.
      *
      * @param string $fieldHandle The field handle
-     * @throws Exception if there is no field with the handle $fieldValue
+     * @throws InvalidFieldException if the element doesn’t have a field with the handle specified by `$fieldHandle`
      */
     protected function normalizeFieldValue(string $fieldHandle)
     {
@@ -3320,7 +3321,7 @@ abstract class Element extends Component implements ElementInterface
         $field = $this->fieldByHandle($fieldHandle);
 
         if (!$field) {
-            throw new Exception('Invalid field handle: ' . $fieldHandle);
+            throw new InvalidFieldException($fieldHandle);
         }
 
         $behavior = $this->getBehavior('customFields');

@@ -5,6 +5,7 @@
 ### Added
 - Assets fields now have an “Upload files” button, which will upload files to the field’s default upload location, just like files uploaded via drag-n-drop. ([#2778](https://github.com/craftcms/cms/issues/2778))
 - Added `craft\elements\db\EagerLoadPlan::$all`.
+- Added `craft\errors\InvalidFieldException`.
 
 ### Changed
 - Element editor HUDs will now close when clicked out of, or if the <kbd>Esc</kbd> key is pressed. If any content has changed, a confirmation dialog will be shown first. ([#6877](https://github.com/craftcms/cms/issues/6877))
@@ -23,6 +24,7 @@
 - Fixed a bug where it wasn’t possible to set an alias when eager-loading Matrix sub-fields.
 - Fixed a bug where it was possible to initiate a file upload to an Assets field via drag-n-drop, even if the user didn’t have permission to upload files to the default field volume.
 - Fixed a bug where Dashboard widget settings could receive focus even when not visible. ([#6885](https://github.com/craftcms/cms/issues/6885))
+- Fixed a bug where Checkboxes, Dropdown, Multi-select, and Radio Button fields could show their default values in element indexes. ([#6891](https://github.com/craftcms/cms/issues/6891))
 
 ## 3.5.11.1 - 2020-09-18
 
