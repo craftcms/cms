@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Assets fields now have an “Upload files” button, which will upload files to the field’s default upload location, just like files uploaded via drag-n-drop. ([#2778](https://github.com/craftcms/cms/issues/2778))
 - Added `craft\elements\db\EagerLoadPlan::$all`.
 
 ### Changed
@@ -17,6 +18,8 @@
 - Fixed a bug where element selection modals would show the source sidebar even if there was only one selectable source, if a source heading came before it. ([#6871](https://github.com/craftcms/cms/issues/6871))
 - Fixed a bug where Plain Text fields with a limit set and line breaks allowed weren’t showing the remaining characters/bytes allowed indicator. ([#6872](https://github.com/craftcms/cms/issues/6872))
 - Fixed a bug where it wasn’t possible to set an alias when eager-loading Matrix sub-fields.
+- Fixed a bug where it was possible to initiate a file upload to an Assets field via drag-n-drop, even if the user didn’t have permission to upload files to the default field volume.
+- Fixed a bug where Dashboard widget settings could receive focus even when not visible. ([#6885](https://github.com/craftcms/cms/issues/6885))
 
 ## 3.5.11.1 - 2020-09-18
 

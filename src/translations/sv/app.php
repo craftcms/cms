@@ -1722,4 +1722,6 @@ Om du inte väntade dig att få detta e-postmeddelande kan du ignorera det.',
     'How the related {type} should be displayed within element indexes.' => 'How the related {type} should be displayed within element indexes.',
     'Show thumbnails and titles' => 'Show thumbnails and titles',
     'Show thumbnails only' => 'Show thumbnails only',
+    'Are you sure you want to close the editor? Any changes will be lost.' => 'Are you sure you want to close the editor? Any changes will be lost.',
+    'Upload a file' => 'Upload a file',
 ];
