@@ -25,6 +25,7 @@
 - Fixed a bug where it was possible to initiate a file upload to an Assets field via drag-n-drop, even if the user didn’t have permission to upload files to the default field volume.
 - Fixed a bug where Dashboard widget settings could receive focus even when not visible. ([#6885](https://github.com/craftcms/cms/issues/6885))
 - Fixed a bug where Checkboxes, Dropdown, Multi-select, and Radio Button fields could show their default values in element indexes. ([#6891](https://github.com/craftcms/cms/issues/6891))
+- Fixed a bug where Title fields were showing a translation indicator even on single-site Craft installs. ([#6503](https://github.com/craftcms/cms/issues/6503))
 
 ## 3.5.11.1 - 2020-09-18
 

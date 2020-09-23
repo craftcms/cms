@@ -373,7 +373,7 @@ class Cp
         $tip = $config['tip'] ?? null;
         $warning = $config['warning'] ?? null;
         $orientation = $config['orientation'] ?? ($site ? $site->getLocale() : Craft::$app->getLocale())->getOrientation();
-        $translatable = $config['translatable'] ?? ($site !== null);
+        $translatable = Craft::$app->getIsMultiSite() ? ($config['translatable'] ?? ($site !== null)) : false;
         $errors = $config['errors'] ?? null;
         $fieldClass = array_merge(array_filter([
             'field',
