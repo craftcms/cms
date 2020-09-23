@@ -9,6 +9,7 @@ namespace craftunit\gql;
 
 use Codeception\Test\Unit;
 use Craft;
+use craft\elements\db\EagerLoadPlan;
 use craft\fields\Assets;
 use craft\fields\Entries;
 use craft\fields\Matrix;
@@ -225,74 +226,74 @@ GQL;
             [
                 '{ user { photo { id }}}',
                 [],
-                ['with' => ['photo']],
+                ['with' => [new EagerLoadPlan(['handle' => 'photo', 'alias' => 'photo'])]],
                 'UserInterface'
             ],
             [
                 '{ entry { assetField { localized { id }}}}',
                 [],
-                ['with' => [['assetField', ['volumeId' => [5, 7]]]]],
+                ['with' => [new EagerLoadPlan(['handle' => 'assetField', 'alias' => 'assetField', 'criteria' => ['volumeId' => [5, 7]]])]],
                 'UserInterface'
             ],
             [
                 '{ entry { entryField { photo }}}',
                 [],
-                ['with' => [['entryField', ['sectionId' => [5], 'typeId' => [2]]]]],
+                ['with' => [new EagerLoadPlan(['handle' => 'entryField', 'alias' => 'entryField', 'criteria' => ['sectionId' => [5], 'typeId' => [2]]])]],
                 'EntryInterface',
             ],
             [
                 '{ entry { localized { title } alias: localized { title }}}',
                 [],
-                ['with' => ['localized', 'localized as alias']],
+                ['with' => [new EagerLoadPlan(['handle' => 'localized', 'alias' => 'localized']), new EagerLoadPlan(['handle' => 'localized', 'alias' => 'alias'])]],
                 'EntryInterface',
             ],
             [
                 '{ user { ph: photo { id }}}',
                 [],
-                ['with' => ['photo']],
+                ['with' => [new EagerLoadPlan(['handle' => 'photo', 'alias' => 'photo'])]],
                 '[UserInterface]'
             ],
             [
                 '{entry { author { ph: photo { id }}}}',
                 [],
-                ['with' => ['author', 'author.photo']],
+                ['with' => [new EagerLoadPlan(['handle' => 'author', 'alias' => 'author', 'nested' => [new EagerLoadPlan(['handle' => 'photo', 'alias' => 'photo'])]])]],
                 'EntryInterface'
             ],
             [
                 '{entry { author { photo { id }}}}',
                 [],
-                ['with' => ['author', 'author.photo']],
+                ['with' => [new EagerLoadPlan(['handle' => 'author', 'alias' => 'author', 'nested' => [new EagerLoadPlan(['handle' => 'photo', 'alias' => 'photo'])]])]],
                 'EntryInterface'
             ],
             [
                 '{ entry { assetField (volumeId: 4) { filename }}}',
                 [],
-                ['with' => [['assetField', ['id' => 0]]]],
+                ['with' => [new EagerLoadPlan(['handle' => 'assetField', 'alias' => 'assetField', 'criteria' => ['id' => 0]])]],
                 'EntryInterface',
             ],
             [
                 '{ entry { localized { id }}}',
                 [],
-                ['with' => ['localized']],
+                ['with' => [new EagerLoadPlan(['handle' => 'localized', 'alias' => 'localized'])]],
                 'EntryInterface',
             ],
             [
                 '{ entry { parent { id }}}',
                 [],
-                ['with' => ['parent']],
+                ['with' => [new EagerLoadPlan(['handle' => 'parent', 'alias' => 'parent'])]],
                 'EntryInterface',
             ],
             [
                 '{ entries { _count(field: "assetField") assetField { filename }}}',
                 [],
-                ['with' => [['assetField', ['volumeId' => [5, 7], 'count' => true]]]],
+                ['with' => [new EagerLoadPlan(['handle' => '_count', 'alias' => '_count', 'criteria' => ['field' => 'assetField'], 'count' => true]), new EagerLoadPlan(['handle' => 'assetField', 'alias' => 'assetField', 'criteria' => ['volumeId' => [5, 7]]])]],
                 '[EntryInterface]',
             ],
             [
                 '{ entries { assetField { filename }}}',
                 [],
                 [
-                    'with' => [['assetField', ['volumeId' => [5, 7]]]]
+                    'with' => [new EagerLoadPlan(['handle' => 'assetField', 'alias' => 'assetField', 'criteria' => ['volumeId' => [5, 7]]])]
                 ],
                 '[EntryInterface]',
             ],
@@ -308,7 +309,7 @@ GQL;
                 }',
                 ['childSlug' => ['slugslug', 'slugger']],
                 [
-                    'with' => [['children', ['type' => 'child', 'slug' => ['slugslug', 'slugger']]]],
+                    'with' => [new EagerLoadPlan(['handle' => 'children', 'alias' => 'children', 'criteria' => ['type' => 'child', 'slug' => ['slugslug', 'slugger']]])],
                 ],
                 '[EntryInterface]',
             ],
