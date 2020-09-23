@@ -398,6 +398,7 @@ class ElementQueryConditionBuilder extends Component
                         /** @var EagerLoadingFieldInterface $craftContentField */
                         $additionalArguments = $craftContentField->getEagerLoadingGqlConditions();
 
+                        // todo refactor this to a method so _count can reuse this.
                         // Load additional requirements enforced by schema, enforcing permissions to see content
                         if ($additionalArguments === false) {
                             // If `false` was returned, make sure nothing is returned by setting an always-false constraint.
@@ -441,6 +442,8 @@ class ElementQueryConditionBuilder extends Component
                     // If they're angling for the count field, alias it so each count field gets their own eager-load arguments.
                     if ($nodeName === Gql::GRAPHQL_COUNT_FIELD) {
                         $plan->count = true;
+                        // TODO load the actual field form $arguments['fieldName'] and ask for it's conditions, then set it here.
+
                     }
 
                     if (!$transformableAssetProperty) {
