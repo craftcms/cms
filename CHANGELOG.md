@@ -10,6 +10,9 @@
 - Element editor HUDs will now close when clicked out of, or if the <kbd>Esc</kbd> key is pressed. If any content has changed, a confirmation dialog will be shown first. ([#6877](https://github.com/craftcms/cms/issues/6877))
 - It’s now possible to specify eager-loading plans as hashes with `path`, `criteria`, and `count` keys.
 
+### Deprecated
+- Deprecated `craft\errors\FieldNotFoundException`.
+
 ### Fixed
 - Fixed a bug where `craft\services\Config::setDotEnvVar()` wasn’t surrounding values with quotes if they contained a `#` character. ([#6867](https://github.com/craftcms/cms/issues/6867))
 - Fixed a bug where GraphQL API queries could produce an incorrect eager-loading plan. ([#6849](https://github.com/craftcms/cms/issues/6849))

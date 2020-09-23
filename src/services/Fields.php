@@ -15,7 +15,6 @@ use craft\base\MemoizableArray;
 use craft\behaviors\CustomFieldBehavior;
 use craft\db\Query;
 use craft\db\Table;
-use craft\errors\FieldNotFoundException;
 use craft\errors\MissingComponentException;
 use craft\events\ConfigEvent;
 use craft\events\FieldEvent;
@@ -916,11 +915,7 @@ class Fields extends Component
      */
     public function applyFieldDelete($fieldUid)
     {
-        try {
-            $fieldRecord = $this->_getFieldRecord($fieldUid);
-        } catch (FieldNotFoundException $exception) {
-            return;
-        }
+        $fieldRecord = $this->_getFieldRecord($fieldUid);
 
         if (!$fieldRecord->id) {
             return;
@@ -1818,7 +1813,6 @@ class Fields extends Component
      *
      * @param string $uid
      * @return FieldRecord
-     * @throws FieldNotFoundException if $field->id is invalid
      */
     private function _getFieldRecord(string $uid): FieldRecord
     {
