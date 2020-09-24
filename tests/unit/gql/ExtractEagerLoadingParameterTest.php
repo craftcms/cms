@@ -177,13 +177,16 @@ GQL;
 
         $complexResult = [
             'with' => [
-                ['neverAllowed', ['id' => 0]],
-                'matrixField',
-                ['matrixField.mockedBlockHandle:image as im', ['volumeId' => [2]]], // Array because of the doubling-cleanup
-                ['matrixField.mockedBlockHandle:entriesInMatrix', ['id' => 80]],
-                ['matrixField.mockedBlockHandle:entriesInMatrix.linkedEntriesThroughMatrix', ['id' => 99]],
-                ['entryField', ['sectionId' => [5], 'typeId' => [2]]],
-                ['assetField', ['volumeId' => [5]]],
+                new EagerLoadPlan(['handle' => 'neverAllowed', 'alias' => 'neverAllowed', 'criteria' => ['id' => 0]]),
+                new EagerLoadPlan(['handle' => 'matrixField', 'alias' => 'matrixField', 'when' => function () {}, 'nested' => [
+                    new EagerLoadPlan(['handle' => 'mockedBlockHandle:image', 'alias' => 'im',  'criteria' => ['volumeId' => 2], 'when' => function () {}]),
+                    new EagerLoadPlan(['handle' => 'mockedBlockHandle:image', 'alias' => 'im',  'criteria' => ['volumeId' => 2], 'when' => function () {}]),
+                    new EagerLoadPlan(['handle' => 'mockedBlockHandle:entriesInMatrix', 'alias' => 'mockedBlockHandle:entriesInMatrix',  'criteria' => ['id' => 80], 'when' => function () {}, 'nested' => [
+                        new EagerLoadPlan(['handle' => 'linkedEntriesThroughMatrix', 'alias' => 'linkedEntriesThroughMatrix', 'when' => function () {}, 'criteria' => ['id' => 99]]),
+                    ]]),
+                ]]),
+                new EagerLoadPlan(['handle' => 'entryField', 'alias' => 'entryField', 'when' => function () {}, 'criteria' => ['sectionId' => [5], 'typeId' => [2]]]),
+                new EagerLoadPlan(['handle' => 'assetField', 'alias' => 'assetField', 'when' => function () {}, 'criteria' => ['volumeId' => [5]]]),
             ]
         ];
 
@@ -209,16 +212,15 @@ GQL;
                 ['height' => 800],
             ],
             'with' => [
-                [
-                    'assetField', [
-                    'withTransforms' => [
-                        ['width' => 400, 'height' => 400],
-                        ['width' => 400],
-                        'whammy'
-                    ],
-                    'volumeId' => [5, 7]
-                ]
-                ]
+                new EagerLoadPlan([
+                    'handle' => 'assetField', 'alias' => 'assetField', 'criteria' => [
+                        'withTransforms' => [
+                            ['width' => 400, 'height' => 400],
+                            ['width' => 400],
+                            'whammy'
+                        ], 'volumeId' => [5, 7]
+                    ]
+                ])
             ]
         ];
 
