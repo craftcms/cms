@@ -130,16 +130,15 @@ class ElementQueryConditionBuilder extends Component
             return [];
         }
 
+        $rootPlan = new EagerLoadPlan();
+
         // Load up all eager loading rules.
         $extractedConditions = [
-            'with' => $this->_traversAndBuildPlans($startingNode, $startingParentField ? $startingParentField->context : 'global', $startingParentField)
+            'with' => $this->_traversAndBuildPlans($startingNode, $startingParentField ? $startingParentField->context : 'global', $startingParentField, null, $rootPlan)
         ];
 
-        $rootOfAssetQuery = $startingParentField === null && $this->_isInsideAssetQuery();
-        if ($rootOfAssetQuery) {
-            // If this is a root asset query that has transform directive defined
-            // We should eager-load transforms using the directive's arguments
-            $extractedConditions['withTransforms'] = $this->_prepareTransformArguments($this->_extractTransformDirectiveArguments($startingNode));
+        if (!empty($rootPlan->criteria['withTransforms'])) {
+            $extractedConditions['withTransforms'] = $rootPlan->criteria['withTransforms'];
         }
 
         return $extractedConditions;
@@ -335,13 +334,22 @@ class ElementQueryConditionBuilder extends Component
      * @param string $context the context in which to search fields
      * @param FieldInterface $parentField the current parent field, that we are in.
      * @param Node|null $wrappingFragment the wrapping fragment node, if any
-     * @param EagerLoadPlan|null $parentPlan The parent eager-loading plan
+     * @param EagerLoadPlan $parentPlan The parent eager-loading plan
      * @return array
      */
-    private function _traversAndBuildPlans(Node $parentNode, $context = 'global', FieldInterface $parentField = null, Node $wrappingFragment = null, EagerLoadPlan $parentPlan = null): array
+    private function _traversAndBuildPlans(Node $parentNode, $context = 'global', FieldInterface $parentField = null, Node $wrappingFragment = null, EagerLoadPlan $parentPlan): array
     {
         $subNodes = $parentNode->selectionSet->selections ?? [];
         $plans = [];
+
+        $rootOfAssetQuery = $parentField === null && $this->_isInsideAssetQuery();
+
+        if ($rootOfAssetQuery) {
+            // If this is a root asset query that has transform directive defined
+            // We should eager-load transforms using the directive's arguments
+            $parentPlan->criteria['withTransforms'] = $this->_prepareTransformArguments($this->_extractTransformDirectiveArguments($parentNode));
+        }
+
 
         // For each subnode that is a direct descendant
         foreach ($subNodes as $subNode) {
@@ -350,7 +358,6 @@ class ElementQueryConditionBuilder extends Component
             // If that's a GraphQL field
             if ($subNode instanceof FieldNode) {
                 $craftContentField = $this->_eagerLoadableFieldsByContext[$context][$nodeName] ?? null;
-                $rootOfAssetQuery = $parentField === null && $this->_isInsideAssetQuery();
 
                 $transformableAssetProperty = ($rootOfAssetQuery || $parentField instanceof AssetField) && in_array($nodeName, $this->_transformableAssetProperties, true);
                 $isAssetField = $craftContentField instanceof AssetField;
