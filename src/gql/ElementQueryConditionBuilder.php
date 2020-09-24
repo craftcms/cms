@@ -506,6 +506,15 @@ class ElementQueryConditionBuilder extends Component
                     try {
                         $gqlFragmentEntity = $parentField->getGqlFragmentEntityByName($nodeName);
                         $plan->nested = $this->_traversAndBuildPlans($subNode, $gqlFragmentEntity->getFieldContext(), $parentField, $wrappingFragment, $plan);
+
+                        // Correct the handles and, maybe, aliases.
+                        foreach ($plan->nested as $nestedPlan) {
+                            $newHandle = $gqlFragmentEntity->getEagerLoadingPrefix() . ':' . $nestedPlan->handle;
+                            if ($nestedPlan->handle === $nestedPlan->alias) {
+                                $nestedPlan->alias = $newHandle;
+                            }
+                            $nestedPlan->handle = $newHandle;
+                        }
                         // This is to be expected, depending on whether the fragment is targeted towards the field itself instead of its subtypes.
                     } catch (InvalidArgumentException $exception) {
                         $plan->nested = $this->_traversAndBuildPlans($subNode, $context, $parentField, $wrappingFragment, $plan);
@@ -514,6 +523,7 @@ class ElementQueryConditionBuilder extends Component
                 } else {
                     $plan->nested = $this->_traversAndBuildPlans($subNode, $context, $parentField, $wrappingFragment, $plan);
                 }
+
             }
 
             if (isset($plan)) {
@@ -522,6 +532,8 @@ class ElementQueryConditionBuilder extends Component
                 } else if (!empty($plan->nested)){
                     $plans = array_merge($plans, $plan->nested);
                 }
+
+                unset($plan);
             }
         }
 
