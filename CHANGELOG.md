@@ -8,7 +8,7 @@
 
 ### Changed
 - It’s now possible to specify eager-loading plans as hashes with `path`, `criteria`, `count`, and `when` keys.
-- `craft\gql\ElementQueryConditionBuilder::extractQueryConditions()` now returns EagerLoadPlans instead of hashes.
+- `craft\gql\ElementQueryConditionBuilder::extractQueryConditions()` now returns EagerLoadPlans instead of hashes. ([#6874](https://github.com/craftcms/cms/issues/6874), [#6811](https://github.com/craftcms/cms/issues/6811), 
 
 ### Fixed
 - Fixed a bug where `craft\services\Config::setDotEnvVar()` wasn’t surrounding values with quotes if they contained a `#` character. ([#6867](https://github.com/craftcms/cms/issues/6867))
