@@ -10,6 +10,7 @@
 ### Changed
 - Element editor HUDs will now close when clicked out of, or if the <kbd>Esc</kbd> key is pressed. If any content has changed, a confirmation dialog will be shown first. ([#6877](https://github.com/craftcms/cms/issues/6877))
 - It’s now possible to specify eager-loading plans as hashes with `path`, `criteria`, and `count` keys.
+- The `users/save-user` action now includes a `csrfTokenValue` key in its JSON responses, if the user’s password was changed. ([#6283](https://github.com/craftcms/cms/issues/6283))
 
 ### Deprecated
 - Deprecated `craft\errors\FieldNotFoundException`.
