@@ -28,6 +28,7 @@
 - Fixed a bug where Checkboxes, Dropdown, Multi-select, and Radio Button fields could show their default values in element indexes. ([#6891](https://github.com/craftcms/cms/issues/6891))
 - Fixed a bug where Title fields were showing a translation indicator even on single-site Craft installs. ([#6503](https://github.com/craftcms/cms/issues/6503))
 - Fixed a bug where it wasn’t possible to set date values using variables via GraphQL mutations.
+- Fixed a bug where `craft\helpers\UrlHelper` was removing empty URL parameters. ([#6900](https://github.com/craftcms/cms/issues/6900))
 
 ## 3.5.11.1 - 2020-09-18
 
