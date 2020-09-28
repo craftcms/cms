@@ -596,9 +596,9 @@ class GeneralConfig extends BaseObject
      * - The <config3:loginPath>, <config3:logoutPath>, <config3:setPasswordPath>, and <config3:verifyEmailPath> settings will be ignored.
      *
      * ::: tip
-     * When Headless Mode is enabled, users will not be able to set an initial password, set a new password, or verify their email address unless
-     * they have the “Access the control panel” permission. Make sure to grant this permission to content editors and administrators who should
-     * be able to log into the control panel.
+     * With Headless Mode enabled, users may only set passwords and verify email addresses via the control panel or controller
+     * actions. Be sure to grant “Access the control panel” permission to content editors and administrators that should be able to
+     * log into the control panel unless you’re providing your own login forms.
      * :::
      *
      * @since 3.3.0
