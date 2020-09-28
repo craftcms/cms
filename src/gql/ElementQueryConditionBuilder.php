@@ -350,6 +350,7 @@ class ElementQueryConditionBuilder extends Component
             $parentPlan->criteria['withTransforms'] = $this->_prepareTransformArguments($this->_extractTransformDirectiveArguments($parentNode));
         }
 
+        $countedHandles = [];
 
         // For each subnode that is a direct descendant
         foreach ($subNodes as $subNode) {
@@ -405,7 +406,6 @@ class ElementQueryConditionBuilder extends Component
                         /** @var EagerLoadingFieldInterface $craftContentField */
                         $additionalArguments = $craftContentField->getEagerLoadingGqlConditions();
 
-                        // todo refactor this to a method so _count can reuse this.
                         // Load additional requirements enforced by schema, enforcing permissions to see content
                         if ($additionalArguments === false) {
                             // If `false` was returned, make sure nothing is returned by setting an always-false constraint.
@@ -448,9 +448,7 @@ class ElementQueryConditionBuilder extends Component
 
                     // If they're angling for the count field, alias it so each count field gets their own eager-load arguments.
                     if ($nodeName === Gql::GRAPHQL_COUNT_FIELD) {
-                        $plan->count = true;
-                        // TODO load the actual field form $arguments['fieldName'] and ask for it's conditions, then set it here.
-
+                        $countedHandles[] = $arguments['field'];
                     }
 
                     if (!$transformableAssetProperty) {
@@ -523,21 +521,36 @@ class ElementQueryConditionBuilder extends Component
                 } else {
                     $plan->nested = $this->_traversAndBuildPlans($subNode, $context, $parentField, $wrappingFragment, $plan);
                 }
-
             }
 
             if (isset($plan)) {
                 if (!empty($plan->handle)) {
-                    $plans[] = $plan;
+                    $plans[$plan->handle] = $plan;
                 } else if (!empty($plan->nested)){
-                    $plans = array_merge($plans, $plan->nested);
+                    foreach ($plan->nested as $nestedPlan) {
+                        $plans[$nestedPlan->handle] = $nestedPlan;
+                    }
                 }
 
                 unset($plan);
             }
         }
 
-        return $plans;
+        if (!empty($countedHandles)) {
+            foreach ($countedHandles as $countedHandle) {
+                if (empty($plans[$countedHandle])) {
+                    $plans[$countedHandle] = new EagerLoadPlan([
+                        'handle' => $countedHandle,
+                        'alias' => $countedHandle,
+                        'count' => true,
+                    ]);
+                } else {
+                    $plans[$countedHandle]->count = true;
+                }
+            }
+        }
+
+        return array_values($plans);
     }
 
     /**
