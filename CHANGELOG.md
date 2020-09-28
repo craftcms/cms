@@ -31,6 +31,7 @@
 - Fixed a bug where Title fields were showing a translation indicator even on single-site Craft installs. ([#6503](https://github.com/craftcms/cms/issues/6503))
 - Fixed a bug where it wasn’t possible to set date values using variables via GraphQL mutations.
 - Fixed a bug where `craft\helpers\UrlHelper` was removing empty URL parameters. ([#6900](https://github.com/craftcms/cms/issues/6900))
+- Fixed a bug where Checkboxes and Multi-select fields’ `getOptions()` methods were only returning the selected options. ([#6899](https://github.com/craftcms/cms/issues/6899))
 
 ## 3.5.11.1 - 2020-09-18
 

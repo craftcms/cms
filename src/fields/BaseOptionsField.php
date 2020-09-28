@@ -272,14 +272,14 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
 
         if ($this->multi) {
             // Convert the value to a MultiOptionsFieldData object
-            $options = [];
+            $selectedOptions = [];
             foreach ($selectedValues as $selectedValue) {
                 $index = array_search($selectedValue, $optionValues, true);
                 $valid = $index !== false;
                 $label = $valid ? $optionLabels[$index] : null;
-                $options[] = new OptionData($label, $selectedValue, true, $valid);
+                $selectedOptions[] = new OptionData($label, $selectedValue, true, $valid);
             }
-            $value = new MultiOptionsFieldData($options);
+            $value = new MultiOptionsFieldData($selectedOptions);
         } else if (!empty($selectedValues)) {
             // Convert the value to a SingleOptionFieldData object
             $selectedValue = reset($selectedValues);
