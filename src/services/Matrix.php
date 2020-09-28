@@ -558,7 +558,8 @@ class Matrix extends Component
                 }
             }
 
-            if (!Craft::$app->getProjectConfig()->areChangesPending(self::CONFIG_BLOCKTYPE_KEY)) {
+            // Only make block type changes if we're not in the middle of applying YAML changes
+            if (!Craft::$app->getProjectConfig()->getIsApplyingYamlChanges()) {
                 // Delete the old block types first, in case there's a handle conflict with one of the new ones
                 $oldBlockTypes = $this->getBlockTypesByFieldId($matrixField->id);
                 $oldBlockTypesById = [];
