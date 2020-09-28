@@ -32,6 +32,7 @@
 - Fixed a bug where it wasn’t possible to set date values using variables via GraphQL mutations.
 - Fixed a bug where `craft\helpers\UrlHelper` was removing empty URL parameters. ([#6900](https://github.com/craftcms/cms/issues/6900))
 - Fixed a bug where Checkboxes and Multi-select fields’ `getOptions()` methods were only returning the selected options. ([#6899](https://github.com/craftcms/cms/issues/6899))
+- Fixed a bug where Project Config files were not being applied running tests even though it was configured in `codeception.yml`. ([#6879](https://github.com/craftcms/cms/issues/6879))
 
 ## 3.5.11.1 - 2020-09-18
 
