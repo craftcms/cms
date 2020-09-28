@@ -598,7 +598,7 @@ class GeneralConfig extends BaseObject
      * ::: tip
      * With Headless Mode enabled, users may only set passwords and verify email addresses via the control panel or controller
      * actions. Be sure to grant “Access the control panel” permission to content editors and administrators that should be able to
-     * log into the control panel unless you’re providing your own login forms.
+     * log into the control panel unless you’re providing your own auth forms.
      * :::
      *
      * @since 3.3.0
