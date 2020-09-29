@@ -288,7 +288,7 @@ GQL;
             [
                 '{ entries { _count(field: "assetField") assetField { filename }}}',
                 [],
-                ['with' => [new EagerLoadPlan(['handle' => '_count', 'alias' => '_count', 'criteria' => ['field' => 'assetField'], 'count' => true]), new EagerLoadPlan(['handle' => 'assetField', 'alias' => 'assetField', 'criteria' => ['volumeId' => [5, 7]]])]],
+                ['with' => [new EagerLoadPlan(['handle' => 'assetField', 'count' => true, 'alias' => 'assetField', 'criteria' => ['volumeId' => [5, 7]]])]],
                 '[EntryInterface]',
             ],
             [
