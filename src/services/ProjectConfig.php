@@ -250,7 +250,7 @@ class ProjectConfig extends Component
     private $_appliedConfig = [];
 
     /**
-     * @var array A list of all config files, defined by import directives in configuration files.
+     * @var array A list of all config YAML files.
      */
     private $_configFileList = [];
 
@@ -1486,22 +1486,11 @@ class ProjectConfig extends Component
      * Save configuration data.
      *
      * @param array $data
-     * @throws ErrorException
      */
     private function _saveConfig(array $data)
     {
         $this->_appliedConfig = $data;
         $this->_isConfigModified = true;
-    }
-
-    /**
-     * Whether to use the config file or not.
-     *
-     * @return bool
-     */
-    private function _useConfigFile(): bool
-    {
-        return true;
     }
 
     /**
