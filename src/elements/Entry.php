@@ -40,6 +40,7 @@ use craft\services\Structures;
 use craft\validators\DateTimeValidator;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
+use yii\db\Expression;
 
 /**
  * Entry represents an entry element.
@@ -464,7 +465,21 @@ class Entry extends Element
             'uri' => Craft::t('app', 'URI'),
             [
                 'label' => Craft::t('app', 'Post Date'),
-                'orderBy' => 'postDate',
+                'orderBy' => function(int $dir) {
+                    if ($dir === SORT_ASC) {
+                        if (Craft::$app->getDb()->getIsMysql()) {
+                            return new Expression('[[postDate]] IS NOT NULL DESC, [[postDate]] ASC');
+                        } else {
+                            return new Expression('[[postDate]] ASC NULLS LAST');
+                        }
+                    }
+                    if (Craft::$app->getDb()->getIsMysql()) {
+                        return new Expression('[[postDate]] IS NULL DESC, [[postDate]] DESC');
+                    } else {
+                        return new Expression('[[postDate]] DESC NULLS FIRST');
+                    }
+                },
+                'attribute' => 'postDate',
                 'defaultDir' => 'desc',
             ],
             [

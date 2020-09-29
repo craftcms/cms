@@ -11,13 +11,15 @@
 
 ### Changed
 - Element editor HUDs will now close when clicked out of, or if the <kbd>Esc</kbd> key is pressed. If any content has changed, a confirmation dialog will be shown first. ([#6877](https://github.com/craftcms/cms/issues/6877))
+- Entry indexes will now sort entries without a post date at the top when ordering by Post Date in descending order, and vise-versa. ([#6924](https://github.com/craftcms/cms/issues/6924))
 - The field layout designer will now prompt for a tab name immediately when the “New Tab” button is clicked. ([#1956](https://github.com/craftcms/cms/issues/1956))
 - It’s now possible to specify eager-loading plans as hashes with `path`, `criteria`, `count`, and `when` keys.
 - The `users/save-user` action now includes a `csrfTokenValue` key in its JSON responses, if the user’s password was changed. ([#6283](https://github.com/craftcms/cms/issues/6283))
 - “Delete” element actions will now only enable themselves if all of the selected elements’ `getIsDeletable()` methods returned `true`.
 - `craft\gql\ElementQueryConditionBuilder::extractQueryConditions()` now returns EagerLoadPlans instead of hashes. ([#6874](https://github.com/craftcms/cms/issues/6874), [#6811](https://github.com/craftcms/cms/issues/6811), 
 - `craft\web\View::hook()` now has an `$append` argument, which can be set to `false` to cause the hook method to be called before other methods.
-- Callback methods passed to `craft\web\View::hook()` can now accept a `$handled` argument by reference, which can be set to `false` within the method body to prevent subsequent hook methods from getting triggered. ([#6912](https://github.com/craftcms/cms/issues/6912))
+- Callback methods passed to `craft\web\View::hook()` can now accept a `$handled` argument by reference, which can be set to `false` within the method body to prevent subsequent hook methods from getting triggered. ([#6912](https://github.com/craftcms/cms/issues/6912))]
+- Element types’ `sortOptions()` methods can now define the `orderBy` key as a callback method.
 
 ### Deprecated
 - Deprecated `craft\errors\FieldNotFoundException`.

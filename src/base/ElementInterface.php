@@ -375,7 +375,9 @@ interface ElementInterface extends ComponentInterface
      * This method should return an array, where each item is a sub-array with the following keys:
      *
      * - `label` – The sort option label
-     * - `orderBy` – An array or comma-delimited string of columns to order the query by
+     * - `orderBy` – An array, comma-delimited string, or a callback function that defines the columns to order the query by. If set to a callback
+     *   function, the function will be passed a single argument, `$dir`, set to either `SORT_ASC` or `SORT_DESC`, and it should return an array of
+     *   column names or an [[\yii\db\ExpressionInterface]] object.
      * - `attribute` _(optional)_ – The [[tableAttributes()|table attribute]] name that this option is associated
      *   with (required if `orderBy` is an array or more than one column name)
      * - `defaultDir` _(optional)_ – The default sort direction that should be used when sorting by this option
