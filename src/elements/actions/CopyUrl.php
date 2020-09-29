@@ -38,9 +38,8 @@ class CopyUrl extends ElementAction
         $type = Json::encode(static::class);
 
         $js = <<<JS
-(function()
-{
-    var trigger = new Craft.ElementActionTrigger({
+(() => {
+    new Craft.ElementActionTrigger({
         type: {$type},
         batch: false,
         validateSelection: function(\$selectedItems)
@@ -59,5 +58,6 @@ class CopyUrl extends ElementAction
 JS;
 
         Craft::$app->getView()->registerJs($js);
+        return null;
     }
 }
