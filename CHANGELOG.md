@@ -35,6 +35,7 @@
 - Fixed a bug where Checkboxes and Multi-select fields’ `getOptions()` methods were only returning the selected options. ([#6899](https://github.com/craftcms/cms/issues/6899))
 - Fixed a bug where Project Config files were not being applied running tests even though it was configured in `codeception.yml`. ([#6879](https://github.com/craftcms/cms/issues/6879))
 - Fixed a bug where Matrix block type settings weren’t saving properly if the Matrix field was nested within another Matrix field (via a Super Table or Neo field).
+- Fixed a bug where it wasn’t possible for users to delete their own entries from Entry Edit pages, if they didn’t have the “Publish live changes” permission. ([#6908](https://github.com/craftcms/cms/issues/6908))
 
 ## 3.5.11.1 - 2020-09-18
 
