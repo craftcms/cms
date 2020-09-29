@@ -4,6 +4,7 @@
 
 ### Added
 - Assets fields now have an “Upload files” button, which will upload files to the field’s default upload location, just like files uploaded via drag-n-drop. ([#2778](https://github.com/craftcms/cms/issues/2778))
+- Added `craft\base\ElementInterface::getIsDeletable()`, which states whether the element can be deleted by the current user.
 - Added `craft\elements\db\EagerLoadPlan::$all`.
 - Added `craft\elements\db\EagerLoadPlan::$when`.
 - Added `craft\errors\InvalidFieldException`.
@@ -13,6 +14,7 @@
 - The field layout designer will now prompt for a tab name immediately when the “New Tab” button is clicked. ([#1956](https://github.com/craftcms/cms/issues/1956))
 - It’s now possible to specify eager-loading plans as hashes with `path`, `criteria`, `count`, and `when` keys.
 - The `users/save-user` action now includes a `csrfTokenValue` key in its JSON responses, if the user’s password was changed. ([#6283](https://github.com/craftcms/cms/issues/6283))
+- “Delete” element actions will now only enable themselves if all of the selected elements’ `getIsDeletable()` methods returned `true`.
 - `craft\gql\ElementQueryConditionBuilder::extractQueryConditions()` now returns EagerLoadPlans instead of hashes. ([#6874](https://github.com/craftcms/cms/issues/6874), [#6811](https://github.com/craftcms/cms/issues/6811), 
 
 ### Deprecated
@@ -36,6 +38,7 @@
 - Fixed a bug where Project Config files were not being applied running tests even though it was configured in `codeception.yml`. ([#6879](https://github.com/craftcms/cms/issues/6879))
 - Fixed a bug where Matrix block type settings weren’t saving properly if the Matrix field was nested within another Matrix field (via a Super Table or Neo field).
 - Fixed a bug where it wasn’t possible for users to delete their own entries from Entry Edit pages, if they didn’t have the “Publish live changes” permission. ([#6908](https://github.com/craftcms/cms/issues/6908))
+- Fixed a bug where it wasn’t possible for users to delete their own entries from the Entries index page, if they didn’t have the “Delete other authors’ entries” permission. ([#6908](https://github.com/craftcms/cms/issues/6908))
 
 ## 3.5.11.1 - 2020-09-18
 

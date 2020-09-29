@@ -2039,6 +2039,15 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function getIsDeletable(): bool
+    {
+        // todo: change to false in 4.0
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getCpEditUrl()
     {
         return null;

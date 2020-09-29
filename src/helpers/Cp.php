@@ -285,6 +285,10 @@ class Cp
             $html .= ' data-editable';
         }
 
+        if ($context === 'index' && $element->getIsDeletable()) {
+            $html .= ' data-deletable';
+        }
+
         if ($element->trashed) {
             $html .= ' data-trashed';
         }

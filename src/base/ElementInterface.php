@@ -673,6 +673,14 @@ interface ElementInterface extends ComponentInterface
     public function getIsEditable(): bool;
 
     /**
+     * Returns whether the current user can delete the element.
+     *
+     * @return bool
+     * @since 3.5.12
+     */
+    public function getIsDeletable(): bool;
+
+    /**
      * Returns the element’s edit URL in the control panel.
      *
      * @return string|null
