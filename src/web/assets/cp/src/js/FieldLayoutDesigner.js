@@ -278,6 +278,7 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend({
         this.tabDrag.addItems($tab);
 
         this.initTab($tab);
+        this.renameTab($tab);
     },
 
     getElementPlacementInputName: function(tabName) {

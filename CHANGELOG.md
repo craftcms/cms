@@ -10,6 +10,7 @@
 
 ### Changed
 - Element editor HUDs will now close when clicked out of, or if the <kbd>Esc</kbd> key is pressed. If any content has changed, a confirmation dialog will be shown first. ([#6877](https://github.com/craftcms/cms/issues/6877))
+- The field layout designer will now prompt for a tab name immediately when the “New Tab” button is clicked. ([#1956](https://github.com/craftcms/cms/issues/1956))
 - It’s now possible to specify eager-loading plans as hashes with `path`, `criteria`, `count`, and `when` keys.
 - The `users/save-user` action now includes a `csrfTokenValue` key in its JSON responses, if the user’s password was changed. ([#6283](https://github.com/craftcms/cms/issues/6283))
 - `craft\gql\ElementQueryConditionBuilder::extractQueryConditions()` now returns EagerLoadPlans instead of hashes. ([#6874](https://github.com/craftcms/cms/issues/6874), [#6811](https://github.com/craftcms/cms/issues/6811), 
