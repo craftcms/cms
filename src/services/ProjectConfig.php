@@ -442,6 +442,11 @@ class ProjectConfig extends Component
      */
     public function set(string $path, $value, $message = '')
     {
+        // If we haven't yet pulled in the YAML changes, then anything in there should be discarded
+        if (empty($this->_appliedConfig)) {
+            $this->_appliedConfig = $this->_getLoadedConfig();
+        }
+
         if (\is_array($value)) {
             $value = ProjectConfigHelper::cleanupConfig($value);
         }
