@@ -3027,6 +3027,10 @@ body.ltr #user-info { padding: 0 11px 0 14px ; }
 
 body.rtl #user-info { padding: 0 14px 0 11px ; }
 
+body.ltr #user-info { margin-right: 14px; }
+
+body.rtl #user-info { margin-left: 14px; }
+
 #user-info:after { border-color: rgba(81, 95, 108, 0.25); -o-transition: border-color linear 100ms; transition: border-color linear 100ms; }
 
 #user-info:hover:after, #user-info.active:after { border-color: rgba(123, 135, 147, 0.5); }

@@ -42,6 +42,7 @@
 - Fixed a bug where it wasn’t possible for users to delete their own entries from Entry Edit pages, if they didn’t have the “Publish live changes” permission. ([#6908](https://github.com/craftcms/cms/issues/6908))
 - Fixed a bug where it wasn’t possible for users to delete their own entries from the Entries index page, if they didn’t have the “Delete other authors’ entries” permission. ([#6908](https://github.com/craftcms/cms/issues/6908))
 - Fixed a bug where components (such as fields) could be deleted if they were saved without any changes, and their corresponding config file was missing from the `config/project/` folder. ([#6913](https://github.com/craftcms/cms/issues/6913))
+- Fixed a bug where the user account menu button could be clipped by the scrollbar. ([#6920](https://github.com/craftcms/cms/issues/6920))
 
 ## 3.5.11.1 - 2020-09-18
 
