@@ -34,6 +34,7 @@
     id: 'min',
     name: 'min',
     value: field.min,
+    errors: field.getErrors('min'),
 }) }}
 
 {{ forms.dateField({
@@ -46,4 +47,5 @@
     id: 'max',
     name: 'max',
     value: field.max,
+    errors: field.getErrors('max'),
 }) }}

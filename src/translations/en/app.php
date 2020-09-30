@@ -1724,4 +1724,7 @@ If you were not expecting this email, just ignore it.',
     'Show thumbnails only' => 'Show thumbnails only',
     'Are you sure you want to close the editor? Any changes will be lost.' => 'Are you sure you want to close the editor? Any changes will be lost.',
     'Upload a file' => 'Upload a file',
+    '{attribute} must be a date.' => '{attribute} must be a date.',
+    '{attribute} must be no earlier than {min}.' => '{attribute} must be no earlier than {min}.',
+    '{attribute} must be no later than {max}.' => '{attribute} must be no later than {max}.',
 ];

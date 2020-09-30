@@ -8,6 +8,10 @@
 - Added `craft\elements\db\EagerLoadPlan::$all`.
 - Added `craft\elements\db\EagerLoadPlan::$when`.
 - Added `craft\errors\InvalidFieldException`.
+- Added `craft\validators\DateTimeValidator::$max`.
+- Added `craft\validators\DateTimeValidator::$min`.
+- Added `craft\validators\DateTimeValidator::$tooEarly`.
+- Added `craft\validators\DateTimeValidator::$tooLate`.
 
 ### Changed
 - Element editor HUDs will now close when clicked out of, or if the <kbd>Esc</kbd> key is pressed. If any content has changed, a confirmation dialog will be shown first. ([#6877](https://github.com/craftcms/cms/issues/6877))
@@ -47,6 +51,8 @@
 - Fixed a bug where it wasn’t possible for users to delete their own entries from the Entries index page, if they didn’t have the “Delete other authors’ entries” permission. ([#6908](https://github.com/craftcms/cms/issues/6908))
 - Fixed a bug where components (such as fields) could be deleted if they were saved without any changes, and their corresponding config file was missing from the `config/project/` folder. ([#6913](https://github.com/craftcms/cms/issues/6913))
 - Fixed a bug where the user account menu button could be clipped by the scrollbar. ([#6920](https://github.com/craftcms/cms/issues/6920))
+- Fixed a bug where Date/Time fields’ Min Date and Max Date settings weren’t being enforced.
+- Fixed a bug where it was possible to save a Date/Time field with a Max Date value that was set to an earlier date than the Min Date value.
 
 ## 3.5.11.1 - 2020-09-18
 

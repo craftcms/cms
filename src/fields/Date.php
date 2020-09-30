@@ -19,6 +19,7 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Html;
 use craft\i18n\Locale;
+use craft\validators\DateTimeValidator;
 use DateTime;
 use yii\db\Schema;
 
@@ -136,11 +137,23 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
+    public function attributeLabels()
+    {
+        return [
+            'min' => Craft::t('app', 'Min Date'),
+            'max' => Craft::t('app', 'Max Date'),
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
         $rules[] = [['showDate', 'showTime'], 'boolean'];
         $rules[] = [['minuteIncrement'], 'integer', 'min' => 1, 'max' => 60];
+        $rules[] = [['max'], DateTimeValidator::class, 'min' => $this->min];
         return $rules;
     }
 
@@ -166,8 +179,8 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
             $dateTimeValue = 'showTime';
         }
 
-        $options = [15, 30, 60];
-        $options = array_combine($options, $options);
+        $incrementOptions = [15, 30, 60];
+        $incrementOptions = array_combine($incrementOptions, $incrementOptions);
 
         /** @noinspection PhpUndefinedVariableInspection */
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Date/settings',
@@ -187,7 +200,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
                     ]
                 ],
                 'value' => $dateTimeValue,
-                'incrementOptions' => $options,
+                'incrementOptions' => $incrementOptions,
                 'field' => $this,
             ]);
     }
@@ -223,6 +236,20 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
         }
 
         return $input;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getElementValidationRules(): array
+    {
+        return [
+            [
+                DateTimeValidator::class,
+                'min' => $this->min ? $this->min->setTime(0, 0, 0) : null,
+                'max' => $this->max ? $this->max->setTime(23, 59, 59) : null,
+            ],
+        ];
     }
 
     /**
