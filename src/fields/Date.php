@@ -170,39 +170,36 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
      */
     public function getSettingsHtml()
     {
-        // If they are both selected or nothing is selected, the select showBoth.
-        if ($this->showDate && $this->showTime) {
-            $dateTimeValue = 'showBoth';
-        } else if ($this->showDate) {
+        if ($this->showDate && !$this->showTime) {
             $dateTimeValue = 'showDate';
-        } else if ($this->showTime) {
+        } else if ($this->showTime && !$this->showDate) {
             $dateTimeValue = 'showTime';
+        } else {
+            $dateTimeValue = 'showBoth';
         }
 
         $incrementOptions = [15, 30, 60];
         $incrementOptions = array_combine($incrementOptions, $incrementOptions);
 
-        /** @noinspection PhpUndefinedVariableInspection */
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Date/settings',
-            [
-                'options' => [
-                    [
-                        'label' => Craft::t('app', 'Show date'),
-                        'value' => 'showDate',
-                    ],
-                    [
-                        'label' => Craft::t('app', 'Show time'),
-                        'value' => 'showTime',
-                    ],
-                    [
-                        'label' => Craft::t('app', 'Show date and time'),
-                        'value' => 'showBoth',
-                    ]
+        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Date/settings', [
+            'options' => [
+                [
+                    'label' => Craft::t('app', 'Show date'),
+                    'value' => 'showDate',
                 ],
-                'value' => $dateTimeValue,
-                'incrementOptions' => $incrementOptions,
-                'field' => $this,
-            ]);
+                [
+                    'label' => Craft::t('app', 'Show time'),
+                    'value' => 'showTime',
+                ],
+                [
+                    'label' => Craft::t('app', 'Show date and time'),
+                    'value' => 'showBoth',
+                ]
+            ],
+            'value' => $dateTimeValue,
+            'incrementOptions' => $incrementOptions,
+            'field' => $this,
+        ]);
     }
 
     /**
