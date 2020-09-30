@@ -25,22 +25,22 @@ use craft\events\RegisterComponentTypesEvent;
 use craft\fieldlayoutelements\CustomField;
 use craft\fields\Assets as AssetsField;
 use craft\fields\Categories as CategoriesField;
-use craft\fields\Checkboxes as CheckboxesField;
-use craft\fields\Color as ColorField;
-use craft\fields\Date as DateField;
-use craft\fields\Dropdown as DropdownField;
-use craft\fields\Email as EmailField;
+use craft\fields\Checkboxes;
+use craft\fields\Color;
+use craft\fields\Date;
+use craft\fields\Dropdown;
+use craft\fields\Email;
 use craft\fields\Entries as EntriesField;
-use craft\fields\Lightswitch as LightswitchField;
+use craft\fields\Lightswitch;
 use craft\fields\Matrix as MatrixField;
 use craft\fields\MissingField;
-use craft\fields\MultiSelect as MultiSelectField;
-use craft\fields\Number as NumberField;
-use craft\fields\PlainText as PlainTextField;
-use craft\fields\RadioButtons as RadioButtonsField;
+use craft\fields\MultiSelect;
+use craft\fields\Number;
+use craft\fields\PlainText;
+use craft\fields\RadioButtons;
 use craft\fields\Table as TableField;
 use craft\fields\Tags as TagsField;
-use craft\fields\Url as UrlField;
+use craft\fields\Url;
 use craft\fields\Users as UsersField;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Component as ComponentHelper;
@@ -443,21 +443,21 @@ class Fields extends Component
         $fieldTypes = [
             AssetsField::class,
             CategoriesField::class,
-            CheckboxesField::class,
-            ColorField::class,
-            DateField::class,
-            DropdownField::class,
-            EmailField::class,
+            Checkboxes::class,
+            Color::class,
+            Date::class,
+            Dropdown::class,
+            Email::class,
             EntriesField::class,
-            LightswitchField::class,
+            Lightswitch::class,
             MatrixField::class,
-            MultiSelectField::class,
-            NumberField::class,
-            PlainTextField::class,
-            RadioButtonsField::class,
+            MultiSelect::class,
+            Number::class,
+            PlainText::class,
+            RadioButtons::class,
             TableField::class,
             TagsField::class,
-            UrlField::class,
+            Url::class,
             UsersField::class,
         ];
 
