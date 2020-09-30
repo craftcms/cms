@@ -13,6 +13,7 @@ use craft\base\FieldInterface;
 use craft\base\FieldLayoutElementInterface;
 use craft\base\MemoizableArray;
 use craft\behaviors\CustomFieldBehavior;
+use craft\db\Connection;
 use craft\db\Query;
 use craft\db\Table;
 use craft\errors\MissingComponentException;
@@ -58,6 +59,7 @@ use craft\records\FieldLayoutTab as FieldLayoutTabRecord;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
+use yii\db\Exception as DbException;
 use yii\web\BadRequestHttpException;
 
 /**
@@ -1572,24 +1574,34 @@ class Fields extends Component
                 // Clear the schema cache
                 $db->getSchema()->refresh();
 
-                // Are we dealing with an existing column?
-                if ($db->columnExists($contentTable, $oldColumnName)) {
-                    // Alter it first, in case that results in an error due to incompatible column data
-                    $db->createCommand()
-                        ->alterColumn($contentTable, $oldColumnName, $columnType)
-                        ->execute();
+                // Are we working with an existing column?
+                $existingColumn = $db->columnExists($contentTable, $oldColumnName);
 
+                if ($existingColumn) {
+                    // Alter it first, in case that results in an error due to incompatible column data
+                    try {
+                        $db->createCommand()
+                            ->alterColumn($contentTable, $oldColumnName, $columnType)
+                            ->execute();
+                    } catch (DbException $e) {
+                        // Just rename the old column and pretend it didn’t exist
+                        $transaction->rollBack();
+                        $transaction = $db->beginTransaction();
+                        $this->_preserveColumn($db, $contentTable, $oldColumnName);
+                        $existingColumn = false;
+                    }
+                }
+
+                if ($existingColumn) {
                     // Name change?
                     if ($oldColumnName !== $newColumnName) {
                         // Does the new column already exist?
                         if ($db->columnExists($contentTable, $newColumnName)) {
                             // Rename it so we don't lose any data
-                            $db->createCommand()
-                                ->renameColumn($contentTable, $newColumnName, $newColumnName . '_' . StringHelper::randomString(10))
-                                ->execute();
+                            $this->_preserveColumn($db, $contentTable, $newColumnName);
                         }
 
-                        // Rename the old column
+                        // Rename the column
                         $db->createCommand()
                             ->renameColumn($contentTable, $oldColumnName, $newColumnName)
                             ->execute();
@@ -1598,9 +1610,7 @@ class Fields extends Component
                     // Does the new column already exist?
                     if ($db->columnExists($contentTable, $newColumnName)) {
                         // Rename it so we don't lose any data
-                        $db->createCommand()
-                            ->renameColumn($contentTable, $newColumnName, $newColumnName . '_' . StringHelper::randomString(10))
-                            ->execute();
+                        $this->_preserveColumn($db, $contentTable, $newColumnName);
                     }
 
                     // Add the new column
@@ -1686,6 +1696,26 @@ class Fields extends Component
 
         // Invalidate all element caches
         Craft::$app->getElements()->invalidateAllCaches();
+    }
+
+    /**
+     * Renames a content table column so its data is preserved.
+     *
+     * @param Connection $db
+     * @param string $table
+     * @param string $column
+     */
+    private function _preserveColumn(Connection $db, string $table, string $column)
+    {
+        $n = 0;
+        do {
+            $n++;
+            $newName = $column . '_old' . ($n > 1 ? $n : '');
+        } while ($db->columnExists($table, $newName));
+
+        $db->createCommand()
+            ->renameColumn($table, $column, $newName)
+            ->execute();
     }
 
     /**
