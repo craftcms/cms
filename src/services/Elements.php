@@ -1976,6 +1976,11 @@ class Elements extends Component
                 } else {
                     $filteredElements = $elements;
                 }
+                
+                if (count($filteredElements) === 0) {
+                    // Skip eager-loading this segment if there is no filtered elements
+                    continue;
+                }
 
                 // Get the eager-loading map from the source element type
                 /** @var ElementInterface|string $elementType */
