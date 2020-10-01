@@ -241,16 +241,25 @@ class TemplateCaches extends Component
     /**
      * Deletes a cache by its key(s).
      *
-     * @param int|array $key The cache key(s) to delete.
+     * @param string|string[] $key The cache key(s) to delete.
+     * @param bool|null $global Whether the template caches are stored globally.
+     * @param int|null $siteId The site ID to delete caches for.
      * @return bool
-     * @deprecated in 3.5.0
      */
-    public function deleteCachesByKey($key): bool
+    public function deleteCachesByKey($key, bool $global = null, int $siteId = null): bool
     {
         $cache = Craft::$app->getCache();
-        // ¯\_(ツ)_/¯
-        $cache->delete($this->_cacheKey($key, true));
-        $cache->delete($this->_cacheKey($key, false));
+
+        if ($global === null) {
+            $this->deleteCachesByKey($key, true, $siteId);
+            $this->deleteCachesByKey($key, false, $siteId);
+            return true;
+        }
+
+        foreach ((array)$key as $k) {
+            $cache->delete($this->_cacheKey($k, $global, $siteId));
+        }
+
         return true;
     }
 
@@ -309,10 +318,11 @@ class TemplateCaches extends Component
      *
      * @param string $key
      * @param bool $global
+     * @param int|null $siteId
      */
-    private function _cacheKey(string $key, bool $global): string
+    private function _cacheKey(string $key, bool $global, int $siteId = null): string
     {
-        $cacheKey = "template::$key::" . Craft::$app->getSites()->getCurrentSite()->id;
+        $cacheKey = "template::$key::" . ($siteId ?? Craft::$app->getSites()->getCurrentSite()->id);
 
         if (!$global) {
             $cacheKey .= '::' . $this->_path();

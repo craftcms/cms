@@ -27,6 +27,7 @@
 - If a SQL error occurs when attempting to change a field’s content column type, Craft will now rename the old column (e.g. `field_fieldHandle_old`), and create a new column with the new type, rather than surfacing the SQL error. ([#3605](https://github.com/craftcms/cms/issues/3605), [#5266](https://github.com/craftcms/cms/issues/5266))
 - `craft\gql\ElementQueryConditionBuilder::extractQueryConditions()` now returns an array of `craft\elements\db\EagerLoadPlan` objects. ([#6874](https://github.com/craftcms/cms/issues/6874), [#6811](https://github.com/craftcms/cms/issues/6811))
 - `craft\helpers\DateTimeHelper::toDateTime()` now supports passing an array with a `time` key in the format of `HH:MM:SS`, rather than just `HH:MM`.
+- `craft\services\TemplateCaches::deleteCachesByKey()` is no longer deprecated, and now has `$global` and `$siteId` arguments. ([#6932](https://github.com/craftcms/cms/issues/6932))
 - `craft\web\View::hook()` now has an `$append` argument, which can be set to `false` to cause the hook method to be called before other methods.
 - Callback methods passed to `craft\web\View::hook()` can now accept a `$handled` argument by reference, which can be set to `false` within the method body to prevent subsequent hook methods from getting triggered. ([#6912](https://github.com/craftcms/cms/issues/6912))]
 - Element types’ `sortOptions()` methods can now define the `orderBy` key as a callback method.
