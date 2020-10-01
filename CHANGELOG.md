@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Added the “Time” field type. ([#6775](https://github.com/craftcms/cms/issues/6775), [#6842](https://github.com/craftcms/cms/issues/6842))
 - Assets fields now have an “Upload files” button, which will upload files to the field’s default upload location, just like files uploaded via drag-n-drop. ([#2778](https://github.com/craftcms/cms/issues/2778))
 - Added `craft\base\ElementInterface::getIsDeletable()`, which states whether the element can be deleted by the current user.
 - Added `craft\elements\db\EagerLoadPlan::$all`.
@@ -12,8 +13,10 @@
 - Added `craft\validators\DateTimeValidator::$min`.
 - Added `craft\validators\DateTimeValidator::$tooEarly`.
 - Added `craft\validators\DateTimeValidator::$tooLate`.
+- Added `craft\validators\TimeValidator`.
 
 ### Changed
+- “Date/Time” fields have been renamed to “Date”, and it’s no longer possible to create new Date fields that only display the time. ([#6842](https://github.com/craftcms/cms/issues/6842))
 - Element editor HUDs will now close when clicked out of, or if the <kbd>Esc</kbd> key is pressed. If any content has changed, a confirmation dialog will be shown first. ([#6877](https://github.com/craftcms/cms/issues/6877))
 - Entry indexes will now sort entries without a post date at the top when ordering by Post Date in descending order, and vise-versa. ([#6924](https://github.com/craftcms/cms/issues/6924))
 - The field layout designer will now prompt for a tab name immediately when the “New Tab” button is clicked. ([#1956](https://github.com/craftcms/cms/issues/1956))
@@ -23,9 +26,11 @@
 - Date/Time fields configured to only show the time no longer set the date to 1970-01-01. ([#6842](https://github.com/craftcms/cms/issues/6842))
 - If a SQL error occurs when attempting to change a field’s content column type, Craft will now rename the old column (e.g. `field_fieldHandle_old`), and create a new column with the new type, rather than surfacing the SQL error. ([#3605](https://github.com/craftcms/cms/issues/3605), [#5266](https://github.com/craftcms/cms/issues/5266))
 - `craft\gql\ElementQueryConditionBuilder::extractQueryConditions()` now returns an array of `craft\elements\db\EagerLoadPlan` objects. ([#6874](https://github.com/craftcms/cms/issues/6874), [#6811](https://github.com/craftcms/cms/issues/6811))
+- `craft\helpers\DateTimeHelper::toDateTime()` now supports passing an array with a `time` key in the format of `HH:MM:SS`, rather than just `HH:MM`.
 - `craft\web\View::hook()` now has an `$append` argument, which can be set to `false` to cause the hook method to be called before other methods.
 - Callback methods passed to `craft\web\View::hook()` can now accept a `$handled` argument by reference, which can be set to `false` within the method body to prevent subsequent hook methods from getting triggered. ([#6912](https://github.com/craftcms/cms/issues/6912))]
 - Element types’ `sortOptions()` methods can now define the `orderBy` key as a callback method.
+- The `_includes/forms/time.html` control panel template now supports passing `minTime`, `maxTime`, `disableTimeRanges`, and `forceRoundTime` variables, which map to the corresponding jquery.timepicker settings.
 
 ### Deprecated
 - Deprecated `craft\errors\FieldNotFoundException`.

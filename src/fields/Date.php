@@ -36,7 +36,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Date/Time');
+        return Craft::t('app', 'Date');
     }
 
     /**
@@ -181,21 +181,28 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
         $incrementOptions = [15, 30, 60];
         $incrementOptions = array_combine($incrementOptions, $incrementOptions);
 
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Date/settings', [
-            'options' => [
-                [
-                    'label' => Craft::t('app', 'Show date'),
-                    'value' => 'showDate',
-                ],
-                [
-                    'label' => Craft::t('app', 'Show time'),
-                    'value' => 'showTime',
-                ],
-                [
-                    'label' => Craft::t('app', 'Show date and time'),
-                    'value' => 'showBoth',
-                ]
+        $options = [
+            [
+                'label' => Craft::t('app', 'Show date'),
+                'value' => 'showDate',
             ],
+        ];
+
+        // Only allow the "Show date and time" option if it's already selected
+        if ($dateTimeValue === 'showTime') {
+            $options[] = [
+                'label' => Craft::t('app', 'Show time'),
+                'value' => 'showTime',
+            ];
+        }
+
+        $options[] = [
+            'label' => Craft::t('app', 'Show date and time'),
+            'value' => 'showBoth',
+        ];
+
+        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Date/settings', [
+            'options' => $options,
             'value' => $dateTimeValue,
             'incrementOptions' => $incrementOptions,
             'field' => $this,

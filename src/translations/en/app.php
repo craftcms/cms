@@ -1727,4 +1727,7 @@ If you were not expecting this email, just ignore it.',
     '{attribute} must be a date.' => '{attribute} must be a date.',
     '{attribute} must be no earlier than {min}.' => '{attribute} must be no earlier than {min}.',
     '{attribute} must be no later than {max}.' => '{attribute} must be no later than {max}.',
+    'Min Time' => 'Min Time',
+    'Max Time' => 'Max Time',
+    'Time fields are better suited for managing Time-only values.' => 'Time fields are better suited for managing Time-only values.',
 ];

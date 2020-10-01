@@ -40,6 +40,7 @@ use craft\fields\PlainText;
 use craft\fields\RadioButtons;
 use craft\fields\Table as TableField;
 use craft\fields\Tags as TagsField;
+use craft\fields\Time;
 use craft\fields\Url;
 use craft\fields\Users as UsersField;
 use craft\helpers\ArrayHelper;
@@ -457,6 +458,7 @@ class Fields extends Component
             RadioButtons::class,
             TableField::class,
             TagsField::class,
+            Time::class,
             Url::class,
             UsersField::class,
         ];

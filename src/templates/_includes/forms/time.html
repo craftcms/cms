@@ -20,7 +20,11 @@
 </div>
 
 {% set options = {
+    minTime: minTime ?? null,
+    maxTime: maxTime ?? null,
+    disableTimeRanges: disableTimeRanges ?? null,
     step: minuteIncrement ?? null,
+    forceRoundTime: forceRoundTime ?? false,
 }|filter %}
 
 {# include JSON_FORCE_OBJECT in the json_encode options #}
