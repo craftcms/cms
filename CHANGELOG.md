@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.5.12 - 2020-10-01
 
 ### Added
 - Added the “Time” field type. ([#6775](https://github.com/craftcms/cms/issues/6775), [#6842](https://github.com/craftcms/cms/issues/6842))
