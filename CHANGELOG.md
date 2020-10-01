@@ -60,6 +60,9 @@
 - Fixed a bug where Date/Time fields’ Min Date and Max Date settings weren’t being enforced.
 - Fixed a bug where it was possible to save a Date/Time field with a Max Date value that was set to an earlier date than the Min Date value.
 
+### Security
+- Fixed a bug where Plain Text fields with line breaks allowed weren’t HTML-encoding their values. ([#6935](https://github.com/craftcms/cms/issues/6935))
+
 ## 3.5.11.1 - 2020-09-18
 
 ### Changed
