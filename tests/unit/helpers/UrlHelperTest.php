@@ -353,6 +353,8 @@ class UrlHelperTest extends Unit
         return [
             ['', []],
             ['', ['foo' => null]],
+            ['foo', ['foo' => '']],
+            ['foo=0', ['foo' => false]],
             ['foo=1', ['foo' => true]],
             ['foo=1&bar=2', ['foo' => 1, 'bar' => 2]],
             ['foo[0]=1&foo[1]=2', ['foo' => [1, 2]]],
@@ -581,7 +583,7 @@ class UrlHelperTest extends Unit
                 'urlWithToken'
             ],
             [
-                $baseUrl . '?token=',
+                $baseUrl . '?token',
                 $baseUrl . '',
                 '',
                 'urlWithToken'

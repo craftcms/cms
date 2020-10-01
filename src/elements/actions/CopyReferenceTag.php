@@ -50,9 +50,8 @@ class CopyReferenceTag extends ElementAction
         $refHandleJs = Json::encode($refHandle);
 
         $js = <<<JS
-(function()
-{
-    var trigger = new Craft.ElementActionTrigger({
+(() => {
+    new Craft.ElementActionTrigger({
         type: {$type},
         batch: false,
         activate: function(\$selectedItems)
@@ -67,5 +66,6 @@ class CopyReferenceTag extends ElementAction
 JS;
 
         Craft::$app->getView()->registerJs($js);
+        return null;
     }
 }

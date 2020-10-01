@@ -1723,4 +1723,12 @@ return [
     'How the related {type} should be displayed within element indexes.' => 'How the related {type} should be displayed within element indexes.',
     'Show thumbnails and titles' => 'Show thumbnails and titles',
     'Show thumbnails only' => 'Show thumbnails only',
+    'Are you sure you want to close the editor? Any changes will be lost.' => 'Are you sure you want to close the editor? Any changes will be lost.',
+    'Upload a file' => 'Upload a file',
+    '{attribute} must be a date.' => '{attribute} must be a date.',
+    '{attribute} must be no earlier than {min}.' => '{attribute} must be no earlier than {min}.',
+    '{attribute} must be no later than {max}.' => '{attribute} must be no later than {max}.',
+    'Min Time' => 'Min Time',
+    'Max Time' => 'Max Time',
+    'Time fields are better suited for managing Time-only values.' => 'Time fields are better suited for managing Time-only values.',
 ];

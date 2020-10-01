@@ -19,13 +19,20 @@
     {%- endif -%}
 </div>
 
-{%- set localeData = craft.app.locale %}
+{% set options = {
+    minTime: minTime ?? null,
+    maxTime: maxTime ?? null,
+    disableTimeRanges: disableTimeRanges ?? null,
+    step: minuteIncrement ?? null,
+    forceRoundTime: forceRoundTime ?? false,
+}|filter %}
+
+{# include JSON_FORCE_OBJECT in the json_encode options #}
+{% set jsonOptions = constant('JSON_HEX_TAG') b-or constant('JSON_HEX_AMP') b-or constant('JSON_HEX_QUOT') b-or constant('JSON_FORCE_OBJECT') %}
 
 {%- js %}
     var $timePicker = $('#{{ id|namespaceInputId|e('js') }}');
-    $timePicker.timepicker($.extend({
-        {% if minuteIncrement is defined %}step: '{{ minuteIncrement }}'{% endif %}
-    }, Craft.timepickerOptions));
+    $timePicker.timepicker($.extend({{ options|json_encode(jsonOptions)|raw }}, Craft.timepickerOptions));
 
     {% if value and value.format is defined %}
         $timePicker.timepicker('setTime', {{ value.format('G') }}*3600 + {{ value.format('i') }}*60 + {{ value.format('s') }});

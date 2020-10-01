@@ -53,9 +53,8 @@ class DeleteUsers extends ElementAction
         $redirect = Json::encode(Craft::$app->getSecurity()->hashData(Craft::$app->getEdition() === Craft::Pro ? 'users' : 'dashboard'));
 
         $js = <<<JS
-(function()
-{
-    var trigger = new Craft.ElementActionTrigger({
+(() => {
+    new Craft.ElementActionTrigger({
         type: {$type},
         batch: true,
         validateSelection: function(\$selectedItems)
@@ -96,6 +95,7 @@ class DeleteUsers extends ElementAction
 JS;
 
         Craft::$app->getView()->registerJs($js);
+        return null;
     }
 
     /**

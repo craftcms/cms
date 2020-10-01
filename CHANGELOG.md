@@ -1,5 +1,68 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.5.12 - 2020-10-01
+
+### Added
+- Added the “Time” field type. ([#6775](https://github.com/craftcms/cms/issues/6775), [#6842](https://github.com/craftcms/cms/issues/6842))
+- Assets fields now have an “Upload files” button, which will upload files to the field’s default upload location, just like files uploaded via drag-n-drop. ([#2778](https://github.com/craftcms/cms/issues/2778))
+- Added `craft\base\ElementInterface::getIsDeletable()`, which states whether the element can be deleted by the current user.
+- Added `craft\elements\db\EagerLoadPlan::$all`.
+- Added `craft\elements\db\EagerLoadPlan::$when`.
+- Added `craft\errors\InvalidFieldException`.
+- Added `craft\validators\DateTimeValidator::$max`.
+- Added `craft\validators\DateTimeValidator::$min`.
+- Added `craft\validators\DateTimeValidator::$tooEarly`.
+- Added `craft\validators\DateTimeValidator::$tooLate`.
+- Added `craft\validators\TimeValidator`.
+
+### Changed
+- “Date/Time” fields have been renamed to “Date”, and it’s no longer possible to create new Date fields that only display the time. ([#6842](https://github.com/craftcms/cms/issues/6842))
+- Element editor HUDs will now close when clicked out of, or if the <kbd>Esc</kbd> key is pressed. If any content has changed, a confirmation dialog will be shown first. ([#6877](https://github.com/craftcms/cms/issues/6877))
+- Entry indexes will now sort entries without a post date at the top when ordering by Post Date in descending order, and vise-versa. ([#6924](https://github.com/craftcms/cms/issues/6924))
+- The field layout designer will now prompt for a tab name immediately when the “New Tab” button is clicked. ([#1956](https://github.com/craftcms/cms/issues/1956))
+- It’s now possible to specify eager-loading plans as hashes with `path`, `criteria`, `count`, and `when` keys.
+- The `users/save-user` action now includes a `csrfTokenValue` key in its JSON responses, if the user’s password was changed. ([#6283](https://github.com/craftcms/cms/issues/6283))
+- “Delete” element actions will now only enable themselves if all of the selected elements’ `getIsDeletable()` methods returned `true`.
+- Date/Time fields configured to only show the time no longer set the date to 1970-01-01. ([#6842](https://github.com/craftcms/cms/issues/6842))
+- If a SQL error occurs when attempting to change a field’s content column type, Craft will now rename the old column (e.g. `field_fieldHandle_old`), and create a new column with the new type, rather than surfacing the SQL error. ([#3605](https://github.com/craftcms/cms/issues/3605), [#5266](https://github.com/craftcms/cms/issues/5266))
+- `craft\gql\ElementQueryConditionBuilder::extractQueryConditions()` now returns an array of `craft\elements\db\EagerLoadPlan` objects. ([#6874](https://github.com/craftcms/cms/issues/6874), [#6811](https://github.com/craftcms/cms/issues/6811))
+- `craft\helpers\DateTimeHelper::toDateTime()` now supports passing an array with a `time` key in the format of `HH:MM:SS`, rather than just `HH:MM`.
+- `craft\services\TemplateCaches::deleteCachesByKey()` is no longer deprecated, and now has `$global` and `$siteId` arguments. ([#6932](https://github.com/craftcms/cms/issues/6932))
+- `craft\web\View::hook()` now has an `$append` argument, which can be set to `false` to cause the hook method to be called before other methods.
+- Callback methods passed to `craft\web\View::hook()` can now accept a `$handled` argument by reference, which can be set to `false` within the method body to prevent subsequent hook methods from getting triggered. ([#6912](https://github.com/craftcms/cms/issues/6912))]
+- Element types’ `sortOptions()` methods can now define the `orderBy` key as a callback method.
+- The `_includes/forms/time.html` control panel template now supports passing `minTime`, `maxTime`, `disableTimeRanges`, and `forceRoundTime` variables, which map to the corresponding jquery.timepicker settings.
+
+### Deprecated
+- Deprecated `craft\errors\FieldNotFoundException`.
+
+### Fixed
+- Fixed a bug where `craft\services\Config::setDotEnvVar()` wasn’t surrounding values with quotes if they contained a `#` character. ([#6867](https://github.com/craftcms/cms/issues/6867))
+- Fixed a bug where GraphQL API queries could produce an incorrect eager-loading plan. ([#6849](https://github.com/craftcms/cms/issues/6849))
+- Fixed a bug where eager-loading elements wasn’t working if also eager-loading the count of related elements for the exact same path.
+- Fixed a bug where the button to show all related elements for relational fields within element indexes was getting formatted with two decimal places on environments that didn’t have the Intl extension installed. ([#6869](https://github.com/craftcms/cms/issues/6869))
+- Fixed a bug where element selection modals would show the source sidebar even if there was only one selectable source, if a source heading came before it. ([#6871](https://github.com/craftcms/cms/issues/6871))
+- Fixed a bug where Plain Text fields with a limit set and line breaks allowed weren’t showing the remaining characters/bytes allowed indicator. ([#6872](https://github.com/craftcms/cms/issues/6872))
+- Fixed a bug where it wasn’t possible to set an alias when eager-loading Matrix sub-fields.
+- Fixed a bug where it was possible to initiate a file upload to an Assets field via drag-n-drop, even if the user didn’t have permission to upload files to the default field volume.
+- Fixed a bug where Dashboard widget settings could receive focus even when not visible. ([#6885](https://github.com/craftcms/cms/issues/6885))
+- Fixed a bug where Checkboxes, Dropdown, Multi-select, and Radio Button fields could show their default values in element indexes. ([#6891](https://github.com/craftcms/cms/issues/6891))
+- Fixed a bug where Title fields were showing a translation indicator even on single-site Craft installs. ([#6503](https://github.com/craftcms/cms/issues/6503))
+- Fixed a bug where it wasn’t possible to set date values using variables via GraphQL mutations.
+- Fixed a bug where `craft\helpers\UrlHelper` was removing empty URL parameters. ([#6900](https://github.com/craftcms/cms/issues/6900))
+- Fixed a bug where Checkboxes and Multi-select fields’ `getOptions()` methods were only returning the selected options. ([#6899](https://github.com/craftcms/cms/issues/6899))
+- Fixed a bug where Project Config files were not being applied running tests even though it was configured in `codeception.yml`. ([#6879](https://github.com/craftcms/cms/issues/6879))
+- Fixed a bug where Matrix block type settings weren’t saving properly if the Matrix field was nested within another Matrix field (via a Super Table or Neo field).
+- Fixed a bug where it wasn’t possible for users to delete their own entries from Entry Edit pages, if they didn’t have the “Publish live changes” permission. ([#6908](https://github.com/craftcms/cms/issues/6908))
+- Fixed a bug where it wasn’t possible for users to delete their own entries from the Entries index page, if they didn’t have the “Delete other authors’ entries” permission. ([#6908](https://github.com/craftcms/cms/issues/6908))
+- Fixed a bug where components (such as fields) could be deleted if they were saved without any changes, and their corresponding config file was missing from the `config/project/` folder. ([#6913](https://github.com/craftcms/cms/issues/6913))
+- Fixed a bug where the user account menu button could be clipped by the scrollbar. ([#6920](https://github.com/craftcms/cms/issues/6920))
+- Fixed a bug where Date/Time fields’ Min Date and Max Date settings weren’t being enforced.
+- Fixed a bug where it was possible to save a Date/Time field with a Max Date value that was set to an earlier date than the Min Date value.
+
+### Security
+- Fixed a bug where Plain Text fields with line breaks allowed weren’t HTML-encoding their values. ([#6935](https://github.com/craftcms/cms/issues/6935))
+
 ## 3.5.11.1 - 2020-09-18
 
 ### Changed

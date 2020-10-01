@@ -14,6 +14,7 @@ use yii\base\Exception;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated in 3.5.12
  */
 class FieldNotFoundException extends Exception
 {

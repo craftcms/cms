@@ -95,11 +95,19 @@ class ElementsController extends BaseElementsController
             $sources = Craft::$app->getElementIndexes()->getSources($elementType);
         }
 
-        if (!empty($sources) && count($sources) === 1) {
-            $firstSource = reset($sources);
-            $showSidebar = !empty($firstSource['nested']);
-        } else {
-            $showSidebar = !empty($sources);
+        // Figure out if we should be showing the sidebar
+        $foundSource = false;
+        $showSidebar = false;
+        foreach ($sources as $source) {
+            // Make sure it's not a heading
+            if (!isset($source['heading'])) {
+                // If this is the second non-heading source we've come across, or it has nested sources, then we've seen enough
+                if ($foundSource || !empty($source['nested'])) {
+                    $showSidebar = true;
+                    break;
+                }
+                $foundSource = true;
+            }
         }
 
         return $this->asJson([

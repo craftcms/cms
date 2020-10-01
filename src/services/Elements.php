@@ -1860,10 +1860,14 @@ class Elements extends Component
 
             // Separate the path and the criteria
             if (is_array($path)) {
-                $criteria = $path[1] ?? null;
-                $path = $path[0];
+                $criteria = $path['criteria'] ?? $path[1] ?? null;
+                $count = $path['count'] ?? ArrayHelper::remove($criteria, 'count', false);
+                $when = $path['when'] ?? null;
+                $path = $path['path'] ?? $path[0];
             } else {
                 $criteria = null;
+                $count = false;
+                $when = null;
             }
 
             // Split the path into the top segment and subpath
@@ -1876,7 +1880,7 @@ class Elements extends Component
             }
 
             // Get the handle & alias
-            if (preg_match('/^(' . HandleValidator::$handlePattern . ')\s+as\s+(' . HandleValidator::$handlePattern . ')$/', $handle, $match)) {
+            if (preg_match('/^([a-zA-Z][a-zA-Z0-9_:]*)\s+as\s+(' . HandleValidator::$handlePattern . ')$/', $handle, $match)) {
                 $handle = $match[1];
                 $alias = $match[2];
             } else {
@@ -1895,14 +1899,29 @@ class Elements extends Component
             // Only set the criteria if there's no subpath
             if ($subpath === null) {
                 if ($criteria !== null) {
-                    if (ArrayHelper::remove($criteria, 'count', false)) {
-                        $plan->count = true;
-                    }
                     $plan->criteria = $criteria;
                 }
+
+                if ($count) {
+                    $plan->count = true;
+                } else {
+                    $plan->all = true;
+                }
+
+                if ($when !== null) {
+                    $plan->when = $when;
+                }
             } else {
+                // We are for sure going to need to query the elements
+                $plan->all = true;
+
                 // Add this as a nested "with"
-                $nestedWiths[$alias][] = [$subpath, $criteria];
+                $nestedWiths[$alias][] = [
+                    'path' => $subpath,
+                    'criteria' => $criteria,
+                    'count' => $count,
+                    'when' => $when,
+                ];
             }
         }
 
@@ -1951,9 +1970,19 @@ class Elements extends Component
             $this->trigger(self::EVENT_BEFORE_EAGER_LOAD_ELEMENTS, $event);
 
             foreach ($event->with as $plan) {
+                // Filter out any elements that the plan doesn't like
+                if ($plan->when !== null) {
+                    $filteredElements = array_values(array_filter($elements, $plan->when));
+                    if (empty($filteredElements)) {
+                        continue;
+                    }
+                } else {
+                    $filteredElements = $elements;
+                }
+
                 // Get the eager-loading map from the source element type
                 /** @var ElementInterface|string $elementType */
-                $map = $elementType::eagerLoadingMap($elements, $plan->handle);
+                $map = $elementType::eagerLoadingMap($filteredElements, $plan->handle);
 
                 if ($map === null) {
                     // Null means to skip eager-loading this segment
@@ -2010,7 +2039,7 @@ class Elements extends Component
                 }
 
                 // Do we just need the count?
-                if ($plan->count && empty($plan->nested)) {
+                if ($plan->count && !$plan->all) {
                     // Just fetch the target elements’ IDs
                     $targetElementIdCounts = [];
                     if ($query) {
@@ -2024,7 +2053,7 @@ class Elements extends Component
                     }
 
                     // Loop through the source elements and count up their targets
-                    foreach ($elements as $sourceElement) {
+                    foreach ($filteredElements as $sourceElement) {
                         $count = 0;
                         if (!empty($targetElementIdCounts) && isset($targetElementIdsBySourceIds[$sourceElement->id])) {
                             foreach (array_keys($targetElementIdsBySourceIds[$sourceElement->id]) as $targetElementId) {
@@ -2043,7 +2072,7 @@ class Elements extends Component
                 $targetElements = [];
 
                 // Tell the source elements about their eager-loaded elements
-                foreach ($elements as $sourceElement) {
+                foreach ($filteredElements as $sourceElement) {
                     $targetElementIdsForSource = [];
                     $targetElementsForSource = [];
 

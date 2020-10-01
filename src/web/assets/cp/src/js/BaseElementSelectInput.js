@@ -59,14 +59,6 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
             this.$elementsContainer = this.getElementsContainer();
             this.$addElementBtn = this.getAddElementsBtn();
-
-            if (this.$addElementBtn && this.settings.limit == 1) {
-                this.$addElementBtn
-                    .css('position', 'absolute')
-                    .css('top', 0)
-                    .css(Craft.left, 0);
-            }
-
             this.thumbLoader = new Craft.ElementThumbLoader();
 
             this.initElementSelect();
@@ -97,7 +89,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         },
 
         getAddElementsBtn: function() {
-            return this.$container.children('.btn.add');
+            return this.$container.find('.btn.add:first');
         },
 
         initElementSelect: function() {

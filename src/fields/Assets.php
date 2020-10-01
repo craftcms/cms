@@ -169,7 +169,7 @@ class Assets extends BaseRelationField
     private $_uploadedDataFiles;
 
     /**
-     * @var int|null The default upload location for this field to open in modal
+     * @var string|null The default upload location for this field to open in modal
      */
     private $_defaultUploadLocation;
 
@@ -657,8 +657,11 @@ class Assets extends BaseRelationField
     protected function inputTemplateVariables($value = null, ElementInterface $element = null): array
     {
         $variables = parent::inputTemplateVariables($value, $element);
+
+        $uploadVolume = $this->_uploadVolume();
         $variables['hideSidebar'] = $this->useSingleFolder;
-        $variables['defaultFieldLayoutId'] = $this->_uploadVolume()->fieldLayoutId ?? null;
+        $variables['canUpload'] = $uploadVolume && Craft::$app->getUser()->checkPermission("saveAssetInVolume:$uploadVolume->uid");
+        $variables['defaultFieldLayoutId'] = $uploadVolume->fieldLayoutId ?? null;
         $variables['defaultUploadLocation'] = $this->_defaultUploadLocation;
 
         return $variables;

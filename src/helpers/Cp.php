@@ -285,6 +285,10 @@ class Cp
             $html .= ' data-editable';
         }
 
+        if ($context === 'index' && $element->getIsDeletable()) {
+            $html .= ' data-deletable';
+        }
+
         if ($element->trashed) {
             $html .= ' data-trashed';
         }
@@ -373,7 +377,7 @@ class Cp
         $tip = $config['tip'] ?? null;
         $warning = $config['warning'] ?? null;
         $orientation = $config['orientation'] ?? ($site ? $site->getLocale() : Craft::$app->getLocale())->getOrientation();
-        $translatable = $config['translatable'] ?? ($site !== null);
+        $translatable = Craft::$app->getIsMultiSite() ? ($config['translatable'] ?? ($site !== null)) : false;
         $errors = $config['errors'] ?? null;
         $fieldClass = array_merge(array_filter([
             'field',

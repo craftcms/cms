@@ -2547,6 +2547,7 @@ $checkboxPadding: $checkboxSize + 4;
   }
 
   .element.small,
+  .flex,
   .btn {
     clear: both;
   }
@@ -2570,6 +2571,10 @@ $checkboxPadding: $checkboxSize + 4;
 
   .caboose {
     @include floatleft;
+  }
+
+  .flex .btn {
+    float: none !important;
   }
 }
 

@@ -517,6 +517,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   flex-direction: row;
   align-items: center;
   @include padding(0, 11px, 0, 14px);
+  @include margin-right(14px);
   height: 100%;
   background-color: transparent;
   border-radius: 0;

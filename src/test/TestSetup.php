@@ -483,6 +483,10 @@ class TestSetup
         ]);
 
         $migration->safeUp();
+
+        if ($projectConfig) {
+            Craft::$app->getProjectConfig()->applyYamlChanges();
+        }
     }
 
     /**

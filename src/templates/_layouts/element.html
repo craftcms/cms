@@ -98,38 +98,38 @@
         shortcut: true,
         retainScroll: true,
     }) %}
-    {% if canUpdateSource %}
-        {% if canAddAnother and addAnotherRedirectUrl %}
-            {% set formActions = formActions|push({
-                label: isUnsavedDraft ? 'Create and add another'|t('app') : 'Save and add another'|t('app'),
-                redirect: addAnotherRedirectUrl|hash,
-                shortcut: true,
-                shift: true,
-            }) %}
-        {% endif %}
-        {% if not isUnsavedDraft and canDuplicateSource and duplicateSourceAction %}
-            {% set formActions = formActions|push({
-                label: 'Save as a new {type}'|t('app', {
-                    type: element.lowerDisplayName(),
-                }),
-                action: duplicateSourceAction,
-                redirect: '{cpEditUrl}'|hash,
-            }) %}
-        {% endif %}
-    {% endif %}
-    {% if not isUnsavedDraft and canDeleteSource and deleteSourceAction %}
+{% endif %}
+{% if canUpdateSource and saveSourceAction %}
+    {% if canAddAnother and addAnotherRedirectUrl %}
         {% set formActions = formActions|push({
-            destructive: true,
-            label: 'Delete {type}'|t('app', {
-                type: element.lowerDisplayName()
-            }),
-            action: deleteSourceAction,
-            redirect: (redirectUrl ~ '#')|hash,
-            confirm: 'Are you sure you want to delete this {type}?'|t('app', {
-                type: element.lowerDisplayName(),
-            }),
+            label: isUnsavedDraft ? 'Create and add another'|t('app') : 'Save and add another'|t('app'),
+            redirect: addAnotherRedirectUrl|hash,
+            shortcut: true,
+            shift: true,
         }) %}
     {% endif %}
+    {% if not isUnsavedDraft and canDuplicateSource and duplicateSourceAction %}
+        {% set formActions = formActions|push({
+            label: 'Save as a new {type}'|t('app', {
+                type: element.lowerDisplayName(),
+            }),
+            action: duplicateSourceAction,
+            redirect: '{cpEditUrl}'|hash,
+        }) %}
+    {% endif %}
+{% endif %}
+{% if not isUnsavedDraft and canDeleteSource and deleteSourceAction %}
+    {% set formActions = formActions|push({
+        destructive: true,
+        label: 'Delete {type}'|t('app', {
+            type: element.lowerDisplayName()
+        }),
+        action: deleteSourceAction,
+        redirect: (redirectUrl ~ '#')|hash,
+        confirm: 'Are you sure you want to delete this {type}?'|t('app', {
+            type: element.lowerDisplayName(),
+        }),
+    }) %}
 {% endif %}
 
 {% block header %}
@@ -153,6 +153,10 @@
                     <button type="button" id="save-draft-btn" class="btn">{{ 'Save as a draft'|t('app') }}</button>
                 {% else %}
                     <button type="submit" id="save-draft-btn" class="btn submit">{{ 'Save as a draft'|t('app') }}</button>
+                    {% if formActions|length %}
+                        <button type="button" class="btn menubtn" aria-label="{{ 'Actions'|t('app') }}" data-icon="settings"></button>
+                        {% include '_layouts/components/form-action-menu' %}
+                    {% endif %}
                 {% endif %}
             </div>
         {% endif %}

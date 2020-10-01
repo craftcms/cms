@@ -149,6 +149,9 @@ Craft.BaseElementEditor = Garnish.Base.extend(
                         onSubmit: this.saveElement.bind(this),
                     });
 
+                    Garnish.shortcutManager.registerShortcut(Garnish.ESC_KEY, this.maybeCloseHud.bind(this));
+                    this.hud.addListener(this.hud.$shade, 'click', this.maybeCloseHud.bind(this));
+
                     this.hud.$hud.data('elementEditor', this);
 
                     // Disable browser input validation
@@ -172,10 +175,7 @@ Craft.BaseElementEditor = Garnish.Base.extend(
         },
 
         switchSite: function() {
-            if (
-                this.hud.$body.serialize() !== this.initialData &&
-                !confirm(Craft.t('app', 'Switching sites will lose unsaved changes. Are you sure you want to switch sites?'))
-            ) {
+            if (this.isDirty() && !confirm(Craft.t('app', 'Switching sites will lose unsaved changes. Are you sure you want to switch sites?'))) {
                 this.$siteSelect.val(this.siteId);
                 return;
             }
@@ -293,7 +293,25 @@ Craft.BaseElementEditor = Garnish.Base.extend(
             }, this));
         },
 
+        isDirty: function() {
+            return this.hud.$body.serialize() !== this.initialData;
+        },
+
+        maybeCloseHud: function(ev) {
+            if (!this.hud || !this.hud.showing) {
+                return;
+            }
+
+            if (!this.isDirty() || confirm('Are you sure you want to close the editor? Any changes will be lost.')) {
+                this.closeHud();
+            }
+        },
+
         closeHud: function() {
+            if (!this.hud || !this.hud.showing) {
+                return;
+            }
+
             this.hud.hide();
             delete this.hud;
         },

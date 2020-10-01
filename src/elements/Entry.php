@@ -40,6 +40,7 @@ use craft\services\Structures;
 use craft\validators\DateTimeValidator;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
+use yii\db\Expression;
 
 /**
  * Entry represents an entry element.
@@ -426,13 +427,13 @@ class Entry extends Element
                 }
 
                 // Delete?
-                if (
-                    $userSession->checkPermission('deleteEntries:' . $section->uid) &&
-                    $userSession->checkPermission('deletePeerEntries:' . $section->uid)
-                ) {
+                $canDeleteEntries = $userSession->checkPermission('deleteEntries:' . $section->uid);
+                $canDeletePeerEntries = $userSession->checkPermission('deletePeerEntries:' . $section->uid);
+
+                if ($canDeleteEntries || $canDeletePeerEntries) {
                     $actions[] = Delete::class;
 
-                    if ($section->type === Section::TYPE_STRUCTURE) {
+                    if ($section->type === Section::TYPE_STRUCTURE && $canDeleteEntries && $canDeletePeerEntries) {
                         $actions[] = [
                             'type' => Delete::class,
                             'withDescendants' => true,
@@ -464,7 +465,21 @@ class Entry extends Element
             'uri' => Craft::t('app', 'URI'),
             [
                 'label' => Craft::t('app', 'Post Date'),
-                'orderBy' => 'postDate',
+                'orderBy' => function(int $dir) {
+                    if ($dir === SORT_ASC) {
+                        if (Craft::$app->getDb()->getIsMysql()) {
+                            return new Expression('[[postDate]] IS NOT NULL DESC, [[postDate]] ASC');
+                        } else {
+                            return new Expression('[[postDate]] ASC NULLS LAST');
+                        }
+                    }
+                    if (Craft::$app->getDb()->getIsMysql()) {
+                        return new Expression('[[postDate]] IS NULL DESC, [[postDate]] DESC');
+                    } else {
+                        return new Expression('[[postDate]] DESC NULLS FIRST');
+                    }
+                },
+                'attribute' => 'postDate',
                 'defaultDir' => 'desc',
             ],
             [
@@ -1158,6 +1173,16 @@ class Entry extends Element
         }
 
         return $userSession->checkPermission("publishPeerEntries:$section->uid");
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getIsDeletable(): bool
+    {
+        $userSession = Craft::$app->getUser();
+        $prefix = $userSession->getId() == $this->authorId ? 'deleteEntries' : 'deletePeerEntries';
+        return $userSession->checkPermission("$prefix:" . $this->getSection()->uid);
     }
 
     /**

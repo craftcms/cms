@@ -13,9 +13,9 @@ use craft\base\FieldInterface;
 use craft\base\FieldLayoutElementInterface;
 use craft\base\MemoizableArray;
 use craft\behaviors\CustomFieldBehavior;
+use craft\db\Connection;
 use craft\db\Query;
 use craft\db\Table;
-use craft\errors\FieldNotFoundException;
 use craft\errors\MissingComponentException;
 use craft\events\ConfigEvent;
 use craft\events\FieldEvent;
@@ -25,22 +25,23 @@ use craft\events\RegisterComponentTypesEvent;
 use craft\fieldlayoutelements\CustomField;
 use craft\fields\Assets as AssetsField;
 use craft\fields\Categories as CategoriesField;
-use craft\fields\Checkboxes as CheckboxesField;
-use craft\fields\Color as ColorField;
-use craft\fields\Date as DateField;
-use craft\fields\Dropdown as DropdownField;
-use craft\fields\Email as EmailField;
+use craft\fields\Checkboxes;
+use craft\fields\Color;
+use craft\fields\Date;
+use craft\fields\Dropdown;
+use craft\fields\Email;
 use craft\fields\Entries as EntriesField;
-use craft\fields\Lightswitch as LightswitchField;
+use craft\fields\Lightswitch;
 use craft\fields\Matrix as MatrixField;
 use craft\fields\MissingField;
-use craft\fields\MultiSelect as MultiSelectField;
-use craft\fields\Number as NumberField;
-use craft\fields\PlainText as PlainTextField;
-use craft\fields\RadioButtons as RadioButtonsField;
+use craft\fields\MultiSelect;
+use craft\fields\Number;
+use craft\fields\PlainText;
+use craft\fields\RadioButtons;
 use craft\fields\Table as TableField;
 use craft\fields\Tags as TagsField;
-use craft\fields\Url as UrlField;
+use craft\fields\Time;
+use craft\fields\Url;
 use craft\fields\Users as UsersField;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Component as ComponentHelper;
@@ -59,6 +60,7 @@ use craft\records\FieldLayoutTab as FieldLayoutTabRecord;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
+use yii\db\Exception as DbException;
 use yii\web\BadRequestHttpException;
 
 /**
@@ -442,21 +444,22 @@ class Fields extends Component
         $fieldTypes = [
             AssetsField::class,
             CategoriesField::class,
-            CheckboxesField::class,
-            ColorField::class,
-            DateField::class,
-            DropdownField::class,
-            EmailField::class,
+            Checkboxes::class,
+            Color::class,
+            Date::class,
+            Dropdown::class,
+            Email::class,
             EntriesField::class,
-            LightswitchField::class,
+            Lightswitch::class,
             MatrixField::class,
-            MultiSelectField::class,
-            NumberField::class,
-            PlainTextField::class,
-            RadioButtonsField::class,
+            MultiSelect::class,
+            Number::class,
+            PlainText::class,
+            RadioButtons::class,
             TableField::class,
             TagsField::class,
-            UrlField::class,
+            Time::class,
+            Url::class,
             UsersField::class,
         ];
 
@@ -916,11 +919,7 @@ class Fields extends Component
      */
     public function applyFieldDelete($fieldUid)
     {
-        try {
-            $fieldRecord = $this->_getFieldRecord($fieldUid);
-        } catch (FieldNotFoundException $exception) {
-            return;
-        }
+        $fieldRecord = $this->_getFieldRecord($fieldUid);
 
         if (!$fieldRecord->id) {
             return;
@@ -1577,24 +1576,34 @@ class Fields extends Component
                 // Clear the schema cache
                 $db->getSchema()->refresh();
 
-                // Are we dealing with an existing column?
-                if ($db->columnExists($contentTable, $oldColumnName)) {
-                    // Alter it first, in case that results in an error due to incompatible column data
-                    $db->createCommand()
-                        ->alterColumn($contentTable, $oldColumnName, $columnType)
-                        ->execute();
+                // Are we working with an existing column?
+                $existingColumn = $db->columnExists($contentTable, $oldColumnName);
 
+                if ($existingColumn) {
+                    // Alter it first, in case that results in an error due to incompatible column data
+                    try {
+                        $db->createCommand()
+                            ->alterColumn($contentTable, $oldColumnName, $columnType)
+                            ->execute();
+                    } catch (DbException $e) {
+                        // Just rename the old column and pretend it didn’t exist
+                        $transaction->rollBack();
+                        $transaction = $db->beginTransaction();
+                        $this->_preserveColumn($db, $contentTable, $oldColumnName);
+                        $existingColumn = false;
+                    }
+                }
+
+                if ($existingColumn) {
                     // Name change?
                     if ($oldColumnName !== $newColumnName) {
                         // Does the new column already exist?
                         if ($db->columnExists($contentTable, $newColumnName)) {
                             // Rename it so we don't lose any data
-                            $db->createCommand()
-                                ->renameColumn($contentTable, $newColumnName, $newColumnName . '_' . StringHelper::randomString(10))
-                                ->execute();
+                            $this->_preserveColumn($db, $contentTable, $newColumnName);
                         }
 
-                        // Rename the old column
+                        // Rename the column
                         $db->createCommand()
                             ->renameColumn($contentTable, $oldColumnName, $newColumnName)
                             ->execute();
@@ -1603,9 +1612,7 @@ class Fields extends Component
                     // Does the new column already exist?
                     if ($db->columnExists($contentTable, $newColumnName)) {
                         // Rename it so we don't lose any data
-                        $db->createCommand()
-                            ->renameColumn($contentTable, $newColumnName, $newColumnName . '_' . StringHelper::randomString(10))
-                            ->execute();
+                        $this->_preserveColumn($db, $contentTable, $newColumnName);
                     }
 
                     // Add the new column
@@ -1691,6 +1698,26 @@ class Fields extends Component
 
         // Invalidate all element caches
         Craft::$app->getElements()->invalidateAllCaches();
+    }
+
+    /**
+     * Renames a content table column so its data is preserved.
+     *
+     * @param Connection $db
+     * @param string $table
+     * @param string $column
+     */
+    private function _preserveColumn(Connection $db, string $table, string $column)
+    {
+        $n = 0;
+        do {
+            $n++;
+            $newName = $column . '_old' . ($n > 1 ? $n : '');
+        } while ($db->columnExists($table, $newName));
+
+        $db->createCommand()
+            ->renameColumn($table, $column, $newName)
+            ->execute();
     }
 
     /**
@@ -1818,7 +1845,6 @@ class Fields extends Component
      *
      * @param string $uid
      * @return FieldRecord
-     * @throws FieldNotFoundException if $field->id is invalid
      */
     private function _getFieldRecord(string $uid): FieldRecord
     {

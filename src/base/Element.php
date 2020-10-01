@@ -18,6 +18,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\elements\exporters\Expanded;
 use craft\elements\exporters\Raw;
 use craft\elements\User;
+use craft\errors\InvalidFieldException;
 use craft\events\DefineAttributeKeywordsEvent;
 use craft\events\DefineEagerLoadingMapEvent;
 use craft\events\ElementStructureEvent;
@@ -57,6 +58,7 @@ use Twig\Markup;
 use yii\base\Event;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
+use yii\db\ExpressionInterface;
 use yii\validators\NumberValidator;
 use yii\validators\Validator;
 
@@ -1184,23 +1186,28 @@ abstract class Element extends Component implements ElementInterface
      *
      * @param string $sourceKey
      * @param array $viewState
-     * @return array|false
+     * @return array|ExpressionInterface|false
      */
     private static function _indexOrderBy(string $sourceKey, array $viewState)
     {
-        if (($columns = self::_indexOrderByColumns($sourceKey, $viewState)) === false) {
-            return false;
+        $dir = empty($viewState['sort']) || strcasecmp($viewState['sort'], 'desc') ? SORT_ASC : SORT_DESC;
+        $columns = self::_indexOrderByColumns($sourceKey, $viewState, $dir);
+
+        if ($columns === false || $columns instanceof ExpressionInterface) {
+            return $columns;
         }
 
         // Borrowed from QueryTrait::normalizeOrderBy()
         if (is_string($columns)) {
             $columns = preg_split('/\s*,\s*/', trim($columns), -1, PREG_SPLIT_NO_EMPTY);
         }
+
         $result = [];
+
         foreach ($columns as $i => $column) {
             if ($i === 0) {
                 // The first column's sort direction is always user-defined
-                $result[$column] = !empty($viewState['sort']) && strcasecmp($viewState['sort'], 'desc') ? SORT_ASC : SORT_DESC;
+                $result[$column] = $dir;
             } else if (preg_match('/^(.*?)\s+(asc|desc)$/i', $column, $matches)) {
                 $result[$matches[1]] = strcasecmp($matches[2], 'desc') ? SORT_ASC : SORT_DESC;
             } else {
@@ -1214,9 +1221,10 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @param string $sourceKey
      * @param array $viewState
+     * @param int $dir
      * @return bool|string|array
      */
-    private static function _indexOrderByColumns(string $sourceKey, array $viewState)
+    private static function _indexOrderByColumns(string $sourceKey, array $viewState, int $dir)
     {
         if (empty($viewState['order'])) {
             return false;
@@ -1230,6 +1238,9 @@ abstract class Element extends Component implements ElementInterface
             if (is_array($sortOption)) {
                 $attribute = $sortOption['attribute'] ?? $sortOption['orderBy'];
                 if ($attribute === $viewState['order']) {
+                    if (is_callable($sortOption['orderBy'])) {
+                        return $sortOption['orderBy']($dir);
+                    }
                     return $sortOption['orderBy'];
                 }
             } else if ($key === $viewState['order']) {
@@ -2033,6 +2044,15 @@ abstract class Element extends Component implements ElementInterface
     public function getIsEditable(): bool
     {
         return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getIsDeletable(): bool
+    {
+        // todo: change to false in 4.0
+        return true;
     }
 
     /**
@@ -3084,8 +3104,8 @@ abstract class Element extends Component implements ElementInterface
                                 // The field might not actually belong to this element
                                 try {
                                     $value = $this->getFieldValue($field->handle);
-                                } catch (\Throwable $e) {
-                                    $value = $field->normalizeValue(null);
+                                } catch (InvalidFieldException $e) {
+                                    return '';
                                 }
                             }
 
@@ -3308,7 +3328,7 @@ abstract class Element extends Component implements ElementInterface
      * Normalizes a field’s value.
      *
      * @param string $fieldHandle The field handle
-     * @throws Exception if there is no field with the handle $fieldValue
+     * @throws InvalidFieldException if the element doesn’t have a field with the handle specified by `$fieldHandle`
      */
     protected function normalizeFieldValue(string $fieldHandle)
     {
@@ -3320,7 +3340,7 @@ abstract class Element extends Component implements ElementInterface
         $field = $this->fieldByHandle($fieldHandle);
 
         if (!$field) {
-            throw new Exception('Invalid field handle: ' . $fieldHandle);
+            throw new InvalidFieldException($fieldHandle);
         }
 
         $behavior = $this->getBehavior('customFields');
