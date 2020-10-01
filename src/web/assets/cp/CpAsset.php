@@ -242,6 +242,7 @@ JS;
             'Transfer it to:',
             'Try again',
             'Update {type}',
+            'Upload a file',
             'Upload failed for {filename}',
             'Upload files',
             'What do you want to do with their content?',
