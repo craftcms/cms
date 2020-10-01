@@ -187,10 +187,19 @@ class Time extends Field implements PreviewableFieldInterface, SortableFieldInte
                 return null;
             }
 
-            return DateTimeHelper::toDateTime($value) ?: null;
+            return DateTimeHelper::toDateTime($value, true) ?: null;
         }
 
-        return DateTimeHelper::toDateTime(['time' => $value]) ?: null;
+        return DateTimeHelper::toDateTime(['time' => $value], true) ?: null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function serializeValue($value, ElementInterface $element = null)
+    {
+        /** @var DateTime|null $value */
+        return $value ? $value->format('H:i:s') : null;
     }
 
     /**
