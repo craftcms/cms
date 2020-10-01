@@ -1973,6 +1973,9 @@ class Elements extends Component
                 // Filter out any elements that the plan doesn't like
                 if ($plan->when !== null) {
                     $filteredElements = array_values(array_filter($elements, $plan->when));
+                    if (empty($filteredElements)) {
+                        continue;
+                    }
                 } else {
                     $filteredElements = $elements;
                 }
