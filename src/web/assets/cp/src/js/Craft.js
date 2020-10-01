@@ -1335,6 +1335,9 @@ $.extend(Craft,
          * @return string
          */
         asciiString: function(str, charMap) {
+            // Normalize NFD chars to NFC
+            str = str.normalize('NFC');
+
             var asciiStr = '';
             var char;
 

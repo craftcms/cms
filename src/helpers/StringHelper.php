@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
+use Normalizer;
 use Stringy\Stringy as BaseStringy;
 use voku\helper\ASCII;
 use yii\base\Exception;
@@ -1573,6 +1574,11 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function toAscii(string $str, string $language = null): string
     {
+        // If Intl is installed, normalize NFD chars to NFC
+        if (class_exists(Normalizer::class)) {
+            $str = Normalizer::normalize($str, Normalizer::FORM_C);
+        }
+
         return (string)BaseStringy::create($str)->toAscii($language ?? Craft::$app->language);
     }
 
