@@ -205,17 +205,6 @@ class Time extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    public function modifyElementsQuery(ElementQueryInterface $query, $value)
-    {
-        if ($value !== null) {
-            /** @var ElementQuery $query */
-            $query->subQuery->andWhere(Db::parseDateParam('content.' . Craft::$app->getContent()->fieldColumnPrefix . $this->handle, $value));
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getContentGqlType()
     {
         return DateTimeType::getType();
