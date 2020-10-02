@@ -82,17 +82,6 @@ class Application extends \yii\web\Application
     const EVENT_AFTER_EDITION_CHANGE = 'afterEditionChange';
 
     /**
-     * Constructor.
-     *
-     * @param array $config
-     */
-    public function __construct(array $config = [])
-    {
-        Craft::$app = $this;
-        parent::__construct($config);
-    }
-
-    /**
      * Initializes the application.
      */
     public function init()

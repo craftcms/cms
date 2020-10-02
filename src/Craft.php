@@ -22,6 +22,7 @@ use yii\web\Request;
  * Craft is helper class serving common Craft and Yii framework functionality.
  * It encapsulates [[Yii]] and ultimately [[yii\BaseYii]], which provides the actual implementation.
  *
+ * @mixin CraftTrait
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
@@ -39,11 +40,6 @@ class Craft extends Yii
      * @deprecated in 3.0.0. Use [[Pro]] instead.
      */
     const Client = 1;
-
-    /**
-     * @var \craft\web\Application|\craft\console\Application The application instance.
-     */
-    public static $app;
 
     /**
      * @var array The default cookie configuration.
