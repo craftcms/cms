@@ -1356,9 +1356,9 @@ class StringHelperTest extends Unit
      * @param $expected
      * @param $string
      */
-    public function testToAscii($expected, $string)
+    public function testToAscii(string $expected, string $string, string $language = null)
     {
-        $actual = StringHelper::toAscii($string);
+        $actual = StringHelper::toAscii($string, $language);
         $this->assertSame($expected, $actual);
     }
 
@@ -1818,7 +1818,8 @@ class StringHelperTest extends Unit
             ['123', '123'],
             ['!@#$%^', '!@#$%^'],
             ['', '🎧𢵌😀😘⛄'],
-            ['abc123', '🎧𢵌😀abc😘123⛄']
+            ['abc123', '🎧𢵌😀abc😘123⛄'],
+            ['ae', 'ä', 'de'], // NFD → NFC conversion (https://github.com/craftcms/cms/issues/6923)
         ];
     }
 

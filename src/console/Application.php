@@ -38,19 +38,6 @@ class Application extends \yii\console\Application
     use ApplicationTrait;
 
     /**
-     * Constructor.
-     *
-     * @param array $config name-value pairs that will be used to initialize the object properties.
-     * Note that the configuration must contain both [[id]] and [[basePath]].
-     * @throws InvalidConfigException if either [[id]] or [[basePath]] configuration is missing.
-     */
-    public function __construct($config = [])
-    {
-        Craft::$app = $this;
-        parent::__construct($config);
-    }
-
-    /**
      * Initializes the console app by creating the command runner.
      */
     public function init()
