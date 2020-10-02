@@ -8,7 +8,6 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
         requestId: 0,
         hud: null,
         $uploadBtn: null,
-        $uploadFileInput: null,
         uploader: null,
         progressBar: null,
 
@@ -136,7 +135,6 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
             var options = {
                 url: Craft.getActionUrl('assets/upload'),
                 dropZone: this.$container,
-                replaceFileInput: false, // https://stackoverflow.com/a/25034721/1688568
                 formData: {
                     fieldId: this.settings.fieldId,
                     elementId: this.settings.sourceElementId
@@ -150,15 +148,11 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
                     'data-icon': 'upload',
                     text: this.settings.limit == 1 ? Craft.t('app', 'Upload a file') : Craft.t('app', 'Upload files'),
                 }).insertAfter(this.$addElementBtn);
-                this.$uploadFileInput = $('<input/>', {
+                options.fileInput = $('<input/>', {
                     type: 'file',
                     class: 'hidden',
                     multiple: this.settings.limit != 1,
                 }).insertAfter(this.$uploadBtn);
-                this.$uploadBtn.on('click', $.proxy(function(ev) {
-                    this.$uploadFileInput.trigger('click');
-                }, this));
-                options.fileInput = this.$uploadFileInput;
             }
 
             // If CSRF protection isn't enabled, these won't be defined.
@@ -179,6 +173,14 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
             options.events.fileuploaddone = $.proxy(this, '_onUploadComplete');
 
             this.uploader = new Craft.Uploader(this.$container, options);
+
+            if (this.$uploadBtn) {
+                this.$uploadBtn.on('click', $.proxy(function(ev) {
+                    // We can't store a reference to the file input, because it gets replaced with a new input
+                    // each time a new file is uploaded - see https://stackoverflow.com/a/25034721/1688568
+                    this.$uploadBtn.next('input[type=file]').trigger('click');
+                }, this));
+            }
         },
 
         refreshThumbnail: function(elementId) {

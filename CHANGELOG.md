@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed a bug where `craft\helpers\StringHelper::toAscii()` and the `Craft.asciiString()` JavaScript method weren’t handling decomposed umlauted characters properly, such as macOS filenames. ([#6923](https://github.com/craftcms/cms/issues/6923))
+- Fixed a JavaScript error that occurred when attempting to open or close Live Preview, after a file had been uploaded from an Assets field. ([#6940](https://github.com/craftcms/cms/issues/6940))
 - Fixed some potential database timeout and sequence issues when running multiple suites of tests.
 
 ## 3.5.12 - 2020-10-01
