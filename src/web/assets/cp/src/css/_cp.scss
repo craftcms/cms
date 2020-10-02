@@ -380,6 +380,11 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 #version {
   margin-top: 4px;
   font-size: 12px;
+
+  &:hover {
+    color: $white;
+    transition: color linear 100ms 500ms;
+  }
 }
 
 #devmode {
