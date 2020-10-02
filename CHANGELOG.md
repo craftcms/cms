@@ -7,6 +7,7 @@
 - Fixed a JavaScript error that occurred when attempting to open or close Live Preview, after a file had been uploaded from an Assets field. ([#6940](https://github.com/craftcms/cms/issues/6940))
 - Fixed a bug where deprecation warnings logged by the `getCsrfInput()`, `getFootHtml()`, `getHeadHtml()`, `round()`, and `svg()` Twig functions, and the `|ucwords` Twig filter, weren’t showing the template name and line number that the warning came from. ([#6927](https://github.com/craftcms/cms/issues/6927))
 - Fixed some potential database timeout and sequence issues when running multiple suites of tests.
+- Fixed a bug where the “Upload files” button within Assets fields was visible if the field limit was already reached on page load. ([#6939](https://github.com/craftcms/cms/issues/6939))
 
 ## 3.5.12 - 2020-10-01
 

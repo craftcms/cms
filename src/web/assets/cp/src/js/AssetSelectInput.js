@@ -94,38 +94,6 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
             });
         },
 
-        disableAddElementsBtn: function() {
-            this.base();
-
-            if (this.$uploadBtn && !this.$uploadBtn.hasClass('disabled')) {
-                this.$uploadBtn.addClass('disabled');
-
-                if (this.settings.limit == 1) {
-                    if (this._initialized) {
-                        this.$uploadBtn.velocity('fadeOut', Craft.BaseElementSelectInput.ADD_FX_DURATION);
-                    } else {
-                        this.$uploadBtn.hide();
-                    }
-                }
-            }
-        },
-
-        enableAddElementsBtn: function() {
-            this.base();
-
-            if (this.$uploadBtn && this.$uploadBtn.hasClass('disabled')) {
-                this.$uploadBtn.removeClass('disabled');
-
-                if (this.settings.limit == 1) {
-                    if (this._initialized) {
-                        this.$uploadBtn.velocity('fadeIn', Craft.BaseElementSelectInput.REMOVE_FX_DURATION);
-                    } else {
-                        this.$uploadBtn.show();
-                    }
-                }
-            }
-        },
-
         /**
          * Attach the uploader with drag event handler
          */

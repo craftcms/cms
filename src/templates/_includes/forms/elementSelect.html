@@ -24,7 +24,7 @@
         {% endfor %}
     </div>
 
-    <div class="flex">
+    <div class="flex{% if limit and elements|length >= limit %} hidden{% endif %}">
         <button type="button" class="btn add icon dashed">{{ selectionLabel is defined ? selectionLabel : "Choose"|t('app') }}</button>
     </div>
 </div>
