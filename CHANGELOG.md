@@ -8,6 +8,7 @@
 - Fixed a bug where deprecation warnings logged by the `getCsrfInput()`, `getFootHtml()`, `getHeadHtml()`, `round()`, and `svg()` Twig functions, and the `|ucwords` Twig filter, weren’t showing the template name and line number that the warning came from. ([#6927](https://github.com/craftcms/cms/issues/6927))
 - Fixed some potential database timeout and sequence issues when running multiple suites of tests.
 - Fixed a bug where the “Upload files” button within Assets fields was visible if the field limit was already reached on page load. ([#6939](https://github.com/craftcms/cms/issues/6939))
+- Fixed an error that could occur when calling `craft\web\View::renderTemplate()` from a console request. ([#6945](https://github.com/craftcms/cms/issues/6945))
 
 ## 3.5.12 - 2020-10-01
 
