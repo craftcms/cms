@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.5.12.1 - 2020-10-02
 
 ### Fixed
 - Fixed a bug where `craft\helpers\StringHelper::toAscii()` and the `Craft.asciiString()` JavaScript method weren’t handling decomposed umlauted characters properly, such as macOS filenames. ([#6923](https://github.com/craftcms/cms/issues/6923))
