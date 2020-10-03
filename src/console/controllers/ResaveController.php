@@ -281,10 +281,10 @@ class ResaveController extends Controller
         $elementsService = Craft::$app->getElements();
         $fail = false;
 
-        $beforeCallback = function(BatchElementActionEvent $e) use ($query) {
+        $beforeCallback = function(BatchElementActionEvent $e) use ($query, $count) {
             if ($e->query === $query) {
                 $element = $e->element;
-                $this->stdout("    - Resaving {$element} ({$element->id}) ... ");
+                $this->stdout("    - [{$e->position}/{$count}] Resaving {$element} ({$element->id}) ... ");
             }
         };
 
