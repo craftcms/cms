@@ -284,7 +284,7 @@ class ResaveController extends Controller
         $beforeCallback = function(BatchElementActionEvent $e) use ($query, $count) {
             if ($e->query === $query) {
                 $element = $e->element;
-                $this->stdout("    - Resaving ({$e->position}/{$count}) {$element} ({$element->id}) ... ");
+                $this->stdout("    - [{$e->position}/{$count}] Resaving {$element} ({$element->id}) ... ");
             }
         };
 
