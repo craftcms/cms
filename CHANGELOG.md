@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\events\UserGroupsAssignEvent::$newGroupIds`. ([#6937](https://github.com/craftcms/cms/issues/6937))
+- Added `craft\events\UserGroupsAssignEvent::$removedGroupIds`. ([#6937](https://github.com/craftcms/cms/issues/6937))
+
 ### Changed
 - `resave/*` commands now show a progress count in the output for each element. ([#6936](https://github.com/craftcms/cms/pull/6936))
 

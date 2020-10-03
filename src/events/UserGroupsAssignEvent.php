@@ -21,7 +21,17 @@ class UserGroupsAssignEvent extends CancelableEvent
     public $userId;
 
     /**
-     * @var int[] The user group IDs being assigned to the user
+     * @var int[] All of the user group IDs that the user belongs to now
      */
     public $groupIds;
+
+    /**
+     * @var int[] The user group IDs that are being removed from the user
+     */
+    public $removedGroupIds;
+
+    /**
+     * @var int[] The user group IDs that are being added to the user
+     */
+    public $newGroupIds;
 }

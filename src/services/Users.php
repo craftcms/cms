@@ -896,10 +896,41 @@ class Users extends Component
      */
     public function assignUserToGroups(int $userId, array $groupIds): bool
     {
+        // Get the unique, indexed group IDs
+        $newGroupIds = array_flip(array_unique(array_filter($groupIds)));
+
+        $db = Craft::$app->getDb();
+
+        // Get the current groups
+        $oldGroups = (new Query())
+            ->select(['id', 'groupId'])
+            ->from([Table::USERGROUPS_USERS])
+            ->where(['userId' => $userId])
+            ->all($db);
+
+        $removedGroupIds = [];
+
+        foreach ($oldGroups as $oldGroup) {
+            // Is the group still selected?
+            if (isset($newGroupIds[$oldGroup['groupId']])) {
+                // Avoid re-inserting it
+                unset($newGroupIds[$oldGroup['groupId']]);
+            } else {
+                $removedGroupIds[] = $oldGroup['id'];
+            }
+        }
+
+        if (empty($removedGroupIds) && empty($newGroupIds)) {
+            // Nothing to do here
+            return true;
+        }
+
         // Fire a 'beforeAssignUserToGroups' event
         $event = new UserGroupsAssignEvent([
             'userId' => $userId,
-            'groupIds' => $groupIds
+            'groupIds' => array_keys($groupIds),
+            'removedGroupIds' => $removedGroupIds,
+            'newGroupIds' => array_keys($newGroupIds),
         ]);
         $this->trigger(self::EVENT_BEFORE_ASSIGN_USER_TO_GROUPS, $event);
 
@@ -907,42 +938,43 @@ class Users extends Component
             return false;
         }
 
-        // Delete their existing groups
-        Db::delete(Table::USERGROUPS_USERS, [
-            'userId' => $userId,
-        ]);
+        // Make sure the event hasn't left us with nothing to do
+        if (empty($event->removedGroupIds) && empty($event->newGroupIds)) {
+            return true;
+        }
 
-        if (!empty($groupIds)) {
-            // Add the new ones
-            $values = [];
-            foreach ($groupIds as $groupId) {
-                $values[] = [$groupId, $userId];
+        $transaction = $db->beginTransaction();
+        try {
+            // Add the new groups
+            if (!empty($event->newGroupIds)) {
+                $values = [];
+                foreach ($event->newGroupIds as $groupId) {
+                    $values[] = [$groupId, $userId];
+                }
+                Db::batchInsert(Table::USERGROUPS_USERS, ['groupId', 'userId'], $values, true, $db);
             }
 
-            Db::batchInsert(Table::USERGROUPS_USERS, ['groupId', 'userId'], $values);
+            if (!empty($event->removedGroupIds)) {
+                Db::delete(Table::USERGROUPS_USERS, [
+                    'id' => $event->removedGroupIds,
+                ], [], $db);
+            }
+
+            $transaction->commit();
+        } catch (\Throwable $e) {
+            $transaction->rollBack();
+            throw $e;
         }
 
         // Fire an 'afterAssignUserToGroups' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_ASSIGN_USER_TO_GROUPS)) {
             $this->trigger(self::EVENT_AFTER_ASSIGN_USER_TO_GROUPS, new UserGroupsAssignEvent([
                 'userId' => $userId,
-                'groupIds' => $groupIds
+                'groupIds' => $groupIds,
+                'removedGroupIds' => $event->removedGroupIds,
+                'newGroupIds' => $event->newGroupIds,
             ]));
         }
-
-        // Need to invalidate the User element's cached values.
-        $user = $this->getUserById($userId);
-        $userGroups = [];
-
-        foreach ($groupIds as $groupId) {
-            $userGroup = Craft::$app->getUserGroups()->getGroupById($groupId);
-
-            if ($userGroup) {
-                $userGroups[] = $userGroup;
-            }
-        }
-
-        $user->setGroups($userGroups);
 
         return true;
     }
