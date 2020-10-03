@@ -641,13 +641,14 @@ class ProjectConfig extends Component
      * Note that this will only have an effect if project config YAML changes are currently getting [[getIsApplyingYamlChanges()|applied]].
      *
      * @param string $path The config item path
-     * @param bool $triggerUpdate is set to true and no changes are detected, an update event will be triggered, anyway.
-     * @param string|null $message The message describing changes, if modifications are made.
-     * @param bool $force Whether the config change should be processed regardless of previous records
+     * @param bool $triggerUpdate Whether an update event should be triggered even if no changes are detected
+     * @param string|null $message The message describing changes, if changes are detected
+     * @param bool $force Whether the config change should be processed regardless of previous records,
+     * or whether YAML changes are currently being applied
      */
     public function processConfigChanges(string $path, bool $triggerUpdate = false, $message = null, bool $force = false)
     {
-        if ($this->getIsApplyingYamlChanges()) {
+        if ($force || $this->getIsApplyingYamlChanges()) {
             $this->_processConfigChangesInternal($path, $triggerUpdate, $message, $force);
         }
     }

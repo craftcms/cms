@@ -10,6 +10,10 @@
 
 ### Changed
 - `resave/*` commands now show a progress count in the output for each element. ([#6936](https://github.com/craftcms/cms/pull/6936))
+- `craft\helpers\ProjectConfig::ensureAllSitesProcessed()` now has a `$force` argument.
+
+### Fixed
+- Fixed an error that could occur when installing Craft with existing project config data. ([#6943](https://github.com/craftcms/cms/issues/6943))
 
 ## 3.5.12.1 - 2020-10-02
 

@@ -1060,7 +1060,7 @@ class Install extends Migration
                 }
 
                 // Make sure at least sites are processed
-                ProjectConfigHelper::ensureAllSitesProcessed();
+                ProjectConfigHelper::ensureAllSitesProcessed(true);
 
                 $this->_installPlugins();
                 $applyExistingProjectConfig = true;

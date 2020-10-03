@@ -81,12 +81,14 @@ class ProjectConfig
 
     /**
      * Ensure all site config changes are processed immediately in a safe manner.
+     *
+     * @param bool $force Whether to proceed even if YAML changes are not currently being applied
      */
-    public static function ensureAllSitesProcessed()
+    public static function ensureAllSitesProcessed(bool $force = false)
     {
         $projectConfig = Craft::$app->getProjectConfig();
 
-        if (static::$_processedSites || !$projectConfig->getIsApplyingYamlChanges()) {
+        if (static::$_processedSites || (!$force && !$projectConfig->getIsApplyingYamlChanges())) {
             return;
         }
 
@@ -97,12 +99,12 @@ class ProjectConfig
 
         foreach ($allGroups as $groupUid => $groupData) {
             // Ensure group is processed
-            $projectConfig->processConfigChanges(Sites::CONFIG_SITEGROUP_KEY . '.' . $groupUid);
+            $projectConfig->processConfigChanges(Sites::CONFIG_SITEGROUP_KEY . '.' . $groupUid, false, null, $force);
         }
 
         foreach ($allSites as $siteUid => $siteData) {
             // Ensure site is processed
-            $projectConfig->processConfigChanges(Sites::CONFIG_SITES_KEY . '.' . $siteUid);
+            $projectConfig->processConfigChanges(Sites::CONFIG_SITES_KEY . '.' . $siteUid, false, null, $force);
         }
     }
 
