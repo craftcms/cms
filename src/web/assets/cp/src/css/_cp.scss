@@ -289,7 +289,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
 #app-info {
   padding: 14px 14px 24px;
-  color: $grey600;
+  color: $grey400;
   text-align: center;
 }
 
@@ -302,23 +302,23 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
     cursor: pointer;
 
     #edition-logo {
-      border-color: $black;
+      border-color: $grey600;
 
       & > .edition-name {
-        color: $black;
+        color: $grey600;
         @include light-on-dark-text;
       }
 
       & > .edition-trial {
-        background-color: $black;
+        background-color: $grey600;
 
         &:before {
           body.ltr & {
-            border-color: transparent $black transparent transparent;
+            border-color: transparent $grey600 transparent transparent;
           }
 
           body.rtl & {
-            border-color: transparent transparent transparent $black;
+            border-color: transparent transparent transparent $grey600;
           }
         }
       }
@@ -328,7 +328,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
 #edition-logo {
   user-select: none;
-  border: 1px solid $grey600;
+  border: 1px solid $grey400;
   border-radius: 3px;
   display: inline-flex;
   height: 24px;
@@ -354,7 +354,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
     position: relative;
     @include margin-left(5px);
     @include padding-left(5px);
-    background-color: $grey600;
+    background-color: $grey400;
     color: $grey200;
     border-radius: 0 1px 1px 0;
     letter-spacing: 1px;
@@ -376,13 +376,13 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
       body.ltr & {
         left: -10px;
         border-width: 0 10px 23px 0;
-        border-color: transparent $grey600 transparent transparent;
+        border-color: transparent $grey400 transparent transparent;
       }
 
       body.rtl & {
         right: -10px;
         border-width: 0 0 23px 10px;
-        border-color: transparent transparent transparent $grey600;
+        border-color: transparent transparent transparent $grey400;
       }
     }
   }
@@ -394,11 +394,11 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   background: transparent;
   padding: 0;
   margin-left: 2px;
-  color: $grey600;
+  color: $grey400;
 
   &:hover,
   &:focus {
-    color: $black;
+    color: $grey600;
     transition: color linear 100ms;
   }
 
