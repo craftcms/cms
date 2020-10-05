@@ -15,6 +15,9 @@
 ### Fixed
 - Fixed an error that could occur when installing Craft with existing project config data. ([#6943](https://github.com/craftcms/cms/issues/6943))
 - Fixed an error that occurred when propagating a Time field value to another site. ([#6950](https://github.com/craftcms/cms/issues/6950))
+- Fixed an error that could occur when calling `craft\web\View::renderTemplate()` from a console request. ([#6945](https://github.com/craftcms/cms/issues/6945))
+- Fixed a Twig error that would occur when rendering the `_includes/forms/elementSelect.html` template if no `limit` variable was passed. ([#6953](https://github.com/craftcms/cms/issues/6953))
+- Fixed an error that could occur when updating to Craft 3.5, if any Assets fields had an upload location set to `{site.group}`. ([#6818](https://github.com/craftcms/cms/issues/6818))
 
 ## 3.5.12.1 - 2020-10-02
 
@@ -24,7 +27,6 @@
 - Fixed a bug where deprecation warnings logged by the `getCsrfInput()`, `getFootHtml()`, `getHeadHtml()`, `round()`, and `svg()` Twig functions, and the `|ucwords` Twig filter, weren’t showing the template name and line number that the warning came from. ([#6927](https://github.com/craftcms/cms/issues/6927))
 - Fixed some potential database timeout and sequence issues when running multiple suites of tests.
 - Fixed a bug where the “Upload files” button within Assets fields was visible if the field limit was already reached on page load. ([#6939](https://github.com/craftcms/cms/issues/6939))
-- Fixed an error that could occur when calling `craft\web\View::renderTemplate()` from a console request. ([#6945](https://github.com/craftcms/cms/issues/6945))
 
 ## 3.5.12 - 2020-10-01
 
