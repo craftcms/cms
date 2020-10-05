@@ -222,6 +222,10 @@ class UrlManager extends \yii\web\UrlManager
             return $this->_matchedElement;
         }
 
+        if (Craft::$app->getRequest()->getIsConsoleRequest()) {
+            return false;
+        }
+
         $this->_getMatchedElementRoute(Craft::$app->getRequest());
         return $this->_matchedElement;
     }
