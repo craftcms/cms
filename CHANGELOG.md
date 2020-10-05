@@ -9,6 +9,7 @@
 - Added `craft\events\UserGroupsAssignEvent::$removedGroupIds`. ([#6937](https://github.com/craftcms/cms/issues/6937))
 
 ### Changed
+- Improved the accessibility of the Craft CMS edition name and version number. ([#6951](https://github.com/craftcms/cms/pull/6951))
 - `resave/*` commands now show a progress count in the output for each element. ([#6936](https://github.com/craftcms/cms/pull/6936))
 - `craft\helpers\ProjectConfig::ensureAllSitesProcessed()` now has a `$force` argument.
 
