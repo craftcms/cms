@@ -241,6 +241,17 @@
             </div><!-- #main-container -->
 
             <footer id="global-footer">
+                <div id="app-info">
+                    <div id="edition" {% if canUpgradeEdition %}class="hot" title="{{ 'Manage your Craft CMS edition'|t('app') }}"{% else %}class="edition"{% endif %}>
+                        <div id="edition-logo">
+                            <div class="edition-name">{{ craft.app.getEditionName() }}</div>
+                            {% if isTrial %}
+                                <div class="edition-trial">{{ "Trial"|t('app') }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div id="version">Craft CMS {{ craft.app.version }}</div>
+                </div>
             </footer>
 
         </div><!-- #page-container -->
