@@ -294,28 +294,30 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
 #edition {
   font-size: 14px;
+  display: inline-block;
+  position: relative;
 
   &.hot:hover {
     cursor: pointer;
 
     #edition-logo {
-      border-color: $grey300;
+      border-color: $black;
 
       & > .edition-name {
-        color: $grey300;
+        color: $black;
         @include light-on-dark-text;
       }
 
       & > .edition-trial {
-        background-color: $grey300;
+        background-color: $black;
 
         &:before {
           body.ltr & {
-            border-color: transparent $grey300 transparent transparent;
+            border-color: transparent $black transparent transparent;
           }
 
           body.rtl & {
-            border-color: transparent transparent transparent $grey300;
+            border-color: transparent transparent transparent $black;
           }
         }
       }
@@ -382,6 +384,32 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
         border-color: transparent transparent transparent $grey600;
       }
     }
+  }
+}
+
+#edition-button {
+  appearance: none;
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin-left: 2px;
+  color: $grey600;
+
+  &:hover,
+  &:focus {
+    color: $black;
+    transition: color linear 100ms;
+  }
+
+  // Create a larger click area for the button
+  .icon::after {
+    content: '';
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
   }
 }
 
