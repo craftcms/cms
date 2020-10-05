@@ -2919,29 +2919,19 @@ body.rtl #nav li ul li a { padding: 3px 42px 3px 14px !important; }
 
 #nav li ul li a:not(.active) { color: #cdd8e4; }
 
-#app-info { padding: 14px 14px 24px; color: #7b8793; text-align: center; }
+#app-info { display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; -webkit-justify-content: center; justify-content: center; padding: 14px 14px 24px; font-size: 12px; color: #606d7b; text-align: center; }
 
-#edition { font-size: 14px; display: inline-block; position: relative; }
+#app-info li { margin: 0 7px; }
 
-#edition.hot:hover { cursor: pointer; }
+#app-info li a { color: #606d7b; text-decoration: underline; }
 
-#edition.hot:hover #edition-logo { border-color: #515f6c; }
+#edition-logo { -webkit-user-select: none; user-select: none; border: 1px solid #606d7b; border-radius: 3px; display: -webkit-inline-flex; display: inline-flex; height: 22px; box-sizing: content-box; -o-transition: border-color linear 100ms; transition: border-color linear 100ms; }
 
-#edition.hot:hover #edition-logo > .edition-name { color: #515f6c; -moz-osx-font-smoothing: grayscale; -webkit-font-smoothing: antialiased; font-weight: 500; }
+#edition-logo > .edition-name, #edition-logo > .edition-trial { padding: 7px 8px 6px; line-height: 8px; }
 
-#edition.hot:hover #edition-logo > .edition-trial { background-color: #515f6c; }
+#edition-logo > .edition-name { font-weight: 600; letter-spacing: 1.9px; padding-right: 5px; text-transform: uppercase; -o-transition: color linear 100ms; transition: color linear 100ms; }
 
-body.ltr #edition.hot:hover #edition-logo > .edition-trial:before { border-color: transparent #515f6c transparent transparent; }
-
-body.rtl #edition.hot:hover #edition-logo > .edition-trial:before { border-color: transparent transparent transparent #515f6c; }
-
-#edition-logo { -webkit-user-select: none; user-select: none; border: 1px solid #7b8793; border-radius: 3px; display: -webkit-inline-flex; display: inline-flex; height: 24px; box-sizing: content-box; -o-transition: border-color linear 100ms; transition: border-color linear 100ms; }
-
-#edition-logo > .edition-name, #edition-logo > .edition-trial { padding: 8px 8px 7px; line-height: 8px; font-weight: 500; }
-
-#edition-logo > .edition-name { letter-spacing: 2.2px; padding-right: 5.8px; text-transform: uppercase; -o-transition: color linear 100ms; transition: color linear 100ms; }
-
-#edition-logo > .edition-trial { display: inline-block; position: relative; background-color: #7b8793; color: #cdd8e4; border-radius: 0 1px 1px 0; letter-spacing: 1px; text-transform: lowercase; -o-transition: background linear 100ms; transition: background linear 100ms; }
+#edition-logo > .edition-trial { display: inline-block; position: relative; background-color: #606d7b; color: #cdd8e4; border-radius: 0 1px 1px 0; letter-spacing: 1px; text-transform: lowercase; -o-transition: background linear 100ms; transition: background linear 100ms; }
 
 body.ltr #edition-logo > .edition-trial { margin-left: 5px; }
 
@@ -2957,17 +2947,9 @@ body.rtl #edition-logo > .edition-trial { padding-left: 7px; }
 
 #edition-logo > .edition-trial:before { display: block; position: absolute; top: 0; content: '.'; font-size: 0; width: 0; height: 0; border-style: solid; -o-transition: border-color linear 100ms; transition: border-color linear 100ms; }
 
-body.ltr #edition-logo > .edition-trial:before { left: -10px; border-width: 0 10px 23px 0; border-color: transparent #7b8793 transparent transparent; }
+body.ltr #edition-logo > .edition-trial:before { left: -10px; border-width: 0 10px 23px 0; border-color: transparent #606d7b transparent transparent; }
 
-body.rtl #edition-logo > .edition-trial:before { right: -10px; border-width: 0 0 23px 10px; border-color: transparent transparent transparent #7b8793; }
-
-#edition-button { -webkit-appearance: none; appearance: none; border: none; background: transparent; padding: 0; margin-left: 2px; color: #7b8793; }
-
-#edition-button:hover, #edition-button:focus { color: #515f6c; -o-transition: color linear 100ms; transition: color linear 100ms; }
-
-#edition-button .icon::after { content: ''; display: block; position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-
-#version { margin-top: 4px; font-size: 12px; }
+body.rtl #edition-logo > .edition-trial:before { right: -10px; border-width: 0 0 23px 10px; border-color: transparent transparent transparent #606d7b; }
 
 #devmode { -webkit-flex: 0 0 4px; flex: 0 0 4px; width: 100%; min-height: 4px; background: url(../images/dev-mode.svg) repeat-x 21px 0; cursor: help; }
 

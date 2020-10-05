@@ -71,7 +71,6 @@ Craft.CP = Garnish.Base.extend(
             this.$sidebar = $('#sidebar');
             this.$contentContainer = $('#content-container');
             this.$collapsibleTables = $('table.collapsible');
-            this.$editionButton = $('#edition-button');
 
             this.updateSidebarMenuLabel();
 
@@ -166,12 +165,6 @@ Craft.CP = Garnish.Base.extend(
                     Garnish.requestAnimationFrame(() => {
                         window.scrollTo(0, scrollY);
                     });
-                });
-            }
-
-            if (this.$editionButton) {
-                this.addListener(this.$editionButton, 'click', function() {
-                    document.location.href = Craft.getUrl('plugin-store/upgrade-craft');
                 });
             }
 

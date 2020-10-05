@@ -118,7 +118,7 @@
     <div id="global-container">
         {% include '_layouts/components/global-sidebar' %}
 
-        <div id="page-container">
+        <li id="page-container">
             {% include '_layouts/components/alerts' %}
             {% include '_layouts/components/notifications' %}
 
@@ -241,23 +241,18 @@
             </div><!-- #main-container -->
 
             <footer id="global-footer">
-                <div id="app-info">
-                    <div id="edition" {% if canUpgradeEdition %}class="hot" title="{{ 'Manage your Craft CMS edition'|t('app') }}"{% endif %}>
-                        <div id="edition-logo">
-                            <div class="edition-name">{{ craft.app.getEditionName() }}</div>
-                            {% if isTrial %}
-                                <div class="edition-trial">{{ "Trial"|t('app') }}</div>
-                            {% endif %}
-                        </div>
-
-                        {% if canUpgradeEdition %}
-                            <button id="edition-button" aria-label="{{ 'Manage your Craft CMS edition'|t('app') }}">
-                                <span class="settings icon"></span>
-                            </button>
+                <ul id="app-info">
+                    <li id="edition-logo" title="{{ '{edition} edition'|t('app', {edition: craft.app.getEditionName()}) ~ (isTrial ? ' ' ~ '(trial)'|t('app')) }}">
+                        <div class="edition-name">{{ craft.app.getEditionName() }}</div>
+                        {% if isTrial %}
+                            <div class="edition-trial">{{ "Trial"|t('app') }}</div>
                         {% endif %}
-                    </div>
-                    <div id="version">Craft CMS {{ craft.app.version }}</div>
-                </div>
+                    </li>
+                    {% if canUpgradeEdition %}
+                        <li><a href="plugin-store/upgrade-craft" title="{{ 'Upgrade Craft CMS'|t('app') }}">{{ 'Upgrade'|t('app') }}</a></li>
+                    {% endif %}
+                    <li>Craft CMS {{ craft.app.version }}</li>
+                </ul>
             </footer>
 
         </div><!-- #page-container -->
