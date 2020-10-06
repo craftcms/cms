@@ -77,6 +77,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
             this.setSettings(settings, Craft.AssetImageEditor.defaults);
 
+            if (this.settings.allowDegreeFractions === null) {
+                this.settings.allowDegreeFractions = Craft.isImagick;
+            }
+
             this.assetId = assetId;
             this.flipData = {x: 0, y: 0};
 
@@ -2762,7 +2766,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             animationDuration: 100,
             allowSavingAsNew: true,
             onSave: $.noop,
-            allowDegreeFractions: true
+            allowDegreeFractions: null,
         }
     }
 );
