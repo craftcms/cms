@@ -309,6 +309,10 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
     a {
       color: $grey500;
       text-decoration: underline;
+
+      &.go:hover:after {
+        color: $grey500;
+      }
     }
   }
 }
@@ -362,13 +366,13 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
       body.ltr & {
         left: -10px;
-        border-width: 0 10px 23px 0;
+        border-width: 0 10px 20px 0;
         border-color: transparent $grey500 transparent transparent;
       }
 
       body.rtl & {
         right: -10px;
-        border-width: 0 0 23px 10px;
+        border-width: 0 0 20px 10px;
         border-color: transparent transparent transparent $grey500;
       }
     }

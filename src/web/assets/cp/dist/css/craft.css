@@ -2927,6 +2927,8 @@ body.rtl #nav li ul li a { padding: 3px 42px 3px 14px !important; }
 
 #app-info li a { color: #606d7b; text-decoration: underline; }
 
+#app-info li a.go:hover:after { color: #606d7b; }
+
 #edition-logo { -webkit-user-select: none; user-select: none; border: 1px solid #606d7b; border-radius: 3px; display: -webkit-inline-flex; display: inline-flex; height: 20px; box-sizing: content-box; font-size: 11px; }
 
 #edition-logo > .edition-name, #edition-logo > .edition-trial { padding: 6px 7px 5px; line-height: 8px; }
@@ -2949,9 +2951,9 @@ body.rtl #edition-logo > .edition-trial { padding-left: 7px; }
 
 #edition-logo > .edition-trial:before { display: block; position: absolute; top: 0; content: '.'; font-size: 0; width: 0; height: 0; border-style: solid; -o-transition: border-color linear 100ms; transition: border-color linear 100ms; }
 
-body.ltr #edition-logo > .edition-trial:before { left: -10px; border-width: 0 10px 23px 0; border-color: transparent #606d7b transparent transparent; }
+body.ltr #edition-logo > .edition-trial:before { left: -10px; border-width: 0 10px 20px 0; border-color: transparent #606d7b transparent transparent; }
 
-body.rtl #edition-logo > .edition-trial:before { right: -10px; border-width: 0 0 23px 10px; border-color: transparent transparent transparent #606d7b; }
+body.rtl #edition-logo > .edition-trial:before { right: -10px; border-width: 0 0 20px 10px; border-color: transparent transparent transparent #606d7b; }
 
 #devmode { -webkit-flex: 0 0 4px; flex: 0 0 4px; width: 100%; min-height: 4px; background: url(../images/dev-mode.svg) repeat-x 21px 0; cursor: help; }
 
