@@ -1734,4 +1734,6 @@ If you were not expecting this email, just ignore it.',
     '(trial)' => '(trial)',
     'Buy Craft Pro' => 'Buy Craft Pro',
     'Upgrade to Craft Pro' => 'Upgrade to Craft Pro',
+    'Allow uploading directly to the field' => 'Allow uploading directly to the field',
+    'Whether authors should be able to upload files directly to the field, rather than requiring them to select/upload assets via the selection modal.' => 'Whether authors should be able to upload files directly to the field, rather than requiring them to select/upload assets via the selection modal.',
 ];

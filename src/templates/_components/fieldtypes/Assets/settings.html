@@ -108,6 +108,14 @@
         {{ forms.errorList(field.getErrors('allowedKinds')) }}
     </fieldset>
 
+    {{ forms.checkboxField({
+        label: 'Allow uploading directly to the field'|t('app'),
+        instructions: 'Whether authors should be able to upload files directly to the field, rather than requiring them to select/upload assets via the selection modal.'|t('app'),
+        id: 'allow-uploads',
+        name: 'allowUploads',
+        checked: field.allowUploads,
+    }) }}
+
     {{ block('limitField') }}
     {{ block('viewModeField') }}
     {{ block('selectionLabelField') }}

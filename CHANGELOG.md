@@ -3,10 +3,12 @@
 ## Unreleased
 
 ### Added
+- It’s now possible to disallow uploading files directly to Assets fields, as opposed to going through the selection modal. ([#6954](https://github.com/craftcms/cms/issues/6954))
 - Added `craft\controllers\UsersController::EVENT_AFTER_ASSIGN_GROUPS_AND_PERMISSIONS`. ([#6937](https://github.com/craftcms/cms/issues/6937))
 - Added `craft\controllers\UsersController::EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS`. ([#6937](https://github.com/craftcms/cms/issues/6937))
 - Added `craft\events\UserGroupsAssignEvent::$newGroupIds`. ([#6937](https://github.com/craftcms/cms/issues/6937))
 - Added `craft\events\UserGroupsAssignEvent::$removedGroupIds`. ([#6937](https://github.com/craftcms/cms/issues/6937))
+- Added `craft\fields\Assets::$allowUploads`.
 
 ### Changed
 - Improved the accessibility of the Craft CMS edition name and version number. ([#6951](https://github.com/craftcms/cms/pull/6951))
