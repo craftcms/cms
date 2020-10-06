@@ -242,19 +242,19 @@
             </div><!-- #main-container -->
 
             <footer id="global-footer">
+                <div id="edition-logo" title="{{ '{edition} edition'|t('app', {edition: editionName}) ~ (isTrial ? ' ' ~ '(trial)'|t('app')) }}">
+                    <div class="edition-name">{{ editionName }}</div>
+                    {% if isTrial %}
+                        <div class="edition-trial">{{ "Trial"|t('app') }}</div>
+                    {% endif %}
+                </div>
                 <ul id="app-info">
-                    <li id="edition-logo" title="{{ '{edition} edition'|t('app', {edition: editionName}) ~ (isTrial ? ' ' ~ '(trial)'|t('app')) }}">
-                        <div class="edition-name">{{ editionName }}</div>
-                        {% if isTrial %}
-                            <div class="edition-trial">{{ "Trial"|t('app') }}</div>
-                        {% endif %}
-                    </li>
+                    <li>Craft CMS {{ craft.app.version }}</li>
                     {% if canUpgradeEdition %}
                         <li>
-                            <a href="plugin-store/upgrade-craft">{{ isTrial ? 'Buy or downgrade'|t('app') : 'Upgrade to Pro'|t('app') }}</a>
+                            <a href="plugin-store/upgrade-craft">{{ isTrial ? 'Buy Craft Pro or downgrade'|t('app') : 'Upgrade to Craft Pro'|t('app') }}</a>
                         </li>
                     {% endif %}
-                    <li>Craft CMS {{ craft.app.version }}</li>
                 </ul>
             </footer>
 
