@@ -1730,4 +1730,7 @@ Ak si tento email neočakával, jednoducho ho ignoruj.',
     'Min Time' => 'Min Time',
     'Max Time' => 'Max Time',
     'Time fields are better suited for managing Time-only values.' => 'Time fields are better suited for managing Time-only values.',
+    '{edition} edition' => '{edition} edition',
+    '(trial)' => '(trial)',
+    'Upgrade' => 'Upgrade',
 ];
