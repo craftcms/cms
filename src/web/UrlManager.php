@@ -359,6 +359,11 @@ class UrlManager extends \yii\web\UrlManager
             return $route;
         }
 
+        // Is this a "well-known" request?
+        if (($route = $this->_getMatchedDiscoverableUrlRoute($request)) !== false) {
+            return $route;
+        }
+
         // Does it look like they're trying to access a public template path?
         return $this->_getTemplateRoute($request);
     }
@@ -431,6 +436,38 @@ class UrlManager extends \yii\web\UrlManager
         }
 
         return false;
+    }
+
+    /**
+     * Attempts to match a path with a “well-known” URL.
+     *
+     * @param Request $request
+     * @return mixed
+     */
+    private function _getMatchedDiscoverableUrlRoute(Request $request)
+    {
+        $path = $request->getPathInfo();
+        $match = $path === '.well-known/change-password';
+
+        if (YII_DEBUG) {
+            Craft::debug([
+                'rule' => 'Discoverable change password URL',
+                'match' => $match,
+                'parent' => null
+            ], __METHOD__);
+        }
+
+        if (!$match) {
+            return false;
+        }
+
+        return [
+            'redirect',
+            [
+                'url' => Craft::$app->getConfig()->getGeneral()->getSetPasswordPath(),
+                'statusCode' => 302,
+            ]
+        ];
     }
 
     /**
