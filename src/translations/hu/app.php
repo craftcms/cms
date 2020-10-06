@@ -1728,4 +1728,7 @@ Amennyiben nem neked szól ez a levél, egyszerűen csak hagyd figyelmen kívül
     'Min Time' => 'Min Time',
     'Max Time' => 'Max Time',
     'Time fields are better suited for managing Time-only values.' => 'Time fields are better suited for managing Time-only values.',
+    '{edition} edition' => '{edition} edition',
+    '(trial)' => '(trial)',
+    'Upgrade' => 'Upgrade',
 ];
