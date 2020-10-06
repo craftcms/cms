@@ -1732,5 +1732,6 @@ Si vous n’attendiez aucun courriel de ce type, ignorez-le, tout simplement.',
     'Time fields are better suited for managing Time-only values.' => 'Time fields are better suited for managing Time-only values.',
     '{edition} edition' => '{edition} edition',
     '(trial)' => '(trial)',
-    'Upgrade' => 'Upgrade',
+    'Buy or downgrade' => 'Buy or downgrade',
+    'Upgrade to Pro' => 'Upgrade to Pro',
 ];
