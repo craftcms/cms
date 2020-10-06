@@ -347,7 +347,10 @@ class ElementQueryConditionBuilder extends Component
         if ($rootOfAssetQuery) {
             // If this is a root asset query that has transform directive defined
             // We should eager-load transforms using the directive's arguments
-            $parentPlan->criteria['withTransforms'] = $this->_prepareTransformArguments($this->_extractTransformDirectiveArguments($parentNode));
+            $transformArguments = $this->_prepareTransformArguments($this->_extractTransformDirectiveArguments($parentNode));
+            if ($transformArguments) {
+                $parentPlan->criteria['withTransforms'] = $transformArguments;
+            }
         }
 
         $countedHandles = [];

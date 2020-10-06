@@ -19,6 +19,7 @@
 - Fixed an error that could occur when calling `craft\web\View::renderTemplate()` from a console request. ([#6945](https://github.com/craftcms/cms/issues/6945))
 - Fixed a Twig error that would occur when rendering the `_includes/forms/elementSelect.html` template if no `limit` variable was passed. ([#6953](https://github.com/craftcms/cms/issues/6953))
 - Fixed an error that could occur when updating to Craft 3.5, if any Assets fields had an upload location set to `{site.group}`. ([#6818](https://github.com/craftcms/cms/issues/6818))
+- Fixed a bug where in some cases querying for Assets using GraphQL API could fail.
 
 ## 3.5.12.1 - 2020-10-02
 
