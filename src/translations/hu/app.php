@@ -1730,6 +1730,6 @@ Amennyiben nem neked szól ez a levél, egyszerűen csak hagyd figyelmen kívül
     'Time fields are better suited for managing Time-only values.' => 'Time fields are better suited for managing Time-only values.',
     '{edition} edition' => '{edition} edition',
     '(trial)' => '(trial)',
-    'Buy or downgrade' => 'Buy or downgrade',
-    'Upgrade to Pro' => 'Upgrade to Pro',
+    'Buy Craft Pro or downgrade' => 'Buy Craft Pro or downgrade',
+    'Upgrade to Craft Pro' => 'Upgrade to Craft Pro',
 ];
