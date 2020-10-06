@@ -1728,5 +1728,6 @@ Wenn Sie diese E-Mail nicht erwartet haben, ignorieren Sie sie bitte einfach.',
     'Time fields are better suited for managing Time-only values.' => 'Time fields are better suited for managing Time-only values.',
     '{edition} edition' => '{edition} edition',
     '(trial)' => '(trial)',
-    'Upgrade' => 'Upgrade',
+    'Buy or downgrade' => 'Buy or downgrade',
+    'Upgrade to Pro' => 'Upgrade to Pro',
 ];
