@@ -9,7 +9,7 @@
  * Helps with IDE auto-completion.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.5.13
+ * @since 3.5.12.1
  */
 trait CraftTrait
 {

@@ -1079,7 +1079,7 @@ class Db
     /**
      * Resets the memoized database connection.
      *
-     * @since 3.5.13
+     * @since 3.5.12.1
      */
     public static function reset()
     {
