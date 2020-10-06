@@ -59,6 +59,7 @@
 {% set hasSystemIcon = CraftEdition == CraftPro and craft.rebrand.isIconUploaded %}
 {% set fullPageForm = (fullPageForm is defined and fullPageForm) %}
 
+{% set editionName = craft.app.getEditionName() %}
 {% set canUpgradeEdition = craft.app.getCanUpgradeEdition() %}
 {% set licensedEdition = craft.app.getLicensedEdition() %}
 {% set isTrial = licensedEdition is not same as(null) and licensedEdition is not same as(CraftEdition) %}
@@ -242,14 +243,16 @@
 
             <footer id="global-footer">
                 <ul id="app-info">
-                    <li id="edition-logo" title="{{ '{edition} edition'|t('app', {edition: craft.app.getEditionName()}) ~ (isTrial ? ' ' ~ '(trial)'|t('app')) }}">
-                        <div class="edition-name">{{ craft.app.getEditionName() }}</div>
+                    <li id="edition-logo" title="{{ '{edition} edition'|t('app', {edition: editionName}) ~ (isTrial ? ' ' ~ '(trial)'|t('app')) }}">
+                        <div class="edition-name">{{ editionName }}</div>
                         {% if isTrial %}
                             <div class="edition-trial">{{ "Trial"|t('app') }}</div>
                         {% endif %}
                     </li>
                     {% if canUpgradeEdition %}
-                        <li><a href="plugin-store/upgrade-craft" title="{{ 'Upgrade Craft CMS'|t('app') }}">{{ 'Upgrade'|t('app') }}</a></li>
+                        <li>
+                            <a href="plugin-store/upgrade-craft">{{ isTrial ? 'Buy or downgrade'|t('app') : 'Upgrade to Pro'|t('app') }}</a>
+                        </li>
                     {% endif %}
                     <li>Craft CMS {{ craft.app.version }}</li>
                 </ul>
