@@ -583,7 +583,7 @@ class UrlHelperTest extends Unit
                 'urlWithToken'
             ],
             [
-                $baseUrl . '?token',
+                $baseUrl . '?token=',
                 $baseUrl . '',
                 '',
                 'urlWithToken'
