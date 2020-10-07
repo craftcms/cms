@@ -9,7 +9,7 @@ namespace craft\db;
 
 use Craft;
 use craft\helpers\Db;
-use yii\db\ActiveQuery;
+use yii\db\ActiveQuery as YiiActiveQuery;
 use yii2tech\ar\softdelete\SoftDeleteBehavior;
 
 /**
@@ -77,7 +77,7 @@ use yii2tech\ar\softdelete\SoftDeleteBehavior;
 trait SoftDeleteTrait
 {
     /**
-     * @return ActiveQuery
+     * @return YiiActiveQuery
      */
     public static function find()
     {
@@ -86,24 +86,30 @@ trait SoftDeleteTrait
         // todo: remove schema version condition after next beakpoint
         $schemaVersion = Craft::$app->getInstalledSchemaVersion();
         if (version_compare($schemaVersion, '3.1.19', '>=')) {
-            $query->where(['dateDeleted' => null]);
+            if ($query instanceof ActiveQuery) {
+                $alias = $query->getAlias();
+                $column = "$alias.dateDeleted";
+            } else {
+                $column = 'dateDeleted';
+            }
+            $query->where([$column => null]);
         }
 
         return $query;
     }
 
     /**
-     * @return ActiveQuery
+     * @return YiiActiveQuery
      */
-    public static function findWithTrashed(): ActiveQuery
+    public static function findWithTrashed(): YiiActiveQuery
     {
         return static::find()->where([]);
     }
 
     /**
-     * @return ActiveQuery
+     * @return YiiActiveQuery
      */
-    public static function findTrashed(): ActiveQuery
+    public static function findTrashed(): YiiActiveQuery
     {
         return static::find()->where(['not', ['dateDeleted' => null]]);
     }
