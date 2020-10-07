@@ -193,7 +193,6 @@ return [
     'Date Created' => '创建日期',
     'Date Updated' => '更新日期',
     'Date Uploaded' => '上传日期',
-    'Date/Time' => '日期/时间',
     'Days' => '日',
     'Default Color' => '默认颜色',
     'Default Asset Location' => 'Default Asset Location',
@@ -362,7 +361,6 @@ return [
     'Looks like you are trying to load a template outside the template folder.' => '看起来您正尝试载入模板文件夹外的模板。',
     'Make not required' => '使非必需',
     'Make required' => '使必需',
-    'Manage your Craft CMS edition' => '管理您的 Craft CMS 版本',
     'Manipulated SVG image rasterizing is unreliable. See \\craft\\services\\Images::loadImage()' => '不可靠的 SVG 图片栅格化操作。请参阅 \\craft\\services\\Images::loadImage()',
     'Matrix' => '矩阵',
     'Matrix Block' => '矩阵块',
@@ -1577,7 +1575,6 @@ return [
     'What entry URIs should look like for the site. Leave blank if entries don’t have URLs.' => '站点条目的 URI 应该是什么样？如果条目没有 URL，请留空。',
     'Helper text to guide the author.' => '指导作者的辅助文字。',
     'Briefly describe your question.' => '简要描述您的问题。',
-    'Share' => '共享',
     'None' => '无',
     'Allow self relations' => '允许自关系',
     'Min Value' => '最小值',
@@ -1736,4 +1733,6 @@ return [
     'Upgrade to Craft Pro' => 'Upgrade to Craft Pro',
     'Allow uploading directly to the field' => 'Allow uploading directly to the field',
     'Whether authors should be able to upload files directly to the field, rather than requiring them to select/upload assets via the selection modal.' => 'Whether authors should be able to upload files directly to the field, rather than requiring them to select/upload assets via the selection modal.',
+    '{attribute} must be a time.' => '{attribute} must be a time.',
+    'Where selected assets should be stored.' => 'Where selected assets should be stored.'
 ];
