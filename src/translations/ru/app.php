@@ -193,7 +193,6 @@ return [
     'Date Created' => 'Дата создания',
     'Date Updated' => 'Дата обновления',
     'Date Uploaded' => 'Дата загрузки',
-    'Date/Time' => 'Дата/Время',
     'Days' => 'Дни',
     'Default Color' => 'Цвет по умолчанию',
     'Default Asset Location' => 'Default Asset Location',
@@ -362,7 +361,6 @@ return [
     'Looks like you are trying to load a template outside the template folder.' => 'Похоже, вы пытаетесь загрузить шаблон не из папки шаблонов.',
     'Make not required' => 'Сделать необязательным',
     'Make required' => 'Сделать обязательным',
-    'Manage your Craft CMS edition' => 'Управляйте вашей версией Craft CMS',
     'Manipulated SVG image rasterizing is unreliable. See \\craft\\services\\Images::loadImage()' => 'Ненадежная растеризация обработанного изображения SVG. См. \\craft\\services\\Images::loadImage()',
     'Matrix' => 'Матрица',
     'Matrix Block' => 'Матричный блок',
@@ -1578,7 +1576,6 @@ return [
     'What entry URIs should look like for the site. Leave blank if entries don’t have URLs.' => 'Какими должны быть URI записей для данного сайта. Не заполнять, если у записей нет URL.',
     'Helper text to guide the author.' => 'Вспомогательный текст для помощи автору.',
     'Briefly describe your question.' => 'Кратко сформулируйте свой вопрос.',
-    'Share' => 'Поделиться',
     'None' => 'Нет',
     'Allow self relations' => 'Разрешить ссылаться на себя',
     'Min Value' => 'Минимальное значение',
@@ -1737,4 +1734,6 @@ return [
     'Upgrade to Craft Pro' => 'Upgrade to Craft Pro',
     'Allow uploading directly to the field' => 'Allow uploading directly to the field',
     'Whether authors should be able to upload files directly to the field, rather than requiring them to select/upload assets via the selection modal.' => 'Whether authors should be able to upload files directly to the field, rather than requiring them to select/upload assets via the selection modal.',
+    '{attribute} must be a time.' => '{attribute} must be a time.',
+    'Where selected assets should be stored.' => 'Where selected assets should be stored.'
 ];
