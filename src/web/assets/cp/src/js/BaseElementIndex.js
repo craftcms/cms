@@ -596,9 +596,16 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 search: this.searchText,
                 offset: this.settings.batchSize * (this.page - 1),
                 limit: this.settings.batchSize,
-                trashed: this.trashed ? 1 : 0,
-                drafts: this.drafts ? 1 : 0,
             };
+
+            // Only set trashed/drafts/draftOf params when needed, so we don't potentially override a source's criteria
+            if (this.trashed) {
+                criteria.trashed = true;
+            }
+            if (this.drafts) {
+                criteria.drafts = true;
+                criteria.draftOf = false;
+            }
 
             if (!Garnish.hasAttr(this.$source, 'data-override-status')) {
                 criteria.status = this.status;

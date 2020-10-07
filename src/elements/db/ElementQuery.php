@@ -2473,6 +2473,8 @@ class ElementQuery extends Query implements ElementQueryInterface
 
             if ($this->draftOf !== null) {
                 $this->subQuery->andWhere(['drafts.sourceId' => $this->draftOf ?: null]);
+            } else {
+                $this->subQuery->andWhere(['not', ['drafts.sourceId' => null]]);
             }
 
             if ($this->draftCreator) {

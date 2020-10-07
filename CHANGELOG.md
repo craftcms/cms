@@ -17,6 +17,7 @@
 - Improved the accessibility of the Craft CMS edition name and version number. ([#6951](https://github.com/craftcms/cms/pull/6951))
 - The “Share” button on Edit Entry and Edit Category pages has been renamed to “View”. ([#6963](https://github.com/craftcms/cms/issues/6963))
 - Edit Entry pages now show validation errors for the `typeId` attribute. ([#6958](https://github.com/craftcms/cms/issues/6958))
+- It’s now possible to define entry sources that show drafts. ([#6632](https://github.com/craftcms/cms/issues/6632))
 - `resave/*` commands now show a progress count in the output for each element. ([#6936](https://github.com/craftcms/cms/pull/6936))
 - `craft\db\ActiveRecord::find()` now returns a `craft\db\ActiveQuery` object.
 - `craft\helpers\ProjectConfig::ensureAllSitesProcessed()` now has a `$force` argument.
