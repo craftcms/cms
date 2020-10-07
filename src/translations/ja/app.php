@@ -193,7 +193,6 @@ return [
     'Date Created' => '作成日',
     'Date Updated' => '更新日',
     'Date Uploaded' => 'アップロード日',
-    'Date/Time' => '日/時',
     'Days' => '日',
     'Default Color' => 'デフォルトの色',
     'Default Asset Location' => 'Default Asset Location',
@@ -362,7 +361,6 @@ return [
     'Looks like you are trying to load a template outside the template folder.' => 'このテンプレートをテンプレートフォルダの外からロードしようとしているようです。',
     'Make not required' => '必須にしない',
     'Make required' => '必須にする',
-    'Manage your Craft CMS edition' => 'あなたのCraft CMSエディションを管理',
     'Manipulated SVG image rasterizing is unreliable. See \\craft\\services\\Images::loadImage()' => '操作済みの SVG 画像に対するラスタライズは信頼できません。次を参照してください: \\craft\\services\\Images::loadImage()',
     'Matrix' => '行列',
     'Matrix Block' => 'マトリックスブロック',
@@ -1577,7 +1575,6 @@ return [
     'What entry URIs should look like for the site. Leave blank if entries don’t have URLs.' => 'このサイトに対して表示されるエントリ URI。エントリに URL がない場合は空にしてください。',
     'Helper text to guide the author.' => '投稿者のための説明テキスト',
     'Briefly describe your question.' => '質問を簡単に説明してください。',
-    'Share' => '共有する',
     'None' => 'なし',
     'Allow self relations' => '自身の関連付けを許可する',
     'Min Value' => '最小値',
@@ -1736,4 +1733,6 @@ return [
     'Upgrade to Craft Pro' => 'Upgrade to Craft Pro',
     'Allow uploading directly to the field' => 'Allow uploading directly to the field',
     'Whether authors should be able to upload files directly to the field, rather than requiring them to select/upload assets via the selection modal.' => 'Whether authors should be able to upload files directly to the field, rather than requiring them to select/upload assets via the selection modal.',
+    '{attribute} must be a time.' => '{attribute} must be a time.',
+    'Where selected assets should be stored.' => 'Where selected assets should be stored.'
 ];
