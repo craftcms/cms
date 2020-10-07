@@ -2282,7 +2282,7 @@ body.rtl .texticon .clear { left: 9px; }
 
 .passwordwrapper { position: relative; display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; }
 
-.passwordwrapper .password { -webkit-flex: 1; flex: 1; border: none; }
+.passwordwrapper .password { -webkit-flex: 1; flex: 1; border: none; background: transparent; box-shadow: none; }
 
 body.ltr .passwordwrapper .password-toggle { padding-right: 7px; }
 
