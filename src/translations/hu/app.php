@@ -193,7 +193,6 @@ return [
     'Date Created' => 'Létrehozás dátuma',
     'Date Updated' => 'Dátum frissítve',
     'Date Uploaded' => 'Dátum feltöltve',
-    'Date/Time' => 'Dátum/Idöpont',
     'Days' => 'Nap',
     'Default Color' => 'Alapértelmezett szín',
     'Default Asset Location' => 'Default Asset Location',
@@ -362,7 +361,6 @@ return [
     'Looks like you are trying to load a template outside the template folder.' => 'Úgy tűnik, hogy olyan sablont próbálsz betölteni, ami a sablon könyvtár elérésén kívül van.',
     'Make not required' => 'Ne legyen kötelező',
     'Make required' => 'Kötelezővé tesz',
-    'Manage your Craft CMS edition' => 'Craft CMS-kiadás kezelése',
     'Manipulated SVG image rasterizing is unreliable. See \\craft\\services\\Images::loadImage()' => 'A módosított SVG-kép raszterezése megbízhatatlan. Lásd: \\craft\\services\\Images::loadImage()',
     'Matrix' => 'Mátrix',
     'Matrix Block' => 'Mátrixblokk',
@@ -1575,7 +1573,6 @@ Amennyiben nem neked szól ez a levél, egyszerűen csak hagyd figyelmen kívül
     'What entry URIs should look like for the site. Leave blank if entries don’t have URLs.' => 'Ilyenek legyenek a webhely beviteli URI-jai. Hagyd üresen, ha a bejegyzésekhez nem tartoznak URL-címek.',
     'Helper text to guide the author.' => 'Segítség a szerkesztőnek.',
     'Briefly describe your question.' => 'Írd le röviden a kérdésedet.',
-    'Share' => 'Megoszt',
     'None' => 'Nincs',
     'Allow self relations' => 'Engedélyezi az önmagával való kapcsolatot',
     'Min Value' => 'Minimum érték',
@@ -1734,4 +1731,6 @@ Amennyiben nem neked szól ez a levél, egyszerűen csak hagyd figyelmen kívül
     'Upgrade to Craft Pro' => 'Upgrade to Craft Pro',
     'Allow uploading directly to the field' => 'Allow uploading directly to the field',
     'Whether authors should be able to upload files directly to the field, rather than requiring them to select/upload assets via the selection modal.' => 'Whether authors should be able to upload files directly to the field, rather than requiring them to select/upload assets via the selection modal.',
+    '{attribute} must be a time.' => '{attribute} must be a time.',
+    'Where selected assets should be stored.' => 'Where selected assets should be stored.'
 ];
