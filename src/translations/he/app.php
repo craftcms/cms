@@ -193,7 +193,6 @@ return [
     'Date Created' => 'תאריך יצירה',
     'Date Updated' => 'תאריך עדכון',
     'Date Uploaded' => 'תאריך העלאה',
-    'Date/Time' => 'תאריך\זמן',
     'Days' => 'ימים',
     'Default Color' => 'צבע ברירת מחדל',
     'Default Asset Location' => 'Default Asset Location',
@@ -362,7 +361,6 @@ return [
     'Looks like you are trying to load a template outside the template folder.' => 'נראה שאתה מנסה לטעון תבנית מחוץ לתיקיית התבניות .',
     'Make not required' => 'עשה לא דרוש',
     'Make required' => 'עשה דרוש',
-    'Manage your Craft CMS edition' => 'ניהול מהדורת Craft CMS שברשותך',
     'Manipulated SVG image rasterizing is unreliable. See \\craft\\services\\Images::loadImage()' => 'המרת תמונת SVG שטופלה למפת סיביות אינה אמינה. ראה \\craft\\services\\Images::loadImage()',
     'Matrix' => 'מטריקס',
     'Matrix Block' => 'בלוק מטריצה',
@@ -1577,7 +1575,6 @@ return [
     'What entry URIs should look like for the site. Leave blank if entries don’t have URLs.' => 'כיצד ממשקי URI של כניסה צריכים להיראות עבור האתר. השאר ריק אם לערכים אין כתובות URL',
     'Helper text to guide the author.' => 'טקסט הסבר לעורך התוכן.',
     'Briefly describe your question.' => 'תאר בקצרה את השאלה שלך.',
-    'Share' => 'שתף',
     'None' => 'כלום',
     'Allow self relations' => 'אפשר קשרים עצמיים',
     'Min Value' => 'ערך מינימלי',
@@ -1736,4 +1733,6 @@ return [
     'Upgrade to Craft Pro' => 'Upgrade to Craft Pro',
     'Allow uploading directly to the field' => 'Allow uploading directly to the field',
     'Whether authors should be able to upload files directly to the field, rather than requiring them to select/upload assets via the selection modal.' => 'Whether authors should be able to upload files directly to the field, rather than requiring them to select/upload assets via the selection modal.',
+    '{attribute} must be a time.' => '{attribute} must be a time.',
+    'Where selected assets should be stored.' => 'Where selected assets should be stored.'
 ];
