@@ -193,7 +193,6 @@ return [
     'Date Created' => '생성 날짜',
     'Date Updated' => '업데이트된 날짜',
     'Date Uploaded' => '업로드된 날짜',
-    'Date/Time' => '날짜/시간',
     'Days' => '일',
     'Default Color' => '기본 색상',
     'Default Asset Location' => 'Default Asset Location',
@@ -362,7 +361,6 @@ return [
     'Looks like you are trying to load a template outside the template folder.' => '다음 템플릿 폴더 밖에서 템플릿 로드를 시도한 것으로 보입니다.',
     'Make not required' => 'Make가 필요하지 않음',
     'Make required' => 'Make가 필요함',
-    'Manage your Craft CMS edition' => 'Craft CMS 에디션 관리하기',
     'Manipulated SVG image rasterizing is unreliable. See \\craft\\services\\Images::loadImage()' => '조작된 SVG 이미지 래스터화는 신뢰할 수 없습니다. \\craft\\services\\Images::loadImage() 참조',
     'Matrix' => '매트릭스',
     'Matrix Block' => '매트릭스 블록',
@@ -1577,7 +1575,6 @@ return [
     'What entry URIs should look like for the site. Leave blank if entries don’t have URLs.' => '해당 사이트의 항목 URI 예시입니다. 항목에 URL이 포함되지 않은 경우 비워 두십시오.',
     'Helper text to guide the author.' => '저자를 안내하는 도움말 텍스트.',
     'Briefly describe your question.' => '질문 내용을 간단하게 서술하십시오.',
-    'Share' => '공유',
     'None' => '없음',
     'Allow self relations' => '자체 관계 허용',
     'Min Value' => '최소값',
@@ -1736,4 +1733,6 @@ return [
     'Upgrade to Craft Pro' => 'Upgrade to Craft Pro',
     'Allow uploading directly to the field' => 'Allow uploading directly to the field',
     'Whether authors should be able to upload files directly to the field, rather than requiring them to select/upload assets via the selection modal.' => 'Whether authors should be able to upload files directly to the field, rather than requiring them to select/upload assets via the selection modal.',
+    '{attribute} must be a time.' => '{attribute} must be a time.',
+    'Where selected assets should be stored.' => 'Where selected assets should be stored.'
 ];
