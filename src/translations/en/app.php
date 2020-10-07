@@ -193,7 +193,6 @@ return [
     'Date Created' => 'Date Created',
     'Date Updated' => 'Date Updated',
     'Date Uploaded' => 'Date Uploaded',
-    'Date/Time' => 'Date/Time',
     'Days' => 'Days',
     'Default Color' => 'Default Color',
     'Default Asset Location' => 'Default Asset Location',
@@ -362,7 +361,6 @@ return [
     'Looks like you are trying to load a template outside the template folder.' => 'Looks like you are trying to load a template outside the template folder.',
     'Make not required' => 'Make not required',
     'Make required' => 'Make required',
-    'Manage your Craft CMS edition' => 'Manage your Craft CMS edition',
     'Manipulated SVG image rasterizing is unreliable. See \\craft\\services\\Images::loadImage()' => 'Manipulated SVG image rasterizing is unreliable. See \\craft\\services\\Images::loadImage()',
     'Matrix' => 'Matrix',
     'Matrix Block' => 'Matrix Block',
@@ -1736,4 +1734,6 @@ If you were not expecting this email, just ignore it.',
     'Upgrade to Craft Pro' => 'Upgrade to Craft Pro',
     'Allow uploading directly to the field' => 'Allow uploading directly to the field',
     'Whether authors should be able to upload files directly to the field, rather than requiring them to select/upload assets via the selection modal.' => 'Whether authors should be able to upload files directly to the field, rather than requiring them to select/upload assets via the selection modal.',
+    '{attribute} must be a time.' => '{attribute} must be a time.',
+    'Where selected assets should be stored.' => 'Where selected assets should be stored.'
 ];
