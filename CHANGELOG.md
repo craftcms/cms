@@ -30,6 +30,7 @@
 - Fixed an error that could occur when updating to Craft 3.5, if any Assets fields had an upload location set to `{site.group}`. ([#6818](https://github.com/craftcms/cms/issues/6818))
 - Fixed a bug where in some cases querying for Assets using GraphQL API could fail.
 - Fixed a SQL error that could occur when joining two soft-deletable active record classes together. ([#6957](https://github.com/craftcms/cms/issues/6957))
+- Fixed a bug where aliasing subfields could sometimes work incorrectly for some fields when using GraphQL API. ([#6874](https://github.com/craftcms/cms/issues/6874))
 
 ## 3.5.12.1 - 2020-10-02
 

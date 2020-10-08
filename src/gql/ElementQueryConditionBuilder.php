@@ -511,7 +511,7 @@ class ElementQueryConditionBuilder extends Component
 
                         // Correct the handles and, maybe, aliases.
                         foreach ($plan->nested as $nestedPlan) {
-                            $newHandle = $gqlFragmentEntity->getEagerLoadingPrefix() . ':' . $nestedPlan->handle;
+                            $newHandle = StringHelper::removeLeft($gqlFragmentEntity->getEagerLoadingPrefix() . ':' . $nestedPlan->handle, ':');
                             if ($nestedPlan->handle === $nestedPlan->alias) {
                                 $nestedPlan->alias = $newHandle;
                             }
