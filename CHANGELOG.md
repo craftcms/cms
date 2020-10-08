@@ -32,6 +32,7 @@
 - Fixed a bug where in some cases querying for Assets using GraphQL API could fail.
 - Fixed a SQL error that could occur when joining two soft-deletable active record classes together. ([#6957](https://github.com/craftcms/cms/issues/6957))
 - Fixed a bug where sub-fields queried via GraphQL could be aliased incorrectly. ([#6874](https://github.com/craftcms/cms/issues/6874))
+- Fixed a bug where element selection modals could show no results if they were limited to a single source, and that source wasn’t available to the primary site.
 
 ## 3.5.12.1 - 2020-10-02
 
