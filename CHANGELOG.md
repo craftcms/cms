@@ -12,6 +12,7 @@
 - Added `craft\events\UserGroupsAssignEvent::$newGroupIds`. ([#6937](https://github.com/craftcms/cms/issues/6937))
 - Added `craft\events\UserGroupsAssignEvent::$removedGroupIds`. ([#6937](https://github.com/craftcms/cms/issues/6937))
 - Added `craft\fields\Assets::$allowUploads`.
+- Added missing `rel="noopener"` to outbound links.
 
 ### Changed
 - Improved the accessibility of the Craft CMS edition name and version number. ([#6951](https://github.com/craftcms/cms/pull/6951))
