@@ -4,13 +4,13 @@
     {% set suggestions = craft.cp.getEnvSuggestions(suggestAliases ?? false) %}
 {% endif %}
 
-{%- set id = (id is defined and id ? id : 'autosuggest'~random()) %}
-{%- set containerId = id ~ '-container' %}
+{%- set id = id ?? "autosuggest#{random()}" %}
+{%- set containerId = "#{id}-container" %}
 
 {%- set class = (class ?? [])|explodeClass|merge([
     'text',
-    (disabled ?? false) ? 'disabled',
-    not (size ?? false) ? 'fullwidth',
+    (disabled ?? false) ? 'disabled' : null,
+    not (size ?? false) ? 'fullwidth' : null,
 ]|filter) %}
 
 <div id="{{ containerId }}" class="autosuggest-container">
