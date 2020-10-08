@@ -22,6 +22,7 @@
 - `resave/*` commands now show a progress count in the output for each element. ([#6936](https://github.com/craftcms/cms/pull/6936))
 - `craft\db\ActiveRecord::find()` now returns a `craft\db\ActiveQuery` object.
 - `craft\helpers\ProjectConfig::ensureAllSitesProcessed()` now has a `$force` argument.
+- Improved the color contrast.
 - Made the viewport scalable.
 
 ### Fixed
