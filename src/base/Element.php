@@ -913,7 +913,8 @@ abstract class Element extends Component implements ElementInterface
                 $descendantStructureQuery = (new Query())
                     ->select(['structureId', 'lft', 'rgt', 'elementId'])
                     ->from([Table::STRUCTUREELEMENTS])
-                    ->where($condition);
+                    ->where($condition)
+                    ->orderBy(['lft' => SORT_ASC]);
 
                 if ($handle === 'children') {
                     $descendantStructureQuery->addSelect('level');
@@ -995,7 +996,8 @@ abstract class Element extends Component implements ElementInterface
                 $ancestorStructureQuery = (new Query())
                     ->select(['structureId', 'lft', 'rgt', 'elementId'])
                     ->from([Table::STRUCTUREELEMENTS])
-                    ->where($condition);
+                    ->where($condition)
+                    ->orderBy(['lft' => SORT_ASC]);
 
                 if ($handle === 'parent') {
                     $ancestorStructureQuery->addSelect('level');
