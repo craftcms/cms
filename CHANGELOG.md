@@ -35,6 +35,7 @@
 - Fixed a bug where sub-fields queried via GraphQL could be aliased incorrectly. ([#6874](https://github.com/craftcms/cms/issues/6874))
 - Fixed a bug where element selection modals could show no results if they were limited to a single source, and that source wasn’t available to the primary site.
 - Fixed a bug where Matrix fields weren’t identifying themselves as translatable on the Fields index page. ([#6970](https://github.com/craftcms/cms/issues/6970))
+- Fixed a bug where `craft\helpers\Html::modifyTagAttributes()` wasn’t working properly with custom elements with hyphenated names. ([#6973](https://github.com/craftcms/cms/issues/6973))
 
 ## 3.5.12.1 - 2020-10-02
 
