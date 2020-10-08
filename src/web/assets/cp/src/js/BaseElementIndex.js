@@ -303,7 +303,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         },
 
         getSourceContainer: function() {
-            return this.$sidebar.find('nav>ul');
+            return this.$sidebar.find('nav > ul');
         },
 
         get $sources() {
@@ -356,9 +356,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 $source = this.$visibleSources.first();
             }
 
-            if ($source.length) {
-                this.selectSource($source);
-            }
+            return this.selectSource($source);
         },
 
         refreshSources: function() {
@@ -672,7 +670,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             }).then((response) => {
                 this.setIndexAvailable();
                 this._updateView(params, response.data);
-            }).catch(() => {
+            }).catch(e => {
                 this.setIndexAvailable();
                 if (!this._ignoreFailedRequest) {
                     Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
@@ -893,7 +891,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         },
 
         getSelectedViewMode: function() {
-            return this.getSelectedSourceState('mode');
+            return this.getSelectedSourceState('mode') || 'table';
         },
 
         setSortDirection: function(dir) {
@@ -1153,7 +1151,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 case 'thumbs':
                     return Craft.ThumbsElementIndexView;
                 default:
-                    throw 'View mode "' + mode + '" not supported.';
+                    throw `View mode "${mode}" not supported.`;
             }
         },
 
@@ -1425,7 +1423,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             // Hide any sources that aren't available for this site
             var $firstVisibleSource;
             var $source;
-            var selectNewSource = false;
+            var selectNewSource = !this.$source || !this.$source.length;
 
             for (var i = 0; i < this.$sources.length; i++) {
                 $source = this.$sources.eq(i);
