@@ -1417,13 +1417,16 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         },
 
         _setSite: function(siteId) {
+            let firstSite = this.siteId === null;
             this.siteId = siteId;
             this.$visibleSources = $();
 
             // Hide any sources that aren't available for this site
             var $firstVisibleSource;
             var $source;
-            var selectNewSource = !this.$source || !this.$source.length;
+            // Select a new source automatically if a site is already selected, but we don't have a selected source
+            // (or if the currently selected source ends up not supporting the new site)
+            var selectNewSource = !firstSite && (!this.$source || !this.$source.length);
 
             for (var i = 0; i < this.$sources.length; i++) {
                 $source = this.$sources.eq(i);
