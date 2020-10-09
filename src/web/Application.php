@@ -396,13 +396,13 @@ class Application extends \yii\web\Application
             return;
         }
 
+        // Only load the debug toolbar if it's enabled for the user, or Dev Mode is enabled and the request wants it
         $user = $this->getUser()->getIdentity();
-        if (!$user || !$user->admin) {
-            return;
-        }
-
         $pref = $request->getIsCpRequest() ? 'enableDebugToolbarForCp' : 'enableDebugToolbarForSite';
-        if (!$user->getPreference($pref)) {
+        if (!(
+            ($user && $user->admin && $user->getPreference($pref)) ||
+            (YII_DEBUG && $request->getHeaders()->get('X-Debug') === 'enable')
+        )) {
             return;
         }
 

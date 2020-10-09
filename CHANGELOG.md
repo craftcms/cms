@@ -22,6 +22,7 @@
 - Edit Entry pages now show validation errors for the `typeId` attribute. ([#6958](https://github.com/craftcms/cms/issues/6958))
 - The `draftOf` entry query parameter can now be set to `'*'`, to match drafts of any source element, so long as they have one. ([#6632](https://github.com/craftcms/cms/issues/6632))
 - `resave/*` commands now show a progress count in the output for each element. ([#6936](https://github.com/craftcms/cms/pull/6936))
+- It’s now possible to enable the Debug extension on a per-request basis when Dev Mode is enabled, by including a `X-Debug: enable` header on the request. ([#6978](https://github.com/craftcms/cms/issues/6978))
 - `*Field()` macros in the `_includes/forms.html` control panel template now define a default `id` value if none was provided.
 - `craft\db\ActiveRecord::find()` now returns a `craft\db\ActiveQuery` object.
 - `craft\helpers\ProjectConfig::ensureAllSitesProcessed()` now has a `$force` argument.
