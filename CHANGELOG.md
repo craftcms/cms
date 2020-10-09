@@ -24,6 +24,8 @@
 - `*Field()` macros in the `_includes/forms.html` control panel template now define a default `id` value if none was provided.
 - `craft\db\ActiveRecord::find()` now returns a `craft\db\ActiveQuery` object.
 - `craft\helpers\ProjectConfig::ensureAllSitesProcessed()` now has a `$force` argument.
+- Improved the color contrast.
+- Made the viewport scalable.
 
 ### Fixed
 - Fixed an error that could occur when installing Craft with existing project config data. ([#6943](https://github.com/craftcms/cms/issues/6943))

@@ -300,18 +300,18 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   align-items: center;
   justify-content: center;
   font-size: 12px;
-  color: $grey500;
+  color: $grey600;
   text-align: center;
 
   li {
     margin: 0 7px;
 
     a {
-      color: $grey500;
+      color: $grey600;
       text-decoration: underline;
 
       &.go:hover:after {
-        color: $grey500;
+        color: $grey600;
       }
     }
   }
@@ -319,7 +319,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
 #edition-logo {
   user-select: none;
-  border: 1px solid $grey500;
+  border: 1px solid $grey600;
   border-radius: 3px;
   display: inline-flex;
   height: 20px;
@@ -345,7 +345,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
     position: relative;
     @include margin-left(5px);
     @include padding-left(5px);
-    background-color: $grey500;
+    background-color: $grey600;
     color: $grey200;
     border-radius: 0 1px 1px 0;
     letter-spacing: 1px;
@@ -367,13 +367,13 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
       body.ltr & {
         left: -10px;
         border-width: 0 10px 20px 0;
-        border-color: transparent $grey500 transparent transparent;
+        border-color: transparent $grey600 transparent transparent;
       }
 
       body.rtl & {
         right: -10px;
         border-width: 0 0 20px 10px;
-        border-color: transparent transparent transparent $grey500;
+        border-color: transparent transparent transparent $grey600;
       }
     }
   }
@@ -1350,7 +1350,7 @@ $toolbarIconColor: darken($inputColor, 10%);
       padding: 0 5px;
       margin: 0 -5px;
       text-transform: uppercase;
-      color: $lightTextColor;
+      color: $mediumTextColor;
       font-size: 11px;
       font-weight: bold;
     }
