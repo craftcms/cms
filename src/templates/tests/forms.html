@@ -24,6 +24,28 @@
         showAllOption: false,
     }) }}
 
+    {{ forms.checkboxGroupField({
+        label: "Checkbox group",
+        options: [
+            { value: 'one', label: 'One' },
+            { value: 'two', label: 'Two' },
+            { value: 'three', label: 'Three' },
+        ],
+        values: ['one', 'three'],
+    }) }}
+
+    <h2>Multi-select</h2>
+
+    {{ forms.multiselectField({
+        label: "Multi-select",
+        options: [
+            { value: 'one', label: 'One' },
+            { value: 'two', label: 'Two' },
+            { value: 'three', label: 'Three' },
+        ],
+        values: ['one', 'three'],
+    }) }}
+
     <h2>Auto Suggest</h2>
 
     {{ forms.autosuggestField({

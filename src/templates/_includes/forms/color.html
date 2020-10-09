@@ -1,6 +1,6 @@
 {% import "_includes/forms" as forms -%}
 
-{% set id = id ?? 'color'~random() -%}
+{% set id = id ?? "color#{random()}" -%}
 {% set containerId = containerId ?? id~'-container' -%}
 {% set name = name ?? null -%}
 {% set value = value ?? null -%}

@@ -2,6 +2,6 @@
     {%- if id is defined %} id="{{ id }}"{% endif %}
     {%- if class is defined %} class="{{ class }}"{% endif %}
     {%- if name is defined %} name="{{ name }}"{% endif %}
-    {%- if autofocus is defined and autofocus and not craft.app.request.isMobileBrowser(true) %} autofocus{% endif %}
-    {%- if disabled is defined and disabled %} disabled{% endif %}
+    {%- if (autofocus ?? false) and not craft.app.request.isMobileBrowser(true) %} autofocus{% endif %}
+    {%- if disabled ?? false %} disabled{% endif %}
     {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>

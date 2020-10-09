@@ -388,7 +388,7 @@ class Html extends \yii\helpers\Html
     private static function _findTag(string $html, int $offset = 0): array
     {
         // Find the first HTML tag that isn't a DTD or a comment
-        if (!preg_match('/<(\/?\w+)/', $html, $match, PREG_OFFSET_CAPTURE, $offset) || $match[1][0][0] === '/') {
+        if (!preg_match('/<(\/?[\w\-]+)/', $html, $match, PREG_OFFSET_CAPTURE, $offset) || $match[1][0][0] === '/') {
             throw new InvalidArgumentException('Could not find an HTML tag in string: ' . $html);
         }
 

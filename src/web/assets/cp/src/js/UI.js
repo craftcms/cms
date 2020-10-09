@@ -67,7 +67,7 @@ Craft.ui =
         },
 
         createCopyTextInput: function(config) {
-            let id = config.id || `copytext-${Math.floor(Math.random() * 1000000000)}`;
+            let id = config.id || 'copytext' + Math.floor(Math.random() * 1000000000);
             let buttonId = config.buttonId || `${id}-btn`;
 
             let $container = $('<div/>', {

@@ -15,9 +15,9 @@
 {% macro cellClass(fullWidth, col, class) %}
     {{- (class is iterable ? class : [class])|merge([
         "#{col.type}-cell",
-        col.type in ['color', 'date', 'email', 'multiline', 'number', 'singleline', 'template', 'time', 'url'] ? 'textual',
-        fullWidth and (col.thin ?? false) ? 'thin',
-        col.info is defined ? 'has-info',
+        col.type in ['color', 'date', 'email', 'multiline', 'number', 'singleline', 'template', 'time', 'url'] ? 'textual' : null,
+        fullWidth and (col.thin ?? false) ? 'thin' : null,
+        col.info is defined ? 'has-info' : null,
     ]|filter)|join(' ') -}}
 {% endmacro %}
 
@@ -35,7 +35,7 @@
                 <th scope="col" class="{{ _self.cellClass(fullWidth, col, col.class ?? []) }}">
                     {%- if col.headingHtml is defined %}
                         {{- col.headingHtml|raw }}
-                    {%- elseif col.heading is defined and col.heading %}
+                    {%- elseif col.heading ?? false %}
                         {{- col.heading }}
                     {%- else %}
                         &nbsp;
@@ -63,7 +63,7 @@
                     {% else %}
                         {% set hasErrors = cell.hasErrors ?? false %}
                         {% set cellName = name~'['~rowId~']['~colId~']' %}
-                        {% set isCode = col.code is defined or col.type == 'color' %}
+                        {% set isCode = (col.code ?? false) or col.type == 'color' %}
                         <td class="{{ _self.cellClass(fullWidth, col, col.class ?? []) }} {% if isCode %}code{% endif %} {% if hasErrors %}error{% endif %}"{% if col.width ?? false %} width="{{ col.width }}"{% endif %}>
                             {% block tablecell %}
                                 {%- switch col.type -%}
@@ -146,7 +146,7 @@
     </tbody>
 </table>
 {% if not staticRows and not fixedRows %}
-    <button type="button" class="btn add icon">{{ addRowLabel is defined ? addRowLabel : "Add a row"|t('app') }}</button>
+    <button type="button" class="btn add icon">{{ addRowLabel ?? "Add a row"|t('app') }}</button>
 {% endif %}
 
 {% if initJs %}

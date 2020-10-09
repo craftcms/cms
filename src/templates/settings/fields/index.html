@@ -94,7 +94,7 @@
     {% set tableData = tableData|merge([{
         id: field.id,
         title: field.name|t('site'),
-        translatable: field.getTranslationDescription(),
+        translatable: field.getIsTranslatable() ? (field.getTranslationDescription() ?? 'This field is translatable.'|t('app')),
         searchable: field.searchable ? true : false,
         url: url('settings/fields/edit/' ~ field.id),
         handle: field.handle,

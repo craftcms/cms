@@ -18,8 +18,9 @@
 - Improved the accessibility of the Craft CMS edition name and version number. ([#6951](https://github.com/craftcms/cms/pull/6951))
 - The “Share” button on Edit Entry and Edit Category pages has been renamed to “View”. ([#6963](https://github.com/craftcms/cms/issues/6963))
 - Edit Entry pages now show validation errors for the `typeId` attribute. ([#6958](https://github.com/craftcms/cms/issues/6958))
-- It’s now possible to define entry sources that show drafts. ([#6632](https://github.com/craftcms/cms/issues/6632))
+- The `draftOf` entry query parameter can now be set to `'*'`, to match drafts of any source element, so long as they have one. ([#6632](https://github.com/craftcms/cms/issues/6632))
 - `resave/*` commands now show a progress count in the output for each element. ([#6936](https://github.com/craftcms/cms/pull/6936))
+- `*Field()` macros in the `_includes/forms.html` control panel template now define a default `id` value if none was provided.
 - `craft\db\ActiveRecord::find()` now returns a `craft\db\ActiveQuery` object.
 - `craft\helpers\ProjectConfig::ensureAllSitesProcessed()` now has a `$force` argument.
 - Improved the color contrast.
@@ -35,6 +36,10 @@
 - Fixed a SQL error that could occur when joining two soft-deletable active record classes together. ([#6957](https://github.com/craftcms/cms/issues/6957))
 - Fixed a bug where sub-fields queried via GraphQL could be aliased incorrectly. ([#6874](https://github.com/craftcms/cms/issues/6874))
 - Fixed a bug where element selection modals could show no results if they were limited to a single source, and that source wasn’t available to the primary site.
+- Fixed a bug where Matrix fields weren’t identifying themselves as translatable on the Fields index page. ([#6970](https://github.com/craftcms/cms/issues/6970))
+- Fixed a bug where `craft\helpers\Html::modifyTagAttributes()` wasn’t working properly with custom elements with hyphenated names. ([#6973](https://github.com/craftcms/cms/issues/6973))
+- Fixed a bug where elements that were eager-loaded via `ancestors`, `children`, and `descendants` handles weren’t getting loaded in the correct order by default. ([#6974](https://github.com/craftcms/cms/issues/6974))
+- Fixed a bug where Assets fields could bleed out of view within element editor HUDs. ([#6975](https://github.com/craftcms/cms/issues/6975))
 
 ## 3.5.12.1 - 2020-10-02
 
