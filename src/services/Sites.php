@@ -740,7 +740,7 @@ class Sites extends Component
         }
 
         // Clear caches
-        $this->_refreshAllSites();
+        $this->refreshSites();
 
         /** @var Site $site */
         $site = $this->getSiteById($siteRecord->id);
@@ -1063,7 +1063,7 @@ class Sites extends Component
         }
 
         // Refresh sites
-        $this->_refreshAllSites();
+        $this->refreshSites();
 
         // Invalidate all element caches
         Craft::$app->getElements()->invalidateAllCaches();
@@ -1103,8 +1103,9 @@ class Sites extends Component
      * Refresh the status of all sites based on the DB data.
      *
      * @throws DbException
+     * @since 3.5.13
      */
-    private function _refreshAllSites()
+    public function refreshSites()
     {
         $this->_allSitesById = null;
         $this->_enabledSitesById = null;
@@ -1357,7 +1358,7 @@ class Sites extends Component
         }
 
         // Set the new primary site by forcing a reload from the DB.
-        $this->_refreshAllSites();
+        $this->refreshSites();
 
         // Fire an afterChangePrimarySite event
         if ($this->hasEventHandlers(self::EVENT_AFTER_CHANGE_PRIMARY_SITE)) {
