@@ -42,7 +42,7 @@ body.ltr #rememberMe-field { margin-right: 14px; }
 
 body.rtl #rememberMe-field { margin-left: 14px; }
 
-#forgot-password { position: relative; z-index: 1; display: block; font-style: normal; font-size: 11px; color: #7b8793; }
+#forgot-password { position: relative; z-index: 1; display: block; font-style: normal; font-size: 11px; color: #596673; }
 
 #forgot-password:only-child { width: 100%; text-align: center; margin-top: -20px; }
 

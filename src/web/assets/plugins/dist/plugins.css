@@ -24,7 +24,7 @@ body.rtl #plugins tbody .plugin-infos .icon .license-key-status { right: 26px; }
 
 #plugins tbody .plugin-infos .details .plugin-id h2 { margin-bottom: 0; }
 
-#plugins tbody .plugin-infos .details .plugin-id .edition { position: relative; top: -1px; -webkit-user-select: none; user-select: none; border: 1px solid #7b8793; border-radius: 3px; display: -webkit-inline-flex; display: inline-flex; height: 16px; -o-transition: border-color linear 100ms; transition: border-color linear 100ms; }
+#plugins tbody .plugin-infos .details .plugin-id .edition { position: relative; top: -1px; -webkit-user-select: none; user-select: none; border: 1px solid #596673; border-radius: 3px; display: -webkit-inline-flex; display: inline-flex; height: 16px; -o-transition: border-color linear 100ms; transition: border-color linear 100ms; }
 
 body.ltr #plugins tbody .plugin-infos .details .plugin-id .edition { margin-left: 7px; }
 
@@ -32,9 +32,9 @@ body.rtl #plugins tbody .plugin-infos .details .plugin-id .edition { margin-righ
 
 #plugins tbody .plugin-infos .details .plugin-id .edition > .edition-name, #plugins tbody .plugin-infos .details .plugin-id .edition > .edition-trial { padding: 0 6px; font-size: 11px; line-height: 16px; font-weight: normal; }
 
-#plugins tbody .plugin-infos .details .plugin-id .edition > .edition-name { color: #606d7b; letter-spacing: 1.5px; padding-right: 5px; text-transform: uppercase; -o-transition: color linear 100ms; transition: color linear 100ms; }
+#plugins tbody .plugin-infos .details .plugin-id .edition > .edition-name { color: #596673; letter-spacing: 1.5px; padding-right: 5px; text-transform: uppercase; -o-transition: color linear 100ms; transition: color linear 100ms; }
 
-#plugins tbody .plugin-infos .details .plugin-id .edition > .edition-trial { position: relative; background: #7b8793; color: #fff; border-radius: 0 1px 1px 0; letter-spacing: 1px; text-transform: lowercase; -o-transition: background linear 100ms; transition: background linear 100ms; }
+#plugins tbody .plugin-infos .details .plugin-id .edition > .edition-trial { position: relative; background: #596673; color: #fff; border-radius: 0 1px 1px 0; letter-spacing: 1px; text-transform: lowercase; -o-transition: background linear 100ms; transition: background linear 100ms; }
 
 body.ltr #plugins tbody .plugin-infos .details .plugin-id .edition .edition-name + .edition-trial { margin-left: 4px; }
 
@@ -46,9 +46,9 @@ body.rtl #plugins tbody .plugin-infos .details .plugin-id .edition .edition-name
 
 #plugins tbody .plugin-infos .details .plugin-id .edition .edition-name + .edition-trial:before { display: block; position: absolute; top: 0; content: '.'; font-size: 0; width: 0; height: 0; border-style: solid; -o-transition: border-color linear 100ms; transition: border-color linear 100ms; }
 
-body.ltr #plugins tbody .plugin-infos .details .plugin-id .edition .edition-name + .edition-trial:before { left: -7px; border-width: 0 7px 16px 0; border-color: transparent #7b8793 transparent transparent; }
+body.ltr #plugins tbody .plugin-infos .details .plugin-id .edition .edition-name + .edition-trial:before { left: -7px; border-width: 0 7px 16px 0; border-color: transparent #596673 transparent transparent; }
 
-body.rtl #plugins tbody .plugin-infos .details .plugin-id .edition .edition-name + .edition-trial:before { right: -7px; border-width: 0 0 16px 7px; border-color: transparent transparent transparent #7b8793; }
+body.rtl #plugins tbody .plugin-infos .details .plugin-id .edition .edition-name + .edition-trial:before { right: -7px; border-width: 0 0 16px 7px; border-color: transparent transparent transparent #596673; }
 
 #plugins tbody .plugin-infos .details .plugin-id a.edition:hover { text-decoration: none; border-color: #0B69A3; }
 
@@ -60,7 +60,7 @@ body.ltr #plugins tbody .plugin-infos .details .plugin-id a.edition:hover .editi
 
 body.rtl #plugins tbody .plugin-infos .details .plugin-id a.edition:hover .edition-name + .edition-trial:before { border-left-color: #0B69A3; }
 
-#plugins tbody .plugin-infos .details .plugin-id .version { color: #7b8793; font-weight: normal; }
+#plugins tbody .plugin-infos .details .plugin-id .version { color: #596673; font-weight: normal; }
 
 body.ltr #plugins tbody .plugin-infos .details .plugin-id .version { margin-left: 14px; }
 
