@@ -37,6 +37,7 @@
 - Fixed a bug where Matrix fields weren’t identifying themselves as translatable on the Fields index page. ([#6970](https://github.com/craftcms/cms/issues/6970))
 - Fixed a bug where `craft\helpers\Html::modifyTagAttributes()` wasn’t working properly with custom elements with hyphenated names. ([#6973](https://github.com/craftcms/cms/issues/6973))
 - Fixed a bug where elements that were eager-loaded via `ancestors`, `children`, and `descendants` handles weren’t getting loaded in the correct order by default. ([#6974](https://github.com/craftcms/cms/issues/6974))
+- Fixed a bug where Assets fields could bleed out of view within element editor HUDs. ([#6975](https://github.com/craftcms/cms/issues/6975))
 
 ## 3.5.12.1 - 2020-10-02
 
