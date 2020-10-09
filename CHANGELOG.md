@@ -33,7 +33,7 @@
 - Fixed a bug where in some cases querying for Assets using GraphQL API could fail.
 - Fixed a SQL error that could occur when joining two soft-deletable active record classes together. ([#6957](https://github.com/craftcms/cms/issues/6957))
 - Fixed a bug where sub-fields queried via GraphQL could be aliased incorrectly. ([#6874](https://github.com/craftcms/cms/issues/6874))
-- Fixed a bug where element selection modals could show no results if they were limited to a single source, and that source wasn’t available to the primary site.
+- Fixed a bug where element selection modals could show no results if they were limited to a single source, and that source wasn’t available to the primary site. ([#6968](https://github.com/craftcms/cms/issues/6968))
 - Fixed a bug where Matrix fields weren’t identifying themselves as translatable on the Fields index page. ([#6970](https://github.com/craftcms/cms/issues/6970))
 - Fixed a bug where `craft\helpers\Html::modifyTagAttributes()` wasn’t working properly with custom elements with hyphenated names. ([#6973](https://github.com/craftcms/cms/issues/6973))
 - Fixed a bug where elements that were eager-loaded via `ancestors`, `children`, and `descendants` handles weren’t getting loaded in the correct order by default. ([#6974](https://github.com/craftcms/cms/issues/6974))
