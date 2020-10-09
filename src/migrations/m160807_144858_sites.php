@@ -442,6 +442,11 @@ class m160807_144858_sites extends Migration
 
         $this->updateRecentEntriesWidgets($siteIdsByLocale);
 
+        // Refresh all sites
+        // ---------------------------------------------------------------------
+
+        Craft::$app->getSites()->refreshSites();
+
         return true;
     }
 
