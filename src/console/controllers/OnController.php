@@ -43,7 +43,7 @@ class OnController extends Controller
         $readOnly = $projectConfig->readOnly;
         $projectConfig->readOnly = false;
 
-        $projectConfig->set('system.live', true);
+        $projectConfig->set('system.live', true, null, false);
 
         $projectConfig->readOnly = $readOnly;
 

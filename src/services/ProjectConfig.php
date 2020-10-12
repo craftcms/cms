@@ -435,12 +435,13 @@ class ProjectConfig extends Component
      * @param string $path The config item path
      * @param mixed $value The config item value
      * @param string|null $message The message describing changes.
+     * @param bool $updateTimestamp Whether the `dateModified` value should be updated, if it hasn’t been updated yet for this request
      * @throws NotSupportedException if the service is set to read-only mode
      * @throws ErrorException
      * @throws Exception
      * @throws ServerErrorHttpException
      */
-    public function set(string $path, $value, string $message = null)
+    public function set(string $path, $value, string $message = null, bool $updateTimestamp = true)
     {
         // If we haven't yet pulled in the YAML changes, then anything in there should be discarded
         if (empty($this->_appliedConfig)) {
@@ -463,7 +464,7 @@ class ProjectConfig extends Component
                 throw new NotSupportedException('Changes to the project config are not possible while in read-only mode.');
             }
 
-            if (!$this->_timestampUpdated) {
+            if ($updateTimestamp && !$this->_timestampUpdated) {
                 $this->_timestampUpdated = true;
                 $this->set('dateModified', DateTimeHelper::currentTimeStamp(), 'Update timestamp for project config');
             }

@@ -56,12 +56,13 @@ class OffController extends Controller
         if (!Craft::$app->getIsLive()) {
             $this->stdout('The system is already offline.' . PHP_EOL, Console::FG_GREEN);
         } else {
-            $projectConfig->set('system.live', false);
+            $projectConfig->set('system.live', false, null, false);
             $this->stdout('The system is now offline.' . PHP_EOL, Console::FG_GREEN);
         }
 
         if ($this->retry !== null) {
-            $projectConfig->set('system.retryDuration', (int)$this->retry ?: null);
+            $retry = (int)$this->retry ?: null;
+            $projectConfig->set('system.retryDuration', $retry, null, false);
             $this->stdout(($this->retry ? "The retry duration is now set to $this->retry." : 'The retry duration has been removed.') . PHP_EOL, Console::FG_GREEN);
         }
 
