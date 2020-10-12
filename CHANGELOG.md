@@ -12,6 +12,7 @@
 - Added `craft\events\UserGroupsAssignEvent::$newGroupIds`. ([#6937](https://github.com/craftcms/cms/issues/6937))
 - Added `craft\events\UserGroupsAssignEvent::$removedGroupIds`. ([#6937](https://github.com/craftcms/cms/issues/6937))
 - Added `craft\fields\Assets::$allowUploads`.
+- Added `craft\services\ProjectConfig::$writeToYaml`.
 - Added `craft\services\Sites::refreshSites()`.
 - Added missing `rel="noopener"` to outbound links.
 
@@ -44,6 +45,7 @@
 - Fixed a bug where elements that were eager-loaded via `ancestors`, `children`, and `descendants` handles weren’t getting loaded in the correct order by default. ([#6974](https://github.com/craftcms/cms/issues/6974))
 - Fixed a bug where Assets fields could bleed out of view within element editor HUDs. ([#6975](https://github.com/craftcms/cms/issues/6975))
 - Fixed an error that could occur when updating from Craft 2.
+- Fixed a bug where the `on` and `off` commands were discarding any pending pending changes in the project config YAML files. ([#6984](https://github.com/craftcms/cms/issues/6984))
 
 ## 3.5.12.1 - 2020-10-02
 

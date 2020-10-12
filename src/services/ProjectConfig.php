@@ -198,6 +198,13 @@ class ProjectConfig extends Component
     const EVENT_REBUILD = 'rebuild';
 
     /**
+     * @var bool Whether project config changes should be written to YAML files.
+     * @see _updateYamlFiles()
+     * @since 3.5.13
+     */
+    public $writeToYaml = true;
+
+    /**
      * @var string The folder name to save the project config files in, within the `config/` folder.
      * @since 3.5.0
      */
@@ -719,7 +726,10 @@ class ProjectConfig extends Component
             $this->_updateInternalConfig($path, $oldValue, $newValue, $message);
 
             $this->updateStoredConfigAfterRequest();
-            $this->updateParsedConfigTimesAfterRequest();
+
+            if ($this->writeToYaml) {
+                $this->updateParsedConfigTimesAfterRequest();
+            }
         }
     }
 
@@ -1630,6 +1640,10 @@ class ProjectConfig extends Component
      */
     private function _updateYamlFiles()
     {
+        if (!$this->writeToYaml) {
+            return;
+        }
+
         $config = ProjectConfigHelper::splitConfigIntoComponents($this->_appliedConfig);
 
         try {
@@ -1672,7 +1686,7 @@ class ProjectConfig extends Component
      */
     public function getHadFileWriteIssues(): bool
     {
-        return Craft::$app->getCache()->get(self::FILE_ISSUES_CACHE_KEY);
+        return $this->writeToYaml && Craft::$app->getCache()->get(self::FILE_ISSUES_CACHE_KEY);
     }
 
     /**
