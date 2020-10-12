@@ -440,7 +440,7 @@ class ProjectConfig extends Component
      * @throws Exception
      * @throws ServerErrorHttpException
      */
-    public function set(string $path, $value, $message = '')
+    public function set(string $path, $value, string $message = null)
     {
         // If we haven't yet pulled in the YAML changes, then anything in there should be discarded
         if (empty($this->_appliedConfig)) {
@@ -661,7 +661,7 @@ class ProjectConfig extends Component
      * @param string|null $message The message describing changes, if modifications are made.
      * @param bool $force Whether the config change should be processed regardless of previous records
      */
-    private function _processConfigChangesInternal(string $path, bool $triggerUpdate = false, $message = null, bool $force = false)
+    private function _processConfigChangesInternal(string $path, bool $triggerUpdate = false, string $message = null, bool $force = false)
     {
         if (!$force && !empty($this->_parsedChanges[$path])) {
             return;
