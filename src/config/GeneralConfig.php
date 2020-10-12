@@ -140,12 +140,12 @@ class GeneralConfig extends BaseObject
     public $backupOnUpdate = true;
 
     /**
-     * @var string|null The shell command that Craft should execute to create a database backup.
+     * @var string|false|null The shell command that Craft should execute to create a database backup.
      *
-     * By default Craft will run `mysqldump` or `pg_dump`, provided that those libraries are in the `$PATH` variable for the system user running
-     * the web server.
+     * When set to `null` (default), Craft will run `mysqldump` or `pg_dump`, provided that those libraries are in the `$PATH` variable
+     * for the system user running the web server.
      *
-     * There are several tokens you can use that Craft will swap out at runtime:
+     * You may provide your own command optionally using several tokens Craft will swap out at runtime:
      *
      * - `{path}` - the target backup file path
      * - `{port}` - the current database port
