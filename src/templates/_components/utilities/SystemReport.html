@@ -46,6 +46,24 @@
         <p>{{ 'No modules are installed.'|t('app') }}</p>
     {% endif %}
 
+  <h2>{{ 'Aliases'|t('app') }}</h2>
+  <p>
+      {{ 'The following <a href="{url}">aliases</a> are defined:'|t('app', {
+          url: 'https://craftcms.com/docs/3.x/config/#aliases',
+      })|raw }}
+  </p>
+
+  <table class="data fullwidth fixed-layout" dir="ltr">
+      <tbody>
+          {% for alias, value in aliases %}
+              <tr>
+                  <th class="light">{{ alias }}</th>
+                  <td>{{ value }}</td>
+              </tr>
+          {% endfor %}
+      </tbody>
+  </table>
+
     <h2>{{ "Requirements"|t('app') }}</h2>
 
     <table class="data fullwidth" dir="ltr">
