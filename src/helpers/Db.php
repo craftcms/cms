@@ -1083,6 +1083,9 @@ class Db
      */
     public static function reset()
     {
+        if (self::$_db) {
+            self::$_db->close();
+        }
         self::$_db = null;
     }
 
