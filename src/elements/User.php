@@ -836,6 +836,8 @@ class User extends Element implements IdentityInterface
      */
     public function authenticate(string $password): bool
     {
+        $this->authError = null;
+
         // Fire a 'beforeAuthenticate' event
         $event = new AuthenticateUserEvent([
             'password' => $password,
