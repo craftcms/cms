@@ -198,11 +198,19 @@ class ProjectConfig extends Component
     const EVENT_REBUILD = 'rebuild';
 
     /**
-     * @var bool Whether project config changes should be written to YAML files.
+     * @var bool Whether project config changes should be written to YAML files automatically.
+     *
+     * If set to `false`, you can manually write out project config YAML files using the `project-config/write` command.
+     *
+     * ::: warning
+     * If this is set to `false`, Craft won’t have a strong grasp of whether the YAML files or database contain the most relevant
+     * project config data, so there’s a chance that the Project Config utility will be a bit misleading.
+     * :::
+     *
      * @see _updateYamlFiles()
      * @since 3.5.13
      */
-    public $writeToYaml = true;
+    public $writeYamlAutomatically = true;
 
     /**
      * @var string The folder name to save the project config files in, within the `config/` folder.
@@ -372,7 +380,9 @@ class ProjectConfig extends Component
      */
     public function init()
     {
-        Craft::$app->on(Application::EVENT_AFTER_REQUEST, [$this, 'saveModifiedConfigData'], null, false);
+        Craft::$app->on(Application::EVENT_AFTER_REQUEST, function() {
+            $this->saveModifiedConfigData();
+        }, null, false);
 
         $this->on(self::EVENT_ADD_ITEM, [$this, 'handleChangeEvent']);
         $this->on(self::EVENT_UPDATE_ITEM, [$this, 'handleChangeEvent']);
@@ -524,7 +534,7 @@ class ProjectConfig extends Component
         $loadedConfig = $this->_getLoadedConfig();
         $this->_saveConfig($loadedConfig);
         $this->updateParsedConfigTimesAfterRequest();
-        $this->saveModifiedConfigData();
+        $this->saveModifiedConfigData(true);
     }
 
     /**
@@ -589,6 +599,17 @@ class ProjectConfig extends Component
     }
 
     /**
+     * Returns whether project config YAML files appear to exist.
+     *
+     * @return bool
+     * @since 3.5.13
+     */
+    public function getDoesYamlExist(): bool
+    {
+        return file_exists(Craft::$app->getPath()->getProjectConfigFilePath());
+    }
+
+    /**
      * Returns whether a given path has pending changes that need to be applied to the loaded project config.
      *
      * @param string|null $path A specific config path that should be checked for pending changes.
@@ -610,11 +631,11 @@ class ProjectConfig extends Component
         }
 
         // If the file does not exist, but should, generate it
-        if (
-            $this->getHadFileWriteIssues() ||
-            !file_exists(Craft::$app->getPath()->getProjectConfigFilePath())
-        ) {
-            $this->regenerateYamlFromConfig();
+        if ($this->getHadFileWriteIssues() || !$this->getDoesYamlExist()) {
+            if ($this->writeYamlAutomatically) {
+                $this->regenerateYamlFromConfig();
+            }
+
             $this->saveModifiedConfigData();
             return false;
         }
@@ -727,7 +748,7 @@ class ProjectConfig extends Component
 
             $this->updateStoredConfigAfterRequest();
 
-            if ($this->writeToYaml) {
+            if ($this->writeYamlAutomatically) {
                 $this->updateParsedConfigTimesAfterRequest();
             }
         }
@@ -786,13 +807,17 @@ class ProjectConfig extends Component
     /**
      * Saves all the config data that has been modified up to now.
      *
+     * @param bool|null $writeYaml Whether to update the YAML files. Defaults to [[$writeYamlAutomatically]].
      * @throws ErrorException
      */
-    public function saveModifiedConfigData()
+    public function saveModifiedConfigData(bool $writeYaml = null)
     {
         if ($this->_isConfigModified) {
             $this->_updateConfigVersion();
-            $this->_updateYamlFiles();
+
+            if ($writeYaml ?? $this->writeYamlAutomatically) {
+                $this->_updateYamlFiles();
+            }
         }
 
         if (!$this->_updateInternalConfig) {
@@ -1207,8 +1232,11 @@ class ProjectConfig extends Component
 
         // Flush it out to yaml files first.
         $this->_saveConfig($event->config);
-        $this->_updateYamlFiles();
         $this->_updateConfigVersion();
+
+        if ($this->writeYamlAutomatically) {
+            $this->_updateYamlFiles();
+        }
 
         // Now we can process the changes
         foreach ($event->config as $path => $value) {
@@ -1317,19 +1345,14 @@ class ProjectConfig extends Component
             return $this->_appliedConfig;
         }
 
-        $path = Craft::$app->getPath();
-
         // If the file does not exist, just use the loaded config
-        if (
-            $this->getHadFileWriteIssues() ||
-            !file_exists($path->getProjectConfigFilePath())
-        ) {
+        if ($this->getHadFileWriteIssues() || !$this->getDoesYamlExist()) {
             return $this->_getLoadedConfig();
         }
 
         $fileList = $this->_getConfigFileList();
         $generatedConfig = [];
-        $projectConfigPathLength = strlen($path->getProjectConfigPath(false));
+        $projectConfigPathLength = strlen(Craft::$app->getPath()->getProjectConfigPath(false));
 
         foreach ($fileList as $filePath) {
             $yamlConfig = Yaml::parse(file_get_contents($filePath));
@@ -1640,10 +1663,6 @@ class ProjectConfig extends Component
      */
     private function _updateYamlFiles()
     {
-        if (!$this->writeToYaml) {
-            return;
-        }
-
         $config = ProjectConfigHelper::splitConfigIntoComponents($this->_appliedConfig);
 
         try {
@@ -1686,7 +1705,7 @@ class ProjectConfig extends Component
      */
     public function getHadFileWriteIssues(): bool
     {
-        return $this->writeToYaml && Craft::$app->getCache()->get(self::FILE_ISSUES_CACHE_KEY);
+        return $this->writeYamlAutomatically && Craft::$app->getCache()->get(self::FILE_ISSUES_CACHE_KEY);
     }
 
     /**

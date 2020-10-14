@@ -7,6 +7,8 @@
 - Reset Password pages are now discoverable by clients that support [.well-known/change-password URLs](https://w3c.github.io/webappsec-change-password-url/), [such as Google Chrome](https://security.googleblog.com/2020/10/new-password-protections-and-more-in.html).
 - Craft now supports `/admin/edit/X` URLs to elements’ edit pages, where `X` is an element’s ID or UID, provided that the user has permission to edit the element. ([#7000](https://github.com/craftcms/cms/issues/7000))
 - The System Report utility now lists all defined [aliases](https://craftcms.com/docs/3.x/config/#aliases). ([#6992](https://github.com/craftcms/cms/issues/6992))
+- Added the `project-config/write` command, which write out the currently-loaded project config as YAML files to the `config/project/` folder, discarding any pending YAML changes.
+- The `project-config/diff` command now has an `--invert` flag, which will treat the loaded project config as the source of truth, rather than the YAML files.
 - Added the `dataUrl()` Twig function, which generates a base64-encoded [data URL](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs) for the passed-in file path or asset.
 - Added `craft\controllers\EditController`.
 - Added `craft\controllers\RedirectController`.
@@ -22,7 +24,8 @@
 - Added `craft\queue\jobs\PruneRevisions::$maxRevisions`. ([#6999](https://github.com/craftcms/cms/issues/6999))
 - Added `craft\services\Elements::getElementByUid()`.
 - Added `craft\services\Elements::getElementTypeByUid()`.
-- Added `craft\services\ProjectConfig::$writeToYaml`.
+- Added `craft\services\ProjectConfig::$writeYamlAutomatically`, which can be set to `false` from `config/app.php` if you’d prefer Craft to not write project config YAML files to `config/project/` automatically when they are missing or changes are made.
+- Added `craft\services\ProjectConfig::getDoesYamlExist()`.
 - Added `craft\services\Sites::refreshSites()`.
 - Added missing `rel="noopener"` to outbound links.
 
@@ -37,7 +40,9 @@
 - It’s now possible to enable the Debug extension on a per-request basis when Dev Mode is enabled, by including a `X-Debug: enable` header on the request. ([#6978](https://github.com/craftcms/cms/issues/6978))
 - `*Field()` macros in the `_includes/forms.html` control panel template now define a default `id` value if none was provided.
 - `craft\db\ActiveRecord::find()` now returns a `craft\db\ActiveQuery` object.
+- `craft\helpers\ProjectConfig::diff()` now has an `$invert` argument.
 - `craft\helpers\ProjectConfig::ensureAllSitesProcessed()` now has a `$force` argument.
+- `craft\services\ProjectConfig::saveModifiedConfigData()` now has a `$writeYaml` argument.
 - `craft\services\ProjectConfig::set()` now has an `$updateTimestamp` argument.
 
 ### Fixed

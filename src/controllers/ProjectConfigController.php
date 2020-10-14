@@ -41,11 +41,12 @@ class ProjectConfigController extends Controller
     /**
      * Returns a diff of the pending project config YAML changes, compared to the currently loaded project config.
      *
+     * @param bool $invert Whether to treat the loaded project config as the source of truth, rather than the YAML files
      * @since 3.5.8
      */
-    public function actionDiff(): string
+    public function actionDiff(bool $invert = false): string
     {
-        return ProjectConfig::diff();
+        return ProjectConfig::diff($invert);
     }
 
     /**

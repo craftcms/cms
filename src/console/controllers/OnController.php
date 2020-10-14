@@ -42,7 +42,7 @@ class OnController extends Controller
         // and prevent changes from getting written to YAML
         $projectConfig = Craft::$app->getProjectConfig();
         $projectConfig->readOnly = false;
-        $projectConfig->writeToYaml = false;
+        $projectConfig->writeYamlAutomatically = false;
 
         $projectConfig->set('system.live', true, null, false);
 

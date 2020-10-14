@@ -161,7 +161,8 @@ class Cp
         if (
             $path !== 'utilities/project-config' &&
             $user->can('utility:project-config') &&
-            $projectConfig->areChangesPending()
+            $projectConfig->areChangesPending() &&
+            ($projectConfig->writeYamlAutomatically || $projectConfig->get('dateModified') <= $projectConfig->get('dateModified', true))
         ) {
             $alerts[] = Craft::t('app', 'Your project config YAML files contain pending changes.') .
                 ' ' . '<a class="go" href="' . UrlHelper::url('utilities/project-config') . '">' . Craft::t('app', 'Review') . '</a>';

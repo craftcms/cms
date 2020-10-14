@@ -450,21 +450,28 @@ class ProjectConfig
     /**
      * Returns a diff of the pending project config YAML changes, compared to the currently loaded project config.
      *
+     * @param bool $invert Whether to reverse the diff, so the loaded config is treated as the source of truth
      * @return string
      * @since 3.5.6
      */
-    public static function diff(): string
+    public static function diff(bool $invert = false): string
     {
         $projectConfig = Craft::$app->getProjectConfig();
+        $cacheKey = ProjectConfigService::DIFF_CACHE_KEY . ($invert ? ':reverse' : '');
 
-        return Craft::$app->getCache()->getOrSet(ProjectConfigService::DIFF_CACHE_KEY, function() use ($projectConfig): string {
+        return Craft::$app->getCache()->getOrSet($cacheKey, function() use ($projectConfig, $invert): string {
             $currentConfig = $projectConfig->get();
             $pendingConfig = $projectConfig->get(null, true);
             $currentYaml = Yaml::dump(static::cleanupConfig($currentConfig), 20, 2);
             $pendingYaml = Yaml::dump(static::cleanupConfig($pendingConfig), 20, 2);
             $builder = new UnifiedDiffOutputBuilder('');
             $differ = new Differ($builder);
-            $diff = $differ->diff($currentYaml, $pendingYaml);
+
+            if ($invert) {
+                $diff = $differ->diff($pendingYaml, $currentYaml);
+            } else {
+                $diff = $differ->diff($currentYaml, $pendingYaml);
+            }
 
             // Cleanup
             $diff = preg_replace("/^@@ @@\n/", '', $diff);

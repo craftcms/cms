@@ -52,7 +52,7 @@ class OffController extends Controller
         // and prevent changes from getting written to YAML
         $projectConfig = Craft::$app->getProjectConfig();
         $projectConfig->readOnly = false;
-        $projectConfig->writeToYaml = false;
+        $projectConfig->writeYamlAutomatically = false;
 
         if (!Craft::$app->getIsLive()) {
             $this->stdout('The system is already offline.' . PHP_EOL, Console::FG_GREEN);
