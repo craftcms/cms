@@ -63,7 +63,7 @@ class User extends Element implements IdentityInterface
     /**
      * @event AuthenticateUserEvent The event that is triggered before a user is authenticated.
      *
-     * You may set [[AuthenticateUserEvent::performAuthentication]] to `false` to prevent the user from getting authenticated
+     * If you wish to offload authentication logic, then set [[AuthenticateUserEvent::authenticates]] to `true` or `false`.
      */
     const EVENT_BEFORE_AUTHENTICATE = 'beforeAuthenticate';
 
@@ -841,8 +841,9 @@ class User extends Element implements IdentityInterface
             'password' => $password,
         ]);
         $this->trigger(self::EVENT_BEFORE_AUTHENTICATE, $event);
+        $this->authError = $event->authError;
 
-        if ($event->performAuthentication) {
+        if ($this->authError === null && $event->performAuthentication) {
             // Validate the password
             try {
                 $passwordValid = Craft::$app->getSecurity()->validatePassword($password, $this->password);
