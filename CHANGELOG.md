@@ -5,8 +5,10 @@
 ### Added
 - It’s now possible to disallow uploading files directly to Assets fields, as opposed to going through the selection modal. ([#6954](https://github.com/craftcms/cms/issues/6954))
 - Reset Password pages are now discoverable by clients that support [.well-known/change-password URLs](https://w3c.github.io/webappsec-change-password-url/), [such as Google Chrome](https://security.googleblog.com/2020/10/new-password-protections-and-more-in.html).
+- Craft now supports `/admin/edit/X` URLs to elements’ edit pages, where `X` is an element’s ID or UID, provided that the user has permission to edit the element. ([#7000](https://github.com/craftcms/cms/issues/7000))
 - The System Report utility now lists all defined [aliases](https://craftcms.com/docs/3.x/config/#aliases). ([#6992](https://github.com/craftcms/cms/issues/6992))
 - Added the `dataUrl()` Twig function, which generates a base64-encoded [data URL](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs) for the passed-in file path or asset.
+- Added `craft\controllers\EditController`.
 - Added `craft\controllers\RedirectController`.
 - Added `craft\controllers\UsersController::EVENT_AFTER_ASSIGN_GROUPS_AND_PERMISSIONS`. ([#6937](https://github.com/craftcms/cms/issues/6937))
 - Added `craft\controllers\UsersController::EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS`. ([#6937](https://github.com/craftcms/cms/issues/6937))
@@ -18,6 +20,8 @@
 - Added `craft\helpers\Html::dataUrl()`.
 - Added `craft\helpers\Html::dataUrlFromString()`.
 - Added `craft\queue\jobs\PruneRevisions::$maxRevisions`. ([#6999](https://github.com/craftcms/cms/issues/6999))
+- Added `craft\services\Elements::getElementByUid()`.
+- Added `craft\services\Elements::getElementTypeByUid()`.
 - Added `craft\services\ProjectConfig::$writeToYaml`.
 - Added `craft\services\Sites::refreshSites()`.
 - Added missing `rel="noopener"` to outbound links.
