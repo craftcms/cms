@@ -51,6 +51,7 @@
 - Fixed a bug where Assets fields could bleed out of view within element editor HUDs. ([#6975](https://github.com/craftcms/cms/issues/6975))
 - Fixed an error that could occur when updating from Craft 2.
 - Fixed a bug where the `on` and `off` commands were discarding any pending pending changes in the project config YAML files. ([#6984](https://github.com/craftcms/cms/issues/6984))
+- Fixed a bug where `craft\helpers\Db::reset()` wasn’t closing the previous database connection. ([#6998](https://github.com/craftcms/cms/pull/6998))
 
 ## 3.5.12.1 - 2020-10-02
 
