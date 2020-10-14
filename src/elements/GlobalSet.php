@@ -95,6 +95,14 @@ class GlobalSet extends Element
 
     /**
      * @inheritdoc
+     */
+    public function getIsEditable(): bool
+    {
+        return Craft::$app->getUser()->checkPermission("editGlobalSet:$this->uid");
+    }
+
+    /**
+     * @inheritdoc
      * @return GlobalSetQuery The newly created [[GlobalSetQuery]] instance.
      */
     public static function find(): ElementQueryInterface
