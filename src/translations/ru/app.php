@@ -1735,5 +1735,6 @@ return [
     'Allow uploading directly to the field' => 'Allow uploading directly to the field',
     'Whether authors should be able to upload files directly to the field, rather than requiring them to select/upload assets via the selection modal.' => 'Whether authors should be able to upload files directly to the field, rather than requiring them to select/upload assets via the selection modal.',
     '{attribute} must be a time.' => '{attribute} must be a time.',
-    'Where selected assets should be stored.' => 'Where selected assets should be stored.'
+    'Where selected assets should be stored.' => 'Where selected assets should be stored.',
+    'The following <a href="{url}">aliases</a> are defined:' => 'The following <a href="{url}">aliases</a> are defined:',
 ];
