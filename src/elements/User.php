@@ -63,7 +63,8 @@ class User extends Element implements IdentityInterface
     /**
      * @event AuthenticateUserEvent The event that is triggered before a user is authenticated.
      *
-     * If you wish to offload authentication logic, then set [[AuthenticateUserEvent::authenticates]] to `true` or `false`.
+     * If you wish to offload authentication logic, then set [[AuthenticateUserEvent::$performAuthentication]] to `false`, and set [[$authError]] to
+     * something if there is an authentication error.
      */
     const EVENT_BEFORE_AUTHENTICATE = 'beforeAuthenticate';
 
