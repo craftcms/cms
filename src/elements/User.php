@@ -841,7 +841,6 @@ class User extends Element implements IdentityInterface
             'password' => $password,
         ]);
         $this->trigger(self::EVENT_BEFORE_AUTHENTICATE, $event);
-        $this->authError = $event->authError;
 
         if ($this->authError === null && $event->performAuthentication) {
             // Validate the password
