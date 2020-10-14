@@ -17,6 +17,7 @@
 - Added `craft\fields\Assets::$allowUploads`.
 - Added `craft\helpers\Html::dataUrl()`.
 - Added `craft\helpers\Html::dataUrlFromString()`.
+- Added `craft\queue\jobs\PruneRevisions::$maxRevisions`. ([#6999](https://github.com/craftcms/cms/issues/6999))
 - Added `craft\services\ProjectConfig::$writeToYaml`.
 - Added `craft\services\Sites::refreshSites()`.
 - Added missing `rel="noopener"` to outbound links.
