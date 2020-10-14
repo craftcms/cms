@@ -1050,7 +1050,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             return $file->getDataUrl();
         }
 
-        return Html::dataUrl($file, $mimeType);
+        return Html::dataUrl(Craft::getAlias($file), $mimeType);
     }
 
     /**
