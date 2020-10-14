@@ -419,17 +419,26 @@ class GeneralConfig extends BaseObject
     public $devMode = false;
 
     /**
-     * @var string[] Array of plugin handles that should be disabled, regardless of what the project config says.
-     * ---
+     * @var string[]|string|null Array of plugin handles that should be disabled, regardless of what the project config says.
+     *
      * ```php
      * 'dev' => [
      *     'disabledPlugins' => ['webhooks'],
      * ],
      * ```
+     *
+     * This can also be set to `'*'` to disable **all** plugins.
+     *
+     * ```php
+     * 'dev' => [
+     *     'disabledPlugins' => '*',
+     * ],
+     * ```
+     *
      * @since 3.1.9
      * @group System
      */
-    public $disabledPlugins = [];
+    public $disabledPlugins;
 
     /**
      * @var bool Whether front end requests should respond with `X-Robots-Tag: none` HTTP headers, indicating that pages should not be indexed,
@@ -941,7 +950,7 @@ class GeneralConfig extends BaseObject
      * Set to `0` to disable this feature.
      *
      * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
-     * 
+     *
      * ::: tip
      * Users will only be purged when [garbage collection](https://craftcms.com/docs/3.x/gc.html) is run.
      * :::

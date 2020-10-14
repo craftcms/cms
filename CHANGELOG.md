@@ -38,6 +38,7 @@
 - `resave/*` commands now show a progress count in the output for each element. ([#6936](https://github.com/craftcms/cms/pull/6936))
 - The `on` and `off` commands no longer update the `dateModified` project config value. ([#6729](https://github.com/craftcms/cms/issues/6729))
 - It’s now possible to enable the Debug extension on a per-request basis when Dev Mode is enabled, by including a `X-Debug: enable` header on the request. ([#6978](https://github.com/craftcms/cms/issues/6978))
+- The `disabledPlugins` config setting can now be set to `'*'` to disable **all** plugins. ([#5106](https://github.com/craftcms/cms/issues/5106))
 - `*Field()` macros in the `_includes/forms.html` control panel template now define a default `id` value if none was provided.
 - `craft\db\ActiveRecord::find()` now returns a `craft\db\ActiveQuery` object.
 - `craft\helpers\ProjectConfig::diff()` now has an `$invert` argument.

@@ -135,7 +135,7 @@ class Plugins extends Component
     private $_disabledPluginInfo;
 
     /**
-     * @var array Any plugin handles that must be disabled per the `disablePlugins` config setting
+     * @var string[]|string|null Any plugin handles that must be disabled per the `disablePlugins` config setting
      */
     private $_forceDisabledPlugins;
 
@@ -149,7 +149,8 @@ class Plugins extends Component
      */
     public function init()
     {
-        $this->_forceDisabledPlugins = array_flip(Craft::$app->getConfig()->getGeneral()->disabledPlugins);
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $this->_forceDisabledPlugins = is_array($generalConfig->disabledPlugins) ? array_flip($generalConfig->disabledPlugins) : $generalConfig->disabledPlugins;
 
         $this->_composerPluginInfo = [];
 
@@ -1371,7 +1372,10 @@ class Plugins extends Component
         }
 
         // Force disable it?
-        if (isset($this->_forceDisabledPlugins[$handle])) {
+        if (
+            $this->_forceDisabledPlugins === '*' ||
+            (is_array($this->_forceDisabledPlugins) && isset($this->_forceDisabledPlugins[$handle]))
+        ) {
             $data['enabled'] = false;
         }
 
