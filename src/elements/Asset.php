@@ -1455,6 +1455,19 @@ class Asset extends Element
     }
 
     /**
+     * Generates a base64-encoded [data URL](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs) for the asset.
+     *
+     * @return string
+     * @throws InvalidConfigException if [[volumeId]] is missing or invalid
+     * @throws AssetException if a stream could not be created
+     * @since 3.5.13
+     */
+    public function getDataUrl(): string
+    {
+        return Html::dataUrlFromString($this->getContents(), $this->getMimeType());
+    }
+
+    /**
      * Return whether the Asset has a URL.
      *
      * @return bool

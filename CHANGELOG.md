@@ -6,13 +6,17 @@
 - It’s now possible to disallow uploading files directly to Assets fields, as opposed to going through the selection modal. ([#6954](https://github.com/craftcms/cms/issues/6954))
 - Reset Password pages are now discoverable by clients that support [.well-known/change-password URLs](https://w3c.github.io/webappsec-change-password-url/), [such as Google Chrome](https://security.googleblog.com/2020/10/new-password-protections-and-more-in.html).
 - The System Report utility now lists all defined [aliases](https://craftcms.com/docs/3.x/config/#aliases). ([#6992](https://github.com/craftcms/cms/issues/6992))
+- Added the `dataUrl()` Twig function, which generates a base64-encoded [data URL](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs) for the passed-in file path or asset.
 - Added `craft\controllers\RedirectController`.
 - Added `craft\controllers\UsersController::EVENT_AFTER_ASSIGN_GROUPS_AND_PERMISSIONS`. ([#6937](https://github.com/craftcms/cms/issues/6937))
 - Added `craft\controllers\UsersController::EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS`. ([#6937](https://github.com/craftcms/cms/issues/6937))
 - Added `craft\db\ActiveQuery`.
+- Added `craft\elements\Asset::getDataUrl()`.
 - Added `craft\events\UserGroupsAssignEvent::$newGroupIds`. ([#6937](https://github.com/craftcms/cms/issues/6937))
 - Added `craft\events\UserGroupsAssignEvent::$removedGroupIds`. ([#6937](https://github.com/craftcms/cms/issues/6937))
 - Added `craft\fields\Assets::$allowUploads`.
+- Added `craft\helpers\Html::dataUrl()`.
+- Added `craft\helpers\Html::dataUrlFromString()`.
 - Added `craft\services\ProjectConfig::$writeToYaml`.
 - Added `craft\services\Sites::refreshSites()`.
 - Added missing `rel="noopener"` to outbound links.
