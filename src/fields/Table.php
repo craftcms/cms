@@ -24,6 +24,7 @@ use craft\web\assets\tablesettings\TableSettingsAsset;
 use craft\web\assets\timepicker\TimepickerAsset;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
+use LitEmoji\LitEmoji;
 use yii\db\Schema;
 use yii\validators\EmailValidator;
 
@@ -419,7 +420,16 @@ class Table extends Field
         foreach ($value as $row) {
             $serializedRow = [];
             foreach (array_keys($this->columns) as $colId) {
-                $serializedRow[$colId] = parent::serializeValue($row[$colId] ?? null);
+                $col = $this->columns[$colId];
+                $type = $col['type'];
+                $value = $row[$colId];
+                $isTextType = $type === 'singleline' || $type === 'multiline';
+
+                if ($isTextType && $value !== null) {
+                    $value = LitEmoji::unicodeToShortcode($value);
+                }
+
+                $serializedRow[$colId] = parent::serializeValue($value ?? null);
             }
             $serialized[] = $serializedRow;
         }
@@ -501,6 +511,12 @@ class Table extends Field
 
                 return new ColorData($value);
 
+            case 'multiline':
+            case 'singleline':
+                if ($value !== null) {
+                    $value = LitEmoji::shortcodeToUnicode($value);
+                    return trim(preg_replace('/\R/u', "\n", $value));
+                }
             case 'date':
             case 'time':
                 return DateTimeHelper::toDateTime($value) ?: null;
