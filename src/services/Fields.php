@@ -1190,20 +1190,41 @@ class Fields extends Component
         $request = Craft::$app->getRequest();
         $layoutId = $request->getBodyParam("{$paramPrefix}fieldLayoutId");
         $elementPlacements = $request->getBodyParam("{$paramPrefix}elementPlacements");
+        $elementConfigs = $request->getBodyParam("{$paramPrefix}elementConfigs", []);
 
         if ($elementPlacements === null) {
-            // the JS probably didn't get fully initialized, so just go with the existing field layout if there is one
-            if ($layoutId) {
-                return $this->getLayoutById($layoutId);
+            // See if the layout was submitted in the old format
+            if (($legacyLayout = $request->getBodyParam("{$paramPrefix}fieldLayout")) !== null) {
+                Craft::$app->getDeprecator()->log('legacy-field-layout', 'Field layouts should be posted as `elementPlacements` and `elementConfigs` arrays, not `fieldLayout` and `requiredFields`.');
+                $legacyRequiredFields = array_flip($request->getBodyParam("{$paramPrefix}requiredFields", []));
+                $elementPlacements = [];
+                foreach ($legacyLayout as $tabName => $fieldIds) {
+                    foreach ($fieldIds as $fieldId) {
+                        $field = $this->getFieldById($fieldId);
+                        if ($field !== null) {
+                            $key = StringHelper::randomString(10);
+                            $elementPlacements[$tabName][] = $key;
+                            $elementConfigs[$key] = Json::encode([
+                                'type' => CustomField::class,
+                                'fieldUid' => $field->uid,
+                                'required' => isset($legacyRequiredFields[$fieldId]),
+                            ]);
+                        }
+                    }
+                }
+            } else {
+                // the JS probably didn't get fully initialized, so just go with the existing field layout if there is one
+                if ($layoutId) {
+                    return $this->getLayoutById($layoutId);
+                }
+                return new FieldLayout();
             }
-            return new FieldLayout();
         }
 
         if ($elementPlacements === '') {
             $elementPlacements = [];
         }
 
-        $elementConfigs = $request->getBodyParam("{$paramPrefix}elementConfigs", []);
 
         $layout = new FieldLayout();
         $layout->id = $layoutId;

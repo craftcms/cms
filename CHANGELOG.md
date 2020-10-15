@@ -46,6 +46,9 @@
 - `craft\services\ProjectConfig::saveModifiedConfigData()` now has a `$writeYaml` argument.
 - `craft\services\ProjectConfig::set()` now has an `$updateTimestamp` argument.
 
+### Deprecated
+- `craft\services\Fields::assembleLayoutFromPost()` now supports field layout data that was posted in the original (pre-3.5) format. ([barrelstrength/sprout-forms#521](https://github.com/barrelstrength/craft-sprout-forms/issues/521))
+
 ### Fixed
 - Fixed an error that could occur when installing Craft with existing project config data. ([#6943](https://github.com/craftcms/cms/issues/6943))
 - Fixed an error that occurred when propagating a Time field value to another site. ([#6950](https://github.com/craftcms/cms/issues/6950))
