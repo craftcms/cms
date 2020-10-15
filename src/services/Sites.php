@@ -740,7 +740,7 @@ class Sites extends Component
         }
 
         // Clear caches
-        $this->_refreshAllSites();
+        $this->refreshSites();
 
         /** @var Site $site */
         $site = $this->getSiteById($siteRecord->id);
@@ -1063,7 +1063,7 @@ class Sites extends Component
         }
 
         // Refresh sites
-        $this->_refreshAllSites();
+        $this->refreshSites();
 
         // Invalidate all element caches
         Craft::$app->getElements()->invalidateAllCaches();
@@ -1103,8 +1103,9 @@ class Sites extends Component
      * Refresh the status of all sites based on the DB data.
      *
      * @throws DbException
+     * @since 3.5.13
      */
-    private function _refreshAllSites()
+    public function refreshSites()
     {
         $this->_allSitesById = null;
         $this->_enabledSitesById = null;
@@ -1128,57 +1129,56 @@ class Sites extends Component
             return;
         }
 
-        try {
-            $results = (new Query())
-                ->select([
-                    's.id',
-                    's.groupId',
-                    's.name',
-                    's.handle',
-                    'language',
-                    's.primary',
-                    's.enabled',
-                    's.hasUrls',
-                    's.baseUrl',
-                    's.sortOrder',
-                    's.uid',
-                    's.dateCreated',
-                    's.dateUpdated',
-                ])
-                ->from(['s' => Table::SITES])
+        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
+
+        $query = (new Query())
+            ->select([
+                's.id',
+                's.name',
+                's.handle',
+                's.language',
+                's.primary',
+                's.hasUrls',
+                's.baseUrl',
+                's.sortOrder',
+                's.uid',
+                's.dateCreated',
+                's.dateUpdated',
+            ])
+            ->from(['s' => Table::SITES]);
+
+        // TODO: remove the version checks after the next breakpoint
+        if (version_compare($schemaVersion, '3.0.74', '<')) {
+            $query
+                ->orderBy(['s.name' => SORT_ASC]);
+        } else {
+            $query
+                ->addSelect(['s.groupId'])
                 ->innerJoin(['sg' => Table::SITEGROUPS], '[[sg.id]] = [[s.groupId]]')
-                ->where(['s.dateDeleted' => null])
-                ->andWhere(['sg.dateDeleted' => null])
-                ->orderBy(['sg.name' => SORT_ASC, 's.sortOrder' => SORT_ASC])
-                ->all();
+                ->orderBy(['sg.name' => SORT_ASC, 's.sortOrder' => SORT_ASC]);
+
+            if (version_compare($schemaVersion, '3.1.7', '>=')) {
+                $query
+                    ->where(['s.dateDeleted' => null])
+                    ->andWhere(['sg.dateDeleted' => null]);
+
+                if (version_compare($schemaVersion, '3.5.12', '>=')) {
+                    $query
+                        ->addSelect(['s.enabled']);
+                }
+            }
+        }
+
+        try {
+            $results = $query->all();
         } catch (DbException $e) {
             // todo: remove this after the next breakpoint
             // If the error code is 42S02 (MySQL) or 42P01 (PostgreSQL), the sites table probably doesn't exist yet
             if (isset($e->errorInfo[0]) && in_array($e->errorInfo[0], ['42S02', '42P01'], true)) {
                 return;
             }
-            // If the error code is 42S22 (MySQL) or 42703 (PostgreSQL), then the sites table doesn't have a groupId, dateDeleted, or enabled column yet
-            if (isset($e->errorInfo[0]) && in_array($e->errorInfo[0], ['42S22', '42703'], true)) {
-                $results = (new Query())
-                    ->select([
-                        's.id',
-                        's.name',
-                        's.handle',
-                        'language',
-                        's.primary',
-                        's.hasUrls',
-                        's.baseUrl',
-                        's.sortOrder',
-                        's.uid',
-                    ])
-                    ->from(['s' => Table::SITES])
-                    ->orderBy(['s.name' => SORT_ASC])
-                    ->all();
-            }
-            if (!isset($results)) {
-                /** @noinspection PhpUnhandledExceptionInspection */
-                throw $e;
-            }
+            /** @noinspection PhpUnhandledExceptionInspection */
+            throw $e;
         }
 
         // Check for results because during installation, the transaction hasn't been committed yet.
@@ -1358,7 +1358,7 @@ class Sites extends Component
         }
 
         // Set the new primary site by forcing a reload from the DB.
-        $this->_refreshAllSites();
+        $this->refreshSites();
 
         // Fire an afterChangePrimarySite event
         if ($this->hasEventHandlers(self::EVENT_AFTER_CHANGE_PRIMARY_SITE)) {

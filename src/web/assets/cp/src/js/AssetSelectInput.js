@@ -121,6 +121,9 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
                     class: 'hidden',
                     multiple: this.settings.limit != 1,
                 }).insertAfter(this.$uploadBtn);
+
+                // Trigger a window resize in case the field is inside an element editor HUD
+                Garnish.$win.trigger('resize');
             }
 
             // If CSRF protection isn't enabled, these won't be defined.

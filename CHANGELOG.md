@@ -1,5 +1,76 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.5.13 - 2020-10-15
+
+### Added
+- It’s now possible to disallow uploading files directly to Assets fields, as opposed to going through the selection modal. ([#6954](https://github.com/craftcms/cms/issues/6954))
+- Reset Password pages are now discoverable by clients that support [.well-known/change-password URLs](https://w3c.github.io/webappsec-change-password-url/), [such as Google Chrome](https://security.googleblog.com/2020/10/new-password-protections-and-more-in.html).
+- Craft now supports `/admin/edit/X` URLs to elements’ edit pages, where `X` is an element’s ID or UID, provided that the user has permission to edit the element. ([#7000](https://github.com/craftcms/cms/issues/7000))
+- The System Report utility now lists all defined [aliases](https://craftcms.com/docs/3.x/config/#aliases). ([#6992](https://github.com/craftcms/cms/issues/6992))
+- Added the `project-config/write` command, which write out the currently-loaded project config as YAML files to the `config/project/` folder, discarding any pending YAML changes.
+- The `project-config/diff` command now has an `--invert` flag, which will treat the loaded project config as the source of truth, rather than the YAML files.
+- Added the `dataUrl()` Twig function, which generates a base64-encoded [data URL](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs) for the passed-in file path or asset.
+- Added `craft\controllers\EditController`.
+- Added `craft\controllers\RedirectController`.
+- Added `craft\controllers\UsersController::EVENT_AFTER_ASSIGN_GROUPS_AND_PERMISSIONS`. ([#6937](https://github.com/craftcms/cms/issues/6937))
+- Added `craft\controllers\UsersController::EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS`. ([#6937](https://github.com/craftcms/cms/issues/6937))
+- Added `craft\db\ActiveQuery`.
+- Added `craft\elements\Asset::getDataUrl()`.
+- Added `craft\events\UserGroupsAssignEvent::$newGroupIds`. ([#6937](https://github.com/craftcms/cms/issues/6937))
+- Added `craft\events\UserGroupsAssignEvent::$removedGroupIds`. ([#6937](https://github.com/craftcms/cms/issues/6937))
+- Added `craft\fields\Assets::$allowUploads`.
+- Added `craft\helpers\Html::dataUrl()`.
+- Added `craft\helpers\Html::dataUrlFromString()`.
+- Added `craft\queue\jobs\PruneRevisions::$maxRevisions`. ([#6999](https://github.com/craftcms/cms/issues/6999))
+- Added `craft\services\Elements::getElementByUid()`.
+- Added `craft\services\Elements::getElementTypeByUid()`.
+- Added `craft\services\ProjectConfig::$writeYamlAutomatically`, which can be set to `false` from `config/app.php` if you’d prefer Craft to not write project config YAML files to `config/project/` automatically when they are missing or changes are made.
+- Added `craft\services\ProjectConfig::getDoesYamlExist()`.
+- Added `craft\services\Sites::refreshSites()`.
+- Added missing `rel="noopener"` to outbound links.
+
+### Changed
+- Improved color contrast throughout the control panel. ([#6951](https://github.com/craftcms/cms/pull/6951), [#6972](https://github.com/craftcms/cms/pull/6972))
+- The control panel viewport is now scalable for mobile browsers. ([#6972](https://github.com/craftcms/cms/pull/6972))
+- The “Share” button on Edit Entry and Edit Category pages has been renamed to “View”. ([#6963](https://github.com/craftcms/cms/issues/6963))
+- Edit Entry pages now show validation errors for the `typeId` attribute. ([#6958](https://github.com/craftcms/cms/issues/6958))
+- Table fields now support emoji characters. ([#7012](https://github.com/craftcms/cms/issues/7012))
+- The `draftOf` entry query parameter can now be set to `'*'`, to match drafts of any source element, so long as they have one. ([#6632](https://github.com/craftcms/cms/issues/6632))
+- `resave/*` commands now show a progress count in the output for each element. ([#6936](https://github.com/craftcms/cms/pull/6936))
+- The `on` and `off` commands no longer update the `dateModified` project config value. ([#6729](https://github.com/craftcms/cms/issues/6729))
+- It’s now possible to enable the Debug extension on a per-request basis when Dev Mode is enabled, by including a `X-Debug: enable` header on the request. ([#6978](https://github.com/craftcms/cms/issues/6978))
+- The `disabledPlugins` config setting can now be set to `'*'` to disable **all** plugins. ([#5106](https://github.com/craftcms/cms/issues/5106))
+- `*Field()` macros in the `_includes/forms.html` control panel template now define a default `id` value if none was provided.
+- `craft\db\ActiveRecord::find()` now returns a `craft\db\ActiveQuery` object.
+- `craft\helpers\ProjectConfig::diff()` now has an `$invert` argument.
+- `craft\helpers\ProjectConfig::ensureAllSitesProcessed()` now has a `$force` argument.
+- `craft\services\Fields::saveLayout()` now maintains existing field layout tab IDs.
+- `craft\services\ProjectConfig::saveModifiedConfigData()` now has a `$writeYaml` argument.
+- `craft\services\ProjectConfig::set()` now has an `$updateTimestamp` argument.
+
+### Deprecated
+- `craft\services\Fields::assembleLayoutFromPost()` now supports field layout data that was posted in the original (pre-3.5) format. ([barrelstrength/sprout-forms#521](https://github.com/barrelstrength/craft-sprout-forms/issues/521))
+
+### Fixed
+- Fixed an error that could occur when installing Craft with existing project config data. ([#6943](https://github.com/craftcms/cms/issues/6943))
+- Fixed an error that occurred when propagating a Time field value to another site. ([#6950](https://github.com/craftcms/cms/issues/6950))
+- Fixed an error that could occur when calling `craft\web\View::renderTemplate()` from a console request. ([#6945](https://github.com/craftcms/cms/issues/6945))
+- Fixed a Twig error that would occur when rendering the `_includes/forms/elementSelect.html` template if no `limit` variable was passed. ([#6953](https://github.com/craftcms/cms/issues/6953))
+- Fixed an error that could occur when updating to Craft 3.5, if any Assets fields had an upload location set to `{site.group}`. ([#6818](https://github.com/craftcms/cms/issues/6818))
+- Fixed a bug where in some cases querying for Assets using GraphQL API could fail.
+- Fixed a SQL error that could occur when joining two soft-deletable active record classes together. ([#6957](https://github.com/craftcms/cms/issues/6957))
+- Fixed a bug where sub-fields queried via GraphQL could be aliased incorrectly. ([#6874](https://github.com/craftcms/cms/issues/6874))
+- Fixed a bug where element selection modals could show no results if they were limited to a single source, and that source wasn’t available to the primary site. ([#6968](https://github.com/craftcms/cms/issues/6968))
+- Fixed a bug where Matrix fields weren’t identifying themselves as translatable on the Fields index page. ([#6970](https://github.com/craftcms/cms/issues/6970))
+- Fixed a bug where `craft\helpers\Html::modifyTagAttributes()` wasn’t working properly with custom elements with hyphenated names. ([#6973](https://github.com/craftcms/cms/issues/6973))
+- Fixed a bug where elements that were eager-loaded via `ancestors`, `children`, and `descendants` handles weren’t getting loaded in the correct order by default. ([#6974](https://github.com/craftcms/cms/issues/6974))
+- Fixed a bug where Assets fields could bleed out of view within element editor HUDs. ([#6975](https://github.com/craftcms/cms/issues/6975))
+- Fixed an error that could occur when updating from Craft 2.
+- Fixed a bug where the `on` and `off` commands were discarding any pending pending changes in the project config YAML files. ([#6984](https://github.com/craftcms/cms/issues/6984))
+- Fixed a bug where `craft\helpers\Db::reset()` wasn’t closing the previous database connection. ([#6998](https://github.com/craftcms/cms/pull/6998))
+- Fixed a bug where it wasn’t possible to access the selected preview target in `Craft.Preview` JavaScript events.
+- Fixed a styling bug with Checkboxes fields. ([#7011](https://github.com/craftcms/cms/issues/7011))
+
 ## 3.5.12.1 - 2020-10-02
 
 ### Fixed
@@ -8,7 +79,6 @@
 - Fixed a bug where deprecation warnings logged by the `getCsrfInput()`, `getFootHtml()`, `getHeadHtml()`, `round()`, and `svg()` Twig functions, and the `|ucwords` Twig filter, weren’t showing the template name and line number that the warning came from. ([#6927](https://github.com/craftcms/cms/issues/6927))
 - Fixed some potential database timeout and sequence issues when running multiple suites of tests.
 - Fixed a bug where the “Upload files” button within Assets fields was visible if the field limit was already reached on page load. ([#6939](https://github.com/craftcms/cms/issues/6939))
-- Fixed an error that could occur when calling `craft\web\View::renderTemplate()` from a console request. ([#6945](https://github.com/craftcms/cms/issues/6945))
 
 ## 3.5.12 - 2020-10-01
 

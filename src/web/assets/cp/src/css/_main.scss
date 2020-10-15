@@ -4558,6 +4558,8 @@ fieldset {
   .password {
     flex: 1;
     border: none;
+    background: transparent;
+    box-shadow: none;
   }
 
   .password-toggle {

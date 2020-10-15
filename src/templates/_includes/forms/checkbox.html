@@ -1,12 +1,12 @@
 {%- spaceless %}
 
-{% set id = (id is defined and id ? id : 'checkbox'~random()) %}
-{% set label = (label is defined ? label) %}
+{% set id = id ?? "checkbox#{random()}" %}
+{% set label = label ?? null %}
 
 {% set inputAttributes = {
     'id': id,
     'class': (class ?? [])|explodeClass|merge([
-        (toggle ?? reverseToggle ?? false) ? 'fieldtoggle',
+        (toggle ?? reverseToggle ?? false) ? 'fieldtoggle' : null,
         'checkbox'
     ]|filter),
     'checked': (checked ?? false) and checked,

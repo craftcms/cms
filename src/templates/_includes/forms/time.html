@@ -1,4 +1,4 @@
-{% set id = (id ?? 'time'~random())~'-time' -%}
+{% set id = (id ?? "time#{random()}") ~ '-time' -%}
 {% set name = name ?? null -%}
 {% set value = value ?? null -%}
 
@@ -7,7 +7,7 @@
 <div class="timewrapper"
         {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
     {%- include "_includes/forms/text" with {
-        name: (name ? name~'[time]'),
+        name: name ? "#{name}[time]" : null,
         autocomplete: false,
         size: 10,
         placeholder: ' ',

@@ -1054,9 +1054,9 @@ class AssetsController extends Controller
         if (count($assets) === 1) {
             $asset = reset($assets);
             return $this->response
-                ->sendStreamAsFile($asset->stream, $asset->filename, [
+                ->sendStreamAsFile($asset->getStream(), $asset->filename, [
                     'fileSize' => $asset->size,
-                    'mimeType' => $asset->mimeType,
+                    'mimeType' => $asset->getMimeType(),
                 ]);
         }
 
@@ -1069,10 +1069,10 @@ class AssetsController extends Controller
         }
 
         App::maxPowerCaptain();
+
         foreach ($assets as $asset) {
-            $localPath = $asset->getCopyOfFile();
-            $volume = $asset->getVolume();
-            $zip->addFile($localPath, $volume->name . '/' . $asset->getPath());
+            $path = $asset->getVolume()->name . '/' . $asset->getPath();
+            $zip->addFromString($path, $asset->getContents());
         }
 
         $zip->close();

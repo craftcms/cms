@@ -38,14 +38,13 @@ class OnController extends Controller
             return ExitCode::OK;
         }
 
-        // Temporarily allow changes to the project config even if it's supposed to be read only
+        // Allow changes to the project config even if it's supposed to be read only,
+        // and prevent changes from getting written to YAML
         $projectConfig = Craft::$app->getProjectConfig();
-        $readOnly = $projectConfig->readOnly;
         $projectConfig->readOnly = false;
+        $projectConfig->writeYamlAutomatically = false;
 
-        $projectConfig->set('system.live', true);
-
-        $projectConfig->readOnly = $readOnly;
+        $projectConfig->set('system.live', true, null, false);
 
         $this->stdout('The system is now online.' . PHP_EOL, Console::FG_GREEN);
         return ExitCode::OK;

@@ -201,7 +201,7 @@ Craft.Preview = Garnish.Base.extend(
             this.$targetMenu.find('a').eq(i).addClass('sel');
             this.updateIframe(true);
             this.trigger('switchTarget', {
-                target: this.draftEditor.settings.previewTargets[i],
+                previewTarget: this.draftEditor.settings.previewTargets[i],
             });
         },
 
@@ -325,7 +325,7 @@ Craft.Preview = Garnish.Base.extend(
             );
 
             this.trigger('beforeUpdateIframe', {
-                target: target,
+                previewTarget: target,
                 resetScroll: resetScroll,
                 refresh: refresh,
             });
@@ -398,7 +398,7 @@ Craft.Preview = Garnish.Base.extend(
                 this.$iframe = $iframe;
 
                 this.trigger('afterUpdateIframe', {
-                    target: this.draftEditor.settings.previewTargets[this.activeTarget],
+                    previewTarget: this.draftEditor.settings.previewTargets[this.activeTarget],
                     $iframe: this.$iframe,
                 });
 

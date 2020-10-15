@@ -347,7 +347,10 @@ class ElementQueryConditionBuilder extends Component
         if ($rootOfAssetQuery) {
             // If this is a root asset query that has transform directive defined
             // We should eager-load transforms using the directive's arguments
-            $parentPlan->criteria['withTransforms'] = $this->_prepareTransformArguments($this->_extractTransformDirectiveArguments($parentNode));
+            $transformArguments = $this->_prepareTransformArguments($this->_extractTransformDirectiveArguments($parentNode));
+            if ($transformArguments) {
+                $parentPlan->criteria['withTransforms'] = $transformArguments;
+            }
         }
 
         $countedHandles = [];
@@ -508,7 +511,7 @@ class ElementQueryConditionBuilder extends Component
 
                         // Correct the handles and, maybe, aliases.
                         foreach ($plan->nested as $nestedPlan) {
-                            $newHandle = $gqlFragmentEntity->getEagerLoadingPrefix() . ':' . $nestedPlan->handle;
+                            $newHandle = StringHelper::removeLeft($gqlFragmentEntity->getEagerLoadingPrefix() . ':' . $nestedPlan->handle, ':');
                             if ($nestedPlan->handle === $nestedPlan->alias) {
                                 $nestedPlan->alias = $newHandle;
                             }

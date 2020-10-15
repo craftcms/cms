@@ -8,10 +8,18 @@ $minHorizontalUiWidth: $minFullUiWidth - $sidebarWidth;
 
 html {
   -webkit-text-size-adjust: 100%;
+  min-height: 100vh;
+}
+
+body {
+  min-height: 100vh;
 }
 
 #global-container {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
 /* global sidebar */
@@ -201,6 +209,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 #nav {
   flex: 1;
   margin: 27px 0 0;
+  padding-bottom: 24px;
   overflow: visible;
 
   li {
@@ -278,38 +287,31 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   }
 }
 
-#app-info {
+#global-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   padding: 14px 14px 24px;
-  color: $grey1000;
-  text-align: center;
 }
 
-#edition {
-  font-size: 14px;
+#app-info {
+  margin-top: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: $grey600;
+  text-align: center;
 
-  &.hot:hover {
-    cursor: pointer;
+  li {
+    margin: 0 7px;
 
-    #edition-logo {
-      border-color: $grey300;
+    a {
+      color: $grey600;
+      text-decoration: underline;
 
-      & > .edition-name {
-        color: $grey300;
-        @include light-on-dark-text;
-      }
-
-      & > .edition-trial {
-        background-color: $grey300;
-
-        &:before {
-          body.ltr & {
-            border-color: transparent $grey300 transparent transparent;
-          }
-
-          body.rtl & {
-            border-color: transparent transparent transparent $grey300;
-          }
-        }
+      &.go:hover:after {
+        color: $grey600;
       }
     }
   }
@@ -317,23 +319,23 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
 #edition-logo {
   user-select: none;
-  border: 1px solid $grey1000;
+  border: 1px solid $grey600;
   border-radius: 3px;
   display: inline-flex;
-  height: 24px;
+  height: 20px;
   box-sizing: content-box;
-  transition: border-color linear 100ms;
+  font-size: 11px;
 
   & > .edition-name,
   & > .edition-trial {
-    padding: 8px 8px 7px;
+    padding: 6px 7px 5px;
     line-height: 8px;
-    font-weight: 500;
   }
 
   & > .edition-name {
-    letter-spacing: 2.2px;
-    padding-right: 5.8px;
+    font-weight: 600;
+    letter-spacing: 1.7px;
+    padding-right: 5px;
     text-transform: uppercase;
     transition: color linear 100ms;
   }
@@ -343,8 +345,8 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
     position: relative;
     @include margin-left(5px);
     @include padding-left(5px);
-    background-color: $grey1000;
-    color: $grey800;
+    background-color: $grey600;
+    color: $grey200;
     border-radius: 0 1px 1px 0;
     letter-spacing: 1px;
     @include padding-right(7px);
@@ -364,22 +366,17 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
       body.ltr & {
         left: -10px;
-        border-width: 0 10px 23px 0;
-        border-color: transparent $grey1000 transparent transparent;
+        border-width: 0 10px 20px 0;
+        border-color: transparent $grey600 transparent transparent;
       }
 
       body.rtl & {
         right: -10px;
-        border-width: 0 0 23px 10px;
-        border-color: transparent transparent transparent $grey1000;
+        border-width: 0 0 20px 10px;
+        border-color: transparent transparent transparent $grey600;
       }
     }
   }
-}
-
-#version {
-  margin-top: 4px;
-  font-size: 12px;
 }
 
 #devmode {
@@ -392,6 +389,9 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
 #page-container {
   @include padding-left($sidebarWidth);
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
 }
 
 #alerts {
@@ -556,6 +556,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
 #main-container {
   position: relative;
+  flex-grow: 1;
 }
 
 #notifications {
@@ -1349,7 +1350,7 @@ $toolbarIconColor: darken($inputColor, 10%);
       padding: 0 5px;
       margin: 0 -5px;
       text-transform: uppercase;
-      color: $lightTextColor;
+      color: $mediumTextColor;
       font-size: 11px;
       font-weight: bold;
     }

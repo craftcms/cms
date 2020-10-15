@@ -1,10 +1,10 @@
 {%- set class = (class ?? [])|explodeClass|merge([
     'select',
-    (disabled ?? false) ? 'disabled',
+    (disabled ?? false) ? 'disabled' : null,
 ]|filter) %}
 
-{%- set options = (options is defined ? options : []) %}
-{%- set value = (value is defined ? value : null) %}
+{%- set options = options ?? [] %}
+{%- set value = value ?? null %}
 {%- set hasOptgroups = false -%}
 
 {%- set containerAttributes = {
@@ -18,7 +18,7 @@
 {% set inputAttributes = {
   id: id ?? false,
   class: [
-    (toggle ?? false) ? 'fieldtoggle'
+    (toggle ?? false) ? 'fieldtoggle' : null,
   ]|filter,
   name: name ?? false,
   autofocus: (autofocus ?? false) and not craft.app.request.isMobileBrowser(true),

@@ -31,7 +31,9 @@
 │   │     │   │   │   └──────────────────────────────────────────────────┘   │   │   │
 │   │     │   │   │                                                          │   │   │
 │   │     │   │   └──────────────────────────────────────────────────────────┘   │   │
-│   │     │   │                                                                  │   │
+│   │     │   │   ┌──────────────────────────────────────────────────────────┐   │   │
+│   │     │   │   │                      #global-footer                      │   │   │
+│   │     │   │   └──────────────────────────────────────────────────────────┘   │   │
 │   └─────┘   └──────────────────────────────────────────────────────────────────┘   │
 │                                                                                    │
 └────────────────────────────────────────────────────────────────────────────────────┘
@@ -57,6 +59,7 @@
 {% set hasSystemIcon = CraftEdition == CraftPro and craft.rebrand.isIconUploaded %}
 {% set fullPageForm = (fullPageForm is defined and fullPageForm) %}
 
+{% set editionName = craft.app.getEditionName() %}
 {% set canUpgradeEdition = craft.app.getCanUpgradeEdition() %}
 {% set licensedEdition = craft.app.getLicensedEdition() %}
 {% set isTrial = licensedEdition is not same as(null) and licensedEdition is not same as(CraftEdition) %}
@@ -116,7 +119,7 @@
     <div id="global-container">
         {% include '_layouts/components/global-sidebar' %}
 
-        <div id="page-container">
+        <li id="page-container">
             {% include '_layouts/components/alerts' %}
             {% include '_layouts/components/notifications' %}
 
@@ -237,6 +240,24 @@
                     {%- endif %}
                 </main><!-- #main -->
             </div><!-- #main-container -->
+
+            <footer id="global-footer">
+                <div id="edition-logo" title="{{ '{edition} edition'|t('app', {edition: editionName}) ~ (isTrial ? ' ' ~ '(trial)'|t('app')) }}">
+                    <div class="edition-name">{{ editionName }}</div>
+                    {% if isTrial %}
+                        <div class="edition-trial">{{ "Trial"|t('app') }}</div>
+                    {% endif %}
+                </div>
+                <ul id="app-info">
+                    <li>Craft CMS {{ craft.app.version }}</li>
+                    {% if canUpgradeEdition %}
+                        <li>
+                            <a class="go" href="plugin-store/upgrade-craft">{{ isTrial ? 'Buy Craft Pro'|t('app') : 'Upgrade to Craft Pro'|t('app') }}</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </footer>
+
         </div><!-- #page-container -->
     </div><!-- #global-container -->
 {% endblock %}

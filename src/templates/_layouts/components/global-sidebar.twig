@@ -74,18 +74,6 @@
         </ul>
     </nav>
 
-    <div id="app-info">
-        <div id="edition" {% if canUpgradeEdition %}class="hot" title="{{ 'Manage your Craft CMS edition'|t('app') }}"{% else %}class="edition"{% endif %}>
-            <div id="edition-logo">
-                <div class="edition-name">{{ craft.app.getEditionName() }}</div>
-                {% if isTrial %}
-                    <div class="edition-trial">{{ "Trial"|t('app') }}</div>
-                {% endif %}
-            </div>
-        </div>
-        <div id="version">Craft CMS {{ craft.app.version }}</div>
-    </div>
-
     {% if currentUser.admin and devMode %}
         <div id="devmode" title="{{ 'Craft CMS is running in Dev Mode.'|t('app') }}"></div>
     {% endif %}

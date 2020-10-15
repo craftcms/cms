@@ -68,6 +68,18 @@ class UsersController extends Controller
     const EVENT_REGISTER_USER_ACTIONS = 'registerUserActions';
 
     /**
+     * @event UserEvent The event that is triggered BEFORE user groups and permissions ARE assigned to the user getting saved
+     * @since 3.5.13
+     */
+    const EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS = 'afterBeforeGroupsAndPermissions';
+
+    /**
+     * @event UserEvent The event that is triggered after user groups and permissions have been assigned to the user getting saved
+     * @since 3.5.13
+     */
+    const EVENT_AFTER_ASSIGN_GROUPS_AND_PERMISSIONS = 'afterAssignGroupsAndPermissions';
+
+    /**
      * @event DefineUserContentSummaryEvent The event that is triggered when defining a summary of content owned by a user(s), before they are deleted
      *
      * ---
@@ -1209,9 +1221,23 @@ class UsersController extends Controller
                 // Assign them to the default user group
                 Craft::$app->getUsers()->assignUserToDefaultGroup($user);
             } else if ($currentUser) {
+                // Fire an 'afterBeforeGroupsAndPermissions' event
+                if ($this->hasEventHandlers(self::EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS)) {
+                    $this->trigger(self::EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS, new UserEvent([
+                        'user' => $user,
+                    ]));
+                }
+
                 // Assign user groups and permissions if the current user is allowed to do that
                 $this->_saveUserPermissions($user, $currentUser);
                 $this->_saveUserGroups($user, $currentUser);
+
+                // Fire an 'afterAssignGroupsAndPermissions' event
+                if ($this->hasEventHandlers(self::EVENT_AFTER_ASSIGN_GROUPS_AND_PERMISSIONS)) {
+                    $this->trigger(self::EVENT_AFTER_ASSIGN_GROUPS_AND_PERMISSIONS, new UserEvent([
+                        'user' => $user,
+                    ]));
+                }
             }
         }
 

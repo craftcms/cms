@@ -1,10 +1,10 @@
-{%- set type = (type is defined ? type : 'text') %}
-{%- set autocomplete = (autocomplete is defined ? autocomplete : false) %}
+{%- set type = type ?? 'text' %}
+{%- set autocomplete = autocomplete ?? false %}
 
 {%- set class = (class ?? [])|explodeClass|merge([
     'text',
-    (disabled ?? false) ? 'disabled',
-    not (size ?? false) ? 'fullwidth',
+    (disabled ?? false) ? 'disabled' : null,
+    not (size ?? false) ? 'fullwidth' : null,
 ]|filter) %}
 
 {%- set inputAttributes = {
@@ -17,7 +17,7 @@
     value: value ?? false,
     maxlength: maxlength ?? false,
     autofocus: (autofocus ?? false) and not craft.app.request.isMobileBrowser(true),
-    autocomplete: autocomplete is not same as(null) ? (autocomplete is same as(true) ? 'on' : (autocomplete ? false : 'off' )),
+    autocomplete: autocomplete is not same as(null) ? (autocomplete is same as(true) ? 'on' : (autocomplete ? false : 'off' )) : null,
     autocorrect: (autocorrect ?? true) ? false : 'off',
     autocapitalize: (autocapitalize ?? true) ? false : 'off',
     disabled: disabled ?? false,

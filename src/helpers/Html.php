@@ -388,7 +388,7 @@ class Html extends \yii\helpers\Html
     private static function _findTag(string $html, int $offset = 0): array
     {
         // Find the first HTML tag that isn't a DTD or a comment
-        if (!preg_match('/<(\/?\w+)/', $html, $match, PREG_OFFSET_CAPTURE, $offset) || $match[1][0][0] === '/') {
+        if (!preg_match('/<(\/?[\w\-]+)/', $html, $match, PREG_OFFSET_CAPTURE, $offset) || $match[1][0][0] === '/') {
             throw new InvalidArgumentException('Could not find an HTML tag in string: ' . $html);
         }
 
@@ -697,5 +697,46 @@ class Html extends \yii\helpers\Html
         $svg = preg_replace('/<title>.*?<\/title>\s*/is', '', $svg);
         $svg = preg_replace('/<desc>.*?<\/desc>\s*/is', '', $svg);
         return $svg;
+    }
+
+    /**
+     * Generates a base64-encoded [data URL](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs) for the given file path.
+     *
+     * @param string $file The file path
+     * @param string|null $mimeType The file’s MIME type. If `null` then it will be determined automatically.
+     * @return string The data URL
+     * @throws InvalidArgumentException if `$file` is an invalid file path
+     * @since 3.5.13
+     */
+    public static function dataUrl(string $file, string $mimeType = null): string
+    {
+        if (!is_file($file)) {
+            throw new InvalidArgumentException("Invalid file path: $file");
+        }
+
+        if ($mimeType === null) {
+            try {
+                $mimeType = FileHelper::getMimeType($file);
+            } catch (\Throwable $e) {
+                Craft::warning("Unable to determine the MIME type for $file: " . $e->getMessage());
+                Craft::$app->getErrorHandler()->logException($e);
+            }
+        }
+
+        return static::dataUrlFromString(file_get_contents($file), $mimeType);
+    }
+
+    /**
+     * Generates a base64-encoded [data URL](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs) based on the given file contents and MIME type.
+     *
+     * @param string $contents The file path
+     * @param string|null $mimeType The file’s MIME type. If `null` then it will be determined automatically.
+     * @return string The data URL
+     * @throws InvalidArgumentException if `$file` is an invalid file path
+     * @since 3.5.13
+     */
+    public static function dataUrlFromString(string $contents, string $mimeType = null): string
+    {
+        return 'data:' . ($mimeType ? "$mimeType;" : '') . 'base64,' . base64_encode($contents);
     }
 }

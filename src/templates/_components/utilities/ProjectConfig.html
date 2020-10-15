@@ -1,77 +1,124 @@
 {% import "_includes/forms" as forms %}
 
-<form method="post" action="" accept-charset="UTF-8">
-    <h2>{{ 'Apply YAML Changes'|t('app') }}</h2>
-    {{ csrfInput() }}
-    <p>{{ 'Apply changes in your project config YAML files to the loaded project config.'|t('app') }}</p>
-    {% if areChangesPending %}
-        <div id="diff" class="pane loading"></div>
-        <div class="readable">
-            <blockquote class="note $noteClass">
+{% if yamlExists %}
+    <form method="post" action="" accept-charset="UTF-8">
+        {% if invert %}
+            <h2>{{ 'Update YAML Files'|t('app') }}</h2>
+            <p>{{ 'Update your project config YAML files to reflect the latest changes in the loaded project config.'|t('app') }}</p>
+        {% else %}
+            <h2>{{ 'Apply YAML Changes'|t('app') }}</h2>
+            <p>{{ 'Apply changes in your project config YAML files to the loaded project config.'|t('app') }}</p>
+        {% endif %}
+        {{ csrfInput() }}
+        {% if areChangesPending %}
+            <div id="diff" class="pane loading"></div>
+            <div class="readable">
+                <blockquote class="note $noteClass">
+                    <p>
+                        {{ invert
+                            ? 'Make sure you’re not overwriting changes in the YAML files that were made on another environment.'|t('app')
+                            : 'Make sure you’ve followed the <a href="{url}" target="_blank">Environment Setup</a> instructions before applying project config YAML changes.'|t('app', {
+                                url: 'https://craftcms.com/docs/3.x/project-config.html#environment-setup',
+                            })|raw
+                        }}
+                    </p>
+                </blockquote>
+            </div>
+            <div class="buttons">
+                {% if invert %}
+                    {{ tag('button', {
+                        type: 'button',
+                        class: ['btn', 'formsubmit', 'secondary'],
+                        text: 'Update YAML files'|t('app'),
+                        data: {
+                            action: 'project-config/discard',
+                            confirm: 'Are you sure you want to discard the pending project config YAML changes?'|t('app'),
+                        },
+                    }) }}
+                    {{ tag('button', {
+                        type: 'button',
+                        class: ['btn', 'formsubmit'],
+                        text: 'Apply YAML changes'|t('app'),
+                        data: {
+                            action: 'config-sync',
+                            params: {
+                                return: 'utilities/project-config',
+                            },
+                        },
+                    }) }}
+                {% else %}
+                    {{ tag('button', {
+                        type: 'button',
+                        class: ['btn', 'formsubmit', 'secondary'],
+                        text: 'Apply changes only'|t('app'),
+                        data: {
+                            action: 'config-sync',
+                            params: {
+                                return: 'utilities/project-config',
+                            },
+                        },
+                    }) }}
+                    {{ tag('button', {
+                        type: 'button',
+                        class: ['btn', 'formsubmit'],
+                        text: 'Reapply everything'|t('app'),
+                        data: {
+                            action: 'config-sync',
+                            params: {
+                                return: 'utilities/project-config',
+                                force: 1,
+                            },
+                        },
+                    }) }}
+                    {{ tag('button', {
+                        type: 'button',
+                        class: ['btn', 'formsubmit'],
+                        text: 'Discard changes'|t('app'),
+                        data: {
+                            action: 'project-config/discard',
+                            confirm: 'Are you sure you want to discard the pending project config YAML changes?'|t('app'),
+                        },
+                    }) }}
+                {% endif %}
+            </div>
+        {% else %}
+            <div class="pane">
                 <p>
-                    {{ 'Make sure you’ve followed the <a href="{url}" target="_blank">Environment Setup</a> instructions before applying project config YAML changes.'|t('app', {
-                        url: 'https://craftcms.com/docs/3.x/project-config.html#environment-setup',
-                    })|raw }}
+                    <span class="checkmark-icon"></span>
+                    {{ 'There aren’t any pending project config changes to apply.'|t('app') }}
                 </p>
-            </blockquote>
-        </div>
+            </div>
+            <div class="buttons">
+                {{ tag('button', {
+                    type: 'button',
+                    class: ['btn', 'formsubmit'],
+                    text: 'Reapply everything'|t('app'),
+                    data: {
+                        action: 'config-sync',
+                        params: {
+                            return: 'utilities/project-config',
+                            force: 1,
+                        },
+                    },
+                }) }}
+            </div>
+        {% endif %}
+    </form>
+{% else %}
+    <form method="post" action="" accept-charset="UTF-8">
+        <h2>{{ 'Generate YAML Files'|t('app') }}</h2>
+        <p>
+            {{ 'Save the loaded project config data to YAML files in your <code>{folder}</code> folder.'|t('app', {
+                folder: 'config/project/',
+            })|raw }}
+        </p>
+        {{ actionInput('project-config/discard') }}
+        {{ csrfInput() }}
         <div class="buttons">
-            {{ tag('button', {
-                type: 'button',
-                class: ['btn', 'formsubmit', 'secondary'],
-                text: 'Apply changes only'|t('app'),
-                data: {
-                    action: 'config-sync',
-                    params: {
-                        return: 'utilities/project-config',
-                    },
-                },
-            }) }}
-            {{ tag('button', {
-                type: 'button',
-                class: ['btn', 'formsubmit'],
-                text: 'Reapply everything'|t('app'),
-                data: {
-                    action: 'config-sync',
-                    params: {
-                        return: 'utilities/project-config',
-                        force: 1,
-                    },
-                },
-            }) }}
-            {{ tag('button', {
-                type: 'button',
-                class: ['btn', 'formsubmit'],
-                text: 'Discard changes'|t('app'),
-                data: {
-                    action: 'project-config/discard',
-                    confirm: 'Are you sure you want to discard the pending project config YAML changes?'|t('app'),
-                },
-            }) }}
+            <button type="submit" class="btn secondary">{{ 'Generate'|t('app') }}</button>
         </div>
-    {% else %}
-        <div class="pane">
-            <p>
-                <span class="checkmark-icon"></span>
-                {{ 'There aren’t any pending project config changes to apply.'|t('app') }}
-            </p>
-        </div>
-        <div class="buttons">
-            {{ tag('button', {
-                type: 'button',
-                class: ['btn', 'formsubmit'],
-                text: 'Reapply everything'|t('app'),
-                data: {
-                    action: 'config-sync',
-                    params: {
-                        return: 'utilities/project-config',
-                        force: 1,
-                    },
-                },
-            }) }}
-        </div>
-    {% endif %}
-</form>
+    </form>
+{% endif %}
 
 <hr>
 
@@ -111,7 +158,9 @@
 {% if areChangesPending %}
     {% js %}
         let cancelToken = axios.CancelToken.source();
-        Craft.sendActionRequest('GET', Craft.getActionUrl('project-config/diff'), {
+        Craft.sendActionRequest('GET', Craft.getActionUrl('project-config/diff', {
+            invert: {{ invert|json_encode }},
+        }), {
             cancelToken: cancelToken.token,
         }).then(response => {
             cancelToken = null;

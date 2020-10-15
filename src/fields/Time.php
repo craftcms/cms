@@ -182,6 +182,10 @@ class Time extends Field implements PreviewableFieldInterface, SortableFieldInte
             return null;
         }
 
+        if ($value instanceof DateTime) {
+            return $value;
+        }
+
         if (is_array($value)) {
             if (empty($value['time'])) {
                 return null;

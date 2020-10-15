@@ -43,6 +43,7 @@
     {{ forms.textField({
         label: 'Retry Duration'|t('app'),
         instructions: 'The number of seconds that the `Retry-After` HTTP header should be set to for 503 responses when the system is offline.'|t('app'),
+        id: 'retry-duration',
         name: 'retryDuration',
         value: system.retryDuration ?? null,
         inputmode: 'numeric',

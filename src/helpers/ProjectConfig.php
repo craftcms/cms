@@ -81,12 +81,14 @@ class ProjectConfig
 
     /**
      * Ensure all site config changes are processed immediately in a safe manner.
+     *
+     * @param bool $force Whether to proceed even if YAML changes are not currently being applied
      */
-    public static function ensureAllSitesProcessed()
+    public static function ensureAllSitesProcessed(bool $force = false)
     {
         $projectConfig = Craft::$app->getProjectConfig();
 
-        if (static::$_processedSites || !$projectConfig->getIsApplyingYamlChanges()) {
+        if (static::$_processedSites || (!$force && !$projectConfig->getIsApplyingYamlChanges())) {
             return;
         }
 
@@ -97,12 +99,12 @@ class ProjectConfig
 
         foreach ($allGroups as $groupUid => $groupData) {
             // Ensure group is processed
-            $projectConfig->processConfigChanges(Sites::CONFIG_SITEGROUP_KEY . '.' . $groupUid);
+            $projectConfig->processConfigChanges(Sites::CONFIG_SITEGROUP_KEY . '.' . $groupUid, false, null, $force);
         }
 
         foreach ($allSites as $siteUid => $siteData) {
             // Ensure site is processed
-            $projectConfig->processConfigChanges(Sites::CONFIG_SITES_KEY . '.' . $siteUid);
+            $projectConfig->processConfigChanges(Sites::CONFIG_SITES_KEY . '.' . $siteUid, false, null, $force);
         }
     }
 
@@ -448,21 +450,28 @@ class ProjectConfig
     /**
      * Returns a diff of the pending project config YAML changes, compared to the currently loaded project config.
      *
+     * @param bool $invert Whether to reverse the diff, so the loaded config is treated as the source of truth
      * @return string
      * @since 3.5.6
      */
-    public static function diff(): string
+    public static function diff(bool $invert = false): string
     {
         $projectConfig = Craft::$app->getProjectConfig();
+        $cacheKey = ProjectConfigService::DIFF_CACHE_KEY . ($invert ? ':reverse' : '');
 
-        return Craft::$app->getCache()->getOrSet(ProjectConfigService::DIFF_CACHE_KEY, function() use ($projectConfig): string {
+        return Craft::$app->getCache()->getOrSet($cacheKey, function() use ($projectConfig, $invert): string {
             $currentConfig = $projectConfig->get();
             $pendingConfig = $projectConfig->get(null, true);
             $currentYaml = Yaml::dump(static::cleanupConfig($currentConfig), 20, 2);
             $pendingYaml = Yaml::dump(static::cleanupConfig($pendingConfig), 20, 2);
             $builder = new UnifiedDiffOutputBuilder('');
             $differ = new Differ($builder);
-            $diff = $differ->diff($currentYaml, $pendingYaml);
+
+            if ($invert) {
+                $diff = $differ->diff($pendingYaml, $currentYaml);
+            } else {
+                $diff = $differ->diff($currentYaml, $pendingYaml);
+            }
 
             // Cleanup
             $diff = preg_replace("/^@@ @@\n/", '', $diff);

@@ -87,6 +87,12 @@ class Assets extends BaseRelationField
     public $useSingleFolder = false;
 
     /**
+     * @var bool Whether it should be possible to upload files directly to the field.
+     * @since 3.5.13
+     */
+    public $allowUploads = true;
+
+    /**
      * @var string|null Where files should be uploaded to by default, in format
      * "folder:X", where X is the craft\models\VolumeFolder ID
      * (only used if [[useSingleFolder]] is false)
@@ -194,6 +200,7 @@ class Assets extends BaseRelationField
         parent::init();
 
         $this->useSingleFolder = (bool)$this->useSingleFolder;
+        $this->allowUploads = (bool)$this->allowUploads;
         $this->showUnpermittedVolumes = (bool)$this->showUnpermittedVolumes;
         $this->showUnpermittedFiles = (bool)$this->showUnpermittedFiles;
 
@@ -660,7 +667,11 @@ class Assets extends BaseRelationField
 
         $uploadVolume = $this->_uploadVolume();
         $variables['hideSidebar'] = $this->useSingleFolder;
-        $variables['canUpload'] = $uploadVolume && Craft::$app->getUser()->checkPermission("saveAssetInVolume:$uploadVolume->uid");
+        $variables['canUpload'] = (
+            $this->allowUploads &&
+            $uploadVolume &&
+            Craft::$app->getUser()->checkPermission("saveAssetInVolume:$uploadVolume->uid")
+        );
         $variables['defaultFieldLayoutId'] = $uploadVolume->fieldLayoutId ?? null;
         $variables['defaultUploadLocation'] = $this->_defaultUploadLocation;
 
@@ -877,11 +888,11 @@ class Assets extends BaseRelationField
         if ($this->useSingleFolder) {
             $uploadVolume = $this->singleUploadLocationSource;
             $subpath = $this->singleUploadLocationSubpath;
-            $settingName = Craft::t('app', 'Upload Location');
+            $settingName = Craft::t('app', 'Asset Location');
         } else {
             $uploadVolume = $this->defaultUploadLocationSource;
             $subpath = $this->defaultUploadLocationSubpath;
-            $settingName = Craft::t('app', 'Default Upload Location');
+            $settingName = Craft::t('app', 'Default Asset Location');
         }
 
         $assets = Craft::$app->getAssets();

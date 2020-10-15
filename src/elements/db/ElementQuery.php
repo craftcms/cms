@@ -143,8 +143,14 @@ class ElementQuery extends Query implements ElementQueryInterface
     public $draftId;
 
     /**
-     * @var int|false|null The source element ID that drafts should be returned for.
-     * Set to `false` to fetch unsaved drafts.
+     * @var int|string|false|null The source element ID that drafts should be returned for.
+     *
+     * This can be set to one of the following:
+     *
+     * - A source element ID – matches drafts of that element
+     * - `'*'` – matches drafts of any source element
+     * - `false` – matches unsaved drafts that have no source element
+     *
      * @since 3.2.0
      */
     public $draftOf;
@@ -2471,7 +2477,9 @@ class ElementQuery extends Query implements ElementQueryInterface
                 $this->subQuery->andWhere(['elements.draftId' => $this->draftId]);
             }
 
-            if ($this->draftOf !== null) {
+            if ($this->draftOf === '*') {
+                $this->subQuery->andWhere(['not', ['drafts.sourceId' => null]]);
+            } else if ($this->draftOf !== null) {
                 $this->subQuery->andWhere(['drafts.sourceId' => $this->draftOf ?: null]);
             }
 
