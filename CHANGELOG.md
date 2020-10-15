@@ -34,6 +34,7 @@
 - The control panel viewport is now scalable for mobile browsers. ([#6972](https://github.com/craftcms/cms/pull/6972))
 - The “Share” button on Edit Entry and Edit Category pages has been renamed to “View”. ([#6963](https://github.com/craftcms/cms/issues/6963))
 - Edit Entry pages now show validation errors for the `typeId` attribute. ([#6958](https://github.com/craftcms/cms/issues/6958))
+- Table fields now support emoji characters. ([#7012](https://github.com/craftcms/cms/issues/7012))
 - The `draftOf` entry query parameter can now be set to `'*'`, to match drafts of any source element, so long as they have one. ([#6632](https://github.com/craftcms/cms/issues/6632))
 - `resave/*` commands now show a progress count in the output for each element. ([#6936](https://github.com/craftcms/cms/pull/6936))
 - The `on` and `off` commands no longer update the `dateModified` project config value. ([#6729](https://github.com/craftcms/cms/issues/6729))
