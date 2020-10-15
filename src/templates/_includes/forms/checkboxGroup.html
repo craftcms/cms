@@ -1,7 +1,3 @@
-{% if name ?? false %}
-    {{ hiddenInput(name, '') }}
-{% endif -%}
-
 {%- set options = options ?? [] %}
 {%- set values = values ?? [] %}
 {%- set name = (name ?? false) ? "#{name}[]" : null %}
@@ -15,6 +11,10 @@
 {% endif %}
 
 <fieldset {{ attr(fieldsetAttributes) }}>
+    {% if name ?? false %}
+        {{ hiddenInput(name, '') }}
+    {% endif -%}
+
     {%- for key, option in options %}
         {%- if option is not iterable %}
             {%- set option = {label: option, value: key} %}
