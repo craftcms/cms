@@ -44,6 +44,7 @@
 - `craft\db\ActiveRecord::find()` now returns a `craft\db\ActiveQuery` object.
 - `craft\helpers\ProjectConfig::diff()` now has an `$invert` argument.
 - `craft\helpers\ProjectConfig::ensureAllSitesProcessed()` now has a `$force` argument.
+- `craft\services\Fields::saveLayout()` now maintains existing field layout tab IDs.
 - `craft\services\ProjectConfig::saveModifiedConfigData()` now has a `$writeYaml` argument.
 - `craft\services\ProjectConfig::set()` now has an `$updateTimestamp` argument.
 

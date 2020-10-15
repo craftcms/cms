@@ -1365,17 +1365,10 @@ class Fields extends Component
             return false;
         }
 
+        // Fetch the tabs in case they aren’t memoized yet or don't have their own field records yet
+        $tabs = $layout->getTabs();
+
         if (!$isNewLayout) {
-            // Delete the old tabs/fields
-            Db::delete(Table::FIELDLAYOUTTABS, [
-                'layoutId' => $layout->id,
-            ]);
-
-            // Because in MySQL, you can't even rely on cascading deletes to work. ¯\_(ツ)_/¯
-            Db::delete(Table::FIELDLAYOUTFIELDS, [
-                'layoutId' => $layout->id,
-            ]);
-
             // Get the current layout
             $layoutRecord = FieldLayoutRecord::findWithTrashed()
                 ->andWhere(['id' => $layout->id])
@@ -1384,11 +1377,24 @@ class Fields extends Component
             if (!$layoutRecord) {
                 throw new Exception('Invalid field layout ID: ' . $layout->id);
             }
+
+            // Get all the current tab records, indexed by ID
+            $tabRecords = FieldLayoutTabRecord::find()
+                ->where(['layoutId' => $layout->id])
+                ->indexBy('id')
+                ->all();
+
+            // Delete all the field layout - field joins up front (we'll recreate the ones we need later)
+            // note: apparently cascade deletes are unreliable in MySQL in this case for some reason
+            Db::delete(Table::FIELDLAYOUTFIELDS, [
+                'layoutId' => $layout->id,
+            ]);
         } else {
             $layoutRecord = new FieldLayoutRecord();
+            $tabRecords = [];
         }
 
-        // Save it
+        // Save the layout
         $layoutRecord->type = $layout->type;
 
         // Use a pre-determined UID if available.
@@ -1415,9 +1421,15 @@ class Fields extends Component
 
         $layout->uid = $layoutRecord->uid;
 
-        foreach ($layout->getTabs() as $tab) {
-            $tabRecord = new FieldLayoutTabRecord();
-            $tabRecord->layoutId = $layout->id;
+        foreach ($tabs as $tab) {
+            if ($tab->id && isset($tabRecords[$tab->id])) {
+                $tabRecord = $tabRecords[$tab->id];
+                unset($tabRecords[$tab->id]);
+            } else {
+                $tabRecord = new FieldLayoutTabRecord();
+                $tabRecord->layoutId = $layout->id;
+            }
+
             $tabRecord->sortOrder = $tab->sortOrder;
             if (Craft::$app->getDb()->getIsMysql()) {
                 $tabRecord->name = StringHelper::encodeMb4($tab->name);
@@ -1448,6 +1460,11 @@ class Fields extends Component
                     $fieldRecord->save(false);
                 }
             }
+        }
+
+        // Delete any remaining tab records
+        foreach ($tabRecords as $tabRecord) {
+            $tabRecord->delete();
         }
 
         // Fire an 'afterSaveFieldLayout' event
