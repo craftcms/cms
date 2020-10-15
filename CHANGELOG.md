@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.5.13 - 2020-10-15
 
 ### Added
 - It’s now possible to disallow uploading files directly to Assets fields, as opposed to going through the selection modal. ([#6954](https://github.com/craftcms/cms/issues/6954))
@@ -30,7 +30,7 @@
 - Added missing `rel="noopener"` to outbound links.
 
 ### Changed
-- Improved color contrast throughout the control panel. ([#6951](https://github.com/craftcms/cms/pull/6951), ([#6972](https://github.com/craftcms/cms/pull/6972)))
+- Improved color contrast throughout the control panel. ([#6951](https://github.com/craftcms/cms/pull/6951), [#6972](https://github.com/craftcms/cms/pull/6972))
 - The control panel viewport is now scalable for mobile browsers. ([#6972](https://github.com/craftcms/cms/pull/6972))
 - The “Share” button on Edit Entry and Edit Category pages has been renamed to “View”. ([#6963](https://github.com/craftcms/cms/issues/6963))
 - Edit Entry pages now show validation errors for the `typeId` attribute. ([#6958](https://github.com/craftcms/cms/issues/6958))
