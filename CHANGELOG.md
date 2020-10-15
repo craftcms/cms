@@ -66,7 +66,7 @@
 - Fixed an error that could occur when updating from Craft 2.
 - Fixed a bug where the `on` and `off` commands were discarding any pending pending changes in the project config YAML files. ([#6984](https://github.com/craftcms/cms/issues/6984))
 - Fixed a bug where `craft\helpers\Db::reset()` wasn’t closing the previous database connection. ([#6998](https://github.com/craftcms/cms/pull/6998))
-- Fixed an error where it was impossible to access the Live Preview target in JavaScript events.
+- Fixed a bug where it wasn’t possible to access the selected preview target in `Craft.Preview` JavaScript events.
 - Fixed a styling bug with Checkboxes fields. ([#7011](https://github.com/craftcms/cms/issues/7011))
 
 ## 3.5.12.1 - 2020-10-02
