@@ -420,12 +420,9 @@ class Table extends Field
         foreach ($value as $row) {
             $serializedRow = [];
             foreach (array_keys($this->columns) as $colId) {
-                $col = $this->columns[$colId];
-                $type = $col['type'];
                 $value = $row[$colId];
-                $isTextType = $type === 'singleline' || $type === 'multiline';
 
-                if ($isTextType && $value !== null) {
+                if (is_string($value) && in_array($this->columns[$colId]['type'], ['singleline', 'multiline'], true)) {
                     $value = LitEmoji::unicodeToShortcode($value);
                 }
 
