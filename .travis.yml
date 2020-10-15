@@ -60,6 +60,7 @@ before_script:
 - pecl channel-update pecl.php.net
 - yes | pecl install imagick
 - cp tests/.env.example.$DB tests/.env
+- sed -i 's/DB_USER="craft"/DB_USER="root"/' tests/.env
 script:
 - |
   if [[ $TASK_TESTS_COVERAGE != 1 ]]; then
