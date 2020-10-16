@@ -8,6 +8,7 @@
 namespace crafttests\unit\db;
 
 use Codeception\Test\Unit;
+use Craft;
 use craft\db\Paginator;
 use craft\db\Query;
 use craft\db\Table;
@@ -40,6 +41,7 @@ class PaginatorTest extends Unit
     {
         $this->setPaginator([], [], 10);
         self::assertSame('10', (string)$this->paginator->getTotalResults());
+        $this->resetPaginator();
     }
 
     /**
@@ -49,6 +51,7 @@ class PaginatorTest extends Unit
     {
         $this->setPaginator(['limit' => 10], [], 25);
         self::assertSame(10, $this->paginator->getTotalResults());
+        $this->resetPaginator();
     }
 
     /**
@@ -58,6 +61,7 @@ class PaginatorTest extends Unit
     {
         $this->setPaginator(['offset' => 5], [], 10);
         self::assertSame(5, $this->paginator->getTotalResults());
+        $this->resetPaginator();
     }
 
     /**
@@ -67,6 +71,7 @@ class PaginatorTest extends Unit
     {
         $this->setPaginator([], ['pageSize' => '25']);
         self::assertSame(4, $this->paginator->getTotalPages());
+        $this->resetPaginator();
     }
 
     /**
@@ -76,6 +81,7 @@ class PaginatorTest extends Unit
     {
         $this->setPaginator([], ['pageSize' => '25'], 101);
         self::assertSame(5, $this->paginator->getTotalPages());
+        $this->resetPaginator();
     }
 
     /**
@@ -87,6 +93,7 @@ class PaginatorTest extends Unit
 
         $desiredResults = (new Query())->from([Table::SESSIONS])->limit(2)->all();
         self::assertSame($desiredResults, $this->paginator->getPageResults());
+        $this->resetPaginator();
     }
 
     /**
@@ -104,6 +111,7 @@ class PaginatorTest extends Unit
         // Next page. Other two results.
         $this->paginator->setCurrentPage(2);
         self::assertSame([$desiredResults[2], $desiredResults[3]], $this->paginator->getPageResults());
+        $this->resetPaginator();
     }
 
     /**
@@ -115,6 +123,7 @@ class PaginatorTest extends Unit
 
         $desiredResults = (new Query())->from([Table::SESSIONS])->limit(1)->all();
         self::assertSame($desiredResults, $this->paginator->getPageResults());
+        $this->resetPaginator();
     }
 
     /**
@@ -124,6 +133,7 @@ class PaginatorTest extends Unit
     {
         $this->setPaginator([], ['pageSize' => null], 10);
         self::assertSame([], $this->paginator->getPageResults());
+        $this->resetPaginator();
     }
 
     /**
@@ -133,6 +143,7 @@ class PaginatorTest extends Unit
     {
         $this->setPaginator([], [], 10);
         self::assertSame(0, $this->paginator->getPageOffset());
+        $this->resetPaginator();
     }
 
     /**
@@ -143,6 +154,7 @@ class PaginatorTest extends Unit
         $this->setPaginator([], [], 10);
         $this->paginator->setCurrentPage(5);
         self::assertSame(1, $this->paginator->getCurrentPage());
+        $this->resetPaginator();
     }
 
     /**
@@ -156,6 +168,7 @@ class PaginatorTest extends Unit
 
         $this->paginator->setCurrentPage(3);
         self::assertSame(2, $this->paginator->getCurrentPage());
+        $this->resetPaginator();
     }
 
     /**
@@ -177,5 +190,15 @@ class PaginatorTest extends Unit
             $query,
             $config
         );
+    }
+
+    /**
+     * @throws \yii\db\Exception
+     */
+    protected function resetPaginator()
+    {
+        Craft::$app->getDb()->createCommand()
+            ->truncateTable(Table::SESSIONS)
+            ->execute();
     }
 }

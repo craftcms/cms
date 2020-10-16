@@ -99,11 +99,9 @@ class CommandTest extends Unit
      */
     public function clearSession()
     {
-        $command = Craft::$app->getDb()->createCommand()
-            ->delete(Table::SESSIONS, $this->_sessionData)
+        Craft::$app->getDb()->createCommand()
+            ->truncateTable(Table::SESSIONS)
             ->execute();
-
-        self::assertGreaterThan(0, $command);
     }
 
     /**
