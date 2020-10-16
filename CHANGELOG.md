@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed a JavaScript error that could occur on element indexes for multi-site installs, resulting in no elements being shown. ([#7017](https://github.com/craftcms/cms/issues/7017))
+- Fixed a bug where the `purgeUnsavedDraftsDuration` config setting didn’t actually accept non-integer values despite the docs claiming it did. ([#7019](https://github.com/craftcms/cms/issues/7019))
 
 ## 3.5.13.1 - 2020-10-15
 
