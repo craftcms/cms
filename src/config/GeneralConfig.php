@@ -313,8 +313,10 @@ class GeneralConfig extends BaseObject
     public $defaultCookieDomain = '';
 
     /**
-     * @var string|null The default language the control panel should use for users who haven’t set a preferred language yet.
+     * @var string|null The default language the control panel should use for users who haven’t set a preferred language yet,
+     * as well as for console requests.
      * @group System
+     * @todo Rename to `defaultLanguage` in Craft 4, since it also determines the language for console requests
      */
     public $defaultCpLanguage;
 
