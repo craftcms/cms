@@ -1130,6 +1130,24 @@ class GeneralConfig extends BaseObject
     public $setPasswordPath = 'setpassword';
 
     /**
+     * @var mixed The URI to the page where users can request to change their password.
+     *
+     * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
+     *
+     * If this is set, Craft will redirect [.well-known/change-password requests](https://w3c.github.io/webappsec-change-password-url/) to this URI.
+     *
+     * ::: tip
+     * You will also need to set the <config:setPasswordPath> config setting, which determines the URI and template path for your Set Password form,
+     * which is where the user will actually reset their password, once they’ve clicked the link in the Password Reset email.
+     * :::
+     *
+     * @see getSetPasswordRequestPath()
+     * @group Routing
+     * @since 3.5.14
+     */
+    public $setPasswordRequestPath;
+
+    /**
      * @var mixed The URI Craft should redirect users to after setting their password from the front end.
      *
      * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
@@ -1681,6 +1699,19 @@ class GeneralConfig extends BaseObject
     public function getSetPasswordPath(string $siteHandle = null): string
     {
         return ConfigHelper::localizedValue($this->setPasswordPath, $siteHandle);
+    }
+
+    /**
+     * Returns the localized Set Password Request Path value.
+     *
+     * @param string|null $siteHandle The site handle the value should be defined for. Defaults to the current site.
+     * @return string|null
+     * @see setPasswordRequestPath
+     * @since 3.5.14
+     */
+    public function getSetPasswordRequestPath(string $siteHandle = null)
+    {
+        return ConfigHelper::localizedValue($this->setPasswordRequestPath, $siteHandle);
     }
 
     /**

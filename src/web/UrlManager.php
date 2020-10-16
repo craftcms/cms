@@ -446,25 +446,26 @@ class UrlManager extends \yii\web\UrlManager
      */
     private function _getMatchedDiscoverableUrlRoute(Request $request)
     {
-        $path = $request->getPathInfo();
-        $match = $path === '.well-known/change-password';
+        $redirectUri = $request->getPathInfo() === '.well-known/change-password'
+            ? Craft::$app->getConfig()->getGeneral()->getSetPasswordRequestPath(Craft::$app->getSites()->getCurrentSite()->handle)
+            : null;
 
         if (YII_DEBUG) {
             Craft::debug([
                 'rule' => 'Discoverable change password URL',
-                'match' => $match,
+                'match' => $redirectUri !== null,
                 'parent' => null
             ], __METHOD__);
         }
 
-        if (!$match) {
+        if (!$redirectUri) {
             return false;
         }
 
         return [
             'redirect',
             [
-                'url' => Craft::$app->getConfig()->getGeneral()->getSetPasswordPath(),
+                'url' => $redirectUri,
                 'statusCode' => 302,
             ]
         ];
