@@ -1,6 +1,6 @@
 {%- set options = options ?? [] %}
 {%- set values = values ?? [] %}
-{%- set name = (name ?? false) ? "#{name}[]" : null %}
+{%- set optionName = (name ?? false) ? "#{name}[]" : null %}
 
 {% set fieldsetAttributes = {
     class: ['checkbox-group'],
@@ -22,7 +22,7 @@
         <div>
             {% include "_includes/forms/checkbox" with {
                 id: loop.first ? (id ?? null) : null,
-                name: name,
+                name: optionName,
                 checked: (option.value is defined and option.value in values),
                 autofocus: loop.first and (autofocus ?? false) and not craft.app.request.isMobileBrowser(true)
             }|merge(option) only %}

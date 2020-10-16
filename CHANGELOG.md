@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where Checkboxes fields weren’t validating.
+
 ## 3.5.13 - 2020-10-15
 
 ### Added
