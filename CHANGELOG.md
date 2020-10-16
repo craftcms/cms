@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a JavaScript error that could occur on element indexes for multi-site installs, resulting in no elements being shown. ([#7017](https://github.com/craftcms/cms/issues/7017))
+
 ## 3.5.13.1 - 2020-10-15
 
 ### Fixed

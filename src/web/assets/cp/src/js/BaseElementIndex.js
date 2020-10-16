@@ -1446,7 +1446,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 }
             }
 
-            if (selectNewSource) {
+            if (this.initialized && selectNewSource) {
                 this.selectSource($firstVisibleSource);
             }
 
