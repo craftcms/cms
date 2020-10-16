@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed a styling bug with the hamburger menu on pages with breadcrumbs. ([#7021](https://github.com/craftcms/cms/issues/7021))
+- Fixed a bug where new entries weren’t assigned a UID in time if their URI format contained a `{uid}` token. ([#4364](https://github.com/craftcms/cms/issues/4364))
 
 ## 3.5.13.2 - 2020-10-16
 
