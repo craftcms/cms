@@ -56,9 +56,9 @@ class PasswordValidatorTest extends Unit
         $this->passwordValidator->validateAttribute($this->model, 'exampleParam');
 
         if ($mustValidate) {
-            $this->assertArrayNotHasKey('exampleParam', $this->model->getErrors());
+            self::assertArrayNotHasKey('exampleParam', $this->model->getErrors());
         } else {
-            $this->assertArrayHasKey('exampleParam', $this->model->getErrors());
+            self::assertArrayHasKey('exampleParam', $this->model->getErrors());
         }
     }
 
@@ -77,9 +77,9 @@ class PasswordValidatorTest extends Unit
         $passVal->validateAttribute($this->model, 'exampleParam');
 
         if ($mustValidate) {
-            $this->assertArrayNotHasKey('exampleParam', $this->model->getErrors());
+            self::assertArrayNotHasKey('exampleParam', $this->model->getErrors());
         } else {
-            $this->assertArrayHasKey('exampleParam', $this->model->getErrors());
+            self::assertArrayHasKey('exampleParam', $this->model->getErrors());
         }
     }
 
@@ -98,9 +98,9 @@ class PasswordValidatorTest extends Unit
         $this->passwordValidator->validateAttribute($this->model, 'exampleParam');
 
         if ($mustValidate) {
-            $this->assertArrayNotHasKey('exampleParam', $this->model->getErrors());
+            self::assertArrayNotHasKey('exampleParam', $this->model->getErrors());
         } else {
-            $this->assertArrayHasKey('exampleParam', $this->model->getErrors());
+            self::assertArrayHasKey('exampleParam', $this->model->getErrors());
         }
     }
 
@@ -115,7 +115,7 @@ class PasswordValidatorTest extends Unit
     {
         $this->passwordValidator->isEmpty = $isEmptyVal;
         $isEmpty = $this->passwordValidator->isEmpty($input);
-        $this->assertSame($result, $isEmpty);
+        self::assertSame($result, $isEmpty);
     }
 
     public function testToStringExpectException()

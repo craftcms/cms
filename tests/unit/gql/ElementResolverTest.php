@@ -66,7 +66,7 @@ class ElementResolverTest extends Unit
         $source = (object)['url' => $assetQuery];
         $resolveInfo = $this->make(ResolveInfo::class, ['fieldName' => 'url']);
 
-        $this->assertSame($testUid, AssetResolver::resolveOne($source, [], null, $resolveInfo)->uid);
-        $this->assertSame($testCount, AssetResolver::resolveCount($source, [], null, $resolveInfo));
+        self::assertSame($testUid, AssetResolver::resolveOne($source, [], null, $resolveInfo)->uid);
+        self::assertSame($testCount, AssetResolver::resolveCount($source, [], null, $resolveInfo));
     }
 }

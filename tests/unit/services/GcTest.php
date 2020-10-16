@@ -132,8 +132,8 @@ class GcTest extends Unit
             ->where(['id' => $ids])
             ->all();
 
-        $this->assertCount($remainingCount, $items);
-        $this->assertSame((string)ArrayHelper::firstValue($items)['id'], $leftoverId);
+        self::assertCount($remainingCount, $items);
+        self::assertSame((string)ArrayHelper::firstValue($items)['id'], $leftoverId);
     }
 
     /**
@@ -150,7 +150,7 @@ class GcTest extends Unit
             ->count();
 
         // Make sure all 4 users are in there
-        $this->assertEquals(4, $count);
+        self::assertEquals(4, $count);
 
         // Create then with 3 days
         $this->_createExpiringPendingUsers();
@@ -163,7 +163,7 @@ class GcTest extends Unit
             ->count();
 
         // Should only be 2 users now
-        $this->assertEquals(2, $count);
+        self::assertEquals(2, $count);
     }
 
     /**
@@ -207,7 +207,7 @@ class GcTest extends Unit
             ->asArray()
             ->all();
 
-        $this->assertCount($totalEntries - $expectedRemoval, $entries);
+        self::assertCount($totalEntries - $expectedRemoval, $entries);
 
         // Check any non allowed titles. Fail if an entry exists with a title that isn't allowed.
         foreach ($notAllowedTitles as $notAllowedTitle) {

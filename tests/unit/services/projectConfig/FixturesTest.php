@@ -59,7 +59,7 @@ class FixturesTest extends Unit
             $projectConfig->set($path, $newValue);
         }
 
-        $this->assertTrue($testFunction());
+        self::assertTrue($testFunction());
     }
 
     public function configChangesPropagatedToDbProvider()

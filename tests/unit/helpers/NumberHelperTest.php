@@ -35,7 +35,7 @@ class NumberHelperTest extends Unit
     public function testWord($result, $input)
     {
         $word = Number::word($input);
-        $this->assertSame($result, $word);
+        self::assertSame($result, $word);
     }
 
     /**
@@ -47,7 +47,7 @@ class NumberHelperTest extends Unit
     public function testUpperAlpha($result, $input)
     {
         $upperAlpha = Number::upperAlpha($input);
-        $this->assertSame($result, $upperAlpha);
+        self::assertSame($result, $upperAlpha);
     }
 
     /**
@@ -59,7 +59,7 @@ class NumberHelperTest extends Unit
     public function testLowerAlpha($result, $input)
     {
         $lowerAlpha = Number::lowerAlpha($input);
-        $this->assertSame($result, $lowerAlpha);
+        self::assertSame($result, $lowerAlpha);
     }
 
     /**
@@ -71,7 +71,7 @@ class NumberHelperTest extends Unit
     public function testUpperRoman($result, $input)
     {
         $upperRoman = Number::upperRoman($input);
-        $this->assertSame($result, $upperRoman);
+        self::assertSame($result, $upperRoman);
     }
 
     /**
@@ -83,7 +83,7 @@ class NumberHelperTest extends Unit
     public function testLowerRoman($result, $input)
     {
         $lower = Number::lowerRoman($input);
-        $this->assertSame($result, $lower);
+        self::assertSame($result, $lower);
     }
 
     /**
@@ -95,7 +95,7 @@ class NumberHelperTest extends Unit
     public function testMakeNumeric($result, $input)
     {
         $numeric = Number::makeNumeric($input);
-        $this->assertSame($result, $numeric);
+        self::assertSame($result, $numeric);
     }
 
     /**

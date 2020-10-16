@@ -45,15 +45,15 @@ class FieldLayoutTest extends Unit
         $tableNames = Craft::$app->getDb()->getSchema()->tableNames;
         $matrixTableName = Craft::$app->getDb()->tablePrefix . 'matrixcontent_matrixfirst';
 
-        $this->assertContains($matrixTableName, $tableNames);
+        self::assertContains($matrixTableName, $tableNames);
 
         $matrixRows = (new Query())
             ->select('*')->from($matrixTableName)->all();
 
-        $this->assertCount(2, $matrixRows);
+        self::assertCount(2, $matrixRows);
 
         foreach ($matrixRows as $row) {
-            $this->assertSame('Some text', $row['field_aBlock_firstSubfield']);
+            self::assertSame('Some text', $row['field_aBlock_firstSubfield']);
         }
     }
 }

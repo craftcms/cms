@@ -43,7 +43,7 @@ class TypeManagerTest extends Unit
         $fields = TypeManager::prepareFieldDefinitions($fields, 'someName');
         Event::off(TypeManager::class, TypeManager::EVENT_DEFINE_GQL_TYPE_FIELDS, $callback);
 
-        $this->assertSame($fields, $result);
+        self::assertSame($fields, $result);
     }
 
     /**
@@ -56,9 +56,9 @@ class TypeManagerTest extends Unit
         $fields= ['ok'];
 
         TypeManager::prepareFieldDefinitions([], $cachedName);
-        $this->assertNotSame($fields, TypeManager::prepareFieldDefinitions($fields, $cachedName));
+        self::assertNotSame($fields, TypeManager::prepareFieldDefinitions($fields, $cachedName));
         TypeManager::flush();
-        $this->assertSame($fields, TypeManager::prepareFieldDefinitions($fields, $cachedName));
+        self::assertSame($fields, TypeManager::prepareFieldDefinitions($fields, $cachedName));
     }
 
     public function fieldModificationDataProvider()

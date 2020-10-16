@@ -47,12 +47,12 @@ class RoutesTest extends Unit
     {
         $routeUUID = $this->routes->saveRoute($uriParts, $template, $siteUid, $routeUid);
 
-        $this->assertSame(
+        self::assertSame(
             $result,
             Craft::$app->getProjectConfig()->get(Routes::CONFIG_ROUTES_KEY . '.' . $routeUUID)
         );
 
-        $this->assertTrue(StringHelper::isUUID($routeUUID));
+        self::assertTrue(StringHelper::isUUID($routeUUID));
     }
 
     /**

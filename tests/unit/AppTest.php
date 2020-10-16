@@ -39,10 +39,10 @@ class AppTest extends Unit
     public function testCraftAppGetMethods($instance, $map)
     {
         $func = $map[0];
-        $this->assertInstanceOf($instance, Craft::$app->$func());
-        $this->assertInstanceOf($instance, Craft::$app->get($map[1]));
+        self::assertInstanceOf($instance, Craft::$app->$func());
+        self::assertInstanceOf($instance, Craft::$app->get($map[1]));
         // http://www.php.net/manual/en/language.variables.variable.php#example-107
-        $this->assertInstanceOf($instance, Craft::$app->{$map[1]});
+        self::assertInstanceOf($instance, Craft::$app->{$map[1]});
     }
 
     /**

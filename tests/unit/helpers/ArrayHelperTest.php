@@ -35,7 +35,7 @@ class ArrayHelperTest extends Unit
     public function testToArray($result, $input)
     {
         $toArray = ArrayHelper::toArray($input);
-        $this->assertSame($result, $toArray);
+        self::assertSame($result, $toArray);
     }
 
     /**
@@ -49,7 +49,7 @@ class ArrayHelperTest extends Unit
     public function testPrependOrAppend($result, $inputArray, $appendable, $preOrAppend)
     {
         ArrayHelper::prependOrAppend($inputArray, $appendable, $preOrAppend);
-        $this->assertSame($result, $inputArray);
+        self::assertSame($result, $inputArray);
     }
 
     /**
@@ -57,7 +57,7 @@ class ArrayHelperTest extends Unit
      */
     public function testFilterEmptyStringsFromArray()
     {
-        $this->assertSame([0 => 1, 1 => 2, 4 => null, 5 => 5], ArrayHelper::filterEmptyStringsFromArray([0 => 1, 1 => 2, 3 => '', 4 => null, 5 => 5]));
+        self::assertSame([0 => 1, 1 => 2, 4 => null, 5 => 5], ArrayHelper::filterEmptyStringsFromArray([0 => 1, 1 => 2, 3 => '', 4 => null, 5 => 5]));
     }
 
     /**
@@ -65,10 +65,10 @@ class ArrayHelperTest extends Unit
      */
     public function testFirstKey()
     {
-        $this->assertNull(ArrayHelper::firstKey([]));
-        $this->assertEquals(0, ArrayHelper::firstKey([1]));
-        $this->assertEquals(5, ArrayHelper::firstKey([5 => 'value']));
-        $this->assertEquals('firstKey', ArrayHelper::firstKey(['firstKey' => 'firstValue', 'secondKey' => 'secondValue']));
+        self::assertNull(ArrayHelper::firstKey([]));
+        self::assertEquals(0, ArrayHelper::firstKey([1]));
+        self::assertEquals(5, ArrayHelper::firstKey([5 => 'value']));
+        self::assertEquals('firstKey', ArrayHelper::firstKey(['firstKey' => 'firstValue', 'secondKey' => 'secondValue']));
     }
 
     /**
@@ -83,7 +83,7 @@ class ArrayHelperTest extends Unit
     public function testArrayRename($result, $inputArray, $oldKey, $newKey, $default = null)
     {
         ArrayHelper::rename($inputArray, $oldKey, $newKey, $default);
-        $this->assertSame($result, $inputArray);
+        self::assertSame($result, $inputArray);
     }
 
     /**
@@ -95,7 +95,7 @@ class ArrayHelperTest extends Unit
     public function testFirstValue($result, $input)
     {
         $firstVal = ArrayHelper::firstValue($input);
-        $this->assertSame($result, $firstVal);
+        self::assertSame($result, $firstVal);
     }
 
     /**
@@ -108,7 +108,7 @@ class ArrayHelperTest extends Unit
     public function testWithout($result, $array, $key)
     {
         $without = ArrayHelper::without($array, $key);
-        $this->assertSame($result, $without);
+        self::assertSame($result, $without);
     }
 
     /**
@@ -121,7 +121,7 @@ class ArrayHelperTest extends Unit
     public function testWithoutValue($result, $array, $value)
     {
         $without = ArrayHelper::withoutValue($array, $value);
-        $this->assertSame($result, $without);
+        self::assertSame($result, $without);
     }
 
     /**
@@ -141,29 +141,29 @@ class ArrayHelperTest extends Unit
         ];
 
         $filtered = ArrayHelper::where($array, 'name', 'array 1');
-        $this->assertCount(1, $filtered);
-        $this->assertSame('the first array', $filtered[0]['description']);
+        self::assertCount(1, $filtered);
+        self::assertSame('the first array', $filtered[0]['description']);
 
         // Set the name to empty and see if we can filter by keys with an empty value
         $array[0]['name'] = '';
         $filtered = ArrayHelper::where($array, 'name', '');
-        $this->assertCount(1, $filtered);
-        $this->assertSame('the first array', $filtered[0]['description']);
+        self::assertCount(1, $filtered);
+        self::assertSame('the first array', $filtered[0]['description']);
 
         // Add a new key to the array that it empty and with an empty value. Make sure that when filtering empty by empty  it returns everything.
         $array[0][''] = '';
         $filtered = ArrayHelper::where($array, '', '');
-        $this->assertCount(count($array), $filtered);
-        $this->assertSame($array, $filtered);
+        self::assertCount(count($array), $filtered);
+        self::assertSame($array, $filtered);
 
         // Filter by emojis?
         $array[0]['😀'] = '😘';
         $filtered = ArrayHelper::where($array, '😀', '😘');
-        $this->assertCount(1, $filtered);
-        $this->assertSame('the first array', $filtered[0]['description']);
+        self::assertCount(1, $filtered);
+        self::assertSame('the first array', $filtered[0]['description']);
 
         // See if we can filter by an array as a value.
-        $this->assertSame([['name' => ['testname' => true]]],
+        self::assertSame([['name' => ['testname' => true]]],
             ArrayHelper::where(
                 [
                     ['name' => ['testname' => true]],
@@ -174,7 +174,7 @@ class ArrayHelperTest extends Unit
             ));
 
         // Strict will only return 1. Non strict will typecast integer to string and thus find 2.
-        $this->assertCount(2,
+        self::assertCount(2,
             ArrayHelper::where(
                 [
                     ['name' => 22],
@@ -185,7 +185,7 @@ class ArrayHelperTest extends Unit
                 false
             )
         );
-        $this->assertCount(1,
+        self::assertCount(1,
             ArrayHelper::where(
                 [
                     ['name' => 22],
@@ -197,7 +197,7 @@ class ArrayHelperTest extends Unit
             )
         );
 
-        $this->assertSame(
+        self::assertSame(
             [['name' => 'john']],
             ArrayHelper::where(
                 [
@@ -209,7 +209,7 @@ class ArrayHelperTest extends Unit
                 true
             ));
 
-        $this->assertSame(
+        self::assertSame(
             [['name' => 'john']],
             ArrayHelper::where(
                 [
@@ -237,7 +237,7 @@ class ArrayHelperTest extends Unit
             ]
         ];
 
-        $this->assertSame($array, $mockedUp);
+        self::assertSame($array, $mockedUp);
     }
 
     /**
@@ -261,19 +261,19 @@ class ArrayHelperTest extends Unit
         ];
 
         $filtered = ArrayHelper::whereIn($array, 'type', ['apple', 'banana', 'pickle']);
-        $this->assertCount(2, $filtered);
-        $this->assertSame(['foo', 'bar'], array_keys($filtered));
+        self::assertCount(2, $filtered);
+        self::assertSame(['foo', 'bar'], array_keys($filtered));
 
         $filtered = ArrayHelper::whereIn($array, 'num', [1, 2, 3], true);
-        $this->assertEmpty($filtered);
+        self::assertEmpty($filtered);
 
         $filtered = ArrayHelper::whereIn($array, 'num', [1, 2]);
-        $this->assertCount(2, $filtered);
-        $this->assertSame(['foo', 'bar'], array_keys($filtered));
+        self::assertCount(2, $filtered);
+        self::assertSame(['foo', 'bar'], array_keys($filtered));
 
         $filtered = ArrayHelper::whereIn($array, 'num', [1, 2], false, false);
-        $this->assertCount(2, $filtered);
-        $this->assertSame([0, 1], array_keys($filtered));
+        self::assertCount(2, $filtered);
+        self::assertSame([0, 1], array_keys($filtered));
     }
 
     /**
@@ -308,62 +308,62 @@ class ArrayHelperTest extends Unit
 
         // Simple search
         $filtered = ArrayHelper::whereMultiple($array, ['name' => 'array 1']);
-        $this->assertCount(1, $filtered);
-        $this->assertSame('the first array', $filtered[0]['description']);
+        self::assertCount(1, $filtered);
+        self::assertSame('the first array', $filtered[0]['description']);
 
         // Search by empty property
         $filtered = ArrayHelper::whereMultiple($array, ['description' => ['']]);
-        $this->assertCount(1, $filtered);
-        $this->assertSame('baz', $filtered[3]['handle']);
+        self::assertCount(1, $filtered);
+        self::assertSame('baz', $filtered[3]['handle']);
 
         // Search with no condition
         $filtered = ArrayHelper::whereMultiple($array, ['name' => []]);
-        $this->assertCount(count($array), $filtered);
-        $this->assertSame($array, $filtered);
+        self::assertCount(count($array), $filtered);
+        self::assertSame($array, $filtered);
 
         // Filter by emojis?
         $filtered = ArrayHelper::whereMultiple($array, ['😀' => '😘']);
-        $this->assertCount(1, $filtered);
-        $this->assertSame('array 4', $filtered[3]['name']);
+        self::assertCount(1, $filtered);
+        self::assertSame('array 4', $filtered[3]['name']);
 
         // Find a non-strict match.
         $filtered = ArrayHelper::whereMultiple($array, ['handle' => 88]);
-        $this->assertCount(1, $filtered);
-        $this->assertSame('array 2', $filtered[1]['name']);
+        self::assertCount(1, $filtered);
+        self::assertSame('array 2', $filtered[1]['name']);
 
         // Fail to find a strict match
         $filtered = ArrayHelper::whereMultiple($array, ['handle' => 88], true);
-        $this->assertCount(0, $filtered);
+        self::assertCount(0, $filtered);
 
         // Find multiple
         $filtered = ArrayHelper::whereMultiple($array, ['handle' => ['foo', 'bar', 'baz']]);
-        $this->assertCount(3, $filtered);
-        $this->assertSame('array 1', $filtered[0]['name']);
-        $this->assertSame('array 3', $filtered[2]['name']);
+        self::assertCount(3, $filtered);
+        self::assertSame('array 1', $filtered[0]['name']);
+        self::assertSame('array 3', $filtered[2]['name']);
 
         // Find multiple and narrow down
         $filtered = ArrayHelper::whereMultiple($array, ['handle' => ['foo', 'bar', 'baz'], 'name' => 'array 4']);
-        $this->assertCount(1, $filtered);
-        $this->assertSame('array 4', $filtered[3]['name']);
+        self::assertCount(1, $filtered);
+        self::assertSame('array 4', $filtered[3]['name']);
 
         // Ensure that array element must match all conditions
         $filtered = ArrayHelper::whereMultiple($array, ['handle' => ['foo', 'bar', 'baz'], 'name' => ['array 4', 'array 2']]);
-        $this->assertCount(1, $filtered);
-        $this->assertSame('array 4', $filtered[3]['name']);
+        self::assertCount(1, $filtered);
+        self::assertSame('array 4', $filtered[3]['name']);
 
         // Find multiple and narrow down to multiple
         $filtered = ArrayHelper::whereMultiple($array, ['handle' => ['foo', 'bar', 'baz'], 'name' => ['array 4', 'array 3']]);
-        $this->assertCount(2, $filtered);
-        $this->assertSame('array 3', $filtered[2]['name']);
+        self::assertCount(2, $filtered);
+        self::assertSame('array 3', $filtered[2]['name']);
 
         // Wrong array syntax
         $filtered = ArrayHelper::whereMultiple($array, ['arrayTest' => ['test' => 'me']]);
-        $this->assertCount(0, $filtered);
+        self::assertCount(0, $filtered);
 
         // Right array syntax
         $filtered = ArrayHelper::whereMultiple($array, ['arrayTest' => [['test' => 'me']]]);
-        $this->assertCount(1, $filtered);
-        $this->assertSame('array 3', $filtered[2]['name']);
+        self::assertCount(1, $filtered);
+        self::assertSame('array 3', $filtered[2]['name']);
     }
 
     /**

@@ -50,7 +50,7 @@ class ResolveEntryMutationsTest extends TestCase
         $this->invokeMethod($resolver, 'identifyEntry', [$entryQuery, $arguments]);
 
         foreach ($expectedValues as $key => $value) {
-            $this->assertSame($value, $entryQuery->{$key});
+            self::assertSame($value, $entryQuery->{$key});
         }
     }
 
@@ -92,7 +92,7 @@ class ResolveEntryMutationsTest extends TestCase
         $entryElement = $this->invokeMethod($resolver, 'getEntryElement', [$arguments]);
 
         if (!empty($entryAttributes['typeId']) && $entryAttributes['typeId'] != $entryType->id) {
-            $this->assertNull($entryElement->fieldLayoutId);
+            self::assertNull($entryElement->fieldLayoutId);
         }
     }
 
@@ -117,7 +117,7 @@ class ResolveEntryMutationsTest extends TestCase
             'performStructureOperations' => Expected::once($entryElement),
         ]);
 
-        $this->assertSame($testId, $resolver->saveEntry(null, [], null, $this->make(ResolveInfo::class))->id);
+        self::assertSame($testId, $resolver->saveEntry(null, [], null, $this->make(ResolveInfo::class))->id);
     }
 
     /**
@@ -160,7 +160,7 @@ class ResolveEntryMutationsTest extends TestCase
             'requireSchemaAction' => Expected::once(true)
         ]);
 
-        $this->assertSame($testId, $resolver->createDraft(null, ['id' => 2], null, $this->make(ResolveInfo::class)));
+        self::assertSame($testId, $resolver->createDraft(null, ['id' => 2], null, $this->make(ResolveInfo::class)));
     }
 
     /**

@@ -45,13 +45,13 @@ class GqlHelperTest extends Unit
 
         // Schema awareness
         if (!$failAll) {
-            $this->assertTrue(GqlHelper::canSchema($permission, $scope));
-            $this->assertFalse(GqlHelper::canSchema($permission, $failingScope));
-            $this->assertTrue(GqlHelper::isSchemaAwareOf($permission));
+            self::assertTrue(GqlHelper::canSchema($permission, $scope));
+            self::assertFalse(GqlHelper::canSchema($permission, $failingScope));
+            self::assertTrue(GqlHelper::isSchemaAwareOf($permission));
         } else {
-            $this->assertFalse(GqlHelper::canSchema($permission, $scope));
-            $this->assertFalse(GqlHelper::canSchema($permission, $failingScope));
-            $this->assertFalse(GqlHelper::isSchemaAwareOf($permission));
+            self::assertFalse(GqlHelper::canSchema($permission, $scope));
+            self::assertFalse(GqlHelper::canSchema($permission, $failingScope));
+            self::assertFalse(GqlHelper::isSchemaAwareOf($permission));
         }
     }
 
@@ -65,7 +65,7 @@ class GqlHelperTest extends Unit
     public function testSchemaPermissionExtraction($permissionSet, $expectedPairs)
     {
         $this->_setSchemaWithPermissions($permissionSet);
-        $this->assertEquals($expectedPairs, GqlHelper::extractAllowedEntitiesFromSchema());
+        self::assertEquals($expectedPairs, GqlHelper::extractAllowedEntitiesFromSchema());
     }
 
     /**
@@ -76,12 +76,12 @@ class GqlHelperTest extends Unit
         // Null the schema
         Craft::$app->getGql()->setActiveSchema(null);
 
-        $this->assertFalse(GqlHelper::isSchemaAwareOf('something'));
-        $this->assertFalse(GqlHelper::canSchema('something'));
+        self::assertFalse(GqlHelper::isSchemaAwareOf('something'));
+        self::assertFalse(GqlHelper::canSchema('something'));
 
         $result = GqlHelper::extractAllowedEntitiesFromSchema();
-        $this->assertIsArray($result);
-        $this->assertEmpty($result);
+        self::assertIsArray($result);
+        self::assertEmpty($result);
     }
 
     /**
@@ -100,12 +100,12 @@ class GqlHelperTest extends Unit
 
         $this->_setSchemaWithPermissions($permissionSet);
 
-        $this->assertTrue(GqlHelper::canQueryEntries());
-        $this->assertTrue(GqlHelper::canQueryGlobalSets());
-        $this->assertTrue(GqlHelper::canQueryUsers());
-        $this->assertFalse(GqlHelper::canQueryAssets());
-        $this->assertFalse(GqlHelper::canQueryCategories());
-        $this->assertFalse(GqlHelper::canQueryTags());
+        self::assertTrue(GqlHelper::canQueryEntries());
+        self::assertTrue(GqlHelper::canQueryGlobalSets());
+        self::assertTrue(GqlHelper::canQueryUsers());
+        self::assertFalse(GqlHelper::canQueryAssets());
+        self::assertFalse(GqlHelper::canQueryCategories());
+        self::assertFalse(GqlHelper::canQueryTags());
     }
 
     /**
@@ -116,7 +116,7 @@ class GqlHelperTest extends Unit
         $unionType = GqlHelper::getUnionType('someUnion', ['one', 'two'], function() {
             return 'one';
         });
-        $this->assertInstanceOf(UnionType::class, $unionType);
+        self::assertInstanceOf(UnionType::class, $unionType);
     }
 
     /**
@@ -127,7 +127,7 @@ class GqlHelperTest extends Unit
         $schema = GqlHelper::createFullAccessSchema();
 
         // Not very realistic to test *everything* without duplicating logic in the helper method
-        $this->assertNotEmpty($schema->scope);
+        self::assertNotEmpty($schema->scope);
     }
 
     /**
@@ -139,7 +139,7 @@ class GqlHelperTest extends Unit
     {
         $this->_setSchemaWithPermissions($scope);
 
-        $this->assertEquals($result, GqlHelper::extractEntityAllowedActions($entity));
+        self::assertEquals($result, GqlHelper::extractEntityAllowedActions($entity));
     }
 
     /**
@@ -150,7 +150,7 @@ class GqlHelperTest extends Unit
      */
     public function testWrapInNonNull($input, $expected)
     {
-        $this->assertEquals($expected, GqlHelper::wrapInNonNull($input));
+        self::assertEquals($expected, GqlHelper::wrapInNonNull($input));
     }
 
     public function wrapInNonNullProvider()

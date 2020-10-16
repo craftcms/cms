@@ -41,7 +41,7 @@ class UsernameValidatorTest extends Unit
     public function testValidateValue($result, $input)
     {
         $validated = $this->usernameValidator->validateValue($input);
-        $this->assertSame($result, $validated);
+        self::assertSame($result, $validated);
     }
 
     public function validateValueDataProvider(): array

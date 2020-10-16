@@ -33,9 +33,9 @@ class ArgumentPreparationTest extends Unit
     public function testArgumentPreparation($in, $out, $result)
     {
         if ($result) {
-            $this->assertEquals(ElementResolver::prepareArguments($in), $out);
+            self::assertEquals(ElementResolver::prepareArguments($in), $out);
         } else {
-            $this->assertNotEquals(ElementResolver::prepareArguments($in), $out);
+            self::assertNotEquals(ElementResolver::prepareArguments($in), $out);
         }
     }
 

@@ -48,11 +48,11 @@ class FileTargetTest extends TestCase
         $wasCalled = false;
         $this->fileTarget->prefix = function($mess) use (&$wasCalled) {
             $wasCalled = true;
-            $this->assertSame('message', $mess);
+            self::assertSame('message', $mess);
         };
 
         $this->fileTarget->getMessagePrefix('message');
-        $this->assertTrue($wasCalled);
+        self::assertTrue($wasCalled);
     }
 
     /**
@@ -63,7 +63,7 @@ class FileTargetTest extends TestCase
     {
         $craftApp = Craft::$app;
         Craft::$app = null;
-        $this->assertSame('', $this->fileTarget->getMessagePrefix('message'));
+        self::assertSame('', $this->fileTarget->getMessagePrefix('message'));
         Craft::$app = $craftApp;
     }
 
@@ -78,7 +78,7 @@ class FileTargetTest extends TestCase
 
         $this->fileTarget->includeUserIp = true;
 
-        $this->assertSame('[192.168.10.10][666][999]', $this->fileTarget->getMessagePrefix('message'));
+        self::assertSame('[192.168.10.10][666][999]', $this->fileTarget->getMessagePrefix('message'));
 
         Craft::$app = $craftApp;
     }

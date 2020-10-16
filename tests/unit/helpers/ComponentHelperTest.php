@@ -42,7 +42,7 @@ class ComponentHelperTest extends Unit
      */
     public function testSuccessfulComponentCreation(Closure $callback)
     {
-        $this->assertInstanceOf(
+        self::assertInstanceOf(
             ComponentInterface::class,
             $callback()
         );
@@ -81,7 +81,7 @@ class ComponentHelperTest extends Unit
      */
     public function testSettingsMerging($mergeable, $result)
     {
-        $this->assertSame($result, Component::mergeSettings($mergeable));
+        self::assertSame($result, Component::mergeSettings($mergeable));
     }
 
     /**

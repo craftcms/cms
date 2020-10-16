@@ -50,6 +50,6 @@ class FactoryTest extends TestCase
         $downloadManager = new DownloadManager(new NullIO());
         $archiveManager = $this->factory->createArchiveManager($config, $downloadManager);
 
-        $this->assertSame([], $this->getInaccessibleProperty($archiveManager, 'archivers'));
+        self::assertSame([], $this->getInaccessibleProperty($archiveManager, 'archivers'));
     }
 }

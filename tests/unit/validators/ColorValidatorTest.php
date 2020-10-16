@@ -41,7 +41,7 @@ class ColorValidatorTest extends Unit
      */
     public function testPattern()
     {
-        $this->assertSame('/^#[0-9a-f]{6}$/', $this->colorValidator->pattern);
+        self::assertSame('/^#[0-9a-f]{6}$/', $this->colorValidator->pattern);
     }
 
     /**
@@ -53,10 +53,10 @@ class ColorValidatorTest extends Unit
     public function testColorNormalization($result, $input)
     {
         $color = ColorValidator::normalizeColor($input);
-        $this->assertSame($result, $color);
+        self::assertSame($result, $color);
 
         $result = (mb_strpos($color, '#') !== false && mb_strlen($input) >= 0);
-        $this->assertTrue($result);
+        self::assertTrue($result);
     }
 
     /**
@@ -82,9 +82,9 @@ class ColorValidatorTest extends Unit
         $this->colorValidator->validateAttribute($this->model, 'exampleParam');
 
         if (!$mustValidate) {
-            $this->assertArrayHasKey('exampleParam', $this->model->getErrors());
+            self::assertArrayHasKey('exampleParam', $this->model->getErrors());
         } else {
-            $this->assertSame([], $this->model->getErrors());
+            self::assertSame([], $this->model->getErrors());
         }
 
         $this->model->clearErrors();

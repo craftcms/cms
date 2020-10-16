@@ -26,8 +26,8 @@ class ProjectConfigHelperTest extends Unit
      */
     public function testAssociativeArrayConfigTransforms($unpackedData, $packedData)
     {
-        $this->assertSame($packedData, ProjectConfigHelper::packAssociativeArrays($unpackedData));
-        $this->assertSame($unpackedData, ProjectConfigHelper::unpackAssociativeArrays($packedData));
+        self::assertSame($packedData, ProjectConfigHelper::packAssociativeArrays($unpackedData));
+        self::assertSame($unpackedData, ProjectConfigHelper::unpackAssociativeArrays($packedData));
     }
 
     /**
@@ -37,7 +37,7 @@ class ProjectConfigHelperTest extends Unit
      */
     public function testCleanupConfig($inputData, $expectedResult)
     {
-        $this->assertSame($expectedResult, ProjectConfigHelper::cleanupConfig($inputData));
+        self::assertSame($expectedResult, ProjectConfigHelper::cleanupConfig($inputData));
     }
 
     /**
@@ -47,7 +47,7 @@ class ProjectConfigHelperTest extends Unit
      */
     public function testSplitIntoComponents($inputData, $expectedResult)
     {
-        $this->assertSame($expectedResult, ProjectConfigHelper::splitConfigIntoComponents($inputData));
+        self::assertSame($expectedResult, ProjectConfigHelper::splitConfigIntoComponents($inputData));
     }
 
     /**

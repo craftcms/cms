@@ -33,7 +33,7 @@ class JsonHelperTest extends Test
      */
     public function testDecodeIfJson($result, $input)
     {
-        $this->assertSame($result, Json::decodeIfJson($input));
+        self::assertSame($result, Json::decodeIfJson($input));
     }
 
     public function jsonDecodableDataProvider(): array
@@ -57,7 +57,7 @@ class JsonHelperTest extends Test
      */
     public function testIsJsonObject(bool $result, string $input)
     {
-        $this->assertSame($result, Json::isJsonObject($input));
+        self::assertSame($result, Json::isJsonObject($input));
     }
 
     public function isJsonObjectDataProvider(): array

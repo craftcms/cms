@@ -121,7 +121,7 @@ class ExtractEagerLoadingParameterTest extends Unit
         ]);
         $extractedConditions = $conditionBuilder->extractQueryConditions();
 
-        $this->assertEquals($expectedParameters, $extractedConditions);
+        self::assertEquals($expectedParameters, $extractedConditions);
     }
 
     public function eagerLoadingParameterExtractionProvider()

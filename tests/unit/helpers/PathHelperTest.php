@@ -34,7 +34,7 @@ class PathHelperTest extends Unit
     public function testIsPathContained($result, $input)
     {
         $isContained = Path::ensurePathIsContained($input);
-        $this->assertSame($result, $isContained);
+        self::assertSame($result, $isContained);
     }
 
     public function isPathContainedDataProviders(): array

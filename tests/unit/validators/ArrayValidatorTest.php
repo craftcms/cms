@@ -47,9 +47,9 @@ class ArrayValidatorTest extends Unit
      */
     public function testMessagingOnEmptyInputArray(ArrayValidator $validator, $variableName)
     {
-        $this->assertTrue(strlen($validator->$variableName) > 2);
+        self::assertTrue(strlen($validator->$variableName) > 2);
 
-        $this->assertIsString($validator->$variableName);
+        self::assertIsString($validator->$variableName);
     }
 
     /**
@@ -58,12 +58,12 @@ class ArrayValidatorTest extends Unit
     public function testCountArrayInputValue()
     {
         $newValidator = new ArrayValidator(['count' => [2, 5]]);
-        $this->assertSame(2, $newValidator->min);
-        $this->assertSame(5, $newValidator->max);
+        self::assertSame(2, $newValidator->min);
+        self::assertSame(5, $newValidator->max);
 
         // Make sure if count is empty array. $count is a null variable.
         $newValidator = new ArrayValidator(['count' => []]);
-        $this->assertNull($newValidator->count);
+        self::assertNull($newValidator->count);
     }
 
     /**
@@ -80,9 +80,9 @@ class ArrayValidatorTest extends Unit
         $this->arrayValidator->validateAttribute($this->model, 'exampleParam');
 
         if ($mustValidate) {
-            $this->assertArrayNotHasKey('exampleParam', $this->model->getErrors());
+            self::assertArrayNotHasKey('exampleParam', $this->model->getErrors());
         } else {
-            $this->assertArrayHasKey('exampleParam', $this->model->getErrors());
+            self::assertArrayHasKey('exampleParam', $this->model->getErrors());
         }
     }
 
@@ -95,8 +95,8 @@ class ArrayValidatorTest extends Unit
         $this->model->exampleParam = [1, 2, 3, 4, 5, 6, 7];
         $this->arrayValidator->validateAttribute($this->model, 'exampleParam');
 
-        $this->assertArrayHasKey('exampleParam', $this->model->getErrors());
-        $this->assertSame('aint right', $this->model->getErrors('exampleParam')[0]);
+        self::assertArrayHasKey('exampleParam', $this->model->getErrors());
+        self::assertSame('aint right', $this->model->getErrors('exampleParam')[0]);
     }
 
     /**
@@ -136,11 +136,11 @@ class ArrayValidatorTest extends Unit
         $this->arrayValidator = new ArrayValidator(['count' => 5, 'max' => 10, 'min' => 4, 'tooFew' => 'aint got nuff', 'tooMany' => 'staahhpp', 'notEqual' => 'aint right']);
 
         // Test all variables are passed in and all good.
-        $this->assertSame(5, $this->arrayValidator->count);
-        $this->assertSame(10, $this->arrayValidator->max);
-        $this->assertSame(4, $this->arrayValidator->min);
-        $this->assertSame('aint got nuff', $this->arrayValidator->tooFew);
-        $this->assertSame('staahhpp', $this->arrayValidator->tooMany);
-        $this->assertSame('aint right', $this->arrayValidator->notEqual);
+        self::assertSame(5, $this->arrayValidator->count);
+        self::assertSame(10, $this->arrayValidator->max);
+        self::assertSame(4, $this->arrayValidator->min);
+        self::assertSame('aint got nuff', $this->arrayValidator->tooFew);
+        self::assertSame('staahhpp', $this->arrayValidator->tooMany);
+        self::assertSame('aint right', $this->arrayValidator->notEqual);
     }
 }
