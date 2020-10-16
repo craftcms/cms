@@ -2985,7 +2985,7 @@ body.rtl #alerts li:before { margin: -1px 0 0 3px ; }
 
 #global-header .flex { height: 50px; -webkit-align-items: center; align-items: center; }
 
-#crumbs { display: -webkit-flex; display: flex; -webkit-flex-direction: row; flex-direction: row; -webkit-align-items: stretch; align-items: stretch; font-size: 13px; }
+#crumbs { display: -webkit-flex; display: flex; -webkit-flex-direction: row; flex-direction: row; -webkit-align-items: center; align-items: center; font-size: 13px; }
 
 #crumbs.empty { display: none; }
 
@@ -3007,15 +3007,7 @@ body.ltr #crumbs nav ul li:after { -webkit-transform: rotate(-45deg); -o-transfo
 
 body.rtl #crumbs nav ul li:after { -webkit-transform: rotate(135deg); -o-transform: rotate(135deg); transform: rotate(135deg); }
 
-#nav-toggle { display: none; width: 36px; height: 26px; line-height: 26px; color: #9aa5b1; text-align: center; }
-
-body.ltr #nav-toggle { margin-left: -10px; }
-
-body.rtl #nav-toggle { margin-right: -10px; }
-
-#nav-toggle:before { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; user-select: none; opacity: 0.8; content: 'menu'; font-size: 16px; line-height: 0; }
-
-#nav-toggle:hover { color: #7b8793; }
+#nav-toggle { display: none; }
 
 #user-info { display: -webkit-flex; display: flex; -webkit-flex-direction: row; flex-direction: row; -webkit-align-items: center; align-items: center; height: 100%; background-color: transparent; border-radius: 0; }
 
@@ -3249,7 +3241,11 @@ body.rtl #details .meta .ui-datepicker { margin: 0 -8px 0 0 ; }
   body.rtl.showing-nav #global-container { right: 0; }
   #crumbs { display: -webkit-flex !important; display: flex !important; }
   #header { width: 100vw; }
-  #nav-toggle { display: block; }
+  #nav-toggle { display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; -webkit-justify-content: center; justify-content: center; width: 36px; height: 50px; line-height: 26px; color: #9aa5b1; text-align: center; }
+  body.ltr #nav-toggle { margin-left: -10px; }
+  body.rtl #nav-toggle { margin-right: -10px; }
+  #nav-toggle:before { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; user-select: none; opacity: 0.8; content: 'menu'; font-size: 16px; line-height: 0; }
+  #nav-toggle:hover { color: #7b8793; }
   #main-content { width: 100vw; } }
 
 @media only screen and (max-width: 973px) { #header { display: block; }
