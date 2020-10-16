@@ -10,6 +10,7 @@ namespace craft\web;
 use Craft;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
+use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\web\assets\iframeresizer\ContentWindowAsset;
 use GuzzleHttp\Exception\ClientException;
@@ -226,21 +227,7 @@ abstract class Controller extends \yii\web\Controller
      */
     public function renderTemplate(string $template, array $variables = [], string $templateMode = null): YiiResponse
     {
-        $headers = $this->response->getHeaders();
         $view = $this->getView();
-
-        // Set the MIME type for the request based on the matched template's file extension (unless the
-        // Content-Type header was already set, perhaps by the template via the {% header %} tag)
-        if (!$headers->has('content-type')) {
-            $templateFile = $view->resolveTemplate($template);
-            $extension = pathinfo($templateFile, PATHINFO_EXTENSION) ?: 'html';
-
-            if (($mimeType = FileHelper::getMimeTypeByExtension('.' . $extension)) === null) {
-                $mimeType = 'text/html';
-            }
-
-            $headers->set('content-type', $mimeType . '; charset=' . $this->response->charset);
-        }
 
         // If this is a preview request, register the iframe resizer script
         if ($this->request->getIsPreview()) {
@@ -252,6 +239,15 @@ abstract class Controller extends \yii\web\Controller
 
         // Prevent a response formatter from overriding the content-type header
         $this->response->format = YiiResponse::FORMAT_RAW;
+
+        // Set the MIME type for the request based on the matched template's file extension (unless the
+        // Content-Type header was already set, perhaps by the template via the {% header %} tag)
+        $headers = $this->response->getHeaders();
+        if (!$headers->has('content-type')) {
+            $templateFile = StringHelper::removeRight(strtolower($view->resolveTemplate($template)), '.twig');
+            $mimeType = FileHelper::getMimeTypeByExtension($templateFile) ?? 'text/html';
+            $headers->set('content-type', $mimeType . '; charset=' . $this->response->charset);
+        }
 
         return $this->response;
     }
