@@ -155,10 +155,10 @@ class InterfaceAndGeneratorTest extends Unit
             $typeName = $getTypeNameByContext($context);
 
             // Make sure the specific type entity exists and can be loaded.
-            $this->assertInstanceOf(ObjectType::class, TypeLoader::loadType($typeName));
+            self::assertInstanceOf(ObjectType::class, TypeLoader::loadType($typeName));
 
             // Make sure the generated types are pre-loaded, when asserting valid.
-            $this->assertTrue(array_key_exists($typeName, Craft::$app->getGql()->getSchemaDef(null, true)->getTypeMap()));
+            self::assertTrue(array_key_exists($typeName, Craft::$app->getGql()->getSchemaDef(null, true)->getTypeMap()));
         }
     }
 
@@ -195,8 +195,8 @@ class InterfaceAndGeneratorTest extends Unit
         ]);
         TableRowType::generateTypes($tableField);
         $typeName = TableRowType::getName($tableField);
-        $this->assertNotFalse(GqlEntityRegistry::getEntity($typeName));
-        $this->assertInstanceOf(ObjectType::class, TypeLoader::loadType($typeName));
+        self::assertNotFalse(GqlEntityRegistry::getEntity($typeName));
+        self::assertInstanceOf(ObjectType::class, TypeLoader::loadType($typeName));
     }
 
 

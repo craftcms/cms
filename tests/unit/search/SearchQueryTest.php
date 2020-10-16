@@ -92,7 +92,7 @@ class SearchQueryTest extends Unit
      */
     public function ensureIdenticalSearchTermObjects(SearchQueryTerm $one, SearchQueryTerm $two)
     {
-        $this->assertSame([
+        self::assertSame([
             $one->exclude, $one->exact, $one->subLeft, $one->subRight, $one->attribute, $one->term, $one->phrase
         ], [$two->exclude, $two->exact, $two->subLeft, $two->subRight, $two->attribute, $two->term, $two->phrase]);
     }
@@ -109,7 +109,7 @@ class SearchQueryTest extends Unit
 
         $this->ensureIdenticalSearchTermObjects(new SearchQueryTerm($options), $search->getTokens()[0]);
 
-        $this->assertInstanceOf(SearchQueryTermGroup::class, $search->getTokens()[1]);
+        self::assertInstanceOf(SearchQueryTermGroup::class, $search->getTokens()[1]);
 
         $options['term'] = 'live';
         $this->ensureIdenticalSearchTermObjects(new SearchQueryTerm($options), $search->getTokens()[1]->terms[0]);
@@ -124,7 +124,7 @@ class SearchQueryTest extends Unit
     public function testOnlyOr()
     {
         $search = new SearchQuery('OR');
-        $this->assertSame([], $search->getTokens());
+        self::assertSame([], $search->getTokens());
     }
 
     /*
@@ -159,8 +159,8 @@ class SearchQueryTest extends Unit
     {
         $search = new SearchQuery('search');
 
-        $this->assertSame('search', $search->getQuery());
-        $this->assertInstanceOf(SearchQueryTerm::class, $search->getTokens()[0]);
+        self::assertSame('search', $search->getQuery());
+        self::assertInstanceOf(SearchQueryTerm::class, $search->getTokens()[0]);
 
         $searchDefaults = new SearchQueryTerm([
             'exclude' => false,
@@ -190,7 +190,7 @@ class SearchQueryTest extends Unit
 
         // If we have to count the array. Count the array.
         if ($sizeOfArray !== null) {
-            $this->assertCount($sizeOfArray, $search->getTokens());
+            self::assertCount($sizeOfArray, $search->getTokens());
         }
 
         // Loop through the given tokens.

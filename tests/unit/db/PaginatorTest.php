@@ -39,7 +39,7 @@ class PaginatorTest extends Unit
     public function testTotalResults()
     {
         $this->setPaginator([], [], 10);
-        $this->assertSame('10', (string)$this->paginator->getTotalResults());
+        self::assertSame('10', (string)$this->paginator->getTotalResults());
     }
 
     /**
@@ -48,7 +48,7 @@ class PaginatorTest extends Unit
     public function testTotalResultsWithQueryLimit()
     {
         $this->setPaginator(['limit' => 10], [], 25);
-        $this->assertSame(10, $this->paginator->getTotalResults());
+        self::assertSame(10, $this->paginator->getTotalResults());
     }
 
     /**
@@ -57,7 +57,7 @@ class PaginatorTest extends Unit
     public function testTotalResultsWithQueryOffset()
     {
         $this->setPaginator(['offset' => 5], [], 10);
-        $this->assertSame(5, $this->paginator->getTotalResults());
+        self::assertSame(5, $this->paginator->getTotalResults());
     }
 
     /**
@@ -66,7 +66,7 @@ class PaginatorTest extends Unit
     public function testTotalPages()
     {
         $this->setPaginator([], ['pageSize' => '25']);
-        $this->assertSame(4, $this->paginator->getTotalPages());
+        self::assertSame(4, $this->paginator->getTotalPages());
     }
 
     /**
@@ -75,7 +75,7 @@ class PaginatorTest extends Unit
     public function testTotalPagesWithOneOverflow()
     {
         $this->setPaginator([], ['pageSize' => '25'], 101);
-        $this->assertSame(5, $this->paginator->getTotalPages());
+        self::assertSame(5, $this->paginator->getTotalPages());
     }
 
     /**
@@ -86,7 +86,7 @@ class PaginatorTest extends Unit
         $this->setPaginator([], ['pageSize' => '2']);
 
         $desiredResults = (new Query())->from([Table::SESSIONS])->limit(2)->all();
-        $this->assertSame($desiredResults, $this->paginator->getPageResults());
+        self::assertSame($desiredResults, $this->paginator->getPageResults());
     }
 
     /**
@@ -99,11 +99,11 @@ class PaginatorTest extends Unit
         $desiredResults = (new Query())->from(Table::SESSIONS)->limit(4)->all();
 
         // Should get the first two...
-        $this->assertSame([$desiredResults[0], $desiredResults[1]], $this->paginator->getPageResults());
+        self::assertSame([$desiredResults[0], $desiredResults[1]], $this->paginator->getPageResults());
 
         // Next page. Other two results.
         $this->paginator->setCurrentPage(2);
-        $this->assertSame([$desiredResults[2], $desiredResults[3]], $this->paginator->getPageResults());
+        self::assertSame([$desiredResults[2], $desiredResults[3]], $this->paginator->getPageResults());
     }
 
     /**
@@ -114,7 +114,7 @@ class PaginatorTest extends Unit
         $this->setPaginator([], ['pageSize' => '2'], 1);
 
         $desiredResults = (new Query())->from([Table::SESSIONS])->limit(1)->all();
-        $this->assertSame($desiredResults, $this->paginator->getPageResults());
+        self::assertSame($desiredResults, $this->paginator->getPageResults());
     }
 
     /**
@@ -123,7 +123,7 @@ class PaginatorTest extends Unit
     public function testGetPageResultsNoPageSize()
     {
         $this->setPaginator([], ['pageSize' => null], 10);
-        $this->assertSame([], $this->paginator->getPageResults());
+        self::assertSame([], $this->paginator->getPageResults());
     }
 
     /**
@@ -132,7 +132,7 @@ class PaginatorTest extends Unit
     public function testGetPageOffset()
     {
         $this->setPaginator([], [], 10);
-        $this->assertSame(0, $this->paginator->getPageOffset());
+        self::assertSame(0, $this->paginator->getPageOffset());
     }
 
     /**
@@ -142,7 +142,7 @@ class PaginatorTest extends Unit
     {
         $this->setPaginator([], [], 10);
         $this->paginator->setCurrentPage(5);
-        $this->assertSame(1, $this->paginator->getCurrentPage());
+        self::assertSame(1, $this->paginator->getCurrentPage());
     }
 
     /**
@@ -152,10 +152,10 @@ class PaginatorTest extends Unit
     {
         $this->setPaginator([], ['pageSize' => '5'], 10);
         $this->paginator->setCurrentPage(2);
-        $this->assertSame(2, $this->paginator->getCurrentPage());
+        self::assertSame(2, $this->paginator->getCurrentPage());
 
         $this->paginator->setCurrentPage(3);
-        $this->assertSame(2, $this->paginator->getCurrentPage());
+        self::assertSame(2, $this->paginator->getCurrentPage());
     }
 
     /**

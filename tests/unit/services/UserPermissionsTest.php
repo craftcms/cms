@@ -82,13 +82,13 @@ class UserPermissionsTest extends TestCase
         }, RegisterUserPermissionsEvent::class);
 
         // Just check for the main keys.
-        $this->assertArrayHasKey('General', $permissions);
-        $this->assertArrayHasKey('Sites', $permissions);
-        $this->assertArrayHasKey('Section - Single', $permissions);
-        $this->assertArrayHasKey('Section - Test 1', $permissions);
-        $this->assertArrayHasKey('Global Sets', $permissions);
-        $this->assertArrayHasKey('Volume - Test volume 1', $permissions);
-        $this->assertArrayHasKey('Utilities', $permissions);
+        self::assertArrayHasKey('General', $permissions);
+        self::assertArrayHasKey('Sites', $permissions);
+        self::assertArrayHasKey('Section - Single', $permissions);
+        self::assertArrayHasKey('Section - Test 1', $permissions);
+        self::assertArrayHasKey('Global Sets', $permissions);
+        self::assertArrayHasKey('Volume - Test volume 1', $permissions);
+        self::assertArrayHasKey('Utilities', $permissions);
     }
 
     /**
@@ -98,28 +98,28 @@ class UserPermissionsTest extends TestCase
     {
         Craft::$app->setEdition(Craft::Pro);
 
-        $this->assertFalse(
+        self::assertFalse(
             $this->userPermissions->doesGroupHavePermission('1000', 'accessCp')
         );
 
         $this->userPermissions->saveGroupPermissions('1000', ['accessCp']);
 
-        $this->assertTrue(
+        self::assertTrue(
             $this->userPermissions->doesGroupHavePermission('1000', 'accessCp')
         );
 
-        $this->assertFalse(
+        self::assertFalse(
             $this->userPermissions->doesGroupHavePermission('1000', 'registerUsers')
         );
-        $this->assertFalse(
+        self::assertFalse(
             $this->userPermissions->doesGroupHavePermission('1000', 'invalidPermission')
         );
 
         $this->userPermissions->saveGroupPermissions('1000', ['assignUserPermissions', 'accessCp']);
-        $this->assertFalse(
+        self::assertFalse(
             $this->userPermissions->doesGroupHavePermission('1000', 'assignUserPermissions')
         );
-        $this->assertTrue(
+        self::assertTrue(
             $this->userPermissions->doesGroupHavePermission('1000', 'accessCp')
         );
     }
@@ -139,19 +139,19 @@ class UserPermissionsTest extends TestCase
             ->one();
         Craft::$app->getUsers()->assignUserToGroups($user->id, ['1000']);
 
-        $this->assertTrue(
+        self::assertTrue(
             $this->userPermissions->doesUserHavePermission($user->id, 'accessCp')
         );
 
-        $this->assertFalse(
+        self::assertFalse(
             $this->userPermissions->doesUserHavePermission($user->id, 'invalidPermission')
         );
 
         $this->userPermissions->saveUserPermissions($user->id, ['editUsers']);
-        $this->assertTrue(
+        self::assertTrue(
             $this->userPermissions->doesUserHavePermission($user->id, 'editUsers')
         );
-        $this->assertTrue(
+        self::assertTrue(
             $this->userPermissions->doesUserHavePermission($user->id, 'accessCp')
         );
     }
@@ -172,13 +172,13 @@ class UserPermissionsTest extends TestCase
 
         Craft::$app->getUsers()->assignUserToGroups($user->id, ['1000', '1001']);
 
-        $this->assertCount(3, $this->userPermissions->getPermissionsByUserId($user->id));
-        $this->assertCount(
+        self::assertCount(3, $this->userPermissions->getPermissionsByUserId($user->id));
+        self::assertCount(
             3,
             $this->userPermissions->getGroupPermissionsByUserId($user->id)
         );
 
-        $this->assertCount(
+        self::assertCount(
             2,
             $this->userPermissions->getPermissionsByGroupId('1000')
         );
@@ -198,13 +198,13 @@ class UserPermissionsTest extends TestCase
             ->one();
         Craft::$app->getUsers()->assignUserToGroups($user->id, ['1000']);
 
-        $this->assertTrue($this->userPermissions->doesUserHavePermission($user->id, 'accessCp'));
-        $this->assertFalse($this->userPermissions->doesUserHavePermission($user->id, 'utility:updates'));
+        self::assertTrue($this->userPermissions->doesUserHavePermission($user->id, 'accessCp'));
+        self::assertFalse($this->userPermissions->doesUserHavePermission($user->id, 'utility:updates'));
 
         // Add a permission and check again.
         $this->userPermissions->saveGroupPermissions('1000', ['accessCp', 'utility:updates']);
-        $this->assertTrue($this->userPermissions->doesUserHavePermission($user->id, 'accessCp'));
-        $this->assertFalse($this->userPermissions->doesUserHavePermission($user->id, 'utility:updates'));
+        self::assertTrue($this->userPermissions->doesUserHavePermission($user->id, 'accessCp'));
+        self::assertFalse($this->userPermissions->doesUserHavePermission($user->id, 'utility:updates'));
     }
 
 

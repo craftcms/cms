@@ -54,9 +54,9 @@ class MailerTest extends TestCase
     public function testFromKeyComposition($key, array $variables = [])
     {
         $res = $this->mailer->composeFromKey($key, $variables);
-        $this->assertInstanceOf(Message::class, $res);
-        $this->assertSame($key, $res->key);
-        $this->assertSame($variables, $res->variables);
+        self::assertInstanceOf(Message::class, $res);
+        self::assertSame($key, $res->key);
+        self::assertSame($variables, $res->variables);
     }
 
     /**
@@ -65,7 +65,7 @@ class MailerTest extends TestCase
     public function testSendMail()
     {
         $this->_sendMail();
-        $this->assertInstanceOf(Message::class, $this->tester->grabLastSentEmail());
+        self::assertInstanceOf(Message::class, $this->tester->grabLastSentEmail());
     }
 
     /**
@@ -88,7 +88,7 @@ class MailerTest extends TestCase
 
         $this->_sendMail();
 
-        $this->assertSame(
+        self::assertSame(
             $this->mailer->from,
             ArrayHelper::firstKey($this->tester->grabLastSentEmail()->getFrom())
         );
@@ -103,8 +103,8 @@ class MailerTest extends TestCase
 
         $variables = $this->tester->grabLastSentEmail()->variables;
 
-        $this->assertSame('1', (string)$variables['user']->id);
-        $this->assertSame('https://craftcms.com', $variables['link']);
+        self::assertSame('1', (string)$variables['user']->id);
+        self::assertSame('https://craftcms.com', $variables['link']);
     }
 
     /**
@@ -128,8 +128,8 @@ class MailerTest extends TestCase
         /* @var Message $lastMessage */
         $lastMessage = $this->tester->grabLastSentEmail();
 
-        $this->assertSame('Craft CMS || info@craftcms.com', $lastMessage->getSubject());
-        $this->assertStringContainsString('info@craftcms.com || Craft CMS', $lastMessage->swiftMessage->toString());
+        self::assertSame('Craft CMS || info@craftcms.com', $lastMessage->getSubject());
+        self::assertStringContainsString('info@craftcms.com || Craft CMS', $lastMessage->swiftMessage->toString());
     }
 
     /**
@@ -144,7 +144,7 @@ class MailerTest extends TestCase
         $this->_sendMail();
 
         $lastMessage = $this->tester->grabLastSentEmail();
-        $this->assertStringContainsString('Hello iam This is a name', $lastMessage->swiftMessage->toString());
+        self::assertStringContainsString('Hello iam This is a name', $lastMessage->swiftMessage->toString());
     }
 
     /**
@@ -157,7 +157,7 @@ class MailerTest extends TestCase
         $this->_sendMail();
         $lastMessage = $this->tester->grabLastSentEmail();
 
-        $this->assertSame([
+        self::assertSame([
             'giel@yellowflash.net' => 'Test Recipient',
             'info@craftcms.com' => 'Test Recipient'
         ], $lastMessage->to);
@@ -173,7 +173,7 @@ class MailerTest extends TestCase
         $this->_sendMail();
         $lastMessage = $this->tester->grabLastSentEmail();
 
-        $this->assertSame([
+        self::assertSame([
             'giel@yellowflash.net' => 'Giel',
             'info@craftcms.com' => 'Craft CMS'
         ], $lastMessage->to);
@@ -219,7 +219,7 @@ class MailerTest extends TestCase
             'link' => 'https://craftcms.com'
         ]));
 
-        $this->assertSame($desiredLang, $this->tester->grabLastSentEmail()->language);
+        self::assertSame($desiredLang, $this->tester->grabLastSentEmail()->language);
     }
 
     /**

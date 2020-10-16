@@ -42,11 +42,11 @@ class ResolveGlobalSetMutationTest extends TestCase
         $resolver = $this->make(GlobalSetResolver::class, [
             'getResolutionData' => Expected::once(new GlobalSet(['id' => 7, 'uid' => $globalSetUid])),
             'requireSchemaAction' => Expected::once(function($scope, $action) use ($globalSetUid) {
-                $this->assertSame('globalsets.' . $globalSetUid, $scope);
-                $this->assertSame($action, 'edit');
+                self::assertSame('globalsets.' . $globalSetUid, $scope);
+                self::assertSame($action, 'edit');
             }),
             'populateElementWithData' => Expected::once(function($element, $passedArguments) use ($arguments) {
-                $this->assertSame($arguments, $passedArguments);
+                self::assertSame($arguments, $passedArguments);
                 return $element;
             }),
             'saveElement' => Expected::once(function($element) {

@@ -54,8 +54,8 @@ class DateTimeHelperTest extends Unit
      */
     public function testConstants($result, $input)
     {
-        $this->assertSame($result, $input);
-        $this->assertIsInt($input);
+        self::assertSame($result, $input);
+        self::assertIsInt($input);
     }
 
     /**
@@ -63,7 +63,7 @@ class DateTimeHelperTest extends Unit
      */
     public function testCurrentUtcDateTime()
     {
-        $this->assertSame(
+        self::assertSame(
             (new DateTime(null, $this->utcTimezone))->format('Y-m-d H:i:s'),
             DateTimeHelper::currentUTCDateTime()->format('Y-m-d H:i:s')
         );
@@ -74,7 +74,7 @@ class DateTimeHelperTest extends Unit
      */
     public function testCurrentUtcDateTimeStamp()
     {
-        $this->assertSame(
+        self::assertSame(
             DateTimeHelper::currentTimeStamp(),
             (new DateTime(null, $this->utcTimezone))->getTimestamp()
         );
@@ -90,8 +90,8 @@ class DateTimeHelperTest extends Unit
     public function testSecondsToHumanTimeDuration($result, $input, $showSeconds = true)
     {
         $toHuman = DateTimeHelper::secondsToHumanTimeDuration($input, $showSeconds);
-        $this->assertSame($result, $toHuman);
-        $this->assertIsString($toHuman);
+        self::assertSame($result, $toHuman);
+        self::assertIsString($toHuman);
     }
 
     /**
@@ -115,14 +115,14 @@ class DateTimeHelperTest extends Unit
         $toDateTime = DateTimeHelper::toDateTime($format);
         $systemTz = $this->systemTimezone->getName();
 
-        $this->assertInstanceOf(DateTime::class, $toDateTime);
-        $this->assertSame($systemTz, $toDateTime->getTimezone()->getName());
+        self::assertInstanceOf(DateTime::class, $toDateTime);
+        self::assertSame($systemTz, $toDateTime->getTimezone()->getName());
 
         // Ensure the expected result is in the same timezone as the system.
-        $this->assertSame($systemTz, $expectedResult->getTimezone()->getName());
+        self::assertSame($systemTz, $expectedResult->getTimezone()->getName());
 
         // Are they the same?
-        $this->assertSame($expectedResult->format('Y-m-d H:i:s'), $toDateTime->format('Y-m-d H:i:s'));
+        self::assertSame($expectedResult->format('Y-m-d H:i:s'), $toDateTime->format('Y-m-d H:i:s'));
     }
 
     /**
@@ -133,7 +133,7 @@ class DateTimeHelperTest extends Unit
      */
     public function testToDateTimeInvalidFormats($format)
     {
-        $this->assertFalse(DateTimeHelper::toDateTime($format));
+        self::assertFalse(DateTimeHelper::toDateTime($format));
     }
 
     /**
@@ -147,7 +147,7 @@ class DateTimeHelperTest extends Unit
     public function testUtcDefault($format)
     {
         $toDateTime = DateTimeHelper::toDateTime($format, false, false);
-        $this->assertSame($this->utcTimezone->getName(), $toDateTime->getTimezone()->getName());
+        self::assertSame($this->utcTimezone->getName(), $toDateTime->getTimezone()->getName());
     }
 
     /**
@@ -164,10 +164,10 @@ class DateTimeHelperTest extends Unit
     {
         $toDateTime = DateTimeHelper::toDateTime($format, false, false);
 
-        $this->assertInstanceOf(DateTime::class, $toDateTime);
-        $this->assertSame($expectedTimezone->getName(), $toDateTime->getTimezone()->getName());
-        $this->assertSame($expectedTimezone->getName(), $expectedResult->getTimezone()->getName());
-        $this->assertSame($expectedResult->format('Y-m-d H:i:s'), $toDateTime->format('Y-m-d H:i:s'));
+        self::assertInstanceOf(DateTime::class, $toDateTime);
+        self::assertSame($expectedTimezone->getName(), $toDateTime->getTimezone()->getName());
+        self::assertSame($expectedTimezone->getName(), $expectedResult->getTimezone()->getName());
+        self::assertSame($expectedResult->format('Y-m-d H:i:s'), $toDateTime->format('Y-m-d H:i:s'));
     }
 
     /**
@@ -184,8 +184,8 @@ class DateTimeHelperTest extends Unit
 
         $toDateTime = DateTimeHelper::toDateTime($format);
 
-        $this->assertSame($expectedResult->format('Y-m-d H:i:s'), DateTimeHelper::toDateTime($format)->format('Y-m-d H:i:s'));
-        $this->assertInstanceOf(DateTime::class, $toDateTime);
+        self::assertSame($expectedResult->format('Y-m-d H:i:s'), DateTimeHelper::toDateTime($format)->format('Y-m-d H:i:s'));
+        self::assertInstanceOf(DateTime::class, $toDateTime);
     }
 
     /**
@@ -199,7 +199,7 @@ class DateTimeHelperTest extends Unit
         $comparable = new DateTime($created->format('Y-m-d') . ' 20:00:00', $this->utcTimezone);
         $comparable->setTimezone($this->systemTimezone);
 
-        $this->assertSame($comparable->format('Y-m-d H:i:s'), $dt->format('Y-m-d H:i:s'));
+        self::assertSame($comparable->format('Y-m-d H:i:s'), $dt->format('Y-m-d H:i:s'));
     }
 
     /**
@@ -211,7 +211,7 @@ class DateTimeHelperTest extends Unit
     public function testNormalizeTimezone($result, $input)
     {
         $normalized = DateTimeHelper::normalizeTimeZone($input);
-        $this->assertSame($result, $normalized);
+        self::assertSame($result, $normalized);
     }
 
     /**
@@ -228,7 +228,7 @@ class DateTimeHelperTest extends Unit
         }
 
         $isIso = DateTimeHelper::isIso8601($input);
-        $this->assertSame($result, $isIso);
+        self::assertSame($result, $isIso);
     }
 
     /**
@@ -243,7 +243,7 @@ class DateTimeHelperTest extends Unit
     {
         $fromInterval = DateTimeHelper::humanDurationFromInterval(new DateInterval($inputString), $showSeconds);
 
-        $this->assertSame($result, $fromInterval);
+        self::assertSame($result, $fromInterval);
     }
 
     /**
@@ -252,16 +252,16 @@ class DateTimeHelperTest extends Unit
     public function testIsToday()
     {
         $dateTime = new DateTime('now');
-        $this->assertTrue(DateTimeHelper::isToday($dateTime));
+        self::assertTrue(DateTimeHelper::isToday($dateTime));
 
         $dateTime->modify('-1 days');
-        $this->assertFalse(DateTimeHelper::isToday($dateTime));
+        self::assertFalse(DateTimeHelper::isToday($dateTime));
 
         $dateTime->modify('-1 days');
-        $this->assertFalse(DateTimeHelper::isToday($dateTime));
+        self::assertFalse(DateTimeHelper::isToday($dateTime));
 
         $dateTime->modify('+2 days');
-        $this->assertTrue(DateTimeHelper::isToday($dateTime));
+        self::assertTrue(DateTimeHelper::isToday($dateTime));
     }
 
     /**
@@ -272,16 +272,16 @@ class DateTimeHelperTest extends Unit
         $dateTime = new DateTime('now');
 
         $dateTime->modify('-1 days');
-        $this->assertTrue(DateTimeHelper::isYesterday($dateTime));
+        self::assertTrue(DateTimeHelper::isYesterday($dateTime));
 
         $dateTime->modify('-1 days');
-        $this->assertFalse(DateTimeHelper::isYesterday($dateTime));
+        self::assertFalse(DateTimeHelper::isYesterday($dateTime));
 
         $dateTime->modify('+2 days');
-        $this->assertFalse(DateTimeHelper::isYesterday($dateTime));
+        self::assertFalse(DateTimeHelper::isYesterday($dateTime));
 
         $dateTime = new DateTime('yesterday');
-        $this->assertTrue(DateTimeHelper::isYesterday($dateTime));
+        self::assertTrue(DateTimeHelper::isYesterday($dateTime));
     }
 
     /**
@@ -290,13 +290,13 @@ class DateTimeHelperTest extends Unit
     public function testThisYearCheck()
     {
         $dateTime = new DateTime('now');
-        $this->assertTrue(DateTimeHelper::isThisYear($dateTime));
+        self::assertTrue(DateTimeHelper::isThisYear($dateTime));
 
         $dateTime->modify('-1 years');
-        $this->assertFalse(DateTimeHelper::isThisYear($dateTime));
+        self::assertFalse(DateTimeHelper::isThisYear($dateTime));
 
         $dateTime->modify('+2 years');
-        $this->assertFalse(DateTimeHelper::isThisYear($dateTime));
+        self::assertFalse(DateTimeHelper::isThisYear($dateTime));
     }
 
     /**
@@ -305,17 +305,17 @@ class DateTimeHelperTest extends Unit
     public function testThisWeek()
     {
         $dateTime = new DateTime('now');
-        $this->assertTrue(DateTimeHelper::isThisWeek($dateTime));
+        self::assertTrue(DateTimeHelper::isThisWeek($dateTime));
 
         $dateTime->modify('-1 weeks');
-        $this->assertFalse(DateTimeHelper::isThisWeek($dateTime));
+        self::assertFalse(DateTimeHelper::isThisWeek($dateTime));
 
 
         $dateTime->modify('+1 weeks');
-        $this->assertTrue(DateTimeHelper::isThisWeek($dateTime));
+        self::assertTrue(DateTimeHelper::isThisWeek($dateTime));
 
         $dateTime->modify('+2 weeks');
-        $this->assertFalse(DateTimeHelper::isYesterday($dateTime));
+        self::assertFalse(DateTimeHelper::isYesterday($dateTime));
     }
 
     /**
@@ -326,13 +326,13 @@ class DateTimeHelperTest extends Unit
         $systemTz = new DateTimeZone(Craft::$app->getTimeZone());
         $dateTime = new DateTime('now', $systemTz);
         $dateTime->modify('-5 seconds');
-        $this->assertTrue(DateTimeHelper::isInThePast($dateTime));
+        self::assertTrue(DateTimeHelper::isInThePast($dateTime));
 
         $dateTime->modify('-1 minutes');
-        $this->assertTrue(DateTimeHelper::isInThePast($dateTime));
+        self::assertTrue(DateTimeHelper::isInThePast($dateTime));
 
         $dateTime->modify('+2 minutes');
-        $this->assertFalse(DateTimeHelper::isInThePast($dateTime));
+        self::assertFalse(DateTimeHelper::isInThePast($dateTime));
     }
 
     /**
@@ -341,10 +341,10 @@ class DateTimeHelperTest extends Unit
     public function testIsThisMonth()
     {
         $dateTime = new DateTime('now');
-        $this->assertTrue(DateTimeHelper::isThisMonth($dateTime));
+        self::assertTrue(DateTimeHelper::isThisMonth($dateTime));
 
         $dateTime->modify('-35 days');
-        $this->assertFalse(DateTimeHelper::isThisMonth($dateTime));
+        self::assertFalse(DateTimeHelper::isThisMonth($dateTime));
     }
 
     /**
@@ -357,7 +357,7 @@ class DateTimeHelperTest extends Unit
     public function testIsWithinLast($result, $dateTime, $interval)
     {
         $isWithinLast = DateTimeHelper::isWithinLast($dateTime, $interval);
-        $this->assertSame($result, $isWithinLast);
+        self::assertSame($result, $isWithinLast);
     }
 
     /**
@@ -370,8 +370,8 @@ class DateTimeHelperTest extends Unit
     public function testSecondsToInterval($shortResult, $longResult, $input)
     {
         $interval = DateTimeHelper::secondsToInterval($input);
-        $this->assertSame($shortResult, $interval->s);
-        $this->assertSame($longResult, (int)$interval->format('%s%d%h%m'));
+        self::assertSame($shortResult, $interval->s);
+        self::assertSame($longResult, (int)$interval->format('%s%d%h%m'));
     }
 
     /**
@@ -385,7 +385,7 @@ class DateTimeHelperTest extends Unit
     public function testIntervalToSeconds($result, $period)
     {
         $seconds = DateTimeHelper::intervalToSeconds(new DateInterval($period));
-        $this->assertSame($result, $seconds);
+        self::assertSame($result, $seconds);
     }
 
     /**
@@ -397,7 +397,7 @@ class DateTimeHelperTest extends Unit
     public function testToIso8601($result, $input)
     {
         $toIso8601 = DateTimeHelper::toIso8601($input);
-        $this->assertSame($result, $toIso8601);
+        self::assertSame($result, $toIso8601);
     }
 
     /**
@@ -409,8 +409,8 @@ class DateTimeHelperTest extends Unit
     public function testTimezoneAbbreviation($result, $input)
     {
         $abbreviated = DateTimeHelper::timeZoneAbbreviation($input);
-        $this->assertSame($result, $abbreviated);
-        $this->assertIsString($abbreviated);
+        self::assertSame($result, $abbreviated);
+        self::assertIsString($abbreviated);
     }
 
     /**
@@ -422,8 +422,8 @@ class DateTimeHelperTest extends Unit
     public function testIsValidTimeStamp($result, $input)
     {
         $isValidTimestamp = DateTimeHelper::isValidTimeStamp($input);
-        $this->assertSame($result, $isValidTimestamp);
-        $this->assertIsBool($isValidTimestamp);
+        self::assertSame($result, $isValidTimestamp);
+        self::assertIsBool($isValidTimestamp);
     }
 
     /**
@@ -435,7 +435,7 @@ class DateTimeHelperTest extends Unit
     public function testIsValidIntervalString($result, $input)
     {
         $isValid = DateTimeHelper::isValidIntervalString($input);
-        $this->assertSame($result, $isValid);
+        self::assertSame($result, $isValid);
     }
 
     /**
@@ -447,7 +447,7 @@ class DateTimeHelperTest extends Unit
     public function testTimezoneOffset($result, $input)
     {
         $offset = DateTimeHelper::timezoneOffset($input);
-        $this->assertSame($result, $offset);
+        self::assertSame($result, $offset);
     }
 
     /**

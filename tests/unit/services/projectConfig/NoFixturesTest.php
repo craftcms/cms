@@ -67,10 +67,10 @@ class ProjectConfigTest extends TestCase
             $value = ProjectConfigHelper::cleanupConfig($value);
         }
 
-        $this->assertSame($projectConfig->get($path), $value);
+        self::assertSame($projectConfig->get($path), $value);
 
         $projectConfig->remove($path);
-        $this->assertNull($projectConfig->get($path));
+        self::assertNull($projectConfig->get($path));
     }
 
     /**
@@ -123,7 +123,7 @@ class ProjectConfigTest extends TestCase
     public function testEncodeData($incomingData, $expectedResult)
     {
         $projectConfig = Craft::$app->getProjectConfig();
-        $this->assertSame($expectedResult, $this->invokeMethod($projectConfig, 'encodeValueAsString', [$incomingData]));
+        self::assertSame($expectedResult, $this->invokeMethod($projectConfig, 'encodeValueAsString', [$incomingData]));
     }
 
     public function getConfigProvider()

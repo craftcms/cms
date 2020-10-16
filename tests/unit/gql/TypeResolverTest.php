@@ -134,9 +134,9 @@ class TypeResolverTest extends Unit
         $resolvedField = $resolverClass::resolve($sourceElement, $filterParameters, null, $resolveInfo);
 
         if ($mustNotBeSame) {
-            $this->assertNotEquals($resolvedField, $elementResults);
+            self::assertNotEquals($resolvedField, $elementResults);
         } else {
-            $this->assertEquals($resolvedField, $elementResults);
+            self::assertEquals($resolvedField, $elementResults);
         }
     }
 }

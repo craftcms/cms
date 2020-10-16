@@ -30,7 +30,7 @@ class HtmlPurifierTest extends Unit
     public function testCleanUtf8($result, $input)
     {
         $cleaned = HtmlPurifier::cleanUtf8($input);
-        $this->assertSame($result, $cleaned);
+        self::assertSame($result, $cleaned);
     }
 
     /**
@@ -40,9 +40,9 @@ class HtmlPurifierTest extends Unit
     {
         $config = HTMLPurifier_Config::createDefault();
         HtmlPurifier::configure($config);
-        $this->assertNull($config->get('HTML.DefinitionID'));
-        $this->assertSame('', $config->get('Attr.DefaultImageAlt'));
-        $this->assertSame('', $config->get('Attr.DefaultInvalidImageAlt'));
+        self::assertNull($config->get('HTML.DefinitionID'));
+        self::assertSame('', $config->get('Attr.DefaultImageAlt'));
+        self::assertSame('', $config->get('Attr.DefaultInvalidImageAlt'));
     }
 
     /**

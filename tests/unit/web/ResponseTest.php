@@ -40,7 +40,7 @@ class ResponseTest extends Unit
         }
 
         $type = $this->response->getContentType();
-        $this->assertSame($result, $type);
+        self::assertSame($result, $type);
     }
 
     /**
@@ -53,10 +53,10 @@ class ResponseTest extends Unit
 
         $cacheTime = 31536000; // 1 year
 
-        $this->assertSame('cache', $headers->get('Pragma'));
-        $this->assertSame('cache', $headers->get('Pragma'));
-        $this->assertSame('max-age=31536000', $headers->get('Cache-Control'));
-        $this->assertSame(gmdate('D, d M Y H:i:s', time() + $cacheTime) . ' GMT', $headers->get('Expires'));
+        self::assertSame('cache', $headers->get('Pragma'));
+        self::assertSame('cache', $headers->get('Pragma'));
+        self::assertSame('max-age=31536000', $headers->get('Cache-Control'));
+        self::assertSame(gmdate('D, d M Y H:i:s', time() + $cacheTime) . ' GMT', $headers->get('Expires'));
     }
 
     /**
@@ -70,7 +70,7 @@ class ResponseTest extends Unit
 
         $this->response->setLastModifiedHeader($path);
 
-        $this->assertSame(gmdate('D, d M Y H:i:s', $modifiedTime) . ' GMT', $this->response->getHeaders()->get('Last-Modified'));
+        self::assertSame(gmdate('D, d M Y H:i:s', $modifiedTime) . ' GMT', $this->response->getHeaders()->get('Last-Modified'));
     }
 
     /**

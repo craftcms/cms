@@ -37,7 +37,7 @@ class SearchHelperTest extends Unit
     public function testKeywordNormalization($result, $keyword, $ignore = [], $processMap = true, $language = null)
     {
         $keyword = Search::normalizeKeywords($keyword, $ignore, $processMap, $language);
-        $this->assertSame($result, $keyword);
+        self::assertSame($result, $keyword);
     }
 
     /**
