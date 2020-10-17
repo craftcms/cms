@@ -4,6 +4,7 @@
 
 ### Added
 - Added the `setPasswordRequestPath` config setting. ([#7024](https://github.com/craftcms/cms/issues/7024))
+- Added the `ul()` and `ol()` Twig functions, which return the HTML for `<ul>` and `<ol>` tags for a passed-in array of strings.
 - Added `craft\config\GeneralConfig::getSetPasswordRequestPath()`.
 
 ### Changed
