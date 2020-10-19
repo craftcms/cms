@@ -1190,7 +1190,10 @@ class Sections extends Component
             $entries = Entry::find()
                 ->sectionId($entryTypeRecord->sectionId)
                 ->typeId($entryTypeRecord->id)
+                ->anyStatus()
                 ->trashed()
+                ->siteId('*')
+                ->unique()
                 ->andWhere(['entries.deletedWithEntryType' => true])
                 ->all();
             Craft::$app->getElements()->restoreElements($entries);
