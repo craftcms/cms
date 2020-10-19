@@ -12,6 +12,7 @@
 ### Changed
 - Craft now ignores the requested template’s `.twig` file extension when determining the default `Content-Type` header value for the response. ([#7025](https://github.com/craftcms/cms/issues/7025))
 - Date and Time fields’ Minute Increment settings now allow 5 and 10-minute increments. ([#7029](https://github.com/craftcms/cms/issues/7029))
+- Tokenized user verification URLs no longer redirect to the user to the `postLoginRedirect`/`postCpLoginRedirect` when the token is invalid and the user is logged in, if they still have a verification token on their account. ([#7006](https://github.com/craftcms/cms/issues/7006))
 
 ### Fixed
 - Fixed a styling bug with the hamburger menu on pages with breadcrumbs. ([#7021](https://github.com/craftcms/cms/issues/7021))

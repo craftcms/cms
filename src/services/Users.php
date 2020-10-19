@@ -230,19 +230,30 @@ class Users extends Component
      */
     public function isVerificationCodeValidForUser(User $user, string $code): bool
     {
-        $userRecord = $this->_getUserRecordById($user->id);
+        if (!$user->verificationCode || !$user->verificationCodeIssuedDate) {
+            // Fetch from the DB
+            $userRecord = $this->_getUserRecordById($user->id);
+            $user->verificationCode = $userRecord->verificationCode;
+            $user->verificationCodeIssuedDate = $userRecord->verificationCodeIssuedDate
+                ? new \DateTime($userRecord->verificationCodeIssuedDate, new \DateTimeZone('UTC'))
+                : null;
+
+            if (!$user->verificationCode || !$user->verificationCodeIssuedDate) {
+                return false;
+            }
+        }
+
+        // Make sure the verification code isn't expired
         $minCodeIssueDate = DateTimeHelper::currentUTCDateTime();
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         $interval = DateTimeHelper::secondsToInterval($generalConfig->verificationCodeDuration);
         $minCodeIssueDate->sub($interval);
-        $verificationCodeIssuedDate = new \DateTime($userRecord->verificationCodeIssuedDate, new \DateTimeZone('UTC'));
 
         // Make sure it's not expired
-        if ($verificationCodeIssuedDate < $minCodeIssueDate) {
-            // Remove it from the record so if they click the link again, it'll throw an exception
-            $userRecord = $this->_getUserRecordById($user->id);
-            $userRecord->verificationCodeIssuedDate = null;
-            $userRecord->verificationCode = null;
+        if ($user->verificationCodeIssuedDate < $minCodeIssueDate) {
+            $userRecord = $userRecord ?? $this->_getUserRecordById($user->id);
+            $userRecord->verificationCode = $user->verificationCode = null;
+            $userRecord->verificationCodeIssuedDate = $user->verificationCodeIssuedDate = null;
             $userRecord->save();
 
             Craft::warning('The verification code (' . $code . ') given for userId: ' . $user->id . ' is expired.', __METHOD__);
@@ -250,7 +261,7 @@ class Users extends Component
         }
 
         try {
-            $valid = Craft::$app->getSecurity()->validatePassword($code, $userRecord->verificationCode);
+            $valid = Craft::$app->getSecurity()->validatePassword($code, $user->verificationCode);
         } catch (InvalidArgumentException $e) {
             $valid = false;
         }
