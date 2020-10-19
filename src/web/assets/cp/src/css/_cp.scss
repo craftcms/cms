@@ -159,11 +159,14 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 }
 
 #job-icon {
+  align-items: flex-start;
+
   & > span.icon {
     display: block;
     position: relative;
     width: 16px;
     height: 16px;
+    margin-top: 2px !important;
 
     & > canvas {
       display: block;
@@ -178,28 +181,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
     }
   }
 
-  .progressbar {
-    position: static;
-    margin: 8px 2px;
-    width: auto;
-    border-color: $grey200;
-    transition: color linear 100ms;
-  }
-
-  .progressbar-inner {
-    background-color: $grey200;
-    transition: color linear 100ms;
-  }
-
   &[href]:hover {
-    .progressbar {
-      border-color: $white;
-    }
-
-    .progressbar-inner {
-      background-color: $white;
-    }
-
     .icon > span.icon > canvas#job-icon-hover {
       opacity: 1;
     }
@@ -1489,21 +1471,6 @@ $toolbarIconColor: darken($inputColor, 10%);
         display: block;
       }
     }
-  }
-}
-
-#job-icon {
-  align-items: flex-start;
-
-  .icon {
-    margin-top: 2px !important;
-  }
-
-  .progress-label {
-    display: block;
-    color: $grey300;
-    font-size: 11px;
-    line-height: 1.5;
   }
 }
 

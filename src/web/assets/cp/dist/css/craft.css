@@ -2863,19 +2863,13 @@ body.rtl #system-name h2:after { left: 0; }
 
 #system-info:hover #system-name h2:after { background-image: -o-linear-gradient(left, rgba(31, 39, 46, 0), #1f272e); background-image: linear-gradient(to right, rgba(31, 39, 46, 0), #1f272e); }
 
-#job-icon > span.icon { display: block; position: relative; width: 16px; height: 16px; }
+#job-icon { -webkit-align-items: flex-start; align-items: flex-start; }
+
+#job-icon > span.icon { display: block; position: relative; width: 16px; height: 16px; margin-top: 2px !important; }
 
 #job-icon > span.icon > canvas { display: block; position: absolute; width: 16px; height: 16px; }
 
 #job-icon > span.icon > canvas#job-icon-hover { opacity: 0; -o-transition: opacity linear 100ms; transition: opacity linear 100ms; }
-
-#job-icon .progressbar { position: static; margin: 8px 2px; width: auto; border-color: #cdd8e4; -o-transition: color linear 100ms; transition: color linear 100ms; }
-
-#job-icon .progressbar-inner { background-color: #cdd8e4; -o-transition: color linear 100ms; transition: color linear 100ms; }
-
-#job-icon[href]:hover .progressbar { border-color: #fff; }
-
-#job-icon[href]:hover .progressbar-inner { background-color: #fff; }
 
 #job-icon[href]:hover .icon > span.icon > canvas#job-icon-hover { opacity: 1; }
 
@@ -3413,12 +3407,6 @@ body.rtl .sidebar nav li a .badge { margin: 0 10px 0 -4px ; }
 .sidebar nav li ul { display: none; }
 
 .sidebar nav li.expanded > ul { display: block; }
-
-#job-icon { -webkit-align-items: flex-start; align-items: flex-start; }
-
-#job-icon .icon { margin-top: 2px !important; }
-
-#job-icon .progress-label { display: block; color: #9aa5b1; font-size: 11px; line-height: 1.5; }
 
 body.ltr .content.has-sidebar:not(.hiding-sidebar) { margin-left: 226px; }
 
