@@ -3537,6 +3537,7 @@ ul.tree,
   align-items: center;
   height: 190px;
   background-color: $grey900;
+  cursor: pointer;
 
   &.loading {
     &:after {
@@ -3571,10 +3572,6 @@ ul.tree,
     }
   }
 
-  &.editable {
-    cursor: pointer;
-  }
-
   .buttons {
     opacity: 0;
     position: absolute;
@@ -3595,21 +3592,21 @@ ul.tree,
           transition: opacity linear 100ms, backdrop-filter linear 100ms;
         }
       }
+
+      &:hover {
+        background-color: $grey500;
+
+        @supports (backdrop-filter: blur(10px)) {
+          & {
+            background-color: transparentize($grey500, 0.3);
+          }
+        }
+      }
     }
   }
 
   &:hover .buttons {
     opacity: 1;
-  }
-
-  &:not(.editable) .buttons .btn:hover {
-    background-color: $grey500;
-
-    @supports (backdrop-filter: blur(10px)) {
-      & {
-        background-color: transparentize($grey500, 0.3);
-      }
-    }
   }
 }
 

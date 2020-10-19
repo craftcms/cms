@@ -1801,7 +1801,7 @@ body.rtl .modal .resizehandle { background-image: url(../images/resizehandle_rtl
 .hud .body ::-webkit-scrollbar-track { background-color: #f3f7fc; }
 
 /* inline asset previews */
-.preview-thumb-container { position: relative; display: -webkit-flex; display: flex; -webkit-flex-direction: row; flex-direction: row; -webkit-align-items: center; align-items: center; height: 190px; background-color: #1f2933; }
+.preview-thumb-container { position: relative; display: -webkit-flex; display: flex; -webkit-flex-direction: row; flex-direction: row; -webkit-align-items: center; align-items: center; height: 190px; background-color: #1f2933; cursor: pointer; }
 
 .preview-thumb-container.loading:after { content: '.'; font-size: 0; display: block; position: absolute; width: 100%; height: 100%; left: 0; top: 0; background: rgba(31, 41, 51, 0.8) no-repeat 50% 50% url(../images/spinner_dark.gif); }
 
@@ -1810,8 +1810,6 @@ body.rtl .modal .resizehandle { background-image: url(../images/resizehandle_rtl
 .preview-thumb-container .preview-thumb { display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column; -webkit-align-items: center; align-items: center; width: 100%; }
 
 .preview-thumb-container .preview-thumb img { display: block; max-width: 100%; max-height: 190px; }
-
-.preview-thumb-container.editable { cursor: pointer; }
 
 .preview-thumb-container .buttons { opacity: 0; position: absolute; top: 10px; margin: 0; -o-transition: opacity linear 100ms; transition: opacity linear 100ms; }
 
@@ -1823,11 +1821,11 @@ body.rtl .preview-thumb-container .buttons { left: 10px; }
 
 @supports ((-webkit-backdrop-filter: blur(10px)) or (backdrop-filter: blur(10px))) { .preview-thumb-container .buttons .btn { background-color: rgba(81, 95, 108, 0.4); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); transition: opacity linear 100ms, -webkit-backdrop-filter linear 100ms; -o-transition: opacity linear 100ms, backdrop-filter linear 100ms; transition: opacity linear 100ms, backdrop-filter linear 100ms; transition: opacity linear 100ms, backdrop-filter linear 100ms, -webkit-backdrop-filter linear 100ms; } }
 
+.preview-thumb-container .buttons .btn:hover { background-color: #606d7b; }
+
+@supports ((-webkit-backdrop-filter: blur(10px)) or (backdrop-filter: blur(10px))) { .preview-thumb-container .buttons .btn:hover { background-color: rgba(96, 109, 123, 0.7); } }
+
 .preview-thumb-container:hover .buttons { opacity: 1; }
-
-.preview-thumb-container:not(.editable) .buttons .btn:hover { background-color: #606d7b; }
-
-@supports ((-webkit-backdrop-filter: blur(10px)) or (backdrop-filter: blur(10px))) { .preview-thumb-container:not(.editable) .buttons .btn:hover { background-color: rgba(96, 109, 123, 0.7); } }
 
 /* element editor HUDs */
 @media (min-width: 440px) { .hud .elementeditor { min-width: 380px; } }
