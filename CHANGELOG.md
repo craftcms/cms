@@ -1,11 +1,11 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.5.14 - 2020-10-20
 
 ### Added
-- Added the `setPasswordRequestPath` config setting. ([#7024](https://github.com/craftcms/cms/issues/7024))
 - Added the `ul()` and `ol()` Twig functions, which return the HTML for `<ul>` and `<ol>` tags for a passed-in array of strings.
 - Added the `project-config/touch` command, which updates the `dateModified` value in `project.yaml`, even if the `dateModified` line is currently part of a Git conflict. ([#7002](https://github.com/craftcms/cms/issues/7002))
+- Added the `setPasswordRequestPath` config setting. ([#7024](https://github.com/craftcms/cms/issues/7024))
 - Added `craft\config\GeneralConfig::getSetPasswordRequestPath()`.
 - Added `craft\helpers\ProjectConfig::touch()`.
 - Added `craft\services\Assets::relocateUserPhoto()`.
