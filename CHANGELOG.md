@@ -8,12 +8,14 @@
 - Added the `project-config/touch` command, which updates the `dateModified` value in `project.yaml`, even if the `dateModified` line is currently part of a Git conflict. ([#7002](https://github.com/craftcms/cms/issues/7002))
 - Added `craft\config\GeneralConfig::getSetPasswordRequestPath()`.
 - Added `craft\helpers\ProjectConfig::touch()`.
+- Added `craft\services\Assets::relocateUserPhoto()`.
 
 ### Changed
 - Craft now ignores the requested template’s `.twig` file extension when determining the default `Content-Type` header value for the response. ([#7025](https://github.com/craftcms/cms/issues/7025))
 - Date and Time fields’ Minute Increment settings now allow 5 and 10-minute increments. ([#7029](https://github.com/craftcms/cms/issues/7029))
 - Tags field menus now support up and down arrow navigation. ([#7031](https://github.com/craftcms/cms/issues/7031))
 - Tokenized user verification URLs no longer redirect to the user to the `postLoginRedirect`/`postCpLoginRedirect` when the token is invalid and the user is logged in, if they still have a verification token on their account. ([#7006](https://github.com/craftcms/cms/issues/7006))
+- Craft now ensures user photos are saved in the right location when users are saved. ([#7034](https://github.com/craftcms/cms/issues/7034))
 
 ### Fixed
 - Fixed a styling bug with the hamburger menu on pages with breadcrumbs. ([#7021](https://github.com/craftcms/cms/issues/7021))

@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\VolumeInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
@@ -31,6 +32,7 @@ use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
+use craft\models\VolumeFolder;
 use craft\records\User as UserRecord;
 use craft\web\Request;
 use DateTime;
@@ -415,50 +417,32 @@ class Users extends Component
      *
      * @param User $user the user.
      * @param string $fileLocation the local image path on server
-     * @param string $filename name of the file to use, defaults to filename of $imagePath
+     * @param string|null $filename name of the file to use, defaults to filename of `$fileLocation`
      * @throws ImageException if the file provided is not a manipulatable image
      * @throws VolumeException if the user photo Volume is not provided or is invalid
      */
-    public function saveUserPhoto(string $fileLocation, User $user, string $filename = '')
+    public function saveUserPhoto(string $fileLocation, User $user, string $filename = null)
     {
-        $filenameToUse = AssetsHelper::prepareAssetName($filename ?: pathinfo($fileLocation, PATHINFO_FILENAME), true, true);
+        $filename = AssetsHelper::prepareAssetName($filename ?? pathinfo($fileLocation, PATHINFO_FILENAME), true, true);
 
         if (!Image::canManipulateAsImage(pathinfo($fileLocation, PATHINFO_EXTENSION))) {
             throw new ImageException(Craft::t('app', 'User photo must be an image that Craft can manipulate.'));
         }
 
-        $volumes = Craft::$app->getVolumes();
-        $volumeUid = Craft::$app->getProjectConfig()->get('users.photoVolumeUid');
-
-        if (!$volumeUid || ($volume = $volumes->getVolumeByUid($volumeUid)) === null) {
-            throw new VolumeException(Craft::t('app',
-                'The volume set for user photo storage is not valid.'));
-        }
-
-        $subpath = Craft::$app->getProjectConfig()->get('users.photoSubpath');
-
-        if ($subpath) {
-            try {
-                $subpath = Craft::$app->getView()->renderObjectTemplate($subpath, $user);
-            } catch (\Throwable $e) {
-                throw new InvalidSubpathException($subpath);
-            }
-        }
-
         $assetsService = Craft::$app->getAssets();
 
         // If the photo exists, just replace the file.
-        if ($user->photoId && $user->getPhoto() !== null) {
-            // No longer a new file.
-            $assetsService->replaceAssetFile($assetsService->getAssetById($user->photoId), $fileLocation, $filenameToUse);
+        if ($user->photoId && ($photo = $user->getPhoto()) !== null) {
+            $assetsService->replaceAssetFile($photo, $fileLocation, $filename);
         } else {
-            $folderId = $assetsService->ensureFolderByFullPathAndVolume((string)$subpath, $volume);
-            $filenameToUse = $assetsService->getNameReplacementInFolder($filenameToUse, $folderId);
+            $volume = $this->_userPhotoVolume();
+            $folderId = $this->_userPhotoFolderId($user, $volume);
+            $filename = $assetsService->getNameReplacementInFolder($filename, $folderId);
 
             $photo = new Asset();
             $photo->setScenario(Asset::SCENARIO_CREATE);
             $photo->tempFilePath = $fileLocation;
-            $photo->filename = $filenameToUse;
+            $photo->filename = $filename;
             $photo->newFolderId = $folderId;
             $photo->setVolumeId($volume->id);
 
@@ -469,6 +453,75 @@ class Users extends Component
             $user->setPhoto($photo);
             $elementsService->saveElement($user, false);
         }
+    }
+
+    /**
+     * Updates the location of a user’s photo.
+     *
+     * @param User $user
+     * @since 3.5.14
+     */
+    public function relocateUserPhoto(User $user)
+    {
+        if (!$user->photoId || ($photo = $user->getPhoto()) === null) {
+            return;
+        }
+
+        $volume = $this->_userPhotoVolume();
+        $folderId = $this->_userPhotoFolderId($user, $volume);
+
+        if ($photo->folderId == $folderId) {
+            return;
+        }
+
+        $photo->setScenario(Asset::SCENARIO_FILEOPS);
+        $photo->newFolderId = $folderId;
+        Craft::$app->getElements()->saveElement($photo);
+    }
+
+    /**
+     * Returns the user photo volume.
+     *
+     * @return VolumeInterface
+     * @throws VolumeException if no user photo volume is set, or it's set to an invalid volume UID
+     */
+    private function _userPhotoVolume(): VolumeInterface
+    {
+        $uid = Craft::$app->getProjectConfig()->get('users.photoVolumeUid');
+        if (!$uid) {
+            throw new VolumeException('No user photo volume is set.');
+        }
+
+        $volume = Craft::$app->getVolumes()->getVolumeByUid($uid);
+        if ($volume === null) {
+            throw new VolumeException("Invalid volume UID: $uid");
+        }
+
+        return $volume;
+    }
+
+    /**
+     * Returns the folder that a user’s photo should be stored.
+     *
+     * @param User $user
+     * @param VolumeInterface $volume The user photo volume
+     * @return int
+     * @throws VolumeException if the user photo volume doesn’t exist
+     * @throws InvalidSubpathException if the user photo subpath can’t be resolved
+     */
+    private function _userPhotoFolderId(User $user, VolumeInterface $volume): int
+    {
+        $subpath = (string)Craft::$app->getProjectConfig()->get('users.photoSubpath');
+
+        if ($subpath !== '') {
+            try {
+                $subpath = Craft::$app->getView()->renderObjectTemplate($subpath, $user);
+            } catch (\Throwable $e) {
+                throw new InvalidSubpathException($subpath);
+            }
+        }
+
+        return Craft::$app->getAssets()->ensureFolderByFullPathAndVolume($subpath, $volume);
     }
 
     /**
