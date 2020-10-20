@@ -22,6 +22,7 @@
 - Fixed a bug where new entries weren’t assigned a UID in time if their URI format contained a `{uid}` token. ([#4364](https://github.com/craftcms/cms/issues/4364))
 - Fixed a bug where entries that were deleted along with their section/entry type weren’t getting restored properly when the section/entry type was restored, if they weren’t live or didn’t exist for the primary site.
 - Fixed an error that occurred when installing Craft, if an issue prevented Craft from using the existing project config data. ([#7027](https://github.com/craftcms/cms/issues/7027))
+- Fixed a JavaScript error that occurred when selecting entries or categories that supported the “Create a new child entry/category” action.
 
 ## 3.5.13.2 - 2020-10-16
 
