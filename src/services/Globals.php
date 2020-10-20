@@ -59,6 +59,18 @@ class Globals extends Component
     private $_editableGlobalSets;
 
     /**
+     * Serializer
+     *
+     * @since 3.5.14
+     */
+    public function __serialize()
+    {
+        $vars = get_object_vars($this);
+        unset($vars['_allGlobalSets']);
+        return $vars;
+    }
+
+    /**
      * Returns all of the global set IDs.
      *
      * ---
