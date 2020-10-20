@@ -100,6 +100,18 @@ class Volumes extends Component
      */
     private $_overrides;
 
+    /**
+     * Serializer
+     *
+     * @since 3.5.14
+     */
+    public function __serialize()
+    {
+        $vars = get_object_vars($this);
+        unset($vars['_volumes']);
+        return $vars;
+    }
+
     // Volumes
     // -------------------------------------------------------------------------
 

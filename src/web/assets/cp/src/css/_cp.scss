@@ -159,11 +159,14 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 }
 
 #job-icon {
+  align-items: flex-start;
+
   & > span.icon {
     display: block;
     position: relative;
     width: 16px;
     height: 16px;
+    margin-top: 2px !important;
 
     & > canvas {
       display: block;
@@ -178,28 +181,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
     }
   }
 
-  .progressbar {
-    position: static;
-    margin: 8px 2px;
-    width: auto;
-    border-color: $grey200;
-    transition: color linear 100ms;
-  }
-
-  .progressbar-inner {
-    background-color: $grey200;
-    transition: color linear 100ms;
-  }
-
   &[href]:hover {
-    .progressbar {
-      border-color: $white;
-    }
-
-    .progressbar-inner {
-      background-color: $white;
-    }
-
     .icon > span.icon > canvas#job-icon-hover {
       opacity: 1;
     }
@@ -449,7 +431,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 #crumbs {
   display: flex;
   flex-direction: row;
-  align-items: stretch;
+  align-items: center;
   font-size: 13px;
 
   &.empty {
@@ -493,23 +475,6 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
 #nav-toggle {
   display: none;
-  width: 36px;
-  height: 26px;
-  line-height: 26px;
-  color: $grey300;
-  text-align: center;
-  @include margin-left(-10px);
-
-  &:before {
-    @include icon;
-    content: 'menu';
-    font-size: 16px;
-    line-height: 0;
-  }
-
-  &:hover {
-    color: $grey400;
-  }
 }
 
 #user-info {
@@ -1093,7 +1058,26 @@ $toolbarIconColor: darken($inputColor, 10%);
   }
 
   #nav-toggle {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 50px;
+    line-height: 26px;
+    color: $grey300;
+    text-align: center;
+    @include margin-left(-10px);
+
+    &:before {
+      @include icon;
+      content: 'menu';
+      font-size: 16px;
+      line-height: 0;
+    }
+
+    &:hover {
+      color: $grey400;
+    }
   }
 
   #main-content {
@@ -1487,21 +1471,6 @@ $toolbarIconColor: darken($inputColor, 10%);
         display: block;
       }
     }
-  }
-}
-
-#job-icon {
-  align-items: flex-start;
-
-  .icon {
-    margin-top: 2px !important;
-  }
-
-  .progress-label {
-    display: block;
-    color: $grey300;
-    font-size: 11px;
-    line-height: 1.5;
   }
 }
 

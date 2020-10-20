@@ -138,6 +138,7 @@ class Schema extends \yii\db\pgsql\Schema
             ' --no-acl' .
             ' --file="{file}"' .
             ' --schema={schema}' .
+            ' --column-inserts' .
             ' ' . implode(' ', $ignoredTableArgs);
     }
 

@@ -207,6 +207,18 @@ class Fields extends Component
      */
     private $_savingFields = [];
 
+    /**
+     * Serializer
+     *
+     * @since 3.5.14
+     */
+    public function __serialize()
+    {
+        $vars = get_object_vars($this);
+        unset($vars['_groups'], $vars['_fields']);
+        return $vars;
+    }
+
     // Groups
     // -------------------------------------------------------------------------
 

@@ -1403,6 +1403,11 @@ class User extends Element implements IdentityInterface
 
         $record->save(false);
 
+        // Make sure that the photo is located in the right place
+        if (!$isNew && $this->photoId) {
+            Craft::$app->getUsers()->relocateUserPhoto($this);
+        }
+
         parent::afterSave($isNew);
 
         if (!$isNew && $changePassword) {

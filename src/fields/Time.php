@@ -117,7 +117,7 @@ class Time extends Field implements PreviewableFieldInterface, SortableFieldInte
      */
     public function getSettingsHtml()
     {
-        $incrementOptions = [15, 30, 60];
+        $incrementOptions = [5, 10, 15, 30, 60];
         $incrementOptions = array_combine($incrementOptions, $incrementOptions);
 
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Time/settings', [

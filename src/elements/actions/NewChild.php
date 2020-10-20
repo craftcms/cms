@@ -63,7 +63,7 @@ class NewChild extends ElementAction
 
         $js = <<<JS
 (() => {
-    new Craft.ElementActionTrigger({
+    let trigger = new Craft.ElementActionTrigger({
         type: {$type},
         batch: false,
         validateSelection: function(\$selectedItems)

@@ -457,11 +457,13 @@ class UsersController extends Controller
         $uid = $this->request->getRequiredParam('id');
         $user = Craft::$app->getUsers()->getUserByUid($uid);
 
-        // See if we still have a valid token.
-        $isCodeValid = Craft::$app->getUsers()->isVerificationCodeValidForUser($user, $code);
+        if (!$user) {
+            throw new BadRequestHttpException("Invalid user UID: $uid");
+        }
 
-        if (!$user || !$isCodeValid) {
-            return $this->_processInvalidToken();
+        // Make sure we still have a valid token.
+        if (!Craft::$app->getUsers()->isVerificationCodeValidForUser($user, $code)) {
+            return $this->_processInvalidToken($user);
         }
 
         $user->newPassword = $this->request->getRequiredBodyParam('newPassword');
@@ -1969,7 +1971,7 @@ class UsersController extends Controller
         }
 
         if (!Craft::$app->getUsers()->isVerificationCodeValidForUser($user, $code)) {
-            return $this->_processInvalidToken();
+            return $this->_processInvalidToken($user);
         }
 
         // Fire an 'afterVerifyUser' event
@@ -1983,21 +1985,24 @@ class UsersController extends Controller
     }
 
     /**
+     * @param User|null
      * @return Response
      * @throws HttpException if the verification code is invalid
      */
-    private function _processInvalidToken(): Response
+    private function _processInvalidToken(User $user = null): Response
     {
         if ($this->request->getAcceptsJson()) {
             return $this->asErrorJson('InvalidVerificationCode');
         }
 
-        // If they're already logged-in, just send them to the post-login URL
-        $userSession = Craft::$app->getUser();
-        if (!$userSession->getIsGuest()) {
-            $returnUrl = $userSession->getReturnUrl();
-            $userSession->removeReturnUrl();
-            return $this->redirect($returnUrl);
+        // If they don't have a verification code at all, and they're already logged-in, just send them to the post-login URL
+        if ($user && !$user->verificationCode) {
+            $userSession = Craft::$app->getUser();
+            if (!$userSession->getIsGuest()) {
+                $returnUrl = $userSession->getReturnUrl();
+                $userSession->removeReturnUrl();
+                return $this->redirect($returnUrl);
+            }
         }
 
         // If the invalidUserTokenPath config setting is set, send them there

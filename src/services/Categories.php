@@ -76,6 +76,16 @@ class Categories extends Component
      */
     private $_groups;
 
+    /**
+     * Serializer
+     */
+    public function __serialize()
+    {
+        $vars = get_object_vars($this);
+        unset($vars['_groups']);
+        return $vars;
+    }
+
     // Category groups
     // -------------------------------------------------------------------------
 

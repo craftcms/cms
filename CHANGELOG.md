@@ -1,5 +1,31 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.5.14 - 2020-10-20
+
+### Added
+- Added the `ul()` and `ol()` Twig functions, which return the HTML for `<ul>` and `<ol>` tags for a passed-in array of strings.
+- Added the `project-config/touch` command, which updates the `dateModified` value in `project.yaml`, even if the `dateModified` line is currently part of a Git conflict. ([#7002](https://github.com/craftcms/cms/issues/7002))
+- Added the `setPasswordRequestPath` config setting. ([#7024](https://github.com/craftcms/cms/issues/7024))
+- Added `craft\config\GeneralConfig::getSetPasswordRequestPath()`.
+- Added `craft\helpers\ProjectConfig::touch()`.
+- Added `craft\services\Assets::relocateUserPhoto()`.
+
+### Changed
+- Craft now ignores the requested template’s `.twig` file extension when determining the default `Content-Type` header value for the response. ([#7025](https://github.com/craftcms/cms/issues/7025))
+- Date and Time fields’ Minute Increment settings now allow 5 and 10-minute increments. ([#7029](https://github.com/craftcms/cms/issues/7029))
+- Tags field menus now support up and down arrow navigation. ([#7031](https://github.com/craftcms/cms/issues/7031))
+- Tokenized user verification URLs no longer redirect to the user to the `postLoginRedirect`/`postCpLoginRedirect` when the token is invalid and the user is logged in, if they still have a verification token on their account. ([#7006](https://github.com/craftcms/cms/issues/7006))
+- Craft now ensures user photos are saved in the right location when users are saved. ([#7034](https://github.com/craftcms/cms/issues/7034))
+- Built-in class properties set to `craft\base\MemoizableArray` are now unset during serialization. ([#7038](https://github.com/craftcms/cms/issues/7038))
+- Craft now passes `--column-inserts` flag to the `pg_dump` command by default when backing up a PostgreSQL database.
+
+### Fixed
+- Fixed a styling bug with the hamburger menu on pages with breadcrumbs. ([#7021](https://github.com/craftcms/cms/issues/7021))
+- Fixed a bug where new entries weren’t assigned a UID in time if their URI format contained a `{uid}` token. ([#4364](https://github.com/craftcms/cms/issues/4364))
+- Fixed a bug where entries that were deleted along with their section/entry type weren’t getting restored properly when the section/entry type was restored, if they weren’t live or didn’t exist for the primary site.
+- Fixed an error that occurred when installing Craft, if an issue prevented Craft from using the existing project config data. ([#7027](https://github.com/craftcms/cms/issues/7027))
+- Fixed a JavaScript error that occurred when selecting entries or categories that supported the “Create a new child entry/category” action.
+
 ## 3.5.13.2 - 2020-10-16
 
 ### Fixed

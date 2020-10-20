@@ -214,6 +214,19 @@ class ProjectConfigController extends Controller
     }
 
     /**
+     * Updates the `dateModified` value in `config/project/project.yaml`, attempting to resolve a Git conflict for it.
+     *
+     * @return int
+     */
+    public function actionTouch(): int
+    {
+        $time = time();
+        ProjectConfig::touch($time);
+        $this->stdout("The dateModified value in project.yaml is now set to $time." . PHP_EOL, Console::FG_GREEN);
+        return ExitCode::OK;
+    }
+
+    /**
      * Uninstalls plugins.
      *
      * @param string[] $handles

@@ -133,6 +133,18 @@ class Sections extends Component
      */
     private $_entryTypesById;
 
+    /**
+     * Serializer
+     *
+     * @since 3.5.14
+     */
+    public function __serialize()
+    {
+        $vars = get_object_vars($this);
+        unset($vars['_sections']);
+        return $vars;
+    }
+
     // Sections
     // -------------------------------------------------------------------------
 
@@ -1190,7 +1202,10 @@ class Sections extends Component
             $entries = Entry::find()
                 ->sectionId($entryTypeRecord->sectionId)
                 ->typeId($entryTypeRecord->id)
+                ->anyStatus()
                 ->trashed()
+                ->siteId('*')
+                ->unique()
                 ->andWhere(['entries.deletedWithEntryType' => true])
                 ->all();
             Craft::$app->getElements()->restoreElements($entries);

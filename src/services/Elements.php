@@ -965,7 +965,7 @@ class Elements extends Component
         $element->getFieldValues();
         $mainClone = clone $element;
         $mainClone->id = null;
-        $mainClone->uid = null;
+        $mainClone->uid = StringHelper::UUID();
         $mainClone->siteSettingsId = null;
         $mainClone->contentId = null;
         $mainClone->root = null;

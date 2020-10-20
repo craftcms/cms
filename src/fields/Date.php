@@ -178,7 +178,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
             $dateTimeValue = 'showBoth';
         }
 
-        $incrementOptions = [15, 30, 60];
+        $incrementOptions = [5, 10, 15, 30, 60];
         $incrementOptions = array_combine($incrementOptions, $incrementOptions);
 
         $options = [

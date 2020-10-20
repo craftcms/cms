@@ -163,6 +163,18 @@ class Sites extends Component
     private $_primarySite;
 
     /**
+     * Serializer
+     *
+     * @since 3.5.14
+     */
+    public function __serialize()
+    {
+        $vars = get_object_vars($this);
+        unset($vars['_groups']);
+        return $vars;
+    }
+
+    /**
      * @inheritdoc
      */
     public function init()
