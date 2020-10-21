@@ -18,7 +18,7 @@
     "rss": "https://github.com/craftcms/cms/releases.atom"
   },
   "require": {
-    "php": ">=7.3",
+    "php": ">=7.4",
     "ext-curl": "*",
     "ext-dom": "*",
     "ext-json": "*",
@@ -90,7 +90,7 @@
   "config": {
     "sort-packages": true,
     "platform": {
-      "php":  "7.3"
+      "php":  "7.4"
     }
   }
 }

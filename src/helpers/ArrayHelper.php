@@ -53,9 +53,6 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
     /**
      * Prepends values to an array.
      *
-     * This should be used instead of `array_unshift($array, ...$values)` when `$values` could be an empty array,
-     * as PHP < 7.3 would throw an error in that case.
-     *
      * ---
      * ```php
      * ArrayHelper::prepend($array, ...$values);
@@ -67,16 +64,11 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      */
     public static function prepend(array &$array, ...$values)
     {
-        if (!empty($values)) {
-            array_unshift($array, ...$values);
-        }
+        array_unshift($array, ...$values);
     }
 
     /**
      * Appends values to an array.
-     *
-     * This should be used instead of `array_push($array, ...$values)` when `$values` could be an empty array,
-     * as PHP < 7.3 would throw an error in that case.
      *
      * ---
      * ```php
@@ -89,9 +81,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      */
     public static function append(array &$array, ...$values)
     {
-        if (!empty($values)) {
-            array_push($array, ...$values);
-        }
+        array_push($array, ...$values);
     }
 
     /**

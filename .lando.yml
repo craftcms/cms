@@ -2,7 +2,7 @@ name: craft-source
 recipe: lamp
 services:
   appserver:
-    type: php:7.3
+    type: php:7.4
     via: cli
     xdebug: true
     build:

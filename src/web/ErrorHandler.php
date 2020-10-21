@@ -69,7 +69,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
     public function handleError($code, $message, $file, $line)
     {
         // Because: https://bugs.php.net/bug.php?id=74980
-        if (PHP_VERSION_ID >= 70100 && strpos($message, 'Narrowing occurred during type inference. Please file a bug report') !== false) {
+        if (strpos($message, 'Narrowing occurred during type inference. Please file a bug report') !== false) {
             return null;
         }
 

@@ -20,7 +20,7 @@
 - Added `craft\services\Gql::GRAPHQL_COMPLEXITY_SIMPLE_FIELD`.
 
 ### Changed
-- Craft now requires PHP 7.3 or later.
+- Craft now requires PHP 7.4 or later.
 - `craft\base\Model::setAttributes()` now normalizes date attributes into `DateTime` objects.
 - `craft\services\Gql::getValidationRules()` now has an `$isIntrospectionQuery` argument.
 - Updated Twig to 2.13.

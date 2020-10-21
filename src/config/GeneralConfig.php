@@ -1116,10 +1116,6 @@ class GeneralConfig extends BaseObject
      *
      * This can be set to `'Lax'`, `'Strict'`, or `null`.
      *
-     * ::: tip
-     * This setting requires PHP 7.3 or later.
-     * :::
-     *
      * @since 3.1.33
      * @group System
      */

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d643a4686617cce36379980922973a76",
+    "content-hash": "e3935f373f92a30edd6cdde4118c7ceb",
     "packages": [
         {
             "name": "cebe/markdown",
@@ -6136,6 +6136,7 @@
                 }
             ],
             "description": "JSONPath implementation for parsing, searching and flattening arrays",
+            "abandoned": "softcreatr/jsonpath",
             "time": "2019-07-15T17:23:22+00:00"
         },
         {
@@ -8500,7 +8501,7 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": ">=7.3",
+        "php": ">=7.4",
         "ext-curl": "*",
         "ext-dom": "*",
         "ext-json": "*",
@@ -8512,7 +8513,7 @@
     },
     "platform-dev": [],
     "platform-overrides": {
-        "php": "7.3"
+        "php": "7.4"
     },
     "plugin-api-version": "1.1.0"
 }
