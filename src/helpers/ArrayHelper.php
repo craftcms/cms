@@ -61,6 +61,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      * @param array &$array the array to be prepended to
      * @param mixed ...$values the values to prepend.
      * @since 3.4.0
+     * @deprecated in 4.0.0. `array_unshift()` should be used instead.
      */
     public static function prepend(array &$array, ...$values)
     {
@@ -78,6 +79,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      * @param array &$array the array to be appended to
      * @param mixed ...$values the values to append.
      * @since 3.4.0
+     * @deprecated in 4.0.0. `array_push()` should be used instead.
      */
     public static function append(array &$array, ...$values)
     {

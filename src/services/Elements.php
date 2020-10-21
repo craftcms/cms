@@ -1753,7 +1753,7 @@ class Elements extends Component
                 &$allRefTagTokens
             ) {
                 $matches = array_pad($matches, 6, null);
-                list($fullMatch, $elementType, $ref, $siteId, $attribute, $fallback) = $matches;
+                [$fullMatch, $elementType, $ref, $siteId, $attribute, $fallback] = $matches;
                 if ($fallback === null) {
                     $fallback = $fullMatch;
                 }
@@ -1826,7 +1826,7 @@ class Elements extends Component
                     foreach ($tokensByName as $refName => $tokens) {
                         $element = $elements[$refName] ?? null;
 
-                        foreach ($tokens as list($token, $attribute, $fallback, $fullMatch)) {
+                        foreach ($tokens as [$token, $attribute, $fallback, $fullMatch]) {
                             $search[] = $token;
                             $replace[] = $this->_getRefTokenReplacement($element, $attribute, $fallback, $fullMatch);
                         }
@@ -2364,7 +2364,7 @@ class Elements extends Component
 
                 // Update our list of dirty attributes
                 if ($trackChanges) {
-                    ArrayHelper::append($dirtyAttributes, ...array_keys($elementRecord->getDirtyAttributes([
+                    array_push($dirtyAttributes, ...array_keys($elementRecord->getDirtyAttributes([
                         'fieldLayoutId',
                         'enabled',
                         'archived',
@@ -2430,7 +2430,7 @@ class Elements extends Component
 
             // Update our list of dirty attributes
             if ($trackChanges && !$isNewSiteElement) {
-                ArrayHelper::append($dirtyAttributes, ...array_keys($siteSettingsRecord->getDirtyAttributes([
+                array_push($dirtyAttributes, ...array_keys($siteSettingsRecord->getDirtyAttributes([
                     'slug',
                     'uri',
                 ])));
@@ -2453,7 +2453,7 @@ class Elements extends Component
 
             // Set all of the dirty attributes on the element, in case an event listener wants to know
             if ($trackChanges) {
-                ArrayHelper::append($dirtyAttributes, ...$element->getDirtyAttributes());
+                array_push($dirtyAttributes, ...$element->getDirtyAttributes());
                 $element->setDirtyAttributes($dirtyAttributes, false);
             }
 

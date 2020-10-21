@@ -25,3 +25,7 @@
 - `craft\services\Gql::getValidationRules()` now has an `$isIntrospectionQuery` argument.
 - Updated Twig to 2.13.
 - Updated `webonyx/graphql-php` to 14.1.1.
+
+### Deprecated
+- Deprecated `craft\helpers\ArrayHelper::append()`. `array_unshift()` should be used instead.
+- Deprecated `craft\helpers\ArrayHelper::prepend()`. `array_push()` should be used instead.
