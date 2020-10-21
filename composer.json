@@ -45,7 +45,7 @@
     "seld/cli-prompt": "^1.0.3",
     "symfony/yaml": "^3.2|^4.0",
     "true/punycode": "^2.1.0",
-    "twig/twig": "~2.12.5 || ~2.13.1",
+    "twig/twig": "~2.12.5 || ~2.13.1 || ~2.14.0",
     "voku/portable-utf8": "^5.4.28",
     "voku/stringy": "^6.2.2",
     "webonyx/graphql-php": "^0.12.0",
