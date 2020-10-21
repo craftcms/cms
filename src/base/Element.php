@@ -2886,7 +2886,7 @@ abstract class Element extends Component implements ElementInterface
                     'handle' => $handle,
                     'elements' => $elements,
                 ]);
-                Event::trigger(static::class, self::EVENT_SET_EAGER_LOADED_ELEMENTS, $event);
+                $this->trigger(self::EVENT_SET_EAGER_LOADED_ELEMENTS, $event);
                 if (!$event->handled) {
                     // No takers. Just store it in the internal array then.
                     $this->_eagerLoadedElements[$handle] = $elements;
