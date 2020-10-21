@@ -258,42 +258,37 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             $selectedValues[] = (string)$val;
         }
 
-        $rawOptions = $this->options();
+        $options = [];
+        $optionValues = [];
+        $optionLabels = [];
+        foreach ($this->options() as $option) {
+            if (!isset($option['optgroup'])) {
+                $selected = in_array($option['value'], $selectedValues, true);
+                $options[] = new OptionData($option['label'], $option['value'], $selected, true);
+                $optionValues[] = (string)$option['value'];
+                $optionLabels[] = (string)$option['label'];
+            }
+        }
 
         if ($this->multi) {
             // Convert the value to a MultiOptionsFieldData object
-            $options = [];
-            if (!empty($selectedValues)) {
-                foreach ($rawOptions as $option) {
-                    if (!isset($option['optgroup']) && in_array((string)$option['value'], $selectedValues, true)) {
-                        $options[] = new OptionData($option['label'], (string)$option['value'], true);
-                    }
-                }
+            $selectedOptions = [];
+            foreach ($selectedValues as $selectedValue) {
+                $index = array_search($selectedValue, $optionValues, true);
+                $valid = $index !== false;
+                $label = $valid ? $optionLabels[$index] : null;
+                $selectedOptions[] = new OptionData($label, $selectedValue, true, $valid);
             }
-            $value = new MultiOptionsFieldData($options);
-        } else {
+            $value = new MultiOptionsFieldData($selectedOptions);
+        } else if (!empty($selectedValues)) {
             // Convert the value to a SingleOptionFieldData object
-            $value = $label = null;
-            if (!empty($selectedValues)) {
-                foreach ($rawOptions as $option) {
-                    if (!isset($option['optgroup']) && in_array((string)$option['value'], $selectedValues, true)) {
-                        $value = (string)$option['value'];
-                        $label = $option['label'];
-                        break;
-                    }
-                }
-            }
-            $value = new SingleOptionFieldData($label, $value, true);
-        }
-
-        $options = [];
-
-        foreach ($rawOptions as $option) {
-            if (isset($option['optgroup'])) {
-                continue;
-            }
-            $selected = in_array($option['value'], $selectedValues, true);
-            $options[] = new OptionData($option['label'], $option['value'], $selected);
+            $selectedValue = reset($selectedValues);
+            $index = array_search($selectedValue, $optionValues, true);
+            $valid = $index !== false;
+            $label = $valid ? $optionLabels[$index] : null;
+            $value = new SingleOptionFieldData($label, $selectedValue, true, $valid);
+        } else {
+            $value = new SingleOptionFieldData(null, null, true, true);
         }
 
         $value->setOptions($options);
@@ -426,32 +421,18 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
      */
     public function getContentGqlMutationArgumentType()
     {
-        $typeName = $this->handle . '_FieldEnum';
-
-        if ($enumType = GqlEntityRegistry::getEntity($typeName)) {
-            return $enumType;
-        }
-
         $values = [];
 
         foreach ($this->options as $option) {
             if (!isset($option['optgroup'])) {
-                $values[] = $option['value'];
+                $values[] = '“' . $option['value'] . '”';
             }
         }
 
-        $enumType = GqlEntityRegistry::createEntity($typeName, new EnumType([
-            'name' => $typeName,
-            'values' => $values,
-        ]));
-
-
-        $type = $this->multi ? Type::listOf($enumType) : $enumType;
-
         return [
             'name' => $this->handle,
-            'type' => $type,
-            'description' => $this->instructions,
+            'type' => Type::string(),
+            'description' => Craft::t('app', 'The allowed values are [{values}]', ['values' => implode(', ', $values)]),
         ];
     }
 

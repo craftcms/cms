@@ -3,19 +3,19 @@
 {%- set instructionsId = instructionsId ?? "#{fieldId}-instructions"  %}
 {%- set status = status ?? null %}
 {%- set label = label is defined and label != '__blank__' ? label : (block('label') ?? null) %}
-{%- set siteId = ((craft.app.getIsMultiSite() and siteId is defined) ? siteId : null) %}
-{%- set site = (siteId ? craft.app.sites.getSiteById(siteId) : null) %}
+{%- set siteId = craft.app.getIsMultiSite() ? (siteId ?? null) : null %}
+{%- set site = siteId ? craft.app.sites.getSiteById(siteId) : null %}
 {%- set required = required ?? false %}
 {%- set instructions = instructions ?? block('instructions') ?? null %}
 {%- set tip = tip ?? block('tip') ?? null %}
 {%- set warning = warning ?? block('warning') ?? null %}
 {%- set orientation = orientation ?? (site ? site.getLocale() : craft.app.locale).getOrientation() %}
 {%- set translatable = translatable ?? (site is not same as(null)) %}
-{%- set errors = (errors is defined ? errors : null) -%}
+{%- set errors = errors ?? null -%}
 {%- set fieldClass = (fieldClass ?? [])|explodeClass|merge([
     'field',
-    (first is defined and first ? 'first' : null),
-    (errors ? 'has-errors' : null),
+    (first ?? false) ? 'first' : null,
+    errors ? 'has-errors' : null,
 ])|filter %}
 {%- set showAttribute = (attribute ?? false) and (currentUser.admin ?? false) and currentUser.getPreference('showFieldHandles') %}
 
@@ -33,7 +33,11 @@
 {% endif %}
 
 {%- set inputContainerAttributes = {
-    class: ['input', orientation, errors ? 'errors']|filter,
+    class: [
+        'input',
+        orientation,
+        errors ? 'errors' : null,
+    ]|filter,
 }|merge(inputContainerAttributes ?? [], recursive=true) %}
 
 <div {{ attr(fieldAttributes) }}>

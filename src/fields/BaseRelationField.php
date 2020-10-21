@@ -617,14 +617,14 @@ JS;
         }
 
         $first = array_shift($value);
-        $html = Cp::elementHtml($first);
+        $html = $this->elementPreviewHtml($first);
 
         if (!empty($value)) {
             $otherHtml = '';
             foreach ($value as $other) {
-                $otherHtml .= Cp::elementHtml($other);
+                $otherHtml .= $this->elementPreviewHtml($other);
             }
-            $html .= Html::tag('span', '+' . Craft::$app->getFormatter()->asDecimal(count($value)), [
+            $html .= Html::tag('span', '+' . Craft::$app->getFormatter()->asInteger(count($value)), [
                 'title' => implode(', ', ArrayHelper::getColumn($value, 'title')),
                 'class' => 'btn small',
                 'role' => 'button',
@@ -633,6 +633,18 @@ JS;
         }
 
         return $html;
+    }
+
+    /**
+     * Renders a related element’s HTML for the element index.
+     *
+     * @param ElementInterface $element
+     * @return string
+     * @since 3.5.11
+     */
+    protected function elementPreviewHtml(ElementInterface $element): string
+    {
+        return Cp::elementHtml($element);
     }
 
     /**

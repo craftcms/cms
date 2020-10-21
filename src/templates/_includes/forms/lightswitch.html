@@ -1,4 +1,4 @@
-{%- set id = id ?? ('lightswitch'~random()) %}
+{%- set id = id ?? "lightswitch#{random()}" %}
 {%- set on = on ?? false %}
 {%- set indeterminate = not on and (indeterminate ?? false) %}
 {%- set value = value ?? '1' %}
@@ -17,12 +17,12 @@
     id: id,
     class: [
         'lightswitch',
-        on ? 'on',
-        hasLabels ? 'has-labels',
-        indeterminate ? 'indeterminate',
-        small ? 'small',
-        toggle or reverseToggle ? 'fieldtoggle',
-        disabled ? 'disabled',
+        on ? 'on' : null,
+        hasLabels ? 'has-labels' : null,
+        indeterminate ? 'indeterminate' : null,
+        small ? 'small' : null,
+        toggle or reverseToggle ? 'fieldtoggle' : null,
+        disabled ? 'disabled' : null,
     ]|filter,
     tabindex: '0',
     data: {

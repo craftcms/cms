@@ -161,7 +161,8 @@ class Cp
         if (
             $path !== 'utilities/project-config' &&
             $user->can('utility:project-config') &&
-            $projectConfig->areChangesPending()
+            $projectConfig->areChangesPending() &&
+            ($projectConfig->writeYamlAutomatically || $projectConfig->get('dateModified') <= $projectConfig->get('dateModified', true))
         ) {
             $alerts[] = Craft::t('app', 'Your project config YAML files contain pending changes.') .
                 ' ' . '<a class="go" href="' . UrlHelper::url('utilities/project-config') . '">' . Craft::t('app', 'Review') . '</a>';
@@ -193,6 +194,9 @@ class Cp
      * @param string $context The context the element is going to be shown in (`index`, `field`, etc.)
      * @param string $size The size of the element (`small` or `large`)
      * @param string|null $inputName The `name` attribute that should be set on the hidden input, if `$context` is set to `field`
+     * @param bool $showStatus Whether the elemnet status should be shown (if the element type has statuses)
+     * @param bool $showThumb Whether the element thumb should be shown (if the element has one)
+     * @param bool $showLabel Whether the element label should be shown
      * @return string
      * @since 3.5.8
      */
@@ -200,13 +204,20 @@ class Cp
         ElementInterface $element,
         string $context = 'index',
         string $size = self::ELEMENT_SIZE_SMALL,
-        string $inputName = null
+        string $inputName = null,
+        bool $showStatus = true,
+        bool $showThumb = true,
+        bool $showLabel = true
     ): string {
         $label = $element->getUiLabel();
 
         // Create the thumb/icon image, if there is one
-        $thumbSize = $size === self::ELEMENT_SIZE_SMALL ? 34 : 120;
-        $thumbUrl = $element->getThumbUrl($thumbSize);
+        if ($showThumb) {
+            $thumbSize = $size === self::ELEMENT_SIZE_SMALL ? 34 : 120;
+            $thumbUrl = $element->getThumbUrl($thumbSize);
+        } else {
+            $thumbSize = $thumbUrl = null;
+        }
 
         if ($thumbUrl !== null) {
             $imageSize2x = $thumbSize * 2;
@@ -275,6 +286,10 @@ class Cp
             $html .= ' data-editable';
         }
 
+        if ($context === 'index' && $element->getIsDeletable()) {
+            $html .= ' data-deletable';
+        }
+
         if ($element->trashed) {
             $html .= ' data-trashed';
         }
@@ -289,7 +304,7 @@ class Cp
                 ]);
         }
 
-        if ($element::hasStatuses()) {
+        if ($showStatus && $element::hasStatuses()) {
             $status = $element->getStatus();
             $html .= Html::tag('span', '', [
                 'class' => array_filter([
@@ -301,29 +316,34 @@ class Cp
         }
 
         $html .= $imgHtml;
-        $html .= '<div class="label">';
-        $html .= '<span class="title">';
 
-        $encodedLabel = Html::encode($label);
+        if ($showLabel) {
+            $html .= '<div class="label">';
+            $html .= '<span class="title">';
 
-        // Should we make the element a link?
-        if (
-            $context === 'index' &&
-            !$element->trashed &&
-            ($cpEditUrl = $element->getCpEditUrl())
-        ) {
-            if ($element->getIsDraft()) {
-                $cpEditUrl = UrlHelper::urlWithParams($cpEditUrl, ['draftId' => $element->draftId]);
-            } else if ($element->getIsRevision()) {
-                $cpEditUrl = UrlHelper::urlWithParams($cpEditUrl, ['revisionId' => $element->revisionId]);
+            $encodedLabel = Html::encode($label);
+
+            // Should we make the element a link?
+            if (
+                $context === 'index' &&
+                !$element->trashed &&
+                ($cpEditUrl = $element->getCpEditUrl())
+            ) {
+                if ($element->getIsDraft()) {
+                    $cpEditUrl = UrlHelper::urlWithParams($cpEditUrl, ['draftId' => $element->draftId]);
+                } else if ($element->getIsRevision()) {
+                    $cpEditUrl = UrlHelper::urlWithParams($cpEditUrl, ['revisionId' => $element->revisionId]);
+                }
+
+                $html .= Html::a($encodedLabel, $cpEditUrl);
+            } else {
+                $html .= $encodedLabel;
             }
 
-            $html .= Html::a($encodedLabel, $cpEditUrl);
-        } else {
-            $html .= $encodedLabel;
+            $html .= '</span></div>';
         }
 
-        $html .= '</span></div></div>';
+        $html .= '</div>';
 
         return $html;
     }
@@ -358,7 +378,7 @@ class Cp
         $tip = $config['tip'] ?? null;
         $warning = $config['warning'] ?? null;
         $orientation = $config['orientation'] ?? ($site ? $site->getLocale() : Craft::$app->getLocale())->getOrientation();
-        $translatable = $config['translatable'] ?? ($site !== null);
+        $translatable = Craft::$app->getIsMultiSite() ? ($config['translatable'] ?? ($site !== null)) : false;
         $errors = $config['errors'] ?? null;
         $fieldClass = array_merge(array_filter([
             'field',

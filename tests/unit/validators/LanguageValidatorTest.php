@@ -47,7 +47,7 @@ class LanguageValidatorTest extends Unit
         $this->languageValidator->onlySiteLanguages = $onlySiteLangs;
         $validated = $this->languageValidator->validateValue($input);
 
-        $this->assertSame($result, $validated);
+        self::assertSame($result, $validated);
     }
 
     /**
@@ -67,9 +67,9 @@ class LanguageValidatorTest extends Unit
         $this->languageValidator->validateAttribute($model, 'exampleParam');
 
         if (!$mustValidate) {
-            $this->assertArrayHasKey('exampleParam', $model->getErrors());
+            self::assertArrayHasKey('exampleParam', $model->getErrors());
         } else {
-            $this->assertSame([], $model->getErrors());
+            self::assertSame([], $model->getErrors());
         }
     }
 

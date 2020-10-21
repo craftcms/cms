@@ -68,6 +68,18 @@ class UsersController extends Controller
     const EVENT_REGISTER_USER_ACTIONS = 'registerUserActions';
 
     /**
+     * @event UserEvent The event that is triggered BEFORE user groups and permissions ARE assigned to the user getting saved
+     * @since 3.5.13
+     */
+    const EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS = 'afterBeforeGroupsAndPermissions';
+
+    /**
+     * @event UserEvent The event that is triggered after user groups and permissions have been assigned to the user getting saved
+     * @since 3.5.13
+     */
+    const EVENT_AFTER_ASSIGN_GROUPS_AND_PERMISSIONS = 'afterAssignGroupsAndPermissions';
+
+    /**
      * @event DefineUserContentSummaryEvent The event that is triggered when defining a summary of content owned by a user(s), before they are deleted
      *
      * ---
@@ -445,11 +457,13 @@ class UsersController extends Controller
         $uid = $this->request->getRequiredParam('id');
         $user = Craft::$app->getUsers()->getUserByUid($uid);
 
-        // See if we still have a valid token.
-        $isCodeValid = Craft::$app->getUsers()->isVerificationCodeValidForUser($user, $code);
+        if (!$user) {
+            throw new BadRequestHttpException("Invalid user UID: $uid");
+        }
 
-        if (!$user || !$isCodeValid) {
-            return $this->_processInvalidToken();
+        // Make sure we still have a valid token.
+        if (!Craft::$app->getUsers()->isVerificationCodeValidForUser($user, $code)) {
+            return $this->_processInvalidToken($user);
         }
 
         $user->newPassword = $this->request->getRequiredBodyParam('newPassword');
@@ -944,6 +958,7 @@ class UsersController extends Controller
         $userSettings = Craft::$app->getProjectConfig()->get('users') ?? [];
         $requireEmailVerification = $userSettings['requireEmailVerification'] ?? true;
         $userVariable = $this->request->getValidatedBodyParam('userVariable') ?? 'user';
+        $returnCsrfToken = false;
 
         // Get the user being edited
         // ---------------------------------------------------------------------
@@ -1057,6 +1072,7 @@ class UsersController extends Controller
             if ($isCurrentUser) {
                 // If there was a newPassword input but it was empty, pretend it didn't exist
                 $user->newPassword = $this->request->getBodyParam('newPassword') ?: null;
+                $returnCsrfToken = $returnCsrfToken || $user->newPassword !== null;
             }
         }
 
@@ -1207,9 +1223,23 @@ class UsersController extends Controller
                 // Assign them to the default user group
                 Craft::$app->getUsers()->assignUserToDefaultGroup($user);
             } else if ($currentUser) {
+                // Fire an 'afterBeforeGroupsAndPermissions' event
+                if ($this->hasEventHandlers(self::EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS)) {
+                    $this->trigger(self::EVENT_BEFORE_ASSIGN_GROUPS_AND_PERMISSIONS, new UserEvent([
+                        'user' => $user,
+                    ]));
+                }
+
                 // Assign user groups and permissions if the current user is allowed to do that
                 $this->_saveUserPermissions($user, $currentUser);
                 $this->_saveUserGroups($user, $currentUser);
+
+                // Fire an 'afterAssignGroupsAndPermissions' event
+                if ($this->hasEventHandlers(self::EVENT_AFTER_ASSIGN_GROUPS_AND_PERMISSIONS)) {
+                    $this->trigger(self::EVENT_AFTER_ASSIGN_GROUPS_AND_PERMISSIONS, new UserEvent([
+                        'user' => $user,
+                    ]));
+                }
             }
         }
 
@@ -1235,13 +1265,14 @@ class UsersController extends Controller
         // Is this public registration, and was the user going to be activated automatically?
         $publicActivation = $isPublicRegistration && $user->getStatus() === User::STATUS_ACTIVE;
         $loggedIn = $publicActivation && $this->_maybeLoginUserAfterAccountActivation($user);
+        $returnCsrfToken = $returnCsrfToken || $loggedIn;
 
         if ($this->request->getAcceptsJson()) {
             $return = [
                 'success' => true,
                 'id' => $user->id
             ];
-            if ($loggedIn && $generalConfig->enableCsrfProtection) {
+            if ($returnCsrfToken && $generalConfig->enableCsrfProtection) {
                 $return['csrfTokenValue'] = $this->request->getCsrfToken();
             }
             return $this->asJson($return);
@@ -1940,7 +1971,7 @@ class UsersController extends Controller
         }
 
         if (!Craft::$app->getUsers()->isVerificationCodeValidForUser($user, $code)) {
-            return $this->_processInvalidToken();
+            return $this->_processInvalidToken($user);
         }
 
         // Fire an 'afterVerifyUser' event
@@ -1954,21 +1985,24 @@ class UsersController extends Controller
     }
 
     /**
+     * @param User|null
      * @return Response
      * @throws HttpException if the verification code is invalid
      */
-    private function _processInvalidToken(): Response
+    private function _processInvalidToken(User $user = null): Response
     {
         if ($this->request->getAcceptsJson()) {
             return $this->asErrorJson('InvalidVerificationCode');
         }
 
-        // If they're already logged-in, just send them to the post-login URL
-        $userSession = Craft::$app->getUser();
-        if (!$userSession->getIsGuest()) {
-            $returnUrl = $userSession->getReturnUrl();
-            $userSession->removeReturnUrl();
-            return $this->redirect($returnUrl);
+        // If they don't have a verification code at all, and they're already logged-in, just send them to the post-login URL
+        if ($user && !$user->verificationCode) {
+            $userSession = Craft::$app->getUser();
+            if (!$userSession->getIsGuest()) {
+                $returnUrl = $userSession->getReturnUrl();
+                $userSession->removeReturnUrl();
+                return $this->redirect($returnUrl);
+            }
         }
 
         // If the invalidUserTokenPath config setting is set, send them there

@@ -33,7 +33,7 @@
 
 {% block fieldSettings %}
     {{ forms.checkboxField({
-        label: 'Restrict uploads to a single folder'|t('app'),
+        label: 'Restrict assets to a single folder'|t('app'),
         id: 'useSingleFolder-toggle',
         name: 'useSingleFolder',
         class: 'use-single-folder-cb',
@@ -55,16 +55,16 @@
         {{ block('sourcesField') }}
 
         {{ forms.field({
-            label: "Default Upload Location"|t('app'),
-            instructions: "Where should files be uploaded when they are dragged directly onto the field, or uploaded from the front end?"|t('app') ~' '~ uploadLocationNote,
+            label: 'Default Asset Location'|t('app'),
+            instructions: 'Where assets should be stored when they are uploaded directly to the field, or via a front-end form.'|t('app') ~' '~ uploadLocationNote,
             errors: field.getErrors('defaultUploadLocationSubpath')
         }, uploadLocationInput('defaultUploadLocation', field, sourceOptions)) }}
     </div>
 
     <div id="single-folder-settings"{% if not field.useSingleFolder %} class="hidden"{% endif %}>
         {{ forms.field({
-            label: "Upload Location"|t('app'),
-            instructions: uploadLocationNote,
+            label: 'Asset Location'|t('app'),
+            instructions: 'Where selected assets should be stored.'|t('app') ~' '~ uploadLocationNote,
             errors: field.getErrors('singleUploadLocationSubpath')
         }, uploadLocationInput('singleUploadLocation', field, sourceOptions)) }}
     </div>
@@ -108,9 +108,35 @@
         {{ forms.errorList(field.getErrors('allowedKinds')) }}
     </fieldset>
 
+    {{ forms.checkboxField({
+        label: 'Allow uploading directly to the field'|t('app'),
+        instructions: 'Whether authors should be able to upload files directly to the field, rather than requiring them to select/upload assets via the selection modal.'|t('app'),
+        id: 'allow-uploads',
+        name: 'allowUploads',
+        checked: field.allowUploads,
+    }) }}
+
     {{ block('limitField') }}
     {{ block('viewModeField') }}
     {{ block('selectionLabelField') }}
     {{ block('validateRelatedElementsField') }}
+
+    <hr>
+
+    {{ forms.selectField({
+        id: 'preview-mode',
+        name: 'previewMode',
+        label: 'Preview Mode'|t('app'),
+        instructions: 'How the related {type} should be displayed within element indexes.'|t('app', {
+            type: pluralElementType,
+        }),
+        options: [
+            {label: 'Show thumbnails and titles'|t('app'), value: 'full'},
+            {label: 'Show thumbnails only'|t('app'), value: 'thumbs'},
+        ],
+        value: field.previewMode,
+        errors: field.getErrors('previewMode'),
+    }) }}
+
     {{ block('advancedSettings') }}
 {% endblock %}

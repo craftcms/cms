@@ -44,7 +44,7 @@ class SecurityTest extends Unit
         $this->security->sensitiveKeywords = $characters;
 
         $redacted = $this->security->redactIfSensitive($name, $value);
-        $this->assertSame($result, $redacted);
+        self::assertSame($result, $redacted);
     }
 
     /**

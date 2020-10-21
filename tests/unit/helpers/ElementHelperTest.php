@@ -52,7 +52,7 @@ class ElementHelperTest extends Unit
         $glue = Craft::$app->getConfig()->getGeneral()->slugWordSeparator;
         $result = str_replace('[separator-here]', $glue, $result);
 
-        $this->assertSame($result, ElementHelper::generateSlug($input, $ascii, $language));
+        self::assertSame($result, ElementHelper::generateSlug($input, $ascii, $language));
     }
 
     /**
@@ -66,7 +66,7 @@ class ElementHelperTest extends Unit
         $glue = Craft::$app->getConfig()->getGeneral()->slugWordSeparator;
         $result = str_replace('[separator-here]', $glue, $result);
 
-        $this->assertSame($result, ElementHelper::normalizeSlug($input));
+        self::assertSame($result, ElementHelper::normalizeSlug($input));
     }
 
     /**
@@ -77,7 +77,7 @@ class ElementHelperTest extends Unit
         $general = Craft::$app->getConfig()->getGeneral();
         $general->allowUppercaseInSlug = false;
 
-        $this->assertSame('word' . $general->slugWordSeparator . 'word', ElementHelper::createSlug('word WORD'));
+        self::assertSame('word' . $general->slugWordSeparator . 'word', ElementHelper::createSlug('word WORD'));
     }
 
     /**
@@ -89,8 +89,8 @@ class ElementHelperTest extends Unit
     public function testDoesUriFormatHaveSlugTag($result, $input)
     {
         $doesIt = ElementHelper::doesUriFormatHaveSlugTag($input);
-        $this->assertSame($result, $doesIt);
-        $this->assertIsBool($doesIt);
+        self::assertSame($result, $doesIt);
+        self::assertIsBool($doesIt);
     }
 
     /**
@@ -103,10 +103,10 @@ class ElementHelperTest extends Unit
     public function testSetUniqueUri($result, $config)
     {
         $example = new ExampleElement($config);
-        $this->assertNull(ElementHelper::setUniqueUri($example));
+        self::assertNull(ElementHelper::setUniqueUri($example));
 
         foreach ($result as $key => $res) {
-            $this->assertSame($res, $example->$key);
+            self::assertSame($res, $example->$key);
         }
     }
 
@@ -138,7 +138,7 @@ class ElementHelperTest extends Unit
             $result = false;
         }
 
-        $this->assertTrue($result);
+        self::assertTrue($result);
     }
 
     /**
@@ -153,13 +153,13 @@ class ElementHelperTest extends Unit
         ];
 
         ElementHelper::setNextPrevOnElements($editable);
-        $this->assertNull($one->getPrev());
+        self::assertNull($one->getPrev());
 
-        $this->assertSame($two, $one->getNext());
-        $this->assertSame($two, $one->getNext());
-        $this->assertSame($two, $three->getPrev());
+        self::assertSame($two, $one->getNext());
+        self::assertSame($two, $one->getNext());
+        self::assertSame($two, $three->getPrev());
 
-        $this->assertNull($three->getNext());
+        self::assertNull($three->getNext());
     }
 
     /**

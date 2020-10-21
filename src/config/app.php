@@ -131,6 +131,11 @@ return [
         'updates' => [
             'class' => craft\services\Updates::class,
         ],
+        'urlManager' => [
+            'class' => craft\web\UrlManager::class,
+            'enablePrettyUrl' => true,
+            'ruleConfig' => ['class' => craft\web\UrlRule::class],
+        ],
         'users' => [
             'class' => craft\services\Users::class,
         ],

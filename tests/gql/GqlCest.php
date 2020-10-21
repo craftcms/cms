@@ -15,6 +15,9 @@ use FunctionalTester;
 
 class GqlCest
 {
+    /**
+     *
+     */
     public function _fixtures()
     {
         return [
@@ -30,17 +33,28 @@ class GqlCest
         ];
     }
 
+    /**
+     * @param FunctionalTester $I
+     */
     public function _before(FunctionalTester $I)
     {
         $this->_setSchema(1000);
     }
 
+    /**
+     * @param FunctionalTester $I
+     */
     public function _after(FunctionalTester $I)
     {
         $gqlService = Craft::$app->getGql();
         $gqlService->flushCaches();
     }
 
+    /**
+     * @param int $tokenId
+     * @return \craft\models\GqlSchema|null
+     * @throws \yii\base\Exception
+     */
     public function _setSchema(int $tokenId)
     {
         $gqlService = Craft::$app->getGql();
@@ -113,8 +127,8 @@ class GqlCest
     {
         $testData = file_get_contents(__DIR__ . '/data/gql.txt');
         foreach (explode('-----TEST DELIMITER-----', $testData) as $case) {
-            list ($query, $response) = explode('-----RESPONSE DELIMITER-----', $case);
-            list ($schemaId, $query) = explode('-----TOKEN DELIMITER-----', $query);
+            [$query, $response] = explode('-----RESPONSE DELIMITER-----', $case);
+            [$schemaId, $query] = explode('-----TOKEN DELIMITER-----', $query);
             $schema = $this->_setSchema(trim($schemaId));
             $I->amOnPage('?action=graphql/api&query=' . urlencode(trim($query)));
             $I->see(trim($response));

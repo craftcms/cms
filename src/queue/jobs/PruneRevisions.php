@@ -35,14 +35,23 @@ class PruneRevisions extends BaseJob
     public $siteId;
 
     /**
+     * @var int|null The maximum number of revisions an element can have
+     * @since 3.5.13
+     */
+    public $maxRevisions;
+
+    /**
      * @inheritdoc
      */
     public function execute($queue)
     {
-        // Make sure maxRevisions is still set
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
-        if (!$generalConfig->maxRevisions) {
-            return;
+        if (!$this->maxRevisions) {
+            // Make sure maxRevisions is still set
+            $generalConfig = Craft::$app->getConfig()->getGeneral();
+            if (!$generalConfig->maxRevisions) {
+                return;
+            }
+            $this->maxRevisions = $generalConfig->maxRevisions;
         }
 
         $class = $this->elementType;
@@ -51,7 +60,7 @@ class PruneRevisions extends BaseJob
             ->siteId($this->siteId)
             ->anyStatus()
             ->orderBy(['num' => SORT_DESC])
-            ->offset($generalConfig->maxRevisions)
+            ->offset($this->maxRevisions)
             ->all();
 
         if (empty($extraRevisions)) {

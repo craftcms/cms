@@ -7,6 +7,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
     {
         requestId: 0,
         hud: null,
+        $uploadBtn: null,
         uploader: null,
         progressBar: null,
 
@@ -23,7 +24,10 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
             }
 
             this.base.apply(this, arguments);
-            this._attachUploader();
+
+            if (this.settings.canUpload) {
+                this._attachUploader();
+            }
 
             this.addListener(this.$elementsContainer, 'keydown', this._onKeyDown.bind(this));
             this.elementSelect.on('focusItem', this._onElementFocus.bind(this));
@@ -105,6 +109,23 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
                 }
             };
 
+            if (this.$addElementBtn) {
+                this.$uploadBtn = $('<button/>', {
+                    type: 'button',
+                    class: 'btn dashed',
+                    'data-icon': 'upload',
+                    text: this.settings.limit == 1 ? Craft.t('app', 'Upload a file') : Craft.t('app', 'Upload files'),
+                }).insertAfter(this.$addElementBtn);
+                options.fileInput = $('<input/>', {
+                    type: 'file',
+                    class: 'hidden',
+                    multiple: this.settings.limit != 1,
+                }).insertAfter(this.$uploadBtn);
+
+                // Trigger a window resize in case the field is inside an element editor HUD
+                Garnish.$win.trigger('resize');
+            }
+
             // If CSRF protection isn't enabled, these won't be defined.
             if (typeof Craft.csrfTokenName !== 'undefined' && typeof Craft.csrfTokenValue !== 'undefined') {
                 // Add the CSRF token
@@ -123,6 +144,14 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
             options.events.fileuploaddone = $.proxy(this, '_onUploadComplete');
 
             this.uploader = new Craft.Uploader(this.$container, options);
+
+            if (this.$uploadBtn) {
+                this.$uploadBtn.on('click', $.proxy(function(ev) {
+                    // We can't store a reference to the file input, because it gets replaced with a new input
+                    // each time a new file is uploaded - see https://stackoverflow.com/a/25034721/1688568
+                    this.$uploadBtn.next('input[type=file]').trigger('click');
+                }, this));
+            }
         },
 
         refreshThumbnail: function(elementId) {

@@ -1,5 +1,22 @@
 {% extends "_layouts/cp" %}
 {% set fullPageForm = true %}
+{% set formActions = [
+    {
+        label: 'Save and continue editing'|t('app'),
+        redirect: 'settings/fields/edit/{id}'|hash,
+        shortcut: true,
+        retainScroll: true,
+    },
+    fieldId ?? false ? {
+        label: 'Delete'|t('app'),
+        action: 'fields/delete-field',
+        redirect: 'settings/fields'|hash,
+        destructive: true,
+        confirm: 'Are you sure you want to delete “{name}”?'|t('app', {
+            name: field.name,
+        }),
+    },
+]|filter %}
 
 {% import "_includes/forms" as forms %}
 

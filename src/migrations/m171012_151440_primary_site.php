@@ -2,6 +2,7 @@
 
 namespace craft\migrations;
 
+use Craft;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\db\Table;
@@ -25,6 +26,11 @@ class m171012_151440_primary_site extends Migration
             ->scalar();
 
         $this->update(Table::SITES, ['primary' => true], ['id' => $primarySiteId]);
+
+        // Refresh all sites
+        // ---------------------------------------------------------------------
+
+        Craft::$app->getSites()->refreshSites();
     }
 
     /**

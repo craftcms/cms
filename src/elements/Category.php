@@ -432,7 +432,7 @@ class Category extends Element
 
         return [
             'templates/render', [
-                'template' => $categoryGroupSiteSettings[$siteId]->template,
+                'template' => (string)$categoryGroupSiteSettings[$siteId]->template,
                 'variables' => [
                     'category' => $this,
                 ]

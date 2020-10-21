@@ -58,7 +58,7 @@ class AssetsHelperTest extends Unit
         $asset = $assetQuery->one();
         $volume = $asset->getVolume();
 
-        $this->assertSame($resultUrl, Assets::generateUrl($volume, $asset));
+        self::assertSame($resultUrl, Assets::generateUrl($volume, $asset));
     }
 
     /**
@@ -67,9 +67,9 @@ class AssetsHelperTest extends Unit
     public function testTempFilePath()
     {
         $tempPath = Assets::tempFilePath();
-        $this->assertNotFalse(strpos($tempPath, '' . DIRECTORY_SEPARATOR . '_craft' . DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR . 'runtime' . DIRECTORY_SEPARATOR . 'temp'));
+        self::assertNotFalse(strpos($tempPath, '' . DIRECTORY_SEPARATOR . '_craft' . DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR . 'runtime' . DIRECTORY_SEPARATOR . 'temp'));
         $tempPath = Assets::tempFilePath('test');
-        $this->assertNotFalse(strpos($tempPath, '.test'));
+        self::assertNotFalse(strpos($tempPath, '.test'));
     }
 
     /**
@@ -83,7 +83,7 @@ class AssetsHelperTest extends Unit
     public function testPrepareAssetName($result, $name, $isFilename, $preventPluginMods)
     {
         $assetName = Assets::prepareAssetName($name, $isFilename, $preventPluginMods);
-        $this->assertSame($result, $assetName);
+        self::assertSame($result, $assetName);
     }
 
     /**
@@ -92,7 +92,7 @@ class AssetsHelperTest extends Unit
     public function testPrepareAssetNameAsciiRemove()
     {
         Craft::$app->getConfig()->getGeneral()->convertFilenamesToAscii = true;
-        $this->assertSame('tesSSt.text', Assets::prepareAssetName('tes§t.text'));
+        self::assertSame('tesSSt.text', Assets::prepareAssetName('tes§t.text'));
     }
 
     /**
@@ -101,13 +101,13 @@ class AssetsHelperTest extends Unit
     public function testConfigSeparator()
     {
         Craft::$app->getConfig()->getGeneral()->filenameWordSeparator = '||';
-        $this->assertSame('te||st.notafile', Assets::prepareAssetName('te st.notafile'));
+        self::assertSame('te||st.notafile', Assets::prepareAssetName('te st.notafile'));
 
         Craft::$app->getConfig()->getGeneral()->filenameWordSeparator = [];
-        $this->assertSame('t est.notafile', Assets::prepareAssetName('t est.notafile'));
+        self::assertSame('t est.notafile', Assets::prepareAssetName('t est.notafile'));
 
         Craft::$app->getConfig()->getGeneral()->filenameWordSeparator = 123;
-        $this->assertSame('t est.notafile', Assets::prepareAssetName('t est.notafile'));
+        self::assertSame('t est.notafile', Assets::prepareAssetName('t est.notafile'));
     }
 
     /**
@@ -119,7 +119,7 @@ class AssetsHelperTest extends Unit
     public function testFilename2Title($result, $input)
     {
         $file2Title = Assets::filename2Title($input);
-        $this->assertSame($result, $file2Title);
+        self::assertSame($result, $file2Title);
     }
 
     /**
@@ -131,7 +131,7 @@ class AssetsHelperTest extends Unit
     public function testFileFindLabel($result, $input)
     {
         $label = Assets::getFileKindLabel($input);
-        $this->assertSame($result, $label);
+        self::assertSame($result, $label);
     }
 
     /**
@@ -143,7 +143,7 @@ class AssetsHelperTest extends Unit
     public function testFileKindByExtension($result, $input)
     {
         $kind = Assets::getFileKindByExtension($input);
-        $this->assertSame($result, $kind);
+        self::assertSame($result, $kind);
     }
 
     /**
@@ -157,7 +157,7 @@ class AssetsHelperTest extends Unit
     public function testParseFileLocation($result, $input)
     {
         $location = Assets::parseFileLocation($input);
-        $this->assertSame($result, $location);
+        self::assertSame($result, $location);
     }
 
     /**
@@ -182,7 +182,7 @@ class AssetsHelperTest extends Unit
     public function testMaxUploadSize()
     {
         Craft::$app->getConfig()->getGeneral()->maxUploadFileSize = 1;
-        $this->assertSame(1, Assets::getMaxUploadSize());
+        self::assertSame(1, Assets::getMaxUploadSize());
     }
 
     /**
@@ -195,7 +195,7 @@ class AssetsHelperTest extends Unit
     {
         if (is_array($result)) {
             $parsed = Assets::parseSrcsetSize($input);
-            $this->assertSame($result, $parsed);
+            self::assertSame($result, $parsed);
         } else {
             $this->tester->expectThrowable(InvalidArgumentException::class, function() use ($input) {
                 Assets::parseSrcsetSize($input);

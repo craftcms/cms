@@ -91,12 +91,12 @@ class DraftsTest extends Unit
         $newEntry = Entry::find()->id($entry->id)->one();
 
         // Have the props changed
-        $this->assertEquals($entry->id, $newEntry->id);
-        $this->assertSame('Not Pending', $newEntry->title);
-        $this->assertSame('not-pending', $newEntry->slug);
+        self::assertEquals($entry->id, $newEntry->id);
+        self::assertSame('Not Pending', $newEntry->title);
+        self::assertSame('not-pending', $newEntry->slug);
 
         // Does the draft exist?
-        $this->assertSame(
+        self::assertSame(
             [],
             (new Query())->select(['id'])->from([Table::DRAFTS])->column()
         );
@@ -132,10 +132,10 @@ class DraftsTest extends Unit
             ->orderBy(['num' => SORT_DESC])
             ->one();
 
-        $this->assertNotNull($revision);
-        $this->assertSame($entry->dateUpdated->format('Y-m-d H:i:s'), $revision->dateCreated->format('Y-m-d H:i:s'));
-        $this->assertSame('With versioning EDITED', $revision->title);
-        $this->assertSame('I am a change note.', $revision->revisionNotes);
+        self::assertNotNull($revision);
+        self::assertSame($entry->dateUpdated->format('Y-m-d H:i:s'), $revision->dateCreated->format('Y-m-d H:i:s'));
+        self::assertSame('With versioning EDITED', $revision->title);
+        self::assertSame('I am a change note.', $revision->revisionNotes);
     }
 
     /**
@@ -159,7 +159,7 @@ class DraftsTest extends Unit
             ->one();
 
         // Old title should now be da one.
-        $this->assertSame('With versioning', $newEntry->title);
+        self::assertSame('With versioning', $newEntry->title);
     }
 
     /**
@@ -208,15 +208,15 @@ class DraftsTest extends Unit
     {
         /** @var Entry $draft */
         $draft = $this->drafts->createDraft($entry, 1, 'Test Draft');
-        $this->assertInstanceOf(Entry::class, $draft);
-        $this->assertNotNull($draft->draftId);
+        self::assertInstanceOf(Entry::class, $draft);
+        self::assertNotNull($draft->draftId);
         /** @var DraftBehavior $behavior */
         $behavior = $draft->getBehavior('draft');
-        $this->assertNotNull($behavior);
-        $this->assertEquals($entry->id, $behavior->sourceId);
-        $this->assertEquals(1, $behavior->creatorId);
-        $this->assertSame('Test Draft', $behavior->draftName);
-        $this->assertNull($behavior->draftNotes);
+        self::assertNotNull($behavior);
+        self::assertEquals($entry->id, $behavior->sourceId);
+        self::assertEquals(1, $behavior->creatorId);
+        self::assertSame('Test Draft', $behavior->draftName);
+        self::assertNull($behavior->draftNotes);
         return $draft;
     }
 

@@ -8,7 +8,10 @@
 namespace craftunit\helpers;
 
 use Codeception\Test\Unit;
+use Craft;
+use craft\helpers\FileHelper;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
+use craft\helpers\StringHelper;
 use craft\services\ProjectConfig;
 
 class ProjectConfigHelperTest extends Unit
@@ -26,8 +29,8 @@ class ProjectConfigHelperTest extends Unit
      */
     public function testAssociativeArrayConfigTransforms($unpackedData, $packedData)
     {
-        $this->assertSame($packedData, ProjectConfigHelper::packAssociativeArrays($unpackedData));
-        $this->assertSame($unpackedData, ProjectConfigHelper::unpackAssociativeArrays($packedData));
+        self::assertSame($packedData, ProjectConfigHelper::packAssociativeArrays($unpackedData));
+        self::assertSame($unpackedData, ProjectConfigHelper::unpackAssociativeArrays($packedData));
     }
 
     /**
@@ -37,7 +40,7 @@ class ProjectConfigHelperTest extends Unit
      */
     public function testCleanupConfig($inputData, $expectedResult)
     {
-        $this->assertSame($expectedResult, ProjectConfigHelper::cleanupConfig($inputData));
+        self::assertSame($expectedResult, ProjectConfigHelper::cleanupConfig($inputData));
     }
 
     /**
@@ -47,7 +50,37 @@ class ProjectConfigHelperTest extends Unit
      */
     public function testSplitIntoComponents($inputData, $expectedResult)
     {
-        $this->assertSame($expectedResult, ProjectConfigHelper::splitConfigIntoComponents($inputData));
+        self::assertSame($expectedResult, ProjectConfigHelper::splitConfigIntoComponents($inputData));
+    }
+
+    /**
+     * @dataProvider touchDataProvider
+     * @param string $input
+     * @param string $expected
+     */
+    public function testTouch(string $input, string $expected)
+    {
+        // Make sure they both end in a newline
+        $input = StringHelper::ensureRight($input, "\n");
+        $expected = StringHelper::ensureRight($expected, "\n");
+
+        // Make a backup of project.yaml
+        $path = Craft::$app->getPath()->getProjectConfigFilePath();
+        $backup = $path . '.bak';
+        rename($path, $backup);
+
+        // Create a new project.yaml file with the input data
+        FileHelper::writeToFile($path, $input);
+
+        // Test
+        $timestamp = time();
+        $expected = str_replace('__TIMESTAMP__', $timestamp, $expected);
+        ProjectConfigHelper::touch($timestamp);
+        self::assertSame($expected, file_get_contents($path));
+
+        // Put the old project.yaml back
+        FileHelper::unlink($path);
+        rename($backup, $path);
     }
 
     /**
@@ -299,6 +332,128 @@ class ProjectConfigHelperTest extends Unit
                     ]
                 ],
             ],
+        ];
+    }
+
+    public function touchDataProvider()
+    {
+        $input1 = <<<EOL
+dateModified: 1603054241
+system:
+  edition: pro
+  live: true
+  name: 'Happy Lager'
+  schemaVersion: 3.5.13
+  timeZone: UTC
+EOL;
+        $expected1 = <<<EOL
+dateModified: __TIMESTAMP__
+system:
+  edition: pro
+  live: true
+  name: 'Happy Lager'
+  schemaVersion: 3.5.13
+  timeZone: UTC
+EOL;
+        $input2 = <<<EOL
+<<<<<<< Updated upstream
+dateModified: 1603054241
+=======
+dateModified: 1603054240
+>>>>>>> Stashed changes
+system:
+  edition: pro
+  live: true
+  name: 'Happy Lager'
+  schemaVersion: 3.5.13
+  timeZone: UTC
+EOL;
+        $expected2 = <<<EOL
+dateModified: __TIMESTAMP__
+system:
+  edition: pro
+  live: true
+  name: 'Happy Lager'
+  schemaVersion: 3.5.13
+  timeZone: UTC
+EOL;
+        $input3 = <<<EOL
+<<<<<<< Updated upstream
+dateModified: 1603054241
+foo: bar
+=======
+dateModified: 1603054240
+>>>>>>> Stashed changes
+system:
+  edition: pro
+  live: true
+  name: 'Happy Lager'
+  schemaVersion: 3.5.13
+  timeZone: UTC
+EOL;
+        $expected3 = <<<EOL
+dateModified: __TIMESTAMP__
+<<<<<<< Updated upstream
+foo: bar
+=======
+>>>>>>> Stashed changes
+system:
+  edition: pro
+  live: true
+  name: 'Happy Lager'
+  schemaVersion: 3.5.13
+  timeZone: UTC
+EOL;
+        $input4 = <<<EOL
+<<<<<<< Updated upstream
+foo: bar
+dateModified: 1603054241
+=======
+>>>>>>> Stashed changes
+system:
+  edition: pro
+  live: true
+  name: 'Happy Lager'
+  schemaVersion: 3.5.13
+  timeZone: UTC
+dateModified: 1603054240
+EOL;
+        $expected4 = <<<EOL
+<<<<<<< Updated upstream
+foo: bar
+=======
+>>>>>>> Stashed changes
+dateModified: __TIMESTAMP__
+system:
+  edition: pro
+  live: true
+  name: 'Happy Lager'
+  schemaVersion: 3.5.13
+  timeZone: UTC
+EOL;
+        $input5 = <<<EOL
+system:
+  edition: pro
+  live: true
+  name: 'Happy Lager'
+  schemaVersion: 3.5.13
+  timeZone: UTC
+EOL;
+        $expected5 = <<<EOL
+system:
+  edition: pro
+  live: true
+  name: 'Happy Lager'
+  schemaVersion: 3.5.13
+  timeZone: UTC
+dateModified: __TIMESTAMP__
+EOL;
+        return [
+            [$input1, $expected1],
+            [$input2, $expected2],
+            [$input3, $expected3],
+            [$input4, $expected4],
+            [$input5, $expected5],
         ];
     }
 }

@@ -303,7 +303,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         },
 
         getSourceContainer: function() {
-            return this.$sidebar.find('nav>ul');
+            return this.$sidebar.find('nav > ul');
         },
 
         get $sources() {
@@ -356,9 +356,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 $source = this.$visibleSources.first();
             }
 
-            if ($source.length) {
-                this.selectSource($source);
-            }
+            return this.selectSource($source);
         },
 
         refreshSources: function() {
@@ -596,9 +594,16 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 search: this.searchText,
                 offset: this.settings.batchSize * (this.page - 1),
                 limit: this.settings.batchSize,
-                trashed: this.trashed ? 1 : 0,
-                drafts: this.drafts ? 1 : 0,
             };
+
+            // Only set trashed/drafts/draftOf params when needed, so we don't potentially override a source's criteria
+            if (this.trashed) {
+                criteria.trashed = true;
+            }
+            if (this.drafts) {
+                criteria.drafts = true;
+                criteria.draftOf = false;
+            }
 
             if (!Garnish.hasAttr(this.$source, 'data-override-status')) {
                 criteria.status = this.status;
@@ -665,7 +670,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             }).then((response) => {
                 this.setIndexAvailable();
                 this._updateView(params, response.data);
-            }).catch(() => {
+            }).catch(e => {
                 this.setIndexAvailable();
                 if (!this._ignoreFailedRequest) {
                     Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
@@ -886,7 +891,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         },
 
         getSelectedViewMode: function() {
-            return this.getSelectedSourceState('mode');
+            return this.getSelectedSourceState('mode') || 'table';
         },
 
         setSortDirection: function(dir) {
@@ -1146,7 +1151,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 case 'thumbs':
                     return Craft.ThumbsElementIndexView;
                 default:
-                    throw 'View mode "' + mode + '" not supported.';
+                    throw `View mode "${mode}" not supported.`;
             }
         },
 
@@ -1412,13 +1417,16 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         },
 
         _setSite: function(siteId) {
+            let firstSite = this.siteId === null;
             this.siteId = siteId;
             this.$visibleSources = $();
 
             // Hide any sources that aren't available for this site
             var $firstVisibleSource;
             var $source;
-            var selectNewSource = false;
+            // Select a new source automatically if a site is already selected, but we don't have a selected source
+            // (or if the currently selected source ends up not supporting the new site)
+            var selectNewSource = !firstSite && (!this.$source || !this.$source.length);
 
             for (var i = 0; i < this.$sources.length; i++) {
                 $source = this.$sources.eq(i);
@@ -1438,7 +1446,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 }
             }
 
-            if (selectNewSource) {
+            if (this.initialized && selectNewSource) {
                 this.selectSource($firstVisibleSource);
             }
 

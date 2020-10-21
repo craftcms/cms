@@ -90,7 +90,7 @@ class PrepareQueryTest extends Unit
         $result = call_user_func_array([$resolverClass, 'prepareQuery'], $preparationArguments);
 
         // Test if results valid
-        $this->assertTrue($testFunction($result));
+        self::assertTrue($testFunction($result));
     }
 
     public function relationalFieldQueryPreparationProvider()

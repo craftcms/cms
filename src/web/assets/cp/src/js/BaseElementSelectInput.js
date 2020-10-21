@@ -15,6 +15,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         $elementsContainer: null,
         $elements: null,
         $addElementBtn: null,
+        $addElementBtnContainer: null,
 
         _initialized: false,
 
@@ -58,13 +59,13 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
             this.$container.data('elementSelect', this);
 
             this.$elementsContainer = this.getElementsContainer();
-            this.$addElementBtn = this.getAddElementsBtn();
 
-            if (this.$addElementBtn && this.settings.limit == 1) {
-                this.$addElementBtn
-                    .css('position', 'absolute')
-                    .css('top', 0)
-                    .css(Craft.left, 0);
+            this.$addElementBtn = this.getAddElementsBtn();
+            if (this.$addElementBtn) {
+                this.$addElementBtnContainer = this.$addElementBtn.parent('.flex');
+                if (!this.$addElementBtnContainer.length) {
+                    this.$addElementBtnContainer = null;
+                }
             }
 
             this.thumbLoader = new Craft.ElementThumbLoader();
@@ -77,7 +78,9 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
                 this.addListener(this.$addElementBtn, 'activate', 'showModal');
             }
 
-            this._initialized = true;
+            Garnish.requestAnimationFrame(() => {
+                this._initialized = true;
+            });
         },
 
         get totalSelected() {
@@ -97,7 +100,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         },
 
         getAddElementsBtn: function() {
-            return this.$container.children('.btn.add');
+            return this.$container.find('.btn.add:first');
         },
 
         initElementSelect: function() {
@@ -152,32 +155,16 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         },
 
         disableAddElementsBtn: function() {
-            if (this.$addElementBtn && !this.$addElementBtn.hasClass('disabled')) {
-                this.$addElementBtn.addClass('disabled');
-
-                if (this.settings.limit == 1) {
-                    if (this._initialized) {
-                        this.$addElementBtn.velocity('fadeOut', Craft.BaseElementSelectInput.ADD_FX_DURATION);
-                    }
-                    else {
-                        this.$addElementBtn.hide();
-                    }
-                }
+            let $btn = this.$addElementBtnContainer || this.$addElementBtn;
+            if ($btn) {
+                $btn.addClass('hidden');
             }
         },
 
         enableAddElementsBtn: function() {
-            if (this.$addElementBtn && this.$addElementBtn.hasClass('disabled')) {
-                this.$addElementBtn.removeClass('disabled');
-
-                if (this.settings.limit == 1) {
-                    if (this._initialized) {
-                        this.$addElementBtn.velocity('fadeIn', Craft.BaseElementSelectInput.REMOVE_FX_DURATION);
-                    }
-                    else {
-                        this.$addElementBtn.show();
-                    }
-                }
+            let $btn = this.$addElementBtnContainer || this.$addElementBtn;
+            if ($btn) {
+                $btn.removeClass('hidden');
             }
         },
 
@@ -267,7 +254,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
         removeElement: function($element) {
             this.removeElements($element);
-            this.animateElementAway($element, function() {
+            this.animateElementAway($element, () => {
                 $element.remove();
             });
         },

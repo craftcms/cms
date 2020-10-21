@@ -51,6 +51,7 @@
 
         {{ forms.field({
             first: true,
+            id: 'tempUploadLocation',
             label: 'Temp Uploads Location'|t('app'),
             instructions: 'Where do you want to store temporary asset uploads?'|t('app'),
             warning: allVolumes is empty ? 'No volumes exist yet.'|t('app')

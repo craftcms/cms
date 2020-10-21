@@ -202,8 +202,7 @@
                                                             .append(
                                                                 $('<li/>')
                                                                     .append(
-                                                                        $('<button/>', {
-                                                                            type: 'button',
+                                                                        $('<a/>', {
                                                                             'class': 'formsubmit',
                                                                             text: Craft.t('app', 'Install')
                                                                         })

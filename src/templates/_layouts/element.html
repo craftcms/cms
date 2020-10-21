@@ -4,6 +4,7 @@
     The following variables should be defined by the sub-template:
 
     - element: the source element or one of its drafts/revisions
+    - hasRevisions: whether the element has revisions, which will determine whether the revision notes field should be displayed.
     - canDeleteDraft (optional): whether the current user is allowed to delete the draft (if it is one).
       If the current user created the draft, then it will be deletable regardless.
     - canUpdateSource (optional): whether the current user is allowed to update the source element
@@ -97,38 +98,38 @@
         shortcut: true,
         retainScroll: true,
     }) %}
-    {% if canUpdateSource %}
-        {% if canAddAnother and addAnotherRedirectUrl %}
-            {% set formActions = formActions|push({
-                label: isUnsavedDraft ? 'Create and add another'|t('app') : 'Save and add another'|t('app'),
-                redirect: addAnotherRedirectUrl|hash,
-                shortcut: true,
-                shift: true,
-            }) %}
-        {% endif %}
-        {% if not isUnsavedDraft and canDuplicateSource and duplicateSourceAction %}
-            {% set formActions = formActions|push({
-                label: 'Save as a new {type}'|t('app', {
-                    type: element.lowerDisplayName(),
-                }),
-                action: duplicateSourceAction,
-                redirect: '{cpEditUrl}'|hash,
-            }) %}
-        {% endif %}
-    {% endif %}
-    {% if not isUnsavedDraft and canDeleteSource and deleteSourceAction %}
+{% endif %}
+{% if canUpdateSource and saveSourceAction %}
+    {% if canAddAnother and addAnotherRedirectUrl %}
         {% set formActions = formActions|push({
-            destructive: true,
-            label: 'Delete {type}'|t('app', {
-                type: element.lowerDisplayName()
-            }),
-            action: deleteSourceAction,
-            redirect: (redirectUrl ~ '#')|hash,
-            confirm: 'Are you sure you want to delete this {type}?'|t('app', {
-                type: element.lowerDisplayName(),
-            }),
+            label: isUnsavedDraft ? 'Create and add another'|t('app') : 'Save and add another'|t('app'),
+            redirect: addAnotherRedirectUrl|hash,
+            shortcut: true,
+            shift: true,
         }) %}
     {% endif %}
+    {% if not isUnsavedDraft and canDuplicateSource and duplicateSourceAction %}
+        {% set formActions = formActions|push({
+            label: 'Save as a new {type}'|t('app', {
+                type: element.lowerDisplayName(),
+            }),
+            action: duplicateSourceAction,
+            redirect: '{cpEditUrl}'|hash,
+        }) %}
+    {% endif %}
+{% endif %}
+{% if not isUnsavedDraft and canDeleteSource and deleteSourceAction %}
+    {% set formActions = formActions|push({
+        destructive: true,
+        label: 'Delete {type}'|t('app', {
+            type: element.lowerDisplayName()
+        }),
+        action: deleteSourceAction,
+        redirect: (redirectUrl ~ '#')|hash,
+        confirm: 'Are you sure you want to delete this {type}?'|t('app', {
+            type: element.lowerDisplayName(),
+        }),
+    }) %}
 {% endif %}
 
 {% block header %}
@@ -142,7 +143,7 @@
                 {% if enablePreview %}
                     <button type="button" id="preview-btn" class="btn">{{ "Preview"|t('app') }}</button>
                 {% endif %}
-                <button type="button" id="share-btn" class="btn">{{ 'Share'|t('app') }}</button>
+                <button type="button" id="share-btn" class="btn">{{ 'View'|t('app') }}</button>
             </div>
         {% endif %}
 
@@ -152,6 +153,10 @@
                     <button type="button" id="save-draft-btn" class="btn">{{ 'Save as a draft'|t('app') }}</button>
                 {% else %}
                     <button type="submit" id="save-draft-btn" class="btn submit">{{ 'Save as a draft'|t('app') }}</button>
+                    {% if formActions|length %}
+                        <button type="button" class="btn menubtn" aria-label="{{ 'Actions'|t('app') }}" data-icon="settings"></button>
+                        {% include '_layouts/components/form-action-menu' %}
+                    {% endif %}
                 {% endif %}
             </div>
         {% endif %}
@@ -311,6 +316,21 @@
             {% endif %}
         {% endblock %}
     </div>
+
+    {% if isCurrent and (hasRevisions ?? false) %}
+        {{ forms.textarea({
+            id: 'revision-notes',
+            class: ['nicetext'],
+            name: 'revisionNotes',
+            placeholder: 'Notes about your changes'|t('app'),
+            value: revisionNotes ?? null,
+            inputAttributes: {
+                aria: {
+                    label: 'Notes about your changes'|t('app'),
+                },
+            },
+        }) }}
+    {% endif %}
 
     {% if isDraft and element.getIsOutdated() %}
         {% do craft.app.session.authorize('mergeDraftSourceChanges:' ~ element.draftId) %}

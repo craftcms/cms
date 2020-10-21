@@ -1,5 +1,5 @@
 {% set attributes = {
-  id: id ?? "copytext-#{random()}",
+  id: id ?? "copytext#{random()}",
   class: (class ?? [])|explodeClass|push('copytextbtn'),
   role: 'button',
   title: 'Copy to clipboard'|t('app'),

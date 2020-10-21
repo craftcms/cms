@@ -1,18 +1,30 @@
 {%- set class = (class ?? [])|explodeClass|merge([
     'text',
-    not (size ?? false) ? 'fullwidth',
+    (disabled ?? false) ? 'disabled',
+    not (cols ?? false) ? 'fullwidth',
 ]|filter) %}
 
-{%- set rows = (rows is defined ? rows : 2) %}
-{%- set cols = (cols is defined ? cols : 50) -%}
+{%- set inputAttributes = {
+    class: class,
+    id: id ?? false,
+    inputmode: inputmode ?? false,
+    rows: rows ?? 2,
+    cols: cols ?? 50,
+    name: name ?? false,
+    maxlength: maxlength ?? false,
+    autofocus: (autofocus ?? false) and not craft.app.request.isMobileBrowser(true),
+    disabled: disabled ?? false,
+    readonly: readonly ?? false,
+    title: title ?? false,
+    placeholder: placeholder ?? false,
+    text: value ?? '',
+    data: {
+        'show-chars-left': showCharsLeft ?? false,
+    },
+}|merge(inputAttributes ?? [], recursive=true) %}
 
-<textarea class="{{ class|join(' ') }}" rows="{{ rows }}" cols="{{ cols }}"
-    {%- if id is defined %} id="{{ id }}"{% endif %}
-    {%- if name is defined %} name="{{ name }}"{% endif %}
-    {%- if maxlength is defined and maxlength %} maxlength="{{ maxlength }}"{% endif %}
-    {%- if showCharsLeft is defined and showCharsLeft %} data-show-chars-left{% endif %}
-    {%- if autofocus is defined and autofocus and not craft.app.request.isMobileBrowser(true) %} autofocus{% endif %}
-    {%- if readonly is defined and readonly %} readonly {% endif %}
-    {%- if disabled is defined and disabled %} disabled{% endif %}
-    {%- if placeholder is defined %} placeholder="{{ placeholder }}"{% endif %}
-    {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>{{ value is defined ? value : null }}</textarea>
+{%- if block('attr') is defined %}
+    {%- set inputAttributes = inputAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
+{%- endif %}
+
+{{- tag('textarea', inputAttributes) }}

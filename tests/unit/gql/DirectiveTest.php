@@ -64,7 +64,7 @@ class DirectiveTest extends Unit
             'fieldNodes' => $fieldNodes
         ]);
 
-        $this->assertEquals($result, $type->resolveWithDirectives($element, [], null, $resolveInfo));
+        self::assertEquals($result, $type->resolveWithDirectives($element, [], null, $resolveInfo));
     }
 
     /**
@@ -112,9 +112,9 @@ class DirectiveTest extends Unit
         }
 
         if ($mustNotBeSame) {
-            $this->assertNotEquals(Craft::$app->getAssets()->getAssetUrl($asset, $parameters, $generateNow), $type->resolveWithDirectives($asset, [], null, $resolveInfo));
+            self::assertNotEquals(Craft::$app->getAssets()->getAssetUrl($asset, $parameters, $generateNow), $type->resolveWithDirectives($asset, [], null, $resolveInfo));
         } else {
-            $this->assertEquals(Craft::$app->getAssets()->getAssetUrl($asset, $parameters, $generateNow), $type->resolveWithDirectives($asset, [], null, $resolveInfo));
+            self::assertEquals(Craft::$app->getAssets()->getAssetUrl($asset, $parameters, $generateNow), $type->resolveWithDirectives($asset, [], null, $resolveInfo));
         }
     }
 
@@ -136,7 +136,7 @@ class DirectiveTest extends Unit
             'fieldNodes' => $fieldNodes
         ]);
 
-        $this->assertEquals($asset->filename, $type->resolveWithDirectives($asset, [], null, $resolveInfo));
+        self::assertEquals($asset->filename, $type->resolveWithDirectives($asset, [], null, $resolveInfo));
     }
 
     public function directiveDataProvider()

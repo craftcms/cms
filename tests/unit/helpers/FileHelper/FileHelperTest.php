@@ -37,12 +37,12 @@ class FileHelperTest extends Unit
     {
         $location = dirname(__DIR__, 4) . '/at-root';
         FileHelper::createDirectory('at-root');
-        $this->assertDirectoryExists($location);
+        self::assertDirectoryExists($location);
 
         FileHelper::removeDirectory($location);
-        $this->assertDirectoryNotExists($location);
+        self::assertDirectoryNotExists($location);
 
-        $this->assertNull(FileHelper::removeDirectory('notadir'));
+        self::assertNull(FileHelper::removeDirectory('notadir'));
     }
 
     /**
@@ -57,7 +57,7 @@ class FileHelperTest extends Unit
         FileHelper::clearDirectory($copyIntoDir);
 
         // Make sure its clear
-        $this->assertTrue(FileHelper::isDirectoryEmpty($copyIntoDir));
+        self::assertTrue(FileHelper::isDirectoryEmpty($copyIntoDir));
 
         // Test that clearing an empty dir wont make things go wrong.
         FileHelper::clearDirectory($copyIntoDir);
@@ -66,14 +66,14 @@ class FileHelperTest extends Unit
         FileHelper::copyDirectory($copyFromDir, $copyIntoDir);
 
         // Make sure something exists
-        $this->assertSame(scandir($copyFromDir, 1), scandir($copyIntoDir, 1));
-        $this->assertFalse(FileHelper::isDirectoryEmpty($copyIntoDir));
+        self::assertSame(scandir($copyFromDir, 1), scandir($copyIntoDir, 1));
+        self::assertFalse(FileHelper::isDirectoryEmpty($copyIntoDir));
 
         // Clear it out.
         FileHelper::clearDirectory($copyIntoDir);
 
         // Ensure everything is empty.
-        $this->assertTrue(FileHelper::isDirectoryEmpty($copyIntoDir));
+        self::assertTrue(FileHelper::isDirectoryEmpty($copyIntoDir));
     }
 
     /**
@@ -96,7 +96,7 @@ class FileHelperTest extends Unit
     public function testPathNormalization($result, $path, $dirSeparator)
     {
         $normalized = FileHelper::normalizePath($path, $dirSeparator);
-        $this->assertSame($result, $normalized);
+        self::assertSame($result, $normalized);
     }
 
     /**
@@ -109,7 +109,7 @@ class FileHelperTest extends Unit
     public function testIsDirEmpty($result, $input)
     {
         $isEmpty = FileHelper::isDirectoryEmpty($input);
-        $this->assertSame($result, $isEmpty);
+        self::assertSame($result, $isEmpty);
     }
 
     /**
@@ -139,7 +139,7 @@ class FileHelperTest extends Unit
     public function testIsWritable($result, $input)
     {
         $isWritable = FileHelper::isWritable($input);
-        $this->assertTrue($result, $isWritable);
+        self::assertTrue($result, $isWritable);
     }
 
     /**
@@ -154,7 +154,7 @@ class FileHelperTest extends Unit
     public function testGetMimeType($file, $magicFile, $checkExtension, $actualMimeType)
     {
         $mimeType = FileHelper::getMimeType($file, $magicFile, $checkExtension);
-        $this->assertSame($actualMimeType, $mimeType);
+        self::assertSame($actualMimeType, $mimeType);
     }
 
     /**
@@ -168,7 +168,7 @@ class FileHelperTest extends Unit
     public function testGetMimeTypeOnFalse($result, $file)
     {
         $mimeType = FileHelper::getMimeType($file, null, false);
-        $this->assertSame($result, $mimeType);
+        self::assertSame($result, $mimeType);
     }
 
     /**
@@ -191,7 +191,7 @@ class FileHelperTest extends Unit
     public function testFilenameSanitation($result, $input, $options)
     {
         $sanitized = FileHelper::sanitizeFilename($input, $options);
-        $this->assertSame($result, $sanitized);
+        self::assertSame($result, $sanitized);
     }
 
     /**
@@ -209,7 +209,7 @@ class FileHelperTest extends Unit
         }
 
         $isSvg = FileHelper::isSvg($input, $magicFile, $checkExtension);
-        $this->assertSame($result, $isSvg);
+        self::assertSame($result, $isSvg);
     }
 
     /**
@@ -227,7 +227,7 @@ class FileHelperTest extends Unit
         }
 
         $isSvg = FileHelper::isGif($input, $magicFile, $checkExtension);
-        $this->assertSame($result, $isSvg);
+        self::assertSame($result, $isSvg);
     }
 
     /**
@@ -245,8 +245,8 @@ class FileHelperTest extends Unit
     {
         FileHelper::writeToFile($file, $contents, $options);
 
-        $this->assertTrue(is_file($file));
-        $this->assertSame($content, file_get_contents($file));
+        self::assertTrue(is_file($file));
+        self::assertSame($content, file_get_contents($file));
 
         if ($removeDir) {
             FileHelper::removeDirectory($removeableDir);
@@ -264,13 +264,13 @@ class FileHelperTest extends Unit
         $file = $sandboxDir . '/test-file';
 
         FileHelper::writeToFile($file, 'contents');
-        $this->assertSame('contents', file_get_contents($file));
+        self::assertSame('contents', file_get_contents($file));
 
         FileHelper::writeToFile($file, 'changed');
-        $this->assertSame('changed', file_get_contents($file));
+        self::assertSame('changed', file_get_contents($file));
 
         FileHelper::writeToFile($file, 'andappended', ['append' => true]);
-        $this->assertSame('changedandappended', file_get_contents($file));
+        self::assertSame('changedandappended', file_get_contents($file));
 
         FileHelper::unlink($file);
     }

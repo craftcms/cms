@@ -230,8 +230,9 @@ class MigrateController extends BaseMigrateController
 
         // TODO remove after next breakpoint
         // Make sure that the new project config structure is there before any migrations cause Project Config to look there.
-        if (!file_exists(Craft::$app->getPath()->getProjectConfigFilePath())) {
-            Craft::$app->getProjectConfig()->regenerateYamlFromConfig();
+        $projectConfig = Craft::$app->getProjectConfig();
+        if ($projectConfig->writeYamlAutomatically && !$projectConfig->getDoesYamlExist()) {
+            $projectConfig->regenerateYamlFromConfig();
         }
 
         if (!parent::beforeAction($action)) {
@@ -340,7 +341,7 @@ class MigrateController extends BaseMigrateController
                     }
                 }
 
-                $error = 'An error occurred running nuw migrations.';
+                $error = 'An error occurred running new migrations.';
                 if ($restored) {
                     $error .= ' The database has been restored to its previous state.';
                 } else if (isset($restoreException)) {

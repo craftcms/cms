@@ -61,6 +61,8 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @event PopulateElementEvent The event that is triggered after an element is populated.
+     *
+     * If [[PopulateElementEvent::$element]] is replaced by an event handler, the replacement will be returned by [[createElement()]] instead.
      */
     const EVENT_AFTER_POPULATE_ELEMENT = 'afterPopulateElement';
 
@@ -141,8 +143,14 @@ class ElementQuery extends Query implements ElementQueryInterface
     public $draftId;
 
     /**
-     * @var int|false|null The source element ID that drafts should be returned for.
-     * Set to `false` to fetch unsaved drafts.
+     * @var int|string|false|null The source element ID that drafts should be returned for.
+     *
+     * This can be set to one of the following:
+     *
+     * - A source element ID – matches drafts of that element
+     * - `'*'` – matches drafts of any source element
+     * - `false` – matches unsaved drafts that have no source element
+     *
      * @since 3.2.0
      */
     public $draftOf;
@@ -1800,10 +1808,12 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         // Fire an 'afterPopulateElement' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_POPULATE_ELEMENT)) {
-            $this->trigger(self::EVENT_AFTER_POPULATE_ELEMENT, new PopulateElementEvent([
+            $event = new PopulateElementEvent([
                 'element' => $element,
                 'row' => $row
-            ]));
+            ]);
+            $this->trigger(self::EVENT_AFTER_POPULATE_ELEMENT, $event);
+            return $event->element;
         }
 
         return $element;
@@ -1943,6 +1953,10 @@ class ElementQuery extends Query implements ElementQueryInterface
             // If specific IDs were requested, then use those
             if (is_numeric($this->id) || (is_array($this->id) && ArrayHelper::isNumeric($this->id))) {
                 $queryTags = (array)$this->id;
+            } else if ($this->drafts) {
+                $queryTags = ['drafts'];
+            } else if ($this->revisions) {
+                $queryTags = ['revisions'];
             } else {
                 $queryTags = $this->cacheTags() ?: ['*'];
             }
@@ -2463,7 +2477,9 @@ class ElementQuery extends Query implements ElementQueryInterface
                 $this->subQuery->andWhere(['elements.draftId' => $this->draftId]);
             }
 
-            if ($this->draftOf !== null) {
+            if ($this->draftOf === '*') {
+                $this->subQuery->andWhere(['not', ['drafts.sourceId' => null]]);
+            } else if ($this->draftOf !== null) {
                 $this->subQuery->andWhere(['drafts.sourceId' => $this->draftOf ?: null]);
             }
 

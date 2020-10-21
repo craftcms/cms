@@ -93,6 +93,10 @@ table.editable textarea {
   }
 }
 
+textarea.nicetext {
+  resize: none;
+}
+
 /* icons */
 .icon:before,
 .menu ul.padded li a.sel:before,
@@ -109,6 +113,19 @@ table.editable textarea {
 [data-icon]:before,
 [data-icon-after]:after {
   @include icon;
+}
+
+.badge-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 17px;
+  height: 17px;
+  box-sizing: border-box;
+  border: 1px solid $yellow500;
+  border-radius: $smallBorderRadius;
+  color: $yellow500;
+  font-size: 9px;
 }
 
 .secure:before,
@@ -1025,6 +1042,7 @@ ul.icons {
 .btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   border-radius: $largeBorderRadius;
   padding: 7px 14px;
   border: none;
@@ -2529,6 +2547,7 @@ $checkboxPadding: $checkboxSize + 4;
   }
 
   .element.small,
+  .flex,
   .btn {
     clear: both;
   }
@@ -2552,6 +2571,10 @@ $checkboxPadding: $checkboxSize + 4;
 
   .caboose {
     @include floatleft;
+  }
+
+  .flex .btn {
+    float: none !important;
   }
 }
 
@@ -3059,10 +3082,9 @@ ul.tree,
     & > .field,
     & > .data {
       display: flex;
-      flex-warp: wrap; // for error lists
+      flex-wrap: wrap; // for error lists
       justify-content: space-between;
       align-items: center;
-      flex-wrap: nowrap;
       margin: 0 -24px !important;
       padding: 0 24px;
       transition: padding-left linear 100ms, padding-right linear 100ms;
@@ -3515,6 +3537,7 @@ ul.tree,
   align-items: center;
   height: 190px;
   background-color: $grey900;
+  cursor: pointer;
 
   &.loading {
     &:after {
@@ -3549,10 +3572,6 @@ ul.tree,
     }
   }
 
-  &.editable {
-    cursor: pointer;
-  }
-
   .buttons {
     opacity: 0;
     position: absolute;
@@ -3573,21 +3592,21 @@ ul.tree,
           transition: opacity linear 100ms, backdrop-filter linear 100ms;
         }
       }
+
+      &:hover {
+        background-color: $grey500;
+
+        @supports (backdrop-filter: blur(10px)) {
+          & {
+            background-color: transparentize($grey500, 0.3);
+          }
+        }
+      }
     }
   }
 
   &:hover .buttons {
     opacity: 1;
-  }
-
-  &:not(.editable) .buttons .btn:hover {
-    background-color: $grey500;
-
-    @supports (backdrop-filter: blur(10px)) {
-      & {
-        background-color: transparentize($grey500, 0.3);
-      }
-    }
   }
 }
 
@@ -4536,6 +4555,8 @@ fieldset {
   .password {
     flex: 1;
     border: none;
+    background: transparent;
+    box-shadow: none;
   }
 
   .password-toggle {

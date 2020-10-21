@@ -65,7 +65,7 @@ class Schema extends \yii\db\pgsql\Schema
             parent::releaseSavepoint($name);
         } catch (Exception $e) {
             // Specifically look for a "No such savepoint" error.
-            if ($e->getCode() == 3 && isset($e->errorInfo[0]) && isset($e->errorInfo[1]) && $e->errorInfo[0] === '3B001' && $e->errorInfo[1] == 7) {
+            if ($e->getCode() === '25P01' || $e->getCode() === '3B001') {
                 Craft::warning('Tried to release a savepoint, but it does not exist: ' . $e->getMessage(), __METHOD__);
             } else {
                 throw $e;
@@ -138,6 +138,7 @@ class Schema extends \yii\db\pgsql\Schema
             ' --no-acl' .
             ' --file="{file}"' .
             ' --schema={schema}' .
+            ' --column-inserts' .
             ' ' . implode(' ', $ignoredTableArgs);
     }
 

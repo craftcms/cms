@@ -86,7 +86,7 @@ class UrlHelper
             list($n, $v) = array_pad(explode('=', $param, 2), 2, '');
             $n = urldecode($n);
             $v = str_replace(['%2F', '%7B', '%7D'], ['/', '{', '}'], $v);
-            $params[] = "$n=$v";
+            $params[] = $v !== '' ? "$n=$v" : $n;
         }
         return implode('&', $params);
     }
@@ -706,7 +706,6 @@ class UrlHelper
             }
 
             parse_str($params, $arr);
-            $arr = ArrayHelper::filterEmptyStringsFromArray($arr);
         } else {
             $arr = [];
         }

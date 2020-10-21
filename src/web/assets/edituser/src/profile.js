@@ -28,7 +28,6 @@
             // So not optimal.
             location.reload();
         },
-        allowDegreeFractions: Craft.isImagick
     };
 
     $('#main').on('click', '.btn.edit-photo', function(ev) {

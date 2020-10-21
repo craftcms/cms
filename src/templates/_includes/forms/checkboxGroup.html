@@ -1,23 +1,30 @@
-{% if name is defined and name %}
-    {{ hiddenInput(name, '') }}
-{% endif -%}
+{%- set options = options ?? [] %}
+{%- set values = values ?? [] %}
+{%- set optionName = (name ?? false) ? "#{name}[]" : null %}
 
-{%- set options = (options is defined ? options : []) %}
-{%- set values = (values is defined ? values : []) %}
-{%- set name = (name is defined and name ? name~'[]' : null) %}
+{% set fieldsetAttributes = {
+    class: ['checkbox-group'],
+} %}
 
-<fieldset class="checkbox-group"
-        {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
+{% if block('attr') is defined %}
+    {%- set fieldsetAttributes = fieldsetAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
+{% endif %}
+
+<fieldset {{ attr(fieldsetAttributes) }}>
+    {% if name ?? false %}
+        {{ hiddenInput(name, '') }}
+    {% endif -%}
+
     {%- for key, option in options %}
         {%- if option is not iterable %}
             {%- set option = {label: option, value: key} %}
         {%- endif %}
         <div>
             {% include "_includes/forms/checkbox" with {
-                id:        (loop.first and id is defined ? id : null),
-                name:      name,
-                checked:   (option.value is defined and option.value in values),
-                autofocus: (autofocus is defined and autofocus and loop.first and not craft.app.request.isMobileBrowser(true))
+                id: loop.first ? (id ?? null) : null,
+                name: optionName,
+                checked: (option.value is defined and option.value in values),
+                autofocus: loop.first and (autofocus ?? false) and not craft.app.request.isMobileBrowser(true)
             }|merge(option) only %}
         </div>
     {%- endfor %}

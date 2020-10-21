@@ -91,9 +91,8 @@
 
             &:before {
               @include left(20px);
-              top: 23px;
-              font-size: 23px;
-              color: $mediumTextColor;
+              top: 29px;
+              border-color: $mediumTextColor;
             }
           }
 

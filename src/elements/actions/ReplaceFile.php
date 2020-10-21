@@ -34,10 +34,9 @@ class ReplaceFile extends ElementAction
     {
         $type = Json::encode(static::class);
 
-        $js = <<<EOD
-(function()
-{
-    var trigger = new Craft.ElementActionTrigger({
+        $js = <<<JS
+(() => {
+    new Craft.ElementActionTrigger({
         type: {$type},
         batch: false,
         validateSelection: function(\$selectedItems)
@@ -66,8 +65,9 @@ class ReplaceFile extends ElementAction
         }
     });
 })();
-EOD;
+JS;
 
         Craft::$app->getView()->registerJs($js);
+        return null;
     }
 }

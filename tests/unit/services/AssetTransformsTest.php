@@ -32,7 +32,7 @@ class AssetTransformsTest extends Unit
         $extendedTransform = Craft::$app->getAssetTransforms()->extendTransform($transform, $parameters);
 
         foreach ($resultCheck as $property => $value) {
-            $this->assertSame($value, $extendedTransform->{$property});
+            self::assertSame($value, $extendedTransform->{$property});
         }
     }
 
@@ -40,7 +40,7 @@ class AssetTransformsTest extends Unit
     {
         $transform = new AssetTransform(['width' => 200, 'height' => 200]);
         $extendedTransform = Craft::$app->getAssetTransforms()->extendTransform($transform, ['height' => 300]);
-        $this->assertNotSame($extendedTransform, $transform);
+        self::assertNotSame($extendedTransform, $transform);
     }
 
     public function extendTransformDataProvider()

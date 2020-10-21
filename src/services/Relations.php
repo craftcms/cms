@@ -53,18 +53,19 @@ class Relations extends Component
             ];
         }
 
+        $db = Craft::$app->getDb();
+
         $oldRelations = (new Query())
             ->select(['id', 'sourceSiteId', 'targetId', 'sortOrder'])
             ->from([Table::RELATIONS])
             ->where($oldRelationConditions)
-            ->all();
+            ->all($db);
 
         /** @var Command[] $updateCommands */
         $updateCommands = [];
         $deleteIds = [];
 
         $sourceSiteId = $field->localizeRelations ? $source->siteId : null;
-        $db = Craft::$app->getDb();
 
         foreach ($oldRelations as $relation) {
             // Does this relation still exist?
@@ -86,7 +87,7 @@ class Relations extends Component
         }
 
         if (!empty($updateCommands) || !empty($deleteIds) || !empty($targetIds)) {
-            $transaction = Craft::$app->getDb()->beginTransaction();
+            $transaction = $db->beginTransaction();
             try {
                 foreach ($updateCommands as $command) {
                     $command->execute();
@@ -104,19 +105,18 @@ class Relations extends Component
                             $sortOrder + 1,
                         ];
                     }
-                    Db::batchInsert(Table::RELATIONS, ['fieldId', 'sourceId', 'sourceSiteId', 'targetId', 'sortOrder'], $values);
+                    Db::batchInsert(Table::RELATIONS, ['fieldId', 'sourceId', 'sourceSiteId', 'targetId', 'sortOrder'], $values, true, $db);
                 }
 
                 if (!empty($deleteIds)) {
                     Db::delete(Table::RELATIONS, [
                         'id' => $deleteIds,
-                    ]);
+                    ], [], $db);
                 }
 
                 $transaction->commit();
             } catch (\Throwable $e) {
                 $transaction->rollBack();
-
                 throw $e;
             }
         }

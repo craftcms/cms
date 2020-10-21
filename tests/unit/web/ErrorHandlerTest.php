@@ -49,9 +49,9 @@ class ErrorHandlerTest extends TestCase
     {
         // Disable clear output as this throws: Test code or tested code did not (only) close its own output buffers
         $this->errorHandler = Stub::construct(ErrorHandler::class, [], [
-            'logException' => $this->assertObjectIsInstanceOfClassCallback(Exception::class),
+            'logException' => self::assertObjectIsInstanceOfClassCallback(Exception::class),
             'clearOutput' => null,
-            'renderException' => $this->assertObjectIsInstanceOfClassCallback(Exception::class)
+            'renderException' => self::assertObjectIsInstanceOfClassCallback(Exception::class)
         ]);
 
         $exception = new RuntimeError('A Twig error occurred');
@@ -66,9 +66,9 @@ class ErrorHandlerTest extends TestCase
     {
         // Disable clear output as this throws: Test code or tested code did not (only) close its own output buffers
         $this->errorHandler = Stub::construct(ErrorHandler::class, [], [
-            'logException' => $this->assertObjectIsInstanceOfClassCallback(HttpException::class),
+            'logException' => self::assertObjectIsInstanceOfClassCallback(HttpException::class),
             'clearOutput' => null,
-            'renderException' => $this->assertObjectIsInstanceOfClassCallback(HttpException::class)
+            'renderException' => self::assertObjectIsInstanceOfClassCallback(HttpException::class)
         ]);
 
         // Oops. Page not found
@@ -77,7 +77,7 @@ class ErrorHandlerTest extends TestCase
 
         // Test 404's are treated with a different file
         $this->errorHandler->handleException($exception);
-        $this->assertSame(Craft::getAlias('@crafttestsfolder/storage/logs/web-404s.log'), Craft::$app->getLog()->targets[0]->logFile);
+        self::assertSame(Craft::getAlias('@crafttestsfolder/storage/logs/web-404s.log'), Craft::$app->getLog()->targets[0]->logFile);
     }
 
     /**
@@ -88,7 +88,7 @@ class ErrorHandlerTest extends TestCase
      */
     public function testGetExceptionName(Throwable $exception, $message)
     {
-        $this->assertSame($message, $this->errorHandler->getExceptionName($exception));
+        self::assertSame($message, $this->errorHandler->getExceptionName($exception));
     }
 
     /**
@@ -101,7 +101,7 @@ class ErrorHandlerTest extends TestCase
      */
     public function testGetTypeUrl($result, $class, $method)
     {
-        $this->assertSame($result, $this->invokeMethod($this->errorHandler, 'getTypeUrl', [$class, $method]));
+        self::assertSame($result, $this->invokeMethod($this->errorHandler, 'getTypeUrl', [$class, $method]));
     }
 
     /**
@@ -110,7 +110,7 @@ class ErrorHandlerTest extends TestCase
     public function testHandleError()
     {
         if (PHP_VERSION_ID >= 70100) {
-            $this->assertNull($this->errorHandler->handleError(null, 'Narrowing occurred during type inference. Please file a bug report', null, null));
+            self::assertNull($this->errorHandler->handleError(null, 'Narrowing occurred during type inference. Please file a bug report', null, null));
         } else {
             $this->markTestSkipped('Running on PHP 70100. parent::handleError() should be called by default in the craft ErrorHandler.');
         }
@@ -125,7 +125,7 @@ class ErrorHandlerTest extends TestCase
     public function testIsCoreFile($result, $input)
     {
         $isCore = $this->errorHandler->isCoreFile(Craft::getAlias($input));
-        $this->assertSame($result, $isCore);
+        self::assertSame($result, $isCore);
     }
 
     /**

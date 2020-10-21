@@ -56,11 +56,11 @@
 
 <div id="context-btngroup" class="btngroup">
     <button type="button" id="context-btn" class="btn {% if showMenu %}menubtn{% else %}disabled{% endif %}"{% if showSiteLabel %} data-icon="world"{% endif %}>
-        {% if showSiteLabel %}
-            {{ element.getSite().name|t('site') }}
-        {% endif %}
-        {% if showSiteLabel and showRevisionLabel %}–{% endif %}
-        {% if showRevisionLabel %}
+        {%- if showSiteLabel %}
+            {{- element.getSite().name|t('site') }}
+        {%- endif %}
+        {%- if showSiteLabel and showRevisionLabel %} – {% endif %}
+        {%- if showRevisionLabel -%}
             <span id="revision-label">
                 {%- if isDraft %}
                     {{- element.getDraftName() }}
@@ -70,7 +70,7 @@
                     {{- 'Current'|t('app') }}
                 {%- endif -%}
             </span>
-        {% endif %}
+        {%- endif -%}
     </button>
 
     <div class="menu{% if not showMenu %} hidden{% endif %}">

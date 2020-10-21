@@ -1077,6 +1077,19 @@ class Db
     private static $_db;
 
     /**
+     * Resets the memoized database connection.
+     *
+     * @since 3.5.12.1
+     */
+    public static function reset()
+    {
+        if (self::$_db) {
+            self::$_db->close();
+        }
+        self::$_db = null;
+    }
+
+    /**
      * Converts a given param value to an array.
      *
      * @param mixed $value

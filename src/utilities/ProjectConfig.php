@@ -62,9 +62,17 @@ class ProjectConfig extends Utility
             $view->registerTranslations('app', [
                 'Show all changes',
             ]);
+            $invert = (
+                !$projectConfig->writeYamlAutomatically &&
+                $projectConfig->get('dateModified') > $projectConfig->get('dateModified', true)
+            );
+        } else {
+            $invert = false;
         }
 
         return $view->renderTemplate('_components/utilities/ProjectConfig', [
+            'invert' => $invert,
+            'yamlExists' => $projectConfig->writeYamlAutomatically || $projectConfig->getDoesYamlExist(),
             'areChangesPending' => $areChangesPending,
             'entireConfig' => Yaml::dump($projectConfig->get(), 20, 2),
         ]);
