@@ -5,6 +5,9 @@
 ## Changed
 - Updated Twig to 2.14, for environments running PHP 7.2.5 or later, and where the `config.platform.php` value in `composer.json` is at least `7.2.5`. ([#7044](https://github.com/craftcms/cms/issues/7044))
 
+### Fixed
+- Fixed a bug where `craft\events\UserGroupsAssignEvent::$groupIds` was getting set incorrectly for the `craft\services\Users::EVENT_BEFORE_ASSIGN_USER_TO_GROUPS` event. ([#7046](https://github.com/craftcms/cms/issues/7046))
+
 ## 3.5.14 - 2020-10-20
 
 ### Added

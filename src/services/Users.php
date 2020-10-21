@@ -992,7 +992,7 @@ class Users extends Component
         // Fire a 'beforeAssignUserToGroups' event
         $event = new UserGroupsAssignEvent([
             'userId' => $userId,
-            'groupIds' => array_keys($groupIds),
+            'groupIds' => $groupIds,
             'removedGroupIds' => $removedGroupIds,
             'newGroupIds' => array_keys($newGroupIds),
         ]);
