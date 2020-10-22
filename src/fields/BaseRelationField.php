@@ -1038,7 +1038,7 @@ JS;
                 }
             }
 
-            if ($element !== null) {
+            if ($element !== null && $element::isLocalized()) {
                 return $element->siteId;
             }
         }
