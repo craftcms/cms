@@ -759,16 +759,6 @@ class Asset extends Element
     }
 
     /**
-     * @inheritdoc
-     */
-    public function fields()
-    {
-        $fields = parent::fields();
-        $fields['volumeId'] = 'volumeId';
-        return $fields;
-    }
-
-    /**
      * Returns the volume’s ID.
      *
      * @return int|null
@@ -1687,6 +1677,7 @@ class Asset extends Element
         $names[] = 'height';
         $names[] = 'mimeType';
         $names[] = 'path';
+        $names[] = 'volumeId';
         $names[] = 'width';
         return $names;
     }
