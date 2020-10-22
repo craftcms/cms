@@ -484,7 +484,7 @@ class ProjectConfig
             'dependencies' => [
                 $projectConfig->getCacheDependency(),
                 new ExpressionDependency([
-                    'expression' => 'md5(' . Json::class . '::encode('. Craft::class . '::$app->getProjectConfig()->get(null, true)))',
+                    'expression' => 'md5(' . Json::class . '::encode(' . Craft::class . '::$app->getProjectConfig()->get(null, true)))',
                 ]),
             ],
         ]));

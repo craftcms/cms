@@ -501,7 +501,7 @@ class Gql extends Component
             'variables' => $variables,
             'operationName' => $operationName,
             'context' => [
-                'conditionBuilder' =>  Craft::createObject([
+                'conditionBuilder' => Craft::createObject([
                     'class' => ElementQueryConditionBuilder::class,
                 ])
             ]

@@ -11,7 +11,6 @@ use Craft;
 use craft\elements\Asset as AssetElement;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\helpers\Gql;
-use craft\helpers\StringHelper;
 use GraphQL\Type\Definition\ResolveInfo;
 
 /**

@@ -32,7 +32,6 @@ use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
-use craft\models\VolumeFolder;
 use craft\records\User as UserRecord;
 use craft\web\Request;
 use DateTime;

@@ -18,7 +18,6 @@ use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\exporters\Raw;
 use craft\events\ElementActionEvent;
-use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
 use yii\db\Expression;
 use yii\web\BadRequestHttpException;

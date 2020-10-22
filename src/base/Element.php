@@ -56,7 +56,6 @@ use craft\web\UploadedFile;
 use DateTime;
 use Twig\Markup;
 use yii\base\Event;
-use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\db\ExpressionInterface;
 use yii\validators\NumberValidator;

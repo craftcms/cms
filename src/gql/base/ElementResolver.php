@@ -110,7 +110,7 @@ abstract class ElementResolver extends Resolver
         }
 
         /** @var ElementQueryConditionBuilder $conditionBuilder */
-        $conditionBuilder = empty($context['conditionBuilder']) ? Craft::createObject([ 'class' => ElementQueryConditionBuilder::class]) : $context['conditionBuilder'];
+        $conditionBuilder = empty($context['conditionBuilder']) ? Craft::createObject(['class' => ElementQueryConditionBuilder::class]) : $context['conditionBuilder'];
         $conditionBuilder->setResolveInfo($resolveInfo);
 
         $conditions = $conditionBuilder->extractQueryConditions($parentField);
