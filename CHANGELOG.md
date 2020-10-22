@@ -28,6 +28,7 @@
 - Updated Guzzle to 7.x.
 - Updated LitEmoji ot 2.x.
 - Updated graphql-php to 14.x.
+- Updated the Symfony YAML component to 5.x.
 
 ### Deprecated
 - Deprecated `craft\helpers\ArrayHelper::append()`. `array_unshift()` should be used instead.
