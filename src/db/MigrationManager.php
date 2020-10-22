@@ -204,7 +204,7 @@ class MigrationManager extends Component
      */
     public function migrateUp($migration)
     {
-        list($migrationName, $migration) = $this->_normalizeMigration($migration);
+        [$migrationName, $migration] = $this->_normalizeMigration($migration);
 
         if ($migrationName === self::BASE_MIGRATION) {
             return;
@@ -265,7 +265,7 @@ class MigrationManager extends Component
      */
     public function migrateDown($migration)
     {
-        list($migrationName, $migration) = $this->_normalizeMigration($migration);
+        [$migrationName, $migration] = $this->_normalizeMigration($migration);
 
         if ($migrationName === self::BASE_MIGRATION) {
             return;

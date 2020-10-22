@@ -1788,7 +1788,7 @@ JS;
                 $this->registerAssetBundle($name, $position);
             }
 
-            foreach ($session->getJsFlashes(true) as list($js, $position, $key)) {
+            foreach ($session->getJsFlashes(true) as [$js, $position, $key]) {
                 $this->registerJs($js, $position, $key);
             }
         }

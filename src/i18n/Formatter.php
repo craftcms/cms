@@ -180,7 +180,7 @@ class Formatter extends \yii\i18n\Formatter
         /** @var DateTime $timestamp */
         /** @var bool $hasTimeInfo */
         /** @var bool $hasDateInfo */
-        list($timestamp, $hasTimeInfo, $hasDateInfo) = $this->normalizeDatetimeValue($value, true);
+        [$timestamp, $hasTimeInfo, $hasDateInfo] = $this->normalizeDatetimeValue($value, true);
 
         // If it's today or missing date info, just return the local time.
         if (!$hasDateInfo || DateTimeHelper::isToday($timestamp)) {
@@ -338,7 +338,7 @@ class Formatter extends \yii\i18n\Formatter
 
         // Avoid time zone conversion for date-only values
         if ($type === 'date') {
-            list($timestamp, $hasTimeInfo) = $this->normalizeDatetimeValue($value, true);
+            [$timestamp, $hasTimeInfo] = $this->normalizeDatetimeValue($value, true);
 
             if (!$hasTimeInfo) {
                 $timeZone = $this->defaultTimeZone;

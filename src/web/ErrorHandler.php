@@ -170,7 +170,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
     {
         if (strpos($file, 'compiled_templates') !== false) {
             try {
-                list($file, $line) = $this->_resolveTemplateTrace($file, $line);
+                [$file, $line] = $this->_resolveTemplateTrace($file, $line);
             } catch (\Throwable $e) {
                 // oh well, we tried
             }

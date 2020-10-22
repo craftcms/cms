@@ -270,7 +270,7 @@ class UpdateController extends Controller
         } else {
             foreach ($handles as $handle) {
                 if (strpos($handle, ':') !== false) {
-                    list($handle, $to) = explode(':', $handle, 2);
+                    [$handle, $to] = explode(':', $handle, 2);
                 } else {
                     $to = null;
                 }
@@ -301,7 +301,7 @@ class UpdateController extends Controller
             $this->stdout($total === 1 ? 'one' : $total, Console::FG_GREEN, Console::BOLD);
             $this->stdout(' update' . ($total === 1 ? '' : 's') . ':' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
 
-            foreach ($info as list($handle, $from, $to, $critical, $status)) {
+            foreach ($info as [$handle, $from, $to, $critical, $status]) {
                 $this->_outputUpdate($handle, $from, $to, $critical, $status);
             }
 

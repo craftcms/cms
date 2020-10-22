@@ -1250,7 +1250,7 @@ class Request extends \yii\web\Request
             throw new NotFoundHttpException(Craft::t('yii', 'Page not found.'));
         }
 
-        list($route, $params) = $result;
+        [$route, $params] = $result;
 
         /** @noinspection AdditionOperationOnArraysInspection */
         return [$route, $params + $this->getQueryParams()];
@@ -1333,7 +1333,7 @@ class Request extends \yii\web\Request
             return false;
         }
 
-        list($nonce,) = $splitToken;
+        [$nonce,] = $splitToken;
 
         // Check that this token is for the current user
         $passwordHash = $currentUser->password;

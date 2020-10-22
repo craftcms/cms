@@ -78,7 +78,7 @@ class Svg extends Image
             throw new ImageException(Craft::t('app', 'No file exists at the given path.'));
         }
 
-        list($width, $height) = ImageHelper::imageSize($path);
+        [$width, $height] = ImageHelper::imageSize($path);
 
         $svg = file_get_contents($path);
 
