@@ -27,7 +27,7 @@
 - Updated Twig to 3.1.
 - Updated Guzzle to 7.x.
 - Updated LitEmoji ot 2.x.
-- Updated `webonyx/graphql-php` to 14.1.1.
+- Updated graphql-php to 14.x.
 
 ### Deprecated
 - Deprecated `craft\helpers\ArrayHelper::append()`. `array_unshift()` should be used instead.
