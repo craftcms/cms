@@ -9,7 +9,6 @@ namespace craft\web\twig;
 
 use Craft;
 use Twig\Environment as TwigEnvironment;
-use Twig\Error\Error;
 use Twig\Extension\EscaperExtension;
 use Twig\Loader\LoaderInterface;
 use Twig\Source;
