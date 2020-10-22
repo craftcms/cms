@@ -1270,16 +1270,6 @@ class GeneralConfig extends BaseObject
     public $storeUserIps = false;
 
     /**
-     * @var bool Whether Twig runtime errors should be suppressed.
-     *
-     * If it is set to `true`, the errors will still be logged to Craft’s log files.
-     *
-     * @deprecated in 3.3.0
-     * @group System
-     */
-    public $suppressTemplateErrors = false;
-
-    /**
      * @var string|array|false|null Configures Craft to send all system emails to either a single email address or an array of email addresses
      * for testing purposes.
      *
@@ -1601,10 +1591,6 @@ class GeneralConfig extends BaseObject
                     throw new InvalidConfigException($e->getMessage(), 0, $e);
                 }
             }
-        }
-
-        if ($this->suppressTemplateErrors) {
-            Craft::$app->getDeprecator()->log('suppressTemplateErrors', "The `suppressTemplateErrors` config setting has been deprecated because it relies on a deprecated Twig feature.");
         }
 
         // Always use project config files

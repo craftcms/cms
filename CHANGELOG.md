@@ -31,3 +31,7 @@
 ### Deprecated
 - Deprecated `craft\helpers\ArrayHelper::append()`. `array_unshift()` should be used instead.
 - Deprecated `craft\helpers\ArrayHelper::prepend()`. `array_push()` should be used instead.
+
+### Removed
+- Removed the `suppressTemplateErrors` config setting.
+- Removed `craft\web\twig\Template`.

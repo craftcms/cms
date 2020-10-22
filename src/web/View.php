@@ -21,7 +21,6 @@ use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\web\twig\Environment;
 use craft\web\twig\Extension;
-use craft\web\twig\Template;
 use craft\web\twig\TemplateLoader;
 use JSMin\JSMin;
 use Minify_CSSmin;
@@ -1939,11 +1938,6 @@ JS;
         ];
 
         $generalConfig = Craft::$app->getConfig()->getGeneral();
-
-        // Only load our custom Template class if they still have suppressTemplateErrors enabled
-        if ($generalConfig->suppressTemplateErrors) {
-            $this->_twigOptions['base_template_class'] = Template::class;
-        }
 
         if ($generalConfig->headlessMode && Craft::$app->getRequest()->getIsSiteRequest()) {
             $this->_twigOptions['autoescape'] = 'js';
