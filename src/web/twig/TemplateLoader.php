@@ -9,7 +9,6 @@ namespace craft\web\twig;
 
 use Craft;
 use craft\web\View;
-use Twig\Loader\ExistsLoaderInterface;
 use Twig\Loader\LoaderInterface;
 use Twig\Source;
 
@@ -19,9 +18,7 @@ use Twig\Source;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-/** @noinspection PhpDeprecationInspection */
-
-class TemplateLoader implements LoaderInterface, ExistsLoaderInterface
+class TemplateLoader implements LoaderInterface
 {
     /**
      * @var View|null
@@ -41,7 +38,7 @@ class TemplateLoader implements LoaderInterface, ExistsLoaderInterface
     /**
      * @inheritdoc
      */
-    public function exists($name)
+    public function exists(string $name)
     {
         return $this->view->doesTemplateExist($name);
     }
@@ -49,7 +46,7 @@ class TemplateLoader implements LoaderInterface, ExistsLoaderInterface
     /**
      * @inheritdoc
      */
-    public function getSourceContext($name)
+    public function getSourceContext(string $name): Source
     {
         $template = $this->_resolveTemplate($name);
 
@@ -67,7 +64,7 @@ class TemplateLoader implements LoaderInterface, ExistsLoaderInterface
      * @return string The cache key (the path to the template)
      * @throws TemplateLoaderException if the template doesn’t exist
      */
-    public function getCacheKey($name): string
+    public function getCacheKey(string $name): string
     {
         return $this->_resolveTemplate($name);
     }
@@ -80,7 +77,7 @@ class TemplateLoader implements LoaderInterface, ExistsLoaderInterface
      * @return bool
      * @throws TemplateLoaderException if the template doesn’t exist
      */
-    public function isFresh($name, $time): bool
+    public function isFresh(string $name, int $time): bool
     {
         // If this is a CP request and a DB update is needed, force a recompile.
         $request = Craft::$app->getRequest();

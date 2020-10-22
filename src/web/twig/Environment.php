@@ -34,12 +34,11 @@ class Environment extends TwigEnvironment
     /**
      * @inheritdoc
      */
-    public function compileSource(Source $source)
+    public function compileSource(Source $source): string
     {
         Craft::beginProfile($source->getName(), __METHOD__);
         $result = parent::compileSource($source);
         Craft::endProfile($source->getName(), __METHOD__);
-
         return $result;
     }
 

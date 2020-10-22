@@ -30,7 +30,7 @@ class EventTagAdder extends BaseEventTagVisitor
     /**
      * @inheritdoc
      */
-    public function enterNode(Node $node, Environment $env)
+    public function enterNode(Node $node, Environment $env): Node
     {
         // Ignore if we're not rendering a page template
         if (!Craft::$app->getView()->getIsRenderingPageTemplate()) {
@@ -48,7 +48,7 @@ class EventTagAdder extends BaseEventTagVisitor
     /**
      * @inheritdoc
      */
-    public function leaveNode(Node $node, Environment $env)
+    public function leaveNode(Node $node, Environment $env): ?Node
     {
         return $node;
     }

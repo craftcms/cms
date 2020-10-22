@@ -7,7 +7,7 @@
             <button type="button" id="newwidgetmenubtn" class="btn menubtn add icon">{{ 'New widget'|t('app') }}</button>
             <div class="menu newwidgetmenu">
                 <ul>
-                    {% for type, info in widgetTypes if info.selectable %}
+                    {% for type, info in widgetTypes|filter(t => t.selectable) %}
                         <li>
                             <a data-type="{{ type }}" data-name="{{ info.name }}">
                                 <span class="icon">{{ info.iconSvg|raw }}</span>

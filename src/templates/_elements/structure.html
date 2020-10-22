@@ -9,7 +9,7 @@
         <li{% if element.id in collapsedElementIds %} class="collapsed"{% endif %} data-level="{{ element.level }}">
             {% set indent = 8 + (element.level - 1) * 35 %}
             <div class="row{% if element.id in disabledElementIds %} disabled{% endif %}" style="margin-left: -{{ indent }}px; padding-left: {{ indent }}px;">
-                {%- spaceless %}
+                {%- apply spaceless %}
                     {% block element %}
                         {% include "_elements/element" %}
 
@@ -21,7 +21,7 @@
                             <a class="add icon" title="{{ 'New child'|t('app') }}"></a>
                         {% endif %}
                     {% endblock %}
-                {% endspaceless -%}
+                {% endapply -%}
             </div>
 
             {% ifchildren %}
@@ -36,7 +36,7 @@
 {# Hide "Add child" menu buttons beyond the max level #}
 {% if structure.maxLevels %}
     {% css %}
-        #{{ id }}{% for i in 2 .. structure.maxLevels if structure.maxLevels >= 2 %} ul{% endfor %} .add { display: none; }
+        #{{ id }}{% if structure.maxLevels >= 2 %}{% for i in 2 .. structure.maxLevels  %} ul{% endfor %}{% endif%} .add { display: none; }
     {% endcss %}
 {% endif %}
 

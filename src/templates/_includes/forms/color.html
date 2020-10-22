@@ -8,7 +8,7 @@
 {% set autofocus = (autofocus ?? false) and not craft.app.request.isMobileBrowser(true) -%}
 {% set disabled = disabled ?? false -%}
 
-{% spaceless %}
+{% apply spaceless %}
     <div id="{{ containerId }}" class="flex color-container"
             {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
         <div class="color static{% if small %} small{% endif %}">
@@ -26,7 +26,7 @@
             disabled: disabled
         }) }}
     </div>
-{% endspaceless -%}
+{% endapply -%}
 
 {% js %}
     new Craft.ColorInput('#{{ containerId|namespaceInputId }}');
