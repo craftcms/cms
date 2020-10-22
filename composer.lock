@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "687f1159c1e993bc1372a886f01ec6f5",
+    "content-hash": "99ea997430274bd609b1cc036ee9b0ca",
     "packages": [
         {
             "name": "cebe/markdown",
@@ -870,23 +870,23 @@
         },
         {
             "name": "elvanto/litemoji",
-            "version": "1.4.4",
+            "version": "2.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/elvanto/litemoji.git",
-                "reference": "17bf635e4d1a5b4d35d2cadf153cd589b78af7f0"
+                "reference": "a71f785642a93194d0b88edebcc5d6ca0b07d282"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/elvanto/litemoji/zipball/17bf635e4d1a5b4d35d2cadf153cd589b78af7f0",
-                "reference": "17bf635e4d1a5b4d35d2cadf153cd589b78af7f0",
+                "url": "https://api.github.com/repos/elvanto/litemoji/zipball/a71f785642a93194d0b88edebcc5d6ca0b07d282",
+                "reference": "a71f785642a93194d0b88edebcc5d6ca0b07d282",
                 "shasum": ""
             },
             "require": {
-                "php": ">=5.4"
+                "php": ">=5.6"
             },
             "require-dev": {
-                "milesj/emojibase": "3.1.0",
+                "milesj/emojibase": "5.0.1",
                 "phpunit/phpunit": "^5.0"
             },
             "type": "library",
@@ -908,7 +908,7 @@
                 "issues": "https://github.com/elvanto/litemoji/issues",
                 "source": "https://github.com/elvanto/litemoji/tree/master"
             },
-            "time": "2018-09-28T05:23:38+00:00"
+            "time": "2020-06-08T05:24:49+00:00"
         },
         {
             "name": "enshrined/svg-sanitize",

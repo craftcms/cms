@@ -19,6 +19,7 @@
 
 ### Changed
 - `craft\services\Gql::getValidationRules()` now has an `$isIntrospectionQuery` argument.
+- Updated LitEmoji ot 2.x.
 - Updated webonyx/graphql-php to 14.x.
 
 ## 3.6.0-beta.2 - 2020-11-04
