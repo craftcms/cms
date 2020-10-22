@@ -36,4 +36,7 @@
 
 ### Removed
 - Removed the `suppressTemplateErrors` config setting.
+- Removed Minify and jsmin-php.
 - Removed `craft\web\twig\Template`.
+- Removed `craft\web\View::$minifyCss`.
+- Removed `craft\web\View::$minifyJs`.

@@ -98,18 +98,6 @@ class View extends \yii\web\View
     const TEMPLATE_MODE_SITE = 'site';
 
     /**
-     * @var bool Whether to minify CSS registered with [[registerCss()]]
-     * @since 3.4.0
-     */
-    public $minifyCss = false;
-
-    /**
-     * @var bool Whether to minify JS registered with [[registerJs()]]
-     * @since 3.4.0
-     */
-    public $minifyJs = false;
-
-    /**
      * @var bool Whether to allow [[evaluateDynamicContent()]] to be called.
      *
      * ::: warning
@@ -931,24 +919,6 @@ class View extends \yii\web\View
     }
 
     /**
-     * @inheritdoc
-     * @since 3.4.0
-     */
-    public function registerCss($css, $options = [], $key = null)
-    {
-        if ($this->minifyCss) {
-            // Sanity check to work around https://github.com/tubalmartin/YUI-CSS-compressor-PHP-port/issues/58
-            if (preg_match('/\{[^\}]*$/', $css, $matches, PREG_OFFSET_CAPTURE)) {
-                Craft::warning("Unable to minify CSS due to an unclosed CSS block at offset {$matches[0][1]}.", __METHOD__);
-            } else {
-                $css = Minify_CSSmin::minify($css);
-            }
-        }
-
-        parent::registerCss($css, $options, $key);
-    }
-
-    /**
      * Registers a hi-res CSS code block.
      *
      * @param string $css the CSS code block to be registered
@@ -980,10 +950,6 @@ class View extends \yii\web\View
     {
         // Trim any whitespace and ensure it ends with a semicolon.
         $js = StringHelper::ensureRight(trim($js, " \t\n\r\0\x0B"), ';');
-
-        if ($this->minifyJs) {
-            $js = JSMin::minify($js);
-        }
 
         parent::registerJs($js, $position, $key);
     }
