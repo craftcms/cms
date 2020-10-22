@@ -107,7 +107,7 @@ class SystemReport extends Utility
             'Craft edition & version' => 'Craft ' . App::editionName(Craft::$app->getEdition()) . ' ' . Craft::$app->getVersion(),
             'Yii version' => Yii::getVersion(),
             'Twig version' => Environment::VERSION,
-            'Guzzle version' => Client::VERSION,
+            'Guzzle version' => Client::MAJOR_VERSION,
             'Imagine version' => Imagine::VERSION,
         ];
     }
