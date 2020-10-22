@@ -25,6 +25,7 @@
 - `craft\base\Model::setAttributes()` now normalizes date attributes into `DateTime` objects.
 - `craft\services\Gql::getValidationRules()` now has an `$isIntrospectionQuery` argument.
 - Updated Twig to 2.13.
+- Updated LitEmoji ot 2.x.
 - Updated `webonyx/graphql-php` to 14.1.1.
 
 ### Deprecated
