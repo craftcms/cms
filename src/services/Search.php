@@ -14,6 +14,7 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\errors\SiteNotFoundException;
 use craft\events\SearchEvent;
+use craft\events\ElementKeywordsEvent;
 use craft\helpers\Db;
 use craft\helpers\Search as SearchHelper;
 use craft\helpers\StringHelper;
@@ -42,6 +43,11 @@ class Search extends Component
      * @event SearchEvent The event that is triggered after a search is performed.
      */
     const EVENT_AFTER_SEARCH = 'afterSearch';
+
+    /**
+     * @event SearchEvent The event that is triggered before each set of custom keywords are saved to the index.
+     */
+    CONST EVENT_ELEMENT_KEYWORDS = 'elementsKeywords';
 
     /**
      * @var bool Whether fulltext searches should be used ever. (MySQL only.)
@@ -160,7 +166,15 @@ class Search extends Component
         foreach ($updateFields as $field) {
             $fieldValue = $element->getFieldValue($field->handle);
             $keywords = $field->getSearchKeywords($fieldValue, $element);
-            $this->_indexElementKeywords($element->id, 'field', (string)$field->id, $element->siteId, $keywords);
+            
+            $event = new ElementKeywordsEvent([
+                'field' => $field,
+                'sender' => $element,
+                'keywords' => $keywords,
+            ]);
+            $this->trigger(static::EVENT_ELEMENT_KEYWORDS, $event);
+
+            $this->_indexElementKeywords($element->id, 'field', (string)$field->id, $element->siteId, $event->keywords);
         }
 
         // Release the lock
