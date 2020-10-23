@@ -280,6 +280,7 @@ abstract class Migration extends \yii\db\Migration
 
     /**
      * Creates and executes a DELETE SQL statement that will only delete duplicate rows from a table.
+     *
      * @param string $table The table where the data will be deleted from
      * @param string[] $columns The column names that contain duplicate data
      * @param string $pk The primary key column name
