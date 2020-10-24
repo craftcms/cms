@@ -4,3 +4,10 @@
 
 ### Changed
 - Updated Guzzle to 7.x, for environments running PHP 7.2.5 or later, and where the `config.platform.php` value in `composer.json` is at least `7.2.5`. ([#6997](https://github.com/craftcms/cms/issues/6997))
+
+### Deprecated
+- Deprecated `craft\web\View::$minifyCss`.
+- Deprecated `craft\web\View::$minifyJs`.
+
+### Removed
+- Removed Minify and jsmin-php.
