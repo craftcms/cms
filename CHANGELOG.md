@@ -3,7 +3,7 @@
 ## Unreleased
 
 ## Added
-- Assets now have the `srcSet` field available when using the GraphQL API. ([#6660](https://github.com/craftcms/cms/issues/6660#issuecomment-714535759))
+- Assets now have a `srcSet` field available via GraphQL. ([#6660](https://github.com/craftcms/cms/issues/6660#issuecomment-714535759))
 
 ## Changed
 - Updated Twig to 2.14, for environments running PHP 7.2.5 or later, and where the `config.platform.php` value in `composer.json` is at least `7.2.5`. ([#7044](https://github.com/craftcms/cms/issues/7044))
