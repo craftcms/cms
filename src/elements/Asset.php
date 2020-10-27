@@ -854,6 +854,21 @@ class Asset extends Element
 
     /**
      * @inheritdoc
+     * @since 3.5.15
+     */
+    public function getIsDeletable(): bool
+    {
+        $userSession = Craft::$app->getUser();
+        $volume = $this->getVolume();
+
+        return (
+            $userSession->checkPermission("deleteFilesAndFoldersInVolume:$volume->uid") &&
+            ($userSession->getId() == $this->uploaderId || $userSession->checkPermission("deletePeerFilesInVolume:$volume->uid"))
+        );
+    }
+
+    /**
+     * @inheritdoc
      * ---
      * ```php
      * $url = $asset->cpEditUrl;
