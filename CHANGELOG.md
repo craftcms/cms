@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+## Added
+- Assets now have the `srcSet` field available when using the GraphQL API. ([#6660](https://github.com/craftcms/cms/issues/6660#issuecomment-714535759))
+
 ## Changed
 - Updated Twig to 2.14, for environments running PHP 7.2.5 or later, and where the `config.platform.php` value in `composer.json` is at least `7.2.5`. ([#7044](https://github.com/craftcms/cms/issues/7044))
 
@@ -9,6 +12,7 @@
 - Fixed a bug where `craft\events\UserGroupsAssignEvent::$groupIds` was getting set incorrectly for the `craft\services\Users::EVENT_BEFORE_ASSIGN_USER_TO_GROUPS` event. ([#7046](https://github.com/craftcms/cms/issues/7046))
 - Fixed a bug where the `craft\base\Element::EVENT_SET_EAGER_LOADED_ELEMENTS` event was being triggered as a class-level event rather than an instance-level event. ([#7047](https://github.com/craftcms/cms/issues/7047))
 - Fixed some errors when running PHP 8.
+- Fixed an error when accessing `draftNotes` or `draftName` on a non-draft using the GraphQL API.
 
 ## 3.5.14 - 2020-10-20
 

@@ -55,6 +55,10 @@ class Asset extends Element
             }
         }
 
+        if ($fieldName === 'srcSet') {
+            return $source->getSrcset($arguments['sizes']);
+        }
+
         return parent::resolve($source, $arguments, $context, $resolveInfo);
     }
 }
