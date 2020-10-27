@@ -9,13 +9,13 @@ namespace craft\services;
 
 use Composer\CaBundle\CaBundle;
 use Composer\Config\JsonConfigSource;
+use Composer\DependencyResolver\Request;
 use Composer\Installer;
 use Composer\IO\IOInterface;
 use Composer\IO\NullIO;
 use Composer\Json\JsonFile;
 use Composer\Json\JsonManipulator;
 use Composer\Package\Locker;
-use Composer\Util\Platform;
 use Craft;
 use craft\composer\Factory;
 use craft\helpers\App;
@@ -103,11 +103,9 @@ class Composer extends Component
      *
      * @param array|null $requirements Package name/version pairs, or set to null to run the equivalent of `composer install`
      * @param IOInterface|null $io The IO object that Composer should be instantiated with
-     * @param array|bool $allowlist List of package names to allow, `true` if that should be determined
-     * dynamically, or `false` if no allowlist should be used.
      * @throws \Throwable if something goes wrong
      */
-    public function install(array $requirements = null, IOInterface $io = null, $allowlist = true)
+    public function install(array $requirements = null, IOInterface $io = null)
     {
         App::maxPowerCaptain();
 
@@ -152,20 +150,19 @@ class Composer extends Component
 
         $installer = Installer::create($io, $composer)
             ->setPreferDist()
-            ->setSkipSuggest()
             ->setDumpAutoloader()
             ->setRunScripts(false)
             ->setOptimizeAutoloader(true)
             ->setClassMapAuthoritative($config->get('classmap-authoritative'));
 
         if ($requirements !== null) {
-            $installer->setUpdate();
+            $installer
+                ->setUpdate(true)
+                ->setUpdateAllowTransitiveDependencies(Request::UPDATE_LISTED_WITH_TRANSITIVE_DEPS);
 
-            if (is_array($allowlist)) {
-                $installer->setUpdateWhitelist($allowlist);
-            } else if ($allowlist === true) {
-                $allowlist = Craft::$app->getApi()->getComposerWhitelist($requirements);
-                $installer->setUpdateWhitelist($allowlist);
+            // if no lock is present, we do not do a partial update as this is not supported by the Installer
+            if ($composer->getLocker()->isLocked()) {
+                $installer->setUpdateAllowList(array_keys($requirements));
             }
         }
 
@@ -253,13 +250,13 @@ class Composer extends Component
             }
 
             $composer = $this->createComposer($io, $jsonPath);
-            $composer->getDownloadManager()->setOutputProgress(false);
+            $composer->getInstallationManager()->setOutputProgress(false);
             $config = $composer->getConfig();
 
             // Run the installer
             $installer = Installer::create($io, $composer)
-                ->setUpdate()
-                ->setUpdateWhitelist($packages)
+                ->setUpdate(true)
+                ->setUpdateAllowList($packages)
                 ->setDumpAutoloader()
                 ->setRunScripts(false)
                 ->setOptimizeAutoloader(true)
@@ -345,19 +342,12 @@ class Composer extends Component
      */
     protected function _ensureHomeVar()
     {
-        if (App::env('COMPOSER_HOME') !== false) {
-            return;
+        // Must call getenv() instead of App::env() here because Composer\Factory doesn’t check $_SERVER
+        if (!getenv('COMPOSER_HOME')) {
+            $path = Craft::$app->getPath()->getRuntimePath() . DIRECTORY_SEPARATOR . 'composer';
+            FileHelper::createDirectory($path);
+            putenv("COMPOSER_HOME=$path");
         }
-
-        $alt = Platform::isWindows() ? 'APPDATA' : 'HOME';
-        if (App::env($alt) !== false) {
-            return;
-        }
-
-        // Just define one ourselves
-        $path = Craft::$app->getPath()->getRuntimePath() . DIRECTORY_SEPARATOR . 'composer';
-        FileHelper::createDirectory($path);
-        putenv("COMPOSER_HOME={$path}");
     }
 
     /**
@@ -515,9 +505,8 @@ class Composer extends Component
         $lockFile = pathinfo($jsonPath, PATHINFO_EXTENSION) === 'json'
             ? substr($jsonPath, 0, -4) . 'lock'
             : $jsonPath . '.lock';
-        $rm = $composer->getRepositoryManager();
         $im = $composer->getInstallationManager();
-        $locker = new Locker($io, new JsonFile($lockFile, null, $io), $rm, $im, file_get_contents($jsonPath));
+        $locker = new Locker($io, new JsonFile($lockFile, null, $io), $im, file_get_contents($jsonPath));
         $composer->setLocker($locker);
         return $composer;
     }

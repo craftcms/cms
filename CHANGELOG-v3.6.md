@@ -3,7 +3,9 @@
 ## Unreleased
 
 ### Changed
+- `craft\services\Composer::install()` no longer has an `$allowlist` argument.
 - Updated Guzzle to 7.x, for environments running PHP 7.2.5 or later, and where the `config.platform.php` value in `composer.json` is at least `7.2.5`. ([#6997](https://github.com/craftcms/cms/issues/6997))
+- Updated Composer to 2.0.2.
 
 ### Deprecated
 - Deprecated `craft\web\View::$minifyCss`.
@@ -11,3 +13,4 @@
 
 ### Removed
 - Removed Minify and jsmin-php.
+- Removed `craft\services\Api::getComposerWhitelist()`.
