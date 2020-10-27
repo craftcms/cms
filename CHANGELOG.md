@@ -4,6 +4,7 @@
 
 ## Added
 - Assets now have a `srcSet` field available via GraphQL. ([#6660](https://github.com/craftcms/cms/issues/6660#issuecomment-714535759))
+- The `restore` command now supports restoring zipped database backups. ([#7049](https://github.com/craftcms/cms/issues/7049))
 
 ## Changed
 - Updated Twig to 2.14, for environments running PHP 7.2.5 or later, and where the `config.platform.php` value in `composer.json` is at least `7.2.5`. ([#7044](https://github.com/craftcms/cms/issues/7044))
