@@ -155,6 +155,36 @@ class Updates extends Component
     }
 
     /**
+     * Returns whether there are any pending migrations.
+     *
+     * @param bool $includeContent Whether pending content migrations should be considered
+     * @return bool
+     * @since 3.5.15
+     */
+    public function getAreMigrationsPending(bool $includeContent = false): bool
+    {
+        if ($this->getIsCraftDbMigrationNeeded()) {
+            return true;
+        }
+
+        $pluginsService = Craft::$app->getPlugins();
+        foreach ($pluginsService->getAllPlugins() as $plugin) {
+            if ($pluginsService->doesPluginRequireDatabaseUpdate($plugin)) {
+                return true;
+            }
+        }
+
+        if ($includeContent) {
+            $contentMigrator = Craft::$app->getContentMigrator();
+            if (!empty($contentMigrator->getNewMigrations())) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Returns a list of things with updated schema versions.
      *
      * Craft CMS will be represented as "craft", plugins will be represented by their handles, and content will be represented as "content".
@@ -163,7 +193,7 @@ class Updates extends Component
      * @return string[]
      * @see runMigrations()
      */
-    public function getPendingMigrationHandles($includeContent = false): array
+    public function getPendingMigrationHandles(bool $includeContent = false): array
     {
         $handles = [];
 
