@@ -55,7 +55,7 @@ class Asset extends Element
             }
         }
 
-        if ($fieldName === 'srcSet') {
+        if ($fieldName === 'srcset') {
             return $source->getSrcset($arguments['sizes']);
         }
 

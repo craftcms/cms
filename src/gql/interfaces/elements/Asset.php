@@ -128,8 +128,8 @@ class Asset extends Element
                 'type' => Type::string(),
                 'description' => 'An `<img>` tag based on this asset.'
             ],
-            'srcSet' => [
-                'name' => 'srcSet',
+            'srcset' => [
+                'name' => 'srcset',
                 'type' => Type::string(),
                 'args' => [
                     'sizes' => [
