@@ -15,6 +15,7 @@
 - Fixed some errors when running PHP 8.
 - Fixed an error when accessing `draftNotes` or `draftName` on a non-draft using the GraphQL API.
 - Fixed a bug where it was possible for users to delete assets they weren’t permitted to delete from the Assets index page. ([#7059](https://github.com/craftcms/cms/issues/7059))
+- Fixed an error where sometimes folders would not get created correctly for Asset fields with static paths.
 
 ## 3.5.14 - 2020-10-20
 
