@@ -40,6 +40,11 @@ class CategoriesController extends Controller
      */
     const EVENT_PREVIEW_CATEGORY = 'previewCategory';
 
+    /**
+     * @inheritdoc
+     */
+    protected $allowAnonymous = ['view-shared-category'];
+
     // Category Groups
     // -------------------------------------------------------------------------
 

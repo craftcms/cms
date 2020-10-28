@@ -16,6 +16,7 @@
 - Fixed an error when accessing `draftNotes` or `draftName` on a non-draft using the GraphQL API.
 - Fixed a bug where it was possible for users to delete assets they weren’t permitted to delete from the Assets index page. ([#7059](https://github.com/craftcms/cms/issues/7059))
 - Fixed a bug where Assets fields weren’t always creating volume subfolders properly.
+- Fixed a bug where it wasn’t possible for logged-out visitors to preview disabled categories. ([#7060](https://github.com/craftcms/cms/issues/7060))
 
 ## 3.5.14 - 2020-10-20
 
