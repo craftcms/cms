@@ -163,7 +163,7 @@ class Updates extends Component
      * @return string[]
      * @see runMigrations()
      */
-    public function getPendingMigrationHandles($includeContent = false): array
+    public function getPendingMigrationHandles(bool $includeContent = false): array
     {
         $handles = [];
 
