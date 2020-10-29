@@ -455,7 +455,7 @@ class Gql extends Component
         if ($event->result === null) {
             $cacheKey = $this->_getCacheKey(
                 $schema,
-                $query,
+                $event->$query,
                 $event->rootValue,
                 $event->context,
                 $event->variables,
@@ -465,13 +465,13 @@ class Gql extends Component
             if ($cacheKey && ($cachedResult = $this->getCachedResult($cacheKey)) !== null) {
                 $event->result = $cachedResult;
             } else {
-                $schemaDef = $this->getSchemaDef($schema, $debugMode || StringHelper::contains($query, '__schema'));
+                $schemaDef = $this->getSchemaDef($schema, $debugMode || StringHelper::contains($event->$query, '__schema'));
                 $elementsService = Craft::$app->getElements();
                 $elementsService->startCollectingCacheTags();
 
                 $event->result = GraphQL::executeQuery(
                     $schemaDef,
-                    $query,
+                    $event->$query,
                     $event->rootValue,
                     $event->context,
                     $event->variables,
