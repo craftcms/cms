@@ -2873,6 +2873,8 @@ body.rtl #system-name h2:after { left: 0; }
 
 #job-icon[href]:hover .icon > span.icon > canvas#job-icon-hover { opacity: 1; }
 
+#job-icon .progress-label { display: block; color: #9aa5b1; font-size: 11px; line-height: 1.5; }
+
 #nav { -webkit-flex: 1; flex: 1; margin: 27px 0 0; padding-bottom: 24px; overflow: visible; }
 
 #nav li:not(.has-subnav) > a.sel { color: #fff; background-color: #1f2933; opacity: 1; }
