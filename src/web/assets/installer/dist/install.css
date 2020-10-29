@@ -30,7 +30,7 @@ body.ltr #install-modal #dots > div + div { margin-left: 5px; }
 
 body.rtl #install-modal #dots > div + div { margin-right: 5px; }
 
-#install-modal #dots > div.sel { border-color: #E5422B; background: #E5422B; }
+#install-modal #dots > div.sel { border-color: #E12D39; background: #E12D39; }
 
 .grid { margin-top: 35px; margin-bottom: 35px; }
 

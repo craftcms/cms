@@ -164,7 +164,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
                 onDragStart: onDragStartProxy,
                 onDropTargetChange: onDropTargetChangeProxy,
-                onDragStop: $.proxy(this, '_onFileDragStop')
+                onDragStop: $.proxy(this, '_onFileDragStop'),
+                helperBaseZindex: 800
             });
 
             // Folder dragging

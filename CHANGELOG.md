@@ -6,6 +6,7 @@
 - Assets now have a `srcset` field available via GraphQL. ([#6660](https://github.com/craftcms/cms/issues/6660))
 - The `restore` command now supports restoring zipped database backups. ([#7049](https://github.com/craftcms/cms/issues/7049))
 - Added `craft\services\Updates::getAreMigrationsPending()`. ([#7068](https://github.com/craftcms/cms/issues/7068))
+- Added argument support to the `parent` field on entries and categories via GraphQL. ([#7036](https://github.com/craftcms/cms/issues/7036))
 
 ## Changed
 - Updated Twig to 2.14, for environments running PHP 7.2.5 or later, and where the `config.platform.php` value in `composer.json` is at least `7.2.5`. ([#7044](https://github.com/craftcms/cms/issues/7044))
@@ -19,6 +20,7 @@
 - Fixed a bug where Assets fields weren’t always creating volume subfolders properly.
 - Fixed a bug where it wasn’t possible for logged-out visitors to preview disabled categories. ([#7060](https://github.com/craftcms/cms/issues/7060))
 - Fixed a bug where Matrix fields were triggering the `blockDeleted` JavaScript event before the block was removed from the DOM. ([#7064](https://github.com/craftcms/cms/issues/7064))
+- Fixed an error where dragging a lot of Assets could obscure the progress bar. ([#6982](https://github.com/craftcms/cms/issues/6982))
 
 ## 3.5.14 - 2020-10-20
 
