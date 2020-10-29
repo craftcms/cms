@@ -6,6 +6,7 @@
 - Assets now have a `srcset` field available via GraphQL. ([#6660](https://github.com/craftcms/cms/issues/6660))
 - The `restore` command now supports restoring zipped database backups. ([#7049](https://github.com/craftcms/cms/issues/7049))
 - Added `craft\services\Updates::getAreMigrationsPending()`. ([#7068](https://github.com/craftcms/cms/issues/7068))
+- Added argument support to the `parent` field on entries and categories via GraphQL. ([#7036](https://github.com/craftcms/cms/issues/7036))
 
 ## Changed
 - Updated Twig to 2.14, for environments running PHP 7.2.5 or later, and where the `config.platform.php` value in `composer.json` is at least `7.2.5`. ([#7044](https://github.com/craftcms/cms/issues/7044))
