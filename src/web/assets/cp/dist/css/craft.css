@@ -524,7 +524,7 @@ ul.icons li a:hover .icon.icon-mask svg rect, ul.icons li a:hover .icon.icon-mas
 /* ----------------------------------------*/
 .toolbar { position: relative; margin-bottom: 14px; min-height: 34px; }
 
-.toolbar .flex { -webkit-align-items: flex-start; align-items: flex-start; }
+.toolbar.flex, .toolbar .flex { -webkit-align-items: flex-start; align-items: flex-start; }
 
 .toolbar .text { border-radius: 5px !important; box-shadow: none !important; }
 
