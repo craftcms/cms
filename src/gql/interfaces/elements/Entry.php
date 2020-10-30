@@ -107,6 +107,7 @@ class Entry extends Structure
             ],
             'parent' => [
                 'name' => 'parent',
+                'args' => EntryArguments::getArguments(),
                 'type' => EntryInterface::getType(),
                 'description' => 'The entry’s parent, if the section is a structure.'
             ],

@@ -968,6 +968,7 @@ ul.icons {
   margin-bottom: 14px;
   min-height: 34px;
 
+  &.flex,
   .flex {
     align-items: flex-start;
   }
@@ -2931,6 +2932,7 @@ ul.tree,
   position: absolute;
   left: 20%;
   width: 60%;
+  z-index: 1000;
 }
 
 .progressbar-inner {

@@ -164,7 +164,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
                 onDragStart: onDragStartProxy,
                 onDropTargetChange: onDropTargetChangeProxy,
-                onDragStop: $.proxy(this, '_onFileDragStop')
+                onDragStop: $.proxy(this, '_onFileDragStop'),
+                helperBaseZindex: 800
             });
 
             // Folder dragging
@@ -784,7 +785,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
         startSearching: function() {
             // Does this source have subfolders?
-            if (this.$source.siblings('ul').length) {
+            if (!this.settings.hideSidebar && this.$source.siblings('ul').length) {
                 if (this.$includeSubfoldersContainer === null) {
                     var id = 'includeSubfolders-' + Math.floor(Math.random() * 1000000000);
 

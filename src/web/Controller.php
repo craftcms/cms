@@ -234,11 +234,11 @@ abstract class Controller extends \yii\web\Controller
             $view->registerAssetBundle(ContentWindowAsset::class);
         }
 
-        // Render and return the template
-        $this->response->data = $view->renderPageTemplate($template, $variables, $templateMode);
-
         // Prevent a response formatter from overriding the content-type header
         $this->response->format = YiiResponse::FORMAT_RAW;
+
+        // Render and return the template
+        $this->response->data = $view->renderPageTemplate($template, $variables, $templateMode);
 
         // Set the MIME type for the request based on the matched template's file extension (unless the
         // Content-Type header was already set, perhaps by the template via the {% header %} tag)
