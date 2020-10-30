@@ -22,6 +22,7 @@
 - Fixed a bug where Matrix fields were triggering the `blockDeleted` JavaScript event before the block was removed from the DOM. ([#7064](https://github.com/craftcms/cms/issues/7064))
 - Fixed an error where dragging a lot of Assets could obscure the progress bar. ([#6982](https://github.com/craftcms/cms/issues/6982))
 - Fixed a bug where job progress status labels weren’t getting styled properly in the control panel sidebar. ([#7070](https://github.com/craftcms/cms/issues/7070))
+- Fixed a bug where it was possible to select assets from subfolders from Assets fields that were restricted to a single folder, by ticking the “Search in subfolders” checkbox while searching. ([#7071](https://github.com/craftcms/cms/issues/7071))
 
 ## 3.5.14 - 2020-10-20
 
