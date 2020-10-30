@@ -9,7 +9,7 @@
 - Craft no longer optimizes the class autoloader when running Composer commands internally. `composer dump-autoloader -o` can be run if optimized autoloading is desired.
 - Craft no longer reports PHP deprecation errors.
 - Updated Guzzle to 7.x, for environments running PHP 7.2.5 or later, and where the `config.platform.php` value in `composer.json` is at least `7.2.5`. ([#6997](https://github.com/craftcms/cms/issues/6997))
-- Updated Composer to 2.0.2.
+- Updated Composer to 2.0.4.
 
 ### Deprecated
 - Deprecated the `backup` and `restore` commands.

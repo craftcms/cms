@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f361659bd4bdc056b719bc05c0421ab8",
+    "content-hash": "361c36bb4cf56063c461c88d80242a2e",
     "packages": [
         {
             "name": "cebe/markdown",
@@ -138,16 +138,16 @@
         },
         {
             "name": "composer/composer",
-            "version": "2.0.2",
+            "version": "2.0.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/composer.git",
-                "reference": "74e8c71026edba786290047199619ac6b6490094"
+                "reference": "4053eab90a7cdf0b81dd93073dc6c18c15d487fd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/composer/zipball/74e8c71026edba786290047199619ac6b6490094",
-                "reference": "74e8c71026edba786290047199619ac6b6490094",
+                "url": "https://api.github.com/repos/composer/composer/zipball/4053eab90a7cdf0b81dd93073dc6c18c15d487fd",
+                "reference": "4053eab90a7cdf0b81dd93073dc6c18c15d487fd",
                 "shasum": ""
             },
             "require": {
@@ -212,11 +212,6 @@
                 "dependency",
                 "package"
             ],
-            "support": {
-                "irc": "irc://irc.freenode.org/composer",
-                "issues": "https://github.com/composer/composer/issues",
-                "source": "https://github.com/composer/composer/tree/2.0.2"
-            },
             "funding": [
                 {
                     "url": "https://packagist.com",
@@ -231,7 +226,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2020-10-25T22:03:59+00:00"
+            "time": "2020-10-30T21:39:11+00:00"
         },
         {
             "name": "composer/semver",
