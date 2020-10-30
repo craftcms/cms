@@ -13,6 +13,7 @@
 
 ### Deprecated
 - Deprecated the `backup` and `restore` commands.
+- Deprecated `craft\services\Composer::$disablePackagist`.
 - Deprecated `craft\web\View::$minifyCss`.
 - Deprecated `craft\web\View::$minifyJs`.
 

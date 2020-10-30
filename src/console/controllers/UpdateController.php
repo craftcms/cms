@@ -198,11 +198,8 @@ class UpdateController extends Controller
         $this->stdout('Performing Composer install ... ', Console::FG_YELLOW);
         $io = new BufferIO();
 
-        $composerService = Craft::$app->getComposer();
-        $composerService->disablePackagist = false;
-
         try {
-            $composerService->install(null, $io);
+            Craft::$app->getComposer()->install(null, $io);
         } catch (\Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);
             $this->stderr('error: ' . $e->getMessage() . PHP_EOL . PHP_EOL, Console::FG_RED);

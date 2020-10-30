@@ -42,8 +42,9 @@ class Composer extends Component
 
     /**
      * @var bool
+     * @deprecated in 3.6.0
      */
-    public $disablePackagist = true;
+    public $disablePackagist = false;
 
     /**
      * @var bool Whether to generate a new Composer class map, rather than preloading all of the classes in the current class map
@@ -428,11 +429,6 @@ class Composer extends Component
             // Add composer.craftcms.com if it's not already in there
             if (!$this->findCraftRepo($config)) {
                 $config['repositories'][] = ['type' => 'composer', 'url' => $this->composerRepoUrl];
-            }
-
-            // Disable Packagist if it's not already disabled
-            if ($this->disablePackagist && !$this->findDisablePackagist($config)) {
-                $config['repositories'][] = ['packagist.org' => false];
             }
 
             // Are we relying on the bundled CA file?
