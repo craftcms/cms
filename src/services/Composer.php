@@ -146,14 +146,12 @@ class Composer extends Component
 
         // Create the installer
         $composer = $this->createComposer($io, $jsonPath);
-        $config = $composer->getConfig();
 
         $installer = Installer::create($io, $composer)
             ->setPreferDist()
             ->setDumpAutoloader()
             ->setRunScripts(false)
-            ->setOptimizeAutoloader(true)
-            ->setClassMapAuthoritative($config->get('classmap-authoritative'));
+            ->setOptimizeAutoloader(false);
 
         if ($requirements !== null) {
             $installer
@@ -251,7 +249,6 @@ class Composer extends Component
 
             $composer = $this->createComposer($io, $jsonPath);
             $composer->getInstallationManager()->setOutputProgress(false);
-            $config = $composer->getConfig();
 
             // Run the installer
             $installer = Installer::create($io, $composer)
@@ -259,8 +256,7 @@ class Composer extends Component
                 ->setUpdateAllowList($packages)
                 ->setDumpAutoloader()
                 ->setRunScripts(false)
-                ->setOptimizeAutoloader(true)
-                ->setClassMapAuthoritative($config->get('classmap-authoritative'));
+                ->setOptimizeAutoloader(false);
 
             $status = $this->run($installer);
         } catch (\Throwable $exception) {
