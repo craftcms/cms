@@ -7,17 +7,12 @@
 
 namespace craft\utilities;
 
+use Composer\InstalledVersions;
 use Craft;
 use craft\base\PluginInterface;
 use craft\base\Utility;
 use craft\helpers\App;
-use craft\helpers\ArrayHelper;
-use craft\helpers\Json;
-use GuzzleHttp\Client;
-use Imagine\Gd\Imagine;
 use RequirementsChecker;
-use Twig\Environment;
-use Yii;
 use yii\base\Module;
 
 /**
@@ -101,28 +96,16 @@ class SystemReport extends Utility
      */
     private static function _appInfo(): array
     {
-        if (defined(Client::class . '::VERSION')) {
-            // Guzzle 6
-            $guzzleVersion = Client::VERSION;
-        } else {
-            // Guzzle 7
-            $installedJsonPath = Craft::$app->getPath()->getVendorPath() . DIRECTORY_SEPARATOR . 'composer' . DIRECTORY_SEPARATOR . 'installed.json';
-            if (file_exists($installedJsonPath)) {
-                $installed = ArrayHelper::index(Json::decode(file_get_contents($installedJsonPath)), 'name');
-            }
-            $guzzleVersion = $installed['guzzlehttp/guzzle']['version'] ?? Client::MAJOR_VERSION;
-        }
-
         return [
             'PHP version' => App::phpVersion(),
             'OS version' => PHP_OS . ' ' . php_uname('r'),
             'Database driver & version' => self::_dbDriver(),
             'Image driver & version' => self::_imageDriver(),
             'Craft edition & version' => 'Craft ' . App::editionName(Craft::$app->getEdition()) . ' ' . Craft::$app->getVersion(),
-            'Yii version' => Yii::getVersion(),
-            'Twig version' => Environment::VERSION,
-            'Guzzle version' => $guzzleVersion,
-            'Imagine version' => Imagine::VERSION,
+            'Yii version' => InstalledVersions::getPrettyVersion('yiisoft/yii2'),
+            'Twig version' => InstalledVersions::getPrettyVersion('twig/twig'),
+            'Guzzle version' => InstalledVersions::getPrettyVersion('guzzlehttp/guzzle'),
+            'Imagine version' => InstalledVersions::getPrettyVersion('pixelandtonic/imagine'),
         ];
     }
 
