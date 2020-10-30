@@ -38,7 +38,7 @@ class Composer extends Component
     /**
      * @var string
      */
-    public $composerRepoUrl = 'https://composer.craftcms.com/';
+    public $composerRepoUrl = 'https://composer.craftcms.com';
 
     /**
      * @var bool
@@ -463,7 +463,7 @@ class Composer extends Component
         }
 
         foreach ($config['repositories'] as $repository) {
-            if (isset($repository['url']) && $repository['url'] === $this->composerRepoUrl) {
+            if (isset($repository['url']) && rtrim($repository['url'], '/') === $this->composerRepoUrl) {
                 return true;
             }
         }
