@@ -138,8 +138,8 @@
                     {% endif %}
                 {% endfor %}
                 {% if not staticRows %}
-                    <td class="thin action"><a class="move icon" title="{{ 'Reorder'|t('app') }}"></a></td>
-                    {% if not fixedRows %}<td class="thin action"><a class="delete icon" title="{{ 'Delete'|t('app') }}"></a></td>{% endif %}
+                    <td class="thin action"><a class="move icon" title="{{ 'Reorder'|t('app') }}" aria-label="{{ 'Reorder'|t('app') }}"></a></td>
+                    {% if not fixedRows %}<td class="thin action"><a class="delete icon" title="{{ 'Delete'|t('app') }}" aria-label="{{ 'Delete'|t('app') }}"></a></td>{% endif %}
                 {% endif %}
             </tr>
         {% endfor %}

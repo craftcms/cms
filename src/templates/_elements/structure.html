@@ -14,11 +14,11 @@
                         {% include "_elements/element" %}
 
                         {% if sortable %}
-                            <a class="move icon" title="{{ 'Move'|t('app') }}"></a>
+                            <a class="move icon" title="{{ 'Move'|t('app') }}" aria-label="{{ 'Move'|t('app') }}"></a>
                         {% endif %}
 
                         {% if newChildUrl %}
-                            <a class="add icon" title="{{ 'New child'|t('app') }}"></a>
+                            <a class="add icon" title="{{ 'New child'|t('app') }}" aria-label="{{ 'New child'|t('app') }}"></a>
                         {% endif %}
                     {% endblock %}
                 {% endspaceless -%}
