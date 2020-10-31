@@ -12,7 +12,6 @@ use craft\base\PluginInterface;
 use craft\base\Utility;
 use craft\helpers\App;
 use GuzzleHttp\Client;
-use Imagine\Gd\Imagine;
 use RequirementsChecker;
 use Twig\Environment;
 use Yii;
@@ -108,7 +107,6 @@ class SystemReport extends Utility
             'Yii version' => Yii::getVersion(),
             'Twig version' => Environment::VERSION,
             'Guzzle version' => Client::VERSION,
-            'Imagine version' => Imagine::VERSION,
         ];
     }
 
