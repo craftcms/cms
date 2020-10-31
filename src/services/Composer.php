@@ -152,7 +152,6 @@ class Composer extends Component
         $installer = Installer::create($io, $composer)
             ->setPreferDist()
             ->setSkipSuggest()
-            ->setDumpAutoloader()
             ->setRunScripts(false);
 
         if ($requirements !== null) {
@@ -256,7 +255,6 @@ class Composer extends Component
             $installer = Installer::create($io, $composer)
                 ->setUpdate()
                 ->setUpdateAllowList($packages)
-                ->setDumpAutoloader()
                 ->setRunScripts(false);
 
             $status = $this->run($installer);
