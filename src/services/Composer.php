@@ -162,10 +162,10 @@ class Composer extends Component
             $installer->setUpdate();
 
             if (is_array($allowlist)) {
-                $installer->setUpdateWhitelist($allowlist);
+                $installer->setUpdateAllowList($allowlist);
             } else if ($allowlist === true) {
                 $allowlist = Craft::$app->getApi()->getComposerWhitelist($requirements);
-                $installer->setUpdateWhitelist($allowlist);
+                $installer->setUpdateAllowList($allowlist);
             }
         }
 
@@ -259,7 +259,7 @@ class Composer extends Component
             // Run the installer
             $installer = Installer::create($io, $composer)
                 ->setUpdate()
-                ->setUpdateWhitelist($packages)
+                ->setUpdateAllowList($packages)
                 ->setDumpAutoloader()
                 ->setRunScripts(false)
                 ->setOptimizeAutoloader(true)
