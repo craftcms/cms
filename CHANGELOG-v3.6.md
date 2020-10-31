@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+- Added the `users/list-admins` and `users/set-password` commands. ([#7067](https://github.com/craftcms/cms/issues/7067))
+- Added `craft\console\Controller::passwordPrompt()`.
+
 ### Changed
 - Renamed the `backup` and `restore` commands to `db/backup` and `db/restore`. ([#7023](https://github.com/craftcms/cms/issues/7023))
 - Relational fields now include all related elements’ titles as search keywords, including disabled elements. ([#7079](https://github.com/craftcms/cms/issues/7079))
