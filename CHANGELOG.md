@@ -9,6 +9,8 @@
 - Added argument support to the `parent` field on entries and categories via GraphQL. ([#7036](https://github.com/craftcms/cms/issues/7036))
 
 ## Changed
+- `aria-label` attributes are now used more consistently across the control panel. ([#6833](https://github.com/craftcms/cms/issues/6833))
+- Craft no longer optimizes the class autoloader when running Composer commands internally, as [recommended](https://getcomposer.org/doc/articles/autoloader-optimization.md) for local development.
 - Updated Twig to 2.14, for environments running PHP 7.2.5 or later, and where the `config.platform.php` value in `composer.json` is at least `7.2.5`. ([#7044](https://github.com/craftcms/cms/issues/7044))
 
 ### Fixed

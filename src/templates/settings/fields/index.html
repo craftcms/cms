@@ -63,7 +63,7 @@
         <button type="button" id="newgroupbtn" class="btn add icon">{{ "New group"|t('app') }}</button>
 
         {% if groupId is defined %}
-            <button type="button" id="groupsettingsbtn" class="btn settings icon menubtn" title="{{ 'Settings'|t('app') }}"></button>
+            <button type="button" id="groupsettingsbtn" class="btn settings icon menubtn" title="{{ 'Settings'|t('app') }}" aria-label="{{ 'Settings'|t('app') }}"></button>
             <div class="menu">
                 <ul>
                     <li><a data-action="rename" role="button">{{ "Rename selected group"|t('app') }}</a></li>
@@ -117,7 +117,7 @@
                 if (!value) {
                     return null;
                 }
-                return `<div class="badge-icon" data-icon="search" title="${Craft.t('app', 'This field’s values are used as search keywords.')}"></div>`;
+                return `<div class="badge-icon" data-icon="search" title="${Craft.t('app', 'This field’s values are used as search keywords.')}" aria-label="${Craft.t('app', 'This field’s values are used as search keywords.')}"></div>`;
             }
         },
         {% if craft.app.isMultiSite %}
@@ -128,7 +128,7 @@
                 if (!value) {
                     return null;
                 }
-                return `<div class="badge-icon" data-icon="language" title="${value}"></div>`;
+                return `<div class="badge-icon" data-icon="language" title="${value}" aria-label="${value}"></div>`;
             }
         },
         {% endif %}

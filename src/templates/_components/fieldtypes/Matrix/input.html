@@ -40,10 +40,10 @@
                         </div>
                         <div class="preview"></div>
                     </div>
-                    <div class="checkbox" title="{{ 'Select'|t('app') }}"></div>
+                    <div class="checkbox" title="{{ 'Select'|t('app') }}" aria-label="{{ 'Select'|t('app') }}"></div>
                     <div class="actions">
-                        <div class="status off" title="{{ 'Disabled'|t('app') }}"></div>
-                        <a class="settings icon menubtn" title="{{ 'Actions'|t('app') }}" role="button"></a>
+                        <div class="status off" title="{{ 'Disabled'|t('app') }}" aria-label="{{ 'Disabled'|t('app') }}"></div>
+                        <a class="settings icon menubtn" title="{{ 'Actions'|t('app') }}" aria-label="{{ 'Actions'|t('app') }}" role="button"></a>
                         <div class="menu">
                             <ul class="padded">
                                 <li><a data-icon="collapse" data-action="collapse">{{ "Collapse"|t('app') }}</a></li>
@@ -66,7 +66,7 @@
                                 </ul>
                             {% endif %}
                         </div>
-                        <a class="move icon" title="{{ 'Reorder'|t('app') }}" role="button"></a>
+                        <a class="move icon" title="{{ 'Reorder'|t('app') }}" aria-label="{{ 'Reorder'|t('app') }}" role="button"></a>
                     </div>
                 {% endif %}
                 <div class="fields">

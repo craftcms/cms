@@ -105,7 +105,6 @@ class SystemReport extends Utility
             'Yii version' => InstalledVersions::getPrettyVersion('yiisoft/yii2'),
             'Twig version' => InstalledVersions::getPrettyVersion('twig/twig'),
             'Guzzle version' => InstalledVersions::getPrettyVersion('guzzlehttp/guzzle'),
-            'Imagine version' => InstalledVersions::getPrettyVersion('pixelandtonic/imagine'),
         ];
     }
 
