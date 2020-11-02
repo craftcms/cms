@@ -9,6 +9,7 @@
 - Added argument support to the `parent` field on entries and categories via GraphQL. ([#7036](https://github.com/craftcms/cms/issues/7036))
 - It is now possible to update the user photo using base64 encoded data. ([#6520](https://github.com/craftcms/cms/issues/6520))
 - Added `craft\helpers\FileHelper::getExtensionByMimeType()`.
+- Added `craft\services\Composer::getConfig()`.
 
 ## Changed
 - `aria-label` attributes are now used more consistently across the control panel. ([#6833](https://github.com/craftcms/cms/issues/6833))
