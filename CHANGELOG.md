@@ -7,7 +7,7 @@
 - The `restore` command now supports restoring zipped database backups. ([#7049](https://github.com/craftcms/cms/issues/7049))
 - Added `craft\services\Updates::getAreMigrationsPending()`. ([#7068](https://github.com/craftcms/cms/issues/7068))
 - Added argument support to the `parent` field on entries and categories via GraphQL. ([#7036](https://github.com/craftcms/cms/issues/7036))
-- It is now possible to update the user photo using base64 encoded data. ([#6520](https://github.com/craftcms/cms/issues/6520))
+- It’s now possible to update user photos with base64-encoded images. ([#6520](https://github.com/craftcms/cms/issues/6520))
 - Added `craft\helpers\FileHelper::getExtensionByMimeType()`.
 - Added `craft\services\Composer::getConfig()`.
 

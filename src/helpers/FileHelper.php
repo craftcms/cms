@@ -709,16 +709,19 @@ class FileHelper extends \yii\helpers\FileHelper
     }
 
     /**
-     * Return an extension based on a mime type or `false` if no extensions can be resolved for the mimetype.
+     * Return a file extension for the given MIME type.
      *
      * @param $mimeType
-     * @return false|mixed|string
+     * @return string
+     * @throws InvalidArgumentException if no known extensions exist for the given MIME type.
+     * @since 3.5.15
      */
-    public static function getExtensionByMimeType($mimeType) {
+    public static function getExtensionByMimeType($mimeType): string
+    {
         $extensions = FileHelper::getExtensionsByMimeType($mimeType);
 
         if (empty($extensions)) {
-            return false;
+            throw new InvalidArgumentException("No file extensions are known for the MIME Type $mimeType.");
         }
 
         $extension = reset($extensions);
@@ -726,10 +729,9 @@ class FileHelper extends \yii\helpers\FileHelper
         // Manually correct for some types.
         switch ($extension) {
             case 'svgz':
-                $extension = 'svg';
-                break;
+                return 'svg';
             case 'jpe':
-                $extension = 'jpg';
+                return 'jpg';
         }
 
         return $extension;
