@@ -183,21 +183,10 @@ class Asset extends ElementMutationResolver
 
             if ($fileData) {
                 if (empty($fileInformation['filename'])) {
-                    $extensions = FileHelper::getExtensionsByMimeType($matches['type']);
+                    $extension = FileHelper::getExtensionByMimeType($matches['type']);
 
-                    if (empty($extensions)) {
+                    if (empty($extension)) {
                         throw new UserError('Invalid file data provided');
-                    }
-
-                    $extension = reset($extensions);
-
-                    // Manually correct for some types.
-                    switch ($extension) {
-                        case 'svgz':
-                            $extension = 'svg';
-                            break;
-                        case 'jpe':
-                            $extension = 'jpg';
                     }
 
                     $filename = 'Upload.' . $extension;
