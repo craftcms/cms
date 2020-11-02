@@ -63,7 +63,7 @@
                                 </button>
                             </td>
                             <td>
-                                <a v-if="job.status != 3" class="delete icon" title="{{ 'Release'|t('app') }}" role="button" @click="releaseJob(job)"></a>
+                                <a v-if="job.status != 3" class="delete icon" title="{{ 'Release'|t('app') }}" aria-label="{{ 'Release'|t('app') }}" role="button" @click="releaseJob(job)"></a>
                             </td>
                         </tr>
                     </tbody>

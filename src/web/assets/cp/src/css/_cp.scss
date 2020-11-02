@@ -186,6 +186,13 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
       opacity: 1;
     }
   }
+
+  .progress-label {
+    display: block;
+    color: $grey300;
+    font-size: 11px;
+    line-height: 1.5;
+  }
 }
 
 #nav {

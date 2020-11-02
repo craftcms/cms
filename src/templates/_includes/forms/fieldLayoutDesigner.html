@@ -25,7 +25,7 @@
             <div class="tab sel{% if context.customizableTabs %} draggable{% endif %}">
                 <span>{{ tabName }}</span>
                 {% if context.customizableTabs %}
-                    <a class="settings icon" title="{{ 'Edit'|t('app') }}"></a>
+                    <a class="settings icon" title="{{ 'Edit'|t('app') }}" aria-label="{{ 'Edit'|t('app') }}"></a>
                 {% endif %}
             </div>
         </div>
@@ -119,7 +119,7 @@
                     inputmode: 'search',
                     placeholder: "Search"|t('app')
                 }) }}
-                <div class="clear hidden" title="{{ 'Clear'|t('app') }}"></div>
+                <div class="clear hidden" title="{{ 'Clear'|t('app') }}" aria-label="{{ 'Clear'|t('app') }}"></div>
             </div>
 
             {{ _self.fieldSelectors('Standard Fields'|t('app'), fieldLayout.getAvailableStandardFields(), _context) }}

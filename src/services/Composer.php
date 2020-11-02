@@ -148,24 +148,20 @@ class Composer extends Component
 
         // Create the installer
         $composer = $this->createComposer($io, $jsonPath);
-        $config = $composer->getConfig();
 
         $installer = Installer::create($io, $composer)
             ->setPreferDist()
             ->setSkipSuggest()
-            ->setDumpAutoloader()
-            ->setRunScripts(false)
-            ->setOptimizeAutoloader(true)
-            ->setClassMapAuthoritative($config->get('classmap-authoritative'));
+            ->setRunScripts(false);
 
         if ($requirements !== null) {
             $installer->setUpdate();
 
             if (is_array($allowlist)) {
-                $installer->setUpdateWhitelist($allowlist);
+                $installer->setUpdateAllowList($allowlist);
             } else if ($allowlist === true) {
                 $allowlist = Craft::$app->getApi()->getComposerWhitelist($requirements);
-                $installer->setUpdateWhitelist($allowlist);
+                $installer->setUpdateAllowList($allowlist);
             }
         }
 
@@ -254,16 +250,12 @@ class Composer extends Component
 
             $composer = $this->createComposer($io, $jsonPath);
             $composer->getDownloadManager()->setOutputProgress(false);
-            $config = $composer->getConfig();
 
             // Run the installer
             $installer = Installer::create($io, $composer)
                 ->setUpdate()
-                ->setUpdateWhitelist($packages)
-                ->setDumpAutoloader()
-                ->setRunScripts(false)
-                ->setOptimizeAutoloader(true)
-                ->setClassMapAuthoritative($config->get('classmap-authoritative'));
+                ->setUpdateAllowList($packages)
+                ->setRunScripts(false);
 
             $status = $this->run($installer);
         } catch (\Throwable $exception) {

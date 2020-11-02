@@ -318,7 +318,7 @@
 
                         {% if actions|length %}
                             <div>
-                                <button type="button" id="action-menubtn" class="btn menubtn" data-icon="settings" title="{{ 'Actions'|t('app') }}"></button>
+                                <button type="button" id="action-menubtn" class="btn menubtn" data-icon="settings" title="{{ 'Actions'|t('app') }}" aria-label="{{ 'Actions'|t('app') }}"></button>
                                 <div class="menu">
                                     {% for actionList in actions %}
                                         {% if not loop.first %}<hr>{% endif %}

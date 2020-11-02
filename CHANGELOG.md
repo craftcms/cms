@@ -11,6 +11,8 @@
 - Added `craft\helpers\FileHelper::getExtensionByMimeType()`.
 
 ## Changed
+- `aria-label` attributes are now used more consistently across the control panel. ([#6833](https://github.com/craftcms/cms/issues/6833))
+- Craft no longer optimizes the class autoloader when running Composer commands internally, as [recommended](https://getcomposer.org/doc/articles/autoloader-optimization.md) for local development.
 - Updated Twig to 2.14, for environments running PHP 7.2.5 or later, and where the `config.platform.php` value in `composer.json` is at least `7.2.5`. ([#7044](https://github.com/craftcms/cms/issues/7044))
 
 ### Fixed
@@ -23,6 +25,9 @@
 - Fixed a bug where it wasn’t possible for logged-out visitors to preview disabled categories. ([#7060](https://github.com/craftcms/cms/issues/7060))
 - Fixed a bug where Matrix fields were triggering the `blockDeleted` JavaScript event before the block was removed from the DOM. ([#7064](https://github.com/craftcms/cms/issues/7064))
 - Fixed an error where dragging a lot of Assets could obscure the progress bar. ([#6982](https://github.com/craftcms/cms/issues/6982))
+- Fixed a bug where job progress status labels weren’t getting styled properly in the control panel sidebar. ([#7070](https://github.com/craftcms/cms/issues/7070))
+- Fixed a bug where it was possible to select assets from subfolders from Assets fields that were restricted to a single folder, by ticking the “Search in subfolders” checkbox while searching. ([#7071](https://github.com/craftcms/cms/issues/7071))
+- Fixed a bug where custom `Content-Type` headers were getting overridden if an `{% exit %}` tag was used. ([#7074](https://github.com/craftcms/cms/issues/7074))
 - Fixed a bug where filename sometimes coukd get generated incorrectly when programmatically updating a user photo.
 
 ## 3.5.14 - 2020-10-20

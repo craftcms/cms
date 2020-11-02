@@ -7,13 +7,11 @@
 
 use craft\base\FieldInterface;
 use craft\behaviors\CustomFieldBehavior;
-use craft\console\Application as ConsoleApplication;
 use craft\db\Query;
 use craft\db\Table;
 use craft\helpers\App;
 use craft\helpers\Component;
 use craft\helpers\FileHelper;
-use craft\web\Application as WebApplication;
 use GuzzleHttp\Client;
 use yii\base\ExitException;
 use yii\db\Expression;
@@ -25,7 +23,6 @@ use yii\web\Request;
  * It encapsulates [[Yii]] and ultimately [[yii\BaseYii]], which provides the actual implementation.
  *
  * @mixin CraftTrait
- * @property WebApplication|ConsoleApplication $app The application instance
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
