@@ -1804,6 +1804,8 @@ class UsersController extends Controller
 
     /**
      * @param User $user
+     * @return void
+     * @throws \Throwable if reasons
      */
     private function _processUserPhoto(User $user)
     {
@@ -1816,16 +1818,46 @@ class UsersController extends Controller
             Craft::$app->getElements()->saveElement($user);
         }
 
+        $newPhoto = false;
+        $fileLocation = null;
+        $photoName = null;
+
         // Did they upload a new one?
         if ($photo = UploadedFile::getInstanceByName('photo')) {
             $fileLocation = Assets::tempFilePath($photo->getExtension());
             move_uploaded_file($photo->tempName, $fileLocation);
+            $photoName = $photo->name;
+            $newPhoto = true;
+
+        // Did they post a new one?
+        } else if (($photo = $this->request->getBodyParam('photo')) && is_array($photo)) {
+            $matches = [];
+
+            if (preg_match('/^data:(?<type>[a-z0-9]+\/[a-z0-9\+]+);base64,(?<data>.+)/i', $photo['data'] ?? '', $matches)) {
+                $photoName = empty($photo['filename']) ? null : $photo['filename'];
+                $mimeType = $matches['type'];
+                $data = base64_decode($matches['data']);
+                $extension = FileHelper::getExtensionByMimeType($mimeType);
+                $fileLocation = Assets::tempFilePath($extension);
+
+                if (empty($extension)) {
+                    Craft::warning("Could not resolve extension for mimetype $mimeType");
+                    return;
+                }
+
+                FileHelper::writeToFile($fileLocation, $data);
+                $newPhoto = true;
+            }
+        }
+
+        if ($newPhoto) {
             try {
-                $users->saveUserPhoto($fileLocation, $user, $photo->name);
+                $users->saveUserPhoto($fileLocation, $user, $photoName);
             } catch (\Throwable $e) {
                 if (file_exists($fileLocation)) {
                     FileHelper::unlink($fileLocation);
                 }
+
                 throw $e;
             }
         }
