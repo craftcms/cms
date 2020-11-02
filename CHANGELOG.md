@@ -23,6 +23,7 @@
 - Fixed a bug where it wasn’t possible for logged-out visitors to preview disabled categories. ([#7060](https://github.com/craftcms/cms/issues/7060))
 - Fixed a bug where Matrix fields were triggering the `blockDeleted` JavaScript event before the block was removed from the DOM. ([#7064](https://github.com/craftcms/cms/issues/7064))
 - Fixed an error where dragging a lot of Assets could obscure the progress bar. ([#6982](https://github.com/craftcms/cms/issues/6982))
+- Fixed a bug where filename sometimes coukd get generated incorrectly when programmatically updating a user photo.
 
 ## 3.5.14 - 2020-10-20
 
