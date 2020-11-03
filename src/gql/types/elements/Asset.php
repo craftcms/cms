@@ -11,7 +11,6 @@ use Craft;
 use craft\elements\Asset as AssetElement;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\helpers\Gql;
-use craft\helpers\StringHelper;
 use GraphQL\Type\Definition\ResolveInfo;
 
 /**
@@ -54,6 +53,10 @@ class Asset extends Element
                 case 'height':
                     return $source->getHeight($transform);
             }
+        }
+
+        if ($fieldName === 'srcset') {
+            return $source->getSrcset($arguments['sizes']);
         }
 
         return parent::resolve($source, $arguments, $context, $resolveInfo);

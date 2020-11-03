@@ -136,9 +136,9 @@ class MemoizableArray extends \ArrayObject
     /**
      * @inheritdoc
      */
-    public function asort()
+    public function asort(int $sort_flags = SORT_REGULAR)
     {
-        parent::asort();
+        parent::asort($sort_flags);
         $this->_memoized = [];
     }
 
@@ -154,9 +154,9 @@ class MemoizableArray extends \ArrayObject
     /**
      * @inheritdoc
      */
-    public function ksort()
+    public function ksort(int $sort_flags = SORT_REGULAR)
     {
-        parent::ksort();
+        parent::ksort($sort_flags);
         $this->_memoized = [];
     }
 

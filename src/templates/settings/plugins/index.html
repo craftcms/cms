@@ -29,7 +29,7 @@
                         <tr id="plugin-{{ handle }}" data-name="{{ config.name }}" data-handle="{{ handle }}">
                             <th>
                                 <div class="plugin-infos">
-                                    <a class="icon" href="{{ pluginStoreUrl }}" title="{{ 'View {plugin} in the Plugin Store'|t('app', {plugin: config.name}) }}">
+                                    <a class="icon" href="{{ pluginStoreUrl }}" title="{{ 'View {plugin} in the Plugin Store'|t('app', {plugin: config.name}) }}" title="{{ 'View {plugin} in the Plugin Store'|t('app', {plugin: config.name}) }}">
                                         {{ svg(craft.app.plugins.getPluginIconSvg(handle), sanitize=true, namespace=true) }}
                                         {% if config.licenseKeyStatus == 'valid' or config.licenseIssues is not empty %}
                                             <span class="license-key-status {{ config.licenseIssues is empty ? 'valid' }}"></span>

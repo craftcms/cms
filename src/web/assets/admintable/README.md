@@ -176,7 +176,14 @@ The menu column allows the output of a dropdown link menu within the column cell
 
 The detail column shows a clickable attribute to allow the toggling of a detail row. This is a row that shows underneath its "parent" row, giving the ability to show more information.
 
-In the data definition the detail column should be an object with two attriubtes `handle` this is the HTML to click for toggling and `content` the HTML to show in the detail row.
+The table below explains all available attributes for data in the detail column.
+
+| Attribute               | Description                                                                                                                                  |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `handle` (optional)     | The HTML for what will be clicked to show the detail row. If omitted an "info" icon will be displayed.                                       |
+| `title` (optional)      | Content for the title attribute on the clickable show/hide toggle.                                                                           |
+| `content`               | HTML to be displayed in the detail row. If using the `showAsList` option this can be an array that will be converted to a key -> value list. | 
+| `showAsList` (optional) | Default: `false`. When set to `true` and `content` is an array of data a key -> value list will be shown in the detail row.                  | 
 
 #### Special Column Examples
 
@@ -206,6 +213,11 @@ var data = [
     status: false,
     url: '/my-second-item',
     handle: 'mySecondItem',
+    detail: {
+      title: Craft.t('site', 'Further Information'),
+      content: { list: 'of', things: ['to', 'show'] },
+      showAsList: true    
+    },
     menu: {
       showItems: true,
       menuBtnTitle: Craft.t('site', 'Edit Sub Options'),

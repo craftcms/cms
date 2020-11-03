@@ -1,5 +1,40 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.5.15 - 2020-11-03
+
+### Added
+- Assets now have a `srcset` field available via GraphQL. ([#6660](https://github.com/craftcms/cms/issues/6660))
+- Entries’ and categories’ `parent` GraphQL fields now support passing criteria arguments. ([#7036](https://github.com/craftcms/cms/issues/7036))
+- It’s now possible to update user photos with base64-encoded images. ([#6520](https://github.com/craftcms/cms/issues/6520))
+- The `restore` command now supports restoring zipped database backups. ([#7049](https://github.com/craftcms/cms/issues/7049))
+- Added `craft\services\Updates::getAreMigrationsPending()`. ([#7068](https://github.com/craftcms/cms/issues/7068))
+- Added `craft\helpers\FileHelper::getExtensionByMimeType()`.
+- Added `craft\helpers\Update`.
+- Added `craft\models\Update::$phpConstraint`.
+- Added `craft\services\Composer::getConfig()`.
+
+### Changed
+- `aria-label` attributes are now used more consistently across the control panel. ([#6833](https://github.com/craftcms/cms/issues/6833))
+- Craft no longer optimizes the class autoloader when running Composer commands internally, as [recommended](https://getcomposer.org/doc/articles/autoloader-optimization.md) for local development.
+- The built-in updater will now warn if the latest eligible Craft CMS release requires a PHP version that is greater than what the environment is running, or what the `config.platform.php` setting is set to in `composer.json`.
+- It’s now possible to query for assets ordered by their path. ([#7085](https://github.com/craftcms/cms/issues/7085))
+- Updated Twig to 2.14, for environments running PHP 7.2.5 or later, and where the `config.platform.php` value in `composer.json` is at least `7.2.5`. ([#7044](https://github.com/craftcms/cms/issues/7044))
+
+### Fixed
+- Fixed a bug where `craft\events\UserGroupsAssignEvent::$groupIds` was getting set incorrectly for the `craft\services\Users::EVENT_BEFORE_ASSIGN_USER_TO_GROUPS` event. ([#7046](https://github.com/craftcms/cms/issues/7046))
+- Fixed a bug where the `craft\base\Element::EVENT_SET_EAGER_LOADED_ELEMENTS` event was being triggered as a class-level event rather than an instance-level event. ([#7047](https://github.com/craftcms/cms/issues/7047))
+- Fixed some errors when running PHP 8.
+- Fixed an error when accessing `draftNotes` or `draftName` on a non-draft using the GraphQL API.
+- Fixed a bug where it was possible for users to delete assets they weren’t permitted to delete from the Assets index page. ([#7059](https://github.com/craftcms/cms/issues/7059))
+- Fixed a bug where Assets fields weren’t always creating volume subfolders properly.
+- Fixed a bug where it wasn’t possible for logged-out visitors to preview disabled categories. ([#7060](https://github.com/craftcms/cms/issues/7060))
+- Fixed a bug where Matrix fields were triggering the `blockDeleted` JavaScript event before the block was removed from the DOM. ([#7064](https://github.com/craftcms/cms/issues/7064))
+- Fixed an error where dragging several assets at one could obscure the progress bar. ([#6982](https://github.com/craftcms/cms/issues/6982))
+- Fixed a bug where job progress status labels weren’t getting styled properly in the control panel sidebar. ([#7070](https://github.com/craftcms/cms/issues/7070))
+- Fixed a bug where it was possible to select assets located in subfolders within Assets fields that were restricted to a single folder, by ticking the “Search in subfolders” checkbox while searching. ([#7071](https://github.com/craftcms/cms/issues/7071))
+- Fixed a bug where custom `Content-Type` headers were getting overridden if an `{% exit %}` tag was used. ([#7074](https://github.com/craftcms/cms/issues/7074))
+- Fixed a bug where user photos’ filenames could be generated incorrectly when they were updated programatically.
+
 ## 3.5.14 - 2020-10-20
 
 ### Added

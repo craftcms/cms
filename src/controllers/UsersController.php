@@ -1804,6 +1804,8 @@ class UsersController extends Controller
 
     /**
      * @param User $user
+     * @return void
+     * @throws \Throwable if reasons
      */
     private function _processUserPhoto(User $user)
     {
@@ -1816,16 +1818,51 @@ class UsersController extends Controller
             Craft::$app->getElements()->saveElement($user);
         }
 
+        $newPhoto = false;
+        $fileLocation = null;
+        $filename = null;
+
         // Did they upload a new one?
         if ($photo = UploadedFile::getInstanceByName('photo')) {
             $fileLocation = Assets::tempFilePath($photo->getExtension());
             move_uploaded_file($photo->tempName, $fileLocation);
+            $filename = $photo->name;
+            $newPhoto = true;
+        } else if (($photo = $this->request->getBodyParam('photo')) && is_array($photo)) {
+            // base64-encoded photo
+            $matches = [];
+
+            if (preg_match('/^data:((?<type>[a-z0-9]+\/[a-z0-9\+]+);)?base64,(?<data>.+)/i', $photo['data'] ?? '', $matches)) {
+                $filename = $photo['filename'] ?? null;
+                $extension = $filename ? pathinfo($filename, PATHINFO_EXTENSION) : null;
+
+                if (!$extension && !empty($matches['type'])) {
+                    try {
+                        $extension = FileHelper::getExtensionByMimeType($matches['type']);
+                    } catch (InvalidArgumentException $e) {
+                    }
+                }
+
+                if (!$extension) {
+                    Craft::warning('Could not determine file extension for user photo.', __METHOD__);
+                    return;
+                }
+
+                $fileLocation = Assets::tempFilePath($extension);
+                $data = base64_decode($matches['data']);
+                FileHelper::writeToFile($fileLocation, $data);
+                $newPhoto = true;
+            }
+        }
+
+        if ($newPhoto) {
             try {
-                $users->saveUserPhoto($fileLocation, $user, $photo->name);
+                $users->saveUserPhoto($fileLocation, $user, $filename);
             } catch (\Throwable $e) {
                 if (file_exists($fileLocation)) {
                     FileHelper::unlink($fileLocation);
                 }
+
                 throw $e;
             }
         }

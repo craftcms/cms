@@ -16,12 +16,10 @@ use craft\fields\data\MultiOptionsFieldData;
 use craft\fields\data\OptionData;
 use craft\fields\data\SingleOptionFieldData;
 use craft\gql\arguments\OptionField as OptionFieldArguments;
-use craft\gql\GqlEntityRegistry;
 use craft\gql\resolvers\OptionField as OptionFieldResolver;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\Json;
-use GraphQL\Type\Definition\EnumType;
 use GraphQL\Type\Definition\Type;
 use yii\db\Schema;
 

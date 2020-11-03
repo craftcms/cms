@@ -758,11 +758,11 @@
                     if (window.draftEditor) {
                         window.draftEditor.resume();
                     }
-                }, this));
 
-                this.matrix.trigger('blockDeleted', {
-                    $block: this.$container,
-                });
+                    this.matrix.trigger('blockDeleted', {
+                        $block: this.$container,
+                    });
+                }, this));
             }
         });
 })(jQuery);

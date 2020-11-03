@@ -99,6 +99,21 @@ class Composer extends Component
     }
 
     /**
+     * Returns the Composer config defined by composer.json.
+     *
+     * @return array
+     * @since 3.5.15
+     */
+    public function getConfig(): array
+    {
+        try {
+            return Json::decode(file_get_contents($this->getJsonPath()));
+        } catch (\Throwable $e) {
+            return [];
+        }
+    }
+
+    /**
      * Installs a given set of packages with Composer.
      *
      * @param array|null $requirements Package name/version pairs, or set to null to run the equivalent of `composer install`
@@ -148,24 +163,20 @@ class Composer extends Component
 
         // Create the installer
         $composer = $this->createComposer($io, $jsonPath);
-        $config = $composer->getConfig();
 
         $installer = Installer::create($io, $composer)
             ->setPreferDist()
             ->setSkipSuggest()
-            ->setDumpAutoloader()
-            ->setRunScripts(false)
-            ->setOptimizeAutoloader(true)
-            ->setClassMapAuthoritative($config->get('classmap-authoritative'));
+            ->setRunScripts(false);
 
         if ($requirements !== null) {
             $installer->setUpdate();
 
             if (is_array($allowlist)) {
-                $installer->setUpdateWhitelist($allowlist);
+                $installer->setUpdateAllowList($allowlist);
             } else if ($allowlist === true) {
                 $allowlist = Craft::$app->getApi()->getComposerWhitelist($requirements);
-                $installer->setUpdateWhitelist($allowlist);
+                $installer->setUpdateAllowList($allowlist);
             }
         }
 
@@ -254,16 +265,12 @@ class Composer extends Component
 
             $composer = $this->createComposer($io, $jsonPath);
             $composer->getDownloadManager()->setOutputProgress(false);
-            $config = $composer->getConfig();
 
             // Run the installer
             $installer = Installer::create($io, $composer)
                 ->setUpdate()
-                ->setUpdateWhitelist($packages)
-                ->setDumpAutoloader()
-                ->setRunScripts(false)
-                ->setOptimizeAutoloader(true)
-                ->setClassMapAuthoritative($config->get('classmap-authoritative'));
+                ->setUpdateAllowList($packages)
+                ->setRunScripts(false);
 
             $status = $this->run($installer);
         } catch (\Throwable $exception) {

@@ -128,6 +128,18 @@ class Asset extends Element
                 'type' => Type::string(),
                 'description' => 'An `<img>` tag based on this asset.'
             ],
+            'srcset' => [
+                'name' => 'srcset',
+                'type' => Type::string(),
+                'args' => [
+                    'sizes' => [
+                        'name' => 'sizes',
+                        'description' => 'A list of size descriptors. If you pass x-descriptors, it will be assumed that the image’s current width is the indented 1x width.',
+                        'type' => Type::nonNull(Type::listOf(Type::nonNull(Type::string())))
+                    ]
+                ],
+                'description' => 'Returns a `srcset` attribute value based on the given widths or x-descriptors.'
+            ],
             'url' => [
                 'name' => 'url',
                 'args' => Transform::getArguments(),

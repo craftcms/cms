@@ -21,6 +21,7 @@ use GraphQL\Error\Error;
 use GraphQL\Error\UserError;
 use GraphQL\Type\Definition\ResolveInfo;
 use GuzzleHttp\Client;
+use yii\base\InvalidArgumentException;
 
 /**
  * Class Asset
@@ -176,36 +177,30 @@ class Asset extends ElementMutationResolver
             $dataString = $fileInformation['fileData'];
             $fileData = null;
 
-            if (preg_match('/^data:(?<type>[a-z0-9]+\/[a-z0-9\+]+);base64,(?<data>.+)/i', $dataString, $matches)) {
+            if (preg_match('/^data:((?<type>[a-z0-9]+\/[a-z0-9\+]+);)?base64,(?<data>.+)/i', $dataString, $matches)) {
                 // Decode the file
                 $fileData = base64_decode($matches['data']);
             }
 
             if ($fileData) {
                 if (empty($fileInformation['filename'])) {
-                    $extensions = FileHelper::getExtensionsByMimeType($matches['type']);
-
-                    if (empty($extensions)) {
-                        throw new UserError('Invalid file data provided');
+                    // Make up a filename
+                    $extension = null;
+                    if (isset($matches['type'])) {
+                        try {
+                            $extension = FileHelper::getExtensionByMimeType($matches['type']);
+                        } catch (InvalidArgumentException $e) {
+                        }
                     }
-
-                    $extension = reset($extensions);
-
-                    // Manually correct for some types.
-                    switch ($extension) {
-                        case 'svgz':
-                            $extension = 'svg';
-                            break;
-                        case 'jpe':
-                            $extension = 'jpg';
+                    if (!$extension) {
+                        throw new UserError('Invalid file data provided.');
                     }
-
                     $filename = 'Upload.' . $extension;
                 } else {
                     $filename = AssetsHelper::prepareAssetName($fileInformation['filename']);
+                    $extension = pathinfo($filename, PATHINFO_EXTENSION);
                 }
 
-                $extension = pathinfo($filename, PATHINFO_EXTENSION);
                 $tempPath = AssetsHelper::tempFilePath($extension);
                 file_put_contents($tempPath, $fileData);
             } else {

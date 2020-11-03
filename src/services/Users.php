@@ -32,7 +32,6 @@ use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
-use craft\models\VolumeFolder;
 use craft\records\User as UserRecord;
 use craft\web\Request;
 use DateTime;
@@ -423,7 +422,7 @@ class Users extends Component
      */
     public function saveUserPhoto(string $fileLocation, User $user, string $filename = null)
     {
-        $filename = AssetsHelper::prepareAssetName($filename ?? pathinfo($fileLocation, PATHINFO_FILENAME), true, true);
+        $filename = AssetsHelper::prepareAssetName($filename ?? pathinfo($fileLocation, PATHINFO_BASENAME), true, true);
 
         if (!Image::canManipulateAsImage(pathinfo($fileLocation, PATHINFO_EXTENSION))) {
             throw new ImageException(Craft::t('app', 'User photo must be an image that Craft can manipulate.'));
@@ -992,7 +991,7 @@ class Users extends Component
         // Fire a 'beforeAssignUserToGroups' event
         $event = new UserGroupsAssignEvent([
             'userId' => $userId,
-            'groupIds' => array_keys($groupIds),
+            'groupIds' => $groupIds,
             'removedGroupIds' => $removedGroupIds,
             'newGroupIds' => array_keys($newGroupIds),
         ]);

@@ -67,12 +67,24 @@ class Api extends Component
     /**
      * Checks for Craft and plugin updates.
      *
+     * @param string[] The maximum versions that should be allowed
      * @return array
      * @throws RequestException if the API gave a non-2xx response
      */
-    public function getUpdates(): array
+    public function getUpdates(array $maxVersions = []): array
     {
-        $response = $this->request('GET', 'updates');
+        $options = [];
+        if ($maxVersions) {
+            $maxVersionsStr = [];
+            foreach ($maxVersions as $name => $version) {
+                $maxVersionsStr[] = "$name:$version";
+            }
+            $options[RequestOptions::QUERY] = [
+                'maxVersions' => implode(',', $maxVersionsStr),
+            ];
+        }
+
+        $response = $this->request('GET', 'updates', $options);
         return Json::decode((string)$response->getBody());
     }
 

@@ -9,11 +9,7 @@ namespace craft\utilities;
 
 use Craft;
 use craft\base\Utility;
-use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\web\assets\prismjs\PrismJsAsset;
-use SebastianBergmann\Diff\Differ;
-use SebastianBergmann\Diff\Output\DiffOnlyOutputBuilder;
-use SebastianBergmann\Diff\Output\UnifiedDiffOutputBuilder;
 use Symfony\Component\Yaml\Yaml;
 
 /**

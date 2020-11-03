@@ -6,7 +6,6 @@ use craft\db\Migration;
 use craft\db\Query;
 use craft\db\Table;
 use craft\helpers\MigrationHelper;
-use yii\db\Expression;
 
 /**
  * m200606_231117_migration_tracks migration.

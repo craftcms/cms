@@ -75,7 +75,7 @@ abstract class ObjectType extends GqlObjectType
             $result = $source[$fieldName] ?? null;
         }
 
-        $result = $result instanceof ElementQueryInterface ? $result->all(): $result;
+        $result = $result instanceof ElementQueryInterface ? $result->all() : $result;
 
         return $result;
     }

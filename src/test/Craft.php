@@ -14,7 +14,6 @@ use Codeception\Stub;
 use Codeception\TestInterface;
 use craft\base\ElementInterface;
 use craft\config\DbConfig;
-use craft\db\Connection;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\db\ElementQuery;
@@ -38,7 +37,6 @@ use yii\base\Exception as YiiBaseException;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\Module;
-use yii\db\Exception;
 
 /**
  * Craft module for codeception
