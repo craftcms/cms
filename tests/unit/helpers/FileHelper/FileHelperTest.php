@@ -5,7 +5,7 @@
  * @license   https://craftcms.github.io/license/
  */
 
-namespace crafttests\unit\helpers\filehelper;
+namespace crafttests\unit\helpers\FileHelper;
 
 use Codeception\Test\Unit;
 use craft\helpers\FileHelper;
@@ -313,7 +313,7 @@ class FileHelperTest extends Unit
         return [
             [true, __DIR__ . '/sandbox/iswritable/dir'],
             [true, __DIR__ . '/sandbox/iswritable/dirwithfile'],
-            [true, __DIR__ . '/sandbox/iswritable/dirwithfile/test.text'],
+            [true, __DIR__.'/sandbox/iswritable/dirwithfile/test.text'],
             [true, 'i/dont/exist/as/a/dir/'],
         ];
     }
