@@ -9,11 +9,14 @@
 - Added argument support to the `parent` field on entries and categories via GraphQL. ([#7036](https://github.com/craftcms/cms/issues/7036))
 - It’s now possible to update user photos with base64-encoded images. ([#6520](https://github.com/craftcms/cms/issues/6520))
 - Added `craft\helpers\FileHelper::getExtensionByMimeType()`.
+- Added `craft\helpers\Update`.
+- Added `craft\models\Update::$phpConstraint`.
 - Added `craft\services\Composer::getConfig()`.
 
 ## Changed
 - `aria-label` attributes are now used more consistently across the control panel. ([#6833](https://github.com/craftcms/cms/issues/6833))
 - Craft no longer optimizes the class autoloader when running Composer commands internally, as [recommended](https://getcomposer.org/doc/articles/autoloader-optimization.md) for local development.
+- The built-in updater will now warn if the latest eligible Craft CMS release requires a PHP version that is greater than what the environment is running, or what the `config.platform.php` setting is set to in `composer.json`.
 - Updated Twig to 2.14, for environments running PHP 7.2.5 or later, and where the `config.platform.php` value in `composer.json` is at least `7.2.5`. ([#7044](https://github.com/craftcms/cms/issues/7044))
 
 ### Fixed
