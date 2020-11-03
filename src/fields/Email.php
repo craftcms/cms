@@ -22,9 +22,6 @@ use yii\db\Schema;
  */
 class Email extends Field implements PreviewableFieldInterface
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -41,16 +38,10 @@ class Email extends Field implements PreviewableFieldInterface
         return 'string|null';
     }
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null The input’s placeholder text
      */
     public $placeholder;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -80,12 +71,13 @@ class Email extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml($value, ElementInterface $element = null): string
     {
         return Craft::$app->getView()->renderTemplate('_includes/forms/text', [
             'type' => 'email',
             'id' => $this->handle,
             'name' => $this->handle,
+            'inputmode' => 'email',
             'placeholder' => Craft::t('site', $this->placeholder),
             'value' => $value,
         ]);
@@ -97,6 +89,7 @@ class Email extends Field implements PreviewableFieldInterface
     public function getElementValidationRules(): array
     {
         return [
+            ['trim'],
             ['email'],
         ];
     }

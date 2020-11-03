@@ -22,9 +22,6 @@ use Twig\Template;
  */
 class GetAttrNode extends GetAttrExpression
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @param array $nodes An array of named nodes
      * @param array $attributes An array of attributes (should not be nodes)

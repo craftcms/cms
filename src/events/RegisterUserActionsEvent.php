@@ -18,9 +18,6 @@ use yii\base\Event;
  */
 class RegisterUserActionsEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var User|null The user associated with the event
      */
@@ -45,5 +42,4 @@ class RegisterUserActionsEvent extends Event
      * @var array Miscellaneous actions
      */
     public $miscActions = [];
-
 }

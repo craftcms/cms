@@ -2,10 +2,10 @@
 
 namespace craft\migrations;
 
-use Craft;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\db\Table;
+use craft\helpers\Db;
 use craft\helpers\Json;
 
 /**
@@ -13,9 +13,6 @@ use craft\helpers\Json;
  */
 class m151005_142750_volume_s3_storage_settings extends Migration
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -34,12 +31,11 @@ class m151005_142750_volume_s3_storage_settings extends Migration
             if (empty($settings['storageClass'])) {
                 $settings['storageClass'] = 'STANDARD'; // value of \craft\base\Volume::STORAGE_STANDARD
 
-                Craft::$app->getDb()->createCommand()
-                    ->update(
-                        Table::VOLUMES,
-                        ['settings' => Json::encode($settings)],
-                        ['id' => $volume['id']])
-                    ->execute();
+                Db::update(Table::VOLUMES, [
+                    'settings' => Json::encode($settings)
+                ], [
+                    'id' => $volume['id'],
+                ], [], true, $this->db);
             }
         }
     }

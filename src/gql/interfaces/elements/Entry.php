@@ -7,11 +7,11 @@
 
 namespace craft\gql\interfaces\elements;
 
-use craft\elements\Entry as EntryElement;
 use craft\gql\arguments\elements\Entry as EntryArguments;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\interfaces\Structure;
+use craft\gql\TypeManager;
 use craft\gql\types\DateTime;
 use craft\gql\types\generators\EntryType;
 use craft\helpers\Gql;
@@ -47,9 +47,7 @@ class Entry extends Structure
             'name' => static::getName(),
             'fields' => self::class . '::getFieldDefinitions',
             'description' => 'This is the interface implemented by all entries.',
-            'resolveType' => function(EntryElement $value) {
-                return $value->getGqlTypeName();
-            }
+            'resolveType' => self::class . '::resolveElementTypeName',
         ]));
 
         EntryType::generateTypes();
@@ -70,7 +68,7 @@ class Entry extends Structure
      */
     public static function getFieldDefinitions(): array
     {
-        return array_merge(parent::getFieldDefinitions(), self::getConditionalFields(), [
+        return TypeManager::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), static::getDraftFieldDefinitions(), self::getConditionalFields(), [
             'sectionId' => [
                 'name' => 'sectionId',
                 'type' => Type::int(),
@@ -109,6 +107,7 @@ class Entry extends Structure
             ],
             'parent' => [
                 'name' => 'parent',
+                'args' => EntryArguments::getArguments(),
                 'type' => EntryInterface::getType(),
                 'description' => 'The entry’s parent, if the section is a structure.'
             ],
@@ -116,8 +115,26 @@ class Entry extends Structure
                 'name' => 'url',
                 'type' => Type::string(),
                 'description' => 'The element’s full URL',
-            ]
-        ]);
+            ],
+            'localized' => [
+                'name' => 'localized',
+                'args' => EntryArguments::getArguments(),
+                'type' => Type::listOf(static::getType()),
+                'description' => 'The same element in other locales.',
+            ],
+            'prev' => [
+                'name' => 'prev',
+                'type' => self::getType(),
+                'args' => EntryArguments::getArguments(),
+                'description' => 'Returns the previous element relative to this one, from a given set of criteria. CAUTION: Applying arguments to this field severely degrades the performance of the query.',
+            ],
+            'next' => [
+                'name' => 'next',
+                'type' => self::getType(),
+                'args' => EntryArguments::getArguments(),
+                'description' => 'Returns the next element relative to this one, from a given set of criteria. CAUTION: Applying arguments to this field severely degrades the performance of the query.',
+            ],
+        ]), self::getName());
     }
 
     /**

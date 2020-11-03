@@ -17,9 +17,6 @@ use yii\db\Expression;
  */
 class FixedOrderExpression extends Expression
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string The column name that contains the values
      */
@@ -34,9 +31,6 @@ class FixedOrderExpression extends Expression
      * @var Connection The DB connection
      */
     public $db;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Constructor

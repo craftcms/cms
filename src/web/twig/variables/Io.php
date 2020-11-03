@@ -17,9 +17,6 @@ use craft\helpers\Assets;
  */
 class Io
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Return max upload size in bytes.
      *

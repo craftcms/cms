@@ -17,9 +17,6 @@ use Twig\NodeVisitor\NodeVisitorInterface;
  */
 abstract class BaseEventTagVisitor implements NodeVisitorInterface
 {
-    // Static
-    // =========================================================================
-
     /**
      * @var bool Whether the head() tag has been found/added
      */

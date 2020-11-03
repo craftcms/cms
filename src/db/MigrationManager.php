@@ -15,6 +15,8 @@ use craft\helpers\FileHelper;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
+use yii\base\NotSupportedException;
+use yii\db\Expression;
 use yii\db\MigrationInterface;
 use yii\di\Instance;
 
@@ -31,22 +33,20 @@ class MigrationManager extends Component
      */
     const BASE_MIGRATION = 'm000000_000000_base';
 
-    const TYPE_APP = 'app';
-    const TYPE_PLUGIN = 'plugin';
-    const TYPE_CONTENT = 'content';
-
-    // Properties
-    // =========================================================================
+    /**
+     * @since 3.5.0
+     */
+    const TRACK_CRAFT = 'craft';
+    /**
+     * @since 3.5.0
+     */
+    const TRACK_CONTENT = 'content';
 
     /**
-     * @var string|null The type of migrations we're dealing with here. Can be 'app', 'plugin', or 'content'.
+     * @var string The migration track (e.g. `craft`, `content`, `plugin:commerce`, etc.)
+     * @since 3.5.0
      */
-    public $type;
-
-    /**
-     * @var int|null The plugin ID, if [[type]] is set to 'plugin'.
-     */
-    public $pluginId;
+    public $track;
 
     /**
      * @var string|null The namespace that the migration classes are in
@@ -68,30 +68,19 @@ class MigrationManager extends Component
      */
     public $migrationTable = Table::MIGRATIONS;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
+     * @throws InvalidConfigException
      */
     public function init()
     {
         parent::init();
 
         if ($this->migrationPath === null) {
-            throw new InvalidConfigException('The migration folder path has not been set.');
-        }
-
-        if (!in_array($this->type, [self::TYPE_APP, self::TYPE_PLUGIN, self::TYPE_CONTENT], true)) {
-            throw new InvalidConfigException('Invalid migration type: ' . $this->type);
-        }
-
-        if ($this->migrationPath === null) {
             throw new InvalidConfigException('The migration path has not been set.');
         }
 
         $this->migrationPath = FileHelper::normalizePath(Craft::getAlias($this->migrationPath));
-
         $this->db = Instance::ensure($this->db, Connection::class);
     }
 
@@ -225,6 +214,10 @@ class MigrationManager extends Component
         /** @noinspection CallableParameterUseCaseInTypeContextInspection */
         $migration = Instance::ensure($migration, MigrationInterface::class);
 
+        // Clear the schema cache
+        $schema = $this->db->getSchema();
+        $schema->refresh();
+
         Craft::info("Applying $migrationName", __METHOD__);
 
         $isConsoleRequest = Craft::$app->getRequest()->getIsConsoleRequest();
@@ -244,6 +237,9 @@ class MigrationManager extends Component
             $success = false;
         }
         $time = microtime(true) - $start;
+
+        // Clear the schema cache
+        $schema->refresh();
 
         $log = ($success ? 'Applied ' : 'Failed to apply ') . $migrationName . ' (time: ' . sprintf('%.3f', $time) . 's).';
         if (!$isConsoleRequest) {
@@ -279,6 +275,10 @@ class MigrationManager extends Component
         /** @noinspection CallableParameterUseCaseInTypeContextInspection */
         $migration = Instance::ensure($migration, MigrationInterface::class);
 
+        // Clear the schema cache
+        $schema = $this->db->getSchema();
+        $schema->refresh();
+
         Craft::info("Reverting $migrationName", __METHOD__);
 
         $isConsoleRequest = Craft::$app->getRequest()->getIsConsoleRequest();
@@ -298,6 +298,9 @@ class MigrationManager extends Component
             $success = false;
         }
         $time = microtime(true) - $start;
+
+        // Clear the schema cache
+        $schema->refresh();
 
         $log = ($success ? 'Reverted ' : 'Failed to revert ') . $migrationName . ' (time: ' . sprintf('%.3f', $time) . 's).';
         if (!$isConsoleRequest) {
@@ -336,21 +339,28 @@ class MigrationManager extends Component
      * Adds a new migration entry to the history.
      *
      * @param string $name The migration name
+     * @throws NotSupportedException
      */
     public function addMigrationHistory(string $name)
     {
-        $this->_validatePluginConfig();
+        // TODO: Remove after next breakpoint
+        if ($this->db->columnExists(Table::MIGRATIONS, 'type')) {
+            if ($this->track !== self::TRACK_CRAFT) {
+                throw new NotSupportedException('Plugin and content migrations aren’t allowed until you update Craft.');
+            }
+            Db::insert($this->migrationTable, [
+                'type' => 'app',
+                'name' => $name,
+                'applyTime' => Db::prepareDateForDb(new \DateTime()),
+            ]);
+            return;
+        }
 
-        Craft::$app->getDb()->createCommand()
-            ->insert(
-                $this->migrationTable,
-                [
-                    'type' => $this->type,
-                    'pluginId' => $this->pluginId,
-                    'name' => $name,
-                    'applyTime' => Db::prepareDateForDb(new \DateTime())
-                ])
-            ->execute();
+        Db::insert($this->migrationTable, [
+            'track' => $this->track,
+            'name' => $name,
+            'applyTime' => Db::prepareDateForDb(new \DateTime()),
+        ]);
     }
 
     /**
@@ -360,17 +370,10 @@ class MigrationManager extends Component
      */
     public function removeMigrationHistory(string $name)
     {
-        $this->_validatePluginConfig();
-
-        Craft::$app->getDb()->createCommand()
-            ->delete(
-                $this->migrationTable,
-                [
-                    'type' => $this->type,
-                    'pluginId' => $this->pluginId,
-                    'name' => $name
-                ])
-            ->execute();
+        Db::delete($this->migrationTable, [
+            'track' => $this->track,
+            'name' => $name,
+        ]);
     }
 
     /**
@@ -380,16 +383,9 @@ class MigrationManager extends Component
      */
     public function truncateHistory()
     {
-        $this->_validatePluginConfig();
-
-        Craft::$app->getDb()->createCommand()
-            ->delete(
-                $this->migrationTable,
-                [
-                    'type' => $this->type,
-                    'pluginId' => $this->pluginId,
-                ])
-            ->execute();
+        Db::delete($this->migrationTable, [
+            'track' => $this->track,
+        ]);
     }
 
     /**
@@ -440,25 +436,6 @@ class MigrationManager extends Component
         return $migrations;
     }
 
-    // Private Methods
-    // =========================================================================
-
-    /**
-     * Ensures that [[pluginId]] is set properly.
-     *
-     * @throws InvalidConfigException
-     */
-    private function _validatePluginConfig()
-    {
-        if ($this->type === self::TYPE_PLUGIN) {
-            if ($this->pluginId === null) {
-                throw new InvalidConfigException('The plugin ID has not been set.');
-            }
-        } else {
-            $this->pluginId = null;
-        }
-    }
-
     /**
      * Normalizes the $migration argument passed to [[migrateUp()]] and [[migrateDown()]].
      *
@@ -485,37 +462,42 @@ class MigrationManager extends Component
      */
     private function _createMigrationQuery(): Query
     {
-        $this->_validatePluginConfig();
-
         // TODO: Remove after next breakpoint
-        if (
-            version_compare(Craft::$app->getInfo()->version, '3.0', '<') &&
-            Craft::$app->getDb()->columnExists($this->migrationTable, 'version', true)
-        ) {
+        if ($this->db->columnExists($this->migrationTable, 'version', true)) {
             $query = (new Query())
                 ->select(['version as name', 'applyTime'])
                 ->from([$this->migrationTable])
                 ->orderBy(['name' => SORT_DESC]);
 
-            if ($this->type === self::TYPE_PLUGIN) {
-                $query->where(['pluginId' => $this->pluginId]);
-            } else {
+            if ($this->track === 'craft') {
                 $query->where(['pluginId' => null]);
+            } else {
+                $query->where(new Expression('1 = 0'));
             }
 
             return $query;
         }
 
-        $query = (new Query())
+        // TODO: Remove after next breakpoint
+        if ($this->db->columnExists($this->migrationTable, 'type', true)) {
+            $query = (new Query())
+                ->select(['name', 'applyTime'])
+                ->from([$this->migrationTable])
+                ->orderBy(['name' => SORT_DESC]);
+
+            if ($this->track === 'craft') {
+                $query->where(['type' => 'app']);
+            } else {
+                $query->where(new Expression('1 = 0'));
+            }
+
+            return $query;
+        }
+
+        return (new Query())
             ->select(['name', 'applyTime'])
             ->from([$this->migrationTable])
             ->orderBy(['name' => SORT_DESC])
-            ->where(['type' => $this->type]);
-
-        if ($this->type === self::TYPE_PLUGIN) {
-            $query->andWhere(['pluginId' => $this->pluginId]);
-        }
-
-        return $query;
+            ->where(['track' => $this->track]);
     }
 }

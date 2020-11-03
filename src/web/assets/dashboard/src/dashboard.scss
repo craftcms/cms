@@ -1,0 +1,169 @@
+@charset "UTF-8";
+@import "../../../../../node_modules/craftcms-sass/mixins";
+
+/* widgets */
+.widget {
+  position: relative;
+  perspective: 1000;
+  transition: opacity linear 200ms, transform linear 200ms;
+  margin-bottom: 14px;
+}
+
+.widget.scaleout {
+  opacity: 0;
+  transform: scale(0.5);
+}
+
+.widget > .front,
+.widget > .back {
+  backface-visibility: hidden;
+  transition: 600ms;
+}
+
+.widget > .back {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+
+.widget:not(.flipped) > .front {
+  transform: rotateY(0deg);
+}
+
+.widget:not(.flipped) > .back {
+  transform: rotateY(-180deg);
+}
+
+.widget.flipped > .front {
+  transform: rotateY(180deg);
+}
+
+.widget.flipped > .back {
+  transform: rotateY(0deg);
+}
+
+.widget:not(.flipped) > .back,
+.widget.flipped > .front {
+  opacity: 0;
+}
+
+.widget > .front > .pane > .spinner.body-loading {
+  display: none;
+}
+
+.widget.loading > .front > .pane > .spinner.body-loading {
+  display: block;
+  @include floatright;
+  @include margin-left(10px);
+}
+
+.widget.loading-new.new > .front > .pane {
+  height: 252px;
+}
+
+.widget.loading-new.new > .front > .pane > .spinner.body-loading {
+  display: block;
+  position: absolute;
+  top: calc(50% - 15px);
+  left: calc(50% - 12px);
+}
+
+.widget > .front > .pane > .icon.settings {
+  display: block;
+  opacity: 0;
+  cursor: pointer;
+  @include right(24px);
+  top: 24px;
+  transition: opacity linear 200ms;
+  position: absolute;
+}
+
+.widget:not(.flipped):hover > .front > .pane > .icon.settings {
+  opacity: 0.3;
+}
+
+.widget:not(.flipped) > .front > .pane > .icon.settings:hover {
+  opacity: 1;
+}
+
+.widget .widget-heading {
+  margin-bottom: 15px;
+
+  h2 {
+    margin-bottom: 3px;
+  }
+  h5 {
+    margin-top: 0;
+  }
+}
+
+.widget form + .errors {
+  margin-top: 15px;
+}
+
+.widget > .back > .pane {
+  background: $grey050;
+}
+
+.widget > .back > .pane > .errors {
+  margin-top: 24px;
+}
+
+/* Recent Entries widget */
+.craft\\widgets\\recententries .body .table  {
+  table-layout: fixed;
+}
+
+/* New Users Widget */
+.craft\\widgets\\newusers .chart {
+  height: 200px;
+  margin: 0;
+}
+
+/* New Widget Menu */
+.newwidgetmenu ul li a {
+  position: relative;
+  @include padding-left(40px);
+}
+
+.newwidgetmenu ul li a .icon {
+  position: absolute;
+  top: 11px;
+  @include left(14px);
+  width: 16px;
+}
+
+.newwidgetmenu ul li a .icon svg,
+.widgetmanagerhud-icon svg {
+  width: 16px;
+  height: 16px;
+  @include svg-mask($mediumTextColor);
+}
+
+/* New Widget Menu */
+.widgetmanagerhud {
+  max-width: 400px;
+
+  .body {
+    min-width: 400px;
+  }
+}
+
+@media only screen and (max-width: 673px) {
+  .widgetmanagerhud {
+    max-width: 300px;
+
+    .body {
+      min-width: 300px;
+
+      .widgetmanagerhud-col-colspan-picker {
+        display: none;
+      }
+
+      .widgetmanagerhud-col-move {
+        display: none;
+      }
+    }
+  }
+}

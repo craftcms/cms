@@ -1,47 +1,109 @@
-{%- set labelId = (labelId is defined ? labelId : (id is defined ? id~'-label' : null)) %}
-{%- set fieldId = (fieldId is defined ? fieldId : (id is defined ? id~'-field' : null)) %}
+{%- set fieldId = fieldId ?? ((id ?? false) ? "#{id}-field" : "field#{random()}") %}
+{%- set labelId = labelId ?? "#{fieldId}-label" %}
+{%- set instructionsId = instructionsId ?? "#{fieldId}-instructions"  %}
+{%- set status = status ?? null %}
 {%- set label = label is defined and label != '__blank__' ? label : (block('label') ?? null) %}
-{%- set siteId = ((craft.app.getIsMultiSite() and siteId is defined) ? siteId : null) %}
-{%- set site = (siteId ? craft.app.sites.getSiteById(siteId) : null) %}
+{%- set siteId = craft.app.getIsMultiSite() ? (siteId ?? null) : null %}
+{%- set site = siteId ? craft.app.sites.getSiteById(siteId) : null %}
+{%- set required = required ?? false %}
 {%- set instructions = instructions ?? block('instructions') ?? null %}
 {%- set tip = tip ?? block('tip') ?? null %}
 {%- set warning = warning ?? block('warning') ?? null %}
-{%- set orientation = (site ? craft.app.i18n.getLocaleById(site.language) : craft.app.locale).getOrientation() %}
+{%- set orientation = orientation ?? (site ? site.getLocale() : craft.app.locale).getOrientation() %}
 {%- set translatable = translatable ?? (site is not same as(null)) %}
-{%- set errors = (errors is defined ? errors : null) -%}
-{%- set fieldClass = [
+{%- set errors = errors ?? null -%}
+{%- set fieldClass = (fieldClass ?? [])|explodeClass|merge([
     'field',
-    (first is defined and first ? 'first' : null),
-    (errors ? 'has-errors' : null),
-    (fieldClass is defined and fieldClass ? fieldClass : null)
-]|filter|join(' ') %}
+    (first ?? false) ? 'first' : null,
+    errors ? 'has-errors' : null,
+])|filter %}
+{%- set showAttribute = (attribute ?? false) and (currentUser.admin ?? false) and currentUser.getPreference('showFieldHandles') %}
 
-<div class="{{ fieldClass }}"
-        {%- if fieldId %} id="{{ fieldId }}"{% endif %}
-        {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
-    {% if label or instructions %}
+
+{%- set fieldAttributes = {
+    class: fieldClass,
+    id: fieldId,
+    aria: {
+        describedby: instructions ? instructionsId : false,
+    }
+}|merge(fieldAttributes ?? [], recursive=true) %}
+
+{%- if block('attr') is defined %}
+    {%- set fieldAttributes = fieldAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
+{% endif %}
+
+{%- set inputContainerAttributes = {
+    class: [
+        'input',
+        orientation,
+        errors ? 'errors' : null,
+    ]|filter,
+}|merge(inputContainerAttributes ?? [], recursive=true) %}
+
+<div {{ attr(fieldAttributes) }}>
+    {% if status %}
+        {{ tag('div', {
+            class: ['status-badge', status[0]],
+            text: status[1][0:1]|upper,
+            title: status[1],
+            'aria-label': status[1],
+        }) }}
+    {% endif %}
+    {% if label or showAttribute %}
         <div class="heading">
-            {% if label %}
-                <label {% if labelId %} id="{{ labelId }}"{% endif %}{% if required is defined and required %} class="required"{% endif %}{% if id is defined and id %} for="{{ id }}"{% endif %}>
-                    {{- label|raw -}}
-                    {%- if translatable %} <span class="extralight" data-icon="language" title="{{ translationDescription ?? 'This field is translatable.'|t('app') }}"></span>{% endif -%}
-                </label>
-            {% endif %}
-            {% if instructions %}
-                <div class="instructions">{{ instructions|md('gfm-comment')|replace('/&amp;(\\w+);/', '&$1;')|raw }}</div>
-            {% endif %}
+            {% block heading %}
+                {% if label %}
+                    {{ tag('label', {
+                        id: labelId,
+                        class: required ? ['required'] : [],
+                        for: id ?? null,
+                        html: label,
+                    }|merge(labelAttributes ?? [], recursive=true)) }}
+                    {%- if translatable %}
+                        {{ tag('div', {
+                            class: 't9n-indicator',
+                            data: {
+                                icon: 'language',
+                            },
+                            title: translationDescription ?? 'This field is translatable.'|t('app'),
+                            'aria-label': translationDescription ?? 'This field is translatable.'|t('app'),
+                        }) }}
+                    {% endif -%}
+                {% endif %}
+                {% if showAttribute %}
+                    <div class="flex-grow"></div>
+                    {% include '_includes/forms/copytextbtn' with {
+                        id: "#{fieldId}-attribute",
+                        class: ['code', 'small', 'light'],
+                        value: attribute,
+                    } only %}
+                {% endif %}
+            {% endblock %}
         </div>
     {% endif %}
-    <div class="input {{ orientation }}{% if errors %} errors{% endif %}">
+    {% if instructions %}
+        {{ tag('div', {
+            id: instructionsId,
+            class: ['instructions'],
+            html: instructions|md('gfm-comment')|replace('/&amp;(\\w+);/', '&$1;'),
+        }) }}
+    {% endif %}
+    <div {{ attr(inputContainerAttributes) }}>
         {% block input %}
             {{ input|raw }}
         {% endblock %}
     </div>
     {% if tip %}
-        <p class="notice">{{ tip|md(inlineOnly=true)|replace('/&amp;(\\w+);/', '&$1;')|raw }}</p>
+        {{ tag('p', {
+            class: ['notice', 'with-icon'],
+            html: tip|md(inlineOnly=true)|replace('/&amp;(\\w+);/', '&$1;'),
+        }) }}
     {% endif %}
     {% if warning %}
-        <p class="warning">{{ warning|md(inlineOnly=true)|replace('/&amp;(\\w+);/', '&$1;')|raw }}</p>
+        {{ tag('p', {
+            class: ['warning', 'with-icon'],
+            html: warning|md(inlineOnly=true)|replace('/&amp;(\\w+);/', '&$1;'),
+        }) }}
     {% endif %}
     {% include "_includes/forms/errorList" with { errors: errors } %}
 </div>

@@ -16,9 +16,6 @@ namespace craft\enums;
  */
 abstract class VersionUpdateStatus
 {
-    // Constants
-    // =========================================================================
-
     const UpToDate = 'UpToDate';
     const UpdateAvailable = 'UpdateAvailable';
 }

@@ -15,9 +15,6 @@ namespace craft\base;
  */
 interface EagerLoadingFieldInterface
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Returns an array that maps source-to-target element IDs based on this custom field.
      *

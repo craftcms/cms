@@ -16,6 +16,7 @@ use Symfony\Component\Filesystem\Filesystem;
 use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
+use ZipArchive;
 
 /**
  * Class FileHelper
@@ -25,25 +26,16 @@ use yii\base\InvalidArgumentException;
  */
 class FileHelper extends \yii\helpers\FileHelper
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
     public static $mimeMagicFile = '@app/config/mimeTypes.php';
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var bool Whether file locks can be used when writing to files.
      * @see useFileLocks()
      */
     private static $_useFileLocks;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -270,6 +262,11 @@ class FileHelper extends \yii\helpers\FileHelper
             return static::getMimeTypeByExtension($file, $magicFile) ?? $mimeType;
         }
 
+        // Handle invalid SVG mime type reported by PHP (https://bugs.php.net/bug.php?id=79045)
+        if (strpos($mimeType, 'image/svg') === 0) {
+            return 'image/svg+xml';
+        }
+
         return $mimeType;
     }
 
@@ -305,8 +302,7 @@ class FileHelper extends \yii\helpers\FileHelper
      */
     public static function isSvg(string $file, string $magicFile = null, bool $checkExtension = true): bool
     {
-        $mimeType = self::getMimeType($file, $magicFile, $checkExtension);
-        return strpos($mimeType, 'image/svg') === 0;
+        return self::getMimeType($file, $magicFile, $checkExtension) === 'image/svg+xml';
     }
 
     /**
@@ -341,6 +337,7 @@ class FileHelper extends \yii\helpers\FileHelper
      * - `lock`: bool, whether a file lock should be used. Defaults to the
      *   `useWriteFileLock` config setting.
      * @throws InvalidArgumentException if the parent directory doesn't exist and `options[createDirs]` is `false`
+     * @throws Exception if the parent directory can't be created
      * @throws ErrorException in case of failure
      */
     public static function writeToFile(string $file, string $contents, array $options = [])
@@ -365,7 +362,9 @@ class FileHelper extends \yii\helpers\FileHelper
         if ($lock) {
             $mutex = Craft::$app->getMutex();
             $lockName = md5($file);
-            $mutex->acquire($lockName);
+            if (!$mutex->acquire($lockName, 2)) {
+                throw new ErrorException("Unable to acquire a lock for file \"{$file}\".");
+            }
         } else {
             $lockName = $mutex = null;
         }
@@ -380,13 +379,41 @@ class FileHelper extends \yii\helpers\FileHelper
         }
 
         // Invalidate opcache
-        if (function_exists('opcache_invalidate')) {
-            @opcache_invalidate($file, true);
-        }
+        static::invalidate($file);
 
         if ($lock) {
             $mutex->release($lockName);
         }
+    }
+
+    /**
+     * Creates a `.gitignore` file in the given directory if one doesn’t exist yet.
+     *
+     * @param string $path
+     * @param array $options options for file write. Valid options are:
+     * - `createDirs`: bool, whether to create parent directories if they do
+     *   not exist. Defaults to `true`.
+     * - `lock`: bool, whether a file lock should be used. Defaults to `false`.
+     * @throws InvalidArgumentException if the parent directory doesn't exist and `options[createDirs]` is `false`
+     * @throws Exception if the parent directory can't be created
+     * @throws ErrorException in case of failure
+     * @since 3.4.0
+     */
+    public static function writeGitignoreFile(string $path, array $options = [])
+    {
+        $gitignorePath = $path . DIRECTORY_SEPARATOR . '.gitignore';
+
+        if (is_file($gitignorePath)) {
+            return;
+        }
+
+        $contents = "*\n!.gitignore\n";
+        $options = array_merge([
+            // Prevent a segfault if this is called recursively
+            'lock' => false,
+        ], $options);
+
+        static::writeToFile($gitignorePath, $contents, $options);
     }
 
     /**
@@ -398,8 +425,21 @@ class FileHelper extends \yii\helpers\FileHelper
      */
     public static function removeFile(string $path): bool
     {
-        Craft::$app->getDeprecator()->log('craft\\helpers\\FileHelper::removeFile()', 'craft\\helpers\\FileHelper::removeFile() is deprecated. Use craft\\helpers\\FileHelper::unlink() instead.');
         return static::unlink($path);
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.4.16
+     */
+    public static function unlink($path)
+    {
+        // BaseFileHelper::unlink() doesn't seem to catch all possible exceptions
+        try {
+            return parent::unlink($path);
+        } catch (\Throwable $e) {
+            return false;
+        }
     }
 
     /**
@@ -581,5 +621,119 @@ class FileHelper extends \yii\helpers\FileHelper
                 }
             }
         }
+    }
+
+    /**
+     * Invalidates a cached file with `clearstatcache()` and `opcache_invalidate()`.
+     *
+     * @param string $file the file path
+     * @since 3.4.0
+     */
+    public static function invalidate(string $file)
+    {
+        clearstatcache(true, $file);
+        if (function_exists('opcache_invalidate') && filter_var(ini_get('opcache.enable'), FILTER_VALIDATE_BOOLEAN)) {
+            @opcache_invalidate($file, true);
+        }
+    }
+
+    /**
+     * Zips a file.
+     *
+     * @param string $path the file/directory path
+     * @param string|null $to the target zip file path. If null, the original path will be used, with “.zip” appended to it.
+     * @return string the zip file path
+     * @throws InvalidArgumentException if `$path` is not a valid file/directory path
+     * @throws Exception if the zip cannot be created
+     * @since 3.5.0
+     */
+    public static function zip(string $path, string $to = null): string
+    {
+        $path = static::normalizePath($path);
+
+        if (!file_exists($path)) {
+            throw new InvalidArgumentException("No file/directory exists at $path");
+        }
+
+        if ($to === null) {
+            $to = "$path.zip";
+        }
+
+        $zip = new ZipArchive();
+
+        if ($zip->open($to, ZipArchive::CREATE) !== true) {
+            throw new Exception("Cannot create zip at $to");
+        }
+
+        $name = basename($path);
+
+        if (is_file($path)) {
+            $zip->addFile($path, $name);
+        } else {
+            static::addFilesToZip($zip, $path);
+        }
+
+        $zip->close();
+        return $to;
+    }
+
+    /**
+     * Adds all the files in a given directory to a ZipArchive, preserving the nested directory structure.
+     *
+     * @param ZipArchive $zip the ZipArchive object
+     * @param string $dir the directory path
+     * @param string|null $prefix the path prefix to use when adding the contents of the directory
+     * @param array $options options for file searching. See [[findFiles()]] for available options.
+     * @param 3.5.0
+     */
+    public static function addFilesToZip(ZipArchive $zip, string $dir, string $prefix = null, $options = [])
+    {
+        if (!is_dir($dir)) {
+            return;
+        }
+
+        if ($prefix !== null) {
+            $prefix = static::normalizePath($prefix) . '/';
+        } else {
+            $prefix = '';
+        }
+
+        $files = static::findFiles($dir, $options);
+
+        foreach ($files as $file) {
+            // Use forward slashes
+            $file = str_replace(DIRECTORY_SEPARATOR, '/', $file);
+            // Preserve the directory structure within the templates folder
+            $zip->addFile($file, $prefix . substr($file, strlen($dir) + 1));
+        }
+    }
+
+    /**
+     * Return a file extension for the given MIME type.
+     *
+     * @param $mimeType
+     * @return string
+     * @throws InvalidArgumentException if no known extensions exist for the given MIME type.
+     * @since 3.5.15
+     */
+    public static function getExtensionByMimeType($mimeType): string
+    {
+        $extensions = FileHelper::getExtensionsByMimeType($mimeType);
+
+        if (empty($extensions)) {
+            throw new InvalidArgumentException("No file extensions are known for the MIME Type $mimeType.");
+        }
+
+        $extension = reset($extensions);
+
+        // Manually correct for some types.
+        switch ($extension) {
+            case 'svgz':
+                return 'svg';
+            case 'jpe':
+                return 'jpg';
+        }
+
+        return $extension;
     }
 }

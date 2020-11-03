@@ -17,9 +17,6 @@ use craft\base\Model;
  */
 class SystemMessage extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null Unique key for the message
      */

@@ -1,6 +1,28 @@
 {% import "_includes/forms" as forms %}
 
 {% if sections %}
+
+    {% if craft.app.getIsMultiSite() %}
+        {% set editableSites = craft.app.sites.getEditableSites() %}
+
+        {% if editableSites|length > 1 %}
+            {% set siteInput %}
+                <div class="select">
+                    <select id="site-id" name="siteId">
+                        {% for site in editableSites %}
+                            <option value="{{ site.id }}"{% if site.id == widget.siteId %} selected{% endif %}>{{ site.name|t('site') }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            {% endset %}
+
+            {{ forms.field({
+                id: 'site-id',
+                label: "Site"|t('app'),
+            }, siteInput) }}
+        {% endif %}
+    {% endif %}
+
     {% set sectionOptions = [] %}
     {% for section in sections %}
         {% set sectionOptions = sectionOptions|merge([{ label: section.name|t('site'), value: section.id }]) %}
@@ -50,7 +72,7 @@
                         {% for field in entryType.getFieldLayout().getFields() %}
                             <div>
                                 {{ forms.checkbox({
-                                    label: field.name|e~(field.required ? ' <span class="required"></span>' : ''),
+                                    label: raw(field.name|e ~ (field.required ? '<span class="required"></span>')),
                                     name: 'sections['~section.id~'][fields][]',
                                     value: field.id,
                                     checked: (field.required or field.id in widget.fields),

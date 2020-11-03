@@ -8,7 +8,6 @@
 namespace tests\gql;
 
 use Craft;
-use crafttests\fixtures\AssetsFixture;
 use crafttests\fixtures\EntryWithFieldsFixture;
 use crafttests\fixtures\GlobalSetFixture;
 use crafttests\fixtures\GqlSchemasFixture;
@@ -16,6 +15,9 @@ use FunctionalTester;
 
 class GqlCest
 {
+    /**
+     *
+     */
     public function _fixtures()
     {
         return [
@@ -31,22 +33,35 @@ class GqlCest
         ];
     }
 
+    /**
+     * @param FunctionalTester $I
+     */
     public function _before(FunctionalTester $I)
     {
-        $this->_setToken('My+voice+is+my+passport.+Verify me.');
+        $this->_setSchema(1000);
     }
 
+    /**
+     * @param FunctionalTester $I
+     */
     public function _after(FunctionalTester $I)
     {
         $gqlService = Craft::$app->getGql();
         $gqlService->flushCaches();
     }
 
-    public function _setToken(string $accessToken)
+    /**
+     * @param int $tokenId
+     * @return \craft\models\GqlSchema|null
+     * @throws \yii\base\Exception
+     */
+    public function _setSchema(int $tokenId)
     {
         $gqlService = Craft::$app->getGql();
-        $schema = $gqlService->getSchemaByAccessToken($accessToken);
+        $schema = $gqlService->getSchemaById($tokenId);
         $gqlService->setActiveSchema($schema);
+
+        return $schema;
     }
 
     /**
@@ -112,10 +127,10 @@ class GqlCest
     {
         $testData = file_get_contents(__DIR__ . '/data/gql.txt');
         foreach (explode('-----TEST DELIMITER-----', $testData) as $case) {
-            list ($query, $response) = explode('-----RESPONSE DELIMITER-----', $case);
-            list ($token, $query) = explode('-----TOKEN DELIMITER-----', $query);
-            $this->_setToken(trim($token));
-            $I->amOnPage('?action=graphql/api&query='.urlencode(trim($query)));
+            [$query, $response] = explode('-----RESPONSE DELIMITER-----', $case);
+            [$schemaId, $query] = explode('-----TOKEN DELIMITER-----', $query);
+            $schema = $this->_setSchema(trim($schemaId));
+            $I->amOnPage('?action=graphql/api&query=' . urlencode(trim($query)));
             $I->see(trim($response));
             $gqlService = Craft::$app->getGql();
             $gqlService->flushCaches();

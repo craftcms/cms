@@ -96,6 +96,7 @@ $contentMigrationsPath = $findConfigPath('CRAFT_CONTENT_MIGRATIONS_PATH', 'conte
 $storagePath = $findConfigPath('CRAFT_STORAGE_PATH', 'storagePath') ?: $rootPath . DIRECTORY_SEPARATOR . 'storage';
 $templatesPath = $findConfigPath('CRAFT_TEMPLATES_PATH', 'templatesPath') ?: $rootPath . DIRECTORY_SEPARATOR . 'templates';
 $translationsPath = $findConfigPath('CRAFT_TRANSLATIONS_PATH', 'translationsPath') ?: $rootPath . DIRECTORY_SEPARATOR . 'translations';
+$testsPath = $findConfigPath('CRAFT_TESTS_PATH', 'testsPath') ?: $rootPath . DIRECTORY_SEPARATOR . 'tests';
 
 // Set the environment
 $environment = $findConfig('CRAFT_ENVIRONMENT', 'env') ?: ($_SERVER['SERVER_NAME'] ?? null);
@@ -130,22 +131,25 @@ if (!defined('CRAFT_LICENSE_KEY')) {
 
             // See if it worked.
             if (!file_exists($licenseFullPath) || (file_exists($licenseFullPath) && file_get_contents($licenseFullPath) !== 'temp')) {
+                // Set a 503 response header so things like Varnish won't cache a bad page.
+                http_response_code(503);
                 exit($licensePath . ' isn\'t writable by PHP. Please fix that.' . PHP_EOL);
             }
         }
     }
 }
 
+if (!defined('CRAFT_EPHEMERAL') || CRAFT_EPHEMERAL === false) {
+    $ensureFolderIsReadable($storagePath, true);
 
-$ensureFolderIsReadable($storagePath, true);
+    // Create the storage/runtime/ folder if it doesn't already exist
+    $createFolder($storagePath . DIRECTORY_SEPARATOR . 'runtime');
+    $ensureFolderIsReadable($storagePath . DIRECTORY_SEPARATOR . 'runtime', true);
 
-// Create the storage/runtime/ folder if it doesn't already exist
-$createFolder($storagePath . DIRECTORY_SEPARATOR . 'runtime');
-$ensureFolderIsReadable($storagePath . DIRECTORY_SEPARATOR . 'runtime', true);
-
-// Create the storage/logs/ folder if it doesn't already exist
-$createFolder($storagePath . DIRECTORY_SEPARATOR . 'logs');
-$ensureFolderIsReadable($storagePath . DIRECTORY_SEPARATOR . 'logs', true);
+    // Create the storage/logs/ folder if it doesn't already exist
+    $createFolder($storagePath . DIRECTORY_SEPARATOR . 'logs');
+    $ensureFolderIsReadable($storagePath . DIRECTORY_SEPARATOR . 'logs', true);
+}
 
 // Log errors to storage/logs/phperrors.log
 if (!defined('CRAFT_LOG_PHP_ERRORS') || CRAFT_LOG_PHP_ERRORS) {
@@ -202,11 +206,13 @@ require $srcPath . DIRECTORY_SEPARATOR . 'Craft.php';
 Craft::setAlias('@root', $rootPath);
 Craft::setAlias('@lib', $libPath);
 Craft::setAlias('@craft', $srcPath);
+Craft::setAlias('@appicons', $srcPath . DIRECTORY_SEPARATOR . 'icons');
 Craft::setAlias('@config', $configPath);
 Craft::setAlias('@contentMigrations', $contentMigrationsPath);
 Craft::setAlias('@storage', $storagePath);
 Craft::setAlias('@templates', $templatesPath);
 Craft::setAlias('@translations', $translationsPath);
+Craft::setAlias('@tests', $testsPath);
 
 // Set any custom aliases
 $customAliases = $generalConfig['aliases'] ?? $generalConfig['environmentVariables'] ?? null;
@@ -234,10 +240,6 @@ $config = ArrayHelper::merge(
     $configService->getConfigFromFile('app'),
     $configService->getConfigFromFile("app.{$appType}")
 );
-
-if (defined('CRAFT_SITE') || defined('CRAFT_LOCALE')) {
-    $config['components']['sites']['currentSite'] = defined('CRAFT_SITE') ? CRAFT_SITE : CRAFT_LOCALE;
-}
 
 // Initialize the application
 /** @var \craft\web\Application|craft\console\Application $app */

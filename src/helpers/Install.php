@@ -62,8 +62,8 @@ class Install
             return $primarySite['baseUrl'];
         }
 
-        // Is there a DEFAULT_SITE_URL environment variable set?
-        if ($envValue = getenv('DEFAULT_SITE_URL')) {
+        // Is there a PRIMARY_SITE_URL environment variable set?
+        if ($envValue = App::env('PRIMARY_SITE_URL')) {
             return $envValue;
         }
 

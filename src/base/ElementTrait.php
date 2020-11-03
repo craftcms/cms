@@ -17,9 +17,6 @@ use DateTime;
  */
 trait ElementTrait
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null The element’s ID
      */
@@ -46,6 +43,12 @@ trait ElementTrait
      * @var string|null The element’s UID
      */
     public $uid;
+
+    /**
+     * @var int|null The ID of the element’s record in the `elements_sites` table
+     * @since 3.5.2
+     */
+    public $siteSettingsId;
 
     /**
      * @var int|null The element’s field layout ID
@@ -76,11 +79,6 @@ trait ElementTrait
      * @var int|null The site ID the element is associated with
      */
     public $siteId;
-
-    /**
-     * @var bool Whether the element is enabled for this site.
-     */
-    public $enabledForSite = true;
 
     /**
      * @var string|null The element’s title
@@ -162,6 +160,7 @@ trait ElementTrait
 
     /**
      * @var int[] The site IDs that the element was just propagated to for the first time.
+     * @since 3.2.9
      */
     public $newSiteIds = [];
 

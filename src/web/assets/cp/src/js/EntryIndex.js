@@ -96,7 +96,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
                 if (selectedSection) {
                     href = this._getSectionTriggerHref(selectedSection);
                     label = (this.settings.context === 'index' ? Craft.t('app', 'New entry') : Craft.t('app', 'New {section} entry', {section: selectedSection.name}));
-                    this.$newEntryBtn = $('<a class="btn submit add icon" ' + href + '>' + Craft.escapeHtml(label) + '</a>').appendTo(this.$newEntryBtnGroup);
+                    this.$newEntryBtn = $('<a class="btn submit add icon" ' + href + ' role="button" tabindex="0">' + Craft.escapeHtml(label) + '</a>').appendTo(this.$newEntryBtnGroup);
 
                     if (this.settings.context !== 'index') {
                         this.addListener(this.$newEntryBtn, 'click', function(ev) {
@@ -105,11 +105,18 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
                     }
 
                     if (this.publishableSections.length > 1) {
-                        $menuBtn = $('<div class="btn submit menubtn"></div>').appendTo(this.$newEntryBtnGroup);
+                        $menuBtn = $('<button/>', {
+                            type: 'button',
+                            class: 'btn submit menubtn',
+                        }).appendTo(this.$newEntryBtnGroup);
                     }
                 }
                 else {
-                    this.$newEntryBtn = $menuBtn = $('<div class="btn submit add icon menubtn">' + Craft.t('app', 'New entry') + '</div>').appendTo(this.$newEntryBtnGroup);
+                    this.$newEntryBtn = $menuBtn = $('<button/>', {
+                        type: 'button',
+                        class: 'btn submit add icon menubtn',
+                        text: Craft.t('app', 'New entry'),
+                    }).appendTo(this.$newEntryBtnGroup);
                 }
 
                 if ($menuBtn) {
@@ -124,7 +131,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
                         ) {
                             href = this._getSectionTriggerHref(section);
                             label = (this.settings.context === 'index' ? section.name : Craft.t('app', 'New {section} entry', {section: section.name}));
-                            menuHtml += '<li><a ' + href + '">' + Craft.escapeHtml(label) + '</a></li>';
+                            menuHtml += '<li><a ' + href + '>' + Craft.escapeHtml(label) + '</a></li>';
                         }
                     }
 
@@ -160,7 +167,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
         _getSectionTriggerHref: function(section) {
             if (this.settings.context === 'index') {
                 var uri = 'entries/' + section.handle + '/new';
-                params = {};
+                let params = {};
                 if (this.siteId) {
                     for (var i = 0; i < Craft.sites.length; i++) {
                         if (Craft.sites[i].id == this.siteId) {
@@ -199,11 +206,11 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 
             Craft.createElementEditor(this.elementType, {
                 hudTrigger: this.$newEntryBtnGroup,
-                elementType: 'craft\\elements\\Entry',
                 siteId: this.siteId,
                 attributes: {
                     sectionId: sectionId,
-                    typeId: section.entryTypes[0].id
+                    typeId: section.entryTypes[0].id,
+                    enabled: section.canPublish ? 1 : 0,
                 },
                 onBeginLoading: $.proxy(function() {
                     this.$newEntryBtn.addClass('loading');

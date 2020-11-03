@@ -8,6 +8,7 @@
 namespace craft\web\assets\cp;
 
 use Craft;
+use craft\base\ElementInterface;
 use craft\config\GeneralConfig;
 use craft\elements\User;
 use craft\helpers\Assets;
@@ -25,6 +26,7 @@ use craft\web\assets\elementresizedetector\ElementResizeDetectorAsset;
 use craft\web\assets\fabric\FabricAsset;
 use craft\web\assets\fileupload\FileUploadAsset;
 use craft\web\assets\garnish\GarnishAsset;
+use craft\web\assets\iframeresizer\IframeResizerAsset;
 use craft\web\assets\jquerypayment\JqueryPaymentAsset;
 use craft\web\assets\jquerytouchevents\JqueryTouchEventsAsset;
 use craft\web\assets\jqueryui\JqueryUiAsset;
@@ -36,47 +38,51 @@ use craft\web\View;
 use yii\web\JqueryAsset;
 
 /**
- * Asset bundle for the Control Panel
+ * Asset bundle for the control panel
  */
 class CpAsset extends AssetBundle
 {
-    // Public Methods
-    // =========================================================================
+    /**
+     * @inheritdoc
+     */
+    public $sourcePath = __DIR__ . '/dist';
 
     /**
      * @inheritdoc
      */
-    public function init()
-    {
-        $this->sourcePath = __DIR__ . '/dist';
+    public $depends = [
+        AxiosAsset::class,
+        D3Asset::class,
+        ElementResizeDetectorAsset::class,
+        GarnishAsset::class,
+        JqueryAsset::class,
+        JqueryTouchEventsAsset::class,
+        JqueryUiAsset::class,
+        JqueryPaymentAsset::class,
+        DatepickerI18nAsset::class,
+        PicturefillAsset::class,
+        SelectizeAsset::class,
+        VelocityAsset::class,
+        FileUploadAsset::class,
+        XregexpAsset::class,
+        FabricAsset::class,
+        IframeResizerAsset::class,
+    ];
 
-        $this->depends = [
-            AxiosAsset::class,
-            D3Asset::class,
-            ElementResizeDetectorAsset::class,
-            GarnishAsset::class,
-            JqueryAsset::class,
-            JqueryTouchEventsAsset::class,
-            JqueryUiAsset::class,
-            JqueryPaymentAsset::class,
-            DatepickerI18nAsset::class,
-            PicturefillAsset::class,
-            SelectizeAsset::class,
-            VelocityAsset::class,
-            FileUploadAsset::class,
-            XregexpAsset::class,
-            FabricAsset::class,
-        ];
+    /**
+     * @inheritdoc
+     */
+    public $css = [
+        'css/craft.css',
+        'css/charts.css',
+    ];
 
-        $this->css = [
-            'css/craft.css',
-            'css/charts.css',
-        ];
-
-        $this->js[] = 'js/Craft' . $this->dotJs();
-
-        parent::init();
-    }
+    /**
+     * @inheritdoc
+     */
+    public $js = [
+        'js/Craft.min.js',
+    ];
 
     /**
      * @inheritdoc
@@ -97,37 +103,36 @@ JS;
         $view->registerJs($js, View::POS_HEAD);
     }
 
-    // Private Methods
-    // =========================================================================
-
     private function _registerTranslations(View $view)
     {
         $view->registerTranslations('app', [
             '(blank)',
-            '1 Available Update',
-            '{first}-{last} of {total}',
+            'A server error occurred.',
             'Actions',
             'All',
-            'An unknown error occurred.',
             'Any changes will be lost if you leave this page.',
             'Apply this to the {number} remaining conflicts?',
+            'Are you sure you want to close the editor? Any changes will be lost.',
             'Are you sure you want to delete this draft?',
             'Are you sure you want to delete this image?',
             'Are you sure you want to delete “{name}”?',
             'Are you sure you want to transfer your license to this domain?',
             'Buy {name}',
-            'by {creator}',
             'Cancel',
             'Choose a user',
+            'Switching sites will lose unsaved changes. Are you sure you want to switch sites?',
             'Choose which table columns should be visible for this source, and in which order.',
-            'Close Live Preview',
+            'Clear',
+            'Close Preview',
             'Close',
             'Continue',
+            'Copied to clipboard.',
+            'Copy the reference tag',
+            'Copy the URL',
+            'Copy to clipboard',
             'Couldn’t delete “{name}”.',
             'Couldn’t save new order.',
             'Create',
-            'day',
-            'days',
             'Delete folder',
             'Delete heading',
             'Delete it',
@@ -140,24 +145,28 @@ JS;
             'Done',
             'Draft Name',
             'Drafts',
-            'Edit',
             'Edit draft settings',
+            'Edit',
             'Element',
             'Elements',
+            'Enabled for {site}',
+            'Enabled',
             'Enter the name of the folder',
             'Enter your password to continue.',
             'Enter your password to log back in.',
+            'Export Type',
             'Export',
             'Export…',
             'Failed',
             'Format',
+            'From {date}',
+            'From',
             'Give your tab a name.',
             'Handle',
+            'Header Column Heading',
             'Heading',
             'Hide sidebar',
             'Hide',
-            'hour',
-            'hours',
             'Incorrect password.',
             'Instructions',
             'Keep both',
@@ -170,10 +179,10 @@ JS;
             'Make not required',
             'Make required',
             'Merge the folder (any conflicting files will be replaced)',
-            'minute',
-            'minutes',
             'More',
             'Move',
+            'Move up',
+            'Move down',
             'Name',
             'New category',
             'New child',
@@ -190,9 +199,12 @@ JS;
             'OK',
             'Options',
             'Password',
+            'Past year',
+            'Past {num} days',
             'Pay {price}',
             'Pending',
             'Previous Page',
+            'Publish changes',
             'Really delete folder “{folder}”?',
             'Remove',
             'Rename folder',
@@ -201,12 +213,11 @@ JS;
             'Replace it',
             'Replace the folder (all existing files will be deleted)',
             'Save as a new asset',
+            'Save draft',
             'Save',
             'Saving',
             'Score',
             'Search in subfolders',
-            'second',
-            'seconds',
             'Select transform',
             'Select',
             'Settings',
@@ -222,19 +233,41 @@ JS;
             'The draft could not be saved.',
             'The draft has been saved.',
             'This can be left blank if you just want an unlabeled separator.',
+            'This month',
+            'This week',
+            'This year',
+            'To {date}',
+            'To',
+            'Today',
             'Transfer it to:',
             'Try again',
             'Update {type}',
+            'Upload a file',
             'Upload failed for {filename}',
             'Upload files',
-            'week',
-            'weeks',
             'What do you want to do with their content?',
             'What do you want to do?',
             'Your session has ended.',
             'Your session will expire in {time}.',
+            'by {creator}',
+            'day',
+            'days',
+            'hour',
+            'hours',
+            'minute',
+            'minutes',
+            'saved {timestamp} by {creator}',
+            'second',
+            'seconds',
+            'updated {timestamp}',
+            'week',
+            'weeks',
             '{ctrl}C to copy.',
-            '{num} Available Updates',
+            '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}',
+            '{first}-{last} of {total}',
+            '{num, number} {num, plural, =1{Available Update} other{Available Updates}}',
+            '{total, number} {total, plural, =1{{item}} other{{items}}}',
+            '{type} saved.',
             '“{name}” deleted.',
         ]);
     }
@@ -250,6 +283,18 @@ JS;
         $userSession = Craft::$app->getUser();
         $currentUser = $userSession->getIdentity();
         $primarySite = $upToDate ? $sitesService->getPrimarySite() : null;
+        $view = Craft::$app->getView();
+
+        $elementTypeNames = [];
+        foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
+            /** @var string|ElementInterface $elementType */
+            $elementTypeNames[$elementType] = [
+                $elementType::displayName(),
+                $elementType::pluralDisplayName(),
+                $elementType::lowerDisplayName(),
+                $elementType::pluralLowerDisplayName(),
+            ];
+        }
 
         $data = [
             'actionTrigger' => $generalConfig->actionTrigger,
@@ -257,28 +302,36 @@ JS;
             'allowUppercaseInSlug' => (bool)$generalConfig->allowUppercaseInSlug,
             'apiParams' => Craft::$app->apiParams,
             'asciiCharMap' => StringHelper::asciiCharMap(true, Craft::$app->language),
+            'autosaveDrafts' => (bool)$generalConfig->autosaveDrafts,
             'baseApiUrl' => Craft::$app->baseApiUrl,
             'baseCpUrl' => UrlHelper::cpUrl(),
             'baseSiteUrl' => UrlHelper::siteUrl(),
             'baseUrl' => UrlHelper::url(),
+            'canAccessQueueManager' => $userSession->checkPermission('utility:queue-manager'),
             'cpTrigger' => $generalConfig->cpTrigger,
             'datepickerOptions' => $this->_datepickerOptions($locale, $currentUser, $generalConfig),
-            'defaultIndexCriteria' => ['enabledForSite' => null],
+            'defaultCookieOptions' => $this->_defaultCookieOptions(),
+            'defaultIndexCriteria' => [],
+            'deltaNames' => $view->getDeltaNames(),
             'editableCategoryGroups' => $upToDate ? $this->_editableCategoryGroups() : [],
             'edition' => Craft::$app->getEdition(),
+            'elementTypeNames' => $elementTypeNames,
             'fileKinds' => Assets::getFileKinds(),
+            'initialDeltaValues' => $view->getInitialDeltaValue(),
             'isImagick' => Craft::$app->getImages()->getIsImagick(),
             'isMultiSite' => Craft::$app->getIsMultiSite(),
             'language' => Craft::$app->language,
             'left' => $orientation === 'ltr' ? 'left' : 'right',
             'limitAutoSlugsToAscii' => (bool)$generalConfig->limitAutoSlugsToAscii,
             'maxUploadSize' => Assets::getMaxUploadSize(),
+            'modifiedDeltaNames' => $request->getBodyParam('modifiedDeltaNames', []),
             'omitScriptNameInUrls' => (bool)$generalConfig->omitScriptNameInUrls,
             'orientation' => $orientation,
             'pageNum' => $request->getPageNum(),
             'pageTrigger' => $generalConfig->getPageTrigger(),
             'path' => $request->getPathInfo(),
             'pathParam' => $generalConfig->pathParam,
+            'previewIframeResizerOptions' => $this->_previewIframeResizerOptions($generalConfig),
             'primarySiteId' => $primarySite ? (int)$primarySite->id : null,
             'primarySiteLanguage' => $primarySite->language ?? null,
             'Pro' => Craft::Pro,
@@ -288,9 +341,10 @@ JS;
             'remainingSessionTime' => !in_array($request->getSegment(1), ['updates', 'manualupdate'], true) ? $userSession->getRemainingSessionTime() : 0,
             'right' => $orientation === 'ltr' ? 'right' : 'left',
             'runQueueAutomatically' => (bool)$generalConfig->runQueueAutomatically,
-            'scriptName' => $request->getScriptFile(),
+            'scriptName' => basename($request->getScriptFile()),
             'siteId' => $upToDate ? (int)$sitesService->currentSite->id : null,
             'sites' => $this->_sites($sitesService),
+            'siteToken' => $generalConfig->siteToken,
             'slugWordSeparator' => $generalConfig->slugWordSeparator,
             'Solo' => Craft::Solo,
             'systemUid' => Craft::$app->getSystemUid(),
@@ -319,11 +373,22 @@ JS;
             'dayNames' => $locale->getWeekDayNames(Locale::LENGTH_FULL),
             'dayNamesMin' => $locale->getWeekDayNames(Locale::LENGTH_ABBREVIATED),
             'dayNamesShort' => $locale->getWeekDayNames(Locale::LENGTH_SHORT),
-            'firstDay' => ($currentUser ? $currentUser->getPreference('weekStartDay') : null) ?: $generalConfig->defaultWeekStartDay,
+            'firstDay' => (int)(($currentUser ? $currentUser->getPreference('weekStartDay') : null) ?? $generalConfig->defaultWeekStartDay),
             'monthNames' => $locale->getMonthNames(Locale::LENGTH_FULL),
             'monthNamesShort' => $locale->getMonthNames(Locale::LENGTH_ABBREVIATED),
             'nextText' => Craft::t('app', 'Next'),
             'prevText' => Craft::t('app', 'Prev'),
+        ];
+    }
+
+    private function _defaultCookieOptions(): array
+    {
+        $config = Craft::cookieConfig();
+        return [
+            'path' => $config['path'] ?? '/',
+            'domain' => $config['domain'] ?? null,
+            'secure' => $config['secure'] ?? false,
+            'sameSite' => $config['sameSite'] ?? 'strict',
         ];
     }
 
@@ -343,12 +408,30 @@ JS;
         return $groups;
     }
 
+    /**
+     * @param GeneralConfig $generalConfig
+     * @return array|false|null
+     */
+    private function _previewIframeResizerOptions(GeneralConfig $generalConfig)
+    {
+        if (!$generalConfig->useIframeResizer) {
+            return false;
+        }
+
+        // Treat false as [] as well now that useIframeResizer exists
+        if (empty($generalConfig->previewIframeResizerOptions)) {
+            return null;
+        }
+
+        return $generalConfig->previewIframeResizerOptions;
+    }
+
     private function _publishableSections(User $currentUser): array
     {
         $sections = [];
 
         foreach (Craft::$app->getSections()->getEditableSections() as $section) {
-            if ($section->type !== Section::TYPE_SINGLE && $currentUser->can('createEntries:' . $section->uid)) {
+            if ($section->type !== Section::TYPE_SINGLE && $currentUser->can("createEntries:$section->uid")) {
                 $sections[] = [
                     'entryTypes' => $this->_entryTypes($section),
                     'handle' => $section->handle,
@@ -357,6 +440,7 @@ JS;
                     'sites' => $section->getSiteIds(),
                     'type' => $section->type,
                     'uid' => $section->uid,
+                    'canPublish' => $currentUser->can("publishEntries:$section->uid"),
                 ];
             }
         }

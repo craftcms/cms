@@ -12,24 +12,27 @@ use craft\web\assets\cp\CpAsset;
 
 /**
  * Asset bundle for Position Select fields
+ *
+ * @deprecated in 3.4.22
  */
 class PositionSelectAsset extends AssetBundle
 {
     /**
      * @inheritdoc
      */
-    public function init()
-    {
-        $this->sourcePath = __DIR__ . '/dist';
+    public $sourcePath = __DIR__ . '/dist';
 
-        $this->depends = [
-            CpAsset::class,
-        ];
+    /**
+     * @inheritdoc
+     */
+    public $depends = [
+        CpAsset::class,
+    ];
 
-        $this->js = [
-            'PositionSelectInput' . $this->dotJs(),
-        ];
-
-        parent::init();
-    }
+    /**
+     * @inheritdoc
+     */
+    public $js = [
+        'PositionSelectInput.min.js',
+    ];
 }

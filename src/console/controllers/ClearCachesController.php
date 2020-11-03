@@ -23,9 +23,6 @@ use yii\console\ExitCode;
  */
 class ClearCachesController extends Controller
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Lists the caches that can be cleared.
      *
@@ -72,15 +69,12 @@ class ClearCachesController extends Controller
         return ExitCode::OK;
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
     protected function defineActions(): array
     {
-        $actions = [];
+        $actions = parent::defineActions();
 
         foreach (ClearCaches::cacheOptions() as $option) {
             $actions[$option['key']] = [
@@ -94,6 +88,6 @@ class ClearCachesController extends Controller
             ];
         }
 
-        return array_merge($actions, parent::defineActions());
+        return $actions;
     }
 }

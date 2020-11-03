@@ -1,13 +1,14 @@
-{% if element is not defined %}{% set element = null %}{% endif %}
-{% if namespace is not defined %}{% set namespace = 'fields' %}{% endif %}
+{% set element = element ?? null %}
+{% set namespace = namespace is defined ? namespace : 'fields' %}
 
 {% namespace namespace %}
     {% for field in fields %}
         {% include "_includes/field" with {
-            field:    field,
+            field: field,
             required: field.required,
-            element:  element,
-            static:   (static is defined ? static : null)
+            element: element,
+            static: static ?? false,
+            registerDeltas: registerDeltas ?? false,
         } only %}
     {% endfor %}
 {% endnamespace %}

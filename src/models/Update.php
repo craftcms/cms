@@ -20,15 +20,9 @@ use craft\base\Model;
  */
 class Update extends Model
 {
-    // Constants
-    // =========================================================================
-
     const STATUS_ELIGIBLE = 'eligible';
     const STATUS_BREAKPOINT = 'breakpoint';
     const STATUS_EXPIRED = 'expired';
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var string The status of the update (eligible, breakpoint, or expired)
@@ -56,12 +50,15 @@ class Update extends Model
     public $releases = [];
 
     /**
+     * @var string|null The PHP version constraint required by this version
+     * @since 3.5.15
+     */
+    public $phpConstraint;
+
+    /**
      * @var string The package name that should be used when updating
      */
     public $packageName;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

@@ -19,9 +19,6 @@ use craft\test\Fixture;
  */
 class SessionsFixture extends Fixture
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

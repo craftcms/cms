@@ -22,9 +22,6 @@ use Twig\TokenParser\AbstractTokenParser;
  */
 class NavTokenParser extends AbstractTokenParser
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

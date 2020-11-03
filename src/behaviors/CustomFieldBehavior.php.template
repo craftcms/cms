@@ -1,0 +1,118 @@
+<?php
+/**
+ * @link http://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license http://craftcms.com/license
+ */
+
+namespace craft\behaviors;
+
+use yii\base\Behavior;
+
+/**
+ * Custom field behavior
+ *
+ * This class provides attributes for all the unique custom field handles.
+ *
+{METHOD_DOCS}
+ */
+class CustomFieldBehavior extends Behavior
+{
+    /**
+     * @var bool Whether the behavior should provide methods based on the field handles.
+     */
+    public $hasMethods = false;
+
+    /**
+     * @var string[] List of supported field handles.
+     */
+    public static $fieldHandles = [
+/* HANDLES */
+    ];
+
+/* PROPERTIES */
+
+    /**
+     * @var array Additional custom field values we don’t know about yet.
+     */
+    private $_customFieldValues = [];
+
+    /**
+     * @inheritdoc
+     */
+    public function __call($name, $params)
+    {
+        if ($this->hasMethods && isset(self::$fieldHandles[$name]) && count($params) === 1) {
+            $this->$name = $params[0];
+            return $this->owner;
+        }
+        return parent::__call($name, $params);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function hasMethod($name)
+    {
+        if ($this->hasMethods && isset(self::$fieldHandles[$name])) {
+            return true;
+        }
+        return parent::hasMethod($name);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function __isset($name)
+    {
+        if (isset(self::$fieldHandles[$name])) {
+            return true;
+        }
+        return parent::__isset($name);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function __get($name)
+    {
+        if (isset(self::$fieldHandles[$name])) {
+            return $this->_customFieldValues[$name] ?? null;
+        }
+        return parent::__get($name);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function __set($name, $value)
+    {
+        if (isset(self::$fieldHandles[$name])) {
+            $this->_customFieldValues[$name] = $value;
+            return;
+        }
+        parent::__set($name, $value);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function canGetProperty($name, $checkVars = true)
+    {
+        if ($checkVars && isset(self::$fieldHandles[$name])) {
+            return true;
+        }
+        return parent::canGetProperty($name, $checkVars);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function canSetProperty($name, $checkVars = true)
+    {
+        if ($checkVars && isset(self::$fieldHandles[$name])) {
+            return true;
+        }
+        return parent::canSetProperty($name, $checkVars);
+    }
+}

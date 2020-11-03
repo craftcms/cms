@@ -10,7 +10,6 @@ namespace craft\validators;
 use Craft;
 use craft\base\ElementInterface;
 use craft\helpers\ElementHelper;
-use craft\helpers\StringHelper;
 use yii\validators\Validator;
 
 /**
@@ -21,9 +20,6 @@ use yii\validators\Validator;
  */
 class SlugValidator extends Validator
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null The source attribute that auto-generated slugs should be based on. Set to null to skip validation for blank slugs.
      */
@@ -39,9 +35,6 @@ class SlugValidator extends Validator
      * @since 3.1.9
      */
     public $language;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -74,18 +67,12 @@ class SlugValidator extends Validator
         }
 
         if (($slug === '' || $isTemp) && $this->sourceAttribute !== null) {
-            // Create a slug for them, based on the element's title.
-            // Replace periods, underscores, and hyphens with spaces so they get separated with the slugWordSeparator
-            // to mimic the default JavaScript-based slug generation.
-            $slug = str_replace(['.', '_', '-'], ' ', $model->{$this->sourceAttribute});
-
-            if ($this->limitAutoSlugsToAscii) {
-                $slug = StringHelper::toAscii($slug, $this->language);
-            }
+            // Create a new slug for them, based on the element's title.
+            $slug = ElementHelper::generateSlug($model->{$this->sourceAttribute}, $this->limitAutoSlugsToAscii, $this->language);
+        } else {
+            // Apply normal slug rules
+            $slug = ElementHelper::normalizeSlug($slug);
         }
-
-        // Apply normal slug rules
-        $slug = ElementHelper::createSlug($slug);
 
         if ($slug !== '') {
             $model->$attribute = $slug;
@@ -98,9 +85,6 @@ class SlugValidator extends Validator
         }
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -112,7 +96,7 @@ class SlugValidator extends Validator
             return [Craft::t('yii', '{attribute} cannot be blank.'), []];
         }
 
-        $slug = ElementHelper::createSlug($value);
+        $slug = ElementHelper::normalizeSlug($value);
 
         if ($slug !== $value) {
             return [Craft::t('yii', '{attribute} is invalid.'), []];

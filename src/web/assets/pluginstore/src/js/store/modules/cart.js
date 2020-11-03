@@ -219,7 +219,7 @@ const actions = {
             const pluginLicenseInfo = rootState.craft.pluginLicenseInfo
 
             for (let pluginHandle in pluginLicenseInfo) {
-                if (pluginLicenseInfo.hasOwnProperty(pluginHandle)) {
+                if (Object.prototype.hasOwnProperty.call(pluginLicenseInfo, pluginHandle)) {
                     pluginHandles.push(pluginHandle)
                 }
             }
@@ -272,7 +272,6 @@ const actions = {
                 .catch((error) => {
                     reject(error)
                 })
-
         })
     },
 
@@ -285,27 +284,23 @@ const actions = {
                         // get cart by order number
                         api.getCart(orderNumber)
                             .then(cartResponseData => {
-                                if (!cartResponseData.error) {
-                                    dispatch('updateCartPlugins', {cartResponseData})
-                                        .then(() => {
-                                            resolve(cartResponseData)
-                                        })
-                                        .catch((error) => {
-                                            reject(error)
-                                        })
-                                } else {
-                                    // Couldn’t get cart for this order number? Try to create a new one.
-                                    dispatch('createCart')
-                                        .then((cartResponseData) => {
-                                            resolve(cartResponseData)
-                                        })
-                                        .catch(cartError => {
-                                            reject(cartError)
-                                        })
-                                }
+                                dispatch('updateCartPlugins', {cartResponseData})
+                                    .then(() => {
+                                        resolve(cartResponseData)
+                                    })
+                                    .catch((error) => {
+                                        reject(error)
+                                    })
                             })
-                            .catch(error => {
-                                reject(error)
+                            .catch(() => {
+                                // Cart already completed or has errors? Create a new one.
+                                dispatch('createCart')
+                                    .then((cartResponseData) => {
+                                        resolve(cartResponseData)
+                                    })
+                                    .catch(cartError => {
+                                        reject(cartError)
+                                    })
                             })
                     } else {
                         // No order number yet? Create a new cart.
@@ -403,9 +398,15 @@ const actions = {
             cart.lineItems.forEach(lineItem => {
                 if (lineItem.purchasable.type === 'plugin-edition') {
                     if (rootGetters['craft/isPluginInstalled'](lineItem.purchasable.plugin.handle)) {
+                        let licenseKey = lineItem.options.licenseKey
+
+                        if (licenseKey.substr(0, 4) === 'new:') {
+                            licenseKey = licenseKey.substr(4)
+                        }
+
                         pluginLicenseKeys.push({
                             handle: lineItem.purchasable.plugin.handle,
-                            key: lineItem.options.licenseKey.substr(4)
+                            key: licenseKey,
                         })
                     }
                 }

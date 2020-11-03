@@ -17,9 +17,6 @@ use yii\base\Event;
  */
 class ConfigEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null The config path being processed
      */

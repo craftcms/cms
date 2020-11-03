@@ -88,14 +88,9 @@
     /* global Craft */
 
     import {mapGetters} from 'vuex'
-    import LicenseStatus from './LicenseStatus'
 
     export default {
         props: ['plugin', 'edition'],
-
-        components: {
-            LicenseStatus,
-        },
 
         data() {
             return {

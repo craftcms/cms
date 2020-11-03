@@ -21,16 +21,10 @@ use Twig\Node\Node;
  */
 class NavNode extends ForNode
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var NavItem_Node|null
      */
     protected $navItemNode;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * NavNode constructor.

@@ -18,9 +18,6 @@ use yii\base\Event;
  */
 class UserGroupEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var UserGroup|null The user group associated with this event
      */

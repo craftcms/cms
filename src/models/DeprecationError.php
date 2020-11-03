@@ -20,9 +20,6 @@ use DateTime;
  */
 class DeprecationError extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null ID
      */
@@ -63,9 +60,6 @@ class DeprecationError extends Model
      */
     public $traces;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -91,9 +85,9 @@ class DeprecationError extends Model
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['id', 'line'], 'number', 'integerOnly' => true];
         $rules[] = [['lastOccurrence'], DateTimeValidator::class];
         return $rules;

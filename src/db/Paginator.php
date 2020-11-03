@@ -26,7 +26,7 @@ use yii\di\Instance;
  *     'currentPage' => \Craft::$app->request->pageNum,
  * ]);
  *
- * $pageResults = $paginator->getResults();
+ * $pageResults = $paginator->getPageResults();
  * ```
  * ```twig
  * {% set paginator = create('craft\\db\\Paginator', [query, {
@@ -34,7 +34,7 @@ use yii\di\Instance;
  *     currentPage: craft.app.request.pageNum,
  * }]) %}
  *
- * {% set pageResults = paginator.getResults() %}
+ * {% set pageResults = paginator.getPageResults() %}
  * ```
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>

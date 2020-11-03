@@ -16,16 +16,10 @@ namespace craft\test\mockclasses;
  */
 class ToString
 {
-    // Private Properties
-    // =========================================================================
-
     /**
      * @var string
      */
     private $_string;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * ToString constructor.

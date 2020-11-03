@@ -25,19 +25,10 @@ use yii\base\NotSupportedException;
  */
 class MysqlDbHelperTest extends Unit
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var UnitTester
      */
     protected $tester;
-
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
 
     /**
      * @dataProvider sqlTypesDataProvider
@@ -49,8 +40,8 @@ class MysqlDbHelperTest extends Unit
     public function testTypeSupport($type, $supported)
     {
         $isSupported = Db::isTypeSupported($type);
-        $this->assertSame($supported, Db::isTypeSupported($type));
-        $this->assertIsBool($isSupported);
+        self::assertSame($supported, Db::isTypeSupported($type));
+        self::assertIsBool($isSupported);
     }
 
     /**
@@ -62,7 +53,7 @@ class MysqlDbHelperTest extends Unit
     public function testGetTextualColumnStorageCapacity($result, $input)
     {
         $capacity = Db::getTextualColumnStorageCapacity($input);
-        $this->assertSame($result, $capacity);
+        self::assertSame($result, $capacity);
     }
 
     /**
@@ -86,7 +77,7 @@ class MysqlDbHelperTest extends Unit
      */
     public function testParseParamGeneral($result, $column, $value, $defaultOperator = '=', $caseInsensitive = false)
     {
-        $this->assertSame($result, Db::parseParam($column, $value, $defaultOperator, $caseInsensitive));
+        self::assertSame($result, Db::parseParam($column, $value, $defaultOperator, $caseInsensitive));
     }
 
     /**
@@ -99,11 +90,8 @@ class MysqlDbHelperTest extends Unit
     public function testGetTextualColumnTypeByContentLength($result, $input)
     {
         $textualCapacity = Db::getTextualColumnTypeByContentLength((int)$input);
-        $this->assertSame($result, $textualCapacity);
+        self::assertSame($result, $textualCapacity);
     }
-
-    // Data Providers
-    // =========================================================================
 
     /**
      * @return array
@@ -187,9 +175,6 @@ class MysqlDbHelperTest extends Unit
 
         return $returnArray;
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

@@ -22,13 +22,7 @@ use craft\validators\UniqueValidator;
  */
 abstract class Volume extends SavableComponent implements VolumeInterface
 {
-    // Traits
-    // =========================================================================
-
     use VolumeTrait;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -56,9 +50,9 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['id', 'fieldLayoutId'], 'number', 'integerOnly' => true];
         $rules[] = [['name', 'handle'], UniqueValidator::class, 'targetClass' => VolumeRecord::class];
         $rules[] = [['hasUrls'], 'boolean'];
@@ -82,6 +76,17 @@ abstract class Volume extends SavableComponent implements VolumeInterface
         }
 
         return $rules;
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.5.0
+     */
+    public function getFieldLayout()
+    {
+        /** @var FieldLayoutBehavior $behavior */
+        $behavior = $this->getBehavior('fieldLayout');
+        return $behavior->getFieldLayout();
     }
 
     /**

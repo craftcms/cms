@@ -19,9 +19,6 @@ use craft\web\assets\updates\UpdatesAsset;
  */
 class Updates extends Utility
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -43,7 +40,7 @@ class Updates extends Utility
      */
     public static function iconPath()
     {
-        return Craft::getAlias('@app/icons/excite.svg');
+        return Craft::getAlias('@appicons/excite.svg');
     }
 
     /**

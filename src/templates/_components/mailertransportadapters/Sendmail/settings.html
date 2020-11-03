@@ -1,0 +1,12 @@
+{% import "_includes/forms" as forms %}
+
+{{ forms.autosuggestField({
+    label: 'Sendmail Command'|t('app'),
+    instructions: 'The command to run Sendmail with.'|t('app'),
+    id: 'command',
+    name: 'command',
+    suggestEnvVars: true,
+    value: adapter.command,
+    placeholder: defaultCommand,
+    errors: adapter.getErrors('command')
+}) }}

@@ -17,7 +17,9 @@ use craft\elements\db\ElementQueryInterface;
 use craft\gql\types\DateTime as DateTimeType;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
+use craft\helpers\Html;
 use craft\i18n\Locale;
+use craft\validators\DateTimeValidator;
 use DateTime;
 use yii\db\Schema;
 
@@ -29,15 +31,12 @@ use yii\db\Schema;
  */
 class Date extends Field implements PreviewableFieldInterface, SortableFieldInterface
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Date/Time');
+        return Craft::t('app', 'Date');
     }
 
     /**
@@ -47,9 +46,6 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     {
         return DateTime::class . '|null';
     }
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var bool Whether a datepicker should be shown as part of the input
@@ -62,12 +58,21 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     public $showTime = false;
 
     /**
+     * @var DateTime|null The minimum allowed date
+     * @since 3.5.0
+     */
+    public $min;
+
+    /**
+     * @var DateTime|null The maximum allowed date
+     * @since 3.5.0
+     */
+    public $max;
+
+    /**
      * @var int The number of minutes that the timepicker options should increment by
      */
     public $minuteIncrement = 30;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -94,7 +99,26 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
             unset($config['dateTime']);
         }
 
+        if (isset($config['min'])) {
+            $config['min'] = DateTimeHelper::toDateTime($config['min']) ?: null;
+        }
+
+        if (isset($config['max'])) {
+            $config['max'] = DateTimeHelper::toDateTime($config['max']) ?: null;
+        }
+
         parent::__construct($config);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function datetimeAttributes(): array
+    {
+        $attributes = parent::datetimeAttributes();
+        $attributes[] = 'min';
+        $attributes[] = 'max';
+        return $attributes;
     }
 
     /**
@@ -113,11 +137,23 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    public function rules()
+    public function attributeLabels()
     {
-        $rules = parent::rules();
+        return [
+            'min' => Craft::t('app', 'Min Date'),
+            'max' => Craft::t('app', 'Max Date'),
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function defineRules(): array
+    {
+        $rules = parent::defineRules();
         $rules[] = [['showDate', 'showTime'], 'boolean'];
         $rules[] = [['minuteIncrement'], 'integer', 'min' => 1, 'max' => 60];
+        $rules[] = [['max'], DateTimeValidator::class, 'min' => $this->min];
         return $rules;
     }
 
@@ -134,48 +170,52 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
      */
     public function getSettingsHtml()
     {
-        // If they are both selected or nothing is selected, the select showBoth.
-        if ($this->showDate && $this->showTime) {
-            $dateTimeValue = 'showBoth';
-        } else if ($this->showDate) {
+        if ($this->showDate && !$this->showTime) {
             $dateTimeValue = 'showDate';
-        } else if ($this->showTime) {
+        } else if ($this->showTime && !$this->showDate) {
             $dateTimeValue = 'showTime';
+        } else {
+            $dateTimeValue = 'showBoth';
         }
 
-        $options = [15, 30, 60];
-        $options = array_combine($options, $options);
+        $incrementOptions = [5, 10, 15, 30, 60];
+        $incrementOptions = array_combine($incrementOptions, $incrementOptions);
 
-        /** @noinspection PhpUndefinedVariableInspection */
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Date/settings',
+        $options = [
             [
-                'options' => [
-                    [
-                        'label' => Craft::t('app', 'Show date'),
-                        'value' => 'showDate',
-                    ],
-                    [
-                        'label' => Craft::t('app', 'Show time'),
-                        'value' => 'showTime',
-                    ],
-                    [
-                        'label' => Craft::t('app', 'Show date and time'),
-                        'value' => 'showBoth',
-                    ]
-                ],
-                'value' => $dateTimeValue,
-                'incrementOptions' => $options,
-                'field' => $this,
-            ]);
+                'label' => Craft::t('app', 'Show date'),
+                'value' => 'showDate',
+            ],
+        ];
+
+        // Only allow the "Show date and time" option if it's already selected
+        if ($dateTimeValue === 'showTime') {
+            $options[] = [
+                'label' => Craft::t('app', 'Show time'),
+                'value' => 'showTime',
+            ];
+        }
+
+        $options[] = [
+            'label' => Craft::t('app', 'Show date and time'),
+            'value' => 'showBoth',
+        ];
+
+        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Date/settings', [
+            'options' => $options,
+            'value' => $dateTimeValue,
+            'incrementOptions' => $incrementOptions,
+            'field' => $this,
+        ]);
     }
 
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml($value, ElementInterface $element = null): string
     {
         $variables = [
-            'id' => Craft::$app->getView()->formatInputId($this->handle),
+            'id' => Html::id($this->handle),
             'name' => $this->handle,
             'value' => $value,
             'minuteIncrement' => $this->minuteIncrement
@@ -205,7 +245,21 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    public function getSearchKeywords($value, ElementInterface $element): string
+    public function getElementValidationRules(): array
+    {
+        return [
+            [
+                DateTimeValidator::class,
+                'min' => $this->min ? $this->min->setTime(0, 0, 0) : null,
+                'max' => $this->max ? $this->max->setTime(23, 59, 59) : null,
+            ],
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function searchKeywords($value, ElementInterface $element): string
     {
         return '';
     }
@@ -215,14 +269,19 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
      */
     public function getTableAttributeHtml($value, ElementInterface $element): string
     {
-        if ($value) {
-            $formatter = Craft::$app->getFormatter();
-
-            /** @var DateTime $value */
-            return '<span title="' . $formatter->asDatetime($value, Locale::LENGTH_SHORT) . '">' . $formatter->asTimestamp($value, Locale::LENGTH_SHORT) . '</span>';
+        if (!$value) {
+            return '';
         }
 
-        return '';
+        if ($this->showDate && $this->showTime) {
+            return Craft::$app->getFormatter()->asDatetime($value, Locale::LENGTH_SHORT);
+        }
+
+        if ($this->showDate) {
+            return Craft::$app->getFormatter()->asDate($value, Locale::LENGTH_SHORT);
+        }
+
+        return Craft::$app->getFormatter()->asTime($value, Locale::LENGTH_SHORT);
     }
 
     /**
@@ -254,5 +313,18 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     public function getContentGqlType()
     {
         return DateTimeType::getType();
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.5.0
+     */
+    public function getContentGqlMutationArgumentType()
+    {
+        return [
+            'name' => $this->handle,
+            'type' => DateTimeType::getType(),
+            'description' => $this->instructions,
+        ];
     }
 }

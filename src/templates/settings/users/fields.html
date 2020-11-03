@@ -2,6 +2,7 @@
 
 {% extends "settings/users/_layout" %}
 {% set selectedNavItem = 'fields' %}
+{% import "_includes/forms" as forms %}
 
 
 {% block content %}
@@ -10,12 +11,13 @@
         {{ redirectInput('settings') }}
         {{ csrfInput() }}
 
-        {% include "_includes/fieldlayoutdesigner" with {
+        {{ forms.fieldLayoutDesignerField({
+            first: true,
             fieldLayout: craft.app.fields.getLayoutByType('craft\\elements\\User')
-        } only %}
+        }) }}
 
         <div class="buttons">
-            <input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
+            <button type="submit" class="btn submit">{{ 'Save'|t('app') }}</button>
         </div>
     </form>
 {% endblock %}

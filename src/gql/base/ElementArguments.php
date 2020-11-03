@@ -7,6 +7,7 @@
 
 namespace craft\gql\base;
 
+use craft\gql\types\QueryArgument;
 use GraphQL\Type\Definition\Type;
 
 /**
@@ -22,7 +23,7 @@ abstract class ElementArguments extends Arguments
      */
     public static function getArguments(): array
     {
-        return array_merge(parent::getArguments(), [
+        return array_merge(parent::getArguments(), static::getDraftArguments(), [
             'status' => [
                 'name' => 'status',
                 'type' => Type::listOf(Type::string()),
@@ -41,12 +42,12 @@ abstract class ElementArguments extends Arguments
             'site' => [
                 'name' => 'site',
                 'type' => Type::listOf(Type::string()),
-                'description' => 'Determines which site(s) the elements should be queried in. Defaults to the primary site.'
+                'description' => 'Determines which site(s) the elements should be queried in. Defaults to the current (requested) site.'
             ],
             'siteId' => [
                 'name' => 'siteId',
                 'type' => Type::string(),
-                'description' => 'Determines which site(s) the elements should be queried in. Defaults to the primary site.'
+                'description' => 'Determines which site(s) the elements should be queried in. Defaults to the current (requested) site.'
             ],
             'unique' => [
                 'name' => 'unique',
@@ -129,5 +130,56 @@ abstract class ElementArguments extends Arguments
                 'description' => 'Sets the field the returned elements should be ordered by'
             ],
         ]);
+    }
+
+    /**
+     * Return the arguments used for elements that support drafts.
+     *
+     * @return array
+     */
+    public static function getDraftArguments(): array
+    {
+        return [
+            'drafts' => [
+                'name' => 'drafts',
+                'type' => Type::boolean(),
+                'description' => 'Whether draft elements should be returned.',
+            ],
+            'draftOf' => [
+                'name' => 'draftOf',
+                'type' => QueryArgument::getType(),
+                'description' => 'The source element ID that drafts should be returned for. Set to `false` to fetch unsaved drafts.',
+            ],
+            'draftId' => [
+                'name' => 'draftId',
+                'type' => Type::int(),
+                'description' => 'The ID of the draft to return (from the `drafts` table)',
+            ],
+            'draftCreator' => [
+                'name' => 'draftCreator',
+                'type' => Type::int(),
+                'description' => 'The drafts’ creator ID',
+            ],
+            'revisions' => [
+                'name' => 'revisions',
+                'type' => Type::boolean(),
+                'description' => 'Whether revision elements should be returned.',
+            ],
+            'revisionOf' => [
+                'name' => 'revisionOf',
+                'type' => QueryArgument::getType(),
+                'description' => 'The source element ID that revisions should be returned for',
+            ],
+            'revisionId' => [
+                'name' => 'revisionId',
+                'type' => Type::int(),
+                'description' => 'The ID of the revision to return (from the `revisions` table)',
+            ],
+            'revisionCreator' => [
+                'name' => 'revisionCreator',
+                'type' => Type::int(),
+                'description' => 'The revisions’ creator ID',
+            ],
+        ];
     }
 }

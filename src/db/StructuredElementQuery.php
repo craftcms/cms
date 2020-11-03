@@ -8,7 +8,6 @@
 namespace craft\db;
 
 use creocoder\nestedsets\NestedSetsQueryBehavior;
-use yii\db\ActiveQuery;
 
 /**
  * @inheritdoc
@@ -18,9 +17,6 @@ use yii\db\ActiveQuery;
  */
 class StructuredElementQuery extends ActiveQuery
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

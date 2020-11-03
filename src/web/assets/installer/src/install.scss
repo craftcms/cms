@@ -1,0 +1,203 @@
+@charset "UTF-8";
+@import "../../../../../node_modules/craftcms-sass/mixins";
+
+html, body {
+  height: 100%;
+}
+
+body {
+  overflow: hidden;
+  background: $grey100 url(images/installer-bg.png) no-repeat 50% 50%;
+  background-size: cover;
+}
+
+.beginbtncontainer {
+  position: absolute;
+  top: 50%;
+  margin-top: -15px;
+  width: 100%;
+  text-align: center;
+}
+
+#beginbtn {
+  display: inline-block;
+  border-radius: 4px;
+  padding: 12px 15px;
+  font-weight: bold;
+  font-size: 19px;
+  height: 42px;
+  line-height: 18px;
+  box-shadow: 0 0 0 4px $grey100;
+}
+
+#install-modal {
+  width: 770px;
+  height: 510px;
+  padding: 0;
+
+  #screens {
+    &,
+    .screen {
+      width: 100%;
+      height: 100%;
+    }
+
+    .screen {
+      padding: 35px;
+      box-sizing: border-box;
+
+      .icon {
+        svg {
+          position: absolute;
+          bottom: -50px;
+          left: -100px;
+          width: 500px;
+          height: 500px;
+          @include svg-mask($grey050);
+        }
+      }
+
+      h1 {
+        margin-bottom: 35px;
+        text-align: center;
+        position: relative;
+      }
+
+      form {
+        width: 50%;
+        float: right;
+
+        .select {
+          &,
+          select {
+            width: 100%;
+          }
+        }
+      }
+    }
+  }
+
+  #dots {
+    position: absolute;
+    bottom: 10px;
+    left: 0;
+    width: 100%;
+    text-align: center;
+
+    & > div {
+      display: inline-block;
+      border-radius: 4px;
+      border: 1px solid $hairlineColor;
+      width: 6px;
+      height: 6px;
+
+      & + div {
+        @include margin-left(5px);
+      }
+
+      &.sel {
+        border-color: $primaryColor;
+        background: $primaryColor;
+      }
+    }
+  }
+}
+
+.grid {
+  margin-top: 35px;
+  margin-bottom: 35px;
+}
+
+.buttons {
+  position: absolute;
+  bottom: 35px;
+  @include right(35px);
+
+  .btn {
+    @include padding-right(10px);
+
+    &:after {
+      @include icon;
+      @include margin(-2px, 0, 0, 4px);
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+      line-height: 18px;
+      body.ltr & {
+        content: 'rarr';
+      }
+      body.rtl & {
+        content: 'larr';
+      }
+    }
+
+    &.loading:after {
+      content: '' !important;
+      background: url(images/spinner_submit.gif) no-repeat 0 0;
+    }
+  }
+}
+
+input.hidden {
+  position: absolute;
+  top: 100px;
+}
+
+#license {
+  padding: 0 !important;
+  overflow-y: scroll;
+
+  #license-content {
+    padding: 70px 105px;
+
+    .license {
+      &,
+      h1 {
+        font-family: Menlo, monospace;
+        font-size: 13px;
+        line-height: 25px;
+      }
+
+      h1 {
+        font-weight: bold;
+      }
+    }
+
+    #license-accept {
+      margin-top: 35px;
+      display: flex;
+      justify-content: center;
+    }
+  }
+}
+
+#installing {
+  text-align: center;
+
+  h1 {
+    margin-top: 200px !important;
+  }
+
+  #spinner {
+    display: block;
+    margin: 0 auto;
+  }
+
+  .buttons {
+    .btn {
+      margin: 0;
+      float: none;
+    }
+  }
+}
+
+@media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+only screen and (-moz-min-device-pixel-ratio: 1.5),
+only screen and (-o-min-device-pixel-ratio: 3/2),
+only screen and (min-device-pixel-ratio: 1.5),
+only screen and (min-resolution: 1.5dppx) {
+  .buttons .btn.loading:after {
+    background-image: url(images/spinner_submit_2x.gif);
+    background-size: 20px;
+  }
+}

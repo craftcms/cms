@@ -15,12 +15,12 @@
  * @method void pause()
  *
  * @SuppressWarnings(PHPMD)
-*/
+ */
 class GqlTester extends \Codeception\Actor
 {
     use _generated\GqlTesterActions;
 
-   /**
-    * Define custom actions here
-    */
+    /**
+     * Define custom actions here
+     */
 }

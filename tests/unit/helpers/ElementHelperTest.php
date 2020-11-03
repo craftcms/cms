@@ -25,19 +25,10 @@ use UnitTester;
  */
 class ElementHelperTest extends Unit
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var UnitTester
      */
     protected $tester;
-
-    // Public Methods
-    // =========================================================================
-
-    // Fixtures
-    // =========================================================================
 
     public function _fixtures(): array
     {
@@ -48,21 +39,34 @@ class ElementHelperTest extends Unit
         ];
     }
 
-    // Tests
-    // =========================================================================
-
     /**
-     * @dataProvider createSlugDataProvider
+     * @dataProvider generateSlugDataProvider
      *
-     * @param $result
-     * @param $input
+     * @param string $result
+     * @param string $input
+     * @param bool|null $ascii
+     * @param string|null $language
      */
-    public function testCreateSlug($result, $input)
+    public function testGenerateSlug(string $result, string $input, bool $ascii = null, string $language = null)
     {
         $glue = Craft::$app->getConfig()->getGeneral()->slugWordSeparator;
         $result = str_replace('[separator-here]', $glue, $result);
 
-        $this->assertSame($result, ElementHelper::createSlug($input));
+        self::assertSame($result, ElementHelper::generateSlug($input, $ascii, $language));
+    }
+
+    /**
+     * @dataProvider normalizeSlugDataProvider
+     *
+     * @param $result
+     * @param $input
+     */
+    public function testNormalizeSlug($result, $input)
+    {
+        $glue = Craft::$app->getConfig()->getGeneral()->slugWordSeparator;
+        $result = str_replace('[separator-here]', $glue, $result);
+
+        self::assertSame($result, ElementHelper::normalizeSlug($input));
     }
 
     /**
@@ -73,7 +77,7 @@ class ElementHelperTest extends Unit
         $general = Craft::$app->getConfig()->getGeneral();
         $general->allowUppercaseInSlug = false;
 
-        $this->assertSame('word' . $general->slugWordSeparator . 'word', ElementHelper::createSlug('word WORD'));
+        self::assertSame('word' . $general->slugWordSeparator . 'word', ElementHelper::createSlug('word WORD'));
     }
 
     /**
@@ -85,8 +89,8 @@ class ElementHelperTest extends Unit
     public function testDoesUriFormatHaveSlugTag($result, $input)
     {
         $doesIt = ElementHelper::doesUriFormatHaveSlugTag($input);
-        $this->assertSame($result, $doesIt);
-        $this->assertIsBool($doesIt);
+        self::assertSame($result, $doesIt);
+        self::assertIsBool($doesIt);
     }
 
     /**
@@ -99,10 +103,10 @@ class ElementHelperTest extends Unit
     public function testSetUniqueUri($result, $config)
     {
         $example = new ExampleElement($config);
-        $this->assertNull(ElementHelper::setUniqueUri($example));
+        self::assertNull(ElementHelper::setUniqueUri($example));
 
         foreach ($result as $key => $res) {
-            $this->assertSame($res, $example->$key);
+            self::assertSame($res, $example->$key);
         }
     }
 
@@ -134,7 +138,7 @@ class ElementHelperTest extends Unit
             $result = false;
         }
 
-        $this->assertTrue($result);
+        self::assertTrue($result);
     }
 
     /**
@@ -149,22 +153,40 @@ class ElementHelperTest extends Unit
         ];
 
         ElementHelper::setNextPrevOnElements($editable);
-        $this->assertNull($one->getPrev());
+        self::assertNull($one->getPrev());
 
-        $this->assertSame($two, $one->getNext());
-        $this->assertSame($two, $one->getNext());
-        $this->assertSame($two, $three->getPrev());
+        self::assertSame($two, $one->getNext());
+        self::assertSame($two, $one->getNext());
+        self::assertSame($two, $three->getPrev());
 
-        $this->assertNull($three->getNext());
+        self::assertNull($three->getNext());
     }
-
-    // Data Providers
-    // =========================================================================
 
     /**
      * @return array
      */
-    public function createSlugDataProvider(): array
+    public function generateSlugDataProvider(): array
+    {
+        return [
+            ['wordWord', 'wordWord'],
+            ['word[separator-here]word', 'word word'],
+            ['foo[separator-here]0', 'foo 0'],
+            ['word', 'word'],
+            ['123456789', '123456789'],
+            ['abc[separator-here]dfg', 'abc...dfg'],
+            ['abc[separator-here]dfg', 'abc...(dfg)'],
+            ['A[separator-here]B[separator-here]C', 'A-B-C'], // https://github.com/craftcms/cms/issues/4266
+            ['test[separator-here]slug', 'test_slug'],
+            ['Audi[separator-here]S8[separator-here]4E[separator-here]2006[separator-here]2010', 'Audi S8 4E (2006-2010)'], // https://github.com/craftcms/cms/issues/4607
+            ['こんにちは', 'こんにちは', false], // https://github.com/craftcms/cms/issues/4628
+            ['Сертификация', 'Сертификация', false], // https://github.com/craftcms/cms/issues/1535
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function normalizeSlugDataProvider(): array
     {
         return [
             ['wordWord', 'wordWord'],

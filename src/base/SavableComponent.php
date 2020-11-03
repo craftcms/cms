@@ -17,15 +17,9 @@ use craft\events\ModelEvent;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-abstract class SavableComponent extends Component implements SavableComponentInterface
+abstract class SavableComponent extends ConfigurableComponent implements SavableComponentInterface
 {
-    // Traits
-    // =========================================================================
-
     use SavableComponentTrait;
-
-    // Constants
-    // =========================================================================
 
     /**
      * @event ModelEvent The event that is triggered before the component is saved
@@ -54,66 +48,12 @@ abstract class SavableComponent extends Component implements SavableComponentInt
      */
     const EVENT_AFTER_DELETE = 'afterDelete';
 
-    // Static
-    // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public static function isSelectable(): bool
-    {
-        return true;
-    }
-
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
     public function getIsNew(): bool
     {
         return (!$this->id || strpos($this->id, 'new') === 0);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getSettings(): array
-    {
-        $settings = [];
-
-        foreach ($this->settingsAttributes() as $attribute) {
-            $settings[$attribute] = $this->$attribute;
-        }
-
-        return $settings;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getSettingsHtml()
-    {
-        return null;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function settingsAttributes(): array
-    {
-        // By default, include all public, non-static properties that were not defined in an abstract class
-        $class = new \ReflectionClass($this);
-        $names = [];
-
-        foreach ($class->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {
-            if (!$property->isStatic() && !$property->getDeclaringClass()->isAbstract()) {
-                $names[] = $property->getName();
-            }
-        }
-
-        return $names;
     }
 
     // Events

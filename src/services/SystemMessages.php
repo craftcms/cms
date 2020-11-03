@@ -26,24 +26,15 @@ use yii\db\Expression;
  */
 class SystemMessages extends Component
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event RegisterEmailMessagesEvent The event that is triggered when registering email messages.
      */
     const EVENT_REGISTER_MESSAGES = 'registerMessages';
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var SystemMessage[]|null
      */
     private $_defaultMessages;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns all of the default system email messages, without subject/body overrides.
@@ -223,9 +214,6 @@ class SystemMessages extends Component
 
         return false;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns a new Query prepped to return system email messages from the DB.

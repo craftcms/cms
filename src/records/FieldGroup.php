@@ -22,9 +22,6 @@ use yii\db\ActiveQueryInterface;
  */
 class FieldGroup extends ActiveRecord
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      * @return string

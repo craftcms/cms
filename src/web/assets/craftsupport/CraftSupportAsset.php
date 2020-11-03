@@ -19,24 +19,28 @@ class CraftSupportAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public function init()
-    {
-        $this->sourcePath = __DIR__ . '/dist';
+    public $sourcePath = __DIR__ . '/dist';
 
-        $this->depends = [
-            CpAsset::class,
-        ];
+    /**
+     * @inheritdoc
+     */
+    public $depends = [
+        CpAsset::class,
+    ];
 
-        $this->css = [
-            'CraftSupportWidget.css',
-        ];
+    /**
+     * @inheritdoc
+     */
+    public $css = [
+        'CraftSupportWidget.css',
+    ];
 
-        $this->js = [
-            'CraftSupportWidget' . $this->dotJs(),
-        ];
-
-        parent::init();
-    }
+    /**
+     * @inheritdoc
+     */
+    public $js = [
+        'CraftSupportWidget.min.js',
+    ];
 
     /**
      * @inheritdoc

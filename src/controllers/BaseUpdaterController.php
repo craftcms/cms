@@ -9,7 +9,6 @@ namespace craft\controllers;
 
 use Composer\IO\BufferIO;
 use Craft;
-use craft\base\Plugin;
 use craft\errors\MigrateException;
 use craft\errors\MigrationException;
 use craft\helpers\App;
@@ -32,9 +31,6 @@ use yii\web\Response;
  */
 abstract class BaseUpdaterController extends Controller
 {
-    // Constants
-    // =========================================================================
-
     const ACTION_PRECHECK = 'precheck';
     const ACTION_RECHECK_COMPOSER = 'recheck-composer';
     const ACTION_COMPOSER_INSTALL = 'composer-install';
@@ -44,9 +40,6 @@ abstract class BaseUpdaterController extends Controller
      */
     const ACTION_COMPOSER_OPTIMIZE = 'composer-optimize';
     const ACTION_FINISH = 'finish';
-
-    // Properties
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -58,18 +51,15 @@ abstract class BaseUpdaterController extends Controller
      */
     protected $data = [];
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
-     * @throws NotFoundHttpException if it's not a CP request
+     * @throws NotFoundHttpException if it's not a control panel request
      * @throws BadRequestHttpException if there's invalid data in the request
      */
     public function beforeAction($action)
     {
         // This controller is only available to the CP
-        if (!Craft::$app->getRequest()->getIsCpRequest()) {
+        if (!$this->request->getIsCpRequest()) {
             throw new NotFoundHttpException();
         }
 
@@ -80,7 +70,7 @@ abstract class BaseUpdaterController extends Controller
         }
 
         if ($action->id !== 'index') {
-            if (($data = Craft::$app->getRequest()->getValidatedBodyParam('data')) === null) {
+            if (($data = $this->request->getValidatedBodyParam('data')) === null) {
                 throw new BadRequestHttpException();
             }
 
@@ -268,9 +258,6 @@ abstract class BaseUpdaterController extends Controller
             'returnUrl' => $this->returnUrl(),
         ]);
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * Returns the page title
@@ -539,6 +526,7 @@ abstract class BaseUpdaterController extends Controller
             }
 
             Craft::error($error, __METHOD__);
+            Craft::$app->getErrorHandler()->logException($e);
 
             $options = [];
 
@@ -558,7 +546,6 @@ abstract class BaseUpdaterController extends Controller
             ];
 
             if ($ownerHandle !== 'craft' && ($plugin = Craft::$app->getPlugins()->getPlugin($ownerHandle)) !== null) {
-                /** @var Plugin $plugin */
                 $email = $plugin->developerEmail;
             }
             $email = $email ?? 'support@craftcms.com';
@@ -593,7 +580,6 @@ abstract class BaseUpdaterController extends Controller
     protected function installPlugin(string $handle, string $edition = null): array
     {
         // Prevent the plugin from sending any headers, etc.
-        $realResponse = Craft::$app->getResponse();
         $tempResponse = new CraftResponse(['isSent' => true]);
         Craft::$app->set('response', $tempResponse);
 
@@ -603,7 +589,7 @@ abstract class BaseUpdaterController extends Controller
             $errorDetails = null;
         } catch (\Throwable $e) {
             $success = false;
-            Craft::$app->set('response', $realResponse);
+            Craft::$app->set('response', $this->response);
             $migration = $output = null;
 
             if ($e instanceof MigrateException) {
@@ -627,13 +613,10 @@ abstract class BaseUpdaterController extends Controller
         }
 
         // Put the real response back
-        Craft::$app->set('response', $realResponse);
+        Craft::$app->set('response', $this->response);
 
         return [$success, $tempResponse, $errorDetails];
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns the hashed data for JS.

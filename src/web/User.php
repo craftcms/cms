@@ -20,11 +20,12 @@ use craft\helpers\UrlHelper;
 use craft\helpers\User as UserHelper;
 use craft\validators\UserPasswordValidator;
 use yii\web\Cookie;
+use yii\web\ForbiddenHttpException;
 
 /**
  * The User component provides APIs for managing the user authentication status.
  *
- * An instance of the User component is globally accessible in Craft via [[\craft\base\ApplicationTrait::getUser()|`Craft::$app->user`]].
+ * An instance of the User component is globally accessible in Craft via [[\yii\web\Application::getUser()|`Craft::$app->user`]].
  *
  * @property bool $hasElevatedSession Whether the user currently has an elevated session
  * @property UserElement|null $identity The logged-in user.
@@ -34,9 +35,6 @@ use yii\web\Cookie;
  */
 class User extends \yii\web\User
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string the session variable name used to store the user session token.
      */
@@ -52,9 +50,6 @@ class User extends \yii\web\User
      * @var string The session variable name used to store the value of the expiration timestamp of the elevated session state.
      */
     public $elevatedSessionTimeoutParam = '__elevated_timeout';
-
-    // Public Methods
-    // =========================================================================
 
     // Authentication
     // -------------------------------------------------------------------------
@@ -191,6 +186,21 @@ class User extends \yii\web\User
     public function getIsGuest()
     {
         return parent::getIsGuest();
+    }
+
+    /**
+     * Redirects the user browser away from a guest page.
+     *
+     * @return Response the redirection response
+     * @throws ForbiddenHttpException if the request doesn’t accept a redirect response
+     * @since 3.4.0
+     */
+    public function guestRequired()
+    {
+        if (!$this->checkRedirectAcceptable()) {
+            throw new ForbiddenHttpException(Craft::t('app', 'Guest Required'));
+        }
+        return Craft::$app->getResponse()->redirect($this->getReturnUrl());
     }
 
     /**
@@ -351,35 +361,21 @@ class User extends \yii\web\User
 
     /**
      * Saves the logged-in user’s Debug toolbar preferences to the session.
+     *
+     * @deprecated in 3.5.0
      */
     public function saveDebugPreferencesToSession()
     {
-        $identity = $this->getIdentity();
-        $session = Craft::$app->getSession();
-
-        $this->destroyDebugPreferencesInSession();
-
-        if ($identity->admin && $identity->getPreference('enableDebugToolbarForSite')) {
-            $session->set('enableDebugToolbarForSite', true);
-        }
-
-        if ($identity->admin && $identity->getPreference('enableDebugToolbarForCp')) {
-            $session->set('enableDebugToolbarForCp', true);
-        }
     }
 
     /**
      * Removes the debug preferences from the session.
+     *
+     * @deprecated in 3.5.0
      */
     public function destroyDebugPreferencesInSession()
     {
-        $session = Craft::$app->getSession();
-        $session->remove('enableDebugToolbarForSite');
-        $session->remove('enableDebugToolbarForCp');
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -407,9 +403,6 @@ class User extends \yii\web\User
         if (!$impersonating) {
             $this->sendUsernameCookie($identity);
         }
-
-        // Save the Debug preferences to the session
-        $this->saveDebugPreferencesToSession();
 
         // Clear out the elevated session, if there is one
         $session->remove($this->elevatedSessionTimeoutParam);
@@ -451,12 +444,10 @@ class User extends \yii\web\User
     {
         $token = Craft::$app->getSecurity()->generateRandomString(100);
 
-        Craft::$app->getDb()->createCommand()
-            ->insert(Table::SESSIONS, [
-                'userId' => $userId,
-                'token' => $token,
-            ])
-            ->execute();
+        Db::insert(Table::SESSIONS, [
+            'userId' => $userId,
+            'token' => $token,
+        ]);
 
         Craft::$app->getSession()->set($this->tokenParam, $token);
     }
@@ -483,10 +474,13 @@ class User extends \yii\web\User
             $this->authTimeout = null;
             $absoluteAuthTimeoutParam = $this->absoluteAuthTimeoutParam;
             $this->absoluteAuthTimeoutParam = $this->authTimeoutParam;
+            $autoRenewCookie = $this->autoRenewCookie;
+            $this->autoRenewCookie = false;
             parent::renewAuthStatus();
             $this->authTimeout = $this->absoluteAuthTimeout;
             $this->absoluteAuthTimeout = null;
             $this->absoluteAuthTimeoutParam = $absoluteAuthTimeoutParam;
+            $this->autoRenewCookie = $autoRenewCookie;
         } else {
             parent::renewAuthStatus();
         }
@@ -507,12 +501,10 @@ class User extends \yii\web\User
         $token = $session->get($this->tokenParam);
         if ($token !== null) {
             $session->remove($this->tokenParam);
-            Craft::$app->getDb()->createCommand()
-                ->delete(Table::SESSIONS, [
-                    'token' => $token,
-                    'userId' => $identity->id,
-                ])
-                ->execute();
+            Db::delete(Table::SESSIONS, [
+                'token' => $token,
+                'userId' => $identity->id,
+            ]);
         }
 
         return true;
@@ -528,8 +520,6 @@ class User extends \yii\web\User
         $session = Craft::$app->getSession();
         $session->remove(UserElement::IMPERSONATE_KEY);
 
-        $this->destroyDebugPreferencesInSession();
-
         if (Craft::$app->getConfig()->getGeneral()->enableCsrfProtection) {
             // Let's keep the current nonce around.
             Craft::$app->getRequest()->regenCsrfToken();
@@ -537,9 +527,6 @@ class User extends \yii\web\User
 
         parent::afterLogout($identity);
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Validates that the request has a user agent and IP associated with it,

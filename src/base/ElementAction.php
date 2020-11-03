@@ -15,11 +15,8 @@ use craft\elements\db\ElementQueryInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-abstract class ElementAction extends SavableComponent implements ElementActionInterface
+abstract class ElementAction extends ConfigurableComponent implements ElementActionInterface
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -28,8 +25,13 @@ abstract class ElementAction extends SavableComponent implements ElementActionIn
         return false;
     }
 
-    // Properties
-    // =========================================================================
+    /**
+     * @inheritdoc
+     */
+    public static function isDownload(): bool
+    {
+        return false;
+    }
 
     /**
      * @var string|ElementInterface
@@ -42,9 +44,6 @@ abstract class ElementAction extends SavableComponent implements ElementActionIn
      * @var
      */
     private $_message;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -93,9 +92,6 @@ abstract class ElementAction extends SavableComponent implements ElementActionIn
     {
         return $this->_message;
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * Sets the message that should be displayed to the user after the action is performed.

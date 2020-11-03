@@ -79,7 +79,7 @@
 </script>
 
 <style lang="scss">
-    @import "../../../../../../../../lib/craftcms-sass/mixins";
+    @import "../../../../../../../../node_modules/craftcms-sass/mixins";
 
     #pluginstore-modal {
         @apply .absolute .pin-t .pin-l;

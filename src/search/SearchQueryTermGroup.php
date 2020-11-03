@@ -16,16 +16,10 @@ namespace craft\search;
  */
 class SearchQueryTermGroup
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var array|null
      */
     public $terms;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Constructor

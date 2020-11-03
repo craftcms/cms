@@ -56,5 +56,4 @@ class m180520_173000_matrix_context_to_uids extends Migration
 
         return false;
     }
-
 }

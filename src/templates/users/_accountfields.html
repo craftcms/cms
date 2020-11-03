@@ -1,5 +1,4 @@
 {% import "_includes/forms" as forms %}
-{% set meta = meta is defined ? meta : false %}
 
 {% if not craft.app.config.general.useEmailAsUsername %}
     {{ forms.textField({
@@ -16,32 +15,23 @@
     }) }}
 {% endif %}
 
-{% if not meta %}
-<div class="flex">
-    <div class="flex-grow">
-{% endif %}
-        {{ forms.textField({
-            label: "First Name"|t('app'),
-            id: 'firstName',
-            name: 'firstName',
-            value: user.firstName,
-            autocomplete: false,
-            errors: user.getErrors('firstName'),
-            autofocus: craft.app.config.general.useEmailAsUsername
-        }) }}
-{% if not meta %}
-    </div>
-    <div class="flex-grow">
-{% endif %}
-        {{ forms.textField({
-            label: "Last Name"|t('app'),
-            id: 'lastName',
-            name: 'lastName',
-            value: user.lastName,
-            autocomplete: false,
-            errors: user.getErrors('lastName')
-        }) }}
-{% if not meta %}
-    </div>
-</div>
-{% endif %}
+{{ forms.textField({
+    fieldClass: 'width-50',
+    label: "First Name"|t('app'),
+    id: 'firstName',
+    name: 'firstName',
+    value: user.firstName,
+    autocomplete: false,
+    errors: user.getErrors('firstName'),
+    autofocus: craft.app.config.general.useEmailAsUsername
+}) }}
+
+{{ forms.textField({
+    fieldClass: 'width-50',
+    label: "Last Name"|t('app'),
+    id: 'lastName',
+    name: 'lastName',
+    value: user.lastName,
+    autocomplete: false,
+    errors: user.getErrors('lastName')
+}) }}

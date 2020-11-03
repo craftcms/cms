@@ -22,16 +22,10 @@ use yii\base\Exception;
  */
 class DeleteUsers extends ElementAction
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null The user ID that the deleted user’s content should be transferred to
      */
     public $transferContentTo;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -59,9 +53,8 @@ class DeleteUsers extends ElementAction
         $redirect = Json::encode(Craft::$app->getSecurity()->hashData(Craft::$app->getEdition() === Craft::Pro ? 'users' : 'dashboard'));
 
         $js = <<<JS
-(function()
-{
-    var trigger = new Craft.ElementActionTrigger({
+(() => {
+    new Craft.ElementActionTrigger({
         type: {$type},
         batch: true,
         validateSelection: function(\$selectedItems)
@@ -102,6 +95,7 @@ class DeleteUsers extends ElementAction
 JS;
 
         Craft::$app->getView()->registerJs($js);
+        return null;
     }
 
     /**
@@ -141,9 +135,6 @@ JS;
 
         return true;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns a list of the user IDs that can't be deleted.

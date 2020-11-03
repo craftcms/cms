@@ -7,12 +7,15 @@
 
 namespace craft\gql\interfaces\elements;
 
-use craft\elements\Asset as AssetElement;
+use craft\gql\arguments\elements\Asset as AssetArguments;
+use craft\gql\arguments\elements\User as UserArguments;
 use craft\gql\arguments\Transform;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\Element;
+use craft\gql\TypeManager;
 use craft\gql\types\DateTime;
 use craft\gql\types\generators\AssetType;
+use craft\helpers\Gql;
 use GraphQL\Type\Definition\InterfaceType;
 use GraphQL\Type\Definition\Type;
 
@@ -45,9 +48,7 @@ class Asset extends Element
             'name' => static::getName(),
             'fields' => self::class . '::getFieldDefinitions',
             'description' => 'This is the interface implemented by all assets.',
-            'resolveType' => function(AssetElement $value) {
-                return $value->getGqlTypeName();
-            }
+            'resolveType' => self::class . '::resolveElementTypeName',
         ]));
 
         AssetType::generateTypes();
@@ -68,7 +69,8 @@ class Asset extends Element
      */
     public static function getFieldDefinitions(): array
     {
-        return array_merge(parent::getFieldDefinitions(), [
+        // @TODO Remove the `uri` field for Assets.
+        return TypeManager::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), self::getConditionalFields(), [
             'volumeId' => [
                 'name' => 'volumeId',
                 'type' => Type::int(),
@@ -111,11 +113,13 @@ class Asset extends Element
             ],
             'height' => [
                 'name' => 'height',
+                'args' => Transform::getArguments(),
                 'type' => Type::int(),
                 'description' => 'The height in pixels or null if it\'s not an image.'
             ],
             'width' => [
                 'name' => 'width',
+                'args' => Transform::getArguments(),
                 'type' => Type::int(),
                 'description' => 'The width in pixels or null if it\'s not an image.'
             ],
@@ -123,6 +127,18 @@ class Asset extends Element
                 'name' => 'img',
                 'type' => Type::string(),
                 'description' => 'An `<img>` tag based on this asset.'
+            ],
+            'srcset' => [
+                'name' => 'srcset',
+                'type' => Type::string(),
+                'args' => [
+                    'sizes' => [
+                        'name' => 'sizes',
+                        'description' => 'A list of size descriptors. If you pass x-descriptors, it will be assumed that the image’s current width is the indented 1x width.',
+                        'type' => Type::nonNull(Type::listOf(Type::nonNull(Type::string())))
+                    ]
+                ],
+                'description' => 'Returns a `srcset` attribute value based on the given widths or x-descriptors.'
             ],
             'url' => [
                 'name' => 'url',
@@ -145,7 +161,42 @@ class Asset extends Element
                 'type' => DateTime::getType(),
                 'description' => 'The date the asset file was last modified.'
             ],
+            'prev' => [
+                'name' => 'prev',
+                'type' => self::getType(),
+                'args' => AssetArguments::getArguments(),
+                'description' => 'Returns the previous element relative to this one, from a given set of criteria. CAUTION: Applying arguments to this field severely degrades the performance of the query.',
+            ],
+            'next' => [
+                'name' => 'next',
+                'type' => self::getType(),
+                'args' => AssetArguments::getArguments(),
+                'description' => 'Returns the next element relative to this one, from a given set of criteria. CAUTION: Applying arguments to this field severely degrades the performance of the query.',
+            ],
+        ]), self::getName());
+    }
 
-        ]);
+    /**
+     * @inheritdoc
+     */
+    protected static function getConditionalFields(): array
+    {
+        if (Gql::canQueryUsers()) {
+            return [
+                'uploaderId' => [
+                    'name' => 'uploaderId',
+                    'type' => Type::int(),
+                    'description' => 'The ID of the user who first added this asset (if known).'
+                ],
+                'uploader' => [
+                    'name' => 'uploader',
+                    'type' => User::getType(),
+                    'args' => UserArguments::getArguments(),
+                    'description' => 'The user who first added this asset (if known).'
+                ],
+            ];
+        }
+
+        return [];
     }
 }

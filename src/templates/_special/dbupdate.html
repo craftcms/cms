@@ -7,6 +7,6 @@
         {{ csrfInput() }}
         {{ actionInput('updater') }}
         {{ hiddenInput('return', craft.app.request.getPathInfo()) }}
-        <input type="submit" class="btn submit" value="{{ 'Finish up'|t('app') }}">
+        <button type="submit" class="btn submit">{{ 'Finish up'|t('app') }}</button>
     </form>
 {% endblock %}

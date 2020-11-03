@@ -21,9 +21,6 @@ use craft\validators\UniqueValidator;
  */
 class FieldGroup extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null ID
      */
@@ -39,9 +36,6 @@ class FieldGroup extends Model
      */
     public $uid;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -55,9 +49,9 @@ class FieldGroup extends Model
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['id'], 'number', 'integerOnly' => true];
         $rules[] = [['name'], 'string', 'max' => 255];
         $rules[] = [['name'], UniqueValidator::class, 'targetClass' => FieldGroupRecord::class];
@@ -83,5 +77,18 @@ class FieldGroup extends Model
     public function getFields(): array
     {
         return Craft::$app->getFields()->getFieldsByGroupId($this->id);
+    }
+
+    /**
+     * Returns the field layout config for this field group.
+     *
+     * @return array
+     * @since 3.5.0
+     */
+    public function getConfig(): array
+    {
+        return [
+            'name' => $this->name,
+        ];
     }
 }

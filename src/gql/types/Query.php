@@ -18,12 +18,8 @@ use craft\gql\base\GqlTypeTrait;
  */
 class Query
 {
-    // Traits
-    // =========================================================================
     use GqlTypeTrait;
 
-    // Methods
-    // =========================================================================
     /**
      * @inheritdoc
      * @throws GqlException if class called incorrectly.

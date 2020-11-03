@@ -25,9 +25,6 @@ use UnitTester;
  */
 class UserTest extends TestCase
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var UnitTester
      */
@@ -48,12 +45,6 @@ class UserTest extends TestCase
      */
     public $user;
 
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
-
     /**
      *
      */
@@ -66,8 +57,8 @@ class UserTest extends TestCase
         // Assert that the cookie is correct
         $cookie = Craft::$app->getResponse()->getCookies()->get($this->_getUsernameCookieName());
 
-        $this->assertSame($this->userElement->username, $cookie->value);
-        $this->assertSame(time() + 20, $cookie->expire);
+        self::assertSame($this->userElement->username, $cookie->value);
+        self::assertSame(time() + 20, $cookie->expire);
     }
 
     /**
@@ -84,8 +75,8 @@ class UserTest extends TestCase
 
         $cookie = Craft::$app->getResponse()->getCookies()->get($this->_getUsernameCookieName());
 
-        $this->assertSame('', $cookie->value);
-        $this->assertSame(1, $cookie->expire);
+        self::assertSame('', $cookie->value);
+        self::assertSame(1, $cookie->expire);
     }
 
     /**
@@ -95,12 +86,12 @@ class UserTest extends TestCase
     {
         // No identity. Remaining should be null.
         $this->user->setIdentity(null);
-        $this->assertSame(0, $this->user->getRemainingSessionTime());
+        self::assertSame(0, $this->user->getRemainingSessionTime());
 
         // With a user and authTimeout null it should return -1
         $this->user->setIdentity($this->userElement);
         $this->user->authTimeout = null;
-        $this->assertSame(-1, $this->user->getRemainingSessionTime());
+        self::assertSame(-1, $this->user->getRemainingSessionTime());
     }
 
     /**
@@ -119,7 +110,7 @@ class UserTest extends TestCase
         $this->_sessionGetStub(time() + 50);
 
         // Session expiry (set above) minus time() should return 50.
-        $this->assertSame(50, Craft::$app->getUser()->getRemainingSessionTime());
+        self::assertSame(50, Craft::$app->getUser()->getRemainingSessionTime());
     }
 
     /**
@@ -129,11 +120,11 @@ class UserTest extends TestCase
     public function testGetHasElevatedSession()
     {
         $this->user->setIdentity(null);
-        $this->assertSame(0, $this->user->getElevatedSessionTimeout());
+        self::assertSame(0, $this->user->getElevatedSessionTimeout());
 
         $this->config->getGeneral()->elevatedSessionDuration = 0;
 
-        $this->assertFalse($this->user->getElevatedSessionTimeout());
+        self::assertFalse($this->user->getElevatedSessionTimeout());
     }
 
     /**
@@ -144,7 +135,7 @@ class UserTest extends TestCase
         $this->user->setIdentity($this->userElement);
         // Session must return null
         $this->_sessionGetStub(null);
-        $this->assertSame(0, $this->user->getElevatedSessionTimeout());
+        self::assertSame(0, $this->user->getElevatedSessionTimeout());
     }
 
     /**
@@ -155,11 +146,11 @@ class UserTest extends TestCase
         $this->user->setIdentity($this->userElement);
 
         $this->_sessionGetStub(time() + 50);
-        $this->assertEqualsWithDelta(50, $this->user->getElevatedSessionTimeout(), 2.0);
+        self::assertEqualsWithDelta(50, $this->user->getElevatedSessionTimeout(), 2.0);
 
         // If the session->get() return value is smaller than time 0 is returned
         $this->_sessionGetStub(time() - 50);
-        $this->assertEqualsWithDelta(0, $this->user->getElevatedSessionTimeout(), 2.0);
+        self::assertEqualsWithDelta(0, $this->user->getElevatedSessionTimeout(), 2.0);
     }
 
     /**
@@ -175,18 +166,18 @@ class UserTest extends TestCase
         $this->user->setIdentity(null);
 
         // If no user it should return false
-        $this->assertFalse($this->user->startElevatedSession('Doesnt matter'));
+        self::assertFalse($this->user->startElevatedSession('Doesnt matter'));
 
         // With a user it should still return false.
         $this->user->setIdentity($this->userElement);
-        $this->assertFalse($this->user->startElevatedSession($passwordHash));
+        self::assertFalse($this->user->startElevatedSession($passwordHash));
 
         // Ensure password validation returns true
         $this->_passwordValidationStub(true);
 
         // If we set this to 0. It should return true
         $this->config->getGeneral()->elevatedSessionDuration = 0;
-        $this->assertTrue($this->user->startElevatedSession($passwordHash));
+        self::assertTrue($this->user->startElevatedSession($passwordHash));
     }
 
     /**
@@ -205,17 +196,14 @@ class UserTest extends TestCase
         $this->_ensureSetSessionIsOfValue(time() + $this->config->getGeneral()->elevatedSessionDuration);
 
         // With a user and Craft::$app->getSecurity()->validatePassword() returning true it should return null because the current user doesnt exist or doesnt have a password
-        $this->assertFalse($this->user->startElevatedSession($passwordHash));
+        self::assertFalse($this->user->startElevatedSession($passwordHash));
 
         $this->userElement->password = 'doesntmatter';
         $this->setInaccessibleProperty(Craft::$app->getUser(), '_identity', $this->userElement);
 
         // With all the above and a current user with a password. Starting should work.
-        $this->assertTrue($this->user->startElevatedSession($passwordHash));
+        self::assertTrue($this->user->startElevatedSession($passwordHash));
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -227,9 +215,6 @@ class UserTest extends TestCase
         $this->config = Craft::$app->getConfig();
         $this->user = Craft::$app->getUser();
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Sets the Craft::$app->getSession(); to a stub where the get() method returns what you want.
@@ -250,7 +235,7 @@ class UserTest extends TestCase
     {
         $this->tester->mockCraftMethods('session', [
             'set' => function($name, $val) use ($value) {
-                $this->assertEqualsWithDelta($value, $val, 1);
+                self::assertEqualsWithDelta($value, $val, 1);
             }
         ]);
     }

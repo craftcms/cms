@@ -19,9 +19,6 @@ use yii\base\InvalidConfigException;
  */
 trait RequestTrait
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var bool
      */
@@ -31,9 +28,6 @@ trait RequestTrait
      * @var bool
      */
     public $isWebAliasSetDynamically = false;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns the requested script name being used to access Craft (e.g. “index.php”).

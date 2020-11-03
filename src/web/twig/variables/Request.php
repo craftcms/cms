@@ -16,13 +16,10 @@ use yii\web\Cookie;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
- * @deprecated in 3.0
+ * @deprecated in 3.0.0
  */
 class Request
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Returns whether this is a GET request.
      *
@@ -30,7 +27,7 @@ class Request
      */
     public function isGet(): bool
     {
-        Craft::$app->getDeprecator()->log('craft.request.isGet()', 'craft.request.isGet() has been deprecated. Use craft.app.request.isGet instead.');
+        Craft::$app->getDeprecator()->log('craft.request.isGet()', '`craft.request.isGet()` has been deprecated. Use `craft.app.request.isGet` instead.');
 
         return Craft::$app->getRequest()->getIsGet();
     }
@@ -42,7 +39,7 @@ class Request
      */
     public function isPost(): bool
     {
-        Craft::$app->getDeprecator()->log('craft.request.isPost()', 'craft.request.isPost() has been deprecated. Use craft.app.request.isPost instead.');
+        Craft::$app->getDeprecator()->log('craft.request.isPost()', '`craft.request.isPost()` has been deprecated. Use `craft.app.request.isPost` instead.');
 
         return Craft::$app->getRequest()->getIsPost();
     }
@@ -54,7 +51,7 @@ class Request
      */
     public function isDelete(): bool
     {
-        Craft::$app->getDeprecator()->log('craft.request.isDelete()', 'craft.request.isDelete() has been deprecated. Use craft.app.request.isDelete instead.');
+        Craft::$app->getDeprecator()->log('craft.request.isDelete()', '`craft.request.isDelete()` has been deprecated. Use `craft.app.request.isDelete` instead.');
 
         return Craft::$app->getRequest()->getIsDelete();
     }
@@ -66,7 +63,7 @@ class Request
      */
     public function isPut(): bool
     {
-        Craft::$app->getDeprecator()->log('craft.request.isPut()', 'craft.request.isPut() has been deprecated. Use craft.app.request.isPut instead.');
+        Craft::$app->getDeprecator()->log('craft.request.isPut()', '`craft.request.isPut()` has been deprecated. Use `craft.app.request.isPut` instead.');
 
         return Craft::$app->getRequest()->getIsPut();
     }
@@ -78,7 +75,7 @@ class Request
      */
     public function isAjax(): bool
     {
-        Craft::$app->getDeprecator()->log('craft.request.isAjax()', 'craft.request.isAjax() has been deprecated. Use craft.app.request.isAjax instead.');
+        Craft::$app->getDeprecator()->log('craft.request.isAjax()', '`craft.request.isAjax()` has been deprecated. Use `craft.app.request.isAjax` instead.');
 
         return Craft::$app->getRequest()->getIsAjax();
     }
@@ -90,7 +87,7 @@ class Request
      */
     public function isSecure(): bool
     {
-        Craft::$app->getDeprecator()->log('craft.request.isSecure()', 'craft.request.isSecure() has been deprecated. Use craft.app.request.isSecureConnection instead.');
+        Craft::$app->getDeprecator()->log('craft.request.isSecure()', '`craft.request.isSecure()` has been deprecated. Use `craft.app.request.isSecureConnection` instead.');
 
         return Craft::$app->getRequest()->getIsSecureConnection();
     }
@@ -102,7 +99,7 @@ class Request
      */
     public function isLivePreview(): bool
     {
-        Craft::$app->getDeprecator()->log('craft.request.isLivePreview()', 'craft.request.isLivePreview() has been deprecated. Use craft.app.request.isLivePreview instead.');
+        Craft::$app->getDeprecator()->log('craft.request.isLivePreview()', '`craft.request.isLivePreview()` has been deprecated. Use `craft.app.request.isLivePreview` instead.');
 
         return Craft::$app->getRequest()->getIsLivePreview();
     }
@@ -114,7 +111,7 @@ class Request
      */
     public function getScriptName(): string
     {
-        Craft::$app->getDeprecator()->log('craft.request.getScriptName()', 'craft.request.getScriptName() has been deprecated. Use craft.app.request.scriptFilename instead.');
+        Craft::$app->getDeprecator()->log('craft.request.getScriptName()', '`craft.request.getScriptName()` has been deprecated. Use `craft.app.request.scriptFilename` instead.');
 
         return Craft::$app->getRequest()->getScriptFilename();
     }
@@ -126,7 +123,7 @@ class Request
      */
     public function getPath(): string
     {
-        Craft::$app->getDeprecator()->log('craft.request.getPath()', 'craft.request.getPath() has been deprecated. Use craft.app.request.pathInfo instead.');
+        Craft::$app->getDeprecator()->log('craft.request.getPath()', '`craft.request.getPath()` has been deprecated. Use `craft.app.request.pathInfo` instead.');
 
         return Craft::$app->getRequest()->getPathInfo();
     }
@@ -138,7 +135,7 @@ class Request
      */
     public function getUrl(): string
     {
-        Craft::$app->getDeprecator()->log('craft.request.getUrl()', 'craft.request.getUrl() has been deprecated. Use craft.app.request.absoluteUrl instead.');
+        Craft::$app->getDeprecator()->log('craft.request.getUrl()', '`craft.request.getUrl()` has been deprecated. Use `craft.app.request.absoluteUrl` instead.');
 
         return UrlHelper::url(Craft::$app->getRequest()->getPathInfo());
     }
@@ -150,7 +147,7 @@ class Request
      */
     public function getSegments(): array
     {
-        Craft::$app->getDeprecator()->log('craft.request.getSegments()', 'craft.request.getSegments() has been deprecated. Use craft.app.request.segments instead.');
+        Craft::$app->getDeprecator()->log('craft.request.getSegments()', '`craft.request.getSegments()` has been deprecated. Use `craft.app.request.segments` instead.');
 
         return Craft::$app->getRequest()->getSegments();
     }
@@ -163,7 +160,7 @@ class Request
      */
     public function getSegment(int $num)
     {
-        Craft::$app->getDeprecator()->log('craft.request.getSegment()', 'craft.request.getSegment() has been deprecated. Use craft.app.request.getSegment() instead.');
+        Craft::$app->getDeprecator()->log('craft.request.getSegment()', '`craft.request.getSegment()` has been deprecated. Use `craft.app.request.getSegment()` instead.');
 
         return Craft::$app->getRequest()->getSegment($num);
     }
@@ -175,7 +172,7 @@ class Request
      */
     public function getFirstSegment()
     {
-        Craft::$app->getDeprecator()->log('craft.request.getFirstSegment()', 'craft.request.getFirstSegment() has been deprecated. Use craft.app.request.segments|first instead.');
+        Craft::$app->getDeprecator()->log('craft.request.getFirstSegment()', '`craft.request.getFirstSegment()` has been deprecated. Use `craft.app.request.segments|first` instead.');
 
         return Craft::$app->getRequest()->getSegment(1);
     }
@@ -187,7 +184,7 @@ class Request
      */
     public function getLastSegment()
     {
-        Craft::$app->getDeprecator()->log('craft.request.getLastSegment()', 'craft.request.getLastSegment() has been deprecated. Use craft.app.request.segments|last instead.');
+        Craft::$app->getDeprecator()->log('craft.request.getLastSegment()', '`craft.request.getLastSegment()` has been deprecated. Use `craft.app.request.segments|last` instead.');
 
         return Craft::$app->getRequest()->getSegment(-1);
     }
@@ -201,7 +198,7 @@ class Request
      */
     public function getParam(string $name, string $default = null)
     {
-        Craft::$app->getDeprecator()->log('craft.request.getParam()', 'craft.request.getParam() has been deprecated. Use craft.app.request.getParam() instead.');
+        Craft::$app->getDeprecator()->log('craft.request.getParam()', '`craft.request.getParam()` has been deprecated. Use `craft.app.request.getParam()` instead.');
 
         return Craft::$app->getRequest()->getParam($name, $default);
     }
@@ -214,7 +211,7 @@ class Request
      */
     public function getCookie(string $name)
     {
-        Craft::$app->getDeprecator()->log('craft.request.getCookie()', 'craft.request.getCookie() has been deprecated. Use craft.app.request.cookies.get() instead.');
+        Craft::$app->getDeprecator()->log('craft.request.getCookie()', '`craft.request.getCookie()` has been deprecated. Use `craft.app.request.cookies.get()` instead.');
 
         return Craft::$app->getRequest()->getCookies()->get($name);
     }
@@ -226,7 +223,7 @@ class Request
      */
     public function getServerName()
     {
-        Craft::$app->getDeprecator()->log('craft.request.getServerName()', 'craft.request.getServerName() has been deprecated. Use craft.app.request.serverName instead.');
+        Craft::$app->getDeprecator()->log('craft.request.getServerName()', '`craft.request.getServerName()` has been deprecated. Use `craft.app.request.serverName` instead.');
 
         return Craft::$app->getRequest()->getServerName();
     }
@@ -238,7 +235,7 @@ class Request
      */
     public function getUrlFormat(): string
     {
-        Craft::$app->getDeprecator()->log('craft.request.getUrlFormat()', 'craft.request.getUrlFormat() has been deprecated. Use craft.app.config.general.usePathInfo instead.');
+        Craft::$app->getDeprecator()->log('craft.request.getUrlFormat()', '`craft.request.getUrlFormat()` has been deprecated. Use `craft.app.config.general.usePathInfo` instead.');
 
         return Craft::$app->getConfig()->getGeneral()->usePathInfo ? 'pathinfo' : 'querystring';
     }
@@ -251,7 +248,7 @@ class Request
      */
     public function isMobileBrowser(bool $detectTablets = false): bool
     {
-        Craft::$app->getDeprecator()->log('craft.request.isMobileBrowser()', 'craft.request.isMobileBrowser() has been deprecated. Use craft.app.request.isMobileBrowser() instead.');
+        Craft::$app->getDeprecator()->log('craft.request.isMobileBrowser()', '`craft.request.isMobileBrowser()` has been deprecated. Use `craft.app.request.isMobileBrowser()` instead.');
 
         return Craft::$app->getRequest()->isMobileBrowser($detectTablets);
     }
@@ -263,7 +260,7 @@ class Request
      */
     public function getPageNum(): int
     {
-        Craft::$app->getDeprecator()->log('craft.request.getPageNum()', 'craft.request.getPageNum() has been deprecated. Use craft.app.request.pageNum instead.');
+        Craft::$app->getDeprecator()->log('craft.request.getPageNum()', '`craft.request.getPageNum()` has been deprecated. Use `craft.app.request.pageNum` instead.');
 
         return Craft::$app->getRequest()->getPageNum();
     }
@@ -276,7 +273,7 @@ class Request
      */
     public function getHostInfo()
     {
-        Craft::$app->getDeprecator()->log('craft.request.getHostInfo()', 'craft.request.getHostInfo() has been deprecated. Use craft.app.request.hostInfo instead.');
+        Craft::$app->getDeprecator()->log('craft.request.getHostInfo()', '`craft.request.getHostInfo()` has been deprecated. Use `craft.app.request.hostInfo` instead.');
 
         return Craft::$app->getRequest()->getHostInfo();
     }
@@ -288,7 +285,7 @@ class Request
      */
     public function getScriptUrl(): string
     {
-        Craft::$app->getDeprecator()->log('craft.request.getScriptUrl()', 'craft.request.getScriptUrl() has been deprecated. Use craft.app.request.scriptUrl instead.');
+        Craft::$app->getDeprecator()->log('craft.request.getScriptUrl()', '`craft.request.getScriptUrl()` has been deprecated. Use `craft.app.request.scriptUrl` instead.');
 
         return Craft::$app->getRequest()->getScriptUrl();
     }
@@ -301,7 +298,7 @@ class Request
      */
     public function getPathInfo(): string
     {
-        Craft::$app->getDeprecator()->log('craft.request.getPathInfo()', 'craft.request.getPathInfo() has been deprecated. Use craft.app.request.getPathInfo(true) instead.');
+        Craft::$app->getDeprecator()->log('craft.request.getPathInfo()', '`craft.request.getPathInfo()` has been deprecated. Use `craft.app.request.getPathInfo(true)` instead.');
 
         return Craft::$app->getRequest()->getPathInfo(true);
     }
@@ -314,7 +311,7 @@ class Request
      */
     public function getRequestUri(): string
     {
-        Craft::$app->getDeprecator()->log('craft.request.getRequestUri()', 'craft.request.getRequestUri() has been deprecated. Use craft.app.request.url instead.');
+        Craft::$app->getDeprecator()->log('craft.request.getRequestUri()', '`craft.request.getRequestUri()` has been deprecated. Use `craft.app.request.url` instead.');
 
         return Craft::$app->getRequest()->getUrl();
     }
@@ -326,7 +323,7 @@ class Request
      */
     public function getServerPort()
     {
-        Craft::$app->getDeprecator()->log('craft.request.getServerPort()', 'craft.request.getServerPort() has been deprecated. Use craft.app.request.serverPort instead.');
+        Craft::$app->getDeprecator()->log('craft.request.getServerPort()', '`craft.request.getServerPort()` has been deprecated. Use `craft.app.request.serverPort` instead.');
 
         return Craft::$app->getRequest()->getServerPort();
     }
@@ -338,7 +335,7 @@ class Request
      */
     public function getUrlReferrer()
     {
-        Craft::$app->getDeprecator()->log('craft.request.getUrlReferrer()', 'craft.request.getUrlReferrer() has been deprecated. Use craft.app.request.referrer instead.');
+        Craft::$app->getDeprecator()->log('craft.request.getUrlReferrer()', '`craft.request.getUrlReferrer()` has been deprecated. Use `craft.app.request.referrer` instead.');
 
         return Craft::$app->getRequest()->getReferrer();
     }
@@ -350,7 +347,7 @@ class Request
      */
     public function getUserAgent()
     {
-        Craft::$app->getDeprecator()->log('craft.request.getUserAgent()', 'craft.request.getUserAgent() has been deprecated. Use craft.app.request.userAgent instead.');
+        Craft::$app->getDeprecator()->log('craft.request.getUserAgent()', '`craft.request.getUserAgent()` has been deprecated. Use `craft.app.request.userAgent` instead.');
 
         return Craft::$app->getRequest()->getUserAgent();
     }
@@ -362,7 +359,7 @@ class Request
      */
     public function getUserHost()
     {
-        Craft::$app->getDeprecator()->log('craft.request.getUserHost()', 'craft.request.getUserHost() has been deprecated. Use craft.app.request.userHost instead.');
+        Craft::$app->getDeprecator()->log('craft.request.getUserHost()', '`craft.request.getUserHost()` has been deprecated. Use `craft.app.request.userHost` instead.');
 
         return Craft::$app->getRequest()->getUserHost();
     }
@@ -375,7 +372,7 @@ class Request
      */
     public function getPort(): int
     {
-        Craft::$app->getDeprecator()->log('craft.request.getPort()', 'craft.request.getPort() has been deprecated. Use craft.app.request.port instead.');
+        Craft::$app->getDeprecator()->log('craft.request.getPort()', '`craft.request.getPort()` has been deprecated. Use `craft.app.request.port` instead.');
 
         return Craft::$app->getRequest()->getPort();
     }
@@ -389,7 +386,7 @@ class Request
      */
     public function getCsrfToken(): string
     {
-        Craft::$app->getDeprecator()->log('craft.request.getCsrfToken()', 'craft.request.getCsrfToken() has been deprecated. Use craft.app.request.csrfToken instead.');
+        Craft::$app->getDeprecator()->log('craft.request.getCsrfToken()', '`craft.request.getCsrfToken()` has been deprecated. Use `craft.app.request.csrfToken` instead.');
 
         return Craft::$app->getRequest()->getCsrfToken();
     }
@@ -401,7 +398,7 @@ class Request
      */
     public function getQueryString(): string
     {
-        Craft::$app->getDeprecator()->log('craft.request.getQueryString()', 'craft.request.getQueryString() has been deprecated. Use craft.app.request.queryString instead.');
+        Craft::$app->getDeprecator()->log('craft.request.getQueryString()', '`craft.request.getQueryString()` has been deprecated. Use `craft.app.request.queryString` instead.');
 
         return Craft::$app->getRequest()->getQueryString();
     }
@@ -413,7 +410,7 @@ class Request
      */
     public function getQueryStringWithoutPath(): string
     {
-        Craft::$app->getDeprecator()->log('craft.request.getQueryStringWithoutPath()', 'craft.request.getQueryStringWithoutPath() has been deprecated. Use craft.app.request.queryStringWithoutPath instead.');
+        Craft::$app->getDeprecator()->log('craft.request.getQueryStringWithoutPath()', '`craft.request.getQueryStringWithoutPath()` has been deprecated. Use `craft.app.request.queryStringWithoutPath` instead.');
 
         return Craft::$app->getRequest()->getQueryStringWithoutPath();
     }
@@ -427,7 +424,7 @@ class Request
      */
     public function getQuery(string $name = null, string $default = null)
     {
-        Craft::$app->getDeprecator()->log('craft.request.getQuery()', 'craft.request.getQuery() has been deprecated. Use craft.app.request.getQueryParam() instead.');
+        Craft::$app->getDeprecator()->log('craft.request.getQuery()', '`craft.request.getQuery()` has been deprecated. Use `craft.app.request.getQueryParam()` instead.');
 
         return Craft::$app->getRequest()->getQueryParam($name, $default);
     }
@@ -441,7 +438,7 @@ class Request
      */
     public function getPost(string $name = null, string $default = null)
     {
-        Craft::$app->getDeprecator()->log('craft.request.getPost()', 'craft.request.getPost() has been deprecated. Use craft.app.request.getBodyParam() instead.');
+        Craft::$app->getDeprecator()->log('craft.request.getPost()', '`craft.request.getPost()` has been deprecated. Use `craft.app.request.getBodyParam()` instead.');
 
         return Craft::$app->getRequest()->getBodyParam($name, $default);
     }
@@ -453,7 +450,7 @@ class Request
      */
     public function getUserHostAddress()
     {
-        Craft::$app->getDeprecator()->log('craft.request.getUserHostAddress()', 'craft.request.getUserHostAddress() has been deprecated. Use craft.app.request.userIP instead.');
+        Craft::$app->getDeprecator()->log('craft.request.getUserHostAddress()', '`craft.request.getUserHostAddress()` has been deprecated. Use `craft.app.request.userIP` instead.');
 
         return Craft::$app->getRequest()->getUserIP();
     }
@@ -468,7 +465,7 @@ class Request
      */
     public function getIpAddress()
     {
-        Craft::$app->getDeprecator()->log('craft.request.getIpAddress()', 'craft.request.getIpAddress() has been deprecated. Use craft.app.request.userIP instead.');
+        Craft::$app->getDeprecator()->log('craft.request.getIpAddress()', '`craft.request.getIpAddress()` has been deprecated. Use `craft.app.request.userIP` instead.');
 
         return Craft::$app->getRequest()->getUserIP();
     }
@@ -481,7 +478,7 @@ class Request
      */
     public function getClientOs(): string
     {
-        Craft::$app->getDeprecator()->log('craft.request.getClientOs()', 'craft.request.getClientOs() has been deprecated. Use craft.app.request.clientOs instead.');
+        Craft::$app->getDeprecator()->log('craft.request.getClientOs()', '`craft.request.getClientOs()` has been deprecated. Use `craft.app.request.clientOs` instead.');
 
         return Craft::$app->getRequest()->getClientOs();
     }

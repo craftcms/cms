@@ -10,9 +10,6 @@ use craft\db\Table;
  */
 class m150403_184533_field_version extends Migration
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

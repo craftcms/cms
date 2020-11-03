@@ -19,9 +19,6 @@ use yii\base\Event;
  */
 class GetAssetThumbUrlEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var Asset The Asset which the thumbnail should be for.
      */

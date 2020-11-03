@@ -18,6 +18,7 @@ use craft\web\AssetBundle;
  */
 class VendorAsset extends AssetBundle
 {
+    /** @inheritdoc */
     public $depends = [
         GraphiqlAsset::class,
     ];

@@ -19,24 +19,28 @@ class UpdatesAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public function init()
-    {
-        $this->sourcePath = __DIR__ . '/dist';
+    public $sourcePath = __DIR__ . '/dist';
 
-        $this->depends = [
-            CpAsset::class,
-        ];
+    /**
+     * @inheritdoc
+     */
+    public $depends = [
+        CpAsset::class,
+    ];
 
-        $this->css = [
-            'updates.css',
-        ];
+    /**
+     * @inheritdoc
+     */
+    public $css = [
+        'updates.css',
+    ];
 
-        $this->js = [
-            'UpdatesUtility' . $this->dotJs(),
-        ];
-
-        parent::init();
-    }
+    /**
+     * @inheritdoc
+     */
+    public $js = [
+        'UpdatesUtility.min.js',
+    ];
 
     /**
      * @inheritdoc

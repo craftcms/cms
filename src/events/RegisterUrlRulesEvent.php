@@ -17,9 +17,6 @@ use yii\base\Event;
  */
 class RegisterUrlRulesEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var array The registered URL rules.
      */

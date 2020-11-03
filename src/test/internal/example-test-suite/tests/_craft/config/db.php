@@ -1,12 +1,11 @@
 <?php
 
+use craft\helpers\App;
+
 return [
-    'password' => getenv('DB_PASSWORD'),
-    'user' => getenv('DB_USER'),
-    'database' => getenv('DB_DATABASE'),
-    'tablePrefix' => getenv('DB_TABLE_PREFIX'),
-    'driver' => getenv('DB_DRIVER'),
-    'port' => getenv('DB_PORT'),
-    'schema' => getenv('DB_SCHEMA'),
-    'server' => getenv('DB_SERVER'),
+    'dsn' => App::env('DB_DSN'),
+    'user' => App::env('DB_USER'),
+    'password' => App::env('DB_PASSWORD'),
+    'schema' => App::env('DB_SCHEMA'),
+    'tablePrefix' => App::env('DB_TABLE_PREFIX'),
 ];

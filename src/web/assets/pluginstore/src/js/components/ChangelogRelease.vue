@@ -18,7 +18,6 @@
         props: ['release'],
 
         computed: {
-
             date() {
                 return Craft.formatDate(this.release.date)
             }
@@ -27,7 +26,7 @@
 </script>
 
 <style lang="scss">
-    @import "../../../../../../../lib/craftcms-sass/mixins";
+    @import "../../../../../../../node_modules/craftcms-sass/mixins";
 
     .changelog-release {
         @apply .pt-2 .pb-4 .border-b .border-grey-light .border-solid;

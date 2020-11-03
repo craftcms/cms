@@ -18,22 +18,26 @@ class RoutesAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public function init()
-    {
-        $this->sourcePath = __DIR__ . '/dist';
+    public $sourcePath = __DIR__ . '/dist';
 
-        $this->depends = [
-            CpAsset::class,
-        ];
+    /**
+     * @inheritdoc
+     */
+    public $depends = [
+        CpAsset::class,
+    ];
 
-        $this->css = [
-            'routes.css',
-        ];
+    /**
+     * @inheritdoc
+     */
+    public $css = [
+        'routes.css',
+    ];
 
-        $this->js = [
-            'routes' . $this->dotJs(),
-        ];
-
-        parent::init();
-    }
+    /**
+     * @inheritdoc
+     */
+    public $js = [
+        'routes.min.js',
+    ];
 }

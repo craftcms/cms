@@ -15,16 +15,23 @@ namespace craft\events;
  */
 class UserGroupsAssignEvent extends CancelableEvent
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null The user ID associated with this event
      */
     public $userId;
 
     /**
-     * @var int[] The user group IDs being assigned to the user
+     * @var int[] All of the user group IDs that the user belongs to now
      */
     public $groupIds;
+
+    /**
+     * @var int[] The user group IDs that are being removed from the user
+     */
+    public $removedGroupIds;
+
+    /**
+     * @var int[] The user group IDs that are being added to the user
+     */
+    public $newGroupIds;
 }

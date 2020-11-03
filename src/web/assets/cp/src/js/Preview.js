@@ -14,24 +14,27 @@ Craft.Preview = Garnish.Base.extend(
         $statusIcon: null,
         $dragHandle: null,
         $previewContainer: null,
+        $iframeContainer: null,
         $targetBtn: null,
         $targetMenu: null,
         $iframe: null,
+        iframeLoaded: false,
         $tempInput: null,
         $fieldPlaceholder: null,
 
         isActive: false,
+        isVisible: false,
         activeTarget: 0,
+        draftId: null,
         url: null,
         fields: null,
 
-        scrollLeft: 0,
-        scrollTop: 0,
+        iframeHeight: null,
+        scrollTop: null,
 
         dragger: null,
         dragStartEditorWidth: null,
 
-        _slideInOnIframeLoad: false,
         _updateIframeProxy: null,
 
         _editorWidth: null,
@@ -90,28 +93,32 @@ Craft.Preview = Garnish.Base.extend(
 
             if (!this.$editor) {
                 this.$shade = $('<div/>', {'class': 'modal-shade dark'}).appendTo(Garnish.$bod);
-                this.$editorContainer = $('<div/>', {'class': 'lp-editor-container'}).appendTo(Garnish.$bod);
                 this.$previewContainer = $('<div/>', {'class': 'lp-preview-container'}).appendTo(Garnish.$bod);
+                this.$editorContainer = $('<div/>', {'class': 'lp-editor-container'}).appendTo(Garnish.$bod);
 
                 var $editorHeader = $('<header/>', {'class': 'flex'}).appendTo(this.$editorContainer);
                 this.$editor = $('<form/>', {'class': 'lp-editor'}).appendTo(this.$editorContainer);
                 this.$dragHandle = $('<div/>', {'class': 'lp-draghandle'}).appendTo(this.$editorContainer);
-                var $closeBtn = $('<div/>', {'class': 'btn', text: Craft.t('app', 'Close Preview')}).appendTo($editorHeader);
+                var $closeBtn = $('<button/>', {
+                    type: 'button',
+                    class: 'btn',
+                    text: Craft.t('app', 'Close Preview'),
+                }).appendTo($editorHeader);
                 $('<div/>', {'class': 'flex-grow'}).appendTo($editorHeader);
                 this.$spinner = $('<div/>', {'class': 'spinner hidden', title: Craft.t('app', 'Saving')}).appendTo($editorHeader);
                 this.$statusIcon = $('<div/>', {'class': 'invisible'}).appendTo($editorHeader);
 
                 if (this.draftEditor.settings.previewTargets.length > 1) {
-                    var $previewHeader = $('<header/>', {'class': 'flex'}).appendTo(this.$previewContainer);
-                    this.$targetBtn = $('<div/>', {
+                    var $previewHeader = $('<header/>', {'class': 'lp-preview-header flex'}).appendTo(this.$previewContainer);
+                    this.$targetBtn = $('<button/>', {
+                        type: 'button',
                         'class': 'btn menubtn',
                         text: this.draftEditor.settings.previewTargets[0].label,
-                        role: 'btn',
                     }).appendTo($previewHeader);
                     this.$targetMenu = $('<div/>', {'class': 'menu lp-target-menu'}).insertAfter(this.$targetBtn);
                     var $ul = $('<ul/>', {'class': 'padded'}).appendTo(this.$targetMenu);
                     var $li, $a;
-                    for (var i = 0; i < this.draftEditor.settings.previewTargets.length; i++) {
+                    for (let i = 0; i < this.draftEditor.settings.previewTargets.length; i++) {
                         $li = $('<li/>').appendTo($ul)
                         $a = $('<a/>', {
                             data: {target: i},
@@ -120,30 +127,32 @@ Craft.Preview = Garnish.Base.extend(
                         }).appendTo($li);
                     }
                     new Garnish.MenuBtn(this.$targetBtn, {
-                        onOptionSelect: $.proxy(function(option) {
+                        onOptionSelect: option => {
                             this.switchTarget($(option).data('target'));
-                        }, this)
+                        },
                     });
                 }
 
+                this.$iframeContainer = $('<div/>', {'class': 'lp-iframe-container'}).appendTo(this.$previewContainer);
+
                 this.dragger = new Garnish.BaseDrag(this.$dragHandle, {
                     axis: Garnish.X_AXIS,
-                    onDragStart: $.proxy(this, '_onDragStart'),
-                    onDrag: $.proxy(this, '_onDrag'),
-                    onDragStop: $.proxy(this, '_onDragStop')
+                    onDragStart: this._onDragStart.bind(this),
+                    onDrag: this._onDrag.bind(this),
+                    onDragStop: this._onDragStop.bind(this),
                 });
 
                 this.addListener($closeBtn, 'click', 'close');
-                this.addListener(this.$statusIcon, 'click', function() {
+                this.addListener(this.$statusIcon, 'click', () => {
                     this.draftEditor.showStatusHud(this.$statusIcon);
-                }.bind(this));
+                });
             }
 
             // Set the sizes
             this.handleWindowResize();
             this.addListener(Garnish.$win, 'resize', 'handleWindowResize');
 
-            this.$editorContainer.css(Craft.left, -(this.editorWidthInPx + Craft.Preview.dragHandleWidth) + 'px');
+            this.$editorContainer.css(Craft.left, -this.editorWidthInPx + 'px');
             this.$previewContainer.css(Craft.right, -this.getIframeWidth());
 
             // Find the fields, excluding nested fields
@@ -156,8 +165,8 @@ Craft.Preview = Garnish.Base.extend(
 
                 // Move all the fields into the editor rather than copying them
                 // so any JS that's referencing the elements won't break.
-                for (var i = 0; i < $fields.length; i++) {
-                    var $field = $($fields[i]),
+                for (let i = 0; i < $fields.length; i++) {
+                    let $field = $($fields[i]),
                         $clone = this._getClone($field);
 
                     // It's important that the actual field is added to the DOM *after* the clone,
@@ -172,15 +181,15 @@ Craft.Preview = Garnish.Base.extend(
                         $clone: $clone
                     });
                 }
-
             }
 
-            this._slideInOnIframeLoad = true;
             this.updateIframe();
 
             this.draftEditor.on('update', this._updateIframeProxy);
             Garnish.on(Craft.BaseElementEditor, 'saveElement', this._updateIframeProxy);
             Garnish.on(Craft.AssetImageEditor, 'save', this._updateIframeProxy);
+
+            Craft.ElementThumbLoader.retryAll();
 
             this.trigger('open');
         },
@@ -191,6 +200,9 @@ Craft.Preview = Garnish.Base.extend(
             this.$targetMenu.find('a.sel').removeClass('sel');
             this.$targetMenu.find('a').eq(i).addClass('sel');
             this.updateIframe(true);
+            this.trigger('switchTarget', {
+                previewTarget: this.draftEditor.settings.previewTargets[i],
+            });
         },
 
         handleWindowResize: function() {
@@ -202,25 +214,31 @@ Craft.Preview = Garnish.Base.extend(
         },
 
         slideIn: function() {
+            if (!this.isActive || this.isVisible) {
+                return;
+            }
+
             $('html').addClass('noscroll');
             this.$shade.velocity('fadeIn');
 
-            this.$editorContainer.show().velocity('stop').animateLeft(0, 'slow', $.proxy(function() {
+            this.$editorContainer.show().velocity('stop').animateLeft(0, 'slow', () => {
                 this.trigger('slideIn');
                 Garnish.$win.trigger('resize');
-            }, this));
+            });
 
-            this.$previewContainer.show().velocity('stop').animateRight(0, 'slow', $.proxy(function() {
+            this.$previewContainer.show().velocity('stop').animateRight(0, 'slow', () => {
                 this.addListener(Garnish.$bod, 'keyup', function(ev) {
                     if (ev.keyCode === Garnish.ESC_KEY) {
                         this.close();
                     }
                 });
-            }, this));
+            });
+
+            this.isVisible = true;
         },
 
         close: function() {
-            if (!this.isActive) {
+            if (!this.isActive || !this.isVisible) {
                 return;
             }
 
@@ -237,23 +255,26 @@ Craft.Preview = Garnish.Base.extend(
 
             this.$shade.delay(200).velocity('fadeOut');
 
-            this.$editorContainer.velocity('stop').animateLeft(-(this.editorWidthInPx + Craft.Preview.dragHandleWidth), 'slow', $.proxy(function() {
+            this.$editorContainer.velocity('stop').animateLeft(-this.editorWidthInPx, 'slow', () => {
                 for (var i = 0; i < this.fields.length; i++) {
                     this.fields[i].$newClone.remove();
                 }
                 this.$editorContainer.hide();
                 this.trigger('slideOut');
-            }, this));
+            });
 
-            this.$previewContainer.velocity('stop').animateRight(-this.getIframeWidth(), 'slow', $.proxy(function() {
+            this.$previewContainer.velocity('stop').animateRight(-this.getIframeWidth(), 'slow', () => {
                 this.$previewContainer.hide();
-            }, this));
+            });
 
             this.draftEditor.off('update', this._updateIframeProxy);
             Garnish.off(Craft.BaseElementEditor, 'saveElement', this._updateIframeProxy);
             Garnish.off(Craft.AssetImageEditor, 'save', this._updateIframeProxy);
 
+            Craft.ElementThumbLoader.retryAll();
+
             this.isActive = false;
+            this.isVisible = false;
             this.trigger('close');
         },
 
@@ -274,12 +295,16 @@ Craft.Preview = Garnish.Base.extend(
         },
 
         getIframeWidth: function() {
-            return Garnish.$win.width() - (this.editorWidthInPx + Craft.Preview.dragHandleWidth);
+            return Garnish.$win.width() - this.editorWidthInPx;
         },
 
         updateWidths: function() {
             this.$editorContainer.css('width', this.editorWidthInPx + 'px');
             this.$previewContainer.width(this.getIframeWidth());
+        },
+
+        _useIframeResizer: function() {
+            return Craft.previewIframeResizerOptions !== false;
         },
 
         updateIframe: function(resetScroll) {
@@ -290,22 +315,45 @@ Craft.Preview = Garnish.Base.extend(
             // Ignore non-boolean resetScroll values
             resetScroll = resetScroll === true;
 
-            var url = this.draftEditor.settings.previewTargets[this.activeTarget].url;
+            var target = this.draftEditor.settings.previewTargets[this.activeTarget];
+            var refresh = !!(
+                this.draftId !== (this.draftId = this.draftEditor.settings.draftId) ||
+                !this.$iframe ||
+                resetScroll ||
+                typeof target.refresh === 'undefined' ||
+                target.refresh
+            );
 
-            this.draftEditor.getTokenizedPreviewUrl(url, 'x-craft-live-preview').then(function(url) {
-                // Capture the current scroll position?
-                var sameHost;
+            this.trigger('beforeUpdateIframe', {
+                previewTarget: target,
+                resetScroll: resetScroll,
+                refresh: refresh,
+            });
+
+            // If this is an existing preview target, make sure it wants to be refreshed automatically
+            if (!refresh) {
+                this.slideIn();
+                return;
+            }
+
+            this.draftEditor.getTokenizedPreviewUrl(target.url, 'x-craft-live-preview').then(url => {
+                // Maintain the current scroll position?
+                let sameHost;
                 if (resetScroll) {
-                    this.scrollLeft = 0;
-                    this.scrolllTop = 0;
-                } else {
-                    sameHost = Craft.isSameHost(url);
-                    if (sameHost && this.$iframe && this.$iframe[0].contentWindow) {
-                        var $doc = $(this.$iframe[0].contentWindow.document);
-                        this.scrollLeft = $doc.scrollLeft();
-                        this.scrollTop = $doc.scrollTop();
+                    this.scrollTop = null;
+                } else if (this.iframeLoaded && this.$iframe) {
+                    if (this._useIframeResizer()) {
+                        this.iframeHeight = this.$iframe.height();
+                        this.scrollTop = this.$iframeContainer.scrollTop();
+                    } else {
+                        sameHost = Craft.isSameHost(url);
+                        if (sameHost && this.$iframe[0].contentWindow) {
+                            this.scrollTop = $(this.$iframe[0].contentWindow.document).scrollTop();
+                        }
                     }
                 }
+
+                this.iframeLoaded = false;
 
                 var $iframe = $('<iframe/>', {
                     'class': 'lp-preview',
@@ -313,33 +361,49 @@ Craft.Preview = Garnish.Base.extend(
                     src: url,
                 });
 
-                if (!resetScroll && sameHost) {
-                    $iframe.on('load', function() {
-                        var $doc = $($iframe[0].contentWindow.document);
-                        $doc.scrollLeft(this.scrollLeft);
-                        $doc.scrollTop(this.scrollTop);
-                    }.bind(this));
-                }
-
                 if (this.$iframe) {
                     this.$iframe.replaceWith($iframe);
                 } else {
-                    $iframe.appendTo(this.$previewContainer);
+                    $iframe.appendTo(this.$iframeContainer);
+                }
+
+                // Keep the iframe height consistent with its content
+                if (this._useIframeResizer()) {
+                    if (!resetScroll && this.iframeHeight !== null) {
+                        $iframe.height(this.iframeHeight);
+                        this.$iframeContainer.scrollTop(this.scrollTop);
+                    }
+
+                    iFrameResize($.extend({
+                        checkOrigin: false,
+                        // Allow iframe scrolling until we've successfully initialized the resizer
+                        scrolling: true,
+                        onInit: iframe => {
+                            this.iframeLoaded = true;
+                            this.iframeHeight = null;
+                            this.scrollTop = null;
+                            iframe.scrolling = 'no';
+                        },
+                    }, Craft.previewIframeResizerOptions || {}), $iframe[0]);
+                } else {
+                    $iframe.on('load', () => {
+                        this.iframeLoaded = true;
+                        if (!resetScroll && sameHost && this.scrollTop !== null) {
+                            $($iframe[0].contentWindow.document).scrollTop(this.scrollTop);
+                        }
+                    });
                 }
 
                 this.url = url;
                 this.$iframe = $iframe;
-                this.afterUpdateIframe();
-            }.bind(this));
-        },
 
-        afterUpdateIframe: function() {
-            this.trigger('afterUpdateIframe');
+                this.trigger('afterUpdateIframe', {
+                    previewTarget: this.draftEditor.settings.previewTargets[this.activeTarget],
+                    $iframe: this.$iframe,
+                });
 
-            if (this._slideInOnIframeLoad) {
                 this.slideIn();
-                this._slideInOnIframeLoad = false;
-            }
+            });
         },
 
         _getClone: function($field) {
@@ -381,5 +445,4 @@ Craft.Preview = Garnish.Base.extend(
     {
         defaultEditorWidth: 0.33,
         minEditorWidthInPx: 320,
-        dragHandleWidth: 2,
     });

@@ -8,18 +8,23 @@
 namespace craft\fields;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\fields\data\ColorData;
+use craft\gql\GqlEntityRegistry;
 use craft\gql\types\generators\TableRowType as TableRowTypeGenerator;
+use craft\gql\types\TableRow;
 use craft\helpers\DateTimeHelper;
+use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\validators\ColorValidator;
+use craft\validators\HandleValidator;
 use craft\validators\UrlValidator;
 use craft\web\assets\tablesettings\TableSettingsAsset;
 use craft\web\assets\timepicker\TimepickerAsset;
+use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
+use LitEmoji\LitEmoji;
 use yii\db\Schema;
 use yii\validators\EmailValidator;
 
@@ -31,9 +36,6 @@ use yii\validators\EmailValidator;
  */
 class Table extends Field
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -49,9 +51,6 @@ class Table extends Field
     {
         return 'array|null';
     }
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var string|null Custom add row button label
@@ -89,9 +88,6 @@ class Table extends Field
      */
     public $columnType = Schema::TYPE_TEXT;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -107,6 +103,12 @@ class Table extends Field
             $this->columns = [];
         } else {
             foreach ($this->columns as $colId => &$column) {
+                // If the column doesn't specify a type, then it probably wasn't meant to be submitted
+                if (!isset($column['type'])) {
+                    unset($this->columns[$colId]);
+                    continue;
+                }
+
                 if ($column['type'] === 'select') {
                     if (!isset($column['options'])) {
                         $column['options'] = [];
@@ -144,9 +146,9 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['minRows'], 'compare', 'compareAttribute' => 'maxRows', 'operator' => '<=', 'type' => 'number', 'when' => [$this, 'hasMaxRows']];
         $rules[] = [['maxRows'], 'compare', 'compareAttribute' => 'minRows', 'operator' => '>=', 'type' => 'number', 'when' => [$this, 'hasMinRows']];
         $rules[] = [['minRows', 'maxRows'], 'integer', 'min' => 0];
@@ -159,20 +161,28 @@ class Table extends Field
      */
     public function validateColumns()
     {
-        $hasErrors = false;
         foreach ($this->columns as &$col) {
-            if ($col['handle'] && preg_match('/^col\d+$/', $col['handle'])) {
-                $col['handle'] = [
-                    'value' => $col['handle'],
-                    'hasErrors' => true,
-                ];
-                $hasErrors = true;
+            if ($col['handle']) {
+                $error = null;
+
+                if (!preg_match('/^' . HandleValidator::$handlePattern . '$/', $col['handle'])) {
+                    $error = Craft::t('app', '“{handle}” isn’t a valid handle.', [
+                        'handle' => $col['handle'],
+                    ]);
+                } else if (preg_match('/^col\d+$/', $col['handle'])) {
+                    $error = Craft::t('app', 'Column handles can’t be in the format “{format}”.', [
+                        'format' => 'colX',
+                    ]);
+                }
+
+                if ($error) {
+                    $col['handle'] = [
+                        'value' => $col['handle'],
+                        'hasErrors' => true,
+                    ];
+                    $this->addError('columns', $error);
+                }
             }
-        }
-        if ($hasErrors) {
-            $this->addError('columns', Craft::t('app', 'Column handles can’t be in the format “{format}”.', [
-                'format' => 'colX',
-            ]));
         }
     }
 
@@ -296,6 +306,7 @@ class Table extends Field
         $columnsField = $view->renderTemplate('_components/fieldtypes/Table/columntable', [
             'cols' => $columnSettings,
             'rows' => $this->columns,
+            'errors' => $this->getErrors('columns'),
         ]);
 
         $defaultsField = $view->renderTemplateMacro('_includes/forms', 'editableTableField', [
@@ -307,7 +318,6 @@ class Table extends Field
                 'cols' => $this->columns,
                 'rows' => $this->defaults,
                 'initJs' => false,
-                'errors' => $this->getErrors('columns'),
             ]
         ]);
 
@@ -321,7 +331,7 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml($value, ElementInterface $element = null): string
     {
         Craft::$app->getView()->registerAssetBundle(TimepickerAsset::class);
         return $this->_getInputHtml($value, $element, false);
@@ -342,12 +352,16 @@ class Table extends Field
      */
     public function validateTableData(ElementInterface $element)
     {
-        /** @var Element $element */
         $value = $element->getFieldValue($this->handle);
 
         if (!empty($value) && !empty($this->columns)) {
-            foreach ($value as $row) {
+            foreach ($value as &$row) {
                 foreach ($this->columns as $colId => $col) {
+                    if (is_string($row[$colId])) {
+                        // Trim the value before validating
+                        $row[$colId] = trim($row[$colId]);
+                    }
+
                     if (!$this->_validateCellValue($col['type'], $row[$colId], $error)) {
                         $element->addError($this->handle, $error);
                     }
@@ -374,9 +388,17 @@ class Table extends Field
         // Normalize the values and make them accessible from both the col IDs and the handles
         foreach ($value as &$row) {
             foreach ($this->columns as $colId => $col) {
-                $row[$colId] = $this->_normalizeCellValue($col['type'], $row[$colId] ?? null);
-                if ($col['handle'] && !isset($this->columns[$col['handle']])) {
-                    $row[$col['handle']] = $row[$colId];
+                if (array_key_exists($colId, $row)) {
+                    $cellValue = $row[$colId];
+                } else if ($col['handle'] && array_key_exists($col['handle'], $row)) {
+                    $cellValue = $row[$col['handle']];
+                } else {
+                    $cellValue = null;
+                }
+                $cellValue = $this->_normalizeCellValue($col['type'], $cellValue);
+                $row[$colId] = $cellValue;
+                if ($col['handle']) {
+                    $row[$col['handle']] = $cellValue;
                 }
             }
         }
@@ -398,7 +420,13 @@ class Table extends Field
         foreach ($value as $row) {
             $serializedRow = [];
             foreach (array_keys($this->columns) as $colId) {
-                $serializedRow[$colId] = parent::serializeValue($row[$colId] ?? null);
+                $value = $row[$colId];
+
+                if (is_string($value) && in_array($this->columns[$colId]['type'], ['singleline', 'multiline'], true)) {
+                    $value = LitEmoji::unicodeToShortcode($value);
+                }
+
+                $serializedRow[$colId] = parent::serializeValue($value ?? null);
             }
             $serialized[] = $serializedRow;
         }
@@ -420,12 +448,33 @@ class Table extends Field
      */
     public function getContentGqlType()
     {
-        $typeArray = TableRowTypeGenerator::generateTypes($this);
-        return Type::listOf(array_pop($typeArray));
+        $type = TableRowTypeGenerator::generateType($this);
+        return Type::listOf($type);
     }
 
-    // Private Methods
-    // =========================================================================
+    /**
+     * @inheritdoc
+     * @since 3.5.0
+     */
+    public function getContentGqlMutationArgumentType()
+    {
+        $typeName = $this->handle . '_TableRowInput';
+
+        if ($argumentType = GqlEntityRegistry::getEntity($typeName)) {
+            return $argumentType;
+        }
+
+        $contentFields = TableRow::prepareRowFieldDefinition($this->columns, $typeName, false);
+
+        $argumentType = GqlEntityRegistry::createEntity($typeName, new InputObjectType([
+            'name' => $typeName,
+            'fields' => function() use ($contentFields) {
+                return $contentFields;
+            }
+        ]));
+
+        return Type::listOf($argumentType);
+    }
 
     /**
      * Normalizes a cell’s value.
@@ -459,6 +508,12 @@ class Table extends Field
 
                 return new ColorData($value);
 
+            case 'multiline':
+            case 'singleline':
+                if ($value !== null) {
+                    $value = LitEmoji::shortcodeToUnicode($value);
+                    return trim(preg_replace('/\R/u', "\n", $value));
+                }
             case 'date':
             case 'time':
                 return DateTimeHelper::toDateTime($value) ?: null;
@@ -512,7 +567,6 @@ class Table extends Field
      */
     private function _getInputHtml($value, ElementInterface $element = null, bool $static): string
     {
-        /** @var Element $element */
         if (empty($this->columns)) {
             return '';
         }
@@ -551,11 +605,8 @@ class Table extends Field
             }
         }
 
-        $view = Craft::$app->getView();
-        $id = $view->formatInputId($this->handle);
-
-        return $view->renderTemplate('_includes/forms/editableTable', [
-            'id' => $id,
+        return Craft::$app->getView()->renderTemplate('_includes/forms/editableTable', [
+            'id' => Html::id($this->handle),
             'name' => $this->handle,
             'cols' => $this->columns,
             'rows' => $value,

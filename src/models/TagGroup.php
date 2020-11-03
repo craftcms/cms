@@ -10,7 +10,10 @@ namespace craft\models;
 use Craft;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
+use craft\db\Table;
 use craft\elements\Tag;
+use craft\helpers\Db;
+use craft\helpers\StringHelper;
 use craft\records\TagGroup as TagGroupRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
@@ -24,9 +27,6 @@ use craft\validators\UniqueValidator;
  */
 class TagGroup extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null ID
      */
@@ -52,20 +52,17 @@ class TagGroup extends Model
      */
     public $uid;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
     public function behaviors()
     {
-        return [
-            'fieldLayout' => [
-                'class' => FieldLayoutBehavior::class,
-                'elementType' => Tag::class
-            ],
+        $behaviors = parent::behaviors();
+        $behaviors['fieldLayout'] = [
+            'class' => FieldLayoutBehavior::class,
+            'elementType' => Tag::class,
         ];
+        return $behaviors;
     }
 
     /**
@@ -82,9 +79,9 @@ class TagGroup extends Model
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['id', 'fieldLayoutId'], 'number', 'integerOnly' => true];
         $rules[] = [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']];
         $rules[] = [['name', 'handle'], UniqueValidator::class, 'targetClass' => TagGroupRecord::class];
@@ -101,5 +98,32 @@ class TagGroup extends Model
     public function __toString(): string
     {
         return Craft::t('site', $this->name) ?: static::class;
+    }
+
+    /**
+     * Returns the field layout config for this tag group.
+     *
+     * @return array
+     * @since 3.5.0
+     */
+    public function getConfig(): array
+    {
+        $config = [
+            'name' => $this->name,
+            'handle' => $this->handle,
+        ];
+
+        $fieldLayout = $this->getFieldLayout();
+
+        if ($fieldLayoutConfig = $fieldLayout->getConfig()) {
+            if (!$fieldLayout->uid) {
+                $fieldLayout->uid = $fieldLayout->id ? Db::uidById(Table::FIELDLAYOUTS, $fieldLayout->id) : StringHelper::UUID();
+            }
+            $config['fieldLayouts'] = [
+                $fieldLayout->uid => $fieldLayoutConfig,
+            ];
+        }
+
+        return $config;
     }
 }

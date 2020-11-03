@@ -57,6 +57,15 @@
         required: true
     }) }}
 
+    {{ forms.textareaField({
+        label: 'Description'|t('app'),
+        id: 'description',
+        class: 'nicetext',
+        name: 'description',
+        value: group.description ?? null,
+        errors: (group is defined ? group.getErrors('description') : null),
+    }) }}
+
     <hr>
 
     <h2>{{ "Permissions"|t('app') }}</h2>

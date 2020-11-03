@@ -16,7 +16,7 @@ use craft\search\SearchQueryTermGroup;
  * Unit tests for SearchTest
  *
  * Searching and some of the commands run in this test are documented here:
- * https://docs.craftcms.com/v3/searching.html#supported-syntaxes
+ * https://craftcms.com/docs/3.x/searching.html
  *
  * @todo There are MySQL and PostgreSQL specific search tests that need to be performed.
  *
@@ -26,9 +26,6 @@ use craft\search\SearchQueryTermGroup;
  */
 class SearchQueryTest extends Unit
 {
-    // Constants
-    // =========================================================================
-
     const DEFAULT_SEARCH_QUERY_TERM_CONFIG = [
         'exclude' => false,
         'exact' => false,
@@ -37,9 +34,6 @@ class SearchQueryTest extends Unit
         'attribute' => null,
         'phrase' => null
     ];
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @param $token
@@ -98,13 +92,10 @@ class SearchQueryTest extends Unit
      */
     public function ensureIdenticalSearchTermObjects(SearchQueryTerm $one, SearchQueryTerm $two)
     {
-        $this->assertSame([
+        self::assertSame([
             $one->exclude, $one->exact, $one->subLeft, $one->subRight, $one->attribute, $one->term, $one->phrase
         ], [$two->exclude, $two->exact, $two->subLeft, $two->subRight, $two->attribute, $two->term, $two->phrase]);
     }
-
-    // Tests
-    // =========================================================================
 
     /**
      *
@@ -118,7 +109,7 @@ class SearchQueryTest extends Unit
 
         $this->ensureIdenticalSearchTermObjects(new SearchQueryTerm($options), $search->getTokens()[0]);
 
-        $this->assertInstanceOf(SearchQueryTermGroup::class, $search->getTokens()[1]);
+        self::assertInstanceOf(SearchQueryTermGroup::class, $search->getTokens()[1]);
 
         $options['term'] = 'live';
         $this->ensureIdenticalSearchTermObjects(new SearchQueryTerm($options), $search->getTokens()[1]->terms[0]);
@@ -133,7 +124,7 @@ class SearchQueryTest extends Unit
     public function testOnlyOr()
     {
         $search = new SearchQuery('OR');
-        $this->assertSame([], $search->getTokens());
+        self::assertSame([], $search->getTokens());
     }
 
     /*
@@ -168,8 +159,8 @@ class SearchQueryTest extends Unit
     {
         $search = new SearchQuery('search');
 
-        $this->assertSame('search', $search->getQuery());
-        $this->assertInstanceOf(SearchQueryTerm::class, $search->getTokens()[0]);
+        self::assertSame('search', $search->getQuery());
+        self::assertInstanceOf(SearchQueryTerm::class, $search->getTokens()[0]);
 
         $searchDefaults = new SearchQueryTerm([
             'exclude' => false,
@@ -199,7 +190,7 @@ class SearchQueryTest extends Unit
 
         // If we have to count the array. Count the array.
         if ($sizeOfArray !== null) {
-            $this->assertCount($sizeOfArray, $search->getTokens());
+            self::assertCount($sizeOfArray, $search->getTokens());
         }
 
         // Loop through the given tokens.
@@ -226,9 +217,6 @@ class SearchQueryTest extends Unit
             $this->ensureIdenticalSearchTermObjects($fromExplodedString, $token);
         }
     }
-
-    // Data Providers
-    // =========================================================================
 
     /**
      *

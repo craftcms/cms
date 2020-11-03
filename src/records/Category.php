@@ -23,9 +23,6 @@ use yii\db\ActiveQueryInterface;
  */
 class Category extends ActiveRecord
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      * @return string

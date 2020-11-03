@@ -19,9 +19,6 @@ use yii\base\Event;
  */
 class GetAssetUrlEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var AssetTransform|string|array|null Asset transform index that is being generated (if any)
      */

@@ -17,9 +17,6 @@ use yii\base\Event;
  */
 class DefineConsoleActionsEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var array The additional actions that should be available to console controllers.
      *

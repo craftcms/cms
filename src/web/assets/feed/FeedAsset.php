@@ -18,18 +18,19 @@ class FeedAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public function init()
-    {
-        $this->sourcePath = __DIR__ . '/dist';
+    public $sourcePath = __DIR__ . '/dist';
 
-        $this->depends = [
-            CpAsset::class,
-        ];
+    /**
+     * @inheritdoc
+     */
+    public $depends = [
+        CpAsset::class,
+    ];
 
-        $this->js = [
-            'FeedWidget' . $this->dotJs(),
-        ];
-
-        parent::init();
-    }
+    /**
+     * @inheritdoc
+     */
+    public $js = [
+        'FeedWidget.min.js',
+    ];
 }

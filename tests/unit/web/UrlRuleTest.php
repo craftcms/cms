@@ -19,19 +19,13 @@ use craft\web\UrlRule;
  */
 class UrlRuleTest extends Unit
 {
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
-
     /**
      *
      */
     public function testUrlRule()
     {
         $rule = new UrlRule(['template' => 'templates/index', 'pattern' => '{handle}', 'variables' => ['2', '22']]);
-        $this->assertSame('templates/render', $rule->route);
-        $this->assertSame(['template' => 'templates/index', 'variables' => ['2', '22']], $rule->params);
+        self::assertSame('templates/render', $rule->route);
+        self::assertSame(['template' => 'templates/index', 'variables' => ['2', '22']], $rule->params);
     }
 }

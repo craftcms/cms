@@ -93,11 +93,18 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
                     }
 
                     if (this.editableGroups.length > 1) {
-                        $menuBtn = $('<div class="btn submit menubtn"></div>').appendTo(this.$newCategoryBtnGroup);
+                        $menuBtn = $('<button/>', {
+                            type: 'button',
+                            class: 'btn submit menubtn',
+                        }).appendTo(this.$newCategoryBtnGroup);
                     }
                 }
                 else {
-                    this.$newCategoryBtn = $menuBtn = $('<div class="btn submit add icon menubtn">' + Craft.t('app', 'New category') + '</div>').appendTo(this.$newCategoryBtnGroup);
+                    this.$newCategoryBtn = $menuBtn = $('<button/>', {
+                        type: 'button',
+                        class: 'btn submit add icon menubtn',
+                        text: Craft.t('app', 'New category'),
+                    }).appendTo(this.$newCategoryBtnGroup);
                 }
 
                 if ($menuBtn) {
@@ -109,7 +116,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
                         if (this.settings.context === 'index' || group !== selectedGroup) {
                             href = this._getGroupTriggerHref(group);
                             label = (this.settings.context === 'index' ? group.name : Craft.t('app', 'New {group} category', {group: group.name}));
-                            menuHtml += '<li><a ' + href + '">' + Craft.escapeHtml(label) + '</a></li>';
+                            menuHtml += '<li><a ' + href + '>' + Craft.escapeHtml(label) + '</a></li>';
                         }
                     }
 
@@ -184,7 +191,6 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
 
             Craft.createElementEditor(this.elementType, {
                 hudTrigger: this.$newCategoryBtnGroup,
-                elementType: 'craft\\elements\\Category',
                 siteId: this.siteId,
                 attributes: {
                     groupId: groupId

@@ -17,9 +17,6 @@ namespace craft\enums;
  */
 abstract class PluginUpdateStatus
 {
-    // Constants
-    // =========================================================================
-
     const UpToDate = 'UpToDate';
     const UpdateAvailable = 'UpdateAvailable';
     const Deleted = 'Deleted';

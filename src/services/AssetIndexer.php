@@ -4,7 +4,6 @@ namespace craft\services;
 
 use Craft;
 use craft\base\LocalVolumeInterface;
-use craft\base\Volume;
 use craft\base\VolumeInterface;
 use craft\db\Query;
 use craft\db\Table;
@@ -36,9 +35,6 @@ use yii\base\Exception;
  */
 class AssetIndexer extends Component
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Returns a unique indexing session id.
      *
@@ -60,7 +56,6 @@ class AssetIndexer extends Component
     public function prepareIndexList(string $sessionId, int $volumeId, string $directory = ''): array
     {
         try {
-            /** @var Volume $volume */
             $volume = Craft::$app->getVolumes()->getVolumeById($volumeId);
 
             // Get the file list.
@@ -92,13 +87,16 @@ class AssetIndexer extends Component
             // Compile a list of missing folders.
             $missingFolders = [];
 
-            $allFolders = $assets->findFolders(
-                [
-                    'volumeId' => $volumeId
-                ]);
+            $folderCriteria = [
+                'volumeId' => $volumeId,
+            ];
+
+            $allFolders = $assets->findFolders($folderCriteria);
+
+            $normalizedDir = !empty($directory) ? rtrim($directory, '/') . '/' : '';
 
             foreach ($allFolders as $folderModel) {
-                if (!isset($indexedFolderIds[$folderModel->id])) {
+                if (!isset($indexedFolderIds[$folderModel->id]) && $folderModel->path !== $normalizedDir && StringHelper::startsWith($folderModel->path, $normalizedDir)) {
                     $missingFolders[$folderModel->id] = $volume->name . '/' . $folderModel->path;
                 }
             }
@@ -163,14 +161,21 @@ class AssetIndexer extends Component
     public function extractSkippedItemsFromIndexList(array &$indexList): array
     {
         $isMysql = Craft::$app->getDb()->getIsMysql();
+        $allowedExtensions = Craft::$app->getConfig()->getGeneral()->allowedFileExtensions;
 
-        $skippedItems = array_filter($indexList, function($entry) use ($isMysql) {
+        $skippedItems = array_filter($indexList, function($entry) use ($isMysql, $allowedExtensions) {
             if (preg_match(AssetsHelper::INDEX_SKIP_ITEMS_PATTERN, $entry['basename'])) {
                 return true;
             }
+
             if ($isMysql && StringHelper::containsMb4($entry['basename'])) {
                 return true;
             }
+
+            if (isset($entry['extension']) && !in_array(strtolower($entry['extension']), $allowedExtensions, true)) {
+                return true;
+            }
+
             return false;
         });
 
@@ -212,12 +217,7 @@ class AssetIndexer extends Component
             $values[] = [$volumeId, $sessionId, $entry['path'], $entry['size'], Db::prepareDateForDb(new \DateTime('@' . $entry['timestamp'])), false, false];
         }
 
-        Craft::$app->getDb()->createCommand()
-            ->batchInsert(
-                Table::ASSETINDEXDATA,
-                $attributes,
-                $values)
-            ->execute();
+        Db::batchInsert(Table::ASSETINDEXDATA, $attributes, $values);
     }
 
     /**
@@ -301,13 +301,9 @@ class AssetIndexer extends Component
     {
         // Only allow a few fields to be updated.
         $data = array_intersect_key($data, array_flip(['inProgress', 'completed', 'recordId']));
-
-        Craft::$app->getDb()->createCommand()
-            ->update(
-                Table::ASSETINDEXDATA,
-                $data,
-                ['id' => $entryId])
-            ->execute();
+        Db::update(Table::ASSETINDEXDATA, $data, [
+            'id' => $entryId,
+        ]);
     }
 
 
@@ -348,10 +344,10 @@ class AssetIndexer extends Component
         $processedFiles = array_flip($processedFiles);
         $assets = (new Query())
             ->select(['fi.volumeId', 'fi.id AS assetId', 'fi.filename', 'fo.path', 's.name AS volumeName'])
-            ->from(['{{%assets}} fi'])
-            ->innerJoin('{{%volumefolders}} fo', '[[fi.folderId]] = [[fo.id]]')
-            ->innerJoin('{{%volumes}} s', '[[s.id]] = [[fi.volumeId]]')
-            ->innerJoin('{{%elements}} e', '[[e.id]] = [[fi.id]]')
+            ->from(['fi' => Table::ASSETS])
+            ->innerJoin(['fo' => Table::VOLUMEFOLDERS], '[[fo.id]] = [[fi.folderId]]')
+            ->innerJoin(['s' => Table::VOLUMES], '[[s.id]] = [[fi.volumeId]]')
+            ->innerJoin(['e' => Table::ELEMENTS], '[[e.id]] = [[fi.id]]')
             ->where(['fi.volumeId' => $volumeIds])
             ->andWhere(['e.dateDeleted' => null])
             ->all();
@@ -368,7 +364,7 @@ class AssetIndexer extends Component
     /**
      * Index a single file by Volume and path.
      *
-     * @param Volume $volume
+     * @param VolumeInterface $volume
      * @param string $path
      * @param string $sessionId optional indexing session id.
      * @param bool $cacheImages Whether remotely-stored images should be downloaded and stored locally, to speed up transform generation.
@@ -377,7 +373,7 @@ class AssetIndexer extends Component
      * @throws MissingAssetException if the asset record doesn't exist and $createIfMissing is false
      * @throws VolumeObjectNotFoundException If the file to be indexed cannot be found.
      */
-    public function indexFile(Volume $volume, string $path, string $sessionId = '', bool $cacheImages = false, bool $createIfMissing = true)
+    public function indexFile(VolumeInterface $volume, string $path, string $sessionId = '', bool $cacheImages = false, bool $createIfMissing = true)
     {
         $fileInfo = $volume->getFileMetadata($path);
         $folderPath = dirname($path);
@@ -408,6 +404,7 @@ class AssetIndexer extends Component
      * @return bool|Asset
      * @throws MissingAssetException if the asset record doesn't exist and $createIfMissing is false
      * @throws VolumeObjectNotFoundException If the file to be indexed cannot be found.
+     * @throws AssetDisallowedExtensionException If the file being indexed has a disallowed extension
      */
     public function indexFileByEntry(AssetIndexData $indexEntry, bool $cacheImages = false, bool $createIfMissing = true)
     {
@@ -415,22 +412,50 @@ class AssetIndexer extends Component
         $indexEntry->completed = false;
         $recordData = $indexEntry->toArray();
 
-        // For some reason Postgres chokes if we don't do that.
-        unset($recordData['id']);
-
         $record = new AssetIndexDataRecord($recordData);
         $record->save();
 
         $indexEntry->id = $record->id;
 
-        $asset = $this->_indexFileByIndexData($indexEntry, $createIfMissing, $cacheImages);
-        $this->updateIndexEntry($indexEntry->id, ['completed' => true, 'inProgress' => false, 'recordId' => $asset->id]);
-
+        try {
+            $asset = $this->_indexFileByIndexData($indexEntry, $createIfMissing, $cacheImages);
+            $this->updateIndexEntry($indexEntry->id, ['completed' => true, 'inProgress' => false, 'recordId' => $asset->id]);
+        } catch (AssetDisallowedExtensionException $exception) {
+            $this->updateIndexEntry($indexEntry->id, ['completed' => true, 'inProgress' => false]);
+            throw $exception;
+        }
         return $asset;
     }
 
-    // Private Methods
-    // =========================================================================
+    /**
+     * Clean up stale asset indexing data. Stale indexing data is all session data for sessions that have all the recordIds set.
+     *
+     * @throws \yii\db\Exception
+     */
+    public function deleteStaleIndexingData()
+    {
+        // Clean up stale indexing data (all sessions that have all recordIds set)
+        $sessionsInProgress = (new Query())
+            ->select(['sessionId'])
+            ->from([Table::ASSETINDEXDATA])
+            ->where(['completed' => false])
+            ->groupBy(['sessionId'])
+            ->column();
+
+        $db = Craft::$app->getDb();
+
+        if (empty($sessionsInProgress)) {
+            $db->createCommand()
+                ->delete(Table::ASSETINDEXDATA)
+                ->execute();
+        } else {
+            $db->createCommand()
+                ->delete(
+                    Table::ASSETINDEXDATA,
+                    ['not', ['sessionId' => $sessionsInProgress]])
+                ->execute();
+        }
+    }
 
     /**
      * Indexes a file.
@@ -468,7 +493,6 @@ class AssetIndexer extends Component
             throw new AssetLogicException("The folder {$path} does not exist");
         }
 
-        /** @var Volume $volume */
         $volume = $folder->getVolume();
 
         // Check if the extension is allowed
@@ -494,7 +518,7 @@ class AssetIndexer extends Component
             }
 
             $asset = new Asset();
-            $asset->volumeId = $volume->id;
+            $asset->setVolumeId($volume->id);
             $asset->folderId = $folderId;
             $asset->folderPath = $folder->path;
             $asset->filename = $filename;

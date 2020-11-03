@@ -21,9 +21,6 @@ use craft\test\Fixture;
  */
 class VolumesFolderFixture extends Fixture
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -38,9 +35,6 @@ class VolumesFolderFixture extends Fixture
      * @inheritdoc
      */
     public $depends = [VolumesFixture::class];
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

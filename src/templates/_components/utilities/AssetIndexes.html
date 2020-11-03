@@ -8,13 +8,13 @@
 
     {{ forms.lightswitchField({
         name: 'cacheImages',
-        label: 'Cache remote images?'|t('app'),
+        label: 'Cache remote images'|t('app'),
         instructions: 'Whether remotely-stored images should be downloaded and stored locally, to speed up transform generation.'|t('app'),
         on: true,
     }) }}
 
     <div class="buttons">
-        <input type="submit" class="btn submit" value="{{ 'Update asset indexes'|t('app') }}" />
+        <button type="submit" class="btn submit">{{ 'Update asset indexes'|t('app') }}</button>
         <div class="utility-status"></div>
     </div>
 </form>

@@ -28,7 +28,7 @@
     {{ forms.textareaField({
         label: "Body"|t('app'),
         id: 'message-body',
-        class: 'message-body code',
+        class: ['message-body', 'code'],
         value: message.body,
         rows: 15
     }) }}
@@ -36,7 +36,7 @@
 
 <footer class="footer">
     <div class="buttons right">
-        <input type="button" class="btn cancel" value="{{ 'Cancel'|t('app') }}">
-        <input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
+        <button type="button" class="btn cancel">{{ 'Cancel'|t('app') }}</button>
+        <button type="submit" class="btn submit">{{ 'Save'|t('app') }}</button>
     </div>
 </footer>

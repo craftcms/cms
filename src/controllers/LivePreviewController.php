@@ -19,7 +19,7 @@ use yii\web\ServerErrorHttpException;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.1.0
- * @deprecated in 3.2
+ * @deprecated in 3.2.0
  */
 class LivePreviewController extends Controller
 {
@@ -35,7 +35,7 @@ class LivePreviewController extends Controller
     {
         // Mark this as a Live Preview request
         if ($action->id === 'preview') {
-            Craft::$app->getRequest()->setIsLivePreview(true);
+            $this->request->setIsLivePreview(true);
         }
 
         return parent::beforeAction($action);
@@ -51,7 +51,7 @@ class LivePreviewController extends Controller
      */
     public function actionCreateToken(): Response
     {
-        $action = Craft::$app->getRequest()->getValidatedBodyParam('previewAction');
+        $action = $this->request->getValidatedBodyParam('previewAction');
 
         if (!$action) {
             throw new BadRequestHttpException('Request missing required body param');
@@ -103,12 +103,12 @@ class LivePreviewController extends Controller
         Craft::$app->getUser()->setIdentity($user);
 
         // Add CORS headers
-        Craft::$app->getResponse()->getHeaders()
-            ->add('Access-Control-Allow-Origin', Craft::$app->getRequest()->getOrigin())
-            ->add('Access-Control-Allow-Credentials', 'true')
-            ->add('Access-Control-Allow-Headers', 'X-Craft-Token');
+        $this->response->getHeaders()
+            ->setDefault('Access-Control-Allow-Origin', '*')
+            ->setDefault('Access-Control-Allow-Credentials', 'true')
+            ->setDefault('Access-Control-Allow-Headers', 'X-Craft-Token');
 
-        if (Craft::$app->getRequest()->getIsOptions()) {
+        if ($this->request->getIsOptions()) {
             // This is just a preflight request, no need to route to the real controller action yet.
             return '';
         }

@@ -28,9 +28,6 @@ use yii\db\ActiveQueryInterface;
  */
 class Section_SiteSettings extends ActiveRecord
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      * @return string

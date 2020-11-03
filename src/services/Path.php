@@ -21,9 +21,6 @@ use yii\base\Exception;
  */
 class Path extends Component
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var
      */
@@ -37,15 +34,17 @@ class Path extends Component
     /**
      * @var
      */
+    private $_testsPath;
+
+    /**
+     * @var
+     */
     private $_siteTranslationsPath;
 
     /**
      * @var
      */
     private $_vendorPath;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns the path to the `config/` directory.
@@ -69,14 +68,33 @@ class Path extends Component
     }
 
     /**
-     * Returns the path to `config/project.yaml`.
+     * Returns the path to `config/project/project.yaml`.
      *
      * @return string
      * @since 3.1.2
      */
     public function getProjectConfigFilePath(): string
     {
-        return $this->getConfigPath() . DIRECTORY_SEPARATOR . ProjectConfig::CONFIG_FILENAME;
+        return $this->getProjectConfigPath(false) . DIRECTORY_SEPARATOR . ProjectConfig::CONFIG_FILENAME;
+    }
+
+    /**
+     * Returns the path to `config/project/` directory.
+     *
+     * @param bool $create Whether the directory should be created if it doesn't exist
+     * @return string
+     * @throws Exception
+     * @since 3.5.0
+     */
+    public function getProjectConfigPath(bool $create = true): string
+    {
+        $path = $this->getConfigPath() . DIRECTORY_SEPARATOR . Craft::$app->getProjectConfig()->folderName;
+
+        if ($create) {
+            FileHelper::createDirectory($path);
+        }
+
+        return $path;
     }
 
     /**
@@ -106,6 +124,28 @@ class Path extends Component
     }
 
     /**
+     * Returns the path to the `tests/` directory.
+     *
+     * @return string
+     * @throws Exception
+     * @since 3.4.29
+     */
+    public function getTestsPath(): string
+    {
+        if ($this->_testsPath !== null) {
+            return $this->_testsPath;
+        }
+
+        $path = Craft::getAlias('@tests');
+
+        if ($path === false) {
+            throw new Exception('There was a problem getting the tests path.');
+        }
+
+        return $this->_testsPath = FileHelper::normalizePath($path);
+    }
+
+    /**
      * Returns the path to the `storage/composer-backups/` directory.
      *
      * @param bool $create Whether the directory should be created if it doesn't exist
@@ -119,14 +159,14 @@ class Path extends Component
 
         if ($create) {
             FileHelper::createDirectory($path);
-            $this->_createGitignore($path);
+            FileHelper::writeGitignoreFile($path);
         }
 
         return $path;
     }
 
     /**
-     * Returns the path to the `storage/configs/` directory.
+     * Returns the path to the `storage/config-backups/` directory.
      *
      * @param bool $create Whether the directory should be created if it doesn't exist
      * @return string
@@ -139,7 +179,27 @@ class Path extends Component
 
         if ($create) {
             FileHelper::createDirectory($path);
-            $this->_createGitignore($path);
+            FileHelper::writeGitignoreFile($path);
+        }
+
+        return $path;
+    }
+
+    /**
+     * Returns the path to the `storage/config-deltas/` directory.
+     *
+     * @param bool $create Whether the directory should be created if it doesn't exist
+     * @return string
+     * @throws Exception
+     * @since 3.4.0
+     */
+    public function getConfigDeltaPath(bool $create = true): string
+    {
+        $path = $this->getStoragePath($create) . DIRECTORY_SEPARATOR . 'config-deltas';
+
+        if ($create) {
+            FileHelper::createDirectory($path);
+            FileHelper::writeGitignoreFile($path);
         }
 
         return $path;
@@ -197,7 +257,7 @@ class Path extends Component
 
         if ($create) {
             FileHelper::createDirectory($path);
-            $this->_createGitignore($path);
+            FileHelper::writeGitignoreFile($path);
         }
 
         return $path;
@@ -512,24 +572,5 @@ class Path extends Component
     public function getLicenseKeyPath(): string
     {
         return defined('CRAFT_LICENSE_KEY_PATH') ? CRAFT_LICENSE_KEY_PATH : $this->getConfigPath() . DIRECTORY_SEPARATOR . 'license.key';
-    }
-
-    /**
-     * Creates a .gitignore file in the given directory if it doesn’t exist yet
-     *
-     * @param string $path
-     */
-    private function _createGitignore(string $path)
-    {
-        $gitignorePath = $path . DIRECTORY_SEPARATOR . '.gitignore';
-
-        if (is_file($gitignorePath)) {
-            return;
-        }
-
-        FileHelper::writeToFile($gitignorePath, "*\n!.gitignore\n", [
-            // Prevent a segfault if this is called recursively
-            'lock' => false,
-        ]);
     }
 }

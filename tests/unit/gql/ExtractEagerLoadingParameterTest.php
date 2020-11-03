@@ -9,19 +9,20 @@ namespace craftunit\gql;
 
 use Codeception\Test\Unit;
 use Craft;
-use craft\elements\db\EntryQuery;
-use craft\elements\Entry;
+use craft\elements\db\EagerLoadPlan;
 use craft\fields\Assets;
 use craft\fields\Entries;
 use craft\fields\Matrix;
-use craft\gql\resolvers\elements\Entry as EntryResolver;
+use craft\gql\ElementQueryConditionBuilder;
 use craft\models\MatrixBlockType;
 use crafttests\fixtures\GqlSchemasFixture;
 use GraphQL\Language\AST\DocumentNode;
 use GraphQL\Language\AST\NodeKind;
 use GraphQL\Language\Parser;
 use GraphQL\Language\Source;
+use GraphQL\Type\Definition\ObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
+use GraphQL\Type\Definition\Type;
 
 class ExtractEagerLoadingParameterTest extends Unit
 {
@@ -33,7 +34,7 @@ class ExtractEagerLoadingParameterTest extends Unit
     protected function _before()
     {
         $gqlService = Craft::$app->getGql();
-        $schema = $gqlService->getSchemaByAccessToken('My+voice+is+my+passport.+Verify me.');
+        $schema = $gqlService->getSchemaById(1000);
         $gqlService->setActiveSchema($schema);
 
         $this->tester->mockMethods(
@@ -65,6 +66,11 @@ class ExtractEagerLoadingParameterTest extends Unit
                         'context' => 'matrix',
                         'getEagerLoadingGqlConditions' => []
                     ]),
+                    $this->make(Entries::class, [
+                        'handle' => 'linkedEntriesThroughMatrix',
+                        'context' => 'global',
+                        'getEagerLoadingGqlConditions' => []
+                    ]),
                     $this->make(Assets::class, [
                         'handle' => 'image',
                         'context' => 'matrix',
@@ -93,42 +99,34 @@ class ExtractEagerLoadingParameterTest extends Unit
     {
     }
 
-    // Tests
-    // =========================================================================
-
     /**
      * Test eager loading parameter extraction from a query string
      *
      * @param string $query The query string
+     * @param array $variables Query variables
      * @param array $expectedParameters The expected eager-loading parameters.
+     * @param string $returnType The return type of the GQL query
      *
+     * @throws \GraphQL\Error\SyntaxError
      * @dataProvider eagerLoadingParameterExtractionProvider
      */
-    public function testEagerLoadingParameterExtraction(string $query, array $expectedParameters)
+    public function testEagerLoadingParameterExtraction(string $query, array $variables, array $expectedParameters, $returnType)
     {
         $documentNode = Parser::parse(new Source($query ?: '', 'GraphQL'));
-        $resolveInfo = $this->_buildResolveInfo($documentNode);
+        $resolveInfo = $this->_buildResolveInfo($documentNode, $variables, $returnType);
 
-        $resolvedConditions = [];
-
-        $mockEntry = $this->make(Entry::class, [
-            '__get' => function($property) use (&$resolvedConditions) {
-                return $this->make(EntryQuery::class, [
-                    'with' => function($eagerLoadConditions) use (&$resolvedConditions) {
-                        $resolvedConditions = $eagerLoadConditions;
-                        return Entry::find();
-                    }
-                ]);
-            }
+        $conditionBuilder = Craft::createObject([
+            'class' => ElementQueryConditionBuilder::class,
+            'resolveInfo' => $resolveInfo
         ]);
-        EntryResolver::resolve($mockEntry, [], null, $resolveInfo);
+        $extractedConditions = $conditionBuilder->extractQueryConditions();
 
-        $this->assertEquals($expectedParameters, $resolvedConditions);
+        self::assertEquals($expectedParameters, $extractedConditions);
     }
 
     public function eagerLoadingParameterExtractionProvider()
     {
-        $gql = <<<'GQL'
+        $complexGql = <<<'GQL'
 {
   entries {
     id
@@ -144,10 +142,13 @@ class ExtractEagerLoadingParameterTest extends Unit
           author
         }
         ... on articleBody_articleSegment_BlockType {
+          im: image (volumeId: 2) {
+            filename
+          }
           text
         }
         ... on articleBody_imageBlock_BlockType {
-          image (volumeId: 2) {
+          im: image (volumeId: 2) {
             filename
           }
           caption
@@ -155,6 +156,11 @@ class ExtractEagerLoadingParameterTest extends Unit
         ... on articleBody_linkedEntries_BlockType {
           entriesInMatrix (id: 80) {
             title
+            ... on articles_news_Entry {
+                linkedEntriesThroughMatrix (id: 99) {
+                    title
+                }
+            }
           }
         }
       }
@@ -168,29 +174,149 @@ class ExtractEagerLoadingParameterTest extends Unit
   }
 }
 GQL;
-        $result = [
-            ['neverAllowed', ['id' => 0]],
-            'matrixField',
-            ['matrixField.mockedBlockHandle:image', ['volumeId' => 2]],
-            ['matrixField.mockedBlockHandle:entriesInMatrix', ['id' => 80]],
-            ['entryField', ['sectionId' => [5], 'typeId' => [2]]],
-            ['assetField', ['volumeId' => [5]]],
+
+        $complexResult = [
+            'with' => [
+                new EagerLoadPlan(['handle' => 'neverAllowed', 'alias' => 'neverAllowed', 'criteria' => ['id' => 0]]),
+                new EagerLoadPlan(['handle' => 'matrixField', 'alias' => 'matrixField', 'when' => function () {}, 'nested' => [
+                    new EagerLoadPlan(['handle' => 'mockedBlockHandle:image', 'alias' => 'im',  'criteria' => ['volumeId' => 2], 'when' => function () {}]),
+                    new EagerLoadPlan(['handle' => 'mockedBlockHandle:image', 'alias' => 'im',  'criteria' => ['volumeId' => 2], 'when' => function () {}]),
+                    new EagerLoadPlan(['handle' => 'mockedBlockHandle:entriesInMatrix', 'alias' => 'mockedBlockHandle:entriesInMatrix',  'criteria' => ['id' => 80], 'when' => function () {}, 'nested' => [
+                        new EagerLoadPlan(['handle' => 'linkedEntriesThroughMatrix', 'alias' => 'linkedEntriesThroughMatrix', 'when' => function () {}, 'criteria' => ['id' => 99]]),
+                    ]]),
+                ]]),
+                new EagerLoadPlan(['handle' => 'entryField', 'alias' => 'entryField', 'when' => function () {}, 'criteria' => ['sectionId' => [5], 'typeId' => [2]]]),
+                new EagerLoadPlan(['handle' => 'assetField', 'alias' => 'assetField', 'when' => function () {}, 'criteria' => ['volumeId' => [5]]]),
+            ]
+        ];
+
+        $assetGql = <<<'GQL'
+{
+    asset @transform(handle: "someHandle") {
+        url @transform(handle: "twoHandles")
+        width(handle: "threeHandles")
+        some: url(height: 800)
+        assetField @transform(width: 400, height: 400) {
+            url (width: 400)
+            width (handle: "whammy")
+        }
+    }
+}
+GQL;
+
+        $assetResult = [
+            'withTransforms' => [
+                'someHandle',
+                'twoHandles',
+                'threeHandles',
+                ['height' => 800],
+            ],
+            'with' => [
+                new EagerLoadPlan([
+                    'handle' => 'assetField', 'alias' => 'assetField', 'criteria' => [
+                        'withTransforms' => [
+                            ['width' => 400, 'height' => 400],
+                            ['width' => 400],
+                            'whammy'
+                        ], 'volumeId' => [5, 7]
+                    ]
+                ])
+            ]
         ];
 
         return [
             [
-                '{ entries { assetField (volumeId: 4) { filename }}}',
-                [
-                    ['assetField', ['id' => 0]]
-                ],
+                '{ user { photo { id }}}',
+                [],
+                ['with' => [new EagerLoadPlan(['handle' => 'photo', 'alias' => 'photo'])]],
+                'UserInterface'
+            ],
+            [
+                '{ entry { assetField { localized { id }}}}',
+                [],
+                ['with' => [new EagerLoadPlan(['handle' => 'assetField', 'alias' => 'assetField', 'criteria' => ['volumeId' => [5, 7]]])]],
+                'UserInterface'
+            ],
+            [
+                '{ entry { entryField { photo }}}',
+                [],
+                ['with' => [new EagerLoadPlan(['handle' => 'entryField', 'alias' => 'entryField', 'criteria' => ['sectionId' => [5], 'typeId' => [2]]])]],
+                'EntryInterface',
+            ],
+            [
+                '{ entry { localized { title } alias: localized { title }}}',
+                [],
+                ['with' => [new EagerLoadPlan(['handle' => 'localized', 'alias' => 'localized']), new EagerLoadPlan(['handle' => 'localized', 'alias' => 'alias'])]],
+                'EntryInterface',
+            ],
+            [
+                '{ user { ph: photo { id }}}',
+                [],
+                ['with' => [new EagerLoadPlan(['handle' => 'photo', 'alias' => 'photo'])]],
+                '[UserInterface]'
+            ],
+            [
+                '{entry { author { ph: photo { id }}}}',
+                [],
+                ['with' => [new EagerLoadPlan(['handle' => 'author', 'alias' => 'author', 'nested' => [new EagerLoadPlan(['handle' => 'photo', 'alias' => 'photo'])]])]],
+                'EntryInterface'
+            ],
+            [
+                '{entry { author { photo { id }}}}',
+                [],
+                ['with' => [new EagerLoadPlan(['handle' => 'author', 'alias' => 'author', 'nested' => [new EagerLoadPlan(['handle' => 'photo', 'alias' => 'photo'])]])]],
+                'EntryInterface'
+            ],
+            [
+                '{ entry { assetField (volumeId: 4) { filename }}}',
+                [],
+                ['with' => [new EagerLoadPlan(['handle' => 'assetField', 'alias' => 'assetField', 'criteria' => ['id' => 0]])]],
+                'EntryInterface',
+            ],
+            [
+                '{ entry { localized { id }}}',
+                [],
+                ['with' => [new EagerLoadPlan(['handle' => 'localized', 'alias' => 'localized'])]],
+                'EntryInterface',
+            ],
+            [
+                '{ entry { parent { id }}}',
+                [],
+                ['with' => [new EagerLoadPlan(['handle' => 'parent', 'alias' => 'parent'])]],
+                'EntryInterface',
+            ],
+            [
+                '{ entries { _count(field: "assetField") assetField { filename }}}',
+                [],
+                ['with' => [new EagerLoadPlan(['handle' => 'assetField', 'count' => true, 'alias' => 'assetField', 'criteria' => ['volumeId' => [5, 7]]])]],
+                '[EntryInterface]',
             ],
             [
                 '{ entries { assetField { filename }}}',
+                [],
                 [
-                    ['assetField', ['volumeId' => [5, 7]]]
+                    'with' => [new EagerLoadPlan(['handle' => 'assetField', 'alias' => 'assetField', 'criteria' => ['volumeId' => [5, 7]]])]
                 ],
+                '[EntryInterface]',
             ],
-            [$gql, $result]
+            [
+                'query entries ($childSlug: [String]) {
+                    entries  {
+                        children(type: "child", slug: $childSlug) {
+                            id
+                            title
+                            slug
+                        }
+                    }
+                }',
+                ['childSlug' => ['slugslug', 'slugger']],
+                [
+                    'with' => [new EagerLoadPlan(['handle' => 'children', 'alias' => 'children', 'criteria' => ['type' => 'child', 'slug' => ['slugslug', 'slugger']]])],
+                ],
+                '[EntryInterface]',
+            ],
+            [$complexGql, [], $complexResult, 'EntryInterface'],
+            [$assetGql, [], $assetResult, 'AssetInterface'],
         ];
     }
 
@@ -198,10 +324,12 @@ GQL;
      * Mock the ResolveInfo variable.
      *
      * @param DocumentNode $documentNode
+     * @param array $variables
+     * @param $returnType
      * @return object
      * @throws \Exception
      */
-    private function _buildResolveInfo(DocumentNode $documentNode)
+    private function _buildResolveInfo(DocumentNode $documentNode, array $variables, $returnType)
     {
 
         $fragments = [];
@@ -212,12 +340,25 @@ GQL;
             }
         }
 
+        $list = false;
+
+        if (preg_match('/\[([a-z_]+)\]/i', $returnType, $matches)) {
+            $returnType = $matches[1];
+            $list = true;
+        }
+
+        $type = $this->make(ObjectType::class, [
+            'name' => $returnType
+        ]);
+
         return $this->make(ResolveInfo::class, [
             'fragments' => $fragments,
             'fieldNodes' => [
                 $documentNode->definitions[0]->selectionSet->selections[0]
             ],
-            'fieldName' => 'mockField'
+            'fieldName' => 'mockField',
+            'variableValues' => $variables,
+            'returnType' => $list ? Type::listOf($type) : $type,
         ]);
     }
 }

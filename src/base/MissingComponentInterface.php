@@ -12,6 +12,7 @@ namespace craft\base;
  * A class implementing this interface should also implement [[ComponentInterface]] and [[\yii\base\Arrayable]],
  * and use [[MissingComponentTrait]].
  *
+ * @mixin MissingComponentTrait
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */

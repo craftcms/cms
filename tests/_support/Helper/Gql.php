@@ -1,4 +1,5 @@
 <?php
+
 namespace Helper;
 
 use Codeception\Module;
@@ -13,7 +14,6 @@ use Codeception\Module;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.3
  */
-
 class Gql extends Module
 {
 

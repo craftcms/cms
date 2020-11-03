@@ -13,7 +13,7 @@
                 <div class="description flex-1">
                     <h1 class="text-lg font-bold mb-2">{{ plugin.name }}</h1>
                     <p class="mb-2 text-grey-dark">{{ plugin.shortDescription }}</p>
-                    <p class="mb-2"><a @click="viewDeveloper(plugin)">{{ plugin.developerName }}</a></p>
+                    <p class="mb-2"><router-link :to="'/developer/' + plugin.developerId" :title="plugin.developerName">{{ plugin.developerName }}</router-link></p>
                 </div>
 
                 <div v-if="actionsLoading">
@@ -53,7 +53,7 @@
                                         <icon icon="book"></icon> {{ "Documentation"|t('app') }}
                                     </a>
                                 </li>
-                                
+
                                 <li><a :href="plugin.repository" rel="noopener" target="_blank"><icon icon="link" /> Repository</a></li>
                             </ul>
 
@@ -87,7 +87,7 @@
                                 <span>{{ "Categories"|t('app') }}</span>
                                 <div>
                                     <div v-for="(category, key) in pluginCategories" :key="'plugin-category-' + key">
-                                        <strong><a @click="viewCategory(category)">{{ category.title }}</a></strong>
+                                        <strong><router-link :to="'/categories/' + category.id" :title="category.title">{{ category.title }}</router-link></strong>
                                     </div>
                                 </div>
                             </li>
@@ -155,10 +155,8 @@
                 if (this.plugin.longDescription && this.plugin.longDescription.length > 0) {
                     return this.plugin.longDescription
                 }
-            },
 
-            developerUrl() {
-                return Craft.getCpUrl('plugin-store/developer/' + this.plugin.developerId)
+                return null
             },
 
             pluginCategories() {
@@ -175,6 +173,8 @@
                     case 'mit':
                         return 'MIT'
                 }
+
+                return null
             },
 
             lastUpdate() {
@@ -207,8 +207,8 @@
             licenseIssue(errorCode) {
                 switch (errorCode) {
                     case 'wrong_edition': {
-                        const currentEdition = this.getPluginEdition(this.plugin.handle, this.pluginLicenseInfo.edition)
-                        const licensedEdition = this.getPluginEdition(this.plugin.handle, this.pluginLicenseInfo.licensedEdition)
+                        const currentEdition = this.getPluginEdition(this.plugin, this.pluginLicenseInfo.edition)
+                        const licensedEdition = this.getPluginEdition(this.plugin, this.pluginLicenseInfo.licensedEdition)
 
                         return this.$options.filters.t('Your are currently using the {currentEdition} edition, and your licensed edition is {licensedEdition}.', 'app', {
                             currentEdition: currentEdition.name,
@@ -224,16 +224,6 @@
                         return this.$options.filters.t('Your license key is invalid.', 'app')
                     }
                 }
-            },
-
-            viewCategory(category) {
-                this.$root.closeModal()
-                this.$router.push({path: '/categories/' + category.id})
-            },
-
-            viewDeveloper(plugin) {
-                this.$root.closeModal()
-                this.$router.push({path: '/developer/' + plugin.developerId})
             },
         },
 
@@ -267,7 +257,7 @@
 
 <style lang="scss">
     @import "../../../sass/variables";
-    @import "../../../../../../../../lib/craftcms-sass/mixins";
+    @import "../../../../../../../../node_modules/craftcms-sass/mixins";
 
     .plugin-icon {
         @apply .relative;
@@ -281,7 +271,7 @@
             height: 32px;
             background: no-repeat 0 0 url(~@/images/invalid-icon.svg);
             background-size: 100% 100%;
-            
+
             &.valid {
                 background-image: url(~@/images/valid-icon.svg);
             }

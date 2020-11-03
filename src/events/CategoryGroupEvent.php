@@ -18,9 +18,6 @@ use yii\base\Event;
  */
 class CategoryGroupEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var CategoryGroup|null The category group model associated with the event.
      */

@@ -7,7 +7,13 @@
 
 namespace craft\gql\base;
 
+use Craft;
+use craft\base\EagerLoadingFieldInterface;
+use craft\base\ElementInterface;
+use craft\base\GqlInlineFragmentFieldInterface;
 use craft\elements\db\ElementQuery;
+use craft\gql\ElementQueryConditionBuilder;
+use craft\helpers\Gql as GqlHelper;
 use GraphQL\Type\Definition\ResolveInfo;
 
 /**
@@ -29,12 +35,59 @@ abstract class ElementResolver extends Resolver
     }
 
     /**
+     * Resolve an element query to a single result.
+     *
+     * @param $source
+     * @param array $arguments
+     * @param $context
+     * @param ResolveInfo $resolveInfo
+     * @return ElementInterface|null|mixed
+     */
+    public static function resolveOne($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    {
+        $query = self::prepareElementQuery($source, $arguments, $context, $resolveInfo);
+        $value = $query instanceof ElementQuery ? $query->one() : $query;
+        return GqlHelper::applyDirectives($source, $resolveInfo, $value);
+    }
+
+    /**
      * @inheritdoc
      */
     public static function resolve($source, array $arguments, $context, ResolveInfo $resolveInfo)
     {
+        $query = self::prepareElementQuery($source, $arguments, $context, $resolveInfo);
+        $value = $query instanceof ElementQuery ? $query->all() : $query;
+        return GqlHelper::applyDirectives($source, $resolveInfo, $value);
+    }
+
+    /**
+     * Resolve an element query to a total count of elements.
+     *
+     * @param $source
+     * @param array $arguments
+     * @param $context
+     * @param ResolveInfo $resolveInfo
+     * @return ElementInterface|null|mixed
+     */
+    public static function resolveCount($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    {
+        $query = self::prepareElementQuery($source, $arguments, $context, $resolveInfo);
+        return $query->count();
+    }
+
+    /**
+     * Prepare an element query for given resolution argument set.
+     *
+     * @param $source
+     * @param array $arguments
+     * @param $context
+     * @param ResolveInfo $resolveInfo
+     * @return ElementQuery|array
+     */
+    protected static function prepareElementQuery($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    {
         $arguments = self::prepareArguments($arguments);
-        $fieldName = $resolveInfo->fieldName;
+        $fieldName = GqlHelper::getFieldNameWithAlias($resolveInfo, $source, $context);
 
         $query = static::prepareQuery($source, $arguments, $fieldName);
 
@@ -43,20 +96,33 @@ abstract class ElementResolver extends Resolver
             return $query;
         }
 
-        /** @var ElementQuery $query */
-        $preloadNodes = self::extractEagerLoadCondition($resolveInfo);
-        $eagerLoadConditions = [];
+        $parentField = null;
 
-        // Set up the preload con
-        foreach ($preloadNodes as $element => $parameters) {
-            if (empty($parameters)) {
-                $eagerLoadConditions[] = $element;
-            } else {
-                $eagerLoadConditions[] = [$element, $parameters];
+        if ($source instanceof ElementInterface) {
+            $fieldContext = $source->getFieldContext();
+            $field = Craft::$app->getFields()->getFieldByHandle($fieldName, $fieldContext);
+
+            // This will happen if something is either dynamically added or is inside an block element that didn't support eager-loading
+            // and broke the eager-loading chain. In this case Craft has to provide the relevant context so the condition builder knows where it's at.
+            if (($context !== 'global' && $field instanceof GqlInlineFragmentFieldInterface) || $field instanceof EagerLoadingFieldInterface) {
+                $parentField = $field;
             }
         }
 
-        return $query->with($eagerLoadConditions)->all();
+        /** @var ElementQueryConditionBuilder $conditionBuilder */
+        $conditionBuilder = empty($context['conditionBuilder']) ? Craft::createObject(['class' => ElementQueryConditionBuilder::class]) : $context['conditionBuilder'];
+        $conditionBuilder->setResolveInfo($resolveInfo);
+
+        $conditions = $conditionBuilder->extractQueryConditions($parentField);
+
+        /** @var ElementQuery $query */
+        foreach ($conditions as $method => $parameters) {
+            if (method_exists($query, $method)) {
+                $query = $query->{$method}($parameters);
+            }
+        }
+
+        return $query;
     }
 
     /**

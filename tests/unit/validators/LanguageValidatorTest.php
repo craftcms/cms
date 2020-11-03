@@ -23,9 +23,6 @@ use yii\base\NotSupportedException;
  */
 class LanguageValidatorTest extends Unit
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var UnitTester
      */
@@ -35,12 +32,6 @@ class LanguageValidatorTest extends Unit
      * @var LanguageValidator
      */
     protected $languageValidator;
-
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
 
     /**
      * @dataProvider validateValueDataProvider
@@ -56,7 +47,7 @@ class LanguageValidatorTest extends Unit
         $this->languageValidator->onlySiteLanguages = $onlySiteLangs;
         $validated = $this->languageValidator->validateValue($input);
 
-        $this->assertSame($result, $validated);
+        self::assertSame($result, $validated);
     }
 
     /**
@@ -76,14 +67,11 @@ class LanguageValidatorTest extends Unit
         $this->languageValidator->validateAttribute($model, 'exampleParam');
 
         if (!$mustValidate) {
-            $this->assertArrayHasKey('exampleParam', $model->getErrors());
+            self::assertArrayHasKey('exampleParam', $model->getErrors());
         } else {
-            $this->assertSame([], $model->getErrors());
+            self::assertSame([], $model->getErrors());
         }
     }
-
-    // Data Providers
-    // =========================================================================
 
     /**
      * @return array
@@ -132,9 +120,6 @@ class LanguageValidatorTest extends Unit
             [['{value} is not a valid site language.', []], 'nolang', false]
         ];
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      *

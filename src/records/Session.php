@@ -23,9 +23,6 @@ use yii\db\ActiveQueryInterface;
  */
 class Session extends ActiveRecord
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

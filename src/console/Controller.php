@@ -18,19 +18,14 @@ use yii\helpers\Inflector;
 /**
  * Base console controller
  *
+ * @property Request $request
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2.0
  */
 class Controller extends YiiController
 {
-    // Traits
-    // =========================================================================
-
     use ControllerTrait;
-
-    // Constants
-    // =========================================================================
 
     /**
      * @event DefineConsoleActionsEvent The event that is triggered when defining custom actions for this controller.
@@ -65,9 +60,6 @@ class Controller extends YiiController
      */
     const EVENT_DEFINE_ACTIONS = 'defineActions';
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var array Custom actions that should be available.
      * @see defineActions()
@@ -85,9 +77,6 @@ class Controller extends YiiController
      * @see runAction()
      */
     private $_actionId;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -264,9 +253,6 @@ class Controller extends YiiController
         return $options;
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * Returns an array of custom actions that should be available on the controller.
      *
@@ -311,9 +297,6 @@ class Controller extends YiiController
 
         return parent::getActionMethodReflection($action);
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns whether the given option is defined by a custom action.

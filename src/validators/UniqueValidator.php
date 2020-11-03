@@ -21,9 +21,6 @@ use yii\validators\UniqueValidator as YiiUniqueValidator;
  */
 class UniqueValidator extends YiiUniqueValidator
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|string[] If [[targetClass]] is set, this defines the model
      * attributes that represent the record's primary key(s). Can be set to a
@@ -44,9 +41,6 @@ class UniqueValidator extends YiiUniqueValidator
      * @var bool Whether a case-insensitive check should be performed.
      */
     public $caseInsensitive = false;
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

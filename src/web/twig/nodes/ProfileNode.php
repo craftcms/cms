@@ -37,7 +37,6 @@ class ProfileNode extends Node
     public function compile(Compiler $compiler)
     {
         $compiler
-            ->addDebugInfo($this)
             ->write(Template::class . '::' . $this->getAttribute('stage') . 'Profile(')
             ->repr($this->getAttribute('type'))
             ->raw(', ')

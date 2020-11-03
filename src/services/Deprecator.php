@@ -19,6 +19,7 @@ use craft\helpers\Template;
 use craft\models\DeprecationError;
 use craft\web\twig\Extension;
 use Twig\Template as TwigTemplate;
+use yii\base\Application;
 use yii\base\Component;
 use yii\db\IntegrityException;
 
@@ -31,9 +32,6 @@ use yii\db\IntegrityException;
  */
 class Deprecator extends Component
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var bool Whether deprecation warnings should throw exceptions rather than being logged.
      * @since 3.1.18
@@ -61,8 +59,18 @@ class Deprecator extends Component
      */
     private $_allLogs;
 
-    // Public Methods
-    // =========================================================================
+    /**
+     * @inheritdoc
+     * @since 3.4.12
+     */
+    public function init()
+    {
+        if (!$this->throwExceptions && $this->logTarget === 'db') {
+            Craft::$app->on(Application::EVENT_AFTER_REQUEST, [$this, 'storeLogs'], null, false);
+        }
+
+        parent::init();
+    }
 
     /**
      * Logs a new deprecation error.
@@ -79,17 +87,6 @@ class Deprecator extends Component
             return;
         }
 
-        // todo: maybe remove the Craft version check after the next breakpoint
-        // (depending on whether the minimum version warning shows up before any config deprecation errors)
-        if (
-            $this->logTarget === 'logs' ||
-            !Craft::$app->getIsInstalled() ||
-            version_compare(Craft::$app->getInfo()->version, '3.0.0-alpha.2910', '<')
-        ) {
-            Craft::warning($message, 'deprecation-error');
-            return;
-        }
-
         // Get the debug backtrace
         $traces = debug_backtrace();
 
@@ -102,14 +99,9 @@ class Deprecator extends Component
         }
 
         $fingerprint = $file . ($line ? ':' . $line : '');
-        $index = $key . '-' . $fingerprint;
 
         // Don't log the same key/fingerprint twice in the same request
-        if (isset($this->_requestLogs[$index])) {
-            return;
-        }
-
-        $log = $this->_requestLogs[$index] = new DeprecationError([
+        $this->_requestLogs["$key-$fingerprint"] = new DeprecationError([
             'key' => $key,
             'fingerprint' => $fingerprint,
             'lastOccurrence' => new \DateTime(),
@@ -118,28 +110,34 @@ class Deprecator extends Component
             'message' => $message,
             'traces' => $this->_cleanTraces($traces)
         ]);
+    }
 
+    /**
+     * Stores all the deprecation warnings that were logged in this request.
+     *
+     * @since 3.4.12
+     */
+    public function storeLogs()
+    {
         $db = Craft::$app->getDb();
-        $command = $db->createCommand()
-            ->upsert(
-                Table::DEPRECATIONERRORS,
-                [
+
+        foreach ($this->_requestLogs as $log) {
+            try {
+                Db::upsert(Table::DEPRECATIONERRORS, [
                     'key' => $log->key,
-                    'fingerprint' => $log->fingerprint
-                ],
-                [
+                    'fingerprint' => $log->fingerprint,
+                ], [
                     'lastOccurrence' => Db::prepareDateForDb($log->lastOccurrence),
                     'file' => $log->file,
                     'line' => $log->line,
                     'message' => $log->message,
                     'traces' => Json::encode($log->traces),
                 ]);
-
-        try {
-            $command->execute();
-            $log->id = $db->getLastInsertID();
-        } catch (IntegrityException $e) {
-            // todo: remove this try/catch after the next breakpoint
+                $log->id = $db->getLastInsertID();
+            } catch (IntegrityException $e) {
+                // todo: remove this try/catch after the next breakpoint
+                break;
+            }
         }
     }
 
@@ -214,9 +212,9 @@ class Deprecator extends Component
      */
     public function deleteLogById(int $id): bool
     {
-        $affectedRows = Craft::$app->getDb()->createCommand()
-            ->delete(Table::DEPRECATIONERRORS, ['id' => $id])
-            ->execute();
+        $affectedRows = Db::delete(Table::DEPRECATIONERRORS, [
+            'id' => $id,
+        ]);
 
         return (bool)$affectedRows;
     }
@@ -228,15 +226,10 @@ class Deprecator extends Component
      */
     public function deleteAllLogs(): bool
     {
-        $affectedRows = Craft::$app->getDb()->createCommand()
-            ->delete(Table::DEPRECATIONERRORS)
-            ->execute();
+        $affectedRows = Db::delete(Table::DEPRECATIONERRORS);
 
         return (bool)$affectedRows;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns a Query object prepped for retrieving deprecation logs.
@@ -281,7 +274,18 @@ class Deprecator extends Component
             isset($traces[1]['class'], $traces[1]['function']) &&
             (
                 ($traces[1]['class'] === ElementQuery::class && $traces[1]['function'] === 'getIterator') ||
-                ($traces[1]['class'] === Extension::class && $traces[1]['function'] === 'groupFilter')
+                (
+                    $traces[1]['class'] === Extension::class &&
+                    in_array($traces[1]['function'], [
+                        'getCsrfInput',
+                        'getFootHtml',
+                        'getHeadHtml',
+                        'groupFilter',
+                        'roundFunction',
+                        'svgFunction',
+                        'ucwordsFilter',
+                    ], true)
+                )
             )
         ) {
             // special case for deprecated looping through element queries

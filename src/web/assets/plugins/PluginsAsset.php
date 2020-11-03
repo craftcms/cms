@@ -19,24 +19,28 @@ class PluginsAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public function init()
-    {
-        $this->sourcePath = __DIR__ . '/dist';
+    public $sourcePath = __DIR__ . '/dist';
 
-        $this->depends = [
-            CpAsset::class,
-        ];
+    /**
+     * @inheritdoc
+     */
+    public $depends = [
+        CpAsset::class,
+    ];
 
-        $this->css = [
-            'plugins.css',
-        ];
+    /**
+     * @inheritdoc
+     */
+    public $css = [
+        'plugins.css',
+    ];
 
-        $this->js = [
-            'PluginManager.js',
-        ];
-
-        parent::init();
-    }
+    /**
+     * @inheritdoc
+     */
+    public $js = [
+        'PluginManager.min.js',
+    ];
 
     /**
      * @inheritdoc

@@ -30,13 +30,7 @@ use yii\db\ActiveQueryInterface;
  */
 class Volume extends ActiveRecord
 {
-    // Traits
-    // =========================================================================
-
     use SoftDeleteTrait;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

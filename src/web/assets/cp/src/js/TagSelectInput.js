@@ -51,12 +51,52 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
                 this.searchTimeout = setTimeout($.proxy(this, 'searchForTags'), 500);
             }, this));
 
-            this.addListener(this.$addTagInput, 'keypress', function(ev) {
+            this.addListener(this.$addTagInput, 'keydown', function(ev) {
                 if (ev.keyCode === Garnish.RETURN_KEY) {
                     ev.preventDefault();
+                }
 
-                    if (this.searchMenu) {
-                        this.selectTag(this.searchMenu.$options[0]);
+                let $option;
+
+                switch (ev.keyCode) {
+                    case Garnish.RETURN_KEY: {
+                        ev.preventDefault();
+                        if (this.searchMenu) {
+                            this.selectTag(this.searchMenu.$options.filter('.hover'));
+                        }
+                        return;
+                    }
+
+                    case Garnish.DOWN_KEY: {
+                        ev.preventDefault();
+                        if (this.searchMenu) {
+                            let $hoverOption = this.searchMenu.$options.filter('.hover');
+                            if ($hoverOption.length) {
+                                let $nextOption = $hoverOption.parent().nextAll().find('a:not(.disabled)').first();
+                                if ($nextOption.length) {
+                                    this.focusOption($nextOption);
+                                }
+                            } else {
+                                this.focusOption(this.searchMenu.$options.eq(0));
+                            }
+                        }
+                        return;
+                    }
+
+                    case Garnish.UP_KEY: {
+                        ev.preventDefault();
+                        if (this.searchMenu) {
+                            let $hoverOption = this.searchMenu.$options.filter('.hover');
+                            if ($hoverOption.length) {
+                                let $prevOption = $hoverOption.parent().prevAll().find('a:not(.disabled)').last();
+                                if ($prevOption.length) {
+                                    this.focusOption($prevOption);
+                                }
+                            } else {
+                                this.focusOption(this.searchMenu.$options.eq(this.searchMenu.$options.length - 1));
+                            }
+                        }
+                        return;
                     }
                 }
             });
@@ -79,6 +119,12 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
                     }
                 }, this), 1);
             });
+        },
+
+        focusOption: function($option) {
+            this.searchMenu.$options.removeClass('hover');
+            $option.addClass('hover');
+            this.searchMenu.$menuList.attr('aria-activedescendant', $option.attr('id'));
         },
 
         // No "add" button
@@ -161,7 +207,6 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 
                         this.searchMenu.show();
                     }
-
                 }, this));
             }
             else {
@@ -243,7 +288,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 
                         if (textStatus === 'success') {
                             // Some sort of validation error that still resulted in  a 200 response. Shouldn't be possible though.
-                            Craft.cp.displayError(Craft.t('app', 'An unknown error occurred.'));
+                            Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
                         }
                     }
                 }, this));

@@ -20,9 +20,6 @@ use craft\web\assets\newusers\NewUsersAsset;
  */
 class NewUsers extends Widget
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -45,11 +42,8 @@ class NewUsers extends Widget
      */
     public static function icon()
     {
-        return Craft::getAlias('@app/icons/users.svg');
+        return Craft::getAlias('@appicons/users.svg');
     }
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var int|null The ID of the user group
@@ -61,9 +55,6 @@ class NewUsers extends Widget
      */
     public $dateRange;
 
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

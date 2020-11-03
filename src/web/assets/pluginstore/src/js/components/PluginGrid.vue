@@ -1,8 +1,8 @@
 <template>
     <div>
         <div class="ps-grid-plugins" v-if="plugins && plugins.length > 0">
-            <div class="ps-grid-box" v-for="(plugin, key) in plugins" :key="key" v-if="(!autoLimit || (autoLimit && key < limit))">
-                <plugin-card :plugin="plugin" @click="showPlugin(plugin)" :trialMode="trialMode"></plugin-card>
+            <div class="ps-grid-box" v-for="(plugin, key) in computedPlugins" :key="key">
+                <plugin-card :plugin="plugin" :trialMode="trialMode"></plugin-card>
             </div>
         </div>
     </div>
@@ -25,6 +25,16 @@
         },
 
         computed: {
+            computedPlugins() {
+                return this.plugins.filter((plugin, key) => {
+                    if (!this.autoLimit || (this.autoLimit && key < this.limit)) {
+                        return true
+                    }
+
+                    return false
+                })
+            },
+
             limit() {
                 let totalPlugins = this.plugins.length
 
@@ -43,14 +53,10 @@
                 }
 
                 return true
-            }
+            },
         },
 
         methods: {
-            showPlugin(plugin) {
-                this.$router.push({path: '/' + plugin.handle})
-            },
-
             onWindowResize() {
                 this.winWidth = window.innerWidth
             }

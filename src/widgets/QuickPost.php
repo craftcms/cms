@@ -22,9 +22,6 @@ use craft\web\assets\quickpost\QuickPostAsset;
  */
 class QuickPost extends Widget
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -38,11 +35,13 @@ class QuickPost extends Widget
      */
     public static function icon()
     {
-        return Craft::getAlias('@app/icons/newspaper.svg');
+        return Craft::getAlias('@appicons/newspaper.svg');
     }
 
-    // Properties
-    // =========================================================================
+    /**
+     * @var string The site ID that the widget should pull entries from
+     */
+    public $siteId;
 
     /**
      * @var int|null The ID of the section that the widget should post to
@@ -63,9 +62,6 @@ class QuickPost extends Widget
      * @var
      */
     private $_section;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -90,9 +86,9 @@ class QuickPost extends Widget
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['section'], 'required'];
         $rules[] = [['section', 'entryType'], 'integer'];
         return $rules;
@@ -164,6 +160,7 @@ class QuickPost extends Widget
         $entryType = $entryTypes[$entryTypeId];
 
         $params = [
+            'siteId' => $this->siteId ?? Craft::$app->getSites()->getPrimarySite()->id,
             'sectionId' => $section->id,
             'typeId' => $entryTypeId,
         ];
@@ -187,9 +184,6 @@ class QuickPost extends Widget
 
         return $html;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns the widget's section.

@@ -18,16 +18,10 @@ use craft\base\Model;
  */
 class Url extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null URL
      */
     public $url;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -42,9 +36,9 @@ class Url extends Model
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['url'], 'required'];
         $rules[] = [['url'], 'url'];
         return $rules;

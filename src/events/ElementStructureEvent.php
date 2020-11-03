@@ -15,9 +15,6 @@ namespace craft\events;
  */
 class ElementStructureEvent extends ModelEvent
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null The structure ID
      */

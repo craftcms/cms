@@ -1,0 +1,24 @@
+<div class="highlight {{ asset.kind }}">
+    <pre><code class="language-{{ language }}">{{ contents|raw }}</code></pre>
+</div>
+{% do view.registerAssetBundle("craft\\web\\assets\\prismjs\\PrismJsAsset") %}
+{% js %}
+var instance = Craft.PreviewFileModal.openInstance;
+var $highlight = instance.$container.find('.highlight');
+
+if ($highlight.length && $highlight.hasClass('json')) {
+    var $target = $highlight.find('code');
+    $target.html(JSON.stringify(JSON.parse($target.html()), undefined, 4));
+}
+
+if ($highlight.length) {
+    Prism.highlightElement($highlight.find('code').get(0));
+}
+
+instance.base();
+
+instance.$container
+    .height(instance.$container.height())
+    .width(instance.$container.width())
+    .css({'overflow': 'auto'});
+{% endjs %}

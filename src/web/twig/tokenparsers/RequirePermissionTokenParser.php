@@ -20,9 +20,6 @@ use Twig\TokenParser\AbstractTokenParser;
  */
 class RequirePermissionTokenParser extends AbstractTokenParser
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

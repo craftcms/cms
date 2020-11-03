@@ -19,9 +19,6 @@ use craft\web\UploadedFile;
  */
 class CraftSupport extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null From email
      */
@@ -52,9 +49,6 @@ class CraftSupport extends Model
      */
     public $attachment;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -69,9 +63,9 @@ class CraftSupport extends Model
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['fromEmail', 'message'], 'required'];
         $rules[] = [['fromEmail'], 'email'];
         $rules[] = [['fromEmail'], 'string', 'min' => 5, 'max' => 255];

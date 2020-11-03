@@ -15,9 +15,6 @@ namespace craft\base;
  */
 abstract class Component extends Model implements ComponentInterface
 {
-    // Static
-    // =========================================================================
-
     /**
      * Returns the display name of this class.
      *
@@ -27,5 +24,13 @@ abstract class Component extends Model implements ComponentInterface
     {
         $classNameParts = explode('\\', static::class);
         return array_pop($classNameParts);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function isSelectable(): bool
+    {
+        return true;
     }
 }

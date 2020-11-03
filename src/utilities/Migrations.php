@@ -18,9 +18,6 @@ use craft\base\Utility;
  */
 class Migrations extends Utility
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -42,7 +39,7 @@ class Migrations extends Utility
      */
     public static function iconPath()
     {
-        return Craft::getAlias('@app/icons/arrow-up.svg');
+        return Craft::getAlias('@appicons/arrow-up.svg');
     }
 
     /**
@@ -70,5 +67,4 @@ class Migrations extends Utility
             'newMigrations' => $newMigrations
         ]);
     }
-
 }

@@ -15,9 +15,6 @@ namespace craft\events;
  */
 class ModelEvent extends \yii\base\ModelEvent
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var bool Whether the model is brand new
      */

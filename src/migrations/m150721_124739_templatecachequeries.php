@@ -11,9 +11,6 @@ use craft\helpers\MigrationHelper;
  */
 class m150721_124739_templatecachequeries extends Migration
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

@@ -9,7 +9,8 @@
         }
     })
     .then(function(responseData) {
-        window.opener.pluginStoreApp.updateCraftId(responseData);
-        window.close();
+        window.opener.pluginStoreApp.updateCraftId(responseData, function() {
+            window.close();
+        });
     })
 {% endjs %}

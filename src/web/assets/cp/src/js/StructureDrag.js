@@ -150,7 +150,6 @@ Craft.StructureDrag = Garnish.Drag.extend(
                             // Position the insertion after the closest target
                             this.$insertion.insertAfter(this._.$closestTargetLi);
                         }
-
                     }
                     else {
                         if (!this.maxLevels || this.maxLevels >= (this._.closestTargetLevel + this.draggeeLevel)) {
@@ -340,7 +339,6 @@ Craft.StructureDrag = Garnish.Drag.extend(
                         if (textStatus === 'success') {
                             Craft.cp.displayNotice(Craft.t('app', 'New order saved.'));
                         }
-
                     });
                 }
             }
@@ -373,5 +371,4 @@ Craft.StructureDrag = Garnish.Drag.extend(
                 this.setLevel($($childLis[i]), level + 1);
             }
         }
-
     });

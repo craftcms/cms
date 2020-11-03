@@ -10,9 +10,13 @@ namespace craft\base;
 use Craft;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\events\DefineFieldHtmlEvent;
+use craft\events\DefineFieldKeywordsEvent;
 use craft\events\FieldElementEvent;
+use craft\gql\types\QueryArgument;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
+use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
 use craft\records\Field as FieldRecord;
@@ -31,13 +35,7 @@ use yii\db\Schema;
  */
 abstract class Field extends SavableComponent implements FieldInterface
 {
-    // Traits
-    // =========================================================================
-
     use FieldTrait;
-
-    // Constants
-    // =========================================================================
 
     // Events
     // -------------------------------------------------------------------------
@@ -83,6 +81,40 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     const EVENT_AFTER_ELEMENT_RESTORE = 'afterElementRestore';
 
+    /**
+     * @event DefineFieldKeywordsEvent The event that is triggered when defining the field’s search keywords for an
+     * element.
+     *
+     * Note that you _must_ set [[Event::$handled]] to `true` if you want the field to accept your custom
+     * [[DefineFieldKeywordsEvent::$keywords|$keywords]] value.
+     *
+     * ```php
+     * Event::on(
+     *     craft\fields\Lightswitch::class,
+     *     craft\base\Field::EVENT_DEFINE_KEYWORDS,
+     *     function(craft\events\DefineFieldKeywordsEvent $e
+     * ) {
+     *     // @var craft\fields\Lightswitch $field
+     *     $field = $e->sender;
+     *
+     *     if ($field->handle === 'fooOrBar') {
+     *         // Override the keywords depending on whether the lightswitch is enabled or not
+     *         $e->keywords = $e->value ? 'foo' : 'bar';
+     *         $e->handled = true;
+     *     }
+     * });
+     * ```
+     *
+     * @since 3.5.0
+     */
+    const EVENT_DEFINE_KEYWORDS = 'defineKeywords';
+
+    /**
+     * @event DefineFieldHtmlEvent The event that is triggered when defining the field’s input HTML.
+     * @since 3.5.0
+     */
+    const EVENT_DEFINE_INPUT_HTML = 'defineInputHtml';
+
     // Translation methods
     // -------------------------------------------------------------------------
 
@@ -91,9 +123,6 @@ abstract class Field extends SavableComponent implements FieldInterface
     const TRANSLATION_METHOD_SITE_GROUP = 'siteGroup';
     const TRANSLATION_METHOD_LANGUAGE = 'language';
     const TRANSLATION_METHOD_CUSTOM = 'custom';
-
-    // Static
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -131,18 +160,12 @@ abstract class Field extends SavableComponent implements FieldInterface
         return 'mixed';
     }
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var bool|null Whether the field is fresh.
      * @see isFresh()
      * @see setIsFresh()
      */
     private $_isFresh;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Use the translated field name as the string representation.
@@ -179,9 +202,9 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
 
         // Make sure the column name is under the databases maximum column length allowed.
         $maxHandleLength = Craft::$app->getDb()->getSchema()->maxObjectNameLength - strlen(Craft::$app->getContent()->fieldColumnPrefix);
@@ -224,9 +247,12 @@ abstract class Field extends SavableComponent implements FieldInterface
                 'fieldValue',
                 'fieldValues',
                 'id',
+                'language',
                 'level',
+                'localized',
                 'lft',
                 'link',
+                'localized',
                 'name', // global set-specific
                 'next',
                 'nextSibling',
@@ -292,21 +318,21 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
+    public function getTranslationDescription(ElementInterface $element = null)
+    {
+        if (!$this->getIsTranslatable($element)) {
+            return null;
+        }
+
+        return ElementHelper::translationDescription($this->translationMethod);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getTranslationKey(ElementInterface $element): string
     {
-        /** @var Element $element */
-        switch ($this->translationMethod) {
-            case self::TRANSLATION_METHOD_NONE:
-                return '1';
-            case self::TRANSLATION_METHOD_SITE:
-                return (string)$element->siteId;
-            case self::TRANSLATION_METHOD_SITE_GROUP:
-                return (string)$element->getSite()->groupId;
-            case self::TRANSLATION_METHOD_LANGUAGE:
-                return $element->getSite()->language;
-            default:
-                return Craft::$app->getView()->renderObjectTemplate($this->translationKeyFormat, $element);
-        }
+        return ElementHelper::translationKey($element, $this->translationMethod, $this->translationKeyFormat);
     }
 
     /**
@@ -321,6 +347,31 @@ abstract class Field extends SavableComponent implements FieldInterface
      * @inheritdoc
      */
     public function getInputHtml($value, ElementInterface $element = null): string
+    {
+        $html = $this->inputHtml($value, $element);
+
+        // Give plugins a chance to modify it
+        $event = new DefineFieldHtmlEvent([
+            'value' => $value,
+            'element' => $element,
+            'html' => $html,
+        ]);
+
+        $this->trigger(self::EVENT_DEFINE_INPUT_HTML, $event);
+        return $event->html;
+    }
+
+    /**
+     * Returns the field’s input HTML.
+     *
+     * @param mixed $value The field’s value. This will either be the [[normalizeValue()|normalized value]],
+     * raw POST data (i.e. if there was a validation error), or null
+     * @param ElementInterface|null $element The element the field is associated with, if there is one
+     * @return string The input HTML.
+     * @see getInputHtml()
+     * @since 3.5.0
+     */
+    protected function inputHtml($value, ElementInterface $element = null): string
     {
         return Html::textarea($this->handle, $value);
     }
@@ -354,7 +405,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     {
         $reflection = new \ReflectionMethod($this, 'isEmpty');
         if ($reflection->getDeclaringClass()->getName() !== self::class) {
-            Craft::$app->getDeprecator()->log('Field::isEmpty()', 'Fields’ isEmpty() method has been deprecated. Use isValueEmpty() instead.');
+            Craft::$app->getDeprecator()->log('Field::isEmpty()', 'Fields’ `isEmpty()` method has been deprecated. Use `isValueEmpty()` instead.');
         }
 
         return $this->isEmpty($value);
@@ -376,6 +427,33 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function getSearchKeywords($value, ElementInterface $element): string
     {
+        // Give plugins/modules a chance to define custom keywords
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_KEYWORDS)) {
+            $event = new DefineFieldKeywordsEvent([
+                'value' => $value,
+                'element' => $element,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_KEYWORDS, $event);
+            if ($event->handled) {
+                return $event->keywords;
+            }
+        }
+        return $this->searchKeywords($value, $element);
+    }
+
+    /**
+     * Returns the search keywords that should be associated with this field.
+     *
+     * The keywords can be separated by commas and/or whitespace; it doesn’t really matter. [[\craft\services\Search]]
+     * will be able to find the individual keywords in whatever string is returned, and normalize them for you.
+     *
+     * @param mixed $value The field’s value
+     * @param ElementInterface $element The element the field is associated with, if there is one
+     * @return string A string of search keywords.
+     * @since 3.5.0
+     */
+    protected function searchKeywords($value, ElementInterface $element): string
+    {
         return StringHelper::toString($value, ' ');
     }
 
@@ -390,7 +468,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     {
         $value = (string)$value;
 
-        return StringHelper::stripHtml($value);
+        return Html::encode(StringHelper::stripHtml($value));
     }
 
     /**
@@ -404,8 +482,8 @@ abstract class Field extends SavableComponent implements FieldInterface
     public function getSortOption(): array
     {
         return [
-            'label' => $this->name,
-            'orderBy' => ($this->columnPrefix ?: 'field_') . $this->handle,
+            'label' => Craft::t('site', $this->name),
+            'orderBy' => ($this->columnPrefix ?: 'field_') . $this->handle . ', elements.id',
             'attribute' => 'field:' . $this->id,
         ];
     }
@@ -484,6 +562,31 @@ abstract class Field extends SavableComponent implements FieldInterface
     public function getContentGqlType()
     {
         return Type::string();
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.5.0
+     */
+    public function getContentGqlMutationArgumentType()
+    {
+        return [
+            'name' => $this->handle,
+            'type' => Type::string(),
+            'description' => $this->instructions,
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.5.0
+     */
+    public function getContentGqlQueryArgumentType()
+    {
+        return [
+            'name' => $this->handle,
+            'type' => Type::listOf(QueryArgument::getType())
+        ];
     }
 
     // Events
@@ -611,9 +714,6 @@ abstract class Field extends SavableComponent implements FieldInterface
         // No restrictions
         return [];
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * Returns the field’s param name on the request.

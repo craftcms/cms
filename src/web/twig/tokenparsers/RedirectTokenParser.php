@@ -21,9 +21,6 @@ use Twig\TokenParser\AbstractTokenParser;
  */
 class RedirectTokenParser extends AbstractTokenParser
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

@@ -18,9 +18,6 @@ use DateTime;
  */
 class CraftIdToken extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null
      */
@@ -55,9 +52,6 @@ class CraftIdToken extends Model
      * @var string
      */
     public $uid;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Has token expired.

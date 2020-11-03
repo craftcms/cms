@@ -23,9 +23,6 @@ use craft\services\Elements;
  */
 class PropagateElements extends BaseJob
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|ElementInterface The element type that should be propagated
      */
@@ -43,17 +40,11 @@ class PropagateElements extends BaseJob
      */
     public $siteId;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
     public function execute($queue)
     {
-        // Let's save ourselves some trouble and just clear all the caches for this element class
-        Craft::$app->getTemplateCaches()->deleteCachesByElementType($this->elementType);
-
         /** @var ElementQuery $query */
         $query = $this->_query();
         $total = $query->count();
@@ -73,9 +64,6 @@ class PropagateElements extends BaseJob
         $elementsService->off(Elements::EVENT_BEFORE_PROPAGATE_ELEMENT, $callback);
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -87,12 +75,9 @@ class PropagateElements extends BaseJob
         $elementType = $query->elementType;
         $total = $query->count();
         return Craft::t('app', 'Propagating {type}', [
-            'type' => mb_strtolower($total == 1 ? $elementType::displayName() : $elementType::pluralDisplayName()),
+            'type' => $total == 1 ? $elementType::lowerDisplayName() : $elementType::pluralLowerDisplayName(),
         ]);
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns the element query based on the criteria.

@@ -18,9 +18,6 @@ use craft\base\Utility;
  */
 class PhpInfo extends Utility
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -42,7 +39,7 @@ class PhpInfo extends Utility
      */
     public static function iconPath()
     {
-        return Craft::getAlias('@app/icons/info-circle.svg');
+        return Craft::getAlias('@appicons/info-circle.svg');
     }
 
     /**

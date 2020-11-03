@@ -18,16 +18,10 @@ use craft\web\Controller;
  */
 class TestController extends Controller
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var array
      */
     protected $allowAnonymous = ['allow-anonymous'];
-
-    // Public Methods
-    // =========================================================================
 
     /**
      *

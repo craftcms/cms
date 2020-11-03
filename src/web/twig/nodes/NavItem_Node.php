@@ -21,9 +21,6 @@ use Twig\Template;
  */
 class NavItem_Node extends Node
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * NavItem_Node constructor.
      *

@@ -16,6 +16,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\MatrixBlockQuery;
 use craft\fields\Matrix;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
 use craft\models\MatrixBlockType;
 use craft\models\MatrixBlockType as MatrixBlockTypeModel;
 use craft\records\MatrixBlock as MatrixBlockRecord;
@@ -33,9 +34,6 @@ use yii\base\InvalidConfigException;
  */
 class MatrixBlock extends Element implements BlockElementInterface
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -47,9 +45,25 @@ class MatrixBlock extends Element implements BlockElementInterface
     /**
      * @inheritdoc
      */
+    public static function lowerDisplayName(): string
+    {
+        return Craft::t('app', 'Matrix block');
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function pluralDisplayName(): string
     {
         return Craft::t('app', 'Matrix Blocks');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function pluralLowerDisplayName(): string
+    {
+        return Craft::t('app', 'Matrix blocks');
     }
 
     /**
@@ -140,9 +154,6 @@ class MatrixBlock extends Element implements BlockElementInterface
         return $context->getField()->handle . '_' . $context->handle . '_BlockType';
     }
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null Field ID
      */
@@ -155,7 +166,7 @@ class MatrixBlock extends Element implements BlockElementInterface
 
     /**
      * @var int|null Owner site ID
-     * @deprecated in 3.2. Use [[$siteId]] instead.
+     * @deprecated in 3.2.0. Use [[$siteId]] instead.
      */
     public $ownerSiteId;
 
@@ -168,6 +179,13 @@ class MatrixBlock extends Element implements BlockElementInterface
      * @var int|null Sort order
      */
     public $sortOrder;
+
+    /**
+     * @var bool Whether the block has changed.
+     * @internal
+     * @since 3.4.0
+     */
+    public $dirty = false;
 
     /**
      * @var bool Collapsed
@@ -189,9 +207,6 @@ class MatrixBlock extends Element implements BlockElementInterface
      * @var ElementInterface[]|null
      */
     private $_eagerLoadedBlockTypeElements;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -217,9 +232,9 @@ class MatrixBlock extends Element implements BlockElementInterface
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['fieldId', 'ownerId', 'typeId', 'sortOrder'], 'number', 'integerOnly' => true];
         return $rules;
     }
@@ -239,7 +254,20 @@ class MatrixBlock extends Element implements BlockElementInterface
             return [Craft::$app->getSites()->getPrimarySite()->id];
         }
 
-        return Craft::$app->getMatrix()->getSupportedSiteIdsForField($this->_field(), $owner);
+        return Craft::$app->getMatrix()->getSupportedSiteIds($this->_field()->propagationMethod, $owner);
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.5.0
+     */
+    public function getCacheTags(): array
+    {
+        return [
+            "field-owner:$this->fieldId-$this->ownerId",
+            "field:$this->fieldId",
+            "owner:$this->ownerId",
+        ];
     }
 
     /**
@@ -265,16 +293,13 @@ class MatrixBlock extends Element implements BlockElementInterface
         $blockType = Craft::$app->getMatrix()->getBlockTypeById($this->typeId);
 
         if (!$blockType) {
-            throw new InvalidConfigException('Invalid Matrix block ID: ' . $this->typeId);
+            throw new InvalidConfigException('Invalid Matrix block type ID: ' . $this->typeId);
         }
 
         return $blockType;
     }
 
-    /**
-     * @inheritdoc
-     * @throws InvalidConfigException
-     */
+    /** @inheritdoc */
     public function getOwner(): ElementInterface
     {
         if ($this->_owner === null) {
@@ -422,11 +447,11 @@ class MatrixBlock extends Element implements BlockElementInterface
         }
 
         // Update the block record
-        Craft::$app->getDb()->createCommand()
-            ->update(Table::MATRIXBLOCKS, [
-                'deletedWithOwner' => $this->deletedWithOwner,
-            ], ['id' => $this->id], [], false)
-            ->execute();
+        Db::update(Table::MATRIXBLOCKS, [
+            'deletedWithOwner' => $this->deletedWithOwner,
+        ], [
+            'id' => $this->id,
+        ], [], false);
 
         return true;
     }
@@ -445,9 +470,6 @@ class MatrixBlock extends Element implements BlockElementInterface
 
         parent::afterDelete();
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns the Matrix field.

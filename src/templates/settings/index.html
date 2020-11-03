@@ -10,10 +10,11 @@
 
         <ul class="icons">
             {% for handle, item in items %}
+                {% set icon = item.iconMask ?? item.icon %}
                 <li>
                     <a href="{% if item.url is defined %}{{ url(item.url) }}{% else %}{{ url('settings/'~handle) }}{% endif %}">
-                        <div class="icon">
-                            {{ svg(item.icon, sanitize=true, namespace=true) }}
+                        <div class="icon{% if item.iconMask is defined %} icon-mask{% endif %}">
+                            {{ svg(icon, sanitize=true, namespace=true) }}
                         </div>
                         {{ item.label }}
                     </a>

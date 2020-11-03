@@ -1,20 +1,23 @@
 language: php
 dist: bionic
-sudo: required
 group: edge
+os: linux
 env:
   global:
   - DEFAULT_COMPOSER_FLAGS="--no-interaction --no-ansi --no-progress --no-suggest"
 branches:
   only:
   - develop
-  - feature/tests
 services:
 - mysql
 - postgresql
-matrix:
+jobs:
   fast_finish: true
   include:
+  - php: 7.4
+    env: DB=mysql
+  - php: 7.4
+    env: DB=pgsql
   - php: 7.3
     env: DB=mysql
   - php: 7.3
@@ -32,7 +35,7 @@ cache:
   - "$HOME/.composer/cache"
   - "$HOME/.npm"
 addons:
-  postgresql: '9.6'
+  postgresql: "9.6"
 install:
 - |
   if [[ $TASK_TESTS_COVERAGE != 1 ]]; then
@@ -61,6 +64,12 @@ before_script:
 - pecl channel-update pecl.php.net
 - yes | pecl install imagick
 - cp tests/.env.example.$DB tests/.env
+- |
+  if [[ $DB == "mysql" ]]; then
+    sed -i 's/DB_USER="craft"/DB_USER="root"/' tests/.env
+  else
+    sed -i 's/DB_USER="craft"/DB_USER="postgres"/' tests/.env
+  fi
 script:
 - |
   if [[ $TASK_TESTS_COVERAGE != 1 ]]; then

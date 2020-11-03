@@ -30,13 +30,7 @@ use yii\db\ActiveQueryInterface;
  */
 class Section extends ActiveRecord
 {
-    // Traits
-    // =========================================================================
-
     use SoftDeleteTrait;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

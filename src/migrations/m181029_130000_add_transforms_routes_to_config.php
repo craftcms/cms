@@ -42,9 +42,6 @@ class m181029_130000_add_transforms_routes_to_config extends Migration
         return false;
     }
 
-    // Private methods
-    // =========================================================================
-
     /**
      * Migrate transforms to project config
      */

@@ -36,8 +36,7 @@ if (PHP_VERSION_ID < 70300) {
     setlocale(
         LC_CTYPE,
         'C.UTF-8', // libc >= 2.13
-        'C.utf8', // different spelling
-        'en_US.utf8' // different spelling for fallback
+        'C.utf8' // different spelling
     );
 }
 

@@ -12,6 +12,7 @@ use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\elements\Category;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use craft\models\CategoryGroup;
@@ -26,9 +27,9 @@ use yii\db\Connection;
  * @method Category|array|null nth(int $n, Connection $db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @doc-path categories.md
  * @supports-structure-params
  * @supports-site-params
- * @supports-enabledforsite-param
  * @supports-title-param
  * @supports-slug-param
  * @supports-uri-param
@@ -41,9 +42,6 @@ use yii\db\Connection;
  */
 class CategoryQuery extends ElementQuery
 {
-    // Properties
-    // =========================================================================
-
     // General parameters
     // -------------------------------------------------------------------------
 
@@ -59,9 +57,6 @@ class CategoryQuery extends ElementQuery
      * @used-by groupId()
      */
     public $groupId;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -105,7 +100,7 @@ class CategoryQuery extends ElementQuery
      *
      * Possible values include:
      *
-     * | Value | Fetches {elements}…
+     * | Value | Fetches categories…
      * | - | -
      * | `'foo'` | in a group with a handle of `foo`.
      * | `'not foo'` | not in a group with a handle of `foo`.
@@ -116,14 +111,14 @@ class CategoryQuery extends ElementQuery
      * ---
      *
      * ```twig
-     * {# Fetch {elements} in the Foo group #}
+     * {# Fetch categories in the Foo group #}
      * {% set {elements-var} = {twig-method}
      *     .group('foo')
      *     .all() %}
      * ```
      *
      * ```php
-     * // Fetch {elements} in the Foo group
+     * // Fetch categories in the Foo group
      * ${elements-var} = {php-method}
      *     ->group('foo')
      *     ->all();
@@ -137,7 +132,7 @@ class CategoryQuery extends ElementQuery
     {
         if ($value instanceof CategoryGroup) {
             $this->structureId = ($value->structureId ?: false);
-            $this->groupId = $value->id;
+            $this->groupId = [$value->id];
         } else if ($value !== null) {
             $this->groupId = (new Query())
                 ->select(['id'])
@@ -156,7 +151,7 @@ class CategoryQuery extends ElementQuery
      *
      * Possible values include:
      *
-     * | Value | Fetches {elements}…
+     * | Value | Fetches categories…
      * | - | -
      * | `1` | in a group with an ID of 1.
      * | `'not 1'` | not in a group with an ID of 1.
@@ -166,14 +161,14 @@ class CategoryQuery extends ElementQuery
      * ---
      *
      * ```twig
-     * {# Fetch {elements} in the group with an ID of 1 #}
+     * {# Fetch categories in the group with an ID of 1 #}
      * {% set {elements-var} = {twig-method}
      *     .groupId(1)
      *     .all() %}
      * ```
      *
      * ```php
-     * // Fetch {elements} in the group with an ID of 1
+     * // Fetch categories in the group with an ID of 1
      * ${elements-var} = {php-method}
      *     ->groupId(1)
      *     ->all();
@@ -188,9 +183,6 @@ class CategoryQuery extends ElementQuery
         $this->groupId = $value;
         return $this;
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -215,9 +207,6 @@ class CategoryQuery extends ElementQuery
         return parent::beforePrepare();
     }
 
-    // Private Methods
-    // =========================================================================
-
     /**
      * Applies the 'editable' param to the query being prepared.
      *
@@ -238,9 +227,12 @@ class CategoryQuery extends ElementQuery
      */
     private function _applyGroupIdParam()
     {
+        $this->_normalizeGroupId();
         if ($this->groupId) {
+            $this->subQuery->andWhere(['categories.groupId' => $this->groupId]);
+
             // Should we set the structureId param?
-            if ($this->structureId === null && (!is_array($this->groupId) || count($this->groupId) === 1)) {
+            if ($this->structureId === null && count($this->groupId) === 1) {
                 $structureId = (new Query())
                     ->select(['structureId'])
                     ->from([Table::CATEGORYGROUPS])
@@ -248,8 +240,24 @@ class CategoryQuery extends ElementQuery
                     ->scalar();
                 $this->structureId = (int)$structureId ?: false;
             }
+        }
+    }
 
-            $this->subQuery->andWhere(Db::parseParam('categories.groupId', $this->groupId));
+    /**
+     * Normalizes the groupId param to an array of IDs or null
+     */
+    private function _normalizeGroupId()
+    {
+        if (empty($this->groupId)) {
+            $this->groupId = null;
+        } else if (is_numeric($this->groupId)) {
+            $this->groupId = [$this->groupId];
+        } else if (!is_array($this->groupId) || !ArrayHelper::isNumeric($this->groupId)) {
+            $this->groupId = (new Query())
+                ->select(['id'])
+                ->from([Table::CATEGORYGROUPS])
+                ->where(Db::parseParam('id', $this->groupId))
+                ->column();
         }
     }
 
@@ -290,7 +298,22 @@ class CategoryQuery extends ElementQuery
         $this->subQuery->andWhere($condition);
 
         if ($joinCategoryGroups) {
-            $this->subQuery->innerJoin('{{%categorygroups}} categorygroups', '[[categorygroups.id]] = [[categories.groupId]]');
+            $this->subQuery->innerJoin(['categorygroups' => Table::CATEGORYGROUPS], '[[categorygroups.id]] = [[categories.groupId]]');
         }
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.5.0
+     */
+    protected function cacheTags(): array
+    {
+        $tags = [];
+        if ($this->groupId) {
+            foreach ($this->groupId as $groupId) {
+                $tags[] = "group:$groupId";
+            }
+        }
+        return $tags;
     }
 }

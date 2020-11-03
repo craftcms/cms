@@ -11,9 +11,12 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
+use craft\elements\db\ElementQueryInterface;
 use craft\fields\data\MultiOptionsFieldData;
 use craft\fields\data\OptionData;
 use craft\fields\data\SingleOptionFieldData;
+use craft\gql\arguments\OptionField as OptionFieldArguments;
+use craft\gql\resolvers\OptionField as OptionFieldResolver;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\Json;
@@ -28,9 +31,6 @@ use yii\db\Schema;
  */
 abstract class BaseOptionsField extends Field implements PreviewableFieldInterface
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var array|null The available options
      */
@@ -45,9 +45,6 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
      * @var bool Whether the field should support optgroups
      */
     protected $optgroups = false;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -97,9 +94,9 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = ['options', 'validateOptions'];
         return $rules;
     }
@@ -160,12 +157,10 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             // See how much data we could possibly be saving if everything was selected.
             $length = 0;
 
-            if ($this->options) {
-                foreach ($this->options as $option) {
-                    if (!empty($option['value'])) {
-                        // +3 because it will be json encoded. Includes the surrounding quotes and comma.
-                        $length += strlen($option['value']) + 3;
-                    }
+            foreach ($this->options() as $option) {
+                if (!empty($option['value'])) {
+                    // +3 because it will be json encoded. Includes the surrounding quotes and comma.
+                    $length += strlen($option['value']) + 3;
                 }
             }
 
@@ -255,34 +250,43 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             $value = $this->defaultValue();
         }
 
-        // Normalize to an array
-        $selectedValues = (array)$value;
-
-        if ($this->multi) {
-            // Convert the value to a MultiOptionsFieldData object
-            $options = [];
-            foreach ($selectedValues as $val) {
-                $label = $this->optionLabel($val);
-                $options[] = new OptionData($label, $val, true);
-            }
-            $value = new MultiOptionsFieldData($options);
-        } else {
-            // Convert the value to a SingleOptionFieldData object
-            $value = !empty($selectedValues) ? reset($selectedValues) : null;
-            $label = $this->optionLabel($value);
-            $value = new SingleOptionFieldData($label, $value, true);
+        // Normalize to an array of strings
+        $selectedValues = [];
+        foreach ((array)$value as $val) {
+            $selectedValues[] = (string)$val;
         }
 
         $options = [];
-
-        if ($this->options) {
-            foreach ($this->options as $option) {
-                if (isset($option['optgroup'])) {
-                    continue;
-                }
+        $optionValues = [];
+        $optionLabels = [];
+        foreach ($this->options() as $option) {
+            if (!isset($option['optgroup'])) {
                 $selected = in_array($option['value'], $selectedValues, true);
-                $options[] = new OptionData($option['label'], $option['value'], $selected);
+                $options[] = new OptionData($option['label'], $option['value'], $selected, true);
+                $optionValues[] = (string)$option['value'];
+                $optionLabels[] = (string)$option['label'];
             }
+        }
+
+        if ($this->multi) {
+            // Convert the value to a MultiOptionsFieldData object
+            $selectedOptions = [];
+            foreach ($selectedValues as $selectedValue) {
+                $index = array_search($selectedValue, $optionValues, true);
+                $valid = $index !== false;
+                $label = $valid ? $optionLabels[$index] : null;
+                $selectedOptions[] = new OptionData($label, $selectedValue, true, $valid);
+            }
+            $value = new MultiOptionsFieldData($selectedOptions);
+        } else if (!empty($selectedValues)) {
+            // Convert the value to a SingleOptionFieldData object
+            $selectedValue = reset($selectedValues);
+            $index = array_search($selectedValue, $optionValues, true);
+            $valid = $index !== false;
+            $label = $valid ? $optionLabels[$index] : null;
+            $value = new SingleOptionFieldData($label, $selectedValue, true, $valid);
+        } else {
+            $value = new SingleOptionFieldData(null, null, true, true);
         }
 
         $value->setOptions($options);
@@ -309,18 +313,40 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
 
     /**
      * @inheritdoc
+     * @since 3.4.6
+     */
+    public function modifyElementsQuery(ElementQueryInterface $query, $value)
+    {
+        // foo => *"foo"*
+        if ($this->multi) {
+            if (is_string($value)) {
+                if (preg_match('/^(not\s+)?([^\*\[\]"]+)$/', $value, $match)) {
+                    $value = "{$match[1]}*\"{$match[2]}\"*";
+                }
+            } else if (is_array($value)) {
+                foreach ($value as &$v) {
+                    if (!in_array(strtolower($v), ['and', 'or', 'not']) && preg_match('/^(not\s+)?([^\*\[\]"]+)$/', $v, $match)) {
+                        $v = "{$match[1]}*\"{$match[2]}\"*";
+                    }
+                }
+            }
+        }
+
+        return parent::modifyElementsQuery($query, $value);
+    }
+
+    /**
+     * @inheritdoc
      */
     public function getElementValidationRules(): array
     {
         // Get all of the acceptable values
         $range = [];
 
-        if ($this->options) {
-            foreach ($this->options as $option) {
-                if (!isset($option['optgroup'])) {
-                    // Cast the option value to a string in case it is an integer
-                    $range[] = (string)$option['value'];
-                }
+        foreach ($this->options() as $option) {
+            if (!isset($option['optgroup'])) {
+                // Cast the option value to a string in case it is an integer
+                $range[] = (string)$option['value'];
             }
         }
 
@@ -379,15 +405,34 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
      */
     public function getContentGqlType()
     {
-        if (!$this->multi) {
-            return parent::getContentGqlType();
-        }
-
-        return Type::listOf(Type::string());
+        return [
+            'name' => $this->handle,
+            'type' => $this->multi ? Type::listOf(Type::string()) : Type::string(),
+            'args' => OptionFieldArguments::getArguments(),
+            'resolve' => OptionFieldResolver::class . '::resolve'
+        ];
     }
 
-    // Protected Methods
-    // =========================================================================
+    /**
+     * @inheritdoc
+     * @since 3.5.0
+     */
+    public function getContentGqlMutationArgumentType()
+    {
+        $values = [];
+
+        foreach ($this->options as $option) {
+            if (!isset($option['optgroup'])) {
+                $values[] = '“' . $option['value'] . '”';
+            }
+        }
+
+        return [
+            'name' => $this->handle,
+            'type' => Type::string(),
+            'description' => Craft::t('app', 'The allowed values are [{values}]', ['values' => implode(', ', $values)]),
+        ];
+    }
 
     /**
      * Returns the label for the Options setting.
@@ -395,6 +440,34 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
      * @return string
      */
     abstract protected function optionsSettingLabel(): string;
+
+    /**
+     * Returns the available options (and optgroups) for the field.
+     *
+     * Each option should be defined as a nested array with the following keys:
+     *
+     * - `label` – The option label
+     * - `value`– The option value
+     *
+     * To define an optgroup, add an array with an `optgroup` key, set to the label of the optgroup.
+     *
+     * ```php
+     * [
+     *   ['label' => 'Foo', 'value' => 'foo'],
+     *   ['label' => 'Bar', 'value' => 'bar'],
+     *   ['optgroup' => 'Fruit']
+     *   ['label' => 'Apple', 'value' => 'apple'],
+     *   ['label' => 'Orange', 'value' => 'orange'],
+     *   ['label' => 'Banana', 'value' => 'banana'],
+     * ]
+     * ```
+     *
+     * @return array
+     */
+    protected function options(): array
+    {
+        return $this->options ?? [];
+    }
 
     /**
      * Returns the field options, with labels run through Craft::t().
@@ -405,18 +478,16 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     {
         $translatedOptions = [];
 
-        if ($this->options) {
-            foreach ($this->options as $option) {
-                if (isset($option['optgroup'])) {
-                    $translatedOptions[] = [
-                        'optgroup' => Craft::t('site', $option['optgroup']),
-                    ];
-                } else {
-                    $translatedOptions[] = [
-                        'label' => Craft::t('site', $option['label']),
-                        'value' => $option['value']
-                    ];
-                }
+        foreach ($this->options() as $option) {
+            if (isset($option['optgroup'])) {
+                $translatedOptions[] = [
+                    'optgroup' => Craft::t('site', $option['optgroup']),
+                ];
+            } else {
+                $translatedOptions[] = [
+                    'label' => Craft::t('site', $option['label']),
+                    'value' => $option['value']
+                ];
             }
         }
 
@@ -428,14 +499,13 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
      *
      * @param string|null $value
      * @return string|null
+     * @deprecated in 3.4.24
      */
     protected function optionLabel(string $value = null)
     {
-        if ($this->options) {
-            foreach ($this->options as $option) {
-                if (!isset($option['optgroup']) && (string)$option['value'] === $value) {
-                    return $option['label'];
-                }
+        foreach ($this->options() as $option) {
+            if (!isset($option['optgroup']) && (string)$option['value'] === $value) {
+                return $option['label'];
             }
         }
 
@@ -452,22 +522,18 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
         if ($this->multi) {
             $defaultValues = [];
 
-            if ($this->options) {
-                foreach ($this->options as $option) {
-                    if (!empty($option['default'])) {
-                        $defaultValues[] = $option['value'];
-                    }
+            foreach ($this->options() as $option) {
+                if (!empty($option['default'])) {
+                    $defaultValues[] = $option['value'];
                 }
             }
 
             return $defaultValues;
         }
 
-        if ($this->options) {
-            foreach ($this->options as $option) {
-                if (!empty($option['default'])) {
-                    return $option['value'];
-                }
+        foreach ($this->options() as $option) {
+            if (!empty($option['default'])) {
+                return $option['value'];
             }
         }
 

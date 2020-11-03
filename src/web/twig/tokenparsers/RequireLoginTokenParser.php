@@ -20,9 +20,6 @@ use Twig\TokenParser\AbstractTokenParser;
  */
 class RequireLoginTokenParser extends AbstractTokenParser
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

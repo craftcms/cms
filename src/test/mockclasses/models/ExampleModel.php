@@ -18,31 +18,25 @@ use craft\base\Model;
  */
 class ExampleModel extends Model
 {
-    // Public Properties
-    // =========================================================================
-
     /**
-     * @var
+     * @var mixed
      */
     public $exampleParam;
 
     /**
-     * @var
+     * @var string
      */
     public $exampleDateParam;
 
     /**
-     * @var
+     * @var \DateTime
      */
     public $dateCreated;
 
     /**
-     * @var
+     * @var \DateTime
      */
     public $dateUpdated;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

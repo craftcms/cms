@@ -18,9 +18,6 @@ use Twig\Node\Node;
  */
 class HeaderNode extends Node
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

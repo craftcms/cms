@@ -28,9 +28,6 @@ use yii\db\Schema;
  */
 class DbHelperTest extends Unit
 {
-    // Constants
-    // =========================================================================
-
     const MULTI_PARSEPARAM_NOT = [
         'or',
         [
@@ -46,9 +43,6 @@ class DbHelperTest extends Unit
     ];
 
     const MULTI_PARSEPARAM = ['foo' => ['field_1', 'field_2']];
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var UnitTester
@@ -75,12 +69,6 @@ class DbHelperTest extends Unit
      */
     protected $isMysql;
 
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
-
     /**
      * @dataProvider parseParamDataProvider
      *
@@ -93,7 +81,7 @@ class DbHelperTest extends Unit
      */
     public function testParseParam($result, $column, $value, $defaultOperator = '=', $caseInsensitive = false, $columnType = null)
     {
-        $this->assertSame($result, Db::parseParam($column, $value, $defaultOperator, $caseInsensitive, $columnType));
+        self::assertSame($result, Db::parseParam($column, $value, $defaultOperator, $caseInsensitive, $columnType));
     }
 
     /**
@@ -105,8 +93,8 @@ class DbHelperTest extends Unit
     public function testEscapeParam(string $result, string $input)
     {
         $escapeResult = Db::escapeParam($input);
-        $this->assertSame($result, $escapeResult);
-        $this->assertIsString($escapeResult);
+        self::assertSame($result, $escapeResult);
+        self::assertIsString($escapeResult);
     }
 
     /**
@@ -117,7 +105,7 @@ class DbHelperTest extends Unit
      */
     public function testColumnTypeParsing($result, string $input)
     {
-        $this->assertSame($result, Db::parseColumnType($input));
+        self::assertSame($result, Db::parseColumnType($input));
     }
 
     /**
@@ -131,7 +119,7 @@ class DbHelperTest extends Unit
      */
     public function testGetNumericColumnType($result, $int1, $int2, $decimals = null)
     {
-        $this->assertSame($result, Db::getNumericalColumnType($int1, $int2, $decimals));
+        self::assertSame($result, Db::getNumericalColumnType($int1, $int2, $decimals));
     }
 
     /**
@@ -142,7 +130,7 @@ class DbHelperTest extends Unit
      */
     public function testColumnLengthParsing($result, $input)
     {
-        $this->assertSame($result, Db::parseColumnLength($input));
+        self::assertSame($result, Db::parseColumnLength($input));
     }
 
     /**
@@ -153,7 +141,7 @@ class DbHelperTest extends Unit
      */
     public function testGetSimplifiedColumnType($result, $input)
     {
-        $this->assertSame($result, Db::getSimplifiedColumnType($input));
+        self::assertSame($result, Db::getSimplifiedColumnType($input));
     }
 
     /**
@@ -169,7 +157,7 @@ class DbHelperTest extends Unit
      */
     public function testDeleteIfExists($result, string $table, $condition = '', array $params = [])
     {
-        $this->assertSame($result, Db::deleteIfExists($table, $condition, $params));
+        self::assertSame($result, Db::deleteIfExists($table, $condition, $params));
     }
 
     /*
@@ -191,7 +179,7 @@ class DbHelperTest extends Unit
     public function testValuePrepareForDb($result, $input)
     {
         $prepped = Db::prepareValueForDb($input);
-        $this->assertSame($result, $prepped);
+        self::assertSame($result, $prepped);
     }
 
     /**
@@ -200,18 +188,18 @@ class DbHelperTest extends Unit
     public function testPrepareDateForDb()
     {
         $date = new DateTime('2018-08-08 20:00:00', $this->utcTimezone);
-        $this->assertSame($date->format('Y-m-d H:i:s'), Db::prepareDateForDb($date));
+        self::assertSame($date->format('Y-m-d H:i:s'), Db::prepareDateForDb($date));
 
         $date = new DateTime('2018-08-08 20:00:00', $this->asiaTokyoTimezone);
         $dbPrepared = Db::prepareDateForDb($date);
 
         // Ensure db makes no changes.
-        $this->assertSame('2018-08-08 20:00:00', $date->format('Y-m-d H:i:s'));
-        $this->assertSame('Asia/Tokyo', $date->getTimezone()->getName());
+        self::assertSame('2018-08-08 20:00:00', $date->format('Y-m-d H:i:s'));
+        self::assertSame('Asia/Tokyo', $date->getTimezone()->getName());
 
         // Set the time to utc from tokyo and ensure its the same as that from prepare.
         $date->setTimezone($this->utcTimezone);
-        $this->assertSame($date->format('Y-m-d H:i:s'), $dbPrepared);
+        self::assertSame($date->format('Y-m-d H:i:s'), $dbPrepared);
 
         // One test to ensure that when a date time is passed in via, for example, string format but with a timezone
         // It is created as a \DateTime with its predefined timezone, set to system, set to utc and then formatted as MySql format.
@@ -220,10 +208,10 @@ class DbHelperTest extends Unit
 
         $date->setTimezone($this->systemTimezone);
         $date->setTimezone($this->utcTimezone);
-        $this->assertSame($date->format('Y-m-d H:i:s'), $preparedWithTz);
+        self::assertSame($date->format('Y-m-d H:i:s'), $preparedWithTz);
 
         // Test that an invalid format will return null.
-        $this->assertNull(Db::prepareDateForDb(['date' => '']));
+        self::assertNull(Db::prepareDateForDb(['date' => '']));
     }
 
     /**
@@ -236,7 +224,7 @@ class DbHelperTest extends Unit
     public function testColumnCompatibility($result, $columnA, $columnB)
     {
         $areCompatible = Db::areColumnTypesCompatible($columnA, $columnB);
-        $this->assertSame($result, $areCompatible);
+        self::assertSame($result, $areCompatible);
     }
 
     /**
@@ -250,7 +238,7 @@ class DbHelperTest extends Unit
     public function testIsNumericColumnType($result, $input)
     {
         $isNumeric = Db::isNumericColumnType($input);
-        $this->assertSame($result, $isNumeric);
+        self::assertSame($result, $isNumeric);
     }
 
     /**
@@ -262,7 +250,7 @@ class DbHelperTest extends Unit
     public function testGetTextualColumnStorageCapacity($result, $input)
     {
         $capacity = Db::getTextualColumnStorageCapacity($input);
-        $this->assertSame($result, $capacity);
+        self::assertSame($result, $capacity);
     }
 
     /**
@@ -274,7 +262,7 @@ class DbHelperTest extends Unit
     public function testGetMaxAllowedValueForNumericColumn($result, $input)
     {
         $allowed = Db::getMaxAllowedValueForNumericColumn($input);
-        $this->assertSame($result, $allowed);
+        self::assertSame($result, $allowed);
     }
 
     /**
@@ -286,7 +274,7 @@ class DbHelperTest extends Unit
     public function testGetMinAllowedValueForNumericColumn($result, $input)
     {
         $allowed = Db::getMinAllowedValueForNumericColumn($input);
-        $this->assertSame($result, $allowed);
+        self::assertSame($result, $allowed);
     }
 
     /**
@@ -298,11 +286,8 @@ class DbHelperTest extends Unit
     public function testPrepareValueForDb($result, $input)
     {
         $prepared = Db::prepareValuesForDb($input);
-        $this->assertSame($result, $prepared);
+        self::assertSame($result, $prepared);
     }
-
-    // Data Providers
-    // =========================================================================
 
     /**
      * @return array
@@ -376,23 +361,23 @@ class DbHelperTest extends Unit
                 'foo', 'not :empty:', '=', false, Schema::TYPE_BOOLEAN,
             ],
             [
-                ['or', ['not', ['foo' => true]], ['foo' => null]],
+                ['foo' => false],
                 'foo', false, '=', false, Schema::TYPE_BOOLEAN,
             ],
             [
-                ['or', ['not', ['foo' => true]], ['foo' => null]],
+                ['foo' => false],
                 'foo', 0, '=', false, Schema::TYPE_BOOLEAN,
             ],
             [
-                ['or', ['not', ['foo' => true]], ['foo' => null]],
+                ['foo' => false],
                 'foo', '0', '=', false, Schema::TYPE_BOOLEAN,
             ],
             [
-                ['or', ['not', ['foo' => true]], ['foo' => null]],
+                ['foo' => false],
                 'foo', 'not 1', '=', false, Schema::TYPE_BOOLEAN,
             ],
             [
-                ['or', ['not', ['foo' => true]], ['foo' => null]],
+                ['foo' => false],
                 'foo', ':empty:', '=', false, Schema::TYPE_BOOLEAN,
             ],
         ];
@@ -610,9 +595,6 @@ class DbHelperTest extends Unit
             [['😀😘'], ['😀😘']]
         ];
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

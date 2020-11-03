@@ -18,9 +18,6 @@ use craft\behaviors\EnvAttributeParserBehavior;
  */
 class Gmail extends BaseTransportAdapter
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -28,9 +25,6 @@ class Gmail extends BaseTransportAdapter
     {
         return 'Gmail';
     }
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var string|null The username that should be used
@@ -47,23 +41,20 @@ class Gmail extends BaseTransportAdapter
      */
     public $timeout = 10;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
     public function behaviors()
     {
-        return [
-            'parser' => [
-                'class' => EnvAttributeParserBehavior::class,
-                'attributes' => [
-                    'username',
-                    'password',
-                ],
-            ]
+        $behaviors = parent::behaviors();
+        $behaviors['parser'] = [
+            'class' => EnvAttributeParserBehavior::class,
+            'attributes' => [
+                'username',
+                'password',
+            ],
         ];
+        return $behaviors;
     }
 
     /**
@@ -81,9 +72,9 @@ class Gmail extends BaseTransportAdapter
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['username', 'password'], 'trim'];
         $rules[] = [['username', 'password', 'timeout'], 'required'];
         $rules[] = [['timeout'], 'number', 'integerOnly' => true];

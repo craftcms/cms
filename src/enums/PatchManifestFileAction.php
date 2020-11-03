@@ -17,9 +17,6 @@ namespace craft\enums;
  */
 abstract class PatchManifestFileAction
 {
-    // Constants
-    // =========================================================================
-
     const Add = 'Add';
     const Remove = 'Remove';
 }

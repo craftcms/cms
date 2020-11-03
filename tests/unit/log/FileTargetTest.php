@@ -29,9 +29,6 @@ use yii\base\InvalidConfigException;
  */
 class FileTargetTest extends TestCase
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var FileTarget
      */
@@ -42,12 +39,6 @@ class FileTargetTest extends TestCase
      */
     public $tester;
 
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
-
     /**
      * @throws InvalidConfigException
      * @throws Throwable
@@ -57,11 +48,11 @@ class FileTargetTest extends TestCase
         $wasCalled = false;
         $this->fileTarget->prefix = function($mess) use (&$wasCalled) {
             $wasCalled = true;
-            $this->assertSame('message', $mess);
+            self::assertSame('message', $mess);
         };
 
         $this->fileTarget->getMessagePrefix('message');
-        $this->assertTrue($wasCalled);
+        self::assertTrue($wasCalled);
     }
 
     /**
@@ -72,7 +63,7 @@ class FileTargetTest extends TestCase
     {
         $craftApp = Craft::$app;
         Craft::$app = null;
-        $this->assertSame('', $this->fileTarget->getMessagePrefix('message'));
+        self::assertSame('', $this->fileTarget->getMessagePrefix('message'));
         Craft::$app = $craftApp;
     }
 
@@ -87,13 +78,10 @@ class FileTargetTest extends TestCase
 
         $this->fileTarget->includeUserIp = true;
 
-        $this->assertSame('[192.168.10.10][666][999]', $this->fileTarget->getMessagePrefix('message'));
+        self::assertSame('[192.168.10.10][666][999]', $this->fileTarget->getMessagePrefix('message'));
 
         Craft::$app = $craftApp;
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -102,9 +90,6 @@ class FileTargetTest extends TestCase
     {
         $this->fileTarget = new FileTarget();
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Mocks the Craft::$app object so that it overrides the components we need for self::testFullMessagePrefix

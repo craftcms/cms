@@ -19,9 +19,6 @@ use craft\test\Fixture;
  */
 class EntryTypeFixture extends Fixture
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

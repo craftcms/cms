@@ -29,13 +29,7 @@ use yii\db\ActiveQueryInterface;
  */
 class CategoryGroup extends ActiveRecord
 {
-    // Traits
-    // =========================================================================
-
     use SoftDeleteTrait;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

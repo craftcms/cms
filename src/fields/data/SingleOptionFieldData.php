@@ -15,16 +15,10 @@ namespace craft\fields\data;
  */
 class SingleOptionFieldData extends OptionData
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var OptionData[]
      */
     private $_options = [];
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns the options.

@@ -20,9 +20,6 @@ use yii\console\ExitCode;
  */
 class UpdateControllerTest extends BaseConsoleTest
 {
-    // Public methods
-    // =========================================================================
-
     /**
      * @throws InvalidConfigException
      */

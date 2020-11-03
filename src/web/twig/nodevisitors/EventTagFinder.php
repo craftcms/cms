@@ -23,9 +23,6 @@ use Twig\Node\PrintNode;
  */
 class EventTagFinder extends BaseEventTagVisitor
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

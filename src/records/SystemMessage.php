@@ -24,9 +24,6 @@ use craft\validators\LanguageValidator;
  */
 class SystemMessage extends ActiveRecord
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

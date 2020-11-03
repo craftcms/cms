@@ -21,9 +21,6 @@ use yii\base\InvalidConfigException;
  */
 class VolumeFolder extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null ID
      */
@@ -59,15 +56,12 @@ class VolumeFolder extends Model
      */
     private $_children;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['id', 'parentId', 'volumeId'], 'number', 'integerOnly' => true];
         return $rules;
     }

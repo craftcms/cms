@@ -17,9 +17,6 @@ use yii\base\Event;
  */
 class RegisterGqlTypesEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var array List of GraphQL Type definition classes
      */

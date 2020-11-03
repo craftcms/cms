@@ -19,9 +19,6 @@ use craft\test\Fixture;
  */
 class SectionSettingFixture extends Fixture
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

@@ -10,6 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\db\Table;
 use craft\helpers\DateTimeHelper;
+use craft\helpers\Db;
 use craft\models\CraftIdToken;
 use craft\records\CraftIdToken as OauthTokenRecord;
 use DateInterval;
@@ -25,9 +26,6 @@ use yii\base\Component;
  */
 class PluginStore extends Component
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string Craft ID endpoint
      */
@@ -62,9 +60,6 @@ class PluginStore extends Component
      * @var bool Enable dev server
      */
     public $useDevServer = false;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Saves the OAuth token.
@@ -190,9 +185,9 @@ class PluginStore extends Component
             return false;
         }
 
-        Craft::$app->getDb()->createCommand()
-            ->delete(Table::CRAFTIDTOKENS, ['userId' => $userId])
-            ->execute();
+        Db::delete(Table::CRAFTIDTOKENS, [
+            'userId' => $userId,
+        ]);
 
         return true;
     }

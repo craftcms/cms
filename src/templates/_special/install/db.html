@@ -28,8 +28,9 @@
                 {{ forms.textField({
                     label: "Server"|t('app'),
                     id: 'db-server',
-                    value: dbConfig.server != 'localhost' ? dbConfig.server,
-                    placeholder: 'localhost'
+                    value: isNitro ? '127.0.0.1' : dbConfig.server != '127.0.0.1' ? dbConfig.server,
+                    placeholder: '127.0.0.1',
+                    disabled: isNitro,
                 }) }}
             </div>
             <div>
@@ -47,15 +48,17 @@
                 {{ forms.textField({
                     label: "Username"|t('app'),
                     id: 'db-user',
-                    value: dbConfig.user != 'root' ? dbConfig.user,
-                    placeholder: 'root'
+                    value: isNitro ? 'nitro' : dbConfig.user != 'root' ? dbConfig.user,
+                    placeholder: 'root',
+                    disabled: isNitro,
                 }) }}
             </div>
             <div class="flex-grow">
                 {{ forms.passwordField({
                     label: "Password"|t('app'),
                     id: 'db-password',
-                    value: dbConfig.password
+                    value: isNitro ? 'nitro' : dbConfig.password,
+                    disabled: isNitro,
                 }) }}
             </div>
         </div>
@@ -88,9 +91,7 @@
         </div>
 
         <div class="buttons">
-            <div class="btn big submit">{{ "Next"|t('app') }}
-                <input type="submit" tabindex="-1">
-            </div>
+            <button type="submit" class="btn big submit">{{ "Next"|t('app') }}</button>
         </div>
     </form>
 </div>

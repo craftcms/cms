@@ -19,15 +19,15 @@ class m171107_000000_assign_group_permissions extends Migration
         // See which users & groups already have the "assignUserPermissions" permission
         $userIds = (new Query())
             ->select(['up_u.userId'])
-            ->from(['{{%userpermissions_users}} up_u'])
-            ->innerJoin('{{%userpermissions}} up', '[[up.id]] = [[up_u.permissionId]]')
+            ->from(['up_u' => Table::USERPERMISSIONS_USERS])
+            ->innerJoin(['up' => Table::USERPERMISSIONS], '[[up.id]] = [[up_u.permissionId]]')
             ->where(['up.name' => 'assignuserpermissions'])
             ->column($this->db);
 
         $groupIds = (new Query())
             ->select(['up_ug.groupId'])
-            ->from(['{{%userpermissions_usergroups}} up_ug'])
-            ->innerJoin('{{%userpermissions}} up', '[[up.id]] = [[up_ug.permissionId]]')
+            ->from(['up_ug' => Table::USERPERMISSIONS_USERGROUPS])
+            ->innerJoin(['up' => Table::USERPERMISSIONS], '[[up.id]] = [[up_ug.permissionId]]')
             ->where(['up.name' => 'assignuserpermissions'])
             ->column($this->db);
 

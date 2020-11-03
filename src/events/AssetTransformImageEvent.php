@@ -17,9 +17,6 @@ use craft\models\AssetTransformIndex;
  */
 class AssetTransformImageEvent extends AssetEvent
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var AssetTransformIndex Asset transform index that is being generated.
      */

@@ -17,9 +17,6 @@ use craft\elements\User;
  */
 class UserEvent extends CancelableEvent
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var User|null The user model associated with the event.
      */

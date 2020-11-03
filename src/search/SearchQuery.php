@@ -17,9 +17,6 @@ use craft\helpers\StringHelper;
  */
 class SearchQuery
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string
      */
@@ -34,9 +31,6 @@ class SearchQuery
      * @var SearchQueryTerm[]|SearchQueryTermGroup
      */
     private $_tokens;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Constructor
@@ -71,9 +65,6 @@ class SearchQuery
     {
         return $this->_query;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Parses the query into an array of tokens.

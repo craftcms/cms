@@ -11,6 +11,7 @@ Craft.LivePreview = Garnish.Base.extend(
         $editorContainer: null,
         $editor: null,
         $dragHandle: null,
+        $previewContainer: null,
         $iframeContainer: null,
         $iframe: null,
         $fieldPlaceholder: null,
@@ -137,15 +138,24 @@ Craft.LivePreview = Garnish.Base.extend(
 
             if (!this.$editor) {
                 this.$shade = $('<div/>', {'class': 'modal-shade dark'}).appendTo(Garnish.$bod);
+                this.$previewContainer = $('<div/>', {'class': 'lp-preview-container'}).appendTo(Garnish.$bod);
+                this.$iframeContainer = $('<div/>', {'class': 'lp-iframe-container'}).appendTo(this.$previewContainer);
                 this.$editorContainer = $('<div/>', {'class': 'lp-editor-container'}).appendTo(Garnish.$bod);
-                this.$iframeContainer =$('<div/>', {'class': 'lp-preview-container'}).appendTo(Garnish.$bod);
 
                 var $editorHeader = $('<header/>', {'class': 'flex'}).appendTo(this.$editorContainer);
                 this.$editor = $('<form/>', {'class': 'lp-editor'}).appendTo(this.$editorContainer);
                 this.$dragHandle = $('<div/>', {'class': 'lp-draghandle'}).appendTo(this.$editorContainer);
-                var $closeBtn = $('<div/>', {'class': 'btn', text: Craft.t('app', 'Close Preview')}).appendTo($editorHeader);
+                var $closeBtn = $('<button/>', {
+                    type: 'button',
+                    class: 'btn',
+                    text: Craft.t('app', 'Close Preview'),
+                }).appendTo($editorHeader);
                 $('<div/>', {'class': 'flex-grow'}).appendTo($editorHeader);
-                var $saveBtn = $('<div class="btn submit">' + Craft.t('app', 'Save') + '</div>').appendTo($editorHeader);
+                let $saveBtn = $('<button/>', {
+                    type: 'button',
+                    class: 'btn submit',
+                    text: Craft.t('app', 'Save'),
+                }).appendTo($editorHeader);
 
                 this.dragger = new Garnish.BaseDrag(this.$dragHandle, {
                     axis: Garnish.X_AXIS,
@@ -162,8 +172,8 @@ Craft.LivePreview = Garnish.Base.extend(
             this.handleWindowResize();
             this.addListener(Garnish.$win, 'resize', 'handleWindowResize');
 
-            this.$editorContainer.css(Craft.left, -(this.editorWidthInPx + Craft.LivePreview.dragHandleWidth) + 'px');
-            this.$iframeContainer.css(Craft.right, -this.getIframeWidth());
+            this.$editorContainer.css(Craft.left, -this.editorWidthInPx + 'px');
+            this.$previewContainer.css(Craft.right, -this.getIframeWidth());
 
             // Move all the fields into the editor rather than copying them
             // so any JS that's referencing the elements won't break.
@@ -195,6 +205,8 @@ Craft.LivePreview = Garnish.Base.extend(
 
             Garnish.on(Craft.BaseElementEditor, 'saveElement', this._forceUpdateIframeProxy);
             Garnish.on(Craft.AssetImageEditor, 'save', this._forceUpdateIframeProxy);
+
+            Craft.ElementThumbLoader.retryAll();
 
             this.inPreviewMode = true;
             this.trigger('enter');
@@ -232,7 +244,7 @@ Craft.LivePreview = Garnish.Base.extend(
                 Garnish.$win.trigger('resize');
             }, this));
 
-            this.$iframeContainer.show().velocity('stop').animateRight(0, 'slow', $.proxy(function() {
+            this.$previewContainer.show().velocity('stop').animateRight(0, 'slow', $.proxy(function() {
                 this.updateIframeInterval = setInterval($.proxy(this, 'updateIframe'), 1000);
 
                 this.addListener(Garnish.$bod, 'keyup', function(ev) {
@@ -263,7 +275,7 @@ Craft.LivePreview = Garnish.Base.extend(
 
             this.$shade.delay(200).velocity('fadeOut');
 
-            this.$editorContainer.velocity('stop').animateLeft(-(this.editorWidthInPx + Craft.LivePreview.dragHandleWidth), 'slow', $.proxy(function() {
+            this.$editorContainer.velocity('stop').animateLeft(-this.editorWidthInPx, 'slow', $.proxy(function() {
                 for (var i = 0; i < this.fields.length; i++) {
                     this.fields[i].$newClone.remove();
                 }
@@ -271,11 +283,13 @@ Craft.LivePreview = Garnish.Base.extend(
                 this.trigger('slideOut');
             }, this));
 
-            this.$iframeContainer.velocity('stop').animateRight(-this.getIframeWidth(), 'slow', $.proxy(function() {
-                this.$iframeContainer.hide();
+            this.$previewContainer.velocity('stop').animateRight(-this.getIframeWidth(), 'slow', $.proxy(function() {
+                this.$previewContainer.hide();
             }, this));
 
             Garnish.off(Craft.BaseElementEditor, 'saveElement', this._forceUpdateIframeProxy);
+
+            Craft.ElementThumbLoader.retryAll();
 
             this.inPreviewMode = false;
             this.trigger('exit');
@@ -298,12 +312,12 @@ Craft.LivePreview = Garnish.Base.extend(
         },
 
         getIframeWidth: function() {
-            return Garnish.$win.width() - (this.editorWidthInPx + Craft.LivePreview.dragHandleWidth);
+            return Garnish.$win.width() - this.editorWidthInPx;
         },
 
         updateWidths: function() {
             this.$editorContainer.css('width', this.editorWidthInPx + 'px');
-            this.$iframeContainer.width(this.getIframeWidth());
+            this.$previewContainer.width(this.getIframeWidth());
         },
 
         updateIframe: function(force) {
@@ -420,7 +434,7 @@ Craft.LivePreview = Garnish.Base.extend(
 
         _onDragStart: function() {
             this.dragStartEditorWidth = this.editorWidthInPx;
-            this.$iframeContainer.addClass('dragging');
+            this.$previewContainer.addClass('dragging');
         },
 
         _onDrag: function() {
@@ -435,14 +449,13 @@ Craft.LivePreview = Garnish.Base.extend(
         },
 
         _onDragStop: function() {
-            this.$iframeContainer.removeClass('dragging');
+            this.$previewContainer.removeClass('dragging');
             Craft.setLocalStorage('LivePreview.editorWidth', this.editorWidth);
         }
     },
     {
         defaultEditorWidth: 0.33,
         minEditorWidthInPx: 320,
-        dragHandleWidth: 4,
 
         defaults: {
             trigger: '.livepreviewbtn',

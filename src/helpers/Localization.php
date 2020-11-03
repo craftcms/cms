@@ -20,16 +20,10 @@ use yii\i18n\MissingTranslationEvent;
  */
 class Localization
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var
      */
     private static $_translations;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Normalizes a language into the correct format (e.g. `en-US`).

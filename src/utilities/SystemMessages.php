@@ -19,9 +19,6 @@ use craft\web\assets\systemmessages\SystemMessagesAsset;
  */
 class SystemMessages extends Utility
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -43,7 +40,7 @@ class SystemMessages extends Utility
      */
     public static function iconPath()
     {
-        return Craft::getAlias('@app/icons/envelope.svg');
+        return Craft::getAlias('@appicons/envelope.svg');
     }
 
     /**

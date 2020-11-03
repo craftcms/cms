@@ -7,6 +7,8 @@
 
 namespace craft\gql\arguments\elements;
 
+use Craft;
+use craft\elements\Asset as AssetElement;
 use craft\gql\base\ElementArguments;
 use craft\gql\types\QueryArgument;
 use GraphQL\Type\Definition\Type;
@@ -24,7 +26,7 @@ class Asset extends ElementArguments
      */
     public static function getArguments(): array
     {
-        return array_merge(parent::getArguments(), [
+        return array_merge(parent::getArguments(), self::getContentArguments(), [
             'volumeId' => [
                 'name' => 'volumeId',
                 'type' => Type::listOf(QueryArgument::getType()),
@@ -75,6 +77,25 @@ class Asset extends ElementArguments
                 'type' => Type::boolean(),
                 'description' => 'Broadens the query results to include assets from any of the subfolders of the folder specified by `folderId`.'
             ],
+            'withTransforms' => [
+                'name' => 'withTransforms',
+                'type' => Type::listOf(Type::string()),
+                'description' => 'A list of transform handles to preload.'
+            ],
+            'uploader' => [
+                'name' => 'uploader',
+                'type' => QueryArgument::getType(),
+                'description' => 'Narrows the query results based on the user the assets were uploaded by, per the user’s ID.'
+            ]
         ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getContentArguments(): array
+    {
+        $volumeFieldArguments = Craft::$app->getGql()->getContentArguments(Craft::$app->getVolumes()->getAllVolumes(), AssetElement::class);
+        return array_merge(parent::getContentArguments(), $volumeFieldArguments);
     }
 }

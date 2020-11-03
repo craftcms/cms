@@ -21,19 +21,10 @@ use yii\base\InvalidArgumentException;
  */
 class HtmlHelperTest extends Unit
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var UnitTester
      */
     protected $tester;
-
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
 
     /**
      * @dataProvider htmlEncodingDataProvider
@@ -44,7 +35,7 @@ class HtmlHelperTest extends Unit
      */
     public function testParamEncoding($result, $input, $variables)
     {
-        $this->assertSame($result, Html::encodeParams($input, $variables));
+        self::assertSame($result, Html::encodeParams($input, $variables));
     }
 
     /**
@@ -60,7 +51,7 @@ class HtmlHelperTest extends Unit
             Html::parseTag($tag);
         } else {
             $info = Html::parseTag($tag);
-            $this->assertSame($result, [
+            self::assertSame($result, [
                 $info['type'],
                 $info['attributes'],
                 isset($info['htmlStart'], $info['htmlEnd'])
@@ -84,7 +75,7 @@ class HtmlHelperTest extends Unit
             $this->expectException(InvalidArgumentException::class);
             Html::appendToTag($tag, $html, $ifExists);
         } else {
-            $this->assertSame($result, Html::appendToTag($tag, $html, $ifExists));
+            self::assertSame($result, Html::appendToTag($tag, $html, $ifExists));
         }
     }
 
@@ -102,7 +93,7 @@ class HtmlHelperTest extends Unit
             $this->expectException(InvalidArgumentException::class);
             Html::prependToTag($tag, $html, $ifExists);
         } else {
-            $this->assertSame($result, Html::prependToTag($tag, $html, $ifExists));
+            self::assertSame($result, Html::prependToTag($tag, $html, $ifExists));
         }
     }
 
@@ -118,7 +109,7 @@ class HtmlHelperTest extends Unit
             $this->expectException(InvalidArgumentException::class);
             Html::parseTagAttributes($tag);
         } else {
-            $this->assertSame($result, Html::parseTagAttributes($tag));
+            self::assertSame($result, Html::parseTagAttributes($tag));
         }
     }
 
@@ -135,7 +126,7 @@ class HtmlHelperTest extends Unit
             $this->expectException(InvalidArgumentException::class);
             Html::modifyTagAttributes($tag, $attributes);
         } else {
-            $this->assertSame($result, Html::modifyTagAttributes($tag, $attributes));
+            self::assertSame($result, Html::modifyTagAttributes($tag, $attributes));
         }
     }
 
@@ -147,11 +138,68 @@ class HtmlHelperTest extends Unit
      */
     public function testNormalizeTagAttributes($result, $attributes)
     {
-        $this->assertSame($result, Html::normalizeTagAttributes($attributes));
+        self::assertSame($result, Html::normalizeTagAttributes($attributes));
     }
 
-    // Data Providers
-    // =========================================================================
+    /**
+     * @dataProvider idDataProvider
+     *
+     * @param string $result
+     * @param string $id
+     */
+    public function testId(string $result, string $id)
+    {
+        self::assertSame($result, Html::id($id));
+    }
+
+    /**
+     * @dataProvider namespaceInputNameDataProvider
+     *
+     * @param string $result
+     * @param string $name
+     * @param string $namespace
+     */
+    public function testNamespaceInputName(string $result, string $name, string $namespace)
+    {
+        self::assertSame($result, Html::namespaceInputName($name, $namespace));
+    }
+
+    /**
+     * @dataProvider namespaceIdDataProvider
+     *
+     * @param string $result
+     * @param string $name
+     * @param string $namespace
+     */
+    public function testNamespaceId(string $result, string $name, string $namespace)
+    {
+        self::assertSame($result, Html::namespaceId($name, $namespace));
+    }
+
+    /**
+     * @dataProvider namespaceInputsDataProvider
+     *
+     * @param string $result
+     * @param string $html
+     * @param string $namespace
+     */
+    public function testNamespaceInputs(string $result, string $html, string $namespace)
+    {
+        self::assertSame($result, Html::namespaceInputs($html, $namespace));
+    }
+
+    /**
+     * @dataProvider namespaceAttributesDataProvider
+     *
+     * @param string $result
+     * @param string $html
+     * @param string $namespace
+     * @param bool $classNames
+     */
+    public function testNamespaceAttributes(string $result, string $html, string $namespace, bool $classNames)
+    {
+        self::assertSame($result, Html::namespaceAttributes($html, $namespace, $classNames));
+    }
 
     /**
      * @return array
@@ -236,7 +284,7 @@ class HtmlHelperTest extends Unit
             [['data' => ['foo' => '1', 'bar' => '2']], '<div data-foo="1" data-bar="2">'],
             [['data-ng' => ['foo' => '1', 'bar' => '2']], '<div data-ng-foo="1" data-ng-bar="2">'],
             [['ng' => ['foo' => '1', 'bar' => '2']], '<div ng-foo="1" ng-bar="2">'],
-            [['data-foo' => true], '<div data-foo>'],
+            [['data' => ['foo' => true]], '<div data-foo>'],
             [['class' => ['foo', 'bar']], '<div class="foo bar">'],
             [['style' => ['color' => 'black', 'background' => 'red']], '<div style="color: black; background: red">'],
             [false, '<div'],
@@ -252,7 +300,7 @@ class HtmlHelperTest extends Unit
     {
         return [
             ['<input type="text">', '<input type="text" disabled>', ['disabled' => false]],
-            [ '<!-- comment --> <input type="text" />',  '<!-- comment --> <input type="text" disabled />', ['disabled' => false]],
+            ['<!-- comment --> <input type="text" />', '<!-- comment --> <input type="text" disabled />', ['disabled' => false]],
             ['<div class="foo bar">', '<div class="foo">', ['class' => ['foo', 'bar']]],
             ['<div data-foo="2" data-bar="3">', '<div data-foo="1">', ['data' => ['foo' => '2', 'bar' => '3']]],
             ['<div style="color: black; background: red;">', '<div>', ['style' => ['color' => 'black', 'background' => 'red']]],
@@ -263,6 +311,8 @@ class HtmlHelperTest extends Unit
             // https://github.com/craftcms/cms/issues/4984
             ['<img class="foo" src="image.jpg?width=100&amp;height=100">', '<img src="image.jpg?width=100&height=100">', ['class' => 'foo']],
             ['<img class="foo" src="image.jpg?width=100&amp;height=100">', '<img src="image.jpg?width=100&amp;height=100">', ['class' => 'foo']],
+            // https://github.com/craftcms/cms/issues/6973
+            ['<custom-element class="foo"></custom-element>', '<custom-element></custom-element>', ['class' => 'foo']],
         ];
     }
 
@@ -278,7 +328,91 @@ class HtmlHelperTest extends Unit
             [['data' => ['foo' => '1', 'bar' => '2']], ['data-foo' => '1', 'data-bar' => '2']],
             [['data-ng' => ['foo' => '1', 'bar' => '2']], ['data-ng-foo' => '1', 'data-ng-bar' => '2']],
             [['ng' => ['foo' => '1', 'bar' => '2']], ['ng-foo' => '1', 'ng-bar' => '2']],
-            [['data-foo' => true], ['data-foo' => true]],
+            [['data' => ['foo' => true]], ['data-foo' => true]],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function idDataProvider(): array
+    {
+        return [
+            ['foo', '-foo-'],
+            ['foo-bar', 'foo--bar'],
+            ['foo-bar-baz', 'foo[bar][baz]'],
+            ['foo-bar-baz', 'foo bar baz'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function namespaceInputNameDataProvider(): array
+    {
+        return [
+            ['foo[bar]', 'bar', 'foo'],
+            ['foo[bar][baz]', 'bar[baz]', 'foo'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function namespaceIdDataProvider(): array
+    {
+        return [
+            ['foo-bar', 'bar', 'foo'],
+            ['foo-bar-baz', 'bar[baz]', 'foo'],
+            ['foo-bar-baz', 'baz', 'foo[bar]'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function namespaceInputsDataProvider(): array
+    {
+        return [
+            ['<input name="foo[bar]">', '<input name="bar">', 'foo'],
+            ['<input name="foo[bar][baz]">', '<input name="bar[baz]">', 'foo'],
+            ['<textarea name="foo[bar]"><input name="foo"></textarea>', '<textarea name="bar"><input name="foo"></textarea>', 'foo'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function namespaceAttributesDataProvider(): array
+    {
+        return [
+            ['<div id="foo-bar"></div>', '<div id="bar"></div>', 'foo', false],
+            ['<textarea><div id="foo"></textarea>', '<textarea><div id="foo"></textarea>', 'foo', false],
+            ['<div id="foo-bar"></div><div for="foo-bar">', '<div id="bar"></div><div for="bar">', 'foo', false],
+            ['<div id="foo-bar-baz"></div><div for="foo-bar-baz">', '<div id="bar-baz"></div><div for="bar-baz">', 'foo', false],
+            ['<div for="bar">', '<div for="bar">', 'foo', false],
+            ['<div id="foo-bar"></div><div list="foo-bar">', '<div id="bar"></div><div list="bar">', 'foo', false],
+            ['<div id="foo-bar"></div><div aria-labelledby="foo-bar">', '<div id="bar"></div><div aria-labelledby="bar">', 'foo', false],
+            ['<div id="foo-bar"></div><div aria-describedby="foo-bar">', '<div id="bar"></div><div aria-describedby="bar">', 'foo', false],
+            ['<div id="foo-bar"></div><div data-target="foo-bar">', '<div id="bar"></div><div data-target="bar">', 'foo', false],
+            ['<div id="foo-bar"></div><div data-target="#foo-bar">', '<div id="bar"></div><div data-target="#bar">', 'foo', false],
+            ['<div id="foo-bar"></div><div data-reverse-target="foo-bar">', '<div id="bar"></div><div data-reverse-target="bar">', 'foo', false],
+            ['<div id="foo-bar"></div><div data-reverse-target="#foo-bar">', '<div id="bar"></div><div data-reverse-target="#bar">', 'foo', false],
+            ['<div id="foo-bar-baz"></div><div data-target-prefix="foo-bar-">', '<div id="bar-baz"></div><div data-target-prefix="bar-">', 'foo', false],
+            ['<div id="foo-bar-baz"></div><div data-target-prefix=".bar-">', '<div id="bar-baz"></div><div data-target-prefix=".bar-">', 'foo', false],
+            ['<div class="foo bar">', '<div class="foo bar">', 'foo', false],
+            ['<div class="foo-bar foo-baz">', '<div class="bar baz">', 'foo', true],
+            ['<div class="foo-bar-baz">', '<div class="bar-baz">', 'foo', true],
+            ['<div id="foo-bar"></div>#foo', '<div id="bar"></div>#foo', 'foo', false],
+            ['<div id="foo-bar"></div>.foo', '<div id="bar"></div>.foo', 'foo', false],
+            ['<div id="foo-bar"></div>.foo', '<div id="bar"></div>.foo', 'foo', true],
+            ['<style>#bar{}</style>', '<style>#bar{}</style>', 'foo', false],
+            ['<div id="foo-bar"></div><style>#foo-bar{}</style>', '<div id="bar"></div><style>#bar{}</style>', 'foo', false],
+            ['<style>.foo{}</style>', '<style>.foo{}</style>', 'foo', false],
+            ['<style>.foo-bar{}</style>', '<style>.bar{}</style>', 'foo', true],
+            ['<style>.foo-bar{content: \'.baz\'}</style>', '<style>.bar{content: \'.baz\'}</style>', 'foo', true],
+            ['<linearGradient id="foo-bar"></linearGradient><path fill="url(#foo-bar)"></path>', '<linearGradient id="bar"></linearGradient><path fill="url(#bar)"></path>', 'foo', false],
+            ['<circle id="foo-bar"></circle><use xlink:href="#foo-bar"></use>', '<circle id="bar"></circle><use xlink:href="#bar"></use>', 'foo', false],
         ];
     }
 }

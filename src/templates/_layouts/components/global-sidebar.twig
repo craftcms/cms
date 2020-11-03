@@ -1,0 +1,80 @@
+<header id="global-sidebar" class="sidebar">
+    <a id="system-info" href="{{ siteUrl }}" rel="noopener" target="_blank" title="{{ 'View site'|t('app') }}" aria-label="{{ 'View site'|t('app') }}">
+        <div id="site-icon">
+            {% if hasSystemIcon %}
+                <img src="{{ craft.rebrand.icon.url }}" alt="">
+            {% else %}
+                {{ svg('@appicons/c-outline.svg', namespace=true) }}
+            {% endif %}
+        </div>
+        <div id="system-name">
+            <h2>{{ systemName }}</h2>
+        </div>
+    </a>
+
+    <nav id="nav">
+        <ul>
+            {% for item in craft.cp.nav() %}
+                {% set itemAttributes = {
+                    id: item.id,
+                    class: item.subnav ? 'has-subnav',
+                } %}
+                {% set linkAttributes = {
+                    href: url(item.url),
+                    class: item.sel ? 'sel'
+                } %}
+                <li {{ attr(itemAttributes) }}>
+                    <a {{ attr(linkAttributes) }}>
+                        <span class="icon icon-mask">
+                            {%- if item.icon is defined -%}
+                                {{ svg(item.icon, sanitize=true, namespace=true) }}
+                            {%- elseif item.fontIcon is defined -%}
+                                <span data-icon="{{ item.fontIcon }}"></span>
+                            {%- else -%}
+                                {% include "_includes/defaulticon.svg" with { label: item.label } %}
+                            {%- endif -%}
+                        </span>
+
+                        <span class="label">{{ item.label }}</span>
+
+                        {%- if not item.sel and item.badgeCount -%}
+                            <span class="badge">{{ item.badgeCount|number(decimals=0) }}</span>
+                        {%- endif -%}
+                    </a>
+                    {% if item.subnav %}
+                        <ul class="subnav">
+                            {% for itemId, item in item.subnav %}
+                                {% set itemIsSelected = (
+                                    (selectedSubnavItem is defined and selectedSubnavItem == itemId) or
+                                    (selectedSubnavItem is not defined and loop.first)
+                                ) -%}
+                                {% set linkAttributes = {
+                                    href: url(item.url),
+                                    class: [
+                                        itemIsSelected ? 'sel',
+                                        (item.external ?? false) ? 'external',
+                                    ],
+                                    target: (item.external ?? false) ? '_blank',
+                                } %}
+
+                                <li>
+                                    <a {{ attr(linkAttributes) }}>
+                                        {{ item.label }}
+
+                                        {%- if not itemIsSelected and item.badgeCount is defined -%}
+                                            <span class="badge">{{ item.badgeCount|number(decimals=0) }}</span>
+                                        {%- endif -%}
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    </nav>
+
+    {% if currentUser.admin and devMode %}
+        <div id="devmode" title="{{ 'Craft CMS is running in Dev Mode.'|t('app') }}" aria-label="{{ 'Craft CMS is running in Dev Mode.'|t('app') }}"></div>
+    {% endif %}
+</header>

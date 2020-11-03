@@ -20,9 +20,6 @@ use yii\web\Response;
  */
 class AssetSettingsController extends Controller
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -44,19 +41,19 @@ class AssetSettingsController extends Controller
         $this->requirePostRequest();
         $projectConfig = Craft::$app->getProjectConfig();
 
-        if ($tempVolumeUid = Craft::$app->getRequest()->getBodyParam('tempVolumeUid')) {
+        if ($tempVolumeUid = $this->request->getBodyParam('tempVolumeUid')) {
             $settings = [
                 'tempVolumeUid' => $tempVolumeUid,
             ];
-            if ($tempSubpath = trim(Craft::$app->getRequest()->getBodyParam('tempSubpath'), '/\\ ')) {
+            if ($tempSubpath = trim($this->request->getBodyParam('tempSubpath'), '/\\ ')) {
                 $settings['tempSubpath'] = str_replace('\\', '/', $tempSubpath);
             }
-            $projectConfig->set('assets', $settings);
+            $projectConfig->set('assets', $settings, 'Update Temporary Upload Volume settings.');
         } else {
-            $projectConfig->remove('assets');
+            $projectConfig->remove('assets', 'Update Temporary Upload Volume settings.');
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'Asset settings saved.'));
+        $this->setSuccessFlash(Craft::t('app', 'Asset settings saved.'));
         return $this->redirectToPostedUrl();
     }
 }

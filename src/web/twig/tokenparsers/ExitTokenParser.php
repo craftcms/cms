@@ -20,9 +20,6 @@ use Twig\TokenParser\AbstractTokenParser;
  */
 class ExitTokenParser extends AbstractTokenParser
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

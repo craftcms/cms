@@ -39,7 +39,7 @@ modules:
       plugins: []
       cleanup: true # Should tests and fixtures be cleaned
       transaction: true # Wrap in transaction
-      #dbSetup: {clean: true, setupCraft: true} # What DB setup work do we need to do.
+      dbSetup: {clean: true, setupCraft: true} # What DB setup work do we need to do.
       fullMock: false
   DataFactory:
     factories: tests/_craft/config/factories
@@ -62,6 +62,6 @@ groups:
   app: [tests/unit/AppTest.php]
   gql:
     - 'tests/unit/gql'
-    - 'tests/unit/services/GqlTest'
-    - 'tests/unit/helpers/GqlHelperTest'
-    - 'tests/gql/GqlCest'
+    - 'tests/unit/services/GqlTest.php'
+    - 'tests/unit/helpers/GqlHelperTest.php'
+    - 'tests/gql'

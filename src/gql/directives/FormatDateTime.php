@@ -7,8 +7,11 @@
 
 namespace craft\gql\directives;
 
+use Craft;
 use craft\gql\base\Directive;
 use craft\gql\GqlEntityRegistry;
+use craft\helpers\StringHelper;
+use craft\i18n\Locale;
 use GraphQL\Language\DirectiveLocation;
 use GraphQL\Type\Definition\Directive as GqlDirective;
 use GraphQL\Type\Definition\FieldArgument;
@@ -45,13 +48,18 @@ class FormatDateTime extends Directive
                     'name' => 'format',
                     'type' => Type::string(),
                     'defaultValue' => self::DEFAULT_FORMAT,
-                    'description' => 'This specifies the format to use. It defaults to the [Atom date time format](https://www.php.net/manual/en/class.datetimeinterface.php#datetime.constants.atom]).'
+                    'description' => 'This specifies the format to use. This can be `short`, `medium`, `long`, `full`, an [ICU date format](http://userguide.icu-project.org/formatparse/datetime), or a [PHP date format](https://www.php.net/manual/en/function.date.php). It defaults to the [Atom date time format](https://www.php.net/manual/en/class.datetimeinterface.php#datetime.constants.atom]).'
                 ]),
                 new FieldArgument([
                     'name' => 'timezone',
                     'type' => Type::string(),
                     'description' => 'The full name of the timezone, defaults to UTC. (E.g., America/New_York)',
                     'defaultValue' => self::DEFAULT_TIMEZONE
+                ]),
+                new FieldArgument([
+                    'name' => 'locale',
+                    'type' => Type::string(),
+                    'description' => 'The locale to use when formatting the date. (E.g., en-US)',
                 ])
             ],
             'description' => 'This directive allows for formatting any date to the desired format. It can be applied to all fields, but changes anything only when applied to a DateTime field.'
@@ -76,13 +84,28 @@ class FormatDateTime extends Directive
         if ($value instanceof \DateTime) {
             /** @var \DateTime $value */
             $format = $arguments['format'] ?? self::DEFAULT_FORMAT;
-            $timezone = new \DateTimeZone($arguments['timezone'] ?? self::DEFAULT_TIMEZONE);
+            $timezone = $arguments['timezone'] ?? self::DEFAULT_TIMEZONE;
 
-            $value = $value->setTimezone($timezone)->format($format);
+            // Is this a custom PHP date format?
+            if ($format !== null && !in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true)) {
+                if (strpos($format, 'icu:') === 0) {
+                    $format = substr($format, 4);
+                } else {
+                    $format = StringHelper::ensureLeft($format, 'php:');
+                }
+            }
+
+            if (!empty($arguments['locale'])) {
+                $formatter = (new Locale($arguments['locale']))->getFormatter();
+            } else {
+                $formatter = Craft::$app->getFormatter();
+            }
+
+            $formatter->datetimeFormat = $format;
+            $formatter->timeZone = $timezone;
+            $value = $formatter->asDatetime($value, $format);
         }
 
         return $value;
     }
-
-
 }

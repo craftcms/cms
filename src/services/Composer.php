@@ -35,9 +35,6 @@ use yii\base\Exception;
  */
 class Composer extends Component
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string
      */
@@ -60,12 +57,15 @@ class Composer extends Component
     public $maxBackups = 50;
 
     /**
+     * @var callable|null The previous error handler.
+     * @see run()
+     */
+    private $_errorHandler;
+
+    /**
      * @var string[]|null
      */
     private $_composerClasses;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns the path to composer.json.
@@ -99,15 +99,30 @@ class Composer extends Component
     }
 
     /**
+     * Returns the Composer config defined by composer.json.
+     *
+     * @return array
+     * @since 3.5.15
+     */
+    public function getConfig(): array
+    {
+        try {
+            return Json::decode(file_get_contents($this->getJsonPath()));
+        } catch (\Throwable $e) {
+            return [];
+        }
+    }
+
+    /**
      * Installs a given set of packages with Composer.
      *
      * @param array|null $requirements Package name/version pairs, or set to null to run the equivalent of `composer install`
      * @param IOInterface|null $io The IO object that Composer should be instantiated with
-     * @param array|bool $whitelist List of package names to whitelist, `true` if that should be determined
-     * dynamically, or `false` if no whitelist should be used.
+     * @param array|bool $allowlist List of package names to allow, `true` if that should be determined
+     * dynamically, or `false` if no allowlist should be used.
      * @throws \Throwable if something goes wrong
      */
-    public function install(array $requirements = null, IOInterface $io = null, $whitelist = true)
+    public function install(array $requirements = null, IOInterface $io = null, $allowlist = true)
     {
         App::maxPowerCaptain();
 
@@ -148,30 +163,26 @@ class Composer extends Component
 
         // Create the installer
         $composer = $this->createComposer($io, $jsonPath);
-        $config = $composer->getConfig();
 
         $installer = Installer::create($io, $composer)
             ->setPreferDist()
             ->setSkipSuggest()
-            ->setDumpAutoloader()
-            ->setRunScripts(false)
-            ->setOptimizeAutoloader(true)
-            ->setClassMapAuthoritative($config->get('classmap-authoritative'));
+            ->setRunScripts(false);
 
         if ($requirements !== null) {
             $installer->setUpdate();
 
-            if (is_array($whitelist)) {
-                $installer->setUpdateWhitelist($whitelist);
-            } else if ($whitelist === true) {
-                $whitelist = Craft::$app->getApi()->getComposerWhitelist($requirements);
-                $installer->setUpdateWhitelist($whitelist);
+            if (is_array($allowlist)) {
+                $installer->setUpdateAllowList($allowlist);
+            } else if ($allowlist === true) {
+                $allowlist = Craft::$app->getApi()->getComposerWhitelist($requirements);
+                $installer->setUpdateAllowList($allowlist);
             }
         }
 
         try {
             // Run the installer
-            $status = $installer->run();
+            $status = $this->run($installer);
         } catch (\Throwable $exception) {
             $status = 1;
         }
@@ -195,7 +206,7 @@ class Composer extends Component
             $contents = "<?php\n\nreturn [\n";
             sort($this->_composerClasses);
             foreach ($this->_composerClasses as $class) {
-                $contents .= "    '{$class}',\n";
+                $contents .= "    $class::class,\n";
             }
             $contents .= "];\n";
             FileHelper::writeToFile(dirname(__DIR__) . '/config/composer-classes.php', $contents);
@@ -254,18 +265,14 @@ class Composer extends Component
 
             $composer = $this->createComposer($io, $jsonPath);
             $composer->getDownloadManager()->setOutputProgress(false);
-            $config = $composer->getConfig();
 
             // Run the installer
             $installer = Installer::create($io, $composer)
                 ->setUpdate()
-                ->setUpdateWhitelist($packages)
-                ->setDumpAutoloader()
-                ->setRunScripts(false)
-                ->setOptimizeAutoloader(true)
-                ->setClassMapAuthoritative($config->get('classmap-authoritative'));
+                ->setUpdateAllowList($packages)
+                ->setRunScripts(false);
 
-            $status = $installer->run();
+            $status = $this->run($installer);
         } catch (\Throwable $exception) {
             $status = 1;
         }
@@ -340,20 +347,17 @@ class Composer extends Component
         $this->_composerClasses[] = $className;
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * Ensures that HOME/APPDATA or COMPOSER_HOME env vars have been set.
      */
     protected function _ensureHomeVar()
     {
-        if (getenv('COMPOSER_HOME') !== false) {
+        if (App::env('COMPOSER_HOME') !== false) {
             return;
         }
 
         $alt = Platform::isWindows() ? 'APPDATA' : 'HOME';
-        if (getenv($alt) !== false) {
+        if (App::env($alt) !== false) {
             return;
         }
 
@@ -560,5 +564,41 @@ class Composer extends Component
                 ],
             ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT));
         }
+    }
+
+    /**
+     * @param Installer $installer
+     * @return int The response status
+     * @throws \Exception
+     * @since 3.5.0
+     */
+    protected function run(Installer $installer): int
+    {
+        $this->_errorHandler = set_error_handler([$this, 'handleError'], E_USER_DEPRECATED);
+        $status = $installer->run();
+        set_error_handler($this->_errorHandler);
+        return $status;
+    }
+
+    /**
+     * Handles an error triggered by Composer
+     *
+     * @param int $code the level of the error raised.
+     * @param string $message the error message.
+     * @param string $file the filename that the error was raised in.
+     * @param int $line the line number the error was raised at.
+     * @return bool whether the normal error handler continues.
+     * @since 3.5.0
+     */
+    public function handleError(int $code, string $message, string $file, int $line): bool
+    {
+        // Ignore deprecated errors
+        if ($code === E_USER_DEPRECATED) {
+            return true;
+        }
+        if ($this->_errorHandler !== null) {
+            return ($this->_errorHandler)($code, $message, $file, $line);
+        }
+        return false;
     }
 }

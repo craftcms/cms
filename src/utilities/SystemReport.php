@@ -12,7 +12,6 @@ use craft\base\PluginInterface;
 use craft\base\Utility;
 use craft\helpers\App;
 use GuzzleHttp\Client;
-use Imagine\Gd\Imagine;
 use RequirementsChecker;
 use Twig\Environment;
 use Yii;
@@ -26,9 +25,6 @@ use yii\base\Module;
  */
 class SystemReport extends Utility
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -50,7 +46,7 @@ class SystemReport extends Utility
      */
     public static function iconPath()
     {
-        return Craft::getAlias('@app/icons/check.svg');
+        return Craft::getAlias('@appicons/check.svg');
     }
 
     /**
@@ -74,10 +70,23 @@ class SystemReport extends Utility
             }
         }
 
+        $aliases = [];
+        foreach (Craft::$aliases as $alias => $value) {
+            if (is_array($value)) {
+                foreach ($value as $a => $v) {
+                    $aliases[$a] = $v;
+                }
+            } else {
+                $aliases[$alias] = $value;
+            }
+        }
+        ksort($aliases);
+
         return Craft::$app->getView()->renderTemplate('_components/utilities/SystemReport', [
             'appInfo' => self::_appInfo(),
             'plugins' => Craft::$app->getPlugins()->getAllPlugins(),
             'modules' => $modules,
+            'aliases' => $aliases,
             'requirements' => self::_requirementResults(),
         ]);
     }
@@ -98,7 +107,6 @@ class SystemReport extends Utility
             'Yii version' => Yii::getVersion(),
             'Twig version' => Environment::VERSION,
             'Guzzle version' => Client::VERSION,
-            'Imagine version' => Imagine::VERSION,
         ];
     }
 
@@ -117,7 +125,7 @@ class SystemReport extends Utility
             $driverName = 'PostgreSQL';
         }
 
-        return $driverName . ' ' . $db->getVersion();
+        return $driverName . ' ' . App::normalizeVersion($db->getSchema()->getServerVersion());
     }
 
     /**

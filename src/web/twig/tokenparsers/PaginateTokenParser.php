@@ -21,9 +21,6 @@ use Twig\TokenParser\AbstractTokenParser;
  */
 class PaginateTokenParser extends AbstractTokenParser
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

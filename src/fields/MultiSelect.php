@@ -10,6 +10,7 @@ namespace craft\fields;
 use Craft;
 use craft\base\ElementInterface;
 use craft\fields\data\MultiOptionsFieldData;
+use craft\helpers\ArrayHelper;
 
 /**
  * MultiSelect represents a Multi-select field.
@@ -19,9 +20,6 @@ use craft\fields\data\MultiOptionsFieldData;
  */
 class MultiSelect extends BaseOptionsField
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -38,9 +36,6 @@ class MultiSelect extends BaseOptionsField
         return MultiOptionsFieldData::class;
     }
 
-    // Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -51,23 +46,22 @@ class MultiSelect extends BaseOptionsField
      */
     public $optgroups = true;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml($value, ElementInterface $element = null): string
     {
+        /** @var MultiOptionsFieldData $value */
+        if (ArrayHelper::contains($value, 'valid', false, true)) {
+            Craft::$app->getView()->setInitialDeltaValue($this->handle, null);
+        }
+
         return Craft::$app->getView()->renderTemplate('_includes/forms/multiselect', [
             'name' => $this->handle,
             'values' => $value,
             'options' => $this->translatedOptions(),
         ]);
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

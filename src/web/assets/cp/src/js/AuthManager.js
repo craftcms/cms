@@ -47,7 +47,7 @@ Craft.AuthManager = Garnish.Base.extend(
          */
         checkRemainingSessionTime: function(extendSession) {
             $.ajax({
-                url: Craft.getActionUrl('users/get-remaining-session-time', (extendSession ? null : 'dontExtendSession=1')),
+                url: Craft.getActionUrl('users/session-info', (extendSession ? null : 'dontExtendSession=1')),
                 type: 'GET',
                 dataType: 'json',
                 complete: $.proxy(function(jqXHR, textStatus) {
@@ -73,7 +73,7 @@ Craft.AuthManager = Garnish.Base.extend(
             this.remainingSessionTime = parseInt(remainingSessionTime);
 
             // Are we within the warning window?
-            if (this.remainingSessionTime !== -1 && this.remainingSessionTime < Craft.AuthManager.minSafeSessiotTime) {
+            if (this.remainingSessionTime !== -1 && this.remainingSessionTime < Craft.AuthManager.minSafeSessionTime) {
                 // Is there still time to renew the session?
                 if (this.remainingSessionTime) {
                     if (!this.showingLogoutWarningModal) {
@@ -109,9 +109,9 @@ Craft.AuthManager = Garnish.Base.extend(
                 this.hideLogoutWarningModal();
                 this.hideLoginModal();
 
-                // Will be be within the minSafeSessiotTime before the next update?
-                if (this.remainingSessionTime !== -1 && this.remainingSessionTime < (Craft.AuthManager.minSafeSessiotTime + Craft.AuthManager.checkInterval)) {
-                    this.setCheckRemainingSessionTimer(this.remainingSessionTime - Craft.AuthManager.minSafeSessiotTime + 1);
+                // Will be be within the minSafeSessionTime before the next update?
+                if (this.remainingSessionTime !== -1 && this.remainingSessionTime < (Craft.AuthManager.minSafeSessionTime + Craft.AuthManager.checkInterval)) {
+                    this.setCheckRemainingSessionTimer(this.remainingSessionTime - Craft.AuthManager.minSafeSessionTime + 1);
                 }
                 else {
                     this.setCheckRemainingSessionTimer(Craft.AuthManager.checkInterval);
@@ -136,11 +136,19 @@ Craft.AuthManager = Garnish.Base.extend(
             this.showingLogoutWarningModal = true;
 
             if (!this.logoutWarningModal) {
-                var $form = $('<form id="logoutwarningmodal" class="modal alert fitted"/>'),
-                    $body = $('<div class="body"/>').appendTo($form),
-                    $buttons = $('<div class="buttons right"/>').appendTo($body),
-                    $logoutBtn = $('<div class="btn">' + Craft.t('app', 'Log out now') + '</div>').appendTo($buttons),
-                    $renewSessionBtn = $('<input type="submit" class="btn submit" value="' + Craft.t('app', 'Keep me logged in') + '" />').appendTo($buttons);
+                let $form = $('<form id="logoutwarningmodal" class="modal alert fitted"/>');
+                let $body = $('<div class="body"/>').appendTo($form);
+                let $buttons = $('<div class="buttons right"/>').appendTo($body);
+                let $logoutBtn = $('<button/>', {
+                    type: 'button',
+                    class: 'btn',
+                    text: Craft.t('app', 'Log out now'),
+                }).appendTo($buttons);
+                let $renewSessionBtn = $('<button/>', {
+                    type: 'submit',
+                    class: 'btn submit',
+                    text: Craft.t('app', 'Keep me logged in'),
+                }).appendTo($buttons);
 
                 this.$logoutWarningPara = $('<p/>').prependTo($body);
 
@@ -245,7 +253,11 @@ Craft.AuthManager = Garnish.Base.extend(
 
                 this.$passwordInput = $('<input type="password" class="text password fullwidth" placeholder="' + Craft.t('app', 'Password') + '"/>').appendTo($passwordWrapper);
                 this.$passwordSpinner = $('<div class="spinner hidden"/>').appendTo($inputContainer);
-                this.$loginBtn = $('<input type="submit" class="btn submit disabled" value="' + Craft.t('app', 'Login') + '" />').appendTo($buttonContainer);
+                this.$loginBtn = $('<button/>', {
+                    type: 'submit',
+                    class: 'btn submit disabled',
+                    text: Craft.t('app', 'Login'),
+                }).appendTo($buttonContainer);
                 this.$loginErrorPara = $('<p class="error"/>').appendTo($body);
 
                 this.loginModal = new Garnish.Modal($form, {
@@ -378,13 +390,12 @@ Craft.AuthManager = Garnish.Base.extend(
                 else {
                     this.showLoginError();
                 }
-
             }, this));
         },
 
         showLoginError: function(error) {
             if (error === null || typeof error === 'undefined') {
-                error = Craft.t('app', 'An unknown error occurred.');
+                error = Craft.t('app', 'A server error occurred.');
             }
 
             this.$loginErrorPara.text(error);
@@ -397,5 +408,5 @@ Craft.AuthManager = Garnish.Base.extend(
     },
     {
         checkInterval: 60,
-        minSafeSessiotTime: 120
+        minSafeSessionTime: 120
     });

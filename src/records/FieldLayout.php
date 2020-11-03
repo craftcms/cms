@@ -24,13 +24,7 @@ use yii\db\ActiveQueryInterface;
  */
 class FieldLayout extends ActiveRecord
 {
-    // Traits
-    // =========================================================================
-
     use SoftDeleteTrait;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

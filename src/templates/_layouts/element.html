@@ -4,6 +4,7 @@
     The following variables should be defined by the sub-template:
 
     - element: the source element or one of its drafts/revisions
+    - hasRevisions: whether the element has revisions, which will determine whether the revision notes field should be displayed.
     - canDeleteDraft (optional): whether the current user is allowed to delete the draft (if it is one).
       If the current user created the draft, then it will be deletable regardless.
     - canUpdateSource (optional): whether the current user is allowed to update the source element
@@ -26,11 +27,17 @@
 {% extends '_layouts/cp' %}
 {% import '_includes/forms' as forms %}
 
-{% set isMultiSiteElement = craft.app.isMultiSite and element.supportedSites|length > 1 %}
 {% set isDraft = element.getIsDraft() %}
-{% set isUnsavedDraft = element.getIsUnsavedDraft() %}
 {% set isRevision = element.getIsRevision() %}
 {% set isCurrent = not isDraft and not isRevision %}
+{% set allSites = craft.app.isMultiSite ? element.getSupportedSites() : [element.siteId] %}
+{% set allEditableSiteIds = craft.app.sites.getEditableSiteIds() %}
+{% set propSiteIds = allSites|filter(s => s.propagate ?? true)|column(s => s.siteId ?? s) %}
+{% set propEditableSiteIds = propSiteIds|intersect(allEditableSiteIds) %}
+{% set isMultiSiteElement = craft.app.isMultiSite and allSites|length > 1 %}
+{% set addlEditableSiteIds = allSites|column(s => s.siteId ?? s)|diff(propSiteIds)|intersect(allEditableSiteIds) %}
+{% set canEditMultipleSites = isMultiSiteElement and (propEditableSiteIds|length > 1 or addlEditableSiteIds|length) %}
+{% set isUnsavedDraft = element.getIsUnsavedDraft() %}
 
 {% set previewTargets = element.getPreviewTargets() %}
 {% set enablePreview = previewTargets and not craft.app.request.isMobileBrowser(true) %}
@@ -40,6 +47,7 @@
 {% set canDuplicateSource = canDuplicateSource ?? false %}
 {% set canAddAnother = canAddAnother ?? false %}
 {% set canDeleteSource = canDeleteSource ?? false %}
+{% set canEdit = canEdit ?? (canUpdateSource or canDuplicateSource or canAddAnother or saveDraftAction) %}
 
 {% set redirectUrl = redirectUrl ?? element.cpEditUrl %}
 {% set addAnotherRedirectUrl = addAnotherRedirectUrl ?? null %}
@@ -48,6 +56,7 @@
 {% set duplicateSourceAction = duplicateSourceAction ?? null %}
 {% set deleteSourceAction = deleteSourceAction ?? null %}
 {% set revertSourceAction = revertSourceAction ?? null %}
+{% set saveDraftAction = saveDraftAction ?? null %}
 
 {% if not isRevision %}
     {% set fullPageForm = true %}
@@ -63,9 +72,9 @@
 
 {# If this is an unsaved draft, then we should only show status toggles if the
    user actually has permission to publish chanegs #}
-{% set showStatusToggles = element.hasStatuses() and
-    (not isUnsavedDraft or canUpdateSource) and
-    (showStatusToggles ?? true) %}
+{% set showStatusToggles = (showStatusToggles ?? true) and
+    element.hasStatuses() and
+    (not isUnsavedDraft or canUpdateSource) %}
 
 {% if not isDraft and not canUpdateSource %}
     {% set saveShortcut = false %}
@@ -73,27 +82,81 @@
     {% set saveShortcutRedirect = '{cpEditUrl}' %}
 {% endif %}
 
+{% set form = element.getFieldLayout().createForm(element, isRevision or not canEdit) %}
+
+{% if tabs is not defined %}
+    {% set tabs = form.getTabMenu() %}
+{% endif %}
+
+{% set settingsHtml = (block('settings') ?? '')|trim %}
+
+{% set formActions = [] %}
+{% if isUnsavedDraft or (canUpdateSource and saveSourceAction) %}
+    {% set formActions = formActions|push({
+        label: isUnsavedDraft ? 'Create and continue editing'|t('app') : 'Save and continue editing'|t('app'),
+        redirect: '{cpEditUrl}'|hash,
+        shortcut: true,
+        retainScroll: true,
+    }) %}
+{% endif %}
+{% if canUpdateSource and saveSourceAction %}
+    {% if canAddAnother and addAnotherRedirectUrl %}
+        {% set formActions = formActions|push({
+            label: isUnsavedDraft ? 'Create and add another'|t('app') : 'Save and add another'|t('app'),
+            redirect: addAnotherRedirectUrl|hash,
+            shortcut: true,
+            shift: true,
+        }) %}
+    {% endif %}
+    {% if not isUnsavedDraft and canDuplicateSource and duplicateSourceAction %}
+        {% set formActions = formActions|push({
+            label: 'Save as a new {type}'|t('app', {
+                type: element.lowerDisplayName(),
+            }),
+            action: duplicateSourceAction,
+            redirect: '{cpEditUrl}'|hash,
+        }) %}
+    {% endif %}
+{% endif %}
+{% if not isUnsavedDraft and canDeleteSource and deleteSourceAction %}
+    {% set formActions = formActions|push({
+        destructive: true,
+        label: 'Delete {type}'|t('app', {
+            type: element.lowerDisplayName()
+        }),
+        action: deleteSourceAction,
+        redirect: (redirectUrl ~ '#')|hash,
+        confirm: 'Are you sure you want to delete this {type}?'|t('app', {
+            type: element.lowerDisplayName(),
+        }),
+    }) %}
+{% endif %}
+
 {% block header %}
     <div class="flex flex-nowrap">
         {{ block('pageTitle') }}
         {{ block('contextMenu') }}
     </div>
-    <div class="flex">
+    <div class="flex" id="action-buttons">
         {% if previewTargets %}
             <div class="btngroup">
                 {% if enablePreview %}
-                    <div id="preview-btn" class="btn">{{ "Preview"|t('app') }}</div>
+                    <button type="button" id="preview-btn" class="btn">{{ "Preview"|t('app') }}</button>
                 {% endif %}
-                <div id="share-btn" class="btn">{{ 'Share'|t('app') }}</div>
+                <button type="button" id="share-btn" class="btn">{{ 'View'|t('app') }}</button>
             </div>
         {% endif %}
 
-        {% if isCurrent %}
+        {% if isCurrent and saveDraftAction %}
             <div id="save-draft-btn-container">
                 {% if canUpdateSource and saveSourceAction %}
-                    <div id="save-draft-btn" class="btn secondary">{{ 'Save as a Draft'|t('app') }}</div>
+                    <button type="button" id="save-draft-btn" class="btn">{{ 'Save as a draft'|t('app') }}</button>
                 {% else %}
-                    <input type="submit" id="save-draft-btn" class="btn submit" value="{{ 'Save as a Draft'|t('app') }}">
+                    <button type="submit" id="save-draft-btn" class="btn submit">{{ 'Save as a draft'|t('app') }}</button>
+                    {% if formActions|length %}
+                        <button type="button" class="btn menubtn" aria-label="{{ 'Actions'|t('app') }}" data-icon="settings"></button>
+                        {% include '_layouts/components/form-action-menu' %}
+                    {% endif %}
                 {% endif %}
             </div>
         {% endif %}
@@ -103,7 +166,12 @@
 {% endblock %}
 
 {% block contextMenu %}
-    {% include "_includes/revisionmenu" %}
+    {% if isMultiSiteElement or saveDraftAction or element.find().revisionOf(element).exists() %}
+        {% include "_includes/revisionmenu" with {
+            supportedSiteIds: propSiteIds,
+            canHaveDrafts: saveDraftAction is not empty,
+        } %}
+    {% endif %}
 {% endblock %}
 
 {% block actionButton %}
@@ -111,51 +179,25 @@
         {# Can they save the source element, and do we know how to save it? #}
         {% if isUnsavedDraft or (canUpdateSource and saveSourceAction) %}
             <div id="save-btn-container" class="btngroup submit">
-                <input type="submit" class="btn submit" value="{{ 'Save'|t('app', { type: element.displayName() }) }}">
-                <div class="btn submit menubtn"></div>
-                <div class="menu" data-align="right">
-                    <ul>
-                        <li>
-                            <a class="formsubmit" data-redirect="{{ '{cpEditUrl}'|hash }}">
-                                {{ forms.optionShortcutLabel('S') }}
-                                {{ "Save and continue editing"|t('app') }}
-                            </a>
-                        </li>
-                        {% if canUpdateSource %}
-                            {% if canAddAnother and addAnotherRedirectUrl %}
-                                <li>
-                                    <a class="formsubmit" data-redirect="{{ addAnotherRedirectUrl|hash }}">
-                                        {{ "Save and add another"|t('app') }}
-                                    </a>
-                                </li>
-                            {% endif %}
-                            {% if not isUnsavedDraft and canDuplicateSource and duplicateSourceAction %}
-                                <li>
-                                    <a class="formsubmit" data-action="{{ duplicateSourceAction }}" data-redirect="{{ '{cpEditUrl}'|hash }}">
-                                        {{ "Save as a new {type}"|t('app', { type: element.displayName()|lower }) }}
-                                    </a>
-                                </li>
-                            {% endif %}
-                        {% endif %}
-                    </ul>
-                    {% if not isUnsavedDraft and canDeleteSource and deleteSourceAction %}
-                        <hr>
-                        <ul>
-                            <li>
-                                <a class="formsubmit error" data-action="{{ deleteSourceAction }}"
-                                   data-confirm="{{ 'Are you sure you want to delete this {type}?'|t('app', { type: element.displayName()|lower }) }}"
-                                   data-redirect="{{ (redirectUrl ~ '#')|hash }}">
-                                    {{ 'Delete {type}'|t('app', { type: element.displayName()|lower }) }}
-                                </a>
-                            </li>
-                        </ul>
-                    {% endif %}
-                </div>
+                {{ tag('button', {
+                    type: 'submit',
+                    class: ['btn', 'submit'],
+                    text: isUnsavedDraft ? 'Create'|t('app') : 'Save'|t('app'),
+                }) }}
+                <button type="button" class="btn submit menubtn"></button>
+                {% include '_layouts/components/form-action-menu' %}
             </div>
         {% endif %}
     {% elseif isDraft %}
-        {% if canUpdateSource and saveSourceAction %}
-            <input type="submit" class="btn submit" value="{{ 'Update {type}'|t('app', { type: element.displayName() }) }}">
+        {% if canUpdateSource and saveSourceAction and (applyDraftAction ?? false) %}
+            <div id="publish-changes-btn-container">
+                <button type="button" class="btn secondary formsubmit" data-action="{{ applyDraftAction }}">{{ 'Publish changes'|t('app') }}</button>
+            </div>
+        {% endif %}
+        {% if not craft.app.config.general.autosaveDrafts %}
+            <div id="save-btn-container">
+                <button type="submit" class="btn submit">{{ 'Save draft'|t('app') }}</button>
+            </div>
         {% endif %}
     {% elseif isRevision %}
         {% if canUpdateSource and revertSourceAction %}
@@ -165,7 +207,7 @@
                 {{ redirectInput('{cpEditUrl}') }}
                 {{ hiddenInput('revisionId', element.revisionId) }}
                 <div class="secondary-buttons">
-                    <input type="button" class="btn submit formsubmit" value="{{ 'Revert {type} to this revision'|t('app', { type: element.displayName()|lower }) }}">
+                    <button type="button" class="btn submit formsubmit">{{ 'Revert {type} to this revision'|t('app', { type: element.lowerDisplayName() }) }}</button>
                 </div>
             </form>
         {% endif %}
@@ -194,41 +236,70 @@
     {{ parent() }}
 {% endblock %}
 
-{% block details %}
-    <div id="settings" class="meta">
-        {% block settings %}
-            {% if showStatusToggles %}
-                {{ forms.lightswitchField({
-                    label: isMultiSiteElement ? 'Enabled Globally'|t('app') : 'Enabled'|t('app'),
-                    id: 'enabled',
-                    name: 'enabled',
-                    on: element.enabled,
-                    disabled: isRevision,
-                    toggle: 'enabledForSite-field'
-                }) }}
+{% block content %}
+    {% if not isRevision %}
+        {{ hiddenInput('sourceId', element.getSourceId()) }}
+    {% else %}
+        {{ hiddenInput('revisionId', entry.revisionId) }}
+    {% endif %}
 
-                {% if isMultiSiteElement %}
-                    {{ forms.lightswitchField({
-                        fieldClass: not element.enabled ? 'hidden',
-                        label: "Enabled for {site}"|t('app', { site: element.site.name|t('site') }),
-                        id: 'enabledForSite',
-                        name: 'enabledForSite',
-                        on: element.enabledForSite,
-                        disabled: isRevision
-                    }) }}
-                {% endif %}
-            {% endif %}
-        {% endblock %}
+    <div id="fields">
+        {{ form.render()|raw }}
     </div>
-    <div class="meta read-only">
+{% endblock %}
+
+{% block details %}
+    {% if settingsHtml %}
+        <div id="settings" class="meta">
+            {{ settingsHtml|raw }}
+        </div>
+    {% endif %}
+
+    {% if showStatusToggles and isMultiSiteElement %}
+        <div class="meta">
+            {{ forms.lightswitchField({
+                status: element.getAttributeStatus('enabled'),
+                label: 'Enabled for {site}'|t('app', { site: element.site.name|t('site')|e }) ~
+                    (canEditMultipleSites ? tag('button', {
+                        type: 'button',
+                        id: 'expand-status-btn',
+                        class: ['btn'],
+                        data: {
+                            icon: 'ellipsis',
+                        },
+                    })),
+                id: "enabledForSite-#{element.siteId}",
+                name: "enabledForSite[#{element.siteId}]",
+                on: element.enabled and element.getEnabledForSite(),
+                disabled: isRevision,
+            }) }}
+        </div>
+    {% endif %}
+
+    <div id="meta-details" class="meta read-only">
         {% block meta %}
+            {% if element.hasStatuses() %}
+                {% if isUnsavedDraft %}
+                    {% set statusColor = 'white' %}
+                    {% set statusLabel = 'Draft'|t('app') %}
+                {% else %}
+                    {% set status = element.getStatus() %}
+                    {% set statusDef = element.statuses()[status] ?? null %}
+                    {% set statusColor = statusDef.color ?? status %}
+                    {% set statusLabel = statusDef.label ?? statusDef ?? status|ucfirst %}
+                {% endif %}
+                <div class="data">
+                    <h5 class="heading">{{ 'Status'|t('app') }}</h5>
+                    <div id="status-value" class="value"><span class="status {{ statusColor }}"></span>{{ statusLabel }}</div>
+                </div>
+            {% endif %}
             <div class="data">
                 <h5 class="heading">{{ "Created at"|t('app') }}</h5>
-                <div class="value">{{ element.dateCreated|datetime('short') }}</div>
+                <div id="date-created-value" class="value">{{ element.dateCreated|datetime('short') }}</div>
             </div>
             <div class="data">
                 <h5 class="heading">{{ "Updated at"|t('app') }}</h5>
-                <div class="value">{{ element.dateUpdated|datetime('short') }}</div>
+                <div id="date-updated-value" class="value">{{ element.dateUpdated|datetime('short') }}</div>
             </div>
             {% if isRevision %}
                 {% set revisionNotes = element.revisionNotes %}
@@ -245,26 +316,105 @@
             {% endif %}
         {% endblock %}
     </div>
+
+    {% if isCurrent and (hasRevisions ?? false) %}
+        {{ forms.textarea({
+            id: 'revision-notes',
+            class: ['nicetext'],
+            name: 'revisionNotes',
+            placeholder: 'Notes about your changes'|t('app'),
+            value: revisionNotes ?? null,
+            inputAttributes: {
+                aria: {
+                    label: 'Notes about your changes'|t('app'),
+                },
+            },
+        }) }}
+    {% endif %}
+
+    {% if isDraft and element.getIsOutdated() %}
+        {% do craft.app.session.authorize('mergeDraftSourceChanges:' ~ element.draftId) %}
+        <div class="meta read-only warning">
+            <p>{{ 'The source {type} has been updated recently.'|t('app', {type: element.lowerDisplayName()}) }}</p>
+            <div class="flex flex-nowrap">
+                {% if element.trackChanges %}
+                    {{ tag('button', {
+                        type: 'button',
+                        id: 'merge-changes-btn',
+                        class: ['btn'],
+                        text: 'Merge changes into draft'|t('app'),
+                    }) }}
+                    <div id="merge-changes-spinner" class="spinner hidden"></div>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
 {% endblock %}
+
+{% block settings %}
+    {% if showStatusToggles and not isMultiSiteElement %}
+        {{ forms.lightswitchField({
+            status: element.getAttributeStatus('enabled'),
+            label: 'Enabled'|t('app'),
+            id: 'enabled',
+            name: 'enabled',
+            on: element.enabled,
+            disabled: isRevision,
+        }) }}
+    {% endif %}
+{% endblock %}
+
+{% if canEditMultipleSites and element.enabled %}
+    {# get the element's statuses across all sites #}
+    {% set siteStatusesQuery = element.find()
+        .select(['elements_sites.siteId', 'elements_sites.enabled'])
+        .id(element.id)
+        .siteId(propEditableSiteIds)
+        .anyStatus()
+        .asArray() %}
+    {% if isDraft %}
+        {% do siteStatusesQuery.drafts() %}
+    {% elseif isRevision %}
+        {% do siteStatusesQuery.revisions() %}
+    {% endif %}
+    {% set siteStatuses = siteStatusesQuery
+        .pairs()|map(s => s ? true : false) %}
+{% elseif canEditMultipleSites %}
+    {% set siteStatusValues = {} %}
+    {% for siteId in propEditableSiteIds %}
+        {% set siteStatusValues = siteStatusValues|merge([false]) %}
+    {% endfor %}
+    {% set siteStatuses = combine(propEditableSiteIds, siteStatusValues) %}
+{% else %}
+    {% set siteStatuses = {
+        ("#{element.siteId}"): element.enabled ? true : false
+    } %}
+{% endif %}
 
 {% set settings = {
     elementType: className(element),
     elementTypeDisplayName: element.displayName(),
     sourceId: element.getSourceId(),
     siteId: element.siteId,
+    siteToken: not element.getSite().enabled ? element.siteId|hash,
     isUnsavedDraft: isUnsavedDraft,
-    isLive: isCurrent and element.enabled and element.enabledForSite and element.getRoute(),
+    siteStatuses: siteStatuses,
+    addlSiteIds: addlEditableSiteIds|values,
+    enabled: element.enabled ? true : false,
+    enabledForSite: element.enabled and element.getEnabledForSite(),
+    isLive: isCurrent and element.enabled and element.getEnabledForSite() and element.getRoute(),
     cpEditUrl: element.cpEditUrl,
     hashedRedirectUrl: (isUnsavedDraft ? redirectUrl : '{cpEditUrl}')|hash,
     draftId: element.draftId,
     revisionId: element.revisionId,
     draftName: isDraft ? element.draftName : null,
     draftNotes: isDraft ? element.draftNotes : null,
+    canEditMultipleSites: canEditMultipleSites,
     canDeleteDraft: canDeleteDraft,
     canUpdateSource: canUpdateSource,
     saveDraftAction: saveDraftAction,
-    deleteDraftAction: deleteDraftAction,
-    applyDraftAction: applyDraftAction,
+    deleteDraftAction: deleteDraftAction ?? null,
+    applyDraftAction: applyDraftAction ?? null,
     enablePreview: enablePreview,
     previewTargets: previewTargets,
 } %}

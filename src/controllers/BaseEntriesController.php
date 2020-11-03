@@ -12,6 +12,7 @@ use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
 use craft\elements\Entry;
 use craft\models\Section;
+use craft\models\Site;
 use craft\web\Controller;
 use yii\web\ForbiddenHttpException;
 
@@ -25,9 +26,6 @@ use yii\web\ForbiddenHttpException;
  */
 abstract class BaseEntriesController extends Controller
 {
-    // Protected Methods
-    // =========================================================================
-
     /**
      * Returns the editable site IDs for a section.
      *
@@ -52,19 +50,29 @@ abstract class BaseEntriesController extends Controller
     }
 
     /**
+     * Enforces edit site permissions.
+     *
+     * @param Site $site
+     * @throws ForbiddenHttpException
+     * @since 3.5.0
+     */
+    protected function enforceSitePermission(Site $site)
+    {
+        if (Craft::$app->getIsMultiSite()) {
+            $this->requirePermission('editSite:' . $site->uid);
+        }
+    }
+
+    /**
      * Enforces all Edit Entry permissions.
      *
      * @param Entry $entry
      * @param bool $duplicate
+     * @throws ForbiddenHttpException
      */
     protected function enforceEditEntryPermissions(Entry $entry, bool $duplicate = false)
     {
         $permissionSuffix = ':' . $entry->getSection()->uid;
-
-        if (Craft::$app->getIsMultiSite()) {
-            // Make sure they have access to this site
-            $this->requirePermission('editSite:' . $entry->getSite()->uid);
-        }
 
         // Make sure the user is allowed to edit entries in this section
         $this->requirePermission('editEntries' . $permissionSuffix);
@@ -129,5 +137,25 @@ abstract class BaseEntriesController extends Controller
             return Craft::t('app', 'Create a new entry');
         }
         return trim($entry->title) ?: Craft::t('app', 'Edit Entry');
+    }
+
+    /**
+     * Returns the posted `enabledForSite` value, taking the user’s permissions into account.
+     *
+     * @return bool|bool[]|null
+     * @throws ForbiddenHttpException
+     * @since 3.4.0
+     */
+    protected function enabledForSiteValue()
+    {
+        $enabledForSite = $this->request->getBodyParam('enabledForSite');
+        if (is_array($enabledForSite)) {
+            // Make sure they are allowed to edit all of the posted site IDs
+            $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
+            if (array_diff(array_keys($enabledForSite), $editableSiteIds)) {
+                throw new ForbiddenHttpException('User not permitted to edit the statuses for all the submitted site IDs');
+            }
+        }
+        return $enabledForSite;
     }
 }

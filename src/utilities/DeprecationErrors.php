@@ -19,9 +19,6 @@ use craft\web\assets\deprecationerrors\DeprecationErrorsAsset;
  */
 class DeprecationErrors extends Utility
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -43,7 +40,7 @@ class DeprecationErrors extends Utility
      */
     public static function iconPath()
     {
-        return Craft::getAlias('@app/icons/bug.svg');
+        return Craft::getAlias('@appicons/bug.svg');
     }
 
     /**

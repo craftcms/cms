@@ -25,23 +25,25 @@ use yii\db\Exception;
  */
 class CommandTest extends Unit
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var DateTime
      */
     protected $sessionDate;
 
-    // Tests
-    // =========================================================================
+    /**
+     * @var array
+     */
+    private array $_sessionData = [
+        'userId' => 1,
+        'token' => 'test'
+    ];
 
     /**
      *
      */
     public function testEnsureCommand()
     {
-        $this->assertInstanceOf(Command::class, Craft::$app->getDb()->createCommand());
+        self::assertInstanceOf(Command::class, Craft::$app->getDb()->createCommand());
     }
 
     /**
@@ -50,8 +52,8 @@ class CommandTest extends Unit
     public function testInsertDateCreated()
     {
         $session = $this->ensureSession();
-
-        $this->assertSame($session['dateCreated'], $this->sessionDate->format('Y-m-d H:i:s'));
+        self::assertSame($session['dateCreated'], $this->sessionDate->format('Y-m-d H:i:s'));
+        $this->clearSession();
     }
 
     /**
@@ -69,7 +71,8 @@ class CommandTest extends Unit
         unset($session['dateUpdated']);
         $session = $this->updateSession($session);
 
-        $this->assertSame($date->format('Y-m-d H:i:s'), $session['dateUpdated']);
+        self::assertSame($date->format('Y-m-d H:i:s'), $session['dateUpdated']);
+        $this->clearSession();
     }
 
     /**
@@ -83,19 +86,22 @@ class CommandTest extends Unit
         $this->sessionDate = new DateTime('now', new DateTimeZone('UTC'));
 
         $command = Craft::$app->getDb()->createCommand()
-            ->insert(Table::SESSIONS,
-                [
-                    'userId' => 1,
-                    'token' => 'test'
-                ]
-            )->execute();
+            ->insert(Table::SESSIONS, $this->_sessionData)
+            ->execute();
 
-        $this->assertGreaterThan(0, $command);
+        self::assertGreaterThan(0, $command);
 
-        return $this->getSession([
-            'userId' => 1,
-            'token' => 'test'
-        ]);
+        return $this->getSession($this->_sessionData);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function clearSession()
+    {
+        Craft::$app->getDb()->createCommand()
+            ->truncateTable(Table::SESSIONS)
+            ->execute();
     }
 
     /**

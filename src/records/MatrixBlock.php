@@ -29,9 +29,6 @@ use yii\db\ActiveQueryInterface;
  */
 class MatrixBlock extends ActiveRecord
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      * @return string

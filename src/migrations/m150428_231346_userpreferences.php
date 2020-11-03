@@ -15,14 +15,8 @@ use yii\base\InvalidArgumentException;
  */
 class m150428_231346_userpreferences extends Migration
 {
-    // Properties
-    // =========================================================================
-
     private $_usersTable;
     private $_prefsTable;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -53,9 +47,6 @@ class m150428_231346_userpreferences extends Migration
 
         return false;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Creates the userpreferences table

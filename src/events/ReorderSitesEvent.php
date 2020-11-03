@@ -17,9 +17,6 @@ use yii\base\Event;
  */
 class ReorderSitesEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int[]|null The site IDs in their new order
      */

@@ -29,9 +29,6 @@ use craft\db\Table;
  */
 class AssetTransform extends ActiveRecord
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      * @return string

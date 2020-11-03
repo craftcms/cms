@@ -18,9 +18,6 @@ use craft\helpers\StringHelper;
  */
 class UrlRule extends \yii\web\UrlRule
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var array Pattern tokens that will be swapped out at runtime.
      */
@@ -31,9 +28,6 @@ class UrlRule extends \yii\web\UrlRule
      */
     public $params = [];
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * Constructor.
      *
@@ -42,9 +36,9 @@ class UrlRule extends \yii\web\UrlRule
     public function __construct(array $config = [])
     {
         // Add support for a 'template' config option, which acts as a shortcut for templates/render?template=foo
-        if (isset($config['template'])) {
+        if (array_key_exists('template', $config)) {
             $config['route'] = 'templates/render';
-            $config['params']['template'] = $config['template'];
+            $config['params']['template'] = (string)$config['template'];
             unset($config['template']);
 
             if (isset($config['variables'])) {

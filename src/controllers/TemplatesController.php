@@ -8,9 +8,12 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\db\Connection;
 use craft\helpers\App;
+use craft\helpers\Db;
 use craft\helpers\Template;
 use craft\web\Controller;
+use craft\web\View;
 use ErrorException;
 use yii\base\UserException;
 use yii\web\ForbiddenHttpException;
@@ -31,40 +34,36 @@ use yii\web\ServerErrorHttpException;
  */
 class TemplatesController extends Controller
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
     public $allowAnonymous = [
         'offline' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'manual-update-notification' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
-        'config-sync-kickoff' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
-        'incompatible-config-alert' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'requirements-check' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'render-error' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
     ];
 
-    // Public Methods
-    // =========================================================================
+    /**
+     * @inheritdoc
+     */
+    public $enableCsrfValidation = false;
 
     /**
      * @inheritdoc
      */
     public function beforeAction($action)
     {
-        $request = Craft::$app->getRequest();
-        $actionSegments = $request->getActionSegments();
+        $actionSegments = $this->request->getActionSegments();
         if (isset($actionSegments[0]) && strtolower($actionSegments[0]) === 'templates') {
             throw new ForbiddenHttpException();
         }
 
         if ($action->id === 'render') {
             // Allow anonymous access to the Login template even if the site is offline
-            if ($request->getIsLoginRequest()) {
+            if ($this->request->getIsLoginRequest()) {
                 $this->allowAnonymous = self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE;
-            } else if ($request->getIsSiteRequest()) {
+            } else if ($this->request->getIsSiteRequest()) {
                 $this->allowAnonymous = self::ALLOW_ANONYMOUS_LIVE;
             }
         }
@@ -86,7 +85,7 @@ class TemplatesController extends Controller
         if (
             (
                 Craft::$app->getConfig()->getGeneral()->headlessMode &&
-                Craft::$app->getRequest()->getIsSiteRequest()
+                $this->request->getIsSiteRequest()
             ) ||
             !$this->getView()->doesTemplateExist($template)
         ) {
@@ -109,13 +108,12 @@ class TemplatesController extends Controller
     public function actionOffline(): Response
     {
         // If this is a site request, make sure the offline template exists
-        $view = $this->getView();
-        if (Craft::$app->getRequest()->getIsSiteRequest() && !$view->doesTemplateExist('offline')) {
-            $view->setTemplateMode($view::TEMPLATE_MODE_CP);
+        if ($this->request->getIsSiteRequest() && !$this->getView()->doesTemplateExist('offline')) {
+            $templateMode = View::TEMPLATE_MODE_CP;
         }
 
         // Output the offline template
-        return $this->renderTemplate('offline');
+        return $this->renderTemplate('offline', [], $templateMode ?? null);
     }
 
     /**
@@ -129,26 +127,6 @@ class TemplatesController extends Controller
     }
 
     /**
-     * Renders the Project Config Sync kickoff template.
-     *
-     * @return Response
-     */
-    public function actionConfigSyncKickoff(): Response
-    {
-        return $this->renderTemplate('_special/configsync');
-    }
-
-    /**
-     * Renders the incompatible project config alert template.
-     *
-     * @return Response
-     */
-    public function actionIncompatibleConfigAlert(array $issues = []): Response
-    {
-        return $this->renderTemplate('_special/incompatibleconfigs', ['issues' => $issues]);
-    }
-
-    /**
      * @return Response|null
      * @throws ServerErrorHttpException if it's an Ajax request and the server doesn’t meet Craft’s requirements
      */
@@ -158,7 +136,7 @@ class TemplatesController extends Controller
         $reqCheck = new \RequirementsChecker();
         $dbConfig = Craft::$app->getConfig()->getDb();
         $reqCheck->dsn = $dbConfig->dsn;
-        $reqCheck->dbDriver = $dbConfig->driver;
+        $reqCheck->dbDriver = $dbConfig->dsn ? Db::parseDsn($dbConfig->dsn, 'driver') : Connection::DRIVER_MYSQL;
         $reqCheck->dbUser = $dbConfig->user;
         $reqCheck->dbPassword = $dbConfig->password;
 
@@ -166,7 +144,7 @@ class TemplatesController extends Controller
 
         if ($reqCheck->result['summary']['errors'] > 0) {
             // Coming from Updater.php
-            if (Craft::$app->getRequest()->getAcceptsJson()) {
+            if ($this->request->getAcceptsJson()) {
                 $message = '<br /><br />';
 
                 foreach ($reqCheck->getResult()['requirements'] as $req) {
@@ -212,7 +190,7 @@ class TemplatesController extends Controller
             $message = $exception->getMessage();
         }
 
-        if (Craft::$app->getRequest()->getIsSiteRequest()) {
+        if ($this->request->getIsSiteRequest()) {
             $prefix = Craft::$app->getConfig()->getGeneral()->errorTemplatePrefix;
 
             if ($this->getView()->doesTemplateExist($prefix . $statusCode)) {
@@ -227,7 +205,7 @@ class TemplatesController extends Controller
         /** @noinspection UnSafeIsSetOverArrayInspection - FP */
         if (!isset($template)) {
             $view = $this->getView();
-            $view->setTemplateMode($view::TEMPLATE_MODE_CP);
+            $view->setTemplateMode(View::TEMPLATE_MODE_CP);
 
             if ($view->doesTemplateExist($statusCode)) {
                 $template = $statusCode;
@@ -241,6 +219,7 @@ class TemplatesController extends Controller
             'code' => $exception->getCode(),
             'file' => $exception->getFile(),
             'line' => $exception->getLine(),
+            'statusCode' => $statusCode,
         ], get_object_vars($exception));
 
         // If this is a PHP error and html_errors (http://php.net/manual/en/errorfunc.configuration.php#ini.html-errors)

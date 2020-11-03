@@ -1,0 +1,168 @@
+{% import '_includes/forms' as forms %}
+
+{% set customizableTabs = customizableTabs ?? true %}
+{% set customizableUi = customizableUi ?? true %}
+{% set pretendTabName = pretendTabName ?? 'Content'|t('app') %}
+{% set fieldLayout = fieldLayout ?? create('craft\\models\\FieldLayout') %}
+
+{% set groups = craft.app.fields.getAllGroups() %}
+
+{% do view.registerTranslations('app', [
+    'Apply',
+    'Delete',
+    'Give your tab a name.',
+    'Move to the left',
+    'Move to the right',
+    'Remove',
+    'Rename',
+    'Required',
+    '{pct} width',
+]) %}
+
+{% macro tab(tabName, elements, context) %}
+    <div class="fld-tab">
+        <div class="tabs">
+            <div class="tab sel{% if context.customizableTabs %} draggable{% endif %}">
+                <span>{{ tabName }}</span>
+                {% if context.customizableTabs %}
+                    <a class="settings icon" title="{{ 'Edit'|t('app') }}" aria-label="{{ 'Edit'|t('app') }}"></a>
+                {% endif %}
+            </div>
+        </div>
+        <div class="fld-tabcontent">
+            {% for element in elements %}
+                {{ _self.elementSelector(element, false) }}
+            {% endfor %}
+        </div>
+    </div>
+{% endmacro %}
+
+{% macro elementSelector(element, forLibrary, attr) %}
+    {% if element is instance of('craft\\fieldlayoutelements\\BaseField') %}
+        {% set attr = {
+            class: [
+                not forLibrary and element.required ? 'fld-required' : null,
+            ]|filter,
+            data: {
+                keywords: forLibrary ? element.keywords()|join(' ')|lower : false,
+            },
+        }|merge(attr ?? {}, recursive=true) %}
+    {% endif %}
+    {% set settingsHtml = element.settingsHtml() %}
+    {{ element.selectorHtml()|attr({
+        class: [
+            'fld-element',
+            forLibrary ? 'unused' : null,
+        ]|filter,
+        data: {
+            type: className(element),
+            config: element.toArray(),
+            'has-custom-width': element.hasCustomWidth(),
+            'settings-html': (settingsHtml ? settingsHtml|namespaceAttributes("element#{random()}") : null) ?: false,
+        },
+    }|merge(attr ?? {}, recursive=true)) }}
+{% endmacro %}
+
+{% macro fieldSelectors(groupName, groupFields, context) %}
+    {% set showGroup = groupFields|contains(f => not context.fieldLayout.isFieldIncluded(f.attribute())) %}
+    <div class="fld-field-group{% if not showGroup %} hidden{% endif %}" data-name="{{ groupName|replace('"', '')|lower }}">
+        <h6>{{ groupName }}</h6>
+        {% for field in groupFields %}
+            {{ _self.elementSelector(field, true, {
+                class: [
+                    context.fieldLayout.isFieldIncluded(field.attribute()) ? 'hidden' : null,
+                ],
+            }) }}
+        {% endfor %}
+    </div>
+{% endmacro %}
+
+{% if fieldLayout.id %}
+    {{ hiddenInput('fieldLayoutId', fieldLayout.id) }}
+{% endif %}
+
+<div id="fieldlayoutform" class="layoutdesigner">
+    <div class="fld-workspace">
+        <div class="fld-tabs">
+            {% if customizableTabs %}
+                {% for tab in fieldLayout.getTabs() %}
+                    {{ _self.tab(tab.name, tab.elements, _context) }}
+                {% endfor %}
+            {% else %}
+                {% set elements = [] %}
+                {% for tab in fieldLayout.getTabs() %}
+                    {% for element in tab.elements %}
+                        {% set elements = elements|push(element) %}
+                    {% endfor %}
+                {% endfor %}
+                {{ _self.tab(pretendTabName, elements, _context) }}
+            {% endif %}
+        </div>
+
+        {% if customizableTabs %}
+            <button type="button" class="fld-new-tab-btn btn add icon">{{ "New Tab"|t('app') }}</button>
+        {% endif %}
+    </div>
+
+    <div class="fld-sidebar">
+        {% if customizableUi %}
+            <div class="btngroup small fullwidth" role="listbox" aria-label="{{ 'Layout element types'|t('app') }}" tabindex="0">
+                <button type="button" class="btn small active" role="option" aria-selected="true" data-library="field" tabindex="-1">{{ 'Fields'|t('app') }}</button>
+                <button type="button" class="btn small" role="option" aria-selected="false" data-library="ui" tabindex="-1">{{ 'UI Elements'|t('app') }}</button>
+            </div>
+        {% endif %}
+
+        <div class="fld-field-library">
+            <div class="texticon search icon clearable">
+                {{ forms.text({
+                    class: 'fullwidth',
+                    inputmode: 'search',
+                    placeholder: "Search"|t('app')
+                }) }}
+                <div class="clear hidden" title="{{ 'Clear'|t('app') }}" aria-label="{{ 'Clear'|t('app') }}"></div>
+            </div>
+
+            {{ _self.fieldSelectors('Standard Fields'|t('app'), fieldLayout.getAvailableStandardFields(), _context) }}
+
+            {% for groupName, groupFields in fieldLayout.getAvailableCustomFields() %}
+                {{ _self.fieldSelectors(groupName, groupFields, _context) }}
+            {% endfor %}
+        </div>
+
+        {% if customizableUi %}
+            <div class="fld-ui-library hidden">
+                {% for element in fieldLayout.getAvailableUiElements() %}
+                    {{ _self.elementSelector(element, true) }}
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% set jsSettings = {
+    customizableTabs: customizableTabs,
+    customizableUi: customizableUi,
+    elementPlacementInputName: 'elementPlacements[__TAB_NAME__][]'|namespaceInputName,
+    elementConfigInputName: 'elementConfigs[__ELEMENT_KEY__]'|namespaceInputName,
+} %}
+
+{% js %}
+    var initFLD = function() {
+        new Craft.FieldLayoutDesigner("#{{ 'fieldlayoutform'|namespaceInputId }}", {{ jsSettings|json_encode|raw }});
+    };
+
+    {% if tab is defined %}
+        var $fldTab = $('#{{ "tab-#{tab}"|namespaceInputId }}');
+
+        if ($fldTab.hasClass('sel')) {
+            initFLD();
+        } else {
+            $fldTab.on('activate.fld', function() {
+                initFLD();
+                $fldTab.off('activate.fld');
+            });
+        }
+    {% else %}
+        initFLD();
+    {% endif %}
+{% endjs %}

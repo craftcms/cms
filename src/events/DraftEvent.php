@@ -19,9 +19,6 @@ use yii\base\Event;
  */
 class DraftEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var ElementInterface|null The source element
      */

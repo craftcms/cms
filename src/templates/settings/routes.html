@@ -4,7 +4,7 @@
 {% set title = "Routes"|t('app') %}
 
 {% block actionButton %}
-    <div id="add-route-btn" class="btn submit add icon">{{ "New route"|t('app') }}</div>
+    <button type="button" id="add-route-btn" class="btn submit add icon">{{ "New route"|t('app') }}</button>
 {% endblock %}
 
 {% set crumbs = [
@@ -33,7 +33,7 @@
 {% set routes = craft.routes.getProjectConfigRoutes() %}
 
 
-{% block content %}
+{% block main %}
     <p id="noroutes"{% if routes %} class="hidden"{% endif %}>
         {{ "No routes exist yet."|t('app') }}
     </p>

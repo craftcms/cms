@@ -1,0 +1,14 @@
+{% if craft.cp.areAlertsCached() %}
+    {% set alerts = craft.cp.getAlerts() %}
+    {% if alerts %}
+        <ul id="alerts">
+            {% for alert in craft.cp.getAlerts() %}
+                <li>{{ alert|raw }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+{% else %}
+    {% js %}
+        Craft.cp.fetchAlerts();
+    {% endjs %}
+{% endif %}

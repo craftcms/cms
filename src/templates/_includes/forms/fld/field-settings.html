@@ -1,0 +1,46 @@
+{% import '_includes/forms' as forms %}
+
+{% set hideLabelChangeJs -%}
+  if (this.checked) {
+    $(this).closest('.field').find('.text').addClass('disabled').prop('disabled', true);
+  } else {
+    $(this).closest('.field').find('.text').removeClass('disabled').prop('disabled', false);
+  }
+{%- endset %}
+
+{% embed '_includes/forms/field' with {
+  id: 'label',
+  label: 'Label'|t('app'),
+} %}
+  {% block heading %}
+    {{ parent() }}
+    <div class="flex-grow"></div>
+    {% include '_includes/forms/checkbox' with {
+      id: 'label-toggle',
+      name: 'labelHidden',
+      label: 'Hide'|t('app'),
+      checked: labelHidden,
+      inputAttributes: {
+        onchange: hideLabelChangeJs,
+      },
+    } %}
+  {% endblock %}
+  {% block input %}
+    {% include '_includes/forms/text' with {
+      id: 'label',
+      name: 'label',
+      value: not labelHidden ? field.label,
+      placeholder: defaultLabel,
+      disabled: labelHidden,
+    } %}
+  {% endblock %}
+{% endembed %}
+
+{{ forms.textareaField({
+  label: 'Instructions'|t('app'),
+  id: 'instructions',
+  class: 'nicetext',
+  name: 'instructions',
+  value: field.instructions,
+  placeholder: defaultInstructions,
+}) }}

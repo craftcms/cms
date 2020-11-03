@@ -22,23 +22,14 @@ use yii\web\Response as YiiResponse;
  */
 class InstallController extends BaseUpdaterController
 {
-    // Constants
-    // =========================================================================
-
     const ACTION_CRAFT_INSTALL = 'craft-install';
     const ACTION_ENABLE = 'enable';
     const ACTION_MIGRATE = 'migrate';
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var string|null
      */
     private $_pluginRedirect;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -127,9 +118,6 @@ class InstallController extends BaseUpdaterController
         return $this->runMigrations([$this->data['handle']]) ?? $this->sendFinished();
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -143,15 +131,14 @@ class InstallController extends BaseUpdaterController
      */
     protected function initialData(): array
     {
-        $request = Craft::$app->getRequest();
-        $packageName = strip_tags($request->getRequiredBodyParam('packageName'));
-        $handle = strip_tags($request->getRequiredBodyParam('handle'));
-        $edition = strip_tags($request->getRequiredBodyParam('edition'));
-        $version = strip_tags($request->getRequiredBodyParam('version'));
-        $licenseKey = $request->getBodyParam('licenseKey');
+        $packageName = strip_tags($this->request->getRequiredBodyParam('packageName'));
+        $handle = strip_tags($this->request->getRequiredBodyParam('handle'));
+        $edition = strip_tags($this->request->getRequiredBodyParam('edition'));
+        $version = strip_tags($this->request->getRequiredBodyParam('version'));
+        $licenseKey = $this->request->getBodyParam('licenseKey');
 
         if (
-            ($returnUrl = $request->getBodyParam('return')) !== null &&
+            ($returnUrl = $this->request->getBodyParam('return')) !== null &&
             !in_array($returnUrl, ['plugin-store', 'settings/plugins'], true)
         ) {
             $returnUrl = null;

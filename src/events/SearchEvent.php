@@ -18,9 +18,6 @@ use yii\base\Event as BaseEvent;
  */
 class SearchEvent extends BaseEvent
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int[] The list of element IDs to filter by the search query, or the
      * filtered list of element IDs, depending on if this is a beforeSearch or

@@ -21,9 +21,6 @@ use craft\test\Fixture;
  */
 class SitesFixture extends Fixture
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -33,9 +30,6 @@ class SitesFixture extends Fixture
      * @inheritdoc
      */
     public $dataFile = __DIR__ . '/data/sites.php';
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

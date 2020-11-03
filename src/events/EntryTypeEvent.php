@@ -17,9 +17,6 @@ use yii\base\Event;
  */
 class EntryTypeEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var \craft\models\EntryType|null The entry type model associated with the event.
      */

@@ -23,5 +23,4 @@ use Codeception\Lib\Friend;
 class FunctionalTester extends Actor
 {
     use _generated\FunctionalTesterActions;
-
 }

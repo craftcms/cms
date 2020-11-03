@@ -9,19 +9,19 @@ namespace craft\base;
 
 use craft\db\MigrationManager;
 use craft\web\twig\variables\Cp;
+use yii\base\Module;
 
 /**
  * PluginInterface defines the common interface to be implemented by plugin classes.
  * A class implementing this interface should also use [[PluginTrait]].
  *
+ * @mixin PluginTrait
+ * @mixin Module
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
 interface PluginInterface
 {
-    // Static
-    // =========================================================================
-
     /**
      * Returns supported plugin editions (lowest to highest).
      *
@@ -29,9 +29,6 @@ interface PluginInterface
      * @since 3.1.0
      */
     public static function editions(): array;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns the plugin’s handle (really just an alias of [[\yii\base\Module::id]]).
@@ -92,9 +89,9 @@ interface PluginInterface
     public function getSettingsResponse();
 
     /**
-     * Returns the CP nav item definition for this plugin’s CP section, if it has one.
+     * Returns the control panel nav item definition for this plugin, if it has a section in the control panel.
      *
-     * The CP nav item definition should be an array with the following keys:
+     * The returned array should contain the following keys:
      *
      * - `label` – The human-facing nav item label
      * - `url` – The URL the nav item should link to
@@ -122,7 +119,7 @@ interface PluginInterface
      * ];
      * ```
      *
-     * Control Panel templates can specify which subnav item is selected by defining a `selectedSubnavItem` variable.
+     * Control panel templates can specify which subnav item is selected by defining a `selectedSubnavItem` variable.
      *
      * ```twig
      * {% set selectedSubnavItem = 'orders' %}

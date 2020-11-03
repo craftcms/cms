@@ -17,9 +17,6 @@ use yii\base\Event;
  */
 class SetElementTableAttributeHtmlEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null The table attribute associated with this event.
      */

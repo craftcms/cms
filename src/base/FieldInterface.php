@@ -16,16 +16,18 @@ use yii\validators\Validator;
  * FieldInterface defines the common interface to be implemented by field classes.
  * A class implementing this interface should also use [[SavableComponentTrait]] and [[FieldTrait]].
  *
+ * @mixin FieldTrait
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
 interface FieldInterface extends SavableComponentInterface
 {
-    // Static
-    // =========================================================================
-
     /**
      * Returns whether this field has a column in the content table.
+     *
+     * ::: warning
+     * If you set this to `false`, you will be on your own in terms of saving and retrieving your field values.
+     * :::
      *
      * @return bool
      */
@@ -48,7 +50,7 @@ interface FieldInterface extends SavableComponentInterface
     /**
      * Returns the PHPDoc type this field’s values will have.
      *
-     * It will be used by generated `ContentBehavior` and `ElementQueryBehavior` classes.
+     * It will be used by the generated `CustomFieldBehavior` class.
      *
      * If the values can be of more than one type, return multiple types separated by `|`s.
      *
@@ -63,9 +65,6 @@ interface FieldInterface extends SavableComponentInterface
      * @since 3.2.0
      */
     public static function valueType(): string;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns the column type that this field should get within the content table.
@@ -84,12 +83,21 @@ interface FieldInterface extends SavableComponentInterface
      * Returns whether the field should be shown as translatable in the UI.
      *
      * Note this method has no effect on whether the field’s value will get copied over to other
-     * sites when the entry is actually getting saved. That is determined by [[getTranslationKey()]].
+     * sites when the element is actually getting saved. That is determined by [[getTranslationKey()]].
      *
      * @param ElementInterface|null $element The element being edited
      * @return bool
      */
     public function getIsTranslatable(ElementInterface $element = null): bool;
+
+    /**
+     * Returns the description of this field’s translation support.
+     *
+     * @param ElementInterface|null $element The element being edited
+     * @return string|null
+     * @since 3.4.0
+     */
+    public function getTranslationDescription(ElementInterface $element = null);
 
     /**
      * Returns the field’s translation key, based on a given element.
@@ -124,8 +132,8 @@ interface FieldInterface extends SavableComponentInterface
      * ]);
      * ```
      *
-     * If you need to tie any JavaScript code to your input, it’s important to know that any `name=` and `id=`
-     * attributes within the returned HTML will probably get [[\craft\web\View::namespaceInputs()|namespaced]],
+     * If you need to tie any JavaScript code to your input, it’s important to know that any `name` and `id`
+     * attributes within the returned HTML will probably get [[\craft\helpers\Html::namespaceHtml()|namespaced]],
      * however your JavaScript code will be left untouched.
      * For example, if getInputHtml() returns the following HTML:
      *
@@ -145,33 +153,33 @@ interface FieldInterface extends SavableComponentInterface
      * </script>
      * ```
      *
-     * As you can see, that JavaScript code will not be able to find the textarea, because the textarea’s `id=`
+     * As you can see, that JavaScript code will not be able to find the textarea, because the textarea’s `id`
      * attribute was changed from `foo` to `namespace-foo`.
      * Before you start adding `namespace-` to the beginning of your element ID selectors, keep in mind that the actual
      * namespace is going to change depending on the context. Often they are randomly generated. So it’s not quite
      * that simple.
      *
-     * Thankfully, [[\craft\web\View]] provides a couple handy methods that can help you deal with this:
+     * Thankfully, Craft provides a couple handy methods that can help you deal with this:
      *
+     * - [[\craft\helpers\Html::id()]] will generate a valid element ID from an input name.
      * - [[\craft\web\View::namespaceInputId()]] will give you the namespaced version of a given ID.
      * - [[\craft\web\View::namespaceInputName()]] will give you the namespaced version of a given input name.
-     * - [[\craft\web\View::formatInputId()]] will format an input name to look more like an ID attribute value.
      *
      * So here’s what a getInputHtml() method that includes field-targeting JavaScript code might look like:
      *
      * ```php
      * public function getInputHtml($value, $element)
      * {
-     *     // Come up with an ID value based on $name
-     *     $id = Craft::$app->view->formatInputId($name);
+     *     // Generate a valid ID based on the input name
+     *     $id = craft\helpers\Html::id($name);
      *     // Figure out what that ID is going to be namespaced into
      *     $namespacedId = Craft::$app->view->namespaceInputId($id);
      *     // Render and return the input template
      *     return Craft::$app->view->renderTemplate('myplugin/_fieldinput', [
-     *         'name'         => $name,
-     *         'id'           => $id,
+     *         'name' => $name,
+     *         'id' => $id,
      *         'namespacedId' => $namespacedId,
-     *         'value'        => $value
+     *         'value' => $value,
      *     ]);
      * }
      * ```
@@ -198,7 +206,7 @@ interface FieldInterface extends SavableComponentInterface
     /**
      * Returns a static (non-editable) version of the field’s input HTML.
      *
-     * This function is called to output field values when viewing entry drafts.
+     * This function is called to output field values when viewing element drafts.
      *
      * @param mixed $value The field’s value
      * @param ElementInterface $element The element the field is associated with
@@ -263,9 +271,18 @@ interface FieldInterface extends SavableComponentInterface
      * Normalizes the field’s value for use.
      *
      * This method is called when the field’s value is first accessed from the element. For example, the first time
-     * `entry.myFieldHandle` is called from a template, or right before [[getInputHtml()]] is called. Whatever
-     * this method returns is what `entry.myFieldHandle` will likewise return, and what [[getInputHtml()]]’s and
+     * `element.myFieldHandle` is called from a template, or right before [[getInputHtml()]] is called. Whatever
+     * this method returns is what `element.myFieldHandle` will likewise return, and what [[getInputHtml()]]’s and
      * [[serializeValue()]]’s $value arguments will be set to.
+     *
+     * The value passed into this method will vary depending on the context.
+     *
+     * - If a new, unsaved element is being edited for the first time (such as an entry within a Quick Post widget
+     *   on the Dashboard), the value will be `null`.
+     * - If an element is currently being saved, the value will be the field’s POST data.
+     * - If an existing element was retrieved from the database, the value will be whatever is stored in the field’s
+     *   `content` table column. (Or if the field doesn’t have a `content` table column per [[hasContentColumn()]],
+     *   the value will be `null`.)
      *
      * @param mixed $value The raw field value
      * @param ElementInterface|null $element The element the field is associated with, if there is one
@@ -274,7 +291,7 @@ interface FieldInterface extends SavableComponentInterface
     public function normalizeValue($value, ElementInterface $element = null);
 
     /**
-     * Prepares the field’s value to be stored somewhere, like the content table or JSON-encoded in an entry revision table.
+     * Prepares the field’s value to be stored somewhere, like the content table.
      *
      * Data types that are JSON-encodable are safe (arrays, integers, strings, booleans, etc).
      * Whatever this returns should be something [[normalizeValue()]] can handle.
@@ -332,6 +349,22 @@ interface FieldInterface extends SavableComponentInterface
      * @since 3.3.0
      */
     public function getContentGqlType();
+
+    /**
+     * Returns the GraphQL type to be used as an argument in mutations for this field type.
+     *
+     * @return Type|array
+     * @since 3.5.0
+     */
+    public function getContentGqlMutationArgumentType();
+
+    /**
+     * Returns the GraphQL type to be used as an argument in queries for this field type.
+     *
+     * @return Type|array
+     * @since 3.5.0
+     */
+    public function getContentGqlQueryArgumentType();
 
     // Events
     // -------------------------------------------------------------------------

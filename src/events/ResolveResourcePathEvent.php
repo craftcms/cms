@@ -17,9 +17,6 @@ use yii\base\Event;
  */
 class ResolveResourcePathEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string The resource URI (sans "cpresources/").
      */

@@ -15,9 +15,6 @@ namespace craft\base;
  */
 interface GqlInlineFragmentInterface
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Get the field context for all subfields in this fragment.
      *

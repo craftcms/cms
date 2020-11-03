@@ -38,6 +38,18 @@ class Entry extends Query
                 'resolve' => EntryResolver::class . '::resolve',
                 'description' => 'This query is used to query for entries.'
             ],
+            'entryCount' => [
+                'type' => Type::nonNull(Type::int()),
+                'args' => EntryArguments::getArguments(),
+                'resolve' => EntryResolver::class . '::resolveCount',
+                'description' => 'This query is used to return the number of entries.'
+            ],
+            'entry' => [
+                'type' => EntryInterface::getType(),
+                'args' => EntryArguments::getArguments(),
+                'resolve' => EntryResolver::class . '::resolveOne',
+                'description' => 'This query is used to query for a single entry.'
+            ],
         ];
     }
 }

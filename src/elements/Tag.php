@@ -12,10 +12,12 @@ use craft\base\Element;
 use craft\db\Table;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\TagQuery;
+use craft\helpers\Db;
 use craft\models\TagGroup;
 use craft\records\Tag as TagRecord;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
+use yii\validators\InlineValidator;
 
 /**
  * Tag represents a tag element.
@@ -26,9 +28,6 @@ use yii\base\InvalidConfigException;
  */
 class Tag extends Element
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -40,9 +39,25 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
+    public static function lowerDisplayName(): string
+    {
+        return Craft::t('app', 'tag');
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function pluralDisplayName(): string
     {
         return Craft::t('app', 'Tags');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function pluralLowerDisplayName(): string
+    {
+        return Craft::t('app', 'tags');
     }
 
     /**
@@ -132,8 +147,15 @@ class Tag extends Element
         return ['taggroups.' . $context->uid];
     }
 
-    // Properties
-    // =========================================================================
+    /**
+     * @inheritdoc
+     * @since 3.5.0
+     */
+    public static function gqlMutationNameByContext($context): string
+    {
+        /** @var TagGroup $context */
+        return 'save_' . $context->handle . '_Tag';
+    }
 
     /**
      * @var int|null Group ID
@@ -145,9 +167,6 @@ class Tag extends Element
      * @see beforeDelete()
      */
     public $deletedWithGroup = false;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -162,11 +181,53 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['groupId'], 'number', 'integerOnly' => true];
+        $rules[] = [
+            ['title'],
+            'validateTitle',
+            'when' => function(): bool {
+                return !$this->hasErrors('groupId') && !$this->hasErrors('title');
+            },
+        ];
         return $rules;
+    }
+
+    /**
+     * Validates the tag title.
+     *
+     * @param string $attribute
+     * @param array|null $params
+     * @param InlineValidator $validator
+     * @since 3.4.12
+     */
+    public function validateTitle(string $attribute, array $params = null, InlineValidator $validator)
+    {
+        $query = static::find()
+            ->groupId($this->groupId)
+            ->siteId($this->siteId)
+            ->title(Db::escapeParam($this->title));
+
+        if ($this->id) {
+            $query->andWhere(['not', ['elements.id' => $this->id]]);
+        }
+
+        if ($query->exists()) {
+            $validator->addError($this, $attribute, Craft::t('yii', '{attribute} "{value}" has already been taken.'));
+        }
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.5.0
+     */
+    public function getCacheTags(): array
+    {
+        return [
+            "group:$this->groupId",
+        ];
     }
 
     /**
@@ -279,11 +340,11 @@ class Tag extends Element
         }
 
         // Update the tag record
-        Craft::$app->getDb()->createCommand()
-            ->update(Table::TAGS, [
-                'deletedWithGroup' => $this->deletedWithGroup,
-            ], ['id' => $this->id], [], false)
-            ->execute();
+        Db::update(Table::TAGS, [
+            'deletedWithGroup' => $this->deletedWithGroup,
+        ], [
+            'id' => $this->id,
+        ], [], false);
 
         return true;
     }

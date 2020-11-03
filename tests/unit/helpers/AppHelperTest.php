@@ -26,26 +26,17 @@ use yii\base\Component;
  */
 class AppHelperTest extends TestCase
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var UnitTester
      */
     protected $tester;
-
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
 
     /**
      *
      */
     public function testEditions()
     {
-        $this->assertEquals([Craft::Solo, Craft::Pro], App::editions());
+        self::assertEquals([Craft::Solo, Craft::Pro], App::editions());
     }
 
     /**
@@ -53,8 +44,8 @@ class AppHelperTest extends TestCase
      */
     public function testEditionName()
     {
-        $this->assertEquals('Solo', App::editionName(Craft::Solo));
-        $this->assertEquals('Pro', App::editionName(Craft::Pro));
+        self::assertEquals('Solo', App::editionName(Craft::Solo));
+        self::assertEquals('Pro', App::editionName(Craft::Pro));
     }
 
     /**
@@ -66,8 +57,8 @@ class AppHelperTest extends TestCase
     public function testIsValidEdition($result, $input)
     {
         $isValid = App::isValidEdition($input);
-        $this->assertSame($result, $isValid);
-        $this->assertIsBool($isValid);
+        self::assertSame($result, $isValid);
+        self::assertIsBool($isValid);
     }
 
     /**
@@ -79,8 +70,8 @@ class AppHelperTest extends TestCase
     public function testVersionNormalization($result, string $input)
     {
         $version = App::normalizeVersion($input);
-        $this->assertSame($result, App::normalizeVersion($input));
-        $this->assertIsString($version);
+        self::assertSame($result, App::normalizeVersion($input));
+        self::assertIsString($version);
     }
 
     /**
@@ -90,16 +81,16 @@ class AppHelperTest extends TestCase
     {
         $displayErrorsValue = ini_get('display_errors');
         @ini_set('display_errors', 1);
-        $this->assertTrue(App::phpConfigValueAsBool('display_errors'));
+        self::assertTrue(App::phpConfigValueAsBool('display_errors'));
         @ini_set('display_errors', $displayErrorsValue);
 
         $timezoneValue = ini_get('date.timezone');
         @ini_set('date.timezone', Craft::$app->getTimeZone() ?: 'Europe/Amsterdam');
-        $this->assertFalse(App::phpConfigValueAsBool('date.timezone'));
+        self::assertFalse(App::phpConfigValueAsBool('date.timezone'));
         @ini_set('date.timezone', $timezoneValue);
 
-        $this->assertFalse(App::phpConfigValueAsBool(''));
-        $this->assertFalse(App::phpConfigValueAsBool('This is not a config value'));
+        self::assertFalse(App::phpConfigValueAsBool(''));
+        self::assertFalse(App::phpConfigValueAsBool('This is not a config value'));
     }
 
     /**
@@ -111,10 +102,10 @@ class AppHelperTest extends TestCase
     public function testClassHumanization($result, $input)
     {
         $humanizedClass = App::humanizeClass($input);
-        $this->assertSame($result, $humanizedClass);
+        self::assertSame($result, $humanizedClass);
 
         // Make sure we dont have any uppercase characters.
-        $this->assertNotRegExp('/[A-Z]/', $humanizedClass);
+        self::assertNotRegExp('/[A-Z]/', $humanizedClass);
     }
 
     /**
@@ -132,8 +123,8 @@ class AppHelperTest extends TestCase
 
         App::maxPowerCaptain();
 
-        $this->assertSame($generalConfig->phpMaxMemoryLimit, ini_get('memory_limit'));
-        $this->assertSame('0', ini_get('max_execution_time'));
+        self::assertSame($generalConfig->phpMaxMemoryLimit, ini_get('memory_limit'));
+        self::assertSame('0', ini_get('max_execution_time'));
 
         ini_set('memory_limit', $oldMemoryLimit);
         ini_set('max_execution_time', $oldMaxExecution);
@@ -145,7 +136,7 @@ class AppHelperTest extends TestCase
      */
     public function testLicenseKey()
     {
-        $this->assertSame(250, strlen(App::licenseKey()));
+        self::assertSame(250, strlen(App::licenseKey()));
     }
 
     /**
@@ -158,13 +149,13 @@ class AppHelperTest extends TestCase
     {
         $config = App::$method();
 
-        $this->assertFalse($this->_areKeysMissing($config, $desiredConfig));
+        self::assertFalse($this->_areKeysMissing($config, $desiredConfig));
 
         // Make sure we aren't passing in anything unknown or invalid.
-        $this->assertTrue(class_exists($config['class']));
+        self::assertTrue(class_exists($config['class']));
 
         // Make sure its a component
-        $this->assertContains(Component::class, class_parents($config['class']));
+        self::assertContains(Component::class, class_parents($config['class']));
     }
 
     /**
@@ -175,11 +166,11 @@ class AppHelperTest extends TestCase
         $mailSettings = new MailSettings(['transportType' => Sendmail::class]);
         $result = App::mailerConfig($mailSettings);
 
-        $this->assertFalse($this->_areKeysMissing($result, ['class', 'messageClass', 'from', 'template', 'transport']));
+        self::assertFalse($this->_areKeysMissing($result, ['class', 'messageClass', 'from', 'template', 'transport']));
 
         // Make sure its a component
-        $this->assertContains(Component::class, class_parents($result['class']));
-        $this->assertTrue(class_exists($result['class']));
+        self::assertContains(Component::class, class_parents($result['class']));
+        self::assertTrue(class_exists($result['class']));
     }
 
     /**
@@ -193,9 +184,6 @@ class AppHelperTest extends TestCase
         $this->setInaccessibleProperty(Craft::$app->getRequest(), '_isCpRequest', false);
         $this->testConfigIndexes('viewConfig', ['class']);
     }
-
-    // Data Providers
-    // =========================================================================
 
     /**
      * @return array
@@ -265,9 +253,6 @@ class AppHelperTest extends TestCase
 
         ];
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * @param array $configArray

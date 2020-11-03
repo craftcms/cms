@@ -15,19 +15,13 @@ use craft\db\Table;
  *
  * @property int $id ID
  * @property string $name Schema name
- * @property string $accessToken The access Token
- * @property bool $enabled whether the schema is enabled
- * @property \DateTime $expiryDate Expiration Date
- * @property \DateTime $lastUsed When the schema was last used
- * @property array $scope The scope of the schema has.
+ * @property array $scope The scope of the schema.
+ * @property bool $isPublic Whether this schema is public
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0
  */
 class GqlSchema extends ActiveRecord
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      * @return string

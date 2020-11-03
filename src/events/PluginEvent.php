@@ -18,9 +18,6 @@ use yii\base\Event;
  */
 class PluginEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var PluginInterface|null The plugin associated with this event
      */

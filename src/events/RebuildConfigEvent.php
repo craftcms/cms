@@ -17,9 +17,6 @@ use yii\base\Event;
  */
 class RebuildConfigEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var array The rebuilt project config
      */

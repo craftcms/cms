@@ -132,7 +132,7 @@
                 couponCodeLoading: false,
                 couponCodeSuccess: false,
                 couponCodeTimeout: false,
-                error: false,
+                error: null,
                 errors: {},
                 guestCardToken: null,
                 loading: false,
@@ -170,7 +170,7 @@
                 let options = []
 
                 for (let iso in this.countries) {
-                    if (this.countries.hasOwnProperty(iso)) {
+                    if (Object.prototype.hasOwnProperty.call(this.countries, iso)) {
                         options.push({
                             label: this.countries[iso].name,
                             value: iso,
@@ -184,6 +184,7 @@
 
         methods: {
             checkout() {
+                this.error = null
                 this.errors = {}
                 this.loading = true
                 this.savePaymentMethod(
@@ -227,23 +228,24 @@
                                                                 this.$store.dispatch('cart/resetCart')
                                                                     .then(() => {
                                                                         this.loading = false
-                                                                        this.error = false
+                                                                        this.error = null
                                                                         this.$root.modalStep = 'thank-you'
                                                                     })
                                                             })
                                                     })
                                             })
                                     })
-                                    .catch(checkoutResponse => {
+                                    .catch(checkoutError => {
                                         this.loading = false
-                                        this.error = checkoutResponse.data.error || checkoutResponse.statusText;
+                                        this.error = (checkoutError.response.data && checkoutError.response.data.message) || checkoutError.response.statusText
+                                        this.$root.displayError("An error occurred.")
                                     })
                             },
 
                             // error
-                            (response) => {
-                                if (response.data.errors) {
-                                    response.data.errors.forEach(error => {
+                            (error) => {
+                                if (error.response && error.response.data.errors) {
+                                    error.response.data.errors.forEach(error => {
                                         this.errors[error.param] = [error.message]
                                     })
                                 }
@@ -393,7 +395,6 @@
 
 <style lang="scss">
     .payment {
-
         .field {
             margin-top: 0.75rem !important;
             margin-bottom: 0 !important;

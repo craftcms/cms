@@ -23,9 +23,6 @@ use Twig\TokenParser\AbstractTokenParser;
  */
 class SwitchTokenParser extends AbstractTokenParser
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

@@ -1,0 +1,11 @@
+{
+  "app.css": "/css/app.css",
+  "app.js": "/js/app.js",
+  "app.css.map": "/css/app.css.map",
+  "app.js.map": "/js/app.js.map",
+  "chunk-vendors.css": "/css/chunk-vendors.css",
+  "chunk-vendors.js": "/js/chunk-vendors.js",
+  "chunk-vendors.css.map": "/css/chunk-vendors.css.map",
+  "chunk-vendors.js.map": "/js/chunk-vendors.js.map",
+  "index.html": "/index.html"
+}

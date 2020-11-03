@@ -11,9 +11,6 @@ use craft\helpers\MigrationHelper;
  */
 class m150815_133521_last_login_attempt_ip extends Migration
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

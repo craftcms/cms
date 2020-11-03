@@ -18,9 +18,6 @@ use yii\base\Event;
  */
 class FieldEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var FieldInterface|null The field associated with this event.
      */

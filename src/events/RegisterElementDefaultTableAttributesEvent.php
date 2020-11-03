@@ -17,9 +17,6 @@ use yii\base\Event;
  */
 class RegisterElementDefaultTableAttributesEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string The selected source’s key
      */

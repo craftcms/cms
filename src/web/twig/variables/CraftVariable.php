@@ -53,9 +53,6 @@ use yii\di\ServiceLocator;
  */
 class CraftVariable extends ServiceLocator
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event \yii\base\Event The event that is triggered after the component's init cycle
      * @see init()
@@ -71,20 +68,14 @@ class CraftVariable extends ServiceLocator
     /**
      * @event DefineComponentsEvent The event that is triggered when defining the Service Locator components.
      * @see __construct()
-     * @deprecated since 3.0.0-beta.23
+     * @deprecated in 3.0.0-beta.23
      */
     const EVENT_DEFINE_COMPONENTS = 'defineComponents';
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var \craft\web\Application|\craft\console\Application|null The Craft application class
      */
     public $app;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -153,7 +144,7 @@ class CraftVariable extends ServiceLocator
     {
         // Are they calling one of the components as if it's still a function?
         if ($params === [] && $this->has($name)) {
-            Craft::$app->getDeprecator()->log("CraftVariable::{$name}()", "craft.{$name}() is no longer a function. Use “craft.{$name}” instead (without the parentheses).");
+            Craft::$app->getDeprecator()->log("CraftVariable::{$name}()", "`craft.{$name}()` is no longer a function. Use `craft.{$name}` instead (without the parentheses).");
             return $this->get($name);
         }
 
@@ -191,11 +182,11 @@ class CraftVariable extends ServiceLocator
      * Gets the current language in use.
      *
      * @return string
-     * @deprecated in 3.0
+     * @deprecated in 3.0.0
      */
     public function locale(): string
     {
-        Craft::$app->getDeprecator()->log('craft.locale()', 'craft.locale() has been deprecated. Use craft.app.language instead.');
+        Craft::$app->getDeprecator()->log('craft.locale()', '`craft.locale()` has been deprecated. Use `craft.app.language` instead.');
         return Craft::$app->language;
     }
 
@@ -203,11 +194,11 @@ class CraftVariable extends ServiceLocator
      * Returns whether this site has multiple locales.
      *
      * @return bool
-     * @deprecated in 3.0. Use craft.app.isMultiSite instead
+     * @deprecated in 3.0.0. Use craft.app.isMultiSite instead
      */
     public function isLocalized(): bool
     {
-        Craft::$app->getDeprecator()->log('craft.isLocalized', 'craft.isLocalized has been deprecated. Use craft.app.isMultiSite instead.');
+        Craft::$app->getDeprecator()->log('craft.isLocalized', '`craft.isLocalized` has been deprecated. Use `craft.app.isMultiSite` instead.');
         return Craft::$app->getIsMultiSite();
     }
 
@@ -215,7 +206,7 @@ class CraftVariable extends ServiceLocator
     // -------------------------------------------------------------------------
 
     /**
-     * Returns a new [asset query](https://docs.craftcms.com/v3/dev/element-queries/asset-queries.html).
+     * Returns a new [asset query](https://craftcms.com/docs/3.x/assets.html#querying-assets).
      *
      * @param array $criteria
      * @return AssetQuery
@@ -228,7 +219,7 @@ class CraftVariable extends ServiceLocator
     }
 
     /**
-     * Returns a new [category query](https://docs.craftcms.com/v3/dev/element-queries/category-queries.html).
+     * Returns a new [category query](https://craftcms.com/docs/3.x/categories.html#querying-categories).
      *
      * @param array $criteria
      * @return CategoryQuery
@@ -241,7 +232,7 @@ class CraftVariable extends ServiceLocator
     }
 
     /**
-     * Returns a new [entry query](https://docs.craftcms.com/v3/dev/element-queries/entry-queries.html).
+     * Returns a new [entry query](https://craftcms.com/docs/3.x/entries.html#querying-entries).
      *
      * @param array $criteria
      * @return EntryQuery
@@ -254,7 +245,7 @@ class CraftVariable extends ServiceLocator
     }
 
     /**
-     * Returns a new [global set query](https://docs.craftcms.com/v3/dev/element-queries/global-set-queries.html).
+     * Returns a new [global set query](https://craftcms.com/docs/3.x/globals.html#querying-globals).
      *
      * @param array $criteria
      * @return GlobalSetQuery
@@ -268,7 +259,7 @@ class CraftVariable extends ServiceLocator
     }
 
     /**
-     * Returns a new [Matrix block query](https://docs.craftcms.com/v3/dev/element-queries/matrix-block-queries.html).
+     * Returns a new [Matrix block query](https://craftcms.com/docs/3.x/matrix-blocks.html#querying-matrix-blocks).
      *
      * @param array $criteria
      * @return MatrixBlockQuery
@@ -292,7 +283,7 @@ class CraftVariable extends ServiceLocator
     }
 
     /**
-     * Returns a new [tag query](https://docs.craftcms.com/v3/dev/element-queries/tag-queries.html).
+     * Returns a new [tag query](https://craftcms.com/docs/3.x/tags.html#querying-tags).
      *
      * @param array $criteria
      * @return TagQuery
@@ -305,7 +296,7 @@ class CraftVariable extends ServiceLocator
     }
 
     /**
-     * Returns a new [user query](https://docs.craftcms.com/v3/dev/element-queries/user-queries.html).
+     * Returns a new [user query](https://craftcms.com/docs/3.x/users.html#querying-users).
      *
      * @param array $criteria
      * @return UserQuery

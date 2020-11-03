@@ -23,6 +23,7 @@ class AssetBundle extends \yii\web\AssetBundle
      * Returns whether Craft is configured to serve compressed JavaScript files
      *
      * @return bool
+     * @deprecated in 3.5.0
      */
     protected function useCompressedJs(): bool
     {
@@ -37,6 +38,7 @@ class AssetBundle extends \yii\web\AssetBundle
      * Returns '.min.js' if Craft is configured to serve compressed JavaScript files, otherwise '.js'.
      *
      * @return string
+     * @deprecated in 3.5.0
      */
     protected function dotJs(): string
     {

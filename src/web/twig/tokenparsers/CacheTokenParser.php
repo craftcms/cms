@@ -20,9 +20,6 @@ use Twig\TokenParser\AbstractTokenParser;
  */
 class CacheTokenParser extends AbstractTokenParser
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @return string
      */

@@ -15,9 +15,6 @@ namespace craft\base;
  */
 interface GqlInlineFragmentFieldInterface
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Returns a GraphQL fragment by its GraphQL fragment name.
      *

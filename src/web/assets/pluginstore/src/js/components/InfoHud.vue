@@ -21,7 +21,7 @@
 </script>
 
 <style lang="scss">
-    @import "../../../../../../../lib/craftcms-sass/mixins";
+    @import "../../../../../../../node_modules/craftcms-sass/mixins";
 
     .info-hud {
         @apply .inline-block;

@@ -15,9 +15,6 @@ namespace craft\events;
  */
 class DeleteSiteEvent extends SiteEvent
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null The site ID that should take over the deleted site’s contents
      */

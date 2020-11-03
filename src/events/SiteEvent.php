@@ -15,9 +15,6 @@ namespace craft\events;
  */
 class SiteEvent extends CancelableEvent
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var \craft\models\Site|null The site model associated with the event.
      */

@@ -1,0 +1,60 @@
+{% extends "_layouts/cp" %}
+{% set title = "GraphQL Tokens"|t('app') %}
+
+{% requireEdition CraftPro %}
+
+{% set selectedSubnavItem = 'tokens' %}
+
+{% set tokens = craft.app.gql.tokens %}
+
+{% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
+{% do view.registerTranslations('app', [
+    'No GraphQL tokens exist yet.',
+    'Never',
+    'Last Used',
+    'Expires',
+]) %}
+
+{% block actionButton %}
+    <a class="btn submit add icon" href="{{ url('graphql/tokens/new') }}">{{ "New token"|t('app') }}</a>
+{% endblock %}
+
+{% block content %}
+    <div id="tokens-vue-admin-table"></div>
+{% endblock %}
+
+{% set tableData = [] %}
+{% for token in tokens %}
+	{% set tableData = tableData|merge([{
+        id: token.id,
+        title: token.name|t('site'),
+        url: url('graphql/tokens/' ~ token.id),
+        status: token.enabled ? true : false,
+        lastUsed: { value: token.lastUsed , date: token.lastUsed ? token.lastUsed|timestamp : null },
+        expiryDate: token.expiryDate ? token.expiryDate|timestamp : 'Never'|t()
+    }]) %}
+{% endfor %}
+
+{% js %}
+    var timestampCallback = function(value) {
+        if (value.value) {
+            return value.date;
+        } else {
+            return '<span class="light">'+Craft.escapeHtml(Craft.t('app', 'Never'))+'</span>';
+        }
+    };
+
+    var columns = [
+        { name: '__slot:title', title: Craft.t('app', 'Name') },
+        { name: 'lastUsed', title: Craft.t('app', 'Last Used'), callback: timestampCallback },
+        { name: 'expiryDate', title: Craft.t('app', 'Expires'), callback: timestampCallback },
+    ];
+
+    new Craft.VueAdminTable({
+        columns: columns,
+        container: '#tokens-vue-admin-table',
+        deleteAction: 'graphql/delete-token',
+        emptyMessage: Craft.t('app', 'No GraphQL tokens exist yet.'),
+        tableData: {{ tableData|json_encode|raw }}
+    });
+{% endjs %}

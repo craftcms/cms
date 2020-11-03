@@ -19,5 +19,4 @@ use yii\console\controllers\FixtureController as BaseFixtureController;
  */
 class FixtureController extends BaseFixtureController
 {
-
 }

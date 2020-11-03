@@ -20,19 +20,10 @@ use UnitTester;
  */
 class SearchHelperTest extends Unit
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var UnitTester
      */
     protected $tester;
-
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
 
     /**
      * @dataProvider keywordNormalizationDataProviders
@@ -46,11 +37,8 @@ class SearchHelperTest extends Unit
     public function testKeywordNormalization($result, $keyword, $ignore = [], $processMap = true, $language = null)
     {
         $keyword = Search::normalizeKeywords($keyword, $ignore, $processMap, $language);
-        $this->assertSame($result, $keyword);
+        self::assertSame($result, $keyword);
     }
-
-    // Data Providers
-    // =========================================================================
 
     /**
      * @return array
@@ -74,8 +62,14 @@ class SearchHelperTest extends Unit
             ['🎧𢵌😀😘⛄', '🎧𢵌😀😘⛄'],
 
             // Ignorance isn't mb-4 safe
-            ['🎧𢵌😀😘⛄', '🎧𢵌😀😘⛄', ['😀']]
+            ['🎧𢵌😀😘⛄', '🎧𢵌😀😘⛄', ['😀']],
 
+            // https://github.com/craftcms/cms/issues/5214
+            ['a doggs tale', 'A Dogg’s Tale'],
+            ['a doggs tale', 'A Dogg\'s Tale'],
+
+            // https://github.com/craftcms/cms/issues/5631
+            ['foo bar baz', '<p>Foo</p><p>Bar<br>Baz</p>'],
         ];
     }
 }

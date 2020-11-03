@@ -29,9 +29,6 @@ use yii\db\ActiveQueryInterface;
  */
 class Entry extends ActiveRecord
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      * @return string

@@ -8,14 +8,17 @@
 namespace craft\elements\db;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\db\Query;
+use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\elements\MatrixBlock;
+use craft\fields\Matrix;
 use craft\fields\Matrix as MatrixField;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\models\MatrixBlockType;
+use yii\base\InvalidConfigException;
 use yii\db\Connection;
 
 /**
@@ -27,6 +30,7 @@ use yii\db\Connection;
  * @method MatrixBlock|array|null nth(int $n, Connection $db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @doc-path matrix-blocks.md
  * @supports-site-params
  * @supports-status-param
  * @replace {element} Matrix block
@@ -37,9 +41,6 @@ use yii\db\Connection;
  */
 class MatrixBlockQuery extends ElementQuery
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -63,7 +64,7 @@ class MatrixBlockQuery extends ElementQuery
 
     /**
      * @var mixed
-     * @deprecated in 3.2
+     * @deprecated in 3.2.0
      */
     public $ownerSiteId;
 
@@ -101,9 +102,6 @@ class MatrixBlockQuery extends ElementQuery
      */
     public $typeId;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -111,13 +109,13 @@ class MatrixBlockQuery extends ElementQuery
     {
         switch ($name) {
             case 'ownerSite':
-                Craft::$app->getDeprecator()->log('MatrixBlockQuery::ownerSite()', 'The “ownerSite” Matrix block query param has been deprecated. Use “site” or “siteId” instead.');
+                Craft::$app->getDeprecator()->log('MatrixBlockQuery::ownerSite()', 'The `ownerSite` Matrix block query param has been deprecated. Use `site` or `siteId` instead.');
                 break;
             case 'type':
                 $this->type($value);
                 break;
             case 'ownerLocale':
-                Craft::$app->getDeprecator()->log('MatrixBlockQuery::ownerLocale()', 'The “ownerLocale” Matrix block query param has been deprecated. Use “site” or “siteId” instead.');
+                Craft::$app->getDeprecator()->log('MatrixBlockQuery::ownerLocale()', 'The `ownerLocale` Matrix block query param has been deprecated. Use `site` or `siteId` instead.');
                 break;
             default:
                 parent::__set($name, $value);
@@ -125,11 +123,73 @@ class MatrixBlockQuery extends ElementQuery
     }
 
     /**
-     * Narrows the query results based on the field the Matrix blocks belong to, per the fields’ IDs.
+     * Narrows the query results based on the field the Matrix blocks belong to.
      *
      * Possible values include:
      *
      * | Value | Fetches {elements}…
+     * | - | -
+     * | `'foo'` | in a field with a handle of `foo`.
+     * | `'not foo'` | not in a field with a handle of `foo`.
+     * | `['foo', 'bar']` | in a field with a handle of `foo` or `bar`.
+     * | `['not', 'foo', 'bar']` | not in a field with a handle of `foo` or `bar`.
+     * | a [[MatrixField]] object | in a field represented by the object.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch {elements} in the Foo field #}
+     * {% set {elements-var} = {twig-method}
+     *     .field('foo')
+     *     .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch {elements} in the Foo field
+     * ${elements-var} = {php-method}
+     *     ->field('foo')
+     *     ->all();
+     * ```
+     *
+     * @param string|string[]|MatrixField|null $value The property value
+     * @return static self reference
+     * @uses $fieldId
+     * @since 3.4.0
+     */
+    public function field($value)
+    {
+        if ($value instanceof MatrixField) {
+            $this->fieldId = [$value->id];
+        } else if (is_string($value) || (is_array($value) && count($value) === 1)) {
+            if (!is_string($value)) {
+                $value = reset($value);
+            }
+            $field = Craft::$app->getFields()->getFieldByHandle($value);
+            if ($field && $field instanceof MatrixField) {
+                $this->fieldId = [$field->id];
+            } else {
+                $this->fieldId = false;
+            }
+        } else if ($value !== null) {
+            $this->fieldId = (new Query())
+                ->select(['id'])
+                ->from([Table::FIELDS])
+                ->where(Db::parseParam('handle', $value))
+                ->andWhere(['type' => MatrixField::class])
+                ->column();
+        } else {
+            $this->fieldId = null;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Narrows the query results based on the field the Matrix blocks belong to, per the fields’ IDs.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches Matrix blocks…
      * | - | -
      * | `1` | in a field with an ID of 1.
      * | `'not 1'` | not in a field with an ID of 1.
@@ -139,14 +199,14 @@ class MatrixBlockQuery extends ElementQuery
      * ---
      *
      * ```twig
-     * {# Fetch {elements} in the field with an ID of 1 #}
+     * {# Fetch Matrix blocks in the field with an ID of 1 #}
      * {% set {elements-var} = {twig-method}
      *     .fieldId(1)
      *     .all() %}
      * ```
      *
      * ```php
-     * // Fetch {elements} in the field with an ID of 1
+     * // Fetch Matrix blocks in the field with an ID of 1
      * ${elements-var} = {php-method}
      *     ->fieldId(1)
      *     ->all();
@@ -167,7 +227,7 @@ class MatrixBlockQuery extends ElementQuery
      *
      * Possible values include:
      *
-     * | Value | Fetches {elements}…
+     * | Value | Fetches Matrix blocks…
      * | - | -
      * | `1` | created for an element with an ID of 1.
      * | `'not 1'` | not created for an element with an ID of 1.
@@ -177,14 +237,14 @@ class MatrixBlockQuery extends ElementQuery
      * ---
      *
      * ```twig
-     * {# Fetch {elements} created for an element with an ID of 1 #}
+     * {# Fetch Matrix blocks created for an element with an ID of 1 #}
      * {% set {elements-var} = {twig-method}
      *     .ownerId(1)
      *     .all() %}
      * ```
      *
      * ```php
-     * // Fetch {elements} created for an element with an ID of 1
+     * // Fetch Matrix blocks created for an element with an ID of 1
      * ${elements-var} = {php-method}
      *     ->ownerId(1)
      *     ->all();
@@ -202,31 +262,31 @@ class MatrixBlockQuery extends ElementQuery
 
     /**
      * @return static self reference
-     * @deprecated in 3.2.
+     * @deprecated in 3.2.0
      */
     public function ownerSiteId()
     {
-        Craft::$app->getDeprecator()->log('MatrixBlockQuery::ownerSiteId()', 'The “ownerSiteId” Matrix block query param has been deprecated. Use “site” or “siteId” instead.');
+        Craft::$app->getDeprecator()->log('MatrixBlockQuery::ownerSiteId()', 'The `ownerSiteId` Matrix block query param has been deprecated. Use `site` or `siteId` instead.');
         return $this;
     }
 
     /**
      * @return static self reference
-     * @deprecated in 3.2.
+     * @deprecated in 3.2.0
      */
     public function ownerSite()
     {
-        Craft::$app->getDeprecator()->log('MatrixBlockQuery::ownerSite()', 'The “ownerSite” Matrix block query param has been deprecated. Use “site” or “siteId” instead.');
+        Craft::$app->getDeprecator()->log('MatrixBlockQuery::ownerSite()', 'The `ownerSite` Matrix block query param has been deprecated. Use `site` or `siteId` instead.');
         return $this;
     }
 
     /**
      * @return static self reference
-     * @deprecated in 3.0.
+     * @deprecated in 3.0.0
      */
     public function ownerLocale()
     {
-        Craft::$app->getDeprecator()->log('MatrixBlockQuery::ownerLocale()', 'The “ownerLocale” Matrix block query param has been deprecated. Use “site” or “siteId” instead.');
+        Craft::$app->getDeprecator()->log('MatrixBlockQuery::ownerLocale()', 'The `ownerLocale` Matrix block query param has been deprecated. Use `site` or `siteId` instead.');
         return $this;
     }
 
@@ -236,14 +296,14 @@ class MatrixBlockQuery extends ElementQuery
      * ---
      *
      * ```twig
-     * {# Fetch {elements} created for this entry #}
+     * {# Fetch Matrix blocks created for this entry #}
      * {% set {elements-var} = {twig-method}
      *     .owner(myEntry)
      *     .all() %}
      * ```
      *
      * ```php
-     * // Fetch {elements} created for this entry
+     * // Fetch Matrix blocks created for this entry
      * ${elements-var} = {php-method}
      *     ->owner($myEntry)
      *     ->all();
@@ -255,8 +315,7 @@ class MatrixBlockQuery extends ElementQuery
      */
     public function owner(ElementInterface $owner)
     {
-        /** @var Element $owner */
-        $this->ownerId = $owner->id;
+        $this->ownerId = [$owner->id];
         $this->siteId = $owner->siteId;
         return $this;
     }
@@ -266,7 +325,7 @@ class MatrixBlockQuery extends ElementQuery
      *
      * Possible values include:
      *
-     * | Value | Fetches {elements}…
+     * | Value | Fetches Matrix blocks…
      * | - | -
      * | `true` | which can belong to a draft.
      * | `false` | which cannot belong to a draft.
@@ -287,7 +346,7 @@ class MatrixBlockQuery extends ElementQuery
      *
      * Possible values include:
      *
-     * | Value | Fetches {elements}…
+     * | Value | Fetches Matrix blocks…
      * | - | -
      * | `true` | which can belong to a revision.
      * | `false` | which cannot belong to a revision.
@@ -308,7 +367,7 @@ class MatrixBlockQuery extends ElementQuery
      *
      * Possible values include:
      *
-     * | Value | Fetches {elements}…
+     * | Value | Fetches Matrix blocks…
      * | - | -
      * | `'foo'` | of a type with a handle of `foo`.
      * | `'not foo'` | not of a type with a handle of `foo`.
@@ -319,14 +378,14 @@ class MatrixBlockQuery extends ElementQuery
      * ---
      *
      * ```twig
-     * {# Fetch {elements} with a Foo block type #}
+     * {# Fetch Matrix blocks with a Foo block type #}
      * {% set {elements-var} = myEntry.myMatrixField
      *     .type('foo')
      *     .all() %}
      * ```
      *
      * ```php
-     * // Fetch {elements} with a Foo block type
+     * // Fetch Matrix blocks with a Foo block type
      * ${elements-var} = $myEntry->myMatrixField
      *     ->type('foo')
      *     ->all();
@@ -358,7 +417,7 @@ class MatrixBlockQuery extends ElementQuery
      *
      * Possible values include:
      *
-     * | Value | Fetches {elements}…
+     * | Value | Fetches Matrix blocks…
      * | - | -
      * | `1` | of a type with an ID of 1.
      * | `'not 1'` | not of a type with an ID of 1.
@@ -368,14 +427,14 @@ class MatrixBlockQuery extends ElementQuery
      * ---
      *
      * ```twig
-     * {# Fetch {elements} of the block type with an ID of 1 #}
+     * {# Fetch Matrix blocks of the block type with an ID of 1 #}
      * {% set {elements-var} = myEntry.myMatrixField
      *     .typeId(1)
      *     .all() %}
      * ```
      *
      * ```php
-     * // Fetch {elements} of the block type with an ID of 1
+     * // Fetch Matrix blocks of the block type with an ID of 1
      * ${elements-var} = $myEntry->myMatrixField
      *     ->typeId(1)
      *     ->all();
@@ -391,34 +450,19 @@ class MatrixBlockQuery extends ElementQuery
         return $this;
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
     protected function beforePrepare(): bool
     {
+        $this->_normalizeFieldId();
         $this->joinElementTable('matrixblocks');
 
         // Figure out which content table to use
         $this->contentTable = null;
-
-        if (!$this->fieldId && $this->id) {
-            $fieldIds = (new Query())
-                ->select(['fieldId'])
-                ->distinct()
-                ->from([Table::MATRIXBLOCKS])
-                ->where(Db::parseParam('id', $this->id))
-                ->column();
-
-            $this->fieldId = count($fieldIds) === 1 ? $fieldIds[0] : $fieldIds;
-        }
-
-        if ($this->fieldId && is_numeric($this->fieldId)) {
+        if ($this->fieldId && count($this->fieldId) === 1) {
             /** @var MatrixField $matrixField */
-            $matrixField = Craft::$app->getFields()->getFieldById($this->fieldId);
-
+            $matrixField = Craft::$app->getFields()->getFieldById(reset($this->fieldId));
             if ($matrixField) {
                 $this->contentTable = $matrixField->contentTable;
             }
@@ -432,11 +476,12 @@ class MatrixBlockQuery extends ElementQuery
         ]);
 
         if ($this->fieldId) {
-            $this->subQuery->andWhere(Db::parseParam('matrixblocks.fieldId', $this->fieldId));
+            $this->subQuery->andWhere(['matrixblocks.fieldId' => $this->fieldId]);
         }
 
+        $this->_normalizeOwnerId();
         if ($this->ownerId) {
-            $this->subQuery->andWhere(Db::parseParam('matrixblocks.ownerId', $this->ownerId));
+            $this->subQuery->andWhere(['matrixblocks.ownerId' => $this->ownerId]);
         }
 
         if ($this->typeId !== null) {
@@ -454,7 +499,7 @@ class MatrixBlockQuery extends ElementQuery
 
         if (!$allowOwnerDrafts || !$allowOwnerRevisions) {
             // todo: we will need to expand on this when Matrix blocks can be nested.
-            $this->subQuery->innerJoin(Table::ELEMENTS . ' owners', '[[owners.id]] = [[matrixblocks.ownerId]]');
+            $this->subQuery->innerJoin(['owners' => Table::ELEMENTS], '[[owners.id]] = [[matrixblocks.ownerId]]');
 
             if (!$allowOwnerDrafts) {
                 $this->subQuery->andWhere(['owners.draftId' => null]);
@@ -469,13 +514,92 @@ class MatrixBlockQuery extends ElementQuery
     }
 
     /**
+     * Normalizes the fieldId param to an array of IDs or null
+     *
+     * @throws QueryAbortedException
+     */
+    private function _normalizeFieldId()
+    {
+        if ($this->fieldId === null && $this->id) {
+            $this->fieldId = (new Query())
+                ->select(['fieldId'])
+                ->distinct()
+                ->from([Table::MATRIXBLOCKS])
+                ->where(Db::parseParam('id', $this->id))
+                ->column() ?: false;
+        }
+
+        if ($this->fieldId === false) {
+            throw new QueryAbortedException();
+        }
+
+        if (empty($this->fieldId)) {
+            $this->fieldId = null;
+        } else if (is_numeric($this->fieldId)) {
+            $this->fieldId = [$this->fieldId];
+        } else if (!is_array($this->fieldId) || !ArrayHelper::isNumeric($this->fieldId)) {
+            $this->fieldId = (new Query())
+                ->select(['id'])
+                ->from([Table::FIELDS])
+                ->where(Db::parseParam('id', $this->fieldId))
+                ->andWhere(['type' => Matrix::class])
+                ->column();
+        }
+    }
+
+    /**
+     * Normalizes the ownerId param to an array of IDs or null
+     *
+     * @throws InvalidConfigException
+     */
+    private function _normalizeOwnerId()
+    {
+        if (empty($this->ownerId)) {
+            $this->ownerId = null;
+        } else if (is_numeric($this->ownerId)) {
+            $this->ownerId = [$this->ownerId];
+        } else if (!is_array($this->ownerId) || !ArrayHelper::isNumeric($this->ownerId)) {
+            throw new InvalidConfigException('Invalid ownerId param value');
+        }
+    }
+
+    /**
      * @inheritdoc
      */
     protected function customFields(): array
     {
         // This method won't get called if $this->fieldId isn't set to a single int
         /** @var MatrixField $matrixField */
-        $matrixField = Craft::$app->getFields()->getFieldById($this->fieldId);
+        $matrixField = Craft::$app->getFields()->getFieldById(reset($this->fieldId));
         return $matrixField->getBlockTypeFields();
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.5.0
+     */
+    protected function cacheTags(): array
+    {
+        $tags = [];
+        // If both the field and owner are set, then only tag the combos
+        if ($this->fieldId && $this->ownerId) {
+            foreach ($this->fieldId as $fieldId) {
+                foreach ($this->ownerId as $ownerId) {
+                    $tags[] = "field-owner:$fieldId-$ownerId";
+                }
+            }
+        } else {
+            if ($this->fieldId) {
+                foreach ($this->fieldId as $fieldId) {
+                    $tags[] = "field:$fieldId";
+                }
+            }
+            if ($this->ownerId) {
+                foreach ($this->ownerId as $ownerId) {
+                    $tags[] = "owner:$ownerId";
+                }
+            }
+        }
+        return $tags;
     }
 }

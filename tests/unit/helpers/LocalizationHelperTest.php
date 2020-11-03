@@ -23,19 +23,10 @@ use yii\base\InvalidArgumentException;
  */
 class LocalizationHelperTest extends Unit
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var UnitTester
      */
     protected $tester;
-
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
 
     /**
      * @dataProvider languageNormalizationDataProvider
@@ -51,7 +42,7 @@ class LocalizationHelperTest extends Unit
         }
 
         $normalized = Localization::normalizeLanguage($input);
-        $this->assertSame($result, $normalized);
+        self::assertSame($result, $normalized);
     }
 
     /**
@@ -77,7 +68,7 @@ class LocalizationHelperTest extends Unit
     public function testNumberNormalization($result, $input, $localeId)
     {
         $normalization = Localization::normalizeNumber($input, $localeId);
-        $this->assertSame($result, $normalization);
+        self::assertSame($result, $normalization);
     }
 
     /**
@@ -89,7 +80,7 @@ class LocalizationHelperTest extends Unit
     public function testLocaleData($result, $input)
     {
         $data = Localization::localeData($input);
-        $this->assertSame($result, $data);
+        self::assertSame($result, $data);
     }
 
     /**
@@ -100,11 +91,8 @@ class LocalizationHelperTest extends Unit
      */
     public function testFindMissingTranslation($result, $input)
     {
-        $this->assertSame($result, Localization::findMissingTranslation($input));
+        self::assertSame($result, Localization::findMissingTranslation($input));
     }
-
-    // Tests
-    // =========================================================================
 
     /**
      * @return array

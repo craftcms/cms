@@ -7,6 +7,8 @@
 
 namespace craft\gql\arguments\elements;
 
+use Craft;
+use craft\elements\Entry as EntryElement;
 use craft\gql\base\StructureElementArguments;
 use craft\gql\types\QueryArgument;
 use GraphQL\Type\Definition\Type;
@@ -24,7 +26,7 @@ class Entry extends StructureElementArguments
      */
     public static function getArguments(): array
     {
-        return array_merge(parent::getArguments(), [
+        return array_merge(parent::getArguments(), self::getContentArguments(), [
             'editable' => [
                 'name' => 'editable',
                 'type' => Type::boolean(),
@@ -86,5 +88,15 @@ class Entry extends StructureElementArguments
                 'description' => 'Narrows the query results based on the entries’ expiry dates.'
             ],
         ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getContentArguments(): array
+    {
+        $entryTypeFieldArguments = Craft::$app->getGql()->getContentArguments(Craft::$app->getSections()->getAllEntryTypes(), EntryElement::class);
+
+        return array_merge(parent::getContentArguments(), $entryTypeFieldArguments);
     }
 }

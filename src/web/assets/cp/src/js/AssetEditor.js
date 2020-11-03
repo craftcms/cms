@@ -7,17 +7,16 @@ Craft.AssetEditor = Craft.BaseElementEditor.extend(
     {
         reloadIndex: false,
 
-        updateForm: function(response) {
-            this.base(response);
+        updateForm: function(response, refreshInitialData) {
+            this.base(response, refreshInitialData);
 
             if (this.$element.data('id')) {
-                var $imageEditorTrigger = this.$fieldsContainer.find('> .meta > .image-preview-container.editable');
+                var $imageEditorTrigger = this.$fieldsContainer.find('> .meta > .preview-thumb-container.editable');
 
                 if ($imageEditorTrigger.length) {
                     this.addListener($imageEditorTrigger, 'click', 'showImageEditor');
                 }
             }
-
         },
 
         showImageEditor: function()
@@ -27,7 +26,6 @@ Craft.AssetEditor = Craft.BaseElementEditor.extend(
                     this.reloadIndex = true;
                     this.reloadForm();
                 }.bind(this),
-                allowDegreeFractions: Craft.isImagick
             });
         },
 

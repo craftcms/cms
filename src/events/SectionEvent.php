@@ -17,9 +17,6 @@ use yii\base\Event;
  */
 class SectionEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var \craft\models\Section|null The section model associated with the event.
      */

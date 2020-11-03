@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
+use craft\gql\types\Number as NumberType;
 use craft\helpers\Db;
 use craft\helpers\Localization;
 use craft\i18n\Locale;
@@ -24,8 +25,18 @@ use craft\i18n\Locale;
  */
 class Number extends Field implements PreviewableFieldInterface, SortableFieldInterface
 {
-    // Static
-    // =========================================================================
+    /**
+     * @since 3.5.11
+     */
+    const FORMAT_DECIMAL = 'decimal';
+    /**
+     * @since 3.5.11
+     */
+    const FORMAT_CURRENCY = 'currency';
+    /**
+     * @since 3.5.11
+     */
+    const FORMAT_NONE = 'none';
 
     /**
      * @inheritdoc
@@ -42,9 +53,6 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
     {
         return 'int|float|null';
     }
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var int|float|null The default value for new elements
@@ -81,8 +89,33 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
      */
     public $suffix;
 
-    // Public Methods
-    // =========================================================================
+    /**
+     * @var string How the number should be formatted in element index views.
+     * @since 3.5.11
+     */
+    public $previewFormat = self::FORMAT_DECIMAL;
+
+    /**
+     * @var string|null The currency that should be used if [[$previewFormat]] is set to `currency`.
+     * @since 3.5.11
+     */
+    public $previewCurrency;
+
+    /**
+     * @inheritdoc
+     * @since 3.5.0
+     */
+    public function __construct($config = [])
+    {
+        // Normalize number settings
+        foreach (['defaultValue', 'min', 'max'] as $name) {
+            if (isset($config[$name]) && is_array($config[$name])) {
+                $config[$name] = Localization::normalizeNumber($config[$name]['value'], $config[$name]['locale']);
+            }
+        }
+
+        parent::__construct($config);
+    }
 
     /**
      * @inheritdoc
@@ -120,10 +153,10 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
-        $rules[] = [['min', 'max'], 'number'];
+        $rules = parent::defineRules();
+        $rules[] = [['defaultValue', 'min', 'max'], 'number'];
         $rules[] = [['decimals', 'size'], 'integer'];
         $rules[] = [
             ['max'],
@@ -133,8 +166,16 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
         ];
 
         if (!$this->decimals) {
-            $rules[] = [['min', 'max'], 'integer'];
+            $rules[] = [['defaultValue', 'min', 'max'], 'integer'];
         }
+
+        $rules[] = [['previewFormat'], 'in', 'range' => [self::FORMAT_DECIMAL, self::FORMAT_CURRENCY, self::FORMAT_NONE]];
+        $rules[] = [
+            ['previewCurrency'], 'required', 'when' => function(): bool {
+                return $this->previewFormat === self::FORMAT_CURRENCY;
+            }
+        ];
+        $rules[] = [['previewCurrency'], 'string', 'min' => 3, 'max' => 3, 'encoding' => '8bit'];
 
         return $rules;
     }
@@ -163,8 +204,11 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
      */
     public function normalizeValue($value, ElementInterface $element = null)
     {
-        if ($value === null && $this->defaultValue !== null && $this->isFresh($element)) {
-            return $this->defaultValue;
+        if ($value === null) {
+            if ($this->defaultValue !== null && $this->isFresh($element)) {
+                return $this->defaultValue;
+            }
+            return null;
         }
 
         // Was this submitted with a locale ID?
@@ -172,13 +216,26 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
             $value = Localization::normalizeNumber($value['value'], $value['locale']);
         }
 
-        return $value === '' ? null : $value;
+        if ($value === '') {
+            return null;
+        }
+
+        if (is_string($value) && is_numeric($value)) {
+            if ((int)$value == $value) {
+                return (int)$value;
+            }
+            if ((float)$value == $value) {
+                return (float)$value;
+            }
+        }
+
+        return $value;
     }
 
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml($value, ElementInterface $element = null): string
     {
         // If decimals is 0 (or null, empty for whatever reason), don't run this
         if ($value !== null && $this->decimals) {
@@ -215,6 +272,34 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
             return '';
         }
 
-        return Craft::$app->getFormatter()->asDecimal($value, $this->decimals);
+        switch ($this->previewFormat) {
+            case self::FORMAT_DECIMAL:
+                return Craft::$app->getFormatter()->asDecimal($value, $this->decimals);
+            case self::FORMAT_CURRENCY:
+                return Craft::$app->getFormatter()->asCurrency($value, $this->previewCurrency, [], [], !$this->decimals);
+            default:
+                return $value;
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getContentGqlType()
+    {
+        return NumberType::getType();
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.5.0
+     */
+    public function getContentGqlMutationArgumentType()
+    {
+        return [
+            'name' => $this->handle,
+            'type' => NumberType::getType(),
+            'description' => $this->instructions,
+        ];
     }
 }

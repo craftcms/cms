@@ -17,9 +17,6 @@ use yii\base\Event;
  */
 class RegisterUserPermissionsEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var array List of registered user permissions.
      */

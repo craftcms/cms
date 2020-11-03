@@ -20,9 +20,6 @@ use yii\base\Event;
  */
 class BlockTypesEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var MatrixBlockType[] The block types that will be available for the current field
      */

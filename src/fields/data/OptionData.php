@@ -17,9 +17,6 @@ use craft\base\Serializable;
  */
 class OptionData implements Serializable
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null
      */
@@ -35,8 +32,11 @@ class OptionData implements Serializable
      */
     public $selected;
 
-    // Public Methods
-    // =========================================================================
+    /**
+     * @var bool
+     * @since 3.5.10
+     */
+    public $valid;
 
     /**
      * Constructor
@@ -44,12 +44,14 @@ class OptionData implements Serializable
      * @param string|null $label
      * @param string|null $value
      * @param bool $selected
+     * @param bool $valid
      */
-    public function __construct(string $label = null, string $value = null, bool $selected)
+    public function __construct(string $label = null, string $value = null, bool $selected, bool $valid = true)
     {
         $this->label = $label;
         $this->value = $value;
         $this->selected = $selected;
+        $this->valid = $valid;
     }
 
     /**

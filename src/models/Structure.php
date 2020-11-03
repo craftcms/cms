@@ -19,9 +19,6 @@ use craft\base\Model;
  */
 class Structure extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null ID
      */
@@ -37,15 +34,12 @@ class Structure extends Model
      */
     public $uid;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['id', 'maxLevels'], 'number', 'integerOnly' => true];
         return $rules;
     }

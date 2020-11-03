@@ -15,9 +15,6 @@ namespace craft\events;
  */
 class DeleteElementEvent extends ElementEvent
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var bool Whether to immediately hard-delete the element, rather than soft-deleting it
      */

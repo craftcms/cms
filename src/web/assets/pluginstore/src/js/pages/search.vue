@@ -28,7 +28,6 @@
 
                 this.$nextTick(() => {
                     this.$router.push({path: '/search'})
-
                 })
             }
         },

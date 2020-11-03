@@ -10,8 +10,12 @@ namespace craftunit\helpers;
 use Codeception\Test\Unit;
 use Craft;
 use craft\errors\GqlException;
+use craft\gql\arguments\elements\Asset as AssetArguments;
+use craft\gql\interfaces\elements\Asset as AssetInterface;
+use craft\gql\resolvers\elements\Asset as AssetResolver;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\GqlSchema;
+use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Definition\UnionType;
 
 class GqlHelperTest extends Unit
@@ -20,9 +24,6 @@ class GqlHelperTest extends Unit
      * @var \UnitTester
      */
     protected $tester;
-
-    // Tests
-    // =========================================================================
 
     /**
      * Test Schema helper methods.
@@ -44,13 +45,13 @@ class GqlHelperTest extends Unit
 
         // Schema awareness
         if (!$failAll) {
-            $this->assertTrue(GqlHelper::canSchema($permission, $scope));
-            $this->assertFalse(GqlHelper::canSchema($permission, $failingScope));
-            $this->assertTrue(GqlHelper::isSchemaAwareOf($permission));
+            self::assertTrue(GqlHelper::canSchema($permission, $scope));
+            self::assertFalse(GqlHelper::canSchema($permission, $failingScope));
+            self::assertTrue(GqlHelper::isSchemaAwareOf($permission));
         } else {
-            $this->assertFalse(GqlHelper::canSchema($permission, $scope));
-            $this->assertFalse(GqlHelper::canSchema($permission, $failingScope));
-            $this->assertFalse(GqlHelper::isSchemaAwareOf($permission));
+            self::assertFalse(GqlHelper::canSchema($permission, $scope));
+            self::assertFalse(GqlHelper::canSchema($permission, $failingScope));
+            self::assertFalse(GqlHelper::isSchemaAwareOf($permission));
         }
     }
 
@@ -64,7 +65,7 @@ class GqlHelperTest extends Unit
     public function testSchemaPermissionExtraction($permissionSet, $expectedPairs)
     {
         $this->_setSchemaWithPermissions($permissionSet);
-        $this->assertEquals($expectedPairs, GqlHelper::extractAllowedEntitiesFromSchema());
+        self::assertEquals($expectedPairs, GqlHelper::extractAllowedEntitiesFromSchema());
     }
 
     /**
@@ -75,12 +76,12 @@ class GqlHelperTest extends Unit
         // Null the schema
         Craft::$app->getGql()->setActiveSchema(null);
 
-        $this->assertFalse(GqlHelper::isSchemaAwareOf('something'));
-        $this->assertFalse(GqlHelper::canSchema('something'));
+        self::assertFalse(GqlHelper::isSchemaAwareOf('something'));
+        self::assertFalse(GqlHelper::canSchema('something'));
 
         $result = GqlHelper::extractAllowedEntitiesFromSchema();
-        $this->assertIsArray($result);
-        $this->assertEmpty($result);
+        self::assertIsArray($result);
+        self::assertEmpty($result);
     }
 
     /**
@@ -99,12 +100,12 @@ class GqlHelperTest extends Unit
 
         $this->_setSchemaWithPermissions($permissionSet);
 
-        $this->assertTrue(GqlHelper::canQueryEntries());
-        $this->assertTrue(GqlHelper::canQueryGlobalSets());
-        $this->assertTrue(GqlHelper::canQueryUsers());
-        $this->assertFalse(GqlHelper::canQueryAssets());
-        $this->assertFalse(GqlHelper::canQueryCategories());
-        $this->assertFalse(GqlHelper::canQueryTags());
+        self::assertTrue(GqlHelper::canQueryEntries());
+        self::assertTrue(GqlHelper::canQueryGlobalSets());
+        self::assertTrue(GqlHelper::canQueryUsers());
+        self::assertFalse(GqlHelper::canQueryAssets());
+        self::assertFalse(GqlHelper::canQueryCategories());
+        self::assertFalse(GqlHelper::canQueryTags());
     }
 
     /**
@@ -112,8 +113,10 @@ class GqlHelperTest extends Unit
      */
     public function testUnionTypes()
     {
-        $unionType = GqlHelper::getUnionType('someUnion', ['one', 'two'], function () {return 'one';});
-        $this->assertInstanceOf(UnionType::class, $unionType);
+        $unionType = GqlHelper::getUnionType('someUnion', ['one', 'two'], function() {
+            return 'one';
+        });
+        self::assertInstanceOf(UnionType::class, $unionType);
     }
 
     /**
@@ -122,10 +125,101 @@ class GqlHelperTest extends Unit
     public function testFullAccessSchema()
     {
         $schema = GqlHelper::createFullAccessSchema();
-        $this->assertTrue($schema->isTemporary);
 
         // Not very realistic to test *everything* without duplicating logic in the helper method
-        $this->assertNotEmpty($schema->scope);
+        self::assertNotEmpty($schema->scope);
+    }
+
+    /**
+     * Test if entity actions are extracted correctly
+     *
+     * @dataProvider actionExtractionDataProvider
+     */
+    public function testEntityActionExtraction($scope, $entity, $result)
+    {
+        $this->_setSchemaWithPermissions($scope);
+
+        self::assertEquals($result, GqlHelper::extractEntityAllowedActions($entity));
+    }
+
+    /**
+     * Test GQL types correctly wrapped in NonNull type.
+     * @param $input
+     * @param $expected
+     * @dataProvider wrapInNonNullProvider
+     */
+    public function testWrapInNonNull($input, $expected)
+    {
+        self::assertEquals($expected, GqlHelper::wrapInNonNull($input));
+    }
+
+    public function wrapInNonNullProvider()
+    {
+        $typeDef = [
+            'name' => 'mock',
+            'type' => Type::listOf(Type::string()),
+            'args' => []
+        ];
+
+        $nonNulledTypeDef = [
+            'name' => 'mock',
+            'type' => Type::nonNull(Type::listOf(Type::string())),
+            'args' => []
+        ];
+
+        return [
+            [Type::boolean(), Type::nonNull(Type::boolean())],
+            [Type::string(),Type::nonNull(Type::string())],
+            [Type::id(),Type::nonNull(Type::id())],
+            [Type::nonNull(Type::int()),Type::nonNull(Type::int())],
+            [$typeDef, $nonNulledTypeDef],
+        ];
+    }
+
+
+    public function actionExtractionDataProvider()
+    {
+        return [
+            [
+                [
+                    'entity-one:read',
+                    'entity-two:read',
+                    'entity-two:write',
+                    'entity-two:observe',
+                ],
+                'entity-one',
+                ['read'],
+            ],
+            [
+                [
+                    'entity-one:read',
+                    'entity-two:read',
+                    'entity-two:write',
+                    'entity-two:observe',
+                ],
+                'entity-two',
+                ['read', 'write', 'observe'],
+            ],            [
+                [
+                    'entity-one:read',
+                    'entity-two:read',
+                    'entity-two:read',
+                    'entity-two:observe',
+                ],
+                'entity-two',
+                ['read', 'observe'],
+            ],
+            [
+                [
+                    'entity-one:read',
+                    'entity-two:read',
+                    'entity-two:write',
+                    'entity-two:observe',
+                ],
+                'entity-three',
+                [],
+            ],
+        ];
     }
 
     public function schemaPermissionDataProvider()
@@ -193,7 +287,7 @@ class GqlHelperTest extends Unit
                 [
                     'usergroups' => ['allUsers', 'otherGroup'],
                 ]
-            ],[
+            ], [
                 [
                     'usergroups.allUsers:read',
                     'usergroups.otherGroup:write',
@@ -237,7 +331,7 @@ class GqlHelperTest extends Unit
     public function _setSchemaWithPermissions($scopeSet)
     {
         $gqlService = Craft::$app->getGql();
-        $schema = new GqlSchema(['id' => uniqid(), 'name' => 'Something', 'enabled' => true, 'scope' => $scopeSet, 'isTemporary' => true]);
+        $schema = new GqlSchema(['id' => uniqid(), 'name' => 'Something', 'scope' => $scopeSet]);
         $gqlService->setActiveSchema($schema);
     }
 }

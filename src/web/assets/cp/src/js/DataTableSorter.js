@@ -45,7 +45,6 @@ Craft.DataTableSorter = Garnish.DragSort.extend(
 
             return $helper;
         }
-
     },
     {
         defaults: {

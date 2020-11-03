@@ -22,7 +22,7 @@ Craft.UriFormatGenerator = Craft.BaseInputGenerator.extend(
             // Get the "words"
             var words = Craft.filterArray(sourceVal.split(/[^a-z0-9]+/));
 
-            var uriFormat = words.join('-');
+            var uriFormat = words.join(Craft.slugWordSeparator);
 
             if (uriFormat && this.settings.suffix) {
                 uriFormat += this.settings.suffix;

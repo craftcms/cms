@@ -7,11 +7,12 @@
 
 namespace craft\gql\interfaces;
 
-use craft\base\ElementInterface;
 use craft\gql\base\InterfaceType;
 use craft\gql\GqlEntityRegistry;
+use craft\gql\TypeManager;
 use craft\gql\types\DateTime;
 use craft\gql\types\generators\ElementType;
+use craft\services\Gql;
 use GraphQL\Type\Definition\InterfaceType as GqlInterfaceType;
 use GraphQL\Type\Definition\Type;
 
@@ -44,9 +45,7 @@ class Element extends InterfaceType
             'name' => static::getName(),
             'fields' => self::class . '::getFieldDefinitions',
             'description' => 'This is the interface implemented by all elements.',
-            'resolveType' => function(ElementInterface $value) {
-                return $value->getGqlTypeName();
-            }
+            'resolveType' => self::class . '::resolveElementTypeName',
         ]));
 
         ElementType::generateTypes();
@@ -59,7 +58,19 @@ class Element extends InterfaceType
      */
     public static function getFieldDefinitions(): array
     {
-        return array_merge(parent::getFieldDefinitions(), [
+        return TypeManager::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), [
+            Gql::GRAPHQL_COUNT_FIELD => [
+                'name' => Gql::GRAPHQL_COUNT_FIELD,
+                'type' => Type::int(),
+                'args' => [
+                    'field' => [
+                        'name' => 'field',
+                        'type' => Type::nonNull(Type::string()),
+                        'description' => 'The handle of the field that holds the relations.'
+                    ]
+                ],
+                'description' => 'Return a number of related elements for a field.'
+            ],
             'title' => [
                 'name' => 'title',
                 'type' => Type::string(),
@@ -90,6 +101,11 @@ class Element extends InterfaceType
                 'type' => Type::int(),
                 'description' => 'The ID of the site the element is associated with.'
             ],
+            'language' => [
+                'name' => 'language',
+                'type' => Type::string(),
+                'description' => 'The language of the site element is associated with.'
+            ],
             'searchScore' => [
                 'name' => 'searchScore',
                 'type' => Type::string(),
@@ -115,7 +131,68 @@ class Element extends InterfaceType
                 'type' => DateTime::getType(),
                 'description' => 'The date the element was last updated.'
             ],
-        ]);
+        ]), self::getName());
+    }
+
+    /**
+     * List the draft field definitions.
+     *
+     * @return array
+     */
+    public static function getDraftFieldDefinitions(): array
+    {
+        return [
+            'isDraft' => [
+                'name' => 'isDraft',
+                'type' => Type::boolean(),
+                'description' => 'Returns whether this is a draft.',
+            ],
+            'isRevision' => [
+                'name' => 'isRevision',
+                'type' => Type::boolean(),
+                'description' => 'Returns whether this is a revision.',
+            ],
+            'sourceId' => [
+                'name' => 'sourceId',
+                'type' => Type::int(),
+                'description' => 'Returns the element’s ID, or if it’s a draft/revision, its source element’s ID.',
+            ],
+            'sourceUid' => [
+                'name' => 'sourceUid',
+                'type' => Type::string(),
+                'description' => 'Returns the element’s UUID, or if it’s a draft/revision, its source element’s UUID.',
+            ],
+            'draftId' => [
+                'name' => 'draftId',
+                'type' => Type::int(),
+                'description' => 'The ID of the draft to return (from the `drafts` table)',
+            ],
+            'isUnsavedDraft' => [
+                'name' => 'isUnsavedDraft',
+                'type' => Type::boolean(),
+                'description' => 'Returns whether this is a draft.',
+            ],
+            'sourceUid' => [
+                'name' => 'sourceUid',
+                'type' => Type::string(),
+                'description' => 'Returns the element’s UUID, or if it’s a draft/revision, its source element’s UUID.',
+            ],
+            'isUnsavedDraft' => [
+                'name' => 'isUnsavedDraft',
+                'type' => Type::boolean(),
+                'description' => 'Returns whether this is a draft.',
+            ],
+            'draftName' => [
+                'name' => 'draftName',
+                'type' => Type::string(),
+                'description' => 'The name of the draft.',
+            ],
+            'draftNotes' => [
+                'name' => 'draftNotes',
+                'type' => Type::string(),
+                'description' => 'The notes for the draft.',
+            ]
+        ];
     }
 
     /**

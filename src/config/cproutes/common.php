@@ -3,6 +3,8 @@
 use craft\helpers\StringHelper;
 
 return [
+    'assets/<volumeHandle:{handle}>' => ['template' => 'assets'],
+    'assets/<volumeHandle:{handle}>/<assetId:\d+><filename:(?:-[^\/]*)?>' => 'assets/edit-asset',
     'categories' => 'categories/category-index',
     'categories/<groupHandle:{handle}>' => 'categories/category-index',
     'categories/<groupHandle:{handle}>/new' => 'categories/edit-category',
@@ -10,6 +12,8 @@ return [
     'categories/<groupHandle:{handle}>/<categoryId:\d+><slug:(?:-[^\/]*)?>/<siteHandle:{handle}>' => 'categories/edit-category',
     'categories/<groupHandle:{handle}>/new/<siteHandle:{handle}>' => 'categories/edit-category',
     'dashboard' => 'dashboard/index',
+    'edit/<id:\d+>' => 'edit/by-id',
+    'edit/<uid:' . StringHelper::UUID_PATTERN . '>' => 'edit/by-uid',
     'entries/<sectionHandle:{handle}>' => ['template' => 'entries'],
     'entries/<section:{handle}>/new' => 'entry-revisions/create-draft',
     'entries/<section:{handle}>/<entryId:\d+><slug:(?:-[^\/]*)?>' => 'entries/edit-entry',
@@ -68,7 +72,7 @@ return [
     'settings/tags/<tagGroupId:\d+>' => 'tags/edit-tag-group',
     'settings/users' => ['template' => 'settings/users/fields'],
     'utilities' => 'utilities',
-    'utilities/<id:[\w\-]+>' => 'utilities/show-utility',
+    'utilities/<id:[\w\-]+><extra:(\/.*)?>' => 'utilities/show-utility',
     'plugin-store' => 'plugin-store',
     'plugin-store/callback' => 'plugin-store/callback',
     'plugin-store/<url:(.*)>' => 'plugin-store',

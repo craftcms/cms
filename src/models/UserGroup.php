@@ -21,9 +21,6 @@ use craft\validators\UniqueValidator;
  */
 class UserGroup extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null ID
      */
@@ -40,12 +37,15 @@ class UserGroup extends Model
     public $handle;
 
     /**
+     * @var string|null Description
+     * @since 3.5.0
+     */
+    public $description;
+
+    /**
      * @var string|null UID
      */
     public $uid;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -61,9 +61,9 @@ class UserGroup extends Model
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['id'], 'number', 'integerOnly' => true];
         $rules[] = [['name', 'handle'], 'required'];
         $rules[] = [['name', 'handle'], 'string', 'max' => 255];
@@ -95,5 +95,27 @@ class UserGroup extends Model
         }
 
         return false;
+    }
+
+    /**
+     * Returns the field layout config for this user group.
+     *
+     * @param bool $withPermissions Whether permissions should be included
+     * @return array
+     * @since 3.5.0
+     */
+    public function getConfig(bool $withPermissions = true): array
+    {
+        $config = [
+            'name' => $this->name,
+            'handle' => $this->handle,
+            'description' => $this->description,
+        ];
+
+        if ($withPermissions && $this->id) {
+            $config['permissions'] = Craft::$app->getUserPermissions()->getPermissionsByGroupId($this->id);
+        }
+
+        return $config;
     }
 }

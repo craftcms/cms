@@ -56,13 +56,16 @@ class Sequence
             $num = self::_next($name);
 
             if ($num === 1) {
-                Craft::$app->getDb()->createCommand()
-                    ->insert(Table::SEQUENCES, ['name' => $name, 'next' => $num + 1], false)
-                    ->execute();
+                Db::insert(Table::SEQUENCES, [
+                    'name' => $name,
+                    'next' => $num + 1,
+                ], false);
             } else {
-                Craft::$app->getDb()->createCommand()
-                    ->update(Table::SEQUENCES, ['next' => $num + 1], ['name' => $name], [], false)
-                    ->execute();
+                Db::update(Table::SEQUENCES, [
+                    'next' => $num + 1,
+                ], [
+                    'name' => $name,
+                ], [], false);
             }
         } catch (\Throwable $e) {
             $mutex->release($lockName);

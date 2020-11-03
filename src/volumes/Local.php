@@ -26,9 +26,6 @@ use League\Flysystem\FileNotFoundException;
  */
 class Local extends FlysystemVolume implements LocalVolumeInterface
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -37,16 +34,10 @@ class Local extends FlysystemVolume implements LocalVolumeInterface
         return Craft::t('app', 'Local Folder');
     }
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null Path to the root of this sources local folder.
      */
     public $path;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -63,9 +54,9 @@ class Local extends FlysystemVolume implements LocalVolumeInterface
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['path'], 'required'];
         return $rules;
     }
@@ -79,6 +70,22 @@ class Local extends FlysystemVolume implements LocalVolumeInterface
             [
                 'volume' => $this,
             ]);
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.4.0
+     */
+    public function afterSave(bool $isNew)
+    {
+        // If the folder doesn't exist yet, create it with a .gitignore file
+        $path = $this->getRootPath();
+        if (!is_dir($path)) {
+            FileHelper::createDirectory($path);
+            FileHelper::writeGitignoreFile($path);
+        }
+
+        parent::afterSave($isNew);
     }
 
     /**
@@ -108,15 +115,21 @@ class Local extends FlysystemVolume implements LocalVolumeInterface
         }
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      * @return LocalAdapter
      */
     protected function createAdapter(): LocalAdapter
     {
-        return new LocalAdapter($this->getRootPath());
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+
+        return new LocalAdapter($this->getRootPath(), LOCK_EX, LocalAdapter::DISALLOW_LINKS, [
+            'file' => [
+                'public' => $generalConfig->defaultFileMode ?: 0644
+            ],
+            'dir' => [
+                'public' => $generalConfig->defaultDirMode ?: 0755
+            ],
+        ]);
     }
 }

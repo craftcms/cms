@@ -23,9 +23,6 @@ use yii\db\Schema;
  */
 class Url extends Field implements PreviewableFieldInterface
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -42,9 +39,6 @@ class Url extends Field implements PreviewableFieldInterface
         return 'string|null';
     }
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null The input’s placeholder text
      */
@@ -55,15 +49,12 @@ class Url extends Field implements PreviewableFieldInterface
      */
     public $maxLength = 255;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['maxLength'], 'required'];
         $rules[] = [['maxLength'], 'number', 'integerOnly' => true, 'min' => 10];
         return $rules;
@@ -110,12 +101,13 @@ class Url extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml($value, ElementInterface $element = null): string
     {
         return Craft::$app->getView()->renderTemplate('_includes/forms/text', [
             'type' => 'url',
             'id' => $this->handle,
             'name' => $this->handle,
+            'inputmode' => 'url',
             'placeholder' => Craft::t('site', $this->placeholder),
             'value' => $value,
         ]);
@@ -127,6 +119,7 @@ class Url extends Field implements PreviewableFieldInterface
     public function getElementValidationRules(): array
     {
         return [
+            ['trim'],
             [UrlValidator::class],
         ];
     }

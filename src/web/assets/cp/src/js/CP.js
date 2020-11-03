@@ -14,19 +14,30 @@ Craft.CP = Garnish.Base.extend(
         $notificationContainer: null,
         $main: null,
         $primaryForm: null,
+        $headerContainer: null,
         $header: null,
         $mainContent: null,
         $details: null,
+        $tabsContainer: null,
+        $tabsList: null,
+        $tabs: null,
+        $overflowTabBtn: null,
+        $overflowTabList: null,
         $selectedTab: null,
+        selectedTabIndex: null,
+        $sidebarContainer: null,
         $sidebar: null,
         $contentContainer: null,
         $edition: null,
 
+        $confirmUnloadForms: null,
+        $deltaForms: null,
         $collapsibleTables: null,
 
         fixedHeader: false,
 
         enableQueue: true,
+        totalJobs: 0,
         jobInfo: null,
         displayedJobInfo: null,
         displayedJobInfoUnchanged: 1,
@@ -52,23 +63,26 @@ Craft.CP = Garnish.Base.extend(
             this.$notificationContainer = $('#notifications');
             this.$main = $('#main');
             this.$primaryForm = $('#main-form');
+            this.$headerContainer = $('#header-container');
             this.$header = $('#header');
             this.$mainContent = $('#main-content');
             this.$details = $('#details');
+            this.$sidebarContainer = $('#sidebar-container');
             this.$sidebar = $('#sidebar');
             this.$contentContainer = $('#content-container');
             this.$collapsibleTables = $('table.collapsible');
-            this.$edition = $('#edition');
 
             this.updateSidebarMenuLabel();
 
-            this.addListener(Garnish.$win, 'scroll', 'updateFixedHeader');
-            this.updateFixedHeader();
+            if (this.$header.length) {
+                this.addListener(Garnish.$win, 'scroll', 'updateFixedHeader');
+                this.updateFixedHeader();
+            }
 
             Garnish.$doc.ready($.proxy(function() {
                 // Update responsive tables on window resize
-                this.addListener(Garnish.$win, 'resize', 'updateResponsiveTables');
-                this.updateResponsiveTables();
+                this.addListener(Garnish.$win, 'resize', 'handleWindowResize');
+                this.handleWindowResize();
 
                 // Fade the notification out two seconds after page load
                 var $errorNotifications = this.$notificationContainer.children('.error'),
@@ -79,7 +93,7 @@ Craft.CP = Garnish.Base.extend(
 
                 // Wait a frame before initializing any confirm-unload forms,
                 // so other JS that runs on ready() has a chance to initialize
-                Garnish.requestAnimationFrame($.proxy(this, 'initConfirmUnloadForms'));
+                Garnish.requestAnimationFrame($.proxy(this, 'initSpecialForms'));
             }, this));
 
             // Alerts
@@ -98,21 +112,59 @@ Craft.CP = Garnish.Base.extend(
 
             // Does the primary form support the save shortcut?
             if (this.$primaryForm.length && Garnish.hasAttr(this.$primaryForm, 'data-saveshortcut')) {
-                this.addListener(Garnish.$doc, 'keydown', function(ev) {
-                    if (Garnish.isCtrlKeyPressed(ev) && ev.keyCode === Garnish.S_KEY) {
-                        ev.preventDefault();
-                        this.submitPrimaryForm();
+                let shortcuts = [];
+                let actions = this.$primaryForm.data('actions');
+                if (typeof actions === 'undefined') {
+                    shortcuts.push([
+                        {
+                            keyCode: Garnish.S_KEY,
+                            ctrl: true,
+                        },
+                        {
+                            redirect: this.$primaryForm.data('saveshortcut-redirect'),
+                            retainScroll: Garnish.hasAttr(this.$primaryForm, 'saveshortcut-scroll'),
+                        }
+                    ]);
+                } else {
+                    for (let i = 0; i < actions.length; i++) {
+                        let action = actions[i];
+                        if (!action.shortcut) {
+                            continue;
+                        }
+                        shortcuts.push([
+                            {
+                                keyCode: Garnish.S_KEY,
+                                ctrl: true,
+                                shift: !!action.shift,
+                            },
+                            {
+                                action: action.action,
+                                redirect: action.redirect,
+                                confirm: action.confirm,
+                                params: action.params,
+                                data: action.data,
+                                retainScroll: action.retainScroll,
+                            }
+                        ]);
                     }
-
-                    return true;
-                });
+                }
+                for (let i = 0; i < shortcuts.length; i++) {
+                    Garnish.shortcutManager.registerShortcut(shortcuts[i][0], () => {
+                        this.submitPrimaryForm(shortcuts[i][1]);
+                    });
+                }
             }
 
             this.initTabs();
 
-            if (this.$edition.hasClass('hot')) {
-                this.addListener(this.$edition, 'click', function() {
-                    document.location.href = Craft.getUrl('plugin-store/upgrade-craft');
+            // Should we match the previous scroll position?
+            let scrollY = Craft.getLocalStorage('scrollY');
+            if (typeof scrollY !== 'undefined') {
+                Craft.removeLocalStorage('scrollY');
+                Garnish.$doc.ready(() => {
+                    Garnish.requestAnimationFrame(() => {
+                        window.scrollTo(0, scrollY);
+                    });
                 });
             }
 
@@ -130,18 +182,20 @@ Craft.CP = Garnish.Base.extend(
             });
         },
 
-        initConfirmUnloadForms: function() {
+        initSpecialForms: function() {
             // Look for forms that we should watch for changes on
             this.$confirmUnloadForms = $('form[data-confirm-unload]');
+            this.$deltaForms = $('form[data-delta]');
 
             if (!this.$confirmUnloadForms.length) {
                 return;
             }
 
+            var $forms = this.$confirmUnloadForms.add(this.$deltaForms);
             var $form, serialized;
 
-            for (var i = 0; i < this.$confirmUnloadForms.length; i++) {
-                $form = this.$confirmUnloadForms.eq(i);
+            for (var i = 0; i < $forms.length; i++) {
+                $form = $forms.eq(i);
                 if (!$form.data('initialSerializedValue')) {
                     if (typeof $form.data('serializer') === 'function') {
                         serialized = $form.data('serializer')();
@@ -150,8 +204,23 @@ Craft.CP = Garnish.Base.extend(
                     }
                     $form.data('initialSerializedValue', serialized);
                 }
-                this.addListener($form, 'submit', function() {
-                    this.removeListener(Garnish.$win, 'beforeunload');
+                this.addListener($form, 'submit', function(ev) {
+                    if (Garnish.hasAttr($form, 'data-confirm-unload')) {
+                        this.removeListener(Garnish.$win, 'beforeunload');
+                    }
+                    if (Garnish.hasAttr($form, 'data-delta')) {
+                        ev.preventDefault();
+                        var serialized;
+                        if (typeof $form.data('serializer') === 'function') {
+                            serialized = $form.data('serializer')();
+                        } else {
+                            serialized = $form.serialize();
+                        }
+                        var data = Craft.findDeltaData($form.data('initialSerializedValue'), serialized, Craft.deltaNames);
+                        Craft.createForm(data)
+                            .appendTo(Garnish.$bod)
+                            .submit();
+                    }
                 });
             }
 
@@ -198,18 +267,34 @@ Craft.CP = Garnish.Base.extend(
             this.updateFixedHeader();
         },
 
-        submitPrimaryForm: function() {
+        /**
+         * Submits a form.
+         * @param {Object} [options]
+         * @param {string} [options.action] The `action` param value override
+         * @param {string} [options.redirect] The `redirect` param value override
+         * @param {string} [options.confirm] A confirmation message that should be shown to the user before submit
+         * @param {Object} [options.params] Additional params that should be added to the form, defined as name/value pairs
+         * @param {Object} [options.data] Additional data to be passed to the submit event
+         * @param {boolean} [options.retainScroll] Whether the scroll position should be stored and reapplied on the next page load
+         */
+        submitPrimaryForm: function(options) {
             // Give other stuff on the page a chance to prepare
             this.trigger('beforeSaveShortcut');
 
-            if (this.$primaryForm.data('saveshortcut-redirect')) {
-                $('<input type="hidden" name="redirect" value="' + this.$primaryForm.data('saveshortcut-redirect') + '"/>').appendTo(this.$primaryForm);
+            if (typeof options !== 'object' || !$.isPlainObject(options)) {
+                options = {};
             }
 
-            this.$primaryForm.trigger({
-                type: 'submit',
-                saveShortcut: true,
-            });
+            if (!options.redirect) {
+                options.redirect = this.$primaryForm.data('saveshortcut-redirect');
+            }
+
+            if (!options.data) {
+                options.data = {};
+            }
+            options.data.saveShortcut = true;
+
+            Craft.submitForm(this.$primaryForm, options);
         },
 
         updateSidebarMenuLabel: function() {
@@ -228,41 +313,45 @@ Craft.CP = Garnish.Base.extend(
         },
 
         initTabs: function() {
-            this.$selectedTab = null;
+            // Clear out all our old info in case the tabs were just replaced
+            this.$tabsList = this.$tabs = this.$overflowTabBtn = this.$overflowTabList = this.$selectedTab =
+                this.selectedTabIndex = null;
 
-            var $tabs = $('#tabs').find('> ul > li');
-            var tabs = [];
-            var tabWidths = [];
-            var totalWidth = 0;
-            var i, a, href;
+            this.$tabsContainer = $('#tabs');
+            if (!this.$tabsContainer.length) {
+                this.$tabsContainer = null;
+                return;
+            }
 
-            for (i = 0; i < $tabs.length; i++) {
-                tabs[i] = $($tabs[i]);
-                tabWidths[i] = tabs[i].width();
-                totalWidth += tabWidths[i];
+            this.$tabsList = this.$tabsContainer.find('> ul');
+            this.$tabs = this.$tabsList.find('> li');
+            this.$overflowTabBtn = $('#overflow-tab-btn');
+            if (!this.$overflowTabBtn.data('menubtn')) {
+                new Garnish.MenuBtn(this.$overflowTabBtn);
+            }
+            this.$overflowTabList = this.$overflowTabBtn.data('menubtn').menu.$container.find('> ul');
+            var i, $tab, $a, href;
+
+            for (i = 0; i < this.$tabs.length; i++) {
+                $tab = this.$tabs.eq(i);
 
                 // Does it link to an anchor?
-                a = tabs[i].children('a');
-                href = a.attr('href');
+                $a = $tab.children('a');
+                href = $a.attr('href');
                 if (href && href.charAt(0) === '#') {
-                    this.addListener(a, 'click', function(ev) {
+                    this.addListener($a, 'click', function(ev) {
                         ev.preventDefault();
                         this.selectTab(ev.currentTarget);
                     });
 
                     if (encodeURIComponent(href.substr(1)) === document.location.hash.substr(1)) {
-                        this.selectTab(a);
+                        this.selectTab($a);
                     }
                 }
 
-                if (!this.$selectedTab && a.hasClass('sel')) {
-                    this.$selectedTab = a;
+                if (!this.$selectedTab && $a.hasClass('sel')) {
+                    this._selectTab($a, i);
                 }
-            }
-
-            // Now set their max widths
-            for (i = 0; i < $tabs.length; i++) {
-                tabs[i].css('max-width', (100 * tabWidths[i] / totalWidth) + '%');
             }
         },
 
@@ -282,10 +371,41 @@ Craft.CP = Garnish.Base.extend(
             if (typeof history !== 'undefined') {
                 history.replaceState(undefined, undefined, href);
             }
+            this._selectTab($tab, this.$tabs.index($tab.parent()));
+            this.updateTabs();
+            this.$overflowTabBtn.data('menubtn').menu.hide();
+        },
+
+        _selectTab: function($tab, index) {
+            if ($tab === this.$selectedTab) {
+                return;
+            }
+
+            this.$selectedTab = $tab;
+            this.selectedTabIndex = index;
+            if (index === 0) {
+                $('#content').addClass('square');
+            } else {
+                $('#content').removeClass('square');
+            }
+
             Garnish.$win.trigger('resize');
             // Fixes Redactor fixed toolbars on previously hidden panes
             Garnish.$doc.trigger('scroll');
-            this.$selectedTab = $tab;
+
+            // If there is a revision menu, set its links to this tab ID
+            let href = $tab && $tab.attr('href');
+            if (href && href.charAt(0) === '#') {
+                let menubtn = $('#context-btn').menubtn().data('menubtn');
+                if (menubtn) {
+                    for (let i = 0; i < menubtn.menu.$options.length; i++) {
+                        let a = menubtn.menu.$options[i];
+                        if (a.href) {
+                            a.href = a.href.match(/^[^#]*/)[0] + href;
+                        }
+                    }
+                }
+            }
         },
 
         deselectTab: function() {
@@ -297,7 +417,54 @@ Craft.CP = Garnish.Base.extend(
             if (this.$selectedTab.attr('href').charAt(0) === '#') {
                 $(this.$selectedTab.attr('href')).addClass('hidden');
             }
-            this.$selectedTab = null;
+            this._selectTab(null, null);
+        },
+
+        handleWindowResize: function() {
+            this.updateTabs();
+            this.updateResponsiveTables();
+        },
+
+        updateTabs: function() {
+            if (!this.$tabsContainer) {
+                return;
+            }
+
+            var maxWidth = Math.floor(this.$tabsContainer.width()) - 40;
+            var totalWidth = 0;
+            var showOverflowMenu = false;
+            var tabMargin = Garnish.$bod.width() >= 768 ? -12 : -7;
+            var $tab;
+
+            // Start with the selected tab, because that needs to be visible
+            if (this.$selectedTab) {
+                this.$selectedTab.parent('li').appendTo(this.$tabsList);
+                totalWidth = Math.ceil(this.$selectedTab.parent('li').width());
+            }
+
+            for (var i = 0; i < this.$tabs.length; i++) {
+                $tab = this.$tabs.eq(i).appendTo(this.$tabsList);
+                if (i !== this.selectedTabIndex) {
+                    totalWidth += Math.ceil($tab.width());
+                    // account for the negative margin
+                    if (i !== 0 || this.$selectedTab) {
+                        totalWidth += tabMargin;
+                    }
+                }
+
+                if (i === this.selectedTabIndex || totalWidth <= maxWidth) {
+                    $tab.find('> a').removeAttr('role');
+                } else {
+                    $tab.appendTo(this.$overflowTabList).find('> a').attr('role', 'option');
+                    showOverflowMenu = true;
+                }
+            }
+
+            if (showOverflowMenu) {
+                this.$overflowTabBtn.removeClass('hidden');
+            } else {
+                this.$overflowTabBtn.addClass('hidden');
+            }
         },
 
         updateResponsiveTables: function() {
@@ -328,7 +495,7 @@ Craft.CP = Garnish.Base.extend(
 
                     // Are we checking the table width?
                     if (this.updateResponsiveTables._check) {
-                        if (this.updateResponsiveTables._$table.width() > this.updateResponsiveTables._containerWidth) {
+                        if (this.updateResponsiveTables._$table.width() - 30 > this.updateResponsiveTables._containerWidth) {
                             this.updateResponsiveTables._$table.addClass('collapsed');
                         }
                     }
@@ -341,30 +508,42 @@ Craft.CP = Garnish.Base.extend(
 
         updateFixedHeader: function() {
             // Have we scrolled passed the top of #main?
-            if (this.$main.length && this.$main[0].getBoundingClientRect().top < 0) {
+            if (this.$main.length && this.$headerContainer[0].getBoundingClientRect().top < 0) {
                 if (!this.fixedHeader) {
-                    var headerHeight = this.$header.outerHeight();
+                    var headerHeight = this.$headerContainer.height();
+
+                    // Hard-set the minimum content container height
+                    this.$contentContainer.css('min-height', 'calc(100vh - ' + (headerHeight + 14 + 48 - 1) + 'px)');
+
+                    // Hard-set the header container height
+                    this.$headerContainer.height(headerHeight);
+                    Garnish.$bod.addClass('fixed-header');
+
+                    // Fix the sidebar and details pane positions if they are taller than #content-container
+                    var contentHeight = this.$contentContainer.outerHeight();
+                    var $detailsHeight = this.$details.outerHeight();
                     var css = {
                         top: headerHeight + 'px',
                         'max-height': 'calc(100vh - ' + headerHeight + 'px)'
                     };
-                    this.$sidebar.css(css);
-                    this.$details.css(css);
-
-                    this.$mainContent.css('margin-top', this.$header.outerHeight());
-                    Garnish.$bod.addClass('fixed-header');
-                    this.fixedheader = true;
+                    this.$sidebar.addClass('fixed').css(css);
+                    this.$details.addClass('fixed').css(css);
+                    this.fixedHeader = true;
                 }
             }
-            else if (this.fixedheader) {
+            else if (this.fixedHeader) {
+                this.$headerContainer.height('auto');
                 Garnish.$bod.removeClass('fixed-header');
-                this.$details.css({
-                    top: null,
-                    'max-height': null
+                this.$contentContainer.css('min-height', '');
+                this.$sidebar.removeClass('fixed').css({
+                    top: '',
+                    'max-height': ''
                 });
-                this.$header.css('top', 0);
-                this.$mainContent.css('margin-top', 0);
-                this.fixedheader = false;
+                this.$details.removeClass('fixed').css({
+                    top: '',
+                    'max-height': ''
+                });
+                this.fixedHeader = false;
             }
         },
 
@@ -419,7 +598,7 @@ Craft.CP = Garnish.Base.extend(
          */
         displayError: function(message) {
             if (!message) {
-                message = Craft.t('app', 'An unknown error occurred.');
+                message = Craft.t('app', 'A server error occurred.');
             }
 
             this.displayNotification('error', message);
@@ -437,7 +616,7 @@ Craft.CP = Garnish.Base.extend(
             this.$alerts.remove();
 
             if (Garnish.isArray(alerts) && alerts.length) {
-                this.$alerts = $('<ul id="alerts"/>').prependTo(this.$mainContainer);
+                this.$alerts = $('<ul id="alerts"/>').prependTo($('#page-container'));
 
                 for (var i = 0; i < alerts.length; i++) {
                     $('<li>' + alerts[i] + '</li>').appendTo(this.$alerts);
@@ -473,9 +652,7 @@ Craft.CP = Garnish.Base.extend(
                                 this.displayError(response.error);
                             }
                         }
-
                     }, this));
-
                 }, this));
             }
         },
@@ -664,10 +841,11 @@ Craft.CP = Garnish.Base.extend(
         },
 
         _trackJobProgressInternal: function() {
-            Craft.queueActionRequest('queue/get-job-info?dontExtendSession=1', $.proxy(function(response, textStatus) {
+            Craft.queueActionRequest('queue/get-job-info?limit=50&dontExtendSession=1', $.proxy(function(response, textStatus) {
                 if (textStatus === 'success') {
                     this.trackJobProgressTimeout = null;
-                    this.setJobInfo(response, true);
+                    this.totalJobs = response.total;
+                    this.setJobInfo(response.jobs);
 
                     if (this.jobInfo.length) {
                         // Check again after a delay
@@ -677,7 +855,7 @@ Craft.CP = Garnish.Base.extend(
             }, this));
         },
 
-        setJobInfo: function(jobInfo, animateIcon) {
+        setJobInfo: function(jobInfo) {
             if (!this.enableQueue) {
                 return;
             }
@@ -703,7 +881,7 @@ Craft.CP = Garnish.Base.extend(
                 this.displayedJobInfoUnchanged = 1;
             }
 
-            this.updateJobIcon(animateIcon);
+            this.updateJobIcon();
 
             // Fire a setJobInfo event
             this.trigger('setJobInfo');
@@ -733,7 +911,7 @@ Craft.CP = Garnish.Base.extend(
             }
         },
 
-        updateJobIcon: function(animate) {
+        updateJobIcon: function() {
             if (!this.enableQueue || !this.$nav.length) {
                 return;
             }
@@ -745,8 +923,8 @@ Craft.CP = Garnish.Base.extend(
 
                 if (this.displayedJobInfo.status === Craft.CP.JOB_STATUS_RESERVED || this.displayedJobInfo.status === Craft.CP.JOB_STATUS_WAITING) {
                     this.jobProgressIcon.hideFailMode();
-                    this.jobProgressIcon.setDescription(this.displayedJobInfo.description);
-                    this.jobProgressIcon.setProgress(this.displayedJobInfo.progress, animate);
+                    this.jobProgressIcon.setDescription(this.displayedJobInfo.description, this.displayedJobInfo.progressLabel);
+                    this.jobProgressIcon.setProgress(this.displayedJobInfo.progress);
                 }
                 else if (this.displayedJobInfo.status === Craft.CP.JOB_STATUS_FAILED) {
                     this.jobProgressIcon.showFailMode(Craft.t('app', 'Failed'));
@@ -759,6 +937,32 @@ Craft.CP = Garnish.Base.extend(
                     delete this.jobProgressIcon;
                 }
             }
+        },
+
+        /**
+         * Returns the active site for the control panel
+         *
+         * @return {number}
+         */
+        getSiteId: function() {
+            // If the old BaseElementIndex.siteId value is in localStorage, go aheand and remove & return that
+            let siteId = Craft.getLocalStorage('BaseElementIndex.siteId');
+            if (typeof siteId !== 'undefined') {
+                Craft.removeLocalStorage('BaseElementIndex.siteId');
+                this.setSiteId(siteId);
+                return siteId;
+            }
+            return Craft.getCookie('siteId');
+        },
+
+        /**
+         * Sets the active site for the control panel
+         * @param {number} siteId
+         */
+        setSiteId: function(siteId) {
+            Craft.setCookie('siteId', siteId, {
+                maxAge: 31536000 // 1 year
+            });
         }
     },
     {
@@ -771,7 +975,7 @@ Craft.CP = Garnish.Base.extend(
         JOB_STATUS_FAILED: 4
     });
 
-Garnish.$scrollContainer = $('#content');
+Garnish.$scrollContainer = Garnish.$win;
 Craft.cp = new Craft.CP();
 
 
@@ -783,11 +987,10 @@ var JobProgressIcon = Garnish.Base.extend(
         $li: null,
         $a: null,
         $label: null,
+        $progressLabel: null,
 
-        hud: null,
+        progress: null,
         failMode: false,
-
-        _canvasSupported: null,
 
         _$bgCanvas: null,
         _$staticCanvas: null,
@@ -813,72 +1016,70 @@ var JobProgressIcon = Garnish.Base.extend(
 
         init: function() {
             this.$li = $('<li/>').appendTo(Craft.cp.$nav.children('ul'));
-            this.$a = $('<a id="job-icon"/>').appendTo(this.$li);
+            this.$a = $('<a/>', {
+                id: 'job-icon',
+                href: Craft.canAccessQueueManager ? Craft.getUrl('utilities/queue-manager') : null,
+            }).appendTo(this.$li);
             this.$canvasContainer = $('<span class="icon"/>').appendTo(this.$a);
-            this.$label = $('<span class="label"></span>').appendTo(this.$a);
+            var $labelContainer = $('<span class="label"/>').appendTo(this.$a);
+            this.$label = $('<span/>').appendTo($labelContainer);
+            this.$progressLabel = $('<span class="progress-label"/>').appendTo($labelContainer).hide();
 
-            this._canvasSupported = !!(document.createElement('canvas').getContext);
+            let m = (window.devicePixelRatio > 1 ? 2 : 1);
+            this._canvasSize = 18 * m;
+            this._arcPos = this._canvasSize / 2;
+            this._arcRadius = 7 * m;
+            this._lineWidth = 3 * m;
 
-            if (this._canvasSupported) {
-                var m = (window.devicePixelRatio > 1 ? 2 : 1);
-                this._canvasSize = 18 * m;
-                this._arcPos = this._canvasSize / 2;
-                this._arcRadius = 7 * m;
-                this._lineWidth = 3 * m;
+            this._$bgCanvas = this._createCanvas('bg', '#61666b');
+            this._$staticCanvas = this._createCanvas('static', '#d7d9db');
+            this._$hoverCanvas = this._createCanvas('hover', '#fff');
+            this._$failCanvas = this._createCanvas('fail', '#da5a47').hide();
 
-                this._$bgCanvas = this._createCanvas('bg', '#61666b');
-                this._$staticCanvas = this._createCanvas('static', '#d7d9db');
-                this._$hoverCanvas = this._createCanvas('hover', '#fff');
-                this._$failCanvas = this._createCanvas('fail', '#da5a47').hide();
+            this._staticCtx = this._$staticCanvas[0].getContext('2d');
+            this._hoverCtx = this._$hoverCanvas[0].getContext('2d');
 
-                this._staticCtx = this._$staticCanvas[0].getContext('2d');
-                this._hoverCtx = this._$hoverCanvas[0].getContext('2d');
-
-                this._drawArc(this._$bgCanvas[0].getContext('2d'), 0, 1);
-                this._drawArc(this._$failCanvas[0].getContext('2d'), 0, 1);
-            }
-            else {
-                this._progressBar = new Craft.ProgressBar(this.$canvasContainer);
-                this._progressBar.showProgressBar();
-            }
-
-            this.addListener(this.$a, 'click', 'toggleHud');
+            this._drawArc(this._$bgCanvas[0].getContext('2d'), 0, 1);
+            this._drawArc(this._$failCanvas[0].getContext('2d'), 0, 1);
         },
 
-        setDescription: function(description) {
+        setDescription: function(description, progressLabel) {
             this.$a.attr('title', description);
             this.$label.text(description);
+            if (progressLabel) {
+                this.$progressLabel.text(progressLabel).show();
+            } else {
+                this.$progressLabel.hide();
+            }
         },
 
-        setProgress: function(progress, animate) {
-            if (this._canvasSupported) {
-                if (animate) {
+        setProgress: function(progress) {
+            if (progress == 0) {
+                this._$staticCanvas.hide();
+                this._$hoverCanvas.hide();
+            } else {
+                this._$staticCanvas.show();
+                this._$hoverCanvas.show();
+                if (this.progress && progress > this.progress) {
                     this._animateArc(0, progress / 100);
                 }
                 else {
                     this._setArc(0, progress / 100);
                 }
             }
-            else {
-                this._progressBar.setProgressPercentage(progress);
-            }
+
+            this.progress = progress;
         },
 
         complete: function() {
-            if (this._canvasSupported) {
-                this._animateArc(0, 1, $.proxy(function() {
-                    this._$bgCanvas.velocity('fadeOut');
+            this._animateArc(0, 1, $.proxy(function() {
+                this._$bgCanvas.velocity('fadeOut');
 
-                    this._animateArc(1, 1, $.proxy(function() {
-                        this.$a.remove();
-                        this.destroy();
-                    }, this));
+                this._animateArc(1, 1, $.proxy(function() {
+                    this.$a.remove();
+                    this.destroy();
                 }, this));
-            }
-            else {
-                this._progressBar.setProgressPercentage(100);
-                this.$a.velocity('fadeOut');
-            }
+            }, this));
         },
 
         showFailMode: function(message) {
@@ -887,18 +1088,12 @@ var JobProgressIcon = Garnish.Base.extend(
             }
 
             this.failMode = true;
+            this.progress = null;
 
-            if (this._canvasSupported) {
-                this._$bgCanvas.hide();
-                this._$staticCanvas.hide();
-                this._$hoverCanvas.hide();
-                this._$failCanvas.show();
-            }
-            else {
-                this._progressBar.$progressBar.css('border-color', '#da5a47');
-                this._progressBar.$innerProgressBar.css('background-color', '#da5a47');
-                this._progressBar.setProgressPercentage(50);
-            }
+            this._$bgCanvas.hide();
+            this._$staticCanvas.hide();
+            this._$hoverCanvas.hide();
+            this._$failCanvas.show();
 
             this.setDescription(message);
         },
@@ -910,26 +1105,10 @@ var JobProgressIcon = Garnish.Base.extend(
 
             this.failMode = false;
 
-            if (this._canvasSupported) {
-                this._$bgCanvas.show();
-                this._$staticCanvas.show();
-                this._$hoverCanvas.show();
-                this._$failCanvas.hide();
-            }
-            else {
-                this._progressBar.$progressBar.css('border-color', '');
-                this._progressBar.$innerProgressBar.css('background-color', '');
-                this._progressBar.setProgressPercentage(50);
-            }
-        },
-
-        toggleHud: function() {
-            if (!this.hud) {
-                this.hud = new QueueHUD();
-            }
-            else {
-                this.hud.toggle();
-            }
+            this._$bgCanvas.show();
+            this._$staticCanvas.show();
+            this._$hoverCanvas.show();
+            this._$failCanvas.hide();
         },
 
         _createCanvas: function(id, color) {
@@ -981,233 +1160,5 @@ var JobProgressIcon = Garnish.Base.extend(
             else if (this._arcAnimateCallback) {
                 this._arcAnimateCallback();
             }
-        }
-    });
-
-var QueueHUD = Garnish.HUD.extend(
-    {
-        jobsById: null,
-        completedJobs: null,
-        updateViewProxy: null,
-
-        init: function() {
-            this.jobsById = {};
-            this.completedJobs = [];
-            this.updateViewProxy = $.proxy(this, 'updateView');
-
-            this.base(Craft.cp.jobProgressIcon.$a);
-
-            this.$main.attr('id', 'queue-hud');
-        },
-
-        onShow: function() {
-            Craft.cp.on('setJobInfo', this.updateViewProxy);
-            this.updateView();
-            this.base();
-        },
-
-        onHide: function() {
-            Craft.cp.off('setJobInfo', this.updateViewProxy);
-
-            // Clear out any completed jobs
-            if (this.completedJobs.length) {
-                for (var i = 0; i < this.completedJobs.length; i++) {
-                    this.completedJobs[i].destroy();
-                }
-
-                this.completedJobs = [];
-            }
-
-            this.base();
-        },
-
-        updateView: function() {
-            // First remove any jobs that have completed
-            var newJobIds = [];
-
-            var i;
-
-            if (Craft.cp.jobInfo) {
-                for (i = 0; i < Craft.cp.jobInfo.length; i++) {
-                    newJobIds.push(parseInt(Craft.cp.jobInfo[i].id));
-                }
-            }
-
-            for (var id in this.jobsById) {
-                if (!this.jobsById.hasOwnProperty(id)) {
-                    continue;
-                }
-                if (!Craft.inArray(parseInt(id), newJobIds)) {
-                    this.jobsById[id].complete();
-                    this.completedJobs.push(this.jobsById[id]);
-                    delete this.jobsById[id];
-                }
-            }
-
-            // Now display the jobs that are still around
-            if (Craft.cp.jobInfo && Craft.cp.jobInfo.length) {
-                for (i = 0; i < Craft.cp.jobInfo.length; i++) {
-                    var info = Craft.cp.jobInfo[i];
-
-                    if (this.jobsById[info.id]) {
-                        this.jobsById[info.id].updateStatus(info);
-                    }
-                    else {
-                        this.jobsById[info.id] = new QueueHUD.Job(this, info);
-
-                        // Place it before the next already known job
-                        var placed = false;
-                        for (var j = i + 1; j < Craft.cp.jobInfo.length; j++) {
-                            if (this.jobsById[Craft.cp.jobInfo[j].id]) {
-                                this.jobsById[info.id].$container.insertBefore(this.jobsById[Craft.cp.jobInfo[j].id].$container);
-                                placed = true;
-                                break;
-                            }
-                        }
-
-                        if (!placed) {
-                            // Place it before the resize <object> if there is one
-                            var $object = this.$main.children('object');
-                            if ($object.length) {
-                                this.jobsById[info.id].$container.insertBefore($object);
-                            }
-                            else {
-                                this.jobsById[info.id].$container.appendTo(this.$main);
-                            }
-                        }
-                    }
-                }
-            }
-            else {
-                this.hide();
-            }
-        }
-    });
-
-QueueHUD.Job = Garnish.Base.extend(
-    {
-        hud: null,
-        id: null,
-        description: null,
-
-        status: null,
-        progress: null,
-
-        $container: null,
-        $statusContainer: null,
-        $descriptionContainer: null,
-        $progressLabel: null,
-
-        _progressBar: null,
-
-        init: function(hud, info) {
-            this.hud = hud;
-
-            this.id = info.id;
-            this.description = info.description;
-
-            this.$container = $('<div/>', { 'class': 'job' });
-            var $flex = $('<div/>', { 'class': 'flex' }).appendTo(this.$container);
-            $('<div/>', { 'class': 'flex-grow' }).text(info.description).appendTo($flex);
-            this.$statusContainer = $('<div class="job-status"/>').appendTo($flex);
-
-            this.$container.data('job', this);
-
-            this.updateStatus(info);
-        },
-
-        updateStatus: function(info) {
-            if (this.status !== (this.status = info.status)) {
-                this.$statusContainer.empty();
-
-                switch (this.status) {
-                    case Craft.CP.JOB_STATUS_WAITING: {
-                        this.$statusContainer.text(Craft.t('app', 'Pending'));
-                        break;
-                    }
-                    case Craft.CP.JOB_STATUS_RESERVED: {
-                        this._progressBar = new Craft.ProgressBar(this.$statusContainer);
-                        this._progressBar.showProgressBar();
-                        break;
-                    }
-                    case Craft.CP.JOB_STATUS_FAILED: {
-                        $('<span/>', {
-                            'class': 'error',
-                            text: Craft.t('app', 'Failed'),
-                            title: info.error
-                        }).appendTo(this.$statusContainer);
-
-                        var $actionBtn = $('<a class="menubtn error" title="' + Craft.t('app', 'Options') + '"/>').appendTo(this.$statusContainer);
-                        $(
-                            '<div class="menu">' +
-                            '<ul>' +
-                            '<li><a data-action="retry">' + Craft.t('app', 'Try again') + '</a></li>' +
-                            '<li><a data-action="release">' + Craft.t('app', 'Cancel') + '</a></li>' +
-                            '</ul>' +
-                            '</div>'
-                        ).appendTo(this.$statusContainer);
-
-                        new Garnish.MenuBtn($actionBtn, {
-                            onOptionSelect: $.proxy(this, 'performErrorAction')
-                        });
-
-                        break;
-                    }
-                }
-            }
-
-            if (this.status === Craft.CP.JOB_STATUS_RESERVED) {
-                this._progressBar.setProgressPercentage(info.progress);
-
-                if (info.progressLabel) {
-                    if (!this.$progressLabel) {
-                        this.$progressLabel = $('<div class="light smalltext"/>').appendTo(this.$container);
-                    }
-                    this.$progressLabel.text(info.progressLabel);
-                }
-            } else if (this.$progressLabel) {
-                this.$progressLabel.remove();
-                this.$progressLabel = null;
-            }
-        },
-
-        performErrorAction: function(option) {
-            // What option did they choose?
-            switch ($(option).data('action')) {
-                case 'retry': {
-                    // Update the icon
-                    Craft.cp.displayedJobInfo.status = Craft.CP.JOB_STATUS_WAITING;
-                    Craft.cp.displayedJobInfo.progress = 0;
-                    Craft.cp.updateJobIcon(false);
-
-                    Craft.postActionRequest('queue/retry', {id: this.id}, $.proxy(function(response, textStatus) {
-                        if (textStatus === 'success') {
-                            Craft.cp.trackJobProgress(false, true);
-                        }
-                    }, this));
-                    break;
-                }
-                case 'release': {
-                    Craft.postActionRequest('queue/release', {id: this.id}, $.proxy(function(response, textStatus) {
-                        if (textStatus === 'success') {
-                            Craft.cp.trackJobProgress(false, true);
-                        }
-                    }, this));
-                }
-            }
-        },
-
-        complete: function() {
-            this.$statusContainer.empty();
-            $('<div data-icon="check"/>').appendTo(this.$statusContainer);
-        },
-
-        destroy: function() {
-            if (this.hud.jobsById[this.id]) {
-                delete this.hud.jobsById[this.id];
-            }
-
-            this.$container.remove();
-            this.base();
         }
     });

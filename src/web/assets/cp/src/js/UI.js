@@ -7,6 +7,7 @@ Craft.ui =
                 attr: {
                     'class': 'text',
                     type: (config.type || 'text'),
+                    inputmode: config.inputmode,
                     id: config.id,
                     size: config.size,
                     name: config.name,
@@ -59,7 +60,67 @@ Craft.ui =
         },
 
         createTextField: function(config) {
+            if (!config.id) {
+                config.id = 'text' + Math.floor(Math.random() * 1000000000);
+            }
             return this.createField(this.createTextInput(config), config);
+        },
+
+        createCopyTextInput: function(config) {
+            let id = config.id || 'copytext' + Math.floor(Math.random() * 1000000000);
+            let buttonId = config.buttonId || `${id}-btn`;
+
+            let $container = $('<div/>', {
+                'class': 'copytext',
+            });
+
+            let $input = this.createTextInput($.extend({}, config, {
+                readonly: true,
+            })).appendTo($container);
+
+            let $btn = $('<button/>', {
+                type: 'button',
+                id: buttonId,
+                'class': 'btn',
+                'data-icon': 'clipboard',
+                title: Craft.t('app', 'Copy to clipboard'),
+            }).appendTo($container);
+
+            $btn.on('click', () => {
+                $input[0].select();
+                document.execCommand('copy');
+                Craft.cp.displayNotice(Craft.t('app', 'Copied to clipboard.'));
+                $container.trigger('copy');
+                $input[0].setSelectionRange(0, 0);
+            });
+
+            return $container;
+        },
+
+        createCopyTextField: function(config) {
+            if (!config.id) {
+                config.id = 'copytext' + Math.floor(Math.random() * 1000000000);
+            }
+            return this.createField(this.createCopyTextInput(config), config);
+        },
+
+        createCopyTextPrompt: function(config) {
+            let $container = $('<div/>', {
+                'class': 'modal fitted',
+            });
+            let $body = $('<div/>', {
+                'class': 'body',
+            }).appendTo($container);
+            this.createCopyTextField($.extend({
+                size: Math.max(Math.min(config.value.length, 50), 25),
+            }, config)).appendTo($body);
+            let modal = new Garnish.Modal($container, {
+                closeOtherModals: false,
+            });
+            $container.on('copy', () => {
+                modal.hide();
+            })
+            return $container;
         },
 
         createTextarea: function(config) {
@@ -92,6 +153,9 @@ Craft.ui =
         },
 
         createTextareaField: function(config) {
+            if (!config.id) {
+                config.id = 'textarea' + Math.floor(Math.random() * 1000000000);
+            }
             return this.createField(this.createTextarea(config), config);
         },
 
@@ -112,14 +176,38 @@ Craft.ui =
                 'data-target-prefix': config.targetPrefix
             }).appendTo($container);
 
+            // Normalize the options into an array
+            if ($.isPlainObject(config.options)) {
+                let options = [];
+                for (var key in config.options) {
+                    if (!config.options.hasOwnProperty(key)) {
+                        continue;
+                    }
+                    let option = config.options[key];
+                    if ($.isPlainObject(option)) {
+                        if (typeof option.optgroup !== 'undefined') {
+                            options.push(option);
+                        } else {
+                            options.push({
+                                label: option.label,
+                                value: typeof option.value !== 'undefined' ? option.value : key,
+                                disabled: typeof option.disabled !== 'undefined' ? option.disabled : false,
+                            });
+                        }
+                    } else {
+                        options.push({
+                            label: option,
+                            value: key,
+                        })
+                    }
+                }
+                config.options = options;
+            }
+
             var $optgroup = null;
 
-            for (var key in config.options) {
-                if (!config.options.hasOwnProperty(key)) {
-                    continue;
-                }
-
-                var option = config.options[key];
+            for (let i = 0; i < config.options.length; i++) {
+                let option = config.options[i];
 
                 // Starting a new <optgroup>?
                 if (typeof option.optgroup !== 'undefined') {
@@ -127,15 +215,11 @@ Craft.ui =
                         'label': option.label
                     }).appendTo($select);
                 } else {
-                    var optionLabel = (typeof option.label !== 'undefined' ? option.label : option),
-                        optionValue = (typeof option.value !== 'undefined' ? option.value : key),
-                        optionDisabled = (typeof option.disabled !== 'undefined' ? option.disabled : false);
-
                     $('<option/>', {
-                        'value': optionValue,
-                        'selected': (optionValue == config.value),
-                        'disabled': optionDisabled,
-                        'html': optionLabel
+                        'value': option.value,
+                        'selected': (option.value == config.value),
+                        'disabled': typeof option.disabled !== 'undefined' ? option.disabled : false,
+                        'html':  option.label
                     }).appendTo($optgroup || $select);
                 }
             }
@@ -149,6 +233,9 @@ Craft.ui =
         },
 
         createSelectField: function(config) {
+            if (!config.id) {
+                config.id = 'select' + Math.floor(Math.random() * 1000000000);
+            }
             return this.createField(this.createSelect(config), config);
         },
 
@@ -203,8 +290,12 @@ Craft.ui =
         },
 
         createCheckboxField: function(config) {
+            if (!config.id) {
+                config.id = 'checkbox' + Math.floor(Math.random() * 1000000000);
+            }
+
             var $field = $('<div class="field checkboxfield"/>', {
-                id: (config.id ? config.id + '-field' : null)
+                id: `${config.id}-field`,
             });
 
             if (config.first) {
@@ -224,7 +315,7 @@ Craft.ui =
         },
 
         createCheckboxSelect: function(config) {
-            var $container = $('<div class="checkbox-select"/>');
+            var $container = $('<fieldset class="checkbox-select"/>');
 
             if (config.class) {
                 $container.addClass(config.class);
@@ -277,17 +368,24 @@ Craft.ui =
         },
 
         createCheckboxSelectField: function(config) {
+            if (!config.id) {
+                config.id = 'checkboxselect' + Math.floor(Math.random() * 1000000000);
+            }
             return this.createField(this.createCheckboxSelect(config), config);
         },
 
         createLightswitch: function(config) {
             var value = config.value || '1';
+            var indeterminateValue = config.indeterminateValue || '-';
 
             var $container = $('<div/>', {
                 'class': 'lightswitch',
                 tabindex: '0',
                 'data-value': value,
+                'data-indeterminate-value': indeterminateValue,
                 id: config.id,
+                role: 'switch',
+                'aria-checked': config.on ? 'true' : (config.indeterminate ? 'mixed' : 'false'),
                 'aria-labelledby': config.labelId,
                 'data-target': config.toggle,
                 'data-reverse-target': config.reverseToggle
@@ -295,6 +393,8 @@ Craft.ui =
 
             if (config.on) {
                 $container.addClass('on');
+            } else if (config.indeterminate) {
+                $container.addClass('indeterminate');
             }
 
             if (config.small) {
@@ -307,9 +407,7 @@ Craft.ui =
 
             $(
                 '<div class="lightswitch-container">' +
-                '<div class="label on"></div>' +
                 '<div class="handle"></div>' +
-                '<div class="label off"></div>' +
                 '</div>'
             ).appendTo($container);
 
@@ -317,7 +415,7 @@ Craft.ui =
                 $('<input/>', {
                     type: 'hidden',
                     name: config.name,
-                    value: (config.on ? value : ''),
+                    value: config.on ? value : (config.indeterminate ? indeterminateValue : ''),
                     disabled: config.disabled
                 }).appendTo($container);
             }
@@ -327,11 +425,19 @@ Craft.ui =
                 new Craft.FieldToggle($container);
             }
 
-            return $container.lightswitch();
+            new Craft.LightSwitch($container, {
+                onChange: config.onChange || $.noop,
+            });
+
+            return $container;
         },
 
         createLightswitchField: function(config) {
-            return this.createField(this.createLightswitch(config), config);
+            if (!config.id) {
+                config.id = 'lightswitch' + Math.floor(Math.random() * 1000000000);
+            }
+            return this.createField(this.createLightswitch(config), config)
+                .addClass('lightswitch-field');
         },
 
         createColorInput: function(config) {
@@ -372,6 +478,9 @@ Craft.ui =
         },
 
         createColorField: function(config) {
+            if (!config.id) {
+                config.id = 'color' + Math.floor(Math.random() * 1000000000);
+            }
             return this.createField(this.createColorInput(config), config);
         },
 
@@ -416,7 +525,244 @@ Craft.ui =
         },
 
         createDateField: function(config) {
+            if (!config.id) {
+                config.id = 'date' + Math.floor(Math.random() * 1000000000);
+            }
             return this.createField(this.createDateInput(config), config);
+        },
+
+        createDateRangePicker: function(config) {
+            var now = new Date();
+            var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            config = $.extend({
+                class: '',
+                options: [
+                    'today',
+                    'thisWeek',
+                    'thisMonth',
+                    'thisYear',
+                    'past7Days',
+                    'past30Days',
+                    'past90Days',
+                    'pastYear',
+                ],
+                onChange: $.noop,
+                selected: null,
+                startDate:null,
+                endDate: null,
+            }, config);
+
+            var $menu = $('<div/>', {'class': 'menu'});
+            var $ul = $('<ul/>', {'class': 'padded'}).appendTo($menu);
+            var $allOption = $('<a/>')
+                .addClass('sel')
+                .text(Craft.t('app', 'All'))
+                .data('handle', 'all');
+
+            $('<li/>')
+                .append($allOption)
+                .appendTo($ul);
+
+            var option;
+            var selectedOption;
+            for (var i = 0; i < config.options.length; i++) {
+                var handle = config.options[i];
+                switch (handle) {
+                    case 'today':
+                        option = {
+                            label: Craft.t('app', 'Today'),
+                            startDate: today,
+                            endDate: today,
+                        };
+                        break;
+                    case 'thisWeek':
+                        var firstDayOffset = now.getDay() - Craft.datepickerOptions.firstDay;
+                        if (firstDayOffset < 0) {
+                            firstDayOffset += 7;
+                        }
+                        option = {
+                            label: Craft.t('app', 'This week'),
+                            startDate: new Date(now.getFullYear(), now.getMonth(), now.getDate() - firstDayOffset),
+                            endDate: today,
+                        };
+                        break;
+                    case 'thisMonth':
+                        option = {
+                            label: Craft.t('app', 'This month'),
+                            startDate: new Date(now.getFullYear(), now.getMonth()),
+                            endDate: today,
+                        };
+                        break;
+                    case 'thisYear':
+                        option = {
+                            label: Craft.t('app', 'This year'),
+                            startDate: new Date(now.getFullYear(), 0),
+                            endDate: today,
+                        };
+                        break;
+                    case 'past7Days':
+                        option = {
+                            label: Craft.t('app', 'Past {num} days', {num: 7}),
+                            startDate: new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7),
+                            endDate: today,
+                        };
+                        break;
+                    case 'past30Days':
+                        option = {
+                            label: Craft.t('app', 'Past {num} days', {num: 30}),
+                            startDate: new Date(now.getFullYear(), now.getMonth(), now.getDate() - 30),
+                            endDate: today,
+                        };
+                        break;
+                    case 'past90Days':
+                        option = {
+                            label: Craft.t('app', 'Past {num} days', {num: 90}),
+                            startDate: new Date(now.getFullYear(), now.getMonth(), now.getDate() - 90),
+                            endDate: today,
+                        };
+                        break;
+                    case 'pastYear':
+                        option = {
+                            label: Craft.t('app', 'Past year'),
+                            startDate: new Date(now.getFullYear(), now.getMonth(), now.getDate() - 365),
+                            endDate: today,
+                        };
+                        break;
+                }
+
+                var $li = $('<li/>');
+                var $a = $('<a/>', {text: option.label})
+                    .data('handle', handle)
+                    .data('startDate', option.startDate)
+                    .data('endDate', option.endDate)
+                    .data('startTime', option.startDate ? option.startDate.getTime() : null)
+                    .data('endTime', option.endDate ? option.endDate.getTime() : null);
+
+                if (config.selected && handle == config.selected) {
+                    selectedOption = $a[0];
+                }
+
+                $li.append($a);
+                $li.appendTo($ul);
+            }
+
+            $('<hr/>').appendTo($menu);
+
+            var $flex = $('<div/>', {'class': 'flex flex-nowrap padded'}).appendTo($menu);
+            var $startDate = this.createDateField({label: Craft.t('app', 'From')}).appendTo($flex).find('input');
+            var $endDate = this.createDateField({label: Craft.t('app', 'To')}).appendTo($flex).find('input');
+
+            // prevent ESC keypresses in the date inputs from closing the menu
+            var $dateInputs = $startDate.add($endDate);
+            $dateInputs.on('keyup', function(ev) {
+                if (ev.keyCode === Garnish.ESC_KEY && $(this).data('datepicker').dpDiv.is(':visible')) {
+                    ev.stopPropagation();
+                }
+            });
+
+            // prevent clicks in the datepicker divs from closing the menu
+            $startDate.data('datepicker').dpDiv.on('mousedown', function(ev) {
+                ev.stopPropagation();
+            });
+            $endDate.data('datepicker').dpDiv.on('mousedown', function(ev) {
+                ev.stopPropagation();
+            });
+
+            var menu = new Garnish.Menu($menu, {
+                onOptionSelect: function(option) {
+                    var $option = $(option);
+                    $btn.text($option.text());
+                    menu.setPositionRelativeToAnchor();
+                    $menu.find('.sel').removeClass('sel');
+                    $option.addClass('sel');
+
+                    // Update the start/end dates
+                    $startDate.datepicker('setDate', $option.data('startDate'));
+                    $endDate.datepicker('setDate', $option.data('endDate'));
+
+                    config.onChange($option.data('startDate') || null, $option.data('endDate') || null, $option.data('handle'));
+                }
+            });
+
+            $dateInputs.on('change', function() {
+                // Do the start & end dates match one of our options?
+                let startDate = $startDate.datepicker('getDate');
+                let endDate = $endDate.datepicker('getDate');
+                let startTime = startDate ? startDate.getTime() : null;
+                let endTime = endDate ? endDate.getTime() : null;
+
+                let $options = $ul.find('a');
+                let $option;
+                let foundOption = false;
+
+                for (let i = 0; i < $options.length; i++) {
+                    $option = $options.eq(i);
+                    if (
+                        startTime === ($option.data('startTime') || null) &&
+                        endTime === ($option.data('endTime') || null)
+                    ) {
+                        menu.selectOption($option[0]);
+                        foundOption = true;
+                        config.onChange(null, null, $option.data('handle'));
+                        break;
+                    }
+                }
+
+                if (!foundOption) {
+                    $menu.find('.sel').removeClass('sel');
+                    $flex.addClass('sel');
+
+                    if (!startTime && !endTime) {
+                        $btn.text(Craft.t('app', 'All'));
+                    } else if (startTime && endTime) {
+                        $btn.text($startDate.val() + ' - ' + $endDate.val());
+                    } else if (startTime) {
+                        $btn.text(Craft.t('app', 'From {date}', {date: $startDate.val()}));
+                    } else {
+                        $btn.text(Craft.t('app', 'To {date}', {date: $endDate.val()}));
+                    }
+                    menu.setPositionRelativeToAnchor();
+
+                    config.onChange(startDate, endDate, 'custom');
+                }
+            });
+
+            menu.on('hide', function() {
+                $startDate.datepicker('hide');
+                $endDate.datepicker('hide');
+            });
+
+            let btnClasses = 'btn menubtn';
+            if (config.class) {
+                btnClasses = btnClasses + ' ' + config.class;
+            }
+
+            let $btn = $('<button/>', {
+                type: 'button',
+                class: btnClasses,
+                'data-icon': 'date',
+                text: Craft.t('app', 'All'),
+            });
+
+            new Garnish.MenuBtn($btn, menu);
+
+            if (selectedOption) {
+                menu.selectOption(selectedOption);
+            }
+
+            if (config.startDate) {
+                $startDate.datepicker('setDate', config.startDate);
+            }
+
+            if (config.endDate) {
+                $endDate.datepicker('setDate', config.endDate);
+            }
+
+            if (config.startDate || config.endDate) {
+                $dateInputs.trigger('change');
+            }
+
+            return $btn;
         },
 
         createTimeInput: function(config) {
@@ -459,6 +805,9 @@ Craft.ui =
         },
 
         createTimeField: function(config) {
+            if (!config.id) {
+                config.id = 'time' + Math.floor(Math.random() * 1000000000);
+            }
             return this.createField(this.createTimeInput(config), config);
         },
 
@@ -475,30 +824,19 @@ Craft.ui =
                 $field.addClass('first');
             }
 
-            if (label || config.instructions) {
+            if (label) {
                 var $heading = $('<div class="heading"/>').appendTo($field);
 
-                if (label) {
-                    var $label = $('<label/>', {
-                        'id': config.labelId || (config.id ? config.id + '-label' : null),
-                        'class': (config.required ? 'required' : null),
-                        'for': config.id,
-                        text: label
-                    }).appendTo($heading);
+                var $label = $('<label/>', {
+                    'id': config.labelId || (config.id ? `${config.id}-label` : null),
+                    'class': (config.required ? 'required' : null),
+                    'for': config.id,
+                    text: label
+                }).appendTo($heading);
+            }
 
-                    if (siteId) {
-                        for (var i = 0; i < Craft.sites.length; i++) {
-                            if (Craft.sites[i].id == siteId) {
-                                $('<span class="site"/>').text(Craft.sites[i].name).appendTo($label);
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                if (config.instructions) {
-                    $('<div class="instructions"/>').text(config.instructions).appendTo($heading);
-                }
+            if (config.instructions) {
+                $('<div class="instructions"/>').text(config.instructions).appendTo($field);
             }
 
             $('<div class="input"/>').append(input).appendTo($field);
@@ -559,5 +897,5 @@ Craft.ui =
 
         getDisabledValue: function(disabled) {
             return (disabled ? 'disabled' : null);
-        }
+        },
     };

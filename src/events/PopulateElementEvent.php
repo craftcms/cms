@@ -15,9 +15,6 @@ namespace craft\events;
  */
 class PopulateElementEvent extends ElementEvent
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var array|null The element query’s result for this element.
      */

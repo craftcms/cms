@@ -20,9 +20,6 @@ use craft\validators\UriValidator;
  */
 class UriValidatorTest extends Unit
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @var UriValidator
      */
@@ -36,12 +33,6 @@ class UriValidatorTest extends Unit
      * @var UnitTester
      */
     protected $tester;
-
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
 
     /**
      * @dataProvider validateValueDataProvider
@@ -59,14 +50,11 @@ class UriValidatorTest extends Unit
         $validates = $this->uriValidator->validate($input);
 
         if ($mustValidate) {
-            $this->assertTrue($validates);
+            self::assertTrue($validates);
         } else {
-            $this->assertFalse($validates);
+            self::assertFalse($validates);
         }
     }
-
-    // Data Providers
-    // =========================================================================
 
     /**
      * @return array
@@ -82,9 +70,6 @@ class UriValidatorTest extends Unit
             [true, 'integer(9)', '/^\w+\((\d+)\)/'],
         ];
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

@@ -17,14 +17,12 @@ class JqueryTouchEventsAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public function init()
-    {
-        $this->sourcePath = '@lib/jquery-touch-events';
+    public $sourcePath = '@lib/jquery-touch-events';
 
-        $this->js = [
-            'jquery.mobile-events' . $this->dotJs(),
-        ];
-
-        parent::init();
-    }
+    /**
+     * @inheritdoc
+     */
+    public $js = [
+        'jquery.mobile-events.js',
+    ];
 }

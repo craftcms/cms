@@ -9,9 +9,8 @@ namespace craft\gql\types\elements;
 
 use Craft;
 use craft\elements\Asset as AssetElement;
-use craft\gql\base\ObjectType;
-use craft\gql\interfaces\Element as ElementInterface;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
+use craft\helpers\Gql;
 use GraphQL\Type\Definition\ResolveInfo;
 
 /**
@@ -20,7 +19,7 @@ use GraphQL\Type\Definition\ResolveInfo;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0
  */
-class Asset extends ObjectType
+class Asset extends Element
 {
     /**
      * @inheritdoc
@@ -29,7 +28,6 @@ class Asset extends ObjectType
     {
         $config['interfaces'] = [
             AssetInterface::getType(),
-            ElementInterface::getType(),
         ];
 
         parent::__construct($config);
@@ -43,21 +41,24 @@ class Asset extends ObjectType
         /** @var AssetElement $source */
         $fieldName = $resolveInfo->fieldName;
 
-        if ($fieldName === 'url' && !empty($arguments)) {
+        if (!empty($arguments) && in_array($fieldName, ['url', 'width', 'height'], true)) {
             $generateNow = $arguments['immediately'] ?? Craft::$app->getConfig()->general->generateTransformsBeforePageLoad;
-            unset($arguments['immediately']);
+            $transform = Gql::prepareTransformArguments($arguments);
 
-            if (!empty($arguments['handle'])) {
-                $transform = $arguments['handle'];
-            } else if (!empty($arguments['transform'])) {
-                $transform = $arguments['transform'];
-            } else {
-                $transform = $arguments;
+            switch ($fieldName) {
+                case 'url':
+                    return $source->getUrl($transform, $generateNow);
+                case 'width':
+                    return $source->getWidth($transform);
+                case 'height':
+                    return $source->getHeight($transform);
             }
-
-            return Craft::$app->getAssets()->getAssetUrl($source, $transform, $generateNow);
         }
 
-        return $source->$fieldName;
+        if ($fieldName === 'srcset') {
+            return $source->getSrcset($arguments['sizes']);
+        }
+
+        return parent::resolve($source, $arguments, $context, $resolveInfo);
     }
 }

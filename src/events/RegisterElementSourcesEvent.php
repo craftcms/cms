@@ -17,9 +17,6 @@ use yii\base\Event;
  */
 class RegisterElementSourcesEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null The context ('index' or 'modal').
      */

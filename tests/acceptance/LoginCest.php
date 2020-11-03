@@ -18,12 +18,6 @@ use AcceptanceTester;
  */
 class LoginCest
 {
-    // Public Methods
-    // =========================================================================
-
-    // Tests
-    // =========================================================================
-
     public function checkOpen(AcceptanceTester $I)
     {
 //        $I->amOnPage(Yii::$app->homeUrl);

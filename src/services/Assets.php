@@ -8,7 +8,12 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\Volume;
+use craft\assetpreviews\Image as ImagePreview;
+use craft\assetpreviews\Pdf;
+use craft\assetpreviews\Text;
+use craft\assetpreviews\Video;
+use craft\base\AssetPreviewHandlerInterface;
+use craft\base\LocalVolumeInterface;
 use craft\base\VolumeInterface;
 use craft\db\Query;
 use craft\db\Table;
@@ -22,6 +27,7 @@ use craft\errors\ImageException;
 use craft\errors\VolumeException;
 use craft\errors\VolumeObjectExistsException;
 use craft\errors\VolumeObjectNotFoundException;
+use craft\events\AssetPreviewEvent;
 use craft\events\AssetThumbEvent;
 use craft\events\GetAssetThumbUrlEvent;
 use craft\events\GetAssetUrlEvent;
@@ -32,6 +38,8 @@ use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\Json;
+use craft\helpers\Queue;
+use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\image\Raster;
 use craft\models\AssetTransform;
@@ -53,16 +61,13 @@ use yii\base\NotSupportedException;
  */
 class Assets extends Component
 {
-    // Constants
-    // =========================================================================
-
     /**
-     * @event AssetEvent The event that is triggered before an asset is replaced.
+     * @event ReplaceAssetEvent The event that is triggered before an asset is replaced.
      */
     const EVENT_BEFORE_REPLACE_ASSET = 'beforeReplaceFile';
 
     /**
-     * @event AssetEvent The event that is triggered after an asset is replaced.
+     * @event ReplaceAssetEvent The event that is triggered after an asset is replaced.
      */
     const EVENT_AFTER_REPLACE_ASSET = 'afterReplaceFile';
 
@@ -82,8 +87,11 @@ class Assets extends Component
      */
     const EVENT_GET_THUMB_PATH = 'getThumbPath';
 
-    // Properties
-    // =========================================================================
+    /**
+     * @event AssetPreviewEvent The event that is triggered when determining the preview handler for an asset.
+     * @since 3.4.0
+     */
+    const EVENT_REGISTER_PREVIEW_HANDLER = 'registerPreviewHandler';
 
     /**
      * @var
@@ -99,9 +107,6 @@ class Assets extends Component
      * @var bool Whether a Generate Pending Transforms job has already been queued up in this request
      */
     private $_queuedGeneratePendingTransformsJob = false;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns a file by its ID.
@@ -162,9 +167,9 @@ class Assets extends Component
 
         $asset->tempFilePath = $pathOnServer;
         $asset->newFilename = $filename;
+        $asset->uploaderId = Craft::$app->getUser()->getId();
         $asset->avoidFilenameConflicts = true;
         $asset->setScenario(Asset::SCENARIO_REPLACE);
-
         Craft::$app->getElements()->saveElement($asset);
 
         // Fire an 'afterReplaceFile' event
@@ -224,14 +229,14 @@ class Assets extends Component
         }
 
         $volume = $parent->getVolume();
+        $path = rtrim($folder->path, '/');
 
         try {
-            $volume->createDir(rtrim($folder->path, '/'));
-        } catch (VolumeObjectExistsException $exception) {
-            // Rethrow exception unless this is a temporary Volume or we're allowed to index it silently
-            if ($folder->volumeId !== null && !$indexExisting) {
-                throw $exception;
-            }
+            $volume->createDir($path);
+        } catch (VolumeObjectExistsException $e) {
+            // Already there, so just log a warning about it
+            Craft::warning("Couldn’t create volume folder at $path because it already exists.");
+            Craft::$app->getErrorHandler()->logException($e);
         }
 
         $this->storeFolderRecord($folder);
@@ -313,10 +318,18 @@ class Assets extends Component
                     $volume = $folder->getVolume();
                     $volume->deleteDir($folder->path);
                 }
-
-                VolumeFolderRecord::deleteAll(['id' => $folderId]);
             }
         }
+
+        $assets = Asset::find()->folderId($folderIds)->all();
+
+        $elementService = Craft::$app->getElements();
+
+        foreach ($assets as $asset) {
+            $elementService->deleteElement($asset, true);
+        }
+
+        VolumeFolderRecord::deleteAll(['id' => $folderIds]);
     }
 
     /**
@@ -364,11 +377,13 @@ class Assets extends Component
      */
     public function getFolderTreeByFolderId(int $folderId): array
     {
-        if (($folder = $this->getFolderById($folderId)) === null) {
+        if (($parentFolder = $this->getFolderById($folderId)) === null) {
             return [];
         }
 
-        return $this->_getFolderTreeByFolders([$folder]);
+        $childFolders = $this->getAllDescendantFolders($parentFolder);
+
+        return $this->_getFolderTreeByFolders([$parentFolder] + $childFolders);
     }
 
     /**
@@ -555,9 +570,8 @@ class Assets extends Component
      *
      * @param Asset $asset
      * @param AssetTransform|string|array|null $transform
-     * @param bool|null $generateNow Whether the transformed image should be
-     * generated immediately if it doesn’t exist. Default is null, meaning it
-     * will be left up to the `generateTransformsBeforePageLoad` sconfig setting.
+     * @param bool|null $generateNow Whether the transformed image should be generated immediately if it doesn’t exist. If `null`, it will be left
+     * up to the `generateTransformsBeforePageLoad` config setting.
      * @return string|null
      */
     public function getAssetUrl(Asset $asset, $transform = null, bool $generateNow = null)
@@ -586,7 +600,15 @@ class Assets extends Component
 
         // Does the file actually exist?
         if ($index->fileExists) {
-            return $assetTransforms->getUrlForTransformByAssetAndTransformIndex($asset, $index);
+            // For local volumes, really make sure
+            $volume = $asset->getVolume();
+            $transformPath = $asset->getFolder()->path . $assetTransforms->getTransformSubpath($asset, $index);
+
+            if ($volume instanceof LocalVolumeInterface && !$volume->fileExists($transformPath)) {
+                $index->fileExists = false;
+            } else {
+                return $assetTransforms->getUrlForTransformByAssetAndTransformIndex($asset, $index);
+            }
         }
 
         if ($generateNow === null) {
@@ -596,16 +618,15 @@ class Assets extends Component
         if ($generateNow) {
             try {
                 return $assetTransforms->ensureTransformUrlByIndexModel($index);
-            } catch (ImageException $exception) {
-                Craft::warning($exception->getMessage(), __METHOD__);
-                $assetTransforms->deleteTransformIndex($index->id);
+            } catch (\Exception $exception) {
+                Craft::$app->getErrorHandler()->logException($exception);
                 return null;
             }
         }
 
         // Queue up a new Generate Pending Transforms job
         if (!$this->_queuedGeneratePendingTransformsJob) {
-            Craft::$app->getQueue()->push(new GeneratePendingTransforms());
+            Queue::push(new GeneratePendingTransforms());
             $this->_queuedGeneratePendingTransformsJob = true;
         }
 
@@ -614,7 +635,7 @@ class Assets extends Component
     }
 
     /**
-     * Returns the CP thumbnail URL for a given asset.
+     * Returns the control panel thumbnail URL for a given asset.
      *
      * @param Asset $asset asset to return a thumb for
      * @param int $width width of the returned thumb
@@ -623,7 +644,6 @@ class Assets extends Component
      * @param bool $fallbackToIcon whether to return the URL to a generic icon if a thumbnail can't be generated
      * @return string
      * @throws NotSupportedException if the asset can't have a thumbnail, and $fallbackToIcon is `false`
-     * @see Asset::getThumbUrl()
      */
     public function getThumbUrl(Asset $asset, int $width, int $height = null, bool $generate = false, bool $fallbackToIcon = true): string
     {
@@ -658,7 +678,7 @@ class Assets extends Component
     }
 
     /**
-     * Returns the CP thumbnail path for a given asset.
+     * Returns the control panel thumbnail path for a given asset.
      *
      * @param Asset $asset asset to return a thumb for
      * @param int $width width of the returned thumb
@@ -725,7 +745,7 @@ class Assets extends Component
                     $image->disableAnimation();
                 }
 
-                $image->scaleToFit($width, $height);
+                $image->scaleAndCrop($width, $height);
                 $image->saveAs($path);
             } catch (ImageException $exception) {
                 Craft::warning($exception->getMessage());
@@ -752,21 +772,21 @@ class Assets extends Component
             return $path;
         }
 
-        $svg = file_get_contents(Craft::getAlias('@app/icons/file.svg'));
+        $svg = file_get_contents(Craft::getAlias('@appicons/file.svg'));
 
         $extLength = strlen($ext);
         if ($extLength <= 3) {
-            $textSize = '26';
+            $textSize = '20';
         } else if ($extLength === 4) {
-            $textSize = '22';
+            $textSize = '17';
         } else {
             if ($extLength > 5) {
                 $ext = substr($ext, 0, 4) . '…';
             }
-            $textSize = '18';
+            $textSize = '14';
         }
 
-        $textNode = "<text x=\"50\" y=\"73\" text-anchor=\"middle\" font-family=\"sans-serif\" fill=\"#8F98A3\" font-size=\"{$textSize}\">" . strtoupper($ext) . '</text>';
+        $textNode = "<text x=\"50\" y=\"73\" text-anchor=\"middle\" font-family=\"sans-serif\" fill=\"#9aa5b1\" font-size=\"{$textSize}\">" . strtoupper($ext) . '</text>';
         $svg = str_replace('<!-- EXT -->', $textNode, $svg);
 
         FileHelper::writeToFile($path, $svg);
@@ -777,10 +797,10 @@ class Assets extends Component
      * Find a replacement for a filename
      *
      * @param string $originalFilename the original filename for which to find a replacement.
-     * @param int $folderId THe folder in which to find the replacement
+     * @param int $folderId The folder in which to find the replacement
      * @return string If a suitable filename replacement cannot be found.
      * @throws AssetLogicException If a suitable filename replacement cannot be found.
-     * @throws InvalidArgumentException If $folderId is invalid
+     * @throws InvalidArgumentException if folder ID invalid
      */
     public function getNameReplacementInFolder(string $originalFilename, int $folderId): string
     {
@@ -791,73 +811,65 @@ class Assets extends Component
         }
 
         $volume = $folder->getVolume();
-        $fileList = $volume->getFileList((string)$folder->path, false);
 
-        // Flip the array for faster lookup
-        $existingFiles = [];
+        // A potentially conflicting filename is one that shares the same stem and extension
 
-        foreach ($fileList as $file) {
-            if (mb_strtolower(rtrim($folder->path, '/')) === mb_strtolower($file['dirname'])) {
-                $existingFiles[mb_strtolower($file['basename'])] = true;
-            }
-        }
+        // Check for potentially conflicting files in index.
+        $baseFileName = pathinfo($originalFilename, PATHINFO_FILENAME);
+        $extension = pathinfo($originalFilename, PATHINFO_EXTENSION);
 
-        // Get a list from DB as well
-        $fileList = (new Query())
+        $dbFileList = (new Query())
             ->select(['assets.filename'])
-            ->from(['{{%assets}} assets'])
-            ->innerJoin(['{{%elements}} elements'], '[[assets.id]] = [[elements.id]]')
+            ->from(['assets' => Table::ASSETS])
+            ->innerJoin(['elements' => Table::ELEMENTS], '[[elements.id]] = [[assets.id]]')
             ->where([
                 'assets.folderId' => $folderId,
-                'elements.dateDeleted' => null
+                'elements.dateDeleted' => null,
             ])
+            ->andWhere(['like', 'assets.filename', $baseFileName . '%.' . $extension, false])
             ->column();
 
-        // Combine the indexed list and the actual file list to make the final potential conflict list.
-        foreach ($fileList as $file) {
-            $existingFiles[mb_strtolower($file)] = true;
+        $potentialConflicts = [];
+
+        foreach ($dbFileList as $filename) {
+            $potentialConflicts[StringHelper::toLowerCase($filename)] = true;
         }
 
-        // Shorthand.
-        $canUse = function($filenameToTest) use ($existingFiles) {
-            return !isset($existingFiles[mb_strtolower($filenameToTest)]);
+        // Check whether a filename we'd want to use does not exist
+        $canUse = function($filenameToTest) use ($potentialConflicts, $volume, $folder) {
+            return !isset($potentialConflicts[mb_strtolower($filenameToTest)]) && !$volume->fileExists($folder->path . $filenameToTest);
         };
 
         if ($canUse($originalFilename)) {
             return $originalFilename;
         }
 
-        $extension = pathinfo($originalFilename, PATHINFO_EXTENSION);
-        $filename = pathinfo($originalFilename, PATHINFO_FILENAME);
-
         // If the file already ends with something that looks like a timestamp, use that instead.
-        if (preg_match('/.*_(\d{6}_\d{6})$/', $filename, $matches)) {
-            $base = $filename;
+        if (preg_match('/.*_\d{4}-\d{2}-\d{2}-\d{6}$/', $baseFileName, $matches)) {
+            $base = $baseFileName;
         } else {
-            $timestamp = DateTimeHelper::currentUTCDateTime()->format('ymd_His');
-            $base = $filename . '_' . $timestamp;
-        }
-
-        $newFilename = $base . '.' . $extension;
-
-        if ($canUse($newFilename)) {
-            return $newFilename;
+            $timestamp = DateTimeHelper::currentUTCDateTime()->format('Y-m-d-His');
+            $base = $baseFileName . '_' . $timestamp;
         }
 
         $increment = 0;
 
-        while (++$increment) {
-            $newFilename = $base . '_' . $increment . '.' . $extension;
+        while (true) {
+            // Add the increment (if > 0) and keep the full filename w/ increment & extension from going over 255 chars
+            $suffix = ($increment ? "_$increment" : '') . ".$extension";
+            $newFilename = substr($base, 0, 255 - mb_strlen($suffix)) . $suffix;
 
             if ($canUse($newFilename)) {
                 break;
             }
 
             if ($increment === 50) {
-                throw new AssetLogicException(Craft::t('app',
-                    'Could not find a suitable replacement filename for “{filename}”.',
-                    ['filename' => $filename]));
+                throw new AssetLogicException(Craft::t('app', 'Could not find a suitable replacement filename for “{filename}”.', [
+                    'filename' => $originalFilename,
+                ]));
             }
+
+            $increment++;
         }
 
         return $newFilename;
@@ -874,7 +886,6 @@ class Assets extends Component
      */
     public function ensureFolderByFullPathAndVolume(string $fullPath, VolumeInterface $volume, bool $justRecord = true): int
     {
-        /** @var Volume $volume */
         $parentId = Craft::$app->getVolumes()->ensureTopFolder($volume);
         $folderId = $parentId;
 
@@ -907,8 +918,10 @@ class Assets extends Component
                 if (!$justRecord) {
                     try {
                         $volume->createDir($path);
-                    } catch (VolumeObjectExistsException $exception) {
-                        // Already there. Good.
+                    } catch (VolumeObjectExistsException $e) {
+                        // Already there, so just log a warning about it
+                        Craft::warning("Couldn’t create volume folder at $path because it already exists.");
+                        Craft::$app->getErrorHandler()->logException($e);
                     }
                 }
 
@@ -948,7 +961,7 @@ class Assets extends Component
      * Return the current user's temporary upload folder.
      *
      * @return VolumeFolder
-     * @deprecated in 3.2. Use [[getUserTemporaryUploadFolder()]] instead.
+     * @deprecated in 3.2.0. Use [[getUserTemporaryUploadFolder()]] instead.
      */
     public function getCurrentUserTemporaryUploadFolder()
     {
@@ -986,7 +999,6 @@ class Assets extends Component
             if (!$volume) {
                 throw new VolumeException(Craft::t('app', 'The volume set for temp asset storage is not valid.'));
             }
-            /** @var Volume $volume */
             $path = (isset($assetSettings['tempSubpath']) ? $assetSettings['tempSubpath'] . '/' : '') .
                 $folderName;
             $folderId = $this->ensureFolderByFullPathAndVolume($path, $volume, false);
@@ -1027,8 +1039,43 @@ class Assets extends Component
         return $folder;
     }
 
-    // Private Methods
-    // =========================================================================
+    /**
+     * Returns the asset preview handler for a given asset, or `null` if the asset is not previewable.
+     *
+     * @param Asset $asset
+     * @return AssetPreviewHandlerInterface|null
+     * @since 3.4.0
+     */
+    public function getAssetPreviewHandler(Asset $asset)
+    {
+        // Give plugins a chance to register their own preview handlers
+        if ($this->hasEventHandlers(self::EVENT_REGISTER_PREVIEW_HANDLER)) {
+            $event = new AssetPreviewEvent(['asset' => $asset]);
+            $this->trigger(self::EVENT_REGISTER_PREVIEW_HANDLER, $event);
+            if ($event->previewHandler instanceof AssetPreviewHandlerInterface) {
+                return $event->previewHandler;
+            }
+        }
+
+        // These are our default preview handlers if one is not supplied
+        switch ($asset->kind) {
+            case Asset::KIND_IMAGE:
+                return new ImagePreview($asset);
+            case Asset::KIND_PDF:
+                return new Pdf($asset);
+            case Asset::KIND_VIDEO:
+                return new Video($asset);
+            case Asset::KIND_HTML:
+            case Asset::KIND_JAVASCRIPT:
+            case Asset::KIND_JSON:
+            case Asset::KIND_PHP:
+            case Asset::KIND_TEXT:
+            case Asset::KIND_XML:
+                return new Text($asset);
+        }
+
+        return null;
+    }
 
     /**
      * Returns a DbCommand object prepped for retrieving assets.

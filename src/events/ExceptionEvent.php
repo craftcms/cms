@@ -17,9 +17,6 @@ use yii\base\Event;
  */
 class ExceptionEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var \Exception The uncaught exception that was thrown
      */

@@ -21,13 +21,7 @@ use yii\db\Connection as YiiConnection;
  */
 class Query extends \yii\db\Query
 {
-    // Traits
-    // =========================================================================
-
     use ClonefixTrait;
-
-    // Constants
-    // =========================================================================
 
     /**
      * @event \yii\base\Event The event that is triggered after the query's init cycle
@@ -40,9 +34,6 @@ class Query extends \yii\db\Query
      * @see behaviors()
      */
     const EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

@@ -22,9 +22,6 @@ use yii\base\InvalidConfigException;
  */
 class Section_SiteSettings extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null ID
      */
@@ -65,8 +62,21 @@ class Section_SiteSettings extends Model
      */
     private $_section;
 
-    // Public Methods
-    // =========================================================================
+    /**
+     * @inheritdoc
+     * @since 3.5.0
+     */
+    public function init()
+    {
+        // Typecast DB values
+        $this->id = (int)$this->id ?: null;
+        $this->sectionId = (int)$this->sectionId ?: null;
+        $this->siteId = (int)$this->siteId ?: null;
+        $this->enabledByDefault = (bool)$this->enabledByDefault;
+        $this->hasUrls = (bool)$this->hasUrls;
+
+        parent::init();
+    }
 
     /**
      * Returns the section.
@@ -141,9 +151,9 @@ class Section_SiteSettings extends Model
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['id', 'sectionId', 'siteId'], 'number', 'integerOnly' => true];
         $rules[] = [['siteId'], SiteIdValidator::class];
         $rules[] = [['template'], 'string', 'max' => 500];

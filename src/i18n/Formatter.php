@@ -22,9 +22,6 @@ use yii\base\InvalidConfigException;
  */
 class Formatter extends \yii\i18n\Formatter
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var array The locale’s date/time formats.
      */
@@ -65,9 +62,6 @@ class Formatter extends \yii\i18n\Formatter
      */
     public $currencySymbols;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      * @param int|string|DateTime $value
@@ -87,27 +81,7 @@ class Formatter extends \yii\i18n\Formatter
         }
 
         if (strncmp($format, 'php:', 4) === 0) {
-            $format = substr($format, 4);
-            // special cases for PHP format characters not supported by ICU
-            $split = preg_split('/(?<!\\\\)(S|w|t|L|B|u|I|Z|U|A|a)/', $format, -1, PREG_SPLIT_DELIM_CAPTURE);
-            $formatted = '';
-            foreach (array_filter($split) as $i => $seg) {
-                if ($i % 2 === 0) {
-                    $formatted .= $this->asDate($value, FormatConverter::convertDatePhpToIcu($seg));
-                } else {
-                    switch ($seg) {
-                        case 'A':
-                            $formatted .= mb_strtoupper($this->asDate($value, FormatConverter::convertDatePhpToIcu($seg)));
-                            break;
-                        case 'a':
-                            $formatted .= mb_strtolower($this->asDate($value, FormatConverter::convertDatePhpToIcu($seg)));
-                            break;
-                        default:
-                            $formatted .= $value->format($seg);
-                    }
-                }
-            }
-            return $formatted;
+            return $this->_formatDateTimeValueWithPhpFormat($value, substr($format, 4));
         }
 
         if (Craft::$app->getI18n()->getIsIntlLoaded()) {
@@ -136,7 +110,7 @@ class Formatter extends \yii\i18n\Formatter
         }
 
         if (strncmp($format, 'php:', 4) === 0) {
-            $format = FormatConverter::convertDatePhpToIcu(substr($format, 4));
+            return $this->_formatDateTimeValueWithPhpFormat($value, substr($format, 4));
         }
 
         if (Craft::$app->getI18n()->getIsIntlLoaded()) {
@@ -165,7 +139,7 @@ class Formatter extends \yii\i18n\Formatter
         }
 
         if (strncmp($format, 'php:', 4) === 0) {
-            $format = FormatConverter::convertDatePhpToIcu(substr($format, 4));
+            return $this->_formatDateTimeValueWithPhpFormat($value, substr($format, 4));
         }
 
         if (Craft::$app->getI18n()->getIsIntlLoaded()) {
@@ -194,12 +168,14 @@ class Formatter extends \yii\i18n\Formatter
      * It can also be a custom format as specified in the [ICU manual](http://userguide.icu-project.org/formatparse/datetime).
      * Alternatively this can be a string prefixed with `php:` representing a format that can be recognized by the
      * PHP [date()](http://php.net/manual/en/function.date.php)-function.
+     * @param bool $withPreposition Whether a preposition should be included in the returned string
+     * (e.g. “**at** 12:00 PM” or “**on** Wednesday”).
      * @return string the formatted result.
      * @throws InvalidArgumentException if the input value can not be evaluated as a date value.
      * @throws InvalidConfigException if the date format is invalid.
      * @see datetimeFormat
      */
-    public function asTimestamp($value, string $format = null): string
+    public function asTimestamp($value, string $format = null, bool $withPreposition = false): string
     {
         /** @var DateTime $timestamp */
         /** @var bool $hasTimeInfo */
@@ -208,22 +184,28 @@ class Formatter extends \yii\i18n\Formatter
 
         // If it's today or missing date info, just return the local time.
         if (!$hasDateInfo || DateTimeHelper::isToday($timestamp)) {
-            return $hasTimeInfo ? $this->asTime($timestamp, $format) : Craft::t('app', 'Today');
+            if ($hasTimeInfo) {
+                $time = $this->asTime($timestamp, $format);
+                return $withPreposition ? Craft::t('app', 'at {time}', ['time' => $time]) : $time;
+            }
+            return $withPreposition ? Craft::t('app', 'today') : Craft::t('app', 'Today');
         }
 
         // If it was yesterday, display 'Yesterday'
         if (DateTimeHelper::isYesterday($timestamp)) {
-            return Craft::t('app', 'Yesterday');
+            return $withPreposition ? Craft::t('app', 'yesterday') : Craft::t('app', 'Yesterday');
         }
 
         // If it were up to 7 days ago, display the weekday name.
         if (DateTimeHelper::isWithinLast($timestamp, '7 days')) {
             $day = $timestamp->format('w');
-            Craft::$app->getI18n()->getLocaleById($this->locale)->getWeekDayName($day);
+            $dayName = Craft::$app->getI18n()->getLocaleById($this->locale)->getWeekDayName($day);
+            return $withPreposition ? Craft::t('app', 'on {day}', ['day' => $dayName]) : $dayName;
         }
 
         // Otherwise, just return the local date.
-        return $this->asDate($timestamp, $format);
+        $date = $this->asDate($timestamp, $format);
+        return $withPreposition ? Craft::t('app', 'on {date}', ['date' => $date]) : $date;
     }
 
     /**
@@ -292,8 +274,46 @@ class Formatter extends \yii\i18n\Formatter
         return parent::asText($value);
     }
 
-    // Private Methods
-    // =========================================================================
+    /**
+     * @inheritdoc
+     * @since 3.4.0
+     */
+    public function asShortSize($value, $decimals = null, $options = [], $textOptions = [])
+    {
+        return strtoupper(parent::asShortSize($value, $decimals, $options, $textOptions));
+    }
+
+    /**
+     * Formats a value as a date, using a PHP date format.
+     *
+     * @param int|string|DateTime $value
+     * @param string|null $format
+     */
+    private function _formatDateTimeValueWithPhpFormat($value, string $format): string
+    {
+        // special cases for PHP format characters not supported by ICU
+        $split = preg_split('/(?<!\\\\)(S|w|t|L|B|u|I|Z|U|A|a)/', $format, -1, PREG_SPLIT_DELIM_CAPTURE);
+        $formatted = '';
+
+        foreach (array_filter($split) as $i => $seg) {
+            if ($i % 2 === 0) {
+                $formatted .= $this->asDate($value, FormatConverter::convertDatePhpToIcu($seg));
+            } else {
+                switch ($seg) {
+                    case 'A':
+                        $formatted .= mb_strtoupper($this->asDate($value, FormatConverter::convertDatePhpToIcu($seg)));
+                        break;
+                    case 'a':
+                        $formatted .= mb_strtolower($this->asDate($value, FormatConverter::convertDatePhpToIcu($seg)));
+                        break;
+                    default:
+                        $formatted .= $value->format($seg);
+                }
+            }
+        }
+
+        return $formatted;
+    }
 
     /**
      * Formats a given date/time.

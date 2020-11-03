@@ -18,9 +18,6 @@ use yii\validators\Validator;
  */
 class UsernameValidator extends Validator
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

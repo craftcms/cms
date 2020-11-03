@@ -10,7 +10,8 @@ Craft.LightSwitch = Garnish.Base.extend(
         $innerContainer: null,
         $input: null,
         small: false,
-        on: null,
+        on: false,
+        indeterminate: false,
         dragger: null,
 
         dragStartMargin: null,
@@ -39,11 +40,7 @@ Craft.LightSwitch = Garnish.Base.extend(
             }
 
             this.on = this.$outerContainer.hasClass('on');
-
-            this.$outerContainer.attr({
-                'role': 'checkbox',
-                'aria-checked': (this.on ? 'true' : 'false')
-            });
+            this.indeterminate = this.$outerContainer.hasClass('indeterminate');
 
             this.addListener(this.$outerContainer, 'mousedown', '_onMouseDown');
             this.addListener(this.$outerContainer, 'keydown', '_onKeyDown');
@@ -55,52 +52,95 @@ Craft.LightSwitch = Garnish.Base.extend(
                 onDrag: $.proxy(this, '_onDrag'),
                 onDragStop: $.proxy(this, '_onDragStop')
             });
+
+            if (this.$outerContainer.attr('id')) {
+                $(`label[for="${this.$outerContainer.attr('id')}"]`).on('click', () => {
+                    this.$outerContainer.focus();
+                });
+            }
+
+            // Does the input have on/off labels?
+            let $wrapper = this.$outerContainer.parent('.lightswitch-inner-container');
+            if ($wrapper.length) {
+                this.addListener($wrapper.children('label[data-toggle="off"]'), 'click', this.turnOff);
+                this.addListener($wrapper.children('label[data-toggle="on"]'), 'click', this.turnOn);
+            }
         },
 
-        turnOn: function() {
-            this.$outerContainer.addClass('dragging');
+        turnOn: function(muteEvent) {
+            var changed = !this.on;
 
+            this.on = true;
+            this.indeterminate = false;
+
+            this.$outerContainer.addClass('dragging');
             var animateCss = {};
             animateCss['margin-' + Craft.left] = 0;
             this.$innerContainer.velocity('stop').velocity(animateCss, Craft.LightSwitch.animationDuration, $.proxy(this, '_onSettle'));
 
             this.$input.val(this.settings.value);
             this.$outerContainer.addClass('on');
+            this.$outerContainer.removeClass('indeterminate');
             this.$outerContainer.attr('aria-checked', 'true');
 
-            if (this.on !== (this.on = true)) {
+            if (changed && muteEvent !== true) {
                 this.onChange();
             }
         },
 
-        turnOff: function() {
-            this.$outerContainer.addClass('dragging');
+        turnOff: function(muteEvent) {
+            var changed = this.on || this.indeterminate;
 
+            this.on = false;
+            this.indeterminate = false;
+
+            this.$outerContainer.addClass('dragging');
             var animateCss = {};
             animateCss['margin-' + Craft.left] = this._getOffMargin();
             this.$innerContainer.velocity('stop').velocity(animateCss, Craft.LightSwitch.animationDuration, $.proxy(this, '_onSettle'));
 
             this.$input.val('');
             this.$outerContainer.removeClass('on');
+            this.$outerContainer.removeClass('indeterminate');
             this.$outerContainer.attr('aria-checked', 'false');
 
-            if (this.on !== (this.on = false)) {
+            if (changed && muteEvent !== true) {
                 this.onChange();
             }
         },
 
-        toggle: function(event) {
-            if (!this.on) {
-                this.turnOn();
+        turnIndeterminate: function(muteEvent) {
+            var changed = !this.indeterminate;
+
+            this.on = false;
+            this.indeterminate = true;
+
+            this.$outerContainer.addClass('dragging');
+            var animateCss = {};
+            animateCss['margin-' + Craft.left] = this._getOffMargin() / 2;
+            this.$innerContainer.velocity('stop').velocity(animateCss, Craft.LightSwitch.animationDuration, $.proxy(this, '_onSettle'));
+
+            this.$input.val(this.settings.indeterminateValue);
+            this.$outerContainer.removeClass('on');
+            this.$outerContainer.addClass('indeterminate');
+            this.$outerContainer.attr('aria-checked', 'mixed');
+
+            if (changed && muteEvent !== true) {
+                this.onChange();
             }
-            else {
+        },
+
+        toggle: function() {
+            if (this.indeterminate || !this.on) {
+                this.turnOn();
+            } else {
                 this.turnOff();
             }
         },
 
         onChange: function() {
             this.trigger('change');
-            this.settings.onChange();
+            this.settings.onChange(this.on);
             this.$outerContainer.trigger('change');
         },
 
@@ -180,11 +220,11 @@ Craft.LightSwitch = Garnish.Base.extend(
 
         _onDragStop: function() {
             var margin = this._getMargin();
+            console.log(margin);
 
             if (margin > (this._getOffMargin() / 2)) {
                 this.turnOn();
-            }
-            else {
+            } else {
                 this.turnOff();
             }
         },
@@ -199,13 +239,13 @@ Craft.LightSwitch = Garnish.Base.extend(
         },
 
         _getOffMargin: function() {
-            return (this.small ? -9 : -11);
+            return (this.small ? -10 : -12);
         }
-
     }, {
         animationDuration: 100,
         defaults: {
             value: '1',
+            indeterminateValue: '-',
             onChange: $.noop
         }
     });

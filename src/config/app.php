@@ -3,8 +3,8 @@
 return [
     'id' => 'CraftCMS',
     'name' => 'Craft CMS',
-    'version' => '3.3.16.1',
-    'schemaVersion' => '3.3.3',
+    'version' => '3.5.15',
+    'schemaVersion' => '3.5.13',
     'minVersionRequired' => '2.6.2788',
     'basePath' => dirname(__DIR__), // Defines the @app alias
     'runtimePath' => '@storage/runtime', // Defines the @runtime alias
@@ -131,6 +131,11 @@ return [
         'updates' => [
             'class' => craft\services\Updates::class,
         ],
+        'urlManager' => [
+            'class' => craft\web\UrlManager::class,
+            'enablePrettyUrl' => true,
+            'ruleConfig' => ['class' => craft\web\UrlRule::class],
+        ],
         'users' => [
             'class' => craft\services\Users::class,
         ],
@@ -148,19 +153,19 @@ return [
         ],
         'contentMigrator' => [
             'class' => craft\db\MigrationManager::class,
-            'type' => craft\db\MigrationManager::TYPE_CONTENT,
+            'track' => craft\db\MigrationManager::TRACK_CONTENT,
             'migrationNamespace' => 'craft\contentmigrations',
             'migrationPath' => '@contentMigrations',
         ],
         'migrator' => [
             'class' => craft\db\MigrationManager::class,
-            'type' => craft\db\MigrationManager::TYPE_APP,
+            'track' => craft\db\MigrationManager::TRACK_CRAFT,
             'migrationNamespace' => 'craft\migrations',
             'migrationPath' => '@app/migrations',
         ],
         'sites' => [
             'class' => craft\services\Sites::class,
-            'currentSite' => null,
+            'currentSite' => defined('CRAFT_SITE') ? CRAFT_SITE : (defined('CRAFT_LOCALE') ? CRAFT_LOCALE : null),
         ],
         'systemSettings' => [
             'class' => craft\services\SystemSettings::class,
@@ -212,7 +217,34 @@ return [
         },
 
         'locale' => function() {
-            return Craft::$app->getI18n()->getLocaleById(Craft::$app->language);
+            $i18n = Craft::$app->getI18n();
+
+            if (Craft::$app->getRequest()->getIsCpRequest() && !Craft::$app->getResponse()->isSent) {
+                // Is someone logged in?
+                $session = Craft::$app->getSession();
+                $id = $session->getHasSessionId() || $session->getIsActive() ? $session->get(Craft::$app->getUser()->idParam) : null;
+                if ($id) {
+                    // If they have a preferred locale, use it
+                    $usersService = Craft::$app->getUsers();
+                    if (($locale = $usersService->getUserPreference($id, 'locale')) !== null) {
+                        return $i18n->getLocaleById($locale);
+                    }
+
+                    // Otherwise see if they have a preferred language
+                    if (($language = $usersService->getUserPreference($id, 'language')) !== null) {
+                        return $i18n->getLocaleById($language);
+                    }
+                }
+
+                // If the defaultCpLocale setting is set, go with that
+                $generalConfig = Craft::$app->getConfig()->getGeneral();
+                if ($generalConfig->defaultCpLocale) {
+                    return $i18n->getLocaleById($generalConfig->defaultCpLocale);
+                }
+            }
+
+            // Default to the application language
+            return $i18n->getLocaleById(Craft::$app->language);
         },
 
         'log' => function() {
@@ -226,7 +258,7 @@ return [
         },
 
         'mutex' => function() {
-            $config = craft\helpers\App::mutexConfig();
+            $config = craft\helpers\App::dbMutexConfig();
             return Craft::createObject($config);
         },
 

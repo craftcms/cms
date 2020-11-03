@@ -17,9 +17,6 @@ use yii\base\Event;
  */
 class CancelableEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var bool Whether to continue performing the action that called this event
      */

@@ -11,9 +11,6 @@ use yii\db\Expression;
  */
 class m150403_184729_type_columns extends Migration
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

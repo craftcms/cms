@@ -10,6 +10,7 @@ namespace craft\models;
 use Craft;
 use craft\base\Model;
 use craft\behaviors\EnvAttributeParserBehavior;
+use craft\i18n\Locale;
 use craft\records\Site as SiteRecord;
 use craft\validators\HandleValidator;
 use craft\validators\LanguageValidator;
@@ -25,9 +26,6 @@ use yii\base\InvalidConfigException;
  */
 class Site extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null ID
      */
@@ -57,6 +55,12 @@ class Site extends Model
      * @var bool Primary site?
      */
     public $primary = false;
+
+    /**
+     * @var bool Enabled?
+     * @since 3.5.0
+     */
+    public $enabled = true;
 
     /**
      * @var bool Has URLs
@@ -98,8 +102,22 @@ class Site extends Model
      */
     public $dateUpdated;
 
-    // Public Methods
-    // =========================================================================
+    /**
+     * @inheritdoc
+     * @since 3.5.0
+     */
+    public function init()
+    {
+        // Typecast DB values
+        $this->id = (int)$this->id ?: null;
+        $this->groupId = (int)$this->groupId ?: null;
+        $this->primary = (bool)$this->primary;
+        $this->enabled = (bool)$this->enabled;
+        $this->hasUrls = (bool)$this->hasUrls;
+        $this->sortOrder = (int)$this->sortOrder;
+
+        parent::init();
+    }
 
     /**
      * Returns the site’s base URL.
@@ -121,14 +139,14 @@ class Site extends Model
      */
     public function behaviors()
     {
-        return [
-            'parser' => [
-                'class' => EnvAttributeParserBehavior::class,
-                'attributes' => [
-                    'baseUrl',
-                ],
-            ]
+        $behaviors = parent::behaviors();
+        $behaviors['parser'] = [
+            'class' => EnvAttributeParserBehavior::class,
+            'attributes' => [
+                'baseUrl',
+            ],
         ];
+        return $behaviors;
     }
 
     /**
@@ -147,9 +165,9 @@ class Site extends Model
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['groupId', 'name', 'handle', 'language'], 'required'];
         $rules[] = [['id', 'groupId'], 'number', 'integerOnly' => true];
         $rules[] = [['name', 'handle', 'baseUrl'], 'string', 'max' => 255];
@@ -160,6 +178,14 @@ class Site extends Model
         if (Craft::$app->getIsInstalled()) {
             $rules[] = [['name', 'handle'], UniqueValidator::class, 'targetClass' => SiteRecord::class];
         }
+
+        $rules[] = [
+            ['enabled'], function(string $attribute) {
+                if ($this->primary && !$this->enabled) {
+                    $this->addError($attribute, Craft::t('app', 'The primary site cannot be disabled.'));
+                }
+            }
+        ];
 
         return $rules;
     }
@@ -213,5 +239,40 @@ class Site extends Model
     {
         $this->originalBaseUrl = (string)$this->baseUrl;
         $this->baseUrl = $baseUrl;
+    }
+
+    /**
+     * Returns the locale for this site’s language.
+     *
+     * @return Locale
+     * @since 3.5.8
+     */
+    public function getLocale(): Locale
+    {
+        if ($this->language === Craft::$app->language) {
+            return Craft::$app->getLocale();
+        }
+        return new Locale($this->language);
+    }
+
+    /**
+     * Returns the field layout config for this site.
+     *
+     * @return array
+     * @since 3.5.0
+     */
+    public function getConfig(): array
+    {
+        return [
+            'siteGroup' => $this->getGroup()->uid,
+            'name' => $this->name,
+            'handle' => $this->handle,
+            'language' => $this->language,
+            'hasUrls' => (bool)$this->hasUrls,
+            'baseUrl' => $this->baseUrl ?: null,
+            'sortOrder' => (int)$this->sortOrder,
+            'primary' => (bool)$this->primary,
+            'enabled' => (bool)$this->enabled,
+        ];
     }
 }

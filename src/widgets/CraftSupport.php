@@ -8,7 +8,6 @@
 namespace craft\widgets;
 
 use Craft;
-use craft\base\Plugin;
 use craft\base\Widget;
 use craft\helpers\App;
 use craft\helpers\Json;
@@ -22,9 +21,6 @@ use craft\web\assets\craftsupport\CraftSupportAsset;
  */
 class CraftSupport extends Widget
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -55,11 +51,16 @@ class CraftSupport extends Widget
      */
     public static function icon()
     {
-        return Craft::getAlias('@app/icons/buoey.svg');
+        return Craft::getAlias('@appicons/buoey.svg');
     }
 
-    // Public Methods
-    // =========================================================================
+    /**
+     * @inheritdoc
+     */
+    public function getTitle(): string
+    {
+        return '';
+    }
 
     /**
      * @inheritdoc
@@ -76,7 +77,6 @@ class CraftSupport extends Widget
 
         $plugins = '';
         foreach (Craft::$app->getPlugins()->getAllPlugins() as $plugin) {
-            /** @var Plugin $plugin */
             $plugins .= "\n    - " . $plugin->name . ' ' . $plugin->getVersion();
         }
 
@@ -98,7 +98,7 @@ class CraftSupport extends Widget
             'Craft version' => Craft::$app->getVersion() . ' (' . Craft::$app->getEditionName() . ')',
             'PHP version' => App::phpVersion(),
             'OS version' => PHP_OS . ' ' . php_uname('r'),
-            'Database driver & version' => $dbDriver . ' ' . $db->getVersion(),
+            'Database driver & version' => $dbDriver . ' ' . App::normalizeVersion($db->getSchema()->getServerVersion()),
             'Image driver & version' => $imageDriver . ' ' . $imagesService->getVersion(),
             'Plugins & versions' => $plugins,
         ]);
@@ -106,7 +106,7 @@ class CraftSupport extends Widget
         $js = "new Craft.CraftSupportWidget({$this->id}, {$envInfoJs});";
         $view->registerJs($js);
 
-        $iconsDir = Craft::getAlias('@app/icons');
+        $iconsDir = Craft::getAlias('@appicons');
 
         // Only show the DB backup option if DB backups haven't been disabled
         $showBackupOption = (Craft::$app->getConfig()->getGeneral()->backupCommand !== false);

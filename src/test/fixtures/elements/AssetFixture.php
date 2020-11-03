@@ -8,7 +8,7 @@
 namespace craft\test\fixtures\elements;
 
 use Craft;
-use craft\base\Element;
+use craft\base\ElementInterface;
 use craft\elements\Asset;
 use craft\helpers\FileHelper;
 use craft\records\VolumeFolder;
@@ -27,9 +27,6 @@ use craft\records\VolumeFolder;
  */
 abstract class AssetFixture extends ElementFixture
 {
-    // Public Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -51,17 +48,14 @@ abstract class AssetFixture extends ElementFixture
     protected $files = [];
 
     /**
-     * @var $string
+     * @var string
      */
     protected $sourceAssetPath;
 
     /**
-     * @var $string
+     * @var string
      */
     protected $destinationAssetPath;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -79,8 +73,8 @@ abstract class AssetFixture extends ElementFixture
             ])->id;
         }
 
-        $this->sourceAssetPath = dirname(__FILE__, 5) . '/tests/_craft/assets/';
-        $this->destinationAssetPath = dirname(__FILE__, 5) . '/tests/_craft/storage/runtime/temp/';
+        $this->sourceAssetPath = Craft::$app->getPath()->getTestsPath() . '/_craft/assets/';
+        $this->destinationAssetPath = Craft::$app->getPath()->getStoragePath() . '/runtime/temp/';
 
         if (!is_dir($this->destinationAssetPath)) {
             FileHelper::createDirectory($this->destinationAssetPath);
@@ -97,7 +91,7 @@ abstract class AssetFixture extends ElementFixture
      * Get asset model.
      *
      * @param array $data
-     * @return Element
+     * @return ElementInterface
      */
     public function getElement(array $data = null)
     {
@@ -133,9 +127,6 @@ abstract class AssetFixture extends ElementFixture
 
         FileHelper::clearDirectory($this->destinationAssetPath);
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

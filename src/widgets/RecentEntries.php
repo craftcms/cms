@@ -22,9 +22,6 @@ use craft\web\assets\recententries\RecentEntriesAsset;
  */
 class RecentEntries extends Widget
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -38,11 +35,13 @@ class RecentEntries extends Widget
      */
     public static function icon()
     {
-        return Craft::getAlias('@app/icons/clock.svg');
+        return Craft::getAlias('@appicons/clock.svg');
     }
 
-    // Properties
-    // =========================================================================
+    /**
+     * @var int|null The site ID that the widget should pull entries from
+     */
+    public $siteId;
 
     /**
      * @var string|int[] The section IDs that the widget should pull entries from
@@ -50,17 +49,9 @@ class RecentEntries extends Widget
     public $section = '*';
 
     /**
-     * string The site ID that the widget should pull entries from
-     */
-    public $siteId;
-
-    /**
-     * int The total number of entries that the widget should show
+     * @var int The total number of entries that the widget should show
      */
     public $limit = 10;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -77,9 +68,9 @@ class RecentEntries extends Widget
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['siteId', 'limit'], 'number', 'integerOnly' => true];
         return $rules;
     }
@@ -156,9 +147,6 @@ class RecentEntries extends Widget
                 'entries' => $entries
             ]);
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns the recent entries, based on the widget settings and user permissions.

@@ -23,9 +23,6 @@ use yii\db\ActiveQueryInterface;
  */
 class Tag extends ActiveRecord
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      * @return string
