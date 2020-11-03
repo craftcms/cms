@@ -100,6 +100,21 @@ class Composer extends Component
     }
 
     /**
+     * Returns the Composer config defined by composer.json.
+     *
+     * @return array
+     * @since 3.5.15
+     */
+    public function getConfig(): array
+    {
+        try {
+            return Json::decode(file_get_contents($this->getJsonPath()));
+        } catch (\Throwable $e) {
+            return [];
+        }
+    }
+
+    /**
      * Installs a given set of packages with Composer.
      *
      * @param array|null $requirements Package name/version pairs, or set to null to run the equivalent of `composer install`

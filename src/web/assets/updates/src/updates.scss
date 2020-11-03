@@ -45,14 +45,8 @@
       }
     }
 
-    blockquote.ineligible {
-      border: none;
-      background: $warningColor;
-      color: #110902;
-      &:before {
-        content: 'ban';
-        color: #110902;
-      }
+    blockquote.ineligible:before {
+      content: 'ban';
     }
 
     .releases {

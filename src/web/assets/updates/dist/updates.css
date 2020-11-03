@@ -14,9 +14,7 @@
 
 #content .update .update-header .buttons { margin: 0; }
 
-#content .update blockquote.ineligible { border: none; background: #B44D12; color: #110902; }
-
-#content .update blockquote.ineligible:before { content: 'ban'; color: #110902; }
+#content .update blockquote.ineligible:before { content: 'ban'; }
 
 #content .update .releases { position: relative; }
 
