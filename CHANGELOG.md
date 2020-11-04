@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where error responses weren’t getting sent as HTML. ([#7092](https://github.com/craftcms/cms/issues/7092))
+
 ## 3.5.15 - 2020-11-03
 
 ### Added
