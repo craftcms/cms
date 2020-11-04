@@ -120,6 +120,14 @@ class ErrorHandler extends \yii\web\ErrorHandler
      */
     protected function renderException($exception)
     {
+        // Set the response format back to HTML if it's still set to raw
+        if (Craft::$app->has('response')) {
+            $response = Craft::$app->getResponse();
+            if ($response->format === Response::FORMAT_RAW) {
+                $response->format = Response::FORMAT_HTML;
+            }
+        }
+
         // Show a broken image for image requests
         if (
             $exception instanceof NotFoundHttpException &&

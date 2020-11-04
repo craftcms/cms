@@ -492,6 +492,7 @@ class AppController extends Controller
             if ($update->phpConstraint && !UpdateHelper::checkPhpConstraint($update->phpConstraint, $phpConstraintError, true)) {
                 $arr['status'] = 'phpIssue';
                 $arr['statusText'] = $phpConstraintError;
+                $arr['ctaUrl'] = false;
             } else {
                 if ($update->status === Update::STATUS_BREAKPOINT) {
                     $arr['statusText'] = Craft::t('app', '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.', [
