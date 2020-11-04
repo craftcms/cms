@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.6.0-beta.2 - 2020-11-04
 
 ### Added
 - Craft now requires PHP 7.2.5 or later.
