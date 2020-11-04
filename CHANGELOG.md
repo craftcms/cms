@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- It is now possible to set up WebP as the transform format for named transforms, if the environment allows it.
+
 ### Fixed
 - Fixed a bug where `craft\elements\Asset::getSrcSet()` would not respect the format of the transform set on the Asset. ([#6660](https://github.com/craftcms/cms/issues/6660))
 - Fixed a bug where Imagick use was sometimes incorrectly assumed.
