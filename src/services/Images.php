@@ -173,7 +173,7 @@ class Images extends Component
      */
     public function getSupportsWebP(): bool
     {
-        return $this->getCanUseImagick() ? !empty(Imagick::queryFormats('WEBP')) : function_exists('imagewebp');
+        return $this->getIsImagick() ? !empty(Imagick::queryFormats('WEBP')) : function_exists('imagewebp');
     }
 
     /**
