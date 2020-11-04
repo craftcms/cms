@@ -1,5 +1,13 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Added
+- Craft now requires PHP 7.2.5 or later.
+
+### Changed
+- Updated the Symfony Yaml component to 5.x.
+
 ## 3.6.0-beta.1 - 2020-11-03
 
 ### Added

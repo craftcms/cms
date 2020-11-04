@@ -26,10 +26,6 @@ jobs:
     env: DB=mysql
   - php: 7.2
     env: DB=pgsql
-  - php: 7.1
-    env: TASK_TESTS_COVERAGE=1 DB=mysql
-  - php: 7.1
-    env: TASK_TESTS_COVERAGE=1 DB=pgsql
 cache:
   directories:
   - "$HOME/.composer/cache"
