@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace crafttests\unit\services;
+namespace crafttests\unit\web\twig;
 
 use ArrayObject;
 use Codeception\Test\Unit;
