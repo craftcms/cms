@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace crafttests\unit\services;
+namespace crafttests\unit\services\projectConfig;
 
 use Codeception\Stub\Expected;
 use Craft;
@@ -22,7 +22,7 @@ use yii\base\NotSupportedException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.16
  */
-class ProjectConfigTest extends TestCase
+class NoFixturesTest extends TestCase
 {
     /**
      * @var UnitTester

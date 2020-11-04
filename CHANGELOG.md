@@ -24,6 +24,12 @@
 - Removed Minify and jsmin-php.
 - Removed `craft\services\Api::getComposerWhitelist()`.
 
+## 3.5.15.1 - 2020-11-04
+
+### Fixed
+- Fixed a bug where error responses weren’t getting sent as HTML. ([#7092](https://github.com/craftcms/cms/issues/7092))
+- Fixed a bug where the Updates utility wasn’t showing “Update” buttons. ([#7091](https://github.com/craftcms/cms/issues/7091))
+
 ## 3.5.15 - 2020-11-03
 
 ### Added
