@@ -23,7 +23,7 @@ class ActiveQuery extends \yii\db\ActiveQuery
      */
     public function getAlias(): string
     {
-        list(, $alias) = $this->getTableNameAndAlias();
+        [, $alias] = $this->getTableNameAndAlias();
         return $alias;
     }
 }

@@ -457,7 +457,7 @@ class AssetTransforms extends Component
         foreach ($transforms as $transform) {
             // Is this a srcset-style size (2x, 100w, etc.)?
             try {
-                list($sizeValue, $sizeUnit) = AssetsHelper::parseSrcsetSize($transform);
+                [$sizeValue, $sizeUnit] = AssetsHelper::parseSrcsetSize($transform);
             } catch (InvalidArgumentException $e) {
                 // All good.
             }

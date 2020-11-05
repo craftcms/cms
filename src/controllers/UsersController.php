@@ -440,7 +440,7 @@ class UsersController extends Controller
             /** @var User $user */
             /** @var string $uid */
             /** @var string $code */
-            list($user, $uid, $code) = $info;
+            [$user, $uid, $code] = $info;
 
             Craft::$app->getUser()->sendUsernameCookie($user);
 
@@ -534,7 +534,7 @@ class UsersController extends Controller
         }
 
         /** @var User $user */
-        list($user) = $info;
+        [$user] = $info;
         $pending = $user->pending;
         $usersService = Craft::$app->getUsers();
 

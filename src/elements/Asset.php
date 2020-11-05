@@ -976,14 +976,14 @@ class Asset extends Element
             $transform = null;
         }
 
-        list($currentWidth, $currentHeight) = $this->_dimensions($transform);
+        [$currentWidth, $currentHeight] = $this->_dimensions($transform);
 
         if (!$currentWidth || !$currentHeight) {
             return false;
         }
 
         foreach ($sizes as $size) {
-            list($value, $unit) = Assets::parseSrcsetSize($size);
+            [$value, $unit] = Assets::parseSrcsetSize($size);
 
             $sizeTransform = [];
             if ($unit === 'w') {
@@ -1174,7 +1174,7 @@ class Asset extends Element
     public function getThumbUrl(int $size)
     {
         if ($this->getWidth() && $this->getHeight()) {
-            list($width, $height) = Assets::scaledDimensions($this->getWidth(), $this->getHeight(), $size, $size);
+            [$width, $height] = Assets::scaledDimensions($this->getWidth(), $this->getHeight(), $size, $size);
         } else {
             $width = $height = $size;
         }
@@ -1203,12 +1203,12 @@ class Asset extends Element
     {
         $assetsService = Craft::$app->getAssets();
         $srcsets = [];
-        list($width, $height) = Assets::scaledDimensions($this->getWidth() ?? 0, $this->getHeight() ?? 0, $width, $height);
+        [$width, $height] = Assets::scaledDimensions($this->getWidth() ?? 0, $this->getHeight() ?? 0, $width, $height);
         $thumbSizes = [
             [$width, $height],
             [$width * 2, $height * 2],
         ];
-        foreach ($thumbSizes as list($width, $height)) {
+        foreach ($thumbSizes as [$width, $height]) {
             $thumbUrl = $assetsService->getThumbUrl($this, $width, $height, false, false);
             $srcsets[] = $thumbUrl . ' ' . $width . 'w';
         }
@@ -1746,7 +1746,7 @@ class Asset extends Element
 
         // Get the (new?) folder ID
         if ($this->newLocation !== null) {
-            list($folderId) = AssetsHelper::parseFileLocation($this->newLocation);
+            [$folderId] = AssetsHelper::parseFileLocation($this->newLocation);
         } else {
             $folderId = $this->folderId;
         }
@@ -1983,7 +1983,7 @@ class Asset extends Element
             return $transformRatio > 1 ? [$this->_width, round($this->_height / $transformRatio)] : [round($this->_width * $transformRatio), $this->_height];
         }
 
-        list($width, $height) = Image::calculateMissingDimension($transform->width, $transform->height, $this->_width, $this->_height);
+        [$width, $height] = Image::calculateMissingDimension($transform->width, $transform->height, $this->_width, $this->_height);
 
         // Special case for 'fit' since that's the only one whose dimensions vary from the transform dimensions
         if ($transform->mode === 'fit') {
@@ -2006,7 +2006,7 @@ class Asset extends Element
 
         // Get the (new?) folder ID & filename
         if ($this->newLocation !== null) {
-            list($folderId, $filename) = AssetsHelper::parseFileLocation($this->newLocation);
+            [$folderId, $filename] = AssetsHelper::parseFileLocation($this->newLocation);
         } else {
             $folderId = $this->folderId;
             $filename = $this->filename;
@@ -2077,7 +2077,7 @@ class Asset extends Element
             $this->kind = AssetsHelper::getFileKindByExtension($filename);
 
             if ($this->kind === self::KIND_IMAGE) {
-                list ($this->_width, $this->_height) = Image::imageSize($tempPath);
+                [$this->_width, $this->_height] = Image::imageSize($tempPath);
             } else {
                 $this->_width = null;
                 $this->_height = null;

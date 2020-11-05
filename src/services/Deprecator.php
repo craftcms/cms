@@ -91,7 +91,7 @@ class Deprecator extends Component
         $traces = debug_backtrace();
 
         if ($file === null) {
-            list($file, $line) = $this->_findOrigin($traces);
+            [$file, $line] = $this->_findOrigin($traces);
         }
 
         if ($this->throwExceptions) {

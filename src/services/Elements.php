@@ -1753,7 +1753,7 @@ class Elements extends Component
                 &$allRefTagTokens
             ) {
                 $matches = array_pad($matches, 6, null);
-                list($fullMatch, $elementType, $ref, $siteId, $attribute, $fallback) = $matches;
+                [$fullMatch, $elementType, $ref, $siteId, $attribute, $fallback] = $matches;
                 if ($fallback === null) {
                     $fallback = $fullMatch;
                 }
@@ -1826,7 +1826,7 @@ class Elements extends Component
                     foreach ($tokensByName as $refName => $tokens) {
                         $element = $elements[$refName] ?? null;
 
-                        foreach ($tokens as list($token, $attribute, $fallback, $fullMatch)) {
+                        foreach ($tokens as [$token, $attribute, $fallback, $fullMatch]) {
                             $search[] = $token;
                             $replace[] = $this->_getRefTokenReplacement($element, $attribute, $fallback, $fullMatch);
                         }

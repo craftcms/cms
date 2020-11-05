@@ -168,14 +168,14 @@ abstract class Api
         if (isset($headers['x-craft-plugin-license-statuses'])) {
             $pluginLicenseInfo = explode(',', reset($headers['x-craft-plugin-license-statuses']));
             foreach ($pluginLicenseInfo as $info) {
-                list($pluginHandle, $pluginLicenseStatus) = explode(':', $info);
+                [$pluginHandle, $pluginLicenseStatus] = explode(':', $info);
                 $pluginLicenseStatuses[$pluginHandle] = $pluginLicenseStatus;
             }
         }
         if (isset($headers['x-craft-plugin-license-editions'])) {
             $pluginLicenseInfo = explode(',', reset($headers['x-craft-plugin-license-editions']));
             foreach ($pluginLicenseInfo as $info) {
-                list($pluginHandle, $pluginLicenseEdition) = explode(':', $info);
+                [$pluginHandle, $pluginLicenseEdition] = explode(':', $info);
                 $pluginLicenseEditions[$pluginHandle] = $pluginLicenseEdition;
             }
         }

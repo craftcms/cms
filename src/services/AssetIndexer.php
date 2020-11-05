@@ -565,7 +565,7 @@ class AssetIndexer extends Component
                     }
                 }
 
-                list ($w, $h) = $dimensions;
+                [$w, $h] = $dimensions;
                 $asset->setWidth($w);
                 $asset->setHeight($h);
                 $asset->dateModified = $timeModified;

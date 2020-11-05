@@ -695,7 +695,7 @@ class AssetsController extends Controller
 
         if (!$result) {
             // Get the corrected filename
-            list(, $filename) = Assets::parseFileLocation($asset->newLocation);
+            [, $filename] = Assets::parseFileLocation($asset->newLocation);
 
             return $this->asJson([
                 'conflict' => $asset->getFirstError('newLocation'),
@@ -938,7 +938,7 @@ class AssetsController extends Controller
                 $asset->filename = preg_replace('/(svg)$/i', 'png', $asset->filename);
             }
 
-            list($originalImageWidth, $originalImageHeight) = $imageSize;
+            [$originalImageWidth, $originalImageHeight] = $imageSize;
 
             if ($imageFlipped) {
                 if (!empty($flipData['x'])) {
