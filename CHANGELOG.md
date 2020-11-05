@@ -8,6 +8,7 @@
 ### Fixed
 - Fixed a bug where `craft\elements\Asset::getSrcSet()` would not respect the format of the transform set on the Asset. ([#6660](https://github.com/craftcms/cms/issues/6660))
 - Fixed a bug where Imagick use was sometimes incorrectly assumed.
+- Fixed a bug where calling `grabFixture()` in a test would case a PHP error. ([#7089](https://github.com/craftcms/cms/issues/7089))
 
 ## 3.5.15.1 - 2020-11-04
 
