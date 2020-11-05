@@ -32,6 +32,7 @@ use yii\db\Connection;
  * @method Entry|array|null nth(int $n, Connection $db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @doc-path entries.md
  * @supports-structure-params
  * @supports-site-params
  * @supports-title-param
@@ -918,7 +919,11 @@ class EntryQuery extends ElementQuery
         } else if (is_numeric($this->typeId)) {
             $this->typeId = [$this->typeId];
         } else if (!is_array($this->typeId) || !ArrayHelper::isNumeric($this->typeId)) {
-            throw new InvalidConfigException('Invalid typeId param value');
+            $this->typeId = (new Query())
+                ->select(['id'])
+                ->from([Table::ENTRYTYPES])
+                ->where(Db::parseParam('id', $this->typeId))
+                ->column();
         }
     }
 

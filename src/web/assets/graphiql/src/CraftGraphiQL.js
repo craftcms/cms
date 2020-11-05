@@ -100,10 +100,13 @@ export class CraftGraphiQL extends React.Component {
         this.graphiql = React.createRef();
         this.explorer = React.createRef();
 
+        const params = new URLSearchParams(window.location.search);
+
         // And initial state.
         this.state = {
             schema: null,
             explorerIsOpen: false,
+            query: params.get('query') ?? undefined
         }
     }
 

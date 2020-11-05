@@ -59,7 +59,13 @@ abstract class Api
         }
 
         // Craft license
-        $headers['X-Craft-License'] = App::licenseKey() ?? (defined('CRAFT_LICENSE_KEY') ? '__INVALID__' : '__REQUEST__');
+        if ($licenseKey = App::licenseKey()) {
+            $headers['X-Craft-License'] = $licenseKey;
+        } else if (defined('CRAFT_LICENSE_KEY')) {
+            $headers['X-Craft-License'] = '__INVALID__';
+        } else if ($user) {
+            $headers['X-Craft-License'] = '__REQUEST__';
+        }
 
         // plugin info
         $pluginLicenses = [];
@@ -93,16 +99,12 @@ abstract class Api
     public static function platformVersions(bool $useComposerOverrides = false): array
     {
         // Let Composer's PlatformRepository do most of the work
-        $overrides = [];
         if ($useComposerOverrides) {
-            try {
-                $jsonPath = Craft::$app->getComposer()->getJsonPath();
-                $config = Json::decode(file_get_contents($jsonPath));
-                $overrides = $config['config']['platform'] ?? [];
-            } catch (Exception $e) {
-                // couldn't locate composer.json - NBD
-            }
+            $overrides = Craft::$app->getComposer()->getConfig()['config']['platform'] ?? [];
+        } else {
+            $overrides = [];
         }
+
         $repo = new PlatformRepository([], $overrides);
 
         $versions = [];

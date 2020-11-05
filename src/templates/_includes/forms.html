@@ -120,6 +120,7 @@
 
 
 {% macro textField(config) %}
+    {% set config = config|merge({id: config.id ?? "text#{random()}"}) %}
     {% if config.unit is defined %}
         {% set input %}
             <div class="flex">
@@ -135,31 +136,37 @@
 
 
 {% macro copytextField(config) %}
+    {% set config = config|merge({id: config.id ?? "copytext#{random()}"}) %}
     {{ _self.field(config, _self.copytext(config)) }}
 {% endmacro %}
 
 
 {% macro passwordField(config) %}
+    {% set config = config|merge({id: config.id ?? "password#{random()}"}) %}
     {{ _self.field(config, _self.password(config)) }}
 {% endmacro %}
 
 
 {% macro dateField(config) %}
+    {% set config = config|merge({id: config.id ?? "date#{random()}"}) %}
     {{ _self.field(config, _self.date(config)) }}
 {% endmacro %}
 
 
 {% macro timeField(config) %}
+    {% set config = config|merge({id: config.id ?? "time#{random()}"}) %}
     {{ _self.field(config, _self.time(config)) }}
 {% endmacro %}
 
 
 {% macro colorField(config) %}
+    {% set config = config|merge({id: config.id ?? "color#{random()}"}) %}
     {{ _self.field(config, _self.color(config)) }}
 {% endmacro %}
 
 
 {% macro dateTimeField(config) %}
+    {% set config = config|merge({id: config.id ?? "datetime#{random()}"}) %}
     {% set input %}
         <div class="datetimewrapper">
             {{ _self.date(config) }}
@@ -171,21 +178,25 @@
 
 
 {% macro textareaField(config) %}
+    {% set config = config|merge({id: config.id ?? "textarea#{random()}"}) %}
     {{ _self.field(config, _self.textarea(config)) }}
 {% endmacro %}
 
 
 {% macro selectField(config) %}
+    {% set config = config|merge({id: config.id ?? "select#{random()}"}) %}
     {{ _self.field(config, _self.select(config)) }}
 {% endmacro %}
 
 
 {% macro multiselectField(config) %}
+    {% set config = config|merge({id: config.id ?? "multiselect#{random()}"}) %}
     {{ _self.field(config, _self.multiselect(config)) }}
 {% endmacro %}
 
 
 {% macro checkboxField(config) %}
+    {% set config = config|merge({id: config.id ?? "checkbox#{random()}"}) %}
     {% if config.fieldLabel is defined %}
         {{ _self.field(config|merge({label: config.fieldLabel}), _self.checkbox(config)) }}
     {% else %}
@@ -205,46 +216,54 @@
 
 
 {% macro checkboxGroupField(config) %}
+    {% set config = config|merge({id: config.id ?? "checkboxgroup#{random()}"}) %}
     {{ _self.field(config, _self.checkboxGroup(config)) }}
 {% endmacro %}
 
 
 {% macro checkboxSelectField(config) %}
+    {% set config = config|merge({id: config.id ?? "checkboxselect#{random()}"}) %}
     {{ _self.field(config, _self.checkboxSelect(config)) }}
 {% endmacro %}
 
 
 {% macro radioGroupField(config) %}
+    {% set config = config|merge({id: config.id ?? "radiogroup#{random()}"}) %}
     {{ _self.field(config, _self.radioGroup(config)) }}
 {% endmacro %}
 
 
 {% macro fileField(config) %}
+    {% set config = config|merge({id: config.id ?? "file#{random()}"}) %}
     {{ _self.field(config, _self.file(config)) }}
 {% endmacro %}
 
 
 {% macro lightswitchField(config) %}
-    {% if config.labelId is not defined or not config.labelId %}
-        {% set config = config|merge({ labelId: 'label'~random() }) %}
-    {% endif %}
-    {% set config = config|merge({ fieldClass: 'lightswitch-field ' ~ (config.fieldClass ?? '') }) %}
+    {% set config = config|merge({
+        id: config.id ?? "lightswitch#{random()}",
+        labelId: config.labelId ?? "#lightswitchlabel#{random()}",
+        fieldClass: (config.fieldClass ?? [])|explodeClass|push('lightswitch-field'),
+    }) %}
     {{ _self.field(config, _self.lightswitch(config|withoutKey('label'))) }}
 {% endmacro %}
 
 
 {% macro editableTableField(config) %}
+    {% set config = config|merge({id: config.id ?? "editabletable#{random()}"}) %}
     {% set input %}{% include "_includes/forms/editableTable" with config only %}{% endset %}
     {{ _self.field(config, input) }}
 {% endmacro %}
 
 
 {% macro elementSelectField(config) %}
+    {% set config = config|merge({id: config.id ?? "elementselect#{random()}"}) %}
     {{ _self.field(config, _self.elementSelect(config)) }}
 {% endmacro %}
 
 
 {% macro autosuggestField(config) %}
+    {% set config = config|merge({id: config.id ?? "autosuggest#{random()}"}) %}
 
     {# Suggest an environment variable / alias? #}
     {% if (config.suggestEnvVars ?? false) %}
@@ -254,7 +273,7 @@
                 tip: ((config.suggestAliases ?? false)
                     ? 'This can be set to an environment variable, or begin with an alias.'|t('app')
                     : 'This can be set to an environment variable.'|t('app'))
-                    ~ ' <a href="https://docs.craftcms.com/v3/config/environments.html" class="go">' ~ 'Learn more'|t('app') ~ '</a>'
+                    ~ ' <a href="https://craftcms.com/docs/3.x/config/#environmental-configuration" class="go">' ~ 'Learn more'|t('app') ~ '</a>'
             }) %}
         {% elseif config.warning is not defined and (value == '@web' or value[0:5] == '@web/') and craft.app.request.isWebAliasSetDynamically %}
             {% set config = config|merge({

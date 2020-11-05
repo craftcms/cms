@@ -9,6 +9,7 @@ namespace craft\services;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\base\MemoizableArray;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
@@ -125,7 +126,8 @@ class Sites extends Component
     const CONFIG_SITES_KEY = 'sites';
 
     /**
-     * @var SiteGroup[]
+     * @var MemoizableArray|null
+     * @see _groups()
      */
     private $_groups;
 
@@ -161,13 +163,25 @@ class Sites extends Component
     private $_primarySite;
 
     /**
+     * Serializer
+     *
+     * @since 3.5.14
+     */
+    public function __serialize()
+    {
+        $vars = get_object_vars($this);
+        unset($vars['_groups']);
+        return $vars;
+    }
+
+    /**
      * @inheritdoc
      */
     public function init()
     {
         // No technical reason to put this here, but it's sortof related
         if (defined('CRAFT_LOCALE')) {
-            Craft::$app->getDeprecator()->log('CRAFT_LOCALE', 'The CRAFT_LOCALE constant has been deprecated. Use CRAFT_SITE instead, which can be set to a site ID or handle.');
+            Craft::$app->getDeprecator()->log('CRAFT_LOCALE', 'The `CRAFT_LOCALE` constant has been deprecated. Use `CRAFT_SITE` instead, which can be set to a site ID or handle.');
         }
 
         // Load all the sites up front
@@ -178,24 +192,31 @@ class Sites extends Component
     // -------------------------------------------------------------------------
 
     /**
+     * Returns a memoizable array of all site groups.
+     *
+     * @return MemoizableArray
+     */
+    private function _groups(): MemoizableArray
+    {
+        if ($this->_groups === null) {
+            $groups = [];
+            foreach ($this->_createGroupQuery()->all() as $result) {
+                $groups[] = new SiteGroup($result);
+            }
+            $this->_groups = new MemoizableArray($groups);
+        }
+
+        return $this->_groups;
+    }
+
+    /**
      * Returns all site groups.
      *
      * @return SiteGroup[] The site groups
      */
     public function getAllGroups(): array
     {
-        if ($this->_groups !== null) {
-            return $this->_groups;
-        }
-
-        $this->_groups = [];
-        $results = $this->_createGroupQuery()->all();
-
-        foreach ($results as $result) {
-            $this->_groups[] = new SiteGroup($result);
-        }
-
-        return $this->_groups;
+        return $this->_groups()->all();
     }
 
     /**
@@ -206,7 +227,19 @@ class Sites extends Component
      */
     public function getGroupById(int $groupId)
     {
-        return ArrayHelper::firstWhere($this->getAllGroups(), 'id', $groupId);
+        return $this->_groups()->firstWhere('id', $groupId);
+    }
+
+    /**
+     * Returns a site group by its UID.
+     *
+     * @param string $uid The site group’s UID
+     * @return SiteGroup|null The site group, or null if it doesn’t exist
+     * @since 3.5.8
+     */
+    public function getGroupByUid(string $uid)
+    {
+        return $this->_groups()->firstWhere('uid', $uid, true);
     }
 
     /**
@@ -233,18 +266,15 @@ class Sites extends Component
             return false;
         }
 
-        $projectConfig = Craft::$app->getProjectConfig();
-        $configData = [
-            'name' => $group->name
-        ];
-
         if ($isNewGroup) {
             $group->uid = StringHelper::UUID();
         } else if (!$group->uid) {
             $group->uid = Db::uidById(Table::SITEGROUPS, $group->id);
         }
 
-        $projectConfig->set(self::CONFIG_SITEGROUP_KEY . '.' . $group->uid, $configData, "Save the “{$group->name}” site group");
+        $configPath = self::CONFIG_SITEGROUP_KEY . '.' . $group->uid;
+        $configData = $group->getConfig();
+        Craft::$app->getProjectConfig()->set($configPath, $configData, "Save the “{$group->name}” site group");
 
         // Now that we have an ID, save it on the model
         if ($isNewGroup) {
@@ -557,7 +587,7 @@ class Sites extends Component
      */
     public function getSitesByGroupId(int $groupId, bool $withDisabled = null): array
     {
-        $sites = ArrayHelper::where($this->_allSites($withDisabled), 'groupId', $groupId);
+        $sites = ArrayHelper::where($this->_allSites($withDisabled), 'groupId', $groupId, false, false);
 
         // Using array_multisort threw a nesting error for no obvious reason, so don't use it here.
         ArrayHelper::multisort($sites, 'sortOrder', SORT_ASC, SORT_NUMERIC);
@@ -642,24 +672,9 @@ class Sites extends Component
             return false;
         }
 
-        $groupRecord = $this->_getGroupRecord($site->groupId);
-
-        $projectConfig = Craft::$app->getProjectConfig();
-        $configData = [
-            'siteGroup' => $groupRecord->uid,
-            'name' => $site->name,
-            'handle' => $site->handle,
-            'language' => $site->language,
-            'hasUrls' => (bool)$site->hasUrls,
-            'baseUrl' => $site->baseUrl,
-            'sortOrder' => (int)$site->sortOrder,
-            'primary' => (bool)$site->primary,
-            'enabled' => (bool)$site->enabled,
-        ];
-
         if ($isNewSite) {
             $site->uid = StringHelper::UUID();
-            $configData['sortOrder'] = ((int)(new Query())
+            $site->sortOrder = ((int)(new Query())
                     ->from([Table::SITES])
                     ->where(['dateDeleted' => null])
                     ->max('[[sortOrder]]')) + 1;
@@ -668,7 +683,8 @@ class Sites extends Component
         }
 
         $configPath = self::CONFIG_SITES_KEY . '.' . $site->uid;
-        $projectConfig->set($configPath, $configData, "Save the “{$site->handle}” site");
+        $configData = $site->getConfig();
+        Craft::$app->getProjectConfig()->set($configPath, $configData, "Save the “{$site->handle}” site");
 
         // Now that we have a site ID, save it on the model
         if ($isNewSite) {
@@ -716,8 +732,12 @@ class Sites extends Component
             $siteRecord->hasUrls = $data['hasUrls'];
             $siteRecord->baseUrl = $data['baseUrl'];
             $siteRecord->primary = $data['primary'];
-            $siteRecord->enabled = $data['enabled'] ?? true;
             $siteRecord->sortOrder = $data['sortOrder'];
+
+            // todo: remove schema version conditions after next beakpoint
+            if (version_compare(Craft::$app->getInstalledSchemaVersion(), '3.5.0', '>=')) {
+                $siteRecord->enabled = $data['enabled'] ?? true;
+            }
 
             if ($siteRecord->dateDeleted) {
                 $siteRecord->restore();
@@ -732,7 +752,7 @@ class Sites extends Component
         }
 
         // Clear caches
-        $this->_refreshAllSites();
+        $this->refreshSites();
 
         /** @var Site $site */
         $site = $this->getSiteById($siteRecord->id);
@@ -1055,7 +1075,7 @@ class Sites extends Component
         }
 
         // Refresh sites
-        $this->_refreshAllSites();
+        $this->refreshSites();
 
         // Invalidate all element caches
         Craft::$app->getElements()->invalidateAllCaches();
@@ -1095,8 +1115,9 @@ class Sites extends Component
      * Refresh the status of all sites based on the DB data.
      *
      * @throws DbException
+     * @since 3.5.13
      */
-    private function _refreshAllSites()
+    public function refreshSites()
     {
         $this->_allSitesById = null;
         $this->_enabledSitesById = null;
@@ -1120,57 +1141,56 @@ class Sites extends Component
             return;
         }
 
-        try {
-            $results = (new Query())
-                ->select([
-                    's.id',
-                    's.groupId',
-                    's.name',
-                    's.handle',
-                    'language',
-                    's.primary',
-                    's.enabled',
-                    's.hasUrls',
-                    's.baseUrl',
-                    's.sortOrder',
-                    's.uid',
-                    's.dateCreated',
-                    's.dateUpdated',
-                ])
-                ->from(['s' => Table::SITES])
+        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
+
+        $query = (new Query())
+            ->select([
+                's.id',
+                's.name',
+                's.handle',
+                's.language',
+                's.primary',
+                's.hasUrls',
+                's.baseUrl',
+                's.sortOrder',
+                's.uid',
+                's.dateCreated',
+                's.dateUpdated',
+            ])
+            ->from(['s' => Table::SITES]);
+
+        // TODO: remove the version checks after the next breakpoint
+        if (version_compare($schemaVersion, '3.0.74', '<')) {
+            $query
+                ->orderBy(['s.name' => SORT_ASC]);
+        } else {
+            $query
+                ->addSelect(['s.groupId'])
                 ->innerJoin(['sg' => Table::SITEGROUPS], '[[sg.id]] = [[s.groupId]]')
-                ->where(['s.dateDeleted' => null])
-                ->andWhere(['sg.dateDeleted' => null])
-                ->orderBy(['sg.name' => SORT_ASC, 's.sortOrder' => SORT_ASC])
-                ->all();
+                ->orderBy(['sg.name' => SORT_ASC, 's.sortOrder' => SORT_ASC]);
+
+            if (version_compare($schemaVersion, '3.1.7', '>=')) {
+                $query
+                    ->where(['s.dateDeleted' => null])
+                    ->andWhere(['sg.dateDeleted' => null]);
+
+                if (version_compare($schemaVersion, '3.5.12', '>=')) {
+                    $query
+                        ->addSelect(['s.enabled']);
+                }
+            }
+        }
+
+        try {
+            $results = $query->all();
         } catch (DbException $e) {
             // todo: remove this after the next breakpoint
             // If the error code is 42S02 (MySQL) or 42P01 (PostgreSQL), the sites table probably doesn't exist yet
             if (isset($e->errorInfo[0]) && in_array($e->errorInfo[0], ['42S02', '42P01'], true)) {
                 return;
             }
-            // If the error code is 42S22 (MySQL) or 42703 (PostgreSQL), then the sites table doesn't have a groupId, dateDeleted, or enabled column yet
-            if (isset($e->errorInfo[0]) && in_array($e->errorInfo[0], ['42S22', '42703'], true)) {
-                $results = (new Query())
-                    ->select([
-                        's.id',
-                        's.name',
-                        's.handle',
-                        'language',
-                        's.primary',
-                        's.hasUrls',
-                        's.baseUrl',
-                        's.sortOrder',
-                        's.uid',
-                    ])
-                    ->from(['s' => Table::SITES])
-                    ->orderBy(['s.name' => SORT_ASC])
-                    ->all();
-            }
-            if (!isset($results)) {
-                /** @noinspection PhpUnhandledExceptionInspection */
-                throw $e;
-            }
+            /** @noinspection PhpUnhandledExceptionInspection */
+            throw $e;
         }
 
         // Check for results because during installation, the transaction hasn't been committed yet.
@@ -1251,7 +1271,8 @@ class Sites extends Component
     private function _allSites(bool $withDisabled = null)
     {
         if ($withDisabled === null) {
-            $withDisabled = Craft::$app->getRequest()->getIsCpRequest();
+            $request = Craft::$app->getRequest();
+            $withDisabled = !$request->getIsSiteRequest() || $request->getIsActionRequest();
         }
 
         return $withDisabled ? $this->_allSitesById : $this->_enabledSitesById;
@@ -1349,7 +1370,7 @@ class Sites extends Component
         }
 
         // Set the new primary site by forcing a reload from the DB.
-        $this->_refreshAllSites();
+        $this->refreshSites();
 
         // Fire an afterChangePrimarySite event
         if ($this->hasEventHandlers(self::EVENT_AFTER_CHANGE_PRIMARY_SITE)) {

@@ -29,6 +29,7 @@ use craft\gql\directives\FormatDateTime;
 use craft\gql\directives\Markdown;
 use craft\gql\directives\ParseRefs;
 use craft\gql\directives\Transform;
+use craft\gql\ElementQueryConditionBuilder;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\Element as ElementInterface;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
@@ -94,7 +95,7 @@ class Gql extends Component
      * @event RegisterGqlTypesEvent The event that is triggered when registering GraphQL types.
      *
      * Plugins get a chance to add their own GraphQL types.
-     * See [GraphQL](https://docs.craftcms.com/v3/graphql.html) for documentation on adding GraphQL support.
+     * See [GraphQL API](https://craftcms.com/docs/3.x/graphql.html) for documentation on adding GraphQL support.
      *
      * ---
      * ```php
@@ -114,7 +115,7 @@ class Gql extends Component
      * @event RegisterGqlQueriesEvent The event that is triggered when registering GraphQL queries.
      *
      * Plugins get a chance to add their own GraphQL queries.
-     * See [GraphQL](https://docs.craftcms.com/v3/graphql.html) for documentation on adding GraphQL support.
+     * See [GraphQL API](https://craftcms.com/docs/3.x/graphql.html) for documentation on adding GraphQL support.
      *
      * ---
      * ```php
@@ -140,7 +141,7 @@ class Gql extends Component
      * @event RegisterGqlMutationsEvent The event that is triggered when registering GraphQL mutations.
      *
      * Plugins get a chance to add their own GraphQL mutations.
-     * See [GraphQL](https://docs.craftcms.com/v3/graphql.html) for documentation on adding GraphQL support.
+     * See [GraphQL API](https://craftcms.com/docs/3.x/graphql.html) for documentation on adding GraphQL support.
      *
      * ---
      * ```php
@@ -165,7 +166,7 @@ class Gql extends Component
      * @event RegisterGqlDirectivesEvent The event that is triggered when registering GraphQL directives.
      *
      * Plugins get a chance to add their own GraphQL directives.
-     * See [GraphQL](https://docs.craftcms.com/v3/graphql.html) for documentation on adding GraphQL support.
+     * See [GraphQL API](https://craftcms.com/docs/3.x/graphql.html) for documentation on adding GraphQL support.
      *
      * ---
      * ```php
@@ -270,14 +271,19 @@ class Gql extends Component
     const CACHE_TAG = 'graphql';
 
     /**
+     * @since 3.5.0
+     */
+    const CONFIG_GQL_KEY = 'graphql';
+
+    /**
      * @since 3.4.0
      */
-    const CONFIG_GQL_SCHEMAS_KEY = 'graphql.schemas';
+    const CONFIG_GQL_SCHEMAS_KEY = self::CONFIG_GQL_KEY . '.' . 'schemas';
 
     /**
      * @since 3.5.0
      */
-    const CONFIG_GQL_PUBLIC_TOKEN_KEY = 'graphql.publicToken';
+    const CONFIG_GQL_PUBLIC_TOKEN_KEY = self::CONFIG_GQL_KEY . '.' . 'publicToken';
 
     /**
      * The field name to use when fetching count of related elements
@@ -494,6 +500,11 @@ class Gql extends Component
             'query' => $query,
             'variables' => $variables,
             'operationName' => $operationName,
+            'context' => [
+                'conditionBuilder' => Craft::createObject([
+                    'class' => ElementQueryConditionBuilder::class,
+                ])
+            ]
         ]);
 
         $this->trigger(self::EVENT_BEFORE_EXECUTE_GQL_QUERY, $event);
@@ -904,6 +915,7 @@ class Gql extends Component
 
     /**
      * Handle public token settings being updated.
+     *
      * @param ConfigEvent $event
      *
      * @since 3.5.0
@@ -929,7 +941,7 @@ class Gql extends Component
             ->one();
 
         $token->schemaId = $publicSchema ? $publicSchema['id'] : null;
-        $token->expiryDate = $data['expiryDate'] ? DateTimeHelper::toDateTime($data['expiryDate']): null;
+        $token->expiryDate = $data['expiryDate'] ? DateTimeHelper::toDateTime($data['expiryDate']) : null;
         $token->enabled = $data['enabled'] ?: false;
 
         $this->_saveTokenInternal($token);
@@ -954,11 +966,11 @@ class Gql extends Component
     }
 
     /**
-     * Saves a GraphQL scope.
+     * Saves a GraphQL schema.
      *
      * @param GqlSchema $schema the schema to save
-     * @param bool $runValidation Whether the scope should be validated
-     * @return bool Whether the scope was saved successfully
+     * @param bool $runValidation Whether the schema should be validated
+     * @return bool Whether the schema was saved successfully
      * @throws Exception
      * @since 3.4.0
      */
@@ -977,15 +989,9 @@ class Gql extends Component
             $schema->uid = Db::uidById(Table::GQLSCHEMAS, $schema->id);
         }
 
-        $projectConfig = Craft::$app->getProjectConfig();
-        $configData = [
-            'name' => $schema->name,
-            'scope' => $schema->scope,
-            'isPublic' => $schema->isPublic
-        ];
-
         $configPath = self::CONFIG_GQL_SCHEMAS_KEY . '.' . $schema->uid;
-        $projectConfig->set($configPath, $configData, "Save GraphQL schema “{$schema->name}”");
+        $configData = $schema->getConfig();
+        Craft::$app->getProjectConfig()->set($configPath, $configData, "Save GraphQL schema “{$schema->name}”");
 
         if ($isNewSchema) {
             $schema->id = Db::idByUid(Table::GQLSCHEMAS, $schema->uid);
@@ -1071,9 +1077,9 @@ class Gql extends Component
      * @return bool
      * @since 3.4.0
      */
-    public function deleteSchema(GqlSchema $scope): bool
+    public function deleteSchema(GqlSchema $schema): bool
     {
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_GQL_SCHEMAS_KEY . '.' . $scope->uid, "Delete the “{$scope->name}” GraphQL schema");
+        Craft::$app->getProjectConfig()->remove(self::CONFIG_GQL_SCHEMAS_KEY . '.' . $schema->uid, "Delete the “{$schema->name}” GraphQL schema");
         return true;
     }
 
@@ -1097,7 +1103,7 @@ class Gql extends Component
         $transaction = $db->beginTransaction();
 
         try {
-            // Delete the scope
+            // Delete the schema
             Db::delete(Table::GQLSCHEMAS, [
                 'id' => $schemaRecord->id,
             ]);
@@ -1153,13 +1159,13 @@ class Gql extends Component
         $rows = $this->_createSchemaQuery()
             ->all();
 
-        $scopes = [];
+        $schemas = [];
 
         foreach ($rows as $row) {
-            $scopes[] = new GqlSchema($row);
+            $schemas[] = new GqlSchema($row);
         }
 
-        return $scopes;
+        return $schemas;
     }
 
 
@@ -1231,8 +1237,14 @@ class Gql extends Component
         }
 
         try {
-            $cacheKey = self::CACHE_TAG . "::$schema->uid::" . md5($query) . '::' . serialize($rootValue) . '::' .
-                serialize($context) . '::' . serialize($variables) . ($operationName ? "::$operationName" : '');
+            $cacheKey = self::CACHE_TAG .
+                '::' . Craft::$app->getSites()->getCurrentSite()->id .
+                '::' . $schema->uid .
+                '::' . md5($query) .
+                '::' . serialize($rootValue) .
+                '::' . serialize($context) .
+                '::' . serialize($variables) .
+                ($operationName ? "::$operationName" : '');
         } catch (\Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);
             $cacheKey = null;

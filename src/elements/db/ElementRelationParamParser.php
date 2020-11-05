@@ -134,6 +134,10 @@ class ElementRelationParamParser extends BaseObject
      */
     private function _subparse($relCriteria)
     {
+        if (!is_array($relCriteria)) {
+            $relCriteria = ['element' => $relCriteria];
+        }
+
         // Merge in default criteria params
         $relCriteria = array_merge([
             'field' => null,
@@ -142,7 +146,7 @@ class ElementRelationParamParser extends BaseObject
 
         // Check for now-deprecated sourceLocale param
         if (isset($relCriteria['sourceLocale'])) {
-            Craft::$app->getDeprecator()->log('relatedTo:sourceLocale', 'The sourceLocale criteria in relatedTo element query params has been deprecated. Use sourceSite instead.');
+            Craft::$app->getDeprecator()->log('relatedTo:sourceLocale', 'The `sourceLocale` criteria in `relatedTo` element query params has been deprecated. Use `sourceSite` instead.');
             $relCriteria['sourceSite'] = $relCriteria['sourceLocale'];
             unset($relCriteria['sourceLocale']);
         }
@@ -159,10 +163,6 @@ class ElementRelationParamParser extends BaseObject
                 }
                 $relCriteria['sourceSite'] = $site->id;
             }
-        }
-
-        if (!is_array($relCriteria)) {
-            $relCriteria = ['element' => $relCriteria];
         }
 
         // Get the element IDs, wherever they are

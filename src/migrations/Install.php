@@ -57,6 +57,12 @@ class Install extends Migration
     public $site;
 
     /**
+     * @var bool Whether to apply the existing project config YAML files, if they exist
+     * @since 3.5.9
+     */
+    public $applyProjectConfigYaml = true;
+
+    /**
      * @inheritdoc
      */
     public function safeUp()
@@ -64,7 +70,6 @@ class Install extends Migration
         $this->createTables();
         $this->createIndexes();
         $this->addForeignKeys();
-        $this->db->getSchema()->refresh();
         $this->insertDefaultData();
     }
 
@@ -411,6 +416,7 @@ class Install extends Migration
             'version' => $this->string(50)->notNull(),
             'schemaVersion' => $this->string(15)->notNull(),
             'maintenance' => $this->boolean()->defaultValue(false)->notNull(),
+            'configVersion' => $this->char(12)->notNull()->defaultValue('000000000000'),
             'fieldVersion' => $this->char(12)->notNull()->defaultValue('000000000000'),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
@@ -1030,6 +1036,7 @@ class Install extends Migration
             'version' => Craft::$app->getVersion(),
             'schemaVersion' => Craft::$app->schemaVersion,
             'maintenance' => false,
+            'configVersion' => StringHelper::randomString(12),
             'fieldVersion' => StringHelper::randomString(12),
         ]));
         echo "done\n";
@@ -1039,8 +1046,7 @@ class Install extends Migration
 
         $applyExistingProjectConfig = false;
 
-        $configFile = Craft::$app->getPath()->getProjectConfigFilePath();
-        if (file_exists($configFile)) {
+        if ($this->applyProjectConfigYaml && $projectConfig->getDoesYamlExist()) {
             try {
                 $expectedSchemaVersion = (string)$projectConfig->get(ProjectConfig::CONFIG_SCHEMA_VERSION_KEY, true);
                 $craftSchemaVersion = (string)Craft::$app->schemaVersion;
@@ -1051,7 +1057,7 @@ class Install extends Migration
                 }
 
                 // Make sure at least sites are processed
-                ProjectConfigHelper::ensureAllSitesProcessed();
+                ProjectConfigHelper::ensureAllSitesProcessed(true);
 
                 $this->_installPlugins();
                 $applyExistingProjectConfig = true;
@@ -1059,10 +1065,11 @@ class Install extends Migration
                 echo "    > can't apply existing project config: {$e->getMessage()}\n";
                 Craft::$app->getErrorHandler()->logException($e);
 
-                // Rename project.yaml so we can create a new one
-                $backupFile = pathinfo(ProjectConfig::CONFIG_FILENAME, PATHINFO_FILENAME) . date('-Y-m-d-His') . '.yaml';
-                echo "    > renaming project.yaml to $backupFile and moving to config backup folder ... ";
-                rename($configFile, Craft::$app->getPath()->getConfigBackupPath() . '/' . $backupFile);
+                // Rename config/project/ so we can create a new one
+                $backupName = "project-" . date('Y-m-d-His');
+                echo "    > moving config/project/ to storage/config-backups/$backupName ... ";
+                $pathService = Craft::$app->getPath();
+                rename($pathService->getProjectConfigPath(), $pathService->getConfigBackupPath() . DIRECTORY_SEPARATOR . $backupName);
                 echo "done\n";
 
                 // Forget everything we knew about the old config
@@ -1218,7 +1225,7 @@ class Install extends Migration
                 'allowPublicRegistration' => false,
                 'defaultGroup' => null,
                 'photoVolumeUid' => null,
-                'photoSubpath' => '',
+                'photoSubpath' => null,
             ],
         ];
     }

@@ -87,9 +87,10 @@ class Console extends \yii\helpers\Console
      * Outputs a warning.
      *
      * @param string $text
+     * @param bool $center
      * @since 3.0.38
      */
-    public static function outputWarning(string $text)
+    public static function outputWarning(string $text, bool $center = true)
     {
         $xPad = 4;
         $lines = explode("\n", $text);
@@ -97,7 +98,6 @@ class Console extends \yii\helpers\Console
         foreach ($lines as $line) {
             $width = max($width, strlen($line));
         }
-        $width += $xPad * 2;
 
         $isColorEnabled = static::isColorEnabled();
         $format = $isColorEnabled ? [self::BG_RED, self::BOLD] : [];
@@ -105,30 +105,35 @@ class Console extends \yii\helpers\Console
         static::output();
 
         if ($isColorEnabled) {
-            static::output(static::ansiFormat(str_repeat(' ', $width), $format));
+            static::output(static::ansiFormat(str_repeat(' ', $width + $xPad * 2), $format));
         }
 
         foreach ($lines as $line) {
             $extra = $width - strlen($line);
-            static::output(static::ansiFormat(str_repeat(' ', floor($extra / 2)) . $line . str_repeat(' ', ceil($extra / 2)), $format));
+            if ($center) {
+                static::output(static::ansiFormat(str_repeat(' ', floor($extra / 2) + $xPad) . $line . str_repeat(' ', ceil($extra / 2) + $xPad), $format));
+            } else {
+                static::output(static::ansiFormat(str_repeat(' ', $xPad) . $line . str_repeat(' ', $extra + $xPad), $format));
+            }
         }
 
         if ($isColorEnabled) {
-            static::output(static::ansiFormat(str_repeat(' ', $width), $format));
+            static::output(static::ansiFormat(str_repeat(' ', $width + $xPad * 2), $format));
         }
 
         static::output();
     }
 
     /**
-     * Ensures that the project.yaml file exists if it's supposed to.
+     * Ensures that the project config YAML files exist if they’re supposed to
      *
      * @since 3.5.0
      */
     public static function ensureProjectConfigFileExists()
     {
-        if (!file_exists(Craft::$app->getPath()->getProjectConfigFilePath())) {
-            $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig = Craft::$app->getProjectConfig();
+
+        if ($projectConfig->writeYamlAutomatically && !$projectConfig->getDoesYamlExist()) {
             static::stdout('Generating project config files from the loaded project config ... ', static::FG_YELLOW);
             $projectConfig->regenerateYamlFromConfig();
             static::stdout('done' . PHP_EOL, static::FG_GREEN);

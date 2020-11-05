@@ -50,6 +50,18 @@ class CustomField extends BaseField
 
     /**
      * @inheritdoc
+     * @since 3.5.2
+     */
+    protected function value(ElementInterface $element = null)
+    {
+        if (!$element) {
+            return null;
+        }
+        return $element->getFieldValue($this->_field->handle);
+    }
+
+    /**
+     * @inheritdoc
      */
     public function requirable(): bool
     {
@@ -149,7 +161,48 @@ class CustomField extends BaseField
      */
     protected function defaultLabel(ElementInterface $element = null, bool $static = false)
     {
-        return Craft::t('site', $this->_field->name);
+        if ($this->_field->name !== '' && $this->_field->name !== null && $this->_field->name !== '__blank__') {
+            return Html::encode(Craft::t('site', $this->_field->name));
+        }
+        return null;
+    }
+
+    /**
+     * Returns whether the label should be shown in form inputs.
+     *
+     * @return bool
+     * @since 3.5.6
+     */
+    protected function showLabel(): bool
+    {
+        // Does the field have a custom label?
+        if ($this->label !== null && $this->label !== '') {
+            return parent::showLabel();
+        }
+
+        return $this->_field->name !== '__blank__';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function statusClass(ElementInterface $element = null, bool $static = false)
+    {
+        if ($element && ($status = $element->getFieldStatus($this->_field->handle))) {
+            return $status[0];
+        }
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function statusLabel(ElementInterface $element = null, bool $static = false)
+    {
+        if ($element && ($status = $element->getFieldStatus($this->_field->handle))) {
+            return $status[1];
+        }
+        return null;
     }
 
     /**

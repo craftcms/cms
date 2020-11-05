@@ -7,14 +7,15 @@
 
 namespace craft\services;
 
-use Craft;
 use craft\base\ElementInterface;
+use craft\db\Connection;
 use craft\db\Query;
 use craft\db\Table;
 use craft\events\ElementContentEvent;
 use craft\helpers\Db;
 use yii\base\Component;
 use yii\base\Exception;
+use yii\di\Instance;
 
 /**
  * Content service.
@@ -36,6 +37,12 @@ class Content extends Component
     const EVENT_AFTER_SAVE_CONTENT = 'afterSaveContent';
 
     /**
+     * @var Connection|array|string The database connection to use
+     * @since 3.5.6
+     */
+    public $db = 'db';
+
+    /**
      * @var string
      */
     public $contentTable = Table::CONTENT;
@@ -49,6 +56,15 @@ class Content extends Component
      * @var string
      */
     public $fieldContext = 'global';
+
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        parent::init();
+        $this->db = Instance::ensure($this->db, Connection::class);
+    }
 
     /**
      * Returns the content row for a given element, with field column prefixes removed from the keys.
@@ -187,11 +203,11 @@ class Content extends Component
             // Update the existing row
             Db::update($this->contentTable, $values, [
                 'id' => $element->contentId,
-            ]);
+            ], [], true, $this->db);
         } else {
             // Insert a new row and store its ID on the element
-            Db::insert($this->contentTable, $values);
-            $element->contentId = Craft::$app->getDb()->getLastInsertID($this->contentTable);
+            Db::insert($this->contentTable, $values, true, $this->db);
+            $element->contentId = $this->db->getLastInsertID($this->contentTable);
         }
 
         // Fire an 'afterSaveContent' event

@@ -8,22 +8,18 @@
 namespace craft\web;
 
 use Craft;
-use craft\base\ElementInterface;
 use craft\events\RegisterTemplateRootsEvent;
 use craft\events\TemplateEvent;
-use craft\helpers\ElementHelper;
+use craft\helpers\Cp;
 use craft\helpers\FileHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\Path;
 use craft\helpers\StringHelper;
-use craft\helpers\UrlHelper;
 use craft\web\twig\Environment;
 use craft\web\twig\Extension;
 use craft\web\twig\Template;
 use craft\web\twig\TemplateLoader;
-use JSMin\JSMin;
-use Minify_CSSmin;
 use Twig\Error\LoaderError as TwigLoaderError;
 use Twig\Error\RuntimeError as TwigRuntimeError;
 use Twig\Error\SyntaxError as TwigSyntaxError;
@@ -100,12 +96,14 @@ class View extends \yii\web\View
     /**
      * @var bool Whether to minify CSS registered with [[registerCss()]]
      * @since 3.4.0
+     * @deprecated in 3.6.0.
      */
     public $minifyCss = false;
 
     /**
      * @var bool Whether to minify JS registered with [[registerJs()]]
      * @since 3.4.0
+     * @deprecated in 3.6.0
      */
     public $minifyJs = false;
 
@@ -756,8 +754,8 @@ class View extends \yii\web\View
      * - TemplateName/index.twig
      *
      * If this is a front-end request, the actual list of file extensions and
-     * index filenames are configurable via the <config:defaultTemplateExtensions>
-     * and <config:indexTemplateFilenames> config settings.
+     * index filenames are configurable via the <config3:defaultTemplateExtensions>
+     * and <config3:indexTemplateFilenames> config settings.
      *
      * For example if you set the following in config/general.php:
      *
@@ -931,24 +929,6 @@ class View extends \yii\web\View
     }
 
     /**
-     * @inheritdoc
-     * @since 3.4.0
-     */
-    public function registerCss($css, $options = [], $key = null)
-    {
-        if ($this->minifyCss) {
-            // Sanity check to work around https://github.com/tubalmartin/YUI-CSS-compressor-PHP-port/issues/58
-            if (preg_match('/\{[^\}]*$/', $css, $matches, PREG_OFFSET_CAPTURE)) {
-                Craft::warning("Unable to minify CSS due to an unclosed CSS block at offset {$matches[0][1]}.", __METHOD__);
-            } else {
-                $css = Minify_CSSmin::minify($css);
-            }
-        }
-
-        parent::registerCss($css, $options, $key);
-    }
-
-    /**
      * Registers a hi-res CSS code block.
      *
      * @param string $css the CSS code block to be registered
@@ -960,7 +940,7 @@ class View extends \yii\web\View
      */
     public function registerHiResCss(string $css, array $options = [], string $key = null)
     {
-        Craft::$app->getDeprecator()->log('registerHiResCss', 'craft\\web\\View::registerHiResCss() has been deprecated. Use registerCss() instead, and type your own media selector.');
+        Craft::$app->getDeprecator()->log('registerHiResCss', '`craft\\web\\View::registerHiResCss()` has been deprecated. Use `registerCss()` instead, and type your own media selector.');
 
         $css = "@media only screen and (-webkit-min-device-pixel-ratio: 1.5),\n" .
             "only screen and (   -moz-min-device-pixel-ratio: 1.5),\n" .
@@ -980,10 +960,6 @@ class View extends \yii\web\View
     {
         // Trim any whitespace and ensure it ends with a semicolon.
         $js = StringHelper::ensureRight(trim($js, " \t\n\r\0\x0B"), ';');
-
-        if ($this->minifyJs) {
-            $js = JSMin::minify($js);
-        }
 
         parent::registerJs($js, $position, $key);
     }
@@ -1543,17 +1519,34 @@ JS;
      * {% hook "myAwesomeHook" %}
      * ```
      *
-     * When the hook tag gets invoked, your template hook function will get called. The $context argument will be the
+     * When the hook tag gets invoked, your template hook function will get called. The `$context` argument will be the
      * current Twig context array, which you’re free to manipulate. Any changes you make to it will be available to the
      * template following the tag. Whatever your template hook function returns will be output in place of the tag in
      * the template as well.
      *
+     * If you want to prevent additional hook methods from getting triggered, add a second `$handled` argument to your callback method,
+     * which should be passed by reference, and then set it to `true` within the method.
+     *
+     * ```php
+     * Craft::$app->view->hook('myAwesomeHook', function(&$context, &$handled) {
+     *     $context['foo'] = 'bar';
+     *     $handled = true;
+     *     return 'Hey!';
+     * });
+     * ```
+     *
      * @param string $hook The hook name.
      * @param callback $method The callback function.
+     * @param bool $append whether to append the method handler to the end of the existing method list for the hook. If `false`, the method will be
+     * inserted at the beginning of the existing method list.
      */
-    public function hook(string $hook, $method)
+    public function hook(string $hook, $method, bool $append = true)
     {
-        $this->_hooks[$hook][] = $method;
+        if ($append || empty($this->_hooks[$hook])) {
+            $this->_hooks[$hook][] = $method;
+        } else {
+            array_unshift($this->_hooks[$hook], $method);
+        }
     }
 
     /**
@@ -1570,8 +1563,12 @@ JS;
         $return = '';
 
         if (isset($this->_hooks[$hook])) {
+            $handled = false;
             foreach ($this->_hooks[$hook] as $method) {
-                $return .= $method($context);
+                $return .= $method($context, $handled);
+                if ($handled) {
+                    break;
+                }
             }
         }
 
@@ -2000,129 +1997,17 @@ JS;
             return null;
         }
 
-        /** @var ElementInterface $element */
-        $element = $context['element'];
-        $label = $element->getUiLabel();
-
-        if (!isset($context['context'])) {
-            $context['context'] = 'index';
-        }
-
-        // How big is the element going to be?
-        if (isset($context['size']) && ($context['size'] === 'small' || $context['size'] === 'large')) {
-            $elementSize = $context['size'];
-        } else if (isset($context['viewMode']) && $context['viewMode'] === 'thumbs') {
-            $elementSize = 'large';
+        if (isset($context['size']) && in_array($context['size'], [Cp::ELEMENT_SIZE_SMALL, Cp::ELEMENT_SIZE_LARGE], true)) {
+            $size = $context['size'];
         } else {
-            $elementSize = 'small';
+            $size = (isset($context['viewMode']) && $context['viewMode'] === 'thumbs') ? Cp::ELEMENT_SIZE_LARGE : Cp::ELEMENT_SIZE_SMALL;
         }
 
-        // Create the thumb/icon image, if there is one
-        // ---------------------------------------------------------------------
-
-        $thumbSize = $elementSize === 'small' ? 34 : 120;
-        $thumbUrl = $element->getThumbUrl($thumbSize);
-
-        if ($thumbUrl !== null) {
-            $imageSize2x = $thumbSize * 2;
-            $thumbUrl2x = $element->getThumbUrl($imageSize2x);
-
-            $srcsets = [
-                "$thumbUrl {$thumbSize}w",
-                "$thumbUrl2x {$imageSize2x}w",
-            ];
-            $sizesHtml = "{$thumbSize}px";
-            $srcsetHtml = implode(', ', $srcsets);
-            $imgHtml = "<div class='elementthumb' data-sizes='{$sizesHtml}' data-srcset='{$srcsetHtml}'></div>";
-        } else {
-            $imgHtml = '';
-        }
-
-        $htmlAttributes = array_merge(
-            $element->getHtmlAttributes($context['context']),
-            [
-                'class' => 'element ' . $elementSize,
-                'data-type' => get_class($element),
-                'data-id' => $element->id,
-                'data-site-id' => $element->siteId,
-                'data-status' => $element->getStatus(),
-                'data-label' => (string)$element,
-                'data-url' => $element->getUrl(),
-                'data-level' => $element->level,
-                'title' => $label . (Craft::$app->getIsMultiSite() ? ' – ' . $element->getSite()->name : ''),
-            ]);
-
-        if ($context['context'] === 'field') {
-            $htmlAttributes['class'] .= ' removable';
-        }
-
-        if ($element->hasErrors()) {
-            $htmlAttributes['class'] .= ' error';
-        }
-
-        if ($element::hasStatuses()) {
-            $htmlAttributes['class'] .= ' hasstatus';
-        }
-
-        if ($thumbUrl !== null) {
-            $htmlAttributes['class'] .= ' hasthumb';
-        }
-
-        $html = '<div';
-
-        // todo: swap this with Html::renderTagAttributse in 4.0
-        // (that will cause a couple breaking changes since `null` means "don't show" and `true` means "no value".)
-        foreach ($htmlAttributes as $attribute => $value) {
-            $html .= ' ' . $attribute . ($value !== null ? '="' . Html::encode($value) . '"' : '');
-        }
-
-        if (ElementHelper::isElementEditable($element)) {
-            $html .= ' data-editable';
-        }
-
-        if ($element->trashed) {
-            $html .= ' data-trashed';
-        }
-
-        $html .= '>';
-
-        if ($context['context'] === 'field' && isset($context['name'])) {
-            $html .= '<input type="hidden" name="' . $context['name'] . '[]" value="' . $element->id . '">';
-            $html .= '<a class="delete icon" title="' . Craft::t('app', 'Remove') . '"></a> ';
-        }
-
-        if ($element::hasStatuses()) {
-            $status = $element->getStatus();
-            $statusClasses = $status . ' ' . ($element::statuses()[$status]['color'] ?? '');
-            $html .= '<span class="status ' . $statusClasses . '"></span>';
-        }
-
-        $html .= $imgHtml;
-        $html .= '<div class="label">';
-
-        $html .= '<span class="title">';
-
-        $encodedLabel = Html::encode($label);
-
-        if (
-            $context['context'] === 'index' &&
-            !$element->trashed &&
-            ($cpEditUrl = $element->getCpEditUrl())
-        ) {
-            if ($element->getIsDraft()) {
-                $cpEditUrl = UrlHelper::urlWithParams($cpEditUrl, ['draftId' => $element->draftId]);
-            } else if ($element->getIsRevision()) {
-                $cpEditUrl = UrlHelper::urlWithParams($cpEditUrl, ['revisionId' => $element->revisionId]);
-            }
-
-            $cpEditUrl = Html::encode($cpEditUrl);
-            $html .= "<a href=\"{$cpEditUrl}\">{$encodedLabel}</a>";
-        } else {
-            $html .= $encodedLabel;
-        }
-
-        $html .= '</span></div></div>';
-
-        return $html;
+        return Cp::elementHtml(
+            $context['element'],
+            $context['context'] ?? 'index',
+            $size,
+            $context['name'] ?? null
+        );
     }
 }

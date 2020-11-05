@@ -54,7 +54,11 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
 
                 this.$passwordInput = $('<input type="password" class="text password fullwidth" placeholder="' + Craft.t('app', 'Password') + '" autocomplete="current-password"/>').appendTo($passwordWrapper);
                 this.$passwordSpinner = $('<div class="spinner hidden"/>').appendTo($inputContainer);
-                this.$submitBtn = $('<input type="submit" class="btn submit disabled" value="' + Craft.t('app', 'Submit') + '" />').appendTo($buttonContainer);
+                this.$submitBtn = $('<button/>', {
+                    type: 'submit',
+                    class: 'btn submit disabled',
+                    text: Craft.t('app', 'Submit'),
+                }).appendTo($buttonContainer);
                 this.$errorPara = $('<p class="error"/>').appendTo($body);
 
                 this.passwordModal = new Garnish.Modal($passwordModal, {

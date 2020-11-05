@@ -73,7 +73,7 @@
                                         if (this.totalActions > 0) {
                                             this.processIndexing();
                                         } else {
-                                            this.onComplete();
+                                            this.finishIndexing();
                                         }
                                     }
                                 }.bind(this));
@@ -129,15 +129,27 @@
                     $buttons = $('<div class="buttons right"/>').appendTo($footer);
 
                 if (data.showDelete) {
-                    var $cancelBtn = $('<div class="btn">' + Craft.t('app', 'Keep them') + '</div>').appendTo($buttons),
-                    $okBtn = $('<input type="submit" class="btn submit" value="' + Craft.t('app', 'Delete them') + '"/>').appendTo($buttons);
+                    let $cancelBtn = $('<button/>', {
+                        type: 'button',
+                        class: 'btn',
+                        text: Craft.t('app', 'Keep them'),
+                    }).appendTo($buttons);
+                    $('<button/>', {
+                        type: 'submit',
+                        class: 'btn submit',
+                        text: Craft.t('app', 'Delete them'),
+                    }).appendTo($buttons);
 
                     this.addListener($cancelBtn, 'click', function() {
                         modal.hide();
                         this.onComplete();
                     });
                 } else {
-                    $('<input type="submit" class="btn submit" value="' + Craft.t('app', 'OK') + '"/>').appendTo($buttons);
+                    $('<button/>', {
+                        type: 'submit',
+                        class: 'btn submit',
+                        text: Craft.t('app', 'OK'),
+                    }).appendTo($buttons);
                 }
 
                 Craft.initUiElements($body);

@@ -18,7 +18,6 @@ use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\exporters\Raw;
 use craft\events\ElementActionEvent;
-use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
 use yii\db\Expression;
 use yii\web\BadRequestHttpException;
@@ -90,7 +89,7 @@ class ElementIndexesController extends BaseElementsController
             return false;
         }
 
-        if ($action->id !== 'export') {
+        if (!in_array($action->id, ['export', 'perform-action'], true)) {
             $this->requireAcceptsJson();
         }
 
@@ -184,7 +183,7 @@ class ElementIndexesController extends BaseElementsController
             /** @var ElementAction $availableAction */
             foreach ($this->actions as $availableAction) {
                 if ($actionClass === get_class($availableAction)) {
-                    $action = $availableAction;
+                    $action = clone $availableAction;
                     break;
                 }
             }
@@ -244,6 +243,10 @@ class ElementIndexesController extends BaseElementsController
         }
 
         // Respond
+        if ($action->isDownload()) {
+            return $this->response;
+        }
+
         $responseData = [
             'success' => $success,
             'message' => $message,
@@ -433,11 +436,17 @@ class ElementIndexesController extends BaseElementsController
         // Override with the request's params
         if ($criteria = $this->request->getBodyParam('criteria')) {
             if (isset($criteria['trashed'])) {
-                $criteria['trashed'] = (bool)$criteria['trashed'];
+                $criteria['trashed'] = filter_var($criteria['trashed'] ?? false, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false;
             }
-            if (ArrayHelper::remove($criteria, 'drafts')) {
-                $criteria['drafts'] = true;
-                $criteria['draftOf'] = false;
+            if (isset($criteria['drafts'])) {
+                $criteria['drafts'] = filter_var($criteria['drafts'] ?? false, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false;
+            }
+            if (isset($criteria['draftOf'])) {
+                if (is_numeric($criteria['draftOf']) && $criteria['draftOf'] != 0) {
+                    $criteria['draftOf'] = (int)$criteria['draftOf'];
+                } else {
+                    $criteria['draftOf'] = filter_var($criteria['draftOf'], FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+                }
             }
             Craft::configure($query, $criteria);
         }
@@ -565,7 +574,7 @@ class ElementIndexesController extends BaseElementsController
             }
 
             if ($this->elementQuery->trashed) {
-                if ($action instanceof Delete) {
+                if ($action instanceof Delete && !$action->withDescendants) {
                     $action->hard = true;
                 } else if (!$action instanceof Restore) {
                     unset($actions[$i]);
@@ -645,9 +654,11 @@ class ElementIndexesController extends BaseElementsController
             $actionData[] = [
                 'type' => get_class($action),
                 'destructive' => $action->isDestructive(),
+                'download' => $action->isDownload(),
                 'name' => $action->getTriggerLabel(),
                 'trigger' => $action->getTriggerHtml(),
                 'confirm' => $action->getConfirmationMessage(),
+                'settings' => $action->getSettings() ?: null,
             ];
         }
 

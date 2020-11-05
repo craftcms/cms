@@ -99,6 +99,7 @@
                         $button.attr('href', option.url);
                         $button.attr('target', '_blank');
                     } else {
+                        $button.attr('role', 'button');
                         this.addListener($button, 'click', option, 'onOptionSelect');
                     }
                 }

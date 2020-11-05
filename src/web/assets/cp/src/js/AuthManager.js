@@ -136,11 +136,19 @@ Craft.AuthManager = Garnish.Base.extend(
             this.showingLogoutWarningModal = true;
 
             if (!this.logoutWarningModal) {
-                var $form = $('<form id="logoutwarningmodal" class="modal alert fitted"/>'),
-                    $body = $('<div class="body"/>').appendTo($form),
-                    $buttons = $('<div class="buttons right"/>').appendTo($body),
-                    $logoutBtn = $('<div class="btn">' + Craft.t('app', 'Log out now') + '</div>').appendTo($buttons),
-                    $renewSessionBtn = $('<input type="submit" class="btn submit" value="' + Craft.t('app', 'Keep me logged in') + '" />').appendTo($buttons);
+                let $form = $('<form id="logoutwarningmodal" class="modal alert fitted"/>');
+                let $body = $('<div class="body"/>').appendTo($form);
+                let $buttons = $('<div class="buttons right"/>').appendTo($body);
+                let $logoutBtn = $('<button/>', {
+                    type: 'button',
+                    class: 'btn',
+                    text: Craft.t('app', 'Log out now'),
+                }).appendTo($buttons);
+                let $renewSessionBtn = $('<button/>', {
+                    type: 'submit',
+                    class: 'btn submit',
+                    text: Craft.t('app', 'Keep me logged in'),
+                }).appendTo($buttons);
 
                 this.$logoutWarningPara = $('<p/>').prependTo($body);
 
@@ -245,7 +253,11 @@ Craft.AuthManager = Garnish.Base.extend(
 
                 this.$passwordInput = $('<input type="password" class="text password fullwidth" placeholder="' + Craft.t('app', 'Password') + '"/>').appendTo($passwordWrapper);
                 this.$passwordSpinner = $('<div class="spinner hidden"/>').appendTo($inputContainer);
-                this.$loginBtn = $('<input type="submit" class="btn submit disabled" value="' + Craft.t('app', 'Login') + '" />').appendTo($buttonContainer);
+                this.$loginBtn = $('<button/>', {
+                    type: 'submit',
+                    class: 'btn submit disabled',
+                    text: Craft.t('app', 'Login'),
+                }).appendTo($buttonContainer);
                 this.$loginErrorPara = $('<p class="error"/>').appendTo($body);
 
                 this.loginModal = new Garnish.Modal($form, {

@@ -43,8 +43,7 @@ Craft.BaseElementEditor = Garnish.Base.extend(
 
             if (value === null) {
                 delete this.settings.attributes[name];
-            }
-            else {
+            } else {
                 this.settings.attributes[name] = value;
             }
         },
@@ -54,15 +53,13 @@ Craft.BaseElementEditor = Garnish.Base.extend(
 
             if (this.settings.siteId) {
                 data.siteId = this.settings.siteId;
-            }
-            else if (this.$element && this.$element.data('site-id')) {
+            } else if (this.$element && this.$element.data('site-id')) {
                 data.siteId = this.$element.data('site-id');
             }
 
             if (this.settings.elementId) {
                 data.elementId = this.settings.elementId;
-            }
-            else if (this.$element && this.$element.data('id')) {
+            } else if (this.$element && this.$element.data('id')) {
                 data.elementId = this.$element.data('id');
             }
 
@@ -125,8 +122,16 @@ Craft.BaseElementEditor = Garnish.Base.extend(
 
                 var $footer = $('<div class="hud-footer"/>').appendTo(this.$form),
                     $buttonsContainer = $('<div class="buttons right"/>').appendTo($footer);
-                this.$cancelBtn = $('<div class="btn">' + Craft.t('app', 'Cancel') + '</div>').appendTo($buttonsContainer);
-                this.$saveBtn = $('<input class="btn submit" type="submit" value="' + Craft.t('app', 'Save') + '"/>').appendTo($buttonsContainer);
+                this.$cancelBtn = $('<button/>', {
+                    type: 'button',
+                    class: 'btn',
+                    text: Craft.t('app', 'Cancel'),
+                }).appendTo($buttonsContainer);
+                this.$saveBtn = $('<button/>', {
+                    type: 'submit',
+                    class: 'btn submit',
+                    text: Craft.t('app', 'Save'),
+                }).appendTo($buttonsContainer);
                 this.$spinner = $('<div class="spinner hidden"/>').appendTo($buttonsContainer);
 
                 $hudContents = $hudContents.add(this.$form);
@@ -144,6 +149,9 @@ Craft.BaseElementEditor = Garnish.Base.extend(
                         onSubmit: this.saveElement.bind(this),
                     });
 
+                    Garnish.shortcutManager.registerShortcut(Garnish.ESC_KEY, this.maybeCloseHud.bind(this));
+                    this.hud.addListener(this.hud.$shade, 'click', this.maybeCloseHud.bind(this));
+
                     this.hud.$hud.data('elementEditor', this);
 
                     // Disable browser input validation
@@ -152,8 +160,7 @@ Craft.BaseElementEditor = Garnish.Base.extend(
                     this.hud.on('hide', $.proxy(function() {
                         delete this.hud;
                     }, this));
-                }
-                else {
+                } else {
                     this.hud.updateBody($hudContents);
                     this.hud.updateSizeAndPosition();
                 }
@@ -168,10 +175,7 @@ Craft.BaseElementEditor = Garnish.Base.extend(
         },
 
         switchSite: function() {
-            if (
-                this.hud.$body.serialize() !== this.initialData &&
-                !confirm(Craft.t('app', 'Switching sites will lose unsaved changes. Are you sure you want to switch sites?'))
-            ) {
+            if (this.isDirty() && !confirm(Craft.t('app', 'Switching sites will lose unsaved changes. Are you sure you want to switch sites?'))) {
                 this.$siteSelect.val(this.siteId);
                 return;
             }
@@ -184,7 +188,7 @@ Craft.BaseElementEditor = Garnish.Base.extend(
 
             this.$siteSpinner.removeClass('hidden');
 
-            this.reloadForm({ siteId: newSiteId }, $.proxy(function(textStatus) {
+            this.reloadForm({siteId: newSiteId}, $.proxy(function(textStatus) {
                 this.$siteSpinner.addClass('hidden');
                 if (textStatus !== 'success') {
                     // Reset the site select
@@ -216,15 +220,16 @@ Craft.BaseElementEditor = Garnish.Base.extend(
             }
 
             // Swap any instruction text with info icons
-            var $instructions = this.$fieldsContainer.find('> .meta > .field > .heading > .instructions');
+            let $allInstructions = this.$fieldsContainer.find('> .meta > .field > .instructions');
 
-            for (var i = 0; i < $instructions.length; i++) {
-                $instructions.eq(i)
-                    .replaceWith($('<span/>', {
-                        'class': 'info',
-                        'html': $instructions.eq(i).children().html()
-                    }))
-                    .infoicon();
+            for (let i = 0; i < $allInstructions.length; i++) {
+                let $instructions = $allInstructions.eq(i);
+                let $label = $instructions.siblings('.heading').children('label');
+                $('<span/>', {
+                    'class': 'info',
+                    'html': $instructions.children().html()
+                }).appendTo($label);
+                $instructions.remove();
             }
 
             Garnish.requestAnimationFrame($.proxy(function() {
@@ -267,8 +272,7 @@ Craft.BaseElementEditor = Garnish.Base.extend(
                             if ($a.length && response.cpEditUrl) {
                                 $a.attr('href', response.cpEditUrl);
                                 $a.text(response.newTitle);
-                            }
-                            else {
+                            } else {
                                 $title.text(response.newTitle);
                             }
                         }
@@ -281,8 +285,7 @@ Craft.BaseElementEditor = Garnish.Base.extend(
 
                         this.closeHud();
                         this.onSaveElement(response);
-                    }
-                    else {
+                    } else {
                         this.updateForm(response, false);
                         Garnish.shake(this.hud.$hud);
                     }
@@ -290,7 +293,25 @@ Craft.BaseElementEditor = Garnish.Base.extend(
             }, this));
         },
 
+        isDirty: function() {
+            return this.hud.$body.serialize() !== this.initialData;
+        },
+
+        maybeCloseHud: function(ev) {
+            if (!this.hud || !this.hud.showing) {
+                return;
+            }
+
+            if (!this.isDirty() || confirm('Are you sure you want to close the editor? Any changes will be lost.')) {
+                this.closeHud();
+            }
+        },
+
         closeHud: function() {
+            if (!this.hud || !this.hud.showing) {
+                return;
+            }
+
             this.hud.hide();
             delete this.hud;
         },

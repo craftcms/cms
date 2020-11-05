@@ -33,9 +33,25 @@ class EagerLoadPlan extends BaseObject
     public $criteria = [];
 
     /**
-     * @var bool Whether to only eager-load the total results
+     * @var bool Whether to eager-load the matching elements
+     * @since 3.5.12
+     */
+    public $all = false;
+
+    /**
+     * @var bool Whether to eager-load the count of the matching elements
      */
     public $count = false;
+
+    /**
+     * @var callable|null A PHP callable whose return value determines whether to apply eager-loaded elements to the given element.
+     *
+     * The signature of the callable should be `function (\craft\base\ElementInterface $element): bool`, where `$element` refers to the element
+     * the eager-loaded elements are about to be applied to. The callable should return a boolean value.
+     *
+     * @since 3.5.12
+     */
+    public $when;
 
     /**
      * @var EagerLoadPlan[] Nested eager-loading plans to apply to the eager-loaded elements.

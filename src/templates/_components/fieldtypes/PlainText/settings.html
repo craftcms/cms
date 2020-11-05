@@ -1,5 +1,16 @@
 {% import "_includes/forms" as forms %}
 
+{{ forms.selectField({
+    label: 'UI Mode'|t('app'),
+    instructions: 'How the field should be presented in the control panel.'|t('app'),
+    id: 'ui-mode',
+    name: 'uiMode',
+    options: [
+        {label: 'Normal'|t('app'), value: 'normal'},
+        {label: 'Enlarged'|t('app'), value: 'enlarged'},
+    ],
+    value: field.uiMode,
+}) }}
 
 {{ forms.textField({
     label: "Placeholder Text"|t('app'),

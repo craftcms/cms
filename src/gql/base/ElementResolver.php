@@ -8,6 +8,7 @@
 namespace craft\gql\base;
 
 use Craft;
+use craft\base\EagerLoadingFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\GqlInlineFragmentFieldInterface;
 use craft\elements\db\ElementQuery;
@@ -86,7 +87,7 @@ abstract class ElementResolver extends Resolver
     protected static function prepareElementQuery($source, array $arguments, $context, ResolveInfo $resolveInfo)
     {
         $arguments = self::prepareArguments($arguments);
-        $fieldName = $resolveInfo->fieldName;
+        $fieldName = GqlHelper::getFieldNameWithAlias($resolveInfo, $source, $context);
 
         $query = static::prepareQuery($source, $arguments, $fieldName);
 
@@ -97,22 +98,23 @@ abstract class ElementResolver extends Resolver
 
         $parentField = null;
 
-        // This will happen if something is either dynamically added or is inside an block element that didn't support eager-loading
-        // and broke the eager-loading chain. In this case Craft has to provide the relevant context so the condition builder knows where it's at.
         if ($source instanceof ElementInterface) {
-            $context = $source->getFieldContext();
+            $fieldContext = $source->getFieldContext();
+            $field = Craft::$app->getFields()->getFieldByHandle($fieldName, $fieldContext);
 
-            if ($context !== 'global') {
-                $field = Craft::$app->getFields()->getFieldByHandle($fieldName, $context);
-                if ($field instanceof GqlInlineFragmentFieldInterface) {
-                    $parentField = $field;
-                }
+            // This will happen if something is either dynamically added or is inside an block element that didn't support eager-loading
+            // and broke the eager-loading chain. In this case Craft has to provide the relevant context so the condition builder knows where it's at.
+            if (($context !== 'global' && $field instanceof GqlInlineFragmentFieldInterface) || $field instanceof EagerLoadingFieldInterface) {
+                $parentField = $field;
             }
         }
 
-        $conditions = (new ElementQueryConditionBuilder($resolveInfo))->extractQueryConditions($parentField);
+        /** @var ElementQueryConditionBuilder $conditionBuilder */
+        $conditionBuilder = empty($context['conditionBuilder']) ? Craft::createObject(['class' => ElementQueryConditionBuilder::class]) : $context['conditionBuilder'];
+        $conditionBuilder->setResolveInfo($resolveInfo);
 
-        // Todo make element resolver classes non-static in Craft 4.0
+        $conditions = $conditionBuilder->extractQueryConditions($parentField);
+
         /** @var ElementQuery $query */
         foreach ($conditions as $method => $parameters) {
             if (method_exists($query, $method)) {

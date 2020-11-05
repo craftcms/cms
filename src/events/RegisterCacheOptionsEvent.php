@@ -18,7 +18,7 @@ use yii\base\Event;
 class RegisterCacheOptionsEvent extends Event
 {
     /**
-     * @var array List of registered cache options for the Clear Caches tool. Each option should contain 'key', 'action', and 'label' keys.
+     * @var array List of registered cache options for the Clear Caches tool.
      */
     public $options = [];
 }

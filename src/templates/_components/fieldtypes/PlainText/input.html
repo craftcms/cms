@@ -2,8 +2,9 @@
 
 {%- set class = [
     'nicetext',
-    (field.code ? 'code' : null)
-]|filter|join(' ') %}
+    field.code ? 'code',
+    field.uiMode == 'enlarged' ? 'readable',
+]|filter %}
 
 {% set config = {
     id: name,
@@ -12,7 +13,7 @@
     class: class,
     maxlength: field.charLimit,
     showCharsLeft: true,
-    placeholder: field.placeholder|t('site'),
+    placeholder: field.placeholder ? field.placeholder|t('site'),
     rows: field.initialRows
 } %}
 

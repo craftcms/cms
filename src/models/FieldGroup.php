@@ -78,4 +78,17 @@ class FieldGroup extends Model
     {
         return Craft::$app->getFields()->getFieldsByGroupId($this->id);
     }
+
+    /**
+     * Returns the field layout config for this field group.
+     *
+     * @return array
+     * @since 3.5.0
+     */
+    public function getConfig(): array
+    {
+        return [
+            'name' => $this->name,
+        ];
+    }
 }

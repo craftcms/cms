@@ -14,6 +14,7 @@ use craft\models\Site;
 use craft\models\SiteGroup;
 use craft\web\assets\sites\SitesAsset;
 use craft\web\Controller;
+use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
@@ -94,31 +95,36 @@ class SitesController extends Controller
      * Saves a site group.
      *
      * @return Response
+     * @throws BadRequestHttpException
      */
     public function actionSaveGroup(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $group = new SiteGroup();
-        $group->id = $this->request->getBodyParam('id');
+        $sitesService = Craft::$app->getSites();
+        $groupId = $this->request->getBodyParam('id');
+
+        if ($groupId) {
+            $group = $sitesService->getGroupById($groupId);
+            if (!$group) {
+                throw new BadRequestHttpException("Invalid site group ID: $groupId");
+            }
+        } else {
+            $group = new SiteGroup();
+        }
+
         $group->name = $this->request->getRequiredBodyParam('name');
 
-        $isNewGroup = empty($group->id);
-
-        if (Craft::$app->getSites()->saveGroup($group)) {
-            if ($isNewGroup) {
-                $this->setSuccessFlash(Craft::t('app', 'Group added.'));
-            }
-
+        if (!Craft::$app->getSites()->saveGroup($group)) {
             return $this->asJson([
-                'success' => true,
-                'group' => $group->getAttributes(),
+                'errors' => $group->getErrors(),
             ]);
         }
 
         return $this->asJson([
-            'errors' => $group->getErrors(),
+            'success' => true,
+            'group' => $group->getAttributes(),
         ]);
     }
 
@@ -251,14 +257,20 @@ class SitesController extends Controller
      * Saves a site.
      *
      * @return Response|null
+     * @throws BadRequestHttpException
      */
     public function actionSaveSite()
     {
         $this->requirePostRequest();
+
+        $sitesService = Craft::$app->getSites();
         $siteId = $this->request->getBodyParam('siteId');
 
         if ($siteId) {
-            $site = Craft::$app->getSites()->getSiteById($siteId);
+            $site = $sitesService->getSiteById($siteId);
+            if (!$site) {
+                throw new BadRequestHttpException("Invalid site ID: $siteId");
+            }
         } else {
             $site = new Site();
             $site->id = $this->request->getBodyParam('siteId');
@@ -274,7 +286,7 @@ class SitesController extends Controller
         $site->baseUrl = $site->hasUrls ? $this->request->getBodyParam('baseUrl') : null;
 
         // Save it
-        if (!Craft::$app->getSites()->saveSite($site)) {
+        if (!$sitesService->saveSite($site)) {
             $this->setFailFlash(Craft::t('app', 'Couldn’t save the site.'));
 
             // Send the site back to the template

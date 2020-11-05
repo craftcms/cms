@@ -115,10 +115,10 @@ class Config extends Component
                     }
                     $config->securityKey = $key;
                 }
-                Craft::$app->getDeprecator()->log('validation.key', "The auto-generated validation key stored at {$keyPath} has been deprecated. Copy its value to the “securityKey” config setting in config/general.php.");
+                Craft::$app->getDeprecator()->log('validation.key', "The auto-generated validation key stored at `{$keyPath}` has been deprecated. Copy its value to the `securityKey` config setting in `config/general.php`.");
             }
             if ($config->siteUrl === null && defined('CRAFT_SITE_URL')) {
-                Craft::$app->getDeprecator()->log('CRAFT_SITE_URL', 'The CRAFT_SITE_URL constant has been deprecated. Set the “siteUrl” config setting in config/general.php instead.');
+                Craft::$app->getDeprecator()->log('CRAFT_SITE_URL', 'The `CRAFT_SITE_URL` constant has been deprecated. Set the `siteUrl` config setting in `config/general.php` instead.');
                 $config->siteUrl = CRAFT_SITE_URL;
             }
         }
@@ -251,12 +251,16 @@ class Config extends Component
         $contents = file_get_contents($path);
         $qName = preg_quote($name, '/');
         $slashedValue = addslashes($value);
+        // Only surround with quotes if the value contains a space
+        if (strpos($slashedValue, ' ') !== false || strpos($slashedValue, '#') !== false) {
+            $slashedValue = "\"$slashedValue\"";
+        }
         $qValue = str_replace('$', '\\$', $slashedValue);
-        $contents = preg_replace("/^(\s*){$qName}=.*/m", "\$1{$name}=\"{$qValue}\"", $contents, -1, $count);
+        $contents = preg_replace("/^(\s*){$qName}=.*/m", "\$1$name=$qValue", $contents, -1, $count);
 
         if ($count === 0) {
             $contents = rtrim($contents);
-            $contents = ($contents ? $contents . PHP_EOL . PHP_EOL : '') . "{$name}=\"{$slashedValue}\"" . PHP_EOL;
+            $contents = ($contents ? $contents . PHP_EOL . PHP_EOL : '') . "$name=$slashedValue" . PHP_EOL;
         }
 
         FileHelper::writeToFile($path, $contents);

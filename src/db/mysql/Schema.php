@@ -153,7 +153,8 @@ class Schema extends \yii\db\mysql\Schema
             ' --routines' .
             ' --default-character-set=' . Craft::$app->getConfig()->getDb()->charset .
             ' --set-charset' .
-            ' --triggers';
+            ' --triggers' .
+            ' --no-tablespaces';
 
         // If the server is MySQL 5.x, we need to see what version of mysqldump is installed (5.x or 8.x)
         if (version_compare(App::normalizeVersion(Craft::$app->getDb()->getSchema()->getServerVersion()), "8", "<")) {
@@ -369,7 +370,7 @@ SQL;
      */
     private function _createDumpConfigFile(): string
     {
-        $filePath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . 'my.cnf';
+        $filePath = FileHelper::normalizePath(sys_get_temp_dir()) . DIRECTORY_SEPARATOR . 'my.cnf';
 
         $parsed = Db::parseDsn($this->db->dsn);
         $username = $this->db->getIsPgsql() && !empty($parsed['user']) ? $parsed['user'] : $this->db->username;

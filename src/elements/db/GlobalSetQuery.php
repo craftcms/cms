@@ -21,6 +21,7 @@ use yii\db\Connection;
  * @method GlobalSet|array|null nth(int $n, Connection $db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @doc-path globals.md
  * @supports-site-params
  * @replace {element} global set
  * @replace {elements} global sets

@@ -80,7 +80,7 @@ abstract class Resolver
      */
     protected static function extractEagerLoadCondition(ResolveInfo $resolveInfo)
     {
-        $conditions = (new ElementQueryConditionBuilder($resolveInfo))->extractQueryConditions();
+        $conditions = (new ElementQueryConditionBuilder(['resolveInfo' => $resolveInfo]))->extractQueryConditions();
 
         return isset($conditions['with']) ? $conditions['with'] : [];
     }

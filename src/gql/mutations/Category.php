@@ -60,7 +60,7 @@ class Category extends Mutation
             $mutationList['deleteCategory'] = [
                 'name' => 'deleteCategory',
                 'args' => ['id' => Type::nonNull(Type::int())],
-                'resolve' => [new CategoryResolver(), 'deleteCategory'],
+                'resolve' => [Craft::createObject(CategoryResolver::class), 'deleteCategory'],
                 'description' => 'Delete a category.',
                 'type' => Type::boolean()
             ];
@@ -82,7 +82,7 @@ class Category extends Mutation
         $mutationArguments = array_merge(ElementMutationArguments::getArguments(), StructureArguments::getArguments());
         $generatedType = CategoryType::generateType($categoryGroup);
 
-        $resolver = new CategoryResolver();
+        $resolver = Craft::createObject(CategoryResolver::class);
         $resolver->setResolutionData('categoryGroup', $categoryGroup);
         static::prepareResolver($resolver, $categoryGroup->getFields());
 

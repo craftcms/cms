@@ -8,6 +8,7 @@
 namespace craft\base;
 
 use craft\elements\db\ElementQueryInterface;
+use craft\errors\InvalidFieldException;
 use craft\models\FieldLayout;
 use craft\models\Site;
 use Twig\Markup;
@@ -292,7 +293,7 @@ interface ElementInterface extends ComponentInterface
     public static function fieldLayouts(string $source): array;
 
     /**
-     * Returns the available [element actions](https://docs.craftcms.com/v3/extend/element-action-types.html) for a
+     * Returns the available [element actions](https://craftcms.com/docs/3.x/extend/element-action-types.html) for a
      * given source.
      *
      * The actions can be represented by their fully qualified class name, a config array with the class name
@@ -374,16 +375,21 @@ interface ElementInterface extends ComponentInterface
      * This method should return an array, where each item is a sub-array with the following keys:
      *
      * - `label` – The sort option label
-     * - `orderBy` – An array or comma-delimited string of columns to order the query by
+     * - `orderBy` – An array, comma-delimited string, or a callback function that defines the columns to order the query by. If set to a callback
+     *   function, the function will be passed a single argument, `$dir`, set to either `SORT_ASC` or `SORT_DESC`, and it should return an array of
+     *   column names or an [[\yii\db\ExpressionInterface]] object.
      * - `attribute` _(optional)_ – The [[tableAttributes()|table attribute]] name that this option is associated
      *   with (required if `orderBy` is an array or more than one column name)
+     * - `defaultDir` _(optional)_ – The default sort direction that should be used when sorting by this option
+     *   (set to either `asc` or `desc`). Defaults to `asc` if not specified.
      *
      * ```php
      * return [
      *     [
      *         'label' => Craft::t('app', 'Attribute Label'),
      *         'orderBy' => 'columnName',
-     *         'attribute' => 'attributeName'
+     *         'attribute' => 'attributeName',
+     *         'defaultDir' => 'asc',
      *     ],
      * ];
      * ```
@@ -669,6 +675,14 @@ interface ElementInterface extends ComponentInterface
     public function getIsEditable(): bool;
 
     /**
+     * Returns whether the current user can delete the element.
+     *
+     * @return bool
+     * @since 3.5.12
+     */
+    public function getIsDeletable(): bool;
+
+    /**
      * Returns the element’s edit URL in the control panel.
      *
      * @return string|null
@@ -701,6 +715,22 @@ interface ElementInterface extends ComponentInterface
      * @return string|null
      */
     public function getThumbUrl(int $size);
+
+    /**
+     * Returns whether the element’s thumbnail should have a checkered background.
+     *
+     * @return bool
+     * @since 3.5.5
+     */
+    public function getHasCheckeredThumb(): bool;
+
+    /**
+     * Returns whether the element’s thumbnail should be rounded.
+     *
+     * @return bool
+     * @since 3.5.5
+     */
+    public function getHasRoundedThumb(): bool;
 
     /**
      * Returns whether the element is enabled for the current site.
@@ -1012,6 +1042,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @param string $fieldHandle The field handle whose value needs to be returned
      * @return mixed The field value
+     * @throws InvalidFieldException if the element doesn’t have a field with the handle specified by `$fieldHandle`
      */
     public function getFieldValue(string $fieldHandle);
 

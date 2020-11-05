@@ -48,7 +48,7 @@ class Stringy extends \Stringy\Stringy
 
     /**
      * Returns the replacements for the toAscii() method, including any custom
-     * mappings provided by the <config:customAsciiCharMappings> config setting.
+     * mappings provided by the <config3:customAsciiCharMappings> config setting.
      *
      * @return array
      */

@@ -12,6 +12,7 @@ use craft\base\Element;
 use craft\elements\GlobalSet;
 use craft\helpers\UrlHelper;
 use craft\web\Controller;
+use yii\web\BadRequestHttpException;
 use yii\web\Cookie;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
@@ -49,6 +50,7 @@ class GlobalsController extends Controller
      *
      * @return Response|null
      * @throws NotFoundHttpException if the requested global set cannot be found
+     * @throws BadRequestHttpException
      */
     public function actionSaveSet()
     {
@@ -59,9 +61,8 @@ class GlobalsController extends Controller
 
         if ($globalSetId) {
             $globalSet = Craft::$app->getGlobals()->getSetById($globalSetId);
-
             if (!$globalSet) {
-                throw new NotFoundHttpException('Global set not found');
+                throw new BadRequestHttpException("Invalid global set ID: $globalSetId");
             }
         } else {
             $globalSet = new GlobalSet();

@@ -30,7 +30,7 @@ class m181016_183648_set_default_user_settings extends Migration
             'allowPublicRegistration' => false,
             'defaultGroup' => null,
             'photoVolumeUid' => null,
-            'photoSubpath' => ''
+            'photoSubpath' => null,
         ], $settings);
 
         $projectConfig->set('users', $settings);

@@ -74,7 +74,12 @@ class DateTime extends ScalarType
      */
     public function parseValue($value)
     {
-        return (string)$value;
+        if (is_string($value)) {
+            return new \DateTime($value);
+        }
+
+        // This message will be lost by the wrapping exception, but it feels good to provide one.
+        throw new GqlException("DateTime must be a string");
     }
 
     /**
@@ -83,7 +88,7 @@ class DateTime extends ScalarType
     public function parseLiteral($valueNode, array $variables = null)
     {
         if ($valueNode instanceof StringValueNode) {
-            return (string)$valueNode->value;
+            return new \DateTime($valueNode->value);
         }
 
         // This message will be lost by the wrapping exception, but it feels good to provide one.

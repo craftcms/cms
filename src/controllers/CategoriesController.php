@@ -40,6 +40,11 @@ class CategoriesController extends Controller
      */
     const EVENT_PREVIEW_CATEGORY = 'previewCategory';
 
+    /**
+     * @inheritdoc
+     */
+    protected $allowAnonymous = ['view-shared-category'];
+
     // Category Groups
     // -------------------------------------------------------------------------
 
@@ -116,16 +121,26 @@ class CategoriesController extends Controller
      * Save a category group.
      *
      * @return Response|null
+     * @throws BadRequestHttpException
      */
     public function actionSaveGroup()
     {
         $this->requirePostRequest();
         $this->requireAdmin();
 
-        $group = new CategoryGroup();
+        $categoriesService = Craft::$app->getCategories();
+        $groupId = $this->request->getBodyParam('groupId');
+
+        if ($groupId) {
+            $group = $categoriesService->getGroupById($groupId);
+            if (!$group) {
+                throw new BadRequestHttpException("Invalid category group ID: $groupId");
+            }
+        } else {
+            $group = new CategoryGroup();
+        }
 
         // Main group settings
-        $group->id = $this->request->getBodyParam('groupId');
         $group->name = $this->request->getBodyParam('name');
         $group->handle = $this->request->getBodyParam('handle');
         $group->maxLevels = $this->request->getBodyParam('maxLevels');
@@ -155,7 +170,7 @@ class CategoriesController extends Controller
         $group->setFieldLayout($fieldLayout);
 
         // Save it
-        if (!Craft::$app->getCategories()->saveGroup($group)) {
+        if (!$categoriesService->saveGroup($group)) {
             $this->setFailFlash(Craft::t('app', 'Couldn’t save the category group.'));
 
             // Send the category group back to the template
@@ -352,7 +367,7 @@ class CategoriesController extends Controller
         // Enable Live Preview?
         if (!$this->request->isMobileBrowser(true) && Craft::$app->getCategories()->isGroupTemplateValid($variables['group'], $category->siteId)) {
             $this->getView()->registerJs('Craft.LivePreview.init(' . Json::encode([
-                    'fields' => '#title-field, #fields > div > div > .field',
+                    'fields' => '#fields > .flex-fields > .field',
                     'extraFields' => '#settings',
                     'previewUrl' => $category->getUrl(),
                     'previewAction' => Craft::$app->getSecurity()->hashData('categories/preview-category'),
@@ -390,7 +405,7 @@ class CategoriesController extends Controller
         $variables['continueEditingUrl'] = $variables['baseCpEditUrl'] . $siteSegment;
 
         // Set the "Save and add another" URL
-        $variables['nextCategoryUrl'] = "categories/{$variables['group']->handle}/new{$siteSegment}";
+        $variables['nextCategoryUrl'] = "categories/{$variables['group']->handle}/new{$siteSegment}?parentId={parent.id}#";
 
         // Render the template!
         return $this->renderTemplate('categories/_edit', $variables);
@@ -431,6 +446,7 @@ class CategoriesController extends Controller
 
         $category = $this->_getCategoryModel();
         $categoryVariable = $this->request->getValidatedBodyParam('categoryVariable') ?? 'category';
+
         // Permission enforcement
         $this->_enforceEditCategoryPermissions($category);
 
@@ -468,7 +484,7 @@ class CategoriesController extends Controller
         $this->_populateCategoryModel($category);
 
         // Save the category
-        if ($category->enabled && $category->enabledForSite) {
+        if ($category->enabled && $category->getEnabledForSite()) {
             $category->setScenario(Element::SCENARIO_LIVE);
         }
 
@@ -484,7 +500,7 @@ class CategoriesController extends Controller
 
             // Send the category back to the template
             Craft::$app->getUrlManager()->setRouteParams([
-                $categoryVarible => $category
+                $categoryVariable => $category
             ]);
 
             return null;

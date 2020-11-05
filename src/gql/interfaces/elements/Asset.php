@@ -8,12 +8,14 @@
 namespace craft\gql\interfaces\elements;
 
 use craft\gql\arguments\elements\Asset as AssetArguments;
+use craft\gql\arguments\elements\User as UserArguments;
 use craft\gql\arguments\Transform;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\Element;
 use craft\gql\TypeManager;
 use craft\gql\types\DateTime;
 use craft\gql\types\generators\AssetType;
+use craft\helpers\Gql;
 use craft\services\Gql as GqlService;
 use GraphQL\Type\Definition\InterfaceType;
 use GraphQL\Type\Definition\Type;
@@ -69,7 +71,7 @@ class Asset extends Element
     public static function getFieldDefinitions(): array
     {
         // @TODO Remove the `uri` field for Assets.
-        return TypeManager::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), [
+        return TypeManager::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), self::getConditionalFields(), [
             'volumeId' => [
                 'name' => 'volumeId',
                 'type' => Type::int(),
@@ -151,6 +153,18 @@ class Asset extends Element
                 'type' => Type::string(),
                 'description' => 'An `<img>` tag based on this asset.'
             ],
+            'srcset' => [
+                'name' => 'srcset',
+                'type' => Type::string(),
+                'args' => [
+                    'sizes' => [
+                        'name' => 'sizes',
+                        'description' => 'A list of size descriptors. If you pass x-descriptors, it will be assumed that the image’s current width is the indented 1x width.',
+                        'type' => Type::nonNull(Type::listOf(Type::nonNull(Type::string())))
+                    ]
+                ],
+                'description' => 'Returns a `srcset` attribute value based on the given widths or x-descriptors.'
+            ],
             'url' => [
                 'name' => 'url',
                 'args' => Transform::getArguments(),
@@ -203,5 +217,29 @@ class Asset extends Element
                 },
             ],
         ]), self::getName());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected static function getConditionalFields(): array
+    {
+        if (Gql::canQueryUsers()) {
+            return [
+                'uploaderId' => [
+                    'name' => 'uploaderId',
+                    'type' => Type::int(),
+                    'description' => 'The ID of the user who first added this asset (if known).'
+                ],
+                'uploader' => [
+                    'name' => 'uploader',
+                    'type' => User::getType(),
+                    'args' => UserArguments::getArguments(),
+                    'description' => 'The user who first added this asset (if known).'
+                ],
+            ];
+        }
+
+        return [];
     }
 }

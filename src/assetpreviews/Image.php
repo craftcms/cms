@@ -32,8 +32,8 @@ class Image extends AssetPreviewHandler
         } else {
             $url = UrlHelper::actionUrl('assets/thumb', [
                 'uid' => $this->asset->uid,
-                'width' => $this->asset->width,
-                'height' => $this->asset->height
+                'width' => $this->asset->getWidth(),
+                'height' => $this->asset->getHeight(),
             ]);
         }
 

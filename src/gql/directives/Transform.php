@@ -12,6 +12,7 @@ use craft\elements\Asset;
 use craft\gql\arguments\Transform as TransformArguments;
 use craft\gql\base\Directive;
 use craft\gql\GqlEntityRegistry;
+use craft\helpers\Gql;
 use GraphQL\Language\DirectiveLocation;
 use GraphQL\Type\Definition\Directive as GqlDirective;
 use GraphQL\Type\Definition\FieldArgument;
@@ -51,7 +52,7 @@ class Transform extends Directive
                 DirectiveLocation::FIELD,
             ],
             'args' => TransformArguments::getArguments(),
-            'description' => 'This directive is used to return a URL for an [asset tranform](https://docs.craftcms.com/v3/image-transforms.html). It accepts the same arguments you would use for a transform in Craft and adds the `immediately` argument.'
+            'description' => 'This directive is used to return a URL for an [asset transform](https://craftcms.com/docs/3.x/image-transforms.html). It accepts the same arguments you would use for a transform in Craft and adds the `immediately` argument.'
         ]));
 
         return $type;
@@ -79,15 +80,7 @@ class Transform extends Directive
         }
 
         $generateNow = $arguments['immediately'] ?? Craft::$app->getConfig()->general->generateTransformsBeforePageLoad;
-        unset($arguments['immediately']);
-
-        if (!empty($arguments['handle'])) {
-            $transform = $arguments['handle'];
-        } else if (!empty($arguments['transform'])) {
-            $transform = $arguments['transform'];
-        } else {
-            $transform = $arguments;
-        }
+        $transform = Gql::prepareTransformArguments($arguments);
 
         // If this directive is applied to an entire Asset
         if ($onAssetElement) {

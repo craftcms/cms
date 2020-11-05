@@ -103,9 +103,9 @@
                     }));
                 }
 
-                $form.append($('<input/>', {
+                $form.append($('<button/>', {
                     type: 'submit',
-                    value: label,
+                    text: label,
                     class: 'btn submit'
                 }));
 
@@ -164,7 +164,7 @@
             },
 
             createCta: function() {
-                if (!this.updatesPage.allowUpdates || !this.updateInfo.latestVersion) {
+                if (!this.updatesPage.allowUpdates || !this.updateInfo.latestVersion || this.updateInfo.ctaUrl === false) {
                     return;
                 }
 

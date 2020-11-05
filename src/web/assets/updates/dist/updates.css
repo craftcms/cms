@@ -14,9 +14,7 @@
 
 #content .update .update-header .buttons { margin: 0; }
 
-#content .update blockquote.ineligible { border: none; background: #CB6E17; color: #110902; }
-
-#content .update blockquote.ineligible:before { content: 'ban'; color: #110902; }
+#content .update blockquote.ineligible:before { content: 'ban'; }
 
 #content .update .releases { position: relative; }
 
@@ -36,7 +34,7 @@ body.ltr #content .update .releases .release .release-info.fieldtoggle { padding
 
 body.rtl #content .update .releases .release .release-info.fieldtoggle { padding-right: 44px; }
 
-#content .update .releases .release .release-info.fieldtoggle:before { top: 23px; font-size: 23px; color: #7b8793; }
+#content .update .releases .release .release-info.fieldtoggle:before { top: 29px; border-color: #596673; }
 
 body.ltr #content .update .releases .release .release-info.fieldtoggle:before { left: 20px; }
 
@@ -44,7 +42,7 @@ body.rtl #content .update .releases .release .release-info.fieldtoggle:before { 
 
 #content .update .releases .release .release-info h2 { margin: 0; line-height: 24px; }
 
-#content .update .releases .release .release-info .date { -webkit-flex-grow: 1; flex-grow: 1; font-size: 24px; line-height: 24px; color: #9aa5b1; }
+#content .update .releases .release .release-info .date { -webkit-flex-grow: 1; flex-grow: 1; font-size: 24px; line-height: 24px; color: #606d7b; }
 
 body.ltr #content .update .releases .release .release-info .date { margin-left: 14px; }
 

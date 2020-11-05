@@ -116,7 +116,7 @@
 
                 var $table = $('<table/>', {
                     id: this.defaultsTableId,
-                    'class': 'editable shadow-box'
+                    'class': 'editable fullwidth'
                 }).append(theadHtml);
 
                 var $tbody = $('<tbody/>').appendTo($table);
@@ -232,9 +232,9 @@
                     this.optionsTable.addRow(false);
                 }
 
-                var $closeButton = $('<div/>', {
-                    'class': 'btn submit',
-                    role: 'button',
+                var $closeButton = $('<button/>', {
+                    type: 'button',
+                    class: 'btn submit',
                     text: Craft.t('app', 'Done')
                 }).appendTo($body);
 

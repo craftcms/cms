@@ -1,10 +1,10 @@
 <header id="global-sidebar" class="sidebar">
-    <a id="system-info" href="{{ siteUrl }}" rel="noopener" target="_blank" title="{{ 'View site'|t('app') }}">
+    <a id="system-info" href="{{ siteUrl }}" rel="noopener" target="_blank" title="{{ 'View site'|t('app') }}" aria-label="{{ 'View site'|t('app') }}">
         <div id="site-icon">
             {% if hasSystemIcon %}
                 <img src="{{ craft.rebrand.icon.url }}" alt="">
             {% else %}
-                {{ svg('@app/icons/c-outline.svg', namespace=true) }}
+                {{ svg('@appicons/c-outline.svg', namespace=true) }}
             {% endif %}
         </div>
         <div id="system-name">
@@ -74,19 +74,7 @@
         </ul>
     </nav>
 
-    <div id="app-info">
-        <div id="edition" {% if canUpgradeEdition %}class="hot" title="{{ 'Manage your Craft CMS edition'|t('app') }}"{% else %}class="edition"{% endif %}>
-            <div id="edition-logo">
-                <div class="edition-name">{{ craft.app.getEditionName() }}</div>
-                {% if isTrial %}
-                    <div class="edition-trial">{{ "Trial"|t('app') }}</div>
-                {% endif %}
-            </div>
-        </div>
-        <div id="version">Craft CMS {{ craft.app.version }}</div>
-    </div>
-
     {% if currentUser.admin and devMode %}
-        <div id="devmode" title="{{ 'Craft CMS is running in Dev Mode.'|t('app') }}"></div>
+        <div id="devmode" title="{{ 'Craft CMS is running in Dev Mode.'|t('app') }}" aria-label="{{ 'Craft CMS is running in Dev Mode.'|t('app') }}"></div>
     {% endif %}
 </header>

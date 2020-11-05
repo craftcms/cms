@@ -7,6 +7,7 @@
 
 namespace craft\db;
 
+use Craft;
 use craft\events\DefineBehaviorsEvent;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
@@ -17,6 +18,9 @@ use craft\helpers\StringHelper;
  * @property string $dateCreated Date created
  * @property string $dateUpdated Date updated
  * @property string $uid UUID
+ * @method ActiveQuery hasMany(string $class, array $link) See [[\yii\db\BaseActiveRecord::hasMany()]] for more info.
+ * @method ActiveQuery hasOne(string $class, array $link) See [[\yii\db\BaseActiveRecord::hasOne()]] for more info.
+ * @method ActiveQuery findBySql(string $sql, array $params) See [[\yii\db\ActiveRecord::findBySql()]] for more info.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
@@ -28,6 +32,15 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
      * @since 3.4.0
      */
     const EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
+
+    /**
+     * @inheritdoc
+     * @return ActiveQuery the newly created [[ActiveQuery]] instance.
+     */
+    public static function find()
+    {
+        return Craft::createObject(ActiveQuery::class, [static::class]);
+    }
 
     /**
      * @inheritdoc

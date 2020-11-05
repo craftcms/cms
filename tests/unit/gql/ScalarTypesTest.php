@@ -34,7 +34,7 @@ class ScalarTypesTest extends Unit
      */
     public function testSerialization(ScalarType $type, $testValue, $match)
     {
-        $this->assertSame($match, $type->serialize($testValue));
+        self::assertSame($match, $type->serialize($testValue));
     }
 
     /**
@@ -48,7 +48,7 @@ class ScalarTypesTest extends Unit
             $this->expectException($exceptionThrown);
             $type->parseValue($testValue);
         } else {
-            $this->assertSame($match, $type->parseValue($testValue));
+            self::assertSame($match, $type->parseValue($testValue));
         }
     }
 
@@ -63,7 +63,7 @@ class ScalarTypesTest extends Unit
             $this->expectException($exceptionThrown);
             $type->parseLiteral($testValue);
         } else {
-            $this->assertSame($match, $type->parseLiteral($testValue));
+            self::assertSame($match, $type->parseLiteral($testValue));
         }
     }
 

@@ -19,7 +19,9 @@
     </div>
 
     {% if sources %}
-        <div class="btn add icon dashed">{{ selectionLabel }}</div>
+        <div class="flex{% if limit and elements|length >= limit %} hidden{% endif %}">
+            <button type="button" class="btn add icon dashed">{{ selectionLabel }}</button>
+        </div>
     {% endif %}
 </div>
 
@@ -37,6 +39,7 @@
     modalStorageKey: storageKey,
     fieldId: fieldId,
     prevalidate: prevalidate ?? false,
+    canUpload: canUpload,
     defaultFieldLayoutId: defaultFieldLayoutId,
     modalSettings: {
         hideSidebar: hideSidebar,

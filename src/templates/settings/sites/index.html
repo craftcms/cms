@@ -22,10 +22,10 @@
     </nav>
 
     <div class="buttons">
-        <div id="newgroupbtn" class="btn add icon">{{ "New group"|t('app') }}</div>
+        <button type="button" id="newgroupbtn" class="btn add icon">{{ "New group"|t('app') }}</button>
 
         {% if group %}
-            <div id="groupsettingsbtn" class="btn settings icon menubtn" title="{{ 'Settings' }}"></div>
+            <button type="button" id="groupsettingsbtn" class="btn settings icon menubtn" title="{{ 'Settings' }}" aria-label="{{ 'Settings' }}"></button>
             <div class="menu">
                 <ul>
                     <li><a data-action="rename" role="button">{{ "Rename selected group"|t('app') }}</a></li>
@@ -73,10 +73,10 @@
                                 <td data-title="{{ 'Group'|t('app') }}">{{ site.group.name|t('site') }}</td>
                             {% endif %}
                             {% if canSort %}
-                                <td class="thin"><a class="move icon" title="{{ 'Reorder'|t('app') }}" role="button"></a></td>
+                                <td class="thin"><a class="move icon" title="{{ 'Reorder'|t('app') }}" aria-label="{{ 'Reorder'|t('app') }}" role="button"></a></td>
                             {% endif %}
                             {% if multiple %}
-                                <td class="thin"><a class="delete icon{% if site.primary %} disabled{% endif %}" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
+                                <td class="thin"><a class="delete icon{% if site.primary %} disabled{% endif %}" title="{{ 'Delete'|t('app') }}" aria-label="{{ 'Delete'|t('app') }}" role="button"></a></td>
                             {% endif %}
                         </tr>
                     {% endfor %}

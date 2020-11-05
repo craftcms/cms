@@ -51,7 +51,7 @@ class CraftSupport extends Widget
      */
     public static function icon()
     {
-        return Craft::getAlias('@app/icons/buoey.svg');
+        return Craft::getAlias('@appicons/buoey.svg');
     }
 
     /**
@@ -106,7 +106,7 @@ class CraftSupport extends Widget
         $js = "new Craft.CraftSupportWidget({$this->id}, {$envInfoJs});";
         $view->registerJs($js);
 
-        $iconsDir = Craft::getAlias('@app/icons');
+        $iconsDir = Craft::getAlias('@appicons');
 
         // Only show the DB backup option if DB backups haven't been disabled
         $showBackupOption = (Craft::$app->getConfig()->getGeneral()->backupCommand !== false);

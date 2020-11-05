@@ -13,9 +13,9 @@
                 <h3>{{ name }}</h3>
                 {% if isComposerInstalled %}
                     {% if isInstalled %}
-                        <a class="btn formsubmit" data-form="x" data-action="plugins/enable-plugin" data-param="pluginHandle" data-value="{{ handle }}">{{ 'Enable'|t('app') }}</a>
+                        <buton type="button" class="btn formsubmit" data-form="x" data-action="plugins/enable-plugin" data-param="pluginHandle" data-value="{{ handle }}">{{ 'Enable'|t('app') }}</buton>
                     {% else %}
-                        <a class="btn formsubmit" data-form="x" data-action="plugins/install-plugin" data-param="pluginHandle" data-value="{{ handle }}">{{ 'Install'|t('app') }}</a>
+                        <buton type="button" class="btn formsubmit" data-form="x" data-action="plugins/install-plugin" data-param="pluginHandle" data-value="{{ handle }}">{{ 'Install'|t('app') }}</buton>
                     {% endif %}
                 {% else %}
                     <a class="btn" href="{{ url('plugin-store/'~handle) }}">{{ 'Install'|t('app') }}</a>

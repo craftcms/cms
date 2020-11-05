@@ -18,11 +18,13 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\validators\ColorValidator;
+use craft\validators\HandleValidator;
 use craft\validators\UrlValidator;
 use craft\web\assets\tablesettings\TableSettingsAsset;
 use craft\web\assets\timepicker\TimepickerAsset;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\Type;
+use LitEmoji\LitEmoji;
 use yii\db\Schema;
 use yii\validators\EmailValidator;
 
@@ -159,20 +161,28 @@ class Table extends Field
      */
     public function validateColumns()
     {
-        $hasErrors = false;
         foreach ($this->columns as &$col) {
-            if ($col['handle'] && preg_match('/^col\d+$/', $col['handle'])) {
-                $col['handle'] = [
-                    'value' => $col['handle'],
-                    'hasErrors' => true,
-                ];
-                $hasErrors = true;
+            if ($col['handle']) {
+                $error = null;
+
+                if (!preg_match('/^' . HandleValidator::$handlePattern . '$/', $col['handle'])) {
+                    $error = Craft::t('app', '“{handle}” isn’t a valid handle.', [
+                        'handle' => $col['handle'],
+                    ]);
+                } else if (preg_match('/^col\d+$/', $col['handle'])) {
+                    $error = Craft::t('app', 'Column handles can’t be in the format “{format}”.', [
+                        'format' => 'colX',
+                    ]);
+                }
+
+                if ($error) {
+                    $col['handle'] = [
+                        'value' => $col['handle'],
+                        'hasErrors' => true,
+                    ];
+                    $this->addError('columns', $error);
+                }
             }
-        }
-        if ($hasErrors) {
-            $this->addError('columns', Craft::t('app', 'Column handles can’t be in the format “{format}”.', [
-                'format' => 'colX',
-            ]));
         }
     }
 
@@ -296,6 +306,7 @@ class Table extends Field
         $columnsField = $view->renderTemplate('_components/fieldtypes/Table/columntable', [
             'cols' => $columnSettings,
             'rows' => $this->columns,
+            'errors' => $this->getErrors('columns'),
         ]);
 
         $defaultsField = $view->renderTemplateMacro('_includes/forms', 'editableTableField', [
@@ -307,7 +318,6 @@ class Table extends Field
                 'cols' => $this->columns,
                 'rows' => $this->defaults,
                 'initJs' => false,
-                'errors' => $this->getErrors('columns'),
             ]
         ]);
 
@@ -410,7 +420,13 @@ class Table extends Field
         foreach ($value as $row) {
             $serializedRow = [];
             foreach (array_keys($this->columns) as $colId) {
-                $serializedRow[$colId] = parent::serializeValue($row[$colId] ?? null);
+                $value = $row[$colId];
+
+                if (is_string($value) && in_array($this->columns[$colId]['type'], ['singleline', 'multiline'], true)) {
+                    $value = LitEmoji::unicodeToShortcode($value);
+                }
+
+                $serializedRow[$colId] = parent::serializeValue($value ?? null);
             }
             $serialized[] = $serializedRow;
         }
@@ -492,6 +508,12 @@ class Table extends Field
 
                 return new ColorData($value);
 
+            case 'multiline':
+            case 'singleline':
+                if ($value !== null) {
+                    $value = LitEmoji::shortcodeToUnicode($value);
+                    return trim(preg_replace('/\R/u', "\n", $value));
+                }
             case 'date':
             case 'time':
                 return DateTimeHelper::toDateTime($value) ?: null;

@@ -50,6 +50,12 @@ class Update extends Model
     public $releases = [];
 
     /**
+     * @var string|null The PHP version constraint required by this version
+     * @since 3.5.15
+     */
+    public $phpConstraint;
+
+    /**
      * @var string The package name that should be used when updating
      */
     public $packageName;

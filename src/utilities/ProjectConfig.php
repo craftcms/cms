@@ -41,7 +41,7 @@ class ProjectConfig extends Utility
      */
     public static function iconPath()
     {
-        return Craft::getAlias('@app/icons/sliders.svg');
+        return Craft::getAlias('@appicons/sliders.svg');
     }
 
     /**
@@ -49,25 +49,27 @@ class ProjectConfig extends Utility
      */
     public static function contentHtml(): string
     {
-        $css = <<<CSS
-#config-container {
-  max-height: 500px;
-  overflow: auto;
-}
-#config-container pre {
-  margin: 0;
-  padding: 0;
-  background-color: transparent;
-}
-CSS;
-
-        $view = Craft::$app->getView();
-        $view->registerAssetBundle(PrismJsAsset::class);
-        $view->registerCss($css);
-
         $projectConfig = Craft::$app->getProjectConfig();
+        $areChangesPending = $projectConfig->areChangesPending();
+        $view = Craft::$app->getView();
+
+        if ($areChangesPending) {
+            $view->registerAssetBundle(PrismJsAsset::class);
+            $view->registerTranslations('app', [
+                'Show all changes',
+            ]);
+            $invert = (
+                !$projectConfig->writeYamlAutomatically &&
+                $projectConfig->get('dateModified') > $projectConfig->get('dateModified', true)
+            );
+        } else {
+            $invert = false;
+        }
+
         return $view->renderTemplate('_components/utilities/ProjectConfig', [
-            'changesPending' => $projectConfig->areChangesPending(null, true),
+            'invert' => $invert,
+            'yamlExists' => $projectConfig->writeYamlAutomatically || $projectConfig->getDoesYamlExist(),
+            'areChangesPending' => $areChangesPending,
             'entireConfig' => Yaml::dump($projectConfig->get(), 20, 2),
         ]);
     }

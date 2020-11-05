@@ -109,7 +109,8 @@ Craft.FieldToggle = Garnish.Base.extend(
                 postVal = Garnish.getInputPostVal(this.$toggle);
             }
 
-            return (typeof postVal === 'undefined' || postVal === null) ? null : postVal.replace(/[\[\]\\\/]+/g, '-');
+            // Normalize the value
+            return (typeof postVal === 'undefined' || postVal === null) ? null : postVal.replace(/[^\w]+/g, '-');
         },
 
         onToggleChange: function() {
@@ -118,6 +119,8 @@ Craft.FieldToggle = Garnish.Base.extend(
                 this.findTargets();
                 this.showTarget(this._$target);
             } else {
+                this.findTargets();
+
                 if (this.type === 'link') {
                     this.onToggleChange._show = this.$toggle.hasClass('collapsed') || !this.$toggle.hasClass('expanded');
                 } else {

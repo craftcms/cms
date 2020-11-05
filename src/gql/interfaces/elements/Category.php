@@ -88,6 +88,7 @@ class Category extends Structure
             ],
             'parent' => [
                 'name' => 'parent',
+                'args' => CategoryArguments::getArguments(),
                 'type' => static::getType(),
                 'description' => 'The category’s parent.',
                 'complexity' => Gql::eagerLoadComplexity(),

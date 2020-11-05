@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace crafttests\unit\services;
+namespace crafttests\unit\services\images;
 
 
 use Codeception\Test\Unit;
@@ -55,7 +55,7 @@ class ImagesTest extends Unit
     public function testCheckMemoryForImage($result, $filePath)
     {
         $memory = $this->images->checkMemoryForImage($this->path . $filePath, false);
-        $this->assertSame($memory, $result);
+        self::assertSame($memory, $result);
     }
 
     /**
@@ -69,10 +69,10 @@ class ImagesTest extends Unit
 
         $contents = file_get_contents($this->sandboxPath . 'dirty-svg.svg');
 
-        $this->assertFalse(
+        self::assertFalse(
             StringHelper::contains($contents, '<script>')
         );
-        $this->assertFalse(
+        self::assertFalse(
             StringHelper::contains($contents, '<this>')
         );
     }
@@ -90,10 +90,10 @@ class ImagesTest extends Unit
 
         $contents = file_get_contents($this->sandboxPath . 'dirty-svg.svg');
 
-        $this->assertTrue(
+        self::assertTrue(
             StringHelper::contains($contents, '<script>')
         );
-        $this->assertTrue(
+        self::assertTrue(
             StringHelper::contains($contents, '<this>')
         );
     }
@@ -107,7 +107,7 @@ class ImagesTest extends Unit
 
         $this->images->cleanImage($this->sandboxPath . 'image-rotated-180.jpg');
         $image = new Imagick($this->sandboxPath . 'image-rotated-180.jpg');
-        $this->assertSame(0, $image->getImageOrientation());
+        self::assertSame(0, $image->getImageOrientation());
     }
 
     /**
@@ -119,7 +119,7 @@ class ImagesTest extends Unit
 
         $this->images->cleanImage($this->sandboxPath . 'image-rotated-180.jpg');
         $currentExif = $this->images->getExifData($this->sandboxPath . 'image-rotated-180.jpg');
-        $this->assertArrayNotHasKey('ifd0.Orientation', $currentExif);
+        self::assertArrayNotHasKey('ifd0.Orientation', $currentExif);
     }
 
     /**
@@ -134,12 +134,12 @@ class ImagesTest extends Unit
         Craft::$app->getConfig()->getGeneral()->transformGifs = false;
 
         $oldContents = file_get_contents($this->sandboxPath . 'example-gif.gif');
-        $this->assertNull($this->images->cleanImage($this->sandboxPath . 'example-gif.gif'));
-        $this->assertSame($oldContents, file_get_contents($this->sandboxPath . 'example-gif.gif'));
+        self::assertNull($this->images->cleanImage($this->sandboxPath . 'example-gif.gif'));
+        self::assertSame($oldContents, file_get_contents($this->sandboxPath . 'example-gif.gif'));
 
         Craft::$app->getConfig()->getGeneral()->transformGifs = true;
         $this->images->cleanImage($this->sandboxPath . 'example-gif.gif');
-        $this->assertNotSame($oldContents, file_get_contents($this->sandboxPath . 'example-gif.gif'));
+        self::assertNotSame($oldContents, file_get_contents($this->sandboxPath . 'example-gif.gif'));
     }
 
     /**
@@ -158,7 +158,7 @@ class ImagesTest extends Unit
         ];
 
         foreach ($requiredValues as $key => $value) {
-            $this->assertSame($value, $exifData[$key]);
+            self::assertSame($value, $exifData[$key]);
         }
     }
 
@@ -167,9 +167,9 @@ class ImagesTest extends Unit
      */
     public function testNoExifFalses()
     {
-        $this->assertNull($this->images->getExifData($this->sandboxPath . 'craft-logo.svg'));
-        $this->assertFalse($this->images->rotateImageByExifData($this->sandboxPath . 'craft-logo.svg'));
-        $this->assertFalse($this->images->stripOrientationFromExifData($this->sandboxPath . 'craft-logo.svg'));
+        self::assertNull($this->images->getExifData($this->sandboxPath . 'craft-logo.svg'));
+        self::assertFalse($this->images->rotateImageByExifData($this->sandboxPath . 'craft-logo.svg'));
+        self::assertFalse($this->images->stripOrientationFromExifData($this->sandboxPath . 'craft-logo.svg'));
     }
 
     /**

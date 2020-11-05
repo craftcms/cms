@@ -10,8 +10,11 @@ namespace craft\models;
 use Craft;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
+use craft\db\Table;
 use craft\elements\Category;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
+use craft\helpers\StringHelper;
 use craft\records\CategoryGroup as CategoryGroupRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
@@ -160,5 +163,46 @@ class CategoryGroup extends Model
         foreach ($this->_siteSettings as $settings) {
             $settings->setGroup($this);
         }
+    }
+
+    /**
+     * Returns the field layout config for this category group.
+     *
+     * @return array
+     * @since 3.5.0
+     */
+    public function getConfig(): array
+    {
+        $config = [
+            'name' => $this->name,
+            'handle' => $this->handle,
+            'structure' => [
+                'uid' => $this->structureId ? Db::uidById(Table::STRUCTURES, $this->structureId) : StringHelper::UUID(),
+                'maxLevels' => (int)$this->maxLevels ?: null,
+            ],
+            'siteSettings' => []
+        ];
+
+        $fieldLayout = $this->getFieldLayout();
+
+        if ($fieldLayoutConfig = $fieldLayout->getConfig()) {
+            if (!$fieldLayout->uid) {
+                $fieldLayout->uid = $fieldLayout->id ? Db::uidById(Table::FIELDLAYOUTS, $fieldLayout->id) : StringHelper::UUID();
+            }
+            $config['fieldLayouts'] = [
+                $fieldLayout->uid => $fieldLayoutConfig,
+            ];
+        }
+
+        foreach ($this->getSiteSettings() as $siteId => $settings) {
+            $siteUid = Db::uidById(Table::SITES, $siteId);
+            $config['siteSettings'][$siteUid] = [
+                'hasUrls' => (bool)$settings['hasUrls'],
+                'uriFormat' => $settings['uriFormat'] ?: null,
+                'template' => $settings['template'] ?: null,
+            ];
+        }
+
+        return $config;
     }
 }

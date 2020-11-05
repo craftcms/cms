@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\MemoizableArray;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Category;
@@ -70,9 +71,20 @@ class Categories extends Component
     const CONFIG_CATEGORYROUP_KEY = 'categoryGroups';
 
     /**
-     * @var CategoryGroup[]
+     * @var MemoizableArray|null
+     * @see _groups()
      */
     private $_groups;
+
+    /**
+     * Serializer
+     */
+    public function __serialize()
+    {
+        $vars = get_object_vars($this);
+        unset($vars['_groups']);
+        return $vars;
+    }
 
     // Category groups
     // -------------------------------------------------------------------------
@@ -98,29 +110,39 @@ class Categories extends Component
     }
 
     /**
+     * Returns a memoizable array of all category groups.
+     *
+     * @return MemoizableArray
+     */
+    private function _groups(): MemoizableArray
+    {
+        if ($this->_groups === null) {
+            $groups = [];
+
+            /** @var CategoryGroupRecord[] $groupRecords */
+            $groupRecords = CategoryGroupRecord::find()
+                ->orderBy(['name' => SORT_ASC])
+                ->with('structure')
+                ->all();
+
+            foreach ($groupRecords as $groupRecord) {
+                $groups[] = $this->_createCategoryGroupFromRecord($groupRecord);
+            }
+
+            $this->_groups = new MemoizableArray($groups);
+        }
+
+        return $this->_groups;
+    }
+
+    /**
      * Returns all category groups.
      *
      * @return CategoryGroup[]
      */
     public function getAllGroups(): array
     {
-        if ($this->_groups !== null) {
-            return $this->_groups;
-        }
-
-        $this->_groups = [];
-
-        /** @var CategoryGroupRecord[] $groupRecords */
-        $groupRecords = CategoryGroupRecord::find()
-            ->orderBy(['name' => SORT_ASC])
-            ->with('structure')
-            ->all();
-
-        foreach ($groupRecords as $groupRecord) {
-            $this->_groups[] = $this->_createCategoryGroupFromRecord($groupRecord);
-        }
-
-        return $this->_groups;
+        return $this->_groups()->all();
     }
 
     /**
@@ -137,7 +159,7 @@ class Categories extends Component
         $userSession = Craft::$app->getUser();
         return ArrayHelper::where($this->getAllGroups(), function(CategoryGroup $group) use ($userSession) {
             return $userSession->checkPermission('editCategories:' . $group->uid);
-        });
+        }, true, true, false);
     }
 
     /**
@@ -158,7 +180,7 @@ class Categories extends Component
      */
     public function getGroupById(int $groupId)
     {
-        return ArrayHelper::firstWhere($this->getAllGroups(), 'id', $groupId);
+        return $this->_groups()->firstWhere('id', $groupId);
     }
 
     /**
@@ -170,7 +192,7 @@ class Categories extends Component
      */
     public function getGroupByUid(string $uid)
     {
-        return ArrayHelper::firstWhere($this->getAllGroups(), 'uid', $uid, true);
+        return $this->_groups()->firstWhere('uid', $uid, true);
     }
 
     /**
@@ -181,7 +203,7 @@ class Categories extends Component
      */
     public function getGroupByHandle(string $groupHandle)
     {
-        return ArrayHelper::firstWhere($this->getAllGroups(), 'handle', $groupHandle, true);
+        return $this->_groups()->firstWhere('handle', $groupHandle, true);
     }
 
     /**
@@ -239,19 +261,6 @@ class Categories extends Component
 
         if ($isNewCategoryGroup) {
             $group->uid = StringHelper::UUID();
-            $structureUid = StringHelper::UUID();
-        } else {
-            /** @var CategoryGroupRecord|null $existingGroupRecord */
-            $existingGroupRecord = CategoryGroupRecord::find()
-                ->where(['id' => $group->id])
-                ->one();
-
-            if (!$existingGroupRecord) {
-                throw new CategoryGroupNotFoundException("No category group exists with the ID '{$group->id}'");
-            }
-
-            $group->uid = $existingGroupRecord->uid;
-            $structureUid = Db::uidById(Table::STRUCTURES, $existingGroupRecord->structureId);
         }
 
         // If they've set maxLevels to 0 (don't ask why), then pretend like there are none.
@@ -259,54 +268,17 @@ class Categories extends Component
             $group->maxLevels = null;
         }
 
-        $projectConfig = Craft::$app->getProjectConfig();
-        $configData = [
-            'name' => $group->name,
-            'handle' => $group->handle,
-            'structure' => [
-                'uid' => $structureUid,
-                'maxLevels' => (int)$group->maxLevels ?: null,
-            ],
-            'siteSettings' => []
-        ];
-
-        $fieldLayout = $group->getFieldLayout();
-        $fieldLayoutConfig = $fieldLayout->getConfig();
-
-        if ($fieldLayoutConfig) {
-            if (empty($fieldLayout->id)) {
-                $layoutUid = StringHelper::UUID();
-                $fieldLayout->uid = $layoutUid;
-            } else {
-                $layoutUid = Db::uidById(Table::FIELDLAYOUTS, $fieldLayout->id);
-            }
-
-            $configData['fieldLayouts'] = [
-                $layoutUid => $fieldLayoutConfig
-            ];
-        }
-
-        // Get the site settings
+        // Make sure the group isn't missing any site settings
         $allSiteSettings = $group->getSiteSettings();
-
-        // Make sure they're all there
         foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
             if (!isset($allSiteSettings[$siteId])) {
                 throw new Exception('Tried to save a category group that is missing site settings');
             }
         }
 
-        foreach ($allSiteSettings as $siteId => $settings) {
-            $siteUid = Db::uidById(Table::SITES, $siteId);
-            $configData['siteSettings'][$siteUid] = [
-                'hasUrls' => (bool)$settings['hasUrls'],
-                'uriFormat' => $settings['uriFormat'],
-                'template' => $settings['template'],
-            ];
-        }
-
         $configPath = self::CONFIG_CATEGORYROUP_KEY . '.' . $group->uid;
-        $projectConfig->set($configPath, $configData, "Save category group “{$group->handle}”");
+        $configData = $group->getConfig();
+        Craft::$app->getProjectConfig()->set($configPath, $configData, "Save category group “{$group->handle}”");
 
         if ($isNewCategoryGroup) {
             $group->id = Db::idByUid(Table::CATEGORYGROUPS, $group->uid);

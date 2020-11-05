@@ -25,7 +25,7 @@
             <div class="tab sel{% if context.customizableTabs %} draggable{% endif %}">
                 <span>{{ tabName }}</span>
                 {% if context.customizableTabs %}
-                    <a class="settings icon" title="{{ 'Edit'|t('app') }}"></a>
+                    <a class="settings icon" title="{{ 'Edit'|t('app') }}" aria-label="{{ 'Edit'|t('app') }}"></a>
                 {% endif %}
             </div>
         </div>
@@ -41,7 +41,7 @@
     {% if element is instance of('craft\\fieldlayoutelements\\BaseField') %}
         {% set attr = {
             class: [
-                not forLibrary and element.required ? 'fld-required',
+                not forLibrary and element.required ? 'fld-required' : null,
             ]|filter,
             data: {
                 keywords: forLibrary ? element.keywords()|join(' ')|lower : false,
@@ -52,25 +52,25 @@
     {{ element.selectorHtml()|attr({
         class: [
             'fld-element',
-            forLibrary ? 'unused',
+            forLibrary ? 'unused' : null,
         ]|filter,
         data: {
             type: className(element),
             config: element.toArray(),
             'has-custom-width': element.hasCustomWidth(),
-            'settings-html': settingsHtml ? settingsHtml|namespaceAttributes("element-#{random()}") ?: false,
+            'settings-html': (settingsHtml ? settingsHtml|namespaceAttributes("element#{random()}") : null) ?: false,
         },
     }|merge(attr ?? {}, recursive=true)) }}
 {% endmacro %}
 
 {% macro fieldSelectors(groupName, groupFields, context) %}
     {% set showGroup = groupFields|contains(f => not context.fieldLayout.isFieldIncluded(f.attribute())) %}
-    <div class="fld-field-group{% if not showGroup %} hidden{% endif %}">
+    <div class="fld-field-group{% if not showGroup %} hidden{% endif %}" data-name="{{ groupName|replace('"', '')|lower }}">
         <h6>{{ groupName }}</h6>
         {% for field in groupFields %}
             {{ _self.elementSelector(field, true, {
                 class: [
-                    context.fieldLayout.isFieldIncluded(field.attribute()) ? 'hidden',
+                    context.fieldLayout.isFieldIncluded(field.attribute()) ? 'hidden' : null,
                 ],
             }) }}
         {% endfor %}
@@ -100,15 +100,15 @@
         </div>
 
         {% if customizableTabs %}
-            <div class="fld-new-tab-btn btn add icon">{{ "New Tab"|t('app') }}</div>
+            <button type="button" class="fld-new-tab-btn btn add icon">{{ "New Tab"|t('app') }}</button>
         {% endif %}
     </div>
 
     <div class="fld-sidebar">
         {% if customizableUi %}
             <div class="btngroup small fullwidth" role="listbox" aria-label="{{ 'Layout element types'|t('app') }}" tabindex="0">
-                <div class="btn small active" role="option" aria-selected="true" data-library="field">{{ 'Fields'|t('app') }}</div>
-                <div class="btn small" role="option" aria-selected="false" data-library="ui">{{ 'UI Elements'|t('app') }}</div>
+                <button type="button" class="btn small active" role="option" aria-selected="true" data-library="field" tabindex="-1">{{ 'Fields'|t('app') }}</button>
+                <button type="button" class="btn small" role="option" aria-selected="false" data-library="ui" tabindex="-1">{{ 'UI Elements'|t('app') }}</button>
             </div>
         {% endif %}
 
@@ -116,9 +116,10 @@
             <div class="texticon search icon clearable">
                 {{ forms.text({
                     class: 'fullwidth',
+                    inputmode: 'search',
                     placeholder: "Search"|t('app')
                 }) }}
-                <div class="clear hidden" title="{{ 'Clear'|t('app') }}"></div>
+                <div class="clear hidden" title="{{ 'Clear'|t('app') }}" aria-label="{{ 'Clear'|t('app') }}"></div>
             </div>
 
             {{ _self.fieldSelectors('Standard Fields'|t('app'), fieldLayout.getAvailableStandardFields(), _context) }}

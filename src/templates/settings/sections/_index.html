@@ -4,12 +4,15 @@
 {% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
 
 {% do view.registerTranslations('app', [
-    "Type",
+    "Are you sure you want to delete “{name}” and all its entries?",
+    "Edit entry type",
+    "Edit entry types ({count})",
+    "Edit entry types",
+    "Entry Types",
     "Handle",
     "Name",
-    "Edit entry types ({count})",
-    "Are you sure you want to delete “{name}” and all its entries?",
     "No sections exist yet.",
+    "Type",
 ]) %}
 
 {% set crumbs = [

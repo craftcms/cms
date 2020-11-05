@@ -1,9 +1,9 @@
 {%- set class = (class ?? [])|explodeClass|push('multiselect') %}
-{%- set options = (options is defined ? options : []) %}
-{%- set values = (values is defined ? values : []) -%}
+{%- set options = options ?? [] %}
+{%- set values = values ?? [] -%}
 {%- set hasOptgroups = false -%}
 
-{% if name is defined and name %}
+{% if name ?? false %}
     {{ hiddenInput(name, '') }}
 {% endif -%}
 
@@ -11,9 +11,9 @@
         {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
     <select multiple
             {%- if id is defined %} id="{{ id }}"{% endif %}
-            {%- if name is defined and name %} name="{{ name }}[]"{% endif %}
-            {%- if autofocus is defined and autofocus and not craft.app.request.isMobileBrowser(true) %} autofocus{% endif %}
-            {%- if disabled is defined and disabled %} disabled{% endif %}
+            {%- if name ?? false %} name="{{ name }}[]"{% endif %}
+            {%- if (autofocus ?? false) and not craft.app.request.isMobileBrowser(true) %} autofocus{% endif %}
+            {%- if disabled ?? false %} disabled{% endif %}
             {%- if size is defined %} size="{{ size }}"{% endif %}>
         {%- for key, option in options %}
             {% if option.optgroup is defined %}

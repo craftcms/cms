@@ -8,10 +8,18 @@ $minHorizontalUiWidth: $minFullUiWidth - $sidebarWidth;
 
 html {
   -webkit-text-size-adjust: 100%;
+  min-height: 100vh;
+}
+
+body {
+  min-height: 100vh;
 }
 
 #global-container {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
 /* global sidebar */
@@ -88,7 +96,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   grid-gap: 10px;
   padding: 0 10px;
   position: relative;
-  flex: 0 0 60px;
+  flex: 0 0 50px;
   flex-direction: row;
   align-items: center;
   background-color: $systemInfoBgColor;
@@ -151,11 +159,14 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 }
 
 #job-icon {
+  align-items: flex-start;
+
   & > span.icon {
     display: block;
     position: relative;
     width: 16px;
     height: 16px;
+    margin-top: 2px !important;
 
     & > canvas {
       display: block;
@@ -170,37 +181,24 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
     }
   }
 
-  .progressbar {
-    position: static;
-    margin: 8px 2px;
-    width: auto;
-    border-color: $grey200;
-    transition: color linear 100ms;
-  }
-
-  .progressbar-inner {
-    background-color: $grey200;
-    transition: color linear 100ms;
-  }
-
   &[href]:hover {
-    .progressbar {
-      border-color: $white;
-    }
-
-    .progressbar-inner {
-      background-color: $white;
-    }
-
     .icon > span.icon > canvas#job-icon-hover {
       opacity: 1;
     }
+  }
+
+  .progress-label {
+    display: block;
+    color: $grey300;
+    font-size: 11px;
+    line-height: 1.5;
   }
 }
 
 #nav {
   flex: 1;
   margin: 27px 0 0;
+  padding-bottom: 24px;
   overflow: visible;
 
   li {
@@ -278,38 +276,31 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   }
 }
 
-#app-info {
+#global-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   padding: 14px 14px 24px;
-  color: $grey1000;
-  text-align: center;
 }
 
-#edition {
-  font-size: 14px;
+#app-info {
+  margin-top: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: $grey600;
+  text-align: center;
 
-  &.hot:hover {
-    cursor: pointer;
+  li {
+    margin: 0 7px;
 
-    #edition-logo {
-      border-color: $grey300;
+    a {
+      color: $grey600;
+      text-decoration: underline;
 
-      & > .edition-name {
-        color: $grey300;
-        @include light-on-dark-text;
-      }
-
-      & > .edition-trial {
-        background-color: $grey300;
-
-        &:before {
-          body.ltr & {
-            border-color: transparent $grey300 transparent transparent;
-          }
-
-          body.rtl & {
-            border-color: transparent transparent transparent $grey300;
-          }
-        }
+      &.go:hover:after {
+        color: $grey600;
       }
     }
   }
@@ -317,23 +308,23 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
 #edition-logo {
   user-select: none;
-  border: 1px solid $grey1000;
+  border: 1px solid $grey600;
   border-radius: 3px;
   display: inline-flex;
-  height: 24px;
+  height: 20px;
   box-sizing: content-box;
-  transition: border-color linear 100ms;
+  font-size: 11px;
 
   & > .edition-name,
   & > .edition-trial {
-    padding: 8px 8px 7px;
+    padding: 6px 7px 5px;
     line-height: 8px;
-    font-weight: 500;
   }
 
   & > .edition-name {
-    letter-spacing: 2.2px;
-    padding-right: 5.8px;
+    font-weight: 600;
+    letter-spacing: 1.7px;
+    padding-right: 5px;
     text-transform: uppercase;
     transition: color linear 100ms;
   }
@@ -343,8 +334,8 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
     position: relative;
     @include margin-left(5px);
     @include padding-left(5px);
-    background-color: $grey1000;
-    color: $grey800;
+    background-color: $grey600;
+    color: $grey200;
     border-radius: 0 1px 1px 0;
     letter-spacing: 1px;
     @include padding-right(7px);
@@ -364,22 +355,17 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
       body.ltr & {
         left: -10px;
-        border-width: 0 10px 23px 0;
-        border-color: transparent $grey1000 transparent transparent;
+        border-width: 0 10px 20px 0;
+        border-color: transparent $grey600 transparent transparent;
       }
 
       body.rtl & {
         right: -10px;
-        border-width: 0 0 23px 10px;
-        border-color: transparent transparent transparent $grey1000;
+        border-width: 0 0 20px 10px;
+        border-color: transparent transparent transparent $grey600;
       }
     }
   }
-}
-
-#version {
-  margin-top: 4px;
-  font-size: 12px;
 }
 
 #devmode {
@@ -392,6 +378,9 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
 #page-container {
   @include padding-left($sidebarWidth);
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
 }
 
 #alerts {
@@ -441,7 +430,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   background: $grey050;
 
   .flex {
-    height: 60px;
+    height: 50px;
     align-items: center;
   }
 }
@@ -449,7 +438,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 #crumbs {
   display: flex;
   flex-direction: row;
-  align-items: stretch;
+  align-items: center;
   font-size: 13px;
 
   &.empty {
@@ -475,24 +464,16 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
       align-items: stretch;
 
       li {
-        &:after {
-          @include icon;
-          margin: -1px 5px 0;
-          font-size: 11px;
-          color: $lightTextColor;
-
-          body.ltr & {
-            content: 'rightangle';
-          }
-
-          body.rtl & {
-            content: 'leftangle';
-          }
-        }
+        display: inline-flex;
+        align-items: center;
 
         a {
-          display: inline-block;
-          padding: 5px 0 1px;
+          padding: 15px 0;
+        }
+
+        &:after {
+          margin: 0 7px;
+          @include angle(right, $mediumHairlineColor);
         }
       }
     }
@@ -501,42 +482,28 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
 #nav-toggle {
   display: none;
-  width: 36px;
-  height: 26px;
-  line-height: 26px;
-  color: $grey300;
-  text-align: center;
-  @include margin-left(-10px);
-
-  &:before {
-    @include icon;
-    content: 'menu';
-    font-size: 16px;
-    line-height: 0;
-  }
-
-  &:hover {
-    color: $grey400;
-  }
 }
 
 #user-info {
   display: flex;
   flex-direction: row;
   align-items: center;
-  @include padding(0, 24px, 0, 14px);
+  @include padding(0, 11px, 0, 14px);
+  @include margin-right(14px);
   height: 100%;
   background-color: transparent;
   border-radius: 0;
 
   &:after {
-    @include margin(0, 0, 0, 5px, !important);
-    color: $lightTextColor;
-    transition: color linear 100ms;
+    border-color: $mediumHairlineColor;
+    transition: border-color linear 100ms;
   }
 
-  &:hover:after {
-    color: $mediumTextColor;
+  &:hover,
+  &.active {
+    &:after {
+      border-color: $darkHairlineColor;
+    }
   }
 }
 
@@ -561,6 +528,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
 #main-container {
   position: relative;
+  flex-grow: 1;
 }
 
 #notifications {
@@ -622,8 +590,8 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   align-content: stretch;
   flex-wrap: nowrap;
   justify-content: space-between;
-  padding-top: 13px;
-  padding-bottom: 13px;
+  padding-top: 8px;
+  padding-bottom: 8px;
   position: relative;
   z-index: 2;
   width: calc(100vw - #{$sidebarWidth});
@@ -1026,19 +994,11 @@ $toolbarIconColor: darken($inputColor, 10%);
         color: $grey600;
       }
     }
-    & > .field.has-errors {
-      margin: 0 -24px !important;
-      padding: 0 24px;
-    }
 
     & > .field {
       .status-badge {
         @include left(4px);
         top: calc(50% - 8px);
-      }
-
-      & + .field {
-        border-top-color: $hairlineColor;
       }
     }
 
@@ -1064,6 +1024,12 @@ $toolbarIconColor: darken($inputColor, 10%);
 
   .text {
     background-color: transparent;
+  }
+
+  & > .text {
+    box-shadow: none;
+    border-radius: $largeBorderRadius;
+    margin-bottom: 14px;
   }
 }
 
@@ -1099,7 +1065,26 @@ $toolbarIconColor: darken($inputColor, 10%);
   }
 
   #nav-toggle {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 50px;
+    line-height: 26px;
+    color: $grey300;
+    text-align: center;
+    @include margin-left(-10px);
+
+    &:before {
+      @include icon;
+      content: 'menu';
+      font-size: 16px;
+      line-height: 0;
+    }
+
+    &:hover {
+      color: $grey400;
+    }
   }
 
   #main-content {
@@ -1139,17 +1124,12 @@ $toolbarIconColor: darken($inputColor, 10%);
   }
 
   #sidebar-toggle {
-    &:after {
-      @include icon;
-      content: 'downangle';
-      @include margin-left(5px);
-    }
-
     body.showing-sidebar & {
       background-color: darken($grey200, 10%) !important;
 
       &:after {
-        content: 'upangle';
+        transform: rotate(225deg);
+        top: 1px;
       }
     }
   }
@@ -1254,7 +1234,7 @@ $toolbarIconColor: darken($inputColor, 10%);
   z-index: 100;
 
   header {
-    padding: 10px 24px;
+    padding: 8px 24px;
     background-color: $grey100;
     box-shadow: 0 1px 0 transparentize($grey700, 0.8);
     box-sizing: border-box;
@@ -1326,7 +1306,7 @@ $toolbarIconColor: darken($inputColor, 10%);
     justify-content: center;
 
     & + .lp-iframe-container {
-      padding-top: 54px;
+      padding-top: 50px;
     }
   }
 
@@ -1361,7 +1341,7 @@ $toolbarIconColor: darken($inputColor, 10%);
       padding: 0 5px;
       margin: 0 -5px;
       text-transform: uppercase;
-      color: $lightTextColor;
+      color: $mediumTextColor;
       font-size: 11px;
       font-weight: bold;
     }
@@ -1373,7 +1353,7 @@ $toolbarIconColor: darken($inputColor, 10%);
     }
 
     & > .toggle {
-      @include left(14px * $level);
+      @include left(5px + 14px * $level);
     }
   }
 
@@ -1480,7 +1460,14 @@ $toolbarIconColor: darken($inputColor, 10%);
 
       .toggle {
         position: absolute;
-        top: 7px;
+        height: 34px;
+        top: 0;
+        padding: 0 4px;
+
+        &:before {
+          position: relative;
+          top: 14px;
+        }
       }
 
       ul {
@@ -1494,27 +1481,12 @@ $toolbarIconColor: darken($inputColor, 10%);
   }
 }
 
-#job-icon {
-  align-items: flex-start;
-
-  .icon {
-    margin-top: 2px !important;
-  }
-
-  .progress-label {
-    display: block;
-    color: $grey300;
-    font-size: 11px;
-    line-height: 1.5;
-  }
-}
-
 .content.has-sidebar:not(.hiding-sidebar) {
   @include margin-left($sidebarWidth);
 }
 
 /* flexbox field layouts */
-.flex-fields {
+#content :not(.meta) > .flex-fields {
   display: flex;
   flex-wrap: wrap;
   align-content: flex-start;
@@ -1522,7 +1494,7 @@ $toolbarIconColor: darken($inputColor, 10%);
   width: calc(100% + 14px);
 
   & > h2 {
-    margin: 0 -10px 24px -24px;
+    margin: 0 -10px 24px -24px !important;
     padding: 0 10px 0 24px;
     width: calc(100% + 34px);
 
@@ -1542,26 +1514,24 @@ $toolbarIconColor: darken($inputColor, 10%);
       margin: 0 14px 24px 0 !important;
       width: calc(100% - 14px);
 
-      #content & {
-        // 4 cols for >= 1200
-        @media only screen and (min-width: $minFullUiWidth + $sidebarWidth) {
-          &.width-25 {
-            width: calc(25% - 14px);
-          }
-          &.width-50 {
-            width: calc(50% - 14px);
-          }
-          &.width-75 {
-            width: calc(75% - 14px);
-          }
+      // 4 cols for >= 1200
+      @media only screen and (min-width: $minFullUiWidth + $sidebarWidth) {
+        &.width-25 {
+          width: calc(25% - 14px);
         }
+        &.width-50 {
+          width: calc(50% - 14px);
+        }
+        &.width-75 {
+          width: calc(75% - 14px);
+        }
+      }
 
-        // 2 cols fol 712 - 1200
-        @media only screen and (min-width: 500px) and (max-width: $minFullUiWidth + $sidebarWidth - 1px) {
-          &.width-25,
-          &.width-50 {
-            width: calc(50% - 14px);
-          }
+      // 2 cols fol 712 - 1200
+      @media only screen and (min-width: 500px) and (max-width: $minFullUiWidth + $sidebarWidth - 1px) {
+        &.width-25,
+        &.width-50 {
+          width: calc(50% - 14px);
         }
       }
     }

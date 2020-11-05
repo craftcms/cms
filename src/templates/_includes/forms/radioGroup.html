@@ -1,10 +1,10 @@
-{%- set options = (options is defined ? options : []) %}
-{%- set value = (value is defined ? value : null) %}
+{%- set options = options ?? [] %}
+{%- set value = value ?? null %}
 
 {%- set class = (class ?? [])|explodeClass|merge([
     'radio-group',
-    (toggle ?? false) ? 'fieldtoggle',
-    (disabled ?? false) ? 'disabled',
+    (toggle ?? false) ? 'fieldtoggle' : null,
+    (disabled ?? false) ? 'disabled' : null,
 ]|filter) %}
 
 {%- set containerAttributes = {
@@ -25,10 +25,10 @@
         {%- endif %}
         <div>
             {% include "_includes/forms/radio" with {
-                id:        (id is defined and loop.first ? id : null),
-                name:      (name is defined ? name : null),
-                checked:   (option.value is defined and option.value == value),
-                autofocus: (autofocus is defined and autofocus and loop.first and not craft.app.request.isMobileBrowser(true))
+                id: loop.first ? (id ?? null) : null,
+                name: name ?? null,
+                checked: (option.value is defined and option.value == value),
+                autofocus: loop.first and (autofocus ?? false) and not craft.app.request.isMobileBrowser(true),
             }|merge(option) only %}
         </div>
     {% endfor %}

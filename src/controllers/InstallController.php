@@ -94,7 +94,7 @@ class InstallController extends Controller
         $defaultSiteUrl = InstallHelper::defaultSiteUrl();
         $defaultSiteLanguage = InstallHelper::defaultSiteLanguage();
 
-        $iconsPath = Craft::getAlias('@app/icons');
+        $iconsPath = Craft::getAlias('@appicons');
         $dbIcon = $showDbScreen ? file_get_contents($iconsPath . DIRECTORY_SEPARATOR . 'database.svg') : null;
         $userIcon = file_get_contents($iconsPath . DIRECTORY_SEPARATOR . 'user.svg');
         $worldIcon = file_get_contents($iconsPath . DIRECTORY_SEPARATOR . 'world.svg');
@@ -276,7 +276,7 @@ class InstallController extends Controller
         if ($siteUrl[0] !== '@' && $siteUrl[0] !== '$' && !App::isEphemeral()) {
             try {
                 $configService->setDotEnvVar('PRIMARY_SITE_URL', $siteUrl);
-                $siteUrl = '$DEFAULT_SITE_URL';
+                $siteUrl = '$PRIMARY_SITE_URL';
             } catch (Exception $e) {
                 // that's fine, we'll just store the entered URL
             }

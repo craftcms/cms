@@ -71,7 +71,6 @@ Craft.CP = Garnish.Base.extend(
             this.$sidebar = $('#sidebar');
             this.$contentContainer = $('#content-container');
             this.$collapsibleTables = $('table.collapsible');
-            this.$edition = $('#edition');
 
             this.updateSidebarMenuLabel();
 
@@ -117,8 +116,14 @@ Craft.CP = Garnish.Base.extend(
                 let actions = this.$primaryForm.data('actions');
                 if (typeof actions === 'undefined') {
                     shortcuts.push([
-                        {keyCode: Garnish.S_KEY, ctrl: true},
-                        {redirect: this.$primaryForm.data('saveshortcut-redirect')}
+                        {
+                            keyCode: Garnish.S_KEY,
+                            ctrl: true,
+                        },
+                        {
+                            redirect: this.$primaryForm.data('saveshortcut-redirect'),
+                            retainScroll: Garnish.hasAttr(this.$primaryForm, 'saveshortcut-scroll'),
+                        }
                     ]);
                 } else {
                     for (let i = 0; i < actions.length; i++) {
@@ -138,6 +143,7 @@ Craft.CP = Garnish.Base.extend(
                                 confirm: action.confirm,
                                 params: action.params,
                                 data: action.data,
+                                retainScroll: action.retainScroll,
                             }
                         ]);
                     }
@@ -151,9 +157,14 @@ Craft.CP = Garnish.Base.extend(
 
             this.initTabs();
 
-            if (this.$edition.hasClass('hot')) {
-                this.addListener(this.$edition, 'click', function() {
-                    document.location.href = Craft.getUrl('plugin-store/upgrade-craft');
+            // Should we match the previous scroll position?
+            let scrollY = Craft.getLocalStorage('scrollY');
+            if (typeof scrollY !== 'undefined') {
+                Craft.removeLocalStorage('scrollY');
+                Garnish.$doc.ready(() => {
+                    Garnish.requestAnimationFrame(() => {
+                        window.scrollTo(0, scrollY);
+                    });
                 });
             }
 
@@ -167,18 +178,6 @@ Craft.CP = Garnish.Base.extend(
             $('a').each(function() {
                 if (this.hostname.length && this.hostname !== location.hostname && typeof $(this).attr('target') === 'undefined') {
                     $(this).attr('rel', 'noopener').attr('target', '_blank')
-                }
-            });
-
-            // Listen for Option/ALT presses
-            this.addListener(Garnish.$win, 'keydown', function(ev) {
-                if (ev.keyCode === Garnish.ALT_KEY) {
-                    Garnish.$bod.addClass('altkeydown');
-                }
-            });
-            this.addListener(Garnish.$win, 'keyup', function(ev) {
-                if (ev.keyCode === Garnish.ALT_KEY) {
-                    Garnish.$bod.removeClass('altkeydown');
                 }
             });
         },
@@ -276,6 +275,7 @@ Craft.CP = Garnish.Base.extend(
          * @param {string} [options.confirm] A confirmation message that should be shown to the user before submit
          * @param {Object} [options.params] Additional params that should be added to the form, defined as name/value pairs
          * @param {Object} [options.data] Additional data to be passed to the submit event
+         * @param {boolean} [options.retainScroll] Whether the scroll position should be stored and reapplied on the next page load
          */
         submitPrimaryForm: function(options) {
             // Give other stuff on the page a chance to prepare
@@ -377,6 +377,10 @@ Craft.CP = Garnish.Base.extend(
         },
 
         _selectTab: function($tab, index) {
+            if ($tab === this.$selectedTab) {
+                return;
+            }
+
             this.$selectedTab = $tab;
             this.selectedTabIndex = index;
             if (index === 0) {
@@ -388,6 +392,20 @@ Craft.CP = Garnish.Base.extend(
             Garnish.$win.trigger('resize');
             // Fixes Redactor fixed toolbars on previously hidden panes
             Garnish.$doc.trigger('scroll');
+
+            // If there is a revision menu, set its links to this tab ID
+            let href = $tab && $tab.attr('href');
+            if (href && href.charAt(0) === '#') {
+                let menubtn = $('#context-btn').menubtn().data('menubtn');
+                if (menubtn) {
+                    for (let i = 0; i < menubtn.menu.$options.length; i++) {
+                        let a = menubtn.menu.$options[i];
+                        if (a.href) {
+                            a.href = a.href.match(/^[^#]*/)[0] + href;
+                        }
+                    }
+                }
+            }
         },
 
         deselectTab: function() {
@@ -974,8 +992,6 @@ var JobProgressIcon = Garnish.Base.extend(
         progress: null,
         failMode: false,
 
-        _canvasSupported: null,
-
         _$bgCanvas: null,
         _$staticCanvas: null,
         _$hoverCanvas: null,
@@ -1009,30 +1025,22 @@ var JobProgressIcon = Garnish.Base.extend(
             this.$label = $('<span/>').appendTo($labelContainer);
             this.$progressLabel = $('<span class="progress-label"/>').appendTo($labelContainer).hide();
 
-            this._canvasSupported = !!(document.createElement('canvas').getContext);
+            let m = (window.devicePixelRatio > 1 ? 2 : 1);
+            this._canvasSize = 18 * m;
+            this._arcPos = this._canvasSize / 2;
+            this._arcRadius = 7 * m;
+            this._lineWidth = 3 * m;
 
-            if (this._canvasSupported) {
-                var m = (window.devicePixelRatio > 1 ? 2 : 1);
-                this._canvasSize = 18 * m;
-                this._arcPos = this._canvasSize / 2;
-                this._arcRadius = 7 * m;
-                this._lineWidth = 3 * m;
+            this._$bgCanvas = this._createCanvas('bg', '#61666b');
+            this._$staticCanvas = this._createCanvas('static', '#d7d9db');
+            this._$hoverCanvas = this._createCanvas('hover', '#fff');
+            this._$failCanvas = this._createCanvas('fail', '#da5a47').hide();
 
-                this._$bgCanvas = this._createCanvas('bg', '#61666b');
-                this._$staticCanvas = this._createCanvas('static', '#d7d9db');
-                this._$hoverCanvas = this._createCanvas('hover', '#fff');
-                this._$failCanvas = this._createCanvas('fail', '#da5a47').hide();
+            this._staticCtx = this._$staticCanvas[0].getContext('2d');
+            this._hoverCtx = this._$hoverCanvas[0].getContext('2d');
 
-                this._staticCtx = this._$staticCanvas[0].getContext('2d');
-                this._hoverCtx = this._$hoverCanvas[0].getContext('2d');
-
-                this._drawArc(this._$bgCanvas[0].getContext('2d'), 0, 1);
-                this._drawArc(this._$failCanvas[0].getContext('2d'), 0, 1);
-            }
-            else {
-                this._progressBar = new Craft.ProgressBar(this.$canvasContainer);
-                this._progressBar.showProgressBar();
-            }
+            this._drawArc(this._$bgCanvas[0].getContext('2d'), 0, 1);
+            this._drawArc(this._$failCanvas[0].getContext('2d'), 0, 1);
         },
 
         setDescription: function(description, progressLabel) {
@@ -1046,43 +1054,32 @@ var JobProgressIcon = Garnish.Base.extend(
         },
 
         setProgress: function(progress) {
-            if (this._canvasSupported) {
-                if (progress == 0) {
-                    this._$staticCanvas.hide();
-                    this._$hoverCanvas.hide();
-                } else {
-                    this._$staticCanvas.show();
-                    this._$hoverCanvas.show();
-                    if (this.progress && progress > this.progress) {
-                        this._animateArc(0, progress / 100);
-                    }
-                    else {
-                        this._setArc(0, progress / 100);
-                    }
+            if (progress == 0) {
+                this._$staticCanvas.hide();
+                this._$hoverCanvas.hide();
+            } else {
+                this._$staticCanvas.show();
+                this._$hoverCanvas.show();
+                if (this.progress && progress > this.progress) {
+                    this._animateArc(0, progress / 100);
                 }
-            }
-            else {
-                this._progressBar.setProgressPercentage(progress);
+                else {
+                    this._setArc(0, progress / 100);
+                }
             }
 
             this.progress = progress;
         },
 
         complete: function() {
-            if (this._canvasSupported) {
-                this._animateArc(0, 1, $.proxy(function() {
-                    this._$bgCanvas.velocity('fadeOut');
+            this._animateArc(0, 1, $.proxy(function() {
+                this._$bgCanvas.velocity('fadeOut');
 
-                    this._animateArc(1, 1, $.proxy(function() {
-                        this.$a.remove();
-                        this.destroy();
-                    }, this));
+                this._animateArc(1, 1, $.proxy(function() {
+                    this.$a.remove();
+                    this.destroy();
                 }, this));
-            }
-            else {
-                this._progressBar.setProgressPercentage(100);
-                this.$a.velocity('fadeOut');
-            }
+            }, this));
         },
 
         showFailMode: function(message) {
@@ -1093,17 +1090,10 @@ var JobProgressIcon = Garnish.Base.extend(
             this.failMode = true;
             this.progress = null;
 
-            if (this._canvasSupported) {
-                this._$bgCanvas.hide();
-                this._$staticCanvas.hide();
-                this._$hoverCanvas.hide();
-                this._$failCanvas.show();
-            }
-            else {
-                this._progressBar.$progressBar.css('border-color', '#da5a47');
-                this._progressBar.$innerProgressBar.css('background-color', '#da5a47');
-                this._progressBar.setProgressPercentage(50);
-            }
+            this._$bgCanvas.hide();
+            this._$staticCanvas.hide();
+            this._$hoverCanvas.hide();
+            this._$failCanvas.show();
 
             this.setDescription(message);
         },
@@ -1115,17 +1105,10 @@ var JobProgressIcon = Garnish.Base.extend(
 
             this.failMode = false;
 
-            if (this._canvasSupported) {
-                this._$bgCanvas.show();
-                this._$staticCanvas.show();
-                this._$hoverCanvas.show();
-                this._$failCanvas.hide();
-            }
-            else {
-                this._progressBar.$progressBar.css('border-color', '');
-                this._progressBar.$innerProgressBar.css('background-color', '');
-                this._progressBar.setProgressPercentage(50);
-            }
+            this._$bgCanvas.show();
+            this._$staticCanvas.show();
+            this._$hoverCanvas.show();
+            this._$failCanvas.hide();
         },
 
         _createCanvas: function(id, color) {

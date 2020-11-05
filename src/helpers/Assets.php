@@ -88,7 +88,7 @@ class Assets
         $folderPath = $asset->folderPath;
         $appendix = static::urlAppendix($volume, $asset, $transformIndex);
 
-        return $baseUrl . $folderPath . ($uri ?? $asset->filename) . $appendix;
+        return $baseUrl . str_replace(' ', '%20', $folderPath . ($uri ?? $asset->filename) . $appendix);
     }
 
     /**
@@ -166,7 +166,8 @@ class Assets
             $baseName = $baseNameSanitized;
         }
 
-        return $baseName . $extension;
+        // Put them back together, but keep the full filename w/ extension from going over 255 chars
+        return substr($baseName, 0, 255 - strlen($extension)) . $extension;
     }
 
     /**

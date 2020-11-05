@@ -22,11 +22,6 @@ return [
             $config = craft\helpers\App::sessionConfig();
             return Craft::createObject($config);
         },
-        'urlManager' => [
-            'class' => craft\web\UrlManager::class,
-            'enablePrettyUrl' => true,
-            'ruleConfig' => ['class' => craft\web\UrlRule::class],
-        ],
         'user' => function() {
             $config = craft\helpers\App::userConfig();
             return Craft::createObject($config);

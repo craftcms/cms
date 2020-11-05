@@ -33,11 +33,11 @@ class StringyHelperTest extends Unit
     public function testLangSpecificCharsArray(string $language, string $orig, string $replace)
     {
         $array = Stringy::getLangSpecificCharsArray($language);
-        $this->assertIsArray($array);
-        $this->assertCount(2, $array);
+        self::assertIsArray($array);
+        self::assertCount(2, $array);
         $index = array_search($orig, $array[0]);
-        $this->assertIsInt($index);
-        $this->assertSame($replace, $array[1][$index]);
+        self::assertIsInt($index);
+        self::assertSame($replace, $array[1][$index]);
     }
 
     /**
@@ -57,8 +57,8 @@ class StringyHelperTest extends Unit
     public function testAsciiCharMap()
     {
         $map = (new Stringy())->getAsciiCharMap();
-        $this->assertIsArray($map);
-        $this->assertIsArray($map['a']);
-        $this->assertIsString($map['a'][0]);
+        self::assertIsArray($map);
+        self::assertIsArray($map['a']);
+        self::assertIsString($map['a'][0]);
     }
 }

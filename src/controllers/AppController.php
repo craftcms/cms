@@ -15,6 +15,7 @@ use craft\helpers\Api;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
+use craft\helpers\Update as UpdateHelper;
 use craft\helpers\UrlHelper;
 use craft\models\Update;
 use craft\models\Updates;
@@ -44,6 +45,7 @@ class AppController extends Controller
     public $allowAnonymous = [
         'migrate' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'broken-image' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+        'health-check' => self::ALLOW_ANONYMOUS_LIVE,
     ];
 
     /**
@@ -56,6 +58,19 @@ class AppController extends Controller
         }
 
         return parent::beforeAction($action);
+    }
+
+    /**
+     * Returns an empty response.
+     *
+     * @since 3.5.0
+     */
+    public function actionHealthCheck(): Response
+    {
+        // All that matters is the 200 response
+        $this->response->format = Response::FORMAT_RAW;
+        $this->response->data = '';
+        return $this->response;
     }
 
     /**
@@ -264,7 +279,7 @@ class AppController extends Controller
                 }
             }
 
-            $error = 'An error occurred running nuw migrations.';
+            $error = 'An error occurred running new migrations.';
             if ($restored) {
                 $error .= ' The database has been restored to its previous state.';
             } else if (isset($restoreException)) {
@@ -472,14 +487,22 @@ class AppController extends Controller
             ]);
             $arr['ctaUrl'] = UrlHelper::url($update->renewalUrl);
         } else {
-            if ($update->status === Update::STATUS_BREAKPOINT) {
-                $arr['statusText'] = Craft::t('app', '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.', [
-                    'update' => $name . ' ' . ($update->getLatest()->version ?? '')
-                ]);
-            }
+            // Make sure that the platform & composer.json PHP version are compatible
+            $phpConstraintError = null;
+            if ($update->phpConstraint && !UpdateHelper::checkPhpConstraint($update->phpConstraint, $phpConstraintError, true)) {
+                $arr['status'] = 'phpIssue';
+                $arr['statusText'] = $phpConstraintError;
+                $arr['ctaUrl'] = false;
+            } else {
+                if ($update->status === Update::STATUS_BREAKPOINT) {
+                    $arr['statusText'] = Craft::t('app', '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.', [
+                        'update' => $name . ' ' . ($update->getLatest()->version ?? '')
+                    ]);
+                }
 
-            if ($allowUpdates) {
-                $arr['ctaText'] = Craft::t('app', 'Update');
+                if ($allowUpdates) {
+                    $arr['ctaText'] = Craft::t('app', 'Update');
+                }
             }
         }
 
@@ -507,7 +530,7 @@ class AppController extends Controller
 
         // Update our records & use all licensed plugins as a starting point
         if (!empty($pluginLicenses)) {
-            $defaultIconUrl = Craft::$app->getAssetManager()->getPublishedUrl('@app/icons/default-plugin.svg', true);
+            $defaultIconUrl = Craft::$app->getAssetManager()->getPublishedUrl('@appicons/default-plugin.svg', true);
             $formatter = Craft::$app->getFormatter();
             foreach ($pluginLicenses as $pluginLicenseInfo) {
                 if (isset($pluginLicenseInfo['plugin'])) {

@@ -65,27 +65,27 @@ class GeneralMutationResolverTest extends TestCase
 
         // Test constructor storage for values and normalizers
         foreach ($testData as $key => $value) {
-            $this->assertSame($this->resolver->getResolutionData($key), $value);
+            self::assertSame($this->resolver->getResolutionData($key), $value);
         }
 
         foreach ($valueNormalizers as $argument => $valueNormalizer) {
-            $this->assertSame($this->invokeMethod($this->resolver, 'normalizeValue', [$argument, $testString]), $valueNormalizer($testString));
+            self::assertSame($this->invokeMethod($this->resolver, 'normalizeValue', [$argument, $testString]), $valueNormalizer($testString));
         }
 
         // Test setting resolution data and normalizes after construction
         $this->resolver->setResolutionData($testKey, $testString);
-        $this->assertSame($this->resolver->getResolutionData($testKey), $testString);
-        $this->assertNull($this->resolver->getResolutionData(uniqid('test', true)));
+        self::assertSame($this->resolver->getResolutionData($testKey), $testString);
+        self::assertNull($this->resolver->getResolutionData(uniqid('test', true)));
 
         $normalizer = function ($value) {
             return strlen($value);
         };
 
         $this->resolver->setValueNormalizer($testKey, $normalizer);
-        $this->assertSame($this->invokeMethod($this->resolver, 'normalizeValue', [$testKey, $testString]), $normalizer($testString));
+        self::assertSame($this->invokeMethod($this->resolver, 'normalizeValue', [$testKey, $testString]), $normalizer($testString));
 
         $this->resolver->setValueNormalizer($testKey, null);
-        $this->assertNotSame($this->invokeMethod($this->resolver, 'normalizeValue', [$testKey, $testString]), $normalizer($testString));
+        self::assertNotSame($this->invokeMethod($this->resolver, 'normalizeValue', [$testKey, $testString]), $normalizer($testString));
     }
 
     /**
@@ -127,7 +127,7 @@ class GeneralMutationResolverTest extends TestCase
 
         foreach ($arguments as $argument => $value) {
             if (!array_key_exists($argument, $contentFields)) {
-                $this->assertSame($value, $entry->{$argument});
+                self::assertSame($value, $entry->{$argument});
             }
         }
     }
@@ -158,13 +158,13 @@ class GeneralMutationResolverTest extends TestCase
         $this->setInaccessibleProperty($this->resolver, 'immutableAttributes', ['id', 'uid', 'title']);
         $this->invokeMethod($this->resolver, 'populateElementWithData', [$entry, $arguments]);
 
-        $this->assertSame($entry->id, $testId);
-        $this->assertSame($entry->uid, $testUid);
-        $this->assertSame($entry->title, $testTitle);
+        self::assertSame($entry->id, $testId);
+        self::assertSame($entry->uid, $testUid);
+        self::assertSame($entry->title, $testTitle);
 
-        $this->assertNotSame($entry->id, $arguments['id']);
-        $this->assertNotSame($entry->uid, $arguments['uid']);
-        $this->assertNotSame($entry->title, $arguments['title']);
+        self::assertNotSame($entry->id, $arguments['id']);
+        self::assertNotSame($entry->uid, $arguments['uid']);
+        self::assertNotSame($entry->title, $arguments['title']);
     }
 
     public function populatingElementWithDataProvider()
@@ -238,12 +238,12 @@ class GeneralMutationResolverTest extends TestCase
         $this->invokeMethod($this->resolver, 'saveElement', [$entry]);
 
         // Ensure scenario unchanged for disabled elements
-        $this->assertSame($scenario, $entry->getScenario());
+        self::assertSame($scenario, $entry->getScenario());
 
         $entry->enabled = true;
         $this->invokeMethod($this->resolver, 'saveElement', [$entry]);
 
         // Ensure scenario changed for enabled elements with the default scenario
-        $this->assertNotSame($scenario, $entry->getScenario());
+        self::assertNotSame($scenario, $entry->getScenario());
     }
 }

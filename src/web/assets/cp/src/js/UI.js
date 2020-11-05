@@ -7,6 +7,7 @@ Craft.ui =
                 attr: {
                     'class': 'text',
                     type: (config.type || 'text'),
+                    inputmode: config.inputmode,
                     id: config.id,
                     size: config.size,
                     name: config.name,
@@ -59,11 +60,14 @@ Craft.ui =
         },
 
         createTextField: function(config) {
+            if (!config.id) {
+                config.id = 'text' + Math.floor(Math.random() * 1000000000);
+            }
             return this.createField(this.createTextInput(config), config);
         },
 
         createCopyTextInput: function(config) {
-            let id = config.id || `copytext-${Math.floor(Math.random() * 1000000000)}`;
+            let id = config.id || 'copytext' + Math.floor(Math.random() * 1000000000);
             let buttonId = config.buttonId || `${id}-btn`;
 
             let $container = $('<div/>', {
@@ -87,12 +91,16 @@ Craft.ui =
                 document.execCommand('copy');
                 Craft.cp.displayNotice(Craft.t('app', 'Copied to clipboard.'));
                 $container.trigger('copy');
+                $input[0].setSelectionRange(0, 0);
             });
 
             return $container;
         },
 
         createCopyTextField: function(config) {
+            if (!config.id) {
+                config.id = 'copytext' + Math.floor(Math.random() * 1000000000);
+            }
             return this.createField(this.createCopyTextInput(config), config);
         },
 
@@ -145,6 +153,9 @@ Craft.ui =
         },
 
         createTextareaField: function(config) {
+            if (!config.id) {
+                config.id = 'textarea' + Math.floor(Math.random() * 1000000000);
+            }
             return this.createField(this.createTextarea(config), config);
         },
 
@@ -222,6 +233,9 @@ Craft.ui =
         },
 
         createSelectField: function(config) {
+            if (!config.id) {
+                config.id = 'select' + Math.floor(Math.random() * 1000000000);
+            }
             return this.createField(this.createSelect(config), config);
         },
 
@@ -276,8 +290,12 @@ Craft.ui =
         },
 
         createCheckboxField: function(config) {
+            if (!config.id) {
+                config.id = 'checkbox' + Math.floor(Math.random() * 1000000000);
+            }
+
             var $field = $('<div class="field checkboxfield"/>', {
-                id: (config.id ? config.id + '-field' : null)
+                id: `${config.id}-field`,
             });
 
             if (config.first) {
@@ -350,6 +368,9 @@ Craft.ui =
         },
 
         createCheckboxSelectField: function(config) {
+            if (!config.id) {
+                config.id = 'checkboxselect' + Math.floor(Math.random() * 1000000000);
+            }
             return this.createField(this.createCheckboxSelect(config), config);
         },
 
@@ -412,6 +433,9 @@ Craft.ui =
         },
 
         createLightswitchField: function(config) {
+            if (!config.id) {
+                config.id = 'lightswitch' + Math.floor(Math.random() * 1000000000);
+            }
             return this.createField(this.createLightswitch(config), config)
                 .addClass('lightswitch-field');
         },
@@ -454,6 +478,9 @@ Craft.ui =
         },
 
         createColorField: function(config) {
+            if (!config.id) {
+                config.id = 'color' + Math.floor(Math.random() * 1000000000);
+            }
             return this.createField(this.createColorInput(config), config);
         },
 
@@ -498,6 +525,9 @@ Craft.ui =
         },
 
         createDateField: function(config) {
+            if (!config.id) {
+                config.id = 'date' + Math.floor(Math.random() * 1000000000);
+            }
             return this.createField(this.createDateInput(config), config);
         },
 
@@ -656,16 +686,16 @@ Craft.ui =
 
             $dateInputs.on('change', function() {
                 // Do the start & end dates match one of our options?
-                var startDate = $startDate.datepicker('getDate');
-                var endDate = $endDate.datepicker('getDate');
-                var startTime = startDate ? startDate.getTime() : null;
-                var endTime = endDate ? endDate.getTime() : null;
+                let startDate = $startDate.datepicker('getDate');
+                let endDate = $endDate.datepicker('getDate');
+                let startTime = startDate ? startDate.getTime() : null;
+                let endTime = endDate ? endDate.getTime() : null;
 
-                var $options = $ul.find('a');
-                var $option;
-                var foundOption = false;
+                let $options = $ul.find('a');
+                let $option;
+                let foundOption = false;
 
-                for (var i = 0; i < $options.length; i++) {
+                for (let i = 0; i < $options.length; i++) {
                     $option = $options.eq(i);
                     if (
                         startTime === ($option.data('startTime') || null) &&
@@ -702,13 +732,17 @@ Craft.ui =
                 $endDate.datepicker('hide');
             });
 
-            var btnClasses = 'btn menubtn';
+            let btnClasses = 'btn menubtn';
             if (config.class) {
                 btnClasses = btnClasses + ' ' + config.class;
             }
 
-            var $btn = $('<div class="'+btnClasses+'" data-icon="date"/>')
-                .text(Craft.t('app', 'All'));
+            let $btn = $('<button/>', {
+                type: 'button',
+                class: btnClasses,
+                'data-icon': 'date',
+                text: Craft.t('app', 'All'),
+            });
 
             new Garnish.MenuBtn($btn, menu);
 
@@ -771,6 +805,9 @@ Craft.ui =
         },
 
         createTimeField: function(config) {
+            if (!config.id) {
+                config.id = 'time' + Math.floor(Math.random() * 1000000000);
+            }
             return this.createField(this.createTimeInput(config), config);
         },
 
@@ -787,30 +824,19 @@ Craft.ui =
                 $field.addClass('first');
             }
 
-            if (label || config.instructions) {
+            if (label) {
                 var $heading = $('<div class="heading"/>').appendTo($field);
 
-                if (label) {
-                    var $label = $('<label/>', {
-                        'id': config.labelId || (config.id ? config.id + '-label' : null),
-                        'class': (config.required ? 'required' : null),
-                        'for': config.id,
-                        text: label
-                    }).appendTo($heading);
+                var $label = $('<label/>', {
+                    'id': config.labelId || (config.id ? `${config.id}-label` : null),
+                    'class': (config.required ? 'required' : null),
+                    'for': config.id,
+                    text: label
+                }).appendTo($heading);
+            }
 
-                    if (siteId) {
-                        for (var i = 0; i < Craft.sites.length; i++) {
-                            if (Craft.sites[i].id == siteId) {
-                                $('<span class="site"/>').text(Craft.sites[i].name).appendTo($label);
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                if (config.instructions) {
-                    $('<div class="instructions"/>').text(config.instructions).appendTo($heading);
-                }
+            if (config.instructions) {
+                $('<div class="instructions"/>').text(config.instructions).appendTo($field);
             }
 
             $('<div class="input"/>').append(input).appendTo($field);

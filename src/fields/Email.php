@@ -77,6 +77,7 @@ class Email extends Field implements PreviewableFieldInterface
             'type' => 'email',
             'id' => $this->handle,
             'name' => $this->handle,
+            'inputmode' => 'email',
             'placeholder' => Craft::t('site', $this->placeholder),
             'value' => $value,
         ]);

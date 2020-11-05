@@ -20,6 +20,7 @@ use craft\helpers\UrlHelper;
 use craft\helpers\User as UserHelper;
 use craft\validators\UserPasswordValidator;
 use yii\web\Cookie;
+use yii\web\ForbiddenHttpException;
 
 /**
  * The User component provides APIs for managing the user authentication status.

@@ -7,7 +7,9 @@
 
 namespace craftunit\gql\mutations;
 
+use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
+use Craft;
 use craft\fields\Matrix as MatrixField;
 use craft\fields\PlainText;
 use craft\gql\GqlEntityRegistry;
@@ -33,7 +35,7 @@ class InputTypeTest extends Unit
 
     public function testFileInput()
     {
-        $this->assertInstanceOf(InputType::class, File::getType());
+        self::assertInstanceOf(InputType::class, File::getType());
     }
 
     /**
@@ -44,23 +46,23 @@ class InputTypeTest extends Unit
         $inputType = Matrix::getType($matrixField);
 
         $fieldTypeName = $matrixField->handle . '_MatrixInput';
-        $this->assertNotFalse(GqlEntityRegistry::getEntity($fieldTypeName));
-        $this->assertNotFalse(GqlEntityRegistry::getEntity($matrixField->handle . '_MatrixBlockContainerInput'));
-        $this->assertNotEmpty(GqlEntityRegistry::getEntity($fieldTypeName)->getFields());
+        self::assertNotFalse(GqlEntityRegistry::getEntity($fieldTypeName));
+        self::assertNotFalse(GqlEntityRegistry::getEntity($matrixField->handle . '_MatrixBlockContainerInput'));
+        self::assertNotEmpty(GqlEntityRegistry::getEntity($fieldTypeName)->getFields());
 
         foreach ($blockTypes as $blockType) {
-            $this->assertNotFalse(GqlEntityRegistry::getEntity($matrixField->handle . '_' . $blockType->handle . '_MatrixBlockInput'));
+            self::assertNotFalse(GqlEntityRegistry::getEntity($matrixField->handle . '_' . $blockType->handle . '_MatrixBlockInput'));
         }
     }
 
     /**
      * Test Matrix input type normalizing values
      *
-     * @dataProvider matrixInputValueNormalizerDataProvicer
+     * @dataProvider matrixInputValueNormalizerDataProvider
      */
     public function testMatrixInputValueNormalization($input, $normalized)
     {
-        $this->assertEquals($normalized, Matrix::normalizeValue($input));
+        self::assertEquals($normalized, Matrix::normalizeValue($input));
     }
 
     public function testMatrixInputDataProvider()
@@ -97,7 +99,7 @@ class InputTypeTest extends Unit
         return $data;
     }
 
-    public function matrixInputValueNormalizerDataProvicer()
+    public function matrixInputValueNormalizerDataProvider()
     {
         return [
             [
@@ -112,7 +114,6 @@ class InputTypeTest extends Unit
                         2 => [
                             'type' => 'blockType',
                             'fields' => [
-                                'id' => 2,
                                 'one',
                                 'two'
                             ]
@@ -140,7 +141,6 @@ class InputTypeTest extends Unit
                         2 => [
                             'type' => 'blockType',
                             'fields' => [
-                                'id' => 2,
                                 'one',
                                 'two'
                             ]
@@ -148,12 +148,11 @@ class InputTypeTest extends Unit
                         88 => [
                             'type' => 'blockTypeB',
                             'fields' => [
-                                'id' => 88,
                                 'stuff' => 'ok',
                             ]
                         ]
                     ]
-                ]
+                ],
             ],
             [
                 ['blocks' =>
@@ -183,7 +182,7 @@ class InputTypeTest extends Unit
                             'fields' => ['four']
                         ]
                     ]
-                ]
+                ],
             ]
         ];
     }

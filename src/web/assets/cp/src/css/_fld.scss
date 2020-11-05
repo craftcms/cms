@@ -82,12 +82,13 @@ $gridColor: hsl(212, 50%, 95%);
 }
 
 .fld-tab .settings,
-.fld-element .slide-picker{
+.fld-element .settings,
+.fld-element .slide-picker {
   @include margin-left(7px);
 }
 
 .fld-tab .settings:before,
-.fld-field .settings:before {
+.fld-element .settings:before {
   margin-top: -2px;
   font-size: 16px;
   opacity: 0.5;
@@ -95,8 +96,8 @@ $gridColor: hsl(212, 50%, 95%);
 
 .fld-tab .settings:hover:before,
 .fld-tab .settings.active:before,
-.fld-field .settings:hover:before,
-.fld-field .settings.active:before {
+.fld-element .settings:hover:before,
+.fld-element .settings.active:before {
   opacity: 1;
 }
 
@@ -151,6 +152,8 @@ $gridColor: hsl(212, 50%, 95%);
 
 .fld-element {
   position: relative;
+  display: flex;
+  align-items: center;
   padding: 7px 10px;
   box-shadow: inset 0 0 0 1px $hairlineColor;
   background-color: $white;
@@ -178,8 +181,7 @@ $gridColor: hsl(212, 50%, 95%);
   }
 
   &.fld-field {
-    display: flex;
-    align-items: center;
+    color: $mediumTextColor;
     background-color: $grey100;
 
     &:not(.draghelper) {
@@ -194,41 +196,72 @@ $gridColor: hsl(212, 50%, 95%);
         @include icon;
         content: 'shuteye';
       }
-
-      &,
-      & + .field-name h4 {
-        color: $mediumTextColor;
-      }
     }
 
     .field-name {
-      flex: 1;
-      overflow: hidden;
-
-      h4 {
+      .fld-element-label {
         margin-bottom: 2px;
       }
     }
+  }
 
-    &.fld-required .field-name h4:after {
-      @include icon;
-      @include margin(-2px, 0, 0, 4px);
-      content: 'asterisk';
-      font-size: 8px;
+  .fld-element-icon {
+    @include margin-right(5px);
+    text-align: center;
+
+    &,
+    svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    svg {
+      @include svg-mask($lightTextColor);
     }
   }
 
-  .fld-element-label {
-    font-weight: normal;
-    color: $textColor;
+  .field-name {
+    flex: 1;
+    overflow: hidden;
+
+    .fld-element-label,
+    .fld-attribute {
+      flex: 1;
+      display: flex;
+    }
+
+    .fld-element-label h4,
+    .fld-attribute .smalltext {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .fld-element-label h4 {
+      font-weight: normal;
+      color: $textColor;
+      margin: 0;
+
+      & + .fld-required-indicator {
+        color: $textColor;
+      }
+    }
+
+    .fld-attribute .fld-required-indicator {
+      margin-top: -1px;
+    }
   }
 
-  .fld-element-label,
-  &.fld-field .field-name .smalltext {
-    flex: 1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  &.fld-required .fld-required-indicator {
+    @include margin-left(2px);
+    line-height: 1;
+
+    &:after {
+      @include icon;
+      content: 'asterisk';
+      font-size: 8px;
+      line-height: 1;
+    }
   }
 }
 
@@ -261,46 +294,6 @@ body.dragging {
     border-radius: 8px;
     padding: 1px 7px;
   }
-}
-
-.fld-heading,
-.fld-tip,
-.fld-template {
-  display: flex;
-  align-items: center;
-
-  .fld-element-icon {
-    width: 1em;
-    @include margin-right(5px);
-    color: $lightTextColor;
-    text-align: center;
-  }
-}
-
-.fld-heading .fld-element-icon:before {
-  content: '#';
-  font-weight: bold;
-}
-
-.fld-tip,
-.fld-template {
-  .fld-element-icon:before {
-    @include icon;
-  }
-}
-
-.fld-tip .fld-element-icon {
-  &:not(.fld-tip-warning):before {
-    content: 'lightbulb';
-  }
-
-  &.fld-tip-warning:before {
-    content: 'alert';
-  }
-}
-
-.fld-template .fld-element-icon:before {
-  content: 'template';
 }
 
 .fld-element-settings {

@@ -26,7 +26,11 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend(
             var $btnGroup = $('<div class="btngroup"/>').appendTo(this.$primaryButtons);
             this.$selectBtn.appendTo($btnGroup);
 
-            this.$selectTransformBtn = $('<div class="btn menubtn disabled">' + Craft.t('app', 'Select transform') + '</div>').appendTo($btnGroup);
+            this.$selectTransformBtn = $('<button/>', {
+                type: 'button',
+                class: 'btn menubtn disabled',
+                text: Craft.t('app', 'Select transform'),
+            }).appendTo($btnGroup);
 
             var $menu = $('<div class="menu" data-align="right"></div>').insertAfter(this.$selectTransformBtn),
                 $menuList = $('<ul></ul>').appendTo($menu);

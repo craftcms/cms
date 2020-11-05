@@ -94,11 +94,12 @@ class SetStatus extends ElementAction
             switch ($this->status) {
                 case self::ENABLED:
                     // Skip if there's nothing to change
-                    if ($element->enabled && $element->enabledForSite) {
+                    if ($element->enabled && $element->getEnabledForSite()) {
                         continue 2;
                     }
 
-                    $element->enabled = $element->enabledForSite = true;
+                    $element->enabled = true;
+                    $element->setEnabledForSite(true);
                     $element->setScenario(Element::SCENARIO_LIVE);
                     break;
 
@@ -106,10 +107,10 @@ class SetStatus extends ElementAction
                     // Is this a multi-site element?
                     if ($isLocalized && count($element->getSupportedSites()) !== 1) {
                         // Skip if there's nothing to change
-                        if (!$element->enabledForSite) {
+                        if (!$element->getEnabledForSite()) {
                             continue 2;
                         }
-                        $element->enabledForSite = false;
+                        $element->setEnabledForSite(false);
                     } else {
                         // Skip if there's nothing to change
                         if (!$element->enabled) {

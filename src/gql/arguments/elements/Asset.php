@@ -81,6 +81,11 @@ class Asset extends ElementArguments
                 'name' => 'withTransforms',
                 'type' => Type::listOf(Type::string()),
                 'description' => 'A list of transform handles to preload.'
+            ],
+            'uploader' => [
+                'name' => 'uploader',
+                'type' => QueryArgument::getType(),
+                'description' => 'Narrows the query results based on the user the assets were uploaded by, per the user’s ID.'
             ]
         ]);
     }

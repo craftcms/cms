@@ -27,6 +27,7 @@ use yii\db\Connection;
  * @method Category|array|null nth(int $n, Connection $db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @doc-path categories.md
  * @supports-structure-params
  * @supports-site-params
  * @supports-title-param

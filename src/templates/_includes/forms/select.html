@@ -1,10 +1,10 @@
 {%- set class = (class ?? [])|explodeClass|merge([
     'select',
-    (disabled ?? false) ? 'disabled',
+    (disabled ?? false) ? 'disabled' : null,
 ]|filter) %}
 
-{%- set options = (options is defined ? options : []) %}
-{%- set value = (value is defined ? value : null) %}
+{%- set options = options ?? [] %}
+{%- set value = value ?? null %}
 {%- set hasOptgroups = false -%}
 
 {%- set containerAttributes = {
@@ -15,13 +15,21 @@
   {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
 {% endif %}
 
+{% set inputAttributes = {
+  id: id ?? false,
+  class: [
+    (toggle ?? false) ? 'fieldtoggle' : null,
+  ]|filter,
+  name: name ?? false,
+  autofocus: (autofocus ?? false) and not craft.app.request.isMobileBrowser(true),
+  disabled: disabled ?? false,
+  data: {
+    'target-prefix': (toggle ?? false) ? (targetPrefix ?? '') : false,
+  },
+}|merge(inputAttributes ?? [], recursive=true) %}
+
 <div {{ attr(containerAttributes) }}>
-    <select
-        {%- if id is defined %} id="{{ id }}"{% endif %}
-        {%- if toggle is defined and toggle %} class="fieldtoggle" data-target-prefix="{{ targetPrefix ?? '' }}"{% endif %}
-        {%- if name is defined %} name="{{ name }}"{% endif %}
-        {%- if autofocus is defined and autofocus and not craft.app.request.isMobileBrowser(true) %} autofocus{% endif %}
-        {%- if disabled is defined and disabled %} disabled{% endif %}>
+    <select {{ attr(inputAttributes) }}>
         {% for key, option in options %}
             {% if option.optgroup is defined %}
                 {% if hasOptgroups %}

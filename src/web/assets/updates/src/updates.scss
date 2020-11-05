@@ -45,14 +45,8 @@
       }
     }
 
-    blockquote.ineligible {
-      border: none;
-      background: $warningColor;
-      color: #110902;
-      &:before {
-        content: 'ban';
-        color: #110902;
-      }
+    blockquote.ineligible:before {
+      content: 'ban';
     }
 
     .releases {
@@ -91,9 +85,8 @@
 
             &:before {
               @include left(20px);
-              top: 23px;
-              font-size: 23px;
-              color: $mediumTextColor;
+              top: 29px;
+              border-color: $mediumTextColor;
             }
           }
 

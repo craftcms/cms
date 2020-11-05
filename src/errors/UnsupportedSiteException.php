@@ -8,7 +8,6 @@
 namespace craft\errors;
 
 use craft\base\ElementInterface;
-use yii\base\Exception;
 
 /**
  * Class UnsupportedSiteException

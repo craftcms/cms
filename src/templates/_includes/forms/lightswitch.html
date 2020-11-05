@@ -1,4 +1,4 @@
-{%- set id = id ?? 'lightswitch'~random() %}
+{%- set id = id ?? "lightswitch#{random()}" %}
 {%- set on = on ?? false %}
 {%- set indeterminate = not on and (indeterminate ?? false) %}
 {%- set value = value ?? '1' %}
@@ -7,17 +7,22 @@
 {%- set toggle = toggle ?? null %}
 {%- set reverseToggle = reverseToggle ?? null %}
 {%- set disabled = (disabled ?? false) ? true : false %}
-{%- set label = label ?? false %}
+{%- set onLabel = onLabel ?? label ?? false %}
+{%- set offLabel = offLabel ?? false %}
+{%- set hasOnLabel = onLabel is not same as(false) %}
+{%- set hasOffLabel = offLabel is not same as(false) %}
+{%- set hasLabels = hasOnLabel or hasOffLabel %}
 
 {%- set containerAttributes = {
     id: id,
     class: [
         'lightswitch',
-        on ? 'on',
-        indeterminate ? 'indeterminate',
-        small ? 'small',
-        toggle or reverseToggle ? 'fieldtoggle',
-        disabled ? 'disabled',
+        on ? 'on' : null,
+        hasLabels ? 'has-labels' : null,
+        indeterminate ? 'indeterminate' : null,
+        small ? 'small' : null,
+        toggle or reverseToggle ? 'fieldtoggle' : null,
+        disabled ? 'disabled' : null,
     ]|filter,
     tabindex: '0',
     data: {
@@ -48,10 +53,17 @@
     </div>
 {% endset %}
 
-{% if label -%}
+{% if hasLabels -%}
     <div class="lightswitch-outer-container">
-        {{ input }}
-        <label for="{{ id }}">{{ label }}</label>
+        <div class="lightswitch-inner-container">
+            {% if hasOffLabel %}
+                <label for="{{ id }}" data-toggle="off">{{ offLabel }}</label>
+            {% endif %}
+            {{ input }}
+            {% if hasOnLabel %}
+                <label for="{{ id }}" data-toggle="on">{{ onLabel }}</label>
+            {% endif %}
+        </div>
     </div>
 {% else %}
     {{ input }}

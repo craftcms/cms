@@ -9,7 +9,6 @@ namespace craft\fieldlayoutelements;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\FieldLayoutElement;
 use craft\helpers\Html;
 
 /**
@@ -18,7 +17,7 @@ use craft\helpers\Html;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0
  */
-class Heading extends FieldLayoutElement
+class Heading extends BaseUiElement
 {
     /**
      * @var string The heading text
@@ -28,18 +27,17 @@ class Heading extends FieldLayoutElement
     /**
      * @inheritdoc
      */
-    public function selectorHtml(): string
+    protected function selectorLabel(): string
     {
-        $text = Html::tag('div', Html::encode($this->heading ?: Craft::t('app', 'Heading')), [
-            'class' => 'fld-element-label',
-        ]);
+        return $this->heading ?: Craft::t('app', 'Heading');
+    }
 
-        return <<<HTML
-<div class="fld-heading">
-  <div class="fld-element-icon"></div>
-  $text
-</div>
-HTML;
+    /**
+     * @inheritdoc
+     */
+    protected function selectorIcon()
+    {
+        return '@appicons/hash.svg';
     }
 
     /**

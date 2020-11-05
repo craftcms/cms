@@ -9,7 +9,6 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\UtilityInterface;
-use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
 use craft\errors\MigrationException;
@@ -23,6 +22,8 @@ use craft\web\assets\utilities\UtilitiesAsset;
 use craft\web\Controller;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
+use yii\caching\TagDependency;
+use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -150,38 +151,6 @@ class UtilitiesController extends Controller
     }
 
     /**
-     * Performs a project config action
-     *
-     * @return Response
-     * @throws ForbiddenHttpException if the user doesn't have access to the Asset Indexes utility
-     */
-    public function actionProjectConfigPerformAction(): Response
-    {
-        $this->requireAdmin(false);
-        $projectConfig = Craft::$app->getProjectConfig();
-
-        switch ($this->request->getRequiredBodyParam('performAction')) {
-            case 'force-apply':
-                $forceUpdate = $projectConfig->forceUpdate;
-                $projectConfig->forceUpdate = true;
-                $projectConfig->applyYamlChanges();
-                $this->setSuccessFlash(Craft::t('app', 'Project config changes applied successfully.'));
-                $projectConfig->forceUpdate = $forceUpdate;
-                break;
-            case 'apply':
-                $projectConfig->applyYamlChanges();
-                $this->setSuccessFlash(Craft::t('app', 'Project config changes applied successfully.'));
-                break;
-            case 'rebuild':
-                $projectConfig->rebuild();
-                $this->setSuccessFlash(Craft::t('app', 'Project config rebuilt successfully.'));
-                break;
-        }
-
-        return $this->redirect('utilities/project-config');
-    }
-
-    /**
      * Performs an Asset Index action
      *
      * @return Response
@@ -300,18 +269,13 @@ class UtilitiesController extends Controller
      *
      * @return Response
      * @throws ForbiddenHttpException if the user doesn't have access to the Clear Caches utility
+     * @throws BadRequestHttpException
      */
     public function actionClearCachesPerformAction(): Response
     {
         $this->requirePermission('utility:clear-caches');
 
         $caches = $this->request->getRequiredBodyParam('caches');
-
-        if (!isset($caches)) {
-            return $this->asJson([
-                'success' => true
-            ]);
-        }
 
         foreach (ClearCaches::cacheOptions() as $cacheOption) {
             if (is_array($caches) && !in_array($cacheOption['key'], $caches, true)) {
@@ -333,6 +297,30 @@ class UtilitiesController extends Controller
             } else {
                 $action();
             }
+        }
+
+        return $this->asJson([
+            'success' => true
+        ]);
+    }
+
+    /**
+     * Performs an Invalidate Data Caches action.
+     *
+     * @return Response
+     * @throws ForbiddenHttpException if the user doesn't have access to the Clear Caches utility
+     * @throws BadRequestHttpException
+     * @since 3.5.0
+     */
+    public function actionInvalidateTags(): Response
+    {
+        $this->requirePermission('utility:clear-caches');
+
+        $tags = $this->request->getRequiredBodyParam('tags');
+        $cache = Craft::$app->getCache();
+
+        foreach ($tags as $tag) {
+            TagDependency::invalidate($cache, $tag);
         }
 
         return $this->asJson([

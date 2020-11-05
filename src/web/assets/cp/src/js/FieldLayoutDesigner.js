@@ -77,7 +77,7 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend({
         }
 
         this.addListener(this.$fieldSearch, 'input', () => {
-            let val = this.$fieldSearch.val().toLowerCase();
+            let val = this.$fieldSearch.val().toLowerCase().replace(/['"]/g, '');
             if (!val) {
                 this.$fieldLibrary.find('.filtered').removeClass('filtered');
                 this.$clearFieldSearchBtn.addClass('hidden');
@@ -85,7 +85,9 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend({
             }
 
             this.$clearFieldSearchBtn.removeClass('hidden');
-            let $matches = this.$fields.filter(`[data-keywords*="${val}"]`).removeClass('filtered');
+            let $matches = this.$fields.filter(`[data-keywords*="${val}"]`)
+                .add(this.$fieldGroups.filter(`[data-name*="${val}"]`).children('.fld-element'))
+                .removeClass('filtered');
             this.$fields.not($matches).addClass('filtered');
 
             // hide any groups that don't have any results
@@ -276,6 +278,7 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend({
         this.tabDrag.addItems($tab);
 
         this.initTab($tab);
+        this.renameTab($tab);
     },
 
     getElementPlacementInputName: function(tabName) {

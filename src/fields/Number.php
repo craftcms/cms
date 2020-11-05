@@ -26,6 +26,19 @@ use craft\i18n\Locale;
 class Number extends Field implements PreviewableFieldInterface, SortableFieldInterface
 {
     /**
+     * @since 3.5.11
+     */
+    const FORMAT_DECIMAL = 'decimal';
+    /**
+     * @since 3.5.11
+     */
+    const FORMAT_CURRENCY = 'currency';
+    /**
+     * @since 3.5.11
+     */
+    const FORMAT_NONE = 'none';
+
+    /**
      * @inheritdoc
      */
     public static function displayName(): string
@@ -75,6 +88,18 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
      * @var string|null Text that should be displayed after the input
      */
     public $suffix;
+
+    /**
+     * @var string How the number should be formatted in element index views.
+     * @since 3.5.11
+     */
+    public $previewFormat = self::FORMAT_DECIMAL;
+
+    /**
+     * @var string|null The currency that should be used if [[$previewFormat]] is set to `currency`.
+     * @since 3.5.11
+     */
+    public $previewCurrency;
 
     /**
      * @inheritdoc
@@ -143,6 +168,14 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
         if (!$this->decimals) {
             $rules[] = [['defaultValue', 'min', 'max'], 'integer'];
         }
+
+        $rules[] = [['previewFormat'], 'in', 'range' => [self::FORMAT_DECIMAL, self::FORMAT_CURRENCY, self::FORMAT_NONE]];
+        $rules[] = [
+            ['previewCurrency'], 'required', 'when' => function(): bool {
+                return $this->previewFormat === self::FORMAT_CURRENCY;
+            }
+        ];
+        $rules[] = [['previewCurrency'], 'string', 'min' => 3, 'max' => 3, 'encoding' => '8bit'];
 
         return $rules;
     }
@@ -239,7 +272,14 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
             return '';
         }
 
-        return Craft::$app->getFormatter()->asDecimal($value, $this->decimals);
+        switch ($this->previewFormat) {
+            case self::FORMAT_DECIMAL:
+                return Craft::$app->getFormatter()->asDecimal($value, $this->decimals);
+            case self::FORMAT_CURRENCY:
+                return Craft::$app->getFormatter()->asCurrency($value, $this->previewCurrency, [], [], !$this->decimals);
+            default:
+                return $value;
+        }
     }
 
     /**

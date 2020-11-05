@@ -1,22 +1,22 @@
 # Do not export those files in the Composer archive (lighter dependency)
-.codecov.yml export-ignore
-.gitattributes export-ignore
-.github/ export-ignore
-.gitignore export-ignore
-.lando.yml export-ignore
-.travis.yml export-ignore
-CHANGELOG-v2.md export-ignore
-CHANGELOG-v3.md export-ignore
-codeception.yml export-ignore
-codeception.yml.example export-ignore
-composer.lock export-ignore
-crowdin.yml export-ignore
-gulpfile.js export-ignore
-package.json
-package-lock.json
-README.md
-SECURITY.md
-tests/ export-ignore
+/.browserslistrc export-ignore
+/.codecov.yml export-ignore
+/.gitattributes export-ignore
+/.github/ export-ignore
+/.gitignore export-ignore
+/.lando.yml export-ignore
+/.travis.yml export-ignore
+/CHANGELOG.md export-ignore
+/codeception.yml export-ignore
+/codeception.yml.example export-ignore
+/composer.lock export-ignore
+/crowdin.yml export-ignore
+/gulpfile.js export-ignore
+/package.json export-ignore
+/package-lock.json export-ignore
+/README.md export-ignore
+/SECURITY.md export-ignore
+/tests/ export-ignore
 
 # Auto detect text files and perform LF normalization
 * text=auto

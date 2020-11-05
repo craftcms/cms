@@ -274,7 +274,18 @@ class Deprecator extends Component
             isset($traces[1]['class'], $traces[1]['function']) &&
             (
                 ($traces[1]['class'] === ElementQuery::class && $traces[1]['function'] === 'getIterator') ||
-                ($traces[1]['class'] === Extension::class && $traces[1]['function'] === 'groupFilter')
+                (
+                    $traces[1]['class'] === Extension::class &&
+                    in_array($traces[1]['function'], [
+                        'getCsrfInput',
+                        'getFootHtml',
+                        'getHeadHtml',
+                        'groupFilter',
+                        'roundFunction',
+                        'svgFunction',
+                        'ucwordsFilter',
+                    ], true)
+                )
             )
         ) {
             // special case for deprecated looping through element queries

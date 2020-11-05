@@ -10,16 +10,21 @@ namespace craft\console\controllers;
 use Composer\IO\BufferIO;
 use Craft;
 use craft\console\Controller;
+use craft\elements\User;
 use craft\errors\InvalidPluginException;
+use craft\helpers\App;
 use craft\helpers\Console;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
+use craft\helpers\Update as UpdateHelper;
 use craft\models\Update;
 use craft\models\Updates;
+use craft\models\Updates as UpdatesModel;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
 use yii\base\InvalidConfigException;
 use yii\console\ExitCode;
+use yii\validators\EmailValidator;
 
 /**
  * Updates Craft and plugins.
@@ -85,6 +90,11 @@ class UpdateController extends Controller
      */
     public function actionInfo(): int
     {
+        // Make sure they have a valid Craft license
+        if (($exitCode = $this->_checkCraftLicense()) !== null) {
+            return $exitCode;
+        }
+
         $updates = $this->_getUpdates();
 
         if (($total = $updates->getTotal()) === 0) {
@@ -97,7 +107,7 @@ class UpdateController extends Controller
         $this->stdout(' available update' . ($total === 1 ? '' : 's') . ':' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
 
         if ($updates->cms->getHasReleases()) {
-            $this->_outputUpdate('craft', Craft::$app->version, $updates->cms->getLatest()->version, $updates->cms->getHasCritical(), $updates->cms->status);
+            $this->_outputUpdate('craft', Craft::$app->version, $updates->cms->getLatest()->version, $updates->cms->getHasCritical(), $updates->cms->status, $updates->cms->phpConstraint);
         }
 
         $pluginsService = Craft::$app->getPlugins();
@@ -110,7 +120,7 @@ class UpdateController extends Controller
                     continue;
                 }
                 if ($pluginInfo['isInstalled']) {
-                    $this->_outputUpdate($pluginHandle, $pluginInfo['version'], $pluginUpdate->getLatest()->version, $pluginUpdate->getHasCritical(), $pluginUpdate->status);
+                    $this->_outputUpdate($pluginHandle, $pluginInfo['version'], $pluginUpdate->getLatest()->version, $pluginUpdate->getHasCritical(), $pluginUpdate->status, $pluginUpdate->phpConstraint);
                 }
             }
         }
@@ -144,6 +154,11 @@ class UpdateController extends Controller
         // Make sure updates are allowed
         if (!$this->_allowUpdates()) {
             return ExitCode::UNSPECIFIED_ERROR;
+        }
+
+        // Make sure they have a valid Craft license
+        if (($exitCode = $this->_checkCraftLicense()) !== null) {
+            return $exitCode;
         }
 
         // Figure out the new requirements
@@ -185,11 +200,8 @@ class UpdateController extends Controller
         $this->stdout('Performing Composer install ... ', Console::FG_YELLOW);
         $io = new BufferIO();
 
-        $composerService = Craft::$app->getComposer();
-        $composerService->disablePackagist = false;
-
         try {
-            $composerService->install(null, $io, false);
+            Craft::$app->getComposer()->install(null, $io);
         } catch (\Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);
             $this->stderr('error: ' . $e->getMessage() . PHP_EOL . PHP_EOL, Console::FG_RED);
@@ -232,7 +244,21 @@ class UpdateController extends Controller
      */
     private function _getRequirements(string ...$handles): array
     {
-        $updates = $this->_getUpdates();
+        $maxVersions = [];
+        if ($handles !== ['all']) {
+            // Look for any specific versions that were requested
+            foreach ($handles as $handle) {
+                if (strpos($handle, ':') !== false) {
+                    list($handle, $to) = explode(':', $handle, 2);
+                    if ($handle === 'craft') {
+                        $handle = 'cms';
+                    }
+                    $maxVersions[$handle] = $to;
+                }
+            }
+        }
+
+        $updates = $this->_getUpdates($maxVersions);
         $pluginsService = Craft::$app->getPlugins();
         $info = [];
         $requirements = [];
@@ -288,8 +314,8 @@ class UpdateController extends Controller
             $this->stdout($total === 1 ? 'one' : $total, Console::FG_GREEN, Console::BOLD);
             $this->stdout(' update' . ($total === 1 ? '' : 's') . ':' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
 
-            foreach ($info as list($handle, $from, $to, $critical, $status)) {
-                $this->_outputUpdate($handle, $from, $to, $critical, $status);
+            foreach ($info as list($handle, $from, $to, $critical, $status, $phpConstraint)) {
+                $this->_outputUpdate($handle, $from, $to, $critical, $status, $phpConstraint);
             }
 
             $this->stdout(PHP_EOL);
@@ -318,6 +344,12 @@ class UpdateController extends Controller
             return;
         }
 
+        $phpConstraintError = null;
+        if ($update->phpConstraint && !UpdateHelper::checkPhpConstraint($update->phpConstraint, $phpConstraintError)) {
+            $this->stdout("Skipping $handle: $phpConstraintError" . PHP_EOL, Console::FG_GREY);
+            return;
+        }
+
         if ($to === null) {
             $to = $update->getLatest()->version ?? $from;
         }
@@ -328,7 +360,7 @@ class UpdateController extends Controller
         }
 
         $requirements[$update->packageName] = $to;
-        $info[] = [$handle, $from, $to, $update->getHasCritical(), $update->status];
+        $info[] = [$handle, $from, $to, $update->getHasCritical(), $update->status, $update->phpConstraint];
 
         // Has the package name changed?
         if ($update->packageName !== $oldPackageName) {
@@ -564,8 +596,9 @@ class UpdateController extends Controller
      * @param string $to
      * @param bool $critical
      * @param string $status
+     * @param string|null $phpConstraint
      */
-    private function _outputUpdate(string $handle, string $from, string $to, bool $critical, string $status)
+    private function _outputUpdate(string $handle, string $from, string $to, bool $critical, string $status, string $phpConstraint = null)
     {
         $expired = $status === Update::STATUS_EXPIRED;
         $grey = $expired ? Console::FG_GREY : null;
@@ -584,19 +617,72 @@ class UpdateController extends Controller
             $this->stdout(' (EXPIRED)', Console::FG_RED);
         }
 
+        // Make sure that the platform & composer.json PHP version are compatible
+        $phpConstraintError = null;
+        if ($phpConstraint && !UpdateHelper::checkPhpConstraint($phpConstraint, $phpConstraintError, false)) {
+            $this->stdout(" ⚠️ $phpConstraintError", Console::FG_RED);
+        }
+
         $this->stdout(PHP_EOL);
+    }
+
+    /**
+     * Ensures that there is a valid Craft license.
+     *
+     * @return int|null
+     */
+    private function _checkCraftLicense()
+    {
+        if (!App::licenseKey()) {
+            if (defined('CRAFT_LICENSE_KEY')) {
+                $this->stderr('The license key defined by the CRAFT_LICENSE_KEY PHP constant is invalid.' . PHP_EOL, Console::FG_RED);
+                return ExitCode::UNSPECIFIED_ERROR;
+            }
+
+            $this->stdout('No license key found.' . PHP_EOL, Console::FG_YELLOW);
+            $session = Craft::$app->getUser();
+            $user = $session->getIdentity();
+
+            if (!$user) {
+                $email = $this->prompt('Enter your email address to request a new license key:', [
+                    'validator' => function(string $input, string &$error = null) {
+                        return (new EmailValidator())->validate($input, $error);
+                    }
+                ]);
+                $session->setIdentity(new User([
+                    'email' => $email,
+                ]));
+            }
+
+            $this->stdout('Requesting license... ');
+            Craft::$app->getApi()->getLicenseInfo();
+
+            if (!$user) {
+                $session->setIdentity(null);
+            }
+
+            if (!App::licenseKey()) {
+                $this->stderr('License key creation was unsuccessful.' . PHP_EOL, Console::FG_RED);
+                return ExitCode::UNSPECIFIED_ERROR;
+            }
+
+            $this->stdout('success!' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
+        }
+
+        return null;
     }
 
     /**
      * Returns the available updates.
      *
+     * @param string[] $maxVersions
      * @return Updates
      */
-    private function _getUpdates(): Updates
+    private function _getUpdates(array $maxVersions = []): Updates
     {
         $this->stdout('Fetching available updates ... ', Console::FG_YELLOW);
-        $updates = Craft::$app->getUpdates()->getUpdates(true);
+        $updateData = Craft::$app->getApi()->getUpdates($maxVersions);
         $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
-        return $updates;
+        return new UpdatesModel($updateData);
     }
 }

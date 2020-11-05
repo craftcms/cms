@@ -19,6 +19,7 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Html;
 use craft\i18n\Locale;
+use craft\validators\DateTimeValidator;
 use DateTime;
 use yii\db\Schema;
 
@@ -35,7 +36,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Date/Time');
+        return Craft::t('app', 'Date');
     }
 
     /**
@@ -136,11 +137,23 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
+    public function attributeLabels()
+    {
+        return [
+            'min' => Craft::t('app', 'Min Date'),
+            'max' => Craft::t('app', 'Max Date'),
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
         $rules[] = [['showDate', 'showTime'], 'boolean'];
         $rules[] = [['minuteIncrement'], 'integer', 'min' => 1, 'max' => 60];
+        $rules[] = [['max'], DateTimeValidator::class, 'min' => $this->min];
         return $rules;
     }
 
@@ -157,39 +170,43 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
      */
     public function getSettingsHtml()
     {
-        // If they are both selected or nothing is selected, the select showBoth.
-        if ($this->showDate && $this->showTime) {
-            $dateTimeValue = 'showBoth';
-        } else if ($this->showDate) {
+        if ($this->showDate && !$this->showTime) {
             $dateTimeValue = 'showDate';
-        } else if ($this->showTime) {
+        } else if ($this->showTime && !$this->showDate) {
             $dateTimeValue = 'showTime';
+        } else {
+            $dateTimeValue = 'showBoth';
         }
 
-        $options = [15, 30, 60];
-        $options = array_combine($options, $options);
+        $incrementOptions = [5, 10, 15, 30, 60];
+        $incrementOptions = array_combine($incrementOptions, $incrementOptions);
 
-        /** @noinspection PhpUndefinedVariableInspection */
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Date/settings',
+        $options = [
             [
-                'options' => [
-                    [
-                        'label' => Craft::t('app', 'Show date'),
-                        'value' => 'showDate',
-                    ],
-                    [
-                        'label' => Craft::t('app', 'Show time'),
-                        'value' => 'showTime',
-                    ],
-                    [
-                        'label' => Craft::t('app', 'Show date and time'),
-                        'value' => 'showBoth',
-                    ]
-                ],
-                'value' => $dateTimeValue,
-                'incrementOptions' => $options,
-                'field' => $this,
-            ]);
+                'label' => Craft::t('app', 'Show date'),
+                'value' => 'showDate',
+            ],
+        ];
+
+        // Only allow the "Show date and time" option if it's already selected
+        if ($dateTimeValue === 'showTime') {
+            $options[] = [
+                'label' => Craft::t('app', 'Show time'),
+                'value' => 'showTime',
+            ];
+        }
+
+        $options[] = [
+            'label' => Craft::t('app', 'Show date and time'),
+            'value' => 'showBoth',
+        ];
+
+        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Date/settings', [
+            'options' => $options,
+            'value' => $dateTimeValue,
+            'incrementOptions' => $incrementOptions,
+            'field' => $this,
+        ]);
     }
 
     /**
@@ -223,6 +240,20 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
         }
 
         return $input;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getElementValidationRules(): array
+    {
+        return [
+            [
+                DateTimeValidator::class,
+                'min' => $this->min ? $this->min->setTime(0, 0, 0) : null,
+                'max' => $this->max ? $this->max->setTime(23, 59, 59) : null,
+            ],
+        ];
     }
 
     /**

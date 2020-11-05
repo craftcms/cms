@@ -8,6 +8,8 @@
 namespace crafttests\unit\web;
 
 use Craft;
+use craft\models\Site;
+use craft\services\Sites;
 use craft\test\TestCase;
 use craft\web\Request;
 use crafttests\fixtures\SitesFixture;
@@ -44,6 +46,162 @@ class RequestTest extends TestCase
     }
 
     /**
+     *
+     */
+    public function testInit()
+    {
+        $oldServer = $_SERVER;
+
+        // Site request - Craft installed at webroot
+        $_SERVER = array_merge($oldServer, [
+            'REQUEST_URI' => '/foo/bar/baz',
+            'SCRIPT_NAME' => '/index.php',
+            'SERVER_NAME' => 'craft.test',
+        ]);
+        $request = new Request();
+        self::assertEquals(false, $request->getIsCpRequest());
+        self::assertEquals('foo/bar/baz', $request->getPathInfo());
+
+        // Site request w/ base URI - Craft installed at webroot
+        $_SERVER = array_merge($oldServer, [
+            'REQUEST_URI' => '/foo/bar/baz',
+            'SCRIPT_NAME' => '/index.php',
+            'SERVER_NAME' => 'craft.test',
+        ]);
+        $sites = new Sites();
+        $sites->setCurrentSite(new Site([
+            'language' => 'en-US',
+            'baseUrl' => 'http://craft.test/foo',
+        ]));
+        $request = new Request([
+            'isCpRequest' => false,
+            'sites' => $sites,
+        ]);
+        self::assertEquals(false, $request->getIsCpRequest());
+        self::assertEquals('bar/baz', $request->getPathInfo());
+
+        // Implicit CP request - Craft installed at webroot
+        $_SERVER = array_merge($oldServer, [
+            'REQUEST_URI' => '/foo/bar/baz',
+            'SCRIPT_NAME' => '/index.php',
+            'SERVER_NAME' => 'craft.test',
+        ]);
+        $generalConfig = clone Craft::$app->getConfig()->getGeneral();
+        $generalConfig->cpTrigger = 'foo';
+        $request = new Request([
+            'generalConfig' => $generalConfig,
+        ]);
+        self::assertEquals(true, $request->getIsCpRequest());
+        self::assertEquals('bar/baz', $request->getPathInfo());
+
+        // Explicit CP request w/ CP trigger - Craft installed at webroot
+        $_SERVER = array_merge($oldServer, [
+            'REQUEST_URI' => '/foo/bar/baz',
+            'SCRIPT_NAME' => '/index.php',
+            'SERVER_NAME' => 'craft.test',
+        ]);
+        $generalConfig = clone Craft::$app->getConfig()->getGeneral();
+        $generalConfig->cpTrigger = 'foo';
+        $request = new Request([
+            'isCpRequest' => true,
+            'generalConfig' => $generalConfig,
+        ]);
+        self::assertEquals(true, $request->getIsCpRequest());
+        self::assertEquals('bar/baz', $request->getPathInfo());
+
+        // Explicit CP request w/out CP trigger - Craft installed at webroot
+        $_SERVER = array_merge($oldServer, [
+            'REQUEST_URI' => '/foo/bar/baz',
+            'SCRIPT_NAME' => '/index.php',
+            'SERVER_NAME' => 'craft.test',
+        ]);
+        $generalConfig = clone Craft::$app->getConfig()->getGeneral();
+        $generalConfig->cpTrigger = null;
+        $request = new Request([
+            'isCpRequest' => true,
+            'generalConfig' => $generalConfig,
+        ]);
+        self::assertEquals(true, $request->getIsCpRequest());
+        self::assertEquals('foo/bar/baz', $request->getPathInfo());
+
+        // Site request - Craft installed in subfolder
+        // https://github.com/craftcms/cms/issues/6579
+        $_SERVER = array_merge($oldServer, [
+            'REQUEST_URI' => '/foo/bar/baz',
+            'SCRIPT_NAME' => '/foo/index.php',
+            'SERVER_NAME' => 'craft.test',
+        ]);
+        $request = new Request();
+        self::assertEquals(false, $request->getIsCpRequest());
+        self::assertEquals('bar/baz', $request->getPathInfo());
+
+        // Site request w/ base URI - Craft installed in subfolder
+        // https://github.com/craftcms/cms/issues/6579
+        $_SERVER = array_merge($oldServer, [
+            'REQUEST_URI' => '/foo/bar/baz',
+            'SCRIPT_NAME' => '/foo/index.php',
+            'SERVER_NAME' => 'craft.test',
+        ]);
+        $sites = new Sites();
+        $sites->setCurrentSite(new Site([
+            'language' => 'en-US',
+            'baseUrl' => 'http://craft.test/foo/bar',
+        ]));
+        $request = new Request([
+            'isCpRequest' => false,
+            'sites' => $sites,
+        ]);
+        self::assertEquals(false, $request->getIsCpRequest());
+        self::assertEquals('baz', $request->getPathInfo());
+
+        // Implicit CP request - Craft installed in subfolder
+        $_SERVER = array_merge($oldServer, [
+            'REQUEST_URI' => '/foo/bar/baz',
+            'SCRIPT_NAME' => '/foo/index.php',
+            'SERVER_NAME' => 'craft.test',
+        ]);
+        $generalConfig = clone Craft::$app->getConfig()->getGeneral();
+        $generalConfig->cpTrigger = 'bar';
+        $request = new Request([
+            'generalConfig' => $generalConfig,
+        ]);
+        self::assertEquals(true, $request->getIsCpRequest());
+        self::assertEquals('baz', $request->getPathInfo());
+
+        // Explicit CP request w/ CP trigger - Craft installed in subfolder
+        $_SERVER = array_merge($oldServer, [
+            'REQUEST_URI' => '/foo/bar/baz',
+            'SCRIPT_NAME' => '/foo/index.php',
+            'SERVER_NAME' => 'craft.test',
+        ]);
+        $generalConfig = clone Craft::$app->getConfig()->getGeneral();
+        $generalConfig->cpTrigger = 'bar';
+        $request = new Request([
+            'isCpRequest' => true,
+            'generalConfig' => $generalConfig,
+        ]);
+        self::assertEquals(true, $request->getIsCpRequest());
+        self::assertEquals('baz', $request->getPathInfo());
+
+        // Explicit CP request w/out CP trigger - Craft installed in subfolder
+        $_SERVER = array_merge($oldServer, [
+            'REQUEST_URI' => '/foo/bar/baz',
+            'SCRIPT_NAME' => '/foo/index.php',
+            'SERVER_NAME' => 'craft.test',
+        ]);
+        $generalConfig = clone Craft::$app->getConfig()->getGeneral();
+        $generalConfig->cpTrigger = null;
+        $request = new Request([
+            'isCpRequest' => true,
+            'generalConfig' => $generalConfig,
+        ]);
+        self::assertEquals(true, $request->getIsCpRequest());
+        self::assertEquals('bar/baz', $request->getPathInfo());
+
+        $_SERVER = $oldServer;
+    }
+
+    /**
      * @dataProvider isMobileBrowserDataProvider
      *
      * @param $result
@@ -54,7 +212,7 @@ class RequestTest extends TestCase
     {
         $this->request->getHeaders()->set('User-Agent', $header);
 
-        $this->assertSame($result, $this->request->isMobileBrowser($detectTablets));
+        self::assertSame($result, $this->request->isMobileBrowser($detectTablets));
     }
 
     /**
@@ -63,7 +221,7 @@ class RequestTest extends TestCase
     public function testGetRequiredParam()
     {
         $this->request->setBodyParams(['test' => 'RAAA']);
-        $this->assertSame('RAAA', $this->request->getRequiredParam('test'));
+        self::assertSame('RAAA', $this->request->getRequiredParam('test'));
 
         $this->tester->expectThrowable(BadRequestHttpException::class, function() {
             $this->request->getRequiredParam('not-a-param');
@@ -76,7 +234,7 @@ class RequestTest extends TestCase
     public function testGetParamWithBody()
     {
         $this->request->setBodyParams(['bodyTest' => 'RAAA']);
-        $this->assertSame('RAAA', $this->request->getParam('bodyTest'));
+        self::assertSame('RAAA', $this->request->getParam('bodyTest'));
     }
 
     /**
@@ -85,7 +243,7 @@ class RequestTest extends TestCase
     public function testGetParamWithQuery()
     {
         $this->request->setQueryParams(['queryTest' => 'RAAA']);
-        $this->assertSame('RAAA', $this->request->getParam('queryTest'));
+        self::assertSame('RAAA', $this->request->getParam('queryTest'));
     }
 
     /**
@@ -93,7 +251,7 @@ class RequestTest extends TestCase
      */
     public function testGetParamDefault()
     {
-        $this->assertSame('default', $this->request->getParam('not-a-param', 'default'));
+        self::assertSame('default', $this->request->getParam('not-a-param', 'default'));
     }
 
     /**
@@ -107,7 +265,7 @@ class RequestTest extends TestCase
         });
 
         $this->request->setQueryParams(['queryTest' => 'RAAA']);
-        $this->assertSame('RAAA', $this->request->getRequiredQueryParam('queryTest'));
+        self::assertSame('RAAA', $this->request->getRequiredQueryParam('queryTest'));
     }
 
     /**
@@ -121,7 +279,7 @@ class RequestTest extends TestCase
         });
 
         $this->request->setBodyParams(['bodyTest' => 'RAAA']);
-        $this->assertSame('RAAA', $this->request->getRequiredBodyParam('bodyTest'));
+        self::assertSame('RAAA', $this->request->getRequiredBodyParam('bodyTest'));
     }
 
     /**
@@ -135,7 +293,7 @@ class RequestTest extends TestCase
     public function testGetUserIp($result, $headerName, $headerValue, $filterFlag = 0)
     {
         $this->request->headers->set($headerName, $headerValue);
-        $this->assertSame($result, $this->request->getUserIP($filterFlag));
+        self::assertSame($result, $this->request->getUserIP($filterFlag));
     }
 
     /**
@@ -147,7 +305,7 @@ class RequestTest extends TestCase
     public function testGetClientOs($result, $header)
     {
         $this->request->headers->set('User-Agent', $header);
-        $this->assertSame($result, $this->request->getClientOs());
+        self::assertSame($result, $this->request->getClientOs());
     }
 
     /**
@@ -158,9 +316,9 @@ class RequestTest extends TestCase
         $token = $this->request->getCsrfToken();
 
         $otherToken = $this->request->getCsrfToken();
-        $this->assertSame($token, $otherToken);
+        self::assertSame($token, $otherToken);
 
-        $this->assertNotSame($token, $this->request->getCsrfToken(true));
+        self::assertNotSame($token, $this->request->getCsrfToken(true));
     }
 
     /**
@@ -169,18 +327,18 @@ class RequestTest extends TestCase
     public function testGenerateCsrfToken()
     {
         $token = $this->_generateCsrfToken();
-        $this->assertSame(40, strlen($token));
+        self::assertSame(40, strlen($token));
 
         $this->_setMockUser();
         $newToken = $this->_generateCsrfToken();
         $tokenComponents = explode('|', $newToken);
 
-        $this->assertNotSame($newToken, $token);
+        self::assertNotSame($newToken, $token);
 
         // Ensure that the data we want exists and is according to our desired specs
-        $this->assertSame('1', $tokenComponents['2']);
-        $this->assertSame(40, strlen($tokenComponents['0']));
-        $this->assertSame('$2y$13$tAtJfYFSRrnOkIbkruGGEu7TPh0Ixvxq0r.XgWqIgNWuWpxpA7SxK', $tokenComponents['3']);
+        self::assertSame('1', $tokenComponents['2']);
+        self::assertSame(40, strlen($tokenComponents['0']));
+        self::assertSame('$2y$13$tAtJfYFSRrnOkIbkruGGEu7TPh0Ixvxq0r.XgWqIgNWuWpxpA7SxK', $tokenComponents['3']);
     }
 
     /**
@@ -191,7 +349,7 @@ class RequestTest extends TestCase
         $this->_setMockUser();
         $token = $this->_generateCsrfToken();
 
-        $this->assertTrue($this->_isCsrfValidForUser($token));
+        self::assertTrue($this->_isCsrfValidForUser($token));
     }
 
     /**
@@ -201,8 +359,8 @@ class RequestTest extends TestCase
     {
         $token = $this->_generateCsrfToken();
 
-        $this->assertTrue($this->_isCsrfValidForUser($token));
-        $this->assertTrue($this->_isCsrfValidForUser('RANDOM'));
+        self::assertTrue($this->_isCsrfValidForUser($token));
+        self::assertTrue($this->_isCsrfValidForUser('RANDOM'));
     }
 
     /**
@@ -217,7 +375,7 @@ class RequestTest extends TestCase
     public function testGetParam($result, $defaultValue, array $params, string $name = null)
     {
         $gotten = $this->_getParam($name, $defaultValue, $params);
-        $this->assertSame($result, $gotten);
+        self::assertSame($result, $gotten);
     }
 
     /**
@@ -228,10 +386,10 @@ class RequestTest extends TestCase
         $this->request->setBodyParams([Craft::$app->getConfig()->getGeneral()->tokenParam => 'something']);
         $this->_checkRequestType();
 
-        $this->assertTrue($this->getInaccessibleProperty($this->request, '_checkedRequestType'));
+        self::assertTrue($this->getInaccessibleProperty($this->request, '_checkedRequestType'));
 
-        $this->assertFalse($this->getInaccessibleProperty($this->request, '_isActionRequest'));
-        $this->assertFalse($this->getInaccessibleProperty($this->request, '_isSingleActionRequest'));
+        self::assertFalse($this->getInaccessibleProperty($this->request, '_isActionRequest'));
+        self::assertFalse($this->getInaccessibleProperty($this->request, '_isSingleActionRequest'));
     }
 
     /**
@@ -304,7 +462,7 @@ class RequestTest extends TestCase
     public function checkRequestAndAssertIsSingleAction()
     {
         $this->_checkRequestType();
-        $this->assertTrue($this->getInaccessibleProperty($this->request, '_isSingleActionRequest'));
+        self::assertTrue($this->getInaccessibleProperty($this->request, '_isSingleActionRequest'));
     }
 
     /**

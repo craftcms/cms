@@ -67,7 +67,7 @@ class Entry extends Mutation
         }
 
         if ($createDeleteMutation || $createDraftMutations) {
-            $resolver = new EntryMutationResolver();
+            $resolver = Craft::createObject(EntryMutationResolver::class);
 
             if ($createDeleteMutation) {
                 $mutationList['deleteEntry'] = [
@@ -119,7 +119,7 @@ class Entry extends Mutation
 
         $section = $entryType->getSection();
 
-        $resolver = new EntryMutationResolver();
+        $resolver = Craft::createObject(EntryMutationResolver::class);
         $resolver->setResolutionData('entryType', $entryType);
         $resolver->setResolutionData('section', $section);
 

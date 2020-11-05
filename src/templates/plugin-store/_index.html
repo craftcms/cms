@@ -126,9 +126,9 @@
 
     <div id="pluginstore-actions" class="hidden">
 
-        <a id="cart-button" role="button" tabindex="0">{{ svg('@app/icons/shopping-cart.svg', namespace=true) }} <span class="badge">0</span></a>
+        <a id="cart-button" role="button" tabindex="0">{{ svg('@appicons/shopping-cart.svg', namespace=true) }} <span class="badge">0</span></a>
 
-        <a id="craftid-account" class="menubtn hidden"><span class="photo">{{ svg('@app/icons/craftid.svg', namespace=true) }}</span><span class="label">Account</span></a>
+        <a id="craftid-account" class="menubtn hidden"><span class="photo">{{ svg('@appicons/craftid.svg', namespace=true) }}</span><span class="label">Account</span></a>
 
         <div class="menu">
             <ul>
@@ -146,7 +146,7 @@
         <form id="craftid-connect-form" method="post">
             {{ csrfInput() }}
             {{ actionInput('plugin-store/connect') }}
-            <div class="ssl-status light" title="{{ craft.app.request.isSecureConnection ? "Your connection is secure"|t('app') : "Your connection is insecure"|t('app') }}">
+            <div class="ssl-status light" title="{{ craft.app.request.isSecureConnection ? "Your connection is secure"|t('app') : "Your connection is insecure"|t('app') }}" aria-label="{{ craft.app.request.isSecureConnection ? "Your connection is secure"|t('app') : "Your connection is insecure"|t('app') }}">
                 <i class="{{ craft.app.request.isSecureConnection ? "secure" : "insecure" }} icon"></i>
             </div>
             <a onclick="document.getElementById('craftid-connect-form').submit();">{{ 'Sign into Craft ID'|t('app') }}</a>

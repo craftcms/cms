@@ -26,7 +26,6 @@ Craft.AssetEditor = Craft.BaseElementEditor.extend(
                     this.reloadIndex = true;
                     this.reloadForm();
                 }.bind(this),
-                allowDegreeFractions: Craft.isImagick
             });
         },
 

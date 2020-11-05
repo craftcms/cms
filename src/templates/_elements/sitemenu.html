@@ -9,7 +9,7 @@
     {% endif %}
     {% set groups = craft.app.sites.getAllGroups() %}
     <div>
-        <div class="btn menubtn sitemenubtn" data-icon="world">{{ selectedSiteId ? craft.app.sites.getSiteById(selectedSiteId).name|t('site') }}</div>
+        <button type="button" id="context-btn" class="btn menubtn sitemenubtn" data-icon="world">{{ selectedSiteId ? craft.app.sites.getSiteById(selectedSiteId).name|t('site') }}</button>
         <div class="menu">
             {% for group in groups %}
                 {% set groupSiteIds = group.getSiteIds()|intersect(siteIds) %}

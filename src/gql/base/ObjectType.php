@@ -7,7 +7,6 @@
 
 namespace craft\gql\base;
 
-use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\errors\GqlException;
 use craft\helpers\Gql as GqlHelper;
@@ -66,18 +65,17 @@ abstract class ObjectType extends GqlObjectType
      */
     protected function resolve($source, $arguments, $context, ResolveInfo $resolveInfo)
     {
-        $fieldName = is_array($resolveInfo->path) ? array_slice($resolveInfo->path, -1)[0] : $resolveInfo->fieldName;
-        $isAlias = $fieldName !== $resolveInfo->fieldName;
+        $fieldName = GqlHelper::getFieldNameWithAlias($resolveInfo, $source, $context);
 
-        if ($isAlias && !($source instanceof ElementInterface && $source->getEagerLoadedElements($fieldName))) {
-            $fieldName = $resolveInfo->fieldName;
+        $result = null;
+
+        if (is_object($source)) {
+            $result = $source->$fieldName;
+        } else if (is_array($source)) {
+            $result = $source[$fieldName] ?? null;
         }
 
-        $result = $source->$fieldName;
-
-        if ($result instanceof ElementQueryInterface) {
-            return $result->all();
-        }
+        $result = $result instanceof ElementQueryInterface ? $result->all() : $result;
 
         return $result;
     }

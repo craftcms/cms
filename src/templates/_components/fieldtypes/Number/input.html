@@ -12,6 +12,7 @@
         {{ text({
             name: field.handle ~ '[value]',
             value: value,
+            inputmode: field.decimals ? 'decimal' : 'numeric',
             size: field.size
         }) }}
     </div>

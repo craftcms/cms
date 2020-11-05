@@ -27,6 +27,7 @@ const atAssetPath = `${cpAssetsPath}/admintable`;
 
 const cpSassGlob = [
     `${cpAssetsPath}/**/src/**/*.scss`,
+    `!${cpAssetsPath}/cp/src/craftui/**/*.scss`,
     `!${graphiqlAssetPath}/**/*.scss`,
     `!${psAssetPath}/**/*.scss`,
     `!${atAssetPath}/**/*.scss`,
@@ -91,7 +92,7 @@ const d3LocaleData = [
 ];
 
 const staticDeps = [
-    {srcGlob: 'node_modules/axios/dist/axios.min.js', dest: `${libPath}/axios`},
+    {srcGlob: ['node_modules/axios/dist/axios.min.js', 'node_modules/axios/dist/axios.min.map'], dest: `${libPath}/axios`},
     {srcGlob: 'node_modules/selectize/dist/css/selectize.css', dest: `${libPath}/selectize`},
 ];
 
@@ -231,10 +232,8 @@ gulp.task('deps', ['jqui', 'graphiql', 'vue', 'static-deps'], function() {
     jsDeps.forEach(function(dep) {
         streams.push(
             gulp.src(dep.srcGlob)
-                //.pipe(gulp.dest(dest))
                 .pipe(sourcemaps.init())
                 .pipe(uglify())
-                //.pipe(rename({ suffix: '.min' }))
                 .pipe(sourcemaps.write('./'))
                 .pipe(gulp.dest(dep.dest))
         );

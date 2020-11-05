@@ -33,7 +33,7 @@
 {% if craft.app.config.general.pathParam %}
     {% set baseParams = baseParams|withoutKey(craft.app.config.general.pathParam) %}
 {% endif %}
-{% set supportedSiteIds = supportedSiteIds ?? (craft.app.isMultiSite ? element.getSupportedSites()|where(s => s.propagate ?? true) : [element.siteId])|column(s => s.siteId ?? s) %}
+{% set supportedSiteIds = supportedSiteIds ?? (craft.app.isMultiSite ? element.getSupportedSites()|filter(s => s.propagate ?? true) : [element.siteId])|column(s => s.siteId ?? s) %}
 {% set editableSiteIds = editableSiteIds ?? supportedSiteIds|intersect(craft.app.sites.getEditableSiteIds()) %}
 {% set isMultiSiteElement = supportedSiteIds|length > 1 %}
 {% set canEditMultipleSites = editableSiteIds|length > 1 %}
@@ -54,13 +54,13 @@
 {% set showRevisions = showRevisionLabel and not isUnsavedDraft %}
 {% set showMenu = editableSiteIds|length > 1 or showRevisions %}
 
-<div id="revision-btngroup" class="btngroup">
-    <div id="revision-btn" class="btn {% if showMenu %}menubtn{% else %}disabled{% endif %}"{% if showSiteLabel %} data-icon="world"{% endif %}>
-        {% if showSiteLabel %}
-            {{ element.getSite().name|t('site') }}
-        {% endif %}
-        {% if showSiteLabel and showRevisionLabel %}–{% endif %}
-        {% if showRevisionLabel %}
+<div id="context-btngroup" class="btngroup">
+    <button type="button" id="context-btn" class="btn {% if showMenu %}menubtn{% else %}disabled{% endif %}"{% if showSiteLabel %} data-icon="world"{% endif %}>
+        {%- if showSiteLabel %}
+            {{- element.getSite().name|t('site') }}
+        {%- endif %}
+        {%- if showSiteLabel and showRevisionLabel %} – {% endif %}
+        {%- if showRevisionLabel -%}
             <span id="revision-label">
                 {%- if isDraft %}
                     {{- element.getDraftName() }}
@@ -70,16 +70,16 @@
                     {{- 'Current'|t('app') }}
                 {%- endif -%}
             </span>
-        {% endif %}
-    </div>
+        {%- endif -%}
+    </button>
 
     <div class="menu{% if not showMenu %} hidden{% endif %}">
         {% set enabledSiteIds = craft.app.elements.getEnabledSiteIdsForElement(element.id) %}
         {% set siteGroups = craft.app.sites.getAllGroups() %}
         {% for group in siteGroups %}
             {% set groupSites = group.getSites() %}
-            {% if groupSites %}
-                {% set groupIsVisible = canEditMultipleSites and groupSites|column('id')|intersect(enabledSiteIds)|length %}
+            {% if groupSites|length %}
+                {% set groupIsVisible = canEditMultipleSites and groupSites|column('id')|intersect(editableSiteIds)|length %}
                 <div class="site-group{% if not groupIsVisible %} hidden{% endif %}">
                     {% if siteGroups|length > 1 %}<h6>{{ group.name|t('site') }}</h6>{% endif %}
                     <ul class="padded">
@@ -172,5 +172,5 @@
     </div>
 </div>
 
-<div id="revision-spinner" class="spinner hidden" title="{{ 'Saving'|t('app') }}"></div>
+<div id="revision-spinner" class="spinner hidden" title="{{ 'Saving'|t('app') }}" aria-label="{{ 'Saving'|t('app') }}"></div>
 <div id="revision-status" class="invisible"></div>

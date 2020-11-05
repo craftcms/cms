@@ -9,6 +9,7 @@
     value: value,
     toggle: true,
     targetPrefix: ".#{targetPrefix}",
+    tip: value == 'showTime' ? 'Time fields are better suited for managing Time-only values.'|t('app'),
 }) }}
 
 {{ forms.selectField({
@@ -34,6 +35,7 @@
     id: 'min',
     name: 'min',
     value: field.min,
+    errors: field.getErrors('min'),
 }) }}
 
 {{ forms.dateField({
@@ -46,4 +48,5 @@
     id: 'max',
     name: 'max',
     value: field.max,
+    errors: field.getErrors('max'),
 }) }}

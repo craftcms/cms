@@ -8,6 +8,8 @@
 namespace craft\helpers;
 
 use Craft;
+use craft\image\SvgAllowedAttributes;
+use enshrined\svgSanitize\Sanitizer;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -386,7 +388,7 @@ class Html extends \yii\helpers\Html
     private static function _findTag(string $html, int $offset = 0): array
     {
         // Find the first HTML tag that isn't a DTD or a comment
-        if (!preg_match('/<(\/?\w+)/', $html, $match, PREG_OFFSET_CAPTURE, $offset) || $match[1][0][0] === '/') {
+        if (!preg_match('/<(\/?[\w\-]+)/', $html, $match, PREG_OFFSET_CAPTURE, $offset) || $match[1][0][0] === '/') {
             throw new InvalidArgumentException('Could not find an HTML tag in string: ' . $html);
         }
 
@@ -594,17 +596,17 @@ class Html extends \yii\helpers\Html
         // Namespace & capture the ID attributes
         $ids = [];
         $html = preg_replace_callback('/(?<=\sid=)(\'|")([^\'"\s]*)\1/i', function($match) use ($namespace, &$ids): string {
-            $ids[] = preg_quote($match[2], '/');
+            $ids[] = $match[2];
             return $match[1] . $namespace . '-' . $match[2] . $match[1];
         }, $html);
         $ids = array_flip($ids);
 
         // normal HTML attributes
         $html = preg_replace_callback(
-            "/(?<=\\s)((?:for|list|xlink:href|href|aria\\-labelledby|aria\\-describedby|data\\-target|data\\-reverse\\-target|data\\-target\\-prefix)=('|\")#?)([^'\"\s]*)\\2/i",
+            "/(?<=\\s)((for|list|xlink:href|href|aria\\-labelledby|aria\\-describedby|data\\-target|data\\-reverse\\-target|data\\-target\\-prefix)=('|\")#?)([^\.'\"\s]*)\\3/i",
             function(array $match) use ($namespace, $ids): string {
-                if (isset($ids[$match[3]])) {
-                    return $match[1] . $namespace . '-' . $match[3] . $match[2];
+                if ($match[2] === 'data-target-prefix' || isset($ids[$match[4]])) {
+                    return $match[1] . $namespace . '-' . $match[4] . $match[3];
                 }
                 return $match[0];
             }, $html);
@@ -676,5 +678,65 @@ class Html extends \yii\helpers\Html
     private static function _restoreTextareas(string $html, array &$markers): string
     {
         return str_replace(array_keys($markers), array_values($markers), $html);
+    }
+
+    /**
+     * Sanitizes an SVG.
+     *
+     * @param string $svg
+     * @return string
+     * @since 3.5.0
+     */
+    public static function sanitizeSvg(string $svg): string
+    {
+        $sanitizer = new Sanitizer();
+        $sanitizer->setAllowedAttrs(new SvgAllowedAttributes());
+        $svg = $sanitizer->sanitize($svg);
+        // Remove comments, title & desc
+        $svg = preg_replace('/<!--.*?-->\s*/s', '', $svg);
+        $svg = preg_replace('/<title>.*?<\/title>\s*/is', '', $svg);
+        $svg = preg_replace('/<desc>.*?<\/desc>\s*/is', '', $svg);
+        return $svg;
+    }
+
+    /**
+     * Generates a base64-encoded [data URL](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs) for the given file path.
+     *
+     * @param string $file The file path
+     * @param string|null $mimeType The file’s MIME type. If `null` then it will be determined automatically.
+     * @return string The data URL
+     * @throws InvalidArgumentException if `$file` is an invalid file path
+     * @since 3.5.13
+     */
+    public static function dataUrl(string $file, string $mimeType = null): string
+    {
+        if (!is_file($file)) {
+            throw new InvalidArgumentException("Invalid file path: $file");
+        }
+
+        if ($mimeType === null) {
+            try {
+                $mimeType = FileHelper::getMimeType($file);
+            } catch (\Throwable $e) {
+                Craft::warning("Unable to determine the MIME type for $file: " . $e->getMessage());
+                Craft::$app->getErrorHandler()->logException($e);
+            }
+        }
+
+        return static::dataUrlFromString(file_get_contents($file), $mimeType);
+    }
+
+    /**
+     * Generates a base64-encoded [data URL](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs) based on the given file contents and MIME type.
+     *
+     * @param string $contents The file path
+     * @param string|null $mimeType The file’s MIME type. If `null` then it will be determined automatically.
+     * @return string The data URL
+     * @throws InvalidArgumentException if `$file` is an invalid file path
+     * @since 3.5.13
+     */
+    public static function dataUrlFromString(string $contents, string $mimeType = null): string
+    {
+        return 'data:' . ($mimeType ? "$mimeType;" : '') . 'base64,' . base64_encode($contents);
     }
 }

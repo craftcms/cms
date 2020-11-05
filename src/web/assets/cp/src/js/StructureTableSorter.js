@@ -264,7 +264,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
                         data.parentId = $prevRow.data('id');
 
                         // Is this row collapsed?
-                        var $toggle = $prevRow.find('> td > .toggle');
+                        var $toggle = $prevRow.find('> th > .toggle');
 
                         if (!$toggle.hasClass('expanded')) {
                             // Make it look expanded
@@ -540,7 +540,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
                 // Is it now childless?
                 if (this._updateAncestors._$ancestor.data('descendants') == 0) {
                     // Remove its toggle
-                    this._updateAncestors._$ancestor.find('> td > .toggle:first').remove();
+                    this._updateAncestors._$ancestor.find('> th > .toggle:first').remove();
                 }
             }
 
@@ -559,7 +559,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
                 if (this._updateAncestors._$ancestor.data('descendants') == 1) {
                     // Create its toggle
                     $('<span class="toggle expanded" title="' + Craft.t('app', 'Show/hide children') + '"></span>')
-                        .insertAfter(this._updateAncestors._$ancestor.find('> td .move:first'));
+                        .insertAfter(this._updateAncestors._$ancestor.find('> th .move:first'));
                 }
             }
 

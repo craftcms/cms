@@ -36,8 +36,16 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
             this.$footerSpinner = $('<div class="spinner hidden"/>').appendTo($footer);
             this.$primaryButtons = $('<div class="buttons right"/>').appendTo($footer);
             this.$secondaryButtons = $('<div class="buttons left secondary-buttons"/>').appendTo($footer);
-            this.$cancelBtn = $('<div class="btn">' + Craft.t('app', 'Cancel') + '</div>').appendTo(this.$primaryButtons);
-            this.$selectBtn = $('<div class="btn disabled submit">' + Craft.t('app', 'Select') + '</div>').appendTo(this.$primaryButtons);
+            this.$cancelBtn = $('<button/>', {
+                type: 'button',
+                class: 'btn',
+                text: Craft.t('app', 'Cancel'),
+            }).appendTo(this.$primaryButtons);
+            this.$selectBtn = $('<button/>', {
+                type: 'button',
+                class: 'btn disabled submit',
+                text: Craft.t('app', 'Select'),
+            }).appendTo(this.$primaryButtons);
 
             this.$body = $body;
 

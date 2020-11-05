@@ -104,7 +104,7 @@ class UrlHelperTest extends Unit
      */
     public function testBuildQuery($result, $input)
     {
-        $this->assertSame($result, UrlHelper::buildQuery($input));
+        self::assertSame($result, UrlHelper::buildQuery($input));
     }
 
     /**
@@ -121,8 +121,8 @@ class UrlHelperTest extends Unit
     public function testIsUrlFunction($url, bool $result, $method)
     {
         $urlHelperResult = UrlHelper::$method($url);
-        $this->assertSame($urlHelperResult, $result);
-        $this->assertIsBool($urlHelperResult);
+        self::assertSame($urlHelperResult, $result);
+        self::assertIsBool($urlHelperResult);
     }
 
     /**
@@ -156,13 +156,13 @@ class UrlHelperTest extends Unit
             $result
         );
 
-        $this->assertSame($expectedUrl, UrlHelper::cpUrl($inputUrl, $params, $scheme));
+        self::assertSame($expectedUrl, UrlHelper::cpUrl($inputUrl, $params, $scheme));
 
         $this->tester->mockCraftMethods('request', [
             'getIsCpRequest' => true,
         ]);
 
-        $this->assertSame($expectedUrl, UrlHelper::url($inputUrl, $params, $scheme));
+        self::assertSame($expectedUrl, UrlHelper::url($inputUrl, $params, $scheme));
     }
 
     /**
@@ -183,7 +183,7 @@ class UrlHelperTest extends Unit
     {
         Craft::$app->getConfig()->getGeneral()->useSslOnTokenizedUrls = true;
 
-        $this->assertSame($result, UrlHelper::$method($url, $modifier));
+        self::assertSame($result, UrlHelper::$method($url, $modifier));
     }
 
     /**
@@ -196,7 +196,7 @@ class UrlHelperTest extends Unit
      */
     public function testRootRelativeUrl(string $url, string $expected)
     {
-        $this->assertSame($expected, UrlHelper::rootRelativeUrl($url));
+        self::assertSame($expected, UrlHelper::rootRelativeUrl($url));
     }
 
     /**
@@ -217,7 +217,7 @@ class UrlHelperTest extends Unit
             $oldResult = $result;
             $result = $this->baseUrlWithScript . '/' . $oldResult;
 
-            $this->assertSame($result, UrlHelper::url($path, $params, $scheme, false));
+            self::assertSame($result, UrlHelper::url($path, $params, $scheme, false));
             $result = $this->baseUrlWithScript . '?p=' . $oldResult;
         }
 
@@ -227,7 +227,7 @@ class UrlHelperTest extends Unit
             $result = $this->urlWithScheme($result, $scheme);
         }
 
-        $this->assertSame($result, UrlHelper::url($path, $params, $scheme, $showScriptName));
+        self::assertSame($result, UrlHelper::url($path, $params, $scheme, $showScriptName));
     }
 
     /**
@@ -241,7 +241,7 @@ class UrlHelperTest extends Unit
         // Don't pass in a scheme type. Ensure it determines this itself.
         $result = UrlHelper::url('someendpoint');
         $conformsScheme = (strpos($result, $schemeType) !== false);
-        $this->assertTrue($conformsScheme);
+        self::assertTrue($conformsScheme);
     }
 
     /**
@@ -255,18 +255,18 @@ class UrlHelperTest extends Unit
             $host = StringHelper::replace($host, '/index.php', '');
         }
 
-        $this->assertSame($baseSiteUrl, UrlHelper::baseUrl());
-        $this->assertSame($baseSiteUrl, UrlHelper::baseSiteUrl());
-        $this->assertSame($host, UrlHelper::host());
+        self::assertSame($baseSiteUrl, UrlHelper::baseUrl());
+        self::assertSame($baseSiteUrl, UrlHelper::baseSiteUrl());
+        self::assertSame($host, UrlHelper::host());
 
-        $this->assertSame('/', UrlHelper::baseCpUrl());
-        $this->assertSame('/', UrlHelper::baseRequestUrl());
+        self::assertSame('/', UrlHelper::baseCpUrl());
+        self::assertSame('/', UrlHelper::baseRequestUrl());
 
         // @todo: This right?
-        $this->assertSame('', UrlHelper::cpHost());
+        self::assertSame('', UrlHelper::cpHost());
 
         Craft::$app->getConfig()->getGeneral()->baseCpUrl = 'https://craftcms.com/test/test';
-        $this->assertSame('https://craftcms.com', UrlHelper::cpHost());
+        self::assertSame('https://craftcms.com', UrlHelper::cpHost());
     }
 
     /**
@@ -274,15 +274,15 @@ class UrlHelperTest extends Unit
      */
     public function testHostInfoRetrieval()
     {
-        $this->assertSame('https://google.com', UrlHelper::hostInfo('https://google.com'));
-        $this->assertSame('http://facebook.com', UrlHelper::hostInfo('http://facebook.com'));
-        $this->assertSame('ftp://www.craftcms.com', UrlHelper::hostInfo('ftp://www.craftcms.com/why/craft/is/cool/'));
-        $this->assertSame('walawalabingbang://gt.com', UrlHelper::hostInfo('walawalabingbang://gt.com/'));
-        $this->assertSame('sftp://volkswagen', UrlHelper::hostInfo('sftp://volkswagen////222////222'));
+        self::assertSame('https://google.com', UrlHelper::hostInfo('https://google.com'));
+        self::assertSame('http://facebook.com', UrlHelper::hostInfo('http://facebook.com'));
+        self::assertSame('ftp://www.craftcms.com', UrlHelper::hostInfo('ftp://www.craftcms.com/why/craft/is/cool/'));
+        self::assertSame('walawalabingbang://gt.com', UrlHelper::hostInfo('walawalabingbang://gt.com/'));
+        self::assertSame('sftp://volkswagen', UrlHelper::hostInfo('sftp://volkswagen////222////222'));
 
         // If nothing is passed to the hostInfo() your mileage may vary depending on request type. So we need to know what to expect before hand..
         $expectedValue = Craft::$app->getRequest()->getIsConsoleRequest() ? '' : Craft::$app->getRequest()->getHostInfo();
-        $this->assertSame($expectedValue, UrlHelper::hostInfo(''));
+        self::assertSame($expectedValue, UrlHelper::hostInfo(''));
     }
 
     /**
@@ -294,10 +294,10 @@ class UrlHelperTest extends Unit
         $config = Craft::$app->getConfig()->getGeneral();
 
         $config->useSslOnTokenizedUrls = true;
-        $this->assertSame('https', UrlHelper::getSchemeForTokenizedUrl());
+        self::assertSame('https', UrlHelper::getSchemeForTokenizedUrl());
 
         $config->useSslOnTokenizedUrls = false;
-        $this->assertSame('http', UrlHelper::getSchemeForTokenizedUrl());
+        self::assertSame('http', UrlHelper::getSchemeForTokenizedUrl());
     }
 
     /**
@@ -313,7 +313,7 @@ class UrlHelperTest extends Unit
     public function testSiteUrl($result, $path, $params = null, $scheme = null, $siteId = null)
     {
         $siteUrl = UrlHelper::siteUrl($path, $params, $scheme, $siteId);
-        $this->assertSame($result, $siteUrl);
+        self::assertSame($result, $siteUrl);
     }
 
     /**
@@ -326,13 +326,13 @@ class UrlHelperTest extends Unit
         ]);
 
         $siteUrl = UrlHelper::url('endpoint');
-        $this->assertSame('http://test.craftcms.test/index.php?p=endpoint&token=t0k3n', $siteUrl);
+        self::assertSame('http://test.craftcms.test/index.php?p=endpoint&token=t0k3n', $siteUrl);
 
         $siteUrl = UrlHelper::siteUrl('endpoint');
-        $this->assertSame('http://test.craftcms.test/index.php?p=endpoint&token=t0k3n', $siteUrl);
+        self::assertSame('http://test.craftcms.test/index.php?p=endpoint&token=t0k3n', $siteUrl);
 
         $siteUrl = UrlHelper::actionUrl('endpoint');
-        $this->assertSame('http://test.craftcms.test/index.php?p=actions/endpoint', $siteUrl);
+        self::assertSame('http://test.craftcms.test/index.php?p=actions/endpoint', $siteUrl);
     }
 
     /**
@@ -353,6 +353,8 @@ class UrlHelperTest extends Unit
         return [
             ['', []],
             ['', ['foo' => null]],
+            ['foo', ['foo' => '']],
+            ['foo=0', ['foo' => false]],
             ['foo=1', ['foo' => true]],
             ['foo=1&bar=2', ['foo' => 1, 'bar' => 2]],
             ['foo[0]=1&foo[1]=2', ['foo' => [1, 2]]],
@@ -581,7 +583,7 @@ class UrlHelperTest extends Unit
                 'urlWithToken'
             ],
             [
-                $baseUrl . '?token=',
+                $baseUrl . '?token',
                 $baseUrl . '',
                 '',
                 'urlWithToken'

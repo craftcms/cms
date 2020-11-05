@@ -65,7 +65,7 @@ class ViewTest extends TestCase
      */
     public function testNormalizeObjectTemplate($result, $input)
     {
-        $this->assertSame($result, $this->view->normalizeObjectTemplate($input));
+        self::assertSame($result, $this->view->normalizeObjectTemplate($input));
     }
 
     /**
@@ -76,7 +76,7 @@ class ViewTest extends TestCase
         // Ensure that the current site is the one with the testSite3 handle
         Craft::$app->getSites()->setCurrentSite(Craft::$app->getSites()->getSiteByHandle('testSite3'));
 
-        $this->assertSame(
+        self::assertSame(
             Craft::getAlias('@craftunittemplates/testSite3/craft.twig'),
             CraftTest::normalizePathSeparators($this->view->resolveTemplate('craft'))
         );
@@ -99,9 +99,9 @@ class ViewTest extends TestCase
         $doesIt = CraftTest::normalizePathSeparators($this->view->resolveTemplate($templatePath));
 
         if ($result === false) {
-            $this->assertFalse($doesIt);
+            self::assertFalse($doesIt);
         } else {
-            $this->assertSame(CraftTest::normalizePathSeparators(Craft::getAlias($result)), $doesIt);
+            self::assertSame(CraftTest::normalizePathSeparators(Craft::getAlias($result)), $doesIt);
         }
     }
 
@@ -130,7 +130,7 @@ class ViewTest extends TestCase
 
         // Lets test stuff.
         $resolved = $this->_resolveTemplate(Craft::getAlias($basePath), $name);
-        $this->assertSame(CraftTest::normalizePathSeparators(Craft::getAlias($result)), $resolved);
+        self::assertSame(CraftTest::normalizePathSeparators(Craft::getAlias($result)), $resolved);
     }
 
     /**
@@ -145,17 +145,17 @@ class ViewTest extends TestCase
     public function testRenderTemplate()
     {
         // Assert that the _renderingTemplate prop goes in and comes out as null.
-        $this->assertNull($this->getInaccessibleProperty($this->view, '_renderingTemplate'));
+        self::assertNull($this->getInaccessibleProperty($this->view, '_renderingTemplate'));
 
         $result = $this->view->renderTemplate('withvar', ['name' => 'Giel Tettelaar']);
 
-        $this->assertSame($result, 'Hello iam Giel Tettelaar');
-        $this->assertNull($this->getInaccessibleProperty($this->view, '_renderingTemplate'));
+        self::assertSame($result, 'Hello iam Giel Tettelaar');
+        self::assertNull($this->getInaccessibleProperty($this->view, '_renderingTemplate'));
 
         // Test that templates can work without variables.
         $result = $this->view->renderTemplate('novar');
 
-        $this->assertSame($result, 'I have no vars');
+        self::assertSame($result, 'I have no vars');
     }
 
     /**
@@ -168,7 +168,7 @@ class ViewTest extends TestCase
     {
         $this->view->setTemplateMode(View::TEMPLATE_MODE_SITE);
         $result = $this->view->renderTemplateMacro('macros', 'testMacro1', ['arg1' => 'Craft', 'arg2' => 'CMS']);
-        $this->assertSame('Craft-CMS', $result);
+        self::assertSame('Craft-CMS', $result);
     }
 
     /**
@@ -178,7 +178,7 @@ class ViewTest extends TestCase
     public function testRenderString()
     {
         $result = $this->view->renderString('{{ arg1 }}-{{ arg2 }}', ['arg1' => 'Craft', 'arg2' => 'CMS']);
-        $this->assertSame('Craft-CMS', $result);
+        self::assertSame('Craft-CMS', $result);
     }
 
     /**
@@ -194,7 +194,7 @@ class ViewTest extends TestCase
     public function testRenderObjectTemplate($result, $template, $object, array $variables = [])
     {
         $res = $this->view->renderObjectTemplate($template, $object, $variables);
-        $this->assertSame($result, $res);
+        self::assertSame($result, $res);
     }
 
     /**
@@ -204,16 +204,16 @@ class ViewTest extends TestCase
     public function testSetSiteTemplateMode()
     {
         $this->view->setTemplateMode(View::TEMPLATE_MODE_SITE);
-        $this->assertSame(
+        self::assertSame(
             Craft::getAlias('@crafttestsfolder/templates'),
             CraftTest::normalizePathSeparators($this->view->templatesPath)
         );
-        $this->assertSame(
+        self::assertSame(
             ['html', 'twig'],
             $this->getInaccessibleProperty($this->view, '_defaultTemplateExtensions')
         );
 
-        $this->assertSame(
+        self::assertSame(
             ['index'],
             $this->getInaccessibleProperty($this->view, '_indexTemplateFilenames')
         );
@@ -226,17 +226,17 @@ class ViewTest extends TestCase
     public function testSetCpTemplateMode()
     {
         $this->view->setTemplateMode(View::TEMPLATE_MODE_CP);
-        $this->assertSame(
+        self::assertSame(
             Craft::$app->getPath()->getCpTemplatesPath(),
             $this->view->templatesPath
         );
 
-        $this->assertSame(
+        self::assertSame(
             ['html', 'twig'],
             $this->getInaccessibleProperty($this->view, '_defaultTemplateExtensions')
         );
 
-        $this->assertSame(
+        self::assertSame(
             ['index'],
             $this->getInaccessibleProperty($this->view, '_indexTemplateFilenames')
         );
@@ -287,8 +287,8 @@ class ViewTest extends TestCase
         ]);
 
         $var = ['333'];
-        $this->assertSame('22333', $this->view->invokeHook('demoHook', $var));
-        $this->assertSame('', $this->view->invokeHook('hook-that-dont-exists', $var));
+        self::assertSame('22333', $this->view->invokeHook('demoHook', $var));
+        self::assertSame('', $this->view->invokeHook('hook-that-dont-exists', $var));
     }
 
     /**
@@ -302,7 +302,7 @@ class ViewTest extends TestCase
     public function testNamespaceInputs($result, $html, $namespace = null, $otherAttributes = true)
     {
         $namespaced = $this->view->namespaceInputs($html, $namespace, $otherAttributes);
-        $this->assertSame($result, $namespaced);
+        self::assertSame($result, $namespaced);
     }
 
     /**
@@ -315,7 +315,7 @@ class ViewTest extends TestCase
     public function testNamespaceInputName($result, $string, $namespace = null)
     {
         $namespaced = $this->view->namespaceInputName($string, $namespace);
-        $this->assertSame($result, $namespaced);
+        self::assertSame($result, $namespaced);
     }
 
     /**
@@ -328,7 +328,7 @@ class ViewTest extends TestCase
     public function testNamespaceInputId($result, $string, $namespace = null)
     {
         $namespaced = $this->view->namespaceInputId($string, $namespace);
-        $this->assertSame($result, $namespaced);
+        self::assertSame($result, $namespaced);
     }
 
     /**
@@ -346,7 +346,7 @@ class ViewTest extends TestCase
         });
 
         $roots = $this->_getTemplateRoots($which);
-        $this->assertSame($result, $roots);
+        self::assertSame($result, $roots);
     }
 
     /**
@@ -596,8 +596,8 @@ class ViewTest extends TestCase
             [],
             [
                 'registerJs' => function($inputJs, $inputPosition) use ($desiredJs, $desiredPosition) {
-                    $this->assertSame($desiredJs, $inputJs);
-                    $this->assertSame($desiredPosition, $inputPosition);
+                    self::assertSame($desiredJs, $inputJs);
+                    self::assertSame($desiredPosition, $inputPosition);
                 }
             ]
         );

@@ -41,7 +41,7 @@ class Config
      */
     public function __get(string $name)
     {
-        Craft::$app->getDeprecator()->log('craft.config.[setting]', 'craft.config.[setting] has been deprecated. Use craft.app.config.general.setting instead.');
+        Craft::$app->getDeprecator()->log('craft.config.[setting]', '`craft.config.[setting]` has been deprecated. Use `craft.app.config.general.[setting]` instead.');
 
         return Craft::$app->getConfig()->getGeneral()->$name ?? null;
     }
@@ -55,7 +55,7 @@ class Config
      */
     public function get(string $name, string $category = ConfigService::CATEGORY_GENERAL)
     {
-        Craft::$app->getDeprecator()->log('craft.config.get()', 'craft.config.get() has been deprecated. Use craft.app.config.general.setting instead.');
+        Craft::$app->getDeprecator()->log('craft.config.get()', '`craft.config.get()` has been deprecated. Use `craft.app.config.general.[setting]` instead.');
 
         try {
             return Craft::$app->getConfig()->getConfigSettings($category)->$name ?? null;
@@ -71,7 +71,7 @@ class Config
      */
     public function usePathInfo(): bool
     {
-        Craft::$app->getDeprecator()->log('craft.config.usePathInfo()', 'craft.config.usePathInfo() has been deprecated. Use craft.app.config.general.usePathInfo instead.');
+        Craft::$app->getDeprecator()->log('craft.config.usePathInfo()', '`craft.config.usePathInfo()` has been deprecated. Use `craft.app.config.general.usePathInfo` instead.');
 
         return Craft::$app->getConfig()->getGeneral()->usePathInfo;
     }
@@ -83,7 +83,7 @@ class Config
      */
     public function omitScriptNameInUrls(): bool
     {
-        Craft::$app->getDeprecator()->log('craft.config.omitScriptNameInUrls()', 'craft.config.omitScriptNameInUrls() has been deprecated. Use craft.app.config.general.omitScriptNameInUrls instead.');
+        Craft::$app->getDeprecator()->log('craft.config.omitScriptNameInUrls()', '`craft.config.omitScriptNameInUrls()` has been deprecated. Use `craft.app.config.general.omitScriptNameInUrls` instead.');
 
         return Craft::$app->getConfig()->getGeneral()->omitScriptNameInUrls;
     }

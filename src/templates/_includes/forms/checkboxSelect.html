@@ -1,5 +1,5 @@
-{%- set options = (options is defined ? options : []) %}
-{%- set values = (values is defined ? values : []) -%}
+{%- set options = options ?? [] %}
+{%- set values = values ?? [] -%}
 
 {%- set showAllOption = showAllOption ?? false %}
 {%- if showAllOption %}
@@ -8,18 +8,18 @@
     {%- set allChecked = (values == allValue) %}
 {%- endif %}
 
-<fieldset class="checkbox-select{% if class is defined %} {{ class }}{% endif %}"
+<fieldset class="checkbox-select{% if class ?? false %} {{ class }}{% endif %}"
         {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
     {%- if showAllOption %}
         <div>
             {% include "_includes/forms/checkbox" with {
-                id:        (id is defined ? id : null),
-                class:     'all',
-                label:     raw("<b>#{allLabel}</b>"),
-                name:      (name is defined ? name : null),
-                value:     allValue,
-                checked:   allChecked,
-                autofocus: (autofocus is defined and autofocus and not craft.app.request.isMobileBrowser(true))
+                id: id ?? null,
+                class: 'all',
+                label: raw("<b>#{allLabel}</b>"),
+                name: name ?? null,
+                value: allValue,
+                checked: allChecked,
+                autofocus: (autofocus ?? false) and not craft.app.request.isMobileBrowser(true),
             } only %}
         </div>
     {%- endif %}
@@ -30,8 +30,8 @@
         {% if not showAllOption or option.value is not defined or option.value != allValue %}
             <div>
                 {% include "_includes/forms/checkbox" with {
-                    name:     (name is defined ? name~'[]' : null),
-                    checked:  ((showAllOption and allChecked) or (option.value is defined and option.value in values)),
+                    name: (name ?? false) ? "#{name}[]" : null,
+                    checked: ((showAllOption and allChecked) or (option.value is defined and option.value in values)),
                     disabled: (showAllOption and allChecked)
                 }|merge(option) only %}
             </div>

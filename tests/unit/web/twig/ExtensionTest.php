@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace crafttests\unit\services;
+namespace crafttests\unit\web\twig;
 
 use ArrayObject;
 use Codeception\Test\Unit;
@@ -294,7 +294,7 @@ class ExtensionTest extends Unit
     protected function extensionRenderTest(string $renderString, string $expectedString, array $variables = [])
     {
         $result = $this->view->renderString($renderString, $variables);
-        $this->assertSame(
+        self::assertSame(
             $expectedString,
             $result
         );

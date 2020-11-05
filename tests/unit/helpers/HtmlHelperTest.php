@@ -35,7 +35,7 @@ class HtmlHelperTest extends Unit
      */
     public function testParamEncoding($result, $input, $variables)
     {
-        $this->assertSame($result, Html::encodeParams($input, $variables));
+        self::assertSame($result, Html::encodeParams($input, $variables));
     }
 
     /**
@@ -51,7 +51,7 @@ class HtmlHelperTest extends Unit
             Html::parseTag($tag);
         } else {
             $info = Html::parseTag($tag);
-            $this->assertSame($result, [
+            self::assertSame($result, [
                 $info['type'],
                 $info['attributes'],
                 isset($info['htmlStart'], $info['htmlEnd'])
@@ -75,7 +75,7 @@ class HtmlHelperTest extends Unit
             $this->expectException(InvalidArgumentException::class);
             Html::appendToTag($tag, $html, $ifExists);
         } else {
-            $this->assertSame($result, Html::appendToTag($tag, $html, $ifExists));
+            self::assertSame($result, Html::appendToTag($tag, $html, $ifExists));
         }
     }
 
@@ -93,7 +93,7 @@ class HtmlHelperTest extends Unit
             $this->expectException(InvalidArgumentException::class);
             Html::prependToTag($tag, $html, $ifExists);
         } else {
-            $this->assertSame($result, Html::prependToTag($tag, $html, $ifExists));
+            self::assertSame($result, Html::prependToTag($tag, $html, $ifExists));
         }
     }
 
@@ -109,7 +109,7 @@ class HtmlHelperTest extends Unit
             $this->expectException(InvalidArgumentException::class);
             Html::parseTagAttributes($tag);
         } else {
-            $this->assertSame($result, Html::parseTagAttributes($tag));
+            self::assertSame($result, Html::parseTagAttributes($tag));
         }
     }
 
@@ -126,7 +126,7 @@ class HtmlHelperTest extends Unit
             $this->expectException(InvalidArgumentException::class);
             Html::modifyTagAttributes($tag, $attributes);
         } else {
-            $this->assertSame($result, Html::modifyTagAttributes($tag, $attributes));
+            self::assertSame($result, Html::modifyTagAttributes($tag, $attributes));
         }
     }
 
@@ -138,7 +138,7 @@ class HtmlHelperTest extends Unit
      */
     public function testNormalizeTagAttributes($result, $attributes)
     {
-        $this->assertSame($result, Html::normalizeTagAttributes($attributes));
+        self::assertSame($result, Html::normalizeTagAttributes($attributes));
     }
 
     /**
@@ -149,7 +149,7 @@ class HtmlHelperTest extends Unit
      */
     public function testId(string $result, string $id)
     {
-        $this->assertSame($result, Html::id($id));
+        self::assertSame($result, Html::id($id));
     }
 
     /**
@@ -161,7 +161,7 @@ class HtmlHelperTest extends Unit
      */
     public function testNamespaceInputName(string $result, string $name, string $namespace)
     {
-        $this->assertSame($result, Html::namespaceInputName($name, $namespace));
+        self::assertSame($result, Html::namespaceInputName($name, $namespace));
     }
 
     /**
@@ -173,7 +173,7 @@ class HtmlHelperTest extends Unit
      */
     public function testNamespaceId(string $result, string $name, string $namespace)
     {
-        $this->assertSame($result, Html::namespaceId($name, $namespace));
+        self::assertSame($result, Html::namespaceId($name, $namespace));
     }
 
     /**
@@ -185,7 +185,7 @@ class HtmlHelperTest extends Unit
      */
     public function testNamespaceInputs(string $result, string $html, string $namespace)
     {
-        $this->assertSame($result, Html::namespaceInputs($html, $namespace));
+        self::assertSame($result, Html::namespaceInputs($html, $namespace));
     }
 
     /**
@@ -198,7 +198,7 @@ class HtmlHelperTest extends Unit
      */
     public function testNamespaceAttributes(string $result, string $html, string $namespace, bool $classNames)
     {
-        $this->assertSame($result, Html::namespaceAttributes($html, $namespace, $classNames));
+        self::assertSame($result, Html::namespaceAttributes($html, $namespace, $classNames));
     }
 
     /**
@@ -311,6 +311,8 @@ class HtmlHelperTest extends Unit
             // https://github.com/craftcms/cms/issues/4984
             ['<img class="foo" src="image.jpg?width=100&amp;height=100">', '<img src="image.jpg?width=100&height=100">', ['class' => 'foo']],
             ['<img class="foo" src="image.jpg?width=100&amp;height=100">', '<img src="image.jpg?width=100&amp;height=100">', ['class' => 'foo']],
+            // https://github.com/craftcms/cms/issues/6973
+            ['<custom-element class="foo"></custom-element>', '<custom-element></custom-element>', ['class' => 'foo']],
         ];
     }
 
@@ -387,6 +389,7 @@ class HtmlHelperTest extends Unit
             ['<div id="foo-bar"></div>', '<div id="bar"></div>', 'foo', false],
             ['<textarea><div id="foo"></textarea>', '<textarea><div id="foo"></textarea>', 'foo', false],
             ['<div id="foo-bar"></div><div for="foo-bar">', '<div id="bar"></div><div for="bar">', 'foo', false],
+            ['<div id="foo-bar-baz"></div><div for="foo-bar-baz">', '<div id="bar-baz"></div><div for="bar-baz">', 'foo', false],
             ['<div for="bar">', '<div for="bar">', 'foo', false],
             ['<div id="foo-bar"></div><div list="foo-bar">', '<div id="bar"></div><div list="bar">', 'foo', false],
             ['<div id="foo-bar"></div><div aria-labelledby="foo-bar">', '<div id="bar"></div><div aria-labelledby="bar">', 'foo', false],
@@ -395,7 +398,8 @@ class HtmlHelperTest extends Unit
             ['<div id="foo-bar"></div><div data-target="#foo-bar">', '<div id="bar"></div><div data-target="#bar">', 'foo', false],
             ['<div id="foo-bar"></div><div data-reverse-target="foo-bar">', '<div id="bar"></div><div data-reverse-target="bar">', 'foo', false],
             ['<div id="foo-bar"></div><div data-reverse-target="#foo-bar">', '<div id="bar"></div><div data-reverse-target="#bar">', 'foo', false],
-            ['<div id="foo-bar"></div><div data-target-prefix="foo-bar">', '<div id="bar"></div><div data-target-prefix="bar">', 'foo', false],
+            ['<div id="foo-bar-baz"></div><div data-target-prefix="foo-bar-">', '<div id="bar-baz"></div><div data-target-prefix="bar-">', 'foo', false],
+            ['<div id="foo-bar-baz"></div><div data-target-prefix=".bar-">', '<div id="bar-baz"></div><div data-target-prefix=".bar-">', 'foo', false],
             ['<div class="foo bar">', '<div class="foo bar">', 'foo', false],
             ['<div class="foo-bar foo-baz">', '<div class="bar baz">', 'foo', true],
             ['<div class="foo-bar-baz">', '<div class="bar-baz">', 'foo', true],

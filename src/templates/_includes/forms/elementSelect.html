@@ -1,17 +1,18 @@
-{% if name is defined and name %}
+{% if name ?? false %}
     {{ hiddenInput(name, '') }}
 {% endif -%}
 
-{% set elements = (elements is defined and elements ? elements : []) -%}
-{% set jsClass = (jsClass is defined and jsClass ? jsClass : 'Craft.BaseElementSelectInput') -%}
-{% set sources = (sources is defined and sources ? sources : null) -%}
-{% set criteria = (criteria is defined and criteria ? criteria : null) -%}
-{% set sourceElementId = (sourceElementId is defined and sourceElementId ? sourceElementId : null) -%}
-{% set storageKey = (storageKey is defined and storageKey ? storageKey : null) -%}
-{% set viewMode = (viewMode is defined ? viewMode : 'list') %}
-{% set sortable = (sortable is defined ? sortable : true) %}
+{% set elements = elements ?? [] -%}
+{% set jsClass = jsClass ?? 'Craft.BaseElementSelectInput' -%}
+{% set sources = sources ?? null -%}
+{% set criteria = criteria ?? null -%}
+{% set sourceElementId = sourceElementId ?? null -%}
+{% set storageKey = storageKey ?? null -%}
+{% set viewMode = viewMode ?? 'list' %}
+{% set sortable = sortable ?? true %}
 {% set prevalidate = prevalidate ?? false %}
-{% set fieldId = (fieldId is defined ? fieldId : null) %}
+{% set fieldId = fieldId ?? null %}
+{% set limit = limit ?? null %}
 
 <div id="{{ id }}" class="elementselect"
         {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
@@ -24,7 +25,9 @@
         {% endfor %}
     </div>
 
-    <div class="btn add icon dashed">{{ selectionLabel is defined ? selectionLabel : "Choose"|t('app') }}</div>
+    <div class="flex{% if limit and elements|length >= limit %} hidden{% endif %}">
+        <button type="button" class="btn add icon dashed">{{ selectionLabel ?? "Choose"|t('app') }}</button>
+    </div>
 </div>
 
 {% set jsSettings = {
@@ -37,7 +40,7 @@
     sourceElementId: sourceElementId,
     disabledElementIds: disabledElementIds ?? null,
     viewMode: viewMode,
-    limit: limit ?? null,
+    limit: limit,
     showSiteMenu: showSiteMenu ?? false,
     modalStorageKey: storageKey,
     fieldId: fieldId,

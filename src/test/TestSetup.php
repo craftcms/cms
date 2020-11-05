@@ -70,7 +70,6 @@ use craft\web\Session;
 use craft\web\UploadedFile;
 use craft\web\User;
 use PHPUnit\Framework\MockObject\MockObject;
-use Symfony\Component\Yaml\Yaml;
 use yii\base\ErrorException;
 use yii\base\Event;
 use yii\base\InvalidArgumentException;
@@ -253,6 +252,7 @@ class TestSetup
         return ArrayHelper::merge($config, [
             'class' => $class,
             'id' => 'craft-test',
+            'env' => 'test',
             'basePath' => $srcPath
         ]);
     }
@@ -373,14 +373,14 @@ class TestSetup
     {
         if (!$projectConfigFolder) {
             $config = \craft\test\Craft::$instance->_getConfig('projectConfig');
-            $projectConfigFolder = dirname(CRAFT_TESTS_PATH).DIRECTORY_SEPARATOR.$config['folder'];
+            $projectConfigFolder = dirname(CRAFT_TESTS_PATH) . DIRECTORY_SEPARATOR . $config['folder'];
         }
 
         if (!is_dir($projectConfigFolder)) {
             throw new InvalidArgumentException('Project config folder does not exist.');
         }
 
-        $dest = CRAFT_CONFIG_PATH.DIRECTORY_SEPARATOR.'project';
+        $dest = CRAFT_CONFIG_PATH . DIRECTORY_SEPARATOR . 'project';
 
         // Remove any existing folders.
         self::removeProjectConfigFolders($dest);
@@ -478,10 +478,15 @@ class TestSetup
             'username' => 'craftcms',
             'password' => 'craftcms2018!!',
             'email' => 'support@craftcms.com',
-            'site' => $site
+            'site' => $site,
+            'applyProjectConfigYaml' => false,
         ]);
 
         $migration->safeUp();
+
+        if ($projectConfig) {
+            Craft::$app->getProjectConfig()->applyYamlChanges();
+        }
     }
 
     /**

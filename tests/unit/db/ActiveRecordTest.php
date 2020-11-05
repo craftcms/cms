@@ -39,8 +39,8 @@ class ActiveRecordTest extends Unit
      */
     public function testIsCraftAr()
     {
-        $this->assertInstanceOf(ActiveRecord::class, new Volume());
-        $this->assertInstanceOf(ActiveRecord::class, new Session());
+        self::assertInstanceOf(ActiveRecord::class, new Volume());
+        self::assertInstanceOf(ActiveRecord::class, new Session());
     }
 
     /**
@@ -52,6 +52,8 @@ class ActiveRecordTest extends Unit
         $session = $this->ensureSession();
 
         $this->tester->assertEqualDates($this, $session->dateCreated, $date->format('Y-m-d H:i:s'), 2);
+
+        $session->delete();
     }
 
     /**
@@ -73,11 +75,13 @@ class ActiveRecordTest extends Unit
 
         // Save it again with a new value. Ensure dateUpdated is now current.
         $date = new DateTime('now', $dateTimeZone);
-        $this->assertGreaterThan($oldDate, $date);
+        self::assertGreaterThan($oldDate, $date);
 
         $session->token = 'test2';
         $session->save();
         $this->tester->assertEqualDates($this, $session->dateUpdated, $date->format('Y-m-d H:i:s'), 1);
+
+        $session->delete();
     }
 
     /**
@@ -87,7 +91,9 @@ class ActiveRecordTest extends Unit
     {
         $session = $this->ensureSession();
 
-        $this->assertTrue(StringHelper::isUUID($session->uid));
+        self::assertTrue(StringHelper::isUUID($session->uid));
+
+        $session->delete();
     }
 
     /**
@@ -107,8 +113,10 @@ class ActiveRecordTest extends Unit
 
         $save = $vol->save();
 
-        $this->assertTrue($save);
-        $this->assertSame($result, $vol->settings);
+        self::assertTrue($save);
+        self::assertSame($result, $vol->settings);
+
+        $vol->delete();
     }
 
     /**
@@ -147,8 +155,10 @@ class ActiveRecordTest extends Unit
         $session->uid = '00000000|0000|0000|0000|000000000000';
         $save = $session->save();
 
-        $this->assertTrue($save);
-        $this->assertSame('00000000|0000|0000|0000|000000000000', $session->uid);
+        self::assertTrue($save);
+        self::assertSame('00000000|0000|0000|0000|000000000000', $session->uid);
+
+        $session->delete();
     }
 
     /**
@@ -161,8 +171,10 @@ class ActiveRecordTest extends Unit
         $session->token = 'test';
         $save = $session->save();
 
-        $this->assertTrue($save);
-        $this->assertTrue(StringHelper::isUUID($session->uid));
+        self::assertTrue($save);
+        self::assertTrue(StringHelper::isUUID($session->uid));
+
+        $session->delete();
     }
 
     /**
@@ -175,7 +187,7 @@ class ActiveRecordTest extends Unit
         $session->token = 'test' . StringHelper::randomString();
         $save = $session->save();
 
-        $this->assertTrue($save);
+        self::assertTrue($save);
         return $session;
     }
 }

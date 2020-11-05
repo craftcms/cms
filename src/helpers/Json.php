@@ -26,7 +26,7 @@ class Json extends \yii\helpers\Json
      */
     public static function isJsonObject(string $str): bool
     {
-        return (bool)preg_match('/^(?:\{.*\}|\[.*\])$/', $str);
+        return (bool)preg_match('/^(?:\{.*\}|\[.*\])$/s', $str);
     }
 
     /**

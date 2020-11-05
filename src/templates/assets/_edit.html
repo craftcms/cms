@@ -13,11 +13,11 @@
         {% if assetUrl %}
             <a class="btn" href="{{ assetUrl }}" target="_blank" data-icon="preview">{{ 'View'|t('app') }}</a>
         {% endif %}
-        <div id="download-btn" class="btn" role="button" data-icon="download">{{ 'Download'|t('app') }}</div>
+        <button type="button" id="download-btn" class="btn" data-icon="download">{{ 'Download'|t('app') }}</button>
     </div>
 
     {% if canReplaceFile %}
-        <div id="replace-btn" class="btn" role="button" data-icon="upload">{{ 'Replace file'|t('app') }}</div>
+        <button type="button" id="replace-btn" class="btn" data-icon="upload">{{ 'Replace file'|t('app') }}</button>
     {% endif %}
 
     {{ parent() }}
@@ -68,6 +68,7 @@
                 class: 'value',
                 text: formattedSize,
                 title: formattedSizeInBytes,
+                'aria-label': formattedSizeInBytes,
             }) }}
         </div>
     {% endif %}

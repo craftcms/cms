@@ -875,16 +875,21 @@ class Db
      *
      * @param string $table
      * @param string $uid
+     * @param Connection|null $db The database connection to use
      * @return int|null
      * @since 3.1.0
      */
-    public static function idByUid(string $table, string $uid)
+    public static function idByUid(string $table, string $uid, Connection $db = null)
     {
+        if ($db === null) {
+            $db = self::db();
+        }
+
         $id = (new Query())
             ->select(['id'])
             ->from([$table])
             ->where(['uid' => $uid])
-            ->scalar();
+            ->scalar($db);
 
         return (int)$id ?: null;
     }
@@ -894,16 +899,21 @@ class Db
      *
      * @param string $table
      * @param string[] $uids
+     * @param Connection|null $db The database connection to use
      * @return string[]
      * @since 3.1.0
      */
-    public static function idsByUids(string $table, array $uids): array
+    public static function idsByUids(string $table, array $uids, Connection $db = null): array
     {
+        if ($db === null) {
+            $db = self::db();
+        }
+
         return (new Query())
             ->select(['uid', 'id'])
             ->from([$table])
             ->where(['uid' => $uids])
-            ->pairs();
+            ->pairs($db);
     }
 
     /**
@@ -911,16 +921,21 @@ class Db
      *
      * @param string $table
      * @param int $id
+     * @param Connection|null $db The database connection to use
      * @return string|null
      * @since 3.1.0
      */
-    public static function uidById(string $table, int $id)
+    public static function uidById(string $table, int $id, Connection $db = null)
     {
+        if ($db === null) {
+            $db = self::db();
+        }
+
         $uid = (new Query())
             ->select(['uid'])
             ->from([$table])
             ->where(['id' => $id])
-            ->scalar();
+            ->scalar($db);
 
         return $uid ?: null;
     }
@@ -930,16 +945,21 @@ class Db
      *
      * @param string $table
      * @param int[] $ids
+     * @param Connection|null $db The database connection to use
      * @return string[]
      * @since 3.1.0
      */
-    public static function uidsByIds(string $table, array $ids): array
+    public static function uidsByIds(string $table, array $ids, Connection $db = null): array
     {
+        if ($db === null) {
+            $db = self::db();
+        }
+
         return (new Query())
             ->select(['id', 'uid'])
             ->from([$table])
             ->where(['id' => $ids])
-            ->pairs();
+            ->pairs($db);
     }
 
     /**
@@ -1055,6 +1075,19 @@ class Db
      * @var Connection|null;
      */
     private static $_db;
+
+    /**
+     * Resets the memoized database connection.
+     *
+     * @since 3.5.12.1
+     */
+    public static function reset()
+    {
+        if (self::$_db) {
+            self::$_db->close();
+        }
+        self::$_db = null;
+    }
 
     /**
      * Converts a given param value to an array.

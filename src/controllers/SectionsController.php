@@ -103,17 +103,6 @@ class SectionsController extends Controller
         $variables['section'] = $section;
         $variables['typeOptions'] = $typeOptions;
 
-        $variables['crumbs'] = [
-            [
-                'label' => Craft::t('app', 'Settings'),
-                'url' => UrlHelper::url('settings')
-            ],
-            [
-                'label' => Craft::t('app', 'Sections'),
-                'url' => UrlHelper::url('settings/sections')
-            ],
-        ];
-
         $this->getView()->registerAssetBundle(EditSectionAsset::class);
 
         return $this->renderTemplate('settings/sections/_edit', $variables);
@@ -129,10 +118,18 @@ class SectionsController extends Controller
     {
         $this->requirePostRequest();
 
-        $section = new Section();
+        $sectionsService = Craft::$app->getSections();
+        $sectionId = $this->request->getBodyParam('sectionId');
+        if ($sectionId) {
+            $section = $sectionsService->getSectionById($sectionId);
+            if (!$section) {
+                throw new BadRequestHttpException("Invalid section ID: $sectionId");
+            }
+        } else {
+            $section = new Section();
+        }
 
         // Main section settings
-        $section->id = $this->request->getBodyParam('sectionId');
         $section->name = $this->request->getBodyParam('name');
         $section->handle = $this->request->getBodyParam('handle');
         $section->type = $this->request->getBodyParam('type');
@@ -175,7 +172,7 @@ class SectionsController extends Controller
         $section->setSiteSettings($allSiteSettings);
 
         // Save it
-        if (!Craft::$app->getSections()->saveSection($section)) {
+        if (!$sectionsService->saveSection($section)) {
             $this->setFailFlash(Craft::t('app', 'Couldn’t save section.'));
 
             // Send the section back to the template
@@ -224,28 +221,12 @@ class SectionsController extends Controller
             throw new NotFoundHttpException('Section not found');
         }
 
-        $crumbs = [
-            [
-                'label' => Craft::t('app', 'Settings'),
-                'url' => UrlHelper::url('settings')
-            ],
-            [
-                'label' => Craft::t('app', 'Sections'),
-                'url' => UrlHelper::url('settings/sections')
-            ],
-            [
-                'label' => Craft::t('site', $section->name),
-                'url' => UrlHelper::url('settings/sections/' . $section->id)
-            ],
-        ];
-
         $title = Craft::t('app', '{section} Entry Types',
             ['section' => Craft::t('site', $section->name)]);
 
         return $this->renderTemplate('settings/sections/_entrytypes/index', [
             'sectionId' => $sectionId,
             'section' => $section,
-            'crumbs' => $crumbs,
             'title' => $title,
         ]);
     }
@@ -325,19 +306,19 @@ class SectionsController extends Controller
      * Saves an entry type.
      *
      * @return Response|null
-     * @throws NotFoundHttpException if the requested entry type cannot be found
+     * @throws BadRequestHttpException
      */
     public function actionSaveEntryType()
     {
         $this->requirePostRequest();
 
+        $sectionsService = Craft::$app->getSections();
         $entryTypeId = $this->request->getBodyParam('entryTypeId');
 
         if ($entryTypeId) {
-            $entryType = Craft::$app->getSections()->getEntryTypeById($entryTypeId);
-
+            $entryType = $sectionsService->getEntryTypeById($entryTypeId);
             if (!$entryType) {
-                throw new NotFoundHttpException('Entry type not found');
+                throw new BadRequestHttpException("Invalid entry type ID: $entryTypeId");
             }
         } else {
             $entryType = new EntryType();
@@ -358,7 +339,7 @@ class SectionsController extends Controller
         $entryType->setFieldLayout($fieldLayout);
 
         // Save it
-        if (!Craft::$app->getSections()->saveEntryType($entryType)) {
+        if (!$sectionsService->saveEntryType($entryType)) {
             $this->setFailFlash(Craft::t('app', 'Couldn’t save entry type.'));
 
             // Send the entry type back to the template

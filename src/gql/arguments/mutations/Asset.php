@@ -34,6 +34,11 @@ class Asset extends ElementMutationArguments
                 'name' => 'newFolderId',
                 'description' => 'ID of the new folder for this asset',
                 'type' => Type::id()
+            ],
+            'uploaderId' => [
+                'name' => 'uploaderId',
+                'description' => 'The ID of the user who first added this asset (if known).',
+                'type' => Type::id()
             ]
         ]);
     }

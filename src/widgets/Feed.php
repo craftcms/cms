@@ -33,7 +33,7 @@ class Feed extends Widget
      */
     public static function icon()
     {
-        return Craft::getAlias('@app/icons/feed.svg');
+        return Craft::getAlias('@appicons/feed.svg');
     }
 
     /**

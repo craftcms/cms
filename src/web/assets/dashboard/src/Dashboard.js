@@ -109,16 +109,16 @@
                               .append(
                                 $('<div/>', {'class': 'buttons clearafter'})
                                   .append(
-                                    $('<input/>', {
+                                    $('<button/>', {
                                       type: 'submit',
                                       'class': 'btn submit',
-                                      value: Craft.t('app', 'Save'),
+                                      text: Craft.t('app', 'Save'),
                                     })
                                   )
                                   .append(
-                                    $('<div/>', {
+                                    $('<button/>', {
+                                      type: 'button',
                                       'class': 'btn',
-                                      role: 'button',
                                       text: Craft.t('app', 'Cancel')
                                     })
                                   )
@@ -132,9 +132,11 @@
 
                 if (settingsHtml) {
                     $container.addClass('flipped');
+                    $container.children('.front').addClass('hidden');
                 }
                 else {
                     $container.addClass('loading');
+                    $container.children('.back').addClass('hidden');
                 }
 
                 var widget = new Craft.Widget($container, settingsHtml.replace(/__NAMESPACE__/g, settingsNamespace), function() {
@@ -369,19 +371,26 @@
                 // Refresh the settings every time
                 this.refreshSettings();
 
-                this.$container
-                    .addClass('flipped')
-                    .velocity({height: this.$back.height()}, {
-                        complete: $.proxy(this, 'onShowBack')
-                    });
+                this.$back.removeClass('hidden');
+                Garnish.requestAnimationFrame(() => {
+                    this.$container
+                        .addClass('flipped')
+                        .velocity({height: this.$back.height()}, {
+                            complete: $.proxy(this, 'onShowBack')
+                        });
+                });
             },
 
             hideSettings: function() {
-                this.$container
-                    .removeClass('flipped')
-                    .velocity({height: this.$front.height()}, {
-                        complete: $.proxy(this, 'onShowFront')
-                    });
+                this.$front.removeClass('hidden');
+
+                Garnish.requestAnimationFrame(() => {
+                    this.$container
+                        .removeClass('flipped')
+                        .velocity({height: this.$front.height()}, {
+                            complete: $.proxy(this, 'onShowFront')
+                        });
+                });
             },
 
             saveSettings: function(e) {
@@ -500,12 +509,16 @@
                 this.showingSettings = false;
                 this.removeListener(this.$back, 'resize');
                 this.addListener(this.$front, 'resize', 'updateContainerHeight');
+                if (this.$back) {
+                    this.$back.addClass('hidden');
+                }
             },
 
             onShowBack: function() {
                 this.showingSettings = true;
                 this.removeListener(this.$front, 'resize');
                 this.addListener(this.$back, 'resize', 'updateContainerHeight');
+                this.$front.addClass('hidden');
 
                 // Focus on the first input
                 setTimeout($.proxy(function() {

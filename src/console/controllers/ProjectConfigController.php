@@ -12,6 +12,7 @@ use craft\console\Controller;
 use craft\db\Table;
 use craft\helpers\Console;
 use craft\helpers\Db;
+use craft\helpers\ProjectConfig;
 use craft\services\Plugins;
 use yii\console\ExitCode;
 
@@ -29,17 +30,67 @@ class ProjectConfigController extends Controller
     public $force = false;
 
     /**
+     * @var bool Whether to treat the loaded project config as the source of truth, instead of the YAML files.
+     * @since 3.5.13
+     */
+    public $invert = false;
+
+    /**
      * @inheritdoc
      */
     public function options($actionID)
     {
         $options = parent::options($actionID);
 
-        if (in_array($actionID, ['apply', 'sync'], true)) {
-            $options[] = 'force';
+        switch ($actionID) {
+            case 'apply':
+            case 'sync':
+                $options[] = 'force';
+                break;
+            case 'diff':
+                $options[] = 'reverse';
         }
 
         return $options;
+    }
+
+    /**
+     * See a diff of the pending project config YAML changes.
+     *
+     * @return int
+     * @since 3.5.6
+     */
+    public function actionDiff(): int
+    {
+        $diff = ProjectConfig::diff($this->invert);
+
+        if ($diff === '') {
+            $this->stdout('No pending project config YAML changes.' . PHP_EOL, Console::FG_GREEN);
+            return ExitCode::OK;
+        }
+
+        if (!$this->isColorEnabled()) {
+            $this->stdout($diff . PHP_EOL . PHP_EOL);
+            return ExitCode::OK;
+        }
+
+        foreach (explode("\n", $diff) as $line) {
+            $firstChar = $line[0] ?? '';
+            switch ($firstChar) {
+                case '-':
+                    $this->stdout($line . PHP_EOL, Console::FG_RED);
+                    break;
+                case '+':
+                    $this->stdout($line . PHP_EOL, Console::FG_GREEN);
+                    break;
+                default:
+                    $this->stdout($line . PHP_EOL);
+                    break;
+            }
+        }
+
+        $this->stdout(PHP_EOL);
+        return ExitCode::OK;
     }
 
     /**
@@ -76,7 +127,7 @@ class ProjectConfigController extends Controller
         }
 
         // Do we need to create a new config file?
-        if (!file_exists(Craft::$app->getPath()->getProjectConfigFilePath())) {
+        if (!$projectConfig->getDoesYamlExist()) {
             $this->stdout("No project config files found. Generating them from internal config ... ", Console::FG_YELLOW);
             $projectConfig->regenerateYamlFromConfig();
         } else {
@@ -120,6 +171,20 @@ class ProjectConfigController extends Controller
     }
 
     /**
+     * Writes out the current project config as YAML files to the `config/project/` folder, discarding any pending YAML changes.
+     *
+     * @return int
+     * @since 3.5.13
+     */
+    public function actionWrite(): int
+    {
+        $this->stdout('Writing out project config files ... ');
+        Craft::$app->getProjectConfig()->regenerateYamlFromConfig();
+        $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
+        return ExitCode::OK;
+    }
+
+    /**
      * Rebuilds the project config.
      *
      * @return int
@@ -129,7 +194,7 @@ class ProjectConfigController extends Controller
     {
         $projectConfig = Craft::$app->getProjectConfig();
 
-        if (!file_exists(Craft::$app->getPath()->getProjectConfigFilePath())) {
+        if ($projectConfig->writeYamlAutomatically && !$projectConfig->getDoesYamlExist()) {
             $this->stdout("No project config files found. Generating them from internal config ... ", Console::FG_YELLOW);
             $projectConfig->regenerateYamlFromConfig();
         }
@@ -145,6 +210,19 @@ class ProjectConfigController extends Controller
         }
 
         $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
+        return ExitCode::OK;
+    }
+
+    /**
+     * Updates the `dateModified` value in `config/project/project.yaml`, attempting to resolve a Git conflict for it.
+     *
+     * @return int
+     */
+    public function actionTouch(): int
+    {
+        $time = time();
+        ProjectConfig::touch($time);
+        $this->stdout("The dateModified value in project.yaml is now set to $time." . PHP_EOL, Console::FG_GREEN);
         return ExitCode::OK;
     }
 

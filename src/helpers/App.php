@@ -9,6 +9,7 @@ namespace craft\helpers;
 
 use Craft;
 use craft\behaviors\SessionBehavior;
+use craft\cache\FileCache;
 use craft\config\DbConfig;
 use craft\db\Command;
 use craft\db\Connection;
@@ -30,7 +31,6 @@ use craft\web\Session;
 use craft\web\User as WebUser;
 use craft\web\View;
 use yii\base\InvalidArgumentException;
-use yii\caching\FileCache;
 use yii\helpers\Inflector;
 use yii\i18n\PhpMessageSource;
 use yii\log\Dispatcher;
@@ -299,7 +299,7 @@ class App
 
     /**
      * Sets PHP’s memory limit to the maximum specified by the
-     * <config:phpMaxMemoryLimit> config setting, and gives the script an
+     * <config3:phpMaxMemoryLimit> config setting, and gives the script an
      * unlimited amount of time to execute.
      */
     public static function maxPowerCaptain()
@@ -413,6 +413,7 @@ class App
 
         return [
             'class' => FileCache::class,
+            'keyPrefix' => Craft::$app->id,
             'cachePath' => Craft::$app->getPath()->getCachePath(),
             'fileMode' => $generalConfig->defaultFileMode,
             'dirMode' => $generalConfig->defaultDirMode,

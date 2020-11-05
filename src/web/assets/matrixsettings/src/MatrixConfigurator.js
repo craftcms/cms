@@ -204,24 +204,32 @@
                 this.setContainer(this.$form);
 
                 this.$body = $('<div class="body"/>').appendTo(this.$form);
-                this.$nameField = $('<div class="field"/>').appendTo(this.$body);
-                this.$nameHeading = $('<div class="heading"/>').appendTo(this.$nameField);
-                this.$nameLabel = $('<label for="new-block-type-name">' + Craft.t('app', 'Name') + '</label>').appendTo(this.$nameHeading);
-                this.$nameInstructions = $('<div class="instructions"><p>' + Craft.t('app', 'What this block type will be called in the control panel.') + '</p></div>').appendTo(this.$nameHeading);
-                this.$nameInputContainer = $('<div class="input"/>').appendTo(this.$nameField);
-                this.$nameInput = $('<input type="text" class="text fullwidth" id="new-block-type-name"/>').appendTo(this.$nameInputContainer);
-                this.$nameErrorList = $('<ul class="errors"/>').appendTo(this.$nameInputContainer).hide();
-                this.$handleField = $('<div class="field"/>').appendTo(this.$body);
-                this.$handleHeading = $('<div class="heading"/>').appendTo(this.$handleField);
-                this.$handleLabel = $('<label for="new-block-type-handle">' + Craft.t('app', 'Handle') + '</label>').appendTo(this.$handleHeading);
-                this.$handleInstructions = $('<div class="instructions"><p>' + Craft.t('app', 'How you’ll refer to this block type in the templates.') + '</p></div>').appendTo(this.$handleHeading);
-                this.$handleInputContainer = $('<div class="input"/>').appendTo(this.$handleField);
-                this.$handleInput = $('<input type="text" class="text fullwidth code" id="new-block-type-handle"/>').appendTo(this.$handleInputContainer);
-                this.$handleErrorList = $('<ul class="errors"/>').appendTo(this.$handleInputContainer).hide();
+                let $nameField = Craft.ui.createTextField({
+                    label:  Craft.t('app', 'Name'),
+                    instructions: Craft.t('app', 'What this block type will be called in the control panel.'),
+                }).appendTo(this.$body);
+                let $nameInputContainer = $nameField.find('.input');
+                this.$nameInput = $nameInputContainer.find('.text');
+                this.$nameErrorList = $('<ul class="errors"/>').appendTo($nameInputContainer).hide();
+                let $handleField =Craft.ui.createTextField({
+                    label: Craft.t('app', 'Handle'),
+                    instructions: Craft.t('app', 'How you’ll refer to this block type in the templates.'),
+                    class: 'code',
+                }).appendTo(this.$body);
+                let $handleInputContainer = $handleField.find('.input');
+                this.$handleInput = $handleInputContainer.find('.text');
+                this.$handleErrorList = $('<ul class="errors"/>').appendTo($handleInputContainer).hide();
                 this.$deleteBtn = $('<a class="error left hidden" style="line-height: 30px;">' + Craft.t('app', 'Delete') + '</a>').appendTo(this.$body);
                 this.$buttons = $('<div class="buttons right" style="margin-top: 0;"/>').appendTo(this.$body);
-                this.$cancelBtn = $('<div class="btn">' + Craft.t('app', 'Cancel') + '</div>').appendTo(this.$buttons);
-                this.$submitBtn = $('<input type="submit" class="btn submit"/>').appendTo(this.$buttons);
+                this.$cancelBtn = $('<button/>', {
+                    type: 'button',
+                    class: 'btn',
+                    text: Craft.t('app', 'Cancel'),
+                }).appendTo(this.$buttons);
+                this.$submitBtn = $('<button/>', {
+                    type: 'submit',
+                    class: 'btn submit',
+                }).appendTo(this.$buttons);
 
                 this.handleGenerator = new Craft.HandleGenerator(this.$nameInput, this.$handleInput);
 
@@ -276,11 +284,11 @@
 
                 if (typeof name === 'undefined') {
                     this.$deleteBtn.addClass('hidden');
-                    this.$submitBtn.val(Craft.t('app', 'Create'));
+                    this.$submitBtn.text(Craft.t('app', 'Create'));
                 }
                 else {
                     this.$deleteBtn.removeClass('hidden');
-                    this.$submitBtn.val(Craft.t('app', 'Save'));
+                    this.$submitBtn.text(Craft.t('app', 'Save'));
                 }
 
                 this.displayErrors('name', (errors ? errors.name : null));

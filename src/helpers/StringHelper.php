@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
+use Normalizer;
 use Stringy\Stringy as BaseStringy;
 use voku\helper\ASCII;
 use yii\base\Exception;
@@ -113,7 +114,7 @@ class StringHelper extends \yii\helpers\StringHelper
 
     /**
      * Returns ASCII character mappings, merging in any custom defined mappings
-     * from the <config:customAsciiCharMappings> config setting.
+     * from the <config3:customAsciiCharMappings> config setting.
      *
      * @param bool $flat Whether the mappings should be returned as a flat array (é => e)
      * @param string|null $language Whether to include language-specific mappings (only applied if $flat is true)
@@ -1274,8 +1275,8 @@ class StringHelper extends \yii\helpers\StringHelper
 
     /**
      * Truncates the string to a given length, while ensuring that it does not split words. If $substring is provided,
-     * and truncating occurs, the string is further truncated so that the substring may be appended without exceeding t
-     * he desired length.
+     * and truncating occurs, the string is further truncated so that the substring may be appended without exceeding
+     * the desired length.
      *
      * @param string $str The string to truncate.
      * @param int $length The desired length of the truncated string.
@@ -1573,6 +1574,11 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function toAscii(string $str, string $language = null): string
     {
+        // If Intl is installed, normalize NFD chars to NFC
+        if (class_exists(Normalizer::class)) {
+            $str = Normalizer::normalize($str, Normalizer::FORM_C);
+        }
+
         return (string)BaseStringy::create($str)->toAscii($language ?? Craft::$app->language);
     }
 

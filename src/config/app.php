@@ -3,8 +3,8 @@
 return [
     'id' => 'CraftCMS',
     'name' => 'Craft CMS',
-    'version' => '3.5.0-RC4',
-    'schemaVersion' => '3.5.12',
+    'version' => '3.6.0-beta.1.1',
+    'schemaVersion' => '3.5.13',
     'minVersionRequired' => '2.6.2788',
     'basePath' => dirname(__DIR__), // Defines the @app alias
     'runtimePath' => '@storage/runtime', // Defines the @runtime alias
@@ -130,6 +130,11 @@ return [
         ],
         'updates' => [
             'class' => craft\services\Updates::class,
+        ],
+        'urlManager' => [
+            'class' => craft\web\UrlManager::class,
+            'enablePrettyUrl' => true,
+            'ruleConfig' => ['class' => craft\web\UrlRule::class],
         ],
         'users' => [
             'class' => craft\services\Users::class,

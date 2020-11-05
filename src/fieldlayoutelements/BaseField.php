@@ -10,6 +10,8 @@ namespace craft\fieldlayoutelements;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutElement;
+use craft\helpers\ArrayHelper;
+use craft\helpers\Cp;
 use craft\helpers\Html;
 
 /**
@@ -44,6 +46,18 @@ abstract class BaseField extends FieldLayoutElement
      * @var bool Whether the field is required.
      */
     public $required = false;
+
+    /**
+     * @inheritdoc
+     */
+    public function __construct($config = [])
+    {
+        if (ArrayHelper::remove($config, 'labelHidden')) {
+            $config['label'] = '__blank__';
+        }
+
+        parent::__construct($config);
+    }
 
     /**
      * Returns the element attribute this field is for.
@@ -112,14 +126,29 @@ abstract class BaseField extends FieldLayoutElement
      */
     protected function selectorInnerHtml(): string
     {
-        $innerHtml =
-            Html::tag('h4', $this->label(), [
-                'class' => 'fld-element-label',
-                'title' => $this->label(),
-            ]) .
+        $innerHtml = '';
+
+        $label = $this->showLabel() ? $this->label() : null;
+        $requiredHtml = $this->required ? Html::tag('span', '', [
+            'class' => 'fld-required-indicator',
+            'title' => Craft::t('app', 'This field is required'),
+        ]) : '';
+
+        if ($label !== null) {
+            $innerHtml .= Html::tag('div',
+                Html::tag('h4', $label, [
+                    'title' => $label,
+                ]) . $requiredHtml, [
+                    'class' => 'fld-element-label',
+                ]);
+        }
+
+        $innerHtml .= Html::tag('div',
             Html::tag('div', $this->attribute(), [
                 'class' => ['smalltext', 'light', 'code'],
                 'title' => $this->attribute(),
+            ]) . ($label === null ? $requiredHtml : ''), [
+                'class' => 'fld-attribute',
             ]);
 
         return Html::tag('div', $innerHtml, [
@@ -157,27 +186,12 @@ abstract class BaseField extends FieldLayoutElement
      */
     public function settingsHtml()
     {
-        $view = Craft::$app->getView();
-        return
-            $view->renderTemplateMacro('_includes/forms', 'textField', [
-                [
-                    'label' => Craft::t('app', 'Label'),
-                    'id' => 'label',
-                    'name' => 'label',
-                    'value' => $this->label,
-                    'placeholder' => $this->defaultLabel(),
-                ],
-            ]) .
-            $view->renderTemplateMacro('_includes/forms', 'textareaField', [
-                [
-                    'label' => Craft::t('app', 'Instructions'),
-                    'class' => 'nicetext',
-                    'id' => 'instructions',
-                    'name' => 'instructions',
-                    'value' => $this->instructions,
-                    'placeholder' => $this->defaultInstructions(),
-                ],
-            ]);
+        return Craft::$app->getView()->renderTemplate('_includes/forms/fld/field-settings', [
+            'field' => $this,
+            'defaultLabel' => $this->defaultLabel(),
+            'defaultInstructions' => $this->defaultInstructions(),
+            'labelHidden' => !$this->showLabel(),
+        ]);
     }
 
     /**
@@ -190,19 +204,18 @@ abstract class BaseField extends FieldLayoutElement
             return null;
         }
 
-        $statusClass = $this->statusClass();
+        $statusClass = $this->statusClass($element, $static);
 
-        return Craft::$app->getView()->renderTemplate('_includes/forms/field', [
+        return Cp::fieldHtml($inputHtml, [
             'id' => $this->id(),
             'fieldAttributes' => $this->containerAttributes($element, $static),
-            'inputAttributes' => $this->inputContainerAttributes($element, $static),
+            'inputContainerAttributes' => $this->inputContainerAttributes($element, $static),
             'labelAttributes' => $this->labelAttributes($element, $static),
-            'status' => $statusClass ? [$statusClass, $this->statusLabel() ?? ucfirst($statusClass)] : null,
-            'label' => $this->label ? Craft::t('site', $this->label) : $this->defaultLabel($element, $static),
-            'altLabel' => Html::tag('code', $this->attribute()),
+            'status' => $statusClass ? [$statusClass, $this->statusLabel($element, $static) ?? ucfirst($statusClass)] : null,
+            'label' => $this->showLabel() ? $this->label() : null,
+            'attribute' => $this->attribute(),
             'required' => !$static && $this->required,
-            'instructions' => $this->_instructions($element, $static),
-            'input' => $inputHtml,
+            'instructions' => Html::encode($this->instructions ? Craft::t('site', $this->instructions) : $this->defaultInstructions($element, $static)),
             'tip' => $this->tip($element, $static),
             'warning' => $this->warning($element, $static),
             'orientation' => $this->orientation($element, $static),
@@ -220,8 +233,9 @@ abstract class BaseField extends FieldLayoutElement
     public function keywords(): array
     {
         return array_filter([
-            $this->label,
+            $this->label(),
             $this->defaultLabel(),
+            $this->attribute(),
         ]);
     }
 
@@ -260,6 +274,42 @@ abstract class BaseField extends FieldLayoutElement
     }
 
     /**
+     * Returns the field’s label.
+     *
+     * @return string|null
+     */
+    public function label()
+    {
+        if ($this->label !== null && $this->label !== '' && $this->label !== '__blank__') {
+            return Html::encode(Craft::t('site', $this->label));
+        }
+        return $this->defaultLabel();
+    }
+
+    /**
+     * Returns the field’s default label, which will be used if [[label]] is null.
+     *
+     * @param ElementInterface|null $element The element the form is being rendered for
+     * @param bool $static Whether the form should be static (non-interactive)
+     * @return string|null
+     */
+    protected function defaultLabel(ElementInterface $element = null, bool $static = false)
+    {
+        return null;
+    }
+
+    /**
+     * Returns whether the label should be shown in form inputs.
+     *
+     * @return bool
+     * @since 3.5.6
+     */
+    protected function showLabel(): bool
+    {
+        return $this->label !== '__blank__';
+    }
+
+    /**
      * Returns the field’s status class.
      *
      * @param ElementInterface|null $element The element the form is being rendered for
@@ -281,52 +331,6 @@ abstract class BaseField extends FieldLayoutElement
     protected function statusLabel(ElementInterface $element = null, bool $static = false)
     {
         return null;
-    }
-
-    /**
-     * Returns the field’s label.
-     *
-     * @return string|null
-     */
-    public function label()
-    {
-        return $this->label ?: $this->defaultLabel();
-    }
-
-    /**
-     * Returns the field’s default label, which will be used if [[label]] is null.
-     *
-     * @param ElementInterface|null $element The element the form is being rendered for
-     * @param bool $static Whether the form should be static (non-interactive)
-     * @return string|null
-     */
-    protected function defaultLabel(ElementInterface $element = null, bool $static = false)
-    {
-        return null;
-    }
-
-    /**
-     * Returns the field’s type.
-     *
-     * @param ElementInterface|null $element The element the form is being rendered for
-     * @param bool $static Whether the form should be static (non-interactive)
-     * @return string|null
-     */
-    protected function fieldType(ElementInterface $element = null, bool $static = false)
-    {
-        return null;
-    }
-
-    /**
-     * Returns the field’s instructions.
-     *
-     * @param ElementInterface|null $element The element the form is being rendered for
-     * @param bool $static Whether the form should be static (non-interactive)
-     * @return string|null
-     */
-    private function _instructions(ElementInterface $element = null, bool $static = false)
-    {
-        return $this->instructions ? Craft::t('site', $this->instructions) : $this->defaultInstructions($element, $static);
     }
 
     /**

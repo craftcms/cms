@@ -10,6 +10,7 @@ namespace craft\gql\types\elements;
 use Craft;
 use craft\elements\Asset as AssetElement;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
+use craft\helpers\Gql;
 use GraphQL\Type\Definition\ResolveInfo;
 
 /**
@@ -40,19 +41,22 @@ class Asset extends Element
         /** @var AssetElement $source */
         $fieldName = $resolveInfo->fieldName;
 
-        if ($fieldName === 'url' && !empty($arguments)) {
+        if (!empty($arguments) && in_array($fieldName, ['url', 'width', 'height'], true)) {
             $generateNow = $arguments['immediately'] ?? Craft::$app->getConfig()->general->generateTransformsBeforePageLoad;
-            unset($arguments['immediately']);
+            $transform = Gql::prepareTransformArguments($arguments);
 
-            if (!empty($arguments['handle'])) {
-                $transform = $arguments['handle'];
-            } else if (!empty($arguments['transform'])) {
-                $transform = $arguments['transform'];
-            } else {
-                $transform = $arguments;
+            switch ($fieldName) {
+                case 'url':
+                    return $source->getUrl($transform, $generateNow);
+                case 'width':
+                    return $source->getWidth($transform);
+                case 'height':
+                    return $source->getHeight($transform);
             }
+        }
 
-            return $source->getUrl($transform, $generateNow);
+        if ($fieldName === 'srcset') {
+            return $source->getSrcset($arguments['sizes']);
         }
 
         return parent::resolve($source, $arguments, $context, $resolveInfo);

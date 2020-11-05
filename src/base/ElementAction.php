@@ -26,6 +26,14 @@ abstract class ElementAction extends ConfigurableComponent implements ElementAct
     }
 
     /**
+     * @inheritdoc
+     */
+    public static function isDownload(): bool
+    {
+        return false;
+    }
+
+    /**
      * @var string|ElementInterface
      *
      * @since 3.0.30

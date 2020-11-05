@@ -9,8 +9,8 @@ namespace craft\elements\actions;
 
 use Craft;
 use craft\base\ElementAction;
-use craft\elements\Asset;
 use craft\elements\db\ElementQueryInterface;
+use craft\helpers\Json;
 use yii\base\Exception;
 
 /**
@@ -47,23 +47,47 @@ class DeleteAssets extends ElementAction
 
     /**
      * @inheritdoc
+     * @since 3.5.15
+     */
+    public function getTriggerHtml()
+    {
+        // Only enable for deletable elements, per getIsDeletable()
+        $type = Json::encode(static::class);
+        $js = <<<JS
+(() => {
+    new Craft.ElementActionTrigger({
+        type: {$type},
+        validateSelection: function(\$selectedItems)
+        {
+            for (let i = 0; i < \$selectedItems.length; i++) {
+                if (!Garnish.hasAttr(\$selectedItems.eq(i).find('.element'), 'data-deletable')) {
+                    return false;
+                }
+            }
+            return true;
+        },
+    });
+})();
+JS;
+        Craft::$app->getView()->registerJs($js);
+        return null;
+    }
+
+    /**
+     * @inheritdoc
      */
     public function performAction(ElementQueryInterface $query): bool
     {
-        $userSession = Craft::$app->getUser();
         $elementsService = Craft::$app->getElements();
 
         try {
             foreach ($query->all() as $asset) {
-                /** @var Asset $asset */
-                $volume = $asset->getVolume();
-                if ($userSession->checkPermission('deleteFilesAndFoldersInVolume:' . $volume->uid)) {
+                if ($asset->getIsDeletable()) {
                     $elementsService->deleteElement($asset);
                 }
             }
         } catch (Exception $exception) {
             $this->setMessage($exception->getMessage());
-
             return false;
         }
 

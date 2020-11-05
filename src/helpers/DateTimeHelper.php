@@ -68,7 +68,7 @@ class DateTimeHelper
      *  - Unix timestamps
      *  - An array with at least one of these keys defined: `datetime`, `date`, or `time`. Supported keys include:
      *      - `date` – a date string in `YYYY-MM-DD` or `YYYY-MM-DD HH:MM:SS.MU` formats or the current locale’s short date format
-     *      - `time` – a time string in `HH:MM` (24-hour) format or the current locale’s short time format
+     *      - `time` – a time string in `HH:MM` or `HH:MM:SS` (24-hour) format or the current locale’s short time format
      *      - `datetime` – A timestamp in any of the non-array formats supported by this method
      *      - `timezone` – A [valid PHP timezone](http://php.net/manual/en/timezones.php). If set, this will override
      *        the assumed timezone per `$assumeSystemTimeZone`.
@@ -275,7 +275,7 @@ class DateTimeHelper
      */
     public static function translateDate(string $str, string $language = null): string
     {
-        Craft::$app->getDeprecator()->log(__METHOD__, __METHOD__ . ' is deprecated. Use craft\i18n\Formatter::asDate() instead.');
+        Craft::$app->getDeprecator()->log(__METHOD__, '`' . __METHOD__ . '` is deprecated. Use `craft\i18n\Formatter::asDate()` instead.');
 
         if ($language === null) {
             $language = Craft::$app->language;
@@ -627,8 +627,8 @@ class DateTimeHelper
         $value = trim($value);
 
         // First see if it's in HH:MM format
-        if (preg_match('/^\d{2}:\d{2}$/', $value)) {
-            return [$value, 'H:i'];
+        if (preg_match('/^\d{2}:\d{2}(:\d{2})?$/', $value, $matches)) {
+            return [$value, 'H:i' . (isset($matches[1]) ? ':s' : '')];
         }
 
         // Get the locale's short time format

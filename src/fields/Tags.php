@@ -174,7 +174,7 @@ class Tags extends BaseRelationField
             return $this->_tagGroupId;
         }
 
-        if (!preg_match('/^taggroup:(([0-9a-f\-]+))$/', $this->source, $matches)) {
+        if (!preg_match('/^taggroup:([0-9a-f\-]+)$/', $this->source, $matches)) {
             return $this->_tagGroupId = false;
         }
 

@@ -48,11 +48,11 @@ class TokenTest extends Unit
         $tokenRec = Token::findOne(['token' => $token]);
 
         // And does it match
-        $this->assertSame('do/stuff', $tokenRec->route);
-        $this->assertSame(1, $tokenRec->usageLimit);
-        $this->assertSame(0, $tokenRec->usageCount);
-        $this->assertSame($dt->format('Y-m-d H:i:s'), $tokenRec->expiryDate);
-        $this->assertEquals(32, strlen($token));
+        self::assertSame('do/stuff', $tokenRec->route);
+        self::assertSame(1, $tokenRec->usageLimit);
+        self::assertSame(0, $tokenRec->usageCount);
+        self::assertSame($dt->format('Y-m-d H:i:s'), $tokenRec->expiryDate);
+        self::assertEquals(32, strlen($token));
     }
 
     /**
@@ -67,15 +67,15 @@ class TokenTest extends Unit
 
         // Create the token
         $token = $this->token->createToken('do/stuff');
-        $this->assertSame(32, strlen($token));
+        self::assertSame(32, strlen($token));
 
         // What actually exists now?
         $tokenRec = Token::findOne(['token' => $token]);
 
         // And does it match
-        $this->assertNull($tokenRec->usageLimit);
-        $this->assertNull($tokenRec->usageCount);
-        $this->assertSame($expiryDate->format('Y-m-d H:i:s'), $tokenRec->expiryDate);
+        self::assertNull($tokenRec->usageLimit);
+        self::assertNull($tokenRec->usageCount);
+        self::assertSame($expiryDate->format('Y-m-d H:i:s'), $tokenRec->expiryDate);
     }
 
     /**

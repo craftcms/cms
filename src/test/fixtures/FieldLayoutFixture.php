@@ -49,6 +49,9 @@ abstract class FieldLayoutFixture extends Fixture
             // Get the tabs setup in such a way they can be set with $fieldLayout->setTabs()
             $tabsToAdd = $this->getTabsForFieldLayout($tabs);
 
+            // Remove from config array and set manually later.
+            unset($fieldLayout['tabs']);
+
             // Setup the field layout and set the tabs
             $fieldLayout = new FieldLayout($fieldLayout);
             $fieldLayout->setTabs($tabsToAdd);

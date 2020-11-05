@@ -6,6 +6,7 @@
                     {{ tag('a', {
                         href: item.permalink,
                         target: '_blank',
+                        rel: 'noopener',
                         text: item.title,
                     }) }}
                     {% if item.date ?? false %}

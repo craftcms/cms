@@ -58,7 +58,7 @@ class GlobalSet extends Mutation
         $mutationName = GlobalSetElement::gqlMutationNameByContext($globalSet);
         $generatedType = GlobalSetType::generateType($globalSet);
 
-        $resolver = new GlobalSetResolver();
+        $resolver = Craft::createObject(GlobalSetResolver::class);
         $resolver->setResolutionData('globalSet', $globalSet);
         static::prepareResolver($resolver, $globalSet->getFields());
 

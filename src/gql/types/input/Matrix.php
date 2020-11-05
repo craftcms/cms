@@ -7,6 +7,7 @@
 
 namespace craft\gql\types\input;
 
+use Craft;
 use craft\base\Field;
 use craft\fields\Matrix as MatrixField;
 use craft\gql\GqlEntityRegistry;
@@ -44,7 +45,12 @@ class Matrix extends InputObjectType
         // For all the blocktypes
         foreach ($blockTypes as $blockType) {
             $fields = $blockType->getFields();
-            $blockTypeFields = [];
+            $blockTypeFields = [
+                'id' => [
+                    'name' => 'id',
+                    'type' => Type::id(),
+                ]
+            ];
 
             // Get the field input types
             foreach ($fields as $field) {
@@ -78,7 +84,7 @@ class Matrix extends InputObjectType
                 return [
                     'sortOrder' => [
                         'name' => 'sortOrder',
-                        'type' => Type::nonNull(Type::listOf(QueryArgument::getType()))
+                        'type' => Type::listOf(QueryArgument::getType())
                     ],
                     'blocks' => [
                         'name' => 'blocks',
@@ -102,18 +108,27 @@ class Matrix extends InputObjectType
     {
         $preparedBlocks = [];
         $blockCounter = 1;
+        $missingId = false;
 
         if (!empty($value['blocks'])) {
             foreach ($value['blocks'] as $block) {
                 if (!empty($block)) {
                     $type = array_key_first($block);
                     $block = reset($block);
+                    $missingId = $missingId || empty($block['id']);
                     $blockId = !empty($block['id']) ? $block['id'] : 'new:' . ($blockCounter++);
+
+                    unset($block['id']);
+
                     $preparedBlocks[$blockId] = [
                         'type' => $type,
                         'fields' => $block
                     ];
                 }
+            }
+
+            if ($missingId) {
+                Craft::$app->getDeprecator()->log('MatrixInput::normalizeValue()', 'The `id` field will be required when mutating Matrix fields as of Craft 4.0.');
             }
 
             $value['blocks'] = $preparedBlocks;

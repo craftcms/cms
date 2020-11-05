@@ -44,6 +44,11 @@ class m200606_231117_migration_tracks extends Migration
             ], [], false);
         }
 
+        // Delete any rows that somehow still are missing a track (perhaps due to a missing FK on the old pluginId column)
+        $this->delete(Table::MIGRATIONS, [
+            'track' => null,
+        ]);
+
         // Now we can set the track column to NOT NULL
         if ($this->db->getIsPgsql()) {
             // Manually construct the SQL for Postgres
@@ -52,6 +57,9 @@ class m200606_231117_migration_tracks extends Migration
         } else {
             $this->alterColumn(Table::MIGRATIONS, 'track', $this->string()->notNull());
         }
+
+        // Delete any duplicate rows
+        $this->deleteDuplicates(Table::MIGRATIONS, ['track', 'name']);
 
         $this->createIndex(null, Table::MIGRATIONS, ['track', 'name'], true);
         MigrationHelper::dropForeignKeyIfExists(Table::MIGRATIONS, ['pluginId'], $this);

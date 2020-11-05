@@ -164,7 +164,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
                 onDragStart: onDragStartProxy,
                 onDropTargetChange: onDropTargetChangeProxy,
-                onDragStop: $.proxy(this, '_onFileDragStop')
+                onDragStop: $.proxy(this, '_onFileDragStop'),
+                helperBaseZindex: 800
             });
 
             // Folder dragging
@@ -687,7 +688,13 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
          */
         afterInit: function() {
             if (!this.$uploadButton) {
-                this.$uploadButton = $('<div class="btn submit" data-icon="upload" style="position: relative; overflow: hidden;" role="button">' + Craft.t('app', 'Upload files') + '</div>');
+                this.$uploadButton = $('<button/>', {
+                    type: 'button',
+                    class: 'btn submit',
+                    'data-icon': 'upload',
+                    style: 'position: relative; overflow: hidden;',
+                    text: Craft.t('app', 'Upload files'),
+                });
                 this.addButton(this.$uploadButton);
 
                 this.$uploadInput = $('<input type="file" multiple="multiple" name="assets-upload" />').hide().insertBefore(this.$uploadButton);
@@ -778,7 +785,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
         startSearching: function() {
             // Does this source have subfolders?
-            if (this.$source.siblings('ul').length) {
+            if (!this.settings.hideSidebar && this.$source.siblings('ul').length) {
                 if (this.$includeSubfoldersContainer === null) {
                     var id = 'includeSubfolders-' + Math.floor(Math.random() * 1000000000);
 

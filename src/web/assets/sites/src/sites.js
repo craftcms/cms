@@ -207,17 +207,17 @@
             _createConfirmDeleteModal: function($row) {
                 this.$rowToDelete = $row;
 
-                var id = this.getItemId($row),
-                    name = this.getItemName($row);
+                let id = this.getItemId($row);
+                let name = this.getItemName($row);
 
-                var $form = $(
+                let $form = $(
                         '<form id="confirmdeletemodal" class="modal fitted" method="post" accept-charset="UTF-8">' +
                         Craft.getCsrfInput() +
                         '<input type="hidden" name="action" value="localization/deleteLocale"/>' +
                         '<input type="hidden" name="id" value="' + id + '"/>' +
                         '</form>'
-                    ).appendTo(Garnish.$bod),
-                    $body = $(
+                    ).appendTo(Garnish.$bod);
+                let $body = $(
                         '<div class="body">' +
                         '<p>' + Craft.t('app', 'What do you want to do with any content that is only available in {language}?', {language: name}) + '</p>' +
                         '<div class="options">' +
@@ -230,13 +230,21 @@
                         '<label><input type="radio" name="contentAction" value="delete"/> ' + Craft.t('app', 'Delete it') + '</label>' +
                         '</div>' +
                         '</div>'
-                    ).appendTo($form),
-                    $buttons = $('<div class="buttons right"/>').appendTo($body),
-                    $cancelBtn = $('<div class="btn">' + Craft.t('app', 'Cancel') + '</div>').appendTo($buttons);
+                    ).appendTo($form);
+                let $buttons = $('<div class="buttons right"/>').appendTo($body);
+                let $cancelBtn = $('<button/>', {
+                    type: 'button',
+                    class: 'btn',
+                    text: Craft.t('app', 'Cancel'),
+                }).appendTo($buttons);
 
                 this.$deleteActionRadios = $body.find('input[type=radio]');
                 this.$transferSelect = $('#transferselect').find('> select');
-                this.$deleteSubmitBtn = $('<input type="submit" class="btn submit disabled" value="' + Craft.t('app', 'Delete {site}', {site: name}) + '" />').appendTo($buttons);
+                this.$deleteSubmitBtn = $('<button/>', {
+                    type: 'submit',
+                    class: 'btn submit disabled',
+                    text: Craft.t('app', 'Delete {site}', {site: name}),
+                }).appendTo($buttons);
                 this.$deleteSpinner = $('<div class="spinner hidden"/>').appendTo($buttons);
 
                 for (var i = 0; i < Craft.sites.length; i++) {

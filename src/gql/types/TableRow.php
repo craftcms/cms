@@ -60,7 +60,7 @@ class TableRow extends ObjectType
 
             $contentFields[$columnKey] = $cellType;
 
-            if ($includeHandles) {
+            if ($includeHandles && !empty($columnDefinition['handle'])) {
                 $contentFields[$columnDefinition['handle']] = $cellType;
             }
         }

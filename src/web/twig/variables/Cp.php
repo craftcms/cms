@@ -29,11 +29,65 @@ class Cp extends Component
 {
     /**
      * @event RegisterCpNavItemsEvent The event that is triggered when registering control panel nav items.
+     *
+     * ```php
+     * use craft\events\RegisterCpNavItemsEvent;
+     * use craft\web\twig\variables\Cp;
+     * use yii\base\Event;
+     *
+     * Event::on(Cp::class, Cp::EVENT_REGISTER_CP_NAV_ITEMS, function(RegisterCpNavItemsEvent $e) {
+     *     $e->navItems[] = [
+     *         'label' => 'Item Label',
+     *         'url' => 'my-module',
+     *         'icon' => '/path/to/icon.svg',
+     *     ];
+     * });
+     * ```
+     *
+     * [[RegisterCpNavItemsEvent::$navItems]] is an array whose values are sub-arrays that define the nav items. Each sub-array can have the following keys:
+     *
+     * - `label` – The item’s label.
+     * - `url` – The URL or path of the control panel page the item should link to.
+     * - `icon` – The path to the SVG icon that should be used for the item.
+     * - `badgeCount` _(optional)_ – The badge count number that should be displayed next to the label.
+     * - `external` _(optional)_ – Set to `true` if the item links to an external URL.
+     * - `id` _(optional)_ – The ID of the `<li>` element. If not specified, it will default to `nav-`.
+     * - `subnav` _(optional)_ – A nested array of sub-navigation items that should be displayed if the main item is selected.
+     *
+     *   The keys of the array should define the items’ IDs, and the values should be nested arrays with `label` and `url` keys, and optionally
+     *   `badgeCount` and `external` keys.
+     *
+     * If a subnav is defined, subpages can specify which subnav item should be selected by defining a `selectedSubnavItem` variable that is set to
+     * the selected item’s ID (its key in the `subnav` array).
      */
     const EVENT_REGISTER_CP_NAV_ITEMS = 'registerCpNavItems';
 
     /**
-     * @event RegisterCpSettingsEvent The event that is triggered when registering control panel nav items.
+     * @event RegisterCpSettingsEvent The event that is triggered when registering links that should render on the Settings page in the control panel.
+     *
+     * ```php
+     * use craft\events\RegisterCpSettingsEvent;
+     * use craft\web\twig\variables\Cp;
+     * use yii\base\Event;
+     *
+     * Event::on(Cp::class, Cp::EVENT_REGISTER_CP_SETTINGS, function(RegisterCpSettingsEvent $e) {
+     *     $e->settings[Craft::t('app', 'Modules')] = [
+     *         'label' => 'Item Label',
+     *         'url' => 'my-module',
+     *         'icon' => '/path/to/icon.svg',
+     *     ];
+     * });
+     * ```
+     *
+     * [[RegisterCpSettingsEvent::$settings]] is an array whose keys define the section labels, and values are sub-arrays that define the
+     * individual links.
+     *
+     * Each link array should have the following keys:
+     *
+     * - `label` – The item’s label.
+     * - `url` – The URL or path of the control panel page the item should link to.
+     * - `icon` – The path to the SVG icon that should be used for the item.
+     *
      * @since 3.1.0
      */
     const EVENT_REGISTER_CP_SETTINGS = 'registerCpSettings';
@@ -180,7 +234,7 @@ class Cp extends Component
                 $navItems[] = [
                     'label' => Craft::t('app', 'GraphQL'),
                     'url' => 'graphql',
-                    'icon' => '@app/icons/graphql.svg',
+                    'icon' => '@appicons/graphql.svg',
                     'subnav' => $subNavItems
                 ];
             }
@@ -277,58 +331,58 @@ class Cp extends Component
         $label = Craft::t('app', 'System');
 
         $settings[$label]['general'] = [
-            'icon' => '@app/icons/sliders.svg',
+            'iconMask' => '@appicons/sliders.svg',
             'label' => Craft::t('app', 'General')
         ];
         $settings[$label]['sites'] = [
-            'icon' => '@app/icons/world.svg',
+            'iconMask' => '@appicons/world.svg',
             'label' => Craft::t('app', 'Sites')
         ];
 
         if (!Craft::$app->getConfig()->getGeneral()->headlessMode) {
             $settings[$label]['routes'] = [
-                'icon' => '@app/icons/routes.svg',
+                'iconMask' => '@appicons/routes.svg',
                 'label' => Craft::t('app', 'Routes')
             ];
         }
 
         $settings[$label]['users'] = [
-            'icon' => '@app/icons/users.svg',
+            'iconMask' => '@appicons/users.svg',
             'label' => Craft::t('app', 'Users')
         ];
         $settings[$label]['email'] = [
-            'icon' => '@app/icons/envelope.svg',
+            'iconMask' => '@appicons/envelope.svg',
             'label' => Craft::t('app', 'Email')
         ];
         $settings[$label]['plugins'] = [
-            'icon' => '@app/icons/plugin.svg',
+            'iconMask' => '@appicons/plugin.svg',
             'label' => Craft::t('app', 'Plugins')
         ];
 
         $label = Craft::t('app', 'Content');
 
         $settings[$label]['fields'] = [
-            'icon' => '@app/icons/field.svg',
+            'iconMask' => '@appicons/field.svg',
             'label' => Craft::t('app', 'Fields')
         ];
         $settings[$label]['sections'] = [
-            'icon' => '@app/icons/newspaper.svg',
+            'iconMask' => '@appicons/newspaper.svg',
             'label' => Craft::t('app', 'Sections')
         ];
         $settings[$label]['assets'] = [
-            'icon' => '@app/icons/photo.svg',
+            'iconMask' => '@appicons/photo.svg',
             'label' => Craft::t('app', 'Assets')
         ];
         $settings[$label]['globals'] = [
-            'icon' => '@app/icons/globe.svg',
+            'iconMask' => '@appicons/globe.svg',
             'label' => Craft::t('app', 'Globals')
         ];
         $settings[$label]['categories'] = [
-            'icon' => '@app/icons/folder-open.svg',
+            'iconMask' => '@appicons/folder-open.svg',
             'label' => Craft::t('app', 'Categories')
         ];
         $settings[$label]['tags'] = [
-            'icon' => '@app/icons/tags.svg',
+            'iconMask' => '@appicons/tags.svg',
             'label' => Craft::t('app', 'Tags')
         ];
 

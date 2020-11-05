@@ -10,7 +10,7 @@ namespace craft\controllers;
 use Craft;
 use craft\models\UserGroup;
 use craft\web\Controller;
-use yii\web\NotFoundHttpException;
+use yii\web\BadRequestHttpException;
 use yii\web\Response;
 
 /**
@@ -42,7 +42,7 @@ class UserSettingsController extends Controller
      * Saves a user group.
      *
      * @return Response|null
-     * @throws NotFoundHttpException if the requested user group cannot be found
+     * @throws BadRequestHttpException
      */
     public function actionSaveGroup()
     {
@@ -52,9 +52,8 @@ class UserSettingsController extends Controller
 
         if ($groupId) {
             $group = Craft::$app->getUserGroups()->getGroupById($groupId);
-
             if (!$group) {
-                throw new NotFoundHttpException('User group not found');
+                throw new BadRequestHttpException('User group not found');
             }
         } else {
             $group = new UserGroup();
@@ -125,7 +124,7 @@ class UserSettingsController extends Controller
         $settings = $projectConfig->get('users') ?? [];
 
         $settings['photoVolumeUid'] = $this->request->getBodyParam('photoVolumeUid') ?: null;
-        $settings['photoSubpath'] = $this->request->getBodyParam('photoSubpath');
+        $settings['photoSubpath'] = $this->request->getBodyParam('photoSubpath') ?: null;
 
         if (Craft::$app->getEdition() === Craft::Pro) {
             $settings['requireEmailVerification'] = (bool)$this->request->getBodyParam('requireEmailVerification');

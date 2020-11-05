@@ -25,6 +25,20 @@ interface ElementActionInterface extends ConfigurableComponentInterface
     public static function isDestructive(): bool;
 
     /**
+     * Returns whether this is a download action.
+     *
+     * Download actions’ [[performAction()]] method should call one of these methods before returning `true`:
+     *
+     * - [[\yii\web\Response::sendFile()]]
+     * - [[\yii\web\Response::sendContentAsFile()]]
+     * - [[\yii\web\Response::sendStreamAsFile()]]
+     *
+     * @return bool Whether this is a download action
+     * @since 3.5.0
+     */
+    public static function isDownload(): bool;
+
+    /**
      * Sets the element type on the action.
      *
      * @param string $elementType

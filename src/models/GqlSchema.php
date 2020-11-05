@@ -116,6 +116,8 @@ class GqlSchema extends Model
                 $parts = explode('.', $permission);
                 if (count($parts) === 2) {
                     $this->_cachedPairs[$action][$parts[0]][] = $parts[1];
+                } else if (count($parts) === 1) {
+                    $this->_cachedPairs[$action][$parts[0]] = true;
                 }
             }
         }
@@ -133,5 +135,25 @@ class GqlSchema extends Model
     {
         $pairs = $this->getAllScopePairs();
         return $pairs[$action] ?? [];
+    }
+
+    /**
+     * Returns the field layout config for this schema.
+     *
+     * @return array
+     * @since 3.5.0
+     */
+    public function getConfig(): array
+    {
+        $config = [
+            'name' => $this->name,
+            'isPublic' => (bool)$this->isPublic,
+        ];
+
+        if ($this->scope) {
+            $config['scope'] = $this->scope;
+        }
+
+        return $config;
     }
 }

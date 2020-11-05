@@ -12,7 +12,6 @@ use craft\base\Element;
 use craft\controllers\ElementIndexesController;
 use craft\db\Query;
 use craft\db\Table;
-use craft\elements\actions\DeepDuplicate;
 use craft\elements\actions\Delete;
 use craft\elements\actions\Duplicate;
 use craft\elements\actions\Edit;
@@ -271,11 +270,18 @@ class Category extends Element
             $actions[] = Duplicate::class;
 
             if ($group->maxLevels != 1) {
-                $actions[] = DeepDuplicate::class;
+                $actions[] = [
+                    'type' => Duplicate::class,
+                    'deep' => true,
+                ];
             }
 
             // Delete
             $actions[] = Delete::class;
+            $actions[] = [
+                'type' => Delete::class,
+                'withDescendants' => true,
+            ];
         }
 
         // Restore
@@ -301,12 +307,14 @@ class Category extends Element
             [
                 'label' => Craft::t('app', 'Date Created'),
                 'orderBy' => 'elements.dateCreated',
-                'attribute' => 'dateCreated'
+                'attribute' => 'dateCreated',
+                'defaultDir' => 'desc',
             ],
             [
                 'label' => Craft::t('app', 'Date Updated'),
                 'orderBy' => 'elements.dateUpdated',
-                'attribute' => 'dateUpdated'
+                'attribute' => 'dateUpdated',
+                'defaultDir' => 'desc',
             ],
             [
                 'label' => Craft::t('app', 'ID'),
@@ -424,7 +432,7 @@ class Category extends Element
 
         return [
             'templates/render', [
-                'template' => $categoryGroupSiteSettings[$siteId]->template,
+                'template' => (string)$categoryGroupSiteSettings[$siteId]->template,
                 'variables' => [
                     'category' => $this,
                 ]

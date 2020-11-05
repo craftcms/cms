@@ -10,7 +10,11 @@ Craft.InfoIcon = Garnish.Base.extend(
 
         init: function(icon) {
             this.$icon = $(icon);
-
+            if (this.$icon.data('infoicon')) {
+                Garnish.log('Double-instantiating an info icon on an element');
+                this.$icon.data('infoicon').destroy();
+            }
+            this.$icon.data('infoicon', this);
             this.addListener(this.$icon, 'click', 'showHud');
         },
 

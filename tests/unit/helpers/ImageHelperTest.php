@@ -36,9 +36,9 @@ class ImageHelperTest extends Unit
      */
     public function testConstants()
     {
-        $this->assertSame(3, Image::EXIF_IFD0_ROTATE_180);
-        $this->assertSame(6, Image::EXIF_IFD0_ROTATE_90);
-        $this->assertSame(8, Image::EXIF_IFD0_ROTATE_270);
+        self::assertSame(3, Image::EXIF_IFD0_ROTATE_180);
+        self::assertSame(6, Image::EXIF_IFD0_ROTATE_90);
+        self::assertSame(8, Image::EXIF_IFD0_ROTATE_270);
     }
 
     /**
@@ -53,7 +53,7 @@ class ImageHelperTest extends Unit
     public function testCalculateMissingDimension($result, $targetWidth, $targetHeight, $sourceWidth, $sourceHeight)
     {
         $calculate = Image::calculateMissingDimension($targetWidth, $targetHeight, $sourceWidth, $sourceHeight);
-        $this->assertSame($result, $calculate);
+        self::assertSame($result, $calculate);
     }
 
     /**
@@ -65,7 +65,7 @@ class ImageHelperTest extends Unit
     public function testCanManipulateAsImage($result, $input)
     {
         $canManipulate = Image::canManipulateAsImage($input);
-        $this->assertSame($result, $canManipulate);
+        self::assertSame($result, $canManipulate);
     }
 
     /**
@@ -73,7 +73,7 @@ class ImageHelperTest extends Unit
      */
     public function testWebSafeFormats()
     {
-        $this->assertSame(['jpg', 'jpeg', 'gif', 'png', 'svg', 'webp'], Image::webSafeFormats());
+        self::assertSame(['jpg', 'jpeg', 'gif', 'png', 'svg', 'webp'], Image::webSafeFormats());
     }
 
     /**
@@ -85,7 +85,7 @@ class ImageHelperTest extends Unit
     public function testPngImageInfo($result, $input)
     {
         $imageInfo = Image::pngImageInfo($input);
-        $this->assertSame($result, $imageInfo);
+        self::assertSame($result, $imageInfo);
     }
 
     /**
@@ -97,7 +97,7 @@ class ImageHelperTest extends Unit
     public function testCanHaveExifData($result, $input)
     {
         $canHavExit = Image::canHaveExifData($input);
-        $this->assertSame($result, $canHavExit);
+        self::assertSame($result, $canHavExit);
     }
 
     /**
@@ -114,7 +114,7 @@ class ImageHelperTest extends Unit
         }
 
         $imageSize = Image::imageSize($input);
-        $this->assertSame($result, $imageSize);
+        self::assertSame($result, $imageSize);
     }
 
     /**
@@ -126,7 +126,7 @@ class ImageHelperTest extends Unit
     public function testParseSvgImageSize($result, $input)
     {
         $parsed = Image::parseSvgSize($input);
-        $this->assertSame($result, $parsed);
+        self::assertSame($result, $parsed);
     }
 
     /**
@@ -138,7 +138,7 @@ class ImageHelperTest extends Unit
     public function testImageByStream($result, $input)
     {
         $stream = Image::imageSizeByStream($input);
-        $this->assertSame($result, $stream);
+        self::assertSame($result, $stream);
     }
 
     /**
@@ -165,13 +165,13 @@ class ImageHelperTest extends Unit
         Craft::setLogger(
             Stub::make(Logger::class, [
                 'log' => function($message) use ($errorLogMessage) {
-                    $this->assertSame($errorLogMessage, $message);
+                    self::assertSame($errorLogMessage, $message);
                 }
             ])
         );
 
         $result = Image::imageSizeByStream($input);
-        $this->assertSame([], $result);
+        self::assertSame([], $result);
     }
 
     /**

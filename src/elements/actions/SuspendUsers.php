@@ -38,10 +38,9 @@ class SuspendUsers extends ElementAction
         $type = Json::encode(static::class);
         $userId = Json::encode(Craft::$app->getUser()->getIdentity()->id);
 
-        $js = <<<EOD
-(function()
-{
-    var trigger = new Craft.ElementActionTrigger({
+        $js = <<<JS
+(() => {
+    new Craft.ElementActionTrigger({
         type: {$type},
         batch: true,
         validateSelection: function(\$selectedItems)
@@ -58,9 +57,10 @@ class SuspendUsers extends ElementAction
         }
     });
 })();
-EOD;
+JS;
 
         Craft::$app->getView()->registerJs($js);
+        return null;
     }
 
     /**

@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\base\FieldInterface;
 use craft\base\FieldLayoutElementInterface;
 use craft\base\Model;
+use craft\events\DefineFieldLayoutElementsEvent;
 use craft\events\DefineFieldLayoutFieldsEvent;
 use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
@@ -19,6 +20,8 @@ use craft\fieldlayoutelements\Heading;
 use craft\fieldlayoutelements\HorizontalRule;
 use craft\fieldlayoutelements\Template;
 use craft\fieldlayoutelements\Tip;
+use craft\helpers\ArrayHelper;
+use craft\helpers\Html;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
@@ -56,6 +59,28 @@ class FieldLayout extends Model
      * @since 3.5.0
      */
     const EVENT_DEFINE_STANDARD_FIELDS = 'defineStandardFields';
+
+    /**
+     * @event DefineFieldLayoutElementsEvent The event that is triggered when defining UI elements for the layout.
+     *
+     * ```php
+     * use craft\models\FieldLayout;
+     * use craft\events\DefineFieldLayoutElementsEvent;
+     * use yii\base\Event;
+     *
+     * Event::on(
+     *     FieldLayout::class,
+     *     FieldLayout::EVENT_DEFINE_UI_ELEMENTS,
+     *     function(DefineFieldLayoutElementsEvent $event) {
+     *         $event->elements[] = MyUiElement::class;
+     *     }
+     * );
+     * ```
+     *
+     * @see getAvailableStandardFields()
+     * @since 3.5.0
+     */
+    const EVENT_DEFINE_UI_ELEMENTS = 'defineUiElements';
 
     /**
      * Creates a new field layout from the given config.
@@ -269,17 +294,35 @@ class FieldLayout extends Model
      */
     public function getAvailableUiElements(): array
     {
-        return [
-            new Heading(),
-            new Tip([
-                'style' => Tip::STYLE_TIP,
-            ]),
-            new Tip([
-                'style' => Tip::STYLE_WARNING,
-            ]),
-            new Template(),
-            new HorizontalRule(),
-        ];
+        $event = new DefineFieldLayoutElementsEvent([
+            'elements' => [
+                new Heading(),
+                new Tip([
+                    'style' => Tip::STYLE_TIP,
+                ]),
+                new Tip([
+                    'style' => Tip::STYLE_WARNING,
+                ]),
+                new Template(),
+            ],
+        ]);
+
+        $this->trigger(self::EVENT_DEFINE_UI_ELEMENTS, $event);
+
+        // HR should always be last
+        $event->elements[] = new HorizontalRule();
+
+        // Instantiate them
+        foreach ($event->elements as &$element) {
+            if (is_string($element) || is_array($element)) {
+                $element = Craft::createObject($element);
+            }
+            if (!$element instanceof FieldLayoutElementInterface) {
+                throw new InvalidConfigException('Invalid UI element config');
+            }
+        }
+
+        return $event->elements;
     }
 
     /**
@@ -313,7 +356,7 @@ class FieldLayout extends Model
     }
 
     /**
-     * Return the field layout config or null if no fields configured.
+     * Returns the field layout config for this field layout.
      *
      * @return array|null
      * @since 3.1.0
@@ -393,15 +436,20 @@ class FieldLayout extends Model
     /**
      * Sets the custom fields included in this layout.
      *
-     * @param FieldInterface[] $fields
+     * @param FieldInterface[]|null $fields
      */
-    public function setFields(array $fields)
+    public function setFields(array $fields = null)
     {
         $this->_customFields = $fields;
     }
 
     /**
      * Creates a new [[FieldLayoutForm]] object for the given element.
+     *
+     * The `$config` array can contain the following keys:
+     *
+     * - `tabIdPrefix` – prefix that should be applied to the tab content containers’ `id` attributes
+     * - `namespace` – Namespace that should be applied to the tab contents
      *
      * @param ElementInterface|null $element The element the form is being rendered for
      * @param bool $static Whether the form should be static (non-interactive)
@@ -411,6 +459,14 @@ class FieldLayout extends Model
      */
     public function createForm(ElementInterface $element = null, bool $static = false, array $config = []): FieldLayoutForm
     {
+        $view = Craft::$app->getView();
+        // Calling this with an existing namespace isn’t fully supported,
+        // since the tab anchors’ `href` attributes won’t end up getting set properly
+        $oldNamespace = $view->getNamespace();
+        $namespace = ArrayHelper::remove($config, 'namespace');
+        if ($namespace !== null) {
+            $view->setNamespace($view->namespaceInputName($namespace));
+        }
         $form = new FieldLayoutForm($config);
 
         foreach ($this->getTabs() as $tab) {
@@ -419,6 +475,9 @@ class FieldLayout extends Model
             foreach ($tab->elements as $formElement) {
                 $elementHtml = $formElement->formHtml($element, $static);
                 if ($elementHtml !== null) {
+                    if ($namespace !== null) {
+                        $elementHtml = Html::namespaceHtml($elementHtml, $namespace);
+                    }
                     $tabHtml[] = $elementHtml;
                 }
             }
@@ -432,6 +491,8 @@ class FieldLayout extends Model
                 ]);
             }
         }
+
+        $view->setNamespace($oldNamespace);
 
         return $form;
     }

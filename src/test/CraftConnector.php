@@ -12,6 +12,7 @@ use Codeception\Lib\Connector\Yii2;
 use Craft;
 use craft\base\PluginInterface;
 use craft\errors\InvalidPluginException;
+use craft\helpers\Db;
 use craft\web\View;
 use yii\base\Module;
 use yii\mail\MessageInterface;
@@ -110,5 +111,14 @@ class CraftConnector extends Yii2
             );
             Craft::$app->setModule($moduleId, $module);
         }
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function resetApplication($closeSession = true)
+    {
+        parent::resetApplication($closeSession);
+        Db::reset();
     }
 }

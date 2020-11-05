@@ -23,6 +23,7 @@ use craft\errors\SiteNotFoundException;
 use craft\events\ElementCriteriaEvent;
 use craft\events\ElementEvent;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
@@ -199,11 +200,6 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     protected $sortable = true;
 
     /**
-     * @var bool Whether existing relations should be made translatable after the field is saved
-     */
-    private $_makeExistingRelationsTranslatable = false;
-
-    /**
      * @inheritdoc
      */
     public function __construct(array $config = [])
@@ -319,7 +315,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         $errorCount = 0;
 
         foreach ($query->all() as $i => $related) {
-            if ($related->enabled && $related->enabledForSite) {
+            if ($related->enabled && $related->getEnabledForSite()) {
                 if (!self::_validateRelatedElement($related)) {
                     $element->addModelErrors($related, "{$this->handle}[{$i}]");
                     $errorCount++;
@@ -570,7 +566,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         /** @var ElementQuery $value */
         $titles = [];
 
-        foreach ($value->all() as $relatedElement) {
+        foreach ($this->_all($value, $element)->all() as $relatedElement) {
             $titles[] = (string)$relatedElement;
         }
 
@@ -593,9 +589,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         $html = "<div id='{$id}' class='elementselect'><div class='elements'>";
 
         foreach ($value as $relatedElement) {
-            $html .= Craft::$app->getView()->renderTemplate('_elements/element', [
-                'element' => $relatedElement
-            ]);
+            $html .= Cp::elementHtml($relatedElement);
         }
 
         $html .= '</div></div>';
@@ -623,19 +617,14 @@ JS;
         }
 
         $first = array_shift($value);
-
-        $html = Craft::$app->getView()->renderTemplate('_elements/element', [
-            'element' => $first,
-        ]);
+        $html = $this->elementPreviewHtml($first);
 
         if (!empty($value)) {
             $otherHtml = '';
             foreach ($value as $other) {
-                $otherHtml .= Craft::$app->getView()->renderTemplate('_elements/element', [
-                    'element' => $other,
-                ]);
+                $otherHtml .= $this->elementPreviewHtml($other);
             }
-            $html .= Html::tag('span', '+' . Craft::$app->getFormatter()->asDecimal(count($value)), [
+            $html .= Html::tag('span', '+' . Craft::$app->getFormatter()->asInteger(count($value)), [
                 'title' => implode(', ', ArrayHelper::getColumn($value, 'title')),
                 'class' => 'btn small',
                 'role' => 'button',
@@ -644,6 +633,18 @@ JS;
         }
 
         return $html;
+    }
+
+    /**
+     * Renders a related element’s HTML for the element index.
+     *
+     * @param ElementInterface $element
+     * @return string
+     * @since 3.5.11
+     */
+    protected function elementPreviewHtml(ElementInterface $element): string
+    {
+        return Cp::elementHtml($element);
     }
 
     /**
@@ -712,30 +713,16 @@ JS;
     /**
      * @inheritdoc
      */
-    public function beforeSave(bool $isNew): bool
-    {
-        $this->_makeExistingRelationsTranslatable = false;
-
-        if (!$this->getIsNew() && $this->localizeRelations) {
-            $existingField = Craft::$app->getFields()->getFieldById($this->id);
-
-            if ($existingField && $existingField instanceof self && !$existingField->localizeRelations) {
-                $this->_makeExistingRelationsTranslatable = true;
-            }
-        }
-
-        return parent::beforeSave($isNew);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function afterSave(bool $isNew)
     {
-        if ($this->_makeExistingRelationsTranslatable) {
-            Queue::push(new LocalizeRelations([
-                'fieldId' => $this->id,
-            ]));
+        // If the propagation method just changed, resave all the Matrix blocks
+        if ($this->oldSettings !== null) {
+            $oldLocalizeRelations = (bool)($this->oldSettings['localizeRelations'] ?? false);
+            if ($this->localizeRelations !== $oldLocalizeRelations) {
+                Queue::push(new LocalizeRelations([
+                    'fieldId' => $this->id,
+                ]));
+            }
         }
 
         parent::afterSave($isNew);
@@ -933,7 +920,7 @@ JS;
         if ($this->validateRelatedElements) {
             // Pre-validate related elements
             foreach ($value as $related) {
-                if ($related->enabled && $related->enabledForSite) {
+                if ($related->enabled && $related->getEnabledForSite()) {
                     $related->setScenario(Element::SCENARIO_LIVE);
                     $related->validate();
                 }

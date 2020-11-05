@@ -1,15 +1,15 @@
 <template v-if="activeJob">
-    <a class="btn" @click="clearActiveJob(true)" data-icon="larr" title="{{ 'Back to the queue index'|t('app') }}">{{ 'Back'|t('app') }}</a>
+    <button type="button" class="btn" @click="clearActiveJob(true)" data-icon="larr" title="{{ 'Back to the queue index'|t('app') }}">{{ 'Back'|t('app') }}</button>
     <div class="flex-grow"></div>
     <div v-if="loading" class="spinner"></div>
-    <a v-if="isRetryable(activeJob)" class="btn" data-icon="play" @click="retryActiveJob">
+    <button type="button" v-if="isRetryable(activeJob)" class="btn" data-icon="play" @click="retryActiveJob">
         <template v-if="activeJob.status == 2">{{ 'Restart job'|t('app') }}</template>
         <template v-else>{{ 'Retry'|t('app') }}</template>
-    </a>
-    <a v-if="activeJob.status != 3" class="btn" data-icon="remove" @click="releaseActiveJob">{{ 'Release job'|t('app') }}</a>
+    </button>
+    <button v-if="activeJob.status != 3" class="btn" data-icon="remove" @click="releaseActiveJob">{{ 'Release job'|t('app') }}</button>
 </template>
 <template v-else-if="jobs.length">
     <div class="flex-grow"></div>
-    <a class="btn" data-icon="play" @click="retryAll">{{ 'Retry all failed jobs'|t('app') }}</a>
-    <a class="btn" data-icon="remove" @click="releaseAll">{{ 'Release all jobs'|t('app') }}</a>
+    <button type="button" class="btn" data-icon="play" @click="retryAll">{{ 'Retry all failed jobs'|t('app') }}</button>
+    <button type="button" class="btn" data-icon="remove" @click="releaseAll">{{ 'Release all jobs'|t('app') }}</button>
 </template>

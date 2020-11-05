@@ -38,7 +38,7 @@ class ConfigHelperTest extends Unit
      */
     public function testSizeInBytes($result, $input)
     {
-        $this->assertSame($result, ConfigHelper::sizeInBytes($input));
+        self::assertSame($result, ConfigHelper::sizeInBytes($input));
     }
 
     /**
@@ -51,8 +51,8 @@ class ConfigHelperTest extends Unit
     public function testDurationInSeconds($result, $input)
     {
         $durationResult = ConfigHelper::durationInSeconds($input);
-        $this->assertSame($result, $durationResult);
-        $this->assertIsInt($durationResult);
+        self::assertSame($result, $durationResult);
+        self::assertIsInt($durationResult);
     }
 
     /**
@@ -90,7 +90,7 @@ class ConfigHelperTest extends Unit
      */
     public function testLocalizedValue($result, $input, $handle = null)
     {
-        $this->assertSame($result, ConfigHelper::localizedValue($input, $handle));
+        self::assertSame($result, ConfigHelper::localizedValue($input, $handle));
     }
 
     /**

@@ -11,6 +11,7 @@ use Craft;
 use craft\base\WidgetInterface;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Component;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
@@ -546,40 +547,7 @@ class DashboardController extends Controller
      */
     private function _getWidgetIconSvg(WidgetInterface $widget): string
     {
-        $icon = $widget::icon();
-
-        if ($icon === null) {
-            return $this->_getDefaultWidgetIconSvg($widget);
-        }
-
-        if (stripos($icon, '<svg') !== false) {
-            return $icon;
-        }
-
-        if (!is_file($icon)) {
-            Craft::warning("Widget icon file doesn't exist: {$icon}", __METHOD__);
-            return $this->_getDefaultWidgetIconSvg($widget);
-        }
-
-        if (!FileHelper::isSvg($icon)) {
-            Craft::warning("Widget icon file is not an SVG: {$icon}", __METHOD__);
-            return $this->_getDefaultWidgetIconSvg($widget);
-        }
-
-        return file_get_contents($icon);
-    }
-
-    /**
-     * Returns the default icon SVG for a given widget type.
-     *
-     * @param WidgetInterface $widget
-     * @return string
-     */
-    private function _getDefaultWidgetIconSvg(WidgetInterface $widget): string
-    {
-        return $this->getView()->renderTemplate('_includes/defaulticon.svg', [
-            'label' => $widget::displayName()
-        ]);
+        return Component::iconSvg($widget::icon(), $widget::displayName());
     }
 
     /**

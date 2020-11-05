@@ -72,7 +72,6 @@ class Path extends Component
      *
      * @return string
      * @since 3.1.2
-     * @deprecated in 3.5.0
      */
     public function getProjectConfigFilePath(): string
     {

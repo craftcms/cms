@@ -19,14 +19,14 @@
                                 </h4>
                                 <div class="smalltext light code">{{ blockType.handle }}</div>
                             </div>
-                            <a class="settings icon{% if blockType.hasErrors() %} error{% endif %}" title="{{ 'Settings'|t('app') }}" role="button"></a>
-                            <a class="move icon" title="{{ 'Reorder'|t('app') }}" role="button"></a>
+                            <a class="settings icon{% if blockType.hasErrors() %} error{% endif %}" title="{{ 'Settings'|t('app') }}" aria-label="{{ 'Settings'|t('app') }}" role="button"></a>
+                            <a class="move icon" title="{{ 'Reorder'|t('app') }}" aria-label="{{ 'Reorder'|t('app') }}" role="button"></a>
                             <input class="hidden" name="blockTypes[{{ blockTypeId }}][name]" value="{{ blockType.name }}">
                             <input class="hidden" name="blockTypes[{{ blockTypeId }}][handle]" value="{{ blockType.handle }}">
                         </div>
                     {% endfor %}
                 </div>
-                <div class="btn add icon">{{ "New block type"|t('app') }}</div>
+                <button type="button" class="btn add icon">{{ "New block type"|t('app') }}</button>
             </div>
         </div>
     </div>
@@ -52,12 +52,12 @@
                                     </h4>
                                     <div class="smalltext light code">{{ field.handle }}</div>
                                 </div>
-                                <a class="move icon" title="{{ 'Reorder'|t('app') }}" role="button"></a>
+                                <a class="move icon" title="{{ 'Reorder'|t('app') }}" aria-label="{{ 'Reorder'|t('app') }}" role="button"></a>
                             </div>
                         {% endfor %}
                     </div>
                 {% endfor %}
-                <div class="btn add icon">{{ "New field"|t('app') }}</div>
+                <button type="button" class="btn add icon">{{ "New field"|t('app') }}</button>
             </div>
         </div>
     </div>

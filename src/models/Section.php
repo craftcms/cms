@@ -13,6 +13,8 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Entry;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
+use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\records\Section as SectionRecord;
 use craft\validators\HandleValidator;
@@ -348,5 +350,46 @@ class Section extends Model
             count($this->getSiteSettings()) > 1 &&
             $this->propagationMethod !== self::PROPAGATION_METHOD_NONE
         );
+    }
+
+    /**
+     * Returns the field layout config for this section.
+     *
+     * @return array
+     * @since 3.5.0
+     */
+    public function getConfig(): array
+    {
+        $config = [
+            'name' => $this->name,
+            'handle' => $this->handle,
+            'type' => $this->type,
+            'enableVersioning' => (bool)$this->enableVersioning,
+            'propagationMethod' => $this->propagationMethod,
+            'siteSettings' => [],
+        ];
+
+        if (!empty($this->previewTargets)) {
+            $config['previewTargets'] = ProjectConfigHelper::packAssociativeArray($this->previewTargets);
+        }
+
+        if ($this->type === self::TYPE_STRUCTURE) {
+            $config['structure'] = [
+                'uid' => $this->structureId ? Db::uidById(Table::STRUCTURES, $this->structureId) : StringHelper::UUID(),
+                'maxLevels' => (int)$this->maxLevels ?: null,
+            ];
+        }
+
+        foreach ($this->getSiteSettings() as $siteId => $siteSettings) {
+            $siteUid = Db::uidById(Table::SITES, $siteId);
+            $config['siteSettings'][$siteUid] = [
+                'enabledByDefault' => (bool)$siteSettings['enabledByDefault'],
+                'hasUrls' => (bool)$siteSettings['hasUrls'],
+                'uriFormat' => $siteSettings['uriFormat'] ?: null,
+                'template' => $siteSettings['template'] ?: null,
+            ];
+        }
+
+        return $config;
     }
 }

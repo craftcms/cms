@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace crafttests\unit\services;
+namespace crafttests\unit\services\projectConfig;
 
 use Codeception\Test\Unit;
 use Craft;
@@ -59,7 +59,7 @@ class FixturesTest extends Unit
             $projectConfig->set($path, $newValue);
         }
 
-        $this->assertTrue($testFunction());
+        self::assertTrue($testFunction());
     }
 
     public function configChangesPropagatedToDbProvider()

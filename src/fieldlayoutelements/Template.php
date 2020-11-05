@@ -9,7 +9,6 @@ namespace craft\fieldlayoutelements;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\FieldLayoutElement;
 use craft\helpers\Html;
 use craft\web\View;
 
@@ -19,7 +18,7 @@ use craft\web\View;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0
  */
-class Template extends FieldLayoutElement
+class Template extends BaseUiElement
 {
     /**
      * @var string The template path
@@ -29,21 +28,29 @@ class Template extends FieldLayoutElement
     /**
      * @inheritdoc
      */
-    public function selectorHtml(): string
+    protected function selectorLabel(): string
     {
-        $text = Html::tag('div', Html::encode($this->template ?: Craft::t('app', 'Template')), [
-            'class' => array_filter([
-                'fld-element-label',
-                $this->template ? 'code' : '',
-            ]),
-        ]);
+        return $this->template ?: Craft::t('app', 'Template');
+    }
 
-        return <<<HTML
-<div class="fld-template">
-  <div class="fld-element-icon"></div>
-  $text
-</div>
-HTML;
+    /**
+     * @inheritdoc
+     */
+    protected function selectorIcon()
+    {
+        return '@appicons/template.svg';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function selectorLabelAttributes(): array
+    {
+        $attr = parent::selectorLabelAttributes();
+        if ($this->template) {
+            $attr['class'][] = 'code';
+        }
+        return $attr;
     }
 
     /**

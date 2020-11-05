@@ -1,27 +1,32 @@
 {%- spaceless %}
 
-{% set class = (class ?? [])|explodeClass|merge([
-    (toggle ?? reverseToggle ?? false) ? 'fieldtoggle',
-    'checkbox'
-]|filter) %}
+{% set id = id ?? "checkbox#{random()}" %}
+{% set label = label ?? null %}
 
-{% set value = (value is defined ? value : 1) %}
-{% set id = (id is defined and id ? id : 'checkbox'~random()) %}
-{% set label = (label is defined ? label) %}
+{% set inputAttributes = {
+    'id': id,
+    'class': (class ?? [])|explodeClass|merge([
+        (toggle ?? reverseToggle ?? false) ? 'fieldtoggle' : null,
+        'checkbox'
+    ]|filter),
+    'checked': (checked ?? false) and checked,
+    'autofocus': (autofocus ?? false) and not craft.app.request.isMobileBrowser(true),
+    'disabled': (disabled ?? false) ? true : false,
+    'data': {
+        'target': toggle ?? false,
+        'reverse-target': reverseToggle ?? false,
+    }
+}|merge(inputAttributes ?? [], recursive=true) %}
+
+{% if block('attr') is defined %}
+    {%- set inputAttributes = inputAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
+{% endif %}
 
 {% if name is defined and (name|length < 3 or name|slice(-2) != '[]') %}
     {{ hiddenInput(name, '') }}
 {% endif %}
 
-<input type="checkbox" value="{{ value }}" class="{{ class|join(' ') }}"
-    {%- if id %} id="{{ id }}"{% endif %}
-    {%- if name is defined %} name="{{ name }}"{% endif %}
-    {%- if checked is defined and checked %} checked{% endif %}
-    {%- if autofocus is defined and autofocus and not craft.app.request.isMobileBrowser(true) %} autofocus{% endif %}
-    {%- if disabled is defined and disabled %} disabled{% endif %}
-    {%- if toggle is defined %} data-target="{{ toggle }}"{% endif %}
-    {%- if reverseToggle is defined %} data-reverse-target="{{ reverseToggle }}"{% endif %}
-    {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
+{{ input('checkbox', name ?? null, value ?? 1, inputAttributes) }}
 
 <label for="{{ id }}">
     {{ label }}

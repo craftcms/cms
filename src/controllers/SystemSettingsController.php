@@ -112,6 +112,7 @@ class SystemSettingsController extends Controller
         $systemSettings = $projectConfig->get('system');
         $systemSettings['name'] = $this->request->getBodyParam('name');
         $systemSettings['live'] = (bool)$this->request->getBodyParam('live');
+        $systemSettings['retryDuration'] = (int)$this->request->getBodyParam('retryDuration') ?: null;
         $systemSettings['timeZone'] = $this->request->getBodyParam('timeZone');
         $projectConfig->set('system', $systemSettings, 'Update system settings.');
 

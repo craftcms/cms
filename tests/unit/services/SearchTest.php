@@ -23,7 +23,7 @@ use UnitTester;
  * @todo There are MySQL and PostgreSQL specific search tests that need to be performed.
  *
  * Searching and some of the commands run in this test are documented here:
- * https://docs.craftcms.com/v3/searching.html#supported-syntaxes
+ * https://craftcms.com/docs/3.x/searching.html
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
@@ -72,7 +72,7 @@ class SearchTest extends Unit
         sort($result, SORT_NUMERIC);
         sort($filtered, SORT_NUMERIC);
 
-        $this->assertSame($result, $filtered);
+        self::assertSame($result, $filtered);
     }
 
     /**
@@ -95,7 +95,7 @@ class SearchTest extends Unit
         // Filter them
         $filtered = $this->search->filterElementIdsByQuery($forQuery, $query, $scoreResults, $siteId, true);
 
-        $this->assertSame($result, $filtered);
+        self::assertSame($result, $filtered);
     }
 
     /**
@@ -108,7 +108,7 @@ class SearchTest extends Unit
 
         $filtered = $this->search->filterElementIdsByQuery($forQuery, 'user');
 
-        $this->assertSame($result, $filtered);
+        self::assertSame($result, $filtered);
     }
 
     /*
@@ -132,10 +132,10 @@ class SearchTest extends Unit
         // Get the data from the DB
         $searchIndex = (new Query())->from([Table::SEARCHINDEX])->where(['elementId' => $user->id])->all();
 
-        $this->assertSame(' testindexelementattributes1 test com ', $this->_getSearchIndexValueByAttribute('email', $searchIndex));
-        $this->assertSame(' john smith ', $this->_getSearchIndexValueByAttribute('firstname', $searchIndex));
-        $this->assertSame(' wil k er son ', $this->_getSearchIndexValueByAttribute('lastname', $searchIndex));
-        $this->assertSame(' john smith wil k er son ', $this->_getSearchIndexValueByAttribute('fullname', $searchIndex));
+        self::assertSame(' testindexelementattributes1 test com ', $this->_getSearchIndexValueByAttribute('email', $searchIndex));
+        self::assertSame(' john smith ', $this->_getSearchIndexValueByAttribute('firstname', $searchIndex));
+        self::assertSame(' wil k er son ', $this->_getSearchIndexValueByAttribute('lastname', $searchIndex));
+        self::assertSame(' john smith wil k er son ', $this->_getSearchIndexValueByAttribute('fullname', $searchIndex));
     }
 
     /**
