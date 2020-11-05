@@ -96,16 +96,28 @@ class SystemReport extends Utility
      */
     private static function _appInfo(): array
     {
-        return [
+        $info = [
             'PHP version' => App::phpVersion(),
             'OS version' => PHP_OS . ' ' . php_uname('r'),
             'Database driver & version' => self::_dbDriver(),
             'Image driver & version' => self::_imageDriver(),
             'Craft edition & version' => 'Craft ' . App::editionName(Craft::$app->getEdition()) . ' ' . Craft::$app->getVersion(),
-            'Yii version' => InstalledVersions::getPrettyVersion('yiisoft/yii2'),
-            'Twig version' => InstalledVersions::getPrettyVersion('twig/twig'),
-            'Guzzle version' => InstalledVersions::getPrettyVersion('guzzlehttp/guzzle'),
         ];
+
+        if (!class_exists(InstalledVersions::class, false)) {
+            $path = Craft::$app->getPath()->getVendorPath() . DIRECTORY_SEPARATOR . 'composer' .  DIRECTORY_SEPARATOR . 'InstalledVersions.php';
+            if (file_exists($path)) {
+                require $path;
+            }
+        }
+
+        if (class_exists(InstalledVersions::class, false)) {
+            $info['Yii version'] = InstalledVersions::getPrettyVersion('yiisoft/yii2');
+            $info['Twig version'] = InstalledVersions::getPrettyVersion('twig/twig');
+            $info['Guzzle version'] = InstalledVersions::getPrettyVersion('guzzlehttp/guzzle');
+        }
+
+        return $info;
     }
 
     /**
