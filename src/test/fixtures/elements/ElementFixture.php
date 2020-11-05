@@ -40,6 +40,11 @@ abstract class ElementFixture extends ActiveFixture
     public $unload = true;
 
     /**
+     * @var ElementInterface[] The loaded elements
+     */
+    private $_models = [];
+
+    /**
      * @inheritdoc
      */
     public function init()
@@ -147,6 +152,7 @@ abstract class ElementFixture extends ActiveFixture
             }
 
             $this->data = [];
+            $this->_models = [];
         }
     }
 

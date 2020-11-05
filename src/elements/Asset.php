@@ -1001,6 +1001,10 @@ class Asset extends Element
                 }
             }
 
+            if (!empty($transform->format)) {
+                $sizeTransform['format'] = $transform->format;
+            }
+
             $srcset[] = $this->getUrl($sizeTransform) . ($size !== '1x' ? " $value$unit" : '');
         }
 
