@@ -12,7 +12,6 @@ use Craft;
 use craft\enums\LicenseKeyStatus;
 use craft\errors\InvalidLicenseKeyException;
 use craft\errors\InvalidPluginException;
-use yii\base\Exception;
 
 /**
  * Craftnet API helper.

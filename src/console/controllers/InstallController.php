@@ -14,7 +14,6 @@ use craft\helpers\Console;
 use craft\helpers\Install as InstallHelper;
 use craft\migrations\Install;
 use craft\models\Site;
-use Seld\CliPrompt\CliPrompt;
 use yii\base\Exception;
 use yii\console\ExitCode;
 
