@@ -14,6 +14,7 @@ use craft\gql\base\Directive;
 use craft\gql\ElementQueryConditionBuilder;
 use craft\gql\GqlEntityRegistry;
 use craft\models\GqlSchema;
+use craft\services\Gql as GqlService;
 use GraphQL\Language\AST\ListValueNode;
 use GraphQL\Language\AST\ValueNode;
 use GraphQL\Language\AST\VariableNode;
@@ -418,5 +419,44 @@ class Gql
         }
 
         return $fieldName;
+    }
+
+    /**
+     * Shorthand for returning the complexity function for an eager-loaded field.
+     *
+     * @return callable
+     * @since 3.6.0
+     */
+    public static function eagerLoadComplexity(): callable
+    {
+        return static function ($childComplexity) {
+            return $childComplexity + GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD;
+        };
+    }
+
+    /**
+     * Shorthand for returning the complexity function for a field that will add a single query to execution.
+     *
+     * @return callable
+     * @since 3.6.0
+     */
+    public static function singleQueryComplexity(): callable
+    {
+        return static function ($childComplexity) {
+            return $childComplexity + GqlService::GRAPHQL_COMPLEXITY_QUERY;
+        };
+    }
+
+    /**
+     * Shorthand for returning the complexity function for a field that will generate a single query for every iteration.
+     *
+     * @return callable
+     * @since 3.6.0
+     */
+    public static function nPlus1Complexity(): callable
+    {
+        return static function ($childComplexity) {
+            return $childComplexity + GqlService::GRAPHQL_COMPLEXITY_NPLUS1;
+        };
     }
 }

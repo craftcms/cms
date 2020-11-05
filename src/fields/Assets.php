@@ -459,6 +459,7 @@ class Assets extends BaseRelationField
             'type' => Type::listOf(AssetInterface::getType()),
             'args' => AssetArguments::getArguments(),
             'resolve' => AssetResolver::class . '::resolve',
+            'complexity' => Gql::eagerLoadComplexity()
         ];
     }
 

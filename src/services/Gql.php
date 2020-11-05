@@ -73,8 +73,11 @@ use craft\records\GqlToken as GqlTokenRecord;
 use GraphQL\GraphQL;
 use GraphQL\Type\Schema;
 use GraphQL\Validator\DocumentValidator;
+use GraphQL\Validator\Rules\DisableIntrospection;
 use GraphQL\Validator\Rules\FieldsOnCorrectType;
 use GraphQL\Validator\Rules\KnownTypeNames;
+use GraphQL\Validator\Rules\QueryComplexity;
+use GraphQL\Validator\Rules\QueryDepth;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -290,6 +293,41 @@ class Gql extends Component
     const GRAPHQL_COUNT_FIELD = '_count';
 
     /**
+     * Complexity value for accessing a simple field.
+     *
+     * @since 3.6.0
+     */
+    const GRAPHQL_COMPLEXITY_SIMPLE_FIELD = 1;
+
+    /**
+     * Complexity value for accessing a field that will trigger a single query for the request.
+     *
+     * @since 3.6.0
+     */
+    const GRAPHQL_COMPLEXITY_QUERY = 10;
+
+    /**
+     * Complexity value for accessing a field that will add an instance of eager-loading for the request.
+     *
+     * @since 3.6.0
+     */
+    const GRAPHQL_COMPLEXITY_EAGER_LOAD = 25;
+
+    /**
+     * Complexity value for accessing a field that will likely trigger a CPU heavy operation.
+     *
+     * @since 3.6.0
+     */
+    const GRAPHQL_COMPLEXITY_CPU_HEAVY = 200;
+
+    /**
+     * Complexity value for accessing a field that will trigger a query for every parent returned,
+     *
+     * @since 3.6.0
+     */
+    const GRAPHQL_COMPLEXITY_NPLUS1 = 500;
+
+    /**
      * Save a GQL Token record based on the model.
      *
      * @param GqlToken $token
@@ -396,9 +434,10 @@ class Gql extends Component
      * Return a set of validation rules to use.
      *
      * @param bool $debug Whether debugging validation rules should be allowed.
+     * @param bool $isIntrospectionQuery Whether this is an introspection query
      * @return array
      */
-    public function getValidationRules($debug = false)
+    public function getValidationRules(bool $debug = false, bool $isIntrospectionQuery = false): array
     {
         $validationRules = DocumentValidator::defaultRules();
 
@@ -408,6 +447,24 @@ class Gql extends Component
                 $validationRules[KnownTypeNames::class],
                 $validationRules[FieldsOnCorrectType::class]
             );
+        }
+
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+
+        if (!$isIntrospectionQuery) {
+            // Set complexity rule, if defined,
+            if (!empty($generalConfig->maxGraphqlComplexity)) {
+                $validationRules[QueryComplexity::class] = new QueryComplexity($generalConfig->maxGraphqlComplexity);
+            }
+
+            // Set depth rule, if defined,
+            if (!empty($generalConfig->maxGraphqlDepth)) {
+                $validationRules[QueryDepth::class] = new QueryDepth($generalConfig->maxGraphqlDepth);
+            }
+        }
+
+        if (!$generalConfig->enableGraphqlIntrospection && Craft::$app->getUser()->getIsGuest()) {
+            $validationRules[DisableIntrospection::class] = new DisableIntrospection();
         }
 
         $event = new DefineGqlValidationRulesEvent([
@@ -465,7 +522,8 @@ class Gql extends Component
             if ($cacheKey && ($cachedResult = $this->getCachedResult($cacheKey)) !== null) {
                 $event->result = $cachedResult;
             } else {
-                $schemaDef = $this->getSchemaDef($schema, $debugMode || StringHelper::contains($query, '__schema'));
+                $isIntrospectionQuery = StringHelper::containsAny($query, ['__schema', '__type']);
+                $schemaDef = $this->getSchemaDef($schema, $debugMode || $isIntrospectionQuery);
                 $elementsService = Craft::$app->getElements();
                 $elementsService->startCollectingCacheTags();
 
@@ -477,7 +535,7 @@ class Gql extends Component
                     $event->variables,
                     $event->operationName,
                     null,
-                    $this->getValidationRules($debugMode)
+                    $this->getValidationRules($debugMode, $isIntrospectionQuery)
                 )->toArray($debugMode);
 
                 $dep = $elementsService->stopCollectingCacheTags();
@@ -1300,8 +1358,11 @@ class Gql extends Component
             FormatDateTime::class,
             Markdown::class,
             ParseRefs::class,
-            Transform::class,
         ];
+
+        if (!Craft::$app->getConfig()->getGeneral()->disableGraphqlTransformDirective) {
+            $directiveClasses[] = Transform::class;
+        }
 
         $event = new RegisterGqlDirectivesEvent([
             'directives' => $directiveClasses

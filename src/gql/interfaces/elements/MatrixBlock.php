@@ -11,6 +11,7 @@ use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\Element;
 use craft\gql\TypeManager;
 use craft\gql\types\generators\MatrixBlockType;
+use craft\helpers\Gql;
 use GraphQL\Type\Definition\InterfaceType;
 use GraphQL\Type\Definition\Type;
 
@@ -83,7 +84,8 @@ class MatrixBlock extends Element
             'typeHandle' => [
                 'name' => 'typeHandle',
                 'type' => Type::string(),
-                'description' => 'The handle of the matrix block\'s type.'
+                'description' => 'The handle of the matrix block\'s type.',
+                'complexity' => Gql::singleQueryComplexity(),
             ],
             'sortOrder' => [
                 'name' => 'sortOrder',
