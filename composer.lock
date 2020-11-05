@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "99ea997430274bd609b1cc036ee9b0ca",
+    "content-hash": "0f491c03670f08f279cc17f0029fa3c2",
     "packages": [
         {
             "name": "cebe/markdown",
@@ -2108,24 +2108,24 @@
         },
         {
             "name": "pixelandtonic/imagine",
-            "version": "1.2.2.1",
+            "version": "1.2.4.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pixelandtonic/Imagine.git",
-                "reference": "c70db7d7f6bd6fb0abc7562bdabe51265af2518b"
+                "reference": "2bedcf2dfab50a22126498a16241944c9d4cde65"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pixelandtonic/Imagine/zipball/c70db7d7f6bd6fb0abc7562bdabe51265af2518b",
-                "reference": "c70db7d7f6bd6fb0abc7562bdabe51265af2518b",
+                "url": "https://api.github.com/repos/pixelandtonic/Imagine/zipball/2bedcf2dfab50a22126498a16241944c9d4cde65",
+                "reference": "2bedcf2dfab50a22126498a16241944c9d4cde65",
                 "shasum": ""
             },
             "require": {
                 "php": ">=5.3.2"
             },
             "require-dev": {
-                "friendsofphp/php-cs-fixer": "2.2.*",
-                "phpunit/phpunit": "^4.8 || ^5.7 || ^6.5 || ^7.4 || ^8.2"
+                "friendsofphp/php-cs-fixer": "^2.2",
+                "phpunit/phpunit": "^4.8 || ^5.7 || ^6.5 || ^7.5 || ^8.4 || ^9.3"
             },
             "suggest": {
                 "ext-gd": "to use the GD implementation",
@@ -2163,9 +2163,9 @@
                 "image processing"
             ],
             "support": {
-                "source": "https://github.com/pixelandtonic/Imagine/tree/1.2.2.1"
+                "source": "https://github.com/pixelandtonic/Imagine/tree/1.2.4.1"
             },
-            "time": "2019-07-19T12:55:50+00:00"
+            "time": "2020-11-05T18:36:18+00:00"
         },
         {
             "name": "psr/container",
