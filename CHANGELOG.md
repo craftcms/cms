@@ -3,12 +3,12 @@
 ## Unreleased
 
 ### Added
-- It is now possible to set up WebP as the transform format for named transforms, if the environment allows it.
+- It’s now possible to save image transforms that generate WebP files, on environments that support it.
 
 ### Fixed
-- Fixed a bug where `craft\elements\Asset::getSrcSet()` would not respect the format of the transform set on the Asset. ([#6660](https://github.com/craftcms/cms/issues/6660))
-- Fixed a bug where Imagick use was sometimes incorrectly assumed.
-- Fixed a bug where calling `grabFixture()` in a test would case a PHP error. ([#7089](https://github.com/craftcms/cms/issues/7089))
+- Fixed a bug where `craft\elements\Asset::getSrcset()` would not respect the format of the transform set on the asset. ([#6660](https://github.com/craftcms/cms/issues/6660))
+- Fixed a bug where Craft could attempt to use the Imagick driver even if it wasn’t available.
+- Fixed a PHP error that occurred if a test called `craft\test\fixtures\elements\ElementFixture::getModel()`. ([#7089](https://github.com/craftcms/cms/issues/7089))
 
 ## 3.5.15.1 - 2020-11-04
 
