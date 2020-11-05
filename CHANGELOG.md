@@ -32,6 +32,19 @@
 - Removed Minify and jsmin-php.
 - Removed `craft\services\Api::getComposerWhitelist()`.
 
+## Unreleased (3.5.x)
+
+### Added
+- It’s now possible to save image transforms that generate WebP files, on environments that support it.
+- Added the `setPasswordUrl` global Twig variable.
+- Added `craft\gql\GqlEntityRegistry::getPrefix()`.
+- Added `craft\gql\GqlEntityRegistry::setPrefix()`.
+
+### Fixed
+- Fixed a bug where `craft\elements\Asset::getSrcset()` would not respect the format of the transform set on the asset. ([#6660](https://github.com/craftcms/cms/issues/6660))
+- Fixed a bug where Craft could attempt to use the Imagick driver even if it wasn’t available.
+- Fixed a PHP error that occurred if a test called `craft\test\fixtures\elements\ElementFixture::getModel()`. ([#7089](https://github.com/craftcms/cms/issues/7089))
+
 ## 3.5.15.1 - 2020-11-04
 
 ### Fixed

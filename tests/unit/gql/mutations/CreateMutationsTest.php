@@ -341,7 +341,7 @@ class CreateMutationsTest extends Unit
         list($saveMutation, $draftMutation) = EntryMutations::createSaveMutations($structure, true);
         self::assertInstanceOf(EntryGqlType::class, $saveMutation['type']);
         self::assertInstanceOf(EntryGqlType::class, $draftMutation['type']);
-        self::assertContains('draft', $draftMutation['description']);
+        self::assertStringContainsString('draft', $draftMutation['description']);
         self::assertArrayHasKey('appendTo', $saveMutation['args']);
         self::assertArrayHasKey('appendToRoot', $saveMutation['args']);
         self::assertArrayNotHasKey('appendToRoot', $draftMutation['args']);
