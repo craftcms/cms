@@ -106,14 +106,14 @@ class DateTimeHelper
 
             // Did they specify a full timestamp ?
             if (!empty($value['datetime'])) {
-                list($date, $format) = self::_parseDateTime($value['datetime'], $timeZone);
+                [$date, $format] = self::_parseDateTime($value['datetime'], $timeZone);
                 if ($format === false) {
                     return false;
                 }
             } else {
                 // Did they specify a date?
                 if (!empty($value['date'])) {
-                    list($date, $format) = self::_parseDate($value['date']);
+                    [$date, $format] = self::_parseDate($value['date']);
                 } else {
                     // Default to the current date
                     $format = 'Y-m-d';
@@ -122,7 +122,7 @@ class DateTimeHelper
 
                 // Did they specify a time?
                 if (!empty($value['time'])) {
-                    list($time, $timeFormat) = self::_parseTime($value['time']);
+                    [$time, $timeFormat] = self::_parseTime($value['time']);
                     $format .= ' ' . $timeFormat;
                     $date .= ' ' . $time;
                 }
@@ -132,7 +132,7 @@ class DateTimeHelper
                 $date .= ' ' . $timeZone;
             }
         } else {
-            list($date, $format) = self::_parseDateTime($value, $defaultTimeZone);
+            [$date, $format] = self::_parseDateTime($value, $defaultTimeZone);
             if ($format === false) {
                 return false;
             }

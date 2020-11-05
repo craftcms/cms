@@ -707,4 +707,33 @@ class FileHelper extends \yii\helpers\FileHelper
             $zip->addFile($file, $prefix . substr($file, strlen($dir) + 1));
         }
     }
+
+    /**
+     * Return a file extension for the given MIME type.
+     *
+     * @param $mimeType
+     * @return string
+     * @throws InvalidArgumentException if no known extensions exist for the given MIME type.
+     * @since 3.5.15
+     */
+    public static function getExtensionByMimeType($mimeType): string
+    {
+        $extensions = FileHelper::getExtensionsByMimeType($mimeType);
+
+        if (empty($extensions)) {
+            throw new InvalidArgumentException("No file extensions are known for the MIME Type $mimeType.");
+        }
+
+        $extension = reset($extensions);
+
+        // Manually correct for some types.
+        switch ($extension) {
+            case 'svgz':
+                return 'svg';
+            case 'jpe':
+                return 'jpg';
+        }
+
+        return $extension;
+    }
 }

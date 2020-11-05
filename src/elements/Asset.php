@@ -339,7 +339,7 @@ class Asset extends Element
             ];
 
             $userSession = Craft::$app->getUser();
-            if ($userSession->checkPermission("replaceFilesInVolume:{$volume->uid}")) {
+            if ($userSession->checkPermission("replaceFilesInVolume:$volume->uid")) {
                 // Rename/Replace File
                 $actions[] = RenameFile::class;
                 $actions[] = ReplaceFile::class;
@@ -357,12 +357,12 @@ class Asset extends Element
             ];
 
             // Edit Image
-            if ($userSession->checkPermission('editImagesInVolume:' . $volume->uid)) {
+            if ($userSession->checkPermission("editImagesInVolume:$volume->uid")) {
                 $actions[] = EditImage::class;
             }
 
             // Delete
-            if ($userSession->checkPermission('deleteFilesAndFoldersInVolume:' . $volume->uid)) {
+            if ($userSession->checkPermission("deleteFilesAndFoldersInVolume:$volume->uid")) {
                 $actions[] = DeleteAssets::class;
             }
         }
@@ -508,12 +508,12 @@ class Asset extends Element
         }
 
         $userSession = Craft::$app->getUser();
-        $canUpload = $userSession->checkPermission("saveAssetInVolume:{$volume->uid}");
-        $canMoveTo = $canUpload && $userSession->checkPermission("deleteFilesAndFoldersInVolume:{$volume->uid}");
+        $canUpload = $userSession->checkPermission("saveAssetInVolume:$volume->uid");
+        $canMoveTo = $canUpload && $userSession->checkPermission("deleteFilesAndFoldersInVolume:$volume->uid");
         $canMovePeerFilesTo = (
             $canMoveTo &&
-            $userSession->checkPermission("editPeerFilesInVolume:{$volume->uid}") &&
-            $userSession->checkPermission("deletePeerFilesInVolume:{$volume->uid}")
+            $userSession->checkPermission("editPeerFilesInVolume:$volume->uid") &&
+            $userSession->checkPermission("deletePeerFilesInVolume:$volume->uid")
         );
 
         $source = [
@@ -532,7 +532,7 @@ class Asset extends Element
         ];
 
         if ($user) {
-            if (!$user->can("viewPeerFilesInVolume:{$volume->uid}")) {
+            if (!$user->can("viewPeerFilesInVolume:$volume->uid")) {
                 $source['criteria']['uploaderId'] = $user->id;
             }
         }
@@ -847,8 +847,23 @@ class Asset extends Element
         $volume = $this->getVolume();
         $userSession = Craft::$app->getUser();
         return (
-            $userSession->checkPermission("saveAssetInVolume:{$volume->uid}") &&
-            ($userSession->getId() == $this->uploaderId || $userSession->checkPermission("editPeerFilesInVolume:{$volume->uid}"))
+            $userSession->checkPermission("saveAssetInVolume:$volume->uid") &&
+            ($userSession->getId() == $this->uploaderId || $userSession->checkPermission("editPeerFilesInVolume:$volume->uid"))
+        );
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.5.15
+     */
+    public function getIsDeletable(): bool
+    {
+        $userSession = Craft::$app->getUser();
+        $volume = $this->getVolume();
+
+        return (
+            $userSession->checkPermission("deleteFilesAndFoldersInVolume:$volume->uid") &&
+            ($userSession->getId() == $this->uploaderId || $userSession->checkPermission("deletePeerFilesInVolume:$volume->uid"))
         );
     }
 
@@ -873,7 +888,7 @@ class Asset extends Element
         }
 
         $filename = $this->getFilename(false);
-        $path = "assets/{$volume->handle}/{$this->id}-{$filename}";
+        $path = "assets/$volume->handle/$this->id-$filename";
 
         $params = [];
         if (Craft::$app->getIsMultiSite()) {
@@ -961,14 +976,14 @@ class Asset extends Element
             $transform = null;
         }
 
-        list($currentWidth, $currentHeight) = $this->_dimensions($transform);
+        [$currentWidth, $currentHeight] = $this->_dimensions($transform);
 
         if (!$currentWidth || !$currentHeight) {
             return false;
         }
 
         foreach ($sizes as $size) {
-            list($value, $unit) = Assets::parseSrcsetSize($size);
+            [$value, $unit] = Assets::parseSrcsetSize($size);
 
             $sizeTransform = [];
             if ($unit === 'w') {
@@ -986,7 +1001,11 @@ class Asset extends Element
                 }
             }
 
-            $srcset[] = $this->getUrl($sizeTransform) . ($size !== '1x' ? " {$value}{$unit}" : '');
+            if (!empty($transform->format)) {
+                $sizeTransform['format'] = $transform->format;
+            }
+
+            $srcset[] = $this->getUrl($sizeTransform) . ($size !== '1x' ? " $value$unit" : '');
         }
 
         return implode(', ', $srcset);
@@ -1143,7 +1162,7 @@ class Asset extends Element
         try {
             return Craft::$app->getAssets()->getAssetUrl($this, $transform, $generateNow);
         } catch (VolumeObjectNotFoundException $e) {
-            Craft::error("Could not determine asset's URL ({$this->id}): {$e->getMessage()}");
+            Craft::error("Could not determine asset's URL ($this->id): {$e->getMessage()}");
             Craft::$app->getErrorHandler()->logException($e);
             return UrlHelper::actionUrl('not-found');
         }
@@ -1155,7 +1174,7 @@ class Asset extends Element
     public function getThumbUrl(int $size)
     {
         if ($this->getWidth() && $this->getHeight()) {
-            list($width, $height) = Assets::scaledDimensions($this->getWidth(), $this->getHeight(), $size, $size);
+            [$width, $height] = Assets::scaledDimensions($this->getWidth(), $this->getHeight(), $size, $size);
         } else {
             $width = $height = $size;
         }
@@ -1184,12 +1203,12 @@ class Asset extends Element
     {
         $assetsService = Craft::$app->getAssets();
         $srcsets = [];
-        list($width, $height) = Assets::scaledDimensions($this->getWidth() ?? 0, $this->getHeight() ?? 0, $width, $height);
+        [$width, $height] = Assets::scaledDimensions($this->getWidth() ?? 0, $this->getHeight() ?? 0, $width, $height);
         $thumbSizes = [
             [$width, $height],
             [$width * 2, $height * 2],
         ];
-        foreach ($thumbSizes as list($width, $height)) {
+        foreach ($thumbSizes as [$width, $height]) {
             $thumbUrl = $assetsService->getThumbUrl($this, $width, $height, false, false);
             $srcsets[] = $thumbUrl . ' ' . $width . 'w';
         }
@@ -1619,8 +1638,8 @@ class Asset extends Element
 
             $editable = (
                 $this->getSupportsImageEditor() &&
-                $userSession->checkPermission("editImagesInVolume:{$volume->uid}") &&
-                ($userSession->getId() == $this->uploaderId || $userSession->checkPermission("editPeerImagesInVolume:{$volume->uid}"))
+                $userSession->checkPermission("editImagesInVolume:$volume->uid") &&
+                ($userSession->getId() == $this->uploaderId || $userSession->checkPermission("editPeerImagesInVolume:$volume->uid"))
             );
 
             $html .= '<div class="preview-thumb-container' . ($editable ? ' editable' : '') . '">' .
@@ -1721,13 +1740,13 @@ class Asset extends Element
         if ($this->newFolderId !== null || $this->newFilename !== null) {
             $folderId = $this->newFolderId ?: $this->folderId;
             $filename = $this->newFilename ?: $this->filename;
-            $this->newLocation = "{folder:{$folderId}}{$filename}";
+            $this->newLocation = "{folder:$folderId}$filename";
             $this->newFolderId = $this->newFilename = null;
         }
 
         // Get the (new?) folder ID
         if ($this->newLocation !== null) {
-            list($folderId) = AssetsHelper::parseFileLocation($this->newLocation);
+            [$folderId] = AssetsHelper::parseFileLocation($this->newLocation);
         } else {
             $folderId = $this->folderId;
         }
@@ -1881,13 +1900,13 @@ class Asset extends Element
             $attributes['data-peer-file'] = null;
             $volume = $this->getVolume();
             $movable = (
-                $userSession->checkPermission("editPeerFilesInVolume:{$volume->uid}") &&
-                $userSession->checkPermission("deletePeerFilesInVolume:{$volume->uid}")
+                $userSession->checkPermission("editPeerFilesInVolume:$volume->uid") &&
+                $userSession->checkPermission("deletePeerFilesInVolume:$volume->uid")
             );
-            $replaceable = $userSession->checkPermission("replacePeerFilesInVolume:{$volume->uid}");
+            $replaceable = $userSession->checkPermission("replacePeerFilesInVolume:$volume->uid");
             $imageEditable = (
                 $imageEditable &&
-                ($userSession->checkPermission("editPeerImagesInVolume:{$volume->uid}"))
+                ($userSession->checkPermission("editPeerImagesInVolume:$volume->uid"))
             );
         }
 
@@ -1920,8 +1939,8 @@ class Asset extends Element
 
         $volume = $this->getVolume();
         return (
-            $userSession->checkPermission("editPeerFilesInVolume:{$volume->uid}") &&
-            $userSession->checkPermission("deletePeerFilesInVolume:{$volume->uid}")
+            $userSession->checkPermission("editPeerFilesInVolume:$volume->uid") &&
+            $userSession->checkPermission("deletePeerFilesInVolume:$volume->uid")
         );
     }
 
@@ -1939,7 +1958,7 @@ class Asset extends Element
 
         if (!$this->_width || !$this->_height) {
             if ($this->getScenario() !== self::SCENARIO_CREATE) {
-                Craft::warning("Asset {$this->id} is missing its width or height", __METHOD__);
+                Craft::warning("Asset $this->id is missing its width or height", __METHOD__);
             }
 
             return [null, null];
@@ -1964,7 +1983,7 @@ class Asset extends Element
             return $transformRatio > 1 ? [$this->_width, round($this->_height / $transformRatio)] : [round($this->_width * $transformRatio), $this->_height];
         }
 
-        list($width, $height) = Image::calculateMissingDimension($transform->width, $transform->height, $this->_width, $this->_height);
+        [$width, $height] = Image::calculateMissingDimension($transform->width, $transform->height, $this->_width, $this->_height);
 
         // Special case for 'fit' since that's the only one whose dimensions vary from the transform dimensions
         if ($transform->mode === 'fit') {
@@ -1987,7 +2006,7 @@ class Asset extends Element
 
         // Get the (new?) folder ID & filename
         if ($this->newLocation !== null) {
-            list($folderId, $filename) = AssetsHelper::parseFileLocation($this->newLocation);
+            [$folderId, $filename] = AssetsHelper::parseFileLocation($this->newLocation);
         } else {
             $folderId = $this->folderId;
             $filename = $this->filename;
@@ -2058,7 +2077,7 @@ class Asset extends Element
             $this->kind = AssetsHelper::getFileKindByExtension($filename);
 
             if ($this->kind === self::KIND_IMAGE) {
-                list ($this->_width, $this->_height) = Image::imageSize($tempPath);
+                [$this->_width, $this->_height] = Image::imageSize($tempPath);
             } else {
                 $this->_width = null;
                 $this->_height = null;

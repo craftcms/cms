@@ -19,8 +19,6 @@ use craft\helpers\StringHelper;
 use craft\web\twig\Environment;
 use craft\web\twig\Extension;
 use craft\web\twig\TemplateLoader;
-use JSMin\JSMin;
-use Minify_CSSmin;
 use Twig\Error\LoaderError as TwigLoaderError;
 use Twig\Error\RuntimeError as TwigRuntimeError;
 use Twig\Error\SyntaxError as TwigSyntaxError;

@@ -71,7 +71,7 @@ class TemplateCaches extends Component
             return null;
         }
 
-        list($body, $tags) = $data;
+        [$body, $tags] = $data;
 
         // If we're actively collecting element cache tags, add this cache's tags to the collection
         Craft::$app->getElements()->collectCacheTags($tags);

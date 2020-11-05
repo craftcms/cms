@@ -7,17 +7,14 @@
 
 namespace craft\utilities;
 
+use Composer\InstalledVersions;
 use Craft;
 use craft\base\PluginInterface;
 use craft\base\Utility;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
-use GuzzleHttp\Client;
-use Imagine\Gd\Imagine;
 use RequirementsChecker;
-use Twig\Environment;
-use Yii;
 use yii\base\Module;
 
 /**
@@ -112,10 +109,9 @@ class SystemReport extends Utility
             'Database driver & version' => self::_dbDriver(),
             'Image driver & version' => self::_imageDriver(),
             'Craft edition & version' => 'Craft ' . App::editionName(Craft::$app->getEdition()) . ' ' . Craft::$app->getVersion(),
-            'Yii version' => Yii::getVersion(),
-            'Twig version' => Environment::VERSION,
-            'Guzzle version' => $installed['guzzlehttp/guzzle']['version'] ?? Client::MAJOR_VERSION,
-            'Imagine version' => Imagine::VERSION,
+            'Yii version' => InstalledVersions::getPrettyVersion('yiisoft/yii2'),
+            'Twig version' => InstalledVersions::getPrettyVersion('twig/twig'),
+            'Guzzle version' => InstalledVersions::getPrettyVersion('guzzlehttp/guzzle'),
         ];
     }
 

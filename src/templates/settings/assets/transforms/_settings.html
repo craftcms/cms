@@ -138,6 +138,10 @@
             {label: 'gif', value: 'gif'},
         ] %}
 
+        {% if (transform is defined and transform.format == 'webp') or craft.app.images.supportsWebP %}
+            {% set formatOptions = formatOptions|merge([{label: 'webp', value: 'webp'}]) %}
+        {% endif %}
+
         {{ forms.selectField({
             label: "Image Format"|t('app'),
             id: "format",

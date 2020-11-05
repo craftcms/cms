@@ -566,7 +566,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         /** @var ElementQuery $value */
         $titles = [];
 
-        foreach ($value->all() as $relatedElement) {
+        foreach ($this->_all($value, $element)->all() as $relatedElement) {
             $titles[] = (string)$relatedElement;
         }
 

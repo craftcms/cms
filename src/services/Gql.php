@@ -295,35 +295,35 @@ class Gql extends Component
     /**
      * Complexity value for accessing a simple field.
      *
-     * @since 4.0.0
+     * @since 3.6.0
      */
     const GRAPHQL_COMPLEXITY_SIMPLE_FIELD = 1;
 
     /**
      * Complexity value for accessing a field that will trigger a single query for the request.
      *
-     * @since 4.0.0
+     * @since 3.6.0
      */
     const GRAPHQL_COMPLEXITY_QUERY = 10;
 
     /**
      * Complexity value for accessing a field that will add an instance of eager-loading for the request.
      *
-     * @since 4.0.0
+     * @since 3.6.0
      */
     const GRAPHQL_COMPLEXITY_EAGER_LOAD = 25;
 
     /**
      * Complexity value for accessing a field that will likely trigger a CPU heavy operation.
      *
-     * @since 4.0.0
+     * @since 3.6.0
      */
     const GRAPHQL_COMPLEXITY_CPU_HEAVY = 200;
 
     /**
      * Complexity value for accessing a field that will trigger a query for every parent returned,
      *
-     * @since 4.0.0
+     * @since 3.6.0
      */
     const GRAPHQL_COMPLEXITY_NPLUS1 = 500;
 

@@ -15,6 +15,7 @@ use craft\helpers\Api;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
+use craft\helpers\Update as UpdateHelper;
 use craft\helpers\UrlHelper;
 use craft\models\Update;
 use craft\models\Updates;
@@ -486,14 +487,22 @@ class AppController extends Controller
             ]);
             $arr['ctaUrl'] = UrlHelper::url($update->renewalUrl);
         } else {
-            if ($update->status === Update::STATUS_BREAKPOINT) {
-                $arr['statusText'] = Craft::t('app', '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.', [
-                    'update' => $name . ' ' . ($update->getLatest()->version ?? '')
-                ]);
-            }
+            // Make sure that the platform & composer.json PHP version are compatible
+            $phpConstraintError = null;
+            if ($update->phpConstraint && !UpdateHelper::checkPhpConstraint($update->phpConstraint, $phpConstraintError, true)) {
+                $arr['status'] = 'phpIssue';
+                $arr['statusText'] = $phpConstraintError;
+                $arr['ctaUrl'] = false;
+            } else {
+                if ($update->status === Update::STATUS_BREAKPOINT) {
+                    $arr['statusText'] = Craft::t('app', '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.', [
+                        'update' => $name . ' ' . ($update->getLatest()->version ?? '')
+                    ]);
+                }
 
-            if ($allowUpdates) {
-                $arr['ctaText'] = Craft::t('app', 'Update');
+                if ($allowUpdates) {
+                    $arr['ctaText'] = Craft::t('app', 'Update');
+                }
             }
         }
 

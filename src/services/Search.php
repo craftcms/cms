@@ -546,7 +546,7 @@ SQL;
 
         foreach ($tokens as $obj) {
             // Get SQL and/or keywords
-            list($sql, $keywords) = $this->_getSqlFromTerm($obj, $siteId);
+            [$sql, $keywords] = $this->_getSqlFromTerm($obj, $siteId);
 
             if ($sql === false && $inclusive) {
                 return false;

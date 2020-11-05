@@ -2,33 +2,11 @@
 
 ## Unreleased
 
-### Added
-- Added the `disableGraphqlTransformDirective` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
-- Added the `enableGraphqlIntrospection` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
-- Added the `maxGraphqlComplexity` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
-- Added the `maxGraphqlDepth` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
-- Added the `maxGraphqlResults` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
-- Added `craft\gql\GqlEntityRegistry::getPrefix()`.
-- Added `craft\gql\GqlEntityRegistry::setPrefix()`.
-- Added `craft\helpers\Gql::eagerLoadComplexity()`.
-- Added `craft\helpers\Gql::nPlus1Complexity()`.
-- Added `craft\helpers\Gql::singleQueryComplexity()`.
-- Added `craft\services\Gql::GRAPHQL_COMPLEXITY_CPU_HEAVY`.
-- Added `craft\services\Gql::GRAPHQL_COMPLEXITY_EAGER_LOAD`.
-- Added `craft\services\Gql::GRAPHQL_COMPLEXITY_NPLUS1`.
-- Added `craft\services\Gql::GRAPHQL_COMPLEXITY_QUERY`.
-- Added `craft\services\Gql::GRAPHQL_COMPLEXITY_SIMPLE_FIELD`.
-
 ### Changed
 - Craft now requires PHP 7.4 or later.
 - Relational fields now load elements in the current site rather than the primary site, if the source element isn’t localizable. ([#7048](https://github.com/craftcms/cms/issues/7048))
 - `craft\base\Model::setAttributes()` now normalizes date attributes into `DateTime` objects.
-- `craft\services\Gql::getValidationRules()` now has an `$isIntrospectionQuery` argument.
 - Updated Twig to 3.1.
-- Updated Guzzle to 7.x.
-- Updated LitEmoji ot 2.x.
-- Updated graphql-php to 14.x.
-- Updated the Symfony YAML component to 5.x.
 
 ### Deprecated
 - Deprecated `craft\helpers\ArrayHelper::append()`. `array_unshift()` should be used instead.
@@ -36,7 +14,6 @@
 
 ### Removed
 - Removed the `suppressTemplateErrors` config setting.
-- Removed Minify and jsmin-php.
 - Removed `craft\web\twig\Template`.
 - Removed `craft\web\View::$minifyCss`.
 - Removed `craft\web\View::$minifyJs`.

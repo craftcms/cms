@@ -83,7 +83,7 @@ class UrlHelper
         // Decode the param names and a few select chars in param values
         $params = [];
         foreach (explode('&', $query) as $param) {
-            list($n, $v) = array_pad(explode('=', $param, 2), 2, '');
+            [$n, $v] = array_pad(explode('=', $param, 2), 2, '');
             $n = urldecode($n);
             $v = str_replace(['%2F', '%7B', '%7D'], ['/', '{', '}'], $v);
             $params[] = $v !== '' ? "$n=$v" : $n;
@@ -101,10 +101,10 @@ class UrlHelper
     public static function urlWithParams(string $url, $params): string
     {
         // Extract any params/fragment from the base URL
-        list($url, $baseParams, $baseFragment) = self::_extractParams($url);
+        [$url, $baseParams, $baseFragment] = self::_extractParams($url);
 
         // Normalize the passed-in params/fragment
-        list($params, $fragment) = self::_normalizeParams($params);
+        [$params, $fragment] = self::_normalizeParams($params);
 
         // Combine them
         $params = array_merge($baseParams, $params);
@@ -131,7 +131,7 @@ class UrlHelper
     public static function removeParam(string $url, string $param): string
     {
         // Extract any params/fragment from the base URL
-        list($url, $params, $fragment) = self::_extractParams($url);
+        [$url, $params, $fragment] = self::_extractParams($url);
 
         // Remove the param
         unset($params[$param]);
@@ -597,10 +597,10 @@ class UrlHelper
     private static function _createUrl(string $path, $params, string $scheme = null, bool $cpUrl, bool $showScriptName = null, bool $addToken = null): string
     {
         // Extract any params/fragment from the path
-        list($path, $baseParams, $baseFragment) = self::_extractParams($path);
+        [$path, $baseParams, $baseFragment] = self::_extractParams($path);
 
         // Normalize the passed-in params/fragment
-        list($params, $fragment) = self::_normalizeParams($params);
+        [$params, $fragment] = self::_normalizeParams($params);
 
         // Combine them
         $params = array_merge($baseParams, $params);
@@ -725,7 +725,7 @@ class UrlHelper
             return [$url, [], null];
         }
 
-        list($params, $fragment) = self::_normalizeParams(substr($url, $queryPos));
+        [$params, $fragment] = self::_normalizeParams(substr($url, $queryPos));
         return [substr($url, 0, $queryPos), $params, $fragment];
     }
 }

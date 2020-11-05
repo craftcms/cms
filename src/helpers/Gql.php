@@ -425,7 +425,7 @@ class Gql
      * Shorthand for returning the complexity function for an eager-loaded field.
      *
      * @return callable
-     * @since 4.0.0
+     * @since 3.6.0
      */
     public static function eagerLoadComplexity(): callable
     {
@@ -438,7 +438,7 @@ class Gql
      * Shorthand for returning the complexity function for a field that will add a single query to execution.
      *
      * @return callable
-     * @since 4.0.0
+     * @since 3.6.0
      */
     public static function singleQueryComplexity(): callable
     {
@@ -451,7 +451,7 @@ class Gql
      * Shorthand for returning the complexity function for a field that will generate a single query for every iteration.
      *
      * @return callable
-     * @since 4.0.0
+     * @since 3.6.0
      */
     public static function nPlus1Complexity(): callable
     {

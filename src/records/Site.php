@@ -23,7 +23,7 @@ use yii\db\ActiveQueryInterface;
  * @property bool $primary Primary
  * @property bool $enabled Enabled
  * @property bool $hasUrls Has URLs
- * @property bool $baseUrl Base URL
+ * @property string $baseUrl Base URL
  * @property int $sortOrder Sort order
  * @property SiteGroup $group Group
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>

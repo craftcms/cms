@@ -164,7 +164,7 @@
             },
 
             createCta: function() {
-                if (!this.updatesPage.allowUpdates || !this.updateInfo.latestVersion) {
+                if (!this.updatesPage.allowUpdates || !this.updateInfo.latestVersion || this.updateInfo.ctaUrl === false) {
                     return;
                 }
 

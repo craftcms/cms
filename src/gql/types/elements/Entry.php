@@ -48,6 +48,9 @@ class Entry extends Element
                 return $source->getSection()->handle;
             case 'typeHandle':
                 return $source->getType()->handle;
+            case 'draftName':
+            case 'draftNotes':
+                return $source->getIsDraft() ? $source->{$fieldName} : null;
         }
 
         return parent::resolve($source, $arguments, $context, $resolveInfo);

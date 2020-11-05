@@ -457,7 +457,7 @@ class AssetTransforms extends Component
         foreach ($transforms as $transform) {
             // Is this a srcset-style size (2x, 100w, etc.)?
             try {
-                list($sizeValue, $sizeUnit) = AssetsHelper::parseSrcsetSize($transform);
+                [$sizeValue, $sizeUnit] = AssetsHelper::parseSrcsetSize($transform);
             } catch (InvalidArgumentException $e) {
                 // All good.
             }
@@ -1516,9 +1516,14 @@ class AssetTransforms extends Component
         }
 
         $transform = $index->getTransform();
+        $images = Craft::$app->getImages();
 
         if ($index->detectedFormat === null) {
             $index->detectedFormat = !empty($index->format) ? $index->format : $this->detectAutoTransformFormat($asset);
+        }
+
+        if ($index->format === 'webp' && !$images->getSupportsWebP()) {
+            throw new AssetTransformException("The `webp` format is not supported on this server!");
         }
 
         $volume = $asset->getVolume();
@@ -1545,7 +1550,6 @@ class AssetTransforms extends Component
         $imageSource = $asset->getTransformSource();
         $quality = $transform->quality ?: Craft::$app->getConfig()->getGeneral()->defaultImageQuality;
 
-        $images = Craft::$app->getImages();
         if (strtolower($asset->getExtension()) === 'svg' && $index->detectedFormat !== 'svg') {
             $image = $images->loadImage($imageSource, true, max($transform->width, $transform->height));
         } else {

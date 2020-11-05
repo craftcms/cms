@@ -12,7 +12,6 @@ use Craft;
 use craft\enums\LicenseKeyStatus;
 use craft\errors\InvalidLicenseKeyException;
 use craft\errors\InvalidPluginException;
-use yii\base\Exception;
 
 /**
  * Craftnet API helper.
@@ -99,16 +98,12 @@ abstract class Api
     public static function platformVersions(bool $useComposerOverrides = false): array
     {
         // Let Composer's PlatformRepository do most of the work
-        $overrides = [];
         if ($useComposerOverrides) {
-            try {
-                $jsonPath = Craft::$app->getComposer()->getJsonPath();
-                $config = Json::decode(file_get_contents($jsonPath));
-                $overrides = $config['config']['platform'] ?? [];
-            } catch (Exception $e) {
-                // couldn't locate composer.json - NBD
-            }
+            $overrides = Craft::$app->getComposer()->getConfig()['config']['platform'] ?? [];
+        } else {
+            $overrides = [];
         }
+
         $repo = new PlatformRepository([], $overrides);
 
         $versions = [];
@@ -173,14 +168,14 @@ abstract class Api
         if (isset($headers['x-craft-plugin-license-statuses'])) {
             $pluginLicenseInfo = explode(',', reset($headers['x-craft-plugin-license-statuses']));
             foreach ($pluginLicenseInfo as $info) {
-                list($pluginHandle, $pluginLicenseStatus) = explode(':', $info);
+                [$pluginHandle, $pluginLicenseStatus] = explode(':', $info);
                 $pluginLicenseStatuses[$pluginHandle] = $pluginLicenseStatus;
             }
         }
         if (isset($headers['x-craft-plugin-license-editions'])) {
             $pluginLicenseInfo = explode(',', reset($headers['x-craft-plugin-license-editions']));
             foreach ($pluginLicenseInfo as $info) {
-                list($pluginHandle, $pluginLicenseEdition) = explode(':', $info);
+                [$pluginHandle, $pluginLicenseEdition] = explode(':', $info);
                 $pluginLicenseEditions[$pluginHandle] = $pluginLicenseEdition;
             }
         }

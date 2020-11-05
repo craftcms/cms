@@ -46,6 +46,7 @@
             class: ['status-badge', status[0]],
             text: status[1][0:1]|upper,
             title: status[1],
+            'aria-label': status[1],
         }) }}
     {% endif %}
     {% if label or showAttribute %}
@@ -65,6 +66,7 @@
                                 icon: 'language',
                             },
                             title: translationDescription ?? 'This field is translatable.'|t('app'),
+                            'aria-label': translationDescription ?? 'This field is translatable.'|t('app'),
                         }) }}
                     {% endif -%}
                 {% endif %}

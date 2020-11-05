@@ -157,7 +157,7 @@ class GraphqlController extends Controller
         Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad = true;
 
         $result = [];
-        foreach ($queries as $key => list($query, $variables, $operationName)) {
+        foreach ($queries as $key => [$query, $variables, $operationName]) {
             try {
                 if (empty($query)) {
                     throw new InvalidValueException('No GraphQL query was supplied');
