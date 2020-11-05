@@ -1281,6 +1281,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             'isInstalled' => $isInstalled,
             'loginUrl' => UrlHelper::siteUrl($generalConfig->getLoginPath()),
             'logoutUrl' => UrlHelper::siteUrl($generalConfig->getLogoutPath()),
+            'setPasswordUrl' => UrlHelper::siteUrl($generalConfig->getSetPasswordRequestPath()),
             'now' => new DateTime(null, new \DateTimeZone(Craft::$app->getTimeZone()))
         ];
 

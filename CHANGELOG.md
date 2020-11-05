@@ -4,6 +4,7 @@
 
 ### Added
 - It’s now possible to save image transforms that generate WebP files, on environments that support it.
+- Added the `setPasswordUrl` global Twig variable.
 
 ### Fixed
 - Fixed a bug where `craft\elements\Asset::getSrcset()` would not respect the format of the transform set on the asset. ([#6660](https://github.com/craftcms/cms/issues/6660))
