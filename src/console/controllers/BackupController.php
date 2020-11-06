@@ -30,7 +30,7 @@ class BackupController extends Controller
      * @var bool Whether the backup should be saved as a zip file.
      * @since 3.5.0
      */
-    public $zip = false;
+    public $zip = true;
 
     /**
      * @var bool Whether to overwrite an existing backup file, if a specific file path is given.
