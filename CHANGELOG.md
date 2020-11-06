@@ -25,6 +25,7 @@
 ### Fixed
 - Fixed a PHP error that could occur on the System Report utility if Craft was installed using Composer 1.
 - Fixed a PHP error that could occur on the System Report utility if the wrong `Composer\Semver\VersionParser\InstalledVersions` class was autoloaded.
+- Fix a bug where the `maxGraphqlResults` setting could cause no results to be returned. when using GraphQL API.
 
 ## 3.6.0-beta.2 - 2020-11-04
 
