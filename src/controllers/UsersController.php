@@ -2044,6 +2044,10 @@ class UsersController extends Controller
 
         // If the invalidUserTokenPath config setting is set, send them there
         if ($this->request->getIsSiteRequest()) {
+            if (!$user->unverifiedEmail) {
+                $this->setFailFlash(Craft::t('app', 'Email is already verified'));
+            }
+
             $url = Craft::$app->getConfig()->getGeneral()->getInvalidUserTokenPath();
             return $this->redirect(UrlHelper::siteUrl($url));
         }
