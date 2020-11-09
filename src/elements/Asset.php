@@ -983,6 +983,11 @@ class Asset extends Element
         }
 
         foreach ($sizes as $size) {
+            if ($size === '1x') {
+                $srcset[] = $this->getUrl();
+                continue;
+            }
+
             list($value, $unit) = Assets::parseSrcsetSize($size);
 
             $sizeTransform = [];
@@ -1005,7 +1010,7 @@ class Asset extends Element
                 $sizeTransform['format'] = $transform->format;
             }
 
-            $srcset[] = $this->getUrl($sizeTransform) . ($size !== '1x' ? " $value$unit" : '');
+            $srcset[] = $this->getUrl($sizeTransform) . " $value$unit";
         }
 
         return implode(', ', $srcset);
