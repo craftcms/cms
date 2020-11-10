@@ -17,6 +17,7 @@
 - Fixed a PHP error that occurred if a test called `craft\test\fixtures\elements\ElementFixture::getModel()`. ([#7089](https://github.com/craftcms/cms/issues/7089))
 - Fixed a bug where `1x` image transforms weren’t using the original image transform.
 - Fixed a bug where sometimes Craft could not process an uploaded file if its extension was in uppercase.
+- Fixed a bug where progress bar was not removed correctly when using the Asset Indexes utility. ([#7111](https://github.com/craftcms/cms/issues/7111))
 
 ## 3.5.15.1 - 2020-11-04
 
