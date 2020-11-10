@@ -239,6 +239,13 @@ class Images extends Component
         // Find out how much memory this image is going to need.
         $imageInfo = getimagesize($filePath);
 
+        // If we can't find out the imagesize, chances are, we won't be able to anything about it.
+        if (!is_array($imageInfo)) {
+            Craft::warning('Could not determine image information for ' . $filePath);
+
+            return false;
+        }
+
         $K64 = 65536;
         $tweakFactor = 1.7;
         $bits = $imageInfo['bits'] ?? 8;

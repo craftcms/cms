@@ -18,6 +18,7 @@
 - Fixed a bug where `1x` image transforms weren’t using the original image transform.
 - Fixed a bug where sometimes Craft could not process an uploaded file if its extension was in uppercase.
 - Fixed a bug where progress bar was not removed correctly when using the Asset Indexes utility. ([#7111](https://github.com/craftcms/cms/issues/7111))
+- Fixed a PHP error that occurred if image size information could not be parsed from an image file. ([#6898](https://github.com/craftcms/cms/issues/6898))
 
 ## 3.5.15.1 - 2020-11-04
 
