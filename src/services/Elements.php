@@ -761,7 +761,13 @@ class Elements extends Component
         // Force propagation for new elements
         $propagate = !$element->id || $propagate;
 
-        return $this->_saveElementInternal($element, $runValidation, $propagate, $updateSearchIndex);
+        // Not currently being duplicated
+        $duplicateOf = $element->duplicateOf;
+        $element->duplicateOf = null;
+
+        $success = $this->_saveElementInternal($element, $runValidation, $propagate, $updateSearchIndex);
+        $element->duplicateOf = $duplicateOf;
+        return $success;
     }
 
     /**

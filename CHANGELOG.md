@@ -19,6 +19,7 @@
 - Fixed a bug where sometimes Craft could not process an uploaded file if its extension was in uppercase.
 - Fixed a bug where progress bar was not removed correctly when using the Asset Indexes utility. ([#7111](https://github.com/craftcms/cms/issues/7111))
 - Fixed a PHP error that occurred if image size information could not be parsed from an image file. ([#6898](https://github.com/craftcms/cms/issues/6898))
+- Fixed a bug where elements wouldn’t get fully saved if they were passed to `craft\services\Elements::saveElement()` from their `EVENT_AFTER_PROPAGATE` event. ([#7108](https://github.com/craftcms/cms/issues/7108))
 
 ## 3.5.15.1 - 2020-11-04
 
