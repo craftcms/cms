@@ -185,6 +185,7 @@
 
                 Craft.postActionRequest('utilities/asset-index-perform-action', {params: params}, function (response) {
                     if (response.confirm) {
+                        this.hideProgressBar();
                         this.showConfirmDialog(response);
                     } else {
                         this.onComplete();
@@ -192,20 +193,23 @@
                 }.bind(this));
             },
 
+            hideProgressBar: function () {
+                this.progressBar.$progressBarStatus.addClass('hidden');
+                this.progressBar.$progressBar.velocity({opacity: 0}, {
+                    duration: 'fast'
+                });
+            },
+
             onComplete: function() {
+                this.hideProgressBar();
+
                 if (!this.$allDone) {
                     this.$allDone = $('<div class="alldone" data-icon="done" />').appendTo(this.$status);
                     this.$allDone.css('opacity', 0);
+                    this.$allDone.velocity({opacity: 1}, {duration: 'fast'});
+                    this.$trigger.removeClass('disabled');
+                    this.$trigger.trigger('focus');
                 }
-
-                this.progressBar.$progressBarStatus.addClass('hidden');
-                this.progressBar.$progressBar.velocity({opacity: 0}, {
-                    duration: 'fast', complete: $.proxy(function() {
-                        this.$allDone.velocity({opacity: 1}, {duration: 'fast'});
-                        this.$trigger.removeClass('disabled');
-                        this.$trigger.trigger('focus');
-                    }, this)
-                });
             }
         },
         {
