@@ -11,6 +11,7 @@
 - Added `craft\helpers\Gql::eagerLoadComplexity()`.
 - Added `craft\helpers\Gql::nPlus1Complexity()`.
 - Added `craft\helpers\Gql::singleQueryComplexity()`.
+- Added `craft\log\Dispatcher`.
 - Added `craft\services\Gql::GRAPHQL_COMPLEXITY_CPU_HEAVY`.
 - Added `craft\services\Gql::GRAPHQL_COMPLEXITY_EAGER_LOAD`.
 - Added `craft\services\Gql::GRAPHQL_COMPLEXITY_NPLUS1`.
@@ -18,9 +19,13 @@
 - Added `craft\services\Gql::GRAPHQL_COMPLEXITY_SIMPLE_FIELD`.
 
 ### Changed
+- It’s now possible to add new log targets by overriding `components.log.target` in `config/app.php`, rather than the entire `log` component config.
 - `craft\services\Gql::getValidationRules()` now has an `$isIntrospectionQuery` argument.
 - Updated LitEmoji ot 2.x.
 - Updated webonyx/graphql-php to 14.x.
+
+### Deprecated
+- Deprecated `craft\helpers\App::logConfig()`.
 
 ### Fixed
 - Fixed a PHP error that could occur on the System Report utility if Craft was installed using Composer 1.

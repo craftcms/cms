@@ -71,6 +71,9 @@ return [
         'images' => [
             'class' => craft\services\Images::class,
         ],
+        'log' => [
+            'class' => craft\log\Dispatcher::class,
+        ],
         'matrix' => [
             'class' => craft\services\Matrix::class,
         ],
@@ -245,11 +248,6 @@ return [
 
             // Default to the application language
             return $i18n->getLocaleById(Craft::$app->language);
-        },
-
-        'log' => function() {
-            $config = craft\helpers\App::logConfig();
-            return $config ? Craft::createObject($config) : null;
         },
 
         'mailer' => function() {
