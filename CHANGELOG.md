@@ -2,6 +2,8 @@
 
 ## Unreleased (3.6)
 
+> {warning} If you have a custom session driver, make sure you update it for Yii 2.0.29 compatibility.
+
 ### Added
 - Added the `disableGraphqlTransformDirective` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
 - Added the `enableGraphqlIntrospection` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
@@ -23,6 +25,8 @@
 ### Changed
 - It’s now possible to add new log targets by overriding `components.log.target` in `config/app.php`, rather than the entire `log` component config.
 - `craft\services\Gql::getValidationRules()` now has an `$isIntrospectionQuery` argument.
+- Updated Yii to 2.0.39.
+- Updated Composer to 2.0.6.
 - Updated LitEmoji ot 2.x.
 - Updated webonyx/graphql-php to 14.x.
 
@@ -81,6 +85,11 @@
 - Fixed a bug where `craft\elements\Asset::getSrcset()` would not respect the format of the transform set on the asset. ([#6660](https://github.com/craftcms/cms/issues/6660))
 - Fixed a bug where Craft could attempt to use the Imagick driver even if it wasn’t available.
 - Fixed a PHP error that occurred if a test called `craft\test\fixtures\elements\ElementFixture::getModel()`. ([#7089](https://github.com/craftcms/cms/issues/7089))
+- Fixed a bug where `1x` image transforms weren’t using the original image transform.
+- Fixed a bug where sometimes Craft could not process an uploaded file if its extension was in uppercase.
+- Fixed a bug where progress bar was not removed correctly when using the Asset Indexes utility. ([#7111](https://github.com/craftcms/cms/issues/7111))
+- Fixed a PHP error that occurred if image size information could not be parsed from an image file. ([#6898](https://github.com/craftcms/cms/issues/6898))
+- Fixed a bug where elements wouldn’t get fully saved if they were passed to `craft\services\Elements::saveElement()` from their `EVENT_AFTER_PROPAGATE` event. ([#7108](https://github.com/craftcms/cms/issues/7108))
 
 ## 3.5.15.1 - 2020-11-04
 
