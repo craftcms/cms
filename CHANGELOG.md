@@ -2,6 +2,8 @@
 
 ## Unreleased (3.6)
 
+> {warning} If you have a custom session driver, make sure you update it for Yii 2.0.29 compatibility.
+
 ### Added
 - Added the `disableGraphqlTransformDirective` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
 - Added the `enableGraphqlIntrospection` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
@@ -21,6 +23,8 @@
 ### Changed
 - It’s now possible to add new log targets by overriding `components.log.target` in `config/app.php`, rather than the entire `log` component config.
 - `craft\services\Gql::getValidationRules()` now has an `$isIntrospectionQuery` argument.
+- Updated Yii to 2.0.39.
+- Updated Composer to 2.0.6.
 - Updated LitEmoji ot 2.x.
 - Updated webonyx/graphql-php to 14.x.
 

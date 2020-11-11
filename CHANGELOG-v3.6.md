@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+> {warning} If you have a custom session driver, make sure you update it for Yii 2.0.29 compatibility.
+
 ### Added
 - Craft now requires PHP 7.2.5 or later.
 - Added the `users/list-admins` and `users/set-password` commands. ([#7067](https://github.com/craftcms/cms/issues/7067))
@@ -26,8 +28,9 @@
 - `craft\services\Composer::install()` no longer has an `$allowlist` argument.
 - `craft\services\Gql::getValidationRules()` now has an `$isIntrospectionQuery` argument.
 - Craft no longer reports PHP deprecation errors.
+- Updated Yii to 2.0.39.
 - Updated Guzzle to 7.x, for projects that don’t have any plugins that require Guzzle 6. ([#6997](https://github.com/craftcms/cms/issues/6997))
-- Updated Composer to 2.0.4.
+- Updated Composer to 2.0.6.
 - Updated LitEmoji ot 2.x.
 - Updated the Symfony Yaml component to 5.x.
 - Updated webonyx/graphql-php to 14.x.
