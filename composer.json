@@ -45,7 +45,7 @@
     "symfony/yaml": "^5.1.8",
     "true/punycode": "^2.1.1",
     "twig/twig": "~2.14.1",
-    "voku/portable-utf8": "^5.4.47",
+    "voku/portable-utf8": "^5.4.48",
     "voku/stringy": "^6.4.0",
     "webonyx/graphql-php": "^14.3.0",
     "yii2tech/ar-softdelete": "^1.0.4",
