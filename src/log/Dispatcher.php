@@ -26,11 +26,13 @@ class Dispatcher extends \yii\log\Dispatcher
     {
         parent::init();
 
+        $devModeLogging = $this->_devModeLogging();
         $isConsoleRequest = Craft::$app->getRequest()->getIsConsoleRequest();
+
         if ($isConsoleRequest || Craft::$app->getUser()->enableSession) {
             $generalConfig = Craft::$app->getConfig()->getGeneral();
 
-            $targetConfig = [
+            $fileTargetConfig = [
                 'class' => FileTarget::class,
                 'fileMode' => $generalConfig->defaultFileMode,
                 'dirMode' => $generalConfig->defaultDirMode,
@@ -41,18 +43,51 @@ class Dispatcher extends \yii\log\Dispatcher
             ];
 
             if ($isConsoleRequest) {
-                $targetConfig['logFile'] = '@storage/logs/console.log';
+                $fileTargetConfig['logFile'] = '@storage/logs/console.log';
             } else {
-                $targetConfig['logFile'] = '@storage/logs/web.log';
+                $fileTargetConfig['logFile'] = '@storage/logs/web.log';
             }
 
-            // Only log errors and warnings, unless Craft is running in Dev Mode or it's being installed/updated
-            // (Explicitly check GeneralConfig::$devMode here, because YII_DEBUG is always `1` for console requests.)
-            if (!$generalConfig->devMode && Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
-                $targetConfig['levels'] = Logger::LEVEL_ERROR | Logger::LEVEL_WARNING;
+            if (!$devModeLogging) {
+                $fileTargetConfig['levels'] = Logger::LEVEL_ERROR | Logger::LEVEL_WARNING;
             }
 
-            $this->targets['__craft'] = Craft::createObject($targetConfig);
+            $this->targets['__craftFileTarget'] = Craft::createObject($fileTargetConfig);
+
+            if (defined('CRAFT_STREAM_LOG') && CRAFT_STREAM_LOG === true) {
+                $streamErrLogTarget = [
+                    'class' => StreamLogTarget::class,
+                    'url' => 'php://stderr',
+                    'levels' => Logger::LEVEL_ERROR | Logger::LEVEL_WARNING,
+                    'includeUserIp' => $generalConfig->storeUserIps,
+                ];
+
+                $this->targets['__craftStreamErrTarget'] = Craft::createObject($streamErrLogTarget);
+
+                if ($devModeLogging) {
+                    $streamOutLogTarget = [
+                        'class' => StreamLogTarget::class,
+                        'url' => 'php://stdout',
+                        'includeUserIp' => $generalConfig->storeUserIps,
+                    ];
+
+                    $this->targets['__craftStreamOutTarget'] = Craft::createObject($streamOutLogTarget);
+                }
+            }
         }
+    }
+
+    /**
+     * @return bool
+     */
+    private function _devModeLogging(): bool
+    {
+        // Only log errors and warnings, unless Craft is running in Dev Mode or it's being installed/updated
+        // (Explicitly check GeneralConfig::$devMode here, because YII_DEBUG is always `1` for console requests.)
+        if (!Craft::$app->getConfig()->getGeneral()->devMode && Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
+            return false;
+        }
+
+        return true;
     }
 }
