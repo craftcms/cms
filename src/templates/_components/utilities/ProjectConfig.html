@@ -120,17 +120,19 @@
     </form>
 {% endif %}
 
-<hr>
+{% if not craft.app.projectConfig.readOnly %}
+    <hr>
 
-<form method="post" action="" accept-charset="UTF-8">
-    <h2>{{ 'Rebuild the Config'|t('app') }}</h2>
-    <p>{{ 'Rebuild the project config based on the data stored throughout the database.'|t('app') }}</p>
-    {{ actionInput('project-config/rebuild') }}
-    {{ csrfInput() }}
-    <div class="buttons">
-        <button type="submit" class="btn secondary">{{ 'Rebuild'|t('app') }}</button>
-    </div>
-</form>
+    <form method="post" action="" accept-charset="UTF-8">
+        <h2>{{ 'Rebuild the Config'|t('app') }}</h2>
+        <p>{{ 'Rebuild the project config based on the data stored throughout the database.'|t('app') }}</p>
+        {{ actionInput('project-config/rebuild') }}
+        {{ csrfInput() }}
+        <div class="buttons">
+            <button type="submit" class="btn secondary">{{ 'Rebuild'|t('app') }}</button>
+        </div>
+    </form>
+{% endif %}
 
 <hr>
 

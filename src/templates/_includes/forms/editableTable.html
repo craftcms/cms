@@ -130,7 +130,7 @@
                                         {% if static %}
                                             <pre class="disabled">{{ value }}</pre>
                                         {% else %}
-                                            <textarea name="{{ cellName }}" rows="1"{% if col.placeholder is defined %} placeholder="{{ col.placeholder }}"{% endif %}>{{ value }}</textarea>
+                                            <textarea name="{{ cellName }}" rows="{{ col.rows ?? 1 }}"{% if col.placeholder is defined %} placeholder="{{ col.placeholder }}"{% endif %}>{{ value }}</textarea>
                                         {% endif %}
                                 {%- endswitch -%}
                             {% endblock %}

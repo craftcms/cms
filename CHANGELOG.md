@@ -79,6 +79,7 @@
 - Added `craft\gql\GqlEntityRegistry::setPrefix()`.
 
 ### Changed
+- Editable table columns can now specify the `<textarea rows>` attribute value via a `rows` key on the column config. ([#7124](https://github.com/craftcms/cms/issues/7124))
 - Updated Imagine to 1.2.4.
 
 ### Fixed
@@ -90,6 +91,8 @@
 - Fixed a bug where progress bar was not removed correctly when using the Asset Indexes utility. ([#7111](https://github.com/craftcms/cms/issues/7111))
 - Fixed a PHP error that occurred if image size information could not be parsed from an image file. ([#6898](https://github.com/craftcms/cms/issues/6898))
 - Fixed a bug where elements wouldn’t get fully saved if they were passed to `craft\services\Elements::saveElement()` from their `EVENT_AFTER_PROPAGATE` event. ([#7108](https://github.com/craftcms/cms/issues/7108))
+- Fixed a bug where formatted dates could use the wrong timezone for certain format characters.
+- Fixed a bug where it was possible to rebuild the project config when `allowAdminChanges` was disabled, from the Project Config utility. ([#7125](https://github.com/craftcms/cms/issues/7125))
 
 ## 3.5.15.1 - 2020-11-04
 
