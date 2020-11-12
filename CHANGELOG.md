@@ -20,6 +20,7 @@
 - Fixed a bug where progress bar was not removed correctly when using the Asset Indexes utility. ([#7111](https://github.com/craftcms/cms/issues/7111))
 - Fixed a PHP error that occurred if image size information could not be parsed from an image file. ([#6898](https://github.com/craftcms/cms/issues/6898))
 - Fixed a bug where elements wouldn’t get fully saved if they were passed to `craft\services\Elements::saveElement()` from their `EVENT_AFTER_PROPAGATE` event. ([#7108](https://github.com/craftcms/cms/issues/7108))
+- Fixed a bug where formatted dates could use the wrong timezone for certain format characters.
 
 ## 3.5.15.1 - 2020-11-04
 
@@ -3460,7 +3461,6 @@
 - Fixed a bug where Number fields would attempt to save non-numeric values. ([craftcms/feed-me#527](https://github.com/craftcms/feed-me/issues/527))
 - Fixed a bug where it was possible to assign a Structure entry or category to a new parent, even if that would cause its descendants to violate the Max Levels setting. ([#4279](https://github.com/craftcms/cms/issues/4279))
 - Fixed an error that could occur when rendering a template from a console request, if the template contained any non-global `{% cache %}` tags. ([#4284](https://github.com/craftcms/cms/pull/4284))
-- Fixed a bug where formatted dates could use the wrong timezone for certain format characters.
 
 ## 3.1.27 - 2019-05-14
 
