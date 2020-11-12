@@ -1400,4 +1400,13 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      * @return int[] The resulting element IDs. An empty array is returned if no elements are found.
      */
     public function ids($db = null): array;
+
+    /**
+     * Converts a found row into an element instance.
+     *
+     * @param array $row
+     * @return ElementInterface
+     * @since 3.6.0
+     */
+    public function createElement(array $row): ElementInterface;
 }
