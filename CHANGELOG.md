@@ -9,6 +9,7 @@
 - Added `craft\gql\GqlEntityRegistry::setPrefix()`.
 
 ### Changed
+- Editable table columns can now specify the `<textarea rows>` attribute value via a `rows` key on the column config. ([#7124](https://github.com/craftcms/cms/issues/7124))
 - Updated Imagine to 1.2.4.
 
 ### Fixed

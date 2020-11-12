@@ -378,7 +378,7 @@ Craft.EditableTable = Garnish.Base.extend(
                         default:
                             $('<textarea/>', {
                                 'name': name,
-                                'rows': 1,
+                                'rows': col.rows || 1,
                                 'val': value,
                                 'placeholder': col.placeholder
                             }).appendTo($cell);
