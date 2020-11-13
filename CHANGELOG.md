@@ -7,6 +7,7 @@
 - Added the `setPasswordUrl` global Twig variable.
 - Added `craft\gql\GqlEntityRegistry::getPrefix()`.
 - Added `craft\gql\GqlEntityRegistry::setPrefix()`.
+- Added `craft\helpers\StringHelper::idnToUtf8Email()`.
 
 ### Changed
 - Editable table columns can now specify the `<textarea rows>` attribute value via a `rows` key on the column config. ([#7124](https://github.com/craftcms/cms/issues/7124))
@@ -24,6 +25,7 @@
 - Fixed a bug where formatted dates could use the wrong timezone for certain format characters.
 - Fixed a bug where it was possible to discard pending project config YAML changes, or rebuild the project config, when `allowAdminChanges` was disabled, from the Project Config utility. ([#7125](https://github.com/craftcms/cms/issues/7125))
 - Fixed an error that occurred when attempting to backup the database when the database connection used a Unix socket. ([#7121](https://github.com/craftcms/cms/issues/7121))
+- Fixed a bug where IDNA ASCII emails and usernames weren’t getting converted back to Unicode. ([#7103](https://github.com/craftcms/cms/issues/7103))
 
 ## 3.5.15.1 - 2020-11-04
 

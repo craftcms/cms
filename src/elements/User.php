@@ -24,6 +24,7 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Html;
 use craft\helpers\Json;
+use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use craft\models\UserGroup;
@@ -600,6 +601,14 @@ class User extends Element implements IdentityInterface
         ) {
             Craft::$app->getUsers()->unlockUser($this);
         }
+
+        // Convert IDNA ASCII to Unicode
+        if ($this->username) {
+            $this->username = StringHelper::idnToUtf8Email($this->username);
+        }
+        if ($this->email) {
+            $this->email = StringHelper::idnToUtf8Email($this->email);
+        }
     }
 
     /**
@@ -679,11 +688,14 @@ class User extends Element implements IdentityInterface
      */
     protected function defineRules(): array
     {
+        // Normalize emails as IDNA ASCII strings if the Intl extension is available
+        $enableIdn = function_exists('idn_to_ascii') && defined('INTL_IDNA_VARIANT_UTS46');
+
         $rules = parent::defineRules();
         $rules[] = [['lastLoginDate', 'lastInvalidLoginDate', 'lockoutDate', 'lastPasswordChangeDate', 'verificationCodeIssuedDate'], DateTimeValidator::class];
         $rules[] = [['invalidLoginCount', 'photoId'], 'number', 'integerOnly' => true];
         $rules[] = [['username', 'email', 'unverifiedEmail', 'firstName', 'lastName'], 'trim', 'skipOnEmpty' => true];
-        $rules[] = [['email', 'unverifiedEmail'], 'email'];
+        $rules[] = [['email', 'unverifiedEmail'], 'email', 'enableIDN' => $enableIdn];
         $rules[] = [['email', 'password', 'unverifiedEmail'], 'string', 'max' => 255];
         $rules[] = [['username', 'firstName', 'lastName', 'verificationCode'], 'string', 'max' => 100];
         $rules[] = [['username', 'email'], 'required'];
