@@ -23,7 +23,7 @@
 - Fixed a bug where elements wouldn’t get fully saved if they were passed to `craft\services\Elements::saveElement()` from their `EVENT_AFTER_PROPAGATE` event. ([#7108](https://github.com/craftcms/cms/issues/7108))
 - Fixed a bug where formatted dates could use the wrong timezone for certain format characters.
 - Fixed a bug where it was possible to rebuild the project config when `allowAdminChanges` was disabled, from the Project Config utility. ([#7125](https://github.com/craftcms/cms/issues/7125))
-- Fixed a bug where Craft's database backups wouldn’t work if you were connecting via a Unix socket. ([#7121](https://github.com/craftcms/cms/issues/7121))
+- Fixed an error that occurred when attempting to backup the database when the database connection used a Unix socket. ([#7121](https://github.com/craftcms/cms/issues/7121))
 
 ## 3.5.15.1 - 2020-11-04
 
