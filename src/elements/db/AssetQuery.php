@@ -793,9 +793,9 @@ class AssetQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    public function populate($rows)
+    public function afterPopulate(array $elements): array
     {
-        $elements = parent::populate($rows);
+        $elements = parent::afterPopulate($elements);
 
         // Eager-load transforms?
         if ($this->withTransforms && !$this->asArray) {

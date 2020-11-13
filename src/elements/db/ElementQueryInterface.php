@@ -1409,4 +1409,13 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      * @since 3.6.0
      */
     public function createElement(array $row): ElementInterface;
+
+    /**
+     * Performs any post-population processing on elements.
+     *
+     * @param ElementInterface[]|array[] $elements the populated elements
+     * @return ElementInterface[]|array[]
+     * @since 3.6.0
+     */
+    public function afterPopulate(array $elements): array;
 }

@@ -2187,6 +2187,12 @@ class Elements extends Component
                     }
                 }
 
+                // Pass the instantiated elements to afterPopulate()
+                if (!empty($targetElements)) {
+                    $query->asArray = false;
+                    $query->afterPopulate(array_merge(...$targetElements));
+                }
+
                 // Now eager-load any sub paths
                 if (!empty($map['map']) && !empty($plan->nested)) {
                     $this->_eagerLoadElementsInternal($map['elementType'], array_map('array_values', $targetElements), $plan->nested);

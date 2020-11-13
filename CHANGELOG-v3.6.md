@@ -13,6 +13,7 @@
 - Added the `maxGraphqlDepth` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
 - Added the `maxGraphqlResults` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
 - Added `craft\console\Controller::passwordPrompt()`.
+- Added `craft\elements\db\ElementQueryInterface::afterPopulate()`.
 - Added `craft\elements\db\ElementQueryInterface::createElement()`.
 - Added `craft\helpers\Gql::eagerLoadComplexity()`.
 - Added `craft\helpers\Gql::nPlus1Complexity()`.
@@ -45,3 +46,6 @@
 ### Removed
 - Removed Minify and jsmin-php.
 - Removed `craft\services\Api::getComposerWhitelist()`.
+
+### Fixed
+- Fixed a bug where asset queries’ `withTransforms` param wasn’t being respected for eager-loaded assets. ([#6140](https://github.com/craftcms/cms/issues/6140))

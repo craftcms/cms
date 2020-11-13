@@ -11,6 +11,7 @@
 - Added the `maxGraphqlDepth` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
 - Added the `maxGraphqlResults` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
 - Added the `CRAFT_STREAM_LOG` PHP constant, which, if set to `true`, will send log output to `stderr` and `stdout`.
+- Added `craft\elements\db\ElementQueryInterface::afterPopulate()`.
 - Added `craft\elements\db\ElementQueryInterface::createElement()`.
 - Added `craft\helpers\Gql::eagerLoadComplexity()`.
 - Added `craft\helpers\Gql::nPlus1Complexity()`.
@@ -38,6 +39,7 @@
 - Fixed a PHP error that could occur on the System Report utility if Craft was installed using Composer 1.
 - Fixed a PHP error that could occur on the System Report utility if the wrong `Composer\Semver\VersionParser\InstalledVersions` class was autoloaded.
 - Fixed a bug where the `maxGraphqlResults` setting could cause no results to be returned via GraphQL.
+- Fixed a bug where asset queries’ `withTransforms` param wasn’t being respected for eager-loaded assets. ([#6140](https://github.com/craftcms/cms/issues/6140))
 
 ## 3.6.0-beta.2 - 2020-11-04
 

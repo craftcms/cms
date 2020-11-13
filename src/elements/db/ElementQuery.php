@@ -1458,7 +1458,16 @@ class ElementQuery extends Query implements ElementQueryInterface
             }
         }
 
-        return $this->_createElements($rows);
+        $elements = $this->_createElements($rows);
+        return $this->afterPopulate($elements);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterPopulate(array $elements): array
+    {
+        return $elements;
     }
 
     /**
