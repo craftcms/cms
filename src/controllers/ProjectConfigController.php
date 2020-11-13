@@ -55,11 +55,18 @@ class ProjectConfigController extends Controller
      *
      * @return Response
      * @since 3.5.6
+     * @throws ForbiddenHttpException if the project config is in read-only mode
      */
     public function actionDiscard(): Response
     {
         $this->requirePostRequest();
-        Craft::$app->getProjectConfig()->regenerateYamlFromConfig();
+        $projectConfig = Craft::$app->getProjectConfig();
+
+        if ($projectConfig->readOnly) {
+            throw new ForbiddenHttpException('Rebuilding the project config is not allowed while it’s in read-only mode.');
+        }
+
+        $projectConfig->regenerateYamlFromConfig();
         $this->setSuccessFlash(Craft::t('app', 'Project config YAML changes discarded.'));
         return $this->redirectToPostedUrl();
     }
