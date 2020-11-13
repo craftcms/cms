@@ -10,6 +10,7 @@
 - Added `craft\helpers\StringHelper::idnToUtf8Email()`.
 
 ### Changed
+- The Settings → Users → Fields and Settings → Users → Settings pages no longer redirect the browser when saved. ([#7131](https://github.com/craftcms/cms/pull/7131))
 - Editable table columns can now specify the `<textarea rows>` attribute value via a `rows` key on the column config. ([#7124](https://github.com/craftcms/cms/issues/7124))
 - Updated Imagine to 1.2.4.
 
