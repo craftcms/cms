@@ -778,7 +778,7 @@ class Volumes extends Component
                 'fieldLayoutId',
                 'type',
                 'settings',
-                'uid'
+                'uid',
             ])
             ->from([Table::VOLUMES])
             ->orderBy(['sortOrder' => SORT_ASC]);

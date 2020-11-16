@@ -9,8 +9,10 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\VolumeInterface;
+use craft\db\Table;
 use craft\elements\Asset;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\volumes\Local;
@@ -165,15 +167,17 @@ class VolumesController extends Controller
         $volumeId = $this->request->getBodyParam('volumeId') ?: null;
 
         if ($volumeId) {
-            $savedVolume = $volumesService->getVolumeById($volumeId);
-            if (!$savedVolume) {
+            $volumeUid = Db::uidById(Table::VOLUMES, $volumeId);
+            if (!$volumeUid) {
                 throw new BadRequestHttpException("Invalid volume ID: $volumeId");
             }
+        } else {
+            $volumeUid = null;
         }
 
-        $volumeData = [
+        $volume = $volumesService->createVolume([
             'id' => $volumeId,
-            'uid' => $savedVolume->uid ?? null,
+            'uid' => $volumeUid,
             'sortOrder' => $savedVolume->sortOrder ?? null,
             'type' => $type,
             'name' => $this->request->getBodyParam('name'),
@@ -181,9 +185,7 @@ class VolumesController extends Controller
             'hasUrls' => (bool)$this->request->getBodyParam('hasUrls'),
             'url' => $this->request->getBodyParam('url'),
             'settings' => $this->request->getBodyParam('types.' . $type)
-        ];
-
-        $volume = $volumesService->createVolume($volumeData);
+        ]);
 
         // Set the field layout
         $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();

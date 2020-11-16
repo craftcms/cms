@@ -298,7 +298,7 @@ class SectionsController extends Controller
             'entryTypeId' => $entryTypeId,
             'entryType' => $entryType,
             'title' => $title,
-            'crumbs' => $crumbs
+            'crumbs' => $crumbs,
         ]);
     }
 
