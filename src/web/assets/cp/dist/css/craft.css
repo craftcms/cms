@@ -3026,7 +3026,9 @@ body.rtl #user-info { margin-left: 14px; }
 /* main container */
 #main-container { position: relative; -webkit-flex-grow: 1; flex-grow: 1; }
 
-#notifications { position: fixed; width: calc(100% - 226px); z-index: 101; display: -webkit-flex; display: flex; -webkit-justify-content: center; justify-content: center; -webkit-align-items: flex-start; align-items: flex-start; }
+#notifications { position: fixed; top: 0; width: 100%; z-index: 101; display: -webkit-flex; display: flex; -webkit-justify-content: center; justify-content: center; -webkit-align-items: flex-start; align-items: flex-start; }
+
+@media only screen and (min-width: 1200px) { #notifications { width: calc(100% - 226px); } }
 
 #notifications .notification { padding: 5px 10px; border-radius: 0 0 3px 3px; border-width: 0 1px 1px; color: #fff !important; pointer-events: auto; -moz-osx-font-smoothing: grayscale; -webkit-font-smoothing: antialiased; font-weight: 500; box-shadow: 0 1px 5px -1px rgba(31, 41, 51, 0.2); }
 
