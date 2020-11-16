@@ -1222,7 +1222,6 @@ If you were not expecting this email, just ignore it.',
     'Are you sure you want to uninstall {plugin}? You will lose all of its associated data.' => 'Are you sure you want to uninstall {plugin}? You will lose all of its associated data.',
     'Last Update' => 'Last Update',
     'Installed as a trial' => 'Installed as a trial',
-    'How should entry titles be translated?' => 'How should entry titles be translated?',
     'Automatic' => 'Automatic',
     'Of the enabled sites above, which sites should entries in this section be saved to?' => 'Of the enabled sites above, which sites should entries in this section be saved to?',
     'Advanced' => 'Advanced',
@@ -1744,5 +1743,7 @@ If you were not expecting this email, just ignore it.',
     'Save the loaded project config data to YAML files in your <code>{folder}</code> folder.' => 'Save the loaded project config data to YAML files in your <code>{folder}</code> folder.',
     'Generate' => 'Generate',
     'This update requires PHP {v1}, but your environment is currently running PHP {v2}.' => 'This update requires PHP {v1}, but your environment is currently running PHP {v2}.',
-    'This update requires PHP {v1}, but your composer.json file is currently set to PHP {v2}.' => 'This update requires PHP {v1}, but your composer.json file is currently set to PHP {v2}.'
+    'This update requires PHP {v1}, but your composer.json file is currently set to PHP {v2}.' => 'This update requires PHP {v1}, but your composer.json file is currently set to PHP {v2}.',
+    'How should {type} titles be translated?' => 'How should {type} titles be translated?',
+    'Template that defines the Title field’s custom “translation key” format. {type} titles will be copied to all sites that produce the same key. For example, to make titles translatable based on the first two characters of the site handle, you could enter `{site.handle[:2]}`.' => 'Template that defines the Title field’s custom “translation key” format. {type} titles will be copied to all sites that produce the same key. For example, to make titles translatable based on the first two characters of the site handle, you could enter `{site.handle[:2]}`.'
 ];

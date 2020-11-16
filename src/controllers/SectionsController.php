@@ -299,6 +299,8 @@ class SectionsController extends Controller
             'entryType' => $entryType,
             'title' => $title,
             'crumbs' => $crumbs,
+            'typeName' => Entry::displayName(),
+            'lowerTypeName' => Entry::lowerDisplayName(),
         ]);
     }
 

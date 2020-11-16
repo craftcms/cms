@@ -149,6 +149,8 @@ class VolumesController extends Controller
             'volumeInstances' => $volumeInstances,
             'title' => $title,
             'crumbs' => $crumbs,
+            'typeName' => Asset::displayName(),
+            'lowerTypeName' => Asset::lowerDisplayName(),
         ]);
     }
 
@@ -184,6 +186,8 @@ class VolumesController extends Controller
             'handle' => $this->request->getBodyParam('handle'),
             'hasUrls' => (bool)$this->request->getBodyParam('hasUrls'),
             'url' => $this->request->getBodyParam('url'),
+            'titleTranslationMethod' => $this->request->getBodyParam('titleTranslationMethod'),
+            'titleTranslationKeyFormat' => $this->request->getBodyParam('titleTranslationKeyFormat'),
             'settings' => $this->request->getBodyParam('types.' . $type)
         ]);
 

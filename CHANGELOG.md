@@ -5,14 +5,18 @@
 > {warning} If you have a custom session driver, make sure you update it for Yii 2.0.29 compatibility.
 
 ### Added
+- Volumes now have “Title Translation Method” and “Title Translation Key Format” settings, like entry types. ([#7135](https://github.com/craftcms/cms/issues/7135))
 - Added the `disableGraphqlTransformDirective` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
 - Added the `enableGraphqlIntrospection` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
 - Added the `maxGraphqlComplexity` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
 - Added the `maxGraphqlDepth` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
 - Added the `maxGraphqlResults` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
 - Added the `CRAFT_STREAM_LOG` PHP constant, which, if set to `true`, will send log output to `stderr` and `stdout`.
+- Added `craft\base\VolumeTrait::$titleTranslationMethod`.
+- Added `craft\base\VolumeTrait::$titleTranslationKeyFormat`.
 - Added `craft\elements\db\ElementQueryInterface::afterPopulate()`.
 - Added `craft\elements\db\ElementQueryInterface::createElement()`.
+- Added `craft\fieldlayoutelements\AssetTitleField`.
 - Added `craft\helpers\Gql::eagerLoadComplexity()`.
 - Added `craft\helpers\Gql::nPlus1Complexity()`.
 - Added `craft\helpers\Gql::singleQueryComplexity()`.
