@@ -81,12 +81,12 @@ abstract class ElementArguments extends Arguments
             ],
             'relatedTo' => [
                 'name' => 'relatedTo',
-                'type' => Type::listOf(Type::int()),
+                'type' => Type::listOf(QueryArgument::getType()),
                 'description' => 'Narrows the query results to elements that relate to *any* of the provided element IDs. This argument is ignored, if `relatedToAll` is also used.'
             ],
             'relatedToAll' => [
                 'name' => 'relatedToAll',
-                'type' => Type::listOf(Type::int()),
+                'type' => Type::listOf(QueryArgument::getType()),
                 'description' => 'Narrows the query results to elements that relate to *all* of the provided element IDs. Using this argument will cause `relatedTo` argument to be ignored.'
             ],
             'ref' => [
