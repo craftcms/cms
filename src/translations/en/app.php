@@ -565,7 +565,6 @@ return [
     'The uploaded file exceeds the maximum allowed size.' => 'The uploaded file exceeds the maximum allowed size.',
     'The uploaded file is not an image.' => 'The uploaded file is not an image.',
     'The user photo provided is not an image.' => 'The user photo provided is not an image.',
-    'The volume set for user photo storage is not valid.' => 'The volume set for user photo storage is not valid.',
     'There was a problem activating the user.' => 'There was a problem activating the user.',
     'There was a problem impersonating this user.' => 'There was a problem impersonating this user.',
     'There was a problem saving your message.' => 'There was a problem saving your message.',
@@ -1744,4 +1743,6 @@ If you were not expecting this email, just ignore it.',
     'Generate YAML Files' => 'Generate YAML Files',
     'Save the loaded project config data to YAML files in your <code>{folder}</code> folder.' => 'Save the loaded project config data to YAML files in your <code>{folder}</code> folder.',
     'Generate' => 'Generate',
+    'This update requires PHP {v1}, but your environment is currently running PHP {v2}.' => 'This update requires PHP {v1}, but your environment is currently running PHP {v2}.',
+    'This update requires PHP {v1}, but your composer.json file is currently set to PHP {v2}.' => 'This update requires PHP {v1}, but your composer.json file is currently set to PHP {v2}.'
 ];
