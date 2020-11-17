@@ -13,6 +13,7 @@
 - Added the `maxGraphqlComplexity` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
 - Added the `maxGraphqlDepth` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
 - Added the `maxGraphqlResults` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
+- Added `craft\base\ElementExporterInterface::isFormattable()`.
 - Added `craft\base\VolumeTrait::$titleTranslationMethod`.
 - Added `craft\base\VolumeTrait::$titleTranslationKeyFormat`.
 - Added `craft\console\Controller::passwordPrompt()`.
@@ -30,10 +31,12 @@
 - Added `craft\services\Gql::GRAPHQL_COMPLEXITY_NPLUS1`.
 - Added `craft\services\Gql::GRAPHQL_COMPLEXITY_QUERY`.
 - Added `craft\services\Gql::GRAPHQL_COMPLEXITY_SIMPLE_FIELD`.
+- Added the `Craft.index()` JavaScript method.
 
 ### Changed
 - Renamed the `backup` and `restore` commands to `db/backup` and `db/restore`. ([#7023](https://github.com/craftcms/cms/issues/7023))
 - Relational fields now include all related elements’ titles as search keywords, including disabled elements. ([#7079](https://github.com/craftcms/cms/issues/7079))
+- `craft\base\ElementExporterInterface::export()` can now return raw response data, or a resource, if `isFormattable()` returns `false`. If a resource is returned, it will be streamed to the browser. ([#7148](https://github.com/craftcms/cms/issues/7148))
 - `craft\services\Composer::install()` no longer has an `$allowlist` argument.
 - `craft\services\Gql::getValidationRules()` now has an `$isIntrospectionQuery` argument.
 - Craft no longer reports PHP deprecation errors.
@@ -52,6 +55,8 @@
 
 ### Removed
 - Removed Minify and jsmin-php.
+- Removed `craft\controllers\ElementIndexesController::actionCreateExportToken()`.
+- Removed `craft\controllers\ExportController`.
 - Removed `craft\services\Api::getComposerWhitelist()`.
 
 ### Fixed
