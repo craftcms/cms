@@ -18,6 +18,9 @@
 - Added `craft\console\Controller::passwordPrompt()`.
 - Added `craft\elements\db\ElementQueryInterface::afterPopulate()`.
 - Added `craft\elements\db\ElementQueryInterface::createElement()`.
+- Added `craft\elements\Entry::EVENT_DEFINE_ENTRY_TYPES`. ([#7136](https://github.com/craftcms/cms/issues/7136))
+- Added `craft\elements\Entry::getAvailableEntryTypes()`.
+- Added `craft\events\DefineEntryTypesEvent`.
 - Added `craft\fieldlayoutelements\AssetTitleField`.
 - Added `craft\helpers\Gql::eagerLoadComplexity()`.
 - Added `craft\helpers\Gql::nPlus1Complexity()`.

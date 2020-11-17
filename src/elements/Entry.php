@@ -25,6 +25,7 @@ use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
 use craft\errors\UnsupportedSiteException;
+use craft\events\DefineEntryTypesEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
@@ -56,6 +57,14 @@ class Entry extends Element
     const STATUS_LIVE = 'live';
     const STATUS_PENDING = 'pending';
     const STATUS_EXPIRED = 'expired';
+
+    /**
+     * @event DefineEntryTypesEvent The event that is triggered when defining the available entry types for the entry
+     *
+     * @see getAvailableEntryTypes()
+     * @since 3.6.0
+     */
+    const EVENT_DEFINE_ENTRY_TYPES = 'defineEntryTypes';
 
     /**
      * @inheritdoc
@@ -1025,6 +1034,29 @@ class Entry extends Element
     }
 
     /**
+     * Returns the available entry types for the entry.
+     *
+     * @return EntryType[]
+     * @throws InvalidConfigException
+     * @since 3.6.0
+     */
+    public function getAvailableEntryTypes(): array
+    {
+        $entryTypes = $this->getSection()->getEntryTypes();
+
+        // Fire a 'defineEntryTypes' event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_ENTRY_TYPES)) {
+            $event = new DefineEntryTypesEvent([
+                'entryTypes' => $entryTypes,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_ENTRY_TYPES, $event);
+            $entryTypes = $event->entryTypes;
+        }
+
+        return $entryTypes;
+    }
+
+    /**
      * Returns the entry type.
      *
      * ---
@@ -1295,7 +1327,7 @@ class Entry extends Element
 
         // Show the Entry Type field?
         if ($this->id === null) {
-            $entryTypes = $this->getSection()->getEntryTypes();
+            $entryTypes = $this->getAvailableEntryTypes();
 
             if (count($entryTypes) > 1) {
                 $entryTypeOptions = [];
