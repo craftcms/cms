@@ -4,6 +4,7 @@
 
 ### Added
 - It’s now possible to save image transforms that generate WebP files, on environments that support it.
+- It's now possible to bypass GraphQL cache by setting the `X-Craft-Gql-Cache` header value to `no-cache`. ([craftcms/gatsby-source-craft#8](https://github.com/craftcms/gatsby-source-craft/issues/8))
 - Added the `setPasswordUrl` global Twig variable.
 - Added `craft\gql\GqlEntityRegistry::getPrefix()`.
 - Added `craft\gql\GqlEntityRegistry::setPrefix()`.
