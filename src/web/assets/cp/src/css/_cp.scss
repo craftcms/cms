@@ -533,11 +533,16 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
 #notifications {
   position: fixed;
-  width: calc(100% - #{$sidebarWidth});
+  top: 0;
+  width: 100%;
   z-index: 101;
   display: flex;
   justify-content: center;
   align-items: flex-start;
+
+  @media only screen and (min-width: $minFullUiWidth) {
+    width: calc(100% - #{$sidebarWidth});
+  }
 
   .notification {
     padding: 5px 10px;

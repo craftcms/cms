@@ -87,9 +87,12 @@
 - Added the `setPasswordUrl` global Twig variable.
 - Added `craft\gql\GqlEntityRegistry::getPrefix()`.
 - Added `craft\gql\GqlEntityRegistry::setPrefix()`.
+- Added `craft\helpers\StringHelper::idnToUtf8Email()`.
 
 ### Changed
+- The Settings → Users → Fields and Settings → Users → Settings pages no longer redirect the browser when saved. ([#7131](https://github.com/craftcms/cms/pull/7131))
 - Editable table columns can now specify the `<textarea rows>` attribute value via a `rows` key on the column config. ([#7124](https://github.com/craftcms/cms/issues/7124))
+- The GraphQL query `relatedTo` and `relatedToAll` arguments now also allow string values.
 - Updated Imagine to 1.2.4.
 
 ### Fixed
@@ -102,7 +105,10 @@
 - Fixed a PHP error that occurred if image size information could not be parsed from an image file. ([#6898](https://github.com/craftcms/cms/issues/6898))
 - Fixed a bug where elements wouldn’t get fully saved if they were passed to `craft\services\Elements::saveElement()` from their `EVENT_AFTER_PROPAGATE` event. ([#7108](https://github.com/craftcms/cms/issues/7108))
 - Fixed a bug where formatted dates could use the wrong timezone for certain format characters.
-- Fixed a bug where it was possible to rebuild the project config when `allowAdminChanges` was disabled, from the Project Config utility. ([#7125](https://github.com/craftcms/cms/issues/7125))
+- Fixed a bug where it was possible to discard pending project config YAML changes, or rebuild the project config, when `allowAdminChanges` was disabled, from the Project Config utility. ([#7125](https://github.com/craftcms/cms/issues/7125))
+- Fixed an error that occurred when attempting to backup the database when the database connection used a Unix socket. ([#7121](https://github.com/craftcms/cms/issues/7121))
+- Fixed a bug where IDNA ASCII emails and usernames weren’t getting converted back to Unicode. ([#7103](https://github.com/craftcms/cms/issues/7103))
+- Fixed a bug where IDs returned by the GraphQL API could not be re-used in `relatedTo` and `relatedToAll` arguments without type-casting. ([#7128](https://github.com/craftcms/cms/issues/7128))
 
 ## 3.5.15.1 - 2020-11-04
 
