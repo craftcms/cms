@@ -76,6 +76,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         $selectAllCheckbox: null,
         showingActionTriggers: false,
         exporters: null,
+        exportersByType: null,
         _$detachedToolbarItems: null,
         _$triggers: null,
 
@@ -1734,6 +1735,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             // -------------------------------------------------------------
 
             this.exporters = response.exporters;
+            this.exportersByType = Craft.index(this.exporters, e => e.type);
 
             if (this.exporters && this.exporters.length) {
                 this.$exportBtn.removeClass('hidden');
@@ -1907,6 +1909,17 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 ],
                 'class': 'fullwidth',
             }).appendTo($form);
+
+            let $typeSelect = $typeField.find('select');
+            this.addListener($typeSelect, 'change', () => {
+                let type = $typeSelect.val();
+                if (this.exportersByType[type].formattable) {
+                    $formatField.removeClass('hidden');
+                } else {
+                    $formatField.addClass('hidden');
+                }
+            });
+            $typeSelect.trigger('change');
 
             // Only show the Limit field if there aren't any selected elements
             var selectedElementIds = this.view.getSelectedElementIds();

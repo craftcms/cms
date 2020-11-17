@@ -12,6 +12,7 @@
 - Added the `maxGraphqlDepth` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
 - Added the `maxGraphqlResults` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
 - Added the `CRAFT_STREAM_LOG` PHP constant, which, if set to `true`, will send log output to `stderr` and `stdout`.
+- Added `craft\base\ElementExporterInterface::isFormattable()`.
 - Added `craft\base\VolumeTrait::$titleTranslationMethod`.
 - Added `craft\base\VolumeTrait::$titleTranslationKeyFormat`.
 - Added `craft\elements\db\ElementQueryInterface::afterPopulate()`.
@@ -30,9 +31,11 @@
 - Added `craft\services\Gql::GRAPHQL_COMPLEXITY_NPLUS1`.
 - Added `craft\services\Gql::GRAPHQL_COMPLEXITY_QUERY`.
 - Added `craft\services\Gql::GRAPHQL_COMPLEXITY_SIMPLE_FIELD`.
+- Added the `Craft.index()` JavaScript method.
 
 ### Changed
 - It’s now possible to add new log targets by overriding `components.log.target` in `config/app.php`, rather than the entire `log` component config.
+- `craft\base\ElementExporterInterface::export()` can now return raw response data, or a resource, if `isFormattable()` returns `false`. If a resource is returned, it will be streamed to the browser. ([#7148](https://github.com/craftcms/cms/issues/7148))
 - `craft\services\Gql::getValidationRules()` now has an `$isIntrospectionQuery` argument.
 - Updated Yii to 2.0.39.
 - Updated Composer to 2.0.6.
@@ -41,6 +44,10 @@
 
 ### Deprecated
 - Deprecated `craft\helpers\App::logConfig()`.
+
+### Removed
+- Removed `craft\controllers\ElementIndexesController::actionCreateExportToken()`.
+- Removed `craft\controllers\ExportController`.
 
 ### Fixed
 - Fixed a PHP error that could occur on the System Report utility if Craft was installed using Composer 1.
