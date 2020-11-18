@@ -669,6 +669,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 cancelToken: this._createCancelToken(),
             }).then((response) => {
                 this.setIndexAvailable();
+                (this.settings.context === 'index' ? Garnish.$scrollContainer : this.$main).scrollTop(0);
                 this._updateView(params, response.data);
             }).catch(e => {
                 this.setIndexAvailable();
