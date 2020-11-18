@@ -42,7 +42,7 @@
 - Craft no longer reports PHP deprecation errors.
 - Updated Yii to 2.0.39.
 - Updated Guzzle to 7.x, for projects that don’t have any plugins that require Guzzle 6. ([#6997](https://github.com/craftcms/cms/issues/6997))
-- Updated Composer to 2.0.6.
+- Updated Composer to 2.0.7.
 - Updated LitEmoji ot 2.x.
 - Updated the Symfony Yaml component to 5.x.
 - Updated webonyx/graphql-php to 14.x.

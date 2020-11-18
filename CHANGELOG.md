@@ -38,7 +38,7 @@
 - `craft\base\ElementExporterInterface::export()` can now return raw response data, or a resource, if `isFormattable()` returns `false`. If a resource is returned, it will be streamed to the browser. ([#7148](https://github.com/craftcms/cms/issues/7148))
 - `craft\services\Gql::getValidationRules()` now has an `$isIntrospectionQuery` argument.
 - Updated Yii to 2.0.39.
-- Updated Composer to 2.0.6.
+- Updated Composer to 2.0.7.
 - Updated LitEmoji ot 2.x.
 - Updated webonyx/graphql-php to 14.x.
 
