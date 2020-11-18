@@ -761,7 +761,7 @@ class AssetTransforms extends Component
 
         $asset = Craft::$app->getAssets()->getAssetById($index->assetId);
         $volume = $asset->getVolume();
-        $index->detectedFormat = !empty($index->format) ? $index->format : $this->detectAutoTransformFormat($asset);
+        $index->detectedFormat = $index->format ?: $this->detectAutoTransformFormat($asset);
 
         $transformFilename = pathinfo($asset->filename, PATHINFO_FILENAME) . '.' . $index->detectedFormat;
         $index->filename = $transformFilename;
@@ -1519,7 +1519,7 @@ class AssetTransforms extends Component
         $images = Craft::$app->getImages();
 
         if ($index->detectedFormat === null) {
-            $index->detectedFormat = !empty($index->format) ? $index->format : $this->detectAutoTransformFormat($asset);
+            $index->detectedFormat = $index->format ?: $this->detectAutoTransformFormat($asset);
         }
 
         if ($index->format === 'webp' && !$images->getSupportsWebP()) {
