@@ -1510,15 +1510,21 @@ class UsersController extends Controller
 
         $summary = [];
 
-        $entryCount = Entry::find()
-            ->authorId($userIds)
-            ->siteId('*')
-            ->unique()
-            ->anyStatus()
-            ->count();
+        foreach (Craft::$app->getSections()->getAllSections() as $section) {
+            $entryCount = Entry::find()
+                ->sectionId($section->id)
+                ->authorId($userIds)
+                ->siteId('*')
+                ->unique()
+                ->anyStatus()
+                ->count();
 
-        if ($entryCount) {
-            $summary[] = $entryCount == 1 ? Craft::t('app', '1 entry') : Craft::t('app', '{num} entries', ['num' => $entryCount]);
+            if ($entryCount) {
+                $summary[] = Craft::t('app', '{num, number} {section} {num, plural, =1{entry} other{entries}}', [
+                    'num' => $entryCount,
+                    'section' => Craft::t('site', $section->name),
+                ]);
+            }
         }
 
         // Fire a 'defineUserContentSummary' event
