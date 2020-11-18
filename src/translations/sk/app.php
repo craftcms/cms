@@ -1744,4 +1744,5 @@ Ak si tento email neočakával, jednoducho ho ignoruj.',
     'Generate YAML Files' => 'Generate YAML Files',
     'Save the loaded project config data to YAML files in your <code>{folder}</code> folder.' => 'Save the loaded project config data to YAML files in your <code>{folder}</code> folder.',
     'Generate' => 'Generate',
+    'Delete their content' => 'Delete their content',
 ];
