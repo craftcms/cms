@@ -136,6 +136,7 @@ JS;
             'Delete folder',
             'Delete heading',
             'Delete it',
+            'Delete their content',
             'Delete them',
             'Delete user',
             'Delete users',
