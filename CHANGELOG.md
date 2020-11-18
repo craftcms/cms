@@ -31,6 +31,7 @@
 - Fixed an error that occurred when attempting to backup the database when the database connection used a Unix socket. ([#7121](https://github.com/craftcms/cms/issues/7121))
 - Fixed a bug where IDNA ASCII emails and usernames weren’t getting converted back to Unicode. ([#7103](https://github.com/craftcms/cms/issues/7103))
 - Fixed a bug where IDs returned by the GraphQL API could not be re-used in `relatedTo` and `relatedToAll` arguments without type-casting. ([#7128](https://github.com/craftcms/cms/issues/7128))
+- Fixed a bug where entry and asset Title fields didn’t always have the correct text orientation. ([#7152](https://github.com/craftcms/cms/issues/7152))
 
 ## 3.5.15.1 - 2020-11-04
 
