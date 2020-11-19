@@ -1602,6 +1602,18 @@ class StringHelperTest extends Unit
     }
 
     /**
+     * @dataProvider idnToUtf8EmailDataProvider
+     *
+     * @param $expected
+     * @param $string
+     */
+    public function testIdnToUtf8Email(string $expected, string $string)
+    {
+        $actual = StringHelper::idnToUtf8Email($string);
+        self::assertSame($expected, $actual);
+    }
+
+    /**
      * @return array
      */
     public function substrDataDataProvider(): array
@@ -4224,6 +4236,17 @@ class StringHelperTest extends Unit
             ['[B][/', '[B][/B]', 'b', false],
             ['κόσμ', 'κόσμbε ¡-öäü', 'b', false],
             ['bκόσμ', 'bκόσμbε', 'b', false],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function idnToUtf8EmailDataProvider(): array
+    {
+        return [
+            ['userName', 'userName'],
+            'aaa@äö.ee', 'aaa@xn--4ca0b.ee',
         ];
     }
 }
