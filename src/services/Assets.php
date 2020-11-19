@@ -722,6 +722,13 @@ class Assets extends Component
 
         // Make the thumb a JPG if the image format isn't safe for web
         $ext = in_array($ext, Image::webSafeFormats(), true) ? $ext : 'jpg';
+
+        // Should we be rasteriszing the thumb?
+        $rasterize = strtolower($ext) === 'svg' && Craft::$app->getConfig()->getGeneral()->rasterizeSvgThumbs;
+        if ($rasterize) {
+            $ext = 'png';
+        }
+
         $dir = Craft::$app->getPath()->getAssetThumbsPath() . DIRECTORY_SEPARATOR . $asset->id;
         $path = $dir . DIRECTORY_SEPARATOR . "thumb-{$width}x{$height}.{$ext}";
 
@@ -734,11 +741,10 @@ class Assets extends Component
             // Generate it
             FileHelper::createDirectory($dir);
             $imageSource = Craft::$app->getAssetTransforms()->getLocalImageSource($asset);
-            $svgSize = max($width, $height);
 
             // hail Mary
             try {
-                $image = Craft::$app->getImages()->loadImage($imageSource, false, $svgSize);
+                $image = Craft::$app->getImages()->loadImage($imageSource, $rasterize, max($width, $height));
 
                 // Prevent resize of all layers
                 if ($image instanceof Raster) {

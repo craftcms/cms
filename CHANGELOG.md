@@ -11,6 +11,7 @@
 - Added the `maxGraphqlComplexity` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
 - Added the `maxGraphqlDepth` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
 - Added the `maxGraphqlResults` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
+- Added the `rasterizeSvgThumbs` config setting. ([#7146](https://github.com/craftcms/cms/issues/7146))
 - Added the `CRAFT_STREAM_LOG` PHP constant, which, if set to `true`, will send log output to `stderr` and `stdout`.
 - Added `craft\base\ElementExporterInterface::isFormattable()`.
 - Added `craft\base\VolumeTrait::$titleTranslationMethod`.

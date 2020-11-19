@@ -1021,6 +1021,15 @@ class GeneralConfig extends BaseObject
     public $purgeUnsavedDraftsDuration = 2592000;
 
     /**
+     * @var bool Whether SVG thumbnails should be rasterized.
+     *
+     * Note this will only work if ImageMagick is installed, and <config:imageDriver> is set to either `auto` or `imagick`.
+     *
+     * @since 3.6.0
+     */
+    public $rasterizeSvgThumbs = false;
+
+    /**
      * @var mixed The amount of time Craft will remember a username and pre-populate it on the control panel’s Login page.
      *
      * Set to `0` to disable this feature altogether.
