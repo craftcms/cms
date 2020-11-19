@@ -9,6 +9,7 @@
 - Added `craft\gql\GqlEntityRegistry::getPrefix()`.
 - Added `craft\gql\GqlEntityRegistry::setPrefix()`.
 - Added `craft\helpers\StringHelper::idnToUtf8Email()`.
+- Added `craft\test\Craft::deleteElement()`.
 
 ### Changed
 - Improved the wording of the user deletion confirmation dialog. ([#5293](https://github.com/craftcms/cms/issues/5293))
