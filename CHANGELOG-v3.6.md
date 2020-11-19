@@ -49,6 +49,7 @@
 
 ### Deprecated
 - Deprecated the `backup` and `restore` commands.
+- Deprecated the `relatedToAll` GraphQL query argument.
 - Deprecated `craft\services\Composer::$disablePackagist`.
 - Deprecated `craft\web\View::$minifyCss`.
 - Deprecated `craft\web\View::$minifyJs`.

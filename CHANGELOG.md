@@ -44,6 +44,7 @@
 
 ### Deprecated
 - Deprecated `craft\helpers\App::logConfig()`.
+- Deprecated the `relatedToAll` GraphQL query argument.
 
 ### Removed
 - Removed `craft\controllers\ElementIndexesController::actionCreateExportToken()`.
