@@ -748,7 +748,7 @@ class Assets extends Component
                 $image->scaleAndCrop($width, $height);
                 $image->saveAs($path);
             } catch (ImageException $exception) {
-                Craft::warning($exception->getMessage());
+                Craft::warning("Unable to generate a thumbnail for asset $asset->id: {$exception->getMessage()}", __METHOD__);
                 return $this->getIconPath($asset);
             }
         }
