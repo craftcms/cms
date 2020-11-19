@@ -4246,7 +4246,7 @@ class StringHelperTest extends Unit
     {
         return [
             ['userName', 'userName'],
-            'aaa@äö.ee', 'aaa@xn--4ca0b.ee',
+            ['aaa@äö.ee', 'aaa@xn--4ca0b.ee'],
         ];
     }
 }
