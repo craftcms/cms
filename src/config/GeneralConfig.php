@@ -350,7 +350,7 @@ class GeneralConfig extends BaseObject
     public $defaultFileMode;
 
     /**
-     * @var int The quality level Craft will use when saving JPG and PNG files. Ranges from 0 (worst quality, smallest file) to
+     * @var int The quality level Craft will use when saving JPG and PNG files. Ranges from 1 (worst quality, smallest file) to
      * 100 (best quality, biggest file).
      * @group Image Handling
      */

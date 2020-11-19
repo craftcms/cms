@@ -1911,6 +1911,13 @@ class StringHelper extends \yii\helpers\StringHelper
                 return $email;
             }
         }
-        return implode('@', $parts);
+        $combined = implode('@', $parts);
+
+        // Return the original string if nothing changed besides casing
+        if (strcasecmp($combined, $email) === 0) {
+            return $email;
+        }
+
+        return $combined;
     }
 }
