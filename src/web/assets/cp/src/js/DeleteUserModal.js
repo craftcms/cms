@@ -41,7 +41,7 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
                     '</div>' +
                     '</div>' +
                     '<div>' +
-                    '<label class="error"><input type="radio" name="contentAction" value="delete"/> ' + Craft.t('app', 'Delete it') + '</label>' +
+                    '<label class="error"><input type="radio" name="contentAction" value="delete"/> ' + Craft.t('app', 'Delete their content') + '</label>' +
                     '</div>' +
                     '</div>'
                 ).appendTo($form);

@@ -364,7 +364,7 @@ class Assets
             throw new Exception('Invalid file location format: ' . $location);
         }
 
-        list(, $folderId, $filename) = $matches;
+        [, $folderId, $filename] = $matches;
 
         return [$folderId, $filename];
     }

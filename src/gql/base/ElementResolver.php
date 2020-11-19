@@ -122,6 +122,19 @@ abstract class ElementResolver extends Resolver
             }
         }
 
+        // Apply max result config
+        $maxGraphqlResults = Craft::$app->getConfig()->getGeneral()->maxGraphqlResults;
+
+        // Reset negative limit to zero
+        if ((int)$query->limit < 0) {
+            $query->limit(0);
+        }
+
+        if ($maxGraphqlResults > 0) {
+            $queryLimit = is_null($query->limit) ? $maxGraphqlResults : min($maxGraphqlResults, $query->limit);
+            $query->limit($queryLimit);
+        }
+
         return $query;
     }
 

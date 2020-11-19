@@ -1747,7 +1747,7 @@ abstract class Element extends Component implements ElementInterface
     public function validateCustomFieldAttribute(string $attribute, array $params = null)
     {
         /** @var array|null $params */
-        list($field, $method, $fieldParams) = $params;
+        [$field, $method, $fieldParams] = $params;
 
         if (is_string($method)) {
             $method = [$field, $method];

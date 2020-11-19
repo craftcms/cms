@@ -727,6 +727,8 @@ class Install extends Migration
             'type' => $this->string()->notNull(),
             'hasUrls' => $this->boolean()->defaultValue(true)->notNull(),
             'url' => $this->string(),
+            'titleTranslationMethod' => $this->string()->notNull()->defaultValue(Field::TRANSLATION_METHOD_SITE),
+            'titleTranslationKeyFormat' => $this->text(),
             'settings' => $this->text(),
             'sortOrder' => $this->smallInteger()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),

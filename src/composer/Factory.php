@@ -7,7 +7,10 @@
 
 namespace craft\composer;
 
+use Composer\Config;
+use Composer\Downloader\DownloadManager;
 use Composer\Package\Archiver;
+use Composer\Util\Loop;
 
 /**
  * Composer Factory
@@ -23,21 +26,16 @@ class Factory extends \Composer\Factory
      *
      * Full class names used when the parent implementation referenced classes relative to its own namespace.
      *
-     * @param \Composer\Config $config
-     * @param \Composer\Downloader\DownloadManager|null $dm
+     * @param Config $config The configuration
+     * @param DownloadManager $dm Manager use to download sources
+     * @param Loop $loop
      * @return Archiver\ArchiveManager
      */
-    public function createArchiveManager(\Composer\Config $config, \Composer\Downloader\DownloadManager $dm = null)
+    public function createArchiveManager(Config $config, DownloadManager $dm, Loop $loop)
     {
-        if (null === $dm) {
-            $io = new \Composer\IO\NullIO();
-            $io->loadConfiguration($config);
-            $dm = $this->createDownloadManager($io, $config);
-        }
-
-        $am = new Archiver\ArchiveManager($dm);
-//        $am->addArchiver(new Archiver\ZipArchiver);
-//        $am->addArchiver(new Archiver\PharArchiver);
+        $am = new Archiver\ArchiveManager($dm, $loop);
+        // $am->addArchiver(new Archiver\ZipArchiver);
+        // $am->addArchiver(new Archiver\PharArchiver);
 
         return $am;
     }

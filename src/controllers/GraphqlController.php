@@ -156,8 +156,15 @@ class GraphqlController extends Controller
         // Generate all transforms immediately
         Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad = true;
 
+        // Check for the cache-bust header
+        $gqlCacheHeader = $this->request->getHeaders()->get('x-craft-gql-cache', null, true);
+        if ($gqlCacheHeader === 'no-cache') {
+            $cacheSetting = Craft::$app->getConfig()->getGeneral()->enableGraphQlCaching;
+            Craft::$app->getConfig()->getGeneral()->enableGraphQlCaching = false;
+        }
+
         $result = [];
-        foreach ($queries as $key => list($query, $variables, $operationName)) {
+        foreach ($queries as $key => [$query, $variables, $operationName]) {
             try {
                 if (empty($query)) {
                     throw new InvalidValueException('No GraphQL query was supplied');
@@ -175,6 +182,10 @@ class GraphqlController extends Controller
                     ],
                 ];
             }
+        }
+
+        if ($gqlCacheHeader === 'no-cache') {
+            Craft::$app->getConfig()->getGeneral()->enableGraphQlCaching = $cacheSetting;
         }
 
         return $this->asJson($singleQuery ? reset($result) : $result);

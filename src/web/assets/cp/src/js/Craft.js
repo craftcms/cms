@@ -15,6 +15,25 @@ $.extend(Craft,
         navHeight: 48,
 
         /**
+         * @callback indexKeyCallback
+         * @param {object} currentValue
+         * @param {number} [index]
+         * @return {string}
+         */
+        /**
+         * Indexes an array of objects by a specified key
+         *
+         * @param {object[]} arr
+         * @param {(string|indexKeyCallback)} key
+         */
+        index: function(arr, key) {
+            return arr.reduce((index, obj, i) => {
+                index[typeof key === 'string' ? obj[key] : key(obj, i)] = obj;
+                return index;
+            }, {});
+        },
+
+        /**
          * Get a translated message.
          *
          * @param {string} category

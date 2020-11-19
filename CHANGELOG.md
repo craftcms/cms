@@ -1,15 +1,104 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## Unreleased (3.6)
+
+> {warning} If you have a custom session driver, make sure you update it for Yii 2.0.29 compatibility.
+
+### Added
+- Volumes now have “Title Translation Method” and “Title Translation Key Format” settings, like entry types. ([#7135](https://github.com/craftcms/cms/issues/7135))
+- Added the `disableGraphqlTransformDirective` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
+- Added the `enableGraphqlIntrospection` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
+- Added the `maxGraphqlComplexity` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
+- Added the `maxGraphqlDepth` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
+- Added the `maxGraphqlResults` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
+- Added the `CRAFT_STREAM_LOG` PHP constant, which, if set to `true`, will send log output to `stderr` and `stdout`.
+- Added `craft\base\ElementExporterInterface::isFormattable()`.
+- Added `craft\base\VolumeTrait::$titleTranslationMethod`.
+- Added `craft\base\VolumeTrait::$titleTranslationKeyFormat`.
+- Added `craft\elements\db\ElementQueryInterface::afterPopulate()`.
+- Added `craft\elements\db\ElementQueryInterface::createElement()`.
+- Added `craft\elements\Entry::EVENT_DEFINE_ENTRY_TYPES`. ([#7136](https://github.com/craftcms/cms/issues/7136))
+- Added `craft\elements\Entry::getAvailableEntryTypes()`.
+- Added `craft\events\DefineEntryTypesEvent`.
+- Added `craft\fieldlayoutelements\AssetTitleField`.
+- Added `craft\helpers\Gql::eagerLoadComplexity()`.
+- Added `craft\helpers\Gql::nPlus1Complexity()`.
+- Added `craft\helpers\Gql::singleQueryComplexity()`.
+- Added `craft\log\Dispatcher`.
+- Added `craft\log\StreamLogTarget`.
+- Added `craft\services\Gql::GRAPHQL_COMPLEXITY_CPU_HEAVY`.
+- Added `craft\services\Gql::GRAPHQL_COMPLEXITY_EAGER_LOAD`.
+- Added `craft\services\Gql::GRAPHQL_COMPLEXITY_NPLUS1`.
+- Added `craft\services\Gql::GRAPHQL_COMPLEXITY_QUERY`.
+- Added `craft\services\Gql::GRAPHQL_COMPLEXITY_SIMPLE_FIELD`.
+- Added the `Craft.index()` JavaScript method.
+
+### Changed
+- It’s now possible to add new log targets by overriding `components.log.target` in `config/app.php`, rather than the entire `log` component config.
+- `craft\base\ElementExporterInterface::export()` can now return raw response data, or a resource, if `isFormattable()` returns `false`. If a resource is returned, it will be streamed to the browser. ([#7148](https://github.com/craftcms/cms/issues/7148))
+- `craft\services\Gql::getValidationRules()` now has an `$isIntrospectionQuery` argument.
+- Updated Yii to 2.0.39.
+- Updated Composer to 2.0.7.
+- Updated LitEmoji ot 2.x.
+- Updated webonyx/graphql-php to 14.x.
+
+### Deprecated
+- Deprecated `craft\helpers\App::logConfig()`.
+
+### Removed
+- Removed `craft\controllers\ElementIndexesController::actionCreateExportToken()`.
+- Removed `craft\controllers\ExportController`.
+
+### Fixed
+- Fixed a PHP error that could occur on the System Report utility if Craft was installed using Composer 1.
+- Fixed a PHP error that could occur on the System Report utility if the wrong `Composer\Semver\VersionParser\InstalledVersions` class was autoloaded.
+- Fixed a bug where the `maxGraphqlResults` setting could cause no results to be returned via GraphQL.
+- Fixed a bug where asset queries’ `withTransforms` param wasn’t being respected for eager-loaded assets. ([#6140](https://github.com/craftcms/cms/issues/6140))
+
+## 3.6.0-beta.2 - 2020-11-04
+
+### Added
+- Craft now requires PHP 7.2.5 or later.
+
+### Changed
+- Updated the Symfony Yaml component to 5.x.
+
+## 3.6.0-beta.1 - 2020-11-03
+
+### Added
+- Added the `users/list-admins` and `users/set-password` commands. ([#7067](https://github.com/craftcms/cms/issues/7067))
+- Added `craft\console\Controller::passwordPrompt()`.
+
+### Changed
+- Renamed the `backup` and `restore` commands to `db/backup` and `db/restore`. ([#7023](https://github.com/craftcms/cms/issues/7023))
+- Relational fields now include all related elements’ titles as search keywords, including disabled elements. ([#7079](https://github.com/craftcms/cms/issues/7079))
+- `craft\services\Composer::install()` no longer has an `$allowlist` argument.
+- Craft no longer reports PHP deprecation errors.
+- Updated Guzzle to 7.x, for environments running PHP 7.2.5 or later, and where the `config.platform.php` value in `composer.json` is at least `7.2.5`. ([#6997](https://github.com/craftcms/cms/issues/6997))
+- Updated Composer to 2.0.4.
+
+### Deprecated
+- Deprecated the `backup` and `restore` commands.
+- Deprecated `craft\services\Composer::$disablePackagist`.
+- Deprecated `craft\web\View::$minifyCss`.
+- Deprecated `craft\web\View::$minifyJs`.
+
+### Removed
+- Removed Minify and jsmin-php.
+- Removed `craft\services\Api::getComposerWhitelist()`.
+
+## Unreleased (3.5.x)
 
 ### Added
 - It’s now possible to save image transforms that generate WebP files, on environments that support it.
+- It's now possible to send a `X-Craft-Gql-Cache: no-cache` header with GraphQL API requests, to bypass the GraphQL cache. ([craftcms/gatsby-source-craft#8](https://github.com/craftcms/gatsby-source-craft/issues/8))
 - Added the `setPasswordUrl` global Twig variable.
 - Added `craft\gql\GqlEntityRegistry::getPrefix()`.
 - Added `craft\gql\GqlEntityRegistry::setPrefix()`.
 - Added `craft\helpers\StringHelper::idnToUtf8Email()`.
 
 ### Changed
+- Improved the wording of the user deletion confirmation dialog. ([#5293](https://github.com/craftcms/cms/issues/5293))
 - The Settings → Users → Fields and Settings → Users → Settings pages no longer redirect the browser when saved. ([#7131](https://github.com/craftcms/cms/pull/7131))
 - Editable table columns can now specify the `<textarea rows>` attribute value via a `rows` key on the column config. ([#7124](https://github.com/craftcms/cms/issues/7124))
 - The GraphQL query `relatedTo` and `relatedToAll` arguments now also allow string values.

@@ -15,6 +15,7 @@ use craft\gql\TypeManager;
 use craft\gql\types\DateTime;
 use craft\gql\types\generators\EntryType;
 use craft\helpers\Gql;
+use craft\services\Gql as GqlService;
 use GraphQL\Type\Definition\InterfaceType;
 use GraphQL\Type\Definition\Type;
 
@@ -77,7 +78,8 @@ class Entry extends Structure
             'sectionHandle' => [
                 'name' => 'sectionHandle',
                 'type' => Type::string(),
-                'description' => 'The handle of the section that contains the entry.'
+                'description' => 'The handle of the section that contains the entry.',
+                'complexity' => Gql::singleQueryComplexity(),
             ],
             'typeId' => [
                 'name' => 'typeId',
@@ -87,7 +89,8 @@ class Entry extends Structure
             'typeHandle' => [
                 'name' => 'typeHandle',
                 'type' => Type::string(),
-                'description' => 'The handle of the entry type that contains the entry.'
+                'description' => 'The handle of the entry type that contains the entry.',
+                'complexity' => Gql::singleQueryComplexity(),
             ],
             'postDate' => [
                 'name' => 'postDate',
@@ -103,13 +106,15 @@ class Entry extends Structure
                 'name' => 'children',
                 'args' => EntryArguments::getArguments(),
                 'type' => Type::listOf(EntryInterface::getType()),
-                'description' => 'The entry’s children, if the section is a structure. Accepts the same arguments as the `entries` query.'
+                'description' => 'The entry’s children, if the section is a structure. Accepts the same arguments as the `entries` query.',
+                'complexity' => Gql::eagerLoadComplexity(),
             ],
             'parent' => [
                 'name' => 'parent',
                 'args' => EntryArguments::getArguments(),
                 'type' => EntryInterface::getType(),
-                'description' => 'The entry’s parent, if the section is a structure.'
+                'description' => 'The entry’s parent, if the section is a structure.',
+                'complexity' => Gql::eagerLoadComplexity(),
             ],
             'url' => [
                 'name' => 'url',
@@ -121,18 +126,25 @@ class Entry extends Structure
                 'args' => EntryArguments::getArguments(),
                 'type' => Type::listOf(static::getType()),
                 'description' => 'The same element in other locales.',
+                'complexity' => Gql::eagerLoadComplexity(),
             ],
             'prev' => [
                 'name' => 'prev',
                 'type' => self::getType(),
                 'args' => EntryArguments::getArguments(),
-                'description' => 'Returns the previous element relative to this one, from a given set of criteria. CAUTION: Applying arguments to this field severely degrades the performance of the query.',
+                'description' => 'Returns the previous element relative to this one, from a given set of criteria.',
+                'complexity' => function($childrenComplexity, $args) {
+                    return $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_NPLUS1 * (int)!empty($args);
+                },
             ],
             'next' => [
                 'name' => 'next',
                 'type' => self::getType(),
                 'args' => EntryArguments::getArguments(),
-                'description' => 'Returns the next element relative to this one, from a given set of criteria. CAUTION: Applying arguments to this field severely degrades the performance of the query.',
+                'description' => 'Returns the next element relative to this one, from a given set of criteria.',
+                'complexity' => function($childrenComplexity, $args) {
+                    return $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_NPLUS1 * (int)!empty($args);
+                },
             ],
         ]), self::getName());
     }
@@ -152,7 +164,8 @@ class Entry extends Structure
                 'author' => [
                     'name' => 'author',
                     'type' => User::getType(),
-                    'description' => 'The entry\'s author.'
+                    'description' => 'The entry\'s author.',
+                    'complexity' => Gql::eagerLoadComplexity(),
                 ],
             ];
         }

@@ -200,11 +200,8 @@ class UpdateController extends Controller
         $this->stdout('Performing Composer install ... ', Console::FG_YELLOW);
         $io = new BufferIO();
 
-        $composerService = Craft::$app->getComposer();
-        $composerService->disablePackagist = false;
-
         try {
-            $composerService->install(null, $io, false);
+            Craft::$app->getComposer()->install(null, $io);
         } catch (\Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);
             $this->stderr('error: ' . $e->getMessage() . PHP_EOL . PHP_EOL, Console::FG_RED);
@@ -252,7 +249,7 @@ class UpdateController extends Controller
             // Look for any specific versions that were requested
             foreach ($handles as $handle) {
                 if (strpos($handle, ':') !== false) {
-                    list($handle, $to) = explode(':', $handle, 2);
+                    [$handle, $to] = explode(':', $handle, 2);
                     if ($handle === 'craft') {
                         $handle = 'cms';
                     }
@@ -286,7 +283,7 @@ class UpdateController extends Controller
         } else {
             foreach ($handles as $handle) {
                 if (strpos($handle, ':') !== false) {
-                    list($handle, $to) = explode(':', $handle, 2);
+                    [$handle, $to] = explode(':', $handle, 2);
                 } else {
                     $to = null;
                 }
@@ -317,7 +314,7 @@ class UpdateController extends Controller
             $this->stdout($total === 1 ? 'one' : $total, Console::FG_GREEN, Console::BOLD);
             $this->stdout(' update' . ($total === 1 ? '' : 's') . ':' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
 
-            foreach ($info as list($handle, $from, $to, $critical, $status, $phpConstraint)) {
+            foreach ($info as [$handle, $from, $to, $critical, $status, $phpConstraint]) {
                 $this->_outputUpdate($handle, $from, $to, $critical, $status, $phpConstraint);
             }
 

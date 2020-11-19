@@ -124,7 +124,7 @@ abstract class Image extends BaseObject
         }
 
         if (!$height || !$width) {
-            list($width, $height) = ImageHelper::calculateMissingDimension($width, $height, $this->getWidth(), $this->getHeight());
+            [$width, $height] = ImageHelper::calculateMissingDimension($width, $height, $this->getWidth(), $this->getHeight());
         }
     }
 }

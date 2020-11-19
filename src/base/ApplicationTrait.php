@@ -22,6 +22,7 @@ use craft\errors\SiteNotFoundException;
 use craft\errors\WrongEditionException;
 use craft\events\DefineFieldLayoutFieldsEvent;
 use craft\events\EditionChangeEvent;
+use craft\fieldlayoutelements\AssetTitleField;
 use craft\fieldlayoutelements\EntryTitleField;
 use craft\fieldlayoutelements\TitleField;
 use craft\helpers\App;
@@ -1515,6 +1516,8 @@ trait ApplicationTrait
 
             switch ($fieldLayout->type) {
                 case Asset::class:
+                    $event->fields[] = AssetTitleField::class;
+                    break;
                 case Category::class:
                     $event->fields[] = TitleField::class;
                     break;

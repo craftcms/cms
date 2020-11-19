@@ -17,7 +17,7 @@ use craft\db\mysql\Schema as MysqlSchema;
 use craft\db\pgsql\Schema as PgsqlSchema;
 use craft\elements\User;
 use craft\errors\MissingComponentException;
-use craft\log\FileTarget;
+use craft\log\Dispatcher;
 use craft\mail\Mailer;
 use craft\mail\Message;
 use craft\mail\transportadapters\Sendmail;
@@ -32,9 +32,6 @@ use craft\web\User as WebUser;
 use craft\web\View;
 use yii\base\InvalidArgumentException;
 use yii\helpers\Inflector;
-use yii\i18n\PhpMessageSource;
-use yii\log\Dispatcher;
-use yii\log\Logger;
 use yii\mutex\FileMutex;
 use yii\mutex\MysqlMutex;
 use yii\mutex\PgsqlMutex;
@@ -553,44 +550,12 @@ class App
      *
      * @return array|null
      * @since 3.0.18
+     * @deprecated in 3.6.0. Override `components.log.targets` instead
      */
     public static function logConfig()
     {
-        // Only log console requests and web requests that aren't getAuthTimeout requests
-        $isConsoleRequest = Craft::$app->getRequest()->getIsConsoleRequest();
-        if (!$isConsoleRequest && !Craft::$app->getUser()->enableSession) {
-            return null;
-        }
-
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
-
-        $target = [
-            'class' => FileTarget::class,
-            'fileMode' => $generalConfig->defaultFileMode,
-            'dirMode' => $generalConfig->defaultDirMode,
-            'includeUserIp' => $generalConfig->storeUserIps,
-            'except' => [
-                PhpMessageSource::class . ':*',
-            ],
-        ];
-
-        if ($isConsoleRequest) {
-            $target['logFile'] = '@storage/logs/console.log';
-        } else {
-            $target['logFile'] = '@storage/logs/web.log';
-        }
-
-        // Only log errors and warnings, unless Craft is running in Dev Mode or it's being installed/updated
-        // (Explicitly check GeneralConfig::$devMode here, because YII_DEBUG is always `1` for console requests.)
-        if (!$generalConfig->devMode && Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
-            $target['levels'] = Logger::LEVEL_ERROR | Logger::LEVEL_WARNING;
-        }
-
         return [
             'class' => Dispatcher::class,
-            'targets' => [
-                $target,
-            ]
         ];
     }
 

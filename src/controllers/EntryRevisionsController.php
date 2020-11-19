@@ -95,13 +95,13 @@ class EntryRevisionsController extends BaseEntriesController
 
         // Type
         if (($typeHandle = $this->request->getQueryParam('type')) !== null) {
-            $type = ArrayHelper::firstWhere($section->getEntryTypes(), 'handle', $typeHandle);
+            $type = ArrayHelper::firstWhere($entry->getAvailableEntryTypes(), 'handle', $typeHandle);
             if ($type === null) {
                 throw new BadRequestHttpException("Invalid entry type handle: $typeHandle");
             }
             $entry->typeId = $type->id;
         } else {
-            $entry->typeId = $this->request->getQueryParam('typeId') ?? $section->getEntryTypes()[0]->id;
+            $entry->typeId = $this->request->getQueryParam('typeId') ?? $entry->getAvailableEntryTypes()[0]->id;
         }
 
         // Status
@@ -552,7 +552,7 @@ class EntryRevisionsController extends BaseEntriesController
 
         if (!$draft->typeId) {
             // Default to the section's first entry type
-            $draft->typeId = $draft->getSection()->getEntryTypes()[0]->id;
+            $draft->typeId = $draft->getAvailableEntryTypes()[0]->id;
             // Prevent the last entry type's field layout from being used
             $draft->fieldLayoutId = null;
         }

@@ -215,7 +215,7 @@ class Db
         }
 
         // Figure out the smallest possible int column type that will fit our min/max
-        foreach (self::$_integerSizeRanges as $type => list($typeMin, $typeMax)) {
+        foreach (self::$_integerSizeRanges as $type => [$typeMin, $typeMax]) {
             if ($min >= $typeMin && $max <= $typeMax) {
                 return $type . "({$length})";
             }
@@ -990,7 +990,7 @@ class Db
 
         $params = substr($dsn, $pos + 1);
         foreach (ArrayHelper::filterEmptyStringsFromArray(explode(';', $params)) as $param) {
-            list($n, $v) = array_pad(explode('=', $param, 2), 2, '');
+            [$n, $v] = array_pad(explode('=', $param, 2), 2, '');
             if ($key === $n) {
                 return $v;
             }

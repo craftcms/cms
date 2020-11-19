@@ -103,7 +103,7 @@ class ConfigSyncController extends BaseUpdaterController
     public function actionInstallPlugin(): Response
     {
         $handle = array_shift($this->data['installPlugins']);
-        list($success, , $errorDetails) = $this->installPlugin($handle);
+        [$success, , $errorDetails] = $this->installPlugin($handle);
 
         if (!$success) {
             $info = Craft::$app->getPlugins()->getComposerPluginInfo($handle);

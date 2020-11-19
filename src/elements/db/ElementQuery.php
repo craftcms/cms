@@ -1458,7 +1458,16 @@ class ElementQuery extends Query implements ElementQueryInterface
             }
         }
 
-        return $this->_createElements($rows);
+        $elements = $this->_createElements($rows);
+        return $this->afterPopulate($elements);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterPopulate(array $elements): array
+    {
+        return $elements;
     }
 
     /**
@@ -1720,12 +1729,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     // -------------------------------------------------------------------------
 
     /**
-     * Converts a found row into an element instance.
-     *
-     * @param array $row
-     * @return ElementInterface
-     * @internal
-     * @since 3.3.1
+     * @inheritdoc
      */
     public function createElement(array $row): ElementInterface
     {

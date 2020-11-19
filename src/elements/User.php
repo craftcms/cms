@@ -826,7 +826,7 @@ class User extends Element implements IdentityInterface
             return false;
         }
 
-        list($token, , $userAgent) = $data;
+        [$token, , $userAgent] = $data;
 
         if (!$this->_validateUserAgent($userAgent)) {
             return false;

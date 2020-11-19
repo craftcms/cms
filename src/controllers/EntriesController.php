@@ -220,7 +220,7 @@ class EntriesController extends BaseEntriesController
         }
 
         // Multiple entry types?
-        $entryTypes = $section->getEntryTypes();
+        $entryTypes = $entry->getAvailableEntryTypes();
 
         if (count($entryTypes) > 1) {
             $variables['showEntryTypes'] = true;
@@ -595,7 +595,7 @@ class EntriesController extends BaseEntriesController
 
         if (!$typeId) {
             // Default to the section's first entry type
-            $typeId = $variables['entry']->typeId ?? $variables['section']->getEntryTypes()[0]->id;
+            $typeId = $variables['entry']->typeId ?? $variables['entry']->getAvailableEntryTypes()[0]->id;
         }
 
         $variables['entry']->typeId = $typeId;
@@ -738,7 +738,7 @@ class EntriesController extends BaseEntriesController
 
         if (!$entry->typeId) {
             // Default to the section's first entry type
-            $entry->typeId = $entry->getSection()->getEntryTypes()[0]->id;
+            $entry->typeId = $entry->getAvailableEntryTypes()[0]->id;
         }
 
         // Prevent the last entry type's field layout from being used
