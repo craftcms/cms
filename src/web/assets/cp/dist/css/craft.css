@@ -197,6 +197,8 @@ p .checkmark-icon { display: inline-block; }
 .alert-icon:before { content: 'alert'; color: #CF1124; }
 
 /* toggles */
+button.toggle { -webkit-appearance: none; appearance: none; color: inherit; background: none; border: none; padding: 0; }
+
 .toggle:before, a.fieldtoggle:before { display: block; content: '.'; font-size: 0; width: 5px; height: 5px; border: solid #596673; border-width: 0 2px 2px 0; transition: -webkit-transform linear 100ms; -o-transition: -o-transform linear 100ms; transition: transform linear 100ms; transition: transform linear 100ms, -webkit-transform linear 100ms, -o-transform linear 100ms; }
 
 body.ltr .toggle:before, body.ltr a.fieldtoggle:before { -webkit-transform: rotate(-45deg); -o-transform: rotate(-45deg); transform: rotate(-45deg); }
@@ -3332,41 +3334,41 @@ body.ltr .sidebar nav > ul > li > a { padding-left: 24px; }
 
 body.rtl .sidebar nav > ul > li > a { padding-right: 24px; }
 
-body.ltr .sidebar nav > ul > li > .toggle { left: 5px; }
+body.ltr .sidebar nav > ul > li > .toggle { left: 0px; }
 
-body.rtl .sidebar nav > ul > li > .toggle { right: 5px; }
+body.rtl .sidebar nav > ul > li > .toggle { right: 0px; }
 
 body.ltr .sidebar nav > ul > li > ul > li > a { padding-left: 38px; }
 
 body.rtl .sidebar nav > ul > li > ul > li > a { padding-right: 38px; }
 
-body.ltr .sidebar nav > ul > li > ul > li > .toggle { left: 19px; }
+body.ltr .sidebar nav > ul > li > ul > li > .toggle { left: 14px; }
 
-body.rtl .sidebar nav > ul > li > ul > li > .toggle { right: 19px; }
+body.rtl .sidebar nav > ul > li > ul > li > .toggle { right: 14px; }
 
 body.ltr .sidebar nav > ul > li > ul > li > ul > li > a { padding-left: 52px; }
 
 body.rtl .sidebar nav > ul > li > ul > li > ul > li > a { padding-right: 52px; }
 
-body.ltr .sidebar nav > ul > li > ul > li > ul > li > .toggle { left: 33px; }
+body.ltr .sidebar nav > ul > li > ul > li > ul > li > .toggle { left: 28px; }
 
-body.rtl .sidebar nav > ul > li > ul > li > ul > li > .toggle { right: 33px; }
+body.rtl .sidebar nav > ul > li > ul > li > ul > li > .toggle { right: 28px; }
 
 body.ltr .sidebar nav > ul > li > ul > li > ul > li > ul > li > a { padding-left: 66px; }
 
 body.rtl .sidebar nav > ul > li > ul > li > ul > li > ul > li > a { padding-right: 66px; }
 
-body.ltr .sidebar nav > ul > li > ul > li > ul > li > ul > li > .toggle { left: 47px; }
+body.ltr .sidebar nav > ul > li > ul > li > ul > li > ul > li > .toggle { left: 42px; }
 
-body.rtl .sidebar nav > ul > li > ul > li > ul > li > ul > li > .toggle { right: 47px; }
+body.rtl .sidebar nav > ul > li > ul > li > ul > li > ul > li > .toggle { right: 42px; }
 
 body.ltr .sidebar nav > ul > li > ul > li > ul > li > ul > li > ul > li > a { padding-left: 80px; }
 
 body.rtl .sidebar nav > ul > li > ul > li > ul > li > ul > li > ul > li > a { padding-right: 80px; }
 
-body.ltr .sidebar nav > ul > li > ul > li > ul > li > ul > li > ul > li > .toggle { left: 61px; }
+body.ltr .sidebar nav > ul > li > ul > li > ul > li > ul > li > ul > li > .toggle { left: 56px; }
 
-body.rtl .sidebar nav > ul > li > ul > li > ul > li > ul > li > ul > li > .toggle { right: 61px; }
+body.rtl .sidebar nav > ul > li > ul > li > ul > li > ul > li > ul > li > .toggle { right: 56px; }
 
 .sidebar nav li { position: relative; }
 
@@ -3404,9 +3406,7 @@ body.ltr .sidebar nav li a .badge { margin: 0 -4px 0 10px ; }
 
 body.rtl .sidebar nav li a .badge { margin: 0 10px 0 -4px ; }
 
-.sidebar nav li .toggle { position: absolute; height: 34px; top: 0; padding: 0 4px; }
-
-.sidebar nav li .toggle:before { position: relative; top: 14px; }
+.sidebar nav li .toggle { position: absolute; height: 34px; top: 0; width: 24px; display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; -webkit-justify-content: center; justify-content: center; }
 
 .sidebar nav li ul { display: none; }
 

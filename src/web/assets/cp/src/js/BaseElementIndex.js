@@ -1566,6 +1566,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         },
 
         _expandSource: function($source) {
+            $source.next('.toggle').attr({
+                'aria-expanded': 'true',
+                'aria-label': Craft.t('app', 'Hide nested sources'),
+            });
             $source.parent('li').addClass('expanded');
 
             var $childSources = this._getChildSources($source);
@@ -1579,6 +1583,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         },
 
         _collapseSource: function($source) {
+            $source.next('.toggle').attr({
+                'aria-expanded': 'false',
+                'aria-label': Craft.t('app', 'Show nested sources'),
+            });
             $source.parent('li').removeClass('expanded');
 
             var $childSources = this._getChildSources($source);

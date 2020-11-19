@@ -400,6 +400,14 @@ li.sel a {
 }
 
 /* toggles */
+button.toggle {
+  appearance: none;
+  color: inherit;
+  background: none;
+  border: none;
+  padding: 0;
+}
+
 .toggle:before,
 a.fieldtoggle:before {
   @include angle(right);
