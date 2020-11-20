@@ -50,7 +50,7 @@
     "webonyx/graphql-php": "^14.3.0",
     "yii2tech/ar-softdelete": "^1.0.4",
     "yiisoft/yii2": "~2.0.39.1",
-    "yiisoft/yii2-debug": "^2.1.14",
+    "yiisoft/yii2-debug": "^2.1.15",
     "yiisoft/yii2-queue": "~2.3.0",
     "yiisoft/yii2-swiftmailer": "^2.1.2"
   },
