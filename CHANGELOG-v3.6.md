@@ -40,6 +40,7 @@
 - `craft\services\Composer::install()` no longer has an `$allowlist` argument.
 - `craft\services\Gql::getValidationRules()` now has an `$isIntrospectionQuery` argument.
 - Craft no longer reports PHP deprecation errors.
+- GraphQL queries now support eager-loading for arguments provided as input objects.
 - Updated Yii to 2.0.39.
 - Updated Guzzle to 7.x, for projects that don’t have any plugins that require Guzzle 6. ([#6997](https://github.com/craftcms/cms/issues/6997))
 - Updated Composer to 2.0.7.
