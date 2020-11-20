@@ -18,6 +18,7 @@
 - Editable table columns can now specify the `<textarea rows>` attribute value via a `rows` key on the column config. ([#7124](https://github.com/craftcms/cms/issues/7124))
 - The GraphQL query `relatedTo` and `relatedToAll` arguments now also allow string values.
 - Updated Imagine to 1.2.4.
+- Editable tables no longer show their heading row if there aren’t any data rows yet. ([#7158](https://github.com/craftcms/cms/issues/7158))
 
 ### Fixed
 - Fixed a bug where `craft\elements\Asset::getSrcset()` would not respect the format of the transform set on the asset. ([#6660](https://github.com/craftcms/cms/issues/6660))

@@ -1462,9 +1462,11 @@ body.rtl table.editable tbody .datewrapper .text:placeholder-shown + div[data-ic
 
 table.editable:not(.static) td.textual { cursor: text; }
 
-table.editable + .btn.add { display: block; width: 100%; border-radius: 0 0 4px 4px; border: 1px dashed rgba(81, 95, 108, 0.25); border-top-width: 0; background-color: transparent; box-shadow: none; }
+table.editable + .btn.add { display: block; width: 100%; border: 1px dashed rgba(81, 95, 108, 0.25); background-color: transparent; box-shadow: none; }
 
 table.editable + .btn.add:focus { border-style: solid; border-color: #1992D4; }
+
+table.editable:not(.hidden) + .btn.add { border-top-width: 0; border-radius: 0 0 4px 4px; }
 
 .border-box + .buttons, .shadow-box + .buttons { margin-top: 7px; }
 
