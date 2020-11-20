@@ -661,7 +661,7 @@ class MigrationHelper
     private static function _addForeignKey(string $tableName, $columns, string $refTable, array $refColumns, string $onUpdate, string $onDelete, Migration $migration = null)
     {
         $db = $migration ? $migration->db : Craft::$app->getDb();
-        $foreignKeyName = $db->getForeignKeyName($tableName, $columns);
+        $foreignKeyName = $db->getForeignKeyName();
 
         if ($migration !== null) {
             $migration->addForeignKey($foreignKeyName, $tableName, $columns, $refTable, $refColumns, $onDelete, $onUpdate);
@@ -701,7 +701,7 @@ class MigrationHelper
     private static function _createIndex(string $tableName, $columns, bool $unique = false, Migration $migration = null)
     {
         $db = $migration ? $migration->db : Craft::$app->getDb();
-        $indexName = $db->getIndexName($tableName, $columns, $unique);
+        $indexName = $db->getIndexName();
 
         if ($migration !== null) {
             $migration->createIndex($indexName, $tableName, $columns, $unique);

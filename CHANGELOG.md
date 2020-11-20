@@ -37,6 +37,7 @@
 ### Changed
 - It’s now possible to add new log targets by overriding `components.log.target` in `config/app.php`, rather than the entire `log` component config.
 - `craft\base\ElementExporterInterface::export()` can now return raw response data, or a resource, if `isFormattable()` returns `false`. If a resource is returned, it will be streamed to the browser. ([#7148](https://github.com/craftcms/cms/issues/7148))
+- `craft\db\Connection::getPrimaryKeyName()`, `getForeignKeyName()`, and `getIndexName()` now generate completely random object names, rather than basing them on a table name, etc. ([#7153](https://github.com/craftcms/cms/issues/7153))
 - `craft\services\Gql::getValidationRules()` now has an `$isIntrospectionQuery` argument.
 - Updated Yii to 2.0.39.
 - Updated Composer to 2.0.7.
@@ -44,6 +45,7 @@
 - Updated webonyx/graphql-php to 14.x.
 
 ### Deprecated
+- Deprecated `craft\db\Connection::trimObjectName()`.
 - Deprecated `craft\helpers\App::logConfig()`.
 
 ### Removed
@@ -55,6 +57,7 @@
 - Fixed a PHP error that could occur on the System Report utility if the wrong `Composer\Semver\VersionParser\InstalledVersions` class was autoloaded.
 - Fixed a bug where the `maxGraphqlResults` setting could cause no results to be returned via GraphQL.
 - Fixed a bug where asset queries’ `withTransforms` param wasn’t being respected for eager-loaded assets. ([#6140](https://github.com/craftcms/cms/issues/6140))
+- Fixed a bug where `craft\db\Connection::getPrimaryKeyName()`, `getForeignKeyName()`, and `getIndexName()` could generate non-unique object names. ([#7153](https://github.com/craftcms/cms/issues/7153))
 
 ## 3.6.0-beta.2 - 2020-11-04
 
