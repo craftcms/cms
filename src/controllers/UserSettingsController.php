@@ -92,7 +92,7 @@ class UserSettingsController extends Controller
         Craft::$app->getUserPermissions()->saveGroupPermissions($group->id, $permissions);
 
         $this->setSuccessFlash(Craft::t('app', 'Group saved.'));
-        return $this->redirectToPostedUrl();
+        return $this->redirectToPostedUrl($group);
     }
 
     /**

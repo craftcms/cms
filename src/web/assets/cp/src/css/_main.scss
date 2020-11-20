@@ -400,6 +400,14 @@ li.sel a {
 }
 
 /* toggles */
+button.toggle {
+  appearance: none;
+  color: inherit;
+  background: none;
+  border: none;
+  padding: 0;
+}
+
 .toggle:before,
 a.fieldtoggle:before {
   @include angle(right);
@@ -2794,9 +2802,7 @@ table.editable {
   & + .btn.add {
     display: block;
     width: 100%;
-    border-radius: 0 0 $mediumBorderRadius $mediumBorderRadius;
     border: 1px dashed $mediumHairlineColor;
-    border-top-width: 0;
     background-color: transparent;
     box-shadow: none;
 
@@ -2804,6 +2810,11 @@ table.editable {
       border-style: solid;
       border-color: $blue600;
     }
+  }
+
+  &:not(.hidden) + .btn.add {
+    border-top-width: 0;
+    border-radius: 0 0 $mediumBorderRadius $mediumBorderRadius;
   }
 }
 

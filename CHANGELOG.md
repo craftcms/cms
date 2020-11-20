@@ -13,10 +13,12 @@
 
 ### Changed
 - Improved the wording of the user deletion confirmation dialog. ([#5293](https://github.com/craftcms/cms/issues/5293))
+- Improved the accessibility of element source toggles.
 - The Settings → Users → Fields and Settings → Users → Settings pages no longer redirect the browser when saved. ([#7131](https://github.com/craftcms/cms/pull/7131))
 - Editable table columns can now specify the `<textarea rows>` attribute value via a `rows` key on the column config. ([#7124](https://github.com/craftcms/cms/issues/7124))
 - The GraphQL query `relatedTo` and `relatedToAll` arguments now also allow string values.
 - Updated Imagine to 1.2.4.
+- Editable tables no longer show their heading row if there aren’t any data rows yet. ([#7158](https://github.com/craftcms/cms/issues/7158))
 
 ### Fixed
 - Fixed a bug where `craft\elements\Asset::getSrcset()` would not respect the format of the transform set on the asset. ([#6660](https://github.com/craftcms/cms/issues/6660))
@@ -34,6 +36,8 @@
 - Fixed a bug where IDs returned by the GraphQL API could not be re-used in `relatedTo` and `relatedToAll` arguments without type-casting. ([#7128](https://github.com/craftcms/cms/issues/7128))
 - Fixed a bug where entry and asset Title fields didn’t always have the correct text orientation. ([#7152](https://github.com/craftcms/cms/issues/7152))
 - Fixed a bug where element indexes weren’t scrolling back to the top when switching views or navigating to the next/previous page. ([#7154](https://github.com/craftcms/cms/issues/7154))
+- Fixed a bug where `craft\events\UserGroupsAssignEvent::$removedGroupIds` was getting set to the wrong IDs.
+- Fixed an error that could occur when attempting to delete an admin user when the `allowAdminChanges` config setting was disabled. ([#7157](https://github.com/craftcms/cms/issues/7157))
 
 ## 3.5.15.1 - 2020-11-04
 

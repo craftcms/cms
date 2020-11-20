@@ -1358,7 +1358,7 @@ $toolbarIconColor: darken($inputColor, 10%);
     }
 
     & > .toggle {
-      @include left(5px + 14px * $level);
+      @include left(14px * $level);
     }
   }
 
@@ -1467,12 +1467,10 @@ $toolbarIconColor: darken($inputColor, 10%);
         position: absolute;
         height: 34px;
         top: 0;
-        padding: 0 4px;
-
-        &:before {
-          position: relative;
-          top: 14px;
-        }
+        width: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
 
       ul {

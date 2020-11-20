@@ -1740,4 +1740,7 @@ Pokud nevíte, o co se jedná, tuto zprávu klidně ignorujte.',
     'Generate YAML Files' => 'Generate YAML Files',
     'Save the loaded project config data to YAML files in your <code>{folder}</code> folder.' => 'Save the loaded project config data to YAML files in your <code>{folder}</code> folder.',
     'Generate' => 'Generate',
+    'Delete their content' => 'Delete their content',
+    'Show nested sources',
+    'Hide nested sources',
 ];
