@@ -115,11 +115,16 @@ class ElementHelperTest extends Unit
      */
     public function testMaxSlugIncrementDoesntThrow()
     {
+        $oldValue = Craft::$app->getConfig()->getGeneral()->maxSlugIncrement;
         Craft::$app->getConfig()->getGeneral()->maxSlugIncrement = 0;
+
         $this->tester->expectThrowable(OperationAbortedException::class, function() {
             $el = new ExampleElement(['uriFormat' => 'test/{slug}']);
             ElementHelper::setUniqueUri($el);
         });
+
+        // reset
+        Craft::$app->getConfig()->getGeneral()->maxSlugIncrement = $oldValue;
     }
 
     /**
