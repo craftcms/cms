@@ -903,7 +903,7 @@ class Install extends Migration
                 'keywords' => $this->text()->notNull(),
             ], ' ENGINE=MyISAM');
 
-            $this->addPrimaryKey($this->db->getIndexName(Table::SEARCHINDEX, 'elementId,attribute,fieldId,siteId', true), Table::SEARCHINDEX, 'elementId,attribute,fieldId,siteId');
+            $this->addPrimaryKey(null, Table::SEARCHINDEX, ['elementId', 'attribute', 'fieldId', 'siteId']);
 
             $sql = 'CREATE FULLTEXT INDEX ' .
                 $this->db->quoteTableName($this->db->getIndexName(Table::SEARCHINDEX, 'keywords')) . ' ON ' .
@@ -913,9 +913,9 @@ class Install extends Migration
             $this->db->createCommand($sql)->execute();
         } else {
             // Postgres is case-sensitive
-            $this->createIndex($this->db->getIndexName(Table::ELEMENTS_SITES, ['uri', 'siteId']), Table::ELEMENTS_SITES, ['lower([[uri]])', 'siteId']);
-            $this->createIndex($this->db->getIndexName(Table::USERS, ['email']), Table::USERS, ['lower([[email]])']);
-            $this->createIndex($this->db->getIndexName(Table::USERS, ['username']), Table::USERS, ['lower([[username]])']);
+            $this->createIndex(null, Table::ELEMENTS_SITES, ['lower([[uri]])', 'siteId']);
+            $this->createIndex(null, Table::USERS, ['lower([[email]])']);
+            $this->createIndex(null, Table::USERS, ['lower([[username]])']);
 
             $this->createTable(Table::SEARCHINDEX, [
                 'elementId' => $this->integer()->notNull(),
@@ -926,7 +926,7 @@ class Install extends Migration
                 'keywords_vector' => $this->db->getSchema()->createColumnSchemaBuilder('tsvector')->notNull(),
             ]);
 
-            $this->addPrimaryKey($this->db->getIndexName(Table::SEARCHINDEX, 'elementId,attribute,fieldId,siteId', true), Table::SEARCHINDEX, 'elementId,attribute,fieldId,siteId');
+            $this->addPrimaryKey(null, Table::SEARCHINDEX, ['elementId', 'attribute', 'fieldId', 'siteId']);
 
             $sql = 'CREATE INDEX ' . $this->db->quoteTableName($this->db->getIndexName(Table::SEARCHINDEX, 'keywords_vector')) . ' ON ' . Table::SEARCHINDEX . ' USING GIN([[keywords_vector]] [[pg_catalog]].[[tsvector_ops]]) WITH (FASTUPDATE=YES)';
             $this->db->createCommand($sql)->execute();
