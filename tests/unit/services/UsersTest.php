@@ -559,7 +559,6 @@ class UsersTest extends TestCase
     }
 
     /**
-     * @todo These tests are 'Dependancy Injected` -ish so i'll swap them out with fixtures later.
      * @inheritdoc
      */
     protected function _before()
@@ -614,5 +613,18 @@ class UsersTest extends TestCase
         $this->tester->saveElement($this->suspendedUser);
         $this->tester->saveElement($this->lockedUser);
         $this->tester->saveElement($this->activeUser);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function _after()
+    {
+        parent::_after();
+
+        $this->tester->deleteElement($this->pendingUser);
+        $this->tester->deleteElement($this->suspendedUser);
+        $this->tester->deleteElement($this->lockedUser);
+        $this->tester->deleteElement($this->activeUser);
     }
 }
