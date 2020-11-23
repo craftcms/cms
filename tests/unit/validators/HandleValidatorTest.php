@@ -46,7 +46,7 @@ class HandleValidatorTest extends Unit
         self::assertSame(
             [
                 'attribute', 'attributeLabels', 'attributeNames', 'attributes', 'classHandle', 'content',
-                'dateCreated', 'dateUpdated', 'false', 'fields', 'handle', 'id', 'n', 'name', 'no',
+                'dateCreated', 'dateUpdated', 'errors', 'false', 'fields', 'handle', 'id', 'n', 'name', 'no',
                 'rawContent', 'rules', 'searchKeywords', 'section', 'this',
                 'true', 'type', 'uid', 'value', 'y', 'yes',
             ],
