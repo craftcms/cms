@@ -512,7 +512,7 @@ class Gql extends Component
         if ($event->result === null) {
             $cacheKey = $this->_getCacheKey(
                 $schema,
-                $query,
+                $event->query,
                 $event->rootValue,
                 $event->context,
                 $event->variables,
@@ -522,14 +522,14 @@ class Gql extends Component
             if ($cacheKey && ($cachedResult = $this->getCachedResult($cacheKey)) !== null) {
                 $event->result = $cachedResult;
             } else {
-                $isIntrospectionQuery = StringHelper::containsAny($query, ['__schema', '__type']);
+                $isIntrospectionQuery = StringHelper::containsAny($event->query, ['__schema', '__type']);
                 $schemaDef = $this->getSchemaDef($schema, $debugMode || $isIntrospectionQuery);
                 $elementsService = Craft::$app->getElements();
                 $elementsService->startCollectingCacheTags();
 
                 $event->result = GraphQL::executeQuery(
                     $schemaDef,
-                    $query,
+                    $event->query,
                     $event->rootValue,
                     $event->context,
                     $event->variables,

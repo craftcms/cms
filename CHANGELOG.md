@@ -39,6 +39,7 @@
 - `craft\base\ElementExporterInterface::export()` can now return raw response data, or a resource, if `isFormattable()` returns `false`. If a resource is returned, it will be streamed to the browser. ([#7148](https://github.com/craftcms/cms/issues/7148))
 - `craft\db\Connection::getPrimaryKeyName()`, `getForeignKeyName()`, and `getIndexName()` now generate completely random object names, rather than basing them on a table name, etc. ([#7153](https://github.com/craftcms/cms/issues/7153))
 - `craft\services\Gql::getValidationRules()` now has an `$isIntrospectionQuery` argument.
+- The `craft\services\Gql::EVENT_BEFORE_EXECUTE_GQL_QUERY` event can now modify the GraphQL query. ([#7072](https://github.com/craftcms/cms/pull/7072))
 - Updated Yii to 2.0.39.
 - Updated Composer to 2.0.7.
 - Updated LitEmoji ot 2.x.
