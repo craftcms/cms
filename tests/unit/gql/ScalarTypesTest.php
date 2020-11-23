@@ -31,7 +31,12 @@ class ScalarTypesTest extends Unit
     /**
      * Test the serialization of scalar data types
      *
-     *@dataProvider seializationDataProvider
+     * @dataProvider serializationDataProvider
+     *
+     * @param ScalarType $type
+     * @param $testValue
+     * @param $match
+     * @throws \GraphQL\Error\Error
      */
     public function testSerialization(ScalarType $type, $testValue, $match)
     {
@@ -42,6 +47,12 @@ class ScalarTypesTest extends Unit
      * Test parsing a value provided as a query variable
      *
      * @dataProvider parsingValueDataProvider
+     *
+     * @param ScalarType $type
+     * @param $testValue
+     * @param $match
+     * @param $exceptionThrown
+     * @throws \GraphQL\Error\Error
      */
     public function testParsingValue(ScalarType $type, $testValue, $match, $exceptionThrown)
     {
@@ -57,6 +68,12 @@ class ScalarTypesTest extends Unit
      * Test parsing a value provided as a query variable
      *
      * @dataProvider parsingLiteralDataProvider
+     *
+     * @param ScalarType $type
+     * @param $testValue
+     * @param $match
+     * @param $exceptionThrown
+     * @throws \Exception
      */
     public function testParsingLiteral(ScalarType $type, $testValue, $match, $exceptionThrown)
     {
@@ -68,7 +85,10 @@ class ScalarTypesTest extends Unit
         }
     }
 
-    public function seializationDataProvider()
+    /**
+     * @return array[]
+     */
+    public function serializationDataProvider()
     {
         $now = new \DateTime();
 
@@ -96,6 +116,9 @@ class ScalarTypesTest extends Unit
         ];
     }
 
+    /**
+     * @return array[]
+     */
     public function parsingValueDataProvider()
     {
         GqlEntityRegistry::setPrefix('');
@@ -116,6 +139,9 @@ class ScalarTypesTest extends Unit
         ];
     }
 
+    /**
+     * @return array[]
+     */
     public function parsingLiteralDataProvider()
     {
         GqlEntityRegistry::setPrefix('');
