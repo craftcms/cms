@@ -20,6 +20,10 @@
 - Updated Imagine to 1.2.4.
 - Editable tables no longer show their heading row if there aren’t any data rows yet. ([#7158](https://github.com/craftcms/cms/issues/7158))
 - Relational fields’ “Show the site menu” settings are no longer enabled by default.
+- Relational fields’ element selection modals now always default to the source element’s site, if no target site is specified in the field’s settings. ([#7164](https://github.com/craftcms/cms/issues/7164))
+
+### Deprecated
+- Deprecated `craft\fields\BaseRelationField::inputSiteId()`.
 
 ### Fixed
 - Fixed a bug where `craft\elements\Asset::getSrcset()` would not respect the format of the transform set on the asset. ([#6660](https://github.com/craftcms/cms/issues/6660))

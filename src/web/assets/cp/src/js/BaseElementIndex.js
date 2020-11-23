@@ -193,6 +193,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 this._setSite(Craft.siteId);
             }
 
+            // Don't let the criteria override the selected site
+            if (this.settings.criteria && this.settings.criteria.siteId) {
+                delete this.settings.criteria.siteId;
+            }
+
             // Initialize the search input
             // ---------------------------------------------------------------------
 
