@@ -12,7 +12,6 @@ use Craft;
 use craft\helpers\UrlHelper;
 use craft\test\mockclasses\controllers\TestController;
 use craft\web\Response;
-use craft\web\ServiceUnavailableHttpException;
 use craft\web\View;
 use UnitTester;
 use yii\base\Action;
@@ -20,6 +19,7 @@ use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidRouteException;
 use yii\web\BadRequestHttpException;
+use yii\web\ForbiddenHttpException;
 
 /**
  * Unit tests for Controller
@@ -47,7 +47,7 @@ class ControllerTest extends Unit
     {
         Craft::$app->getConfig()->getGeneral()->isSystemLive = true;
 
-        $this->tester->expectThrowable(ServiceUnavailableHttpException::class, function() {
+        $this->tester->expectThrowable(ForbiddenHttpException::class, function() {
             // AllowAnonymous should redirect and Craft::$app->exit(); I.E. An exit exception
             $this->controller->beforeAction(new Action('not-allow-anonymous', $this->controller));
         });
