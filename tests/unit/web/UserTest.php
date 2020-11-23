@@ -97,10 +97,6 @@ class UserTest extends TestCase
     /**
      * Test that the current time() is subtracted from the session expiration value.
      * We use a stub to ensure Craft::$app->getSession()->get() always returns 50 PHP sessions are difficult(ish) in testing.
-     *
-     * @todo Currently this test can fail because the by the time getRemainingSessionTime gets to line 204 a (half) second may have passed
-     * meaning that it will return 49 seconds remaining instead of 50 (because between setting the session stub and processing the remaining session time
-     * a second will have passed). Solve this.
      */
     public function testGetRemainingSessionTimeMath()
     {
@@ -109,8 +105,8 @@ class UserTest extends TestCase
         // ensure Craft::$app->getSession()->get() always returns time() + 50.
         $this->_sessionGetStub(time() + 50);
 
-        // Session expiry (set above) minus time() should return 50.
-        self::assertSame(50, Craft::$app->getUser()->getRemainingSessionTime());
+        // Give a few seconds depending on how fast tests run.
+        self::assertContains(Craft::$app->getUser()->getRemainingSessionTime(), [48, 49, 50]);
     }
 
     /**
@@ -135,7 +131,7 @@ class UserTest extends TestCase
         $this->user->setIdentity($this->userElement);
         // Session must return null
         $this->_sessionGetStub(null);
-        self::assertSame(0, $this->user->getElevatedSessionTimeout());
+        self::assertSame(false, $this->user->getElevatedSessionTimeout());
     }
 
     /**

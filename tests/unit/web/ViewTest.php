@@ -263,11 +263,6 @@ class ViewTest extends TestCase
         $js = $this->_generateTranslationJs('app', ['Save' => 'Bewaren', 'Cancel' => 'Afbreken']);
         $this->_assertRegisterJsInputValues($js, View::POS_BEGIN);
         $this->view->registerTranslations('app', ['Save', 'Cancel']);
-
-        // Non existing translations get ignored
-        $js = $this->_generateTranslationJs('app', ['Save' => 'Bewaren']);
-        $this->_assertRegisterJsInputValues($js, View::POS_BEGIN);
-        $this->view->registerTranslations('app', ['Save', 'not an existing translation23131321313']);
     }
 
     /**
@@ -491,7 +486,7 @@ class ViewTest extends TestCase
             ['', ''],
             ['<input type="text" name="test">', '<input type="text" name="test">'],
             ['<input type="text" name="namespace[test]">', '<input type="text" name="test">', 'namespace'],
-            ['<input type="text" for="namespace-test3" id="namespace-test2"  name="namespace[test]">', '<input type="text" for="test3" id="test2"  name="test">', 'namespace'],
+            ['<input type="text" for="test3" id="namespace-test2"  name="namespace[test]">', '<input type="text" for="test3" id="test2"  name="test">', 'namespace'],
             ['<input type="text" value="im the input" name="namespace[test]">', '<input type="text" value="im the input" name="test">', 'namespace'],
             ['<textarea id="namespace-test">Im the content</textarea>', '<textarea id="test">Im the content</textarea>', 'namespace'],
             ['<not-html id="namespace-test"></not-html>', '<not-html id="test"></not-html>', 'namespace'],
@@ -500,12 +495,12 @@ class ViewTest extends TestCase
             ['<input data-target="test2">', '<input data-target="test2">', 'namespace', false],
 
             // Other attributes
-            ['<input data-target="namespace-test2">', '<input data-target="test2">', 'namespace', true],
+            ['<input data-target="test2">', '<input data-target="test2">', 'namespace', true],
             ['<input aria-describedby="test2">', '<input aria-describedby="test2">', 'namespace', true],
             ['<input aria-not-a-tag="test2">', '<input aria-not-a-tag="test2">', 'namespace', true],
-            ['<input data-reverse-target="namespace-test2">', '<input data-reverse-target="test2">', 'namespace', true],
+            ['<input data-reverse-target="test2">', '<input data-reverse-target="test2">', 'namespace', true],
             ['<input data-target-prefix="namespace-test2">', '<input data-target-prefix="test2">', 'namespace', true],
-            ['<input aria-labelledby="namespace-test2">', '<input aria-labelledby="test2">', 'namespace', true],
+            ['<input aria-labelledby="test2">', '<input aria-labelledby="test2">', 'namespace', true],
             ['<input data-random="test2">', '<input data-random="test2">', 'namespace', true],
         ];
     }
@@ -547,9 +542,9 @@ class ViewTest extends TestCase
     public function getTemplateRootsDataProvider(): array
     {
         return [
-            [['random-roots' => [null]], 'random-roots', ['random-roots' => null]],
+            [['random-roots' => [null]], 'random-roots', ['random-roots' => [null]]],
             [['random-roots' => ['/linux/box/craft/templates']], 'random-roots', ['random-roots' => '/linux/box/craft/templates']],
-            [['random-roots' => [['windows/box/craft/templates', '/linux/box/craft/templates']]], 'random-roots', ['random-roots' => ['windows/box/craft/templates', '/linux/box/craft/templates']]],
+            [['random-roots' => ['windows/box/craft/templates', '/linux/box/craft/templates']], 'random-roots', ['random-roots' => ['windows/box/craft/templates', '/linux/box/craft/templates']]],
         ];
     }
 

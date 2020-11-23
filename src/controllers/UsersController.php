@@ -1557,7 +1557,7 @@ class UsersController extends Controller
 
             // Even if you have deleteUser permissions, only and admin should be able to delete another admin.
             if ($user->admin) {
-                $this->requireAdmin();
+                $this->requireAdmin(false);
             }
         }
 
