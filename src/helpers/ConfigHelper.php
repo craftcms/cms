@@ -46,7 +46,7 @@ class ConfigHelper
         }
 
         if (!$value instanceof \DateInterval) {
-            throw new InvalidConfigException("Unable to convert {$value} to seconds.");
+            throw new InvalidConfigException("Unable to convert to seconds.");
         }
 
         return DateTimeHelper::intervalToSeconds($value);

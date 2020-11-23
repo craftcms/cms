@@ -32,8 +32,6 @@ use yii\base\InvalidArgumentException;
 /**
  * Unit tests for the garbage collector service.
  *
- * @todo Test search index removal
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
@@ -152,7 +150,7 @@ class GcTest extends Unit
         // Make sure all 4 users are in there
         self::assertEquals(4, $count);
 
-        // Create then with 3 days
+        // Create them with 3 days
         $this->_createExpiringPendingUsers();
 
         $this->gc->run(true);
@@ -213,7 +211,7 @@ class GcTest extends Unit
         foreach ($notAllowedTitles as $notAllowedTitle) {
             $doesEntryExistWithThisTitle = ArrayHelper::where($entries, 'title', $notAllowedTitle);
             if ($doesEntryExistWithThisTitle) {
-                $this->fail("Entries were deleted but an entry with title ($notAllowedTitle) still exists");
+                self::fail("Entries were deleted but an entry with title ($notAllowedTitle) still exists");
             }
         }
     }
