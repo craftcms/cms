@@ -212,8 +212,8 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             unset($config['useTargetSite']);
         }
 
-        // If showSiteMenu isn't set, default it to true, to avoid a change in behavior
-        if (!isset($config['showSiteMenu'])) {
+        // Default showSiteMenu to true for existing fields
+        if (isset($config['id']) && !isset($config['showSiteMenu'])) {
             $config['showSiteMenu'] = true;
         }
 
