@@ -32,12 +32,12 @@ class SitesController extends Controller
     /**
      * @inheritdoc
      */
-    public function init()
+    public function beforeAction($action)
     {
-        parent::init();
-
         // All actions require an admin account
         $this->requireAdmin();
+
+        return parent::beforeAction($action);
     }
 
     /**

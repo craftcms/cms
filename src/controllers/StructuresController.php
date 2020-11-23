@@ -36,15 +36,11 @@ class StructuresController extends Controller
     private $_element;
 
     /**
-     * Initializes the application component.
-     *
-     * @throws ForbiddenHttpException if this is not a control panel request
+     * @inheritdoc
      * @throws NotFoundHttpException if the requested element cannot be found
      */
-    public function init()
+    public function beforeAction($action)
     {
-        parent::init();
-
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
@@ -81,6 +77,8 @@ class StructuresController extends Controller
         if ($this->_element === null) {
             throw new NotFoundHttpException('Element not found');
         }
+
+        return parent::beforeAction($action);
     }
 
     /**
