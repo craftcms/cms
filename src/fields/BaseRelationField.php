@@ -212,8 +212,8 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             unset($config['useTargetSite']);
         }
 
-        // If showSiteMenu isn't set, default it to true, to avoid a change in behavior
-        if (!isset($config['showSiteMenu'])) {
+        // Default showSiteMenu to true for existing fields
+        if (isset($config['id']) && !isset($config['showSiteMenu'])) {
             $config['showSiteMenu'] = true;
         }
 
@@ -928,9 +928,7 @@ JS;
         }
 
         $selectionCriteria = $this->inputSelectionCriteria();
-        if (($siteId = $this->inputSiteId($element)) !== null) {
-            $selectionCriteria['siteId'] = $siteId;
-        }
+        $selectionCriteria['siteId'] = $this->inputSiteId($element);
 
         $disabledElementIds = [];
 
@@ -1012,13 +1010,11 @@ JS;
      * @param ElementInterface|null $element
      * @return int|null
      * @since 3.4.19
+     * @deprecated in 3.5.16
      */
     protected function inputSiteId(ElementInterface $element = null)
     {
-        if ($this->targetSiteId) {
-            return $this->targetSiteId($element);
-        }
-        return null;
+        return $this->targetSiteId($element);
     }
 
     /**

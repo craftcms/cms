@@ -335,19 +335,6 @@ class Elements extends Component
             $this->_cacheTagBuffers[] = $this->_cacheTags;
         }
         $this->_cacheTags = [];
-
-        // If there was a requested element, tag it right away
-        if (
-            !Craft::$app->getRequest()->getIsConsoleRequest() &&
-            ($element = Craft::$app->getUrlManager()->getMatchedElement())
-        ) {
-            $elementType = get_class($element);
-            $this->collectCacheTags([
-                'element',
-                "element::$elementType",
-                "element::$elementType::$element->id",
-            ]);
-        }
     }
 
     /**

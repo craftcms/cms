@@ -22,14 +22,14 @@ use yii\web\BadRequestHttpException;
 abstract class BaseElementsController extends Controller
 {
     /**
-     * Initializes the application component.
-     *
-     * @throws BadRequestHttpException
+     * @inheritdoc
      */
-    public function init()
+    public function beforeAction($action)
     {
-        parent::init();
+        // All actions require CP requests
         $this->requireCpRequest();
+
+        return parent::beforeAction($action);
     }
 
     /**

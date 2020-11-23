@@ -694,20 +694,6 @@ class Assets extends BaseRelationField
     }
 
     /**
-     * @inheritdoc
-     * @since 3.4.19
-     */
-    protected function inputSiteId(ElementInterface $element = null)
-    {
-        if ($element) {
-            // Maintain the same site as the element
-            return $element->siteId;
-        }
-
-        return null;
-    }
-
-    /**
      * Returns any files that were uploaded to the field.
      *
      * @param ElementInterface $element
