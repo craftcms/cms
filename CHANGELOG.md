@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.5.16 - 2020-11-24
 
 ### Added
 - It’s now possible to save image transforms that generate WebP files, on environments that support it.
