@@ -70,15 +70,17 @@
                             },
                         },
                     }) }}
-                    {{ tag('button', {
-                        type: 'button',
-                        class: ['btn', 'formsubmit'],
-                        text: 'Discard changes'|t('app'),
-                        data: {
-                            action: 'project-config/discard',
-                            confirm: 'Are you sure you want to discard the pending project config YAML changes?'|t('app'),
-                        },
-                    }) }}
+                    {% if not readOnly %}
+                        {{ tag('button', {
+                            type: 'button',
+                            class: ['btn', 'formsubmit'],
+                            text: 'Discard changes'|t('app'),
+                            data: {
+                                action: 'project-config/discard',
+                                confirm: 'Are you sure you want to discard the pending project config YAML changes?'|t('app'),
+                            },
+                        }) }}
+                    {% endif %}
                 {% endif %}
             </div>
         {% else %}
@@ -120,17 +122,19 @@
     </form>
 {% endif %}
 
-<hr>
+{% if not readOnly %}
+    <hr>
 
-<form method="post" action="" accept-charset="UTF-8">
-    <h2>{{ 'Rebuild the Config'|t('app') }}</h2>
-    <p>{{ 'Rebuild the project config based on the data stored throughout the database.'|t('app') }}</p>
-    {{ actionInput('project-config/rebuild') }}
-    {{ csrfInput() }}
-    <div class="buttons">
-        <button type="submit" class="btn secondary">{{ 'Rebuild'|t('app') }}</button>
-    </div>
-</form>
+    <form method="post" action="" accept-charset="UTF-8">
+        <h2>{{ 'Rebuild the Config'|t('app') }}</h2>
+        <p>{{ 'Rebuild the project config based on the data stored throughout the database.'|t('app') }}</p>
+        {{ actionInput('project-config/rebuild') }}
+        {{ csrfInput() }}
+        <div class="buttons">
+            <button type="submit" class="btn secondary">{{ 'Rebuild'|t('app') }}</button>
+        </div>
+    </form>
+{% endif %}
 
 <hr>
 

@@ -1259,6 +1259,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         $isInstalled = Craft::$app->getIsInstalled();
         $request = Craft::$app->getRequest();
         $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $setPasswordRequestPath = $generalConfig->getSetPasswordRequestPath();
 
         $globals = [
             'view' => $this->view,
@@ -1281,6 +1282,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             'isInstalled' => $isInstalled,
             'loginUrl' => UrlHelper::siteUrl($generalConfig->getLoginPath()),
             'logoutUrl' => UrlHelper::siteUrl($generalConfig->getLogoutPath()),
+            'setPasswordUrl' => $setPasswordRequestPath !== null ? UrlHelper::siteUrl($setPasswordRequestPath) : null,
             'now' => new DateTime(null, new \DateTimeZone(Craft::$app->getTimeZone()))
         ];
 

@@ -43,16 +43,15 @@ class InstallController extends Controller
 
     /**
      * @inheritdoc
-     * @throws BadRequestHttpException if Craft is already installed
      */
-    public function init()
+    public function beforeAction($action)
     {
-        parent::init();
-
         // Return a 404 if Craft is already installed
         if (!YII_DEBUG && Craft::$app->getIsInstalled()) {
             throw new BadRequestHttpException('Craft is already installed');
         }
+
+        return parent::beforeAction($action);
     }
 
     /**

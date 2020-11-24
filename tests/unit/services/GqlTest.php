@@ -440,6 +440,10 @@ class GqlTest extends Unit
     {
         $gql = Craft::$app->getGql();
 
+        Craft::$app->getDb()->createCommand()
+            ->truncateTable(Table::GQLTOKENS)
+            ->execute();
+
         $accessToken = StringHelper::randomString();
         $tokenName = StringHelper::randomString(15);
 
@@ -463,12 +467,11 @@ class GqlTest extends Unit
 
         // Test public token doesn't exists
         $this->tester->expectThrowable(InvalidArgumentException::class, function() use ($gql) {
-            $publicToken = $gql->getTokenByAccessToken(GqlToken::PUBLIC_TOKEN);
+            $gql->getTokenByAccessToken(GqlToken::PUBLIC_TOKEN);
         });
 
         // Test fetching public schema creates public token
-        $publicSchema = $gql->getPublicSchema();
-        $publicToken = $gql->getTokenByAccessToken(GqlToken::PUBLIC_TOKEN);
+        $publicToken = $gql->getPublicToken();
         self::assertEquals($publicToken->accessToken, GqlToken::PUBLIC_TOKEN);
 
         // Test deleting

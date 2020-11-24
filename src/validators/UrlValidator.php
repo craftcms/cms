@@ -35,7 +35,7 @@ class UrlValidator extends YiiUrlValidator
         }
 
         // Enable support for validating international domain names if the intl extension is available.
-        if (!isset($config['enableIDN']) && Craft::$app->getI18n()->getIsIntlLoaded() && defined('INTL_IDNA_VARIANT_UTS46')) {
+        if (!isset($config['enableIDN']) && function_exists('idn_to_ascii') && defined('INTL_IDNA_VARIANT_UTS46')) {
             $config['enableIDN'] = true;
         }
 

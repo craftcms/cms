@@ -65,16 +65,16 @@ class ConfigHelperTest extends Unit
             ConfigHelper::durationInSeconds(true);
         });
 
-        $this->tester->expectThrowable(ErrorException::class, function() {
+        $this->tester->expectThrowable(InvalidConfigException::class, function() {
             ConfigHelper::durationInSeconds(['test' => 'test']);
         });
 
-        $this->tester->expectThrowable(ErrorException::class, function() {
+        $this->tester->expectThrowable(InvalidConfigException::class, function() {
             $dateTime = new DateTime('2018-08-08 20:0:00');
             ConfigHelper::durationInSeconds($dateTime);
         });
 
-        $this->tester->expectThrowable(ErrorException::class, function() {
+        $this->tester->expectThrowable(InvalidConfigException::class, function() {
             $std = new stdClass();
             $std->a = 'a';
             ConfigHelper::durationInSeconds($std);

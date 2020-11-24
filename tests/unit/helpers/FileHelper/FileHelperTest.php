@@ -325,7 +325,7 @@ class FileHelperTest extends Unit
     {
         return [
             [dirname(__DIR__, 3) . '/_data/assets/files/pdf-sample.pdf', null, true, 'application/pdf'],
-            [dirname(__DIR__, 3) . '/_data/assets/files/empty-file.text', null, true, 'inode/x-empty'],
+            [dirname(__DIR__, 3) . '/_data/assets/files/empty-file.text', null, true, 'application/x-empty'],
             [dirname(__DIR__, 3) . '/_data/assets/files/test.html', null, true, 'text/html'],
             [dirname(__DIR__, 3) . '/_data/assets/files/example-gif.gif', null, true, 'image/gif'],
             [dirname(__DIR__, 3) . '/_data/assets/files/pdf-sample.pdf', null, true, 'application/pdf'],
@@ -367,7 +367,7 @@ class FileHelperTest extends Unit
             ['notafile', 'notafile', []],
             ['not-a-file', 'not a file', []],
             ['im-a-file@.svg', 'im-a-file!@#$%^&*(.svg', []],
-            ['i(c)m-a-file.svg', 'i£©m-a-file⚽🐧🎺.svg', ['asciiOnly' => true]],
+            ['iPS(c)m-a-file.svg', 'i£©m-a-file⚽🐧🎺.svg', ['asciiOnly' => true]],
             ['not||a||file', 'not a file', ['separator' => '||']],
             ['not🐧a🐧file', 'not a file', ['separator' => '🐧', 'asciiOnly' => true]],
         ];

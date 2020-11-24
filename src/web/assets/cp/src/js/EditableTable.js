@@ -62,7 +62,7 @@ Craft.EditableTable = Garnish.Base.extend(
         },
 
         isVisible: function() {
-            return (this.$table.height() > 0);
+            return (this.$table.parent().height() > 0);
         },
 
         initialize: function() {
@@ -116,6 +116,10 @@ Craft.EditableTable = Garnish.Base.extend(
             this.rowCount--;
 
             this.updateAddRowButton();
+            if (this.rowCount === 0) {
+                this.$table.addClass('hidden');
+            }
+
             // onDeleteRow callback
             this.settings.onDeleteRow(row.$tr);
 
@@ -156,6 +160,7 @@ Craft.EditableTable = Garnish.Base.extend(
 
             this.rowCount++;
             this.updateAddRowButton();
+            this.$table.removeClass('hidden');
 
             // onAddRow callback
             this.settings.onAddRow($tr);
@@ -378,7 +383,7 @@ Craft.EditableTable = Garnish.Base.extend(
                         default:
                             $('<textarea/>', {
                                 'name': name,
-                                'rows': 1,
+                                'rows': col.rows || 1,
                                 'val': value,
                                 'placeholder': col.placeholder
                             }).appendTo($cell);

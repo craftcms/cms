@@ -70,6 +70,8 @@ class UserElementTest extends TestCase
             ['unverifiedEmail' => ['Email "unverifemail@email.com" has already been taken.']],
             $this->activeUser->getErrors()
         );
+
+        $this->tester->deleteElement($user);
     }
 
     /**
@@ -291,5 +293,15 @@ class UserElementTest extends TestCase
         $this->users = Craft::$app->getUsers();
 
         $this->tester->saveElement($this->activeUser);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function _after()
+    {
+        parent::_after();
+
+        $this->tester->deleteElement($this->activeUser);
     }
 }

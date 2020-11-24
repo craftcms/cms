@@ -387,7 +387,13 @@ abstract class BaseField extends FieldLayoutElement
      */
     protected function orientation(ElementInterface $element = null, bool $static = false): string
     {
-        return Craft::$app->getLocale()->getOrientation();
+        if (!$element || !$this->translatable($element, $static)) {
+            return Craft::$app->getLocale()->getOrientation();
+        }
+
+        $site = $element->getSite();
+        $locale = Craft::$app->getI18n()->getLocaleById($site->language);
+        return $locale->getOrientation();
     }
 
     /**

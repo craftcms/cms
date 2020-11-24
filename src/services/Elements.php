@@ -335,19 +335,6 @@ class Elements extends Component
             $this->_cacheTagBuffers[] = $this->_cacheTags;
         }
         $this->_cacheTags = [];
-
-        // If there was a requested element, tag it right away
-        if (
-            !Craft::$app->getRequest()->getIsConsoleRequest() &&
-            ($element = Craft::$app->getUrlManager()->getMatchedElement())
-        ) {
-            $elementType = get_class($element);
-            $this->collectCacheTags([
-                'element',
-                "element::$elementType",
-                "element::$elementType::$element->id",
-            ]);
-        }
     }
 
     /**
@@ -761,7 +748,13 @@ class Elements extends Component
         // Force propagation for new elements
         $propagate = !$element->id || $propagate;
 
-        return $this->_saveElementInternal($element, $runValidation, $propagate, $updateSearchIndex);
+        // Not currently being duplicated
+        $duplicateOf = $element->duplicateOf;
+        $element->duplicateOf = null;
+
+        $success = $this->_saveElementInternal($element, $runValidation, $propagate, $updateSearchIndex);
+        $element->duplicateOf = $duplicateOf;
+        return $success;
     }
 
     /**

@@ -119,11 +119,11 @@
     <div id="global-container">
         {% include '_layouts/components/global-sidebar' %}
 
-        <li id="page-container">
+        <div id="page-container">
             {% include '_layouts/components/alerts' %}
             {% include '_layouts/components/notifications' %}
 
-            <div id="global-header">
+            <div id="global-header" role="region" aria-label="{{ 'My Account'|t('app') }}">
                 <div class="flex">
                     {% include '_layouts/components/crumbs' %}
                     <div class="flex-grow"></div>

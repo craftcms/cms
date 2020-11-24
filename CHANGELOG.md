@@ -1,5 +1,52 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.5.16 - 2020-11-24
+
+### Added
+- It’s now possible to save image transforms that generate WebP files, on environments that support it.
+- It's now possible to send a `X-Craft-Gql-Cache: no-cache` header with GraphQL API requests, to bypass the GraphQL cache. ([craftcms/gatsby-source-craft#8](https://github.com/craftcms/gatsby-source-craft/issues/8))
+- Added the `setPasswordUrl` global Twig variable.
+- Added `craft\gql\GqlEntityRegistry::getPrefix()`.
+- Added `craft\gql\GqlEntityRegistry::setPrefix()`.
+- Added `craft\helpers\StringHelper::idnToUtf8Email()`.
+- Added `craft\test\Craft::deleteElement()`.
+
+### Changed
+- Improved the wording of the user deletion confirmation dialog. ([#5293](https://github.com/craftcms/cms/issues/5293))
+- Improved the accessibility of element source toggles.
+- The Settings → Users → Fields and Settings → Users → Settings pages no longer redirect the browser when saved. ([#7131](https://github.com/craftcms/cms/pull/7131))
+- Editable table columns can now specify the `<textarea rows>` attribute value via a `rows` key on the column config. ([#7124](https://github.com/craftcms/cms/issues/7124))
+- The GraphQL query `relatedTo` and `relatedToAll` arguments now also allow string values.
+- Updated Imagine to 1.2.4.
+- Editable tables no longer show their heading row if there aren’t any data rows yet. ([#7158](https://github.com/craftcms/cms/issues/7158))
+- Relational fields’ “Show the site menu” settings are no longer enabled by default.
+- Relational fields’ element selection modals now always default to the source element’s site, if no target site is specified in the field’s settings. ([#7164](https://github.com/craftcms/cms/issues/7164))
+- Controllers now run request and permission checks from `beforeAction()` rather than `init()`. ([#7168](https://github.com/craftcms/cms/issues/7168))
+
+### Deprecated
+- Deprecated `craft\fields\BaseRelationField::inputSiteId()`.
+
+### Fixed
+- Fixed a bug where `craft\elements\Asset::getSrcset()` would not respect the format of the transform set on the asset. ([#6660](https://github.com/craftcms/cms/issues/6660))
+- Fixed a bug where Craft could attempt to use the Imagick driver even if it wasn’t available.
+- Fixed a PHP error that occurred if a test called `craft\test\fixtures\elements\ElementFixture::getModel()`. ([#7089](https://github.com/craftcms/cms/issues/7089))
+- Fixed a bug where `1x` image transforms weren’t using the original image transform.
+- Fixed a bug where sometimes Craft could not process an uploaded file if its extension was in uppercase.
+- Fixed a bug where progress bar was not removed correctly when using the Asset Indexes utility. ([#7111](https://github.com/craftcms/cms/issues/7111))
+- Fixed a PHP error that occurred if image size information could not be parsed from an image file. ([#6898](https://github.com/craftcms/cms/issues/6898))
+- Fixed a bug where elements wouldn’t get fully saved if they were passed to `craft\services\Elements::saveElement()` from their `EVENT_AFTER_PROPAGATE` event. ([#7108](https://github.com/craftcms/cms/issues/7108))
+- Fixed a bug where formatted dates could use the wrong timezone for certain format characters.
+- Fixed a bug where it was possible to discard pending project config YAML changes, or rebuild the project config, when `allowAdminChanges` was disabled, from the Project Config utility. ([#7125](https://github.com/craftcms/cms/issues/7125))
+- Fixed an error that occurred when attempting to backup the database when the database connection used a Unix socket. ([#7121](https://github.com/craftcms/cms/issues/7121))
+- Fixed a bug where IDNA ASCII emails and usernames weren’t getting converted back to Unicode. ([#7103](https://github.com/craftcms/cms/issues/7103))
+- Fixed a bug where IDs returned by the GraphQL API could not be re-used in `relatedTo` and `relatedToAll` arguments without type-casting. ([#7128](https://github.com/craftcms/cms/issues/7128))
+- Fixed a bug where entry and asset Title fields didn’t always have the correct text orientation. ([#7152](https://github.com/craftcms/cms/issues/7152))
+- Fixed a bug where element indexes weren’t scrolling back to the top when switching views or navigating to the next/previous page. ([#7154](https://github.com/craftcms/cms/issues/7154))
+- Fixed a bug where `craft\events\UserGroupsAssignEvent::$removedGroupIds` was getting set to the wrong IDs.
+- Fixed an error that could occur when attempting to delete an admin user when the `allowAdminChanges` config setting was disabled. ([#7157](https://github.com/craftcms/cms/issues/7157))
+- Fixed a bug where template caches weren’t getting invalidated when global sets were saved. ([#7166](https://github.com/craftcms/cms/issues/7166))
+- Fixed a bug where validation rules defined by fields’ `getElementValidationRules()` methods could lose their `isEmpty` and `on` keys.
+
 ## 3.5.15.1 - 2020-11-04
 
 ### Fixed

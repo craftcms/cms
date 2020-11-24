@@ -47,7 +47,7 @@ interface PluginInterface
     /**
      * Installs the plugin.
      *
-     * @return void|false Return `false` to indicate the installation failed.
+     * @return null|false Return `false` to indicate the installation failed.
      * All other return values mean the installation was successful.
      */
     public function install();
@@ -55,7 +55,7 @@ interface PluginInterface
     /**
      * Uninstalls the plugin.
      *
-     * @return void|false Return `false` to indicate the uninstallation failed.
+     * @return null|false Return `false` to indicate the uninstallation failed.
      * All other return values mean the uninstallation was successful.
      */
     public function uninstall();
