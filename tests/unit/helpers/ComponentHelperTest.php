@@ -104,7 +104,8 @@ class ComponentHelperTest extends Unit
             ],
             'dependency-heavy' => [
                 function() {
-                    return Component::createComponent([
+                    /** @var DependencyHeavyComponentExample $component */
+                    $component = Component::createComponent([
                         'type' => DependencyHeavyComponentExample::class,
                         'dependency1' => 'value1',
                         'dependency2' => 'value2',
@@ -112,6 +113,11 @@ class ComponentHelperTest extends Unit
                             'settingsdependency1' => 'value'
                         ]
                     ]);
+
+                    $this->assertEquals('value1', $component->dependency1);
+                    $this->assertEquals('value2', $component->dependency2);
+                    $this->assertEquals('value', $component->settingsdependency1);
+                    return $component;
                 }
             ]
         ];
