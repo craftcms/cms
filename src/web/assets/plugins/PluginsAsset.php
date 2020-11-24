@@ -51,12 +51,12 @@ class PluginsAsset extends AssetBundle
 
         if ($view instanceof View) {
             $view->registerTranslations('app', [
+                '<a>Renew now</a> for another year of updates.',
                 'A license key is required.',
                 'Action',
                 'Documentation',
                 'Install',
                 'Missing',
-                '<a>Renew now</a> for another year of updates.',
                 'Status',
                 'Switch',
                 'This license is for the {name} edition.',
