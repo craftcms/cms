@@ -38,7 +38,7 @@
 ### Changed
 - Renamed the `backup` and `restore` commands to `db/backup` and `db/restore`. ([#7023](https://github.com/craftcms/cms/issues/7023))
 - Relational fields now include all related elements’ titles as search keywords, including disabled elements. ([#7079](https://github.com/craftcms/cms/issues/7079))
-- It’s now possible to add new log targets by overriding `components.log.target` in `config/app.php`, rather than the entire `log` component config.
+- It’s now possible to add new log targets by overriding `components.log.targets` in `config/app.php`, rather than the entire `log` component config.
 - `craft\base\ElementExporterInterface::export()` can now return raw response data, or a resource, if `isFormattable()` returns `false`. If a resource is returned, it will be streamed to the browser. ([#7148](https://github.com/craftcms/cms/issues/7148))
 - `craft\db\Connection::getPrimaryKeyName()`, `getForeignKeyName()`, and `getIndexName()` now generate completely random object names, rather than basing them on a table name, etc. ([#7153](https://github.com/craftcms/cms/issues/7153))
 - `craft\services\Composer::install()` no longer has an `$allowlist` argument.
@@ -47,7 +47,7 @@
 - Updated Yii to 2.0.39.
 - Updated Guzzle to 7.x, for projects that don’t have any plugins that require Guzzle 6. ([#6997](https://github.com/craftcms/cms/issues/6997))
 - Updated Composer to 2.0.7.
-- Updated LitEmoji ot 2.x.
+- Updated LitEmoji to 2.x.
 - Updated the Symfony Yaml component to 5.x.
 - Updated webonyx/graphql-php to 14.x.
 
