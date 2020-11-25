@@ -194,6 +194,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 this._setSite(Craft.siteId);
             }
 
+            // Don't let the criteria override the selected site
+            if (this.settings.criteria && this.settings.criteria.siteId) {
+                delete this.settings.criteria.siteId;
+            }
+
             // Initialize the search input
             // ---------------------------------------------------------------------
 
@@ -670,6 +675,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 cancelToken: this._createCancelToken(),
             }).then((response) => {
                 this.setIndexAvailable();
+                (this.settings.context === 'index' ? Garnish.$scrollContainer : this.$main).scrollTop(0);
                 this._updateView(params, response.data);
             }).catch(e => {
                 this.setIndexAvailable();
@@ -1566,6 +1572,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         },
 
         _expandSource: function($source) {
+            $source.next('.toggle').attr({
+                'aria-expanded': 'true',
+                'aria-label': Craft.t('app', 'Hide nested sources'),
+            });
             $source.parent('li').addClass('expanded');
 
             var $childSources = this._getChildSources($source);
@@ -1579,6 +1589,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         },
 
         _collapseSource: function($source) {
+            $source.next('.toggle').attr({
+                'aria-expanded': 'false',
+                'aria-label': Craft.t('app', 'Show nested sources'),
+            });
             $source.parent('li').removeClass('expanded');
 
             var $childSources = this._getChildSources($source);

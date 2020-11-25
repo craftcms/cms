@@ -2,6 +2,8 @@
 
 ## Unreleased (3.6)
 
+## 3.6.0-RC1 - 2020-11-24
+
 > {warning} If you have a custom session driver, make sure you update it for Yii 2.0.29 compatibility.
 
 ### Added
@@ -11,6 +13,7 @@
 - Added the `maxGraphqlComplexity` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
 - Added the `maxGraphqlDepth` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
 - Added the `maxGraphqlResults` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
+- Added the `rasterizeSvgThumbs` config setting. ([#7146](https://github.com/craftcms/cms/issues/7146))
 - Added the `CRAFT_STREAM_LOG` PHP constant, which, if set to `true`, will send log output to `stderr` and `stdout`.
 - Added `craft\base\ElementExporterInterface::isFormattable()`.
 - Added `craft\base\VolumeTrait::$titleTranslationMethod`.
@@ -36,7 +39,9 @@
 ### Changed
 - It’s now possible to add new log targets by overriding `components.log.target` in `config/app.php`, rather than the entire `log` component config.
 - `craft\base\ElementExporterInterface::export()` can now return raw response data, or a resource, if `isFormattable()` returns `false`. If a resource is returned, it will be streamed to the browser. ([#7148](https://github.com/craftcms/cms/issues/7148))
+- `craft\db\Connection::getPrimaryKeyName()`, `getForeignKeyName()`, and `getIndexName()` now generate completely random object names, rather than basing them on a table name, etc. ([#7153](https://github.com/craftcms/cms/issues/7153))
 - `craft\services\Gql::getValidationRules()` now has an `$isIntrospectionQuery` argument.
+- The `craft\services\Gql::EVENT_BEFORE_EXECUTE_GQL_QUERY` event can now modify the GraphQL query. ([#7072](https://github.com/craftcms/cms/pull/7072))
 - GraphQL queries now support eager-loading for arguments provided as input objects.
 - Updated Yii to 2.0.39.
 - Updated Composer to 2.0.7.
@@ -44,6 +49,7 @@
 - Updated webonyx/graphql-php to 14.x.
 
 ### Deprecated
+- Deprecated `craft\db\Connection::trimObjectName()`.
 - Deprecated `craft\helpers\App::logConfig()`.
 - Deprecated the `relatedToAll` GraphQL query argument.
 
@@ -56,6 +62,7 @@
 - Fixed a PHP error that could occur on the System Report utility if the wrong `Composer\Semver\VersionParser\InstalledVersions` class was autoloaded.
 - Fixed a bug where the `maxGraphqlResults` setting could cause no results to be returned via GraphQL.
 - Fixed a bug where asset queries’ `withTransforms` param wasn’t being respected for eager-loaded assets. ([#6140](https://github.com/craftcms/cms/issues/6140))
+- Fixed a bug where `craft\db\Connection::getPrimaryKeyName()`, `getForeignKeyName()`, and `getIndexName()` could generate non-unique object names. ([#7153](https://github.com/craftcms/cms/issues/7153))
 
 ## 3.6.0-beta.2 - 2020-11-04
 
@@ -89,7 +96,7 @@
 - Removed Minify and jsmin-php.
 - Removed `craft\services\Api::getComposerWhitelist()`.
 
-## Unreleased (3.5.x)
+## 3.5.16 - 2020-11-24
 
 ### Added
 - It’s now possible to save image transforms that generate WebP files, on environments that support it.
@@ -98,13 +105,22 @@
 - Added `craft\gql\GqlEntityRegistry::getPrefix()`.
 - Added `craft\gql\GqlEntityRegistry::setPrefix()`.
 - Added `craft\helpers\StringHelper::idnToUtf8Email()`.
+- Added `craft\test\Craft::deleteElement()`.
 
 ### Changed
 - Improved the wording of the user deletion confirmation dialog. ([#5293](https://github.com/craftcms/cms/issues/5293))
+- Improved the accessibility of element source toggles.
 - The Settings → Users → Fields and Settings → Users → Settings pages no longer redirect the browser when saved. ([#7131](https://github.com/craftcms/cms/pull/7131))
 - Editable table columns can now specify the `<textarea rows>` attribute value via a `rows` key on the column config. ([#7124](https://github.com/craftcms/cms/issues/7124))
 - The GraphQL query `relatedTo` and `relatedToAll` arguments now also allow string values.
 - Updated Imagine to 1.2.4.
+- Editable tables no longer show their heading row if there aren’t any data rows yet. ([#7158](https://github.com/craftcms/cms/issues/7158))
+- Relational fields’ “Show the site menu” settings are no longer enabled by default.
+- Relational fields’ element selection modals now always default to the source element’s site, if no target site is specified in the field’s settings. ([#7164](https://github.com/craftcms/cms/issues/7164))
+- Controllers now run request and permission checks from `beforeAction()` rather than `init()`. ([#7168](https://github.com/craftcms/cms/issues/7168))
+
+### Deprecated
+- Deprecated `craft\fields\BaseRelationField::inputSiteId()`.
 
 ### Fixed
 - Fixed a bug where `craft\elements\Asset::getSrcset()` would not respect the format of the transform set on the asset. ([#6660](https://github.com/craftcms/cms/issues/6660))
@@ -120,6 +136,12 @@
 - Fixed an error that occurred when attempting to backup the database when the database connection used a Unix socket. ([#7121](https://github.com/craftcms/cms/issues/7121))
 - Fixed a bug where IDNA ASCII emails and usernames weren’t getting converted back to Unicode. ([#7103](https://github.com/craftcms/cms/issues/7103))
 - Fixed a bug where IDs returned by the GraphQL API could not be re-used in `relatedTo` and `relatedToAll` arguments without type-casting. ([#7128](https://github.com/craftcms/cms/issues/7128))
+- Fixed a bug where entry and asset Title fields didn’t always have the correct text orientation. ([#7152](https://github.com/craftcms/cms/issues/7152))
+- Fixed a bug where element indexes weren’t scrolling back to the top when switching views or navigating to the next/previous page. ([#7154](https://github.com/craftcms/cms/issues/7154))
+- Fixed a bug where `craft\events\UserGroupsAssignEvent::$removedGroupIds` was getting set to the wrong IDs.
+- Fixed an error that could occur when attempting to delete an admin user when the `allowAdminChanges` config setting was disabled. ([#7157](https://github.com/craftcms/cms/issues/7157))
+- Fixed a bug where template caches weren’t getting invalidated when global sets were saved. ([#7166](https://github.com/craftcms/cms/issues/7166))
+- Fixed a bug where validation rules defined by fields’ `getElementValidationRules()` methods could lose their `isEmpty` and `on` keys.
 
 ## 3.5.15.1 - 2020-11-04
 

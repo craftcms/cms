@@ -53,7 +53,7 @@ class AssetTransformsTest extends Unit
             ],
             [
                 new AssetTransform(['width' => 200, 'height' => 200]),
-                null,
+                [],
                 ['width' => 200, 'height' => 200],
             ],
             [

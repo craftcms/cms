@@ -381,6 +381,28 @@ class Craft extends Yii2
     }
 
     /**
+     * @param ElementInterface $element
+     * @param bool $hardDelete
+     * @param bool $failHard
+     * @return bool
+     * @throws Throwable
+     */
+    public function deleteElement(ElementInterface $element, bool $hardDelete = true, bool $failHard = true): bool
+    {
+        if (!\Craft::$app->getElements()->deleteElement($element, $hardDelete)) {
+            if ($failHard) {
+                throw new InvalidArgumentException(
+                    implode(', ', $element->getErrorSummary(true))
+                );
+            }
+
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
      * @param string $elementType
      * @param array $searchProperties
      * @param int $amount

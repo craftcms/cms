@@ -1,7 +1,7 @@
 {
   "name": "craftcms/cms",
   "description": "Craft CMS",
-  "version": "3.6.0-beta.2",
+  "version": "3.6.0-RC1",
   "keywords": [
     "cms",
     "craftcms",
@@ -45,12 +45,12 @@
     "symfony/yaml": "^5.1.8",
     "true/punycode": "^2.1.1",
     "twig/twig": "~2.14.1",
-    "voku/portable-utf8": "^5.4.48",
+    "voku/portable-utf8": "^5.4.50",
     "voku/stringy": "^6.4.0",
     "webonyx/graphql-php": "^14.3.0",
     "yii2tech/ar-softdelete": "^1.0.4",
-    "yiisoft/yii2": "~2.0.39.1",
-    "yiisoft/yii2-debug": "^2.1.14",
+    "yiisoft/yii2": "~2.0.39.3",
+    "yiisoft/yii2-debug": "^2.1.15",
     "yiisoft/yii2-queue": "~2.3.0",
     "yiisoft/yii2-swiftmailer": "^2.1.2"
   },

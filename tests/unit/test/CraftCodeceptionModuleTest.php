@@ -103,10 +103,10 @@ class CraftCodeceptionModuleTest extends Unit
         ];
 
         $user = new User($configArray);
-
-        Craft::$app->getElements()->saveElement($user);
+        $this->tester->saveElement($user);
 
         $this->tester->assertElementsExist(User::class, $configArray);
+        $this->tester->deleteElement($user);
     }
 
     /**
@@ -124,17 +124,17 @@ class CraftCodeceptionModuleTest extends Unit
         ];
 
         $user = new User($configArray);
-
-        Craft::$app->getElements()->saveElement($user);
+        $this->tester->saveElement($user);
 
         $this->tester->assertTestFails(function() use ($configArray) {
             $this->tester->assertElementsExist(User::class, $configArray, 2);
         });
+
+        $this->tester->deleteElement($user);
     }
 
     /**
      * @throws Throwable
-     * @throws ElementNotFoundException
      * @throws InvalidElementException
      * @throws \yii\base\Exception
      */
@@ -149,13 +149,16 @@ class CraftCodeceptionModuleTest extends Unit
 
         $user = new User($configArray);
 
-        Craft::$app->getElements()->saveElement($user);
+        $this->tester->saveElement($user);
 
         $dupeConfig = ['username' => 'user3', 'email' => 'user3@crafttest.com'];
-        Craft::$app->getElements()->duplicateElement($user, $dupeConfig);
+        $dupeUser = Craft::$app->getElements()->duplicateElement($user, $dupeConfig);
 
         $this->tester->assertElementsExist(User::class, $configArray, 1);
         $this->tester->assertElementsExist(User::class, array_merge($configArray, $dupeConfig), 1);
+
+        $this->tester->deleteElement($user);
+        $this->tester->deleteElement($dupeUser);
     }
 
     /**

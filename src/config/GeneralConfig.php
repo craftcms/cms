@@ -350,7 +350,7 @@ class GeneralConfig extends BaseObject
     public $defaultFileMode;
 
     /**
-     * @var int The quality level Craft will use when saving JPG and PNG files. Ranges from 0 (worst quality, smallest file) to
+     * @var int The quality level Craft will use when saving JPG and PNG files. Ranges from 1 (worst quality, smallest file) to
      * 100 (best quality, biggest file).
      * @group Image Handling
      */
@@ -1019,6 +1019,15 @@ class GeneralConfig extends BaseObject
      * @group Garbage Collection
      */
     public $purgeUnsavedDraftsDuration = 2592000;
+
+    /**
+     * @var bool Whether SVG thumbnails should be rasterized.
+     *
+     * Note this will only work if ImageMagick is installed, and <config:imageDriver> is set to either `auto` or `imagick`.
+     *
+     * @since 3.6.0
+     */
+    public $rasterizeSvgThumbs = false;
 
     /**
      * @var mixed The amount of time Craft will remember a username and pre-populate it on the control panel’s Login page.

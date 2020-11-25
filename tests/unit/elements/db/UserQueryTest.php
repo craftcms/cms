@@ -257,4 +257,17 @@ class UserQueryTest extends TestCase
         $this->tester->saveElement($this->lockedUser);
         $this->tester->saveElement($this->activeUser);
     }
+
+    /**
+     * @inheritdoc
+     */
+    protected function _after()
+    {
+        parent::_after();
+
+        $this->tester->deleteElement($this->pendingUser);
+        $this->tester->deleteElement($this->suspendedUser);
+        $this->tester->deleteElement($this->lockedUser);
+        $this->tester->deleteElement($this->activeUser);
+    }
 }

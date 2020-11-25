@@ -376,7 +376,7 @@ abstract class Migration extends \yii\db\Migration
     public function addForeignKey($name, $table, $columns, $refTable, $refColumns, $delete = null, $update = null)
     {
         if ($name === null) {
-            $name = $this->db->getForeignKeyName($table, $columns);
+            $name = $this->db->getForeignKeyName();
         }
 
         return parent::addForeignKey($name, $table, $columns, $refTable, $refColumns, $delete, $update);
@@ -394,7 +394,7 @@ abstract class Migration extends \yii\db\Migration
     public function createIndex($name, $table, $columns, $unique = false)
     {
         if ($name === null) {
-            $name = $this->db->getIndexName($table, $columns, $unique);
+            $name = $this->db->getIndexName();
         }
 
         return parent::createIndex($name, $table, $columns, $unique);
