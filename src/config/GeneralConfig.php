@@ -1137,8 +1137,8 @@ class GeneralConfig extends BaseObject
      * If this is set, Craft will redirect [.well-known/change-password requests](https://w3c.github.io/webappsec-change-password-url/) to this URI.
      *
      * ::: tip
-     * You will also need to set the <config:setPasswordPath> config setting, which determines the URI and template path for your Set Password form,
-     * which is where the user will actually reset their password, once they’ve clicked the link in the Password Reset email.
+     * You’ll also need to set [setPasswordPath](config3:setPasswordPath), which determines the URI and template path for the Set Password form
+     * where the user resets their password after following the link in the Password Reset email.
      * :::
      *
      * @see getSetPasswordRequestPath()
