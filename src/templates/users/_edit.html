@@ -89,7 +89,7 @@
                     value: user.email,
                     required: true,
                     type: 'email',
-                    errors: user.getErrors('email')|merge(user.getErrors('unverifiedEmail'))
+                    errors: user.getErrors('email')|merge(user.getErrors('unverifiedEmail')),
                 }) }}
 
                 {{ forms.checkboxField({
@@ -110,7 +110,7 @@
                     value: user.email,
                     required: true,
                     type: 'email',
-                    errors: user.getErrors('email')|merge(user.getErrors('unverifiedEmail'))
+                    errors: user.getErrors('email')|merge(user.getErrors('unverifiedEmail')),
                 }) }}
 
                 {% if user.getIsCurrent() %}
@@ -119,7 +119,7 @@
                         id: 'newPassword',
                         name: 'newPassword',
                         autocomplete: 'new-password',
-                        errors: user.getErrors('newPassword')
+                        errors: user.getErrors('newPassword'),
                     }) }}
 
                     {% js %}
