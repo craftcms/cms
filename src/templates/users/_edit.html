@@ -90,6 +90,9 @@
                     required: true,
                     type: 'email',
                     errors: user.getErrors('email')|merge(user.getErrors('unverifiedEmail')),
+                    inputAttributes: {
+                        data: {lpignore: 'true'},
+                    },
                 }) }}
 
                 {{ forms.checkboxField({
@@ -111,6 +114,9 @@
                     required: true,
                     type: 'email',
                     errors: user.getErrors('email')|merge(user.getErrors('unverifiedEmail')),
+                    inputAttributes: {
+                        data: {lpignore: 'true'},
+                    },
                 }) }}
 
                 {% if user.getIsCurrent() %}
@@ -120,6 +126,9 @@
                         name: 'newPassword',
                         autocomplete: 'new-password',
                         errors: user.getErrors('newPassword'),
+                        inputAttributes: {
+                            data: {lpignore: 'true'},
+                        },
                     }) }}
 
                     {% js %}

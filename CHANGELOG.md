@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Changed
+- The Username, First Name, Last Name, Email, and New Password fields on Edit User pages now prevent LastPass from autofilling them. ([#7177](https://github.com/craftcms/cms/issues/7177))
+
 ## 3.5.16 - 2020-11-24
 
 ### Added
