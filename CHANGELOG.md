@@ -1,5 +1,7 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased (3.6)
+
 ## 3.6.0-RC1 - 2020-11-24
 
 > {warning} If you have a custom session driver, make sure you update it for Yii 2.0.29 compatibility.
@@ -40,6 +42,7 @@
 - `craft\db\Connection::getPrimaryKeyName()`, `getForeignKeyName()`, and `getIndexName()` now generate completely random object names, rather than basing them on a table name, etc. ([#7153](https://github.com/craftcms/cms/issues/7153))
 - `craft\services\Gql::getValidationRules()` now has an `$isIntrospectionQuery` argument.
 - The `craft\services\Gql::EVENT_BEFORE_EXECUTE_GQL_QUERY` event can now modify the GraphQL query. ([#7072](https://github.com/craftcms/cms/pull/7072))
+- GraphQL queries now support eager-loading for arguments provided as input objects.
 - Updated Yii to 2.0.39.
 - Updated Composer to 2.0.7.
 - Updated LitEmoji ot 2.x.
@@ -48,6 +51,7 @@
 ### Deprecated
 - Deprecated `craft\db\Connection::trimObjectName()`.
 - Deprecated `craft\helpers\App::logConfig()`.
+- Deprecated the `relatedToAll` GraphQL query argument.
 
 ### Removed
 - Removed `craft\controllers\ElementIndexesController::actionCreateExportToken()`.

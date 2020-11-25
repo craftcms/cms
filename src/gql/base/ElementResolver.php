@@ -146,6 +146,7 @@ abstract class ElementResolver extends Resolver
         $arguments = parent::prepareArguments($arguments);
 
         if (isset($arguments['relatedToAll'])) {
+            Craft::$app->getDeprecator()->log('graphql.arguments.relatedToAll', 'The `relatedToAll` argument has been deprecated. Use the `relatedTo` argument with the `["and", ...ids]` syntax instead.');
             $ids = (array)$arguments['relatedToAll'];
             $ids = array_map(function($value) {
                 return ['element' => $value];
