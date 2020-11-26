@@ -27,10 +27,12 @@ $.extend(Craft,
          * @param {(string|indexKeyCallback)} key
          */
         index: function(arr, key) {
-            return arr.reduce((index, obj, i) => {
-                index[typeof key === 'string' ? obj[key] : key(obj, i)] = obj;
-                return index;
-            }, {});
+            if (arr) {
+                return arr.reduce((index, obj, i) => {
+                    index[typeof key === 'string' ? obj[key] : key(obj, i)] = obj;
+                    return index;
+                }, {});
+            }
         },
 
         /**
