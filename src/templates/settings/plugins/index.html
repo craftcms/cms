@@ -39,10 +39,13 @@
                                         <div class="plugin-id">
                                             <h2>{{ config.name }}</h2>
                                             {% if config.hasMultipleEditions or config.isTrial %}
-                                                {{ (config.upgradeAvailable ? '<a href="' ~ pluginStoreUrl ~ '"' : '<div')|raw }} class="edition">
+                                                {% tag (config.upgradeAvailable ? 'a' : 'div') with {
+                                                    class: 'edition',
+                                                    href: config.upgradeAvailable ? pluginStoreUrl : false,
+                                                } %}
                                                     {% if config.hasMultipleEditions %}<div class="edition-name">{{ config.edition }}</div>{% endif %}
                                                     {% if config.isTrial %}<div class="edition-trial">{{ 'Trial'|t('app') }}</div>{% endif %}
-                                                {{ (config.upgradeAvailable ? '</a>' : '</div>')|raw }}
+                                                {% endtag %}
                                             {% endif %}
                                             <span class="version">{{ config.version }}</span>
                                         </div>
