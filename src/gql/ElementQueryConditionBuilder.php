@@ -170,17 +170,28 @@ class ElementQueryConditionBuilder extends Component
     {
         $argumentNodeValue = $argumentNode->value;
 
-        if (isset($argumentNodeValue->values)) {
-            $extractedValue = [];
-            foreach ($argumentNodeValue->values as $value) {
-                $extractedValue[] = $this->_extractArgumentValue($value);
+        if (in_array($argumentNode->kind, ['Argument', 'Variable', 'ListValue', 'ObjectField'], true)) {
+            switch ($argumentNodeValue->kind) {
+                case 'Variable':
+                    $extractedValue = $this->_resolveInfo->variableValues[$argumentNodeValue->name->value];
+                    break;
+                case 'ListValue':
+                    $extractedValue = [];
+
+                    foreach ($argumentNodeValue->values as $value) {
+                        $extractedValue[] = $this->_extractArgumentValue($value);
+                    }
+                    break;
+                case 'ObjectValue':
+                    foreach ($argumentNodeValue->fields as $fieldNode) {
+                        $extractedValue[$fieldNode->name->value] = $this->_extractArgumentValue($fieldNode);
+                    }
+                    break;
+                default:
+                    $extractedValue = $argumentNodeValue->value;
             }
         } else {
-            if (in_array($argumentNode->kind, ['Argument', 'Variable'], true)) {
-                $extractedValue = $argumentNodeValue->kind === 'Variable' ? $this->_resolveInfo->variableValues[$argumentNodeValue->name->value] : $argumentNodeValue->value;
-            } else {
-                $extractedValue = $argumentNodeValue;
-            }
+            $extractedValue = $argumentNodeValue;
         }
 
         return $extractedValue;
