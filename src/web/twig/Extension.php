@@ -47,6 +47,7 @@ use craft\web\twig\tokenparsers\RequireGuestTokenParser;
 use craft\web\twig\tokenparsers\RequireLoginTokenParser;
 use craft\web\twig\tokenparsers\RequirePermissionTokenParser;
 use craft\web\twig\tokenparsers\SwitchTokenParser;
+use craft\web\twig\tokenparsers\TagTokenParser;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\View;
 use DateInterval;
@@ -143,6 +144,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new RequireGuestTokenParser(),
             new RequirePermissionTokenParser(),
             new SwitchTokenParser(),
+            new TagTokenParser(),
 
             // Deprecated tags
             new RegisterResourceTokenParser('includeCss', 'Craft::$app->getView()->registerCss', [

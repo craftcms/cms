@@ -191,11 +191,20 @@
             },
 
             isLicenseValid() {
-                return this.pluginLicenseInfo && this.pluginLicenseInfo.licenseKeyStatus === 'valid' && this.pluginLicenseInfo.licenseIssues.length === 0
+                return (
+                    this.pluginLicenseInfo &&
+                    this.pluginLicenseInfo.licenseKeyStatus === 'valid' &&
+                    this.pluginLicenseInfo.licenseIssues.length === 0
+                );
             },
 
             showLicenseKeyStatus() {
-                return !this.loading && this.pluginLicenseInfo && this.pluginLicenseInfo.isInstalled && this.pluginLicenseInfo.licenseKey;
+                return (
+                    !this.loading &&
+                    this.pluginLicenseInfo &&
+                    this.pluginLicenseInfo.isInstalled &&
+                    this.pluginLicenseInfo.licenseKey
+                );
             }
         },
 

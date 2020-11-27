@@ -39,10 +39,13 @@
                                         <div class="plugin-id">
                                             <h2>{{ config.name }}</h2>
                                             {% if config.hasMultipleEditions or config.isTrial %}
-                                                {{ (config.upgradeAvailable ? '<a href="' ~ pluginStoreUrl ~ '"' : '<div')|raw }} class="edition">
+                                                {% tag (config.upgradeAvailable ? 'a' : 'div') with {
+                                                    class: 'edition',
+                                                    href: config.upgradeAvailable ? pluginStoreUrl : false,
+                                                } %}
                                                     {% if config.hasMultipleEditions %}<div class="edition-name">{{ config.edition }}</div>{% endif %}
                                                     {% if config.isTrial %}<div class="edition-trial">{{ 'Trial'|t('app') }}</div>{% endif %}
-                                                {{ (config.upgradeAvailable ? '</a>' : '</div>')|raw }}
+                                                {% endtag %}
                                             {% endif %}
                                             <span class="version">{{ config.version }}</span>
                                         </div>
@@ -66,7 +69,15 @@
                                             <div class="pane">
                                                 <input class="text code{% if config.licenseIssues is not empty %} error{% endif %}" size="29" value="{{ config.licenseKey[0:1] == '$' ? config.licenseKey : (config.licenseKey|replace('/.{4}/', '$0-')|trim('-')) }}" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX-XXXX" readonly>
                                             </div>
-                                            <a class="btn{% if config.licenseIssues is not empty %} submit{% endif %}{% if not (showLicenseKey and not config.licenseKey) %} hidden{% endif %}" href="{{ url('plugin-store/buy/'~handle~'/'~config.edition)}}">{{ "Buy now"|t('app') }}</a>
+                                            {{ tag('a', {
+                                                text: 'Buy now'|t('app'),
+                                                class: [
+                                                    'btn',
+                                                    config.licenseIssues is not empty ? 'submit',
+                                                    not (showLicenseKey and not config.licenseKey) ? 'hidden',
+                                                ]|filter,
+                                                href: url('plugin-store/buy/'~handle~'/'~config.edition),
+                                            }) }}
                                             <div class="spinner hidden"></div>
                                         </div>
                                         {% for issue in config.licenseIssues %}
@@ -139,7 +150,7 @@
             </table>
         </div>
     {% else %}
-        <p id="no-plugins">{{ "There are no available plugins."|t('app') }}
+        <p id="no-plugins" class="zilch">{{ "There are no available plugins."|t('app') }}
     {% endif %}
 {% endblock %}
 
