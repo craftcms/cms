@@ -7,6 +7,7 @@
 
 namespace craft\gql\base;
 
+use Craft;
 use craft\gql\ArgumentManager;
 use craft\gql\ElementQueryConditionBuilder;
 use craft\helpers\StringHelper;
