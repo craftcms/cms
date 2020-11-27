@@ -14,6 +14,7 @@
 - Added the `maxGraphqlDepth` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
 - Added the `maxGraphqlResults` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
 - Added the `rasterizeSvgThumbs` config setting. ([#7146](https://github.com/craftcms/cms/issues/7146))
+- It is now possible to access reverse relations within element queries in GraphQL using the `related*` arguments. ([#7110](https://github.com/craftcms/cms/issues/7110))
 - Added the `CRAFT_STREAM_LOG` PHP constant, which, if set to `true`, will send log output to `stderr` and `stdout`.
 - Added `craft\base\ElementExporterInterface::isFormattable()`.
 - Added `craft\base\VolumeTrait::$titleTranslationMethod`.
@@ -23,7 +24,23 @@
 - Added `craft\elements\Entry::EVENT_DEFINE_ENTRY_TYPES`. ([#7136](https://github.com/craftcms/cms/issues/7136))
 - Added `craft\elements\Entry::getAvailableEntryTypes()`.
 - Added `craft\events\DefineEntryTypesEvent`.
+- Added `craft\events\RegisterGqlArgumentHandlersEvent`.
 - Added `craft\fieldlayoutelements\AssetTitleField`.
+- Added `craft\gql\ArgumentManager`.
+- Added `craft\gql\base\ArgumentHandler`.
+- Added `craft\gql\base\ArgumentHandlerInterface`.
+- Added `craft\gql\base\RelationArgumentHandler`.
+- Added `craft\gql\ElementQueryConditionBuilder::setArgumentManager()`.
+- Added `craft\gql\handlers\RelatedAssets`.
+- Added `craft\gql\handlers\RelatedCategories`.
+- Added `craft\gql\handlers\RelatedEntries`.
+- Added `craft\gql\handlers\RelatedTags`.
+- Added `craft\gql\handlers\RelatedUsers`.
+- Added `craft\gql\types\input\criteria\Asset`.
+- Added `craft\gql\types\input\criteria\Category`.
+- Added `craft\gql\types\input\criteria\Entry`.
+- Added `craft\gql\types\input\criteria\Tag`.
+- Added `craft\gql\types\input\criteria\User`.
 - Added `craft\helpers\Gql::eagerLoadComplexity()`.
 - Added `craft\helpers\Gql::nPlus1Complexity()`.
 - Added `craft\helpers\Gql::singleQueryComplexity()`.
@@ -52,6 +69,8 @@
 - Deprecated `craft\db\Connection::trimObjectName()`.
 - Deprecated `craft\helpers\App::logConfig()`.
 - Deprecated the `relatedToAll` GraphQL query argument.
+- Deprecated `craft\gql\base\Resolver::getArrayableArguments()`.
+- Deprecated `craft\gql\base\Resolver::prepareArguments()`. 
 
 ### Removed
 - Removed `craft\controllers\ElementIndexesController::actionCreateExportToken()`.
