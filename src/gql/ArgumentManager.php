@@ -92,7 +92,7 @@ class ArgumentManager extends Component
         foreach ($this->_argumentHandlerClassers as $argumentName => $handlerClass) {
             if (!empty($arguments[$argumentName])) {
                 if (empty($this->_argumentHandlers[$handlerClass])) {
-                    $this->_argumentHandlers[$handlerClass] = Craft::createObject($handlerClass);
+                    $this->_argumentHandlers[$handlerClass] = is_object($handlerClass) ? $handlerClass : Craft::createObject($handlerClass);
                 }
 
                 $handler = $this->_argumentHandlers[$handlerClass];
