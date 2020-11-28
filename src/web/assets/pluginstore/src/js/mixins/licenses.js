@@ -1,7 +1,7 @@
 export default {
     computed: {
         licenseMismatched() {
-            return this.pluginLicenseInfo.licenseIssues.find(issue => issue === 'mismatched')
+            return this.pluginLicenseInfo.licenseKeyStatus === 'mismatched'
         },
 
         licenseValidOrAstray() {
