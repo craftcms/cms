@@ -5,6 +5,9 @@
 ### Added
 - Added the `{% tag %}` Twig tag.
 
+### Fixed
+- Fixed a JavaScript error that occurred when opening an element selector modal. ([#7186](https://github.com/craftcms/cms/issues/7186))
+
 ## 3.6.0-RC1 - 2020-11-24
 
 > {warning} If you have a custom session driver, make sure you update it for Yii 2.0.29 compatibility.
