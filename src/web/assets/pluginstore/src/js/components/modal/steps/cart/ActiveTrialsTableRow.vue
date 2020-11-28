@@ -7,7 +7,7 @@
             </div>
         </td>
         <td class="item-name">
-            <strong>{{ plugin.name }}</strong>
+            <a :title="plugin.name" @click.prevent="navigateToPlugin"><strong>{{ plugin.name }}</strong></a>
 
             <edition-badge v-if="activeTrialPluginEdition && plugin.editions.length > 1" :name="activeTrialPluginEdition.name"></edition-badge>
         </td>
@@ -106,6 +106,16 @@
                         this.$root.displayError(errorMessage)
                     })
             },
+
+            navigateToPlugin() {
+                const path = '/' + this.plugin.handle
+
+                this.$root.closeModal()
+
+                if (this.$route.path !== path) {
+                    this.$router.push({path})
+                }
+            }
         }
     }
 </script>
