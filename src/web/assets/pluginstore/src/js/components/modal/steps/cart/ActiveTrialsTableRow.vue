@@ -25,7 +25,9 @@
         <td class="w-1/4">
             <div class="text-right">
                 <template v-if="!activeTrialLoading">
-                    <a @click="addToCart(plugin, pluginLicenseInfo.edition)" :loading="activeTrialLoading">{{ "Add to cart"|t('app') }}</a>
+                    <a @click="addToCart(plugin, pluginLicenseInfo.edition)" :loading="activeTrialLoading" :class="{
+                        'disabled hover:no-underline': licenseMismatched
+                    }">{{ "Add to cart"|t('app') }}</a>
                 </template>
                 <template v-else>
                     <spinner size="sm"></spinner>
@@ -82,6 +84,10 @@
 
         methods: {
             addToCart(plugin, editionHandle) {
+                if (this.licenseMismatched) {
+                    return false
+                }
+
                 this.activeTrialLoading = true
 
                 const item = {
