@@ -102,6 +102,13 @@
 - Removed Minify and jsmin-php.
 - Removed `craft\services\Api::getComposerWhitelist()`.
 
+## Unreleased (3.5)
+
+### Changed
+- The Username, First Name, Last Name, Email, and New Password fields on Edit User pages now prevent LastPass from autofilling them. ([#7177](https://github.com/craftcms/cms/issues/7177))
+- Field layout elements’ settings HUDs now automatically set the focus on the first text input when opened. ([#7175](https://github.com/craftcms/cms/issues/7175))
+- Field instructions within the details pane are now replaced with info icons. ([#7180](https://github.com/craftcms/cms/issues/7180))
+
 ## 3.5.16 - 2020-11-24
 
 ### Added

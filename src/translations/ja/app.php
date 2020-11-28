@@ -582,7 +582,7 @@ return [
     'This field is not set to a valid source.' => 'このフィールドは有効なソースに設定されていません。',
     'This field is required' => 'このフィールドは必須です',
     'This field’s target subfolder path is invalid: {path}' => 'このフィールドが対象とするサブホルダー・パスは無効です。: {path}',
-    'This license is tied to another Craft install. Visit {url} to resolve.' => 'このライセンスは別の Craft インストールに紐づけられています。{url} にアクセスして解決してください。',
+    'This license is tied to another Craft install. Visit {accountLink} to detach it, or <a href="{buyUrl}">buy a new license</a>.' => 'This license is tied to another Craft install. Visit {accountLink} to detach it, or <a href="{buyUrl}">buy a new license</a>.',
     'This license isn’t allowed to run version {version}.' => 'このライセンスではバージョン {version} を実行できません。',
     'Time' => '時間',
     'Timeout' => 'タイムアウト',

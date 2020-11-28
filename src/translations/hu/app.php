@@ -582,7 +582,7 @@ return [
     'This field is not set to a valid source.' => 'Ez a mező nincs egy érvényes forráshoz kötve.',
     'This field is required' => 'Kötelező mező',
     'This field’s target subfolder path is invalid: {path}' => 'A mező cél almappájának elérési útvonala érvénytelen: {path}',
-    'This license is tied to another Craft install. Visit {url} to resolve.' => 'Ez a licenc egy másik Craft telepítéshez van csatolva. Látogasson el a(z) {url} oldalra a megoldáshoz.',
+    'This license is tied to another Craft install. Visit {accountLink} to detach it, or <a href="{buyUrl}">buy a new license</a>.' => 'This license is tied to another Craft install. Visit {accountLink} to detach it, or <a href="{buyUrl}">buy a new license</a>.',
     'This license isn’t allowed to run version {version}.' => 'Ez a licenc nem futtathatja a(z) {version} verziót.',
     'Time' => 'Idő',
     'Timeout' => 'Időtúllépés',

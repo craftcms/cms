@@ -582,7 +582,7 @@ return [
     'This field is not set to a valid source.' => 'Toto pole není nastaveno jako platný zdroj.',
     'This field is required' => 'Toto pole je vyžadováno',
     'This field’s target subfolder path is invalid: {path}' => 'Cesta k vybranému podsouboru pole je neplatná: {path}',
-    'This license is tied to another Craft install. Visit {url} to resolve.' => 'Tato licence je vázaná na jinou instalaci systému Craft. Řešení najdete na stránkách {url}.',
+    'This license is tied to another Craft install. Visit {accountLink} to detach it, or <a href="{buyUrl}">buy a new license</a>.' => 'This license is tied to another Craft install. Visit {accountLink} to detach it, or <a href="{buyUrl}">buy a new license</a>.',
     'This license isn’t allowed to run version {version}.' => 'Tato licence nemá povoleno spuštění verze {version}.',
     'Time' => 'Čas',
     'Timeout' => 'Vypršení časového limitu',

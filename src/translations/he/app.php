@@ -582,7 +582,7 @@ return [
     'This field is not set to a valid source.' => 'השדה לא מוגדר למקור תקני.',
     'This field is required' => 'השדה דרוש',
     'This field’s target subfolder path is invalid: {path}' => 'נתיב תת תיקיית היעד בשדה זה אינו תקין: {path}',
-    'This license is tied to another Craft install. Visit {url} to resolve.' => 'רישיון זה קשור להתקנה אחרת של Craft. כדי לפתור בקר ב-{url}.',
+    'This license is tied to another Craft install. Visit {accountLink} to detach it, or <a href="{buyUrl}">buy a new license</a>.' => 'This license is tied to another Craft install. Visit {accountLink} to detach it, or <a href="{buyUrl}">buy a new license</a>.',
     'This license isn’t allowed to run version {version}.' => 'רישיון זה אינו מורשה להריץ גרסה {version}.',
     'Time' => 'זמן',
     'Timeout' => 'פסק זמן',

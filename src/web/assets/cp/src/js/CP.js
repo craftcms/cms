@@ -74,6 +74,19 @@ Craft.CP = Garnish.Base.extend(
 
             this.updateSidebarMenuLabel();
 
+            // Swap any instruction text with info icons
+            let $allInstructions = this.$details.find('.meta > .field > .instructions');
+
+            for (let i = 0; i < $allInstructions.length; i++) {
+                let $instructions = $allInstructions.eq(i);
+                let $label = $instructions.siblings('.heading').children('label');
+                $('<span/>', {
+                    'class': 'info',
+                    'html': $instructions.children().html()
+                }).appendTo($label);
+                $instructions.remove();
+            }
+
             if (this.$header.length) {
                 this.addListener(Garnish.$win, 'scroll', 'updateFixedHeader');
                 this.updateFixedHeader();
