@@ -582,7 +582,7 @@ return [
     'This field is not set to a valid source.' => 'Dit veld is niet ingesteld voor een geldige bron.',
     'This field is required' => 'Dit veld is vereist',
     'This field’s target subfolder path is invalid: {path}' => 'De doel submap voor dit veld is ongeldig: {path}',
-    'This license is tied to another Craft install. Visit {url} to resolve.' => 'Deze licentie is aan een andere Craft-installatie gekoppeld. Ga naar {url} om dit op te lossen.',
+    'This license is tied to another Craft install. Visit {accountLink} to detach it, or <a href="{buyUrl}">buy a new license</a>.' => 'This license is tied to another Craft install. Visit {accountLink} to detach it, or <a href="{buyUrl}">buy a new license</a>.',
     'This license isn’t allowed to run version {version}.' => 'Met deze licentie mag u versie {version} niet uitvoeren.',
     'Time' => 'Tijd',
     'Timeout' => 'Time-out',
