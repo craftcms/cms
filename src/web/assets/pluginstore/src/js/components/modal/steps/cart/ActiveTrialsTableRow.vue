@@ -13,7 +13,7 @@
         </td>
         <td>
             <template v-if="activeTrialPluginEdition">
-                <template v-if="licensedEdition && licensedEdition.handle !== activeTrialPluginEdition.handle && licensedEdition.price > 0">
+                <template v-if="licensedEdition && licensedEdition.handle !== activeTrialPluginEdition.handle && licensedEdition.price > 0 && licenseValidOrAstray">
                     <del class="mr-1">{{activeTrialPluginEdition.price|currency}}</del>
                     <strong>{{(activeTrialPluginEdition.price - licensedEdition.price)|currency}}</strong>
                 </template>
@@ -38,9 +38,14 @@
 <script>
     import {mapGetters} from 'vuex'
     import EditionBadge from '../../../EditionBadge';
+    import licensesMixin from '../../../../mixins/licenses'
+
 
     export default {
+        mixins: [licensesMixin],
+
         components: {EditionBadge},
+
         props: ['plugin'],
 
         data() {
