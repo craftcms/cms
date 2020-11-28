@@ -11,7 +11,10 @@
         autocomplete: false,
         required: (isNewUser or (currentUser.admin or user.getIsCurrent()) ? true : false),
         disabled: (isNewUser or (currentUser.admin or user.getIsCurrent()) ? false : true),
-        errors: (user is defined ? user.getErrors('username') : null)
+        errors: (user is defined ? user.getErrors('username') : null),
+        inputAttributes: {
+            data: {lpignore: 'true'},
+        },
     }) }}
 {% endif %}
 
@@ -23,7 +26,10 @@
     value: user.firstName,
     autocomplete: false,
     errors: user.getErrors('firstName'),
-    autofocus: craft.app.config.general.useEmailAsUsername
+    autofocus: craft.app.config.general.useEmailAsUsername,
+    inputAttributes: {
+        data: {lpignore: 'true'},
+    },
 }) }}
 
 {{ forms.textField({
@@ -33,5 +39,8 @@
     name: 'lastName',
     value: user.lastName,
     autocomplete: false,
-    errors: user.getErrors('lastName')
+    errors: user.getErrors('lastName'),
+    inputAttributes: {
+        data: {lpignore: 'true'},
+    },
 }) }}

@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Changed
+- The Username, First Name, Last Name, Email, and New Password fields on Edit User pages now prevent LastPass from autofilling them. ([#7177](https://github.com/craftcms/cms/issues/7177))
+
+## 3.5.16 - 2020-11-24
+
 ### Added
 - It’s now possible to save image transforms that generate WebP files, on environments that support it.
 - It's now possible to send a `X-Craft-Gql-Cache: no-cache` header with GraphQL API requests, to bypass the GraphQL cache. ([craftcms/gatsby-source-craft#8](https://github.com/craftcms/gatsby-source-craft/issues/8))
@@ -45,6 +50,7 @@
 - Fixed a bug where `craft\events\UserGroupsAssignEvent::$removedGroupIds` was getting set to the wrong IDs.
 - Fixed an error that could occur when attempting to delete an admin user when the `allowAdminChanges` config setting was disabled. ([#7157](https://github.com/craftcms/cms/issues/7157))
 - Fixed a bug where template caches weren’t getting invalidated when global sets were saved. ([#7166](https://github.com/craftcms/cms/issues/7166))
+- Fixed a bug where validation rules defined by fields’ `getElementValidationRules()` methods could lose their `isEmpty` and `on` keys.
 
 ## 3.5.15.1 - 2020-11-04
 
