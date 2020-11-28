@@ -216,28 +216,6 @@ c-2-26.8-24.8-53.5-42-72.5S0,169.8,0,144C0,76,64.8,32,128,32S256,76,256,144z"/>
             ...mapActions({
                 addToCart: 'cart/addToCart'
             }),
-
-            licenseIssue(errorCode) {
-                switch (errorCode) {
-                    case 'wrong_edition': {
-                        const currentEdition = this.getPluginEdition(this.plugin, this.pluginLicenseInfo.edition)
-                        const licensedEdition = this.getPluginEdition(this.plugin, this.pluginLicenseInfo.licensedEdition)
-
-                        return this.$options.filters.t('Your are currently using the {currentEdition} edition, and your licensed edition is {licensedEdition}.', 'app', {
-                            currentEdition: currentEdition.name,
-                            licensedEdition: licensedEdition.name,
-                        })
-                    }
-
-                    case 'mismatched': {
-                        return this.$options.filters.t('This license is tied to another Craft install. Purchase a license for this install.', 'app')
-                    }
-
-                    default: {
-                        return this.$options.filters.t('Your license key is invalid.', 'app')
-                    }
-                }
-            },
         },
 
         mounted() {
