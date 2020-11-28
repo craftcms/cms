@@ -6,8 +6,6 @@
                 <div class="plugin-icon">
                     <img v-if="plugin.iconUrl" :src="plugin.iconUrl" width="100" />
                     <img v-else :src="defaultPluginSvg" width="100" />
-
-                    <div v-if="showLicenseKeyStatus" class="license-key-status" :class="{valid: isLicenseValid}"></div>
                 </div>
 
                 <div class="description flex-1">
@@ -295,20 +293,6 @@ c-2-26.8-24.8-53.5-42-72.5S0,169.8,0,144C0,76,64.8,32,128,32S256,76,256,144z"/>
     .plugin-icon {
         @apply .relative;
         @include margin-right(1.5rem); // .mr-6
-
-        .license-key-status {
-            @apply .block .absolute;
-            bottom: 0px;
-            right: 0;
-            width: 32px;
-            height: 32px;
-            background: no-repeat 0 0 url(~@/images/invalid-icon.svg);
-            background-size: 100% 100%;
-
-            &.valid {
-                background-image: url(~@/images/valid-icon.svg);
-            }
-        }
     }
 
 
