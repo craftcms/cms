@@ -353,8 +353,11 @@
                                 }) + ' <button type="button" class="btn submit small formsubmit">' + Craft.t('app', 'Switch') + '</button>';
                                 break;
                             case 'mismatched':
-                                message = Craft.t('app', 'This license is tied to another Craft install. Visit {url} to resolve.', {
-                                    url: '<a href="https://id.craftcms.com" rel="noopener" target="_blank">id.craftcms.com</a>'
+                                message = Craft.t('app', 'This license is tied to another Craft install. Visit {accountLink} to resolve the issue or {buyLink}.', {
+                                    accountLink: '<a href="https://id.craftcms.com" rel="noopener" target="_blank">id.craftcms.com</a>',
+                                    buyLink: Craft.t('app', '<a href="' + Craft.getCpUrl('plugin-store/upgrade-craft') + '">{label}</a>', {
+                                        label: Craft.t('app', 'buy a new license')
+                                    }),
                                 });
                                 break;
                             case 'astray':
