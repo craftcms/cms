@@ -202,14 +202,6 @@ c-2-26.8-24.8-53.5-42-72.5S0,169.8,0,144C0,76,64.8,32,128,32S256,76,256,144z"/>
                 return this.getPluginLicenseInfo(this.plugin.handle)
             },
 
-            isLicenseValid() {
-                return this.pluginLicenseInfo && this.pluginLicenseInfo.licenseKeyStatus === 'valid' && this.pluginLicenseInfo.licenseIssues.length === 0
-            },
-
-            showLicenseKeyStatus() {
-                return !this.loading && this.pluginLicenseInfo && this.pluginLicenseInfo.isInstalled && this.pluginLicenseInfo.licenseKey;
-            },
-
             licenseMismatchedMessage() {
                 return this.$options.filters.t('This license is tied to another Craft install. Visit {accountLink} to resolve the issue or {buyLink}.', 'app', {
                     accountLink: '<a href="https://id.craftcms.com" rel="noopener" target="_blank">id.craftcms.com</a>',
