@@ -105,13 +105,24 @@ abstract class RelationArgumentHandler extends ArgumentHandler
             return [];
         }
 
-        // If it begins with an "or", just drop the or.
+        // If it begins with an "and" or an "or", just drop it, but keep note of it.
         $firstOperand = StringHelper::toLowerCase($relatedTo[0]);
         if ($firstOperand === 'or' || $firstOperand === 'and') {
             array_shift($relatedTo);
         }
 
         if (ArrayHelper::isNumeric($relatedTo)) {
+            // If it was "and", split out all the ids to their own condition
+            if ($firstOperand === 'and') {
+                $output = ['and'];
+
+                foreach ($relatedTo as $relatedId) {
+                    $output[] = ['element' => $relatedId];
+                }
+
+                return $output;
+            }
+
             $relatedTo = ['and', ['element' => $relatedTo]];
         } else {
             array_unshift($relatedTo, 'and');
