@@ -1,6 +1,14 @@
 {% extends 'settings/sections/_layout' %}
 {% set selectedTab = 'settings' %}
 {% set fullPageForm = true %}
+{% set formActions = [
+    {
+        label: 'Save and continue editing'|t('app'),
+        redirect: 'settings/sections/{id}'|hash,
+        shortcut: true,
+        retainScroll: true,
+    },
+] %}
 
 {% import "_includes/forms" as forms %}
 
