@@ -25,11 +25,9 @@ abstract class ArgumentHandler implements ArgumentHandlerInterface
     protected $argumentName;
 
     /**
-     * Construct the argument handler and save a reference to the argument manager.
-     *
-     * @param ArgumentManager $argumentManager
+     * @inheritdoc
      */
-    public function __construct(ArgumentManager $argumentManager) {
+    public function setArgumentManager(ArgumentManager $argumentManager): void {
         $this->argumentManager = $argumentManager;
     }
 

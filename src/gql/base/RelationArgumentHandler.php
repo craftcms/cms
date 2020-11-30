@@ -26,14 +26,6 @@ abstract class RelationArgumentHandler extends ArgumentHandler
     private $_memoizedValues = [];
 
     /**
-     * @inheritdoc
-     */
-    public function getCanMemoizeResult(): bool
-    {
-        return true;
-    }
-
-    /**
      * Get the IDs of elements returned by configuring the provided element query with given criteria.
      *
      * @param ElementQueryInterface $elementQuery
@@ -85,6 +77,20 @@ abstract class RelationArgumentHandler extends ArgumentHandler
 
         return $argumentList;
     }
+
+    /**
+     * @inheritdoc
+     */
+    protected function handleArgument($argumentValue)
+    {
+        // Recursively parse nested arguments.
+        if (ArrayHelper::isAssociative($argumentValue)) {
+            $argumentValue = $this->argumentManager->prepareArguments($argumentValue);
+        }
+
+        return $argumentValue;
+    }
+
 
     /**
      * Prepare the `relatedTo` argument.

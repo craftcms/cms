@@ -47,9 +47,9 @@ class ArgumentManager extends Component
      */
     const EVENT_DEFINE_GQL_ARGUMENT_HANDLERS = 'defineGqlArgumentHandlers';
 
-    private $_argumentHandlerClassers = [];
-
     private $_argumentHandlers = [];
+
+    private $_handlersCreated = false;
 
     public function init()
     {
@@ -67,17 +67,54 @@ class ArgumentManager extends Component
 
         $this->trigger(self::EVENT_DEFINE_GQL_ARGUMENT_HANDLERS, $event);
 
-        $this->_argumentHandlerClassers = $event->handlers;
+        $this->_argumentHandlers = $event->handlers;
+    }
+
+    /**
+     * Create all the handlers, if class names were provided.
+     */
+    protected function createHandlers(): void
+    {
+        if ($this->_handlersCreated) {
+            return;
+        }
+
+        foreach ($this->_argumentHandlers as &$handler) {
+            // Instantiate in place, if a class name is added.
+            if (is_string($handler)) {
+                $handler = $this->createHandler($handler);
+            }
+        }
+
+        unset($handler);
+        $this->_handlersCreated = true;
+    }
+
+    /**
+     * Set the argument handler for an argument name.
+     *
+     * @param string $argumentName
+     * @param string|ArgumentHandlerInterface $handler
+     */
+    public function setHandler(string $argumentName, $handler): void
+    {
+        if (is_string($handler)) {
+            $handler = $this->createHandler($handler);
+        }
+
+        $this->_argumentHandlers[$argumentName] = $handler;
     }
 
     /**
      * Prepare GraphQL arguments according to the registered argument handlers.
      *
      * @param $arguments
-     * @return array|mixed
+     * @return array
      * @throws \yii\base\InvalidConfigException
      */
-    public function prepareArguments($arguments) {
+    public function prepareArguments($arguments): array {
+        $this->createHandlers();
+
         // TODO remove in Craft 4.1
         if (isset($arguments['relatedToAll'])) {
             Craft::$app->getDeprecator()->log('graphql.arguments.relatedToAll', 'The `relatedToAll` argument has been deprecated. Use the `relatedTo` argument with the `["and", ...ids]` syntax instead.');
@@ -89,20 +126,26 @@ class ArgumentManager extends Component
             unset($arguments['relatedToAll']);
         }
 
-        foreach ($this->_argumentHandlerClassers as $argumentName => $handlerClass) {
-            if (!empty($arguments[$argumentName])) {
-                if (empty($this->_argumentHandlers[$handlerClass])) {
-                    $this->_argumentHandlers[$handlerClass] = is_object($handlerClass) ? $handlerClass : Craft::createObject($handlerClass);
-                }
-
-                $handler = $this->_argumentHandlers[$handlerClass];
-
-                if ($handler instanceof ArgumentHandlerInterface) {
-                    $arguments = $handler->handleArgumentCollection($arguments);
-                }
+        foreach ($this->_argumentHandlers as $argumentName => $handler) {
+            if (!empty($arguments[$argumentName]) && $handler instanceof ArgumentHandlerInterface) {
+                $arguments = $handler->handleArgumentCollection($arguments);
             }
         }
 
         return $arguments;
+    }
+
+    /**
+     * @param string $handler
+     * @return ArgumentHandlerInterface|string
+     */
+    protected function createHandler(string $handler)
+    {
+        if (is_a($handler, ArgumentHandlerInterface::class)) {
+            /** @var ArgumentHandlerInterface $handler */
+            $handler = new $handler();
+            $handler->setArgumentManager($this);
+        }
+        return $handler;
     }
 }

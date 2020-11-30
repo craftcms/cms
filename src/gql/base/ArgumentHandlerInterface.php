@@ -8,6 +8,8 @@
 namespace craft\gql\base;
 
 
+use craft\gql\ArgumentManager;
+
 /**
  * Class ArgumentHandlerInterface
  *
@@ -23,4 +25,11 @@ interface ArgumentHandlerInterface
      * @return mixed
      */
     public function handleArgumentCollection(array $argumentList = []): array;
+
+    /**
+     * Set the current argument manager. Required for recursive argument preparation.
+     *
+     * @param ArgumentManager $argumentManager
+     */
+    public function setArgumentManager(ArgumentManager  $argumentManager): void;
 }

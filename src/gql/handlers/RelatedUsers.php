@@ -28,11 +28,7 @@ class RelatedUsers extends RelationArgumentHandler
      */
     protected function handleArgument($argumentValue)
     {
-        // Recursively parse nested arguments.
-        if (ArrayHelper::isAssociative($argumentValue)) {
-            $argumentValue = $this->argumentManager->prepareArguments($argumentValue);
-        }
-
+        $argumentValue = parent::handleArgument($argumentValue);
         return $this->getIds(Craft::$app->getElements()->createElementQuery(User::class), $argumentValue);
     }
 }
