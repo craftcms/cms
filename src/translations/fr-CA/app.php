@@ -582,7 +582,7 @@ return [
     'This field is not set to a valid source.' => 'Ce champ n’est pas relié à une source valide.',
     'This field is required' => 'Ce champ est obligatoire',
     'This field’s target subfolder path is invalid: {path}' => 'Le chemin du sous-dossier cible du champ est non valide : {path}',
-    'This license is tied to another Craft install. Visit {url} to resolve.' => 'La licence est liée à une autre installation Craft. Consultez {url} pour résoudre le problème.',
+    'This license is tied to another Craft install. Visit {accountLink} to detach it, or <a href="{buyUrl}">buy a new license</a>.' => 'This license is tied to another Craft install. Visit {accountLink} to detach it, or <a href="{buyUrl}">buy a new license</a>.',
     'This license isn’t allowed to run version {version}.' => 'Cette licence ne peut exécuter la version {version}.',
     'Time' => 'Heure',
     'Timeout' => 'Temps écoulé',

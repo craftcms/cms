@@ -127,7 +127,9 @@
                         autocomplete: 'new-password',
                         errors: user.getErrors('newPassword'),
                         inputAttributes: {
-                            data: {lpignore: 'true'},
+                            data: {
+                                lpignore: user.getIsCurrent() ? false : 'true',
+                            }|filter,
                         },
                     }) }}
 

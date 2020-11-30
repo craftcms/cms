@@ -419,6 +419,13 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
 </div>
 `;
         this.hud = new Garnish.HUD(this.$container, bodyHtml, {
+            onShow: (e) => {
+                // Hold off a sec until it's positioned...
+                Garnish.requestAnimationFrame(() => {
+                    // Focus on the first text input
+                    this.hud.$main.find('.text:first').trigger('focus');
+                });
+            },
             onSubmit: () => {
                 this.applyHudSettings();
             }

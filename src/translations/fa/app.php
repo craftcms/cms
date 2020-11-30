@@ -582,7 +582,7 @@ return [
     'This field is not set to a valid source.' => 'این فیلد برای یک منبع صحیح تنظیم نشده است.',
     'This field is required' => 'این فیلد اجباری است',
     'This field’s target subfolder path is invalid: {path}' => 'مسیر زیر پوشه مقصد این فیلد نا معتیر است: {path}',
-    'This license is tied to another Craft install. Visit {url} to resolve.' => 'این لایسنس مربوط به نصب Craft دیگری است. برای برطرف کردن مشکل {url} را مشاهده نمایید.',
+    'This license is tied to another Craft install. Visit {accountLink} to detach it, or <a href="{buyUrl}">buy a new license</a>.' => 'This license is tied to another Craft install. Visit {accountLink} to detach it, or <a href="{buyUrl}">buy a new license</a>.',
     'This license isn’t allowed to run version {version}.' => 'این لایسنس مجوز اجرای نسخه {version} را ندارد.',
     'Time' => 'زمان',
     'Timeout' => 'تایم اوت',

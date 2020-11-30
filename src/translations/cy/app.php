@@ -582,7 +582,7 @@ return [
     'This field is not set to a valid source.' => 'This field is not set to a valid source.',
     'This field is required' => 'This field is required',
     'This field’s target subfolder path is invalid: {path}' => 'This field’s target subfolder path is invalid: {path}',
-    'This license is tied to another Craft install. Visit {url} to resolve.' => 'This license is tied to another Craft install. Visit {url} to resolve.',
+    'This license is tied to another Craft install. Visit {accountLink} to detach it, or <a href="{buyUrl}">buy a new license</a>.' => 'This license is tied to another Craft install. Visit {accountLink} to detach it, or <a href="{buyUrl}">buy a new license</a>.',
     'This license isn’t allowed to run version {version}.' => 'This license isn’t allowed to run version {version}.',
     'Time' => 'Time',
     'Timeout' => 'Timeout',

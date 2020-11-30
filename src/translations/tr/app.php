@@ -582,7 +582,7 @@ return [
     'This field is not set to a valid source.' => 'Bu alan geçerli bir kaynağa bağlanmamış.',
     'This field is required' => 'Bu alan gereklidir',
     'This field’s target subfolder path is invalid: {path}' => 'Bu alanın hedef alt klasörü geçersizdir: {path}',
-    'This license is tied to another Craft install. Visit {url} to resolve.' => 'Bu lisans başka bir Craft yüklemesine bağlı. Sorunu çözmek için {url} adresini ziyaret edin.',
+    'This license is tied to another Craft install. Visit {accountLink} to detach it, or <a href="{buyUrl}">buy a new license</a>.' => 'This license is tied to another Craft install. Visit {accountLink} to detach it, or <a href="{buyUrl}">buy a new license</a>.',
     'This license isn’t allowed to run version {version}.' => 'Bu lisansa {version} sürümünü çalıştırma izni verilmiyor.',
     'Time' => 'Süre',
     'Timeout' => 'Zamn Aşımı',

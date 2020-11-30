@@ -582,7 +582,7 @@ return [
     'This field is not set to a valid source.' => 'Это поле не связано с корректным источником.',
     'This field is required' => 'Заполнение данного поля обязательно',
     'This field’s target subfolder path is invalid: {path}' => 'Путь к целевой подпапке в этом поле недействителен: {path}',
-    'This license is tied to another Craft install. Visit {url} to resolve.' => 'Данная лицензия связана с другой установкой Craft. Для устранения проблемы откройте ссылку {url}.',
+    'This license is tied to another Craft install. Visit {accountLink} to detach it, or <a href="{buyUrl}">buy a new license</a>.' => 'This license is tied to another Craft install. Visit {accountLink} to detach it, or <a href="{buyUrl}">buy a new license</a>.',
     'This license isn’t allowed to run version {version}.' => 'Данная лицензия не допускает работу с версией {version}.',
     'Time' => 'Время',
     'Timeout' => 'Задержка',

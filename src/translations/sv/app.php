@@ -582,7 +582,7 @@ return [
     'This field is not set to a valid source.' => 'Detta fält har ej angivits som en giltig källa.',
     'This field is required' => 'Detta fält krävs.',
     'This field’s target subfolder path is invalid: {path}' => 'Detta fältets målmappsökväg är felaktig: {path}',
-    'This license is tied to another Craft install. Visit {url} to resolve.' => 'Denna licens är kopplad till en annan Craft-installation. Besök {url} för att lösa detta.',
+    'This license is tied to another Craft install. Visit {accountLink} to detach it, or <a href="{buyUrl}">buy a new license</a>.' => 'This license is tied to another Craft install. Visit {accountLink} to detach it, or <a href="{buyUrl}">buy a new license</a>.',
     'This license isn’t allowed to run version {version}.' => 'Denna licens har inte tillåtelse att köra version {version}.',
     'Time' => 'Tid',
     'Timeout' => 'Timeout',

@@ -582,7 +582,7 @@ return [
     'This field is not set to a valid source.' => 'Dette felt er ikke sat til en gyldig kilde.',
     'This field is required' => 'Dette felt er påkrævet',
     'This field’s target subfolder path is invalid: {path}' => 'Stien til dette felts undermappe er ugyldig: {path}',
-    'This license is tied to another Craft install. Visit {url} to resolve.' => 'Denne licens er bundet til en anden Craft-installation. Gå til {url} for at løse problemet.',
+    'This license is tied to another Craft install. Visit {accountLink} to detach it, or <a href="{buyUrl}">buy a new license</a>.' => 'This license is tied to another Craft install. Visit {accountLink} to detach it, or <a href="{buyUrl}">buy a new license</a>.',
     'This license isn’t allowed to run version {version}.' => 'Denne licens har ikke tilladelse til at køre {version}.',
     'Time' => 'Klokkeslæt',
     'Timeout' => 'Timeout',
