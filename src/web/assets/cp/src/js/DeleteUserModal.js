@@ -64,7 +64,7 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
             this.$deleteSubmitBtn = $('<button/>', {
                 type: 'submit',
                 class: 'btn submit disabled',
-                text: Garnish.isArray(this.userId) ? Craft.t('app', 'Delete users') : Craft.t('app', 'Delete user'),
+                text: this._submitBtnLabel(false),
             }).appendTo($buttons);
             this.$deleteSpinner = $('<div class="spinner hidden"/>').appendTo($buttons);
 
@@ -115,15 +115,30 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
             this.base($form, settings);
         },
 
+        _submitBtnLabel: function(withContent) {
+            let message = withContent
+                ? 'Delete {num, plural, =1{user} other{users}} and content'
+                : 'Delete {num, plural, =1{user} other{users}}';
+
+            return Craft.t('app', message, {
+                num: Garnish.isArray(this.userId) ? this.userId.length : 1,
+            });
+        },
+
         validateDeleteInputs: function() {
             var validates = false;
 
-            if (this.$deleteActionRadios.eq(0).prop('checked')) {
-                validates = !!this.userSelect.totalSelected;
-            }
-            else if (this.$deleteActionRadios.eq(1).prop('checked')) {
+            if (this.$deleteActionRadios.eq(1).prop('checked')) {
                 validates = true;
+                this.$deleteSubmitBtn.text(this._submitBtnLabel(true));
+            } else {
+                this.$deleteSubmitBtn.text(this._submitBtnLabel(false));
+                if (this.$deleteActionRadios.eq(0).prop('checked')) {
+                    validates = !!this.userSelect.totalSelected;
+                }
             }
+
+            this.updateSizeAndPosition();
 
             if (validates) {
                 this.$deleteSubmitBtn.removeClass('disabled');
