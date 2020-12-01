@@ -3,7 +3,9 @@
 ## Unreleased (3.6)
 
 ### Added
+- User indexes can now include a “Groups” column. ([#7211](https://github.com/craftcms/cms/issues/7211))
 - Added the `{% tag %}` Twig tag.
+- Added the `withGroups` user query param.
 
 ### Fixed
 - Fixed a JavaScript error that occurred when opening an element selector modal. ([#7186](https://github.com/craftcms/cms/issues/7186))
