@@ -13,6 +13,7 @@
 ### Fixed
 - Fixed a bug where `craft\base\Field::isFresh()` could return the wrong result.
 - Fixed a bug where required Checkboxes, Dropdown, Multi-select, and Radio Button fields within Matrix blocks could cause validation errors. ([#7205](https://github.com/craftcms/cms/issues/7205))
+- Fixed a PHP error that could occur when running functional tests. ([#7207](https://github.com/craftcms/cms/pull/7207))
 
 ## 3.5.16 - 2020-11-24
 
