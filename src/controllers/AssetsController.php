@@ -314,7 +314,12 @@ class AssetsController extends Controller
                     throw new BadRequestHttpException('The field provided is not an Assets field');
                 }
 
-                $element = $elementId ? Craft::$app->getElements()->getElementById((int)$elementId) : null;
+                if ($elementId) {
+                    $siteId = $this->request->getBodyParam('siteId') ?: null;
+                    $element = Craft::$app->getElements()->getElementById($elementId, null, $siteId);
+                } else {
+                    $element = null;
+                }
                 $folderId = $field->resolveDynamicPathToFolderId($element);
             }
 
