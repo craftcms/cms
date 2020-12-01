@@ -74,7 +74,7 @@
                                                 class: [
                                                     'btn',
                                                     config.licenseIssues is not empty ? 'submit',
-                                                    not (showLicenseKey and not config.licenseKey) ? 'hidden',
+                                                    config.licenseKeyStatus != 'trial' ? 'hidden',
                                                 ]|filter,
                                                 href: url('plugin-store/buy/'~handle~'/'~config.edition),
                                             }) }}
@@ -87,6 +87,8 @@
                                                         {{ 'This license is for the {name} edition.'|t('app', {
                                                             name: config.licensedEdition|ucfirst
                                                         }) }}
+                                                    {% case 'no_trials' %}
+                                                        {{ 'Plugin trials are not allowed on this domain.'|t('app') }}
                                                     {% case 'mismatched' %}
                                                         {{ 'This license is tied to another Craft install. Visit {accountLink} to detach it, or <a href="{buyUrl}">buy a new license</a>.'|t('app', {
                                                             accountLink: '<a href="https://id.craftcms.com" rel="noopener" target="_blank">id.craftcms.com</a>',

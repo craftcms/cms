@@ -84,7 +84,10 @@
                     return false
                 }
 
-                if (pluginLicenseInfo.licenseKey && pluginLicenseInfo.licenseIssues.indexOf('mismatched') === -1) {
+                if (
+                    pluginLicenseInfo.licenseKey &&
+                    pluginLicenseInfo.licenseKeyStatus !== 'trial' &&
+                    pluginLicenseInfo.licenseIssues.indexOf('mismatched') === -1) {
                     return false
                 }
 

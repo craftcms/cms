@@ -98,7 +98,9 @@ class AppController extends Controller
         $this->requireCpRequest();
         $headers = $this->request->getRequiredBodyParam('headers');
         Api::processResponseHeaders($headers);
-        return $this->asJson(1);
+
+        // return the updated headers
+        return $this->asJson(Api::headers());
     }
 
     /**

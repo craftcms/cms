@@ -462,6 +462,7 @@ class Install extends Migration
             'schemaVersion' => $this->string()->notNull(),
             'licenseKeyStatus' => $this->enum('licenseKeyStatus', [
                 LicenseKeyStatus::Valid,
+                LicenseKeyStatus::Trial,
                 LicenseKeyStatus::Invalid,
                 LicenseKeyStatus::Mismatched,
                 LicenseKeyStatus::Astray,

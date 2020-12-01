@@ -981,13 +981,17 @@ class Plugins extends Component
         $info['licensedEdition'] = $pluginInfo['licensedEdition'] ?? null;
         $info['licenseIssues'] = $installed ? $this->getLicenseIssues($handle) : [];
 
-        // The plugin is in trial if it's missing its license key, or running the wrong edition
-        $info['isTrial'] = $installed
-            ? (
-                ($info['licenseKeyStatus'] === LicenseKeyStatus::Invalid && empty($info['licenseIssues'])) ||
-                ($info['licenseKeyStatus'] === LicenseKeyStatus::Valid && !empty($pluginInfo['licensedEdition']) && $pluginInfo['licensedEdition'] !== $edition)
+        $info['isTrial'] = (
+            $installed &&
+            (
+                $info['licenseKeyStatus'] === LicenseKeyStatus::Trial ||
+                (
+                    $info['licenseKeyStatus'] === LicenseKeyStatus::Valid &&
+                    !empty($pluginInfo['licensedEdition'])
+                    && $pluginInfo['licensedEdition'] !== $edition
+                )
             )
-            : false;
+        );
 
         // An upgrade is available if the plugin is in trial or licensed to less than the best edition
         $info['upgradeAvailable'] = (
@@ -1064,18 +1068,15 @@ class Plugins extends Component
 
         // General license issues
         switch ($pluginInfo['licenseKeyStatus']) {
-            case LicenseKeyStatus::Mismatched:
-                $issues[] = 'mismatched';
-                break;
-            case LicenseKeyStatus::Astray:
-                $issues[] = 'astray';
+            case LicenseKeyStatus::Trial:
+                if (!$canTestEditions) {
+                    $issues[] = empty($pluginInfo['licenseKey']) ? 'required' : 'no_trials';
+                }
                 break;
             case LicenseKeyStatus::Invalid:
-                if (!empty($pluginInfo['licenseKey'])) {
-                    $issues[] = 'invalid';
-                } else if (!$canTestEditions) {
-                    $issues[] = 'required';
-                }
+            case LicenseKeyStatus::Mismatched:
+            case LicenseKeyStatus::Astray:
+                $issues[] = $pluginInfo['licenseKeyStatus'];
                 break;
         }
 

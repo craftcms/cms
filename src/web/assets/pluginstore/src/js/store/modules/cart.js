@@ -120,14 +120,14 @@ const actions = {
                             if (
                                 pluginLicenseInfo &&
                                 pluginLicenseInfo.licenseKey &&
-                                (pluginLicenseInfo.licenseKeyStatus === 'valid')
+                                (pluginLicenseInfo.licenseKeyStatus === 'valid' || pluginLicenseInfo.licenseKeyStatus === 'trial')
                             ) {
                                 // Check if the license has issues other than `wrong_edition` or `astray`
                                 let hasIssues = false
 
                                 if (pluginLicenseInfo.licenseIssues.length > 0) {
                                     pluginLicenseInfo.licenseIssues.forEach((issue) => {
-                                        if (issue !== 'wrong_edition' && issue !== 'astray') {
+                                        if (issue !== 'wrong_edition' && issue !== 'astray' && issue !== 'no_trials') {
                                             hasIssues = true
                                         }
                                     })

@@ -75,11 +75,9 @@ abstract class Api
                 try {
                     $licenseKey = $pluginsService->getPluginLicenseKey($pluginHandle);
                 } catch (InvalidLicenseKeyException $e) {
-                    $licenseKey = null;
+                    $licenseKey = '__INVALID__';
                 }
-                if ($licenseKey !== null) {
-                    $pluginLicenses[] = "{$pluginHandle}:{$licenseKey}";
-                }
+                $pluginLicenses[] = "$pluginHandle:" . ($licenseKey ?? '__REQUEST__');
             }
         }
         if (!empty($pluginLicenses)) {
@@ -157,9 +155,18 @@ abstract class Api
             $cache->set('licensedEdition', $licensedEdition, $duration);
         }
 
+        // did we just get any new plugin license keys?
+        $pluginsService = Craft::$app->getPlugins();
+        if (isset($headers['x-craft-plugin-licenses'])) {
+            $pluginLicenseKeys = explode(',', reset($headers['x-craft-plugin-licenses']));
+            foreach ($pluginLicenseKeys as $key) {
+                [$pluginHandle, $key] = explode(':', $key);
+                $pluginsService->setPluginLicenseKey($pluginHandle, $key);
+            }
+        }
+
         $pluginLicenseStatuses = [];
         $pluginLicenseEditions = [];
-        $pluginsService = Craft::$app->getPlugins();
         foreach ($pluginsService->getAllPluginInfo() as $pluginHandle => $pluginInfo) {
             if ($pluginInfo['isInstalled']) {
                 $pluginLicenseStatuses[$pluginHandle] = LicenseKeyStatus::Unknown;
