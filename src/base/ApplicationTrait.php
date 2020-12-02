@@ -783,7 +783,7 @@ trait ApplicationTrait
         }
 
         try {
-            $name = $this->getSites()->getPrimarySite()->name;
+            $name = $this->getSites()->getPrimarySite()->getName();
         } catch (SiteNotFoundException $e) {
             $name = null;
         }

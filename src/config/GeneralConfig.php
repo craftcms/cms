@@ -1207,6 +1207,8 @@ class GeneralConfig extends BaseObject
      * This can be set to a string, which will override the primary site’s name only, or an array with site handles used as the keys.
      *
      * @group System
+     * @deprecated in 3.6.0. Set your sites’ Name settings on a per-environment basis using environment variables instead.
+     * See [Environmental Configuration](https://craftcms.com/docs/3.x/config/#environmental-configuration) for more info.
      */
     public $siteName;
 
@@ -1232,6 +1234,8 @@ class GeneralConfig extends BaseObject
      * ```
      *
      * @group Routing
+     * @deprecated in 3.6.0. Set your sites’ Base URL settings on a per-environment basis using aliases or environment variables instead.
+     * See [Environmental Configuration](https://craftcms.com/docs/3.x/config/#environmental-configuration) for more info.
      */
     public $siteUrl;
 
@@ -1414,7 +1418,7 @@ class GeneralConfig extends BaseObject
 
     /**
      * @var bool|string Determines what protocol/schema Craft will use when generating tokenized URLs. If set to `'auto'`, Craft will check the
-     * <config3:siteUrl> and the protocol of the current request and if either of them are https will use `https` in the tokenized URL. If not,
+     * current site’s base URL and the protocol of the current request and if either of them are https will use `https` in the tokenized URL. If not,
      * will use `http`.
      *
      * If set to `false`, Craft will always use `http`. If set to `true`, then, Craft will always use `https`.
@@ -1614,6 +1618,26 @@ class GeneralConfig extends BaseObject
                     throw new InvalidConfigException($e->getMessage(), 0, $e);
                 }
             }
+        }
+
+        if ($this->siteName) {
+            if (is_array($this->siteName) && count($this->siteName) > 1) {
+                $fix = 'You can set your sites’ Name settings on a per-environment basis using environment variables.';
+            } else {
+                $fix = 'You can set your site’s Name setting on a per-environment basis using an environment variable.';
+            }
+            Craft::$app->getDeprecator()->log('siteName', "The `siteName` config setting has been deprecated. $fix " .
+                'See [Environmental Configuration](https://craftcms.com/docs/3.x/config/#environmental-configuration) for more info.');
+        }
+
+        if ($this->siteUrl) {
+            if (is_array($this->siteUrl) && count($this->siteUrl) > 1) {
+                $fix = 'You can set your sites’ Base URL settings on a per-environment basis using aliases or environment variables.';
+            } else {
+                $fix = 'You can set your site’s Base URL setting on a per-environment basis using an alias or environment variable.';
+            }
+            Craft::$app->getDeprecator()->log('siteUrl', "The `siteUrl` config setting has been deprecated. $fix " .
+                'See [Environmental Configuration](https://craftcms.com/docs/3.x/config/#environmental-configuration) for more info.');
         }
 
         if ($this->suppressTemplateErrors) {

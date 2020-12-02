@@ -4,8 +4,22 @@
 
 ### Added
 - User indexes can now include a “Groups” column. ([#7211](https://github.com/craftcms/cms/issues/7211))
+- It’s now possible to set sites’ Name settings to environment variables.
 - Added the `{% tag %}` Twig tag.
 - Added the `withGroups` user query param.
+- Added `craft\models\Site::setBaseUrl()`.
+- Added `craft\models\Site::setName()`.
+
+### Changed
+- `craft\behaviors\EnvAttributeParserBehavior::$attributes` can now be set to an array with key/value pairs, where the key is the attribute name, and the value is the raw (unparsed) value, or a callable that returns the raw value.
+- `craft\models\Site::$baseUrl` is now a magic property, which returns the parsed base URL. ([#3964](https://github.com/craftcms/cms/issues/3964))
+- `craft\models\Site::$name` is now a magic property, which returns the parsed site name. ([#3964](https://github.com/craftcms/cms/issues/3964))
+- `craft\models\Site::getBaseUrl()` now has a `$parse` argument, which can be set to `false` to return the raw (unparsed) base URL.
+- `craft\models\Site::getName()` now has a `$parse` argument, which can be set to `false` to return the raw (unparsed) site name.
+
+### Deprecated
+- Deprecated the `siteName` config setting. Sites’ Name settings should be set to environment variables instead.
+- Deprecated the `siteUrl` config setting. Sites’ Base URL settings should be set to aliases or environment variables instead. ([#3205](https://github.com/craftcms/cms/issues/3205))
 
 ### Fixed
 - Fixed a JavaScript error that occurred when opening an element selector modal. ([#7186](https://github.com/craftcms/cms/issues/7186))

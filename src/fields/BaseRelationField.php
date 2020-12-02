@@ -809,7 +809,7 @@ JS;
 
         foreach (Craft::$app->getSites()->getAllSites() as $site) {
             $siteOptions[] = [
-                'label' => Craft::t('site', $site->name),
+                'label' => Craft::t('site', $site->getName()),
                 'value' => $site->uid
             ];
         }

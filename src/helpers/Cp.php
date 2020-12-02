@@ -255,7 +255,7 @@ class Cp
                 'data-label' => (string)$element,
                 'data-url' => $element->getUrl(),
                 'data-level' => $element->level,
-                'title' => $label . (Craft::$app->getIsMultiSite() ? ' – ' . $element->getSite()->name : ''),
+                'title' => $label . (Craft::$app->getIsMultiSite() ? ' – ' . Craft::t('site', $element->getSite()->getName()) : ''),
             ]);
 
         if ($context === 'field') {
