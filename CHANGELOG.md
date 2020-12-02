@@ -7,6 +7,7 @@
 - It’s now possible to set sites’ Name settings to environment variables.
 - Added the `{% tag %}` Twig tag.
 - Added the `withGroups` user query param.
+- Added `craft\models\Site::getName()`.
 - Added `craft\models\Site::setBaseUrl()`.
 - Added `craft\models\Site::setName()`.
 
@@ -15,7 +16,6 @@
 - `craft\models\Site::$baseUrl` is now a magic property, which returns the parsed base URL. ([#3964](https://github.com/craftcms/cms/issues/3964))
 - `craft\models\Site::$name` is now a magic property, which returns the parsed site name. ([#3964](https://github.com/craftcms/cms/issues/3964))
 - `craft\models\Site::getBaseUrl()` now has a `$parse` argument, which can be set to `false` to return the raw (unparsed) base URL.
-- `craft\models\Site::getName()` now has a `$parse` argument, which can be set to `false` to return the raw (unparsed) site name.
 
 ### Deprecated
 - Deprecated the `siteName` config setting. Sites’ Name settings should be set to environment variables instead.
