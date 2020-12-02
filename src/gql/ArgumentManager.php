@@ -141,7 +141,7 @@ class ArgumentManager extends Component
      */
     protected function createHandler(string $handler)
     {
-        if (is_a($handler, ArgumentHandlerInterface::class)) {
+        if (is_a($handler, ArgumentHandlerInterface::class, true)) {
             /** @var ArgumentHandlerInterface $handler */
             $handler = new $handler();
             $handler->setArgumentManager($this);
