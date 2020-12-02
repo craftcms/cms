@@ -265,11 +265,11 @@ class Site extends Model
     {
         return [
             'siteGroup' => $this->getGroup()->uid,
-            'name' => $this->name,
+            'name' => $this->originalName ?? $this->name,
             'handle' => $this->handle,
             'language' => $this->language,
             'hasUrls' => (bool)$this->hasUrls,
-            'baseUrl' => $this->baseUrl ?: null,
+            'baseUrl' => $this->originalBaseUrl ?? ($this->baseUrl ?: null),
             'sortOrder' => (int)$this->sortOrder,
             'primary' => (bool)$this->primary,
             'enabled' => (bool)$this->enabled,
