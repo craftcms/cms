@@ -409,7 +409,7 @@ class ElementsController extends BaseElementsController
 
                 $response['sites'][] = [
                     'id' => $siteId,
-                    'name' => Craft::t('site', $site->name),
+                    'name' => Craft::t('site', $site->getName()),
                 ];
             }
         }

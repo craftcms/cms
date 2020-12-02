@@ -1106,10 +1106,10 @@ class Install extends Migration
             // Update the primary site with the installer settings
             $sitesService = Craft::$app->getSites();
             $site = $sitesService->getPrimarySite();
-            $site->baseUrl = $this->site->baseUrl;
+            $site->setBaseUrl($this->site->getBaseUrl(false));
             $site->hasUrls = $this->site->hasUrls;
             $site->language = $this->site->language;
-            $site->name = $this->site->name;
+            $site->setName($this->site->getName(false));
             $sitesService->saveSite($site);
         }
 
@@ -1202,21 +1202,21 @@ class Install extends Migration
             ],
             'email' => [
                 'fromEmail' => $this->email,
-                'fromName' => $this->site->name,
+                'fromName' => $this->site->getName(),
                 'transportType' => Sendmail::class,
             ],
             'siteGroups' => [
                 $siteGroupUid => [
-                    'name' => $this->site->name,
+                    'name' => $this->site->getName(),
                 ],
             ],
             'sites' => [
                 StringHelper::UUID() => [
-                    'baseUrl' => $this->site->baseUrl,
+                    'baseUrl' => $this->site->getBaseUrl(false),
                     'handle' => $this->site->handle,
                     'hasUrls' => $this->site->hasUrls,
                     'language' => $this->site->language,
-                    'name' => $this->site->name,
+                    'name' => $this->site->getName(false),
                     'primary' => true,
                     'siteGroup' => $siteGroupUid,
                     'sortOrder' => 1,
@@ -1224,7 +1224,7 @@ class Install extends Migration
             ],
             'system' => [
                 'edition' => App::editionHandle(Craft::Solo),
-                'name' => $this->site->name,
+                'name' => $this->site->getName(),
                 'live' => true,
                 'schemaVersion' => Craft::$app->schemaVersion,
                 'timeZone' => 'America/Los_Angeles',
