@@ -27,12 +27,14 @@ abstract class ArgumentHandler implements ArgumentHandlerInterface
     /**
      * @inheritdoc
      */
-    public function setArgumentManager(ArgumentManager $argumentManager): void {
+    public function setArgumentManager(ArgumentManager $argumentManager): void
+    {
         $this->argumentManager = $argumentManager;
     }
 
     /**
      * Handle a single argument value
+     *
      * @param $argumentValue
      * @return mixed
      */

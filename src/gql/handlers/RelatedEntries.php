@@ -9,10 +9,8 @@ namespace craft\gql\handlers;
 
 
 use Craft;
-use craft\elements\db\ElementQuery;
 use craft\elements\Entry;
 use craft\gql\base\RelationArgumentHandler;
-use craft\helpers\ArrayHelper;
 
 /**
  * Class RelatedEntries

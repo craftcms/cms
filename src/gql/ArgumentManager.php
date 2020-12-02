@@ -9,7 +9,6 @@ namespace craft\gql;
 
 use Craft;
 use craft\base\Component;
-use craft\events\DefineGqlTypeFieldsEvent;
 use craft\events\RegisterGqlArgumentHandlersEvent;
 use craft\gql\base\ArgumentHandlerInterface;
 use craft\gql\handlers\RelatedAssets;
@@ -61,7 +60,7 @@ class ArgumentManager extends Component
             'relatedToUsers' => RelatedUsers::class,
         ];
 
-        $event= new RegisterGqlArgumentHandlersEvent([
+        $event = new RegisterGqlArgumentHandlersEvent([
             'handlers' => $handlers
         ]);
 
@@ -112,7 +111,8 @@ class ArgumentManager extends Component
      * @return array
      * @throws \yii\base\InvalidConfigException
      */
-    public function prepareArguments($arguments): array {
+    public function prepareArguments($arguments): array
+    {
         $this->createHandlers();
 
         // TODO remove in Craft 4.1

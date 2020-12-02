@@ -31,5 +31,5 @@ interface ArgumentHandlerInterface
      *
      * @param ArgumentManager $argumentManager
      */
-    public function setArgumentManager(ArgumentManager  $argumentManager): void;
+    public function setArgumentManager(ArgumentManager $argumentManager): void;
 }

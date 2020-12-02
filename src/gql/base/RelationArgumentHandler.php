@@ -22,7 +22,7 @@ use craft\helpers\StringHelper;
  */
 abstract class RelationArgumentHandler extends ArgumentHandler
 {
-    /** @var array  */
+    /** @var array */
     private $_memoizedValues = [];
 
     /**
@@ -94,10 +94,11 @@ abstract class RelationArgumentHandler extends ArgumentHandler
 
     /**
      * Prepare the `relatedTo` argument.
+     *
      * @param array $relatedTo
      * @return array
      */
-    protected function prepareRelatedTo(array $relatedTo) : array
+    protected function prepareRelatedTo(array $relatedTo): array
     {
         // Convert numeric arrays to ['and', ['element' => [...]]]
 

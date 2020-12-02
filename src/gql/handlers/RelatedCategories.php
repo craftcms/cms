@@ -11,7 +11,6 @@ namespace craft\gql\handlers;
 use Craft;
 use craft\elements\Category;
 use craft\gql\base\RelationArgumentHandler;
-use craft\helpers\ArrayHelper;
 
 /**
  * Class RelatedCategories

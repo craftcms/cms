@@ -12,7 +12,6 @@ use craft\base\EagerLoadingFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\GqlInlineFragmentFieldInterface;
 use craft\elements\db\ElementQuery;
-use craft\elements\Entry;
 use craft\gql\ArgumentManager;
 use craft\gql\ElementQueryConditionBuilder;
 use craft\helpers\Gql as GqlHelper;
@@ -79,7 +78,7 @@ abstract class ElementResolver extends Resolver
     protected static function prepareElementQuery($source, array $arguments, $context, ResolveInfo $resolveInfo)
     {
         /** @var ArgumentManager $argumentManager */
-        $argumentManager = empty($context['argumentManager']) ?  Craft::createObject(['class' => ArgumentManager::class]) : $context['argumentManager'];
+        $argumentManager = empty($context['argumentManager']) ? Craft::createObject(['class' => ArgumentManager::class]) : $context['argumentManager'];
         $arguments = $argumentManager->prepareArguments($arguments);
 
         $fieldName = GqlHelper::getFieldNameWithAlias($resolveInfo, $source, $context);

@@ -20,7 +20,6 @@ use craft\fields\BaseRelationField;
 use craft\fields\Categories as CategoryField;
 use craft\fields\Entries as EntryField;
 use craft\fields\Users as UserField;
-use craft\gql\base\ElementResolver;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\helpers\Gql as GqlHelper;
 use craft\helpers\StringHelper;
@@ -208,7 +207,7 @@ class ElementQueryConditionBuilder extends Component
                     $extractedValue = $argumentNodeValue->value;
             }
         } else {
-            $extractedValue = $argumentNode->kind === 'IntValue' ? (int) $argumentNodeValue : $argumentNodeValue;
+            $extractedValue = $argumentNode->kind === 'IntValue' ? (int)$argumentNodeValue : $argumentNodeValue;
         }
 
         return $extractedValue;
