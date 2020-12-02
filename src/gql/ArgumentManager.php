@@ -54,11 +54,11 @@ class ArgumentManager extends Component
     public function init()
     {
         $handlers = [
-            'relatedEntries' => RelatedEntries::class,
-            'relatedAssets' => RelatedAssets::class,
-            'relatedCategories' => RelatedCategories::class,
-            'relatedTags' => RelatedTags::class,
-            'relatedUsers' => RelatedUsers::class,
+            'relatedToEntries' => RelatedEntries::class,
+            'relatedToAssets' => RelatedAssets::class,
+            'relatedToCategories' => RelatedCategories::class,
+            'relatedToTags' => RelatedTags::class,
+            'relatedToUsers' => RelatedUsers::class,
         ];
 
         $event= new RegisterGqlArgumentHandlersEvent([

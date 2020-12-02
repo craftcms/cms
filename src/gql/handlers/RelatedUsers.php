@@ -21,7 +21,7 @@ use craft\helpers\ArrayHelper;
  */
 class RelatedUsers extends RelationArgumentHandler
 {
-    protected $argumentName = 'relatedUsers';
+    protected $argumentName = 'relatedToUsers';
 
     /**
      * @inheritDoc

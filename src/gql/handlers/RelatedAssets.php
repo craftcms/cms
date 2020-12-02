@@ -21,7 +21,7 @@ use craft\helpers\ArrayHelper;
  */
 class RelatedAssets extends RelationArgumentHandler
 {
-    protected $argumentName = 'relatedAssets';
+    protected $argumentName = 'relatedToAssets';
 
     /**
      * @inheritDoc

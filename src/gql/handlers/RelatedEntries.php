@@ -22,7 +22,7 @@ use craft\helpers\ArrayHelper;
  */
 class RelatedEntries extends RelationArgumentHandler
 {
-    protected $argumentName = 'relatedEntries';
+    protected $argumentName = 'relatedToEntries';
 
     /**
      * @inheritDoc

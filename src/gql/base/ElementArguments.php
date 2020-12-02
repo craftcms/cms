@@ -89,28 +89,28 @@ abstract class ElementArguments extends Arguments
                 'type' => Type::listOf(QueryArgument::getType()),
                 'description' => 'Narrows the query results to elements that relate to the provided element IDs. This argument is ignored, if `relatedToAll` is also used.'
             ],
-            'relatedAssets' => [
-                'name' => 'relatedAssets',
+            'relatedToAssets' => [
+                'name' => 'relatedToAssets',
                 'type' => Asset::getType(),
                 'description' => 'Narrows the query results to elements that relate to an asset list defined with this argument.'
             ],
-            'relatedEntries' => [
-                'name' => 'relatedEntries',
+            'relatedToEntries' => [
+                'name' => 'relatedToEntries',
                 'type' => Entry::getType(),
                 'description' => 'Narrows the query results to elements that relate to an entry list defined with this argument.'
             ],
-            'relatedUsers' => [
-                'name' => 'relatedUsers',
+            'relatedToUsers' => [
+                'name' => 'relatedToUsers',
                 'type' => User::getType(),
                 'description' => 'Narrows the query results to elements that relate to a use list defined with this argument.'
             ],
-            'relatedCategories' => [
-                'name' => 'relatedCategories',
+            'relatedToCategories' => [
+                'name' => 'relatedToCategories',
                 'type' => Category::getType(),
                 'description' => 'Narrows the query results to elements that relate to a category list defined with this argument.'
             ],
-            'relatedTags' => [
-                'name' => 'relatedTags',
+            'relatedToTags' => [
+                'name' => 'relatedToTags',
                 'type' => Tag::getType(),
                 'description' => 'Narrows the query results to elements that relate to a tag list defined with this argument.'
             ],
