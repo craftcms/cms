@@ -416,7 +416,7 @@ class AssetTransforms extends Component
     }
 
     /**
-     * Eager-loads transform indexes for a given set of file IDs.
+     * Eager-loads transform indexes the given list of assets.
      *
      * You can include `srcset`-style sizes (e.g. `100w` or `2x`) following a normal transform definition, for example:
      *
@@ -435,7 +435,7 @@ class AssetTransforms extends Component
      * When a `srcset`-style size is encountered, the preceding normal transform definition will be used as a
      * reference when determining the resulting transform dimensions.
      *
-     * @param Asset[]|array $assets The files to eager-load tranforms for
+     * @param Asset[]|array $assets The assets or asset data to eager-load transforms for
      * @param array $transforms The transform definitions to eager-load
      */
     public function eagerLoadTransforms(array $assets, array $transforms)
@@ -624,7 +624,7 @@ class AssetTransforms extends Component
     }
 
     /**
-     * Validates a transform index result to see if the index is still valid for a given file.
+     * Validates a transform index result to see if the index is still valid for a given asset.
      *
      * @param array $result
      * @param AssetTransform $transform

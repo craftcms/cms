@@ -582,7 +582,7 @@ return [
     'This field is not set to a valid source.' => '该字段未设置为有效源。',
     'This field is required' => '该字段是必填项',
     'This field’s target subfolder path is invalid: {path}' => '该字段的目标子文件夹路径是无效的: {path}',
-    'This license is tied to another Craft install. Visit {url} to resolve.' => '此许可证与另一个 Craft 安装绑定。请访问 {url}予以解决。',
+    'This license is tied to another Craft install. Visit {accountLink} to detach it, or <a href="{buyUrl}">buy a new license</a>.' => 'This license is tied to another Craft install. Visit {accountLink} to detach it, or <a href="{buyUrl}">buy a new license</a>.',
     'This license isn’t allowed to run version {version}.' => '此许可证不允许运行版本 {version}。',
     'Time' => '时间',
     'Timeout' => '超时',

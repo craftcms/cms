@@ -338,6 +338,7 @@ class TestSetup
         Craft::setAlias('@vendor', $vendorPath);
         Craft::setAlias('@lib', $libPath);
         Craft::setAlias('@craft', $srcPath);
+        Craft::setAlias('@appicons', $srcPath . DIRECTORY_SEPARATOR . 'icons');
         Craft::setAlias('@config', $configPath);
         Craft::setAlias('@contentMigrations', $contentMigrationsPath);
         Craft::setAlias('@storage', $storagePath);

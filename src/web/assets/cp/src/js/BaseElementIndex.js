@@ -1749,7 +1749,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             // -------------------------------------------------------------
 
             this.exporters = response.exporters;
-            this.exportersByType = Craft.index(this.exporters, e => e.type);
+            this.exportersByType = Craft.index(this.exporters || [], e => e.type);
 
             if (this.exporters && this.exporters.length) {
                 this.$exportBtn.removeClass('hidden');

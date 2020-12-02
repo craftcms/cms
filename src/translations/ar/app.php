@@ -582,7 +582,7 @@ return [
     'This field is not set to a valid source.' => 'لم يتم تعيين الحقل إلى مصدر صالح.',
     'This field is required' => 'هذا الحقل مطلوب',
     'This field’s target subfolder path is invalid: {path}' => 'إن المسار الفرعي المستهدف لهذا الحقل غير صالح: {path}',
-    'This license is tied to another Craft install. Visit {url} to resolve.' => 'هذا الترخيص مرتبط بتثبيت Craft آخر. يرجى زيارة {url} لحل هذه المشكلة.',
+    'This license is tied to another Craft install. Visit {accountLink} to detach it, or <a href="{buyUrl}">buy a new license</a>.' => 'This license is tied to another Craft install. Visit {accountLink} to detach it, or <a href="{buyUrl}">buy a new license</a>.',
     'This license isn’t allowed to run version {version}.' => 'غير مسموح لهذا الترخيص بتشغيل إصدار {version}.',
     'Time' => 'الوقت',
     'Timeout' => 'مهلة',

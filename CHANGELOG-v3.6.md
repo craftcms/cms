@@ -6,6 +6,7 @@
 
 ### Added
 - Craft now requires PHP 7.2.5 or later.
+- User indexes can now include a “Groups” column. ([#7211](https://github.com/craftcms/cms/issues/7211))
 - Volumes now have “Title Translation Method” and “Title Translation Key Format” settings, like entry types. ([#7135](https://github.com/craftcms/cms/issues/7135))
 - It is now possible to access reverse relations within element queries in GraphQL using the `related*` arguments. ([#7110](https://github.com/craftcms/cms/issues/7110))
 - Added the `users/list-admins` and `users/set-password` commands. ([#7067](https://github.com/craftcms/cms/issues/7067))
@@ -15,6 +16,8 @@
 - Added the `maxGraphqlDepth` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
 - Added the `maxGraphqlResults` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
 - Added the `rasterizeSvgThumbs` config setting. ([#7146](https://github.com/craftcms/cms/issues/7146))
+- Added the `{% tag %}` Twig tag.
+- Added the `withGroups` user query param.
 - Added `craft\base\ElementExporterInterface::isFormattable()`.
 - Added `craft\base\VolumeTrait::$titleTranslationMethod`.
 - Added `craft\base\VolumeTrait::$titleTranslationKeyFormat`.

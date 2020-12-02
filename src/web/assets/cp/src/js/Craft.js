@@ -27,6 +27,10 @@ $.extend(Craft,
          * @param {(string|indexKeyCallback)} key
          */
         index: function(arr, key) {
+            if (!$.isArray(arr)) {
+                throw 'The first argument passed to Craft.index() must be an array.';
+            }
+
             return arr.reduce((index, obj, i) => {
                 index[typeof key === 'string' ? obj[key] : key(obj, i)] = obj;
                 return index;

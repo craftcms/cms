@@ -2,6 +2,14 @@
 
 ## Unreleased (3.6)
 
+### Added
+- User indexes can now include a “Groups” column. ([#7211](https://github.com/craftcms/cms/issues/7211))
+- Added the `{% tag %}` Twig tag.
+- Added the `withGroups` user query param.
+
+### Fixed
+- Fixed a JavaScript error that occurred when opening an element selector modal. ([#7186](https://github.com/craftcms/cms/issues/7186))
+
 ## 3.6.0-RC1 - 2020-11-24
 
 > {warning} If you have a custom session driver, make sure you update it for Yii 2.0.29 compatibility.
@@ -114,6 +122,23 @@
 ### Removed
 - Removed Minify and jsmin-php.
 - Removed `craft\services\Api::getComposerWhitelist()`.
+
+## Unreleased (3.5)
+
+### Added
+- Edit Section and Edit Entry Type pages now have a “Save and continue editing” Save menu option, and the <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>S</kbd> keyboard shortcut is now assigned to that. ([#2872](https://github.com/craftcms/cms/issues/2872))
+
+### Changed
+- The Username, First Name, Last Name, Email, and New Password fields on Edit User pages now prevent LastPass from autofilling them. ([#7177](https://github.com/craftcms/cms/issues/7177))
+- Field layout elements’ settings HUDs now automatically set the focus on the first text input when opened. ([#7175](https://github.com/craftcms/cms/issues/7175))
+- Field instructions within the details pane are now replaced with info icons. ([#7180](https://github.com/craftcms/cms/issues/7180))
+
+### Fixed
+- Fixed a bug where `craft\base\Field::isFresh()` could return the wrong result.
+- Fixed a bug where required Checkboxes, Dropdown, Multi-select, and Radio Button fields within Matrix blocks could cause validation errors. ([#7205](https://github.com/craftcms/cms/issues/7205))
+- Fixed a bug where assets could be uploaded to a folder named after the primary site rather than the selected site, when uploaded via an Assets field in a global set, if the field had a dynamic upload path that contained `{site.handle}`. ([#7213](https://github.com/craftcms/cms/issues/7213))
+- Fixed a PHP error that could occur when running functional tests. ([#7207](https://github.com/craftcms/cms/pull/7207))
+- Fixed a bug where the plugin installer wasn’t always handling plugins’ post-install redirects correctly. ([#7204](https://github.com/craftcms/cms/issues/7204))
 
 ## 3.5.16 - 2020-11-24
 
