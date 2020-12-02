@@ -8,6 +8,22 @@
 - Added the `{% tag %}` Twig tag.
 - Added the `withGroups` user query param.
 - Added the `relatedToAssets`, `relatedToCategories`, `relatedToEntries`, `relatedToTags`, and `relatedToUsers` arguments to GraphQL queries. ([#7110](https://github.com/craftcms/cms/issues/7110))
+- Added `craft\events\RegisterGqlArgumentHandlersEvent`.
+- Added `craft\gql\ArgumentManager`.
+- Added `craft\gql\base\ArgumentHandler`.
+- Added `craft\gql\base\ArgumentHandlerInterface`.
+- Added `craft\gql\base\RelationArgumentHandler`.
+- Added `craft\gql\ElementQueryConditionBuilder::setArgumentManager()`.
+- Added `craft\gql\handlers\RelatedAssets`.
+- Added `craft\gql\handlers\RelatedCategories`.
+- Added `craft\gql\handlers\RelatedEntries`.
+- Added `craft\gql\handlers\RelatedTags`.
+- Added `craft\gql\handlers\RelatedUsers`.
+- Added `craft\gql\types\input\criteria\Asset`.
+- Added `craft\gql\types\input\criteria\Category`.
+- Added `craft\gql\types\input\criteria\Entry`.
+- Added `craft\gql\types\input\criteria\Tag`.
+- Added `craft\gql\types\input\criteria\User`.
 - Added `craft\models\Site::getName()`.
 - Added `craft\models\Site::setBaseUrl()`.
 - Added `craft\models\Site::setName()`.
@@ -21,6 +37,8 @@
 ### Deprecated
 - Deprecated the `siteName` config setting. Sites’ Name settings should be set to environment variables instead.
 - Deprecated the `siteUrl` config setting. Sites’ Base URL settings should be set to aliases or environment variables instead. ([#3205](https://github.com/craftcms/cms/issues/3205))
+- Deprecated `craft\gql\base\Resolver::getArrayableArguments()`.
+- Deprecated `craft\gql\base\Resolver::prepareArguments()`. 
 
 ### Fixed
 - Fixed a JavaScript error that occurred when opening an element selector modal. ([#7186](https://github.com/craftcms/cms/issues/7186))
@@ -46,23 +64,7 @@
 - Added `craft\elements\Entry::EVENT_DEFINE_ENTRY_TYPES`. ([#7136](https://github.com/craftcms/cms/issues/7136))
 - Added `craft\elements\Entry::getAvailableEntryTypes()`.
 - Added `craft\events\DefineEntryTypesEvent`.
-- Added `craft\events\RegisterGqlArgumentHandlersEvent`.
 - Added `craft\fieldlayoutelements\AssetTitleField`.
-- Added `craft\gql\ArgumentManager`.
-- Added `craft\gql\base\ArgumentHandler`.
-- Added `craft\gql\base\ArgumentHandlerInterface`.
-- Added `craft\gql\base\RelationArgumentHandler`.
-- Added `craft\gql\ElementQueryConditionBuilder::setArgumentManager()`.
-- Added `craft\gql\handlers\RelatedAssets`.
-- Added `craft\gql\handlers\RelatedCategories`.
-- Added `craft\gql\handlers\RelatedEntries`.
-- Added `craft\gql\handlers\RelatedTags`.
-- Added `craft\gql\handlers\RelatedUsers`.
-- Added `craft\gql\types\input\criteria\Asset`.
-- Added `craft\gql\types\input\criteria\Category`.
-- Added `craft\gql\types\input\criteria\Entry`.
-- Added `craft\gql\types\input\criteria\Tag`.
-- Added `craft\gql\types\input\criteria\User`.
 - Added `craft\helpers\Gql::eagerLoadComplexity()`.
 - Added `craft\helpers\Gql::nPlus1Complexity()`.
 - Added `craft\helpers\Gql::singleQueryComplexity()`.
@@ -91,8 +93,6 @@
 - Deprecated `craft\db\Connection::trimObjectName()`.
 - Deprecated `craft\helpers\App::logConfig()`.
 - Deprecated the `relatedToAll` GraphQL query argument.
-- Deprecated `craft\gql\base\Resolver::getArrayableArguments()`.
-- Deprecated `craft\gql\base\Resolver::prepareArguments()`. 
 
 ### Removed
 - Removed `craft\controllers\ElementIndexesController::actionCreateExportToken()`.
