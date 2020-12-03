@@ -955,9 +955,15 @@ class AssetsController extends Controller
                 }
             }
 
+            $generalConfig = Craft::$app->getConfig()->getGeneral();
+            $upscale = $generalConfig->upscaleImages;
+            $generalConfig->upscaleImages = true;
+
             if ($zoom !== 1.0) {
                 $image->scaleToFit($originalImageWidth * $zoom, $originalImageHeight * $zoom);
             }
+
+            $generalConfig->upscaleImages = $upscale;
 
             if ($imageRotated) {
                 $image->rotate($imageRotation + $viewportRotation);

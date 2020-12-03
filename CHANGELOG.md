@@ -20,7 +20,7 @@
 - Fixed a bug where sites’ Name setting would show the `siteName` config setting value rather than the stored value, if it was set.
 - Fixed a bug where `craft\elements\Asset::getSrcset()` would not respect some of the properties of the transform set on the asset. ([#7193](https://github.com/craftcms/cms/issues/7193))
 - Fixed a bug where WebP images were not transformable, even if the server was configured for it. ([#7170](https://github.com/craftcms/cms/issues/7170)) 
-
+- Fixed a bug where the image editor could save an image incorrectly, if the `upscaleImages` config setting was set to `false`.
 
 ## 3.5.16 - 2020-11-24
 
