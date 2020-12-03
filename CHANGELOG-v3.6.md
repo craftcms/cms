@@ -6,7 +6,9 @@
 
 ### Added
 - Craft now requires PHP 7.2.5 or later.
+- User indexes can now include a “Groups” column. ([#7211](https://github.com/craftcms/cms/issues/7211))
 - Volumes now have “Title Translation Method” and “Title Translation Key Format” settings, like entry types. ([#7135](https://github.com/craftcms/cms/issues/7135))
+- It’s now possible to set sites’ Name settings to environment variables.
 - Added the `users/list-admins` and `users/set-password` commands. ([#7067](https://github.com/craftcms/cms/issues/7067))
 - Added the `disableGraphqlTransformDirective` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
 - Added the `enableGraphqlIntrospection` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
@@ -15,6 +17,8 @@
 - Added the `maxGraphqlResults` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
 - Added the `rasterizeSvgThumbs` config setting. ([#7146](https://github.com/craftcms/cms/issues/7146))
 - Added the `{% tag %}` Twig tag.
+- Added the `withGroups` user query param.
+- Added the `relatedToAssets`, `relatedToCategories`, `relatedToEntries`, `relatedToTags`, and `relatedToUsers` arguments to GraphQL queries. ([#7110](https://github.com/craftcms/cms/issues/7110))
 - Added `craft\base\ElementExporterInterface::isFormattable()`.
 - Added `craft\base\VolumeTrait::$titleTranslationMethod`.
 - Added `craft\base\VolumeTrait::$titleTranslationKeyFormat`.
@@ -24,11 +28,30 @@
 - Added `craft\elements\Entry::EVENT_DEFINE_ENTRY_TYPES`. ([#7136](https://github.com/craftcms/cms/issues/7136))
 - Added `craft\elements\Entry::getAvailableEntryTypes()`.
 - Added `craft\events\DefineEntryTypesEvent`.
+- Added `craft\events\RegisterGqlArgumentHandlersEvent`.
 - Added `craft\fieldlayoutelements\AssetTitleField`.
+- Added `craft\gql\ArgumentManager`.
+- Added `craft\gql\base\ArgumentHandler`.
+- Added `craft\gql\base\ArgumentHandlerInterface`.
+- Added `craft\gql\base\RelationArgumentHandler`.
+- Added `craft\gql\ElementQueryConditionBuilder::setArgumentManager()`.
+- Added `craft\gql\handlers\RelatedAssets`.
+- Added `craft\gql\handlers\RelatedCategories`.
+- Added `craft\gql\handlers\RelatedEntries`.
+- Added `craft\gql\handlers\RelatedTags`.
+- Added `craft\gql\handlers\RelatedUsers`.
+- Added `craft\gql\types\input\criteria\Asset`.
+- Added `craft\gql\types\input\criteria\Category`.
+- Added `craft\gql\types\input\criteria\Entry`.
+- Added `craft\gql\types\input\criteria\Tag`.
+- Added `craft\gql\types\input\criteria\User`.
 - Added `craft\helpers\Gql::eagerLoadComplexity()`.
 - Added `craft\helpers\Gql::nPlus1Complexity()`.
 - Added `craft\helpers\Gql::singleQueryComplexity()`.
 - Added `craft\log\Dispatcher`.
+- Added `craft\models\Site::getName()`.
+- Added `craft\models\Site::setBaseUrl()`.
+- Added `craft\models\Site::setName()`.
 - Added `craft\services\Gql::GRAPHQL_COMPLEXITY_CPU_HEAVY`.
 - Added `craft\services\Gql::GRAPHQL_COMPLEXITY_EAGER_LOAD`.
 - Added `craft\services\Gql::GRAPHQL_COMPLEXITY_NPLUS1`.
@@ -41,7 +64,12 @@
 - Relational fields now include all related elements’ titles as search keywords, including disabled elements. ([#7079](https://github.com/craftcms/cms/issues/7079))
 - It’s now possible to add new log targets by overriding `components.log.targets` in `config/app.php`, rather than the entire `log` component config.
 - `craft\base\ElementExporterInterface::export()` can now return raw response data, or a resource, if `isFormattable()` returns `false`. If a resource is returned, it will be streamed to the browser. ([#7148](https://github.com/craftcms/cms/issues/7148))
+- `craft\behaviors\EnvAttributeParserBehavior::$attributes` can now be set to an array with key/value pairs, where the key is the attribute name, and the value is the raw (unparsed) value, or a callable that returns the raw value.
+- `craft\behaviors\EnvAttributeParserBehavior::$attributes` can now be set to an array with key/value pairs, where the key is the attribute name, and the value is the raw (unparsed) value, or a callable that returns the raw value.
 - `craft\db\Connection::getPrimaryKeyName()`, `getForeignKeyName()`, and `getIndexName()` now generate completely random object names, rather than basing them on a table name, etc. ([#7153](https://github.com/craftcms/cms/issues/7153))
+- `craft\models\Site::$baseUrl` is now a magic property, which returns the parsed base URL. ([#3964](https://github.com/craftcms/cms/issues/3964))
+- `craft\models\Site::$name` is now a magic property, which returns the parsed site name. ([#3964](https://github.com/craftcms/cms/issues/3964))
+- `craft\models\Site::getBaseUrl()` now has a `$parse` argument, which can be set to `false` to return the raw (unparsed) base URL.
 - `craft\services\Composer::install()` no longer has an `$allowlist` argument.
 - `craft\services\Gql::getValidationRules()` now has an `$isIntrospectionQuery` argument.
 - Craft no longer reports PHP deprecation errors.
@@ -56,7 +84,11 @@
 ### Deprecated
 - Deprecated the `backup` and `restore` commands.
 - Deprecated the `relatedToAll` GraphQL query argument.
+- Deprecated the `siteName` config setting. Sites’ Name settings should be set to environment variables instead.
+- Deprecated the `siteUrl` config setting. Sites’ Base URL settings should be set to aliases or environment variables instead. ([#3205](https://github.com/craftcms/cms/issues/3205))
 - Deprecated `craft\db\Connection::trimObjectName()`.
+- Deprecated `craft\gql\base\Resolver::getArrayableArguments()`.
+- Deprecated `craft\gql\base\Resolver::prepareArguments()`.
 - Deprecated `craft\helpers\App::logConfig()`.
 - Deprecated `craft\services\Composer::$disablePackagist`.
 - Deprecated `craft\web\View::$minifyCss`.

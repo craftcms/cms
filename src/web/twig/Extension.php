@@ -1311,7 +1311,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             /** @noinspection PhpUnhandledExceptionInspection */
             $site = Craft::$app->getSites()->getCurrentSite();
             $globals['currentSite'] = $site;
-            $globals['siteName'] = $site->name;
+            $globals['siteName'] = Craft::t('site', $site->getName());
             $globals['siteUrl'] = $site->getBaseUrl();
 
             // Global sets (site templates only)

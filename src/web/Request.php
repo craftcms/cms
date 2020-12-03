@@ -230,8 +230,8 @@ class Request extends \yii\web\Request
                     $site = $this->_requestedSite($siteScore);
                 }
 
-                if ($site->baseUrl) {
-                    $baseUrl = rtrim($site->getBaseUrl(), '/');
+                if ($siteBaseUrl = $site->getBaseUrl()) {
+                    $baseUrl = rtrim($siteBaseUrl, '/');
                 }
             }
         } catch (SiteNotFoundException $e) {
@@ -1418,8 +1418,8 @@ class Request extends \yii\web\Request
      */
     private function _scoreSite(Site $site): int
     {
-        if ($site->baseUrl) {
-            $score = $this->_scoreUrl($site->getBaseUrl());
+        if ($baseUrl = $site->getBaseUrl()) {
+            $score = $this->_scoreUrl($baseUrl);
         } else {
             $score = 0;
         }

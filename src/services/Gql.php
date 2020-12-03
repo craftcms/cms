@@ -22,6 +22,7 @@ use craft\events\RegisterGqlPermissionsEvent;
 use craft\events\RegisterGqlQueriesEvent;
 use craft\events\RegisterGqlSchemaComponentsEvent;
 use craft\events\RegisterGqlTypesEvent;
+use craft\gql\ArgumentManager;
 use craft\gql\base\Directive;
 use craft\gql\base\GeneratorInterface;
 use craft\gql\base\InterfaceType;
@@ -503,6 +504,9 @@ class Gql extends Component
             'context' => [
                 'conditionBuilder' => Craft::createObject([
                     'class' => ElementQueryConditionBuilder::class,
+                ]),
+                'argumentManager' => Craft::createObject([
+                    'class' => ArgumentManager::class
                 ])
             ]
         ]);

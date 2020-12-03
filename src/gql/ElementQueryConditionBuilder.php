@@ -20,7 +20,6 @@ use craft\fields\BaseRelationField;
 use craft\fields\Categories as CategoryField;
 use craft\fields\Entries as EntryField;
 use craft\fields\Users as UserField;
-use craft\gql\base\ElementResolver;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\helpers\Gql as GqlHelper;
 use craft\helpers\StringHelper;
@@ -74,6 +73,12 @@ class ElementQueryConditionBuilder extends Component
      * @var ResolveInfo
      */
     private $_resolveInfo;
+
+    /**
+     * @var ArgumentManager
+     */
+    private $_argumentManager;
+
     private $_fragments;
     private $_eagerLoadableFieldsByContext = [];
     private $_transformableAssetProperties = ['url', 'width', 'height'];
@@ -113,6 +118,17 @@ class ElementQueryConditionBuilder extends Component
     {
         $this->_resolveInfo = $resolveInfo;
         $this->_fragments = $this->_resolveInfo->fragments;
+    }
+
+    /**
+     * Set the current ResolveInfo object.
+     *
+     * @param ArgumentManager $argumentManager
+     * @since 3.6.0
+     */
+    public function setArgumentManager(ArgumentManager $argumentManager)
+    {
+        $this->_argumentManager = $argumentManager;
     }
 
     /**
@@ -191,7 +207,7 @@ class ElementQueryConditionBuilder extends Component
                     $extractedValue = $argumentNodeValue->value;
             }
         } else {
-            $extractedValue = $argumentNodeValue;
+            $extractedValue = $argumentNode->kind === 'IntValue' ? (int)$argumentNodeValue : $argumentNodeValue;
         }
 
         return $extractedValue;
@@ -453,7 +469,7 @@ class ElementQueryConditionBuilder extends Component
 
                         // For relational fields, prepare the arguments.
                         if ($craftContentField instanceof BaseRelationField) {
-                            $arguments = ElementResolver::prepareArguments($arguments);
+                            $arguments = $this->_argumentManager->prepareArguments($arguments);
                         }
                     }
 

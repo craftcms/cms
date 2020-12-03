@@ -138,8 +138,8 @@ JS;
             'Delete it',
             'Delete their content',
             'Delete them',
-            'Delete user',
-            'Delete users',
+            'Delete {num, plural, =1{user} other{users}}',
+            'Delete {num, plural, =1{user} other{users}} and content',
             'Delete',
             'Display as thumbnails',
             'Display in a table',
@@ -475,7 +475,7 @@ JS;
                 'handle' => $site->handle,
                 'id' => (int)$site->id,
                 'uid' => (string)$site->uid,
-                'name' => Craft::t('site', $site->name),
+                'name' => Craft::t('site', $site->getName()),
             ];
         }
 

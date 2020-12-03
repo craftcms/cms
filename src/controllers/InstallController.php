@@ -208,10 +208,11 @@ class InstallController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $site = new Site();
-        $site->name = $this->request->getBodyParam('name');
-        $site->baseUrl = $this->request->getBodyParam('baseUrl');
-        $site->language = $this->request->getBodyParam('language');
+        $site = new Site([
+            'name' => $this->request->getBodyParam('name'),
+            'baseUrl' => $this->request->getBodyParam('baseUrl'),
+            'language' => $this->request->getBodyParam('language'),
+        ]);
 
         $validates = $site->validate(['name', 'baseUrl', 'language']);
         $errors = $site->getErrors();

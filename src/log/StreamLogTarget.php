@@ -8,9 +8,9 @@
 namespace craft\log;
 
 use craft\base\LogTargetTrait;
+use yii\base\InvalidConfigException;
 use yii\log\LogRuntimeException;
 use yii\log\Target as BaseTarget;
-use yii\base\InvalidConfigException;
 
 /**
  * Class StreamLogTarget
@@ -78,7 +78,8 @@ class StreamLogTarget extends BaseTarget
     /**
      * @inheritdoc
      */
-    public function init() {
+    public function init()
+    {
         if (empty($this->fp) && empty($this->url)) {
             throw new InvalidConfigException("Either 'url' or 'fp' must be set.");
         }
@@ -112,7 +113,7 @@ class StreamLogTarget extends BaseTarget
     public function getFp()
     {
         if ($this->fp === null) {
-            $this->fp = @fopen($this->url,'w');
+            $this->fp = @fopen($this->url, 'w');
             if ($this->fp === false) {
                 throw new InvalidConfigException("Unable to open '{$this->url}' for writing.");
             }
@@ -135,6 +136,7 @@ class StreamLogTarget extends BaseTarget
 
     /**
      * Writes a log message to the given target URL
+     *
      * @throws InvalidConfigException If unable to open the stream for writing
      * @throws LogRuntimeException If unable to write to the log
      */

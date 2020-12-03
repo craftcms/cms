@@ -3,7 +3,42 @@
 ## Unreleased (3.6)
 
 ### Added
+- User indexes can now include a “Groups” column. ([#7211](https://github.com/craftcms/cms/issues/7211))
+- It’s now possible to set sites’ Name settings to environment variables.
 - Added the `{% tag %}` Twig tag.
+- Added the `withGroups` user query param.
+- Added the `relatedToAssets`, `relatedToCategories`, `relatedToEntries`, `relatedToTags`, and `relatedToUsers` arguments to GraphQL queries. ([#7110](https://github.com/craftcms/cms/issues/7110))
+- Added `craft\events\RegisterGqlArgumentHandlersEvent`.
+- Added `craft\gql\ArgumentManager`.
+- Added `craft\gql\base\ArgumentHandler`.
+- Added `craft\gql\base\ArgumentHandlerInterface`.
+- Added `craft\gql\base\RelationArgumentHandler`.
+- Added `craft\gql\ElementQueryConditionBuilder::setArgumentManager()`.
+- Added `craft\gql\handlers\RelatedAssets`.
+- Added `craft\gql\handlers\RelatedCategories`.
+- Added `craft\gql\handlers\RelatedEntries`.
+- Added `craft\gql\handlers\RelatedTags`.
+- Added `craft\gql\handlers\RelatedUsers`.
+- Added `craft\gql\types\input\criteria\Asset`.
+- Added `craft\gql\types\input\criteria\Category`.
+- Added `craft\gql\types\input\criteria\Entry`.
+- Added `craft\gql\types\input\criteria\Tag`.
+- Added `craft\gql\types\input\criteria\User`.
+- Added `craft\models\Site::getName()`.
+- Added `craft\models\Site::setBaseUrl()`.
+- Added `craft\models\Site::setName()`.
+
+### Changed
+- `craft\behaviors\EnvAttributeParserBehavior::$attributes` can now be set to an array with key/value pairs, where the key is the attribute name, and the value is the raw (unparsed) value, or a callable that returns the raw value.
+- `craft\models\Site::$baseUrl` is now a magic property, which returns the parsed base URL. ([#3964](https://github.com/craftcms/cms/issues/3964))
+- `craft\models\Site::$name` is now a magic property, which returns the parsed site name. ([#3964](https://github.com/craftcms/cms/issues/3964))
+- `craft\models\Site::getBaseUrl()` now has a `$parse` argument, which can be set to `false` to return the raw (unparsed) base URL.
+
+### Deprecated
+- Deprecated the `siteName` config setting. Sites’ Name settings should be set to environment variables instead.
+- Deprecated the `siteUrl` config setting. Sites’ Base URL settings should be set to aliases or environment variables instead. ([#3205](https://github.com/craftcms/cms/issues/3205))
+- Deprecated `craft\gql\base\Resolver::getArrayableArguments()`.
+- Deprecated `craft\gql\base\Resolver::prepareArguments()`. 
 
 ### Fixed
 - Fixed a JavaScript error that occurred when opening an element selector modal. ([#7186](https://github.com/craftcms/cms/issues/7186))
@@ -104,10 +139,22 @@
 
 ## Unreleased (3.5)
 
+### Added
+- Edit Section and Edit Entry Type pages now have a “Save and continue editing” Save menu option, and the <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>S</kbd> keyboard shortcut is now assigned to that. ([#2872](https://github.com/craftcms/cms/issues/2872))
+
 ### Changed
 - The Username, First Name, Last Name, Email, and New Password fields on Edit User pages now prevent LastPass from autofilling them. ([#7177](https://github.com/craftcms/cms/issues/7177))
 - Field layout elements’ settings HUDs now automatically set the focus on the first text input when opened. ([#7175](https://github.com/craftcms/cms/issues/7175))
 - Field instructions within the details pane are now replaced with info icons. ([#7180](https://github.com/craftcms/cms/issues/7180))
+
+### Fixed
+- Fixed a bug where `craft\base\Field::isFresh()` could return the wrong result.
+- Fixed a bug where required Checkboxes, Dropdown, Multi-select, and Radio Button fields within Matrix blocks could cause validation errors. ([#7205](https://github.com/craftcms/cms/issues/7205))
+- Fixed a bug where assets could be uploaded to a folder named after the primary site rather than the selected site, when uploaded via an Assets field in a global set, if the field had a dynamic upload path that contained `{site.handle}`. ([#7213](https://github.com/craftcms/cms/issues/7213))
+- Fixed a PHP error that could occur when running functional tests. ([#7207](https://github.com/craftcms/cms/pull/7207))
+- Fixed a bug where the plugin installer wasn’t always handling plugins’ post-install redirects correctly. ([#7204](https://github.com/craftcms/cms/issues/7204))
+- Fixed a bug where the `siteName` and `siteUrl` config settings could get hard-coded into the project config when the project config was rebuilt. ([#7208](https://github.com/craftcms/cms/issues/7208))
+- Fixed a bug where sites’ Name setting would show the `siteName` config setting value rather than the stored value, if it was set.
 
 ## 3.5.16 - 2020-11-24
 
