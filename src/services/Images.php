@@ -114,7 +114,13 @@ class Images extends Component
      */
     public function getSupportedImageFormats(): array
     {
-        return $this->supportedImageFormats;
+        $supportedFormats = $this->supportedImageFormats;
+
+        if ($this->getSupportsWebP()) {
+            $supportedFormats[] = 'webp';
+        }
+
+        return $supportedFormats;
     }
 
     /**
