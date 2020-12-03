@@ -27,6 +27,14 @@
 {% extends '_layouts/cp' %}
 {% import '_includes/forms' as forms %}
 
+{% set saveSourceAction = saveSourceAction ?? null %}
+{% set duplicateSourceAction = duplicateSourceAction ?? null %}
+{% set deleteSourceAction = deleteSourceAction ?? null %}
+{% set revertSourceAction = revertSourceAction ?? null %}
+{% set saveDraftAction = saveDraftAction ?? null %}
+{% set applyDraftAction = applyDraftAction ?? null %}
+{% set deleteDraftAction = deleteDraftAction ?? null %}
+
 {% set isDraft = element.getIsDraft() %}
 {% set isRevision = element.getIsRevision() %}
 {% set isCurrent = not isDraft and not isRevision %}
@@ -51,12 +59,6 @@
 
 {% set redirectUrl = redirectUrl ?? element.cpEditUrl %}
 {% set addAnotherRedirectUrl = addAnotherRedirectUrl ?? null %}
-
-{% set saveSourceAction = saveSourceAction ?? null %}
-{% set duplicateSourceAction = duplicateSourceAction ?? null %}
-{% set deleteSourceAction = deleteSourceAction ?? null %}
-{% set revertSourceAction = revertSourceAction ?? null %}
-{% set saveDraftAction = saveDraftAction ?? null %}
 
 {% if not isRevision %}
     {% set fullPageForm = true %}
@@ -393,18 +395,15 @@
 
 {% set settings = {
     elementType: className(element),
-    elementTypeDisplayName: element.displayName(),
     sourceId: element.getSourceId(),
     siteId: element.siteId,
-    siteToken: not element.getSite().enabled ? element.siteId|hash,
     isUnsavedDraft: isUnsavedDraft,
-    siteStatuses: siteStatuses,
-    addlSiteIds: addlEditableSiteIds|values,
     enabled: element.enabled ? true : false,
     enabledForSite: element.enabled and element.getEnabledForSite(),
     isLive: isCurrent and element.enabled and element.getEnabledForSite() and element.getRoute(),
+    siteStatuses: siteStatuses,
+    addlSiteIds: addlEditableSiteIds|values,
     cpEditUrl: element.cpEditUrl,
-    hashedRedirectUrl: (isUnsavedDraft ? redirectUrl : '{cpEditUrl}')|hash,
     draftId: element.draftId,
     revisionId: element.revisionId,
     draftName: isDraft ? element.draftName : null,
@@ -413,10 +412,12 @@
     canDeleteDraft: canDeleteDraft,
     canUpdateSource: canUpdateSource,
     saveDraftAction: saveDraftAction,
-    deleteDraftAction: deleteDraftAction ?? null,
-    applyDraftAction: applyDraftAction ?? null,
+    deleteDraftAction: deleteDraftAction,
+    applyDraftAction: applyDraftAction,
+    hashedRedirectUrl: (isUnsavedDraft ? redirectUrl : '{cpEditUrl}')|hash,
     enablePreview: enablePreview,
     previewTargets: previewTargets,
+    siteToken: not element.getSite().enabled ? element.siteId|hash,
 } %}
 {% js %}
     window.draftEditor = new Craft.DraftEditor({{ settings|json_encode|raw }});
