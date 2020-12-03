@@ -990,7 +990,8 @@ class Asset extends Element
 
             list($value, $unit) = Assets::parseSrcsetSize($size);
 
-            $sizeTransform = $transform->toArray();
+            $sizeTransform = $transform ? $transform->toArray() : [];
+
             if ($unit === 'w') {
                 $sizeTransform['width'] = (int)$value;
             } else {
