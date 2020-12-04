@@ -85,7 +85,7 @@ class DraftsTest extends Unit
         $draft->slug = 'not-pending';
 
         // Houston.... Ready for take-off
-        $this->drafts->applyDraft($draft);
+        $this->drafts->publishDraft($draft);
 
         // Re-get the entry (By the same id)
         $newEntry = Entry::find()->id($entry->id)->one();

@@ -149,7 +149,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      *
      * - A source element ID – matches drafts of that element
      * - `'*'` – matches drafts of any source element
-     * - `false` – matches unsaved drafts that have no source element
+     * - `false` – matches unpublished drafts that have no source element
      *
      * @since 3.2.0
      */

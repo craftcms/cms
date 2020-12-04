@@ -255,14 +255,9 @@ class EntryRevisionsController extends BaseEntriesController
             $draft->setFieldValuesFromRequest($fieldsLocation);
             $draft->updateTitle();
 
-            // Draft meta
-            /** @var Entry|DraftBehavior $draft */
-            $draft->draftName = $this->request->getBodyParam('draftName') ?? $draft->draftName;
-            $draft->draftNotes = $this->request->getBodyParam('draftNotes') ?? $draft->draftNotes;
-
             $draft->setScenario(Element::SCENARIO_ESSENTIALS);
 
-            if ($draft->getIsUnsavedDraft() && $this->request->getBodyParam('propagateAll')) {
+            if ($draft->getIsUnpublishedDraft() && $this->request->getBodyParam('propagateAll')) {
                 $draft->propagateAll = true;
             }
 
@@ -350,7 +345,7 @@ class EntryRevisionsController extends BaseEntriesController
             ]);
         }
 
-        return $this->redirectToPostedUrl();
+        return $this->redirectToPostedUrl($draft);
     }
 
     /**
@@ -417,7 +412,7 @@ class EntryRevisionsController extends BaseEntriesController
 
         // Even more permission enforcement
         if ($draft->enabled && !Craft::$app->getUser()->checkPermission("publishEntries:{$section->uid}")) {
-            if ($draft->getIsUnsavedDraft()) {
+            if ($draft->getIsUnpublishedDraft()) {
                 // Just disable it
                 $draft->enabled = false;
             } else {
@@ -435,7 +430,7 @@ class EntryRevisionsController extends BaseEntriesController
             $draft->setScenario(Element::SCENARIO_LIVE);
         }
 
-        if ($draft->getIsUnsavedDraft() && $this->request->getBodyParam('propagateAll')) {
+        if ($draft->getIsUnpublishedDraft() && $this->request->getBodyParam('propagateAll')) {
             $draft->propagateAll = true;
         }
 
@@ -445,7 +440,7 @@ class EntryRevisionsController extends BaseEntriesController
             }
 
             // Publish the draft (finally!)
-            $newEntry = Craft::$app->getDrafts()->applyDraft($draft);
+            $newEntry = Craft::$app->getDrafts()->publishDraft($draft);
         } catch (InvalidElementException $e) {
             $this->setFailFlash(Craft::t('app', 'Couldn’t publish draft.'));
 
@@ -462,7 +457,7 @@ class EntryRevisionsController extends BaseEntriesController
             ]);
         }
 
-        $this->setSuccessFlash(Craft::t('app', 'Entry saved.'));
+        $this->setSuccessFlash(Craft::t('app', 'Draft published.'));
         return $this->redirectToPostedUrl($newEntry);
     }
 
@@ -574,5 +569,10 @@ class EntryRevisionsController extends BaseEntriesController
         }
 
         $draft->newParentId = $parentId ?: null;
+
+        // Draft meta
+        /** @var Entry|DraftBehavior $draft */
+        $draft->draftName = $this->request->getBodyParam('draftName') ?? $draft->draftName;
+        $draft->draftNotes = $this->request->getBodyParam('notes') ?? $draft->draftNotes;
     }
 }

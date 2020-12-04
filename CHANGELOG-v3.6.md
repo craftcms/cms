@@ -6,6 +6,7 @@
 
 ### Added
 - Craft now requires PHP 7.2.5 or later.
+- Entries now begin life as “unpublished drafts” rather than “unsaved drafts”. They are no longer ephemeral; they will continue to exist until explicitly published or deleted. ([#5661](https://github.com/craftcms/cms/issues/5661), [#7216](https://github.com/craftcms/cms/issues/7216))
 - User indexes can now include a “Groups” column. ([#7211](https://github.com/craftcms/cms/issues/7211))
 - Volumes now have “Title Translation Method” and “Title Translation Key Format” settings, like entry types. ([#7135](https://github.com/craftcms/cms/issues/7135))
 - It’s now possible to set sites’ Name settings to environment variables.
@@ -19,7 +20,9 @@
 - Added the `{% tag %}` Twig tag.
 - Added the `withGroups` user query param.
 - Added the `relatedToAssets`, `relatedToCategories`, `relatedToEntries`, `relatedToTags`, and `relatedToUsers` arguments to GraphQL queries. ([#7110](https://github.com/craftcms/cms/issues/7110))
+- Added the `isUnpublishedDraft` GraphQL field.
 - Added `craft\base\ElementExporterInterface::isFormattable()`.
+- Added `craft\base\ElementInterface::getIsUnpublishedDraft()`.
 - Added `craft\base\VolumeTrait::$titleTranslationKeyFormat`.
 - Added `craft\base\VolumeTrait::$titleTranslationMethod`.
 - Added `craft\console\Controller::passwordPrompt()`.
@@ -52,6 +55,9 @@
 - Added `craft\models\Site::getName()`.
 - Added `craft\models\Site::setBaseUrl()`.
 - Added `craft\models\Site::setName()`.
+- Added `craft\services\Drafts::EVENT_AFTER_APPLY_DRAFT`.
+- Added `craft\services\Drafts::EVENT_BEFORE_APPLY_DRAFT`.
+- Added `craft\services\Drafts::publishDraft()`.
 - Added `craft\services\Gql::GRAPHQL_COMPLEXITY_CPU_HEAVY`.
 - Added `craft\services\Gql::GRAPHQL_COMPLEXITY_EAGER_LOAD`.
 - Added `craft\services\Gql::GRAPHQL_COMPLEXITY_NPLUS1`.
@@ -83,14 +89,21 @@
 
 ### Deprecated
 - Deprecated the `backup` and `restore` commands.
+- Deprecated the `purgeUnsavedDraftsDuration` config setting.
 - Deprecated the `siteName` config setting. Sites’ Name settings should be set to environment variables instead.
 - Deprecated the `siteUrl` config setting. Sites’ Base URL settings should be set to aliases or environment variables instead. ([#3205](https://github.com/craftcms/cms/issues/3205))
 - Deprecated the `relatedToAll` GraphQL query argument.
+- Deprecated the `isUnsavedDraft` GraphQL field.
+- Deprecated `craft\base\Element::getIsUnsavedDraft()`. `getIsUnpublishedDraft()` should be used instead.
 - Deprecated `craft\db\Connection::trimObjectName()`.
 - Deprecated `craft\gql\base\Resolver::getArrayableArguments()`.
 - Deprecated `craft\gql\base\Resolver::prepareArguments()`.
 - Deprecated `craft\helpers\App::logConfig()`.
 - Deprecated `craft\services\Composer::$disablePackagist`.
+- Deprecated `craft\services\Drafts::applyDraft()`. `publishDraft()` should be used instead.
+- Deprecated `craft\services\Drafts::EVENT_AFTER_APPLY_DRAFT`. `EVENT_AFTER_PUBLISH_DRAFT` should be used instead.
+- Deprecated `craft\services\Drafts::EVENT_BEFORE_APPLY_DRAFT`. `EVENT_BEFORE_PUBLISH_DRAFT` should be used instead.
+- Deprecated `craft\services\Drafts::purgeUnsavedDrafts()`.
 - Deprecated `craft\web\View::$minifyCss`.
 - Deprecated `craft\web\View::$minifyJs`.
 

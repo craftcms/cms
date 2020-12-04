@@ -50,8 +50,7 @@
     {% set baseUrl = cpEditUrl %}
 {% endif %}
 
-{% set isUnsavedDraft = element.getIsUnsavedDraft() %}
-{% set showRevisions = showRevisionLabel and not isUnsavedDraft %}
+{% set showRevisions = showRevisionLabel and not element.getIsUnpublishedDraft() %}
 {% set showMenu = editableSiteIds|length > 1 or showRevisions %}
 
 <div id="context-btngroup" class="btngroup">

@@ -766,6 +766,6 @@ class EntriesController extends BaseEntriesController
         }
 
         // Revision notes
-        $entry->setRevisionNotes($this->request->getBodyParam('revisionNotes'));
+        $entry->setRevisionNotes($this->request->getBodyParam('notes'));
     }
 }

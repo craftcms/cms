@@ -555,12 +555,12 @@ interface ElementInterface extends ComponentInterface
     public function getSourceUid(): string;
 
     /**
-     * Returns whether the element is an unsaved draft.
+     * Returns whether the element is an unpublished draft.
      *
      * @return bool
-     * @since 3.2.0
+     * @since 3.6.0
      */
-    public function getIsUnsavedDraft(): bool;
+    public function getIsUnpublishedDraft(): bool;
 
     /**
      * Returns the field layout used by this element.

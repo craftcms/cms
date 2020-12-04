@@ -1010,15 +1010,11 @@ class GeneralConfig extends BaseObject
 
     /**
      * @var mixed The amount of time to wait before Craft purges drafts of new elements that were never formally saved.
-     *
-     * Set to `0` to disable this feature.
-     *
-     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
-     *
      * @since 3.2.0
      * @group Garbage Collection
+     * @deprecated in 3.6.0
      */
-    public $purgeUnsavedDraftsDuration = 2592000;
+    public $purgeUnsavedDraftsDuration = 0;
 
     /**
      * @var bool Whether SVG thumbnails should be rasterized.
@@ -1590,7 +1586,6 @@ class GeneralConfig extends BaseObject
         $this->elevatedSessionDuration = ConfigHelper::durationInSeconds($this->elevatedSessionDuration);
         $this->invalidLoginWindowDuration = ConfigHelper::durationInSeconds($this->invalidLoginWindowDuration);
         $this->purgePendingUsersDuration = ConfigHelper::durationInSeconds($this->purgePendingUsersDuration);
-        $this->purgeUnsavedDraftsDuration = ConfigHelper::durationInSeconds($this->purgeUnsavedDraftsDuration);
         $this->rememberUsernameDuration = ConfigHelper::durationInSeconds($this->rememberUsernameDuration);
         $this->rememberedUserSessionDuration = ConfigHelper::durationInSeconds($this->rememberedUserSessionDuration);
         $this->softDeleteDuration = ConfigHelper::durationInSeconds($this->softDeleteDuration);

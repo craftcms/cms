@@ -14,7 +14,6 @@ Craft.DraftEditor = Garnish.Base.extend(
         $editMetaBtn: null,
         metaHud: null,
         $nameTextInput: null,
-        $notesTextInput: null,
         $saveMetaBtn: null,
 
         $siteStatusPane: null,
@@ -581,7 +580,7 @@ Craft.DraftEditor = Garnish.Base.extend(
                 data = data.replace('__PREVIEW_FIELDS__=1', this.preview.$editor.serialize());
             }
 
-            if (removeActionParams && !this.settings.isUnsavedDraft) {
+            if (removeActionParams && !this.settings.isUnpublishedDraft) {
                 // Remove action and redirect params
                 data = data.replace(/&action=[^&]*/, '');
                 data = data.replace(/&redirect=[^&]*/, '');
@@ -615,7 +614,6 @@ Craft.DraftEditor = Garnish.Base.extend(
 
         createDraft: function() {
             return new Promise(function(resolve, reject) {
-                this.settings.draftNotes = $('#revision-notes').val();
                 this.saveDraft(this.serializeForm(true))
                     .then(resolve)
                     .catch(reject);
@@ -687,7 +685,6 @@ Craft.DraftEditor = Garnish.Base.extend(
                     this.$revisionLabel.text(response.draftName);
 
                     this.settings.draftName = response.draftName;
-                    this.settings.draftNotes = response.draftNotes;
 
                     var revisionMenu = this.$revisionBtn.data('menubtn') ? this.$revisionBtn.data('menubtn').menu : null;
 
@@ -727,40 +724,124 @@ Craft.DraftEditor = Garnish.Base.extend(
                         }
                         history.replaceState({}, '', newHref);
 
+                        // Replace the action input
+                        $('#action').remove();
+                        $('<input/>', {
+                            id: 'action',
+                            type: 'hidden',
+                            name: 'action',
+                            value: this.settings.saveDraftAction,
+                        }).appendTo(Craft.cp.$primaryForm);
+
                         // Remove the "Save as a Draft" and "Save" buttons
                         $('#save-draft-btn-container').remove();
                         $('#save-btn-container').remove();
 
                         let $actionButtonContainer = $('#action-buttons');
 
-                        // If they're allowed to update the source, add a "Publish changes" button
+                        // If they're allowed to update the source, add a "Publish draft" button
                         if (this.settings.canUpdateSource) {
                             $('<button/>', {
                                 type: 'button',
                                 class: 'btn secondary formsubmit',
-                                text: Craft.t('app', 'Publish changes'),
+                                text: Craft.t('app', 'Publish draft'),
                                 data: {
-                                    action: this.settings.applyDraftAction,
+                                    action: this.settings.publishDraftAction,
+                                    redirect: this.settings.hashedCpEditUrl,
                                 },
                             }).appendTo($actionButtonContainer).formsubmit();
                         }
 
-                        // If autosaving is disabled, add a "Save draft" button
-                        if (!Craft.autosaveDrafts) {
-                            $('<button/>', {
-                                type: 'submit',
-                                class: 'btn submit',
-                                text: Craft.t('app', 'Save draft'),
-                            }).appendTo($actionButtonContainer);
+                        // Add a "Save draft" button
+                        let $saveBtnContainer = $('<div/>', {
+                            id: 'save-btn-container',
+                            class: 'btngroup submit',
+                        }).appendTo($actionButtonContainer);
+
+                        $('<button/>', {
+                            type: 'submit',
+                            class: 'btn submit',
+                            text: Craft.t('app', 'Save draft'),
+                        }).appendTo($saveBtnContainer);
+
+                        if (this.settings.saveDraftAction || this.settings.deleteDraftAction) {
+                            let $menuBtn = $('<button/>', {
+                                type: 'button',
+                                class: 'btn submit menubtn',
+                            }).appendTo($saveBtnContainer);
+                            let $menu = $('<div/>', {
+                                class: 'menu',
+                                attr: {
+                                    'data-align': 'right',
+                                },
+                            }).appendTo($saveBtnContainer);
+
+                            if (this.settings.saveDraftAction) {
+                                let $ul = $('<ul/>')
+                                    .appendTo($menu)
+                                    .append(
+                                        $('<li/>')
+                                            .append(
+                                                $('<a/>', {
+                                                    class: 'formsubmit',
+                                                    data: {
+                                                        action: this.settings.saveDraftAction,
+                                                    },
+                                                    text: Craft.t('app', 'Save and continue editing'),
+                                                })
+                                                    .prepend(
+                                                        $('<span/>', {
+                                                            class: 'shortcut',
+                                                            text: (Craft.clientOs === 'Mac' ? '⌘' : 'Ctrl+') + 'S',
+                                                        })
+                                                    )
+                                            )
+                                    );
+                                if (this.settings.canUpdateSource && this.settings.hashedAddAnotherRedirectUrl) {
+                                    $ul.append(
+                                        $('<li/>')
+                                            .append(
+                                                $('<a/>', {
+                                                    class: 'formsubmit',
+                                                    data: {
+                                                        action: this.settings.publishDraftAction,
+                                                        redirect: this.settings.hashedAddAnotherRedirectUrl,
+                                                    },
+                                                    text: Craft.t('app', 'Publish and add another'),
+                                                })
+                                            )
+                                    );
+                                }
+                                if (this.settings.deleteDraftAction) {
+                                    $('<hr/>').appendTo($menu);
+                                }
+                            }
+
+                            if (this.settings.deleteDraftAction) {
+                                $('<ul/>')
+                                    .appendTo($menu)
+                                    .append(
+                                        $('<li/>')
+                                            .append(
+                                                $('<a/>', {
+                                                    class: 'formsubmit error',
+                                                    data: {
+                                                        action: this.settings.deleteDraftAction,
+                                                        redirect: this.settings.hashedCpEditUrl,
+                                                        confirm: Craft.t('app', 'Are you sure you want to delete this draft?'),
+                                                    },
+                                                    text: Craft.t('app', 'Delete draft'),
+                                                })
+                                            )
+                                    )
+                            }
                         }
 
-                        // Remove the revision notes field
-                        $('#revision-notes').remove();
+                        Craft.initUiElements($saveBtnContainer);
 
                         // Update the editor settings
                         this.settings.draftId = response.draftId;
                         this.settings.isLive = false;
-                        this.settings.canDeleteDraft = true;
                         this.previewToken = null;
                         this.initForDraft();
 
@@ -846,10 +927,6 @@ Craft.DraftEditor = Garnish.Base.extend(
 
             if (this.settings.draftName !== null) {
                 data += `&draftName=${this.settings.draftName}`;
-            }
-
-            if (this.settings.draftNotes !== null) {
-                data += `&draftNotes=${this.settings.draftNotes}`;
             }
 
             // Filter out anything that hasn't changed
@@ -965,19 +1042,8 @@ Craft.DraftEditor = Garnish.Base.extend(
             $inputContainer = $('<div class="input"/>').appendTo($field);
             this.$nameTextInput = $('<input type="text" class="text fullwidth" id="draft-name"/>').appendTo($inputContainer).val(this.settings.draftName);
 
-            // Add the Notes field
-            $field = $('<div class="field"><div class="heading"><label for="draft-notes">' + Craft.t('app', 'Notes') + '</label></div></div>').appendTo($hudBody);
-            $inputContainer = $('<div class="input"/>').appendTo($field);
-            this.$notesTextInput = $('<textarea class="text fullwidth" id="draft-notes" rows="2"/>').appendTo($inputContainer).val(this.settings.draftNotes);
-
             // HUD footer
             var $footer = $('<div class="hud-footer flex flex-center"/>').appendTo($hudBody);
-
-            // Delete button
-            let $deleteLink;
-            if (this.settings.canDeleteDraft) {
-                $deleteLink = $('<a class="error" role="button">' + Craft.t('app', 'Delete') + '</a>').appendTo($footer);
-            }
 
             $('<div class="flex-grow"></div>').appendTo($footer);
             this.$saveMetaBtn = $('<button/>', {
@@ -990,20 +1056,11 @@ Craft.DraftEditor = Garnish.Base.extend(
                 onSubmit: this.saveMeta.bind(this)
             });
 
-            new Garnish.NiceText(this.$notesTextInput);
-
-            this.addListener(this.$notesTextInput, 'keydown', 'onNotesKeydown');
-
             this.addListener(this.$nameTextInput, 'input', 'checkMetaValues');
-            this.addListener(this.$notesTextInput, 'input', 'checkMetaValues');
 
             this.metaHud.on('show', this.onMetaHudShow.bind(this));
             this.metaHud.on('hide', this.onMetaHudHide.bind(this));
             this.metaHud.on('escape', this.onMetaHudEscape.bind(this));
-
-            if ($deleteLink) {
-                this.addListener($deleteLink, 'click', 'deleteDraft');
-            }
         },
 
         onMetaHudShow: function() {
@@ -1016,22 +1073,12 @@ Craft.DraftEditor = Garnish.Base.extend(
 
         onMetaHudEscape: function() {
             this.$nameTextInput.val(this.settings.draftName);
-            this.$notesTextInput.val(this.settings.draftNotes);
-        },
-
-        onNotesKeydown: function(ev) {
-            if (ev.keyCode === Garnish.RETURN_KEY) {
-                ev.preventDefault();
-                this.metaHud.submit();
-            }
         },
 
         checkMetaValues: function() {
             if (
-                this.$nameTextInput.val() && (
-                    this.$nameTextInput.val() !== this.settings.draftName ||
-                    this.$notesTextInput.val() !== this.settings.draftNotes
-                )
+                this.$nameTextInput.val() &&
+                this.$nameTextInput.val() !== this.settings.draftName
             ) {
                 this.$saveMetaBtn.removeClass('disabled');
                 return true;
@@ -1052,22 +1099,9 @@ Craft.DraftEditor = Garnish.Base.extend(
             }
 
             this.settings.draftName = this.$nameTextInput.val();
-            this.settings.draftNotes = this.$notesTextInput.val();
 
             this.metaHud.hide();
             this.checkForm(true);
-        },
-
-        deleteDraft: function() {
-            if (!confirm(Craft.t('app', 'Are you sure you want to delete this draft?'))) {
-                return;
-            }
-
-            Craft.postActionRequest(this.settings.deleteDraftAction, {draftId: this.settings.draftId}, function(response, textStatus) {
-                if (textStatus === 'success') {
-                    window.location.href = this.settings.cpEditUrl;
-                }
-            }.bind(this))
         },
 
         handleFormSubmit: function(ev) {
@@ -1078,8 +1112,13 @@ Craft.DraftEditor = Garnish.Base.extend(
                 return;
             }
 
-            // Is this a normal draft, and was this a normal save (either via submit button or save shortcut)?
-            if (this.settings.draftId && !this.settings.isUnsavedDraft && !ev.customTrigger) {
+            // If this a draft and was this a normal save (either via submit button or save shortcut),
+            // then trigger an autosave
+            if (
+                this.settings.draftId &&
+                (typeof ev.autosave === 'undefined' || ev.autosave) &&
+                (ev.saveShortcut || (ev.customTrigger && ev.customTrigger.data('action') === this.settings.saveDraftAction))
+            ) {
                 this.checkForm(true);
                 return;
             }
@@ -1096,30 +1135,6 @@ Craft.DraftEditor = Garnish.Base.extend(
             var data = this.prepareData(this.serializeForm(false));
             var $form = Craft.createForm(data);
 
-            if (this.settings.draftId) {
-                if (
-                    this.settings.isUnsavedDraft &&
-                    (!ev.customTrigger || !ev.customTrigger.data('action'))
-                ) {
-                    $('<input/>', {
-                        type: 'hidden',
-                        name: 'action',
-                        value: this.settings.applyDraftAction
-                    }).appendTo($form);
-                }
-
-                if (
-                    (!ev.saveShortcut || !Craft.cp.$primaryForm.data('saveshortcut-redirect')) &&
-                    (!ev.customTrigger || !ev.customTrigger.data('redirect'))
-                ) {
-                    $('<input/>', {
-                        type: 'hidden',
-                        name: 'redirect',
-                        value: this.settings.hashedRedirectUrl
-                    }).appendTo($form);
-                }
-            }
-
             $form.appendTo(Garnish.$bod);
             $form.submit();
             this.submittingForm = true;
@@ -1130,7 +1145,7 @@ Craft.DraftEditor = Garnish.Base.extend(
             elementType: null,
             sourceId: null,
             siteId: null,
-            isUnsavedDraft: false,
+            isUnpublishedDraft: false,
             enabled: false,
             enabledForSite: false,
             isLive: false,
@@ -1140,14 +1155,13 @@ Craft.DraftEditor = Garnish.Base.extend(
             draftId: null,
             revisionId: null,
             draftName: null,
-            draftNotes: null,
             canEditMultipleSites: false,
-            canDeleteDraft: false,
             canUpdateSource: false,
             saveDraftAction: null,
             deleteDraftAction: null,
-            applyDraftAction: null,
-            hashedRedirectUrl: null,
+            publishDraftAction: null,
+            hashedCpEditUrl: null,
+            hashedAddAnotherRedirectUrl: null,
             enablePreview: false,
             previewTargets: [],
             siteToken: null,
