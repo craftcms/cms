@@ -20,8 +20,8 @@
 - Added the `withGroups` user query param.
 - Added the `relatedToAssets`, `relatedToCategories`, `relatedToEntries`, `relatedToTags`, and `relatedToUsers` arguments to GraphQL queries. ([#7110](https://github.com/craftcms/cms/issues/7110))
 - Added `craft\base\ElementExporterInterface::isFormattable()`.
-- Added `craft\base\VolumeTrait::$titleTranslationMethod`.
 - Added `craft\base\VolumeTrait::$titleTranslationKeyFormat`.
+- Added `craft\base\VolumeTrait::$titleTranslationMethod`.
 - Added `craft\console\Controller::passwordPrompt()`.
 - Added `craft\elements\db\ElementQueryInterface::afterPopulate()`.
 - Added `craft\elements\db\ElementQueryInterface::createElement()`.
@@ -83,9 +83,9 @@
 
 ### Deprecated
 - Deprecated the `backup` and `restore` commands.
-- Deprecated the `relatedToAll` GraphQL query argument.
 - Deprecated the `siteName` config setting. Sites’ Name settings should be set to environment variables instead.
 - Deprecated the `siteUrl` config setting. Sites’ Base URL settings should be set to aliases or environment variables instead. ([#3205](https://github.com/craftcms/cms/issues/3205))
+- Deprecated the `relatedToAll` GraphQL query argument.
 - Deprecated `craft\db\Connection::trimObjectName()`.
 - Deprecated `craft\gql\base\Resolver::getArrayableArguments()`.
 - Deprecated `craft\gql\base\Resolver::prepareArguments()`.
