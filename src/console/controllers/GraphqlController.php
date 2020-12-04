@@ -11,6 +11,7 @@ use Craft;
 use craft\console\Controller;
 use craft\errors\GqlException;
 use craft\helpers\Console;
+use craft\helpers\Gql;
 use GraphQL\Utils\SchemaPrinter;
 use yii\base\InvalidArgumentException;
 use yii\console\ExitCode;
@@ -33,12 +34,18 @@ class GraphqlController extends Controller
     public $token = null;
 
     /**
+     * @var bool Whether full schema should be printed or dumped.
+     */
+    public $fullSchema = false;
+
+    /**
      * @inheritdoc
      */
     public function options($actionID)
     {
         $options = parent::options($actionID);
         $options[] = 'token';
+        $options[] = 'fullSchema';
 
         return $options;
     }
@@ -97,8 +104,12 @@ class GraphqlController extends Controller
      */
     protected function getGqlSchema()
     {
-        $token = null;
+        if ($this->fullSchema) {
+            return Gql::createFullAccessSchema();
+        }
+
         $gqlService = Craft::$app->getGql();
+        $token = null;
 
         // First try to get the token from the passed in token
         if ($this->token !== null) {

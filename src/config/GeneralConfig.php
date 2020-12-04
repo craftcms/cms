@@ -1453,7 +1453,7 @@ class GeneralConfig extends BaseObject
     /**
      * @var bool Whether the project config should be saved to the `config/` folder.
      * @since 3.1.0
-     * @deprecated since 3.5.0. Craft now always saves the project config out to the `config/` folder.
+     * @deprecated in 3.5.0. Craft now always saves the project config out to the `config/` folder.
      */
     public $useProjectConfigFile = true;
 
