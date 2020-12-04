@@ -67,12 +67,12 @@ class GqlTest extends Unit
 
     /**
      * Test getting active schema errors out if none set
-     *
-     * @expectedException \craft\errors\GqlException
-     * @expectedExceptionMessage No schema is active.
      */
     public function testCreatingSchemaFail()
     {
+        $this->expectExceptionMessage("No schema is active.");
+        $this->expectException(GqlException::class);
+
         $gqlService = Craft::$app->getGql();
         $gqlService->setActiveSchema(null);
         $gqlService->getActiveSchema();
