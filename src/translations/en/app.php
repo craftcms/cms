@@ -680,13 +680,7 @@ return [
     'Your system isn’t set up to save content for the site “{site}”.' => 'Your system isn’t set up to save content for the site “{site}”.',
     'You’re all up-to-date!' => 'You’re all up-to-date!',
     'You’re running Craft {edition} with a Craft {licensedEdition} license.' => 'You’re running Craft {edition} with a Craft {licensedEdition} license.',
-    'account_activation_body' => 'Hey {{user.friendlyName}},
-
-Thanks for creating an account with {{systemName}}! To activate your account, click the following link:
-
-<{{link}}>
-
-If you were not expecting this email, just ignore it.',
+    'account_activation_body' => "Hey {{user.friendlyName}},\n\nThanks for creating an account with {{systemName}}! To activate your account, click the following link:\n\n<{{link}}>\n\nIf you were not expecting this email, just ignore it.",
     'account_activation_heading' => 'When someone creates an account:',
     'account_activation_subject' => 'Activate your account',
     'by {author}' => 'by {author}',
@@ -695,13 +689,7 @@ If you were not expecting this email, just ignore it.',
     'days' => 'days',
     'eight' => 'eight',
     'five' => 'five',
-    'forgot_password_body' => 'Hey {{user.friendlyName}},
-
-To reset your {{systemName}} password, click on this link:
-
-<{{link}}>
-
-If you were not expecting this email, just ignore it.',
+    'forgot_password_body' => "Hey {{user.friendlyName}},\n\nTo reset your {{systemName}} password, click on this link:\n\n<{{link}}>\n\nIf you were not expecting this email, just ignore it.",
     'forgot_password_heading' => 'When someone forgets their password:',
     'forgot_password_subject' => 'Reset your password',
     'four' => 'four',
@@ -716,24 +704,12 @@ If you were not expecting this email, just ignore it.',
     'seconds' => 'seconds',
     'seven' => 'seven',
     'six' => 'six',
-    'test_email_body' => 'Hey {{user.friendlyName}},
-
-Congratulations! Craft was successfully able to send an email.
-
-Here are the settings you used:
-
-{{ settings }}',
+    'test_email_body' => "Hey {{user.friendlyName}},\n\nCongratulations! Craft was successfully able to send an email.\n\nHere are the settings you used:\n\n{{ settings }}",
     'test_email_heading' => 'When you are testing your email settings:',
     'test_email_subject' => 'This is a test email from Craft',
     'three' => 'three',
     'two' => 'two',
-    'verify_new_email_body' => 'Hey {{user.friendlyName}},
-
-Please verify your new email address by clicking on this link:
-
-<{{link}}>
-
-If you were not expecting this email, just ignore it.',
+    'verify_new_email_body' => "Hey {{user.friendlyName}},\n\nPlease verify your new email address by clicking on this link:\n\n<{{link}}>\n\nIf you were not expecting this email, just ignore it.",
     'verify_new_email_heading' => 'When someone changes their email address:',
     'verify_new_email_subject' => 'Verify your new email address',
     'week' => 'week',
