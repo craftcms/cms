@@ -358,24 +358,6 @@ class ViewTest extends TestCase
     }
 
     /**
-     * Basic test to check the Registered js function
-     */
-    public function testRegisteredJs()
-    {
-        $property = 'randomprop';
-        $name = 'name';
-        $resultString = "if (typeof Craft !== 'undefined') {\n";
-        $jsName = Json::encode($name);
-        $resultString .= "  Craft.{$property}[{$jsName}] = true;\n";
-        $resultString .= '}';
-
-        // Set a stub and ensure that _registeredJs is correctly formatting js but dont bother registering it....
-        $this->_assertRegisterJsInputValues($resultString, View::POS_HEAD);
-
-        $this->_registeredJs('randomprop', ['name' => 'value']);
-    }
-
-    /**
      * @return array
      */
     public function normalizeObjectTemplateDataProvider(): array
@@ -596,17 +578,6 @@ class ViewTest extends TestCase
                 }
             ]
         );
-    }
-
-    /**
-     * @param $property
-     * @param $names
-     * @return mixed
-     * @throws ReflectionException
-     */
-    private function _registeredJs($property, $names)
-    {
-        return $this->invokeMethod($this->view, '_registeredJs', [$property, $names]);
     }
 
     /**

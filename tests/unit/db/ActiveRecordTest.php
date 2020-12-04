@@ -101,6 +101,8 @@ class ActiveRecordTest extends Unit
      *
      * @param $result
      * @param $input
+     * @throws \Throwable
+     * @throws \yii\db\StaleObjectException
      */
     public function testPrepValForDb($result, $input)
     {
