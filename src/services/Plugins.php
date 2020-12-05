@@ -505,6 +505,14 @@ class Plugins extends Component
                 'installDate' => Db::prepareDateForDb(new \DateTime()),
             ];
 
+            // Make sure the plugin doesn't have a row in the `plugins` or `migrations` tables first, just in case
+            Db::delete(Table::PLUGINS, [
+                'handle' => $handle,
+            ]);
+            Db::delete(Table::MIGRATIONS, [
+                'track' => "plugin:$handle",
+            ]);
+
             Db::insert(Table::PLUGINS, $info);
 
             $info['installDate'] = DateTimeHelper::toDateTime($info['installDate']);
@@ -821,7 +829,11 @@ class Plugins extends Component
             return null;
         }
 
-        $configData = $this->_getPluginConfigData($handle);
+        try {
+            $configData = $this->_getPluginConfigData($handle);
+        } catch (InvalidPluginException $e) {
+            return null;
+        }
 
         $row['settings'] = $configData['settings'] ?? [];
         $row['enabled'] = $configData['enabled'] ?? false;
