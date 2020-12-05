@@ -23,6 +23,7 @@
 - Fixed a bug where WebP images were not transformable, even if the server was configured for it. ([#7170](https://github.com/craftcms/cms/issues/7170)) 
 - Fixed a bug where the image editor could save an image incorrectly, if the `upscaleImages` config setting was set to `false`.
 - Fixed a bug where it wasn’t possible to install a plugin if it had a row in the `plugins` table, but it wasn’t in the project config. ([#7229](https://github.com/craftcms/cms/issues/7229))
+- Fixed a bug where Craft wasn’t always respecting plugins’ `minVersionRequired`. ([#7191](https://github.com/craftcms/cms/issues/7191))
 
 ## 3.5.16 - 2020-11-24
 
