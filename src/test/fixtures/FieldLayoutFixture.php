@@ -19,6 +19,7 @@ use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\services\Fields;
 use craft\test\ActiveFixture;
+use craft\test\DbFixtureTrait;
 use Throwable;
 use yii\base\Exception as YiiBaseException;
 use yii\base\InvalidArgumentException;
@@ -34,6 +35,8 @@ use yii\db\Exception as YiiDbException;
  */
 abstract class FieldLayoutFixture extends ActiveFixture
 {
+    use DbFixtureTrait;
+
     /**
      * @throws Throwable
      * @throws YiiBaseException
@@ -107,11 +110,12 @@ abstract class FieldLayoutFixture extends ActiveFixture
     }
 
     /**
-     * @return bool
-     * @throws Throwable
+     * @inheritdoc
      */
     public function unload()
     {
+        $this->checkIntegrity(true);
+
         foreach ($this->getData() as $fieldLayout) {
             foreach ($fieldLayout['tabs'] as $tab) {
                 foreach ($tab['fields'] as $fieldData) {
@@ -124,7 +128,8 @@ abstract class FieldLayoutFixture extends ActiveFixture
             }
         }
 
-        return false;
+        $this->hardDelete();
+        $this->checkIntegrity(false);
     }
 
     /**

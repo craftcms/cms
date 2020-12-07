@@ -12,8 +12,9 @@ use craft\base\ElementInterface;
 use craft\db\Table;
 use craft\errors\InvalidElementException;
 use craft\helpers\Db;
+use craft\test\DbFixtureTrait;
+use yii\test\DbFixture;
 use yii\test\FileFixtureTrait;
-use yii\test\Fixture;
 
 /**
  * Class BaseElementFixture is a base class for setting up fixtures for element types.
@@ -23,9 +24,10 @@ use yii\test\Fixture;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since  3.6.0
  */
-abstract class BaseElementFixture extends Fixture
+abstract class BaseElementFixture extends DbFixture
 {
     use FileFixtureTrait;
+    use DbFixtureTrait;
 
     /**
      * @var array
@@ -106,11 +108,13 @@ abstract class BaseElementFixture extends Fixture
     public function unload()
     {
         $elementsService = Craft::$app->getElements();
+        $this->checkIntegrity(true);
 
         foreach ($this->_elements as $element) {
             $elementsService->deleteElement($element, true);
         }
 
+        $this->checkIntegrity(false);
         $this->_elements = [];
     }
 
