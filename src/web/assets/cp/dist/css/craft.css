@@ -938,7 +938,7 @@ table.fixed-layout { table-layout: fixed; }
 
 table th.thin, table td.thin { width: 0.01% !important; white-space: nowrap; }
 
-table thead th { font-weight: bold; vertical-align: top; color: #596673; }
+table thead th { font-weight: bold; vertical-align: top; }
 
 body.ltr table thead th { text-align: left; }
 
