@@ -8,7 +8,7 @@
 
 namespace crafttests\fixtures;
 
-use craft\test\fixtures\elements\AssetFixture;
+use craft\test\fixtures\elements\AssetFixture as BaseAssetFixture;
 
 /**
  * Class AssetsFixture.
@@ -17,7 +17,7 @@ use craft\test\fixtures\elements\AssetFixture;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class AssetsFixture extends AssetFixture
+class AssetFixture extends BaseAssetFixture
 {
     /**
      * @inheritdoc

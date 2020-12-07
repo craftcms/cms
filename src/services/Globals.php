@@ -510,6 +510,16 @@ class Globals extends Component
     }
 
     /**
+     * Resets the memoized globals.
+     *
+     * @since 3.6.0
+     */
+    public function reset(): void
+    {
+        $this->_allGlobalSets = $this->_editableGlobalSets = null;
+    }
+
+    /**
      * Returns a memoizable array of all global sets for the given site.
      *
      * @param int $siteId

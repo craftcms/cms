@@ -7,7 +7,7 @@
 
 namespace crafttests\fixtures;
 
-use craft\test\fixtures\elements\UserFixture;
+use craft\test\fixtures\elements\UserFixture as BaseUserFixture;
 
 /**
  * Class UsersFixture
@@ -16,7 +16,7 @@ use craft\test\fixtures\elements\UserFixture;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class UsersFixture extends UserFixture
+class UserFixture extends BaseUserFixture
 {
     /**
      * @inheritdoc

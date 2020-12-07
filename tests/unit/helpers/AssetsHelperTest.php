@@ -11,7 +11,7 @@ use Codeception\Test\Unit;
 use Craft;
 use craft\elements\Asset;
 use craft\helpers\Assets;
-use crafttests\fixtures\AssetsFixture;
+use crafttests\fixtures\AssetFixture;
 use UnitTester;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -35,7 +35,7 @@ class AssetsHelperTest extends Unit
     {
         return [
             'assets' => [
-                'class' => AssetsFixture::class
+                'class' => AssetFixture::class
             ]
         ];
     }
