@@ -38,7 +38,7 @@ abstract class EntryFixture extends ElementFixture
     public $typeIds = [];
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function init()
     {

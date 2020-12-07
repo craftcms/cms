@@ -33,7 +33,7 @@ abstract class CategoryFixture extends ElementFixture
     protected $groupIds = [];
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function init()
     {

@@ -276,7 +276,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function getTests()
     {

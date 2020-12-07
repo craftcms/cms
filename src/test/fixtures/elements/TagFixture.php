@@ -24,7 +24,7 @@ use craft\elements\Tag;
 abstract class TagFixture extends ElementFixture
 {
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public $modelClass = Tag::class;
 
@@ -34,7 +34,7 @@ abstract class TagFixture extends ElementFixture
     protected $groupIds = [];
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function init()
     {
@@ -46,7 +46,7 @@ abstract class TagFixture extends ElementFixture
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     protected function isPrimaryKey(string $key): bool
     {
