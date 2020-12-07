@@ -231,21 +231,25 @@ class Plugins extends Component
             }
 
             if ($plugin !== null) {
-                // If we're not updating, check if the plugin's version number changed, but not its schema version.
-                if (!Craft::$app->getIsInMaintenanceMode() && $this->hasPluginVersionNumberChanged($plugin) && !$this->doesPluginRequireDatabaseUpdate($plugin)) {
-                    if (
-                        $plugin->minVersionRequired &&
-                        strpos($row['version'], 'dev-') !== 0 &&
-                        !StringHelper::endsWith($row['version'], '-dev') &&
-                        version_compare($row['version'], $plugin->minVersionRequired, '<')
-                    ) {
-                        throw new HttpException(200, Craft::t('app', 'You need to be on at least {plugin} {version} before you can update to {plugin} {targetVersion}.', [
-                            'version' => $plugin->minVersionRequired,
-                            'targetVersion' => $plugin->version,
-                            'plugin' => $plugin->name
-                        ]));
-                    }
+                $hasVersionChanged = $this->hasPluginVersionNumberChanged($plugin);
 
+                // If the plugin’s version just changed, make sure the old version is >= the min allowed version
+                if (
+                    $hasVersionChanged &&
+                    $plugin->minVersionRequired &&
+                    strpos($row['version'], 'dev-') !== 0 &&
+                    !StringHelper::endsWith($row['version'], '-dev') &&
+                    version_compare($row['version'], $plugin->minVersionRequired, '<')
+                ) {
+                    throw new HttpException(200, Craft::t('app', 'You need to be on at least {plugin} {version} before you can update to {plugin} {targetVersion}.', [
+                        'version' => $plugin->minVersionRequired,
+                        'targetVersion' => $plugin->version,
+                        'plugin' => $plugin->name
+                    ]));
+                }
+
+                // If we're not updating, check if the plugin's version number changed, but not its schema version.
+                if (!Craft::$app->getIsInMaintenanceMode() && $hasVersionChanged && !$this->doesPluginRequireDatabaseUpdate($plugin)) {
                     // Update our record of the plugin's version number
                     Db::update(Table::PLUGINS, [
                         'version' => $plugin->getVersion(),
@@ -504,6 +508,14 @@ class Plugins extends Component
                 'schemaVersion' => $plugin->schemaVersion,
                 'installDate' => Db::prepareDateForDb(new \DateTime()),
             ];
+
+            // Make sure the plugin doesn't have a row in the `plugins` or `migrations` tables first, just in case
+            Db::delete(Table::PLUGINS, [
+                'handle' => $handle,
+            ]);
+            Db::delete(Table::MIGRATIONS, [
+                'track' => "plugin:$handle",
+            ]);
 
             Db::insert(Table::PLUGINS, $info);
 
@@ -821,7 +833,11 @@ class Plugins extends Component
             return null;
         }
 
-        $configData = $this->_getPluginConfigData($handle);
+        try {
+            $configData = $this->_getPluginConfigData($handle);
+        } catch (InvalidPluginException $e) {
+            return null;
+        }
 
         $row['settings'] = $configData['settings'] ?? [];
         $row['enabled'] = $configData['enabled'] ?? false;
