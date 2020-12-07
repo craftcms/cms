@@ -1720,7 +1720,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                     this.$selectAllContainer.attr({
                         'role': 'checkbox',
                         'tabindex': '0',
-                        'aria-checked': 'false'
+                        'aria-checked': 'false',
+                        'aria-label': Craft.t('app', 'Select all'),
                     });
 
                     this.addListener(this.$selectAllContainer, 'click', function() {
