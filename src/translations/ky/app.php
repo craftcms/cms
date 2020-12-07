@@ -75,6 +75,7 @@ return [
     'Author' => 'Автор',
     'Backing-up database…' => 'Backing-up database…',
     'Base URL' => 'Base URL',
+    'Breadcrumbs' => 'Breadcrumbs',
     'Buy {name}' => 'Buy {name}',
     'Cancel' => 'Токтотуу',
     'categories' => 'категориялар',

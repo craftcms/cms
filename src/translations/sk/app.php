@@ -75,6 +75,7 @@ return [
     'Author' => 'Autor',
     'Backing-up database…' => 'Zálohovanie databázy…',
     'Base URL' => 'Základná adresa URL',
+    'Breadcrumbs' => 'Breadcrumbs',
     'Buy {name}' => 'Kúpiť {name}',
     'Cancel' => 'Zrušiť',
     'categories' => 'kategórie',

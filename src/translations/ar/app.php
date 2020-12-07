@@ -75,6 +75,7 @@ return [
     'Author' => 'المؤلف',
     'Backing-up database…' => 'يتم نسخ قاعدة البيانات احتياطياً…',
     'Base URL' => 'عنوان URL أساسي',
+    'Breadcrumbs' => 'Breadcrumbs',
     'Buy {name}' => 'شراء {name}',
     'Cancel' => 'إلغاء',
     'categories' => 'الفئات',
