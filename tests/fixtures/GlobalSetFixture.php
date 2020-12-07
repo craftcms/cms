@@ -22,4 +22,9 @@ class GlobalSetFixture extends BaseGlobalSetFixture
      * @inheritdoc
      */
     public $dataFile = __DIR__ . '/data/global-sets.php';
+
+    /**
+     * @inheritdoc
+     */
+    public $depends = [FieldLayoutFixture::class];
 }
