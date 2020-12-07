@@ -1025,6 +1025,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                         class: 'btn' + (typeof sourceViewMode.className !== 'undefined' ? ` ${sourceViewMode.className}` : ''),
                         'data-view': sourceViewMode.mode,
                         'data-icon': sourceViewMode.icon,
+                        'aria-label': sourceViewMode.title,
+                        title: sourceViewMode.title,
                     }).appendTo(this.$viewModeBtnContainer);
 
                     this.viewModeBtns[sourceViewMode.mode] = $viewModeBtn;
