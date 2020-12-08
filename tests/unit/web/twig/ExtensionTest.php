@@ -145,7 +145,7 @@ class ExtensionTest extends Unit
      * @throws LoaderError
      * @throws SyntaxError
      */
-    public function testCsrfInput()
+    public function testCsrfInputFunction()
     {
         Craft::$app->getConfig()->getGeneral()->enableCsrfProtection = true;
         $this->extensionRenderTest(
@@ -167,7 +167,7 @@ class ExtensionTest extends Unit
      * @throws Exception
      * @throws InvalidConfigException
      */
-    public function testRedirectInput()
+    public function testRedirectInputFunction()
     {
         $this->extensionRenderTest(
             '{{ redirectInput("A URL") }}',
@@ -184,7 +184,7 @@ class ExtensionTest extends Unit
      * @throws LoaderError
      * @throws SyntaxError
      */
-    public function testActionInput()
+    public function testActionInputFunction()
     {
         $this->extensionRenderTest(
             '{{ actionInput("A URL") }}',
@@ -201,7 +201,7 @@ class ExtensionTest extends Unit
      * @throws LoaderError
      * @throws SyntaxError
      */
-    public function testRenderObjectTemplate()
+    public function testRenderObjectTemplateFunction()
     {
         // This is some next level inception stuff IMO.....
         $this->extensionRenderTest(
@@ -222,7 +222,7 @@ class ExtensionTest extends Unit
      * @throws LoaderError
      * @throws SyntaxError
      */
-    public function testGetEnv()
+    public function testGetenvFunction()
     {
         $this->extensionRenderTest(
             '{{ getenv("FROM_EMAIL_NAME") }} | {{ getenv("FROM_EMAIL_ADDRESS") }}',
@@ -234,7 +234,7 @@ class ExtensionTest extends Unit
      * @throws LoaderError
      * @throws SyntaxError
      */
-    public function testEnvParsing()
+    public function testParseEnvFunction()
     {
         $this->extensionRenderTest(
             '{{ parseEnv("$FROM_EMAIL_NAME") }}',
@@ -251,7 +251,7 @@ class ExtensionTest extends Unit
      * @throws LoaderError
      * @throws SyntaxError
      */
-    public function testIndexOf()
+    public function testIndexOfFilter()
     {
         $arrayObject = new ArrayObject(['John', 'Smith']);
 
@@ -276,7 +276,7 @@ class ExtensionTest extends Unit
      * @throws LoaderError
      * @throws SyntaxError
      */
-    public function testShuffle()
+    public function testShuffleFunction()
     {
         // 1 means true (string version of bool)
         $this->extensionRenderTest(
