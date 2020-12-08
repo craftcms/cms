@@ -8,10 +8,12 @@
 namespace tests\gql;
 
 use Craft;
+use craft\models\GqlSchema;
 use crafttests\fixtures\EntryWithFieldsFixture;
 use crafttests\fixtures\GlobalSetFixture;
 use crafttests\fixtures\GqlSchemasFixture;
 use FunctionalTester;
+use yii\base\Exception;
 
 class GqlCest
 {
@@ -52,8 +54,8 @@ class GqlCest
 
     /**
      * @param int $tokenId
-     * @return \craft\models\GqlSchema|null
-     * @throws \yii\base\Exception
+     * @return GqlSchema|null
+     * @throws Exception
      */
     public function _setSchema(int $tokenId)
     {

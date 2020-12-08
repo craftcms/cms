@@ -36,18 +36,17 @@ class LanguageValidatorTest extends Unit
     /**
      * @dataProvider validateValueDataProvider
      *
-     * @param $result
-     * @param $input
+     * @param array|null $expected
+     * @param string $value
      * @param bool $onlySiteLangs
      * @throws NotSupportedException
      */
-    public function testValidateValue($result, $input, $onlySiteLangs = true)
+    public function testValidateValue(?array $expected, string $value, bool $onlySiteLangs = true)
     {
         $this->tester->mockCraftMethods('i18n', ['getSiteLocaleIds' => ['nl', 'en-US']]);
         $this->languageValidator->onlySiteLanguages = $onlySiteLangs;
-        $validated = $this->languageValidator->validateValue($input);
 
-        self::assertSame($result, $validated);
+        self::assertSame($expected, $this->languageValidator->validateValue($value));
     }
 
     /**

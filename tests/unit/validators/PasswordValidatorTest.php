@@ -104,20 +104,6 @@ class PasswordValidatorTest extends Unit
         }
     }
 
-    /**
-     * @dataProvider isEmptyDataProvider
-     *
-     * @param $result
-     * @param $input
-     * @param $isEmptyVal
-     */
-    public function testIsEmpty($result, $input, $isEmptyVal)
-    {
-        $this->passwordValidator->isEmpty = $isEmptyVal;
-        $isEmpty = $this->passwordValidator->isEmpty($input);
-        self::assertSame($result, $isEmpty);
-    }
-
     public function testToStringExpectException()
     {
         $passVal = $this->passwordValidator;
@@ -171,25 +157,6 @@ class PasswordValidatorTest extends Unit
             [true, '      ', '         '],
 
         ];
-    }
-
-    /**
-     * @return array
-     */
-    public function isEmptyDataProvider(): array
-    {
-        return [
-            ['im a test', '', self::class . '::testReturn'],
-        ];
-    }
-
-
-    /**
-     * @return string
-     */
-    public static function testReturn(): string
-    {
-        return 'im a test';
     }
 
     /**

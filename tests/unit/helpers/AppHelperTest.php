@@ -51,27 +51,23 @@ class AppHelperTest extends TestCase
     /**
      * @dataProvider validEditionsDataProviders
      *
-     * @param $result
-     * @param $input
+     * @param bool $expected
+     * @param mixed $edition
      */
-    public function testIsValidEdition($result, $input)
+    public function testIsValidEdition(bool $expected, $edition)
     {
-        $isValid = App::isValidEdition($input);
-        self::assertSame($result, $isValid);
-        self::assertIsBool($isValid);
+        self::assertSame($expected, App::isValidEdition($edition));
     }
 
     /**
-     * @dataProvider versionListDataProvider
+     * @dataProvider normalizeVersionDataProvider
      *
-     * @param $result
-     * @param $input
+     * @param string $expected
+     * @param string $version
      */
-    public function testVersionNormalization($result, string $input)
+    public function testNormalizeVersion(string $expected, string $version)
     {
-        $version = App::normalizeVersion($input);
-        self::assertSame($result, App::normalizeVersion($input));
-        self::assertIsString($version);
+        self::assertSame($expected, App::normalizeVersion($version));
     }
 
     /**
@@ -94,18 +90,14 @@ class AppHelperTest extends TestCase
     }
 
     /**
-     * @dataProvider classHumanizationDataProvider
+     * @dataProvider humanizeClassDataProvider
      *
-     * @param $result
-     * @param $input
+     * @param string $expected
+     * @param string $class
      */
-    public function testClassHumanization($result, $input)
+    public function testHumanizeClass(string $expected, string $class)
     {
-        $humanizedClass = App::humanizeClass($input);
-        self::assertSame($result, $humanizedClass);
-
-        // Make sure we dont have any uppercase characters.
-        self::assertNotRegExp('/[A-Z]/', $humanizedClass);
+        self::assertSame($expected, App::humanizeClass($class));
     }
 
     /**
@@ -225,7 +217,7 @@ class AppHelperTest extends TestCase
     /**
      * @return array
      */
-    public function classHumanizationDataProvider(): array
+    public function humanizeClassDataProvider(): array
     {
         return [
             ['entries', Entries::class],
@@ -238,7 +230,7 @@ class AppHelperTest extends TestCase
     /**
      * @return array
      */
-    public function versionListDataProvider(): array
+    public function normalizeVersionDataProvider(): array
     {
         return [
             ['version', 'version 21'],
@@ -250,7 +242,6 @@ class AppHelperTest extends TestCase
             ['~2', '~2'],
             ['', ''],
             ['\*v^2.0.0(beta)', '\*v^2.0.0(beta)'],
-
         ];
     }
 

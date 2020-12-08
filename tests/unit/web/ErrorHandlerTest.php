@@ -72,14 +72,14 @@ class ErrorHandlerTest extends TestCase
     /**
      * @dataProvider getTypeUrlDataProvider
      *
-     * @param $result
-     * @param $class
-     * @param $method
+     * @param string|null $expected
+     * @param string $class
+     * @param string|null $method
      * @throws ReflectionException
      */
-    public function testGetTypeUrl($result, $class, $method)
+    public function testGetTypeUrl(?string $expected, string $class, ?string $method)
     {
-        self::assertSame($result, $this->invokeMethod($this->errorHandler, 'getTypeUrl', [$class, $method]));
+        self::assertSame($expected, $this->invokeMethod($this->errorHandler, 'getTypeUrl', [$class, $method]));
     }
 
     /**
@@ -97,13 +97,12 @@ class ErrorHandlerTest extends TestCase
     /**
      * @dataProvider isCoreFileDataProvider
      *
-     * @param $result
-     * @param $input
+     * @param bool $expected
+     * @param string $file
      */
-    public function testIsCoreFile($result, $input)
+    public function testIsCoreFile(bool $expected, string $file)
     {
-        $isCore = $this->errorHandler->isCoreFile(Craft::getAlias($input));
-        self::assertSame($result, $isCore);
+        self::assertSame($expected, $this->errorHandler->isCoreFile(Craft::getAlias($file)));
     }
 
     /**

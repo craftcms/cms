@@ -41,13 +41,13 @@ class AssetsHelperTest extends Unit
     }
 
     /**
-     * @dataProvider urlGenerationDataProvider
+     * @dataProvider generateUrlDataProvider
      *
-     * @param $resultUrl
-     * @param $params
+     * @param string $expected
+     * @param array $params
      * @throws InvalidConfigException
      */
-    public function testUrlGeneration($resultUrl, $params)
+    public function testGenerateUrl(string $expected, array $params)
     {
         $assetQuery = Asset::find();
 
@@ -58,7 +58,7 @@ class AssetsHelperTest extends Unit
         $asset = $assetQuery->one();
         $volume = $asset->getVolume();
 
-        self::assertSame($resultUrl, Assets::generateUrl($volume, $asset));
+        self::assertSame($expected, Assets::generateUrl($volume, $asset));
     }
 
     /**
@@ -75,15 +75,14 @@ class AssetsHelperTest extends Unit
     /**
      * @dataProvider prepareAssetNameDataProvider
      *
-     * @param $result
-     * @param $name
-     * @param $isFilename
-     * @param $preventPluginMods
+     * @param string $expected
+     * @param string $name
+     * @param bool $isFilename
+     * @param bool $preventPluginModifications
      */
-    public function testPrepareAssetName($result, $name, $isFilename, $preventPluginMods)
+    public function testPrepareAssetName(string $expected, string $name, bool $isFilename, bool $preventPluginModifications)
     {
-        $assetName = Assets::prepareAssetName($name, $isFilename, $preventPluginMods);
-        self::assertSame($result, $assetName);
+        self::assertSame($expected, Assets::prepareAssetName($name, $isFilename, $preventPluginModifications));
     }
 
     /**
@@ -113,51 +112,46 @@ class AssetsHelperTest extends Unit
     /**
      * @dataProvider filename2TitleDataProvider
      *
-     * @param $result
-     * @param $input
+     * @param string $expected
+     * @param string $filename
      */
-    public function testFilename2Title($result, $input)
+    public function testFilename2Title(string $expected, string $filename)
     {
-        $file2Title = Assets::filename2Title($input);
-        self::assertSame($result, $file2Title);
+        self::assertSame($expected, Assets::filename2Title($filename));
     }
 
     /**
-     * @dataProvider fileKindLabelDataProvider
+     * @dataProvider getFileKindLabelDataProvider
      *
-     * @param $result
-     * @param $input
+     * @param string $expected
+     * @param string $kind
      */
-    public function testFileFindLabel($result, $input)
+    public function testGetFileKindLabel(string $expected, string $kind)
     {
-        $label = Assets::getFileKindLabel($input);
-        self::assertSame($result, $label);
+        self::assertSame($expected, Assets::getFileKindLabel($kind));
     }
 
     /**
-     * @dataProvider fileKindByExtensionDataProvider
+     * @dataProvider getFileKindByExtensionDataProvider
      *
-     * @param $result
-     * @param $input
+     * @param string $expected
+     * @param string $file
      */
-    public function testFileKindByExtension($result, $input)
+    public function testGetFileKindByExtension(string $expected, string $file)
     {
-        $kind = Assets::getFileKindByExtension($input);
-        self::assertSame($result, $kind);
+        self::assertSame($expected, Assets::getFileKindByExtension($file));
     }
 
     /**
      * @dataProvider parseFileLocationDataProvider
      *
-     * @param $result
-     * @param $input
-     *
+     * @param array $expected
+     * @param string $location
      * @throws Exception
      */
-    public function testParseFileLocation($result, $input)
+    public function testParseFileLocation(array $expected, string $location)
     {
-        $location = Assets::parseFileLocation($input);
-        self::assertSame($result, $location);
+        self::assertSame($expected, Assets::parseFileLocation($location));
     }
 
     /**
@@ -188,17 +182,16 @@ class AssetsHelperTest extends Unit
     /**
      * @dataProvider parseSrcsetSizeDataProvider
      *
-     * @param $result
-     * @param $input
+     * @param array|false $expected
+     * @param mixed $size
      */
-    public function testParseSrcsetSize($result, $input)
+    public function testParseSrcsetSize($expected, $size)
     {
-        if (is_array($result)) {
-            $parsed = Assets::parseSrcsetSize($input);
-            self::assertSame($result, $parsed);
+        if (is_array($expected)) {
+            self::assertSame($expected, Assets::parseSrcsetSize($size));
         } else {
-            $this->tester->expectThrowable(InvalidArgumentException::class, function() use ($input) {
-                Assets::parseSrcsetSize($input);
+            $this->tester->expectThrowable(InvalidArgumentException::class, function() use ($size) {
+                Assets::parseSrcsetSize($size);
             });
         }
     }
@@ -206,7 +199,7 @@ class AssetsHelperTest extends Unit
     /**
      * @return array
      */
-    public function urlGenerationDataProvider(): array
+    public function generateUrlDataProvider(): array
     {
         return [
             ['https://cdn.test.craftcms.test/test-volume-1/product.jpg', ['volumeId' => '1000', 'filename' => 'product.jpg']]
@@ -246,7 +239,7 @@ class AssetsHelperTest extends Unit
     /**
      * @return array
      */
-    public function fileKindLabelDataProvider(): array
+    public function getFileKindLabelDataProvider(): array
     {
         return [
             ['Access', 'access'],
@@ -286,7 +279,7 @@ class AssetsHelperTest extends Unit
     /**
      * @return array
      */
-    public function fileKindByExtensionDataProvider(): array
+    public function getFileKindByExtensionDataProvider(): array
     {
         return [
             ['unknown', 'html'],
