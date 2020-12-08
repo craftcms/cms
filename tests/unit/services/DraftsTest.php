@@ -68,11 +68,11 @@ class DraftsTest extends Unit
     }
 
     /**
-     * Test applying draft changes to an entry
+     * Test publishing draft changes to an entry
      *
      * @throws Throwable
      */
-    public function testApplyDraft()
+    public function testPublishDraft()
     {
         $entry = Entry::find()
             ->title('Pending 1')
