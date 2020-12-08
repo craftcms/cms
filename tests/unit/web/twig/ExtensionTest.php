@@ -11,6 +11,7 @@ use ArrayObject;
 use Codeception\Test\Unit;
 use Craft;
 use craft\elements\User;
+use craft\test\TestSetup;
 use craft\web\View;
 use crafttests\fixtures\GlobalSetFixture;
 use Twig\Error\LoaderError;
@@ -121,7 +122,7 @@ class ExtensionTest extends Unit
         Craft::$app->getProjectConfig()->set('system.name', 'Im a test system');
         $this->extensionRenderTest(
             '{{ systemName }} | {{ currentSite.handle }} {{ currentSite }} {{ siteUrl }}',
-            'Im a test system | default Craft test site https://test.craftcms.test/index.php/'
+            'Im a test system | default Craft test site ' . TestSetup::SITE_URL
         );
     }
 

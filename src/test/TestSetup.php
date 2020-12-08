@@ -91,6 +91,11 @@ use yii\mutex\Mutex;
 class TestSetup
 {
     /**
+     * @since 3.6.0
+     */
+    const SITE_URL = 'https://test.craftcms.test/';
+
+    /**
      * @var array Project Config data
      */
     private static $_parsedProjectConfig = [];
@@ -448,7 +453,7 @@ class TestSetup
             'name' => 'Craft test site',
             'handle' => 'default',
             'hasUrls' => true,
-            'baseUrl' => 'https://craftcms.com',
+            'baseUrl' => self::SITE_URL,
             'language' => 'en-US',
             'primary' => true,
         ];
