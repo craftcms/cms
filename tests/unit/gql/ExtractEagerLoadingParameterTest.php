@@ -13,6 +13,7 @@ use craft\elements\db\EagerLoadPlan;
 use craft\fields\Assets;
 use craft\fields\Entries;
 use craft\fields\Matrix;
+use craft\gql\ArgumentManager;
 use craft\gql\ElementQueryConditionBuilder;
 use craft\models\MatrixBlockType;
 use crafttests\fixtures\GqlSchemasFixture;
@@ -117,7 +118,8 @@ class ExtractEagerLoadingParameterTest extends Unit
 
         $conditionBuilder = Craft::createObject([
             'class' => ElementQueryConditionBuilder::class,
-            'resolveInfo' => $resolveInfo
+            'resolveInfo' => $resolveInfo,
+            'argumentManager' => new ArgumentManager()
         ]);
         $extractedConditions = $conditionBuilder->extractQueryConditions();
 
