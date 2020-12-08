@@ -42,7 +42,7 @@
                                         <td>
                                             <div class="item-name">
                                                 <strong>{{ item.plugin.name}}</strong>
-                                                <edition-badge :name="item.lineItem.purchasable.name"></edition-badge>
+                                                <edition-badge v-if="item.plugin.editions > 1" :name="item.lineItem.purchasable.name"></edition-badge>
                                             </div>
                                         </td>
                                     </template>
