@@ -127,9 +127,7 @@ const getters = {
                 navigateTo: '/upgrade-craft',
             })
         }
-
-        console.log('activeTrialPlugins', activeTrialPlugins)
-
+        
         // Plugin trials
         const plugins = activeTrialPlugins.filter(p => {
             if (p) {
