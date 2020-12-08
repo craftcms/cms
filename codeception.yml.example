@@ -27,7 +27,7 @@ modules:
     config:
         \craft\test\Craft:
             configFile: 'tests/_craft/config/test.php'
-            entryUrl: 'https://test.craftcms.dev/'
+            entryUrl: 'https://test.craftcms.test/index.php'
             entryScript: 'index.php'
             projectConfig: {}
             migrations: [{'class': 'craft\migrations\ExampleMigration', 'params': {tableName: 'exampletable'}}]
