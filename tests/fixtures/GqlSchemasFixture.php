@@ -8,7 +8,7 @@
 namespace crafttests\fixtures;
 
 use craft\records\GqlSchema;
-use craft\test\Fixture;
+use craft\test\ActiveFixture;
 
 /**
  * Class GqlTokensFixture
@@ -17,7 +17,7 @@ use craft\test\Fixture;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.3
  */
-class GqlSchemasFixture extends Fixture
+class GqlSchemasFixture extends ActiveFixture
 {
     /**
      * @inheritdoc

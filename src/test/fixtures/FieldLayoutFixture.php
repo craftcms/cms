@@ -18,7 +18,7 @@ use craft\helpers\Db;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\services\Fields;
-use craft\test\Fixture;
+use craft\test\ActiveFixture;
 use Throwable;
 use yii\base\Exception as YiiBaseException;
 use yii\base\InvalidArgumentException;
@@ -32,7 +32,7 @@ use yii\db\Exception as YiiDbException;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since  3.2
  */
-abstract class FieldLayoutFixture extends Fixture
+abstract class FieldLayoutFixture extends ActiveFixture
 {
     /**
      * @throws Throwable

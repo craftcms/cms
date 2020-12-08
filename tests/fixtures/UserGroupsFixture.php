@@ -10,7 +10,7 @@ namespace crafttests\fixtures;
 use Craft;
 use craft\records\UserGroup;
 use craft\services\UserGroups;
-use craft\test\Fixture;
+use craft\test\ActiveFixture;
 use yii\base\Exception;
 
 /**
@@ -20,7 +20,7 @@ use yii\base\Exception;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class UserGroupsFixture extends Fixture
+class UserGroupsFixture extends ActiveFixture
 {
     /**
      * @inheritdoc
