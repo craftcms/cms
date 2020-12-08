@@ -1,5 +1,6 @@
 import api from '../../api/cart'
 import pluginStoreApi from '../../api/pluginstore'
+import licensesMixins from '../../mixins/licenses'
 import Vue from 'vue'
 import Vuex from 'vuex'
 
@@ -91,6 +92,109 @@ const getters = {
             return pluginEdition
         }
     },
+
+    pendingActiveTrials(state, getters, rootState, rootGetters) {
+        const activeTrialPlugins = state.activeTrialPlugins
+        const cart = state.cart
+        const craftLogo = rootState.craft.craftLogo
+        const cmsEditions = rootState.pluginStore.cmsEditions
+        const licensedEdition = rootState.craft.licensedEdition
+        const CraftEdition = rootState.craft.CraftEdition
+
+        const getPluginLicenseInfo = rootGetters['craft/getPluginLicenseInfo']
+        const getCmsEditionIndex = rootGetters['craft/getCmsEditionIndex']
+        const getPluginEdition = rootGetters['pluginStore/getPluginEdition']
+        const isCmsEditionInCart = getters.isCmsEditionInCart
+
+        const trials = []
+
+        // CMS trial
+        const cmsProEdition = cmsEditions.find(edition => edition.handle === 'pro')
+        const cmsProEditionIndex = getCmsEditionIndex(cmsProEdition.handle)
+
+        if (
+            cmsProEdition
+            && (licensedEdition < cmsProEditionIndex && licensedEdition < CraftEdition)
+            && !isCmsEditionInCart(cmsProEdition.handle)
+        ) {
+            trials.push({
+                type: 'cms-edition',
+                name: 'Craft',
+                iconUrl: craftLogo,
+                editionHandle: 'pro',
+                editionName: 'Pro',
+                price: cmsProEdition.price,
+                navigateTo: '/upgrade-craft',
+            })
+        }
+
+        console.log('activeTrialPlugins', activeTrialPlugins)
+
+        // Plugin trials
+        const plugins = activeTrialPlugins.filter(p => {
+            if (p) {
+                if(!cart) {
+                    return false
+                }
+
+                return !cart.lineItems.find(item => {
+                    return item.purchasable.pluginId == p.id
+                })
+            }
+        })
+
+        for (let i = 0; i < plugins.length; i++) {
+            const plugin = plugins[i]
+
+            // license mismatched
+            const pluginLicenseInfo = getPluginLicenseInfo(plugin.handle)
+            const licenseMismatched = licensesMixins.methods.getLicenseMismatched(pluginLicenseInfo)
+
+            // plugin edition
+            const activeTrialPluginEdition = getPluginEdition(plugin, pluginLicenseInfo.edition)
+
+            // licensed edition
+            const licensedEdition = getPluginEdition(plugin, pluginLicenseInfo.licensedEdition)
+
+            // license valid or astray
+            const licenseValidOrAstray = licensesMixins.methods.getLicenseValidOrAstray(pluginLicenseInfo)
+
+            // navigate to
+            const navigateTo = '/' + plugin.handle
+
+            // price & discount price
+            let price = null
+            let discountPrice = null
+
+            if (activeTrialPluginEdition) {
+                price = activeTrialPluginEdition.price
+
+                if (licensedEdition && licensedEdition.handle !== activeTrialPluginEdition.handle && licensedEdition.price > 0 && licenseValidOrAstray) {
+                    discountPrice = activeTrialPluginEdition.price - licensedEdition.price
+                }
+            }
+
+            // show edition badge
+            const showEditionBadge = (activeTrialPluginEdition && plugin.editions.length > 1)
+
+            // build trial row
+            trials.push({
+                type: 'plugin-edition',
+                name: plugin.name,
+                iconUrl: plugin.iconUrl,
+                editionHandle: pluginLicenseInfo.edition,
+                editionName: activeTrialPluginEdition.name,
+                pluginHandle: plugin.handle,
+                licenseMismatched,
+                discountPrice,
+                price,
+                navigateTo,
+                showEditionBadge,
+            })
+        }
+
+        return trials
+    }
 }
 
 /**
@@ -173,6 +277,25 @@ const actions = {
                     return reject(error)
                 })
         })
+    },
+
+    addAllTrialsToCart({dispatch, getters}) {
+        let items = []
+
+        getters.pendingActiveTrials.forEach(activeTrial => {
+            const item = {
+                type: activeTrial.type,
+                edition: activeTrial.editionHandle,
+            }
+
+            if (activeTrial.type === 'plugin-edition') {
+                item.plugin = activeTrial.pluginHandle
+            }
+
+            items.push(item)
+        })
+
+        return dispatch('addToCart', items)
     },
 
     checkout(context, data) {

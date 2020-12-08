@@ -1346,7 +1346,6 @@ If you were not expecting this email, just ignore it.',
     'The base URL to the assets in this volume.' => 'The base URL to the assets in this volume.',
     'Configuration' => 'Configuration',
     'Your are currently using the {currentEdition} edition, and your licensed edition is {licensedEdition}.' => 'Your are currently using the {currentEdition} edition, and your licensed edition is {licensedEdition}.',
-    'Plugin Name' => 'Plugin Name',
     'Are you sure you want to delete this group and all its fields?' => 'Are you sure you want to delete this group and all its fields?',
     'Renewal price' => 'Renewal price',
     'Save blocks to other sites in the same site group' => 'Save blocks to other sites in the same site group',
@@ -1748,5 +1747,6 @@ If you were not expecting this email, just ignore it.',
     'This update requires PHP {v1}, but your environment is currently running PHP {v2}.' => 'This update requires PHP {v1}, but your environment is currently running PHP {v2}.',
     'This update requires PHP {v1}, but your composer.json file is currently set to PHP {v2}.' => 'This update requires PHP {v1}, but your composer.json file is currently set to PHP {v2}.',
     'How should {type} titles be translated?' => 'How should {type} titles be translated?',
-    'Template that defines the Title field’s custom “translation key” format. {type} titles will be copied to all sites that produce the same key. For example, to make titles translatable based on the first two characters of the site handle, you could enter `{site.handle[:2]}`.' => 'Template that defines the Title field’s custom “translation key” format. {type} titles will be copied to all sites that produce the same key. For example, to make titles translatable based on the first two characters of the site handle, you could enter `{site.handle[:2]}`.'
+    'Template that defines the Title field’s custom “translation key” format. {type} titles will be copied to all sites that produce the same key. For example, to make titles translatable based on the first two characters of the site handle, you could enter `{site.handle[:2]}`.' => 'Template that defines the Title field’s custom “translation key” format. {type} titles will be copied to all sites that produce the same key. For example, to make titles translatable based on the first two characters of the site handle, you could enter `{site.handle[:2]}`.',
+    'Active trials added to the cart.' => 'Active trials added to the cart.'
 ];
