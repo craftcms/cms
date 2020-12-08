@@ -23,6 +23,7 @@ use craft\helpers\StringHelper;
 use craft\services\Config;
 use craft\test\mockclasses\elements\ExampleElement;
 use craft\test\mockclasses\gql\MockDirective;
+use craft\volumes\Local;
 use DateTime;
 use GraphQL\Type\Definition\ResolveInfo;
 
@@ -91,7 +92,13 @@ class DirectiveTest extends Unit
         );
 
         /** @var Asset $asset */
-        $asset = $this->make(Asset::class, ['filename' => StringHelper::randomString() . '.jpg']);
+        $asset = $this->make(Asset::class, [
+            'filename' => StringHelper::randomString() . '.jpg',
+            'getVolume' => $this->make(Local::class, [
+                'hasUrls' => true,
+            ]),
+            'folderId' => 7
+        ]);
 
         /** @var GqlAssetType $type */
         $type = $this->make(GqlAssetType::class);
