@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\db\Table;
 use craft\errors\InvalidElementException;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\test\DbFixtureTrait;
 use yii\test\DbFixture;
@@ -60,18 +61,11 @@ abstract class BaseElementFixture extends DbFixture
             $element = $this->createElement();
 
             // If they want to add a date deleted. Store it but dont set that as an element property
-            $dateDeleted = null;
-
-            if (isset($data['dateDeleted'])) {
-                $dateDeleted = $data['dateDeleted'];
-                unset($data['dateDeleted']);
-            }
+            $dateDeleted = ArrayHelper::remove($data, 'dateDeleted');
 
             // Set the field layout
-            if (isset($data['fieldLayoutType'])) {
-                $fieldLayoutType = $data['fieldLayoutType'];
-                unset($data['fieldLayoutType']);
-
+            $fieldLayoutType = ArrayHelper::remove($data, 'fieldLayoutType');
+            if ($fieldLayoutType) {
                 $fieldLayout = Craft::$app->getFields()->getLayoutByType($fieldLayoutType);
                 if ($fieldLayout) {
                     $element->fieldLayoutId = $fieldLayout->id;
@@ -80,9 +74,7 @@ abstract class BaseElementFixture extends DbFixture
                 }
             }
 
-            foreach ($data as $handle => $value) {
-                $element->$handle = $value;
-            }
+            $this->populateElement($element, $data);
 
             if (!$this->saveElement($element)) {
                 throw new InvalidElementException($element, implode(' ', $element->getErrorSummary(true)));
@@ -133,6 +125,19 @@ abstract class BaseElementFixture extends DbFixture
      * Creates an element.
      */
     abstract protected function createElement(): ElementInterface;
+
+    /**
+     * Populates an element’s attributes.
+     *
+     * @param ElementInterface $element
+     * @param array $attributes
+     */
+    protected function populateElement(ElementInterface $element, array $attributes): void
+    {
+        foreach ($attributes as $name => $value) {
+            $element->$name = $value;
+        }
+    }
 
     /**
      * Saves an element.
