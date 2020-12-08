@@ -19,7 +19,6 @@ use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
 use UnitTester;
 use yii\base\ErrorException;
-use yii\web\HttpException;
 
 /**
  * Unit tests for ErrorHandler
@@ -57,27 +56,6 @@ class ErrorHandlerTest extends TestCase
         $exception = new RuntimeError('A Twig error occurred');
         $this->setInaccessibleProperty($exception, 'previous', new Exception('Im not a twig error'));
         $this->errorHandler->handleException($exception);
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function testHandle404Exception()
-    {
-        // Disable clear output as this throws: Test code or tested code did not (only) close its own output buffers
-        $this->errorHandler = Stub::construct(ErrorHandler::class, [], [
-            'logException' => self::assertObjectIsInstanceOfClassCallback(HttpException::class),
-            'clearOutput' => null,
-            'renderException' => self::assertObjectIsInstanceOfClassCallback(HttpException::class)
-        ]);
-
-        // Oops. Page not found
-        $exception = new HttpException('I am an error.');
-        $exception->statusCode = 404;
-
-        // Test 404's are treated with a different file
-        $this->errorHandler->handleException($exception);
-        self::assertSame(Craft::getAlias('@crafttestsfolder/storage/logs/web-404s.log'), Craft::$app->getLog()->targets[0]->logFile);
     }
 
     /**
