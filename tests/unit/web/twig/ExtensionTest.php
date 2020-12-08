@@ -286,6 +286,34 @@ class ExtensionTest extends Unit
     }
 
     /**
+     * @throws LoaderError
+     * @throws SyntaxError
+     */
+    public function testWithoutFilter()
+    {
+        $this->extensionRenderTest(
+            '{{ ["foo","bar","baz"]|without("baz")|join(",") }}',
+            'foo,bar'
+        );
+        $this->extensionRenderTest(
+            '{{ ["foo","bar","baz"]|without(["bar","baz"])|join(",") }}',
+            'foo'
+        );
+    }
+
+    /**
+     * @throws LoaderError
+     * @throws SyntaxError
+     */
+    public function testWithoutKeyFilter()
+    {
+        $this->extensionRenderTest(
+            '{{ {a:"foo",b:"bar",c:"baz"}|withoutKey("c")|join(",") }}',
+            'foo,bar'
+        );
+    }
+
+    /**
      * @param string $renderString
      * @param string $expectedString
      * @param array $variables
