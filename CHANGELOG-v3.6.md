@@ -58,11 +58,16 @@
 - Added `craft\services\Drafts::EVENT_AFTER_APPLY_DRAFT`.
 - Added `craft\services\Drafts::EVENT_BEFORE_APPLY_DRAFT`.
 - Added `craft\services\Drafts::publishDraft()`.
+- Added `craft\services\Globals::reset()`.
 - Added `craft\services\Gql::GRAPHQL_COMPLEXITY_CPU_HEAVY`.
 - Added `craft\services\Gql::GRAPHQL_COMPLEXITY_EAGER_LOAD`.
 - Added `craft\services\Gql::GRAPHQL_COMPLEXITY_NPLUS1`.
 - Added `craft\services\Gql::GRAPHQL_COMPLEXITY_QUERY`.
 - Added `craft\services\Gql::GRAPHQL_COMPLEXITY_SIMPLE_FIELD`.
+- Added `craft\test\ActiveFixture`.
+- Added `craft\test\DbFixtureTrait`.
+- Added `craft\test\fixtures\elements\BaseElementFixture`.
+- Added `craft\test\TestSetup::SITE_URL`.
 - Added the `Craft.index()` JavaScript method.
 
 ### Changed
@@ -104,6 +109,7 @@
 - Deprecated `craft\services\Drafts::EVENT_AFTER_APPLY_DRAFT`. `EVENT_AFTER_PUBLISH_DRAFT` should be used instead.
 - Deprecated `craft\services\Drafts::EVENT_BEFORE_APPLY_DRAFT`. `EVENT_BEFORE_PUBLISH_DRAFT` should be used instead.
 - Deprecated `craft\services\Drafts::purgeUnsavedDrafts()`.
+- Deprecated `craft\test\Fixture`. `craft\test\ActiveFixture` should be used instead.
 - Deprecated `craft\web\View::$minifyCss`.
 - Deprecated `craft\web\View::$minifyJs`.
 
@@ -112,6 +118,7 @@
 - Removed `craft\controllers\ElementIndexesController::actionCreateExportToken()`.
 - Removed `craft\controllers\ExportController`.
 - Removed `craft\services\Api::getComposerWhitelist()`.
+- Removed `craft\test\fixtures\elements\ElementFixture`. `craft\test\fixtures\elements\BaseElementFixture` should be used instead.
 
 ### Fixed
 - Fixed a bug where asset queries’ `withTransforms` param wasn’t being respected for eager-loaded assets. ([#6140](https://github.com/craftcms/cms/issues/6140))

@@ -33,6 +33,11 @@
 - Added `craft\services\Drafts::EVENT_AFTER_APPLY_DRAFT`.
 - Added `craft\services\Drafts::EVENT_BEFORE_APPLY_DRAFT`.
 - Added `craft\services\Drafts::publishDraft()`.
+- Added `craft\services\Globals::reset()`.
+- Added `craft\test\ActiveFixture`.
+- Added `craft\test\DbFixtureTrait`.
+- Added `craft\test\fixtures\elements\BaseElementFixture`.
+- Added `craft\test\TestSetup::SITE_URL`.
 
 ### Changed
 - `craft\behaviors\EnvAttributeParserBehavior::$attributes` can now be set to an array with key/value pairs, where the key is the attribute name, and the value is the raw (unparsed) value, or a callable that returns the raw value.
@@ -52,6 +57,10 @@
 - Deprecated `craft\services\Drafts::EVENT_AFTER_APPLY_DRAFT`. `EVENT_AFTER_PUBLISH_DRAFT` should be used instead.
 - Deprecated `craft\services\Drafts::EVENT_BEFORE_APPLY_DRAFT`. `EVENT_BEFORE_PUBLISH_DRAFT` should be used instead.
 - Deprecated `craft\services\Drafts::purgeUnsavedDrafts()`.
+- Deprecated `craft\test\Fixture`. `craft\test\ActiveFixture` should be used instead.
+
+### Removed
+- Removed `craft\test\fixtures\elements\ElementFixture`. `craft\test\fixtures\elements\BaseElementFixture` should be used instead.
 
 ### Fixed
 - Fixed a JavaScript error that occurred when opening an element selector modal. ([#7186](https://github.com/craftcms/cms/issues/7186))
