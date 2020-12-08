@@ -358,7 +358,7 @@ class Assets
      * @return array
      * @throws Exception if the file location is invalid
      */
-    public static function parseFileLocation($location)
+    public static function parseFileLocation(string $location): array
     {
         if (!preg_match('/^\{folder:(\d+)\}(.+)$/', $location, $matches)) {
             throw new Exception('Invalid file location format: ' . $location);
