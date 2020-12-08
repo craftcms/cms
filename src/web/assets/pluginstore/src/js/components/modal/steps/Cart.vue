@@ -303,6 +303,8 @@
     @import "../../../../../../../../../node_modules/craftcms-sass/mixins";
 
     table.cart-data {
+        border-top: 1px solid #eee;
+
         thead,
         tbody {
             border-bottom: 1px solid #eee;
@@ -349,8 +351,6 @@
 
     @media (max-width: 991px) {
         table.cart-data {
-            border-top: 1px solid #eee;
-
             thead {
                 display: none;
             }
