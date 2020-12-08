@@ -40,6 +40,7 @@
 - Added `craft\test\TestSetup::SITE_URL`.
 
 ### Changed
+- The `withoutKey` Twig filter can now accept an array, for removing multiple keys at once. ([#7230](https://github.com/craftcms/cms/issues/7230))
 - `craft\behaviors\EnvAttributeParserBehavior::$attributes` can now be set to an array with key/value pairs, where the key is the attribute name, and the value is the raw (unparsed) value, or a callable that returns the raw value.
 - `craft\models\Site::$baseUrl` is now a magic property, which returns the parsed base URL. ([#3964](https://github.com/craftcms/cms/issues/3964))
 - `craft\models\Site::$name` is now a magic property, which returns the parsed site name. ([#3964](https://github.com/craftcms/cms/issues/3964))

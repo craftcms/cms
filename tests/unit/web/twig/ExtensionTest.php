@@ -311,6 +311,10 @@ class ExtensionTest extends Unit
             '{{ {a:"foo",b:"bar",c:"baz"}|withoutKey("c")|join(",") }}',
             'foo,bar'
         );
+        $this->extensionRenderTest(
+            '{{ {a:"foo",b:"bar",c:"baz"}|withoutKey(["b","c"])|join(",") }}',
+            'foo'
+        );
     }
 
     /**

@@ -484,14 +484,22 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * Returns an array without a certain key.
      *
      * @param mixed $arr
-     * @param string $key
+     * @param string|string[] $key
      * @return array
      * @since 3.2.0
      */
-    public function withoutKeyFilter($arr, string $key): array
+    public function withoutKeyFilter($arr, $key): array
     {
         $arr = (array)$arr;
-        ArrayHelper::remove($arr, $key);
+
+        if (!is_array($key)) {
+            $key = [$key];
+        }
+
+        foreach ($key as $k) {
+            ArrayHelper::remove($arr, $k);
+        }
+
         return $arr;
     }
 
