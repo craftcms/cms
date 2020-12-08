@@ -42,7 +42,7 @@ class Cp
      * @param bool $fetch
      * @return array
      */
-    public static function alerts(string $path = null, bool $fetch = false): array
+    public static function alerts(?string $path = null, bool $fetch = false): array
     {
         $alerts = [];
         $user = Craft::$app->getUser()->getIdentity();
@@ -204,7 +204,7 @@ class Cp
         ElementInterface $element,
         string $context = 'index',
         string $size = self::ELEMENT_SIZE_SMALL,
-        string $inputName = null,
+        ?string $inputName = null,
         bool $showStatus = true,
         bool $showThumb = true,
         bool $showLabel = true

@@ -63,7 +63,7 @@ class ElementHelper
      * @return string
      * @since 3.5.0
      */
-    public static function generateSlug(string $str, bool $ascii = null, string $language = null): string
+    public static function generateSlug(string $str, ?bool $ascii = null, ?string $language = null): string
     {
         // Replace periods, underscores, and hyphens with spaces so they get separated with the slugWordSeparator
         // to mimic the default JavaScript-based slug generation.
@@ -461,7 +461,7 @@ class ElementHelper
      * @param string|null $context The context
      * @return array|null The source definition, or null if it cannot be found
      */
-    public static function findSource(string $elementType, string $sourceKey, string $context = null)
+    public static function findSource(string $elementType, string $sourceKey, ?string $context = null)
     {
         /** @var string|ElementInterface $elementType */
         $path = explode('/', $sourceKey);
@@ -530,7 +530,7 @@ class ElementHelper
      * @return string
      * @since 3.5.0
      */
-    public static function translationKey(ElementInterface $element, string $translationMethod, string $translationKeyFormat = null): string
+    public static function translationKey(ElementInterface $element, string $translationMethod, ?string $translationKeyFormat = null): string
     {
         switch ($translationMethod) {
             case Field::TRANSLATION_METHOD_NONE:

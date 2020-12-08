@@ -389,7 +389,7 @@ class ProjectConfig
      * @param string|null $path
      * @return bool whether the config was split
      */
-    private static function splitConfigIntoComponentsInternal(array &$config, array &$splitConfig, string $path = null): bool
+    private static function splitConfigIntoComponentsInternal(array &$config, array &$splitConfig, ?string $path = null): bool
     {
         $split = false;
 
@@ -498,7 +498,7 @@ class ProjectConfig
      * @param int|null $timestamp The updated `dateModified` value. If `null`, the current time will be used.
      * @since 3.5.14
      */
-    public static function touch(int $timestamp = null)
+    public static function touch(?int $timestamp = null)
     {
         if ($timestamp === null) {
             $timestamp = time();

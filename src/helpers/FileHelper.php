@@ -300,7 +300,7 @@ class FileHelper extends \yii\helpers\FileHelper
      * `finfo_open()` cannot determine it.
      * @return bool
      */
-    public static function isSvg(string $file, string $magicFile = null, bool $checkExtension = true): bool
+    public static function isSvg(string $file, ?string $magicFile = null, bool $checkExtension = true): bool
     {
         return self::getMimeType($file, $magicFile, $checkExtension) === 'image/svg+xml';
     }
@@ -318,7 +318,7 @@ class FileHelper extends \yii\helpers\FileHelper
      * @return bool
      * @since 3.0.9
      */
-    public static function isGif(string $file, string $magicFile = null, bool $checkExtension = true): bool
+    public static function isGif(string $file, ?string $magicFile = null, bool $checkExtension = true): bool
     {
         $mimeType = self::getMimeType($file, $magicFile, $checkExtension);
         return $mimeType === 'image/gif';
@@ -647,7 +647,7 @@ class FileHelper extends \yii\helpers\FileHelper
      * @throws Exception if the zip cannot be created
      * @since 3.5.0
      */
-    public static function zip(string $path, string $to = null): string
+    public static function zip(string $path, ?string $to = null): string
     {
         $path = static::normalizePath($path);
 
@@ -686,7 +686,7 @@ class FileHelper extends \yii\helpers\FileHelper
      * @param array $options options for file searching. See [[findFiles()]] for available options.
      * @param 3.5.0
      */
-    public static function addFilesToZip(ZipArchive $zip, string $dir, string $prefix = null, $options = [])
+    public static function addFilesToZip(ZipArchive $zip, string $dir, ?string $prefix = null, $options = [])
     {
         if (!is_dir($dir)) {
             return;

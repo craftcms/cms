@@ -128,7 +128,7 @@ class Html extends \yii\helpers\Html
      * @return string The modified HTML
      * @since 3.3.0
      */
-    public static function appendToTag(string $tag, string $html, string $ifExists = null): string
+    public static function appendToTag(string $tag, string $html, ?string $ifExists = null): string
     {
         return self::_addToTagInternal($tag, $html, 'htmlEnd', $ifExists);
     }
@@ -144,7 +144,7 @@ class Html extends \yii\helpers\Html
      * @return string The modified HTML
      * @since 3.3.0
      */
-    public static function prependToTag(string $tag, string $html, string $ifExists = null): string
+    public static function prependToTag(string $tag, string $html, ?string $ifExists = null): string
     {
         return self::_addToTagInternal($tag, $html, 'htmlStart', $ifExists);
     }
@@ -404,7 +404,7 @@ class Html extends \yii\helpers\Html
      * @param string|null $ifExists
      * @return string
      */
-    private static function _addToTagInternal(string $tag, string $html, string $position, string $ifExists = null): string
+    private static function _addToTagInternal(string $tag, string $html, string $position, ?string $ifExists = null): string
     {
         $info = static::parseTag($tag);
 
@@ -708,7 +708,7 @@ class Html extends \yii\helpers\Html
      * @throws InvalidArgumentException if `$file` is an invalid file path
      * @since 3.5.13
      */
-    public static function dataUrl(string $file, string $mimeType = null): string
+    public static function dataUrl(string $file, ?string $mimeType = null): string
     {
         if (!is_file($file)) {
             throw new InvalidArgumentException("Invalid file path: $file");
@@ -735,7 +735,7 @@ class Html extends \yii\helpers\Html
      * @throws InvalidArgumentException if `$file` is an invalid file path
      * @since 3.5.13
      */
-    public static function dataUrlFromString(string $contents, string $mimeType = null): string
+    public static function dataUrlFromString(string $contents, ?string $mimeType = null): string
     {
         return 'data:' . ($mimeType ? "$mimeType;" : '') . 'base64,' . base64_encode($contents);
     }

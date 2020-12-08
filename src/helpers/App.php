@@ -425,7 +425,7 @@ class App
      * @return array
      * @since 3.0.18
      */
-    public static function dbConfig(DbConfig $dbConfig = null): array
+    public static function dbConfig(?DbConfig $dbConfig = null): array
     {
         if ($dbConfig === null) {
             $dbConfig = Craft::$app->getConfig()->getDb();
@@ -482,7 +482,7 @@ class App
      * @return array
      * @since 3.0.18
      */
-    public static function mailerConfig(MailSettings $settings = null): array
+    public static function mailerConfig(?MailSettings $settings = null): array
     {
         if ($settings === null) {
             $settings = static::mailSettings();

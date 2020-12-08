@@ -120,7 +120,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * @param string|null $language Whether to include language-specific mappings (only applied if $flat is true)
      * @return array The fully merged ASCII character mappings.
      */
-    public static function asciiCharMap(bool $flat = false, string $language = null): array
+    public static function asciiCharMap(bool $flat = false, ?string $language = null): array
     {
         $key = $flat ? 'flat-' . ($language ?? '*') : '*';
         if (isset(self::$_asciiCharMaps[$key])) {
@@ -215,7 +215,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * @param int|null $offset Index from which to begin the search. Defaults to 0.
      * @return string The resulting string.
      */
-    public static function between(string $str, string $start, string $end, int $offset = null): string
+    public static function between(string $str, string $start, string $end, ?int $offset = null): string
     {
         return (string)BaseStringy::create($str)->between($start, $end, $offset);
     }
@@ -541,7 +541,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * @return string The string to escape.
      * @since 3.3.0
      */
-    public static function extractText(string $str, string $search = '', int $length = null, string $replacerForSkippedText = '…'): string
+    public static function extractText(string $str, string $search = '', ?int $length = null, string $replacerForSkippedText = '…'): string
     {
         return (string)BaseStringy::create($str)->extractText($search, $length, $replacerForSkippedText);
     }
@@ -1087,7 +1087,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * @return string The string with Html removed.
      * @since 3.3.0
      */
-    public static function removeHtml(string $str, string $allowableTags = null): string
+    public static function removeHtml(string $str, ?string $allowableTags = null): string
     {
         return (string)BaseStringy::create($str)->removeHtml($allowableTags ?? '');
     }
@@ -1328,7 +1328,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * @return string The extracted substring.
      * @since 3.3.0
      */
-    public static function slice(string $str, int $start, int $end = null): string
+    public static function slice(string $str, int $start, ?int $end = null): string
     {
         return (string)BaseStringy::create($str)->slice($start, $end);
     }
@@ -1347,7 +1347,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * @return string The string converted to a URL slug.
      * @since 3.3.0
      */
-    public static function slugify(string $str, string $replacement = '-', string $language = null): string
+    public static function slugify(string $str, string $replacement = '-', ?string $language = null): string
     {
         return (string)BaseStringy::create($str)->slugify($replacement, $language ?? Craft::$app->language);
     }
@@ -1468,7 +1468,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * @param int|null $length Maximum number of characters used.
      * @return string The substring of $str.
      */
-    public static function substr(string $str, int $start, int $length = null): string
+    public static function substr(string $str, int $start, ?int $length = null): string
     {
         return (string)BaseStringy::create($str)->substr($start, $length);
     }
@@ -1539,7 +1539,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * @param array|null $ignore An array of words not to capitalize.
      * @return string The titleized string.
      */
-    public static function titleize(string $str, array $ignore = null): string
+    public static function titleize(string $str, ?array $ignore = null): string
     {
         return (string)BaseStringy::create($str)->titleize($ignore);
     }
@@ -1572,7 +1572,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * @param string|null $language The language to pull ASCII character mappings for.
      * @return string The string that contains only ASCII characters.
      */
-    public static function toAscii(string $str, string $language = null): string
+    public static function toAscii(string $str, ?string $language = null): string
     {
         // If Intl is installed, normalize NFD chars to NFC
         if (class_exists(Normalizer::class)) {
@@ -1804,7 +1804,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * @param string|null $chars String of characters to strip. Defaults to null.
      * @return string The trimmed $str.
      */
-    public static function trim(string $str, string $chars = null): string
+    public static function trim(string $str, ?string $chars = null): string
     {
         return (string)BaseStringy::create($str)->trim($chars);
     }
@@ -1819,7 +1819,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * @return string The trimmed $str.
      * @since 3.3.0
      */
-    public static function trimLeft(string $str, string $chars = null): string
+    public static function trimLeft(string $str, ?string $chars = null): string
     {
         return (string)BaseStringy::create($str)->trimLeft($chars);
     }
@@ -1834,7 +1834,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * @return string The trimmed $str.
      * @since 3.3.0
      */
-    public static function trimRight(string $str, string $chars = null): string
+    public static function trimRight(string $str, ?string $chars = null): string
     {
         return (string)BaseStringy::create($str)->trimRight($chars);
     }
