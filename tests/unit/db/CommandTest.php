@@ -33,7 +33,7 @@ class CommandTest extends Unit
     /**
      * @var array
      */
-    private array $_sessionData = [
+    private $_sessionData = [
         'userId' => 1,
         'token' => 'test'
     ];
