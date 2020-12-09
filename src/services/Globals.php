@@ -294,7 +294,7 @@ class Globals extends Component
         }
 
         if ($isNewSet) {
-            $globalSet->uid = StringHelper::UUID();
+            $globalSet->uid = $globalSet->uid ?: StringHelper::UUID();
         } else if (!$globalSet->uid) {
             $globalSet->uid = Db::uidById(Table::GLOBALSETS, $globalSet->id);
         }

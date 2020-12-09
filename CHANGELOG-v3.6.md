@@ -125,4 +125,5 @@
 ### Fixed
 - Fixed a bug where asset queries’ `withTransforms` param wasn’t being respected for eager-loaded assets. ([#6140](https://github.com/craftcms/cms/issues/6140))
 - Fixed a bug where `craft\db\Connection::getPrimaryKeyName()`, `getForeignKeyName()`, and `getIndexName()` could generate non-unique object names. ([#7153](https://github.com/craftcms/cms/issues/7153))
-- Fixed a bug where number strings were not correctly typecast to the right PHP numeric type when using the Number GraphQL type
+- Fixed a bug where number strings were not correctly typecast to the right PHP numeric type when using the Number GraphQL type.7
+- Fixed a bug where it was impossible to save a Global set with a pre-defined UID.
