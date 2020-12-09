@@ -39,7 +39,6 @@ Garnish.$doc.ready(function() {
             return {
                 allDataLoaded: false,
                 cartDataLoaded: false,
-                cmsEditionsLoaded: false,
                 coreDataLoaded: false,
                 craftDataLoaded: false,
                 craftIdDataLoaded: false,
@@ -328,20 +327,6 @@ Garnish.$doc.ready(function() {
                             throw error
                         }
                     })
-
-                // cms editions
-                this.$store.dispatch('pluginStore/getCmsEditions')
-                    .then(() => {
-                        this.cmsEditionsLoaded = true
-                        this.$emit('dataLoaded')
-                    })
-                    .catch((error) => {
-                        if (axios.isCancel(error)) {
-                            // Request canceled
-                        } else {
-                            throw error
-                        }
-                    })
             },
 
             /**
@@ -363,10 +348,6 @@ Garnish.$doc.ready(function() {
                 }
 
                 if (!this.craftIdDataLoaded) {
-                    return null
-                }
-
-                if (!this.cmsEditionsLoaded) {
                     return null
                 }
 

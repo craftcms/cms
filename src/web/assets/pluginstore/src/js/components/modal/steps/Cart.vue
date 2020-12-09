@@ -132,7 +132,7 @@
     export default {
         data() {
             return {
-                activeTrialsLoading: false,
+                activeTrialsLoading: true,
                 loadingItems: {},
                 loadingRemoveFromCart: {},
                 loadingCheckout: false,
@@ -286,9 +286,7 @@
         },
 
         mounted() {
-            this.activeTrialsLoading = true
-
-            this.$store.dispatch('cart/getActiveTrialPlugins')
+            this.$store.dispatch('cart/getActiveTrials')
                 .then(() => {
                     this.activeTrialsLoading = false
                 })

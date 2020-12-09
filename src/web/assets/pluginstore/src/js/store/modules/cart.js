@@ -93,9 +93,7 @@ const getters = {
         }
     },
 
-    pendingActiveTrials(state, getters, rootState, rootGetters) {
-        const activeTrialPlugins = state.activeTrialPlugins
-        const cart = state.cart
+    activeTrials(state, getters, rootState, rootGetters) {
         const craftLogo = rootState.craft.craftLogo
         const cmsEditions = rootState.pluginStore.cmsEditions
         const licensedEdition = rootState.craft.licensedEdition
@@ -104,7 +102,6 @@ const getters = {
         const getPluginLicenseInfo = rootGetters['craft/getPluginLicenseInfo']
         const getCmsEditionIndex = rootGetters['craft/getCmsEditionIndex']
         const getPluginEdition = rootGetters['pluginStore/getPluginEdition']
-        const isCmsEditionInCart = getters.isCmsEditionInCart
 
         const trials = []
 
@@ -115,7 +112,6 @@ const getters = {
         if (
             cmsProEdition
             && (licensedEdition < cmsProEditionIndex && licensedEdition < CraftEdition)
-            && !isCmsEditionInCart(cmsProEdition.handle)
         ) {
             trials.push({
                 type: 'cms-edition',
@@ -127,19 +123,9 @@ const getters = {
                 navigateTo: '/upgrade-craft',
             })
         }
-        
-        // Plugin trials
-        const plugins = activeTrialPlugins.filter(p => {
-            if (p) {
-                if(!cart) {
-                    return false
-                }
 
-                return !cart.lineItems.find(item => {
-                    return item.purchasable.pluginId == p.id
-                })
-            }
-        })
+        // Plugin trials
+        const plugins = state.activeTrialPlugins
 
         for (let i = 0; i < plugins.length; i++) {
             const plugin = plugins[i]
@@ -175,6 +161,9 @@ const getters = {
             // show edition badge
             const showEditionBadge = (activeTrialPluginEdition && plugin.editions.length > 1)
 
+            // plugin id
+            const pluginId = plugin.id
+
             // build trial row
             trials.push({
                 type: 'plugin-edition',
@@ -188,11 +177,36 @@ const getters = {
                 price,
                 navigateTo,
                 showEditionBadge,
+                pluginId,
             })
         }
 
         return trials
-    }
+    },
+
+    pendingActiveTrials(state, getters) {
+        const activeTrials = getters.activeTrials
+        const cart = state.cart
+        const isCmsEditionInCart = getters.isCmsEditionInCart
+
+        // filter out trials which are already in the cart
+        return activeTrials.filter(activeTrial => {
+            switch (activeTrial.type) {
+                case 'cms-edition':
+                    if(isCmsEditionInCart(activeTrial.editionHandle)) {
+                        return false
+                    }
+
+                    return true
+                case 'plugin-edition':
+                    return !cart.lineItems.find(item => {
+                        return item.purchasable.pluginId == activeTrial.pluginId
+                    })
+                default:
+                    return false
+            }
+        })
+    },
 }
 
 /**
@@ -333,6 +347,26 @@ const actions = {
         })
     },
 
+    getActiveTrials({dispatch}) {
+        return new Promise((resolve, reject) => {
+            // get cms editions
+            dispatch('pluginStore/getCmsEditions', null, {root: true})
+                .then(() => {
+                    // get active trial plugins
+                    dispatch('getActiveTrialPlugins')
+                        .then(() => {
+                            resolve()
+                        })
+                        .catch((error) => {
+                            reject(error)
+                        })
+                })
+                .catch((error) => {
+                    reject(error)
+                })
+        })
+    },
+
     getActiveTrialPlugins({commit, rootState, rootGetters}) {
         return new Promise((resolve, reject) => {
             // get plugin license info and find active trial plugin handles
@@ -375,7 +409,7 @@ const actions = {
                         if (info.edition) {
                             const pluginEdition = plugin.editions.find(edition => edition.handle === info.edition)
 
-                            if(pluginEdition && rootGetters['pluginStore/isPluginEditionFree'](pluginEdition)) {
+                            if (pluginEdition && rootGetters['pluginStore/isPluginEditionFree'](pluginEdition)) {
                                 continue
                             }
                         }
