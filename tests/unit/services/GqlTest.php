@@ -384,8 +384,6 @@ class GqlTest extends Unit
     public function testInvalidatingCache()
     {
         $gql = Craft::$app->getGql();
-        $elements = Craft::$app->getElements();
-
         $gql->invalidateCaches();
 
         $cacheKey = 'testKey';
@@ -402,6 +400,7 @@ class GqlTest extends Unit
         // Make sure saving a schema invalidates caches
         $gql->saveSchema($schema);
         self::assertNull($gql->getCachedResult($cacheKey));
+        $gql->deleteSchemaById($schema->id);
     }
 
     /**
