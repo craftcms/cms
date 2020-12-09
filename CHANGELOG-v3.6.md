@@ -32,6 +32,7 @@
 - Added `craft\elements\Entry::getAvailableEntryTypes()`.
 - Added `craft\events\DefineEntryTypesEvent`.
 - Added `craft\events\RegisterGqlArgumentHandlersEvent`.
+- Added `craft\events\SearchEvent::$results`. ([#7237](https://github.com/craftcms/cms/issues/7237))
 - Added `craft\fieldlayoutelements\AssetTitleField`.
 - Added `craft\gql\ArgumentManager`.
 - Added `craft\gql\base\ArgumentHandler`.

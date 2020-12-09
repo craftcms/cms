@@ -12,6 +12,7 @@
 - Added the `isUnpublishedDraft` GraphQL field.
 - Added `craft\base\ElementInterface::getIsUnpublishedDraft()`.
 - Added `craft\events\RegisterGqlArgumentHandlersEvent`.
+- Added `craft\events\SearchEvent::$results`. ([#7237](https://github.com/craftcms/cms/issues/7237))
 - Added `craft\gql\ArgumentManager`.
 - Added `craft\gql\base\ArgumentHandler`.
 - Added `craft\gql\base\ArgumentHandlerInterface`.
