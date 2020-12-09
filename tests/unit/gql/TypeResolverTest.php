@@ -129,7 +129,7 @@ class TypeResolverTest extends Unit
 
         $filterParameters = [];
 
-        $resolveInfo = $this->make(ResolveInfo::class, ['fieldName' => 'someField']);
+        $resolveInfo = $this->make(ResolveInfo::class, ['fieldName' => 'someField', 'fieldNodes' => [null]]);
 
         $resolvedField = $resolverClass::resolve($sourceElement, $filterParameters, null, $resolveInfo);
 
