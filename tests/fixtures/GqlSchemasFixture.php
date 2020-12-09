@@ -11,7 +11,7 @@ use craft\records\GqlSchema;
 use craft\test\ActiveFixture;
 
 /**
- * Class GqlTokensFixture
+ * Class GqlSchemasFixture
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
