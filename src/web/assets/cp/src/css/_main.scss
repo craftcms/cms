@@ -3118,6 +3118,10 @@ ul.tree,
           content: 'plus';
           color: $lightTextColor;
         }
+
+        .input {
+          width: 100%;
+        }
       }
 
       & > .heading {
