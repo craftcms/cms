@@ -105,6 +105,32 @@ abstract class BaseEntriesController extends Controller
     }
 
     /**
+     * Enforces entry deletion permissions.
+     *
+     * @param Entry $entry
+     * @throws ForbiddenHttpException
+     * @since 3.6.0
+     */
+    protected function enforceDeleteEntryPermissions(Entry $entry)
+    {
+        $currentUser = Craft::$app->getUser()->getIdentity();
+        $section = $entry->getSection();
+
+        if ($entry->getIsDraft()) {
+            /** @var Entry|DraftBehavior $entry */
+            if (!$entry->creatorId || $entry->creatorId != $currentUser->id) {
+                $this->requirePermission("deletePeerEntryDrafts:$section->uid");
+            }
+        } else {
+            if ($entry->authorId == $currentUser->id) {
+                $this->requirePermission("deleteEntries:$section->uid");
+            } else {
+                $this->requirePermission("deletePeerEntries:$section->uid");
+            }
+        }
+    }
+
+    /**
      * Returns the document title that should be used on an Edit Entry page.
      *
      * @param Entry

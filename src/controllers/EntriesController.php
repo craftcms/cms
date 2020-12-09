@@ -9,11 +9,14 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\Element;
+use craft\db\Table;
 use craft\elements\Entry;
 use craft\elements\User;
 use craft\errors\InvalidElementException;
 use craft\errors\UnsupportedSiteException;
 use craft\helpers\DateTimeHelper;
+use craft\helpers\Db;
+use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 use craft\models\Section;
 use craft\models\Site;
@@ -243,6 +246,9 @@ class EntriesController extends BaseEntriesController
                 ($entry->authorId != $currentUser->id && $currentUser->can('deletePeerEntries' . $variables['permissionSuffix']))
             );
 
+        // Can the user delete the entry for the current site?
+        $variables['canDeleteForSite'] = $section->propagationMethod === Section::PROPAGATION_METHOD_CUSTOM;
+
         // Render the template!
         return $this->renderTemplate('entries/_edit', $variables);
     }
@@ -439,6 +445,88 @@ class EntriesController extends BaseEntriesController
     }
 
     /**
+     * Deletes an entry for the given site.
+     *
+     * @return Response|null
+     * @throws NotFoundHttpException
+     * @throws BadRequestHttpException
+     * @since 3.6.0
+     */
+    public function actionDeleteForSite()
+    {
+        $this->requirePostRequest();
+
+        // Make sure they have permission to access this site
+        $siteId = $this->request->getRequiredBodyParam('siteId');
+        $sitesService = Craft::$app->getSites();
+        $site = $sitesService->getSiteById($siteId);
+
+        if (!$site) {
+            throw new BadRequestHttpException("Invalid site ID: $siteId");
+        }
+
+        $this->enforceSitePermission($site);
+
+        // Get the entry in any but the to-be-deleted site -- preferably one the user has access to edit
+        $draftId = $this->request->getBodyParam('draftId');
+        $entryId = $this->request->getBodyParam('sourceId');
+        $editableSiteIds = $sitesService->getEditableSiteIds();
+
+        $query = Entry::find()
+            ->siteId(['not', $siteId])
+            ->preferSites($editableSiteIds)
+            ->unique()
+            ->anyStatus();
+
+        if ($draftId) {
+            $query->draftId($draftId);
+        } else {
+            $query->id($entryId);
+        }
+
+        $entry = $query->one();
+        if (!$entry) {
+            throw new NotFoundHttpException('Entry not found');
+        }
+
+        $this->enforceEditEntryPermissions($entry);
+        $this->enforceDeleteEntryPermissions($entry);
+
+        // Delete the row in elements_sites
+        Db::delete(Table::ELEMENTS_SITES, [
+            'elementId' => $entry->id,
+            'siteId' => $siteId,
+        ]);
+
+        // Resave the entry
+        $entry->setScenario(Element::SCENARIO_ESSENTIALS);
+        Craft::$app->getElements()->saveElement($entry);
+
+        if ($draftId) {
+            $this->setSuccessFlash(Craft::t('app', 'Draft deleted for site.'));
+        } else {
+            $this->setSuccessFlash(Craft::t('app', 'Entry deleted for site.'));
+        }
+
+        if (!in_array($entry->siteId, $editableSiteIds)) {
+            // That was the only site they had access to, so send them back to the Entries index
+            return $this->redirect('entries');
+        }
+
+        if ($draftId) {
+            // Redirect to the same draft in the fetched site
+            $source = ElementHelper::sourceElement($entry) ?? $entry;
+            return $this->redirect(UrlHelper::url($source->getCpEditUrl(), [
+                'siteId' => $entry->siteId,
+                'draftId' => $draftId,
+            ]));
+        }
+
+        // Redirect them to the same entry in the fetched site
+        return $this->redirect($entry->getCpEditUrl());
+    }
+
+    /**
      * Deletes an entry.
      *
      * @return Response|null
@@ -456,13 +544,7 @@ class EntriesController extends BaseEntriesController
             throw new BadRequestHttpException("Invalid entry ID: $entryId");
         }
 
-        $currentUser = Craft::$app->getUser()->getIdentity();
-
-        if ($entry->authorId == $currentUser->id) {
-            $this->requirePermission('deleteEntries:' . $entry->getSection()->uid);
-        } else {
-            $this->requirePermission('deletePeerEntries:' . $entry->getSection()->uid);
-        }
+        $this->enforceDeleteEntryPermissions($entry);
 
         if (!Craft::$app->getElements()->deleteElement($entry)) {
             if ($this->request->getAcceptsJson()) {

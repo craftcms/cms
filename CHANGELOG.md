@@ -4,6 +4,7 @@
 
 ### Added
 - Entries now begin life as “unpublished drafts” rather than “unsaved drafts”. They are no longer ephemeral; they will continue to exist until explicitly published or deleted. ([#5661](https://github.com/craftcms/cms/issues/5661), [#7216](https://github.com/craftcms/cms/issues/7216))
+- It’s now possible to delete entries for a specific site, if their section’s propagation method is set to “Let each entry choose which sites it should be saved to”. ([#7190](https://github.com/craftcms/cms/issues/7190))
 - User indexes can now include a “Groups” column. ([#7211](https://github.com/craftcms/cms/issues/7211))
 - It’s now possible to set sites’ Name settings to environment variables.
 - Added the `{% tag %}` Twig tag.
@@ -11,6 +12,7 @@
 - Added the `relatedToAssets`, `relatedToCategories`, `relatedToEntries`, `relatedToTags`, and `relatedToUsers` arguments to GraphQL queries. ([#7110](https://github.com/craftcms/cms/issues/7110))
 - Added the `isUnpublishedDraft` GraphQL field.
 - Added `craft\base\ElementInterface::getIsUnpublishedDraft()`.
+- Added `craft\controllers\BaseEntriesController::enforceDeleteEntryPermissions()`.
 - Added `craft\events\RegisterGqlArgumentHandlersEvent`.
 - Added `craft\events\SearchEvent::$results`. ([#7237](https://github.com/craftcms/cms/issues/7237))
 - Added `craft\gql\ArgumentManager`.

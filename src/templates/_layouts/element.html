@@ -12,11 +12,13 @@
     - canDuplicateSource: whether the current user is allowed to duplicate the source element
     - canAddAnother: whether the current user is allowed to create another source element after saving the current one
     - canDeleteSource: whether the current user is allowed to delete the source element
+    - canDeleteForSite: whether the current user is allowed to delete the source element for the current site
     - redirectUrl: the URL that the user should be redirected to after saving the source element
     - addAnotherRedirectUrl: the URL that the user should be redirected to after opting to save and add another
     - saveSourceAction: the controller action that should be used to save the source element
     - duplicateSourceAction: the controller action that should be used to duplicate the source element
     - deleteSourceAction: the controller action that should be used to delete the source element
+    - deleteForSiteAction: the controller action that should be used to delete the source element for the current site
     - saveDraftAction: the controller action that should be used to save a draft
     - deleteDraftAction: the controller action that should be used to delete a draft
     - publishDraftAction: the controller action that should be used to apply a draft onto the source element
@@ -30,6 +32,7 @@
 {% set saveSourceAction = saveSourceAction ?? null %}
 {% set duplicateSourceAction = duplicateSourceAction ?? null %}
 {% set deleteSourceAction = deleteSourceAction ?? null %}
+{% set deleteForSiteAction = deleteForSiteAction ?? null %}
 {% set revertSourceAction = revertSourceAction ?? null %}
 {% set saveDraftAction = saveDraftAction ?? null %}
 {% set publishDraftAction = publishDraftAction ?? applyDraftAction ?? null %}
@@ -47,6 +50,19 @@
 {% set canEditMultipleSites = isMultiSiteElement and (propEditableSiteIds|length > 1 or addlEditableSiteIds|length) %}
 {% set isUnpublishedDraft = element.getIsUnpublishedDraft() %}
 
+{# See if this is a new site that isn’t supported by the source element yet #}
+{% if isUnpublishedDraft %}
+    {% set isNewlySupportedSite = true %}
+{% elseif isDraft %}
+    {% set isNewlySupportedSite = not element.find()
+        .id(element.getSourceId())
+        .siteId(element.siteId)
+        .anyStatus()
+        .exists() %}
+{% else %}
+    {% set isNewlySupportedSite = false %}
+{% endif %}
+
 {% set previewTargets = element.getPreviewTargets() %}
 {% set enablePreview = previewTargets and not craft.app.request.isMobileBrowser(true) %}
 
@@ -55,6 +71,9 @@
 {% set canDuplicateSource = canDuplicateSource ?? false %}
 {% set canAddAnother = canAddAnother ?? false %}
 {% set canDeleteSource = canDeleteSource ?? false %}
+{% set canDeleteForSite = (canDeleteForSite ?? false) and deleteForSiteAction and
+    canDeleteForSite and isMultiSiteElement and propSiteIds|length > 1 and
+    ((isCurrent and canDeleteSource) or (isDraft and canDeleteDraft and isNewlySupportedSite)) %}
 {% set canEdit = canEdit ?? (canUpdateSource or canDuplicateSource or canAddAnother or saveDraftAction) %}
 
 {% set redirectUrl = redirectUrl ?? craft.app.config.general.getPostCpLoginRedirect() %}
@@ -120,6 +139,19 @@
             }) %}
         {% endif %}
     {% endif %}
+    {% if canDeleteForSite %}
+        {% set formActions = formActions|push({
+            destructive: true,
+            label: 'Delete {type} for this site'|t('app', {
+                type: element.lowerDisplayName()
+            }),
+            action: deleteForSiteAction,
+            redirect: (redirectUrl ~ '#')|hash,
+            confirm: 'Are you sure you want to delete the {type} for this site?'|t('app', {
+                type: element.lowerDisplayName(),
+            }),
+        }) %}
+    {% endif %}
     {% if canDeleteSource and deleteSourceAction %}
         {% set formActions = formActions|push({
             destructive: true,
@@ -155,6 +187,15 @@
         }) %}
     {% endif %}
     {% if canDeleteDraft %}
+        {% if canDeleteForSite %}
+            {% set formActions = formActions|push({
+                destructive: true,
+                label: 'Delete draft for this site'|t('app'),
+                action: deleteForSiteAction,
+                redirect: (redirectUrl ~ '#')|hash,
+                confirm: 'Are you sure you want to delete the draft for this site?'|t('app'),
+            }) %}
+        {% endif %}
         {% set formActions = formActions|push({
             destructive: true,
             label: 'Delete draft'|t('app'),
