@@ -67,7 +67,7 @@
 ### Fixed
 - Fixed a JavaScript error that occurred when opening an element selector modal. ([#7186](https://github.com/craftcms/cms/issues/7186))
 - Fixed a bug where number strings were not correctly typecast to the right PHP numeric type when using the Number GraphQL type.
-- Fixed a bug where it was impossible to save a Global set with a pre-defined UID.
+- Fixed a bug where it wasn’t possible to save a Global set with a predefined UID.
 
 ## 3.6.0-RC1 - 2020-11-24
 
@@ -187,6 +187,8 @@
 - Fixed a bug where the image editor could save an image incorrectly, if the `upscaleImages` config setting was set to `false`.
 - Fixed a bug where it wasn’t possible to install a plugin if it had a row in the `plugins` table, but it wasn’t in the project config. ([#7229](https://github.com/craftcms/cms/issues/7229))
 - Fixed a bug where Craft wasn’t always respecting plugins’ `minVersionRequired`. ([#7191](https://github.com/craftcms/cms/issues/7191))
+- Fixed a bug where `craft\elements\db\ElementQuery::getCriteria()` wasn’t including custom field criteria values. ([#7225](https://github.com/craftcms/cms/issues/7225))
+- Fixed a MySQL deadlock error that could occur when running background jobs. ([#7179](https://github.com/craftcms/cms/issues/7179))
 
 ## 3.5.16 - 2020-11-24
 
