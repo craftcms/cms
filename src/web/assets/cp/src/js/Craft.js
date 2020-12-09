@@ -1211,7 +1211,7 @@ $.extend(Craft,
             if ($.isPlainObject(arr)) {
                 arr = Object.values(arr);
             }
-            return ($.inArray(elem, arr) !== -1);
+            return arr.includes(elem);
         },
 
         /**
