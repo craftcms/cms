@@ -601,21 +601,29 @@ EOD;
     {
         if ($this->_reserveTime !== time()) {
             $this->_reserveTime = time();
-            Db::update($this->tableName, [
-                'dateReserved' => null,
-                'timeUpdated' => null,
-                'progress' => 0,
-                'progressLabel' => null,
-            ], [
-                'and',
-                [
-                    'channel' => $this->channel,
-                    'fail' => false,
-                ],
-                '[[timeUpdated]] < :time - [[ttr]]',
-            ], [
-                ':time' => $this->_reserveTime,
-            ], false, $this->db);
+            $expiredIds = (new Query())
+                ->select(['id'])
+                ->from([$this->tableName])
+                ->where([
+                    'and',
+                    [
+                        'channel' => $this->channel,
+                        'fail' => false,
+                    ],
+                    '[[timeUpdated]] < :time - [[ttr]]',
+                ], [
+                    ':time' => $this->_reserveTime,
+                ])
+                ->column($this->db);
+
+            if (!empty($expiredIds)) {
+                Db::update($this->tableName, [
+                    'dateReserved' => null,
+                    'timeUpdated' => null,
+                    'progress' => 0,
+                    'progressLabel' => null,
+                ], ['id' => $expiredIds], [], false, $this->db);
+            }
         }
     }
 

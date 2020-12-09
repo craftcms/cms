@@ -1622,6 +1622,8 @@ body.ltr .meta > .field.add:before, body.ltr .meta > .data.add:before, body.ltr 
 
 body.rtl .meta > .field.add:before, body.rtl .meta > .data.add:before, body.rtl .meta > .flex-fields > .field.add:before, body.rtl .meta > .flex-fields > .data.add:before { text-align: left; }
 
+.meta > .field.add .input, .meta > .data.add .input, .meta > .flex-fields > .field.add .input, .meta > .flex-fields > .data.add .input { width: 100%; }
+
 .meta > .field > .heading, .meta > .data > .heading, .meta > .flex-fields > .field > .heading, .meta > .flex-fields > .data > .heading { -webkit-flex: 0 0 105px; flex: 0 0 105px; line-height: 18px; }
 
 body.ltr .meta > .field > .heading, body.ltr .meta > .data > .heading, body.ltr .meta > .flex-fields > .field > .heading, body.ltr .meta > .flex-fields > .data > .heading { margin: 0 7px 0 0 ; }
