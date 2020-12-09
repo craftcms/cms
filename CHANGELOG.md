@@ -67,7 +67,7 @@
 ### Fixed
 - Fixed a JavaScript error that occurred when opening an element selector modal. ([#7186](https://github.com/craftcms/cms/issues/7186))
 - Fixed a bug where number strings were not correctly typecast to the right PHP numeric type when using the Number GraphQL type.
-- Fixed a bug where it was impossible to save a Global set with a pre-defined UID.
+- Fixed a bug where it wasn’t possible to save a Global set with a predefined UID.
 
 ## 3.6.0-RC1 - 2020-11-24
 
