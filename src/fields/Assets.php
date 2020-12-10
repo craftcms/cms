@@ -601,8 +601,7 @@ class Assets extends BaseRelationField implements GqlSchemaAwareFieldInterface
      */
     public function getExistsForCurrentGqlSchema(): bool
     {
-        $allowedEntities = Gql::extractAllowedEntitiesFromSchema();
-        return !empty($allowedEntities['volumes']);
+        return Gql::canQueryAssets();
     }
 
     /**

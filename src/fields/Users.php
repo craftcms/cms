@@ -102,7 +102,6 @@ class Users extends BaseRelationField implements GqlSchemaAwareFieldInterface
      */
     public function getExistsForCurrentGqlSchema(): bool
     {
-        $allowedEntities = Gql::extractAllowedEntitiesFromSchema();
-        return !empty($allowedEntities['usergroups']);
+        return Gql::canQueryUsers();
     }
 }

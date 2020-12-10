@@ -191,7 +191,6 @@ class Categories extends BaseRelationField implements GqlSchemaAwareFieldInterfa
      */
     public function getExistsForCurrentGqlSchema(): bool
     {
-        $allowedEntities = Gql::extractAllowedEntitiesFromSchema();
-        return !empty($allowedEntities['categorygroups']);
+        return Gql::canQueryCategories();
     }
 }

@@ -152,8 +152,7 @@ class Tags extends BaseRelationField implements GqlSchemaAwareFieldInterface
      */
     public function getExistsForCurrentGqlSchema(): bool
     {
-        $allowedEntities = Gql::extractAllowedEntitiesFromSchema();
-        return !empty($allowedEntities['taggroups']);
+        return Gql::canQueryTags();
     }
 
     /**

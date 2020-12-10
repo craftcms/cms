@@ -101,7 +101,6 @@ class Entries extends BaseRelationField implements GqlSchemaAwareFieldInterface
      */
     public function getExistsForCurrentGqlSchema(): bool
     {
-        $allowedEntities = Gql::extractAllowedEntitiesFromSchema();
-        return !empty($allowedEntities['sections']) && !empty($allowedEntities['entrytypes']);
+        return Gql::canQueryEntries();
     }
 }
