@@ -320,7 +320,7 @@ class EntryRevisionsController extends BaseEntriesController
 
         $draftId = $this->request->getBodyParam('draftId');
 
-        /** @var ElementInterface|DraftBehavior $draft */
+        /** @var Entry|DraftBehavior $draft */
         $draft = Entry::find()
             ->draftId($draftId)
             ->siteId('*')
@@ -331,9 +331,7 @@ class EntryRevisionsController extends BaseEntriesController
             throw new NotFoundHttpException('Draft not found');
         }
 
-        if (!$draft->creatorId || $draft->creatorId != Craft::$app->getUser()->getIdentity()->id) {
-            $this->requirePermission('deletePeerEntryDrafts:' . $draft->getSection()->uid);
-        }
+        $this->enforceDeleteEntryPermissions($draft);
 
         Craft::$app->getElements()->deleteElement($draft, true);
 

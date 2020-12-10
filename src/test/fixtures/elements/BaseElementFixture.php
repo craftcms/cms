@@ -99,11 +99,10 @@ abstract class BaseElementFixture extends DbFixture
      */
     public function unload()
     {
-        $elementsService = Craft::$app->getElements();
         $this->checkIntegrity(true);
 
         foreach ($this->_elements as $element) {
-            $elementsService->deleteElement($element, true);
+            $this->deleteElement($element);
         }
 
         $this->checkIntegrity(false);
@@ -148,5 +147,16 @@ abstract class BaseElementFixture extends DbFixture
     protected function saveElement(ElementInterface $element): bool
     {
         return Craft::$app->getElements()->saveElement($element, true, true, false);
+    }
+
+    /**
+     * Deletes an element.
+     *
+     * @param ElementInterface $element The element to be deleted
+     * @return bool Whether the deletion was successful
+     */
+    protected function deleteElement(ElementInterface $element): bool
+    {
+        return Craft::$app->getElements()->deleteElement($element, true);
     }
 }

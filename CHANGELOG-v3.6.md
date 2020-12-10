@@ -7,6 +7,7 @@
 ### Added
 - Craft now requires PHP 7.2.5 or later.
 - Entries now begin life as “unpublished drafts” rather than “unsaved drafts”. They are no longer ephemeral; they will continue to exist until explicitly published or deleted. ([#5661](https://github.com/craftcms/cms/issues/5661), [#7216](https://github.com/craftcms/cms/issues/7216))
+- It’s now possible to delete entries for a specific site, if their section’s propagation method is set to “Let each entry choose which sites it should be saved to”. ([#7190](https://github.com/craftcms/cms/issues/7190))
 - User indexes can now include a “Groups” column. ([#7211](https://github.com/craftcms/cms/issues/7211))
 - Volumes now have “Title Translation Method” and “Title Translation Key Format” settings, like entry types. ([#7135](https://github.com/craftcms/cms/issues/7135))
 - It’s now possible to set sites’ Name settings to environment variables.
@@ -26,6 +27,7 @@
 - Added `craft\base\VolumeTrait::$titleTranslationKeyFormat`.
 - Added `craft\base\VolumeTrait::$titleTranslationMethod`.
 - Added `craft\console\Controller::passwordPrompt()`.
+- Added `craft\controllers\BaseEntriesController::enforceDeleteEntryPermissions()`.
 - Added `craft\elements\db\ElementQueryInterface::afterPopulate()`.
 - Added `craft\elements\db\ElementQueryInterface::createElement()`.
 - Added `craft\elements\Entry::EVENT_DEFINE_ENTRY_TYPES`. ([#7136](https://github.com/craftcms/cms/issues/7136))

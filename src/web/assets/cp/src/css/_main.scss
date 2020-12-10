@@ -3254,6 +3254,10 @@ ul.tree,
         width: 100%;
         list-style-type: none;
       }
+
+      & > .clear-btn {
+        @include margin-right(-24px);
+      }
     }
   }
 
@@ -4589,24 +4593,26 @@ fieldset {
   & > .datewrapper + .timewrapper {
     @include margin-left(5px);
   }
+}
 
-  .clear-btn {
-    width: 20px;
-    @include margin-left(4px);
-    cursor: pointer;
-    color: $darkHairlineColor;
-    border: none;
-    padding: 0;
-    background: transparent;
+.clear-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 24px;
+  cursor: pointer;
+  color: $darkHairlineColor;
+  border: none;
+  padding: 0;
+  background: transparent;
 
-    &:before {
-      @include icon;
-      content: 'remove';
-    }
+  &:before {
+    @include icon;
+    content: 'remove';
+  }
 
-    &:hover {
-      color: $mediumTextColor;
-    }
+  &:hover {
+    color: $mediumTextColor;
   }
 }
 

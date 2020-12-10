@@ -1211,7 +1211,7 @@ $.extend(Craft,
             if ($.isPlainObject(arr)) {
                 arr = Object.values(arr);
             }
-            return ($.inArray(elem, arr) !== -1);
+            return arr.includes(elem);
         },
 
         /**
@@ -2050,6 +2050,7 @@ $.extend($.fn,
                                 type: 'button',
                                 class: 'clear-btn',
                                 title: Craft.t('app', 'Clear'),
+                                'aria-label': Craft.t('app', 'Clear'),
                             })
                                 .appendTo($wrapper)
                                 .on('click', () => {
@@ -2057,6 +2058,7 @@ $.extend($.fn,
                                         $inputs.eq(i).val('');
                                     }
                                     $btn.remove();
+                                    $inputs.first().focus();
                                 })
                         }
                     } else {

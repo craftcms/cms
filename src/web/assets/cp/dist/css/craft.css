@@ -1678,6 +1678,10 @@ body.rtl .meta > .field > .input > .datetimewrapper > .clear-btn, body.rtl .meta
 
 .meta > .field > ul.errors, .meta > .flex-fields > .field > ul.errors { margin: 0; padding: 0 0 6px; width: 100%; list-style-type: none; }
 
+body.ltr .meta > .field > .clear-btn, body.ltr .meta > .flex-fields > .field > .clear-btn { margin-right: -24px; }
+
+body.rtl .meta > .field > .clear-btn, body.rtl .meta > .flex-fields > .field > .clear-btn { margin-left: -24px; }
+
 .meta > .field:not(:first-child), .meta > .flex-fields + .field { border-top: 1px solid rgba(51, 64, 77, 0.1); }
 
 .meta > .flex-fields h2, .meta > .flex-fields blockquote.note { margin: 0 -24px !important; padding: 14px 24px; background-color: #ebf2fa; }
@@ -2298,15 +2302,11 @@ body.ltr .datetimewrapper > .datewrapper + .timewrapper { margin-left: 5px; }
 
 body.rtl .datetimewrapper > .datewrapper + .timewrapper { margin-right: 5px; }
 
-.datetimewrapper .clear-btn { width: 20px; cursor: pointer; color: rgba(123, 135, 147, 0.5); border: none; padding: 0; background: transparent; }
+.clear-btn { display: -webkit-flex; display: flex; -webkit-justify-content: center; justify-content: center; -webkit-align-items: center; align-items: center; width: 24px; cursor: pointer; color: rgba(123, 135, 147, 0.5); border: none; padding: 0; background: transparent; }
 
-body.ltr .datetimewrapper .clear-btn { margin-left: 4px; }
+.clear-btn:before { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; user-select: none; opacity: 0.8; content: 'remove'; }
 
-body.rtl .datetimewrapper .clear-btn { margin-right: 4px; }
-
-.datetimewrapper .clear-btn:before { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; user-select: none; opacity: 0.8; content: 'remove'; }
-
-.datetimewrapper .clear-btn:hover { color: #596673; }
+.clear-btn:hover { color: #596673; }
 
 .datewrapper, .timewrapper { display: inline-block; position: relative; }
 
