@@ -7,6 +7,7 @@
 
 namespace craft\gql\types\generators;
 
+use Craft;
 use craft\elements\User as UserElement;
 use craft\gql\base\BaseGenerator;
 use craft\gql\base\GeneratorInterface;
@@ -40,6 +41,9 @@ class UserType extends BaseGenerator implements GeneratorInterface, SingleGenera
      */
     public static function generateType($context): ObjectType
     {
+        // Users don't have different types, so the contexxt for a user will be the same every time.
+        $context = $context ?: Craft::$app->getFields()->getLayoutByType(UserElement::class);
+
         $typeName = UserElement::gqlTypeNameByContext(null);
         $contentFieldGqlTypes = self::getContentFields($context);
         $userFields = TypeManager::prepareFieldDefinitions(array_merge(UserInterface::getFieldDefinitions(), $contentFieldGqlTypes), $typeName);
