@@ -49,56 +49,6 @@ class EditUserCest
     /**
      * @param FunctionalTester $I
      */
-    public function testSaveUserFunctions(FunctionalTester $I)
-    {
-        $I->amOnPage('/' . $this->cpTrigger . '/users/new');
-        $I->see('Register a new user');
-
-        $variables = [
-            'username' => 'newusernameforcreateuserfunctest',
-            'firstName' => 'NewUserFirstName',
-            'lastName' => 'NewUserLastName',
-            'email' => 'NewUser@email.com'
-        ];
-
-        $I->submitForm('#userform', $variables);
-
-        unset($variables['fields']);
-
-        $I->see('User saved');
-        $I->see('Users');
-
-        $user = $I->assertElementsExist(User::class, $variables, 1, true);
-        $user = ArrayHelper::firstValue($user);
-
-        $I->amOnPage('/' . $this->cpTrigger . '/users/' . $user->id . '');
-        $I->submitForm('#userform', []);
-    }
-
-    /**
-     * @param FunctionalTester $I
-     */
-    public function testNewUserValidationError(FunctionalTester $I)
-    {
-        $I->amOnPage('/' . $this->cpTrigger . '/users/new');
-        $I->see('New User');
-
-        $I->submitForm('#userform', []);
-        $I->see('Couldn’t save user.');
-        $I->see('Username cannot be blank.');
-        $I->see('Email cannot be blank.');
-
-        $I->submitForm('#userform', [
-            'username' => 'testusernametestusername32798132789312789',
-            'email' => 'test',
-        ]);
-
-        $I->see('Email is not a valid email address.');
-    }
-
-    /**
-     * @param FunctionalTester $I
-     */
     public function testMyAccountPage(FunctionalTester $I)
     {
         $I->amOnPage('/' . $this->cpTrigger . '/myaccount');
