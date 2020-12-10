@@ -89,7 +89,7 @@ class Db
     public static function prepareValuesForDb($values): array
     {
         // Normalize to an array
-        $values = ArrayHelper::toArray($values);
+        $values = ArrayHelper::toArray($values, [], false);
 
         foreach ($values as $key => $value) {
             $values[$key] = static::prepareValueForDb($value);
