@@ -438,8 +438,8 @@ class ElementQueryConditionBuilder extends Component
 
                         // Load additional requirements enforced by schema, enforcing permissions to see content
                         if ($additionalArguments === false) {
-                            // If `false` was returned, make sure nothing is returned by setting an always-false constraint.
-                            $arguments = ['id' => 0];
+                            // If `false` was returned, make sure nothing is returned by setting a constraint that always fails.
+                            $arguments = ['id' => ['and', 1, 2]];
                         } else {
                             // Loop through what schema allows for this content type
                             foreach ($additionalArguments as $argumentName => $argumentValue) {
