@@ -306,6 +306,11 @@ class Html extends \yii\helpers\Html
         $normalized = [];
 
         foreach ($attributes as $name => $value) {
+            if ($value === false || $value === null) {
+                $normalized[$name] = false;
+                continue;
+            }
+
             switch ($name) {
                 case 'class':
                     $normalized[$name] = static::explodeClass($value);
