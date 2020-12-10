@@ -16,17 +16,17 @@ jobs:
   fast_finish: true
   include:
   - php: 7.4
-    env: DB=mysql
-  - php: 7.4
-    env: DB=pgsql
-  - php: 7.3
-    env: DB=mysql
-  - php: 7.3
-    env: DB=pgsql
-  - php: 7.2
     env: DB=mysql TASK_TESTS_COVERAGE=1
-  - php: 7.2
+  - php: 7.4
     env: DB=pgsql TASK_TESTS_COVERAGE=1
+  - php: 7.3
+    env: DB=mysql
+  - php: 7.3
+    env: DB=pgsql
+  - php: 7.2
+    env: DB=mysql
+  - php: 7.2
+    env: DB=pgsql
 cache:
   directories:
   - "$HOME/.composer/cache"
