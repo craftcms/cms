@@ -24,6 +24,7 @@
 - Added the `isUnpublishedDraft` GraphQL field.
 - Added `craft\base\ElementExporterInterface::isFormattable()`.
 - Added `craft\base\ElementInterface::getIsUnpublishedDraft()`.
+- Added `craft\base\GqlSchemaAwareFieldInterface`.
 - Added `craft\base\VolumeTrait::$titleTranslationKeyFormat`.
 - Added `craft\base\VolumeTrait::$titleTranslationMethod`.
 - Added `craft\console\Controller::passwordPrompt()`.
@@ -89,6 +90,7 @@
 - `craft\services\Gql::getValidationRules()` now has an `$isIntrospectionQuery` argument.
 - Craft no longer reports PHP deprecation errors.
 - GraphQL queries now support eager-loading for arguments provided as input objects.
+- GraphQL API no longer exposes custom fields that implement the new `GqlSchemaAwareFieldInterface` and should not be visible.
 - Updated Yii to 2.0.39.
 - Updated Guzzle to 7.x, for projects that don’t have any plugins that require Guzzle 6. ([#6997](https://github.com/craftcms/cms/issues/6997))
 - Updated Composer to 2.0.7.

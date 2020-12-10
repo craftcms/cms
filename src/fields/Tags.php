@@ -9,6 +9,7 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\base\GqlSchemaAwareFieldInterface;
 use craft\db\Table as DbTable;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\TagQuery;
@@ -28,7 +29,7 @@ use GraphQL\Type\Definition\Type;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Tags extends BaseRelationField
+class Tags extends BaseRelationField implements GqlSchemaAwareFieldInterface
 {
     /**
      * @inheritdoc
@@ -128,7 +129,6 @@ class Tags extends BaseRelationField
         ];
     }
 
-
     /**
      * @inheritdoc
      * @since 3.3.0
@@ -145,6 +145,15 @@ class Tags extends BaseRelationField
         $tagGroupIds = Db::idsByUids(DbTable::TAGGROUPS, $allowedTagGroupUids);
 
         return ['groupId' => array_values($tagGroupIds)];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getExistsForCurrentGqlSchema(): bool
+    {
+        $allowedEntities = Gql::extractAllowedEntitiesFromSchema();
+        return !empty($allowedEntities['taggroups']);
     }
 
     /**

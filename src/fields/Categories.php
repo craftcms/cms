@@ -9,6 +9,7 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\base\GqlSchemaAwareFieldInterface;
 use craft\db\Table as DbTable;
 use craft\elements\Category;
 use craft\elements\db\CategoryQuery;
@@ -27,7 +28,7 @@ use GraphQL\Type\Definition\Type;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Categories extends BaseRelationField
+class Categories extends BaseRelationField implements GqlSchemaAwareFieldInterface
 {
     /**
      * @inheritdoc
@@ -167,7 +168,6 @@ class Categories extends BaseRelationField
         ];
     }
 
-
     /**
      * @inheritdoc
      * @since 3.3.0
@@ -184,5 +184,14 @@ class Categories extends BaseRelationField
         $categoryIds = Db::idsByUids(DbTable::CATEGORYGROUPS, $allowedCategoryUids);
 
         return ['groupId' => array_values($categoryIds)];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getExistsForCurrentGqlSchema(): bool
+    {
+        $allowedEntities = Gql::extractAllowedEntitiesFromSchema();
+        return !empty($allowedEntities['categorygroups']);
     }
 }

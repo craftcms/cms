@@ -8,6 +8,7 @@
 namespace craft\fields;
 
 use Craft;
+use craft\base\GqlSchemaAwareFieldInterface;
 use craft\db\Table as DbTable;
 use craft\elements\db\UserQuery;
 use craft\elements\User;
@@ -24,7 +25,7 @@ use GraphQL\Type\Definition\Type;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Users extends BaseRelationField
+class Users extends BaseRelationField implements GqlSchemaAwareFieldInterface
 {
     /**
      * @inheritdoc
@@ -94,5 +95,14 @@ class Users extends BaseRelationField
         $groupIds = Db::idsByUids(DbTable::USERGROUPS, $allowedGroupUids);
 
         return ['groupId' => array_values($groupIds)];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getExistsForCurrentGqlSchema(): bool
+    {
+        $allowedEntities = Gql::extractAllowedEntitiesFromSchema();
+        return !empty($allowedEntities['usergroups']);
     }
 }

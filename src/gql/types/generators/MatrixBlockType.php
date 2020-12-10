@@ -9,6 +9,7 @@ namespace craft\gql\types\generators;
 
 use Craft;
 use craft\base\Field;
+use craft\base\GqlSchemaAwareFieldInterface;
 use craft\elements\MatrixBlock as MatrixBlockElement;
 use craft\fields\Matrix;
 use craft\gql\base\GeneratorInterface;
@@ -66,7 +67,9 @@ class MatrixBlockType implements GeneratorInterface, SingleGeneratorInterface
 
             /** @var Field $contentField */
             foreach ($contentFields as $contentField) {
-                $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
+                if (!$contentField instanceof GqlSchemaAwareFieldInterface || $contentField->getExistsForCurrentGqlSchema()) {
+                    $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
+                }
             }
 
             $blockTypeFields = TypeManager::prepareFieldDefinitions(array_merge(MatrixBlockInterface::getFieldDefinitions(), $contentFieldGqlTypes), $typeName);

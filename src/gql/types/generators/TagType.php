@@ -9,6 +9,7 @@ namespace craft\gql\types\generators;
 
 use Craft;
 use craft\base\Field;
+use craft\base\GqlSchemaAwareFieldInterface;
 use craft\elements\Tag as TagElement;
 use craft\gql\base\GeneratorInterface;
 use craft\gql\base\ObjectType;
@@ -64,7 +65,9 @@ class TagType implements GeneratorInterface, SingleGeneratorInterface
 
         /** @var Field $contentField */
         foreach ($contentFields as $contentField) {
-            $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
+            if (!$contentField instanceof GqlSchemaAwareFieldInterface || $contentField->getExistsForCurrentGqlSchema()) {
+                $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
+            }
         }
 
         $tagGroupFields = TypeManager::prepareFieldDefinitions(array_merge(TagInterface::getFieldDefinitions(), $contentFieldGqlTypes), $typeName);

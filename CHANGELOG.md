@@ -12,6 +12,7 @@
 - Added the `relatedToAssets`, `relatedToCategories`, `relatedToEntries`, `relatedToTags`, and `relatedToUsers` arguments to GraphQL queries. ([#7110](https://github.com/craftcms/cms/issues/7110))
 - Added the `isUnpublishedDraft` GraphQL field.
 - Added `craft\base\ElementInterface::getIsUnpublishedDraft()`.
+- Added `craft\base\GqlSchemaAwareFieldInterface`.
 - Added `craft\controllers\BaseEntriesController::enforceDeleteEntryPermissions()`.
 - Added `craft\events\RegisterGqlArgumentHandlersEvent`.
 - Added `craft\events\SearchEvent::$results`. ([#7237](https://github.com/craftcms/cms/issues/7237))
@@ -48,6 +49,7 @@
 - `craft\models\Site::$baseUrl` is now a magic property, which returns the parsed base URL. ([#3964](https://github.com/craftcms/cms/issues/3964))
 - `craft\models\Site::$name` is now a magic property, which returns the parsed site name. ([#3964](https://github.com/craftcms/cms/issues/3964))
 - `craft\models\Site::getBaseUrl()` now has a `$parse` argument, which can be set to `false` to return the raw (unparsed) base URL.
+- GraphQL API no longer exposes custom fields that implement the new `GqlSchemaAwareFieldInterface` and should not be visible.
 
 ### Deprecated
 - Deprecated the `purgeUnsavedDraftsDuration` config setting.

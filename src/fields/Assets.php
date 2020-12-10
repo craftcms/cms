@@ -9,6 +9,7 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\base\GqlSchemaAwareFieldInterface;
 use craft\base\VolumeInterface;
 use craft\db\Table as DbTable;
 use craft\elements\Asset;
@@ -38,7 +39,7 @@ use yii\base\InvalidConfigException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Assets extends BaseRelationField
+class Assets extends BaseRelationField implements GqlSchemaAwareFieldInterface
 {
     /**
      * @since 3.5.11
@@ -593,6 +594,15 @@ class Assets extends BaseRelationField
         $volumeIds = Db::idsByUids(DbTable::VOLUMES, $allowedVolumeUids);
 
         return ['volumeId' => array_values($volumeIds)];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getExistsForCurrentGqlSchema(): bool
+    {
+        $allowedEntities = Gql::extractAllowedEntitiesFromSchema();
+        return !empty($allowedEntities['volumes']);
     }
 
     /**

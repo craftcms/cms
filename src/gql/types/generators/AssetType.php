@@ -9,6 +9,7 @@ namespace craft\gql\types\generators;
 
 use Craft;
 use craft\base\Field;
+use craft\base\GqlSchemaAwareFieldInterface;
 use craft\base\Volume;
 use craft\elements\Asset as AssetElement;
 use craft\gql\base\GeneratorInterface;
@@ -64,7 +65,9 @@ class AssetType implements GeneratorInterface, SingleGeneratorInterface
 
         /** @var Field $contentField */
         foreach ($contentFields as $contentField) {
-            $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
+            if (!$contentField instanceof GqlSchemaAwareFieldInterface || $contentField->getExistsForCurrentGqlSchema()) {
+                $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
+            }
         }
 
         $assetFields = TypeManager::prepareFieldDefinitions(array_merge(AssetInterface::getFieldDefinitions(), $contentFieldGqlTypes), $typeName);

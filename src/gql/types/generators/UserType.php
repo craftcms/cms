@@ -8,6 +8,7 @@
 namespace craft\gql\types\generators;
 
 use Craft;
+use craft\base\GqlSchemaAwareFieldInterface;
 use craft\elements\User as UserElement;
 use craft\gql\base\GeneratorInterface;
 use craft\gql\base\ObjectType;
@@ -45,7 +46,9 @@ class UserType implements GeneratorInterface, SingleGeneratorInterface
         $contentFieldGqlTypes = [];
 
         foreach ($contentFields as $contentField) {
-            $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
+            if (!$contentField instanceof GqlSchemaAwareFieldInterface || $contentField->getExistsForCurrentGqlSchema()) {
+                $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
+            }
         }
 
         $userFields = TypeManager::prepareFieldDefinitions(array_merge(UserInterface::getFieldDefinitions(), $contentFieldGqlTypes), $typeName);
