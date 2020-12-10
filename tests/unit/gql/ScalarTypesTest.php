@@ -70,8 +70,10 @@ class ScalarTypesTest extends Unit
      */
     public function testDateTimeParseValueAndLiteral()
     {
-        $this->assertInstanceOf(\DateTime::class, (new DateTime())->parseValue((string) time()));
-        $this->assertInstanceOf(\DateTime::class, (new DateTime())->parseLiteral(new StringValueNode(['value' => $time = time()])));
+        $timeAsStr = (new \DateTime('now'))->format("Y-m-d H:i:s");
+
+        $this->assertInstanceOf(\DateTime::class, (new DateTime())->parseValue($timeAsStr));
+        $this->assertInstanceOf(\DateTime::class, (new DateTime())->parseLiteral(new StringValueNode(['value' => $timeAsStr])));
     }
 
     /**
