@@ -12,7 +12,7 @@ coverage:
   notify:
       slack:
         default:
-          url: "secret:hbWp/me8PnbBJSIUO451vp1r/ckaonSCbx/yN43zapDfJ1b9X/K6rgqTN4PfPmujZZJ7Jz8+k9ql4p9aWKpmZbP/Yqd0wOcZchYKKKBiXHopaa53xw/DJ4o16NYpwSHz6gYKku89r0/teupDUosc4KBlEPwl09Rx/ak5/R/dXXU="
+          url: "secret:M/dQaxt1nCzNG8JinXO5SmKdYoqErol7pzCV4Xv194cltAc0qu9WEezFP8Gnwkdg4eXfdxw2M0SbjcE8R8QB2B9n/YUHdXPdWsnhxa/HuIwc4kbvcaHyM7fU/lh7eWgYs4O5K3z/YnrirkmqNlzcgUuRmBOajf6MocPp4zd3sz8="
 parsers:
   gcov:
     branch_detection:
