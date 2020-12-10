@@ -8,9 +8,8 @@
 namespace craft\gql\types\generators;
 
 use Craft;
-use craft\base\Field;
-use craft\base\GqlSchemaAwareFieldInterface;
 use craft\elements\Tag as TagElement;
+use craft\gql\base\BaseGenerator;
 use craft\gql\base\GeneratorInterface;
 use craft\gql\base\ObjectType;
 use craft\gql\base\SingleGeneratorInterface;
@@ -28,7 +27,7 @@ use craft\models\TagGroup;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0
  */
-class TagType implements GeneratorInterface, SingleGeneratorInterface
+class TagType extends BaseGenerator implements GeneratorInterface, SingleGeneratorInterface
 {
     /**
      * @inheritdoc
@@ -60,16 +59,7 @@ class TagType implements GeneratorInterface, SingleGeneratorInterface
     {
         /** @var TagGroup $tagGroup */
         $typeName = TagElement::gqlTypeNameByContext($context);
-        $contentFields = $context->getFields();
-        $contentFieldGqlTypes = [];
-
-        /** @var Field $contentField */
-        foreach ($contentFields as $contentField) {
-            if (!$contentField instanceof GqlSchemaAwareFieldInterface || $contentField->getExistsForCurrentGqlSchema()) {
-                $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
-            }
-        }
-
+        $contentFieldGqlTypes = self::getContentFields($context);
         $tagGroupFields = TypeManager::prepareFieldDefinitions(array_merge(TagInterface::getFieldDefinitions(), $contentFieldGqlTypes), $typeName);
 
         return GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new Tag([

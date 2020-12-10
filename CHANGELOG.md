@@ -19,6 +19,7 @@
 - Added `craft\gql\ArgumentManager`.
 - Added `craft\gql\base\ArgumentHandler`.
 - Added `craft\gql\base\ArgumentHandlerInterface`.
+- Added `craft\gql\base\BaseGenerator`.
 - Added `craft\gql\base\RelationArgumentHandler`.
 - Added `craft\gql\ElementQueryConditionBuilder::setArgumentManager()`.
 - Added `craft\gql\handlers\RelatedAssets`.

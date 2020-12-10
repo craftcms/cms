@@ -8,9 +8,8 @@
 namespace craft\gql\types\generators;
 
 use Craft;
-use craft\base\Field;
-use craft\base\GqlSchemaAwareFieldInterface;
 use craft\elements\Entry as EntryElement;
+use craft\gql\base\BaseGenerator;
 use craft\gql\base\GeneratorInterface;
 use craft\gql\base\ObjectType;
 use craft\gql\base\SingleGeneratorInterface;
@@ -28,7 +27,7 @@ use craft\models\EntryType as EntryTypeModel;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0
  */
-class EntryType implements GeneratorInterface, SingleGeneratorInterface
+class EntryType extends BaseGenerator implements GeneratorInterface, SingleGeneratorInterface
 {
     /**
      * @inheritdoc
@@ -65,16 +64,7 @@ class EntryType implements GeneratorInterface, SingleGeneratorInterface
             return $createdType;
         }
 
-        $contentFields = $context->getFields();
-        $contentFieldGqlTypes = [];
-
-        /** @var Field $contentField */
-        foreach ($contentFields as $contentField) {
-            if (!$contentField instanceof GqlSchemaAwareFieldInterface || $contentField->getExistsForCurrentGqlSchema()) {
-                $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
-            }
-        }
-
+        $contentFieldGqlTypes = self::getContentFields($context);
         $entryTypeFields = TypeManager::prepareFieldDefinitions(array_merge(EntryInterface::getFieldDefinitions(), $contentFieldGqlTypes), $typeName);
 
         return GqlEntityRegistry::createEntity($typeName, new Entry([
