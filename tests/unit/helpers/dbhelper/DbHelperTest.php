@@ -572,10 +572,10 @@ class DbHelperTest extends Unit
         $dateTime = new DateTime('2018-06-06 18:00:00', new DateTimeZone('UTC'));
 
         return [
-            [['[]'], [$dateTime]],
+            [['2018-06-06 18:00:00'], [$dateTime]],
             [['{"name":"name"}'], [$jsonableClass]],
             [['{"JsonArray":"SomeArray"}'], [$jsonableArray]],
-            [['[]'], [$serializable]],
+            [['Serialized data'], [$serializable]],
             [[false], [false]],
             [['😀😘'], ['😀😘']]
         ];
