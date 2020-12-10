@@ -40,7 +40,6 @@
     "league/oauth2-client": "^2.6.0",
     "mikehaertl/php-shellcommand": "^1.6.2",
     "pixelandtonic/imagine": "~1.2.4.1",
-    "sebastian/diff": "^3.0.2|^4.0.4",
     "seld/cli-prompt": "^1.0.3",
     "symfony/yaml": "^5.1.8",
     "true/punycode": "^2.1.1",
