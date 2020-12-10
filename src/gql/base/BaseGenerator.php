@@ -24,7 +24,7 @@ abstract class BaseGenerator
      * @param mixed $context
      * @return array
      */
-    protected static function getContentFields(mixed $context): array
+    protected static function getContentFields($context): array
     {
         $contentFields = $context->getFields();
         $contentFieldGqlTypes = [];
