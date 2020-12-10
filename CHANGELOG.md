@@ -10,6 +10,7 @@
 - The Username, First Name, Last Name, Email, and New Password fields on Edit User pages now prevent LastPass from autofilling them. ([#7177](https://github.com/craftcms/cms/issues/7177))
 - Field layout elements’ settings HUDs now automatically set the focus on the first text input when opened. ([#7175](https://github.com/craftcms/cms/issues/7175))
 - Field instructions within the details pane are now replaced with info icons. ([#7180](https://github.com/craftcms/cms/issues/7180))
+- `users/set-password` requests now include a `status` key in JSON responses, set to the user’s status. ([#7239](https://github.com/craftcms/cms/issues/7239))
 
 ### Fixed
 - Fixed a bug where `craft\base\Field::isFresh()` could return the wrong result.
@@ -26,6 +27,7 @@
 - Fixed a bug where Craft wasn’t always respecting plugins’ `minVersionRequired`. ([#7191](https://github.com/craftcms/cms/issues/7191))
 - Fixed a bug where `craft\elements\db\ElementQuery::getCriteria()` wasn’t including custom field criteria values. ([#7225](https://github.com/craftcms/cms/issues/7225))
 - Fixed a MySQL deadlock error that could occur when running background jobs. ([#7179](https://github.com/craftcms/cms/issues/7179))
+- Fixed a bug where Craft was responding to set-password requests for pending users as if they had been activated, even if something prevented them from being activated. ([#7239](https://github.com/craftcms/cms/issues/7239))
 
 ## 3.5.16 - 2020-11-24
 
