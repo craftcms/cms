@@ -83,7 +83,6 @@ class UserActionCest
         ]);
 
         $I->see('Dashboard');
-        $I->see('Logged in');
 
         $I->assertSame(
             (string)$this->activeUser->id,

@@ -42,6 +42,8 @@ class EditUserCest
 
         $I->amLoggedInAs($this->currentUser);
         $this->cpTrigger = Craft::$app->getConfig()->getGeneral()->cpTrigger;
+
+        Craft::$app->setEdition(Craft::Pro);
     }
 
     /**
@@ -50,14 +52,13 @@ class EditUserCest
     public function testSaveUserFunctions(FunctionalTester $I)
     {
         $I->amOnPage('/' . $this->cpTrigger . '/users/new');
-        $I->see('New User');
+        $I->see('Register a new user');
 
         $variables = [
             'username' => 'newusernameforcreateuserfunctest',
             'firstName' => 'NewUserFirstName',
             'lastName' => 'NewUserLastName',
-            'email' => 'NewUser@email.com',
-            'fields' => ['exampleTextField1' => 'Test data']
+            'email' => 'NewUser@email.com'
         ];
 
         $I->submitForm('#userform', $variables);
@@ -90,7 +91,6 @@ class EditUserCest
         $I->submitForm('#userform', [
             'username' => 'testusernametestusername32798132789312789',
             'email' => 'test',
-            'fields' => ['exampleTextField1' => 'Test data']
         ]);
 
         $I->see('Email is not a valid email address.');
@@ -103,11 +103,10 @@ class EditUserCest
     {
         $I->amOnPage('/' . $this->cpTrigger . '/myaccount');
 
-        $I->see('My account');
+        $I->see('My Account');
 
         $I->submitForm('#userform', [
             'firstName' => 'IM A CHANGED FIRSTNAME',
-            'fields' => ['exampleTextField1' => 'Test data']
         ]);
 
         $I->see('User saved');
@@ -120,22 +119,5 @@ class EditUserCest
                 ->id($this->currentUser->id)
                 ->one()->firstName
         );
-    }
-
-    /**
-     * @param FunctionalTester $I
-     */
-    public function testCustomFieldValidation(FunctionalTester $I)
-    {
-        $I->amOnPage('/' . $this->cpTrigger . '/myaccount');
-
-        $I->see('My account');
-
-        $I->submitForm('#userform', [
-            'firstName' => 'IM A CHANGED FIRSTNAME',
-        ]);
-
-        $I->canSeeInCurrentUrl('myaccount');
-        $I->see('Example text field 1 cannot be blank.');
     }
 }

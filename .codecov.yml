@@ -1,9 +1,7 @@
 codecov:
-  notify:
-    require_ci_to_pass: yes
-
+  require_ci_to_pass: yes
 coverage:
-  range: 20..100
+  range: "20...100"
   round: down
   precision: 2
   status:
@@ -11,19 +9,10 @@ coverage:
       default:
         threshold: .1
         base: pr
-
   notify:
-    slack:
-      default:
-        url: secret:6khnlMrrqo73RkUvirgGG60/ormed+LWKvoeYGU72jUDSrPqOMR63KQsS3hzvGtOFWYNzYHkesvlagFb3aAijHGw2Md0jEbjWj/PfXV23XGB59tF9ktCdIoe9o05AKlWtGYKaguPRkbNqTk3yAaYXUQtV02KvUFm+RzAEcwuRv0=
-        threshold: 1%
-        only_pulls: false
-        branches: develop
-        flags: null
-        attachments: "sunburst, diff"
-        paths: null
-        message: "Coverage {{changed}} for {{owner}}/{{repo}}"
-
+      slack:
+        default:
+          url: "secret:hbWp/me8PnbBJSIUO451vp1r/ckaonSCbx/yN43zapDfJ1b9X/K6rgqTN4PfPmujZZJ7Jz8+k9ql4p9aWKpmZbP/Yqd0wOcZchYKKKBiXHopaa53xw/DJ4o16NYpwSHz6gYKku89r0/teupDUosc4KBlEPwl09Rx/ak5/R/dXXU="
 parsers:
   gcov:
     branch_detection:
@@ -31,9 +20,7 @@ parsers:
       loop: yes
       method: no
       macro: no
-
 comment: off
-
 ignore:
   - "src/web/assets"
   - "src/test/internal"
