@@ -8,10 +8,6 @@ coverage:
     project:
       default:
         threshold: .1
-        branches:
-          - master
-          - develop
-          - 3.6
   notify:
       slack:
         default:
