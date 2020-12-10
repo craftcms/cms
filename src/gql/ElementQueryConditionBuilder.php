@@ -454,7 +454,7 @@ class ElementQueryConditionBuilder extends Component
 
                                     // If they wanted to filter by values that were not allowed by schema, make it impossible
                                     if (empty($allowed)) {
-                                        $arguments = ['id' => 0];
+                                        $arguments = ['id' => ['and', 1, 2]];
                                         break;
                                     }
 
