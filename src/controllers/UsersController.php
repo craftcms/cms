@@ -486,14 +486,13 @@ class UsersController extends Controller
             ]);
         }
 
-        if ($user->getStatus() == User::STATUS_PENDING) {
-            // Activate them
-            Craft::$app->getUsers()->activateUser($user);
-
-            // Treat this as an activation request
-            if (($response = $this->_onAfterActivateUser($user)) !== null) {
-                return $response;
-            }
+        // If they're pending, try to activate them, and maybe treat this as an activation request
+        if (
+            $user->getStatus() == User::STATUS_PENDING &&
+            Craft::$app->getUsers()->activateUser($user) &&
+            ($response = $this->_onAfterActivateUser($user)) !== null
+        ) {
+            return $response;
         }
 
         // Maybe automatically log them in
@@ -502,6 +501,7 @@ class UsersController extends Controller
         if ($this->request->getAcceptsJson()) {
             $return = [
                 'success' => true,
+                'status' => $user->getStatus(),
             ];
             if ($loggedIn && Craft::$app->getConfig()->getGeneral()->enableCsrfProtection) {
                 $return['csrfTokenValue'] = $this->request->getCsrfToken();
