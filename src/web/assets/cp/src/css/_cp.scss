@@ -15,6 +15,12 @@ body {
   min-height: 100vh;
 }
 
+*:focus {
+  outline-style: solid;
+  outline-color: transparent;
+  box-shadow: 0 0 0 1px $blue700, 0 0 0 3px transparentize($blue700, 0.5);
+}
+
 #global-container {
   position: relative;
   display: flex;
@@ -45,9 +51,12 @@ $sidebarLinkSecondaryColor: $grey200;
     text-decoration: none;
   }
 
+  *:focus {
+    box-shadow: 0 0 0 1px $blue600, 0 0 0 3px transparentize($blue600, 0.5);
+  }
+
   & > a,
   *:not(.has-subnav) > a {
-    outline: none;
     transition: background-color linear 100ms;
 
     &[href] {
@@ -1312,7 +1321,6 @@ $toolbarIconColor: darken($inputColor, 10%);
         box-sizing: border-box;
         color: $textColor;
         user-select: none;
-        outline: none;
         border-radius: $largeBorderRadius;
 
         .status {
