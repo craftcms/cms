@@ -48,6 +48,7 @@
 
 ### Changed
 - Improved the performance of project config change diffs. ([#7218](https://github.com/craftcms/cms/issues/7218))
+- Improved the accessibility of info icons.
 - The `withoutKey` Twig filter can now accept an array, for removing multiple keys at once. ([#7230](https://github.com/craftcms/cms/issues/7230))
 - `craft\behaviors\EnvAttributeParserBehavior::$attributes` can now be set to an array with key/value pairs, where the key is the attribute name, and the value is the raw (unparsed) value, or a callable that returns the raw value.
 - `craft\helpers\Gql::isSchemaAwareOf()`, `extractAllowedEntitiesFromSchema()`, `canSchema()`, `extractEntityAllowedActions()`, `canMutateEntries()`, `canMutateTags()`, `canMutateGlobalSets()`, `canMutateCategories()`, `canMutateAssets()`, `canQueryEntries()`, `canQueryAssets()`, `canQueryCategories()`, `canQueryTags()`, `canQueryGlobalSets()`, and `canQueryUsers()` now have `$schema` arguments.
@@ -81,6 +82,7 @@
 - Fixed a bug where number strings were not correctly typecast to the right PHP numeric type when using the Number GraphQL type.
 - Fixed a bug where it wasn’t possible to save a Global set with a predefined UID.
 - Fixed a bug where `craft\helpers\Db::prepareValuesForDb()` would omit or JSON-encode `DateTime` objects, depending on the PHP version, rather than converting them to ISO-8601-formatted strings.
+- Fixed a bug where info icons’ content was focusable before the icon was activated. ([#7257](https://github.com/craftcms/cms/issues/7257))
 
 ## 3.6.0-RC1 - 2020-11-24
 

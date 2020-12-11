@@ -170,6 +170,7 @@ JS;
             'Hide sidebar',
             'Hide',
             'Incorrect password.',
+            'Information',
             'Instructions',
             'Keep both',
             'Keep me logged in',
