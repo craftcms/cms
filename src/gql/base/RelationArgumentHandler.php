@@ -7,7 +7,6 @@
 
 namespace craft\gql\base;
 
-
 use Craft;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
@@ -90,7 +89,6 @@ abstract class RelationArgumentHandler extends ArgumentHandler
 
         return $argumentValue;
     }
-
 
     /**
      * Prepare the `relatedTo` argument.

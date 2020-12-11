@@ -52,7 +52,6 @@ class CategoryType extends Generator implements GeneratorInterface, SingleGenera
         return $gqlTypes;
     }
 
-
     /**
      * @inheritdoc
      */

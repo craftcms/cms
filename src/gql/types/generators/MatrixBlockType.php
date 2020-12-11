@@ -51,7 +51,6 @@ class MatrixBlockType extends Generator implements GeneratorInterface, SingleGen
         return $gqlTypes;
     }
 
-
     /**
      * @inheritdoc
      */

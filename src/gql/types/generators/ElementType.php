@@ -34,7 +34,6 @@ class ElementType implements GeneratorInterface, SingleGeneratorInterface
         return [$type->name => $type];
     }
 
-
     /**
      * @inheritdoc
      */
