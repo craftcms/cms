@@ -53,6 +53,7 @@ abstract class GlobalSetFixture extends BaseElementFixture
      */
     protected function saveElement(ElementInterface $element): bool
     {
-        return Craft::$app->getGlobals()->saveSet($element);
+        Craft::$app->getGlobals()->saveSet($element);
+        return Craft::$app->getElements()->saveElement($element);
     }
 }
