@@ -293,7 +293,6 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend({
     }
 });
 
-
 Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
     designer: null,
     $container: null,
@@ -500,7 +499,6 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
     }
 });
 
-
 Craft.FieldLayoutDesigner.BaseDrag = Garnish.Drag.extend({
     designer: null,
     $insertion: null,
@@ -654,7 +652,6 @@ Craft.FieldLayoutDesigner.BaseDrag = Garnish.Drag.extend({
     }
 });
 
-
 Craft.FieldLayoutDesigner.TabDrag = Craft.FieldLayoutDesigner.BaseDrag.extend({
     /**
      * Constructor
@@ -744,7 +741,6 @@ Craft.FieldLayoutDesigner.TabDrag = Craft.FieldLayoutDesigner.BaseDrag.extend({
 `);
     },
 });
-
 
 Craft.FieldLayoutDesigner.ElementDrag = Craft.FieldLayoutDesigner.BaseDrag.extend({
     draggingLibraryElement: false,

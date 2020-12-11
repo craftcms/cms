@@ -52,7 +52,6 @@ QUnit.test('Craft.getUrl()', function(assert) {
     assert.equal(Craft.getActionUrl('about?foo=1', {'bar': 1}), 'http://craft.dev/index.php/admin/actions/about?foo=1&bar=1');
     assert.equal(Craft.getActionUrl('about', {'foo': 1, '#': 'bar'}), 'http://craft.dev/index.php/admin/actions/about?foo=1#bar');
 
-
     // Don't omit the script name
     Craft.baseUrl = 'http://craft.dev/index.php/admin';
     Craft.baseCpUrl = 'http://craft.dev/index.php/admin';
@@ -95,7 +94,6 @@ QUnit.test('Craft.getUrl()', function(assert) {
     assert.equal(Craft.getActionUrl('about?foo=1', 'bar=1'), 'http://craft.dev/index.php/admin/actions/about?foo=1&bar=1');
     assert.equal(Craft.getActionUrl('about?foo=1', {'bar': 1}), 'http://craft.dev/index.php/admin/actions/about?foo=1&bar=1');
     assert.equal(Craft.getActionUrl('about', {'foo': 1, '#': 'bar'}), 'http://craft.dev/index.php/admin/actions/about?foo=1#bar');
-
 
     // Don't use path info
     Craft.baseUrl = 'http://craft.dev/?p=admin';
