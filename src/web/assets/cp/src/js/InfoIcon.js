@@ -21,7 +21,7 @@ Craft.InfoIcon = Garnish.Base.extend({
                 .html('')
                 .attr({
                     tabindex: 0,
-                    'aria-role': 'button',
+                    'role': 'button',
                     'aria-label': Craft.t('app', 'Information'),
                 });
         }
