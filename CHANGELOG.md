@@ -67,6 +67,10 @@
 
 ### Removed
 - Removed `craft\test\fixtures\elements\ElementFixture`. `craft\test\fixtures\elements\BaseElementFixture` should be used instead.
+- Removed `craft\test\fixtures\FieldLayoutFixture::deleteAllByFieldHandle()`.
+- Removed `craft\test\fixtures\FieldLayoutFixture::extractTabsFromFieldLayout()`.
+- Removed `craft\test\fixtures\FieldLayoutFixture::getTabsForFieldLayout()`.
+- Removed `craft\test\fixtures\FieldLayoutFixture::linkFieldToLayout()`.
 
 ### Fixed
 - Fixed a JavaScript error that occurred when opening an element selector modal. ([#7186](https://github.com/craftcms/cms/issues/7186))

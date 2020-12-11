@@ -125,6 +125,10 @@
 - Removed `craft\controllers\ExportController`.
 - Removed `craft\services\Api::getComposerWhitelist()`.
 - Removed `craft\test\fixtures\elements\ElementFixture`. `craft\test\fixtures\elements\BaseElementFixture` should be used instead.
+- Removed `craft\test\fixtures\FieldLayoutFixture::deleteAllByFieldHandle()`.
+- Removed `craft\test\fixtures\FieldLayoutFixture::extractTabsFromFieldLayout()`.
+- Removed `craft\test\fixtures\FieldLayoutFixture::getTabsForFieldLayout()`.
+- Removed `craft\test\fixtures\FieldLayoutFixture::linkFieldToLayout()`.
 
 ### Fixed
 - Fixed a bug where asset queries’ `withTransforms` param wasn’t being respected for eager-loaded assets. ([#6140](https://github.com/craftcms/cms/issues/6140))

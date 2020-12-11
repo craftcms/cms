@@ -18,14 +18,10 @@ return [
                 'name' => 'Tab 1',
                 'fields' => [
                     [
-                        'layout-link' => [
-                            'required' => true
-                        ],
-                        'field' => [
-                            'name' => 'Test field',
-                            'handle' => 'testField2',
-                            'fieldType' => Number::class,
-                        ]
+                        'name' => 'Test field',
+                        'handle' => 'testField2',
+                        'type' => Number::class,
+                        'required' => true,
                     ],
                 ]
             ]
@@ -39,14 +35,10 @@ return [
                 'name' => 'Tab 1',
                 'fields' => [
                     [
-                        'layout-link' => [
-                            'required' => true
-                        ],
-                        'field' => [
-                            'name' => 'Short Biography',
-                            'handle' => 'shortBio',
-                            'fieldType' => PlainText::class,
-                        ]
+                        'name' => 'Short Biography',
+                        'handle' => 'shortBio',
+                        'type' => PlainText::class,
+                        'required' => true,
                     ],
                 ]
             ]
@@ -59,24 +51,16 @@ return [
                 'name' => 'Tab 1',
                 'fields' => [
                     [
-                        'layout-link' => [
-                            'required' => true
-                        ],
-                        'field' => [
-                            'name' => 'Image description',
-                            'handle' => 'imageDescription',
-                            'fieldType' => PlainText::class,
-                        ]
+                        'name' => 'Image description',
+                        'handle' => 'imageDescription',
+                        'type' => PlainText::class,
+                        'required' => true,
                     ],
                     [
-                        'layout-link' => [
-                            'required' => true
-                        ],
-                        'field' => [
-                            'name' => 'Volume and mass',
-                            'handle' => 'volumeAndMass',
-                            'fieldType' => PlainText::class,
-                        ]
+                        'name' => 'Volume and mass',
+                        'handle' => 'volumeAndMass',
+                        'type' => PlainText::class,
+                        'required' => true,
                     ],
                 ]
             ]
@@ -91,84 +75,72 @@ return [
                 'fields' => [
                     // MATRIX FIELD 1
                     [
-                        'layout-link' => [
-                            'required' => false
-                        ],
-                        'field' => [
-                            'uid' => 'field-1000-----------------------uid',
-                            'name' => 'Matrix 1',
-                            'handle' => 'matrixFirst',
-                            'fieldType' => Matrix::class,
-                            'blockTypes' => [
-                                'new1' => [
-                                    'name' => 'A Block',
-                                    'handle' => 'aBlock',
-                                    'fields' => [
-                                        'new1' => [
-                                            'type' => PlainText::class,
-                                            'name' => 'First Subfield',
-                                            'handle' => 'firstSubfield',
-                                            'instructions' => '',
-                                            'required' => false,
-                                            'typesettings' => [
-                                                'multiline' => ''
-                                            ]
+                        'uid' => 'field-1000-----------------------uid',
+                        'name' => 'Matrix 1',
+                        'handle' => 'matrixFirst',
+                        'type' => Matrix::class,
+                        'blockTypes' => [
+                            'new1' => [
+                                'name' => 'A Block',
+                                'handle' => 'aBlock',
+                                'fields' => [
+                                    'new1' => [
+                                        'type' => PlainText::class,
+                                        'name' => 'First Subfield',
+                                        'handle' => 'firstSubfield',
+                                        'instructions' => '',
+                                        'required' => false,
+                                        'typesettings' => [
+                                            'multiline' => ''
                                         ]
                                     ]
                                 ]
                             ]
-                        ]
+                        ],
+                        'required' => false,
                     ],
 
                     // PLAIN TEXT FIELD TWO
                     [
-                        'layout-link' => [
-                            'required' => true
-                        ],
-                        'field' => [
-                            'uid' => 'field-1001-----------------------uid',
-                            'name' => 'Plain Text Field',
-                            'handle' => 'plainTextField',
-                            'fieldType' => PlainText::class,
-                        ]
+                        'uid' => 'field-1001-----------------------uid',
+                        'name' => 'Plain Text Field',
+                        'handle' => 'plainTextField',
+                        'type' => PlainText::class,
+                        'required' => true,
                     ],
 
                     // A table field
                     [
-                        'layout-link' => [
-                            'required' => true
-                        ],
-                        'field' => [
-                            'uid' => 'field-1002-----------------------uid',
-                            'name' => 'Appointments',
-                            'handle' => 'appointments',
-                            'fieldType' => Table::class,
-                            'addRowLabel' => 'Add a row',
-                            'minRows' => 1,
-                            'maxRows' => 5,
-                            'columns' => [
-                                'col1' => [
-                                    'heading' => 'What',
-                                    'handle' => 'one',
-                                    'type' => 'singleline',
-                                ],
-                                'col2' => [
-                                    'heading' => 'When',
-                                    'handle' => 'two',
-                                    'type' => 'date',
-                                ],
-                                'col3' => [
-                                    'heading' => 'How many',
-                                    'handle' => 'howMany',
-                                    'type' => 'number',
-                                ],
-                                'col4' => [
-                                    'heading' => 'Allow?',
-                                    'handle' => 'allow',
-                                    'type' => 'lightswitch',
-                                ],
+                        'uid' => 'field-1002-----------------------uid',
+                        'name' => 'Appointments',
+                        'handle' => 'appointments',
+                        'type' => Table::class,
+                        'addRowLabel' => 'Add a row',
+                        'minRows' => 1,
+                        'maxRows' => 5,
+                        'columns' => [
+                            'col1' => [
+                                'heading' => 'What',
+                                'handle' => 'one',
+                                'type' => 'singleline',
                             ],
-                        ]
+                            'col2' => [
+                                'heading' => 'When',
+                                'handle' => 'two',
+                                'type' => 'date',
+                            ],
+                            'col3' => [
+                                'heading' => 'How many',
+                                'handle' => 'howMany',
+                                'type' => 'number',
+                            ],
+                            'col4' => [
+                                'heading' => 'Allow?',
+                                'handle' => 'allow',
+                                'type' => 'lightswitch',
+                            ],
+                        ],
+                        'required' => true,
                     ]
                 ]
             ]
