@@ -1,0 +1,18 @@
+  dateModified:
+-   1607544575
++   1607544576
+  email:
+    fromEmail:
+-     admin@happylager.dev
++     admin@happylager.test
+    fromName:
+      Happylager
+    template:
+...
+      handle:
+        companyLogos
+      hasUrls:
+-       true
++       false
+      name:
+        'Company Logos'

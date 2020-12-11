@@ -85,7 +85,7 @@ class DiffHelperTest extends Unit
                 0
             ],
             [
-                "  dateModified:\n-   1607544575\n+   1607544576\n  email:\n    fromEmail:",
+                rtrim(file_get_contents(dirname(__DIR__, 2) . '/_data/diff/expected.diff')),
                 include dirname(__DIR__, 2) . '/_data/diff/a.php',
                 include dirname(__DIR__, 2) . '/_data/diff/b.php'
             ]

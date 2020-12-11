@@ -5,7 +5,7 @@ return
         'dateModified' => 1607544576,
         'email' =>
             [
-                'fromEmail' => 'admin@happylager.dev',
+                'fromEmail' => 'admin@happylager.test',
                 'fromName' => 'Happylager',
                 'template' => null,
                 'transportType' => 'craft\\mail\\transportadapters\\Sendmail',
@@ -3581,7 +3581,7 @@ return
                                     ],
                             ],
                         'handle' => 'companyLogos',
-                        'hasUrls' => true,
+                        'hasUrls' => false,
                         'name' => 'Company Logos',
                         'settings' =>
                             [
