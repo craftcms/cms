@@ -926,10 +926,6 @@ return
                     [
                         'name' => 'Services',
                     ],
-                'd58a1faa-0bf6-46b2-b880-b0c14bebca75' =>
-                    [
-                        'name' => 'Homepage',
-                    ],
                 'f00e1793-0757-46e5-99e9-016b21359ac7' =>
                     [
                         'name' => 'Work',
@@ -1193,7 +1189,7 @@ return
                 '8823155c-e84a-4a38-af30-2cb88b705e7b' =>
                     [
                         'contentColumnType' => 'string',
-                        'fieldGroup' => 'd58a1faa-0bf6-46b2-b880-b0c14bebca75',
+                        'fieldGroup' => 'f00e1793-0757-46e5-99e9-016b21359ac7',
                         'handle' => 'testimonials',
                         'instructions' => '',
                         'name' => 'Testimonials',

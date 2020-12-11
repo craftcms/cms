@@ -111,7 +111,7 @@ class Diff
                 // Output any keys in $to that come before this one
                 if ($toPos > $toCursor) {
                     $newKeys = array_slice($toKeys, $toCursor, $toPos - $toCursor);
-                    static::_buildLinesForValue(ArrayHelper::filter($to, $newKeys), $indent, $level, '+');
+                    ArrayHelper::append($lines, ...static::_buildLinesForValue(ArrayHelper::filter($to, $newKeys), $indent, $level, '+'));
                 }
 
                 $lines[] = static::_buildLine("$key:", $indent, $level);
