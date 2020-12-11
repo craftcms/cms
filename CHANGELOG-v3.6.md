@@ -64,6 +64,7 @@
 - Added `craft\services\Drafts::EVENT_AFTER_APPLY_DRAFT`.
 - Added `craft\services\Drafts::EVENT_BEFORE_APPLY_DRAFT`.
 - Added `craft\services\Drafts::publishDraft()`.
+- Added `craft\services\Globals::deleteSet()`.
 - Added `craft\services\Globals::reset()`.
 - Added `craft\services\Gql::GRAPHQL_COMPLEXITY_CPU_HEAVY`.
 - Added `craft\services\Gql::GRAPHQL_COMPLEXITY_EAGER_LOAD`.

@@ -425,8 +425,19 @@ class Globals extends Component
             return false;
         }
 
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_GLOBALSETS_KEY . '.' . $globalSet->uid, "Delete the “{$globalSet->handle}” global set");
+        $this->deleteSet($globalSet);
         return true;
+    }
+
+    /**
+     * Deletes a global set by its ID.
+     *
+     * @param GlobalSet $globalSet
+     * @since 3.6.0
+     */
+    public function deleteSet(GlobalSet $globalSet): void
+    {
+        Craft::$app->getProjectConfig()->remove(self::CONFIG_GLOBALSETS_KEY . '.' . $globalSet->uid, "Delete the “{$globalSet->handle}” global set");
     }
 
     /**
