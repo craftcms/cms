@@ -11,6 +11,7 @@ namespace craft\test\fixtures\elements;
 use Craft;
 use craft\base\ElementInterface;
 use craft\elements\GlobalSet;
+use craft\records\GlobalSet as GlobalSetRecord;
 
 /**
  * Class GlobalSetFixture
@@ -53,7 +54,21 @@ abstract class GlobalSetFixture extends BaseElementFixture
      */
     protected function saveElement(ElementInterface $element): bool
     {
-        Craft::$app->getGlobals()->saveSet($element);
-        return Craft::$app->getElements()->saveElement($element);
+        /** @var GlobalSet $element */
+        if (!parent::saveElement($element)) {
+            return false;
+        }
+
+        // Add the globalsets table row manually rather than going through Globals::saveSet(),
+        // since the field layout should not be created/removed exclusively for this global set
+        $record = new GlobalSetRecord();
+        $record->id = $element->id;
+        $record->uid = $element->uid;
+        $record->name = $element->name;
+        $record->handle = $element->handle;
+        $record->fieldLayoutId = $element->fieldLayoutId;
+        $record->save();
+
+        return true;
     }
 }
