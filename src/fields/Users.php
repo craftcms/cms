@@ -16,6 +16,7 @@ use craft\gql\interfaces\elements\User as UserInterface;
 use craft\gql\resolvers\elements\User as UserResolver;
 use craft\helpers\Db;
 use craft\helpers\Gql;
+use craft\models\GqlSchema;
 use GraphQL\Type\Definition\Type;
 
 /**
@@ -60,6 +61,14 @@ class Users extends BaseRelationField
 
     /**
      * @inheritdoc
+     */
+    public function includeInGqlSchema(GqlSchema $schema): bool
+    {
+        return Gql::canQueryUsers($schema);
+    }
+
+    /**
+     * @inheritdoc
      * @since 3.3.0
      */
     public function getContentGqlType()
@@ -72,7 +81,6 @@ class Users extends BaseRelationField
             'complexity' => Gql::eagerLoadComplexity()
         ];
     }
-
 
     /**
      * @inheritdoc

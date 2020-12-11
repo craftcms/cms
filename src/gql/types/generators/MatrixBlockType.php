@@ -8,9 +8,9 @@
 namespace craft\gql\types\generators;
 
 use Craft;
-use craft\base\Field;
 use craft\elements\MatrixBlock as MatrixBlockElement;
 use craft\fields\Matrix;
+use craft\gql\base\Generator;
 use craft\gql\base\GeneratorInterface;
 use craft\gql\base\ObjectType;
 use craft\gql\base\SingleGeneratorInterface;
@@ -26,7 +26,7 @@ use craft\models\MatrixBlockType as MatrixBlockTypeModel;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0
  */
-class MatrixBlockType implements GeneratorInterface, SingleGeneratorInterface
+class MatrixBlockType extends Generator implements GeneratorInterface, SingleGeneratorInterface
 {
     /**
      * @inheritdoc
@@ -61,14 +61,7 @@ class MatrixBlockType implements GeneratorInterface, SingleGeneratorInterface
         $typeName = MatrixBlockElement::gqlTypeNameByContext($context);
 
         if (!($entity = GqlEntityRegistry::getEntity($typeName))) {
-            $contentFields = $context->getFields();
-            $contentFieldGqlTypes = [];
-
-            /** @var Field $contentField */
-            foreach ($contentFields as $contentField) {
-                $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
-            }
-
+            $contentFieldGqlTypes = self::getContentFields($context);
             $blockTypeFields = TypeManager::prepareFieldDefinitions(array_merge(MatrixBlockInterface::getFieldDefinitions(), $contentFieldGqlTypes), $typeName);
 
             // Generate a type for each block type
