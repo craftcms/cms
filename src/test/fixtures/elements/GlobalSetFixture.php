@@ -23,12 +23,54 @@ use craft\elements\GlobalSet;
 abstract class GlobalSetFixture extends BaseElementFixture
 {
     /**
+     * @var array content store
+     */
+    private $_contentStore = [];
+
+    /**
      * @inheritdoc
      */
     public function load()
     {
         parent::load();
-        Craft::$app->getGlobals()->reset();
+
+        $globals = Craft::$app->getGlobals();
+        $globals->reset();
+
+        // Add the content now that the globals exist and have fields.
+        foreach ($this->_contentStore as $handle => $fieldValues) {
+            $globalSet = $globals->getSetByHandle($handle) ?? GlobalSet::find()->trashed()->handle($handle)->one();
+
+            if (!$globalSet) {
+                continue;
+            }
+
+            foreach ($fieldValues as $field => $value) {
+                $globalSet->{$field} = $value;
+            }
+
+            Craft::$app->getElements()->saveElement($globalSet);
+        }
+
+        $globals->reset();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function populateElement(ElementInterface $element, array $attributes): void
+    {
+        $deferredAttributes = [];
+
+        // Store all the content for later.
+        foreach ($attributes as $attribute => $value) {
+            if (substr($attribute, 0, 6) === 'field:') {
+                $deferredAttributes[$attribute] = $value;
+            }
+        }
+
+        $this->_contentStore[$attributes['handle']] = $deferredAttributes;
+        parent::populateElement($element, $attributes);
     }
 
     /**
