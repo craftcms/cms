@@ -74,7 +74,6 @@ class Users extends BaseRelationField implements GqlSchemaAwareFieldInterface
         ];
     }
 
-
     /**
      * @inheritdoc
      * @since 3.3.0

@@ -8,8 +8,6 @@
 namespace craft\gql\types\generators;
 
 use Craft;
-use craft\base\Field;
-use craft\base\GqlSchemaAwareFieldInterface;
 use craft\elements\MatrixBlock as MatrixBlockElement;
 use craft\fields\Matrix;
 use craft\gql\base\BaseGenerator;
