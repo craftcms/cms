@@ -62,9 +62,7 @@ before_script:
 - yes | pecl install imagick
 - cp tests/.env.example.$DB tests/.env
 - |
-  if [[ $DB == "mysql" ]]; then
-    sed -i 's/DB_USER=root/DB_USER=root/' tests/.env
-  else
+  if [[ $DB == "pgsql" ]]; then
     sed -i 's/DB_USER=root/DB_USER=postgres/' tests/.env
   fi
 script:
