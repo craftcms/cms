@@ -160,7 +160,9 @@ class Craft extends Yii2
             return;
         }
 
-        $this->resetProjectConfig();
+        if ($this->_getConfig('dbSetup')['setupCraft']) {
+            $this->resetProjectConfig();
+        }
     }
 
     /**

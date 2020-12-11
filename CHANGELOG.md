@@ -32,6 +32,7 @@
 - Added `craft\gql\types\input\criteria\Entry`.
 - Added `craft\gql\types\input\criteria\Tag`.
 - Added `craft\gql\types\input\criteria\User`.
+- Added `craft\helpers\Diff`.
 - Added `craft\models\Site::getName()`.
 - Added `craft\models\Site::setBaseUrl()`.
 - Added `craft\models\Site::setName()`.
@@ -45,6 +46,7 @@
 - Added `craft\test\TestSetup::SITE_URL`.
 
 ### Changed
+- Improved the performance of project config change diffs. ([#7218](https://github.com/craftcms/cms/issues/7218))
 - The `withoutKey` Twig filter can now accept an array, for removing multiple keys at once. ([#7230](https://github.com/craftcms/cms/issues/7230))
 - `craft\behaviors\EnvAttributeParserBehavior::$attributes` can now be set to an array with key/value pairs, where the key is the attribute name, and the value is the raw (unparsed) value, or a callable that returns the raw value.
 - `craft\models\Site::$baseUrl` is now a magic property, which returns the parsed base URL. ([#3964](https://github.com/craftcms/cms/issues/3964))
