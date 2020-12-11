@@ -8,7 +8,6 @@
 namespace craft\fields;
 
 use Craft;
-use craft\base\GqlSchemaAwareFieldInterface;
 use craft\db\Table as DbTable;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
@@ -17,6 +16,7 @@ use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\resolvers\elements\Entry as EntryResolver;
 use craft\helpers\Db;
 use craft\helpers\Gql;
+use craft\models\GqlSchema;
 use GraphQL\Type\Definition\Type;
 
 /**
@@ -25,7 +25,7 @@ use GraphQL\Type\Definition\Type;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Entries extends BaseRelationField implements GqlSchemaAwareFieldInterface
+class Entries extends BaseRelationField
 {
     /**
      * @inheritdoc
@@ -57,6 +57,14 @@ class Entries extends BaseRelationField implements GqlSchemaAwareFieldInterface
     public static function valueType(): string
     {
         return EntryQuery::class;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function includeInGqlSchema(GqlSchema $schema): bool
+    {
+        return Gql::canQueryEntries($schema);
     }
 
     /**
@@ -94,13 +102,5 @@ class Entries extends BaseRelationField implements GqlSchemaAwareFieldInterface
             'typeId' => array_values($entryTypeIds),
             'sectionId' => array_values($sectionIds)
         ];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getExistsForCurrentGqlSchema(): bool
-    {
-        return Gql::canQueryEntries();
     }
 }

@@ -9,7 +9,6 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\GqlSchemaAwareFieldInterface;
 use craft\base\VolumeInterface;
 use craft\db\Table as DbTable;
 use craft\elements\Asset;
@@ -29,6 +28,7 @@ use craft\helpers\ElementHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Gql;
 use craft\helpers\Html;
+use craft\models\GqlSchema;
 use craft\web\UploadedFile;
 use GraphQL\Type\Definition\Type;
 use yii\base\InvalidConfigException;
@@ -39,7 +39,7 @@ use yii\base\InvalidConfigException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Assets extends BaseRelationField implements GqlSchemaAwareFieldInterface
+class Assets extends BaseRelationField
 {
     /**
      * @since 3.5.11
@@ -451,6 +451,14 @@ class Assets extends BaseRelationField implements GqlSchemaAwareFieldInterface
 
     /**
      * @inheritdoc
+     */
+    public function includeInGqlSchema(GqlSchema $schema): bool
+    {
+        return Gql::canQueryAssets($schema);
+    }
+
+    /**
+     * @inheritdoc
      * @since 3.3.0
      */
     public function getContentGqlType()
@@ -594,14 +602,6 @@ class Assets extends BaseRelationField implements GqlSchemaAwareFieldInterface
         $volumeIds = Db::idsByUids(DbTable::VOLUMES, $allowedVolumeUids);
 
         return ['volumeId' => array_values($volumeIds)];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getExistsForCurrentGqlSchema(): bool
-    {
-        return Gql::canQueryAssets();
     }
 
     /**

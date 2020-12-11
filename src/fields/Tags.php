@@ -9,7 +9,6 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\GqlSchemaAwareFieldInterface;
 use craft\db\Table as DbTable;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\TagQuery;
@@ -20,6 +19,7 @@ use craft\gql\resolvers\elements\Tag as TagResolver;
 use craft\helpers\Db;
 use craft\helpers\Gql;
 use craft\helpers\Html;
+use craft\models\GqlSchema;
 use craft\models\TagGroup;
 use GraphQL\Type\Definition\Type;
 
@@ -29,7 +29,7 @@ use GraphQL\Type\Definition\Type;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Tags extends BaseRelationField implements GqlSchemaAwareFieldInterface
+class Tags extends BaseRelationField
 {
     /**
      * @inheritdoc
@@ -116,6 +116,14 @@ class Tags extends BaseRelationField implements GqlSchemaAwareFieldInterface
 
     /**
      * @inheritdoc
+     */
+    public function includeInGqlSchema(GqlSchema $schema): bool
+    {
+        return Gql::canQueryTags($schema);
+    }
+
+    /**
+     * @inheritdoc
      * @since 3.3.0
      */
     public function getContentGqlType()
@@ -145,14 +153,6 @@ class Tags extends BaseRelationField implements GqlSchemaAwareFieldInterface
         $tagGroupIds = Db::idsByUids(DbTable::TAGGROUPS, $allowedTagGroupUids);
 
         return ['groupId' => array_values($tagGroupIds)];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getExistsForCurrentGqlSchema(): bool
-    {
-        return Gql::canQueryTags();
     }
 
     /**

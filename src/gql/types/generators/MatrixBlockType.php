@@ -10,7 +10,7 @@ namespace craft\gql\types\generators;
 use Craft;
 use craft\elements\MatrixBlock as MatrixBlockElement;
 use craft\fields\Matrix;
-use craft\gql\base\BaseGenerator;
+use craft\gql\base\Generator;
 use craft\gql\base\GeneratorInterface;
 use craft\gql\base\ObjectType;
 use craft\gql\base\SingleGeneratorInterface;
@@ -26,7 +26,7 @@ use craft\models\MatrixBlockType as MatrixBlockTypeModel;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0
  */
-class MatrixBlockType extends BaseGenerator implements GeneratorInterface, SingleGeneratorInterface
+class MatrixBlockType extends Generator implements GeneratorInterface, SingleGeneratorInterface
 {
     /**
      * @inheritdoc

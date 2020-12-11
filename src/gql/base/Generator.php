@@ -7,16 +7,17 @@
 
 namespace craft\gql\base;
 
+use Craft;
 use craft\base\Field;
-use craft\base\GqlSchemaAwareFieldInterface;
+use craft\errors\GqlException;
 
 /**
- * Class BaseGenerator
+ * Class Generator
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.6.0
  */
-abstract class BaseGenerator
+abstract class Generator
 {
     /**
      * Get content fields for a given context.
@@ -26,12 +27,20 @@ abstract class BaseGenerator
      */
     protected static function getContentFields($context): array
     {
+        try {
+            $schema = Craft::$app->getGql()->getActiveSchema();
+        } catch (GqlException $e) {
+            Craft::warning("Could not get the active GraphQL schema: {$e->getMessage()}", __METHOD__);
+            Craft::$app->getErrorHandler()->logException($e);
+            return [];
+        }
+
         $contentFields = $context->getFields();
         $contentFieldGqlTypes = [];
 
         /** @var Field $contentField */
         foreach ($contentFields as $contentField) {
-            if (!$contentField instanceof GqlSchemaAwareFieldInterface || $contentField->getExistsForCurrentGqlSchema()) {
+            if ($contentField->includeInGqlSchema($schema)) {
                 $contentFieldGqlTypes[$contentField->handle] = $contentField->getContentGqlType();
             }
         }

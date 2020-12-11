@@ -9,7 +9,7 @@ namespace craft\gql\types\generators;
 
 use Craft;
 use craft\elements\Tag as TagElement;
-use craft\gql\base\BaseGenerator;
+use craft\gql\base\Generator;
 use craft\gql\base\GeneratorInterface;
 use craft\gql\base\ObjectType;
 use craft\gql\base\SingleGeneratorInterface;
@@ -27,7 +27,7 @@ use craft\models\TagGroup;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0
  */
-class TagType extends BaseGenerator implements GeneratorInterface, SingleGeneratorInterface
+class TagType extends Generator implements GeneratorInterface, SingleGeneratorInterface
 {
     /**
      * @inheritdoc

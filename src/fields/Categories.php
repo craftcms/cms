@@ -9,7 +9,6 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\GqlSchemaAwareFieldInterface;
 use craft\db\Table as DbTable;
 use craft\elements\Category;
 use craft\elements\db\CategoryQuery;
@@ -20,6 +19,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Gql;
+use craft\models\GqlSchema;
 use GraphQL\Type\Definition\Type;
 
 /**
@@ -28,7 +28,7 @@ use GraphQL\Type\Definition\Type;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Categories extends BaseRelationField implements GqlSchemaAwareFieldInterface
+class Categories extends BaseRelationField
 {
     /**
      * @inheritdoc
@@ -155,6 +155,14 @@ class Categories extends BaseRelationField implements GqlSchemaAwareFieldInterfa
 
     /**
      * @inheritdoc
+     */
+    public function includeInGqlSchema(GqlSchema $schema): bool
+    {
+        return Gql::canQueryCategories($schema);
+    }
+
+    /**
+     * @inheritdoc
      * @since 3.3.0
      */
     public function getContentGqlType()
@@ -184,13 +192,5 @@ class Categories extends BaseRelationField implements GqlSchemaAwareFieldInterfa
         $categoryIds = Db::idsByUids(DbTable::CATEGORYGROUPS, $allowedCategoryUids);
 
         return ['groupId' => array_values($categoryIds)];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getExistsForCurrentGqlSchema(): bool
-    {
-        return Gql::canQueryCategories();
     }
 }

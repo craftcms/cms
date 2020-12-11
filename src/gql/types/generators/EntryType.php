@@ -9,7 +9,7 @@ namespace craft\gql\types\generators;
 
 use Craft;
 use craft\elements\Entry as EntryElement;
-use craft\gql\base\BaseGenerator;
+use craft\gql\base\Generator;
 use craft\gql\base\GeneratorInterface;
 use craft\gql\base\ObjectType;
 use craft\gql\base\SingleGeneratorInterface;
@@ -27,7 +27,7 @@ use craft\models\EntryType as EntryTypeModel;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0
  */
-class EntryType extends BaseGenerator implements GeneratorInterface, SingleGeneratorInterface
+class EntryType extends Generator implements GeneratorInterface, SingleGeneratorInterface
 {
     /**
      * @inheritdoc

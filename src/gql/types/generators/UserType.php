@@ -9,7 +9,7 @@ namespace craft\gql\types\generators;
 
 use Craft;
 use craft\elements\User as UserElement;
-use craft\gql\base\BaseGenerator;
+use craft\gql\base\Generator;
 use craft\gql\base\GeneratorInterface;
 use craft\gql\base\ObjectType;
 use craft\gql\base\SingleGeneratorInterface;
@@ -24,7 +24,7 @@ use craft\gql\types\elements\User;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0
  */
-class UserType extends BaseGenerator implements GeneratorInterface, SingleGeneratorInterface
+class UserType extends Generator implements GeneratorInterface, SingleGeneratorInterface
 {
     /**
      * @inheritdoc
