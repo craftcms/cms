@@ -29,7 +29,7 @@
             viewLogTraces: function(ev) {
                 if (!this.tracesModal) {
                     var $container = $('<div id="traces" class="modal loading"/>').appendTo(Garnish.$bod);
-                    this.$tracesModalBody = $('<div class="body"/>').appendTo($container);
+                    this.$tracesModalBody = $('<div class="body" tabindex="0"/>').appendTo($container);
 
                     this.tracesModal = new Garnish.Modal($container, {
                         resizable: true

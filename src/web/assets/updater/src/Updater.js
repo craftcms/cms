@@ -34,7 +34,12 @@
             },
 
             showErrorDetails: function(details) {
-                $('<div/>', {id: 'error', 'class': 'code', html: this.parseStatus(details)}).appendTo(this.$status);
+                $('<div/>', {
+                    id: 'error',
+                    class: 'code',
+                    tabindex: 0,
+                    html: this.parseStatus(details),
+                }).appendTo(this.$status);
             },
 
             postActionRequest: function(action) {
