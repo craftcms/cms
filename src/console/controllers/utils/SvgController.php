@@ -7,15 +7,12 @@
 
 namespace craft\console\controllers\utils;
 
-use Craft;
 use craft\console\Controller;
-use craft\db\Table;
 use craft\helpers\Console;
 use craft\helpers\FileHelper;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
 use yii\console\ExitCode;
-use yii\db\Expression;
 
 /**
  * Processes SVG files.
