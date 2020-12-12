@@ -194,22 +194,6 @@
                     $p.remove();
                 });
             }
-
-            // // Only show the diff right away if it's less than 100 lines long
-            // if ((response.data.match(/\n/g) || []).length < 2) {
-            //     showDiff();
-            // } else {
-            //     $diffPane.append(
-            //         $('<p/>', {
-            //             class: 'centeralign',
-            //         }).append(
-            //             $('<a/>', {
-            //                 class: 'largetext g',
-            //                 text: Craft.t('app', 'View changes'),
-            //             })
-            //         )
-            //     );
-            // }
         });
         Garnish.$win.on('beforeunload', () => {
             if (cancelToken) {
