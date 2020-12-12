@@ -11,7 +11,7 @@
         {% endif %}
         {{ csrfInput() }}
         {% if areChangesPending %}
-            <div id="diff" class="pane loading"></div>
+            <div id="diff" class="pane loading" tabindex="0"></div>
             <div class="readable">
                 <blockquote class="note $noteClass">
                     <p>
@@ -139,7 +139,7 @@
 <hr>
 
 <h2>{{ 'Loaded Project Config Data'|t('app') }}</h2>
-<div class="pane">
+<div class="pane" tabindex="0">
     <pre><code>{{ entireConfig }}</code></pre>
 </div>
 <div class="buttons">

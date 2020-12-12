@@ -10,6 +10,7 @@
 - The Username, First Name, Last Name, Email, and New Password fields on Edit User pages now prevent LastPass from autofilling them. ([#7177](https://github.com/craftcms/cms/issues/7177))
 - Field layout elements’ settings HUDs now automatically set the focus on the first text input when opened. ([#7175](https://github.com/craftcms/cms/issues/7175))
 - Field instructions within the details pane are now replaced with info icons. ([#7180](https://github.com/craftcms/cms/issues/7180))
+- Panes with `overflow: auto` and no focusable content within them now have `tabindex="0"` attributes, so their content can be keyboard-scrollable on Chromium and WebKit-based browsers. ([#7236](https://github.com/craftcms/cms/issues/7236))
 - `users/set-password` requests now include a `status` key in JSON responses, set to the user’s status. ([#7239](https://github.com/craftcms/cms/issues/7239))
 
 ### Fixed
