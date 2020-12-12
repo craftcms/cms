@@ -1531,14 +1531,14 @@ body,
       background: #f3f7fc;
       box-shadow: inset -1px 0 0 rgba(51, 64, 77, 0.1); }
     #graphiql .queryWrap .CodeMirror-linenumber {
-      color: #9aa5b1; }
+      color: #606d7b; }
     #graphiql .queryWrap .variable-editor {
       height: 28px; }
       #graphiql .queryWrap .variable-editor .variable-editor-title {
         background: #f3f7fc;
         box-shadow: 0 -1px 0 rgba(51, 64, 77, 0.1), 0 1px 0 rgba(51, 64, 77, 0.1);
         z-index: 4;
-        color: #9aa5b1; }
+        color: #606d7b; }
   #graphiql .graphiql-container .toolbar {
     margin-left: 16px; }
   #graphiql .graphiql-container .toolbar-button {
@@ -1612,7 +1612,7 @@ body,
           opacity: 0.8;
           content: 'check';
           font-size: 14px;
-          color: #9aa5b1; }
+          color: #606d7b; }
           body.ltr #graphiql .graphiql-container .execute-options li.selected-schema:before, body.ltr #graphiql .graphiql-container .toolbar-menu-items li.selected-schema:before {
             float: left; }
           body.rtl #graphiql .graphiql-container .execute-options li.selected-schema:before, body.rtl #graphiql .graphiql-container .toolbar-menu-items li.selected-schema:before {
