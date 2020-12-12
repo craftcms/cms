@@ -31,6 +31,7 @@
 - Fixed a bug where the `|attr` Twig filter wasn’t removing `class` and `style` attributes when they were set to `false` or `null`. ([#7234](https://github.com/craftcms/cms/issues/7234))
 - Fixed a bug where eager-loading would load incorrect elements in some cases when using GraphQL API.
 - Fixed a bug where select inputs could bleed out of their container divs. ([#7183](https://github.com/craftcms/cms/issues/7183))
+- Fixed a bug where Edit Entry pages would show “Save and add another” and “Save as a new entry” action options for users who didn’t have permission to create new entries in the section. ([#7232](https://github.com/craftcms/cms/issues/7232))
 
 ## 3.5.16 - 2020-11-24
 
