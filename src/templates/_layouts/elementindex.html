@@ -25,7 +25,7 @@
 
 {% block sidebar %}
     {% if sources is not empty %}
-        <nav>
+        <nav aria-label="{{ 'Sources'|t('app') }}">
             {% include "_elements/sources" %}
         </nav>
 

@@ -109,7 +109,7 @@
                                     {{ hiddenInput('pluginHandle', handle) }}
                                     {{ csrfInput() }}
                                     <div class="btngroup">
-                                        <button type="button" class="btn menubtn" data-icon="settings"></button>
+                                        <button type="button" class="btn menubtn" data-icon="settings" aria-label="{{ 'Settings'|t('app') }}"></button>
                                         <div class="menu" data-align="right">
                                             <ul>
                                                 {% if not config.isInstalled %}

@@ -75,6 +75,7 @@ return [
     'Author' => 'Autor',
     'Backing-up database…' => 'Tworzenie kopii zapasowej bazy danych…',
     'Base URL' => 'Bazowy URL',
+    'Breadcrumbs' => 'Breadcrumbs',
     'Buy {name}' => 'Kup {name}',
     'Cancel' => 'Anuluj',
     'categories' => 'kategorie',

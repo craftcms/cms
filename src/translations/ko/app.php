@@ -75,6 +75,7 @@ return [
     'Author' => '저자',
     'Backing-up database…' => '데이터베이스 백업 중...',
     'Base URL' => '기준 URL',
+    'Breadcrumbs' => 'Breadcrumbs',
     'Buy {name}' => '{name} 구입',
     'Cancel' => '취소',
     'categories' => '카테고리',

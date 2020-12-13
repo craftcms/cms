@@ -8,6 +8,7 @@
 - Added the `utils/svg` command, which can sanitize and/or namespace a batch of SVG files.
 
 ### Changed
+- Improved accessibility throughout the control panel. ([#7231](https://github.com/craftcms/cms/pull/7231))
 - The Username, First Name, Last Name, Email, and New Password fields on Edit User pages now prevent LastPass from autofilling them. ([#7177](https://github.com/craftcms/cms/issues/7177))
 - Field layout elements’ settings HUDs now automatically set the focus on the first text input when opened. ([#7175](https://github.com/craftcms/cms/issues/7175))
 - Field instructions within the details pane are now replaced with info icons. ([#7180](https://github.com/craftcms/cms/issues/7180))
