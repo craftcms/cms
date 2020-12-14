@@ -75,6 +75,7 @@ return [
     'Author' => 'עורך',
     'Backing-up database…' => 'מגבה בסיס נתונים...',
     'Base URL' => 'כתובת URL בסיסית',
+    'Breadcrumbs' => 'Breadcrumbs',
     'Buy {name}' => 'קנה את {name}',
     'Cancel' => 'ביטול',
     'categories' => 'קטגוריות',

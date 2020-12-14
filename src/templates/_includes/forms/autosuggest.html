@@ -6,6 +6,7 @@
 
 {%- set id = id ?? "autosuggest#{random()}" %}
 {%- set containerId = "#{id}-container" %}
+{%- set autosuggestId = "#{id}-autosuggest" %}
 
 {%- set class = (class ?? [])|explodeClass|merge([
     'text',
@@ -20,6 +21,7 @@
         :get-suggestion-value="getSuggestionValue"
         :input-props="inputProps"
         :limit="limit"
+        :component-attr-id-autosuggest="id"
         @selected="onSelected"
         @focus="updateFilteredOptions"
         @blur="onBlur"
@@ -43,6 +45,7 @@ new Vue({
             selected: '',
             filteredOptions: [],
             suggestions: suggestions ?? [],
+            id: autosuggestId,
             inputProps: {
                 class: class|join(' '),
                 initialValue: value ?? '',

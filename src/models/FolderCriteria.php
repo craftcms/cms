@@ -33,7 +33,12 @@ class FolderCriteria extends Model
     public $volumeId;
 
     /**
-     * @var string|null Name
+     * @var string|string[]|null The folder name(s).
+     *
+     * ::: tip
+     * If you’re searching for a folder name that contains a comma, pass the value through
+     * [[\craft\helpers\Db::escapeParam()]] to prevent it from getting treated as multiple folder name values.
+     * :::
      */
     public $name;
 

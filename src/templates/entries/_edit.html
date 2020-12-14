@@ -32,8 +32,8 @@
     {% if section.type == 'structure' %}
         {% set nextEntryParams = nextEntryParams|merge(['parentId={parent.id}']) %}
     {% endif %}
-    {% set canDuplicateSource = true %}
-    {% set canAddAnother = true %}
+    {% set canDuplicateSource = currentUser.can("createEntries#{permissionSuffix}") %}
+    {% set canAddAnother = currentUser.can("createEntries#{permissionSuffix}") %}
     {% set addAnotherRedirectUrl = "entries/#{section.handle}/new?" ~ nextEntryParams|join('&') %}
 {% endif %}
 

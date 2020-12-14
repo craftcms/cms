@@ -75,6 +75,7 @@ return [
     'Author' => 'Forfatter',
     'Backing-up database…' => 'Sikkerhedskopiere database…',
     'Base URL' => 'Basis-URL',
+    'Breadcrumbs' => 'Breadcrumbs',
     'Buy {name}' => 'Køb {name}',
     'Cancel' => 'Anuller',
     'categories' => 'kategorier',

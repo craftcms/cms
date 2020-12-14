@@ -166,6 +166,7 @@ return [
     'Bottom-Left' => 'Bottom-Left',
     'Bottom-Right' => 'Bottom-Right',
     'Branch Limit' => 'Branch Limit',
+    'Breadcrumbs' => 'Breadcrumbs',
     'Briefly describe your issue or idea.' => 'Briefly describe your issue or idea.',
     'Briefly describe your question.' => 'Briefly describe your question.',
     'Bug reports and feature requests' => 'Bug reports and feature requests',

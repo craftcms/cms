@@ -75,6 +75,7 @@ return [
     'Author' => 'Auteur',
     'Backing-up database…' => 'Database wordt bewaard…',
     'Base URL' => 'Basis-URL',
+    'Breadcrumbs' => 'Breadcrumbs',
     'Buy {name}' => 'Koop {name}',
     'Cancel' => 'Afbreken',
     'categories' => 'categorieën',

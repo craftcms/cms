@@ -456,16 +456,23 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      */
     public function modifyElementsQuery(ElementQueryInterface $query, $value)
     {
-        if ($value === null) {
+        if (empty($value)) {
             return null;
         }
 
-        /** @var ElementQuery $query */
-        if ($value === 'not :empty:') {
-            $value = ':notempty:';
+        if (!is_array($value)) {
+            $value = [$value];
         }
 
-        if ($value === ':notempty:' || $value === ':empty:') {
+        /** @var ElementQuery $query */
+        $conditions = [];
+
+        if (isset($value[0]) && in_array($value[0], [':notempty:', ':empty:', 'not :empty:'])) {
+            $emptyCondition = array_shift($value);
+            if ($emptyCondition === 'not :empty:') {
+                $emptyCondition = ':notempty:';
+            }
+
             $ns = $this->handle . '_' . StringHelper::randomString(5);
             $condition = [
                 'exists', (new Query())
@@ -485,12 +492,14 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
                     ->andWhere(['not', ["elements_sites_$ns.enabled" => false]])
             ];
 
-            if ($value === ':notempty:') {
-                $query->subQuery->andWhere($condition);
+            if ($emptyCondition === ':notempty:') {
+                $conditions[] = $condition;
             } else {
-                $query->subQuery->andWhere(['not', $condition]);
+                $conditions[] = ['not', $condition];
             }
-        } else {
+        }
+
+        if (!empty($value)) {
             $parser = new ElementRelationParamParser([
                 'fields' => [
                     $this->handle => $this,
@@ -500,13 +509,17 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
                 'targetElement' => $value,
                 'field' => $this->handle,
             ]);
-
-            if ($condition === false) {
-                return false;
+            if ($condition !== false) {
+                $conditions[] = $condition;
             }
-
-            $query->subQuery->andWhere($condition);
         }
+
+        if (empty($conditions)) {
+            return false;
+        }
+
+        array_unshift($conditions, 'or');
+        $query->subQuery->andWhere($conditions);
 
         return null;
     }

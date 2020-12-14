@@ -75,6 +75,7 @@ return [
     'Author' => '投稿者',
     'Backing-up database…' => 'データーベースをバックアップ中…',
     'Base URL' => 'ベース URL',
+    'Breadcrumbs' => 'Breadcrumbs',
     'Buy {name}' => '{name} を購入',
     'Cancel' => 'キャンセル',
     'categories' => 'カテゴリ',

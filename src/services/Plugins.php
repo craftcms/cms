@@ -53,7 +53,7 @@ class Plugins extends Component
      */
     const EVENT_BEFORE_ENABLE_PLUGIN = 'beforeEnablePlugin';
     /**
-     * @event PluginEvent The event that is triggered before a plugin is enabled
+     * @event PluginEvent The event that is triggered after a plugin is enabled
      */
     const EVENT_AFTER_ENABLE_PLUGIN = 'afterEnablePlugin';
 
@@ -62,7 +62,7 @@ class Plugins extends Component
      */
     const EVENT_BEFORE_DISABLE_PLUGIN = 'beforeDisablePlugin';
     /**
-     * @event PluginEvent The event that is triggered before a plugin is disabled
+     * @event PluginEvent The event that is triggered after a plugin is disabled
      */
     const EVENT_AFTER_DISABLE_PLUGIN = 'afterDisablePlugin';
 
@@ -72,7 +72,7 @@ class Plugins extends Component
     const EVENT_BEFORE_INSTALL_PLUGIN = 'beforeInstallPlugin';
 
     /**
-     * @event PluginEvent The event that is triggered before a plugin is installed
+     * @event PluginEvent The event that is triggered after a plugin is installed
      */
     const EVENT_AFTER_INSTALL_PLUGIN = 'afterInstallPlugin';
 
@@ -82,7 +82,7 @@ class Plugins extends Component
     const EVENT_BEFORE_UNINSTALL_PLUGIN = 'beforeUninstallPlugin';
 
     /**
-     * @event PluginEvent The event that is triggered before a plugin is uninstalled
+     * @event PluginEvent The event that is triggered after a plugin is uninstalled
      */
     const EVENT_AFTER_UNINSTALL_PLUGIN = 'afterUninstallPlugin';
 
@@ -92,7 +92,7 @@ class Plugins extends Component
     const EVENT_BEFORE_SAVE_PLUGIN_SETTINGS = 'beforeSavePluginSettings';
 
     /**
-     * @event PluginEvent The event that is triggered before a plugin's settings are saved
+     * @event PluginEvent The event that is triggered after a plugin's settings are saved
      */
     const EVENT_AFTER_SAVE_PLUGIN_SETTINGS = 'afterSavePluginSettings';
 

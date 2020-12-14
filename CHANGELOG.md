@@ -186,9 +186,12 @@
 - Added the `fullSchema` option to the `graphql/dump-schema` and `graphql/print-schema` commands. ([#7226](https://github.com/craftcms/cms/issues/7226))
 
 ### Changed
+- Improved accessibility throughout the control panel. ([#7231](https://github.com/craftcms/cms/pull/7231))
 - The Username, First Name, Last Name, Email, and New Password fields on Edit User pages now prevent LastPass from autofilling them. ([#7177](https://github.com/craftcms/cms/issues/7177))
 - Field layout elements’ settings HUDs now automatically set the focus on the first text input when opened. ([#7175](https://github.com/craftcms/cms/issues/7175))
 - Field instructions within the details pane are now replaced with info icons. ([#7180](https://github.com/craftcms/cms/issues/7180))
+- Panes with `overflow: auto` and no focusable content within them now have `tabindex="0"` attributes, so their content can be keyboard-scrollable on Chromium and WebKit-based browsers. ([#7236](https://github.com/craftcms/cms/issues/7236))
+- It’s now possible to pass arrays to relational fields’ element query params which begin with `':empty:'`, to fetch elements where the relational field is either empty or has a certain value. ([#7256](https://github.com/craftcms/cms/issues/7256))
 - `users/set-password` requests now include a `status` key in JSON responses, set to the user’s status. ([#7239](https://github.com/craftcms/cms/issues/7239))
 
 ### Fixed
@@ -207,7 +210,12 @@
 - Fixed a bug where `craft\elements\db\ElementQuery::getCriteria()` wasn’t including custom field criteria values. ([#7225](https://github.com/craftcms/cms/issues/7225))
 - Fixed a MySQL deadlock error that could occur when running background jobs. ([#7179](https://github.com/craftcms/cms/issues/7179))
 - Fixed a bug where Craft was responding to set-password requests for pending users as if they had been activated, even if something prevented them from being activated. ([#7239](https://github.com/craftcms/cms/issues/7239))
+- Fixed a bug where the `|attr` Twig filter wasn’t removing `class` and `style` attributes when they were set to `false` or `null`. ([#7234](https://github.com/craftcms/cms/issues/7234))
 - Fixed a bug where eager-loading would load incorrect elements in some cases when using GraphQL API.
+- Fixed a bug where select inputs could bleed out of their container divs. ([#7183](https://github.com/craftcms/cms/issues/7183))
+- Fixed a bug where Edit Entry pages would show “Save and add another” and “Save as a new entry” action options for users who didn’t have permission to create new entries in the section. ([#7232](https://github.com/craftcms/cms/issues/7232))
+- Fixed a bug where some control panel SVG icons had conflicting IDs. ([#7247](https://github.com/craftcms/cms/pull/7247))
+- Fixed a bug where it was impossible to use multiple options for checkbox and multi-select fields when using GraphQL Mutations. ([#7197](https://github.com/craftcms/cms/issues/7197))
 
 ## 3.5.16 - 2020-11-24
 
