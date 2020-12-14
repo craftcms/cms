@@ -427,13 +427,13 @@ class Entry extends Element
                 }
 
                 // Delete?
-                $canDeleteEntries = $userSession->checkPermission('deleteEntries:' . $section->uid);
-                $canDeletePeerEntries = $userSession->checkPermission('deletePeerEntries:' . $section->uid);
-
-                if ($canDeleteEntries || $canDeletePeerEntries) {
+                if ($userSession->checkPermission("deleteEntries:$section->uid")) {
                     $actions[] = Delete::class;
 
-                    if ($section->type === Section::TYPE_STRUCTURE && $canDeleteEntries && $canDeletePeerEntries) {
+                    if (
+                        $section->type === Section::TYPE_STRUCTURE &&
+                        $userSession->checkPermission("deletePeerEntries:$section->uid")
+                    ) {
                         $actions[] = [
                             'type' => Delete::class,
                             'withDescendants' => true,
@@ -1180,9 +1180,15 @@ class Entry extends Element
      */
     public function getIsDeletable(): bool
     {
+        $section = $this->getSection();
+        if ($section === Section::TYPE_SINGLE) {
+            return false;
+        }
         $userSession = Craft::$app->getUser();
-        $prefix = $userSession->getId() == $this->authorId ? 'deleteEntries' : 'deletePeerEntries';
-        return $userSession->checkPermission("$prefix:" . $this->getSection()->uid);
+        return (
+            $userSession->checkPermission("deleteEntries:$section->uid") &&
+            ($this->authorId == $userSession->getId() || $userSession->checkPermission("deletePeerEntries:$section->uid"))
+        );
     }
 
     /**

@@ -37,6 +37,7 @@
 - Fixed a bug where Edit Entry pages would show “Save and add another” and “Save as a new entry” action options for users who didn’t have permission to create new entries in the section. ([#7232](https://github.com/craftcms/cms/issues/7232))
 - Fixed a bug where some control panel SVG icons had conflicting IDs. ([#7247](https://github.com/craftcms/cms/pull/7247))
 - Fixed a bug where it was impossible to use multiple options for checkbox and multi-select fields when using GraphQL Mutations. ([#7197](https://github.com/craftcms/cms/issues/7197))
+- Fixed a bug where users were able to delete entries if they had the “Delete other authors’ entries” permission but not the “Delete entries” permission. ([#7233](https://github.com/craftcms/cms/issues/7233))
 
 ## 3.5.16 - 2020-11-24
 
