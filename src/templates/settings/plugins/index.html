@@ -52,17 +52,43 @@
                                         {% if config.description %}
                                             <p>{{ config.description }}</p>
                                         {% endif %}
-                                        {% if config.developerUrl or config.developer or config.hasCpSettings or config.documentationUrl %}
-                                            <p class="links">
+                                        {% if config.developer or config.documentationUrl or config.hasCpSettings %}
+                                            <ul class="links">
                                                 {%- spaceless %}
-                                                {% if config.documentationUrl %}
-                                                    <a href="{{ config.documentationUrl }}" rel="noopener" target="_blank">{{ "Documentation"|t('app') }}</a>
-                                                {% endif %}
-                                                {% if config.hasCpSettings %}
-                                                    <a href="{{ url('settings/plugins/'~config.moduleId) }}"><span data-icon="settings"></span>{{ "Settings"|t('app') }}</a>
-                                                {% endif %}
+                                                    {% if config.developer %}
+                                                        <li class="link-developer">
+                                                            {% if config.developerUrl %}
+                                                                {{ tag('a', {
+                                                                    href: config.developerUrl,
+                                                                    rel: 'noopener',
+                                                                    target: '_blank',
+                                                                    text: config.developer,
+                                                                }) }}
+                                                            {% else %}
+                                                                <span>{{ config.developer }}</span>
+                                                            {% endif %}
+                                                        </li>
+                                                    {% endif %}
+                                                    {% if config.documentationUrl %}
+                                                        <li class="link-docs">
+                                                            {{ tag('a', {
+                                                                href: config.documentationUrl,
+                                                                rel: 'noopener',
+                                                                target: '_blank',
+                                                                text: 'Documentation'|t('app'),
+                                                            }) }}
+                                                        </li>
+                                                    {% endif %}
+                                                    {% if config.hasCpSettings %}
+                                                        <li class="link-settings">
+                                                            {{ tag('a', {
+                                                                href: url('settings/plugins/'~config.moduleId),
+                                                                text: 'Settings'|t('app'),
+                                                            }) }}
+                                                        </li>
+                                                    {% endif %}
                                                 {% endspaceless -%}
-                                            </p>
+                                            </ul>
                                         {% endif %}
                                         {% set showLicenseKey = config.licenseKey or config.licenseKeyStatus != 'unknown' %}
                                         <div class="flex license-key{% if not showLicenseKey %} hidden{% endif %}">
