@@ -10,7 +10,7 @@
             rows: 5
         }) }}
         <div class="cs-search-results-container hidden">
-            <div class="cs-search-icon">{{ svg(resultsIcon) }}</div>
+            <div class="cs-search-icon">{{ svg(resultsIcon, sanitize=false) }}</div>
             <h2>{{ resultsHeading }}</h2>
             <ul class="cs-search-results"></ul>
         </div>
@@ -110,12 +110,12 @@
 
 <div class="cs-screen cs-screen-home">
     <div class="cs-opt" data-screen="help">
-        <div class="cs-opt-icon">{{ svg(buoeyIcon) }}</div>
+        <div class="cs-opt-icon">{{ svg(buoeyIcon, sanitize=false) }}</div>
         <h2>{{ "Get help"|t('app') }}</h2>
         <p>{{ "How-to’s and other questions"|t('app') }}</p>
     </div>
     <div class="cs-opt" data-screen="feedback">
-        <div class="cs-opt-icon">{{ svg(bullhornIcon) }}</div>
+        <div class="cs-opt-icon">{{ svg(bullhornIcon, sanitize=false) }}</div>
         <h2>{{ "Give feedback"|t('app') }}</h2>
         <p>{{ "Bug reports and feature requests"|t('app') }}</p>
     </div>
