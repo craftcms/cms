@@ -75,6 +75,7 @@ return [
     'Author' => 'نویسنده',
     'Backing-up database…' => 'در حال پشتیبان گیری از پایگاه داده...',
     'Base URL' => 'آدرس اینترنتی پایه',
+    'Breadcrumbs' => 'Breadcrumbs',
     'Buy {name}' => '{name} را بخر',
     'Cancel' => 'لغو کردن',
     'categories' => 'دسته بندی ها',

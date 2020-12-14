@@ -75,6 +75,7 @@ return [
     'Author' => '作者',
     'Backing-up database…' => '正在备份数据库…',
     'Base URL' => '根 URL',
+    'Breadcrumbs' => 'Breadcrumbs',
     'Buy {name}' => '购买 {name}',
     'Cancel' => '取消',
     'categories' => '分类',

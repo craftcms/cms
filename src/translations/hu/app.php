@@ -75,6 +75,7 @@ return [
     'Author' => 'Szerző',
     'Backing-up database…' => 'Adatbázis biztonsági mentése…',
     'Base URL' => 'Alap URL',
+    'Breadcrumbs' => 'Breadcrumbs',
     'Buy {name}' => '{name} vásárlása',
     'Cancel' => 'Mégse',
     'categories' => 'kategóriák',

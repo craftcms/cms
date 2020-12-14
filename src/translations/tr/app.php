@@ -75,6 +75,7 @@ return [
     'Author' => 'Yazar',
     'Backing-up database…' => 'Veritabanı yedeklemesi alınıyor…',
     'Base URL' => 'Temel URL',
+    'Breadcrumbs' => 'Breadcrumbs',
     'Buy {name}' => '{name} satın alın',
     'Cancel' => 'İptal',
     'categories' => 'kategoriler',

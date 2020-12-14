@@ -3,7 +3,7 @@
 {% set title = displayName %}
 
 {% block sidebar %}
-    <nav>
+    <nav aria-label="{{ 'Utilities'|t('app') }}">
         <ul>
             {% for utility in utilities %}
                 {% set selected = utility.id == id %}
