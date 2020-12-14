@@ -429,7 +429,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
 
         return [
             'name' => $this->handle,
-            'type' => Type::string(),
+            'type' => $this->multi ? Type::listOf(Type::string()) : Type::string(),
             'description' => Craft::t('app', 'The allowed values are [{values}]', ['values' => implode(', ', $values)]),
         ];
     }
