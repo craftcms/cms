@@ -33,6 +33,7 @@
 - Added `craft\elements\db\ElementQueryInterface::createElement()`.
 - Added `craft\elements\Entry::EVENT_DEFINE_ENTRY_TYPES`. ([#7136](https://github.com/craftcms/cms/issues/7136))
 - Added `craft\elements\Entry::getAvailableEntryTypes()`.
+- Added `craft\events\CreateFieldLayoutFormEvent`.
 - Added `craft\events\DefineEntryTypesEvent`.
 - Added `craft\events\RegisterGqlArgumentHandlersEvent`.
 - Added `craft\events\SearchEvent::$results`. ([#7237](https://github.com/craftcms/cms/issues/7237))
@@ -58,6 +59,7 @@
 - Added `craft\helpers\Gql::nPlus1Complexity()`.
 - Added `craft\helpers\Gql::singleQueryComplexity()`.
 - Added `craft\log\Dispatcher`.
+- Added `craft\models\FieldLayout::EVENT_CREATE_FORM`. ([#7258](https://github.com/craftcms/cms/issues/7258))
 - Added `craft\models\Site::getName()`.
 - Added `craft\models\Site::setBaseUrl()`.
 - Added `craft\models\Site::setName()`.

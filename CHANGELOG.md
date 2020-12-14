@@ -14,6 +14,7 @@
 - Added `craft\base\ElementInterface::getIsUnpublishedDraft()`.
 - Added `craft\base\FieldInterface::includeInGqlSchema()`. ([#7244](https://github.com/craftcms/cms/pull/7244))
 - Added `craft\controllers\BaseEntriesController::enforceDeleteEntryPermissions()`.
+- Added `craft\events\CreateFieldLayoutFormEvent`.
 - Added `craft\events\RegisterGqlArgumentHandlersEvent`.
 - Added `craft\events\SearchEvent::$results`. ([#7237](https://github.com/craftcms/cms/issues/7237))
 - Added `craft\gql\ArgumentManager`.
@@ -33,6 +34,7 @@
 - Added `craft\gql\types\input\criteria\Tag`.
 - Added `craft\gql\types\input\criteria\User`.
 - Added `craft\helpers\Diff`.
+- Added `craft\models\FieldLayout::EVENT_CREATE_FORM`. ([#7258](https://github.com/craftcms/cms/issues/7258))
 - Added `craft\models\Site::getName()`.
 - Added `craft\models\Site::setBaseUrl()`.
 - Added `craft\models\Site::setName()`.
