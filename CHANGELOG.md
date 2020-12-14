@@ -5,7 +5,6 @@
 ### Added
 - Edit Section and Edit Entry Type pages now have a “Save and continue editing” Save menu option, and the <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>S</kbd> keyboard shortcut is now assigned to that. ([#2872](https://github.com/craftcms/cms/issues/2872))
 - Added the `fullSchema` option to the `graphql/dump-schema` and `graphql/print-schema` commands. ([#7226](https://github.com/craftcms/cms/issues/7226))
-- Added the `utils/svg` command, which can sanitize and/or namespace a batch of SVG files.
 
 ### Changed
 - Improved accessibility throughout the control panel. ([#7231](https://github.com/craftcms/cms/pull/7231))
@@ -35,7 +34,6 @@
 - Fixed a bug where eager-loading would load incorrect elements in some cases when using GraphQL API.
 - Fixed a bug where select inputs could bleed out of their container divs. ([#7183](https://github.com/craftcms/cms/issues/7183))
 - Fixed a bug where Edit Entry pages would show “Save and add another” and “Save as a new entry” action options for users who didn’t have permission to create new entries in the section. ([#7232](https://github.com/craftcms/cms/issues/7232))
-- Fixed a bug where the control panel SVG icons had conflicting IDs. ([#7247](https://github.com/craftcms/cms/pull/7247))
 
 ## 3.5.16 - 2020-11-24
 
