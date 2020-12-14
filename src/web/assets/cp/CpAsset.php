@@ -220,6 +220,7 @@ JS;
             'Saving',
             'Score',
             'Search in subfolders',
+            'Select all',
             'Select transform',
             'Select',
             'Settings',
