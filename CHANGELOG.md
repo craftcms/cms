@@ -56,11 +56,11 @@
 - The Settings → Users → Fields and Settings → Users → Settings pages no longer redirect the browser when saved. ([#7131](https://github.com/craftcms/cms/pull/7131))
 - Editable table columns can now specify the `<textarea rows>` attribute value via a `rows` key on the column config. ([#7124](https://github.com/craftcms/cms/issues/7124))
 - The GraphQL query `relatedTo` and `relatedToAll` arguments now also allow string values.
-- Updated Imagine to 1.2.4.
 - Editable tables no longer show their heading row if there aren’t any data rows yet. ([#7158](https://github.com/craftcms/cms/issues/7158))
 - Relational fields’ “Show the site menu” settings are no longer enabled by default.
 - Relational fields’ element selection modals now always default to the source element’s site, if no target site is specified in the field’s settings. ([#7164](https://github.com/craftcms/cms/issues/7164))
 - Controllers now run request and permission checks from `beforeAction()` rather than `init()`. ([#7168](https://github.com/craftcms/cms/issues/7168))
+- Updated Imagine to 1.2.4.
 
 ### Deprecated
 - Deprecated `craft\fields\BaseRelationField::inputSiteId()`.
