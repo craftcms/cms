@@ -17,3 +17,4 @@
 - Removed `craft\web\twig\Template`.
 - Removed `craft\web\View::$minifyCss`.
 - Removed `craft\web\View::$minifyJs`.
+- Removed `craft\web\View::renderTemplateMacro()`.
