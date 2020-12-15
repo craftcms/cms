@@ -16,6 +16,14 @@ namespace craft\base;
 abstract class ElementExporter extends Component implements ElementExporterInterface
 {
     /**
+     * @inheritdoc
+     */
+    public static function isFormattable(): bool
+    {
+        return true;
+    }
+
+    /**
      * @var string|ElementInterface
      */
     protected $elementType;

@@ -24,6 +24,7 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Html;
 use craft\helpers\Json;
+use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use craft\models\UserGroup;
@@ -341,6 +342,7 @@ class User extends Element implements IdentityInterface
             'fullName' => ['label' => Craft::t('app', 'Full Name')],
             'firstName' => ['label' => Craft::t('app', 'First Name')],
             'lastName' => ['label' => Craft::t('app', 'Last Name')],
+            'groups' => ['label' => Craft::t('app', 'Groups')],
             'preferredLanguage' => ['label' => Craft::t('app', 'Preferred Language')],
             'preferredLocale' => ['label' => Craft::t('app', 'Preferred Locale')],
             'id' => ['label' => Craft::t('app', 'ID')],
@@ -362,6 +364,19 @@ class User extends Element implements IdentityInterface
             'dateCreated',
             'lastLoginDate',
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute)
+    {
+        /** @var UserQuery $elementQuery */
+        if ($attribute === 'groups') {
+            $elementQuery->withGroups();
+        } else {
+            parent::prepElementQueryForTableAttribute($elementQuery, $attribute);
+        }
     }
 
     /**
@@ -600,6 +615,14 @@ class User extends Element implements IdentityInterface
         ) {
             Craft::$app->getUsers()->unlockUser($this);
         }
+
+        // Convert IDNA ASCII to Unicode
+        if ($this->username) {
+            $this->username = StringHelper::idnToUtf8Email($this->username);
+        }
+        if ($this->email) {
+            $this->email = StringHelper::idnToUtf8Email($this->email);
+        }
     }
 
     /**
@@ -679,11 +702,14 @@ class User extends Element implements IdentityInterface
      */
     protected function defineRules(): array
     {
+        // Normalize emails as IDNA ASCII strings if the Intl extension is available
+        $enableIdn = function_exists('idn_to_ascii') && defined('INTL_IDNA_VARIANT_UTS46');
+
         $rules = parent::defineRules();
         $rules[] = [['lastLoginDate', 'lastInvalidLoginDate', 'lockoutDate', 'lastPasswordChangeDate', 'verificationCodeIssuedDate'], DateTimeValidator::class];
         $rules[] = [['invalidLoginCount', 'photoId'], 'number', 'integerOnly' => true];
         $rules[] = [['username', 'email', 'unverifiedEmail', 'firstName', 'lastName'], 'trim', 'skipOnEmpty' => true];
-        $rules[] = [['email', 'unverifiedEmail'], 'email'];
+        $rules[] = [['email', 'unverifiedEmail'], 'email', 'enableIDN' => $enableIdn];
         $rules[] = [['email', 'password', 'unverifiedEmail'], 'string', 'max' => 255];
         $rules[] = [['username', 'firstName', 'lastName', 'verificationCode'], 'string', 'max' => 100];
         $rules[] = [['username', 'email'], 'required'];
@@ -1300,6 +1326,11 @@ class User extends Element implements IdentityInterface
         switch ($attribute) {
             case 'email':
                 return $this->email ? Html::mailto(Html::encode($this->email)) : '';
+
+            case 'groups':
+                return implode(', ', array_map(function(UserGroup $group) {
+                    return Html::encode(Craft::t('site', $group->name));
+                }, $this->getGroups()));
 
             case 'preferredLanguage':
                 $language = $this->getPreferredLanguage();

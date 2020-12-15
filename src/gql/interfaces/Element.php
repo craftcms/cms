@@ -169,10 +169,15 @@ class Element extends InterfaceType
                 'type' => Type::int(),
                 'description' => 'The ID of the draft to return (from the `drafts` table)',
             ],
+            'isUnpublishedDraft' => [
+                'name' => 'isUnpublishedDraft',
+                'type' => Type::boolean(),
+                'description' => 'Returns whether this is an unpublished draft.',
+            ],
             'isUnsavedDraft' => [
                 'name' => 'isUnsavedDraft',
                 'type' => Type::boolean(),
-                'description' => 'Returns whether this is a draft.',
+                'description' => 'Returns whether this is an unpublished draft. **This field is deprecated.** `isUnpublishedDraft` should be used instead.',
             ],
             'draftName' => [
                 'name' => 'draftName',

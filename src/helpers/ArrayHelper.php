@@ -292,12 +292,12 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
     /**
      * Filters empty strings from an array.
      *
-     * @param array $arr
+     * @param array $array
      * @return array
      */
-    public static function filterEmptyStringsFromArray(array $arr): array
+    public static function filterEmptyStringsFromArray(array $array): array
     {
-        return array_filter($arr, function($value): bool {
+        return array_filter($array, function($value): bool {
             return $value !== '';
         });
     }
@@ -305,13 +305,13 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
     /**
      * Returns the first key in a given array.
      *
-     * @param array $arr
-     * @return string|int|null The first key, whether that is a number (if the array is numerically indexed) or a string, or null if $arr isn’t an array, or is empty.
+     * @param array $array
+     * @return string|int|null The first key, whether that is a number (if the array is numerically indexed) or a string, or null if $array isn’t an array, or is empty.
      */
-    public static function firstKey(array $arr)
+    public static function firstKey(array $array)
     {
         /** @noinspection LoopWhichDoesNotLoopInspection */
-        foreach ($arr as $key => $value) {
+        foreach ($array as $key => $value) {
             return $key;
         }
 
@@ -321,12 +321,12 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
     /**
      * Returns the first value in a given array.
      *
-     * @param array $arr
-     * @return mixed The first value, or null if $arr isn’t an array, or is empty.
+     * @param array $array
+     * @return mixed The first value, or null if $array isn’t an array, or is empty.
      */
-    public static function firstValue(array $arr)
+    public static function firstValue(array $array)
     {
-        return !empty($arr) ? reset($arr) : null;
+        return !empty($array) ? reset($array) : null;
     }
 
     /**

@@ -12,7 +12,6 @@ Craft.PromptHandler = Garnish.Base.extend({
     $promptApplyToRemainingLabel: null,
     $pomptChoices: null,
 
-
     _prompts: [],
     _promptBatchCallback: $.noop,
     _promptBatchReturnData: [],
@@ -71,13 +70,11 @@ Craft.PromptHandler = Garnish.Base.extend({
             // Apply the same choice to the remaining items?
             if (applyToRemaining) {
                 this._handleBatchPromptSelection(choice, true);
-            }
-            else {
+            } else {
                 // Show the next prompt
                 this._showNextPromptInBatch();
             }
-        }
-        else {
+        } else {
             // All done! Call the callback
             if (typeof this._promptBatchCallback === 'function') {
                 this._promptBatchCallback(this._promptBatchReturnData);

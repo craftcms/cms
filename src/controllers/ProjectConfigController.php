@@ -15,6 +15,7 @@ use craft\web\Controller;
 use Symfony\Component\Yaml\Yaml;
 use yii\base\Exception;
 use yii\base\Response;
+use yii\web\ForbiddenHttpException;
 use ZipArchive;
 
 /**
@@ -54,11 +55,18 @@ class ProjectConfigController extends Controller
      *
      * @return Response
      * @since 3.5.6
+     * @throws ForbiddenHttpException if the project config is in read-only mode
      */
     public function actionDiscard(): Response
     {
         $this->requirePostRequest();
-        Craft::$app->getProjectConfig()->regenerateYamlFromConfig();
+        $projectConfig = Craft::$app->getProjectConfig();
+
+        if ($projectConfig->readOnly) {
+            throw new ForbiddenHttpException('Rebuilding the project config is not allowed while it’s in read-only mode.');
+        }
+
+        $projectConfig->regenerateYamlFromConfig();
         $this->setSuccessFlash(Craft::t('app', 'Project config YAML changes discarded.'));
         return $this->redirectToPostedUrl();
     }
@@ -67,12 +75,19 @@ class ProjectConfigController extends Controller
      * Rebuilds the project config.
      *
      * @return Response
+     * @throws ForbiddenHttpException if the project config is in read-only mode
      * @since 3.5.6
      */
     public function actionRebuild(): Response
     {
         $this->requirePostRequest();
-        Craft::$app->getProjectConfig()->rebuild();
+        $projectConfig = Craft::$app->getProjectConfig();
+
+        if ($projectConfig->readOnly) {
+            throw new ForbiddenHttpException('Rebuilding the project config is not allowed while it’s in read-only mode.');
+        }
+
+        $projectConfig->rebuild();
         $this->setSuccessFlash(Craft::t('app', 'Project config rebuilt successfully.'));
         return $this->redirectToPostedUrl();
     }

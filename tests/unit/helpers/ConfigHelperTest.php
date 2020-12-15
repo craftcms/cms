@@ -33,26 +33,24 @@ class ConfigHelperTest extends Unit
     /**
      * @dataProvider sizeInBytesDataProvider
      *
-     * @param $result
-     * @param $input
+     * @param int|float $expected
+     * @param int|string $value
      */
-    public function testSizeInBytes($result, $input)
+    public function testSizeInBytes($expected, $value)
     {
-        self::assertSame($result, ConfigHelper::sizeInBytes($input));
+        self::assertSame($expected, ConfigHelper::sizeInBytes($value));
     }
 
     /**
      * @dataProvider durationInSecondsDataProvider
      *
-     * @param $result
-     * @param $input
+     * @param int $expected
+     * @param mixed $value
      * @throws InvalidConfigException
      */
-    public function testDurationInSeconds($result, $input)
+    public function testDurationInSeconds(int $expected, $value)
     {
-        $durationResult = ConfigHelper::durationInSeconds($input);
-        self::assertSame($result, $durationResult);
-        self::assertIsInt($durationResult);
+        self::assertSame($expected, ConfigHelper::durationInSeconds($value));
     }
 
     /**
@@ -65,16 +63,16 @@ class ConfigHelperTest extends Unit
             ConfigHelper::durationInSeconds(true);
         });
 
-        $this->tester->expectThrowable(ErrorException::class, function() {
+        $this->tester->expectThrowable(InvalidConfigException::class, function() {
             ConfigHelper::durationInSeconds(['test' => 'test']);
         });
 
-        $this->tester->expectThrowable(ErrorException::class, function() {
+        $this->tester->expectThrowable(InvalidConfigException::class, function() {
             $dateTime = new DateTime('2018-08-08 20:0:00');
             ConfigHelper::durationInSeconds($dateTime);
         });
 
-        $this->tester->expectThrowable(ErrorException::class, function() {
+        $this->tester->expectThrowable(InvalidConfigException::class, function() {
             $std = new stdClass();
             $std->a = 'a';
             ConfigHelper::durationInSeconds($std);
@@ -84,13 +82,13 @@ class ConfigHelperTest extends Unit
     /**
      * @dataProvider localizedValueDataProvider
      *
-     * @param $result
-     * @param $input
-     * @param null $handle
+     * @param mixed $expected
+     * @param mixed $value
+     * @param string|null $siteHandle
      */
-    public function testLocalizedValue($result, $input, $handle = null)
+    public function testLocalizedValue($expected, $value, ?string $siteHandle = null)
     {
-        self::assertSame($result, ConfigHelper::localizedValue($input, $handle));
+        self::assertSame($expected, ConfigHelper::localizedValue($value, $siteHandle));
     }
 
     /**

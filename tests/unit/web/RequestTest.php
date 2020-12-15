@@ -204,15 +204,14 @@ class RequestTest extends TestCase
     /**
      * @dataProvider isMobileBrowserDataProvider
      *
-     * @param $result
-     * @param $header
+     * @param bool $expected
+     * @param string $userAgent
      * @param bool $detectTablets
      */
-    public function testIsMobileBrowser($result, $header, $detectTablets = false)
+    public function testIsMobileBrowser(bool $expected, string $userAgent, bool $detectTablets = false)
     {
-        $this->request->getHeaders()->set('User-Agent', $header);
-
-        self::assertSame($result, $this->request->isMobileBrowser($detectTablets));
+        $this->request->getHeaders()->set('User-Agent', $userAgent);
+        self::assertSame($expected, $this->request->isMobileBrowser($detectTablets));
     }
 
     /**
@@ -285,27 +284,30 @@ class RequestTest extends TestCase
     /**
      * @dataProvider getUserIpDataProvider
      *
-     * @param $result
-     * @param $headerName
-     * @param $headerValue
-     * @param int $filterFlag
+     * @param string|null $expected
+     * @param string|null $headerName
+     * @param string|null $headerValue
+     * @param int $filterOptions
      */
-    public function testGetUserIp($result, $headerName, $headerValue, $filterFlag = 0)
+    public function testGetUserIp(?string $expected, ?string $headerName, ?string $headerValue, int $filterOptions = 0)
     {
-        $this->request->headers->set($headerName, $headerValue);
-        self::assertSame($result, $this->request->getUserIP($filterFlag));
+        if ($headerName !== null) {
+            $this->request->getHeaders()->set($headerName, $headerValue);
+        }
+
+        self::assertSame($expected, $this->request->getUserIP($filterOptions));
     }
 
     /**
      * @dataProvider getClientOsDataProvider
      *
-     * @param $result
-     * @param $header
+     * @param string $expected
+     * @param string $userAgent
      */
-    public function testGetClientOs($result, $header)
+    public function testGetClientOs(string $expected, string $userAgent)
     {
-        $this->request->headers->set('User-Agent', $header);
-        self::assertSame($result, $this->request->getClientOs());
+        $this->request->getHeaders()->set('User-Agent', $userAgent);
+        self::assertSame($expected, $this->request->getClientOs());
     }
 
     /**
@@ -366,16 +368,15 @@ class RequestTest extends TestCase
     /**
      * @dataProvider getParamDataProvider
      *
-     * @param $result
-     * @param string|null $name
-     * @param $defaultValue
+     * @param mixed $expected
+     * @param mixed $defaultValue
      * @param array $params
+     * @param string|null $name
      * @throws ReflectionException
      */
-    public function testGetParam($result, $defaultValue, array $params, string $name = null)
+    public function testGetParam($expected, $defaultValue, array $params, ?string $name)
     {
-        $gotten = $this->_getParam($name, $defaultValue, $params);
-        self::assertSame($result, $gotten);
+        self::assertSame($expected, $this->_getParam($name, $defaultValue, $params));
     }
 
     /**
@@ -591,12 +592,12 @@ class RequestTest extends TestCase
 
     /**
      * @param string|null $name
-     * @param $defaultValue
+     * @param mixed $defaultValue
      * @param array $params
      * @return mixed
      * @throws ReflectionException
      */
-    private function _getParam(string $name = null, $defaultValue, array $params)
+    private function _getParam(?string $name, $defaultValue, array $params)
     {
         return $this->invokeMethod($this->request, '_getParam', [$name, $defaultValue, $params]);
     }

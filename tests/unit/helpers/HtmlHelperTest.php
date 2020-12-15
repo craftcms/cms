@@ -27,31 +27,31 @@ class HtmlHelperTest extends Unit
     protected $tester;
 
     /**
-     * @dataProvider htmlEncodingDataProvider
+     * @dataProvider encodeParamsDataProvider
      *
-     * @param $result
-     * @param $input
-     * @param $variables
+     * @param string $expected
+     * @param string $html
+     * @param array $variables
      */
-    public function testParamEncoding($result, $input, $variables)
+    public function testEncodeParams(string $expected, string $html, array $variables)
     {
-        self::assertSame($result, Html::encodeParams($input, $variables));
+        self::assertSame($expected, Html::encodeParams($html, $variables));
     }
 
     /**
      * @dataProvider parseTagDataProvider
      *
-     * @param $result
-     * @param $tag
+     * @param array|false $expected
+     * @param string $tag
      */
-    public function testParseTag($result, $tag)
+    public function testParseTag($expected, string $tag)
     {
-        if ($result === false) {
+        if ($expected === false) {
             $this->expectException(InvalidArgumentException::class);
             Html::parseTag($tag);
         } else {
             $info = Html::parseTag($tag);
-            self::assertSame($result, [
+            self::assertSame($expected, [
                 $info['type'],
                 $info['attributes'],
                 isset($info['htmlStart'], $info['htmlEnd'])
@@ -64,147 +64,147 @@ class HtmlHelperTest extends Unit
     /**
      * @dataProvider appendToTagDataProvider
      *
-     * @param $result
-     * @param $tag
-     * @param $html
-     * @param $ifExists
+     * @param string|false $expected
+     * @param string $tag
+     * @param string $html
+     * @param string|null $ifExists
      */
-    public function testAppendToTag($result, $tag, $html, $ifExists)
+    public function testAppendToTag($expected, string $tag, string $html, ?string $ifExists)
     {
-        if ($result === false) {
+        if ($expected === false) {
             $this->expectException(InvalidArgumentException::class);
             Html::appendToTag($tag, $html, $ifExists);
         } else {
-            self::assertSame($result, Html::appendToTag($tag, $html, $ifExists));
+            self::assertSame($expected, Html::appendToTag($tag, $html, $ifExists));
         }
     }
 
     /**
      * @dataProvider prependToTagDataProvider
      *
-     * @param $result
-     * @param $tag
-     * @param $html
-     * @param $ifExists
+     * @param string|false $expected
+     * @param string $tag
+     * @param string $html
+     * @param string|null $ifExists
      */
-    public function testPrependToTag($result, $tag, $html, $ifExists)
+    public function testPrependToTag($expected, string $tag, string $html, ?string $ifExists)
     {
-        if ($result === false) {
+        if ($expected === false) {
             $this->expectException(InvalidArgumentException::class);
             Html::prependToTag($tag, $html, $ifExists);
         } else {
-            self::assertSame($result, Html::prependToTag($tag, $html, $ifExists));
+            self::assertSame($expected, Html::prependToTag($tag, $html, $ifExists));
         }
     }
 
     /**
      * @dataProvider parseTagAttributesDataProvider
      *
-     * @param $result
-     * @param $tag
+     * @param array|false $expected
+     * @param string $tag
      */
-    public function testParseTagAttributes($result, $tag)
+    public function testParseTagAttributes($expected, string $tag)
     {
-        if ($result === false) {
+        if ($expected === false) {
             $this->expectException(InvalidArgumentException::class);
             Html::parseTagAttributes($tag);
         } else {
-            self::assertSame($result, Html::parseTagAttributes($tag));
+            self::assertSame($expected, Html::parseTagAttributes($tag));
         }
     }
 
     /**
      * @dataProvider modifyTagAttributesDataProvider
      *
-     * @param $result
-     * @param $tag
-     * @param $attributes
+     * @param string|false $expected
+     * @param string $tag
+     * @param array $attributes
      */
-    public function testModifyTagAttributes($result, $tag, $attributes)
+    public function testModifyTagAttributes($expected, string $tag, array $attributes)
     {
-        if ($result === false) {
+        if ($expected === false) {
             $this->expectException(InvalidArgumentException::class);
             Html::modifyTagAttributes($tag, $attributes);
         } else {
-            self::assertSame($result, Html::modifyTagAttributes($tag, $attributes));
+            self::assertSame($expected, Html::modifyTagAttributes($tag, $attributes));
         }
     }
 
     /**
      * @dataProvider normalizeTagAttributesDataProvider
      *
-     * @param $result
-     * @param $attributes
+     * @param array $expected
+     * @param array $attributes
      */
-    public function testNormalizeTagAttributes($result, $attributes)
+    public function testNormalizeTagAttributes(array $expected, array $attributes)
     {
-        self::assertSame($result, Html::normalizeTagAttributes($attributes));
+        self::assertSame($expected, Html::normalizeTagAttributes($attributes));
     }
 
     /**
      * @dataProvider idDataProvider
      *
-     * @param string $result
+     * @param string $expected
      * @param string $id
      */
-    public function testId(string $result, string $id)
+    public function testId(string $expected, string $id)
     {
-        self::assertSame($result, Html::id($id));
+        self::assertSame($expected, Html::id($id));
     }
 
     /**
      * @dataProvider namespaceInputNameDataProvider
      *
-     * @param string $result
+     * @param string $expected
      * @param string $name
      * @param string $namespace
      */
-    public function testNamespaceInputName(string $result, string $name, string $namespace)
+    public function testNamespaceInputName(string $expected, string $name, string $namespace)
     {
-        self::assertSame($result, Html::namespaceInputName($name, $namespace));
+        self::assertSame($expected, Html::namespaceInputName($name, $namespace));
     }
 
     /**
      * @dataProvider namespaceIdDataProvider
      *
-     * @param string $result
+     * @param string $expected
      * @param string $name
      * @param string $namespace
      */
-    public function testNamespaceId(string $result, string $name, string $namespace)
+    public function testNamespaceId(string $expected, string $name, string $namespace)
     {
-        self::assertSame($result, Html::namespaceId($name, $namespace));
+        self::assertSame($expected, Html::namespaceId($name, $namespace));
     }
 
     /**
      * @dataProvider namespaceInputsDataProvider
      *
-     * @param string $result
+     * @param string $expected
      * @param string $html
      * @param string $namespace
      */
-    public function testNamespaceInputs(string $result, string $html, string $namespace)
+    public function testNamespaceInputs(string $expected, string $html, string $namespace)
     {
-        self::assertSame($result, Html::namespaceInputs($html, $namespace));
+        self::assertSame($expected, Html::namespaceInputs($html, $namespace));
     }
 
     /**
      * @dataProvider namespaceAttributesDataProvider
      *
-     * @param string $result
+     * @param string $expected
      * @param string $html
      * @param string $namespace
      * @param bool $classNames
      */
-    public function testNamespaceAttributes(string $result, string $html, string $namespace, bool $classNames)
+    public function testNamespaceAttributes(string $expected, string $html, string $namespace, bool $classNames)
     {
-        self::assertSame($result, Html::namespaceAttributes($html, $namespace, $classNames));
+        self::assertSame($expected, Html::namespaceAttributes($html, $namespace, $classNames));
     }
 
     /**
      * @return array
      */
-    public function htmlEncodingDataProvider(): array
+    public function encodeParamsDataProvider(): array
     {
         $htmlTagString = '<p>Im a paragraph. What am i, {whatIsThis}</p>';
         $pureVariableString = '{variable1}, {variable2}';
@@ -313,6 +313,9 @@ class HtmlHelperTest extends Unit
             ['<img class="foo" src="image.jpg?width=100&amp;height=100">', '<img src="image.jpg?width=100&amp;height=100">', ['class' => 'foo']],
             // https://github.com/craftcms/cms/issues/6973
             ['<custom-element class="foo"></custom-element>', '<custom-element></custom-element>', ['class' => 'foo']],
+            // https://github.com/craftcms/cms/issues/7234
+            ['<div>', '<div class="foo">', ['class' => false]],
+            ['<div>', '<div style="background: red">', ['style' => false]],
         ];
     }
 
@@ -329,6 +332,11 @@ class HtmlHelperTest extends Unit
             [['data-ng' => ['foo' => '1', 'bar' => '2']], ['data-ng-foo' => '1', 'data-ng-bar' => '2']],
             [['ng' => ['foo' => '1', 'bar' => '2']], ['ng-foo' => '1', 'ng-bar' => '2']],
             [['data' => ['foo' => true]], ['data-foo' => true]],
+            // https://github.com/craftcms/cms/issues/7234
+            [['class' => false], ['class' => false]],
+            [['class' => false], ['class' => null]],
+            [['class' => false], ['class' => false]],
+            [['class' => false], ['class' => null]],
         ];
     }
 

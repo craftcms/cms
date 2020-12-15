@@ -7,6 +7,7 @@
 
 namespace craft\test\fixtures\elements;
 
+use craft\base\ElementInterface;
 use craft\elements\User;
 
 /**
@@ -16,18 +17,13 @@ use craft\elements\User;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2.0
  */
-abstract class UserFixture extends ElementFixture
+abstract class UserFixture extends BaseElementFixture
 {
     /**
      * @inheritdoc
      */
-    public $modelClass = User::class;
-
-    /**
-     * @inheritdoc
-     */
-    protected function isPrimaryKey(string $key): bool
+    protected function createElement(): ElementInterface
     {
-        return parent::isPrimaryKey($key) || in_array($key, ['username', 'email']);
+        return new User();
     }
 }

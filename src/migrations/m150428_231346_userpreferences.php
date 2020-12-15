@@ -65,21 +65,8 @@ class m150428_231346_userpreferences extends Migration
      */
     private function _createUserPrefsIndexAndForeignKey()
     {
-        $this->createIndex(
-            $this->db->getIndexName($this->_prefsTable, 'userId', true),
-            $this->_prefsTable,
-            'userId',
-            true
-        );
-
-        $this->addForeignKey(
-            $this->db->getForeignKeyName($this->_prefsTable, ['userId']),
-            $this->_prefsTable,
-            'userId',
-            $this->_usersTable,
-            'id',
-            'CASCADE'
-        );
+        $this->createIndex(null, $this->_prefsTable, 'userId', true);
+        $this->addForeignKey(null, $this->_prefsTable, 'userId', $this->_usersTable, 'id', 'CASCADE');
     }
 
     /**

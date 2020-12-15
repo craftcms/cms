@@ -8,7 +8,7 @@
 
             <template v-else>
                 <!-- Add to cart / Upgrade (from lower edition) -->
-                <btn v-if="allowUpdates && isEditionMoreExpensiveThanLicensed" kind="primary" @click="addEditionToCart(edition.handle)" :loading="addToCartloading" :disabled="addToCartloading || !plugin.latestCompatibleVersion" block large>{{ "Add to cart"|t('app') }}</btn>
+                <btn v-if="allowUpdates && isEditionMoreExpensiveThanLicensed" kind="primary" @click="addEditionToCart(edition.handle)" :loading="addToCartloading" :disabled="addToCartloading || !plugin.latestCompatibleVersion || licenseMismatched" block large>{{ "Add to cart"|t('app') }}</btn>
 
                 <!-- Licensed -->
                 <btn v-else-if="licensedEdition === edition.handle" kind="primary" block large disabled>{{ "Licensed"|t('app') }}</btn>
@@ -88,8 +88,11 @@
     /* global Craft */
 
     import {mapGetters} from 'vuex'
+    import licensesMixin from '../mixins/licenses'
 
     export default {
+        mixins: [licensesMixin],
+
         props: ['plugin', 'edition'],
 
         data() {

@@ -609,7 +609,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         switch ($this->propagationMethod) {
             case self::PROPAGATION_METHOD_NONE:
                 return Craft::t('app', 'Blocks will only be saved in the {site} site.', [
-                    'site' => Craft::t('site', $element->getSite()->name),
+                    'site' => Craft::t('site', $element->getSite()->getName()),
                 ]);
             case self::PROPAGATION_METHOD_SITE_GROUP:
                 return Craft::t('app', 'Blocks will be saved across all sites in the {group} site group.', [

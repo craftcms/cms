@@ -10,7 +10,7 @@ namespace crafttests\fixtures;
 use Craft;
 use craft\records\Section;
 use craft\services\Sections;
-use craft\test\Fixture;
+use craft\test\ActiveFixture;
 
 /**
  * Class SectionsFixture
@@ -19,7 +19,7 @@ use craft\test\Fixture;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class SectionsFixture extends Fixture
+class SectionsFixture extends ActiveFixture
 {
     /**
      * @inheritdoc

@@ -59,6 +59,7 @@ class ProjectConfig extends Utility
                 'Show all changes',
             ]);
             $invert = (
+                !$projectConfig->readOnly &&
                 !$projectConfig->writeYamlAutomatically &&
                 $projectConfig->get('dateModified') > $projectConfig->get('dateModified', true)
             );
@@ -67,6 +68,7 @@ class ProjectConfig extends Utility
         }
 
         return $view->renderTemplate('_components/utilities/ProjectConfig', [
+            'readOnly' => $projectConfig->readOnly,
             'invert' => $invert,
             'yamlExists' => $projectConfig->writeYamlAutomatically || $projectConfig->getDoesYamlExist(),
             'areChangesPending' => $areChangesPending,

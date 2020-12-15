@@ -396,7 +396,7 @@ class UsersTest extends TestCase
         $user = $this->getUserQuery($this->activeUser->id);
 
         $this->tester->assertEqualDates($this, $dateTime->format('Y-m-d H:i:s'), $user['lastLoginDate']);
-        self::assertNull($user['lastLoginAttemptIp']);
+        self::assertNotNull($user['lastLoginAttemptIp']);
     }
 
     /**
@@ -444,6 +444,7 @@ class UsersTest extends TestCase
         $this->updateUser([
             // The past.
             'verificationCodeIssuedDate' => '2018-06-06 20:00:00',
+            'verificationCode' => 'irrelevant_code'
         ], ['id' => $this->activeUser->id]);
 
         self::assertFalse(
@@ -454,6 +455,7 @@ class UsersTest extends TestCase
         $this->updateUser([
             // The present.
             'verificationCodeIssuedDate' => Db::prepareDateForDb(new DateTime('now')),
+            'verificationCode' => 'irrelevant_code'
         ], ['id' => $this->activeUser->id]);
 
         self::assertTrue(
@@ -473,14 +475,14 @@ class UsersTest extends TestCase
         $this->users->sendActivationEmail($this->pendingUser);
         $this->testUsersEmailFunctions(
             'account_activation',
-            'set-password&code=' . $string
+            'set-password?code=' . $string
         );
 
         $this->pendingUser->password = 'some_password';
         $this->users->sendActivationEmail($this->pendingUser);
         $this->testUsersEmailFunctions(
             'account_activation',
-            'verify-email&code=' . $string
+            'verify-email?code=' . $string
         );
         $this->pendingUser->password = null;
 
@@ -488,14 +490,14 @@ class UsersTest extends TestCase
         $this->users->sendNewEmailVerifyEmail($this->pendingUser);
         $this->testUsersEmailFunctions(
             'verify_new_email',
-            'verify-email&code=' . $string
+            'verify-email?code=' . $string
         );
 
         // Test password reset email
         $this->users->sendPasswordResetEmail($this->pendingUser);
         $this->testUsersEmailFunctions(
             'forgot_password',
-            'set-password&code=' . $string
+            'set-password?code=' . $string
         );
     }
 
@@ -559,7 +561,6 @@ class UsersTest extends TestCase
     }
 
     /**
-     * @todo These tests are 'Dependancy Injected` -ish so i'll swap them out with fixtures later.
      * @inheritdoc
      */
     protected function _before()
@@ -614,5 +615,18 @@ class UsersTest extends TestCase
         $this->tester->saveElement($this->suspendedUser);
         $this->tester->saveElement($this->lockedUser);
         $this->tester->saveElement($this->activeUser);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function _after()
+    {
+        parent::_after();
+
+        $this->tester->deleteElement($this->pendingUser);
+        $this->tester->deleteElement($this->suspendedUser);
+        $this->tester->deleteElement($this->lockedUser);
+        $this->tester->deleteElement($this->activeUser);
     }
 }

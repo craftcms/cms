@@ -60,12 +60,12 @@ class ViewTest extends TestCase
     /**
      * @dataProvider normalizeObjectTemplateDataProvider
      *
-     * @param $result
-     * @param $input
+     * @param string $expected
+     * @param string $template
      */
-    public function testNormalizeObjectTemplate($result, $input)
+    public function testNormalizeObjectTemplate(string $expected, string $template)
     {
-        self::assertSame($result, $this->view->normalizeObjectTemplate($input));
+        self::assertSame($expected, $this->view->normalizeObjectTemplate($template));
     }
 
     /**
@@ -83,54 +83,59 @@ class ViewTest extends TestCase
     }
 
     /**
-     * @dataProvider doesTemplateExistDataProvider
+     * @dataProvider resolveTemplateDataProvider
      *
-     * @param $result
-     * @param $templatePath
-     * @param null $templateMode
+     * @param string|false $expected
+     * @param string $name
+     * @param string|null $templateMode
      * @throws Exception
      */
-    public function testDoesTemplateExistInSite($result, $templatePath, $templateMode = null)
+    public function testResolveTemplate($expected, string $name, ?string $templateMode = null)
     {
         if ($templateMode !== null) {
             $this->view->setTemplateMode($templateMode);
         }
 
-        $doesIt = CraftTest::normalizePathSeparators($this->view->resolveTemplate($templatePath));
-
-        if ($result === false) {
-            self::assertFalse($doesIt);
-        } else {
-            self::assertSame(CraftTest::normalizePathSeparators(Craft::getAlias($result)), $doesIt);
+        if ($expected !== false) {
+            $expected = CraftTest::normalizePathSeparators(Craft::getAlias($expected));
         }
+
+        self::assertSame($expected, CraftTest::normalizePathSeparators($this->view->resolveTemplate($name)));
     }
 
     /**
-     * @dataProvider       privateResolveTemplateDataProvider
+     * @dataProvider privateResolveTemplateDataProvider
      *
-     * @param $result
-     * @param $basePath
-     * @param $name
-     * @param null $templateExtensions
-     * @param null $viewTemplateNameExtensions
+     * @param string|null $expected
+     * @param string $basePath
+     * @param string $name
+     * @param string[]|null $defaultTemplateExtensions
+     * @param string[]|null $indexTemplateFilenames
      * @throws ReflectionException
-     * @see                testDoesTemplateExistsInSite
      */
-    public function testPrivateResolveTemplate($result, $basePath, $name, $templateExtensions = null, $viewTemplateNameExtensions = null)
-    {
+    public function testPrivateResolveTemplate(
+        ?string $expected,
+        string $basePath,
+        string $name,
+        ?array $defaultTemplateExtensions = null,
+        ?array $indexTemplateFilenames = null
+    ) {
         // If the data wants to set something custom? Set it as a prop.
-        if ($templateExtensions !== null) {
-            $this->setInaccessibleProperty($this->view, '_defaultTemplateExtensions', $templateExtensions);
+        if ($defaultTemplateExtensions !== null) {
+            $this->setInaccessibleProperty($this->view, '_defaultTemplateExtensions', $defaultTemplateExtensions);
         }
 
         // Same with index names
-        if ($viewTemplateNameExtensions !== null) {
-            $this->setInaccessibleProperty($this->view, '_indexTemplateFilenames', $viewTemplateNameExtensions);
+        if ($indexTemplateFilenames !== null) {
+            $this->setInaccessibleProperty($this->view, '_indexTemplateFilenames', $indexTemplateFilenames);
         }
 
         // Lets test stuff.
-        $resolved = $this->_resolveTemplate(Craft::getAlias($basePath), $name);
-        self::assertSame(CraftTest::normalizePathSeparators(Craft::getAlias($result)), $resolved);
+        if ($expected !== null) {
+            $expected = CraftTest::normalizePathSeparators(Craft::getAlias($expected));
+        }
+
+        self::assertSame($expected, $this->_resolveTemplate(Craft::getAlias($basePath), $name));
     }
 
     /**
@@ -184,17 +189,16 @@ class ViewTest extends TestCase
     /**
      * @dataProvider renderObjectTemplateDataProvider
      *
-     * @param $result
-     * @param $template
-     * @param $object
+     * @param string $expected
+     * @param string $template
+     * @param mixed $object
      * @param array $variables
      * @throws Exception
      * @throws Throwable
      */
-    public function testRenderObjectTemplate($result, $template, $object, array $variables = [])
+    public function testRenderObjectTemplate(string $expected, string $template, $object, array $variables = [])
     {
-        $res = $this->view->renderObjectTemplate($template, $object, $variables);
-        self::assertSame($result, $res);
+        self::assertSame($expected, $this->view->renderObjectTemplate($template, $object, $variables));
     }
 
     /**
@@ -263,11 +267,6 @@ class ViewTest extends TestCase
         $js = $this->_generateTranslationJs('app', ['Save' => 'Bewaren', 'Cancel' => 'Afbreken']);
         $this->_assertRegisterJsInputValues($js, View::POS_BEGIN);
         $this->view->registerTranslations('app', ['Save', 'Cancel']);
-
-        // Non existing translations get ignored
-        $js = $this->_generateTranslationJs('app', ['Save' => 'Bewaren']);
-        $this->_assertRegisterJsInputValues($js, View::POS_BEGIN);
-        $this->view->registerTranslations('app', ['Save', 'not an existing translation23131321313']);
     }
 
     /**
@@ -294,59 +293,55 @@ class ViewTest extends TestCase
     /**
      * @dataProvider namespaceInputsDataProvider
      *
-     * @param $result
-     * @param $html
-     * @param null $namespace
+     * @param string $expected
+     * @param string $html
+     * @param string|null $namespace
      * @param bool $otherAttributes
      */
-    public function testNamespaceInputs($result, $html, $namespace = null, $otherAttributes = true)
+    public function testNamespaceInputs(string $expected, string $html, ?string $namespace = null, bool $otherAttributes = true)
     {
-        $namespaced = $this->view->namespaceInputs($html, $namespace, $otherAttributes);
-        self::assertSame($result, $namespaced);
+        self::assertSame($expected, $this->view->namespaceInputs($html, $namespace, $otherAttributes));
     }
 
     /**
      * @dataProvider namespaceInputNameDataProvider
      *
-     * @param $result
-     * @param $string
-     * @param $namespace
+     * @param string $expected
+     * @param string $string
+     * @param string|null $namespace
      */
-    public function testNamespaceInputName($result, $string, $namespace = null)
+    public function testNamespaceInputName(string $expected, string $string, ?string $namespace = null)
     {
-        $namespaced = $this->view->namespaceInputName($string, $namespace);
-        self::assertSame($result, $namespaced);
+        self::assertSame($expected, $this->view->namespaceInputName($string, $namespace));
     }
 
     /**
      * @dataProvider namespaceInputIdDataProvider
      *
-     * @param $result
-     * @param $string
-     * @param $namespace
+     * @param string $expected
+     * @param string $string
+     * @param string|null $namespace
      */
-    public function testNamespaceInputId($result, $string, $namespace = null)
+    public function testNamespaceInputId(string $expected, string $string, ?string $namespace = null)
     {
-        $namespaced = $this->view->namespaceInputId($string, $namespace);
-        self::assertSame($result, $namespaced);
+        self::assertSame($expected, $this->view->namespaceInputId($string, $namespace));
     }
 
     /**
      * @dataProvider getTemplateRootsDataProvider
      *
-     * @param $result
-     * @param $which
-     * @param $rootsToBeAdded
+     * @param array $expected
+     * @param string $which
+     * @param array $roots
      * @throws ReflectionException
      */
-    public function testGetTemplateRoots($result, $which, $rootsToBeAdded)
+    public function testGetTemplateRoots(array $expected, string $which, array $roots)
     {
-        Event::on(View::class, View::EVENT_REGISTER_SITE_TEMPLATE_ROOTS, function(RegisterTemplateRootsEvent $event) use ($rootsToBeAdded) {
-            $event->roots = $rootsToBeAdded;
+        Event::on(View::class, View::EVENT_REGISTER_SITE_TEMPLATE_ROOTS, function(RegisterTemplateRootsEvent $event) use ($roots) {
+            $event->roots = $roots;
         });
 
-        $roots = $this->_getTemplateRoots($which);
-        self::assertSame($result, $roots);
+        self::assertSame($expected, $this->_getTemplateRoots($which));
     }
 
     /**
@@ -360,24 +355,6 @@ class ViewTest extends TestCase
         $this->tester->expectEvent(View::class, View::EVENT_REGISTER_SITE_TEMPLATE_ROOTS, function() {
             $this->_getTemplateRoots('doesnt-matter-what-this-is');
         });
-    }
-
-    /**
-     * Basic test to check the Registered js function
-     */
-    public function testRegisteredJs()
-    {
-        $property = 'randomprop';
-        $name = 'name';
-        $resultString = "if (typeof Craft !== 'undefined') {\n";
-        $jsName = Json::encode($name);
-        $resultString .= "  Craft.{$property}[{$jsName}] = true;\n";
-        $resultString .= '}';
-
-        // Set a stub and ensure that _registeredJs is correctly formatting js but dont bother registering it....
-        $this->_assertRegisterJsInputValues($resultString, View::POS_HEAD);
-
-        $this->_registeredJs('randomprop', ['name' => 'value']);
     }
 
     /**
@@ -409,7 +386,7 @@ class ViewTest extends TestCase
     /**
      * @return array
      */
-    public function doesTemplateExistDataProvider(): array
+    public function resolveTemplateDataProvider(): array
     {
         return [
             ['@craftunittemplates/index.html', ''],
@@ -443,7 +420,7 @@ class ViewTest extends TestCase
             // Assert that registering custom extensions works.
             ['@craftunittemplates/dotxml.xml', '@craftunittemplates', 'dotxml', ['xml']],
             [null, '@craftunittemplates', 'dotxml'],
-            ['@craftunittemplates/dotxml.xml', '@craftunittemplates', 'dotxml.xml',],
+            ['@craftunittemplates/dotxml.xml', '@craftunittemplates', 'dotxml.xml'],
 
             // Allow change in index names
             ['@craftunittemplates/template.twig', '@craftunittemplates', '', null, ['template']],
@@ -491,7 +468,7 @@ class ViewTest extends TestCase
             ['', ''],
             ['<input type="text" name="test">', '<input type="text" name="test">'],
             ['<input type="text" name="namespace[test]">', '<input type="text" name="test">', 'namespace'],
-            ['<input type="text" for="namespace-test3" id="namespace-test2"  name="namespace[test]">', '<input type="text" for="test3" id="test2"  name="test">', 'namespace'],
+            ['<input type="text" for="test3" id="namespace-test2"  name="namespace[test]">', '<input type="text" for="test3" id="test2"  name="test">', 'namespace'],
             ['<input type="text" value="im the input" name="namespace[test]">', '<input type="text" value="im the input" name="test">', 'namespace'],
             ['<textarea id="namespace-test">Im the content</textarea>', '<textarea id="test">Im the content</textarea>', 'namespace'],
             ['<not-html id="namespace-test"></not-html>', '<not-html id="test"></not-html>', 'namespace'],
@@ -500,12 +477,12 @@ class ViewTest extends TestCase
             ['<input data-target="test2">', '<input data-target="test2">', 'namespace', false],
 
             // Other attributes
-            ['<input data-target="namespace-test2">', '<input data-target="test2">', 'namespace', true],
+            ['<input data-target="test2">', '<input data-target="test2">', 'namespace', true],
             ['<input aria-describedby="test2">', '<input aria-describedby="test2">', 'namespace', true],
             ['<input aria-not-a-tag="test2">', '<input aria-not-a-tag="test2">', 'namespace', true],
-            ['<input data-reverse-target="namespace-test2">', '<input data-reverse-target="test2">', 'namespace', true],
+            ['<input data-reverse-target="test2">', '<input data-reverse-target="test2">', 'namespace', true],
             ['<input data-target-prefix="namespace-test2">', '<input data-target-prefix="test2">', 'namespace', true],
-            ['<input aria-labelledby="namespace-test2">', '<input aria-labelledby="test2">', 'namespace', true],
+            ['<input aria-labelledby="test2">', '<input aria-labelledby="test2">', 'namespace', true],
             ['<input data-random="test2">', '<input data-random="test2">', 'namespace', true],
         ];
     }
@@ -547,9 +524,9 @@ class ViewTest extends TestCase
     public function getTemplateRootsDataProvider(): array
     {
         return [
-            [['random-roots' => [null]], 'random-roots', ['random-roots' => null]],
+            [['random-roots' => [null]], 'random-roots', ['random-roots' => [null]]],
             [['random-roots' => ['/linux/box/craft/templates']], 'random-roots', ['random-roots' => '/linux/box/craft/templates']],
-            [['random-roots' => [['windows/box/craft/templates', '/linux/box/craft/templates']]], 'random-roots', ['random-roots' => ['windows/box/craft/templates', '/linux/box/craft/templates']]],
+            [['random-roots' => ['windows/box/craft/templates', '/linux/box/craft/templates']], 'random-roots', ['random-roots' => ['windows/box/craft/templates', '/linux/box/craft/templates']]],
         ];
     }
 
@@ -604,34 +581,27 @@ class ViewTest extends TestCase
     }
 
     /**
-     * @param $property
-     * @param $names
-     * @return mixed
+     * @param string $which
+     * @return array
      * @throws ReflectionException
      */
-    private function _registeredJs($property, $names)
-    {
-        return $this->invokeMethod($this->view, '_registeredJs', [$property, $names]);
-    }
-
-    /**
-     * @param $which
-     * @return mixed
-     * @throws ReflectionException
-     */
-    private function _getTemplateRoots($which)
+    private function _getTemplateRoots(string $which): array
     {
         return $this->invokeMethod($this->view, '_getTemplateRoots', [$which]);
     }
 
     /**
-     * @param $basePath
-     * @param $name
-     * @return mixed
+     * @param string $basePath
+     * @param string $name
+     * @return string|null
      * @throws ReflectionException
      */
-    private function _resolveTemplate($basePath, $name)
+    private function _resolveTemplate(string $basePath, string $name): ?string
     {
-        return CraftTest::normalizePathSeparators($this->invokeMethod($this->view, '_resolveTemplate', [$basePath, $name]));
+        $path = $this->invokeMethod($this->view, '_resolveTemplate', [$basePath, $name]);
+        if ($path !== null) {
+            $path = CraftTest::normalizePathSeparators($path);
+        }
+        return $path;
     }
 }

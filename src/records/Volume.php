@@ -22,6 +22,8 @@ use yii\db\ActiveQueryInterface;
  * @property string $type Type
  * @property bool $hasUrls Whether Volume has URLs
  * @property string $url URL
+ * @property string $titleTranslationMethod
+ * @property string|null $titleTranslationKeyFormat
  * @property array $settings Settings
  * @property int $sortOrder Sort order
  * @property FieldLayout $fieldLayout Field layout

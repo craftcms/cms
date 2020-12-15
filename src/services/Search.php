@@ -292,6 +292,7 @@ class Search extends Component
                     'elementIds' => array_keys($scoresByElementId),
                     'query' => $query,
                     'siteId' => $siteId,
+                    'results' => $results,
                 ]));
             }
 
@@ -318,6 +319,7 @@ class Search extends Component
                 'elementIds' => $elementIds,
                 'query' => $query,
                 'siteId' => $siteId,
+                'results' => $results,
             ]));
         }
 

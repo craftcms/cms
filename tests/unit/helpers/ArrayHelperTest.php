@@ -29,27 +29,26 @@ class ArrayHelperTest extends Unit
     /**
      * @dataProvider toArrayDataProvider
      *
-     * @param $result
-     * @param $input
+     * @param array $expected
+     * @param mixed $object
      */
-    public function testToArray($result, $input)
+    public function testToArray(array $expected, $object)
     {
-        $toArray = ArrayHelper::toArray($input);
-        self::assertSame($result, $toArray);
+        self::assertSame($expected, ArrayHelper::toArray($object));
     }
 
     /**
      * @dataProvider prependOrAppendDataProvider
      *
-     * @param $result
-     * @param $inputArray
-     * @param $appendable
-     * @param $preOrAppend
+     * @param array $expected
+     * @param array $array
+     * @param mixed $appendable
+     * @param bool $prepend
      */
-    public function testPrependOrAppend($result, $inputArray, $appendable, $preOrAppend)
+    public function testPrependOrAppend(array $expected, array $array, $appendable, bool $prepend)
     {
-        ArrayHelper::prependOrAppend($inputArray, $appendable, $preOrAppend);
-        self::assertSame($result, $inputArray);
+        ArrayHelper::prependOrAppend($array, $appendable, $prepend);
+        self::assertSame($expected, $array);
     }
 
     /**
@@ -74,54 +73,51 @@ class ArrayHelperTest extends Unit
     /**
      * @dataProvider renameDataProvider
      *
-     * @param      $result
-     * @param      $inputArray
-     * @param      $oldKey
-     * @param      $newKey
-     * @param null $default
+     * @param array $expected
+     * @param array $array
+     * @param string $oldKey
+     * @param string $newKey
+     * @param mixed $default
      */
-    public function testArrayRename($result, $inputArray, $oldKey, $newKey, $default = null)
+    public function testArrayRename(array $expected, array $array, string $oldKey, string $newKey, $default = null)
     {
-        ArrayHelper::rename($inputArray, $oldKey, $newKey, $default);
-        self::assertSame($result, $inputArray);
+        ArrayHelper::rename($array, $oldKey, $newKey, $default);
+        self::assertSame($expected, $array);
     }
 
     /**
      * @dataProvider firstValueDataProvider
      *
-     * @param $result
-     * @param $input
+     * @param mixed $expected
+     * @param array $array
      */
-    public function testFirstValue($result, $input)
+    public function testFirstValue($expected, array $array)
     {
-        $firstVal = ArrayHelper::firstValue($input);
-        self::assertSame($result, $firstVal);
+        self::assertSame($expected, ArrayHelper::firstValue($array));
     }
 
     /**
      * @dataProvider withoutDataProvider
      *
-     * @param $result
-     * @param $array
-     * @param $key
+     * @param array $expected
+     * @param array $array
+     * @param string $key
      */
-    public function testWithout($result, $array, $key)
+    public function testWithout(array $expected, array $array, string $key)
     {
-        $without = ArrayHelper::without($array, $key);
-        self::assertSame($result, $without);
+        self::assertSame($expected, ArrayHelper::without($array, $key));
     }
 
     /**
      * @dataProvider withoutValueDataProvider
      *
-     * @param $result
-     * @param $array
-     * @param $value
+     * @param array $expected
+     * @param array $array
+     * @param mixed $value
      */
-    public function testWithoutValue($result, $array, $value)
+    public function testWithoutValue(array $expected, array $array, $value)
     {
-        $without = ArrayHelper::withoutValue($array, $value);
-        self::assertSame($result, $without);
+        self::assertSame($expected, ArrayHelper::withoutValue($array, $value));
     }
 
     /**
@@ -435,7 +431,6 @@ class ArrayHelperTest extends Unit
             [[], ['key' => 'value'], 'key'],
             [['key' => 'value'], ['key' => 'value', 'key2' => 'value2'], 'key2'],
             [['key' => 'value'], ['key' => 'value'], 'notakey'],
-            [[], ['value'], 0],
         ];
     }
 

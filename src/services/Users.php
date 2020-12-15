@@ -979,7 +979,7 @@ class Users extends Component
                 // Avoid re-inserting it
                 unset($newGroupIds[$oldGroup['groupId']]);
             } else {
-                $removedGroupIds[] = $oldGroup['id'];
+                $removedGroupIds[] = $oldGroup['groupId'];
             }
         }
 
@@ -1019,7 +1019,8 @@ class Users extends Component
 
             if (!empty($event->removedGroupIds)) {
                 Db::delete(Table::USERGROUPS_USERS, [
-                    'id' => $event->removedGroupIds,
+                    'userId' => $userId,
+                    'groupId' => $event->removedGroupIds,
                 ], [], $db);
             }
 

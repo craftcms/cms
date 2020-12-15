@@ -53,8 +53,7 @@ Craft.ui =
 
             if (config.type === 'password') {
                 return $('<div class="passwordwrapper"/>').append($input);
-            }
-            else {
+            } else {
                 return $input;
             }
         },
@@ -219,7 +218,7 @@ Craft.ui =
                         'value': option.value,
                         'selected': (option.value == config.value),
                         'disabled': typeof option.disabled !== 'undefined' ? option.disabled : false,
-                        'html':  option.label
+                        'html': option.label
                     }).appendTo($optgroup || $select);
                 }
             }
@@ -280,8 +279,7 @@ Craft.ui =
                     $input[0],
                     $label[0]
                 ]);
-            }
-            else {
+            } else {
                 return $([
                     $input[0],
                     $label[0]
@@ -485,9 +483,9 @@ Craft.ui =
         },
 
         createDateInput: function(config) {
-            var id = (config.id || 'date' + Math.floor(Math.random() * 1000000000))+'-date';
+            var id = (config.id || 'date' + Math.floor(Math.random() * 1000000000)) + '-date';
             var name = config.name || null;
-            var inputName = name ? name+'[date]' : null;
+            var inputName = name ? name + '[date]' : null;
             var value = config.value && typeof config.value.getMonth === 'function' ? config.value : null;
             var formattedValue = value ? Craft.formatDate(value) : null;
             var autofocus = config.autofocus && Garnish.isMobileBrowser(true);
@@ -512,7 +510,7 @@ Craft.ui =
             if (name) {
                 $('<input/>', {
                     type: 'hidden',
-                    name: name+'[timezone]',
+                    name: name + '[timezone]',
                     val: Craft.timezone
                 }).appendTo($container);
             }
@@ -548,7 +546,7 @@ Craft.ui =
                 ],
                 onChange: $.noop,
                 selected: null,
-                startDate:null,
+                startDate: null,
                 endDate: null,
             }, config);
 
@@ -766,9 +764,9 @@ Craft.ui =
         },
 
         createTimeInput: function(config) {
-            var id = (config.id || 'time' + Math.floor(Math.random() * 1000000000))+'-time';
+            var id = (config.id || 'time' + Math.floor(Math.random() * 1000000000)) + '-time';
             var name = config.name || null;
-            var inputName = name ? name+'[time]' : null;
+            var inputName = name ? name + '[time]' : null;
             var value = config.value && typeof config.value.getMonth === 'function' ? config.value : null;
             var autofocus = config.autofocus && Garnish.isMobileBrowser(true);
             var disabled = config.disabled || false;
@@ -791,14 +789,14 @@ Craft.ui =
             if (name) {
                 $('<input/>', {
                     type: 'hidden',
-                    name: name+'[timezone]',
+                    name: name + '[timezone]',
                     val: Craft.timezone
                 }).appendTo($container);
             }
 
             $input.timepicker(Craft.timepickerOptions);
             if (value) {
-                $input.timepicker('setTime', value.getHours()*3600 + value.getMinutes()*60 + value.getSeconds());
+                $input.timepicker('setTime', value.getHours() * 3600 + value.getMinutes() * 60 + value.getSeconds());
             }
 
             return $container;

@@ -20,7 +20,6 @@ use craft\fields\BaseRelationField;
 use craft\fields\Categories as CategoryField;
 use craft\fields\Entries as EntryField;
 use craft\fields\Users as UserField;
-use craft\gql\base\ElementResolver;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\helpers\Gql as GqlHelper;
 use craft\helpers\StringHelper;
@@ -74,6 +73,12 @@ class ElementQueryConditionBuilder extends Component
      * @var ResolveInfo
      */
     private $_resolveInfo;
+
+    /**
+     * @var ArgumentManager
+     */
+    private $_argumentManager;
+
     private $_fragments;
     private $_eagerLoadableFieldsByContext = [];
     private $_transformableAssetProperties = ['url', 'width', 'height'];
@@ -113,6 +118,17 @@ class ElementQueryConditionBuilder extends Component
     {
         $this->_resolveInfo = $resolveInfo;
         $this->_fragments = $this->_resolveInfo->fragments;
+    }
+
+    /**
+     * Set the current ResolveInfo object.
+     *
+     * @param ArgumentManager $argumentManager
+     * @since 3.6.0
+     */
+    public function setArgumentManager(ArgumentManager $argumentManager)
+    {
+        $this->_argumentManager = $argumentManager;
     }
 
     /**
@@ -170,17 +186,28 @@ class ElementQueryConditionBuilder extends Component
     {
         $argumentNodeValue = $argumentNode->value;
 
-        if (isset($argumentNodeValue->values)) {
-            $extractedValue = [];
-            foreach ($argumentNodeValue->values as $value) {
-                $extractedValue[] = $this->_extractArgumentValue($value);
+        if (in_array($argumentNode->kind, ['Argument', 'Variable', 'ListValue', 'ObjectField'], true)) {
+            switch ($argumentNodeValue->kind) {
+                case 'Variable':
+                    $extractedValue = $this->_resolveInfo->variableValues[$argumentNodeValue->name->value];
+                    break;
+                case 'ListValue':
+                    $extractedValue = [];
+
+                    foreach ($argumentNodeValue->values as $value) {
+                        $extractedValue[] = $this->_extractArgumentValue($value);
+                    }
+                    break;
+                case 'ObjectValue':
+                    foreach ($argumentNodeValue->fields as $fieldNode) {
+                        $extractedValue[$fieldNode->name->value] = $this->_extractArgumentValue($fieldNode);
+                    }
+                    break;
+                default:
+                    $extractedValue = $argumentNodeValue->value;
             }
         } else {
-            if (in_array($argumentNode->kind, ['Argument', 'Variable'], true)) {
-                $extractedValue = $argumentNodeValue->kind === 'Variable' ? $this->_resolveInfo->variableValues[$argumentNodeValue->name->value] : $argumentNodeValue->value;
-            } else {
-                $extractedValue = $argumentNodeValue;
-            }
+            $extractedValue = $argumentNode->kind === 'IntValue' ? (int)$argumentNodeValue : $argumentNodeValue;
         }
 
         return $extractedValue;
@@ -411,8 +438,8 @@ class ElementQueryConditionBuilder extends Component
 
                         // Load additional requirements enforced by schema, enforcing permissions to see content
                         if ($additionalArguments === false) {
-                            // If `false` was returned, make sure nothing is returned by setting an always-false constraint.
-                            $arguments = ['id' => 0];
+                            // If `false` was returned, make sure nothing is returned by setting a constraint that always fails.
+                            $arguments = ['id' => ['and', 1, 2]];
                         } else {
                             // Loop through what schema allows for this content type
                             foreach ($additionalArguments as $argumentName => $argumentValue) {
@@ -427,7 +454,7 @@ class ElementQueryConditionBuilder extends Component
 
                                     // If they wanted to filter by values that were not allowed by schema, make it impossible
                                     if (empty($allowed)) {
-                                        $arguments = ['id' => 0];
+                                        $arguments = ['id' => ['and', 1, 2]];
                                         break;
                                     }
 
@@ -442,7 +469,7 @@ class ElementQueryConditionBuilder extends Component
 
                         // For relational fields, prepare the arguments.
                         if ($craftContentField instanceof BaseRelationField) {
-                            $arguments = ElementResolver::prepareArguments($arguments);
+                            $arguments = $this->_argumentManager->prepareArguments($arguments);
                         }
                     }
 

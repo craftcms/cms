@@ -7,13 +7,13 @@
             </div>
         </td>
         <td class="item-name">
-            <strong>{{ plugin.name }}</strong>
+            <a :title="plugin.name" @click.prevent="navigateToPlugin"><strong>{{ plugin.name }}</strong></a>
 
             <edition-badge v-if="activeTrialPluginEdition && plugin.editions.length > 1" :name="activeTrialPluginEdition.name"></edition-badge>
         </td>
         <td>
             <template v-if="activeTrialPluginEdition">
-                <template v-if="licensedEdition && licensedEdition.handle !== activeTrialPluginEdition.handle && licensedEdition.price > 0">
+                <template v-if="licensedEdition && licensedEdition.handle !== activeTrialPluginEdition.handle && licensedEdition.price > 0 && licenseValidOrAstray">
                     <del class="mr-1">{{activeTrialPluginEdition.price|currency}}</del>
                     <strong>{{(activeTrialPluginEdition.price - licensedEdition.price)|currency}}</strong>
                 </template>
@@ -25,7 +25,9 @@
         <td class="w-1/4">
             <div class="text-right">
                 <template v-if="!activeTrialLoading">
-                    <a @click="addToCart(plugin, pluginLicenseInfo.edition)" :loading="activeTrialLoading">{{ "Add to cart"|t('app') }}</a>
+                    <a @click="addToCart(plugin, pluginLicenseInfo.edition)" :loading="activeTrialLoading" :class="{
+                        'disabled hover:no-underline': licenseMismatched
+                    }">{{ "Add to cart"|t('app') }}</a>
                 </template>
                 <template v-else>
                     <spinner size="sm"></spinner>
@@ -38,9 +40,14 @@
 <script>
     import {mapGetters} from 'vuex'
     import EditionBadge from '../../../EditionBadge';
+    import licensesMixin from '../../../../mixins/licenses'
+
 
     export default {
+        mixins: [licensesMixin],
+
         components: {EditionBadge},
+
         props: ['plugin'],
 
         data() {
@@ -77,6 +84,10 @@
 
         methods: {
             addToCart(plugin, editionHandle) {
+                if (this.licenseMismatched) {
+                    return false
+                }
+
                 this.activeTrialLoading = true
 
                 const item = {
@@ -95,6 +106,16 @@
                         this.$root.displayError(errorMessage)
                     })
             },
+
+            navigateToPlugin() {
+                const path = '/' + this.plugin.handle
+
+                this.$root.closeModal()
+
+                if (this.$route.path !== path) {
+                    this.$router.push({path})
+                }
+            }
         }
     }
 </script>

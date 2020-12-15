@@ -31,7 +31,12 @@ class ScalarTypesTest extends Unit
     /**
      * Test the serialization of scalar data types
      *
-     *@dataProvider seializationDataProvider
+     * @dataProvider serializationDataProvider
+     *
+     * @param ScalarType $type
+     * @param $testValue
+     * @param $match
+     * @throws \GraphQL\Error\Error
      */
     public function testSerialization(ScalarType $type, $testValue, $match)
     {
@@ -42,6 +47,12 @@ class ScalarTypesTest extends Unit
      * Test parsing a value provided as a query variable
      *
      * @dataProvider parsingValueDataProvider
+     *
+     * @param ScalarType $type
+     * @param $testValue
+     * @param $match
+     * @param $exceptionThrown
+     * @throws \GraphQL\Error\Error
      */
     public function testParsingValue(ScalarType $type, $testValue, $match, $exceptionThrown)
     {
@@ -54,9 +65,27 @@ class ScalarTypesTest extends Unit
     }
 
     /**
+     * Test DateTime parsing value correctly.
+     * @throws \GraphQL\Error\Error
+     */
+    public function testDateTimeParseValueAndLiteral()
+    {
+        $timeAsStr = (new \DateTime('now'))->format("Y-m-d H:i:s");
+
+        $this->assertInstanceOf(\DateTime::class, (new DateTime())->parseValue($timeAsStr));
+        $this->assertInstanceOf(\DateTime::class, (new DateTime())->parseLiteral(new StringValueNode(['value' => $timeAsStr])));
+    }
+
+    /**
      * Test parsing a value provided as a query variable
      *
      * @dataProvider parsingLiteralDataProvider
+     *
+     * @param ScalarType $type
+     * @param $testValue
+     * @param $match
+     * @param $exceptionThrown
+     * @throws \Exception
      */
     public function testParsingLiteral(ScalarType $type, $testValue, $match, $exceptionThrown)
     {
@@ -68,7 +97,10 @@ class ScalarTypesTest extends Unit
         }
     }
 
-    public function seializationDataProvider()
+    /**
+     * @return array[]
+     */
+    public function serializationDataProvider()
     {
         $now = new \DateTime();
 
@@ -96,13 +128,14 @@ class ScalarTypesTest extends Unit
         ];
     }
 
+    /**
+     * @return array[]
+     */
     public function parsingValueDataProvider()
     {
         GqlEntityRegistry::setPrefix('');
 
         return [
-            [DateTime::getType(), $time = time(), (string)$time, false],
-
             [Number::getType(), 2, 2, false],
             [Number::getType(), 2.0, 2.0, false],
             [Number::getType(), null, null, false],
@@ -116,12 +149,14 @@ class ScalarTypesTest extends Unit
         ];
     }
 
+    /**
+     * @return array[]
+     */
     public function parsingLiteralDataProvider()
     {
         GqlEntityRegistry::setPrefix('');
 
         return [
-            [DateTime::getType(), new StringValueNode(['value' => $time = time()]), (string)$time, false],
             [DateTime::getType(), new IntValueNode(['value' => 2]), null, GqlException::class],
 
             [Number::getType(), new StringValueNode(['value' => '2.4']), 2.4, false],

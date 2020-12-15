@@ -9,6 +9,7 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
+use craft\base\Field;
 use craft\base\LocalVolumeInterface;
 use craft\base\VolumeInterface;
 use craft\db\Query;
@@ -34,6 +35,7 @@ use craft\helpers\Assets;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
+use craft\helpers\ElementHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Html;
 use craft\helpers\Image;
@@ -983,9 +985,15 @@ class Asset extends Element
         }
 
         foreach ($sizes as $size) {
+            if ($size === '1x') {
+                $srcset[] = $this->getUrl();
+                continue;
+            }
+
             [$value, $unit] = Assets::parseSrcsetSize($size);
 
-            $sizeTransform = [];
+            $sizeTransform = $transform ? $transform->toArray() : [];
+
             if ($unit === 'w') {
                 $sizeTransform['width'] = (int)$value;
             } else {
@@ -1001,14 +1009,35 @@ class Asset extends Element
                 }
             }
 
-            if (!empty($transform->format)) {
-                $sizeTransform['format'] = $transform->format;
-            }
-
-            $srcset[] = $this->getUrl($sizeTransform) . ($size !== '1x' ? " $value$unit" : '');
+            $srcset[] = $this->getUrl($sizeTransform) . " $value$unit";
         }
 
         return implode(', ', $srcset);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getIsTitleTranslatable(): bool
+    {
+        return ($this->getVolume()->titleTranslationMethod !== Field::TRANSLATION_METHOD_NONE);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getTitleTranslationDescription()
+    {
+        return ElementHelper::translationDescription($this->getVolume()->titleTranslationMethod);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getTitleTranslationKey(): string
+    {
+        $type = $this->getVolume();
+        return ElementHelper::translationKey($this, $type->titleTranslationMethod, $type->titleTranslationKeyFormat);
     }
 
     /**

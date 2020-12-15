@@ -29,6 +29,7 @@ use craft\helpers\ElementHelper;
 use craft\helpers\StringHelper;
 use craft\models\Site;
 use craft\search\SearchQuery;
+use ReflectionProperty;
 use yii\base\ArrayableTrait;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -149,7 +150,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      *
      * - A source element ID – matches drafts of that element
      * - `'*'` – matches drafts of any source element
-     * - `false` – matches unsaved drafts that have no source element
+     * - `false` – matches unpublished drafts that have no source element
      *
      * @since 3.2.0
      */
@@ -1458,7 +1459,16 @@ class ElementQuery extends Query implements ElementQueryInterface
             }
         }
 
-        return $this->_createElements($rows);
+        $elements = $this->_createElements($rows);
+        return $this->afterPopulate($elements);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterPopulate(array $elements): array
+    {
+        return $elements;
     }
 
     /**
@@ -1644,11 +1654,10 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function criteriaAttributes(): array
     {
-        // By default, include all public, non-static properties that were defined by a sub class, and certain ones in this class
-        $class = new \ReflectionClass($this);
         $names = [];
 
-        foreach ($class->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {
+        // By default, include all public, non-static properties that were defined by a sub class, and certain ones in this class
+        foreach ((new \ReflectionClass($this))->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
             if (!$property->isStatic()) {
                 $dec = $property->getDeclaringClass();
                 if (
@@ -1657,6 +1666,18 @@ class ElementQuery extends Query implements ElementQueryInterface
                 ) {
                     $names[] = $property->getName();
                 }
+            }
+        }
+
+        // Add custom field properties
+        /** @var CustomFieldBehavior $behavior */
+        $behavior = $this->getBehavior('customFields');
+        foreach ((new \ReflectionClass($behavior))->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
+            if (
+                !$property->isStatic() &&
+                !in_array($property->getName(), ['hasMethods', 'owner'], true)
+            ) {
+                $names[] = $property->getName();
             }
         }
 
@@ -1720,12 +1741,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     // -------------------------------------------------------------------------
 
     /**
-     * Converts a found row into an element instance.
-     *
-     * @param array $row
-     * @return ElementInterface
-     * @internal
-     * @since 3.3.1
+     * @inheritdoc
      */
     public function createElement(array $row): ElementInterface
     {

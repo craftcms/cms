@@ -82,7 +82,7 @@ class SingleSectionUriValidator extends UriFormatValidator
             }
 
             $this->addError($model, $attribute, Craft::t('app', $message, [
-                'site' => Craft::t('site', $site->name)
+                'site' => Craft::t('site', $site->getName()),
             ]));
         }
     }

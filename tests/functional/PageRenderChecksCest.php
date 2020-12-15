@@ -43,6 +43,8 @@ class PageRenderChecksCest
 
         $I->amLoggedInAs($this->currentUser);
         $this->cpTrigger = Craft::$app->getConfig()->getGeneral()->cpTrigger;
+
+        Craft::$app->setEdition(Craft::Pro);
     }
 
     /**
@@ -76,82 +78,91 @@ class PageRenderChecksCest
             ['url' => '/dashboard', 'title' => 'Dashboard'],
             ['url' => '/entries', 'title' => 'Entries'],
             ['url' => '/users', 'title' => 'Users'],
-            // TODO: fix globals fixture     ['url' => '/globals', 'title' => 'Globals'],
-            // TODO: Requires fixtures data. ['url' => '/categories', 'title' => 'Categories'],
 
             // Settings pages
             [
                 'url' => '/settings/general', 'title' => 'General Settings', 'extraContent' => [
                 ['rendered' => 'System Name'],
                 ['rendered' => 'System Status'],
+                ['rendered' => 'Retry Duration'],
                 ['rendered' => 'Time Zone'],
-                ['rendered' => 'Login Page Logo']
+                ['rendered' => 'Login Page Logo'],
+                ['rendered' => 'Site Icon'],
             ]
             ],
             [
                 'url' => '/settings/sections', 'title' => 'Sections', 'extraContent' => [
-                ['source' => 'Craft CMS Test Section']
+                ['rendered' => 'New section']
             ]
             ],
             [
                 'url' => '/settings/users', 'title' => 'User Settings', 'extraContent' => [
                 ['rendered' => 'User Groups'],
                 ['rendered' => 'Fields'],
-                ['source' => 'Test group1']
+                ['rendered' => 'Settings'],
+                ['rendered' => 'New user group'],
             ]
             ],
             [
                 'url' => '/settings/users/settings', 'title' => 'User Settings', 'extraContent' => [
-                ['rendered' => 'User Photo Location'],
-                ['rendered' => 'Verify email addresses?'],
-                ['rendered' => 'Allow public registration?']
+                ['rendered' => 'User Photo Volume'],
+                ['rendered' => 'Verify email addresses'],
+                ['rendered' => 'Allow public registration']
             ]
             ],
             [
                 'url' => '/settings/users/fields', 'title' => 'User Settings', 'extraContent' => [
-                ['rendered' => 'Design your field layout']
+                ['rendered' => 'Field Layout']
             ]
             ],
 
             [
                 'url' => '/settings/email', 'title' => 'Email Settings', 'extraContent' => [
-                ['rendered' => 'Email Settings'],
+                ['rendered' => 'System Email Address'],
                 ['rendered' => 'This can be set to an environment variable. Learn more'],
+                ['rendered' => 'Sender Name'],
+                ['rendered' => 'HTML Email Template'],
                 ['rendered' => 'Transport Type']
             ]
             ],
-            ['url' => '/settings/plugins', 'title' => 'Plugins'],
             [
-                'url' => '/settings/sites', 'title' => 'Sites', 'extraContent' => [
-                ['source' => 'Craft CMS Test Site']
-            ]
+                'url' => '/settings/plugins', 'title' => 'Plugins'
+            ],
+            [
+                'url' => '/settings/sites', 'title' => 'Sites'
             ],
             [
                 'url' => '/settings/routes', 'title' => 'Routes', 'extraContent' => [
-                ['rendered' => '_includes/route-handler']
-            ]
-            ],
-            [
-                'url' => '/settings/routes', 'title' => 'Routes', 'extraContent' => [
-                ['rendered' => '_includes/route-handler']
+                ['rendered' => 'No routes exist yet.']
             ]
             ],
             [
                 'url' => '/settings/fields', 'title' => 'Fields', 'extraContent' => [
-                ['source' => 'Test field group 1'],
-                ['source' => 'Example text field 1']
+                ['rendered' => 'New field']
             ]
             ],
             [
-                'url' => '/settings/assets', 'title' => 'Asset Settings', 'extraContent' => [
-                ['source' => 'Test volume 1'],
-                ['rendered' => 'Volumes'],
-                ['rendered' => 'Image Transforms']
+                'url' => '/settings/fields/1', 'title' => 'Fields', 'extraContent' => [
+                ['rendered' => 'New field']
+            ]
+            ],
+
+            [
+                'url' => '/settings/assets', 'title' => 'Volumes - Asset Settings', 'extraContent' => [
+                ['rendered' => 'New volume'],
+                ['rendered' => 'Image Transforms'],
+                ['rendered' => 'Settings']
             ]
             ],
             [
-                'url' => '/settings/assets/transforms', 'title' => 'Asset Settings', 'extraContent' => [
-                ['source' => 'Example transform 1']
+                'url' => '/settings/assets/transforms', 'title' => 'Image Transforms - Asset Settings', 'extraContent' => [
+                ['rendered' => 'New image transform']
+            ]
+            ],
+            [
+                'url' => '/settings/assets/settings', 'title' => 'Settings - Asset Settings', 'extraContent' => [
+                ['rendered' => 'Temp Uploads Location'],
+                ['rendered' => 'Where do you want to store temporary asset uploads?']
             ]
             ],
 
@@ -165,19 +176,29 @@ class PageRenderChecksCest
             ]
             ],
             [
-                'url' => '/utilities/updates', 'title' => 'Updates', 'extraContent' => [
-                ['rendered' => 'Craft CMS'],
-                ['rendered' => 'Update']
+                'url' => '/utilities/updates', 'title' => 'Updates'
+            ],
+            [
+                'url' => '/utilities/project-config', 'title' => 'Project Config', 'extraContent' => [
+                ['rendered' => 'Apply YAML Changes'],
+                ['rendered' => 'Rebuild the Config'],
+                ['rendered' => 'Loaded Project Config Data']
             ]
+            ],
+            [
+                'url' => '/utilities/php-info', 'title' => 'PHP Info'
             ],
             [
                 'url' => '/utilities/system-messages', 'title' => 'System Messages', 'extraContent' => [
-                ['rendered' => 'When someone creates an account']
+                ['rendered' => 'When someone creates an account:'],
+                ['rendered' => 'When someone changes their email address:'],
+                ['rendered' => 'When someone forgets their password:'],
+                ['rendered' => 'When you are testing your email settings:'],
             ]
             ],
             [
-                'url' => '/utilities/asset-indexes', 'title' => 'Asset Indexes', 'extraContent' => [
-                ['source' => 'Test volume 1']
+                'url' => '/utilities/queue-manager', 'title' => 'Queue Manager', 'extraContent' => [
+                ['rendered' => 'No pending jobs.']
             ]
             ],
             [
@@ -197,13 +218,14 @@ class PageRenderChecksCest
             ]
             ],
             [
-                'url' => '/utilities/clear-caches', 'title' => 'Clear Caches', 'extraContent' => [
-                ['rendered' => 'Asset caches']
+                'url' => '/utilities/clear-caches', 'title' => 'Caches', 'extraContent' => [
+                ['rendered' => 'Clear Caches'],
+                ['rendered' => 'Invalidate Data Caches']
             ]
             ],
             [
                 'url' => '/utilities/db-backup', 'title' => 'Database Backup', 'extraContent' => [
-                ['rendered' => 'Download backup?']
+                ['rendered' => 'Download backup']
             ]
             ],
         ];

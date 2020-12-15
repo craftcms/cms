@@ -11,13 +11,15 @@
 {% set saveSourceAction = 'entries/save-entry' %}
 {% set duplicateSourceAction = 'entries/duplicate-entry' %}
 {% set deleteSourceAction = 'entries/delete-entry' %}
+{% set deleteForSiteAction = 'entries/delete-for-site' %}
 {% set saveDraftAction = 'entry-revisions/save-draft' %}
 {% set deleteDraftAction = 'entry-revisions/delete-draft' %}
-{% set applyDraftAction = 'entry-revisions/publish-draft' %}
+{% set publishDraftAction = 'entry-revisions/publish-draft' %}
 {% set revertSourceAction = 'entry-revisions/revert-entry-to-version' %}
 {% set canUpdateSource = (
     currentUser.can('publishEntries'~permissionSuffix) and
-    (isSingle or entry.authorId == currentUser.id or currentUser.can('publishPeerEntries'~permissionSuffix))
+    (isSingle or entry.authorId == currentUser.id or currentUser.can('publishPeerEntries'~permissionSuffix)) and
+    (not isDraft or entry.creatorId == currentUser.id or currentUser.can('publishPeerEntryDrafts'~permissionSuffix))
 ) %}
 {% set canDuplicateSource = canUpdateSource and not isSingle %}
 {% set canDeleteDraft = currentUser.can('deletePeerEntryDrafts'~permissionSuffix) %}
@@ -30,8 +32,8 @@
     {% if section.type == 'structure' %}
         {% set nextEntryParams = nextEntryParams|merge(['parentId={parent.id}']) %}
     {% endif %}
-    {% set canDuplicateSource = true %}
-    {% set canAddAnother = true %}
+    {% set canDuplicateSource = currentUser.can("createEntries#{permissionSuffix}") %}
+    {% set canAddAnother = currentUser.can("createEntries#{permissionSuffix}") %}
     {% set addAnotherRedirectUrl = "entries/#{section.handle}/new?" ~ nextEntryParams|join('&') %}
 {% endif %}
 

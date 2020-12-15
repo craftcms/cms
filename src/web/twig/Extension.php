@@ -47,6 +47,7 @@ use craft\web\twig\tokenparsers\RequireGuestTokenParser;
 use craft\web\twig\tokenparsers\RequireLoginTokenParser;
 use craft\web\twig\tokenparsers\RequirePermissionTokenParser;
 use craft\web\twig\tokenparsers\SwitchTokenParser;
+use craft\web\twig\tokenparsers\TagTokenParser;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\View;
 use DateInterval;
@@ -143,6 +144,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new RequireGuestTokenParser(),
             new RequirePermissionTokenParser(),
             new SwitchTokenParser(),
+            new TagTokenParser(),
 
             // Deprecated tags
             new RegisterResourceTokenParser('includeCss', 'Craft::$app->getView()->registerCss', [
@@ -274,7 +276,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function getTests()
     {
@@ -482,14 +484,22 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * Returns an array without a certain key.
      *
      * @param mixed $arr
-     * @param string $key
+     * @param string|string[] $key
      * @return array
      * @since 3.2.0
      */
-    public function withoutKeyFilter($arr, string $key): array
+    public function withoutKeyFilter($arr, $key): array
     {
         $arr = (array)$arr;
-        ArrayHelper::remove($arr, $key);
+
+        if (!is_array($key)) {
+            $key = [$key];
+        }
+
+        foreach ($key as $k) {
+            ArrayHelper::remove($arr, $k);
+        }
+
         return $arr;
     }
 
@@ -1309,7 +1319,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             /** @noinspection PhpUnhandledExceptionInspection */
             $site = Craft::$app->getSites()->getCurrentSite();
             $globals['currentSite'] = $site;
-            $globals['siteName'] = $site->name;
+            $globals['siteName'] = Craft::t('site', $site->getName());
             $globals['siteUrl'] = $site->getBaseUrl();
 
             // Global sets (site templates only)

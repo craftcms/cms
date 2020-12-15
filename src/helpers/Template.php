@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
+use craft\base\ElementInterface;
 use craft\db\Paginator;
 use craft\i18n\Locale;
 use craft\web\twig\variables\Paginate;
@@ -68,6 +69,19 @@ class Template
      */
     public static function attribute(Environment $env, Source $source, $object, $item, array $arguments = [], string $type = TwigTemplate::ANY_CALL, bool $isDefinedTest = false, bool $ignoreStrictCheck = false)
     {
+        // Include this element in any active caches
+        if ($object instanceof ElementInterface) {
+            $elementsService = Craft::$app->getElements();
+            if ($elementsService->getIsCollectingCacheTags()) {
+                $class = get_class($object);
+                $elementsService->collectCacheTags([
+                    'element',
+                    "element::$class",
+                    "element::$class::$object->id",
+                ]);
+            }
+        }
+
         if (
             $type !== TwigTemplate::METHOD_CALL &&
             $object instanceof BaseObject &&
@@ -321,7 +335,7 @@ class Template
      * @throws InvalidConfigException
      * @since 3.5.6
      */
-    public static function css(string $css, array $options = [], string $key = null)
+    public static function css(string $css, array $options = [], ?string $key = null)
     {
         // Is this a CSS file?
         if (preg_match('/^[^\r\n]+\.css$/i', $css)) {
@@ -342,7 +356,7 @@ class Template
      * @throws InvalidConfigException
      * @since 3.5.6
      */
-    public static function js(string $js, array $options = [], string $key = null)
+    public static function js(string $js, array $options = [], ?string $key = null)
     {
         // Is this a JS file?
         if (preg_match('/^[^\r\n]+\.js$/i', $js)) {

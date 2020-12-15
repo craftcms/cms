@@ -19,6 +19,7 @@ use craft\gql\resolvers\elements\Tag as TagResolver;
 use craft\helpers\Db;
 use craft\helpers\Gql;
 use craft\helpers\Html;
+use craft\models\GqlSchema;
 use craft\models\TagGroup;
 use GraphQL\Type\Definition\Type;
 
@@ -115,6 +116,14 @@ class Tags extends BaseRelationField
 
     /**
      * @inheritdoc
+     */
+    public function includeInGqlSchema(GqlSchema $schema): bool
+    {
+        return Gql::canQueryTags($schema);
+    }
+
+    /**
+     * @inheritdoc
      * @since 3.3.0
      */
     public function getContentGqlType()
@@ -127,7 +136,6 @@ class Tags extends BaseRelationField
             'complexity' => Gql::eagerLoadComplexity()
         ];
     }
-
 
     /**
      * @inheritdoc
