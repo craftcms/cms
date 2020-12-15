@@ -196,22 +196,16 @@
 
 
 {% macro checkboxField(config) %}
-    {% set config = config|merge({id: config.id ?? "checkbox#{random()}"}) %}
-    {% if config.fieldLabel is defined %}
-        {{ _self.field(config|merge({label: config.fieldLabel}), _self.checkbox(config)) }}
-    {% else %}
-        {% set instructions = config.instructions ?? null -%}
-        {% set warning = config.warning ?? null -%}
-        <div class="field checkboxfield{% if config.first is defined and config.first %} first{% endif %}{% if instructions %} has-instructions{% endif %}"{% if config.id is defined and config.id %} id="{{ config.id }}-field"{% endif %}>
-            {{ _self.checkbox(config) }}
-            {% if instructions %}
-                <div class="instructions">{{ instructions|md }}</div>
-            {% endif %}
-            {% if warning %}
-                <p class="warning with-icon">{{ warning }}</p>
-            {% endif %}
-        </div>
-    {% endif %}
+    {# label --> checkboxLabel, fieldLabel --> label #}
+    {% set config = config|merge({
+        fieldset: config.fieldLabel is defined,
+        fieldClass: (config.fieldClass ?? [])|explodeClass|push('checkboxfield'),
+        id: config.id ?? "checkbox#{random()}",
+        checkboxLabel: config.label ?? null,
+        label: config.fieldLabel ?? null,
+        instructionsPosition: config.instructionsPosition ?? 'after',
+    })|withoutKey('fieldLabel') %}
+    {{ _self.field(config, _self.checkbox(config)) }}
 {% endmacro %}
 
 

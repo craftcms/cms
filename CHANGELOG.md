@@ -57,6 +57,9 @@
 - The Settings → Plugin page now shows which developer created each plugin. ([#7254](https://github.com/craftcms/cms/issues/7254))
 - Site URLs that are generated on the front-end of disabled sites now include the `siteToken` param, if one was passed to the current page. ([#7264](https://github.com/craftcms/cms/issues/7264))
 - The `withoutKey` Twig filter can now accept an array, for removing multiple keys at once. ([#7230](https://github.com/craftcms/cms/issues/7230))
+- The `_includes/forms/field.html` control panel template and `craft\helpers\Cp::fieldHtml()` now accept a `fieldset` variable/config key, which can be set to `true` to cause the resulting field to be a `<fieldset>` instead of a `<div>`, and the label to be a `<legend>` instead of a `<label>`.
+- The `_includes/forms/field.html` control panel template and `craft\helpers\Cp::fieldHtml()` now accept an `instructionsPosition` variable/config key, which can be set to `'after'` to cause the field instructions to be rerdered after the input instead of before.
+- The `checkboxField` macro within the `_includes/forms.html` control panel template now returns a `<fieldset>` if a `fieldLabel` config key was passed.
 - `craft\behaviors\EnvAttributeParserBehavior::$attributes` can now be set to an array with key/value pairs, where the key is the attribute name, and the value is the raw (unparsed) value, or a callable that returns the raw value.
 - `craft\helpers\Gql::isSchemaAwareOf()`, `extractAllowedEntitiesFromSchema()`, `canSchema()`, `extractEntityAllowedActions()`, `canMutateEntries()`, `canMutateTags()`, `canMutateGlobalSets()`, `canMutateCategories()`, `canMutateAssets()`, `canQueryEntries()`, `canQueryAssets()`, `canQueryCategories()`, `canQueryTags()`, `canQueryGlobalSets()`, and `canQueryUsers()` now have `$schema` arguments.
 - `craft\models\Site::$baseUrl` is now a magic property, which returns the parsed base URL. ([#3964](https://github.com/craftcms/cms/issues/3964))

@@ -2142,13 +2142,13 @@ body.rtl .field > .status-badge { right: -19px; }
 
 .field > .heading { display: -webkit-flex; display: flex; -webkit-flex-wrap: wrap; flex-wrap: wrap; -webkit-align-items: center; align-items: center; position: relative; margin-top: -5px; margin-bottom: 5px; }
 
-.field > .heading > label { font-weight: bold; color: #596673; }
+.field > .heading > label, .field > .heading > legend { font-weight: bold; color: #596673; }
 
-.field > .heading > label code { font-size: 1em !important; }
+.field > .heading > label code, .field > .heading > legend code { font-size: 1em !important; }
 
-body.ltr .field > .heading > label .info { margin-left: 5px; }
+body.ltr .field > .heading > label .info, body.ltr .field > .heading > legend .info { margin-left: 5px; }
 
-body.rtl .field > .heading > label .info { margin-right: 5px; }
+body.rtl .field > .heading > label .info, body.rtl .field > .heading > legend .info { margin-right: 5px; }
 
 .field > .heading > .t9n-indicator { color: #606d7b; }
 
@@ -2162,11 +2162,13 @@ body.rtl .field > .heading > .t9n-indicator { margin-right: 7px; }
 
 .field > .instructions { margin-bottom: 5px; }
 
-.field > .notice, .field > .warning { margin: 5px 0 0; }
-
 .field > .input { position: relative; }
 
 .field > .input:after { content: '.'; display: block; height: 0; clear: both; visibility: hidden; }
+
+.field > .input + .instructions { margin: 5px 0 0; }
+
+.field > .notice, .field > .warning { margin: 5px 0 0; }
 
 .field > .instructions, .field > .heading > .instructions, .checkboxfield .instructions { color: #596673; }
 

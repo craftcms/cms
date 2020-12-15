@@ -91,6 +91,9 @@
 - Site URLs that are generated on the front-end of disabled sites now include the `siteToken` param, if one was passed to the current page. ([#7264](https://github.com/craftcms/cms/issues/7264))
 - The `withoutKey` Twig filter can now accept an array, for removing multiple keys at once. ([#7230](https://github.com/craftcms/cms/issues/7230))
 - It’s now possible to add new log targets by overriding `components.log.targets` in `config/app.php`, rather than the entire `log` component config.
+- The `_includes/forms/field.html` control panel template and `craft\helpers\Cp::fieldHtml()` now accept a `fieldset` variable/config key, which can be set to `true` to cause the resulting field to be a `<fieldset>` instead of a `<div>`, and the label to be a `<legend>` instead of a `<label>`.
+- The `_includes/forms/field.html` control panel template and `craft\helpers\Cp::fieldHtml()` now accept an `instructionsPosition` variable/config key, which can be set to `'after'` to cause the field instructions to be rerdered after the input instead of before.
+- The `checkboxField` macro within the `_includes/forms.html` control panel template now returns a `<fieldset>` if a `fieldLabel` config key was passed.
 - `craft\base\ElementExporterInterface::export()` can now return raw response data, or a resource, if `isFormattable()` returns `false`. If a resource is returned, it will be streamed to the browser. ([#7148](https://github.com/craftcms/cms/issues/7148))
 - `craft\behaviors\EnvAttributeParserBehavior::$attributes` can now be set to an array with key/value pairs, where the key is the attribute name, and the value is the raw (unparsed) value, or a callable that returns the raw value.
 - `craft\behaviors\EnvAttributeParserBehavior::$attributes` can now be set to an array with key/value pairs, where the key is the attribute name, and the value is the raw (unparsed) value, or a callable that returns the raw value.

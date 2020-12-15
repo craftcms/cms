@@ -4252,7 +4252,8 @@ fieldset {
     margin-top: -5px;
     margin-bottom: 5px;
 
-    & > label {
+    & > label,
+    & > legend {
       font-weight: bold;
       color: $mediumDarkTextColor;
 
@@ -4284,17 +4285,21 @@ fieldset {
     margin-bottom: 5px;
   }
 
-  & > .notice,
-  & > .warning {
-    margin: 5px 0 0;
-  }
-
   & > .input {
     position: relative;
 
     &:after {
       @include clearafter;
     }
+
+    & + .instructions {
+      margin: 5px 0 0;
+    }
+  }
+
+  & > .notice,
+  & > .warning {
+    margin: 5px 0 0;
   }
 }
 

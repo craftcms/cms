@@ -372,8 +372,9 @@ class Cp
      */
     public static function fieldHtml(string $inputHtml, array $config = []): string
     {
+        $fieldset = $config['fieldset'] ?? false;
         $fieldId = $config['fieldId'] ?? (isset($config['id']) ? "{$config['id']}-field" : ('field' . mt_rand()));
-        $labelId = $config['labelId'] ?? "$fieldId-label";
+        $labelId = $config['labelId'] ?? "$fieldId-" . ($fieldset ? 'legend' : 'label');
         $instructionsId = $config['instructionsId'] ?? "$fieldId-instructions";
         $status = $config['status'] ?? null;
         $label = isset($config['label']) && $config['label'] !== '__blank__' ? $config['label'] : null;
@@ -388,6 +389,7 @@ class Cp
         }
         $required = (bool)($config['required'] ?? false);
         $instructions = $config['instructions'] ?? null;
+        $instructionsPosition = $config['instructionsPosition'] ?? 'before';
         $tip = $config['tip'] ?? null;
         $warning = $config['warning'] ?? null;
         $orientation = $config['orientation'] ?? ($site ? $site->getLocale() : Craft::$app->getLocale())->getOrientation();
@@ -417,8 +419,14 @@ class Cp
                 $errors ? 'errors' : null,
             ])
         ], $config['inputContainerAttributes'] ?? []);
+        $instructionsHtml = $instructions
+            ? Html::tag('div', preg_replace('/&amp;(\w+);/', '&$1;', Markdown::process($instructions, 'gfm-comment')), [
+                'id' => $instructionsId,
+                'class' => ['instructions'],
+            ])
+            : '';
 
-        return Html::tag('div',
+        return Html::tag($fieldset ? 'fieldset' : 'div',
             ($status
                 ? Html::tag('div', Html::encode(mb_strtoupper($status[1][0])), [
                     'class' => ['status-badge', $status[0]],
@@ -428,10 +436,10 @@ class Cp
             (($label || $showAttribute)
                 ? Html::tag('div',
                     ($label
-                        ? Html::tag('label', $label, ArrayHelper::merge([
+                        ? Html::tag($fieldset ? 'legend' : 'label', $label, ArrayHelper::merge([
                             'id' => $labelId,
                             'class' => $required ? ['required'] : [],
-                            'for' => $config['id'] ?? null,
+                            'for' => ($config['id'] ?? false) && !$fieldset ? $config['id'] : null,
                         ], $config['labelAttributes'] ?? []))
                         : '') .
                     ($translatable
@@ -457,13 +465,9 @@ class Cp
                     ]
                 )
                 : '') .
-            ($instructions
-                ? Html::tag('div', preg_replace('/&amp;(\w+);/', '&$1;', Markdown::process($instructions, 'gfm-comment')), [
-                    'id' => $instructionsId,
-                    'class' => ['instructions'],
-                ])
-                : '') .
+            ($instructionsPosition === 'before' ? $instructionsHtml : '') .
             Html::tag('div', $inputHtml, $inputContainerAttributes) .
+            ($instructionsPosition === 'after' ? $instructionsHtml : '') .
             ($tip
                 ? Html::tag('p', preg_replace('/&amp;(\w+);/', '&$1;', Markdown::processParagraph($tip)), [
                     'class' => ['notice', 'with-icon'],
