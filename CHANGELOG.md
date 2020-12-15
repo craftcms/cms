@@ -13,6 +13,7 @@
 - Added the `isUnpublishedDraft` GraphQL field.
 - Added `craft\base\ElementInterface::getIsUnpublishedDraft()`.
 - Added `craft\base\FieldInterface::includeInGqlSchema()`. ([#7244](https://github.com/craftcms/cms/pull/7244))
+- Added `craft\console\Request::getSiteToken()`.
 - Added `craft\controllers\BaseEntriesController::enforceDeleteEntryPermissions()`.
 - Added `craft\events\CreateFieldLayoutFormEvent`.
 - Added `craft\events\RegisterGqlArgumentHandlersEvent`.
@@ -47,11 +48,13 @@
 - Added `craft\test\DbFixtureTrait`.
 - Added `craft\test\fixtures\elements\BaseElementFixture`.
 - Added `craft\test\TestSetup::SITE_URL`.
+- Added `craft\web\Request::getSiteToken()`.
 
 ### Changed
 - Improved the performance of project config change diffs. ([#7218](https://github.com/craftcms/cms/issues/7218))
 - Improved the accessibility of info icons.
 - The Settings → Plugin page now shows which developer created each plugin. ([#7254](https://github.com/craftcms/cms/issues/7254))
+- Site URLs that are generated on the front-end of disabled sites now include the `siteToken` param, if one was passed to the current page. ([#7264](https://github.com/craftcms/cms/issues/7264))
 - The `withoutKey` Twig filter can now accept an array, for removing multiple keys at once. ([#7230](https://github.com/craftcms/cms/issues/7230))
 - `craft\behaviors\EnvAttributeParserBehavior::$attributes` can now be set to an array with key/value pairs, where the key is the attribute name, and the value is the raw (unparsed) value, or a callable that returns the raw value.
 - `craft\helpers\Gql::isSchemaAwareOf()`, `extractAllowedEntitiesFromSchema()`, `canSchema()`, `extractEntityAllowedActions()`, `canMutateEntries()`, `canMutateTags()`, `canMutateGlobalSets()`, `canMutateCategories()`, `canMutateAssets()`, `canQueryEntries()`, `canQueryAssets()`, `canQueryCategories()`, `canQueryTags()`, `canQueryGlobalSets()`, and `canQueryUsers()` now have `$schema` arguments.

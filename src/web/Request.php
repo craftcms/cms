@@ -516,6 +516,20 @@ class Request extends \yii\web\Request
     }
 
     /**
+     * Returns the site token submitted with the request, if there is one.
+     *
+     * Tokens must be sent either as a query string param named after the <config3:siteToken> config setting
+     * (`siteToken` by default), or an `X-Craft-Site-Token` HTTP header on the request.
+     *
+     * @return string|null The token, or `null` if there isn’t one.
+     * @since 3.6.0
+     */
+    public function getSiteToken(): ?string
+    {
+        return $this->getQueryParam($this->generalConfig->siteToken) ?? $this->getHeaders()->get('X-Craft-Site-Token');
+    }
+
+    /**
      * Returns whether the control panel was requested.
      *
      * The result depends on whether the first segment in the URI matches the
