@@ -938,7 +938,7 @@ table.fixed-layout { table-layout: fixed; }
 
 table th.thin, table td.thin { width: 0.01% !important; white-space: nowrap; }
 
-table thead th { font-weight: bold; vertical-align: top; color: #596673; }
+table thead th { font-weight: bold; vertical-align: top; }
 
 body.ltr table thead th { text-align: left; }
 
@@ -1621,6 +1621,8 @@ body.rtl .meta > .field.add:before, body.rtl .meta > .data.add:before, body.rtl 
 body.ltr .meta > .field.add:before, body.ltr .meta > .data.add:before, body.ltr .meta > .flex-fields > .field.add:before, body.ltr .meta > .flex-fields > .data.add:before { text-align: right; }
 
 body.rtl .meta > .field.add:before, body.rtl .meta > .data.add:before, body.rtl .meta > .flex-fields > .field.add:before, body.rtl .meta > .flex-fields > .data.add:before { text-align: left; }
+
+.meta > .field.add .input, .meta > .data.add .input, .meta > .flex-fields > .field.add .input, .meta > .flex-fields > .data.add .input { width: 100%; }
 
 .meta > .field > .heading, .meta > .data > .heading, .meta > .flex-fields > .field > .heading, .meta > .flex-fields > .data > .heading { -webkit-flex: 0 0 105px; flex: 0 0 105px; line-height: 18px; }
 
@@ -2350,7 +2352,7 @@ body.rtl .timewrapper .text:before { right: 7px; }
 
 .select:not(.selectize), .select:not(.selectize) select { position: relative; border-radius: 5px; white-space: nowrap; }
 
-.select:not(.selectize) { position: relative; }
+.select:not(.selectize) { max-width: 100%; position: relative; }
 
 :not(.flex) > .select:not(.selectize) { display: inline-block; }
 
@@ -2360,7 +2362,7 @@ body.ltr .select:not(.selectize):after { right: 9px; }
 
 body.rtl .select:not(.selectize):after { left: 9px; }
 
-.select:not(.selectize) select { display: block; position: relative; border: none; font-size: 14px; line-height: 20px; color: #3f4d5a; background-color: rgba(96, 125, 159, 0.25); -webkit-appearance: none; appearance: none; white-space: pre; }
+.select:not(.selectize) select { display: block; position: relative; max-width: 100%; border: none; font-size: 14px; line-height: 20px; color: #3f4d5a; background-color: rgba(96, 125, 159, 0.25); -webkit-appearance: none; appearance: none; white-space: pre; }
 
 body.ltr .select:not(.selectize) select { padding: 7px 22px 7px 10px ; }
 
@@ -2388,7 +2390,7 @@ body .selectize-dropdown { border: none; }
 /* single select styles */
 .selectize.select .selectize-control, .selectize.select .selectize-control .selectize-input { position: relative; border-radius: 5px; white-space: nowrap; }
 
-.selectize.select .selectize-control { position: relative; }
+.selectize.select .selectize-control { max-width: 100%; position: relative; }
 
 :not(.flex) > .selectize.select .selectize-control { display: inline-block; }
 
@@ -2398,7 +2400,7 @@ body.ltr .selectize.select .selectize-control:after { right: 9px; }
 
 body.rtl .selectize.select .selectize-control:after { left: 9px; }
 
-.selectize.select .selectize-control .selectize-input { display: block; position: relative; border: none; font-size: 14px; line-height: 20px; color: #3f4d5a; background-color: rgba(96, 125, 159, 0.25); -webkit-appearance: none; appearance: none; }
+.selectize.select .selectize-control .selectize-input { display: block; position: relative; max-width: 100%; border: none; font-size: 14px; line-height: 20px; color: #3f4d5a; background-color: rgba(96, 125, 159, 0.25); -webkit-appearance: none; appearance: none; }
 
 body.ltr .selectize.select .selectize-control .selectize-input { padding: 7px 22px 7px 10px ; }
 

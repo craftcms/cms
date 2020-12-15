@@ -6,8 +6,6 @@
                 <div class="plugin-icon">
                     <img v-if="plugin.iconUrl" :src="plugin.iconUrl" width="100" />
                     <img v-else :src="defaultPluginSvg" width="100" />
-
-                    <div v-if="showLicenseKeyStatus" class="license-key-status" :class="{valid: isLicenseValid}"></div>
                 </div>
 
                 <div class="description flex-1">
@@ -24,16 +22,6 @@
             <!-- body -->
             <div class="plugin-details-body">
                 <template v-if="!loading">
-                    <template v-if="pluginLicenseInfo && pluginLicenseInfo.licenseIssues.length > 0">
-                        <ul>
-                            <li v-for="(errorCode, key) in pluginLicenseInfo.licenseIssues" class="error" :key="'license-issue' + key">
-                                {{licenseIssue(errorCode)}}
-                            </li>
-                        </ul>
-
-                        <hr>
-                    </template>
-
                     <template v-if="plugin.screenshotUrls && plugin.screenshotUrls.length">
                         <plugin-screenshots :images="plugin.screenshotUrls"></plugin-screenshots>
 
@@ -64,11 +52,32 @@
 
                     <div class="py-8">
                         <plugin-editions :plugin="plugin"></plugin-editions>
+
+                        <div v-if="licenseMismatched" class="mx-auto max-w-sm px-8">
+                            <div class="tw-flex items-center">
+                                <svg version="1.1"
+                                     xmlns="http://www.w3.org/2000/svg"
+                                     x="0px" y="0px" viewBox="0 0 256 448"
+                                     xml:space="preserve"
+                                     class="text-blue fill-current w-8 h-8 mr-4 flex items-center">
+<path fill="currentColor" d="M184,144c0,4.2-3.8,8-8,8s-8-3.8-8-8c0-17.2-26.8-24-40-24c-4.2,0-8-3.8-8-8s3.8-8,8-8C151.2,104,184,116.2,184,144z
+M224,144c0-50-50.8-80-96-80s-96,30-96,80c0,16,6.5,32.8,17,45c4.8,5.5,10.2,10.8,15.2,16.5C82,226.8,97,251.8,99.5,280h57
+c2.5-28.2,17.5-53.2,35.2-74.5c5-5.8,10.5-11,15.2-16.5C217.5,176.8,224,160,224,144z M256,144c0,25.8-8.5,48-25.8,67
+s-40,45.8-42,72.5c7.2,4.2,11.8,12.2,11.8,20.5c0,6-2.2,11.8-6.2,16c4,4.2,6.2,10,6.2,16c0,8.2-4.2,15.8-11.2,20.2
+c2,3.5,3.2,7.8,3.2,11.8c0,16.2-12.8,24-27.2,24c-6.5,14.5-21,24-36.8,24s-30.2-9.5-36.8-24c-14.5,0-27.2-7.8-27.2-24
+c0-4,1.2-8.2,3.2-11.8c-7-4.5-11.2-12-11.2-20.2c0-6,2.2-11.8,6.2-16c-4-4.2-6.2-10-6.2-16c0-8.2,4.5-16.2,11.8-20.5
+c-2-26.8-24.8-53.5-42-72.5S0,169.8,0,144C0,76,64.8,32,128,32S256,76,256,144z"/>
+</svg>
+                                <div>
+                                    <div v-html="licenseMismatchedMessage"></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <hr>
 
-                    <div class="max-w-sm mx-auto p-8">
+                    <div class="max-w-xs mx-auto py-8">
                         <h2 class="mt-0">{{ "Package Name"|t('app') }}</h2>
                         <p>{{ "Copy the package’s name for this plugin."|t('app') }}</p>
                         <copy-package :plugin="plugin"></copy-package>
@@ -122,8 +131,11 @@
     import PluginChangelog from '../../components/PluginChangelog'
     import PluginEditions from '../../components/PluginEditions'
     import PluginScreenshots from '../../components/PluginScreenshots'
+    import licensesMixin from '../../mixins/licenses'
 
     export default {
+        mixins: [licensesMixin],
+
         components: {
             CopyPackage,
             PluginChangelog,
@@ -190,12 +202,10 @@
                 return this.getPluginLicenseInfo(this.plugin.handle)
             },
 
-            isLicenseValid() {
-                return this.pluginLicenseInfo && this.pluginLicenseInfo.licenseKeyStatus === 'valid' && this.pluginLicenseInfo.licenseIssues.length === 0
-            },
-
-            showLicenseKeyStatus() {
-                return !this.loading && this.pluginLicenseInfo && this.pluginLicenseInfo.isInstalled && this.pluginLicenseInfo.licenseKey;
+            licenseMismatchedMessage() {
+                return this.$options.filters.t('This license is tied to another Craft install. Visit {accountLink} to detach it, or buy a new license.', 'app', {
+                    accountLink: '<a href="https://id.craftcms.com" rel="noopener" target="_blank">id.craftcms.com</a>',
+                })
             }
         },
 
@@ -203,28 +213,6 @@
             ...mapActions({
                 addToCart: 'cart/addToCart'
             }),
-
-            licenseIssue(errorCode) {
-                switch (errorCode) {
-                    case 'wrong_edition': {
-                        const currentEdition = this.getPluginEdition(this.plugin, this.pluginLicenseInfo.edition)
-                        const licensedEdition = this.getPluginEdition(this.plugin, this.pluginLicenseInfo.licensedEdition)
-
-                        return this.$options.filters.t('Your are currently using the {currentEdition} edition, and your licensed edition is {licensedEdition}.', 'app', {
-                            currentEdition: currentEdition.name,
-                            licensedEdition: licensedEdition.name,
-                        })
-                    }
-
-                    case 'mismatched': {
-                        return this.$options.filters.t('This license is tied to another Craft install. Purchase a license for this install.', 'app')
-                    }
-
-                    default: {
-                        return this.$options.filters.t('Your license key is invalid.', 'app')
-                    }
-                }
-            },
         },
 
         mounted() {
@@ -262,20 +250,6 @@
     .plugin-icon {
         @apply .relative;
         @include margin-right(1.5rem); // .mr-6
-
-        .license-key-status {
-            @apply .block .absolute;
-            bottom: 0px;
-            right: 0;
-            width: 32px;
-            height: 32px;
-            background: no-repeat 0 0 url(~@/images/invalid-icon.svg);
-            background-size: 100% 100%;
-
-            &.valid {
-                background-image: url(~@/images/valid-icon.svg);
-            }
-        }
     }
 
 

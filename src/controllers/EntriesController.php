@@ -238,10 +238,7 @@ class EntriesController extends BaseEntriesController
         }
 
         // Can the user delete the entry?
-        $variables['canDeleteSource'] = $section->type !== Section::TYPE_SINGLE && (
-                ($entry->authorId == $currentUser->id && $currentUser->can('deleteEntries' . $variables['permissionSuffix'])) ||
-                ($entry->authorId != $currentUser->id && $currentUser->can('deletePeerEntries' . $variables['permissionSuffix']))
-            );
+        $variables['canDeleteSource'] = $entry->getIsDeletable();
 
         // Render the template!
         return $this->renderTemplate('entries/_edit', $variables);
@@ -457,10 +454,9 @@ class EntriesController extends BaseEntriesController
         }
 
         $currentUser = Craft::$app->getUser()->getIdentity();
+        $this->requirePermission('deleteEntries:' . $entry->getSection()->uid);
 
-        if ($entry->authorId == $currentUser->id) {
-            $this->requirePermission('deleteEntries:' . $entry->getSection()->uid);
-        } else {
+        if ($entry->authorId != $currentUser->id) {
             $this->requirePermission('deletePeerEntries:' . $entry->getSection()->uid);
         }
 

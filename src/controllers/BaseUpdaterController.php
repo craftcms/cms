@@ -580,8 +580,10 @@ abstract class BaseUpdaterController extends Controller
     protected function installPlugin(string $handle, string $edition = null): array
     {
         // Prevent the plugin from sending any headers, etc.
+        $response = $this->response;
         $tempResponse = new CraftResponse(['isSent' => true]);
         Craft::$app->set('response', $tempResponse);
+        $this->response = $tempResponse;
 
         try {
             Craft::$app->getPlugins()->installPlugin($handle, $edition);
@@ -589,7 +591,8 @@ abstract class BaseUpdaterController extends Controller
             $errorDetails = null;
         } catch (\Throwable $e) {
             $success = false;
-            Craft::$app->set('response', $this->response);
+            Craft::$app->set('response', $response);
+            $this->response = $response;
             $migration = $output = null;
 
             if ($e instanceof MigrateException) {
@@ -613,7 +616,8 @@ abstract class BaseUpdaterController extends Controller
         }
 
         // Put the real response back
-        Craft::$app->set('response', $this->response);
+        Craft::$app->set('response', $response);
+        $this->response = $response;
 
         return [$success, $tempResponse, $errorDetails];
     }

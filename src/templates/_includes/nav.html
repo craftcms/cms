@@ -1,4 +1,4 @@
-<nav>
+<nav {% if label is defined and label %}aria-label="{{ label }}"{% endif %}>
     <ul>
         {% for itemId, item in items %}
             {% if item %}

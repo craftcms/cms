@@ -313,6 +313,9 @@ class HtmlHelperTest extends Unit
             ['<img class="foo" src="image.jpg?width=100&amp;height=100">', '<img src="image.jpg?width=100&amp;height=100">', ['class' => 'foo']],
             // https://github.com/craftcms/cms/issues/6973
             ['<custom-element class="foo"></custom-element>', '<custom-element></custom-element>', ['class' => 'foo']],
+            // https://github.com/craftcms/cms/issues/7234
+            ['<div>', '<div class="foo">', ['class' => false]],
+            ['<div>', '<div style="background: red">', ['style' => false]],
         ];
     }
 
@@ -329,6 +332,11 @@ class HtmlHelperTest extends Unit
             [['data-ng' => ['foo' => '1', 'bar' => '2']], ['data-ng-foo' => '1', 'data-ng-bar' => '2']],
             [['ng' => ['foo' => '1', 'bar' => '2']], ['ng-foo' => '1', 'ng-bar' => '2']],
             [['data' => ['foo' => true]], ['data-foo' => true]],
+            // https://github.com/craftcms/cms/issues/7234
+            [['class' => false], ['class' => false]],
+            [['class' => false], ['class' => null]],
+            [['class' => false], ['class' => false]],
+            [['class' => false], ['class' => null]],
         ];
     }
 

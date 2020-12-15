@@ -16,5 +16,12 @@
 {% set docTitle = navItems[selectedNavItem].label~' - '~title %}
 
 {% block sidebar %}
-    {% include "_includes/nav" with { items: navItems, selectedItem: selectedNavItem } only %}
+    {% include "_includes/nav"
+        with {
+            label: title,
+            items: navItems,
+            selectedItem: selectedNavItem,
+        }
+        only
+    %}
 {% endblock %}

@@ -1025,6 +1025,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                         class: 'btn' + (typeof sourceViewMode.className !== 'undefined' ? ` ${sourceViewMode.className}` : ''),
                         'data-view': sourceViewMode.mode,
                         'data-icon': sourceViewMode.icon,
+                        'aria-label': sourceViewMode.title,
+                        title: sourceViewMode.title,
                     }).appendTo(this.$viewModeBtnContainer);
 
                     this.viewModeBtns[sourceViewMode.mode] = $viewModeBtn;
@@ -1718,7 +1720,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                     this.$selectAllContainer.attr({
                         'role': 'checkbox',
                         'tabindex': '0',
-                        'aria-checked': 'false'
+                        'aria-checked': 'false',
+                        'aria-label': Craft.t('app', 'Select all'),
                     });
 
                     this.addListener(this.$selectAllContainer, 'click', function() {

@@ -1137,8 +1137,8 @@ class GeneralConfig extends BaseObject
      * If this is set, Craft will redirect [.well-known/change-password requests](https://w3c.github.io/webappsec-change-password-url/) to this URI.
      *
      * ::: tip
-     * You will also need to set the <config:setPasswordPath> config setting, which determines the URI and template path for your Set Password form,
-     * which is where the user will actually reset their password, once they’ve clicked the link in the Password Reset email.
+     * You’ll also need to set [setPasswordPath](config3:setPasswordPath), which determines the URI and template path for the Set Password form
+     * where the user resets their password after following the link in the Password Reset email.
      * :::
      *
      * @see getSetPasswordRequestPath()
@@ -1405,7 +1405,7 @@ class GeneralConfig extends BaseObject
     /**
      * @var bool Whether the project config should be saved to the `config/` folder.
      * @since 3.1.0
-     * @deprecated since 3.5.0. Craft now always saves the project config out to the `config/` folder.
+     * @deprecated in 3.5.0. Craft now always saves the project config out to the `config/` folder.
      */
     public $useProjectConfigFile = true;
 

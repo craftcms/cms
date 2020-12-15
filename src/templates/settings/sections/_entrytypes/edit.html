@@ -1,5 +1,13 @@
 {% extends "_layouts/cp" %}
 {% set fullPageForm = true %}
+{% set formActions = [
+    {
+        label: 'Save and continue editing'|t('app'),
+        redirect: "settings/sections/#{section.id}/entrytypes/{id}"|hash,
+        shortcut: true,
+        retainScroll: true,
+    },
+] %}
 
 {% import "_includes/forms" as forms %}
 

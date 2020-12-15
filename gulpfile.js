@@ -250,3 +250,5 @@ gulp.task('deps', ['jqui', 'graphiql', 'vue', 'static-deps'], function() {
 
     return es.merge(streams);
 });
+
+gulp.task('default', ['cp', 'deps']);

@@ -1841,7 +1841,6 @@ table {
       font-weight: bold;
       @include alignleft;
       vertical-align: top;
-      color: $mediumTextColor;
     }
   }
 
@@ -3117,6 +3116,10 @@ ul.tree,
           @include icon;
           content: 'plus';
           color: $lightTextColor;
+        }
+
+        .input {
+          width: 100%;
         }
       }
 

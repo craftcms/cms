@@ -1,5 +1,46 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.5.17 - 2020-12-15
+
+### Added
+- Edit Section and Edit Entry Type pages now have a “Save and continue editing” Save menu option, and the <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>S</kbd> keyboard shortcut is now assigned to that. ([#2872](https://github.com/craftcms/cms/issues/2872))
+- Added the `fullSchema` option to the `graphql/dump-schema` and `graphql/print-schema` commands. ([#7226](https://github.com/craftcms/cms/issues/7226))
+
+### Changed
+- Improved accessibility throughout the control panel. ([#7231](https://github.com/craftcms/cms/pull/7231))
+- The Username, First Name, Last Name, Email, and New Password fields on Edit User pages now prevent LastPass from autofilling them. ([#7177](https://github.com/craftcms/cms/issues/7177))
+- Field layout elements’ settings HUDs now automatically set the focus on the first text input when opened. ([#7175](https://github.com/craftcms/cms/issues/7175))
+- Field instructions within the details pane are now replaced with info icons. ([#7180](https://github.com/craftcms/cms/issues/7180))
+- Panes with `overflow: auto` and no focusable content within them now have `tabindex="0"` attributes, so their content can be keyboard-scrollable on Chromium and WebKit-based browsers. ([#7236](https://github.com/craftcms/cms/issues/7236))
+- The `generateTransformsBeforePageLoad` config setting is now automatically enabled when rendering emails. ([#7267](https://github.com/craftcms/cms/issues/7267))
+- It’s now possible to pass arrays to relational fields’ element query params which begin with `':empty:'`, to fetch elements where the relational field is either empty or has a certain value. ([#7256](https://github.com/craftcms/cms/issues/7256))
+- `users/set-password` requests now include a `status` key in JSON responses, set to the user’s status. ([#7239](https://github.com/craftcms/cms/issues/7239))
+
+### Fixed
+- Fixed a bug where `craft\base\Field::isFresh()` could return the wrong result.
+- Fixed a bug where required Checkboxes, Dropdown, Multi-select, and Radio Button fields within Matrix blocks could cause validation errors. ([#7205](https://github.com/craftcms/cms/issues/7205))
+- Fixed a bug where assets could be uploaded to a folder named after the primary site rather than the selected site, when uploaded via an Assets field in a global set, if the field had a dynamic upload path that contained `{site.handle}`. ([#7213](https://github.com/craftcms/cms/issues/7213))
+- Fixed a PHP error that could occur when running functional tests. ([#7207](https://github.com/craftcms/cms/pull/7207))
+- Fixed a bug where the plugin installer wasn’t always handling plugins’ post-install redirects correctly. ([#7204](https://github.com/craftcms/cms/issues/7204))
+- Fixed a bug where the `siteName` and `siteUrl` config settings could get hard-coded into the project config when the project config was rebuilt. ([#7208](https://github.com/craftcms/cms/issues/7208))
+- Fixed a bug where sites’ Name setting would show the `siteName` config setting value rather than the stored value, if it was set.
+- Fixed a bug where `craft\elements\Asset::getSrcset()` would not respect some of the properties of the transform set on the asset. ([#7193](https://github.com/craftcms/cms/issues/7193))
+- Fixed a bug where WebP images were not transformable, even if the server was configured for it. ([#7170](https://github.com/craftcms/cms/issues/7170)) 
+- Fixed a bug where the image editor could save an image incorrectly, if the `upscaleImages` config setting was set to `false`.
+- Fixed a bug where it wasn’t possible to install a plugin if it had a row in the `plugins` table, but it wasn’t in the project config. ([#7229](https://github.com/craftcms/cms/issues/7229))
+- Fixed a bug where Craft wasn’t always respecting plugins’ `minVersionRequired`. ([#7191](https://github.com/craftcms/cms/issues/7191))
+- Fixed a bug where `craft\elements\db\ElementQuery::getCriteria()` wasn’t including custom field criteria values. ([#7225](https://github.com/craftcms/cms/issues/7225))
+- Fixed a MySQL deadlock error that could occur when running background jobs. ([#7179](https://github.com/craftcms/cms/issues/7179))
+- Fixed a bug where Craft was responding to set-password requests for pending users as if they had been activated, even if something prevented them from being activated. ([#7239](https://github.com/craftcms/cms/issues/7239))
+- Fixed a bug where the `|attr` Twig filter wasn’t removing `class` and `style` attributes when they were set to `false` or `null`. ([#7234](https://github.com/craftcms/cms/issues/7234))
+- Fixed a bug where eager-loading would load incorrect elements in some cases when using GraphQL API.
+- Fixed a bug where select inputs could bleed out of their container divs. ([#7183](https://github.com/craftcms/cms/issues/7183))
+- Fixed a bug where Edit Entry pages would show “Save and add another” and “Save as a new entry” action options for users who didn’t have permission to create new entries in the section. ([#7232](https://github.com/craftcms/cms/issues/7232))
+- Fixed a bug where some control panel SVG icons had conflicting IDs. ([#7247](https://github.com/craftcms/cms/pull/7247))
+- Fixed a bug where it wasn’t possible to set multiple options on Checkboxes and Multi-select fields when saving elements via GraphQL mutations. ([#7197](https://github.com/craftcms/cms/issues/7197))
+- Fixed a bug where users were able to delete entries if they had the “Delete other authors’ entries” permission but not the “Delete entries” permission. ([#7233](https://github.com/craftcms/cms/issues/7233))
+- Fixed a bug where Checkboxes, Dropdown, Multi-select, and Radio Buttons fields’ values weren’t getting translated on element indexes. ([#7271](https://github.com/craftcms/cms/issues/7271))
+
 ## 3.5.16 - 2020-11-24
 
 ### Added
@@ -17,11 +58,11 @@
 - The Settings → Users → Fields and Settings → Users → Settings pages no longer redirect the browser when saved. ([#7131](https://github.com/craftcms/cms/pull/7131))
 - Editable table columns can now specify the `<textarea rows>` attribute value via a `rows` key on the column config. ([#7124](https://github.com/craftcms/cms/issues/7124))
 - The GraphQL query `relatedTo` and `relatedToAll` arguments now also allow string values.
-- Updated Imagine to 1.2.4.
 - Editable tables no longer show their heading row if there aren’t any data rows yet. ([#7158](https://github.com/craftcms/cms/issues/7158))
 - Relational fields’ “Show the site menu” settings are no longer enabled by default.
 - Relational fields’ element selection modals now always default to the source element’s site, if no target site is specified in the field’s settings. ([#7164](https://github.com/craftcms/cms/issues/7164))
 - Controllers now run request and permission checks from `beforeAction()` rather than `init()`. ([#7168](https://github.com/craftcms/cms/issues/7168))
+- Updated Imagine to 1.2.4.
 
 ### Deprecated
 - Deprecated `craft\fields\BaseRelationField::inputSiteId()`.
