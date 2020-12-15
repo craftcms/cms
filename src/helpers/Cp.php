@@ -377,7 +377,10 @@ class Cp
         $labelId = $config['labelId'] ?? "$fieldId-" . ($fieldset ? 'legend' : 'label');
         $instructionsId = $config['instructionsId'] ?? "$fieldId-instructions";
         $status = $config['status'] ?? null;
-        $label = isset($config['label']) && $config['label'] !== '__blank__' ? $config['label'] : null;
+        $label = $config['fieldLabel'] ?? $config['label'] ?? null;
+        if ($label === '__blank__') {
+            $label = null;
+        }
         $siteId = Craft::$app->getIsMultiSite() && isset($config['siteId']) ? (int)$config['siteId'] : null;
         if ($siteId) {
             $site = Craft::$app->getSites()->getSiteById($siteId);

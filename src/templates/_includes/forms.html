@@ -196,15 +196,14 @@
 
 
 {% macro checkboxField(config) %}
-    {# label --> checkboxLabel, fieldLabel --> label #}
+    {# label --> checkboxLabel #}
     {% set config = config|merge({
         fieldset: config.fieldLabel is defined,
         fieldClass: (config.fieldClass ?? [])|explodeClass|push('checkboxfield'),
         id: config.id ?? "checkbox#{random()}",
         checkboxLabel: config.label ?? null,
-        label: config.fieldLabel ?? null,
         instructionsPosition: config.instructionsPosition ?? 'after',
-    })|withoutKey('fieldLabel') %}
+    }) %}
     {{ _self.field(config, _self.checkbox(config)) }}
 {% endmacro %}
 

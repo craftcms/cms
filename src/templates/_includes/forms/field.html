@@ -3,7 +3,10 @@
 {%- set labelId = labelId ?? "#{fieldId}-" ~ (fieldset ? 'legend' : 'label') %}
 {%- set instructionsId = instructionsId ?? "#{fieldId}-instructions"  %}
 {%- set status = status ?? null %}
-{%- set label = label is defined and label != '__blank__' ? label : (block('label') ?? null) %}
+{%- set label = fieldLabel ?? label ?? block('label') ?? null %}
+{%- if label == '__blank__' %}
+    {%- set label = null %}
+{%- endif %}
 {%- set siteId = craft.app.getIsMultiSite() ? (siteId ?? null) : null %}
 {%- set site = siteId ? craft.app.sites.getSiteById(siteId) : null %}
 {%- set required = required ?? false %}
