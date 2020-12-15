@@ -1685,17 +1685,15 @@ class Asset extends Element
             // NBD
         }
 
-        $html .= $view->renderTemplateMacro('_includes/forms', 'textField', [
-            [
-                'label' => Craft::t('app', 'Filename'),
-                'id' => 'newFilename',
-                'name' => 'newFilename',
-                'value' => $this->filename,
-                'errors' => $this->getErrors('newLocation'),
-                'first' => true,
-                'required' => true,
-                'class' => 'renameHelper text'
-            ]
+        $html .= Cp::textFieldHtml([
+            'label' => Craft::t('app', 'Filename'),
+            'id' => 'newFilename',
+            'name' => 'newFilename',
+            'value' => $this->filename,
+            'errors' => $this->getErrors('newLocation'),
+            'first' => true,
+            'required' => true,
+            'class' => ['renameHelper', 'text'],
         ]);
 
         $html .= parent::getEditorHtml();

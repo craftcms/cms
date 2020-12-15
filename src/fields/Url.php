@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
+use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\validators\UrlValidator;
 use yii\db\Schema;
@@ -73,28 +74,24 @@ class Url extends Field implements PreviewableFieldInterface
      */
     public function getSettingsHtml()
     {
-        return Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField', [
-                [
-                    'label' => Craft::t('app', 'Placeholder Text'),
-                    'instructions' => Craft::t('app', 'The text that will be shown if the field doesn’t have a value.'),
-                    'id' => 'placeholder',
-                    'name' => 'placeholder',
-                    'value' => $this->placeholder,
-                    'errors' => $this->getErrors('placeholder'),
-                ]
+        return Cp::textFieldHtml([
+                'label' => Craft::t('app', 'Placeholder Text'),
+                'instructions' => Craft::t('app', 'The text that will be shown if the field doesn’t have a value.'),
+                'id' => 'placeholder',
+                'name' => 'placeholder',
+                'value' => $this->placeholder,
+                'errors' => $this->getErrors('placeholder'),
             ]) .
-            Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField', [
-                [
-                    'label' => Craft::t('app', 'Max Length'),
-                    'instructions' => Craft::t('app', 'The maximum length (in bytes) the field can hold.'),
-                    'id' => 'maxLength',
-                    'name' => 'maxLength',
-                    'type' => 'number',
-                    'min' => '10',
-                    'step' => '10',
-                    'value' => $this->maxLength,
-                    'errors' => $this->getErrors('maxLength'),
-                ]
+            Cp::textFieldHtml([
+                'label' => Craft::t('app', 'Max Length'),
+                'instructions' => Craft::t('app', 'The maximum length (in bytes) the field can hold.'),
+                'id' => 'maxLength',
+                'name' => 'maxLength',
+                'type' => 'number',
+                'min' => '10',
+                'step' => '10',
+                'value' => $this->maxLength,
+                'errors' => $this->getErrors('maxLength'),
             ]);
     }
 

@@ -1345,13 +1345,11 @@ class Entry extends Element
                     ];
                 }
 
-                $html .= Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'selectField', [
-                    [
-                        'label' => Craft::t('app', 'Entry Type'),
-                        'id' => 'entryType',
-                        'value' => $this->typeId,
-                        'options' => $entryTypeOptions,
-                    ]
+                $html .= Cp::selectFieldHtml([
+                    'label' => Craft::t('app', 'Entry Type'),
+                    'id' => 'entryType',
+                    'value' => $this->typeId,
+                    'options' => $entryTypeOptions,
                 ]);
 
                 $typeInputId = $view->namespaceInputId('entryType');

@@ -463,6 +463,7 @@ class View extends \yii\web\View
      * @throws TwigRuntimeError
      * @throws TwigSyntaxError
      * @throws Exception if $templateMode is invalid
+     * @deprecated in 3.6.0.
      */
     public function renderTemplateMacro(string $template, string $macro, array $args = [], string $templateMode = null): string
     {
