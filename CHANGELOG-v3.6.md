@@ -55,6 +55,7 @@
 - Added `craft\gql\types\input\criteria\Entry`.
 - Added `craft\gql\types\input\criteria\Tag`.
 - Added `craft\gql\types\input\criteria\User`.
+- Added `craft\helpers\App::phpSizeToBytes()`.
 - Added `craft\helpers\Cp::checkboxFieldHtml()`.
 - Added `craft\helpers\Cp::colorFieldHtml()`.
 - Added `craft\helpers\Cp::editableTableFieldHtml()`.

@@ -212,6 +212,18 @@ class App
     public static function phpConfigValueInBytes(string $var)
     {
         $value = trim(ini_get($var));
+        return static::phpSizeToBytes($value);
+    }
+
+    /**
+     * Normalizes a PHP file size into bytes.
+     *
+     * @param string $value The file size expressed in PHP config value notation
+     * @return int|float The value normalized into bytes.
+     * @since 3.6.0
+     */
+    public static function phpSizeToBytes(string $value)
+    {
         $unit = strtolower(substr($value, -1, 1));
         $value = (int)$value;
 
