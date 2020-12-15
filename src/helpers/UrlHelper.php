@@ -611,12 +611,8 @@ class UrlHelper
 
         // If this is a site URL and there was a token on the request, pass it along
         if (!$cpUrl && $addToken !== false) {
-            $tokenParam = $generalConfig->tokenParam;
-            if (
-                !isset($params[$tokenParam]) &&
-                ($token = $request->getToken()) !== null
-            ) {
-                $params[$tokenParam] = $token;
+            if (!isset($params[$generalConfig->tokenParam]) && ($token = $request->getToken()) !== null) {
+                $params[$generalConfig->tokenParam] = $token;
             }
         }
 
