@@ -121,12 +121,8 @@ abstract class BaseEntriesController extends Controller
             if (!$entry->creatorId || $entry->creatorId != $currentUser->id) {
                 $this->requirePermission("deletePeerEntryDrafts:$section->uid");
             }
-        } else {
-            if ($entry->authorId == $currentUser->id) {
-                $this->requirePermission("deleteEntries:$section->uid");
-            } else {
-                $this->requirePermission("deletePeerEntries:$section->uid");
-            }
+        } else if (!$entry->getIsDeletable()) {
+            throw new ForbiddenHttpException('User is not permitted to perform this action');
         }
     }
 

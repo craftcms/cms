@@ -241,10 +241,7 @@ class EntriesController extends BaseEntriesController
         }
 
         // Can the user delete the entry?
-        $variables['canDeleteSource'] = $section->type !== Section::TYPE_SINGLE && (
-                ($entry->authorId == $currentUser->id && $currentUser->can('deleteEntries' . $variables['permissionSuffix'])) ||
-                ($entry->authorId != $currentUser->id && $currentUser->can('deletePeerEntries' . $variables['permissionSuffix']))
-            );
+        $variables['canDeleteSource'] = $entry->getIsDeletable();
 
         // Can the user delete the entry for the current site?
         $variables['canDeleteForSite'] = $section->propagationMethod === Section::PROPAGATION_METHOD_CUSTOM;

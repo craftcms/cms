@@ -220,7 +220,8 @@
 - Fixed a bug where select inputs could bleed out of their container divs. ([#7183](https://github.com/craftcms/cms/issues/7183))
 - Fixed a bug where Edit Entry pages would show “Save and add another” and “Save as a new entry” action options for users who didn’t have permission to create new entries in the section. ([#7232](https://github.com/craftcms/cms/issues/7232))
 - Fixed a bug where some control panel SVG icons had conflicting IDs. ([#7247](https://github.com/craftcms/cms/pull/7247))
-- Fixed a bug where it was impossible to use multiple options for checkbox and multi-select fields when using GraphQL Mutations. ([#7197](https://github.com/craftcms/cms/issues/7197))
+- Fixed a bug where it wasn’t possible to set multiple options on Checkboxes and Multi-select fields when saving elements via GraphQL mutations. ([#7197](https://github.com/craftcms/cms/issues/7197))
+- Fixed a bug where users were able to delete entries if they had the “Delete other authors’ entries” permission but not the “Delete entries” permission. ([#7233](https://github.com/craftcms/cms/issues/7233))
 
 ## 3.5.16 - 2020-11-24
 
@@ -239,11 +240,11 @@
 - The Settings → Users → Fields and Settings → Users → Settings pages no longer redirect the browser when saved. ([#7131](https://github.com/craftcms/cms/pull/7131))
 - Editable table columns can now specify the `<textarea rows>` attribute value via a `rows` key on the column config. ([#7124](https://github.com/craftcms/cms/issues/7124))
 - The GraphQL query `relatedTo` and `relatedToAll` arguments now also allow string values.
-- Updated Imagine to 1.2.4.
 - Editable tables no longer show their heading row if there aren’t any data rows yet. ([#7158](https://github.com/craftcms/cms/issues/7158))
 - Relational fields’ “Show the site menu” settings are no longer enabled by default.
 - Relational fields’ element selection modals now always default to the source element’s site, if no target site is specified in the field’s settings. ([#7164](https://github.com/craftcms/cms/issues/7164))
 - Controllers now run request and permission checks from `beforeAction()` rather than `init()`. ([#7168](https://github.com/craftcms/cms/issues/7168))
+- Updated Imagine to 1.2.4.
 
 ### Deprecated
 - Deprecated `craft\fields\BaseRelationField::inputSiteId()`.
