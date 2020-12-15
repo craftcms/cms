@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\enums\LicenseKeyStatus;
 use craft\events\RegisterCpAlertsEvent;
+use craft\web\View;
 use http\Exception\InvalidArgumentException;
 use yii\base\Event;
 use yii\helpers\Markdown;
@@ -36,6 +37,18 @@ class Cp
      * @since 3.5.8
      */
     const ELEMENT_SIZE_LARGE = 'large';
+
+    /**
+     * Renders a control panel template.
+     *
+     * @param string $template
+     * @param array $variables
+     * @return string
+     */
+    public static function renderTemplate(string $template, array $variables = []): string
+    {
+        return Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP);
+    }
 
     /**
      * @param string|null $path
@@ -433,7 +446,7 @@ class Cp
                     ($showAttribute
                         ? Html::tag('div', '', [
                             'class' => ['flex-grow'],
-                        ]) . Craft::$app->getView()->renderTemplate('_includes/forms/copytextbtn', [
+                        ]) . static::renderTemplate('_includes/forms/copytextbtn', [
                             'id' => "$fieldId-attribute",
                             'class' => ['code', 'small', 'light'],
                             'value' => $config['attribute'],
@@ -462,7 +475,7 @@ class Cp
                 ])
                 : '') .
             ($errors
-                ? Craft::$app->getView()->renderTemplate('_includes/forms/errorList', [
+                ? static::renderTemplate('_includes/forms/errorList', [
                     'errors' => $errors,
                 ])
                 : ''),

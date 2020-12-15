@@ -34,6 +34,7 @@
 - Added `craft\gql\types\input\criteria\Entry`.
 - Added `craft\gql\types\input\criteria\Tag`.
 - Added `craft\gql\types\input\criteria\User`.
+- Added `craft\helpers\Cp::renderTemplate()`.
 - Added `craft\helpers\Diff`.
 - Added `craft\models\FieldLayout::EVENT_CREATE_FORM`. ([#7258](https://github.com/craftcms/cms/issues/7258))
 - Added `craft\models\Site::getName()`.

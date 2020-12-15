@@ -55,6 +55,7 @@
 - Added `craft\gql\types\input\criteria\Entry`.
 - Added `craft\gql\types\input\criteria\Tag`.
 - Added `craft\gql\types\input\criteria\User`.
+- Added `craft\helpers\Cp::renderTemplate()`.
 - Added `craft\helpers\Diff`.
 - Added `craft\helpers\Gql::eagerLoadComplexity()`.
 - Added `craft\helpers\Gql::nPlus1Complexity()`.
