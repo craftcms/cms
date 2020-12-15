@@ -87,6 +87,8 @@ class Mailer extends \yii\swiftmailer\Mailer
      */
     public function send($message)
     {
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+
         if ($message instanceof Message && $message->key !== null) {
             if ($message->language === null) {
                 // Default to the current language
@@ -110,6 +112,10 @@ class Mailer extends \yii\swiftmailer\Mailer
                     'replyToEmail' => Craft::parseEnv($settings->replyToEmail),
                     'fromName' => Craft::parseEnv($settings->fromName),
                 ];
+
+            // Temporarily disable lazy transform generation
+            $generateTransformsBeforePageLoad = $generalConfig->generateTransformsBeforePageLoad;
+            $generalConfig->generateTransformsBeforePageLoad = true;
 
             // Render the subject and textBody
             $view = Craft::$app->getView();
@@ -139,6 +145,7 @@ class Mailer extends \yii\swiftmailer\Mailer
 
             // Set things back to normal
             Craft::$app->language = $language;
+            $generalConfig->generateTransformsBeforePageLoad = $generateTransformsBeforePageLoad;
         }
 
         // Set the default sender if there isn't one already
@@ -151,7 +158,7 @@ class Mailer extends \yii\swiftmailer\Mailer
         }
 
         // Apply the testToEmailAddress config setting
-        $testToEmailAddress = Craft::$app->getConfig()->getGeneral()->getTestToEmailAddress();
+        $testToEmailAddress = $generalConfig->getTestToEmailAddress();
         if (!empty($testToEmailAddress)) {
             $message->setTo($testToEmailAddress);
             $message->setCc(null);

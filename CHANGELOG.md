@@ -12,6 +12,7 @@
 - Field layout elements’ settings HUDs now automatically set the focus on the first text input when opened. ([#7175](https://github.com/craftcms/cms/issues/7175))
 - Field instructions within the details pane are now replaced with info icons. ([#7180](https://github.com/craftcms/cms/issues/7180))
 - Panes with `overflow: auto` and no focusable content within them now have `tabindex="0"` attributes, so their content can be keyboard-scrollable on Chromium and WebKit-based browsers. ([#7236](https://github.com/craftcms/cms/issues/7236))
+- The `generateTransformsBeforePageLoad` config setting is now automatically enabled when rendering emails. ([#7267](https://github.com/craftcms/cms/issues/7267))
 - It’s now possible to pass arrays to relational fields’ element query params which begin with `':empty:'`, to fetch elements where the relational field is either empty or has a certain value. ([#7256](https://github.com/craftcms/cms/issues/7256))
 - `users/set-password` requests now include a `status` key in JSON responses, set to the user’s status. ([#7239](https://github.com/craftcms/cms/issues/7239))
 
