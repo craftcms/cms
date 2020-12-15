@@ -362,18 +362,25 @@ class Cp
     }
 
     /**
-     * Renders a field’s HTML.
+     * Renders a field’s HTML, for the given input HTML or a template.
      *
-     * @param string $inputHtml
+     * @param string $input The input HTML or template path. If passing a template path, it must begin with `template:`.
      * @param array $config
      * @return string
      * @throws InvalidArgumentException if `$config['siteId']` is invalid
      * @since 3.5.8
      */
-    public static function fieldHtml(string $inputHtml, array $config = []): string
+    public static function fieldHtml(string $input, array $config = []): string
     {
+        // Set the ID before rendering the field so it's consistent
+        $config['id'] = $config['id'] ?? 'field' . mt_rand();
+
+        if (StringHelper::startsWith($input, 'template:')) {
+            $input = static::renderTemplate(substr($input, 9), $config);
+        }
+
         $fieldset = $config['fieldset'] ?? false;
-        $fieldId = $config['fieldId'] ?? (isset($config['id']) ? "{$config['id']}-field" : ('field' . mt_rand()));
+        $fieldId = $config['fieldId'] ?? "{$config['id']}-field";
         $labelId = $config['labelId'] ?? "$fieldId-" . ($fieldset ? 'legend' : 'label');
         $instructionsId = $config['instructionsId'] ?? "$fieldId-instructions";
         $status = $config['status'] ?? null;
@@ -469,7 +476,7 @@ class Cp
                 )
                 : '') .
             ($instructionsPosition === 'before' ? $instructionsHtml : '') .
-            Html::tag('div', $inputHtml, $inputContainerAttributes) .
+            Html::tag('div', $input, $inputContainerAttributes) .
             ($instructionsPosition === 'after' ? $instructionsHtml : '') .
             ($tip
                 ? Html::tag('p', preg_replace('/&amp;(\w+);/', '&$1;', Markdown::processParagraph($tip)), [
@@ -487,5 +494,125 @@ class Cp
                 ])
                 : ''),
             $fieldAttributes);
+    }
+
+    /**
+     * Renders a checkbox field’s HTML.
+     *
+     * Note that unlike the `checkboxField` macro in `_includes/forms.html`, you must set the checkbox label via
+     * `$config['checkboxLabel']`.
+     *
+     * @param array $config
+     * @return string
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 3.6.0
+     */
+    public static function checkboxFieldHtml(array $config): string
+    {
+        $config['fieldClass'] = Html::explodeClass($config['fieldClass'] ?? []);
+        $config['fieldClass'][] = 'checkboxfield';
+        $config['instructionsPosition'] = $config['instructionsPosition'] ?? 'after';
+
+        // Don't pass along `label` since it's ambiguous
+        unset($config['label']);
+
+        return static::fieldHtml('template:_includes/forms/checkbox', $config);
+    }
+
+    /**
+     * Renders a color field’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 3.6.0
+     */
+    public static function colorFieldHtml(array $config): string
+    {
+        return static::fieldHtml('template:_includes/forms/color', $config);
+    }
+
+    /**
+     * Renders an editable table field’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 3.6.0
+     */
+    public static function editableTableFieldHtml(array $config): string
+    {
+        return static::fieldHtml('template:_includes/forms/editableTable', $config);
+    }
+
+    /**
+     * Renders a lightswitch field’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 3.6.0
+     */
+    public static function lightswitchFieldHtml(array $config): string
+    {
+        $config['fieldClass'] = Html::explodeClass($config['fieldClass'] ?? []);
+        $config['fieldClass'][] = 'lightswitch-field';
+
+        // Don't pass along `label` since it's ambiguous
+        $config['fieldLabel'] = $config['fieldLabel'] ?? $config['label'] ?? null;
+        unset($config['label']);
+
+        return static::fieldHtml('template:_includes/forms/lightswitch', $config);
+    }
+
+    /**
+     * Renders a select field’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 3.6.0
+     */
+    public static function selectFieldHtml(array $config): string
+    {
+        return static::fieldHtml('template:_includes/forms/select', $config);
+    }
+
+    /**
+     * Renders a text field’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 3.6.0
+     */
+    public static function textFieldHtml(array $config): string
+    {
+        $config['id'] = $config['id'] ?? 'text' . mt_rand();
+        $input = static::renderTemplate('_includes/forms/text', $config);
+
+        if (isset($config['unit'])) {
+            $input = Html::tag('div',
+                Html::tag('div', $input, ['class' => 'textwrapper']) .
+                Html::tag('div', Html::encode($config['unit']), ['class' => ['label', 'light']]),
+                [
+                    'class' => 'flex',
+                ]);
+        }
+
+        return static::fieldHtml($input, $config);
+    }
+
+    /**
+     * Renders a textarea field’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 3.6.0
+     */
+    public static function textareaFieldHtml(array $config): string
+    {
+        return static::fieldHtml('template:_includes/forms/textarea', $config);
     }
 }

@@ -34,7 +34,14 @@
 - Added `craft\gql\types\input\criteria\Entry`.
 - Added `craft\gql\types\input\criteria\Tag`.
 - Added `craft\gql\types\input\criteria\User`.
+- Added `craft\helpers\Cp::checkboxFieldHtml()`.
+- Added `craft\helpers\Cp::colorFieldHtml()`.
+- Added `craft\helpers\Cp::editableTableFieldHtml()`.
+- Added `craft\helpers\Cp::lightswitchFieldHtml()`.
 - Added `craft\helpers\Cp::renderTemplate()`.
+- Added `craft\helpers\Cp::selectFieldHtml()`.
+- Added `craft\helpers\Cp::textareaFieldHtml()`.
+- Added `craft\helpers\Cp::textFieldHtml()`.
 - Added `craft\helpers\Diff`.
 - Added `craft\models\FieldLayout::EVENT_CREATE_FORM`. ([#7258](https://github.com/craftcms/cms/issues/7258))
 - Added `craft\models\Site::getName()`.
@@ -62,6 +69,7 @@
 - The `_includes/forms/field.html` control panel template and `craft\helpers\Cp::fieldHtml()` now accept a `fieldLabel` variable/config key, which will take precedence over `label`.
 - The `checkboxField` macro within the `_includes/forms.html` control panel template now returns a `<fieldset>` if a `fieldLabel` config key was passed.
 - `craft\behaviors\EnvAttributeParserBehavior::$attributes` can now be set to an array with key/value pairs, where the key is the attribute name, and the value is the raw (unparsed) value, or a callable that returns the raw value.
+- `craft\helpers\Cp::fieldHtml()` now accepts a control panel template path, prefixed with `template:`.
 - `craft\helpers\Gql::isSchemaAwareOf()`, `extractAllowedEntitiesFromSchema()`, `canSchema()`, `extractEntityAllowedActions()`, `canMutateEntries()`, `canMutateTags()`, `canMutateGlobalSets()`, `canMutateCategories()`, `canMutateAssets()`, `canQueryEntries()`, `canQueryAssets()`, `canQueryCategories()`, `canQueryTags()`, `canQueryGlobalSets()`, and `canQueryUsers()` now have `$schema` arguments.
 - `craft\models\Site::$baseUrl` is now a magic property, which returns the parsed base URL. ([#3964](https://github.com/craftcms/cms/issues/3964))
 - `craft\models\Site::$name` is now a magic property, which returns the parsed site name. ([#3964](https://github.com/craftcms/cms/issues/3964))
@@ -80,6 +88,7 @@
 - Deprecated `craft\services\Drafts::EVENT_BEFORE_APPLY_DRAFT`. `EVENT_BEFORE_PUBLISH_DRAFT` should be used instead.
 - Deprecated `craft\services\Drafts::purgeUnsavedDrafts()`.
 - Deprecated `craft\test\Fixture`. `craft\test\ActiveFixture` should be used instead.
+- Deprecated `craft\web\View::renderTemplateMacro()`.
 
 ### Removed
 - Removed `craft\test\fixtures\elements\ElementFixture`. `craft\test\fixtures\elements\BaseElementFixture` should be used instead.

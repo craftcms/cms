@@ -164,19 +164,6 @@ class ViewTest extends TestCase
     }
 
     /**
-     * @throws Exception
-     * @throws LoaderError
-     * @throws RuntimeError
-     * @throws SyntaxError
-     */
-    public function testRenderMacro()
-    {
-        $this->view->setTemplateMode(View::TEMPLATE_MODE_SITE);
-        $result = $this->view->renderTemplateMacro('macros', 'testMacro1', ['arg1' => 'Craft', 'arg2' => 'CMS']);
-        self::assertSame('Craft-CMS', $result);
-    }
-
-    /**
      * @throws LoaderError
      * @throws SyntaxError
      */
