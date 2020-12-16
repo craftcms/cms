@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\enums\LicenseKeyStatus;
 use craft\events\RegisterCpAlertsEvent;
+use craft\web\twig\TemplateLoaderException;
 use craft\web\View;
 use yii\base\Event;
 use yii\base\InvalidArgumentException;
@@ -44,6 +45,7 @@ class Cp
      * @param string $template
      * @param array $variables
      * @return string
+     * @throws TemplateLoaderException if `$template` is an invalid template path
      */
     public static function renderTemplate(string $template, array $variables = []): string
     {
@@ -367,6 +369,7 @@ class Cp
      * @param string $input The input HTML or template path. If passing a template path, it must begin with `template:`.
      * @param array $config
      * @return string
+     * @throws TemplateLoaderException if $input begins with `template:` and is followed by an invalid template path
      * @throws InvalidArgumentException if `$config['siteId']` is invalid
      * @since 3.5.8
      */
