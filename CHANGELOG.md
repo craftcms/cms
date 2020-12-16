@@ -5,6 +5,9 @@
 ### Added
 - Added `craft\helpers\App::phpSizeToBytes()`.
 
+### Fixed
+- Fixed a bug where most control panel checkbox fields had redundant legends. ([#7275](https://github.com/craftcms/cms/issues/7275))
+
 ## 3.6.0-RC2 - 2020-12-15
 
 ### Added

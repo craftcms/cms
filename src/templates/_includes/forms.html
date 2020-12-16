@@ -203,7 +203,7 @@
         id: config.id ?? "checkbox#{random()}",
         checkboxLabel: config.label ?? null,
         instructionsPosition: config.instructionsPosition ?? 'after',
-    }) %}
+    })|withoutKey('label') %}
     {{ _self.field(config, _self.checkbox(config)) }}
 {% endmacro %}
 
