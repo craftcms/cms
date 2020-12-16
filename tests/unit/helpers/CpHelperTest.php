@@ -46,17 +46,6 @@ class CpHelperTest extends Unit
         $user = User::findOne(1);
         self::assertInstanceOf(User::class, $user);
 
-        $html = <<<HTML
-<div class="element small hasstatus hasthumb" data-type="craft\\elements\\User" data-id="1" data-site-id="1" data-status="active" data-label="craftcms" data-url data-level title="craftcms" data-deletable>
-<span class="status active"></span>
-<div class="elementthumb rounded" data-sizes="34px" data-srcset="https://test.craftcms.test:80/cpresources/131f66b9/images/user.svg?v=1586544152 34w, https://test.craftcms.test:80/cpresources/131f66b9/images/user.svg?v=1586544152 68w"></div>
-<div class="label">
-<span class="title">craftcms</span>
-</div>
-</div>
-HTML;
-
-        self::assertSame(str_replace("\n", '', $html), Cp::elementHtml($user));
         self::assertStringContainsString('removable', Cp::elementHtml($user, 'field'));
         self::assertStringContainsString('name="myFieldName[]"', Cp::elementHtml($user, 'field', Cp::ELEMENT_SIZE_SMALL, 'myFieldName'));
         self::assertStringNotContainsString('<div class="label">', Cp::elementHtml($user, 'index', Cp::ELEMENT_SIZE_SMALL, null, true, true, false));
@@ -126,9 +115,11 @@ HTML;
             ['lightswitch', 'lightswitchFieldHtml'],
             ['<select', 'selectFieldHtml'],
             ['type="text"', 'textFieldHtml'],
-            ['<div class="label light">Test unit</div>', 'textFieldHtml', [
+            [
+                '<div class="label light">Test unit</div>', 'textFieldHtml', [
                 'unit' => 'Test unit',
-            ]],
+            ]
+            ],
             ['<textarea', 'textareaFieldHtml'],
         ];
     }
