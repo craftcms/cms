@@ -7,6 +7,7 @@
 
 namespace crafttests\unit\helpers;
 
+use Craft;
 use Codeception\Test\Unit;
 use craft\elements\User;
 use craft\helpers\Cp;
@@ -46,9 +47,53 @@ class CpHelperTest extends Unit
         $user = User::findOne(1);
         self::assertInstanceOf(User::class, $user);
 
-        self::assertStringContainsString('removable', Cp::elementHtml($user, 'field'));
-        self::assertStringContainsString('name="myFieldName[]"', Cp::elementHtml($user, 'field', Cp::ELEMENT_SIZE_SMALL, 'myFieldName'));
+        $indexHtml = Cp::elementHtml($user);
+        $fieldHtml = Cp::elementHtml($user, 'field', Cp::ELEMENT_SIZE_SMALL, 'myFieldName');
+
+        // field
+        self::assertStringContainsString('removable', $fieldHtml);
+        self::assertStringContainsString('name="myFieldName[]"', $fieldHtml);
+
+        // status
+        self::assertStringContainsString('<span class="status', $indexHtml);
+        self::assertStringNotContainsString('<span class="status', Cp::elementHtml($user, 'index', Cp::ELEMENT_SIZE_SMALL, null, false));
+
+        // thumb
+        self::assertStringContainsString('elementthumb', $indexHtml);
+        self::assertStringNotContainsString('elementthumb', Cp::elementHtml($user, 'index', Cp::ELEMENT_SIZE_SMALL, null, true, false));
+
+        // label
+        self::assertStringContainsString('<div class="label">', $indexHtml);
         self::assertStringNotContainsString('<div class="label">', Cp::elementHtml($user, 'index', Cp::ELEMENT_SIZE_SMALL, null, true, true, false));
+
+        // errors
+        self::assertStringNotContainsString('error', $indexHtml);
+        $user->addError('foo', 'bad error');
+        self::assertStringContainsString('error', Cp::elementHtml($user));
+        $user->clearErrors();
+
+        // trashed
+        self::assertStringNotContainsString('data-trashed', $indexHtml);
+        $user->trashed = true;
+        self::assertStringContainsString('data-trashed', Cp::elementHtml($user));
+        $user->trashed = false;
+
+        $edition = Craft::$app->getEdition();
+        Craft::$app->setEdition(Craft::Pro);
+
+        // draft
+        self::assertStringNotContainsString('draftId', $indexHtml);
+        $user->draftId = 1;
+        self::assertStringContainsString('draftId', Cp::elementHtml($user));
+        $user->draftId = null;
+
+        // revision
+        self::assertStringNotContainsString('revisionId', $indexHtml);
+        $user->revisionId = 1;
+        self::assertStringContainsString('revisionId', Cp::elementHtml($user));
+        $user->revisionId = null;
+
+        Craft::$app->setEdition($edition);
     }
 
     /**
