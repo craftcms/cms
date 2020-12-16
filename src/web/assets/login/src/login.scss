@@ -124,7 +124,8 @@ body {
   }
 }
 
-#forgot-password:hover {
+#forgot-password:hover,
+#forgot-password:focus {
   color: $linkColor;
   text-decoration: none;
 }

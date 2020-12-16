@@ -77,7 +77,7 @@
                 {% if craft.app.config.general.rememberedUserSessionDuration %}
                     {{ forms.checkboxField({ id: 'rememberMe', label: 'Keep me logged in'|t('app') }) }}
                 {% endif %}
-                <a id="forgot-password">{{ 'Forgot your password?'|t('app') }}</a>
+                <button id="forgot-password">{{ 'Forgot your password?'|t('app') }}</button>
             </div>
             <div class="buttons">
                 <button id="submit" class="btn submit disabled" type="submit">{{ 'Login'|t('app') }}</button>
