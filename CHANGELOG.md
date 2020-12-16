@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.6.0-RC2.1 - 2020-12-15
 
 ### Added
 - Added `craft\helpers\App::phpSizeToBytes()`.
