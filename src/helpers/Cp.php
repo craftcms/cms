@@ -11,8 +11,8 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\enums\LicenseKeyStatus;
 use craft\events\RegisterCpAlertsEvent;
-use http\Exception\InvalidArgumentException;
 use yii\base\Event;
+use yii\base\InvalidArgumentException;
 use yii\helpers\Markdown;
 
 /**
