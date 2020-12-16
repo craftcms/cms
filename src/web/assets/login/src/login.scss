@@ -179,11 +179,12 @@ p.error {
   text-align: center;
   margin-top: 70px;
   margin-bottom: 48px;
-  opacity: .6;
+  opacity: .8;
 }
 
-#poweredby:hover {
-  opacity: 0.8;
+#poweredby:hover,
+#poweredby:focus {
+  opacity: 1;
 }
 
 #poweredby:active {
