@@ -8,8 +8,12 @@
 namespace crafttests\unit\helpers;
 
 use Codeception\Test\Unit;
+use craft\elements\User;
 use craft\helpers\Cp;
+use craft\web\twig\TemplateLoaderException;
+use crafttests\fixtures\SitesFixture;
 use UnitTester;
+use yii\base\InvalidArgumentException;
 
 /**
  * Unit tests for the CP Helper class.
@@ -23,6 +27,76 @@ class CpHelperTest extends Unit
      * @var UnitTester
      */
     protected $tester;
+
+    public function _fixtures(): array
+    {
+        return [
+            'sites' => [
+                'class' => SitesFixture::class
+            ],
+        ];
+    }
+
+    /**
+     *
+     */
+    public function testElementHtml()
+    {
+        /** @var User $user */
+        $user = User::findOne(1);
+        self::assertInstanceOf(User::class, $user);
+
+        $html = <<<HTML
+<div class="element small hasstatus hasthumb" data-type="craft\\elements\\User" data-id="1" data-site-id="1" data-status="active" data-label="craftcms" data-url data-level title="craftcms" data-deletable>
+<span class="status active"></span>
+<div class="elementthumb rounded" data-sizes="34px" data-srcset="https://test.craftcms.test:80/cpresources/131f66b9/images/user.svg?v=1586544152 34w, https://test.craftcms.test:80/cpresources/131f66b9/images/user.svg?v=1586544152 68w"></div>
+<div class="label">
+<span class="title">craftcms</span>
+</div>
+</div>
+HTML;
+
+        self::assertSame(str_replace("\n", '', $html), Cp::elementHtml($user));
+        self::assertStringContainsString('removable', Cp::elementHtml($user, 'field'));
+        self::assertStringContainsString('name="myFieldName[]"', Cp::elementHtml($user, 'field', Cp::ELEMENT_SIZE_SMALL, 'myFieldName'));
+        self::assertStringNotContainsString('<div class="label">', Cp::elementHtml($user, 'index', Cp::ELEMENT_SIZE_SMALL, null, true, true, false));
+    }
+
+    /**
+     *
+     */
+    public function testFieldHtml()
+    {
+        self::assertStringContainsString('<div class="input ltr"><input></div>', Cp::fieldHtml('<input>'));
+        self::assertStringContainsString('<label id="id-field-label" for="id">Label</label>', Cp::fieldHtml('<input>', ['label' => 'Label', 'id' => 'id']));
+        self::assertStringNotContainsString('<label', Cp::fieldHtml('<input>', ['label' => '__blank__',]));
+        // invalid site ID
+        $this->tester->expectThrowable(InvalidArgumentException::class, function() {
+            Cp::fieldHtml('<input>', ['siteId' => -1]);
+        });
+        // fieldset + legend
+        $fieldset = Cp::fieldHtml('<input>', ['fieldset' => 'true', 'label' => 'Label']);
+        self::assertStringContainsString('<fieldset', $fieldset);
+        self::assertStringContainsString('<legend', $fieldset);
+        // translatable
+        self::assertStringContainsString('class="t9n-indicator"', Cp::fieldHtml('<input>', ['label' => 'Label', 'translatable' => true]));
+        // instructions
+        $withInstructions = Cp::fieldHtml('<input>', ['instructionsId' => 'inst-id', 'instructions' => '**Test**']);
+        self::assertStringContainsString('id="inst-id"', $withInstructions);
+        self::assertStringContainsString('<p><strong>Test</strong></p>', $withInstructions);
+        // tip
+        self::assertStringContainsString('<p class="notice with-icon"><strong>Test</strong></p>', Cp::fieldHtml('<input>', ['tip' => '**Test**']));
+        // tip
+        self::assertStringContainsString('<p class="warning with-icon"><strong>Test</strong></p>', Cp::fieldHtml('<input>', ['warning' => '**Test**']));
+        // errors
+        $withErrors = Cp::fieldHtml('<input>', ['errors' => ['Very bad', 'Very, very bad']]);
+        self::assertStringContainsString('has-errors', $withErrors);
+        self::assertStringContainsString('<ul class="errors">', $withErrors);
+        // invalid template path
+        $this->tester->expectThrowable(TemplateLoaderException::class, function() {
+            Cp::fieldHtml('template:invalid/template.twig', []);
+        });
+    }
 
     /**
      * @dataProvider fieldMethodsDataProvider
@@ -44,12 +118,17 @@ class CpHelperTest extends Unit
         return [
             ['type="checkbox"', 'checkboxFieldHtml'],
             ['color-input', 'colorFieldHtml'],
-            ['editable', 'editableTableFieldHtml', [
+            [
+                'editable', 'editableTableFieldHtml', [
                 'name' => 'test',
-            ]],
+            ]
+            ],
             ['lightswitch', 'lightswitchFieldHtml'],
             ['<select', 'selectFieldHtml'],
             ['type="text"', 'textFieldHtml'],
+            ['<div class="label light">Test unit</div>', 'textFieldHtml', [
+                'unit' => 'Test unit',
+            ]],
             ['<textarea', 'textareaFieldHtml'],
         ];
     }
