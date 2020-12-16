@@ -18,15 +18,16 @@ body {
   background: no-repeat center top;
 }
 
-#login-form.has-logo {
-  padding-top: 116px;
-}
-
 #login-form h1 {
   text-align: center;
   font-size: 3em;
   color: $textColor;
   word-wrap: break-word;
+}
+
+#login-logo {
+  width: 100%;
+  height: auto;
 }
 
 #login-fields {

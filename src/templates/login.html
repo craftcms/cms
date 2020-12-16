@@ -28,22 +28,25 @@
 
 {% if hasLogo %}
     {% set logo = craft.rebrand.logo %}
-    {% set formAttributes = formAttributes|merge({
-        class: 'has-logo',
-        style: {
-            'background-image': "url(#{logo.url|e('css')})",
-            'background-size': "#{logo.width}px #{logo.height}px",
-            'padding-top': "#{logo.height + 30}px",
-        },
-    }) %}
 {% endif %}
 
 {% set formHtml %}
     <main>
         <form {{ attr(formAttributes) }}>
-            {% if not hasLogo %}
-                <h1>{{ systemName }}</h1>
-            {% endif %}
+            <h1>
+                {% if hasLogo %}
+                    {{ tag('img', {
+                        id: 'login-logo',
+                        src: logo.url,
+                        alt: systemName,
+                        width: logo.width,
+                        height: logo.height,
+                    }) }}
+                {% else %}
+                    {{ systemName }}
+                {% endif %}
+            </h1>
+
             <div id="login-fields">
                 {{ forms.textField({
                     id: 'loginName',
