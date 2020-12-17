@@ -9,6 +9,9 @@
 - Added `craft\web\Request::getHadToken()`.
 - Added `craft\web\Request::setToken()`.
 
+### Changed
+- Updated Composer to 2.0.8.
+
 ### Fixed
 - Fixed a bug where generated URLs would include the token from the current request, even if it had expired or met its usage limit.
 
