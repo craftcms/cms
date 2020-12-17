@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Changed
+- Craft no longer reports user deprecation errors logged with `E_USER_DEPRECATED`.
+
 ## 3.6.0-RC3 - 2020-12-17
 
 ### Added
