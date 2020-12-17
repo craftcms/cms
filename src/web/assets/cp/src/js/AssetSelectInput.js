@@ -105,10 +105,16 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
                 dropZone: this.$container,
                 formData: {
                     fieldId: this.settings.fieldId,
-                    elementId: this.settings.sourceElementId,
-                    siteId: this.settings.criteria.siteId,
                 }
             };
+
+            if (this.settings.sourceElementId) {
+                options.formData.elementId = this.settings.sourceElementId;
+            }
+
+            if (this.settings.criteria.siteId) {
+                options.formData.siteId = this.settings.criteria.siteId;
+            }
 
             if (this.$addElementBtn) {
                 this.$uploadBtn = $('<button/>', {

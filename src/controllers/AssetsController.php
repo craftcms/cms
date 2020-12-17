@@ -290,16 +290,16 @@ class AssetsController extends Controller
     public function actionUpload(): Response
     {
         $uploadedFile = UploadedFile::getInstanceByName('assets-upload');
-        $folderId = $this->request->getBodyParam('folderId');
-        $fieldId = $this->request->getBodyParam('fieldId');
-        $elementId = $this->request->getBodyParam('elementId');
 
-        if (empty($folderId) && (empty($fieldId) || empty($elementId))) {
-            throw new BadRequestHttpException('No target destination provided for uploading');
+        if (!$uploadedFile) {
+            throw new BadRequestHttpException('No file was uploaded');
         }
 
-        if ($uploadedFile === null) {
-            throw new BadRequestHttpException('No file was uploaded');
+        $folderId = $this->request->getBodyParam('folderId');
+        $fieldId = $this->request->getBodyParam('fieldId');
+
+        if (!$folderId && !$fieldId) {
+            throw new BadRequestHttpException('No target destination provided for uploading');
         }
 
         try {
@@ -314,7 +314,7 @@ class AssetsController extends Controller
                     throw new BadRequestHttpException('The field provided is not an Assets field');
                 }
 
-                if ($elementId) {
+                if ($elementId = $this->request->getBodyParam('elementId')) {
                     $siteId = $this->request->getBodyParam('siteId') ?: null;
                     $element = Craft::$app->getElements()->getElementById($elementId, null, $siteId);
                 } else {
