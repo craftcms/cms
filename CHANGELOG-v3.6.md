@@ -28,7 +28,9 @@
 - Added `craft\base\VolumeTrait::$titleTranslationKeyFormat`.
 - Added `craft\base\VolumeTrait::$titleTranslationMethod`.
 - Added `craft\console\Controller::passwordPrompt()`.
+- Added `craft\console\Request::getHadToken()`.
 - Added `craft\console\Request::getSiteToken()`.
+- Added `craft\console\Request::setToken()`.
 - Added `craft\controllers\BaseEntriesController::enforceDeleteEntryPermissions()`.
 - Added `craft\elements\db\ElementQueryInterface::afterPopulate()`.
 - Added `craft\elements\db\ElementQueryInterface::createElement()`.
@@ -87,7 +89,9 @@
 - Added `craft\test\DbFixtureTrait`.
 - Added `craft\test\fixtures\elements\BaseElementFixture`.
 - Added `craft\test\TestSetup::SITE_URL`.
+- Added `craft\web\Request::getHadToken()`.
 - Added `craft\web\Request::getSiteToken()`.
+- Added `craft\web\Request::setToken()`.
 - Added the `Craft.index()` JavaScript method.
 
 ### Changed
@@ -163,3 +167,4 @@
 - Fixed a bug where it wasn’t possible to save a Global set with a predefined UID.
 - Fixed a bug where `craft\helpers\Db::prepareValuesForDb()` would omit or JSON-encode `DateTime` objects, depending on the PHP version, rather than converting them to ISO-8601-formatted strings.
 - Fixed a bug where info icons’ content was focusable before the icon was activated. ([#7257](https://github.com/craftcms/cms/issues/7257))
+- Fixed a bug where generated URLs would include the token from the current request, even if it had expired or met its usage limit.

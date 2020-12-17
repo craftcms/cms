@@ -1,5 +1,16 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Added
+- Added `craft\console\Request::getHadToken()`.
+- Added `craft\console\Request::setToken()`.
+- Added `craft\web\Request::getHadToken()`.
+- Added `craft\web\Request::setToken()`.
+
+### Fixed
+- Fixed a bug where generated URLs would include the token from the current request, even if it had expired or met its usage limit.
+
 ## 3.6.0-RC2.1 - 2020-12-15
 
 ### Added
