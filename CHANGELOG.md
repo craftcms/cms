@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.5.17.1 - 2020-12-17
 
 ### Fixed
 - Fixed a bug where search keywords weren’t getting normalized based on the selected site when searching for elements in the control panel. ([#3145](https://github.com/craftcms/cms/issues/3145))
