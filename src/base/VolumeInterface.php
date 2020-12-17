@@ -68,6 +68,7 @@ interface VolumeInterface extends SavableComponentInterface
      * @param array $config Additional config options to pass to the adapter
      * @throws VolumeObjectExistsException if a file already exists at the path on the Volume
      * @throws VolumeException if something else goes wrong
+     * @deprecated Use `writeFileFromStream()` instead.
      */
     public function createFileByStream(string $path, $stream, array $config): void;
 
@@ -79,8 +80,20 @@ interface VolumeInterface extends SavableComponentInterface
      * @param array $config Additional config options to pass to the adapter
      * @throws VolumeObjectNotFoundException if the file to be updated cannot be found
      * @throws VolumeException if something else goes wrong
+     * @deprecated Use `writeFileFromStream()` instead.
      */
     public function updateFileByStream(string $path, $stream, array $config): void;
+
+    /**
+     * Write a file to volume from a stream.
+     *
+     * @param string $path The path of the file, relative to the source’s root
+     * @param resource $stream The new contents of the file as a stream
+     * @param array $config Additional config options to pass to the adapter
+     * @throws VolumeObjectNotFoundException if the file to be updated cannot be found
+     * @throws VolumeException if something else goes wrong
+     */
+    public function writeFileFromStream(string $path, $stream, array $config): void;
 
     /**
      * Returns whether a file exists.

@@ -100,4 +100,20 @@ abstract class Volume extends SavableComponent implements VolumeInterface
 
         return rtrim(Craft::parseEnv($this->url), '/') . '/';
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function createFileByStream(string $path, $stream, array $config): void
+    {
+        $this->writeFileFromStream($path, $stream, $config);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function updateFileByStream(string $path, $stream, array $config): void
+    {
+        $this->writeFileFromStream($path, $stream, $config);
+    }
 }
