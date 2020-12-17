@@ -274,7 +274,7 @@ class Search extends Component
             // Loop through results and calculate score per element
             foreach ($results as $row) {
                 $elementId = $row['elementId'];
-                $score = $this->_scoreRow($row);
+                $score = $this->_scoreRow($row, $siteId);
 
                 if (!isset($scoresByElementId[$elementId])) {
                     $scoresByElementId[$elementId] = $score;
@@ -411,16 +411,17 @@ SQL;
      * Calculate score for a result.
      *
      * @param array $row A single result from the search query.
+     * @param int|int[]|null $siteId
      * @return float The total score for this row.
      */
-    private function _scoreRow(array $row): float
+    private function _scoreRow(array $row, $siteId = null): float
     {
         // Starting point
         $score = 0;
 
         // Loop through AND-terms and score each one against this row
         foreach ($this->_terms as $term) {
-            $score += $this->_scoreTerm($term, $row);
+            $score += $this->_scoreTerm($term, $row, 1, $siteId);
         }
 
         // Loop through each group of OR-terms
@@ -430,7 +431,7 @@ SQL;
 
             // Get the score for each term and add it to the total
             foreach ($terms as $term) {
-                $score += $this->_scoreTerm($term, $row, $weight);
+                $score += $this->_scoreTerm($term, $row, $weight, $siteId);
             }
         }
 
@@ -443,13 +444,14 @@ SQL;
      * @param SearchQueryTerm $term The SearchQueryTerm to score.
      * @param array $row The result row to score against.
      * @param float|int $weight Optional weight for this term.
+     * @param int|int[]|null $siteId
      * @return float The total score for this term/row combination.
      */
-    private function _scoreTerm(SearchQueryTerm $term, array $row, $weight = 1): float
+    private function _scoreTerm(SearchQueryTerm $term, array $row, $weight = 1, $siteId = null): float
     {
         // Skip these terms: exact filtering is just that, no weighted search applies since all elements will
         // already apply for these filters.
-        if ($term->exact || !($keywords = $this->_normalizeTerm($term->term))) {
+        if ($term->exact || !($keywords = $this->_normalizeTerm($term->term, $siteId))) {
             return 0;
         }
 
@@ -625,7 +627,7 @@ SQL;
 
         // Sanitize term
         if ($term->term !== null) {
-            $keywords = $this->_normalizeTerm($term->term);
+            $keywords = $this->_normalizeTerm($term->term, $siteId);
 
             // Make sure that it didn't result in an empty string (e.g. if they entered '&')
             // unless it's meant to search for *anything* (e.g. if they entered 'attribute:*').
@@ -708,14 +710,18 @@ SQL;
      * Normalize term from tokens, keep a record for cache.
      *
      * @param string $term
+     * @param int|int[]|null $siteId
      * @return string
      */
-    private function _normalizeTerm(string $term): string
+    private function _normalizeTerm(string $term, $siteId = null): string
     {
         static $terms = [];
 
         if (!array_key_exists($term, $terms)) {
-            $terms[$term] = SearchHelper::normalizeKeywords($term);
+            if ($siteId && !is_array($siteId)) {
+                $site = Craft::$app->getSites()->getSiteById($siteId);
+            }
+            $terms[$term] = SearchHelper::normalizeKeywords($term, [], true, $site->language ?? null);
         }
 
         return $terms[$term];
