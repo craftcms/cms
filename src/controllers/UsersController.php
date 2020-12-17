@@ -180,7 +180,7 @@ class UsersController extends Controller
     }
 
     /**
-     * Logs a user in for impersonation. Requires you to be an administrator.
+     * Logs a user in for impersonation.
      *
      * @return Response|null
      * @throws ForbiddenHttpException
