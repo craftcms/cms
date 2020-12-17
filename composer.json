@@ -35,7 +35,6 @@
     "elvanto/litemoji": "^2.0.2",
     "enshrined/svg-sanitize": "~0.13.3",
     "guzzlehttp/guzzle": "^7.2.0",
-    "league/flysystem": "^1.1.3",
     "league/oauth2-client": "^2.6.0",
     "mikehaertl/php-shellcommand": "^1.6.2",
     "pixelandtonic/imagine": "~1.2.4.1",

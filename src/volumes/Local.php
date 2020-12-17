@@ -14,7 +14,6 @@ use craft\models\VolumeListingMetadata;
 use DirectoryIterator;
 use FilesystemIterator;
 use Generator;
-use League\Flysystem\Adapter\Local as LocalAdapter;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 
