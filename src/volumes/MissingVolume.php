@@ -49,7 +49,7 @@ class MissingVolume extends Volume implements MissingComponentInterface
     /**
      * @inheritdoc
      */
-    public function createFileByStream(string $path, $stream, array $config)
+    public function writeFileFromStream(string $path, $stream, array $config)
     {
         throw new NotSupportedException('createFileByStream() is not implemented.');
     }

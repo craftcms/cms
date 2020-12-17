@@ -11,6 +11,11 @@ namespace craft\base;
 use Craft;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\Asset;
+use craft\errors\VolumeException;
+use craft\errors\VolumeObjectExistsException;
+use craft\errors\VolumeObjectNotFoundException;
+use craft\helpers\Assets;
+use craft\models\FieldLayout;
 use craft\records\Volume as VolumeRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
@@ -99,6 +104,14 @@ abstract class Volume extends SavableComponent implements VolumeInterface
         }
 
         return rtrim(Craft::parseEnv($this->url), '/') . '/';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function saveFileLocally(string $uriPath, string $targetPath): int
+    {
+        return Assets::downloadFile($this, $uriPath, $targetPath);
     }
 
     /**

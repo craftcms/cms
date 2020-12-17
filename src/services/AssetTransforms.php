@@ -1606,7 +1606,7 @@ class AssetTransforms extends Component
         $stream = fopen($tempPath, 'rb');
 
         try {
-            $volume->createFileByStream($transformPath, $stream, []);
+            $volume->writeFileFromStream($transformPath, $stream, []);
         } catch (VolumeObjectExistsException $e) {
             // We're fine with that.
         }

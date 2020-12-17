@@ -2050,7 +2050,7 @@ class Asset extends Element
             }
 
             // Upload the file to the new location
-            $newVolume->createFileByStream($newPath, $stream, [
+            $newVolume->writeFileFromStream($newPath, $stream, [
                 'mimetype' => FileHelper::getMimeType($tempPath)
             ]);
 

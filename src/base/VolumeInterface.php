@@ -14,6 +14,7 @@ use craft\errors\VolumeObjectNotFoundException;
 use craft\models\FieldLayout;
 use craft\models\VolumeListing;
 use craft\models\VolumeListingMetadata;
+use Generator;
 
 /**
  * VolumeInterface defines the common interface to be implemented by volume classes.
@@ -46,19 +47,19 @@ interface VolumeInterface extends SavableComponentInterface
      * List files.
      *
      * @param string $directory The path of the directory to list files of
-     * @param bool $recursive whether to fetch file list recursively
-     * @return VolumeListing[]
+     * @param bool $recursive whether to fetch file list recursively, defaults to true
+     * @return Generator|VolumeListing[]
      */
-    public function getFileList(string $directory, bool $recursive): array;
+    public function getFileList(string $directory, bool $recursive = true): Generator;
 
     /**
      * Return the metadata about a file.
      *
      * @param string $uri URI to the file on the volume
-     * @return VolumeListingMetadata[]
+     * @return VolumeListingMetadata
      * @throws VolumeObjectNotFoundException if the file cannot be found
      */
-    public function getFileMetadata(string $uri): array;
+    public function getFileMetadata(string $uri): VolumeListingMetadata;
 
     /**
      * Creates a file.
