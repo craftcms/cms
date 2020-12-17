@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed a bug where search keywords weren’t getting normalized based on the selected site when searching for elements in the control panel. ([#3145](https://github.com/craftcms/cms/issues/3145))
+- Fixed a bug where element indexes’ custom header column headings weren’t translatable. ([#7272](https://github.com/craftcms/cms/issues/7272))
 
 ## 3.5.17 - 2020-12-15
 
