@@ -5,6 +5,9 @@
 ### Changed
 - Craft no longer reports user deprecation errors logged with `E_USER_DEPRECATED`.
 
+### Fixed
+- Fixed a bug where the Edit Site page was appending a `/` to the end of the base URL, even if it was set to an environment variable.
+
 ## 3.6.0-RC3 - 2020-12-17
 
 ### Added
