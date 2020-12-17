@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.6.0-RC3 - 2020-12-17
 
 ### Added
 - Added the “Copy impersonation URL” user action, which generates a URL that can be pasted into a private window to impersonate the user without losing the current session. ([#7281](https://github.com/craftcms/cms/issues/7281))
