@@ -139,6 +139,7 @@ interface VolumeInterface extends SavableComponentInterface
      * @param string $uriPath
      * @param string $targetPath
      * @return int amount of bytes copied
+     * @deprecated This method is deprecated, please use `\craft\helpers\Assets::downloadFile()` instead.
      */
     public function saveFileLocally(string $uriPath, string $targetPath): int;
 

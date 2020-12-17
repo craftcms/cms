@@ -12,6 +12,7 @@ use craft\base\LocalVolumeInterface;
 use craft\base\VolumeInterface;
 use craft\elements\Asset;
 use craft\enums\PeriodType;
+use craft\errors\AssetException;
 use craft\events\RegisterAssetFileKindsEvent;
 use craft\events\SetAssetFilenameEvent;
 use craft\models\AssetTransformIndex;
@@ -757,5 +758,27 @@ class Assets
             throw new InvalidArgumentException("Invalid srcset size: $size");
         }
         return [(float)$match[1], $match[2]];
+    }
+
+    /**
+     * Save a file from a volume locally.
+     *
+     * @param VolumeInterface $volume
+     * @param string $uriPath
+     * @param string $localPath
+     * @return int
+     * @throws AssetException
+     */
+    public static function downloadFile(VolumeInterface $volume, string $uriPath, string $localPath): int
+    {
+        $stream = $volume->getFileStream($uriPath);
+        $outputStream = fopen($localPath, 'wb');
+
+        $bytes = stream_copy_to_stream($stream, $outputStream);
+
+        fclose($stream);
+        fclose($outputStream);
+
+        return $bytes;
     }
 }
