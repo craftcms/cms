@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Added the “Copy impersonation URL” user action, which generates a URL that can be pasted into a private window to impersonate the user without losing the current session. ([#7281](https://github.com/craftcms/cms/issues/7281))
 - Added `craft\console\Request::getHadToken()`.
 - Added `craft\console\Request::setToken()`.
 - Added `craft\web\Request::getHadToken()`.
