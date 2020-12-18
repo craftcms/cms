@@ -44,16 +44,10 @@ body {
 }
 
 #loginName {
-  margin: -1px -1px 0;
+  margin: 0 -1px;
   width: calc(100% + 2px);
   padding: 14px 16px;
-  border-radius: $largeBorderRadius $largeBorderRadius 0 0;
-  border-bottom-width: 0;
-
-  &:focus {
-    border-bottom-width: 1px;
-    margin-bottom: -1px;
-  }
+  border-radius: $largeBorderRadius;
 }
 
 #remember-password {
@@ -64,11 +58,20 @@ body {
   justify-content: space-between;
 }
 
-#login-form.reset-password {
+#login-form:not(.reset-password) {
   #loginName {
-    border-bottom-left-radius: $largeBorderRadius;
-    border-bottom-right-radius: $largeBorderRadius;
+    margin: -1px -1px 0;
+    border-radius: $largeBorderRadius $largeBorderRadius 0 0;
+    border-bottom-width: 0;
+
+    &:focus {
+      border-bottom-width: 1px;
+      margin-bottom: -1px;
+    }
   }
+}
+
+#login-form.reset-password {
 
   #password-field,
   #rememberMe-field,
