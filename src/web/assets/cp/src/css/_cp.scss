@@ -1308,10 +1308,42 @@ $toolbarIconColor: darken($inputColor, 10%);
   }
 
   .lp-preview-header {
-    justify-content: center;
+    // JA
+    justify-content: space-between;
+
+    .btngroup {
+      margin-bottom: 0;
+    }
 
     & + .lp-iframe-container {
       padding-top: 50px;
+    }
+
+    .lp-breakpoint-btn {
+      margin: 0 12px;
+      cursor: pointer;
+
+      &::before {
+        width: 28px;
+        height: 28px;
+        display: inline-block;
+        content: ' ';
+        background-size: 28px 28px;
+        background-repeat: no-repeat;
+        background-position: center;
+        transition-duration: .3s;
+      }
+
+      // Hover state
+      //&:active::before { background-size: 38px 38px; }
+
+      // Not for currently active btn
+      //&--active:active::before { background-size: 40px 40px; }
+
+      // SVGs
+      &--desktop::before { background-image: url(../images/live-preview/imac.svg);   }
+      &--tablet::before  { background-image: url(../images/live-preview/ipad.svg);   }
+      &--mobile::before  { background-image: url(../images/live-preview/iphone.svg);   }
     }
   }
 
