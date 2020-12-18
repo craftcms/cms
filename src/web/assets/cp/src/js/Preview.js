@@ -145,9 +145,10 @@ Craft.Preview = Garnish.Base.extend({
 
                 // Zoom
                 // TODO convert element syntax
-                const $zoomMenuBtn = $('<div class="btn portal-lp-zoom-btn menubtn no-outline">' + Craft.t('app', 'Zoom') + '</div>').appendTo($previewBtnGroup);
-                this.$zoomMenu = $('<div class="menu portal-lp-menu" />').appendTo($previewBtnGroup);
-                const $zoomMenuUl = $('<ul />').appendTo(this.$zoomMenu);
+                // TODO hide until activated
+                const $zoomMenuBtn = $('<div class="btn menubtn">' + Craft.t('app', 'Zoom') + '</div>').appendTo($previewBtnGroup);
+                this.$zoomMenu = $('<div class="menu" />').appendTo($previewBtnGroup);
+                const $zoomMenuUl = $('<ul />', {'class': 'padded'}).appendTo(this.$zoomMenu);
 
                 $('<li><a data-zoom="full">100%</a></li>').appendTo($zoomMenuUl);
                 $('<li><a data-zoom="threequarters" class="sel">75%</a></li>').appendTo($zoomMenuUl);
@@ -161,7 +162,8 @@ Craft.Preview = Garnish.Base.extend({
 
                 // Orientation toggle
                 // TODO convert element syntax
-                const $orientationToggle = $('<div class="btn portal-lp-orientation-btn" data-icon="refresh"></div>').appendTo($previewBtnGroup);
+                // TODO hide until activated
+                const $orientationToggle = $('<div class="btn" data-icon="refresh"></div>').appendTo($previewBtnGroup);
                 // TODO
                 // this.addListener($orientationToggle, 'activate', 'toggleOrientation');
             }

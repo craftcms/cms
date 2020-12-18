@@ -1319,7 +1319,6 @@ $toolbarIconColor: darken($inputColor, 10%);
     }
 
     .lp-breakpoint-btn {
-      margin: 0 12px;
       cursor: pointer;
       opacity: 0.65;
       transition-duration: .1s;
@@ -1330,11 +1329,11 @@ $toolbarIconColor: darken($inputColor, 10%);
       }
 
       &::before {
-        width: 28px;
+        width: 34px;
         height: 28px;
         display: inline-block;
         content: ' ';
-        background-size: 28px 28px;
+        background-size: contain;
         background-repeat: no-repeat;
         background-position: center;
         transition-duration: .3s;
@@ -1350,6 +1349,10 @@ $toolbarIconColor: darken($inputColor, 10%);
       &--mobile::before  { background-image: url(../images/live-preview/iphone.svg);   }
       &--tablet::before  { background-image: url(../images/live-preview/ipad.svg);   }
       &--desktop::before { background-image: url(../images/live-preview/imac.svg);   }
+
+      // Fix spacing
+      &--tablet { margin-left: 6px; }
+      &--desktop { margin-left: 16px; }
     }
   }
 
