@@ -4577,6 +4577,7 @@ fieldset {
 
   .password-toggle {
     @include padding-right(7px);
+    z-index: 1;
   }
 }
 

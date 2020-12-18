@@ -13,14 +13,12 @@ body {
 }
 
 #login {
-  display: block;
   width: 300px;
 }
 
 #login h1 {
   text-align: center;
   font-size: 3em;
-  color: $textColor;
   word-wrap: break-word;
 }
 
@@ -30,25 +28,7 @@ body {
 }
 
 #login-fields {
-  position: relative;
   padding: 1px;
-
-  &:after {
-    position: absolute;
-    z-index: 1;
-    top: 0;
-    right: 0;
-    left: 0;
-    bottom: 0;
-    display: block;
-    content: '.';
-    font-size: 0;
-    @include input-styles;
-    background-color: transparent;
-    border-color: transparent;
-    user-select: none;
-    pointer-events: none;
-  }
 
   .text {
     box-shadow: none;
@@ -61,10 +41,6 @@ body {
 
 #login-form .btn {
   display: block;
-}
-
-.passwordwrapper .password-toggle {
-  z-index: 1;
 }
 
 #loginName {
@@ -109,38 +85,26 @@ body {
 }
 
 #forgot-password {
-  position: relative;
-  z-index: 1;
-  display: block;
-  font-style: normal;
   font-size: 11px;
   color: $mediumTextColor;
 
   &:only-child {
     width: 100%;
     text-align: center;
-    margin-top: -20px;
+    margin-top: -10px;
   }
 }
 
 #forgot-password:hover,
 #forgot-password:focus {
   color: $linkColor;
-  text-decoration: none;
-}
-
-#login-form .buttons {
-  position: relative;
-  text-align: center;
 }
 
 #login-form .submit {
   display: block;
-  float: none;
   padding: 14px 16px;
   height: auto;
   width: 100%;
-  border-radius: 4px;
 }
 
 #spinner {
@@ -163,10 +127,7 @@ p.error {
 }
 
 #poweredby:hover,
-#poweredby:focus {
-  opacity: 1;
-}
-
+#poweredby:focus,
 #poweredby:active {
   opacity: 1;
 }
@@ -188,14 +149,4 @@ p.error {
   content: 'mail';
   font-size: 30px;
   color: $linkColor;
-}
-
-@media only screen and (-webkit-min-device-pixel-ratio: 1.5),
-only screen and (-moz-min-device-pixel-ratio: 1.5),
-only screen and (-o-min-device-pixel-ratio: 3/2),
-only screen and (min-device-pixel-ratio: 1.5),
-only screen and (min-resolution: 1.5dppx) {
-  #login-form {
-    background-size: 202px;
-  }
 }
