@@ -310,6 +310,7 @@ return [
     'Couldn’t enable plugin.' => 'Couldn’t enable plugin.',
     'Couldn’t install plugin.' => 'Couldn’t install plugin.',
     'Couldn’t load active trials.' => 'Couldn’t load active trials.',
+    'Couldn’t log in. Please check your username or email and password.',
     'Couldn’t publish draft.' => 'Couldn’t publish draft.',
     'Couldn’t restore the database. How would you like to proceed?' => 'Couldn’t restore the database. How would you like to proceed?',
     'Couldn’t save asset.' => 'Couldn’t save asset.',

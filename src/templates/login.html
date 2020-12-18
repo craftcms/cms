@@ -9,6 +9,7 @@
 ]) %}
 
 {% set username = craft.app.config.general.rememberUsernameDuration ? craft.app.user.getRememberedUsername(): '' %}
+{% set showRememberMe = craft.app.config.general.rememberedUserSessionDuration %}
 
 {% if craft.app.config.general.useEmailAsUsername %}
     {% set usernameLabel = 'Email'|t('app') %}
@@ -23,6 +24,7 @@
 {% set formAttributes = {
     id: 'login-form',
     method: 'post',
+    class: showRememberMe ? 'remember-me' : '',
     'accept-charset': 'UTF-8',
 } %}
 
@@ -78,7 +80,7 @@
                 </div>
 
                 <div id="login-form-bottom">
-                    {% if craft.app.config.general.rememberedUserSessionDuration %}
+                    {% if showRememberMe %}
                         {{ forms.checkboxField({ id: 'rememberMe', label: 'Keep me logged in'|t('app') }) }}
                     {% endif %}
                     <button id="forgot-password" type="button">{{ 'Forgot your password?'|t('app') }}</button>
@@ -86,7 +88,7 @@
                 </div>
 
                 <div class="buttons">
-                    <button id="submit" class="btn submit disabled" type="submit">{{ 'Login'|t('app') }}</button>
+                    <button id="submit" class="btn submit" type="submit">{{ 'Login'|t('app') }}</button>
                     <div id="spinner" class="spinner hidden"></div>
                 </div>
             </form>

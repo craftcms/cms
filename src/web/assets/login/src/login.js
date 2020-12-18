@@ -6,16 +6,15 @@
             $form: null,
             $loginNameInput: null,
             $passwordInput: null,
+            $rememberMeCheckbox: null,
             $forgotPasswordLink: null,
             $rememberPasswordLink: null,
-            $rememberMeCheckbox: null,
             $submitBtn: null,
             $spinner: null,
             $error: null,
 
-            passwordInputInterval: null,
             forgotPassword: false,
-            loading: false,
+            validateOnInput: false,
 
             init: function() {
                 this.$form = $('#login-form');
@@ -31,29 +30,31 @@
                     onToggleInput: $.proxy(function($newPasswordInput) {
                         this.removeListener(this.$passwordInput, 'input');
                         this.$passwordInput = $newPasswordInput;
-                        this.addListener(this.$passwordInput, 'input', 'validate');
+                        this.addListener(this.$passwordInput, 'input', 'onInput');
                     }, this)
                 });
 
-                this.addListener(this.$loginNameInput, 'input', 'validate');
-                this.addListener(this.$passwordInput, 'input', 'validate');
+                this.addListener(this.$loginNameInput, 'input', 'onInput')
+                this.addListener(this.$passwordInput, 'input', 'onInput');
                 this.addListener(this.$forgotPasswordLink, 'click', 'onSwitchForm');
                 this.addListener(this.$rememberPasswordLink, 'click', 'onSwitchForm');
                 this.addListener(this.$form, 'submit', 'onSubmit');
-
-                // Manually validate the inputs every 250ms since some browsers don't fire events when autofill is used
-                // http://stackoverflow.com/questions/11708092/detecting-browser-autofill
-                this.passwordInputInterval = setInterval($.proxy(this, 'validate'), 250);
             },
 
             validate: function() {
                 if (this.$loginNameInput.val() && (this.forgotPassword || this.$passwordInput.val().length >= 6)) {
-                    this.$submitBtn.enable();
+                    this.removeError();
                     return true;
                 }
                 else {
-                    this.$submitBtn.disable();
+                    this.showError(Craft.t('app', 'Couldn’t log in. Please check your username or email and password.'));
                     return false;
+                }
+            },
+
+            onInput: function(event) {
+                if (this.validateOnInput) {
+                    this.validate();
                 }
             },
 
@@ -62,16 +63,14 @@
                 event.preventDefault();
 
                 if (!this.validate()) {
+                    this.validateOnInput = true;
                     return;
                 }
 
                 this.$submitBtn.addClass('active');
                 this.$spinner.removeClass('hidden');
-                this.loading = true;
 
-                if (this.$error) {
-                    this.$error.remove();
-                }
+                this.removeError();
 
                 if (this.forgotPassword) {
                     this.submitForgotPassword();
@@ -131,35 +130,32 @@
             onSubmitResponse: function() {
                 this.$submitBtn.removeClass('active');
                 this.$spinner.addClass('hidden');
-                this.loading = false;
             },
 
             showError: function(error) {
-                if (!error) {
-                    error = Craft.t('app', 'A server error occurred.');
-                }
+                this.removeError();
 
                 this.$error = $('<p class="error" style="display:none">' + error + '</p>').insertAfter($('.buttons', this.$form));
                 this.$error.velocity('fadeIn');
             },
 
-            onSwitchForm: function(event) {
-                event.preventDefault();
+            removeError: function() {
+                if (this.$error) {
+                    this.$error.remove();
+                }
+            },
 
+            onSwitchForm: function(event) {
                 if (!Garnish.isMobileBrowser()) {
                     this.$loginNameInput.trigger('focus');
                 }
 
-                if (this.$error) {
-                    this.$error.remove();
-                }
+                this.removeError();
 
                 this.forgotPassword = !this.forgotPassword;
 
                 this.$form.toggleClass('reset-password', this.forgotPassword);
-                this.$submitBtn.text(Craft.t('app', 'Reset Password'));
-                this.$submitBtn.enable();
-                this.validate();
+                this.$submitBtn.text(Craft.t('app', this.forgotPassword ? 'Reset Password': 'Login'));
             },
         });
 

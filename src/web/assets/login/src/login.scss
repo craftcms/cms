@@ -60,6 +60,10 @@ body {
   display: none;
 }
 
+#login-form.remember-me:not(.reset-password) #login-form-bottom {
+  justify-content: space-between;
+}
+
 #login-form.reset-password {
   #loginName {
     border-bottom-left-radius: $largeBorderRadius;
@@ -93,7 +97,7 @@ body {
 #login-form-bottom {
   margin-top: 24px;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
 }
 
 #rememberMe-field {
@@ -104,12 +108,6 @@ body {
 #remember-password {
   font-size: 11px;
   color: $mediumTextColor;
-
-  &:only-child {
-    width: 100%;
-    text-align: center;
-    margin-top: -10px;
-  }
 }
 
 #forgot-password:hover,
