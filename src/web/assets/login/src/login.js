@@ -195,7 +195,7 @@
                 this.$passwordField.remove();
                 this.$passwordFields.remove();
                 this.$submitBtn.addClass('reset-password');
-                this.$submitBtn.attr('value', Craft.t('app', 'Reset Password'));
+                this.$submitBtn.text(Craft.t('app', 'Reset Password'));
                 this.$submitBtn.enable();
                 this.$sslIcon.remove();
 
