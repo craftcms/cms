@@ -134,27 +134,6 @@ body {
   text-align: center;
 }
 
-#login-form #ssl-icon {
-  position: absolute;
-  top: 0;
-  @include left(0);
-  z-index: 1;
-  line-height: 30px;
-  width: 2.2em;
-  color: $white;
-  text-align: center;
-  cursor: pointer;
-}
-
-#login-form #ssl-icon.disabled {
-  opacity: 0.75;
-  cursor: default;
-}
-
-#login-form #ssl-icon + #submit {
-  @include padding-left(2em);
-}
-
 #login-form .submit {
   display: block;
   float: none;

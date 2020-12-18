@@ -10,7 +10,6 @@
             $passwordInput: null,
             $forgotPasswordLink: null,
             $rememberMeCheckbox: null,
-            $sslIcon: null,
             $submitBtn: null,
             $spinner: null,
             $error: null,
@@ -26,7 +25,6 @@
                 this.$passwordField = $('#password-field');
                 this.$passwordInput = $('#password');
                 this.$forgotPasswordLink = $('#forgot-password');
-                this.$sslIcon = $('#ssl-icon');
                 this.$submitBtn = $('#submit');
                 this.$spinner = $('#spinner');
                 this.$rememberMeCheckbox = $('#rememberMe');
@@ -44,51 +42,17 @@
                 this.addListener(this.$forgotPasswordLink, 'click', 'onForgetPassword');
                 this.addListener(this.$form, 'submit', 'onSubmit');
 
-                // Super hacky!
-                this.addListener(this.$sslIcon, 'mouseover', function() {
-                    if (this.$sslIcon.hasClass('disabled')) {
-                        return;
-                    }
-
-                    this.$submitBtn.addClass('hover');
-                });
-                this.addListener(this.$sslIcon, 'mouseout', function() {
-                    if (this.$sslIcon.hasClass('disabled')) {
-                        return;
-                    }
-
-                    this.$submitBtn.removeClass('hover');
-                });
-                this.addListener(this.$sslIcon, 'mousedown', function() {
-                    if (this.$sslIcon.hasClass('disabled')) {
-                        return;
-                    }
-
-                    this.$submitBtn.addClass('active');
-
-                    this.addListener(Garnish.$doc, 'mouseup', function() {
-                        this.$submitBtn.removeClass('active');
-                        this.removeListener(Garnish.$doc, 'mouseup');
-                    });
-                });
-
                 // Manually validate the inputs every 250ms since some browsers don't fire events when autofill is used
                 // http://stackoverflow.com/questions/11708092/detecting-browser-autofill
                 this.passwordInputInterval = setInterval($.proxy(this, 'validate'), 250);
-
-                this.addListener(this.$sslIcon, 'click', function() {
-                    this.$submitBtn.trigger('click');
-                });
             },
 
             validate: function() {
                 if (this.$loginNameInput.val() && (this.forgotPassword || this.$passwordInput.val().length >= 6)) {
-                    this.$sslIcon.enable();
                     this.$submitBtn.enable();
                     return true;
                 }
                 else {
-                    this.$sslIcon.disable();
                     this.$submitBtn.disable();
                     return false;
                 }
@@ -194,10 +158,8 @@
                 this.$form.addClass('reset-password');
                 this.$passwordField.remove();
                 this.$passwordFields.remove();
-                this.$submitBtn.addClass('reset-password');
                 this.$submitBtn.text(Craft.t('app', 'Reset Password'));
                 this.$submitBtn.enable();
-                this.$sslIcon.remove();
 
                 this.forgotPassword = true;
                 this.validate();
