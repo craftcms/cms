@@ -3325,15 +3325,17 @@ body.rtl .lp-editor-container .lp-draghandle { left: -2px; }
 
 .lp-preview-container .lp-preview-header + .lp-iframe-container { padding-top: 50px; }
 
-.lp-preview-container .lp-preview-header .lp-breakpoint-btn { margin: 0 12px; cursor: pointer; }
+.lp-preview-container .lp-preview-header .lp-breakpoint-btn { margin: 0 12px; cursor: pointer; opacity: 0.65; -o-transition-duration: .1s; transition-duration: .1s; }
+
+.lp-preview-container .lp-preview-header .lp-breakpoint-btn--active, .lp-preview-container .lp-preview-header .lp-breakpoint-btn:hover { opacity: 1; }
 
 .lp-preview-container .lp-preview-header .lp-breakpoint-btn::before { width: 28px; height: 28px; display: inline-block; content: ' '; -o-background-size: 28px 28px; background-size: 28px 28px; background-repeat: no-repeat; background-position: center; -o-transition-duration: .3s; transition-duration: .3s; }
 
-.lp-preview-container .lp-preview-header .lp-breakpoint-btn--desktop::before { background-image: url(../images/live-preview/imac.svg); }
+.lp-preview-container .lp-preview-header .lp-breakpoint-btn--mobile::before { background-image: url(../images/live-preview/iphone.svg); }
 
 .lp-preview-container .lp-preview-header .lp-breakpoint-btn--tablet::before { background-image: url(../images/live-preview/ipad.svg); }
 
-.lp-preview-container .lp-preview-header .lp-breakpoint-btn--mobile::before { background-image: url(../images/live-preview/iphone.svg); }
+.lp-preview-container .lp-preview-header .lp-breakpoint-btn--desktop::before { background-image: url(../images/live-preview/imac.svg); }
 
 .lp-preview-container .lp-iframe-container { -webkit-flex: 1; flex: 1; overflow: auto; }
 

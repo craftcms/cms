@@ -1308,7 +1308,6 @@ $toolbarIconColor: darken($inputColor, 10%);
   }
 
   .lp-preview-header {
-    // JA
     justify-content: space-between;
 
     .btngroup {
@@ -1322,6 +1321,13 @@ $toolbarIconColor: darken($inputColor, 10%);
     .lp-breakpoint-btn {
       margin: 0 12px;
       cursor: pointer;
+      opacity: 0.65;
+      transition-duration: .1s;
+
+      &--active,
+      &:hover {
+        opacity: 1;
+      }
 
       &::before {
         width: 28px;
@@ -1341,9 +1347,9 @@ $toolbarIconColor: darken($inputColor, 10%);
       //&--active:active::before { background-size: 40px 40px; }
 
       // SVGs
-      &--desktop::before { background-image: url(../images/live-preview/imac.svg);   }
-      &--tablet::before  { background-image: url(../images/live-preview/ipad.svg);   }
       &--mobile::before  { background-image: url(../images/live-preview/iphone.svg);   }
+      &--tablet::before  { background-image: url(../images/live-preview/ipad.svg);   }
+      &--desktop::before { background-image: url(../images/live-preview/imac.svg);   }
     }
   }
 

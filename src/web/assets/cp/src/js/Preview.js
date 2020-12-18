@@ -137,13 +137,15 @@ Craft.Preview = Garnish.Base.extend({
                 }
 
                 // Breakpoint buttons
-                this.$breakpointButtons = $('<div class="btngroup lp-breakpoints" />').appendTo($previewHeader);
-                $('<div class="lp-breakpoint-btn lp-breakpoint-btn--desktop" data-width="" data-height="" data-breakpoint="desktop" title="' + Craft.t('portal', 'Desktop') + '" />').appendTo(this.$breakpointButtons);
-                $('<div class="lp-breakpoint-btn lp-breakpoint-btn--tablet" data-width="768" data-height="1006" data-breakpoint="tablet" title="' + Craft.t('portal', 'Tablet') + '" />').appendTo(this.$breakpointButtons);
-                $('<div class="lp-breakpoint-btn lp-breakpoint-btn--mobile" data-width="375" data-height="653" data-breakpoint="mobile" title="' + Craft.t('portal', 'Mobile') + '" />').appendTo(this.$breakpointButtons);
+                this.$breakpointButtons = $('<div/>', {'class': 'btngroup lp-breakpoints'}).appendTo($previewHeader);
+                // TODO convert element syntax
+                $('<div class="lp-breakpoint-btn lp-breakpoint-btn--mobile" data-width="375" data-height="653" data-breakpoint="mobile" title="' + Craft.t('app', 'Mobile') + '" />').appendTo(this.$breakpointButtons);
+                $('<div class="lp-breakpoint-btn lp-breakpoint-btn--tablet" data-width="768" data-height="1006" data-breakpoint="tablet" title="' + Craft.t('app', 'Tablet') + '" />').appendTo(this.$breakpointButtons);
+                $('<div class="lp-breakpoint-btn lp-breakpoint-btn--desktop lp-breakpoint-btn--active" data-width="" data-height="" data-breakpoint="desktop" title="' + Craft.t('app', 'Desktop') + '" />').appendTo(this.$breakpointButtons);
 
                 // Zoom
-                const $zoomMenuBtn = $('<div class="btn portal-lp-zoom-btn menubtn no-outline">' + Craft.t('portal', 'Zoom') + '</div>').appendTo($previewBtnGroup);
+                // TODO convert element syntax
+                const $zoomMenuBtn = $('<div class="btn portal-lp-zoom-btn menubtn no-outline">' + Craft.t('app', 'Zoom') + '</div>').appendTo($previewBtnGroup);
                 this.$zoomMenu = $('<div class="menu portal-lp-menu" />').appendTo($previewBtnGroup);
                 const $zoomMenuUl = $('<ul />').appendTo(this.$zoomMenu);
 
@@ -151,14 +153,16 @@ Craft.Preview = Garnish.Base.extend({
                 $('<li><a data-zoom="threequarters" class="sel">75%</a></li>').appendTo($zoomMenuUl);
                 $('<li><a data-zoom="half">50%</a></li>').appendTo($zoomMenuUl);
 
-                this.zoomMenuBtn = new Garnish.MenuBtn($zoomMenuBtn,
-                    {
-                        // onOptionSelect: $.proxy(this, 'onZoom')
-                    });
+                // TODO
+                this.zoomMenuBtn = new Garnish.MenuBtn($zoomMenuBtn, {
+                    // onOptionSelect: $.proxy(this, 'onZoom')
+                });
 
 
                 // Orientation toggle
+                // TODO convert element syntax
                 const $orientationToggle = $('<div class="btn portal-lp-orientation-btn" data-icon="refresh"></div>').appendTo($previewBtnGroup);
+                // TODO
                 // this.addListener($orientationToggle, 'activate', 'toggleOrientation');
             }
 
