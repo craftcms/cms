@@ -50,7 +50,7 @@
 
             <form {{ attr(formAttributes) }}>
 
-                <div id="login-fields">
+                <div id="login-form-top">
                     {{ forms.textField({
                         id: 'loginName',
                         name: 'username',
@@ -76,12 +76,15 @@
                         },
                     }) }}
                 </div>
-                <div id="password-fields">
+
+                <div id="login-form-bottom">
                     {% if craft.app.config.general.rememberedUserSessionDuration %}
                         {{ forms.checkboxField({ id: 'rememberMe', label: 'Keep me logged in'|t('app') }) }}
                     {% endif %}
-                    <button id="forgot-password">{{ 'Forgot your password?'|t('app') }}</button>
+                    <button id="forgot-password" type="button">{{ 'Forgot your password?'|t('app') }}</button>
+                    <button id="remember-password" type="button">{{ 'Remember your password?'|t('app') }}</button>
                 </div>
+
                 <div class="buttons">
                     <button id="submit" class="btn submit disabled" type="submit">{{ 'Login'|t('app') }}</button>
                     <div id="spinner" class="spinner hidden"></div>

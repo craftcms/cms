@@ -5,10 +5,9 @@
         {
             $form: null,
             $loginNameInput: null,
-            $passwordFields: null,
-            $passwordField: null,
             $passwordInput: null,
             $forgotPasswordLink: null,
+            $rememberPasswordLink: null,
             $rememberMeCheckbox: null,
             $submitBtn: null,
             $spinner: null,
@@ -21,10 +20,9 @@
             init: function() {
                 this.$form = $('#login-form');
                 this.$loginNameInput = $('#loginName');
-                this.$passwordFields = $('#password-fields');
-                this.$passwordField = $('#password-field');
                 this.$passwordInput = $('#password');
                 this.$forgotPasswordLink = $('#forgot-password');
+                this.$rememberPasswordLink = $('#remember-password');
                 this.$submitBtn = $('#submit');
                 this.$spinner = $('#spinner');
                 this.$rememberMeCheckbox = $('#rememberMe');
@@ -39,7 +37,8 @@
 
                 this.addListener(this.$loginNameInput, 'input', 'validate');
                 this.addListener(this.$passwordInput, 'input', 'validate');
-                this.addListener(this.$forgotPasswordLink, 'click', 'onForgetPassword');
+                this.addListener(this.$forgotPasswordLink, 'click', 'onSwitchForm');
+                this.addListener(this.$rememberPasswordLink, 'click', 'onSwitchForm');
                 this.addListener(this.$form, 'submit', 'onSubmit');
 
                 // Manually validate the inputs every 250ms since some browsers don't fire events when autofill is used
@@ -144,7 +143,7 @@
                 this.$error.velocity('fadeIn');
             },
 
-            onForgetPassword: function(event) {
+            onSwitchForm: function(event) {
                 event.preventDefault();
 
                 if (!Garnish.isMobileBrowser()) {
@@ -155,15 +154,13 @@
                     this.$error.remove();
                 }
 
-                this.$form.addClass('reset-password');
-                this.$passwordField.remove();
-                this.$passwordFields.remove();
+                this.forgotPassword = !this.forgotPassword;
+
+                this.$form.toggleClass('reset-password', this.forgotPassword);
                 this.$submitBtn.text(Craft.t('app', 'Reset Password'));
                 this.$submitBtn.enable();
-
-                this.forgotPassword = true;
                 this.validate();
-            }
+            },
         });
 
 

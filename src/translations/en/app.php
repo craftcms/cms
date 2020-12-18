@@ -1041,6 +1041,7 @@ return [
     'Release all jobs' => 'Release all jobs',
     'Release job' => 'Release job',
     'Release' => 'Release',
+    'Remember your password?' => 'Remember your password?',
     'Remove files and folders' => 'Remove files and folders',
     'Remove files uploaded by other users' => 'Remove files uploaded by other users',
     'Remove it' => 'Remove it',

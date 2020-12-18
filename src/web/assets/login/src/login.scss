@@ -27,7 +27,7 @@ body {
   height: auto;
 }
 
-#login-fields {
+#login-form-top {
   padding: 1px;
 
   .text {
@@ -56,9 +56,25 @@ body {
   }
 }
 
-#login-form.reset-password #loginName {
-  border-bottom-left-radius: $largeBorderRadius;
-  border-bottom-right-radius: $largeBorderRadius;
+#remember-password {
+  display: none;
+}
+
+#login-form.reset-password {
+  #loginName {
+    border-bottom-left-radius: $largeBorderRadius;
+    border-bottom-right-radius: $largeBorderRadius;
+  }
+
+  #password-field,
+  #rememberMe-field,
+  #forgot-password {
+    display: none;
+  }
+
+  #remember-password {
+    display: block;
+  }
 }
 
 .passwordwrapper {
@@ -74,7 +90,7 @@ body {
   }
 }
 
-#password-fields {
+#login-form-bottom {
   margin-top: 24px;
   display: flex;
   justify-content: space-between;
@@ -84,7 +100,8 @@ body {
   @include margin-right(14px);
 }
 
-#forgot-password {
+#forgot-password,
+#remember-password {
   font-size: 11px;
   color: $mediumTextColor;
 
@@ -96,7 +113,9 @@ body {
 }
 
 #forgot-password:hover,
-#forgot-password:focus {
+#forgot-password:focus,
+#remember-password:hover,
+#remember-password:focus {
   color: $linkColor;
 }
 
