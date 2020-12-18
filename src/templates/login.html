@@ -32,7 +32,8 @@
 
 {% set formHtml %}
     <main>
-        <form {{ attr(formAttributes) }}>
+        <div id="login">
+
             <h1>
                 {% if hasLogo %}
                     {{ tag('img', {
@@ -47,46 +48,52 @@
                 {% endif %}
             </h1>
 
-            <div id="login-fields">
-                {{ forms.textField({
-                    id: 'loginName',
-                    name: 'username',
-                    placeholder: usernameLabel,
-                    value: username,
-                    autocomplete: 'username',
-                    type: usernameType,
-                    inputAttributes: {
-                        aria: {
-                            label: usernameLabel,
+            <form {{ attr(formAttributes) }}>
+
+                <div id="login-fields">
+                    {{ forms.textField({
+                        id: 'loginName',
+                        name: 'username',
+                        placeholder: usernameLabel,
+                        value: username,
+                        autocomplete: 'username',
+                        type: usernameType,
+                        inputAttributes: {
+                            aria: {
+                                label: usernameLabel,
+                            },
                         },
-                    },
-                }) }}
-                {{ forms.passwordField({
-                    id: 'password',
-                    name: 'password',
-                    placeholder: 'Password'|t('app'),
-                    autocomplete: 'current-password',
-                    inputAttributes: {
-                        aria: {
-                            label: 'Password'|t('app'),
+                    }) }}
+                    {{ forms.passwordField({
+                        id: 'password',
+                        name: 'password',
+                        placeholder: 'Password'|t('app'),
+                        autocomplete: 'current-password',
+                        inputAttributes: {
+                            aria: {
+                                label: 'Password'|t('app'),
+                            },
                         },
-                    },
-                }) }}
-            </div>
-            <div id="password-fields">
-                {% if craft.app.config.general.rememberedUserSessionDuration %}
-                    {{ forms.checkboxField({ id: 'rememberMe', label: 'Keep me logged in'|t('app') }) }}
-                {% endif %}
-                <button id="forgot-password">{{ 'Forgot your password?'|t('app') }}</button>
-            </div>
-            <div class="buttons">
-                <button id="submit" class="btn submit disabled" type="submit">{{ 'Login'|t('app') }}</button>
-                <div id="spinner" class="spinner hidden"></div>
-            </div>
+                    }) }}
+                </div>
+                <div id="password-fields">
+                    {% if craft.app.config.general.rememberedUserSessionDuration %}
+                        {{ forms.checkboxField({ id: 'rememberMe', label: 'Keep me logged in'|t('app') }) }}
+                    {% endif %}
+                    <button id="forgot-password">{{ 'Forgot your password?'|t('app') }}</button>
+                </div>
+                <div class="buttons">
+                    <button id="submit" class="btn submit disabled" type="submit">{{ 'Login'|t('app') }}</button>
+                    <div id="spinner" class="spinner hidden"></div>
+                </div>
+            </form>
+
             <a id="poweredby" href="http://craftcms.com/" title="{{ 'Powered by Craft CMS'|t('app') }}" aria-label="{{ 'Powered by Craft CMS'|t('app') }}">
                 {{ svg('@app/web/assets/cp/dist/images/craftcms.svg') }}
             </a>
-        </form>
+
+        </div>
+
     </main>
 {% endset %}
 

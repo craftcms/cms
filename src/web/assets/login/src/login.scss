@@ -12,13 +12,12 @@ body {
   justify-content: center;
 }
 
-#login-form {
+#login {
   display: block;
   width: 300px;
-  background: no-repeat center top;
 }
 
-#login-form h1 {
+#login h1 {
   text-align: center;
   font-size: 3em;
   color: $textColor;
