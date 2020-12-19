@@ -11,7 +11,7 @@
             $rememberPasswordLink: null,
             $submitBtn: null,
             $spinner: null,
-            $error: null,
+            $errors: null,
 
             forgotPassword: false,
             validateOnInput: false,
@@ -20,11 +20,12 @@
                 this.$form = $('#login-form');
                 this.$loginNameInput = $('#loginName');
                 this.$passwordInput = $('#password');
+                this.$rememberMeCheckbox = $('#rememberMe');
                 this.$forgotPasswordLink = $('#forgot-password');
                 this.$rememberPasswordLink = $('#remember-password');
                 this.$submitBtn = $('#submit');
                 this.$spinner = $('#spinner');
-                this.$rememberMeCheckbox = $('#rememberMe');
+                this.$errors = $('#login-errors');
 
                 new Craft.PasswordInput(this.$passwordInput, {
                     onToggleInput: $.proxy(function($newPasswordInput) {
@@ -43,11 +44,10 @@
 
             validate: function() {
                 if (this.$loginNameInput.val() && (this.forgotPassword || this.$passwordInput.val().length >= 6)) {
-                    this.removeError();
+                    this.clearErrors();
                     return true;
                 }
                 else {
-                    this.showError(Craft.t('app', 'Couldn’t log in. Please check your username or email and password.'));
                     return false;
                 }
             },
@@ -63,6 +63,7 @@
                 event.preventDefault();
 
                 if (!this.validate()) {
+                    this.showError(Craft.t('app', 'Couldn’t log in. Please check your username or email and password.'));
                     this.validateOnInput = true;
                     return;
                 }
@@ -70,7 +71,7 @@
                 this.$submitBtn.addClass('active');
                 this.$spinner.removeClass('hidden');
 
-                this.removeError();
+                this.clearErrors();
 
                 if (this.forgotPassword) {
                     this.submitForgotPassword();
@@ -133,16 +134,15 @@
             },
 
             showError: function(error) {
-                this.removeError();
+                this.clearErrors();
 
-                this.$error = $('<p class="error" style="display:none">' + error + '</p>').insertAfter($('.buttons', this.$form));
-                this.$error.velocity('fadeIn');
+                $('<p style="display: none;">' + error + '</p>')
+                    .appendTo(this.$errors)
+                    .velocity('fadeIn');
             },
 
-            removeError: function() {
-                if (this.$error) {
-                    this.$error.remove();
-                }
+            clearErrors: function() {
+                this.$errors.empty();
             },
 
             onSwitchForm: function(event) {
@@ -150,7 +150,7 @@
                     this.$loginNameInput.trigger('focus');
                 }
 
-                this.removeError();
+                this.clearErrors();
 
                 this.forgotPassword = !this.forgotPassword;
 

@@ -134,8 +134,10 @@ body {
   margin-left: -12px;
 }
 
-p.error {
+#login-errors {
   text-align: center;
+  color: $errorColor;
+  margin-top: 1em;
 }
 
 #poweredby {
