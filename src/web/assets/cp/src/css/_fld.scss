@@ -116,6 +116,15 @@ $gridColor: hsl(212, 50%, 95%);
       display: flex;
       padding: 8px $tabPadding;
       border-radius: $mediumBorderRadius $mediumBorderRadius 0 0;
+      box-sizing: border-box;
+      max-width: calc(100% - 20px);
+
+      & > span {
+        display: block;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
 
       body:not(.dragging) &.draggable {
         cursor: move;
