@@ -3,7 +3,7 @@
 {% set useEmailAsUsername = craft.app.config.general.useEmailAsUsername %}
 
 <div id="account" class="screen hidden" data-inputs="username,email,password">
-    <div class="icon">{{ svg(userIcon, sanitize=false) }}</div>
+    <div class="icon" aria-hidden="true">{{ svg(userIcon, sanitize=false) }}</div>
     <h1>{{ "Create your account"|t('app') }}</h1>
 
     <form accept-charset="UTF-8">
