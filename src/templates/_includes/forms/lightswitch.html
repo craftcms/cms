@@ -57,11 +57,11 @@
     <div class="lightswitch-outer-container">
         <div class="lightswitch-inner-container">
             {% if hasOffLabel %}
-                <label for="{{ id }}" data-toggle="off">{{ offLabel }}</label>
+                <span data-toggle="off">{{ offLabel }}</span>
             {% endif %}
             {{ input }}
             {% if hasOnLabel %}
-                <label for="{{ id }}" data-toggle="on">{{ onLabel }}</label>
+                <span data-toggle="on">{{ onLabel }}</span>
             {% endif %}
         </div>
     </div>
