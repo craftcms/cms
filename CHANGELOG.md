@@ -1,5 +1,8 @@
 # Release Notes for Craft CMS 3.x
 
+### Changed
+- Improved the error message that is output when running the `clear-caches/cp-resources` command, if the `@webroot` alias isn’t explicitly set. ([#7286](https://github.com/craftcms/cms/issues/7286))
+
 ## 3.5.17.1 - 2020-12-17
 
 ### Fixed
