@@ -35,6 +35,7 @@
     aria: {
         checked: on ? 'true' : (indeterminate ? 'mixed' : 'false'),
         labelledby: labelId ?? null,
+        describedby: hasLabels ? 'id-#{ on-off-label-desc }' : null,
     },
 }|merge(containerAttributes ?? [], recursive=true) %}
 
@@ -55,13 +56,14 @@
 
 {% if hasLabels -%}
     <div class="lightswitch-outer-container">
+        <span id="{{ id }}-on-off-label-desc" class="visually-hidden">{{ "Check for #{onLabel}, uncheck for #{offLabel}."|t('app') }}</span>
         <div class="lightswitch-inner-container">
             {% if hasOffLabel %}
-                <span data-toggle="off">{{ offLabel }}</span>
+                <span data-toggle="off" aria-hidden="true">{{ offLabel }}</span>
             {% endif %}
             {{ input }}
             {% if hasOnLabel %}
-                <span data-toggle="on">{{ onLabel }}</span>
+                <span data-toggle="on" aria-hidden="true">{{ onLabel }}</span>
             {% endif %}
         </div>
     </div>

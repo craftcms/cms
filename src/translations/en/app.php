@@ -208,6 +208,7 @@ return [
     'Characters' => 'Characters',
     'Charts' => 'Charts',
     'Check again' => 'Check again',
+    'Check for #{onLabel}, uncheck for #{offLabel}.' => 'Check for #{onLabel}, uncheck for #{offLabel}.',
     'Check your email for instructions to reset your password.' => 'Check your email for instructions to reset your password.',
     'Checkbox Options' => 'Checkbox Options',
     'Checkbox' => 'Checkbox',
