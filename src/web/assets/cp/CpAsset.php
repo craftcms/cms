@@ -326,6 +326,7 @@ JS;
             'edition' => Craft::$app->getEdition(),
             'elementTypeNames' => $elementTypeNames,
             'fileKinds' => Assets::getFileKinds(),
+            'handleCasing' => $generalConfig->handleCasing,
             'initialDeltaValues' => $view->getInitialDeltaValue(),
             'isImagick' => Craft::$app->getImages()->getIsImagick(),
             'isMultiSite' => Craft::$app->getIsMultiSite(),

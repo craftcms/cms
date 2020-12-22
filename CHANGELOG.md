@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Added the `handleCasing` config setting, which determines the default casing that should be used when autogenerating component handles. ([#4276](https://github.com/craftcms/cms/issues/4276))
+
 ### Changed
 - Craft no longer reports user deprecation errors logged with `E_USER_DEPRECATED`.
 
