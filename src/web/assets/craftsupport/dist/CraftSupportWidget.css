@@ -68,7 +68,7 @@ body.rtl .widget.craft\\widgets\\craftsupport .front .pane .cs-screen-2 .cs-sear
 
 .widget.craft\\widgets\\craftsupport .front .pane .cs-screen-2 .cs-search-form .cs-icon-resources { position: relative; margin-top: 14px; padding-top: 24px; display: -webkit-flex; display: flex; -webkit-justify-content: center; justify-content: center; }
 
-.widget.craft\\widgets\\craftsupport .front .pane .cs-screen-2 .cs-search-form .cs-icon-resources:before { display: block; content: '.'; font-size: 0; position: absolute; top: 0; left: 50%; margin: 0 -10px; width: 20px; height: 1px; background: rgba(51, 64, 77, 0.1); }
+.widget.craft\\widgets\\craftsupport .front .pane .cs-screen-2 .cs-search-form .cs-icon-resources:before { display: block; content: ''; font-size: 0; position: absolute; top: 0; left: 50%; margin: 0 -10px; width: 20px; height: 1px; background: rgba(51, 64, 77, 0.1); }
 
 body.ltr .widget.craft\\widgets\\craftsupport .front .pane .cs-screen-2 .cs-search-form .cs-icon-resources a + a { margin-left: 24px; }
 
