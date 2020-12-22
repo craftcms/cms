@@ -404,6 +404,8 @@ body.rtl .with-icon.notice:before, body.rtl .with-icon.warning:before { margin: 
 
 .hidden { display: none !important; }
 
+.visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: 0; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
+
 .invisible { visibility: hidden; }
 
 .clearafter:after { content: '.'; display: block; height: 0; clear: both; visibility: hidden; }
@@ -801,23 +803,23 @@ body.rtl .color .color-preview > .color-preview-input { right: 0; }
 
 .lightswitch-outer-container .lightswitch-inner-container { border: 1px solid rgba(51, 64, 77, 0.1); border-radius: 3px; display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; }
 
-.lightswitch-outer-container .lightswitch-inner-container label { padding: 7px 0; color: #596673; }
+.lightswitch-outer-container .lightswitch-inner-container span { padding: 7px 0; color: #596673; }
 
-body.ltr .lightswitch-outer-container .lightswitch-inner-container label[data-toggle=on] { padding-right: 10px; }
+body.ltr .lightswitch-outer-container .lightswitch-inner-container span[data-toggle=on] { padding-right: 10px; }
 
-body.rtl .lightswitch-outer-container .lightswitch-inner-container label[data-toggle=on] { padding-left: 10px; }
+body.rtl .lightswitch-outer-container .lightswitch-inner-container span[data-toggle=on] { padding-left: 10px; }
 
-body.ltr .lightswitch-outer-container .lightswitch-inner-container label[data-toggle=on] { margin-left: 7px; }
+body.ltr .lightswitch-outer-container .lightswitch-inner-container span[data-toggle=on] { margin-left: 7px; }
 
-body.rtl .lightswitch-outer-container .lightswitch-inner-container label[data-toggle=on] { margin-right: 7px; }
+body.rtl .lightswitch-outer-container .lightswitch-inner-container span[data-toggle=on] { margin-right: 7px; }
 
-body.ltr .lightswitch-outer-container .lightswitch-inner-container label[data-toggle=off] { padding-left: 10px; }
+body.ltr .lightswitch-outer-container .lightswitch-inner-container span[data-toggle=off] { padding-left: 10px; }
 
-body.rtl .lightswitch-outer-container .lightswitch-inner-container label[data-toggle=off] { padding-right: 10px; }
+body.rtl .lightswitch-outer-container .lightswitch-inner-container span[data-toggle=off] { padding-right: 10px; }
 
-body.ltr .lightswitch-outer-container .lightswitch-inner-container label[data-toggle=off] { margin-right: 7px; }
+body.ltr .lightswitch-outer-container .lightswitch-inner-container span[data-toggle=off] { margin-right: 7px; }
 
-body.rtl .lightswitch-outer-container .lightswitch-inner-container label[data-toggle=off] { margin-left: 7px; }
+body.rtl .lightswitch-outer-container .lightswitch-inner-container span[data-toggle=off] { margin-left: 7px; }
 
 .lightswitch { position: relative; border: none !important; overflow: hidden; cursor: pointer; -webkit-user-select: none; user-select: none; background-image: -o-linear-gradient(left, #9aa5b1, #9aa5b1); background-image: linear-gradient(to right, #9aa5b1, #9aa5b1); -o-transition: background-image linear 100ms; transition: background-image linear 100ms; }
 
@@ -859,13 +861,13 @@ body.ltr .lightswitch.on .lightswitch-container { margin-left: 0; }
 
 body.rtl .lightswitch.on .lightswitch-container { margin-right: 0; }
 
-body.ltr .lightswitch.indeterminate:not(.small) .lightswitch-container { margin-left: -12px/2; }
+body.ltr .lightswitch.indeterminate:not(.small) .lightswitch-container { margin-left: -6px; }
 
-body.rtl .lightswitch.indeterminate:not(.small) .lightswitch-container { margin-right: -12px/2; }
+body.rtl .lightswitch.indeterminate:not(.small) .lightswitch-container { margin-right: -6px; }
 
-body.ltr .lightswitch.indeterminate.small .lightswitch-container { margin-left: -10px/2; }
+body.ltr .lightswitch.indeterminate.small .lightswitch-container { margin-left: -5px; }
 
-body.rtl .lightswitch.indeterminate.small .lightswitch-container { margin-right: -10px/2; }
+body.rtl .lightswitch.indeterminate.small .lightswitch-container { margin-right: -5px; }
 
 /* pagination */
 table.data + .pagination { margin-top: 24px; }
