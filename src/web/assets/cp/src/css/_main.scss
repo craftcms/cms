@@ -1711,12 +1711,12 @@ div.btn.submit input {
   &.indeterminate {
     &:not(.small) {
       .lightswitch-container {
-        @include margin-left(-12px / 2);
+        @include margin-left(0.5 * -12px);
       }
     }
     &.small {
       .lightswitch-container {
-        @include margin-left(-10px / 2);
+        @include margin-left(0.5 * -10px);
       }
     }
   }
