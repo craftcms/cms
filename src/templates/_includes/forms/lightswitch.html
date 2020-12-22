@@ -24,13 +24,13 @@
         toggle or reverseToggle ? 'fieldtoggle' : null,
         disabled ? 'disabled' : null,
     ]|filter,
-    tabindex: '0',
     data: {
         'value': value != '1' ? value : false,
         'indeterminate-value': indeterminateValue != '-' ? indeterminateValue : false,
         'target': toggle ?: false,
         'reverse-target': reverseToggle ?: false,
     },
+    type: 'button',
     role: 'switch',
     aria: {
         checked: on ? 'true' : (indeterminate ? 'mixed' : 'false'),
@@ -43,14 +43,14 @@
 {% endif %}
 
 {% set input %}
-    <div {{ attr(containerAttributes) }}>
+    <button {{ attr(containerAttributes) }}>
         <div class="lightswitch-container">
             <div class="handle"></div>
         </div>
         {% if name is defined -%}
             {{ hiddenInput(name, on ? value : (indeterminate ? indeterminateValue : ''), {disabled: disabled}) }}
         {%- endif %}
-    </div>
+    </button>
 {% endset %}
 
 {% if hasLabels -%}
