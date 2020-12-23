@@ -56,7 +56,7 @@
                                                     <a href="{{ config.documentationUrl }}" rel="noopener" target="_blank">{{ "Documentation"|t('app') }}</a>
                                                 {% endif %}
                                                 {% if config.hasCpSettings %}
-                                                    <a href="{{ url('settings/plugins/'~config.moduleId) }}"><span data-icon="settings"></span>{{ "Settings"|t('app') }}</a>
+                                                    <a href="{{ url('settings/plugins/'~config.moduleId) }}"><span data-icon="settings" aria-hidden="true"></span>{{ "Settings"|t('app') }}</a>
                                                 {% endif %}
                                                 {% endspaceless -%}
                                             </p>

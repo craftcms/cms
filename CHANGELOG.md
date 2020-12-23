@@ -1,5 +1,12 @@
 # Release Notes for Craft CMS 3.x
 
+### Changed
+- Improved the error message that is output when running the `clear-caches/cp-resources` command, if the `@webroot` alias isn’t explicitly set. ([#7286](https://github.com/craftcms/cms/issues/7286))
+- Added `aria-label` or `aria-hidden` attributes to control panel icons, where appropriate. ([#7302](https://github.com/craftcms/cms/pull/7302))
+
+### Fixed
+- Fixed a bug where field layout tabs’ settings buttons could become inaccessible if the tab name began with a long word without any hyphens. ([#7298](https://github.com/craftcms/cms/issues/7298))
+
 ## 3.5.17.1 - 2020-12-17
 
 ### Fixed
