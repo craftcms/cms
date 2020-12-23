@@ -1575,6 +1575,7 @@ return [
     'XML' => 'XML',
     'Years' => 'Yıl',
     'Yesterday' => 'Dün',
+    'Yes' => 'Yes',
     'You can only delete groups that have no sites.' => 'Yalnızca sitesi olmayan grupları silebilirsiniz.',
     'You cannot access the control panel while the system is offline with that account.' => 'Sistem bu hesapla çevrim dışıyken kontrol paneline erişemezsiniz.',
     'You cannot access the control panel with that account.' => 'Bu hesapla kontrol paneline erişemezsiniz.',
