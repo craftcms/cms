@@ -368,7 +368,7 @@ body.rtl th.right, body.rtl td.right { text-align: left; }
 
 .success { color: #27AB83 !important; }
 
-.notice { color: #127FBF !important; }
+.notice { color: #0B69A3 !important; }
 
 .warning { color: #B44D12 !important; }
 
@@ -744,11 +744,11 @@ body.rtl .btn.big[data-icon]:before, body.rtl #preview-btn:before, body.rtl #sha
 
 .btn.submit:not(.disabled):not(.inactive):active, .btn.submit:not(.disabled):not(.inactive).active { background-color: #c01b26 !important; }
 
-.secondary-buttons .btn.submit, .btn.secondary { background-color: #8b96a2 !important; }
+.secondary-buttons .btn.submit, .btn.secondary { background-color: #606d7b !important; }
 
-.secondary-buttons .btn.submit:not(.disabled):not(.inactive):hover, .secondary-buttons .btn.submit:not(.disabled):not(.inactive).hover, .secondary-buttons .btn.submit:not(.disabled):not(.inactive):focus, .btn.secondary:not(.disabled):not(.inactive):hover, .btn.secondary:not(.disabled):not(.inactive).hover, .btn.secondary:not(.disabled):not(.inactive):focus { background-color: #7d8997 !important; }
+.secondary-buttons .btn.submit:not(.disabled):not(.inactive):hover, .secondary-buttons .btn.submit:not(.disabled):not(.inactive).hover, .secondary-buttons .btn.submit:not(.disabled):not(.inactive):focus, .btn.secondary:not(.disabled):not(.inactive):hover, .btn.secondary:not(.disabled):not(.inactive).hover, .btn.secondary:not(.disabled):not(.inactive):focus { background-color: #55616d !important; }
 
-.secondary-buttons .btn.submit:not(.disabled):not(.inactive):active, .secondary-buttons .btn.submit:not(.disabled):not(.inactive).active, .btn.secondary:not(.disabled):not(.inactive):active, .btn.secondary:not(.disabled):not(.inactive).active { background-color: #6f7c8b !important; }
+.secondary-buttons .btn.submit:not(.disabled):not(.inactive):active, .secondary-buttons .btn.submit:not(.disabled):not(.inactive).active, .btn.secondary:not(.disabled):not(.inactive):active, .btn.secondary:not(.disabled):not(.inactive).active { background-color: #4a545e !important; }
 
 div.btn.submit { position: relative; overflow: hidden; }
 
@@ -3038,7 +3038,7 @@ body.rtl #user-info { margin-left: 14px; }
 
 #notifications .notification { padding: 5px 10px; border-radius: 0 0 3px 3px; border-width: 0 1px 1px; color: #fff !important; pointer-events: auto; -moz-osx-font-smoothing: grayscale; -webkit-font-smoothing: antialiased; font-weight: 500; box-shadow: 0 1px 5px -1px rgba(31, 41, 51, 0.2); }
 
-#notifications .notification.notice { background-color: #127FBF; }
+#notifications .notification.notice { background-color: #0B69A3; }
 
 #notifications .notification.error { background-color: #E12D39; }
 
