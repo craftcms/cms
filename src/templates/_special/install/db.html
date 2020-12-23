@@ -3,7 +3,7 @@
 {% set dbConfig = craft.app.config.db %}
 
 <div id="db" class="screen hidden" data-inputs="driver,server,port,user,password,database,schema,tablePrefix">
-    <div class="icon">{{ svg(dbIcon, sanitize=false) }}</div>
+    <div class="icon" aria-hidden="true">{{ svg(dbIcon, sanitize=false) }}</div>
     <h1>{{ "Connect the database"|t('app') }}</h1>
 
     <form accept-charset="UTF-8">

@@ -36,7 +36,7 @@
                     <div class="titlebar">
                         <div class="blocktype{% if block.hasErrors() %} error{% endif %}">
                             {{ block.getType().name|t('site') }}
-                            {% if block.hasErrors() %}<span data-icon="alert"></span>{% endif %}
+                            {% if block.hasErrors() %}<span data-icon="alert" aria-label="{{ 'Error'|t('app') }}"></span>{% endif %}
                         </div>
                         <div class="preview"></div>
                     </div>
