@@ -1575,6 +1575,7 @@ return [
     'XML' => 'XML',
     'Years' => 'Roky',
     'Yesterday' => 'Včera',
+    'Yes' => 'Yes',
     'You can only delete groups that have no sites.' => 'Odstrániť je možné iba skupiny, ktoré neobsahujú žiadne weby.',
     'You cannot access the control panel while the system is offline with that account.' => 'S daným účtom nemáte prístup k ovládaciemu panelu, kým je systém offline.',
     'You cannot access the control panel with that account.' => 'S tým účtom nemožno získať prístup k ovládaciemu panelu.',
