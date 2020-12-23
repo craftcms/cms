@@ -1575,6 +1575,7 @@ return [
     'XML' => 'XML',
     'Years' => '년',
     'Yesterday' => '어제',
+    'Yes' => 'Yes',
     'You can only delete groups that have no sites.' => '사이트가 없는 그룹만 삭제할 수 있습니다.',
     'You cannot access the control panel while the system is offline with that account.' => '시스템이 오프라인 상태인 경우, 해당 계정으로 제어판에 액세스할 수 없습니다.',
     'You cannot access the control panel with that account.' => '해당 계정으로 제어판에 액세스할 수 없습니다.',
