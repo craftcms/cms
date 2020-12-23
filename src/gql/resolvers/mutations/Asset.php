@@ -177,7 +177,7 @@ class Asset extends ElementMutationResolver
             $dataString = $fileInformation['fileData'];
             $fileData = null;
 
-            if (preg_match('/^data:((?<type>[a-z0-9]+\/[a-z0-9\+]+);)?base64,(?<data>.+)/i', $dataString, $matches)) {
+            if (preg_match('/^data:((?<type>[a-z0-9]+\/[a-z0-9\+\.\-]+);)?base64,(?<data>.+)/i', $dataString, $matches)) {
                 // Decode the file
                 $fileData = base64_decode($matches['data']);
             }
