@@ -114,12 +114,20 @@ $gridColor: hsl(212, 50%, 95%);
 
     .tab {
       display: flex;
+      max-width: calc(100% - 10px);
+      box-sizing: border-box;
       padding: 8px $tabPadding;
       border-radius: $mediumBorderRadius $mediumBorderRadius 0 0;
 
       body:not(.dragging) &.draggable {
         cursor: move;
         cursor: grab;
+      }
+
+      span {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
     }
   }
