@@ -1575,6 +1575,7 @@ return [
     'XML' => 'XML',
     'Years' => 'Év',
     'Yesterday' => 'Tegnap',
+    'Yes' => 'Yes',
     'You can only delete groups that have no sites.' => 'Csak webhellyel nem rendelkező csoportok törölhetők.',
     'You cannot access the control panel while the system is offline with that account.' => 'Ezzel a fiókkal nem érhető el a vezérlőpult, amíg a rendszer offline.',
     'You cannot access the control panel with that account.' => 'A vezérlőpult nem elérhető ezzel a fiókkal.',
