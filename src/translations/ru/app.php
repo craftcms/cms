@@ -1575,6 +1575,7 @@ return [
     'XML' => 'XML',
     'Years' => 'Лет',
     'Yesterday' => 'Вчера',
+    'Yes' => 'Yes',
     'You can only delete groups that have no sites.' => 'Можно удалить только группы, в которых нет сайтов.',
     'You cannot access the control panel while the system is offline with that account.' => 'Вам не разрешен доступ в панель управления, когда система работает в автономном режиме.',
     'You cannot access the control panel with that account.' => 'Вы не можете получить доступ к панели управления с этой учетной записью.',
