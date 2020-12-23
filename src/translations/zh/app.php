@@ -1575,6 +1575,7 @@ return [
     'XML' => 'XML',
     'Years' => '年',
     'Yesterday' => '昨天',
+    'Yes' => 'Yes',
     'You can only delete groups that have no sites.' => '只能删除没有站点的组。',
     'You cannot access the control panel while the system is offline with that account.' => '系统离线时，您不能使用该帐户访问控制面板。',
     'You cannot access the control panel with that account.' => '您不能使用该帐户访问控制面板。',
