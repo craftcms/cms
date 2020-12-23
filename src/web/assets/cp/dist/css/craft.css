@@ -3497,9 +3497,11 @@ body.rtl .fld-tab { padding: 0 0 24px 25px ; }
 
 .fld-tab .tabs { margin: -10px -12px 0; padding: 10px 12px 0; overflow: hidden; display: -webkit-flex; display: flex; }
 
-.fld-tab .tabs .tab { display: -webkit-flex; display: flex; padding: 8px 14px; border-radius: 4px 4px 0 0; }
+.fld-tab .tabs .tab { display: -webkit-flex; display: flex; max-width: calc(100% - 10px); box-sizing: border-box; padding: 8px 14px; border-radius: 4px 4px 0 0; }
 
 body:not(.dragging) .fld-tab .tabs .tab.draggable { cursor: move; cursor: -webkit-grab; cursor: grab; }
+
+.fld-tab .tabs .tab span { white-space: nowrap; overflow: hidden; -o-text-overflow: ellipsis; text-overflow: ellipsis; }
 
 .fld-tab .fld-tabcontent { padding: 14px; }
 
