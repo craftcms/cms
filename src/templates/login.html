@@ -3,10 +3,6 @@
 {% set title = "Login"|t('app') %}
 {% set bodyClass = 'login' %}
 {% do view.registerAssetBundle("craft\\web\\assets\\login\\LoginAsset") %}
-{% do view.registerTranslations('app', [
-    "Reset Password",
-    "Check your email for instructions to reset your password.",
-]) %}
 
 {% set username = craft.app.config.general.rememberUsernameDuration ? craft.app.user.getRememberedUsername(): '' %}
 {% set showRememberMe = craft.app.config.general.rememberedUserSessionDuration %}

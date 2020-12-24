@@ -43,18 +43,40 @@
             },
 
             validate: function() {
-                if (this.$loginNameInput.val() && (this.forgotPassword || this.$passwordInput.val().length >= 6)) {
-                    this.clearErrors();
-                    return true;
+                const loginNameVal = this.$loginNameInput.val();
+                if (loginNameVal.length === 0) {
+                    if (window.useEmailAsUsername) {
+                        return Craft.t('app', 'Invalid email.');
+                    }
+                    return Craft.t('app', 'Invalid username or email.');
                 }
-                else {
-                    return false;
+
+                if (window.useEmailAsUsername && !loginNameVal.match('.+@.+\..+')) {
+                    return Craft.t('app', 'Invalid email.');
                 }
+
+                if (!this.forgotPassword) {
+                    const passwordLength = this.$passwordInput.val().length;
+                    if (passwordLength < window.minPasswordLength) {
+                        return Craft.t('yii', '{attribute} should contain at least {min, number} {min, plural, one{character} other{characters}}.', {
+                            attribute: Craft.t('app', 'Password'),
+                            min: window.minPasswordLength,
+                        });
+                    }
+                    if (passwordLength > window.maxPasswordLength) {
+                        return Craft.t('yii', '{attribute} should contain at most {max, number} {max, plural, one{character} other{characters}}.', {
+                            attribute: Craft.t('app', 'Password'),
+                            max: window.maxPasswordLength,
+                        });
+                    }
+                }
+
+                return true;
             },
 
             onInput: function(event) {
-                if (this.validateOnInput) {
-                    this.validate();
+                if (this.validateOnInput && this.validate() === true) {
+                    this.clearErrors();
                 }
             },
 
@@ -62,8 +84,9 @@
                 // Prevent full HTTP submits
                 event.preventDefault();
 
-                if (!this.validate()) {
-                    this.showError(Craft.t('app', 'Couldn’t log in. Please check your username or email and password.'));
+                const error = this.validate();
+                if (error !== true) {
+                    this.showError(error);
                     this.validateOnInput = true;
                     return;
                 }
