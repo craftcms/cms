@@ -26,12 +26,12 @@ Craft.PasswordInput = Garnish.Base.extend(
 
             this.$passwordInput.data('passwordInput', this);
 
-            this.$showPasswordToggle = $('<a/>').addClass('invisible');
+            this.$showPasswordToggle = $('<button type="button" class="invisible" />');
             this.$showPasswordToggle.addClass('password-toggle');
             this.$showPasswordToggle.insertAfter(this.$passwordInput);
 
             this.initInputFocusEvents(this.$passwordInput);
-            this.addListener(this.$showPasswordToggle, 'mousedown', 'onToggleMouseDown');
+            this.addListener(this.$showPasswordToggle, 'click', 'onClick');
             this.hidePassword();
         },
 
@@ -131,10 +131,7 @@ Craft.PasswordInput = Garnish.Base.extend(
             }
         },
 
-        onToggleMouseDown: function(ev) {
-            // Prevent focus change
-            ev.preventDefault();
-
+        onClick: function(ev) {
             if (this.$currentInput[0].setSelectionRange) {
                 var selectionStart = this.$currentInput[0].selectionStart,
                     selectionEnd = this.$currentInput[0].selectionEnd;
