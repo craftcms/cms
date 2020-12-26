@@ -13,7 +13,7 @@
                 {% set icon = item.iconMask ?? item.icon %}
                 <li>
                     <a href="{% if item.url is defined %}{{ url(item.url) }}{% else %}{{ url('settings/'~handle) }}{% endif %}">
-                        <div class="icon{% if item.iconMask is defined %} icon-mask{% endif %}">
+                        <div class="icon{% if item.iconMask is defined %} icon-mask{% endif %}" aria-hidden="true">
                             {{ svg(icon, sanitize=true, namespace=true) }}
                         </div>
                         {{ item.label }}

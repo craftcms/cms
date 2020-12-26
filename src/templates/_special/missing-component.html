@@ -2,9 +2,9 @@
     <p class="error">{{ error }}</p>
     {% if showPlugin %}
         <div class="install-plugin">
-            <div class="icon">
+            <div class="icon" aria-hidden="true">
                 {% if iconUrl %}
-                    <img src="{{ iconUrl }}">
+                    <img src="{{ iconUrl }}" alt="">
                 {% else %}
                     {{ svg(iconSvg, sanitize=true, namespace=true) }}
                 {% endif %}

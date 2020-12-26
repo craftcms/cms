@@ -4586,6 +4586,11 @@ fieldset {
 
   .password-toggle {
     @include padding-right(7px);
+    color: $linkColor;
+
+    &:hover {
+      text-decoration: underline;
+    }
   }
 }
 

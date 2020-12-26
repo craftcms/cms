@@ -18,6 +18,8 @@ table { border-collapse: separate; border-spacing: 0; }
 
 a { text-decoration: none; }
 
+button { -webkit-appearance: none; appearance: none; background-color: transparent; border: none; padding: 0; }
+
 input, textarea { margin: 0; font-family: 'Lucida Grande', sans-serif; font-size: 100%; }
 
 textarea { resize: vertical; }
@@ -2294,9 +2296,13 @@ body.rtl .texticon .clear { left: 9px; }
 
 .passwordwrapper .password { -webkit-flex: 1; flex: 1; border: none; background: transparent; box-shadow: none; }
 
+.passwordwrapper .password-toggle { color: #0B69A3; }
+
 body.ltr .passwordwrapper .password-toggle { padding-right: 7px; }
 
 body.rtl .passwordwrapper .password-toggle { padding-left: 7px; }
+
+.passwordwrapper .password-toggle:hover { text-decoration: underline; }
 
 .datetimewrapper { display: -webkit-flex; display: flex; -webkit-flex-direction: row; flex-direction: row; -webkit-align-items: center; align-items: center; }
 
