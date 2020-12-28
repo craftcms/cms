@@ -184,6 +184,7 @@ return [
     'Can contain Markdown formatting.' => 'Can contain Markdown formatting.',
     'Cancel' => 'Cancel',
     'Can’t run Craft CMS' => 'Can’t run Craft CMS',
+    'Captions/Subtitles' => 'Captions/Subtitles',
     'Card number' => 'Card number',
     'Cart' => 'Cart',
     'Categories not restored.' => 'Categories not restored.',
