@@ -3,9 +3,11 @@
 ## Unreleased
 
 ### Added
+- Added the “Captions/Subtitles” file kind. ([#7304](https://github.com/craftcms/cms/issues/7304))
 - Added the `handleCasing` config setting, which determines the default casing that should be used when autogenerating component handles. ([#4276](https://github.com/craftcms/cms/issues/4276))
 
 ### Changed
+- The `allowedFileExtensions` config setting now includes several file extensions used by caption and subtitle file formats by default. ([#7304](https://github.com/craftcms/cms/issues/7304))
 - Craft no longer reports user deprecation errors logged with `E_USER_DEPRECATED`.
 
 ### Fixed
