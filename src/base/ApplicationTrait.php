@@ -126,7 +126,6 @@ use yii\web\ServerErrorHttpException;
  * @property-read bool $isMultiSite Whether this site has multiple sites
  * @property-read bool $isSystemLive Whether the system is live
  * @property-read Connection $db The database connection component
- * @property-read Connection $unbufferedDb A database connection component based on the `db` component, but with `PDO::MYSQL_ATTR_USE_BUFFERED_QUERY` set to `false` if using MySQL
  * @property-read Formatter $formatter The formatter component
  * @property-read I18N $i18n The internationalization (i18n) component
  * @property-read Queue|QueueInterface $queue The job queue
@@ -1320,18 +1319,6 @@ trait ApplicationTrait
     {
         /** @var WebApplication|ConsoleApplication $this */
         return $this->get('tokens');
-    }
-
-    /**
-     * Returns a database connection component based on the `db` component, but with
-     * `PDO::MYSQL_ATTR_USE_BUFFERED_QUERY` set to `false` if using MySQL.
-     *
-     * @return Connection
-     * @since 3.6.0
-     */
-    public function getUnbufferedDb(): Connection
-    {
-        return $this->get('unbufferedDb');
     }
 
     /**
