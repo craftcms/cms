@@ -127,7 +127,7 @@
 - `craft\services\Gql::getValidationRules()` now has an `$isIntrospectionQuery` argument.
 - Craft no longer reports PHP deprecation errors.
 - GraphQL queries now support eager-loading for arguments provided as input objects.
-- Updated Yii to 2.0.39.
+- Updated Yii to 2.0.40.
 - Updated Guzzle to 7.x, for projects that don’t have any plugins that require Guzzle 6. ([#6997](https://github.com/craftcms/cms/issues/6997))
 - Updated Composer to 2.0.8.
 - Updated LitEmoji to 2.x.
@@ -169,6 +169,7 @@
 - Removed `craft\test\fixtures\FieldLayoutFixture::linkFieldToLayout()`.
 
 ### Fixed
+- Fixed an error that occurred when a schema change was made within a transaction, if using MySQL and PHP 8. ([#7174](https://github.com/craftcms/cms/issues/7174))
 - Fixed a bug where asset queries’ `withTransforms` param wasn’t being respected for eager-loaded assets. ([#6140](https://github.com/craftcms/cms/issues/6140))
 - Fixed a bug where `craft\db\Connection::getPrimaryKeyName()`, `getForeignKeyName()`, and `getIndexName()` could generate non-unique object names. ([#7153](https://github.com/craftcms/cms/issues/7153))
 - Fixed a bug where number strings were not correctly typecast to the right PHP numeric type when using the Number GraphQL type.
