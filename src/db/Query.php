@@ -7,10 +7,15 @@
 
 namespace craft\db;
 
+use Closure;
+use Craft;
 use craft\base\ClonefixTrait;
 use craft\events\DefineBehaviorsEvent;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
+use PDO;
 use yii\base\Exception;
+use yii\db\BatchQueryResult;
 use yii\db\Connection as YiiConnection;
 
 /**
@@ -34,6 +39,23 @@ class Query extends \yii\db\Query
      * @see behaviors()
      */
     const EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
+
+    /**
+     * @var Connection|false|null
+     * @see _unbufferedDb()
+     */
+    private static $_unbufferedDb;
+
+    /**
+     * Returns an unbuffered DB connection, if using MySQL.
+     */
+    private static function _unbufferedDb(): ?Connection
+    {
+        if (self::$_unbufferedDb === null) {
+            self::$_unbufferedDb = Db::createUnbufferedDb() ?? false;
+        }
+        return self::$_unbufferedDb ?: null;
+    }
 
     /**
      * @inheritdoc
@@ -141,6 +163,66 @@ class Query extends \yii\db\Query
         }
 
         return $rows;
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.6.0
+     */
+    public function batch($batchSize = 100, $db = null)
+    {
+        return $this->_batch($batchSize, $db, false);
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.6.0
+     */
+    public function each($batchSize = 100, $db = null)
+    {
+        return $this->_batch($batchSize, $db, true);
+    }
+
+    /**
+     * Returns a batch query for batch() and each(), with the DB possibly set to an unbuffered DB connection.
+     *
+     * @param int $batchSize
+     * @param YiiConnection|null $db
+     * @param bool $each
+     */
+    private function _batch(int $batchSize, ?YiiConnection $db, bool $each)
+    {
+        if ($unbuffered = ($db === null && Craft::$app->getDb()->getIsMysql())) {
+            // Create a new DB connection based on the `db` app component, but set to run unbuffered queries
+            // see https://www.yiiframework.com/doc/guide/2.0/en/db-query-builder#batch-query-mysql
+            $db = Craft::$app->getComponents()['db'];
+            if (!is_object($db) || $db instanceof Closure) {
+                $db = Craft::createObject($db);
+            }
+            $db->on(YiiConnection::EVENT_AFTER_OPEN, function() use ($db) {
+                $db->pdo->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, false);
+            });
+        }
+
+        /** @var BatchQueryResult $result */
+        $result = Craft::createObject([
+            'class' => BatchQueryResult::class,
+            'query' => $this,
+            'batchSize' => $batchSize,
+            'db' => $db,
+            'each' => $each,
+        ]);
+
+        if ($unbuffered) {
+            $result->on(BatchQueryResult::EVENT_FINISH, function() use ($db) {
+                $db->close();
+            });
+            $result->on(BatchQueryResult::EVENT_RESET, function() use ($db) {
+                $db->close();
+            });
+        }
+
+        return $result;
     }
 
     /**
