@@ -73,6 +73,7 @@
 - Added `craft\helpers\Gql::eagerLoadComplexity()`.
 - Added `craft\helpers\Gql::nPlus1Complexity()`.
 - Added `craft\helpers\Gql::singleQueryComplexity()`.
+- Added `craft\helpers\Template::paginateQuery()`.
 - Added `craft\log\Dispatcher`.
 - Added `craft\models\FieldLayout::EVENT_CREATE_FORM`. ([#7258](https://github.com/craftcms/cms/issues/7258))
 - Added `craft\models\Site::getName()`.
@@ -143,6 +144,7 @@
 - Deprecated `craft\gql\base\Resolver::getArrayableArguments()`.
 - Deprecated `craft\gql\base\Resolver::prepareArguments()`.
 - Deprecated `craft\helpers\App::logConfig()`.
+- Deprecated `craft\helpers\Template::paginateCriteria()`. `paginateQuery()` should be used instead.
 - Deprecated `craft\services\Composer::$disablePackagist`.
 - Deprecated `craft\services\Drafts::applyDraft()`. `publishDraft()` should be used instead.
 - Deprecated `craft\services\Drafts::EVENT_AFTER_APPLY_DRAFT`. `EVENT_AFTER_PUBLISH_DRAFT` should be used instead.

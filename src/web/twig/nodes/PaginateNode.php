@@ -27,12 +27,12 @@ class PaginateNode extends Node
             ->addDebugInfo($this)
             // the (array) cast bypasses a PHP 5.2.6 bug
             //->write("\$context['_parent'] = (array) \$context;\n")
-            ->write('list(')
-            ->subcompile($this->getNode('paginateTarget'))
+            ->write('[')
+            ->subcompile($this->getNode('infoVariable'))
             ->raw(', ')
-            ->subcompile($this->getNode('elementsTarget'))
-            ->raw(') = \craft\helpers\Template::paginateCriteria(')
-            ->subcompile($this->getNode('criteria'))
+            ->subcompile($this->getNode('resultVariable'))
+            ->raw('] = \craft\helpers\Template::paginateQuery(')
+            ->subcompile($this->getNode('query'))
             ->raw(");\n");
     }
 }
