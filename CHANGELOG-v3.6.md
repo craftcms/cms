@@ -25,6 +25,7 @@
 - Added the `withGroups` user query param.
 - Added the `relatedToAssets`, `relatedToCategories`, `relatedToEntries`, `relatedToTags`, and `relatedToUsers` arguments to GraphQL queries. ([#7110](https://github.com/craftcms/cms/issues/7110))
 - Added the `isUnpublishedDraft` GraphQL field.
+- Added `craft\base\ApplicationTrait::getUnbufferedDb()`.
 - Added `craft\base\ElementExporterInterface::isFormattable()`.
 - Added `craft\base\ElementInterface::getIsUnpublishedDraft()`.
 - Added `craft\base\FieldInterface::includeInGqlSchema()`. ([#7244](https://github.com/craftcms/cms/pull/7244))
@@ -116,6 +117,7 @@
 - `craft\behaviors\EnvAttributeParserBehavior::$attributes` can now be set to an array with key/value pairs, where the key is the attribute name, and the value is the raw (unparsed) value, or a callable that returns the raw value.
 - `craft\behaviors\EnvAttributeParserBehavior::$attributes` can now be set to an array with key/value pairs, where the key is the attribute name, and the value is the raw (unparsed) value, or a callable that returns the raw value.
 - `craft\db\Connection::getPrimaryKeyName()`, `getForeignKeyName()`, and `getIndexName()` now generate completely random object names, rather than basing them on a table name, etc. ([#7153](https://github.com/craftcms/cms/issues/7153))
+- `craft\db\Query::batch()` and `each()` now use an [unbuffered database connection](https://www.php.net/manual/en/mysqlinfo.concepts.buffering.php) by default if using MySQL. ([#7338](https://github.com/craftcms/cms/issues/7338))
 - `craft\helpers\Cp::fieldHtml()` now accepts a control panel template path, prefixed with `template:`.
 - `craft\helpers\Gql::isSchemaAwareOf()`, `extractAllowedEntitiesFromSchema()`, `canSchema()`, `extractEntityAllowedActions()`, `canMutateEntries()`, `canMutateTags()`, `canMutateGlobalSets()`, `canMutateCategories()`, `canMutateAssets()`, `canQueryEntries()`, `canQueryAssets()`, `canQueryCategories()`, `canQueryTags()`, `canQueryGlobalSets()`, and `canQueryUsers()` now have `$schema` arguments.
 - `craft\models\Site::$baseUrl` is now a magic property, which returns the parsed base URL. ([#3964](https://github.com/craftcms/cms/issues/3964))

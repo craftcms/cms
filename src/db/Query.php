@@ -7,6 +7,7 @@
 
 namespace craft\db;
 
+use Craft;
 use craft\base\ClonefixTrait;
 use craft\events\DefineBehaviorsEvent;
 use craft\helpers\ArrayHelper;
@@ -141,6 +142,32 @@ class Query extends \yii\db\Query
         }
 
         return $rows;
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.6.0
+     */
+    public function batch($batchSize = 100, $db = null)
+    {
+        if ($db === null) {
+            $db = Craft::$app->getUnbufferedDb();
+        }
+
+        return parent::batch($batchSize, $db);
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.6.0
+     */
+    public function each($batchSize = 100, $db = null)
+    {
+        if ($db === null) {
+            $db = Craft::$app->getUnbufferedDb();
+        }
+
+        return parent::each($batchSize, $db);
     }
 
     /**

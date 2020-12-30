@@ -265,6 +265,24 @@ return [
             return Craft::createObject($config);
         },
 
+        'unbufferedDb' => function() {
+            // If we're not using MySQL, just return the main DB component
+            $db = Craft::$app->getDb();
+            if (!$db->getIsMysql()) {
+                return $db;
+            }
+
+            $unbufferedDb = Craft::$app->getComponents()['db'];
+
+            if (!is_object($unbufferedDb) || $unbufferedDb instanceof Closure) {
+                $unbufferedDb = Craft::createObject($unbufferedDb);
+            }
+
+            $unbufferedDb->open();
+            $unbufferedDb->pdo->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, false);
+            return $unbufferedDb;
+        },
+
         'view' => function() {
             $config = craft\helpers\App::viewConfig();
             return Craft::createObject($config);
