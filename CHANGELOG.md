@@ -8,6 +8,7 @@
 ### Fixed
 - Fixed a bug where field layout tabs’ settings buttons could become inaccessible if the tab name began with a long word without any hyphens. ([#7298](https://github.com/craftcms/cms/issues/7298))
 - Fixed an error that could occur on console requests if Craft didn’t think it was installed yet. ([#7309](https://github.com/craftcms/cms/issues/7309))
+- Fixed an error that could occur when saving elements with Matrix fields, if there were any custom fields whose handles conflicted with `craft\elements\db\ElementQuery` getter methods, such as `criteria`. ([#7335](https://github.com/craftcms/cms/issues/7335))
 
 ## 3.5.17.1 - 2020-12-17
 
