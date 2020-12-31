@@ -379,6 +379,7 @@ Craft.ui =
             var indeterminateValue = config.indeterminateValue || '-';
 
             var $container = $('<button/>', {
+                'type': 'button',
                 'class': 'lightswitch',
                 'data-value': value,
                 'data-indeterminate-value': indeterminateValue,
