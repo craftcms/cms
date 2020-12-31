@@ -104,6 +104,7 @@
 - Improved the performance of project config change diffs. ([#7218](https://github.com/craftcms/cms/issues/7218))
 - Improved the accessibility of info icons.
 - The Settings → Plugin page now shows which developer created each plugin. ([#7254](https://github.com/craftcms/cms/issues/7254))
+- Field layout designers will no longer create a new tab if no tab name is entered in the prompt. ([#7333](https://github.com/craftcms/cms/issues/7333))
 - Site URLs that are generated on the front-end of disabled sites now include the `siteToken` param, if one was passed to the current page. ([#7264](https://github.com/craftcms/cms/issues/7264))
 - The `allowedFileExtensions` config setting now includes several file extensions used by caption and subtitle file formats by default. ([#7304](https://github.com/craftcms/cms/issues/7304))
 - The `withoutKey` Twig filter can now accept an array, for removing multiple keys at once. ([#7230](https://github.com/craftcms/cms/issues/7230))

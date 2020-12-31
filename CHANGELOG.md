@@ -8,6 +8,7 @@
 - Added `craft\helpers\Template::paginateQuery()`.
 
 ### Changed
+- Field layout designers will no longer create a new tab if no tab name is entered in the prompt. ([#7333](https://github.com/craftcms/cms/issues/7333))
 - The `allowedFileExtensions` config setting now includes several file extensions used by caption and subtitle file formats by default. ([#7304](https://github.com/craftcms/cms/issues/7304))
 - Craft no longer reports user deprecation errors logged with `E_USER_DEPRECATED`.
 - Updated Yii to 2.0.40.
