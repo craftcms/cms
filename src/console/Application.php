@@ -75,6 +75,7 @@ class Application extends \yii\console\Application
                 } else {
                     $infoTable = $this->getDb()->getSchema()->getRawTableName(Table::INFO);
                     // Figure out the exception that is getting thrown
+                    $e = null;
                     try {
                         (new Query())->from([Table::INFO])->where(['id' => 1])->one();
                     } catch (\Throwable $e) {
