@@ -112,7 +112,7 @@ class NoFixturesTest extends TestCase
         Craft::$app->set('sections', $sectionService);
         Craft::$app->set('projectConfig', $projectConfig);
 
-        Craft::$app->getProjectConfig()->processConfigChanges('sections.someUid.handle');
+        Craft::$app->getProjectConfig()->processConfigChanges('sections.someUid.handle', false, null, true);
     }
 
     /**

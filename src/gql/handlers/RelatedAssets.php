@@ -7,7 +7,6 @@
 
 namespace craft\gql\handlers;
 
-
 use Craft;
 use craft\elements\Asset;
 use craft\gql\base\RelationArgumentHandler;

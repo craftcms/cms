@@ -212,6 +212,18 @@ class App
     public static function phpConfigValueInBytes(string $var)
     {
         $value = trim(ini_get($var));
+        return static::phpSizeToBytes($value);
+    }
+
+    /**
+     * Normalizes a PHP file size into bytes.
+     *
+     * @param string $value The file size expressed in PHP config value notation
+     * @return int|float The value normalized into bytes.
+     * @since 3.6.0
+     */
+    public static function phpSizeToBytes(string $value)
+    {
         $unit = strtolower(substr($value, -1, 1));
         $value = (int)$value;
 
@@ -425,7 +437,7 @@ class App
      * @return array
      * @since 3.0.18
      */
-    public static function dbConfig(DbConfig $dbConfig = null): array
+    public static function dbConfig(?DbConfig $dbConfig = null): array
     {
         if ($dbConfig === null) {
             $dbConfig = Craft::$app->getConfig()->getDb();
@@ -482,7 +494,7 @@ class App
      * @return array
      * @since 3.0.18
      */
-    public static function mailerConfig(MailSettings $settings = null): array
+    public static function mailerConfig(?MailSettings $settings = null): array
     {
         if ($settings === null) {
             $settings = static::mailSettings();
@@ -508,11 +520,19 @@ class App
     }
 
     /**
-     * Returns the `mutex` component config.
+     * Returns a file-based `mutex` component config.
+     *
+     * ::: tip
+     * If you were calling this to override the [[\yii\mutex\FileMutex::$isWindows]] property, note that you
+     * can safely remove your custom `mutex` component config for Craft 3.5.0 and later. Craft now uses a
+     * database-based mutex component by default (see [[dbMutexConfig()]]), which doesn’t care which type of
+     * file system is used.
+     * :::
      *
      * @return array
      * @since 3.0.18
-     * @deprecated in 3.5.0. Use [[dbMutexConfig()]] instead.
+     * @deprecated in 3.5.0.
+     *
      */
     public static function mutexConfig(): array
     {

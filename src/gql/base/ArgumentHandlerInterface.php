@@ -7,7 +7,6 @@
 
 namespace craft\gql\base;
 
-
 use craft\gql\ArgumentManager;
 
 /**

@@ -228,7 +228,7 @@ const actions = {
                     // Set default values
                     item.autoRenew = false
 
-                    switch(item.type) {
+                    switch (item.type) {
                         case 'plugin-edition': {
                             const pluginLicenseInfo = rootGetters['craft/getPluginLicenseInfo'](item.plugin)
 

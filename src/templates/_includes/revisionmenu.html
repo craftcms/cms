@@ -17,7 +17,7 @@
 {% set maxRevisions = craft.app.config.general.maxRevisions %}
 {% if not maxRevisions or maxRevisions > 1 %}
     {% set revisions = element.find()
-        .revisionOf(element.sourceId)
+        .revisionOf(element.getSourceId())
         .siteId(element.siteId)
         .anyStatus()
         .offset(1)
@@ -50,8 +50,7 @@
     {% set baseUrl = cpEditUrl %}
 {% endif %}
 
-{% set isUnsavedDraft = element.getIsUnsavedDraft() %}
-{% set showRevisions = showRevisionLabel and not isUnsavedDraft %}
+{% set showRevisions = showRevisionLabel and not element.getIsUnpublishedDraft() %}
 {% set showMenu = editableSiteIds|length > 1 or showRevisions %}
 
 <div id="context-btngroup" class="btngroup">

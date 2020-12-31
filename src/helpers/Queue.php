@@ -26,7 +26,7 @@ class Queue
      * @param int|null $priority
      * @return string|null The new job ID
      */
-    public static function push(JobInterface $job, int $priority = null)
+    public static function push(JobInterface $job, ?int $priority = null)
     {
         $queue = Craft::$app->getQueue();
 

@@ -97,12 +97,14 @@ class ActiveRecordTest extends Unit
     }
 
     /**
-     * @dataProvider dataForDbPrepareDataProvider
+     * @dataProvider prepValForDbDataProvider
      *
-     * @param $result
-     * @param $input
+     * @param string $expected
+     * @param mixed $input
+     * @throws \Throwable
+     * @throws \yii\db\StaleObjectException
      */
-    public function testPrepValForDb($result, $input)
+    public function testPrepValForDb(string $expected, $input)
     {
         $vol = new Volume();
         $vol->name = 'NaN';
@@ -114,7 +116,7 @@ class ActiveRecordTest extends Unit
         $save = $vol->save();
 
         self::assertTrue($save);
-        self::assertSame($result, $vol->settings);
+        self::assertSame($expected, $vol->settings);
 
         $vol->delete();
     }
@@ -123,7 +125,7 @@ class ActiveRecordTest extends Unit
      * @return array
      * @throws Exception
      */
-    public function dataForDbPrepareDataProvider(): array
+    public function prepValForDbDataProvider(): array
     {
         $jsonableArray = ['JsonArray' => 'SomeArray'];
         $jsonableClass = new stdClass();

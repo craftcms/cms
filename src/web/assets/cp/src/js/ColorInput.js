@@ -59,7 +59,7 @@ Craft.ColorInput = Garnish.Base.extend({
 
         // Make sure the value starts with a #
         if (val[0] !== '#') {
-            val = '#'+val;
+            val = '#' + val;
             this.$input.val(val);
         }
 
@@ -72,10 +72,8 @@ Craft.ColorInput = Garnish.Base.extend({
 }, {
     _browserSupportsColorInputs: null,
 
-    doesBrowserSupportColorInputs: function()
-    {
-        if (Craft.ColorInput._browserSupportsColorInputs === null)
-        {
+    doesBrowserSupportColorInputs: function() {
+        if (Craft.ColorInput._browserSupportsColorInputs === null) {
         }
 
         return Craft.ColorInput._browserSupportsColorInputs;

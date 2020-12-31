@@ -78,7 +78,7 @@ class MailerHelper
      * @return TransportAdapterInterface
      * @throws MissingComponentException if $type is missing
      */
-    public static function createTransportAdapter(string $type, array $settings = null): TransportAdapterInterface
+    public static function createTransportAdapter(string $type, ?array $settings = null): TransportAdapterInterface
     {
         /** @var BaseTransportAdapter $adapter */
         $adapter = Component::createComponent([
@@ -146,7 +146,7 @@ class MailerHelper
      * @return string
      * @since 3.5.0
      */
-    public static function settingsReport(Mailer $mailer, TransportAdapterInterface $transportAdapter = null): string
+    public static function settingsReport(Mailer $mailer, ?TransportAdapterInterface $transportAdapter = null): string
     {
         $transport = $mailer->getTransport();
         $settings = [

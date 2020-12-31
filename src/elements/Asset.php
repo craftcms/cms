@@ -104,6 +104,10 @@ class Asset extends Element
 
     const KIND_ACCESS = 'access';
     const KIND_AUDIO = 'audio';
+    /**
+     * @since 3.6.0
+     */
+    const KIND_CAPTIONS_SUBTITLES = 'captionsSubtitles';
     const KIND_COMPRESSED = 'compressed';
     const KIND_EXCEL = 'excel';
     const KIND_FLASH = 'flash';
@@ -992,7 +996,8 @@ class Asset extends Element
 
             [$value, $unit] = Assets::parseSrcsetSize($size);
 
-            $sizeTransform = [];
+            $sizeTransform = $transform ? $transform->toArray() : [];
+
             if ($unit === 'w') {
                 $sizeTransform['width'] = (int)$value;
             } else {
@@ -1006,10 +1011,6 @@ class Asset extends Element
                 } else {
                     $sizeTransform['height'] = (int)ceil($currentHeight * $value);
                 }
-            }
-
-            if (!empty($transform->format)) {
-                $sizeTransform['format'] = $transform->format;
             }
 
             $srcset[] = $this->getUrl($sizeTransform) . " $value$unit";
@@ -1688,17 +1689,15 @@ class Asset extends Element
             // NBD
         }
 
-        $html .= $view->renderTemplateMacro('_includes/forms', 'textField', [
-            [
-                'label' => Craft::t('app', 'Filename'),
-                'id' => 'newFilename',
-                'name' => 'newFilename',
-                'value' => $this->filename,
-                'errors' => $this->getErrors('newLocation'),
-                'first' => true,
-                'required' => true,
-                'class' => 'renameHelper text'
-            ]
+        $html .= Cp::textFieldHtml([
+            'label' => Craft::t('app', 'Filename'),
+            'id' => 'newFilename',
+            'name' => 'newFilename',
+            'value' => $this->filename,
+            'errors' => $this->getErrors('newLocation'),
+            'first' => true,
+            'required' => true,
+            'class' => ['renameHelper', 'text'],
         ]);
 
         $html .= parent::getEditorHtml();

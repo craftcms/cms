@@ -1876,6 +1876,18 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function getIsUnpublishedDraft(): bool
+    {
+        return $this->getIsUnsavedDraft();
+    }
+
+    /**
+     * Returns whether the element is an unpublished draft.
+     *
+     * @return bool
+     * @since 3.2.0
+     * @deprecated in 3.6.0. Use [[getIsUnpublishedDraft()]] instead.
+     */
     public function getIsUnsavedDraft(): bool
     {
         if (!$this->getIsDraft()) {

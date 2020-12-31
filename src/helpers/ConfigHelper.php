@@ -99,7 +99,7 @@ class ConfigHelper
      * @param string|null $siteHandle The site handle the value should be defined for. Defaults to the current site.
      * @return mixed
      */
-    public static function localizedValue($value, string $siteHandle = null)
+    public static function localizedValue($value, ?string $siteHandle = null)
     {
         if (is_scalar($value)) {
             return $value;

@@ -44,7 +44,7 @@ class ElementUriValidator extends UriValidator
         if (
             $model->uri &&
             (
-                ($model->getIsDraft() && !$model->getIsUnsavedDraft()) ||
+                ($model->getIsDraft() && !$model->getIsUnpublishedDraft()) ||
                 $model->getIsRevision()
             )
         ) {

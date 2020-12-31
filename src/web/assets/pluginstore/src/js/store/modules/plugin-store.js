@@ -185,7 +185,7 @@ const actions = {
     getPluginsByFeaturedSectionHandle({getters, dispatch}, context) {
         return new Promise((resolve, reject) => {
             const pluginIndexParams = getters['getPluginIndexParams'](context)
-            
+
             return api.getPluginsByFeaturedSectionHandle(context.featuredSectionHandle, pluginIndexParams)
                 .then(responseData => {
                     dispatch('updatePluginIndex', {context, responseData})

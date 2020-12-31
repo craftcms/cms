@@ -26,18 +26,17 @@ class PathHelperTest extends Unit
     protected $tester;
 
     /**
-     * @dataProvider isPathContainedDataProviders
+     * @dataProvider ensurePathIsContainedDataProvider
      *
-     * @param $result
-     * @param $input
+     * @param bool $expected
+     * @param string $path
      */
-    public function testIsPathContained($result, $input)
+    public function testEnsurePathIsContained(bool $expected, string $path)
     {
-        $isContained = Path::ensurePathIsContained($input);
-        self::assertSame($result, $isContained);
+        self::assertSame($expected, Path::ensurePathIsContained($path));
     }
 
-    public function isPathContainedDataProviders(): array
+    public function ensurePathIsContainedDataProvider(): array
     {
         return [
             [true, '/'],

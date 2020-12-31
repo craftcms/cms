@@ -1841,7 +1841,6 @@ table {
       font-weight: bold;
       @include alignleft;
       vertical-align: top;
-      color: $mediumTextColor;
     }
   }
 
@@ -3118,6 +3117,10 @@ ul.tree,
           content: 'plus';
           color: $lightTextColor;
         }
+
+        .input {
+          width: 100%;
+        }
       }
 
       & > .heading {
@@ -3249,6 +3252,10 @@ ul.tree,
         padding: 0 0 6px;
         width: 100%;
         list-style-type: none;
+      }
+
+      & > .clear-btn {
+        @include margin-right(-24px);
       }
     }
   }
@@ -4245,7 +4252,8 @@ fieldset {
     margin-top: -5px;
     margin-bottom: 5px;
 
-    & > label {
+    & > label,
+    & > legend {
       font-weight: bold;
       color: $mediumDarkTextColor;
 
@@ -4277,17 +4285,21 @@ fieldset {
     margin-bottom: 5px;
   }
 
-  & > .notice,
-  & > .warning {
-    margin: 5px 0 0;
-  }
-
   & > .input {
     position: relative;
 
     &:after {
       @include clearafter;
     }
+
+    & + .instructions {
+      margin: 5px 0 0;
+    }
+  }
+
+  & > .notice,
+  & > .warning {
+    margin: 5px 0 0;
   }
 }
 
@@ -4574,6 +4586,11 @@ fieldset {
 
   .password-toggle {
     @include padding-right(7px);
+    color: $linkColor;
+
+    &:hover {
+      text-decoration: underline;
+    }
   }
 }
 
@@ -4585,24 +4602,26 @@ fieldset {
   & > .datewrapper + .timewrapper {
     @include margin-left(5px);
   }
+}
 
-  .clear-btn {
-    width: 20px;
-    @include margin-left(4px);
-    cursor: pointer;
-    color: $darkHairlineColor;
-    border: none;
-    padding: 0;
-    background: transparent;
+.clear-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 24px;
+  cursor: pointer;
+  color: $darkHairlineColor;
+  border: none;
+  padding: 0;
+  background: transparent;
 
-    &:before {
-      @include icon;
-      content: 'remove';
-    }
+  &:before {
+    @include icon;
+    content: 'remove';
+  }
 
-    &:hover {
-      color: $mediumTextColor;
-    }
+  &:hover {
+    color: $mediumTextColor;
   }
 }
 

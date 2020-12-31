@@ -1,0 +1,187 @@
+  dateModified:
+-   1607544575
++   1607544576
+  email:
+    fromEmail:
+-     admin@happylager.dev
++     admin@happylager.test
+    fromName:
+      Happylager
+    template:
+...
+    transportType:
+      craft\mail\transportadapters\Sendmail
+  entryTypes:
++   01416786-fb23-483e-9b86-d70279bf18a9:
++     fieldLayouts:
++       b3e92e12-b415-4a53-b67e-ade9f5fdf5dc:
++         tabs:
++           -
++             elements:
++               -
++                 autocapitalize: true
++                 autocomplete: false
++                 autocorrect: true
++                 autofocus: false
++                 class: null
++                 disabled: false
++                 id: null
++                 instructions: null
++                 label: null
++                 max: null
++                 min: null
++                 name: null
++                 orientation: null
++                 placeholder: null
++                 readonly: false
++                 requirable: false
++                 required: false
++                 size: null
++                 step: null
++                 tip: null
++                 title: null
++                 type: craft\fieldlayoutelements\EntryTitleField
++                 warning: null
++                 width: 100
++               -
++                 fieldUid: aef80333-1412-4130-bb84-ac3bdbbcbbe2
++                 instructions: null
++                 label: null
++                 required: '0'
++                 tip: null
++                 type: craft\fieldlayoutelements\CustomField
++                 warning: null
++                 width: 100
++               -
++                 fieldUid: 9bb293f8-c659-4035-b5d3-e30dbf8d1c5b
++                 instructions: null
++                 label: null
++                 required: '0'
++                 tip: null
++                 type: craft\fieldlayoutelements\CustomField
++                 warning: null
++                 width: 100
++               -
++                 fieldUid: 674e53a6-d62c-4322-ae09-349765f1ef17
++                 instructions: null
++                 label: null
++                 required: '0'
++                 tip: null
++                 type: craft\fieldlayoutelements\CustomField
++                 warning: null
++                 width: 100
++               -
++                 fieldUid: 82ac4aa6-3b63-4cb9-a1f6-6cb6a5210a2e
++                 instructions: null
++                 label: null
++                 required: '0'
++                 tip: null
++                 type: craft\fieldlayoutelements\CustomField
++                 warning: null
++                 width: 100
++               -
++                 fieldUid: a988d6b4-6983-48e6-b08e-8fd72e31e483
++                 instructions: null
++                 label: null
++                 required: '0'
++                 tip: null
++                 type: craft\fieldlayoutelements\CustomField
++                 warning: null
++                 width: 100
++             name: Content
++             sortOrder: 1
++           -
++             elements:
++               -
++                 fieldUid: 0cbb9736-a84b-4e83-803c-5077f56394a9
++                 instructions: null
++                 label: null
++                 required: '0'
++                 tip: null
++                 type: craft\fieldlayoutelements\CustomField
++                 warning: null
++                 width: 100
++               -
++                 fieldUid: 0305c984-3934-4c7a-9de9-b0162c5b0112
++                 instructions: null
++                 label: null
++                 required: '0'
++                 tip: null
++                 type: craft\fieldlayoutelements\CustomField
++                 warning: null
++                 width: 100
++               -
++                 fieldUid: cdcff4b0-ece0-4d03-8d9f-6ab5939c1bea
++                 instructions: null
++                 label: null
++                 required: '0'
++                 tip: null
++                 type: craft\fieldlayoutelements\CustomField
++                 warning: null
++                 width: 100
++             name: Design
++             sortOrder: 2
++     handle: work
++     hasTitleField: true
++     name: Work
++     section: b3a9eef3-9444-4995-84e2-6dc6b60aebd2
++     sortOrder: 0
++     titleFormat: null
++     titleTranslationKeyFormat: null
++     titleTranslationMethod: site
+    1f72a359-0ce9-4415-82dc-88dc833073c3:
+      fieldLayouts:
+        31a1e163-6326-436a-9feb-53b372c086e3:
+...
+    8b4aae04-76ef-48c2-a294-e81064a470ed:
+      name:
+        Services
+-   d58a1faa-0bf6-46b2-b880-b0c14bebca75:
+-     name: Homepage
+    f00e1793-0757-46e5-99e9-016b21359ac7:
+      name:
+        Work
+...
+      contentColumnType:
+        string
+      fieldGroup:
+-       d58a1faa-0bf6-46b2-b880-b0c14bebca75
++       f00e1793-0757-46e5-99e9-016b21359ac7
+      handle:
+        testimonials
+      instructions:
+...
+        null
+      width:
+        280
++   36f99c8f-0ba4-4e4c-af7d-a07dee715ac1:
++     format: null
++     handle: medium
++     height: 424
++     interlace: none
++     mode: crop
++     name: Medium
++     position: center-center
++     quality: null
++     width: 700
++   726664b6-90aa-4fa9-9d03-23be4ba628bc:
++     format: null
++     handle: small
++     height: 339
++     interlace: none
++     mode: crop
++     name: Small
++     position: center-center
++     quality: null
++     width: 400
+  matrixBlockTypes:
+    070be8db-f9b0-4605-98ae-e9b54b1af3f6:
+      field:
+...
+      handle:
+        companyLogos
+      hasUrls:
+-       true
++       false
+      name:
+        'Company Logos'

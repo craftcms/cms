@@ -374,7 +374,7 @@ export default {
         return new Promise((resolve, reject) => {
             const params = this._getPluginIndexParams(pluginIndexParams)
             params.searchQuery = searchQuery
-            
+
             Craft.sendApiRequest('GET', 'plugin-store/plugins', {
                     cancelToken: cancelTokenSource.token,
                     params,

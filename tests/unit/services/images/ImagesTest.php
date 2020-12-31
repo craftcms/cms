@@ -47,15 +47,14 @@ class ImagesTest extends Unit
     protected $sandboxPath;
 
     /**
-     * @dataProvider memoryForImageDataProvider
+     * @dataProvider checkMemoryForImageDataProvider
      *
-     * @param $result
-     * @param $filePath
+     * @param bool $expected
+     * @param string $filePath
      */
-    public function testCheckMemoryForImage($result, $filePath)
+    public function testCheckMemoryForImage(bool $expected, string $filePath)
     {
-        $memory = $this->images->checkMemoryForImage($this->path . $filePath, false);
-        self::assertSame($memory, $result);
+        self::assertSame($expected, $this->images->checkMemoryForImage($this->path . $filePath));
     }
 
     /**
@@ -176,7 +175,7 @@ class ImagesTest extends Unit
      * @return array
      * @todo Can we get this to fail?
      */
-    public function memoryForImageDataProvider(): array
+    public function checkMemoryForImageDataProvider(): array
     {
         return [
             [true, 'craft-logo.svg'],

@@ -1,223 +1,193 @@
 (function($) {
     /** global: Craft */
     /** global: Garnish */
-    var LoginForm = Garnish.Base.extend(
-        {
-            $form: null,
-            $loginNameInput: null,
-            $passwordFields: null,
-            $passwordField: null,
-            $passwordInput: null,
-            $forgotPasswordLink: null,
-            $rememberMeCheckbox: null,
-            $sslIcon: null,
-            $submitBtn: null,
-            $spinner: null,
-            $error: null,
+    var LoginForm = Garnish.Base.extend({
+        $form: null,
+        $loginNameInput: null,
+        $passwordInput: null,
+        $rememberMeCheckbox: null,
+        $forgotPasswordLink: null,
+        $rememberPasswordLink: null,
+        $submitBtn: null,
+        $spinner: null,
+        $errors: null,
 
-            passwordInputInterval: null,
-            forgotPassword: false,
-            loading: false,
+        forgotPassword: false,
+        validateOnInput: false,
 
-            init: function() {
-                this.$form = $('#login-form');
-                this.$loginNameInput = $('#loginName');
-                this.$passwordFields = $('#password-fields');
-                this.$passwordField = $('#password-field');
-                this.$passwordInput = $('#password');
-                this.$forgotPasswordLink = $('#forgot-password');
-                this.$sslIcon = $('#ssl-icon');
-                this.$submitBtn = $('#submit');
-                this.$spinner = $('#spinner');
-                this.$rememberMeCheckbox = $('#rememberMe');
+        init: function() {
+            this.$form = $('#login-form');
+            this.$loginNameInput = $('#loginName');
+            this.$passwordInput = $('#password');
+            this.$rememberMeCheckbox = $('#rememberMe');
+            this.$forgotPasswordLink = $('#forgot-password');
+            this.$rememberPasswordLink = $('#remember-password');
+            this.$submitBtn = $('#submit');
+            this.$spinner = $('#spinner');
+            this.$errors = $('#login-errors');
 
-                new Craft.PasswordInput(this.$passwordInput, {
-                    onToggleInput: $.proxy(function($newPasswordInput) {
-                        this.removeListener(this.$passwordInput, 'input');
-                        this.$passwordInput = $newPasswordInput;
-                        this.addListener(this.$passwordInput, 'input', 'validate');
-                    }, this)
-                });
+            new Craft.PasswordInput(this.$passwordInput, {
+                onToggleInput: $.proxy(function($newPasswordInput) {
+                    this.removeListener(this.$passwordInput, 'input');
+                    this.$passwordInput = $newPasswordInput;
+                    this.addListener(this.$passwordInput, 'input', 'onInput');
+                }, this)
+            });
 
-                this.addListener(this.$loginNameInput, 'input', 'validate');
-                this.addListener(this.$passwordInput, 'input', 'validate');
-                this.addListener(this.$forgotPasswordLink, 'click', 'onForgetPassword');
-                this.addListener(this.$form, 'submit', 'onSubmit');
+            this.addListener(this.$loginNameInput, 'input', 'onInput')
+            this.addListener(this.$passwordInput, 'input', 'onInput');
+            this.addListener(this.$forgotPasswordLink, 'click', 'onSwitchForm');
+            this.addListener(this.$rememberPasswordLink, 'click', 'onSwitchForm');
+            this.addListener(this.$form, 'submit', 'onSubmit');
+        },
 
-                // Super hacky!
-                this.addListener(this.$sslIcon, 'mouseover', function() {
-                    if (this.$sslIcon.hasClass('disabled')) {
-                        return;
-                    }
+        validate: function() {
+            const loginNameVal = this.$loginNameInput.val();
+            if (loginNameVal.length === 0) {
+                if (window.useEmailAsUsername) {
+                    return Craft.t('app', 'Invalid email.');
+                }
+                return Craft.t('app', 'Invalid username or email.');
+            }
 
-                    this.$submitBtn.addClass('hover');
-                });
-                this.addListener(this.$sslIcon, 'mouseout', function() {
-                    if (this.$sslIcon.hasClass('disabled')) {
-                        return;
-                    }
+            if (window.useEmailAsUsername && !loginNameVal.match('.+@.+\..+')) {
+                return Craft.t('app', 'Invalid email.');
+            }
 
-                    this.$submitBtn.removeClass('hover');
-                });
-                this.addListener(this.$sslIcon, 'mousedown', function() {
-                    if (this.$sslIcon.hasClass('disabled')) {
-                        return;
-                    }
-
-                    this.$submitBtn.addClass('active');
-
-                    this.addListener(Garnish.$doc, 'mouseup', function() {
-                        this.$submitBtn.removeClass('active');
-                        this.removeListener(Garnish.$doc, 'mouseup');
+            if (!this.forgotPassword) {
+                const passwordLength = this.$passwordInput.val().length;
+                if (passwordLength < window.minPasswordLength) {
+                    return Craft.t('yii', '{attribute} should contain at least {min, number} {min, plural, one{character} other{characters}}.', {
+                        attribute: Craft.t('app', 'Password'),
+                        min: window.minPasswordLength,
                     });
-                });
-
-                // Manually validate the inputs every 250ms since some browsers don't fire events when autofill is used
-                // http://stackoverflow.com/questions/11708092/detecting-browser-autofill
-                this.passwordInputInterval = setInterval($.proxy(this, 'validate'), 250);
-
-                this.addListener(this.$sslIcon, 'click', function() {
-                    this.$submitBtn.trigger('click');
-                });
-            },
-
-            validate: function() {
-                if (this.$loginNameInput.val() && (this.forgotPassword || this.$passwordInput.val().length >= 6)) {
-                    this.$sslIcon.enable();
-                    this.$submitBtn.enable();
-                    return true;
                 }
-                else {
-                    this.$sslIcon.disable();
-                    this.$submitBtn.disable();
-                    return false;
+                if (passwordLength > window.maxPasswordLength) {
+                    return Craft.t('yii', '{attribute} should contain at most {max, number} {max, plural, one{character} other{characters}}.', {
+                        attribute: Craft.t('app', 'Password'),
+                        max: window.maxPasswordLength,
+                    });
                 }
-            },
+            }
 
-            onSubmit: function(event) {
-                // Prevent full HTTP submits
-                event.preventDefault();
+            return true;
+        },
 
-                if (!this.validate()) {
-                    return;
-                }
+        onInput: function(event) {
+            if (this.validateOnInput && this.validate() === true) {
+                this.clearErrors();
+            }
+        },
 
-                this.$submitBtn.addClass('active');
-                this.$spinner.removeClass('hidden');
-                this.loading = true;
+        onSubmit: function(event) {
+            // Prevent full HTTP submits
+            event.preventDefault();
 
-                if (this.$error) {
-                    this.$error.remove();
-                }
+            const error = this.validate();
+            if (error !== true) {
+                this.showError(error);
+                this.validateOnInput = true;
+                return;
+            }
 
-                if (this.forgotPassword) {
-                    this.submitForgotPassword();
-                }
-                else {
-                    this.submitLogin();
-                }
-            },
+            this.$submitBtn.addClass('active');
+            this.$spinner.removeClass('hidden');
 
-            submitForgotPassword: function() {
-                var data = {
-                    loginName: this.$loginNameInput.val()
-                };
+            this.clearErrors();
 
-                Craft.postActionRequest('users/send-password-reset-email', data, $.proxy(function(response, textStatus) {
-                    if (textStatus === 'success') {
-                        if (response.success) {
-                            new MessageSentModal();
-                        }
-                        else {
-                            this.showError(response.error);
-                        }
+            if (this.forgotPassword) {
+                this.submitForgotPassword();
+            } else {
+                this.submitLogin();
+            }
+        },
+
+        submitForgotPassword: function() {
+            var data = {
+                loginName: this.$loginNameInput.val()
+            };
+
+            Craft.postActionRequest('users/send-password-reset-email', data, $.proxy(function(response, textStatus) {
+                if (textStatus === 'success') {
+                    if (response.success) {
+                        new MessageSentModal();
+                    } else {
+                        this.showError(response.error);
                     }
+                }
 
-                    this.onSubmitResponse();
-                }, this));
-            },
+                this.onSubmitResponse();
+            }, this));
+        },
 
-            submitLogin: function() {
-                var data = {
-                    loginName: this.$loginNameInput.val(),
-                    password: this.$passwordInput.val(),
-                    rememberMe: (this.$rememberMeCheckbox.prop('checked') ? 'y' : '')
-                };
+        submitLogin: function() {
+            var data = {
+                loginName: this.$loginNameInput.val(),
+                password: this.$passwordInput.val(),
+                rememberMe: (this.$rememberMeCheckbox.prop('checked') ? 'y' : '')
+            };
 
-                Craft.postActionRequest('users/login', data, $.proxy(function(response, textStatus) {
-                    if (textStatus === 'success') {
-                        if (response.success) {
-                            window.location.href = response.returnUrl;
-                        }
-                        else {
-                            Garnish.shake(this.$form);
-                            this.onSubmitResponse();
-
-                            // Add the error message
-                            this.showError(response.error);
-                        }
-                    }
-                    else {
+            Craft.postActionRequest('users/login', data, $.proxy(function(response, textStatus) {
+                if (textStatus === 'success') {
+                    if (response.success) {
+                        window.location.href = response.returnUrl;
+                    } else {
+                        Garnish.shake(this.$form);
                         this.onSubmitResponse();
+
+                        // Add the error message
+                        this.showError(response.error);
                     }
-                }, this));
-
-                return false;
-            },
-
-            onSubmitResponse: function() {
-                this.$submitBtn.removeClass('active');
-                this.$spinner.addClass('hidden');
-                this.loading = false;
-            },
-
-            showError: function(error) {
-                if (!error) {
-                    error = Craft.t('app', 'A server error occurred.');
+                } else {
+                    this.onSubmitResponse();
                 }
+            }, this));
 
-                this.$error = $('<p class="error" style="display:none">' + error + '</p>').insertAfter($('.buttons', this.$form));
-                this.$error.velocity('fadeIn');
-            },
+            return false;
+        },
 
-            onForgetPassword: function(event) {
-                event.preventDefault();
+        onSubmitResponse: function() {
+            this.$submitBtn.removeClass('active');
+            this.$spinner.addClass('hidden');
+        },
 
-                if (!Garnish.isMobileBrowser()) {
-                    this.$loginNameInput.trigger('focus');
-                }
+        showError: function(error) {
+            this.clearErrors();
 
-                if (this.$error) {
-                    this.$error.remove();
-                }
+            $('<p style="display: none;">' + error + '</p>')
+                .appendTo(this.$errors)
+                .velocity('fadeIn');
+        },
 
-                this.$form.addClass('reset-password');
-                this.$passwordField.remove();
-                this.$passwordFields.remove();
-                this.$submitBtn.addClass('reset-password');
-                this.$submitBtn.attr('value', Craft.t('app', 'Reset Password'));
-                this.$submitBtn.enable();
-                this.$sslIcon.remove();
+        clearErrors: function() {
+            this.$errors.empty();
+        },
 
-                this.forgotPassword = true;
-                this.validate();
+        onSwitchForm: function(event) {
+            if (!Garnish.isMobileBrowser()) {
+                this.$loginNameInput.trigger('focus');
             }
-        });
 
+            this.clearErrors();
 
-    var MessageSentModal = Garnish.Modal.extend(
-        {
-            init: function() {
-                var $container = $('<div class="modal fitted email-sent"><div class="body">' + Craft.t('app', 'Check your email for instructions to reset your password.') + '</div></div>')
-                    .appendTo(Garnish.$bod);
+            this.forgotPassword = !this.forgotPassword;
 
-                this.base($container);
-            },
+            this.$form.toggleClass('reset-password', this.forgotPassword);
+            this.$submitBtn.text(Craft.t('app', this.forgotPassword ? 'Reset Password' : 'Login'));
+        },
+    });
 
-            hide: function() {
-            }
-        });
+    var MessageSentModal = Garnish.Modal.extend({
+        init: function() {
+            var $container = $('<div class="modal fitted email-sent"><div class="body">' + Craft.t('app', 'Check your email for instructions to reset your password.') + '</div></div>')
+                .appendTo(Garnish.$bod);
 
+            this.base($container);
+        },
+
+        hide: function() {
+        }
+    });
 
     new LoginForm();
 })(jQuery);

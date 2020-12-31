@@ -7,7 +7,6 @@
 
 namespace craft\gql\handlers;
 
-
 use Craft;
 use craft\elements\Tag;
 use craft\gql\base\RelationArgumentHandler;

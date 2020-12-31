@@ -67,7 +67,7 @@
                             </th>
                             <td data-title="{{ 'Handle'|t('app') }}"><code>{{ site.handle }}</code></td>
                             <td data-title="{{ 'Language'|t('app') }}"><code>{{ site.language }}</code></td>
-                            <td data-title="{{ 'Primary'|t('app') }}">{% if site.primary %}<div data-icon="check"></div>{% endif %}</td>
+                            <td data-title="{{ 'Primary'|t('app') }}">{% if site.primary %}<div data-icon="check" aria-label="{{ 'Yes'|t('app') }}"></div>{% endif %}</td>
                             <td data-title="{{ 'Base URL'|t('app') }}"><code>{{ site.baseUrl }}</code></td>
                             {% if not group %}
                                 <td data-title="{{ 'Group'|t('app') }}">{{ site.group.name|t('site') }}</td>

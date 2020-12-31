@@ -27,20 +27,19 @@ class ResponseTest extends Unit
     /**
      * @dataProvider getContentTypeDataProvider
      *
-     * @param $result
-     * @param $format
-     * @param null $header
+     * @param string|null $expected
+     * @param string $format
+     * @param string|null $contentType
      */
-    public function testGetContentType($result, $format, $header = null)
+    public function testGetContentType(?string $expected, ?string $format = null, ?string $contentType = null)
     {
-        $this->response->format = $format;
+        $this->response->format = $format ?? Response::FORMAT_RAW;
 
-        if ($header !== null) {
-            $this->response->headers->set('content-type', $header);
+        if ($contentType !== null) {
+            $this->response->getHeaders()->set('content-type', $contentType);
         }
 
-        $type = $this->response->getContentType();
-        self::assertSame($result, $type);
+        self::assertSame($expected, $this->response->getContentType());
     }
 
     /**

@@ -11,6 +11,7 @@ use ArrayObject;
 use Codeception\Test\Unit;
 use Craft;
 use craft\elements\User;
+use craft\test\TestSetup;
 use craft\web\View;
 use crafttests\fixtures\GlobalSetFixture;
 use Twig\Error\LoaderError;
@@ -121,7 +122,7 @@ class ExtensionTest extends Unit
         Craft::$app->getProjectConfig()->set('system.name', 'Im a test system');
         $this->extensionRenderTest(
             '{{ systemName }} | {{ currentSite.handle }} {{ currentSite }} {{ siteUrl }}',
-            'Im a test system | default Craft test site https://test.craftcms.test/index.php/'
+            'Im a test system | default Craft test site ' . TestSetup::SITE_URL
         );
     }
 
@@ -144,7 +145,7 @@ class ExtensionTest extends Unit
      * @throws LoaderError
      * @throws SyntaxError
      */
-    public function testCsrfInput()
+    public function testCsrfInputFunction()
     {
         Craft::$app->getConfig()->getGeneral()->enableCsrfProtection = true;
         $this->extensionRenderTest(
@@ -166,7 +167,7 @@ class ExtensionTest extends Unit
      * @throws Exception
      * @throws InvalidConfigException
      */
-    public function testRedirectInput()
+    public function testRedirectInputFunction()
     {
         $this->extensionRenderTest(
             '{{ redirectInput("A URL") }}',
@@ -183,7 +184,7 @@ class ExtensionTest extends Unit
      * @throws LoaderError
      * @throws SyntaxError
      */
-    public function testActionInput()
+    public function testActionInputFunction()
     {
         $this->extensionRenderTest(
             '{{ actionInput("A URL") }}',
@@ -200,7 +201,7 @@ class ExtensionTest extends Unit
      * @throws LoaderError
      * @throws SyntaxError
      */
-    public function testRenderObjectTemplate()
+    public function testRenderObjectTemplateFunction()
     {
         // This is some next level inception stuff IMO.....
         $this->extensionRenderTest(
@@ -221,7 +222,7 @@ class ExtensionTest extends Unit
      * @throws LoaderError
      * @throws SyntaxError
      */
-    public function testGetEnv()
+    public function testGetenvFunction()
     {
         $this->extensionRenderTest(
             '{{ getenv("FROM_EMAIL_NAME") }} | {{ getenv("FROM_EMAIL_ADDRESS") }}',
@@ -233,7 +234,7 @@ class ExtensionTest extends Unit
      * @throws LoaderError
      * @throws SyntaxError
      */
-    public function testEnvParsing()
+    public function testParseEnvFunction()
     {
         $this->extensionRenderTest(
             '{{ parseEnv("$FROM_EMAIL_NAME") }}',
@@ -250,7 +251,7 @@ class ExtensionTest extends Unit
      * @throws LoaderError
      * @throws SyntaxError
      */
-    public function testIndexOf()
+    public function testIndexOfFilter()
     {
         $arrayObject = new ArrayObject(['John', 'Smith']);
 
@@ -275,12 +276,44 @@ class ExtensionTest extends Unit
      * @throws LoaderError
      * @throws SyntaxError
      */
-    public function testShuffle()
+    public function testShuffleFunction()
     {
         // 1 means true (string version of bool)
         $this->extensionRenderTest(
             '{% set a = [0,1,2,3,4,5,6,7,8,9,"a","b","c","d","e","f"] %}{{ a != shuffle(a) or a != shuffle(a) }}',
             '1'
+        );
+    }
+
+    /**
+     * @throws LoaderError
+     * @throws SyntaxError
+     */
+    public function testWithoutFilter()
+    {
+        $this->extensionRenderTest(
+            '{{ ["foo","bar","baz"]|without("baz")|join(",") }}',
+            'foo,bar'
+        );
+        $this->extensionRenderTest(
+            '{{ ["foo","bar","baz"]|without(["bar","baz"])|join(",") }}',
+            'foo'
+        );
+    }
+
+    /**
+     * @throws LoaderError
+     * @throws SyntaxError
+     */
+    public function testWithoutKeyFilter()
+    {
+        $this->extensionRenderTest(
+            '{{ {a:"foo",b:"bar",c:"baz"}|withoutKey("c")|join(",") }}',
+            'foo,bar'
+        );
+        $this->extensionRenderTest(
+            '{{ {a:"foo",b:"bar",c:"baz"}|withoutKey(["b","c"])|join(",") }}',
+            'foo'
         );
     }
 

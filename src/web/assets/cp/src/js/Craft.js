@@ -4,10 +4,9 @@
 // Use old jQuery prefilter behavior
 // see https://jquery.com/upgrade-guide/3.5/
 var rxhtmlTag = /<(?!area|br|col|embed|hr|img|input|link|meta|param)(([a-z][^\/\0>\x20\t\r\n\f]*)[^>]*)\/>/gi;
-jQuery.htmlPrefilter = function( html ) {
-    return html.replace( rxhtmlTag, "<$1></$2>" );
+jQuery.htmlPrefilter = function(html) {
+    return html.replace(rxhtmlTag, "<$1></$2>");
 };
-
 
 // Set all the standard Craft.* stuff
 $.extend(Craft,
@@ -1213,7 +1212,7 @@ $.extend(Craft,
             if ($.isPlainObject(arr)) {
                 arr = Object.values(arr);
             }
-            return ($.inArray(elem, arr) !== -1);
+            return arr.includes(elem);
         },
 
         /**
@@ -1823,7 +1822,6 @@ $.extend(Craft,
         },
     });
 
-
 // -------------------------------------------
 //  Custom jQuery plugins
 // -------------------------------------------
@@ -2052,6 +2050,7 @@ $.extend($.fn,
                                 type: 'button',
                                 class: 'clear-btn',
                                 title: Craft.t('app', 'Clear'),
+                                'aria-label': Craft.t('app', 'Clear'),
                             })
                                 .appendTo($wrapper)
                                 .on('click', () => {
@@ -2059,6 +2058,7 @@ $.extend($.fn,
                                         $inputs.eq(i).val('');
                                     }
                                     $btn.remove();
+                                    $inputs.first().focus();
                                 })
                         }
                     } else {
@@ -2070,7 +2070,6 @@ $.extend($.fn,
             });
         },
     });
-
 
 Garnish.$doc.ready(function() {
     Craft.initUiElements();

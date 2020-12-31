@@ -77,7 +77,7 @@ class Craft extends Yii2
     protected $addedConfig = [
         'migrations' => [],
         'plugins' => [],
-        'setupDb' => null,
+        'dbSetup' => null,
         'projectConfig' => null,
         'fullMock' => false,
         'edition' => \Craft::Solo
@@ -160,7 +160,9 @@ class Craft extends Yii2
             return;
         }
 
-        $this->resetProjectConfig();
+        if ($this->_getConfig('dbSetup')['setupCraft']) {
+            $this->resetProjectConfig();
+        }
     }
 
     /**

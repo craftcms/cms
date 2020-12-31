@@ -26,24 +26,23 @@ class SearchHelperTest extends Unit
     protected $tester;
 
     /**
-     * @dataProvider keywordNormalizationDataProviders
+     * @dataProvider normalizeKeywordsDataProviders
      *
-     * @param       $result
-     * @param       $keyword
+     * @param string $expected
+     * @param string|string[] $str
      * @param array $ignore
-     * @param bool $processMap
-     * @param null $language
+     * @param bool $processCharMap
+     * @param string|null $language
      */
-    public function testKeywordNormalization($result, $keyword, $ignore = [], $processMap = true, $language = null)
+    public function testNormalizeKeywords(string $expected, $str, array $ignore = [], bool $processCharMap = true, ?string $language = null)
     {
-        $keyword = Search::normalizeKeywords($keyword, $ignore, $processMap, $language);
-        self::assertSame($result, $keyword);
+        self::assertSame($expected, Search::normalizeKeywords($str, $ignore, $processCharMap, $language));
     }
 
     /**
      * @return array
      */
-    public function keywordNormalizationDataProviders(): array
+    public function normalizeKeywordsDataProviders(): array
     {
         return [
             ['test', 'test'],

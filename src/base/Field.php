@@ -19,6 +19,7 @@ use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
+use craft\models\GqlSchema;
 use craft\records\Field as FieldRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
@@ -554,6 +555,14 @@ abstract class Field extends SavableComponent implements FieldInterface
     public function getGroup()
     {
         return Craft::$app->getFields()->getGroupById($this->groupId);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function includeInGqlSchema(GqlSchema $schema): bool
+    {
+        return true;
     }
 
     /**

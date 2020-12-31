@@ -1,4 +1,4 @@
-import {buildClientSchema, getIntrospectionQuery, parse} from 'graphql';
+import {buildClientSchema, getIntrospectionQuery} from 'graphql';
 import React from 'react';
 import GraphiQL from 'graphiql';
 import GraphiQLExplorer from 'graphiql-explorer';
@@ -83,7 +83,7 @@ class Item extends React.Component {
 
 class SchemaSelector extends React.Component {
     render() {
-        let e =  elem(GraphiQL.Menu, {
+        let e = elem(GraphiQL.Menu, {
             className: 'menu',
             label: this.props.selectedSchema.name,
             title: "Select a GraphQL schema"

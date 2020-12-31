@@ -220,7 +220,7 @@ class UrlHelper
      * By default (null) it will defer to the `omitScriptNameInUrls` config setting.
      * @return string
      */
-    public static function url(string $path = '', $params = null, string $scheme = null, bool $showScriptName = null): string
+    public static function url(string $path = '', $params = null, ?string $scheme = null, ?bool $showScriptName = null): string
     {
         // Return $path if it appears to be an absolute URL.
         if (static::isFullUrl($path)) {
@@ -262,7 +262,7 @@ class UrlHelper
      * @param string|null $scheme
      * @return string
      */
-    public static function cpUrl(string $path = '', $params = null, string $scheme = null): string
+    public static function cpUrl(string $path = '', $params = null, ?string $scheme = null): string
     {
         // If this is already an absolute or root-relative URL, don't change it
         if (static::isAbsoluteUrl($path) || static::isRootRelativeUrl($path)) {
@@ -285,7 +285,7 @@ class UrlHelper
      * @return string
      * @throws Exception if|null $siteId is invalid
      */
-    public static function siteUrl(string $path = '', $params = null, string $scheme = null, int $siteId = null): string
+    public static function siteUrl(string $path = '', $params = null, ?string $scheme = null, ?int $siteId = null): string
     {
         // Return $path if it appears to be an absolute URL.
         if (static::isAbsoluteUrl($path) || static::isProtocolRelativeUrl($path)) {
@@ -335,7 +335,7 @@ class UrlHelper
      * request will be used.
      * @return string
      */
-    public static function actionUrl(string $path = '', $params = null, string $scheme = null): string
+    public static function actionUrl(string $path = '', $params = null, ?string $scheme = null): string
     {
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         $path = $generalConfig->actionTrigger . '/' . trim($path, '/');
@@ -594,7 +594,7 @@ class UrlHelper
      * @param bool|null $addToken
      * @return string
      */
-    private static function _createUrl(string $path, $params, string $scheme = null, bool $cpUrl, bool $showScriptName = null, bool $addToken = null): string
+    private static function _createUrl(string $path, $params, ?string $scheme = null, bool $cpUrl, ?bool $showScriptName = null, ?bool $addToken = null): string
     {
         // Extract any params/fragment from the path
         [$path, $baseParams, $baseFragment] = self::_extractParams($path);
@@ -609,14 +609,13 @@ class UrlHelper
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         $request = Craft::$app->getRequest();
 
-        // If this is a site URL and there was a token on the request, pass it along
+        // If this is a site URL and there was a (site) token on the request, pass it along
         if (!$cpUrl && $addToken !== false) {
-            $tokenParam = $generalConfig->tokenParam;
-            if (
-                !isset($params[$tokenParam]) &&
-                ($token = $request->getToken()) !== null
-            ) {
-                $params[$tokenParam] = $token;
+            if (!isset($params[$generalConfig->tokenParam]) && ($token = $request->getToken()) !== null) {
+                $params[$generalConfig->tokenParam] = $token;
+            }
+            if (!isset($params[$generalConfig->siteToken]) && ($siteToken = $request->getSiteToken()) !== null) {
+                $params[$generalConfig->siteToken] = $siteToken;
             }
         }
 

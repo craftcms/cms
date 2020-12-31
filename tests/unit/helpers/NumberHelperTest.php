@@ -29,73 +29,67 @@ class NumberHelperTest extends Unit
     /**
      * @dataProvider wordDataProvider
      *
-     * @param $result
-     * @param $input
+     * @param string $expected
+     * @param int $num
      */
-    public function testWord($result, $input)
+    public function testWord(string $expected, int $num)
     {
-        $word = Number::word($input);
-        self::assertSame($result, $word);
+        self::assertSame($expected, Number::word($num));
     }
 
     /**
      * @dataProvider upperAlphaDataProvider
      *
-     * @param $result
-     * @param $input
+     * @param string $expected
+     * @param int $num
      */
-    public function testUpperAlpha($result, $input)
+    public function testUpperAlpha(string $expected, int $num)
     {
-        $upperAlpha = Number::upperAlpha($input);
-        self::assertSame($result, $upperAlpha);
+        self::assertSame($expected, Number::upperAlpha($num));
     }
 
     /**
      * @dataProvider lowerAlphaDataProvider
      *
-     * @param $result
-     * @param $input
+     * @param string $expected
+     * @param int $num
      */
-    public function testLowerAlpha($result, $input)
+    public function testLowerAlpha(string $expected, int $num)
     {
-        $lowerAlpha = Number::lowerAlpha($input);
-        self::assertSame($result, $lowerAlpha);
+        self::assertSame($expected, Number::lowerAlpha($num));
     }
 
     /**
      * @dataProvider upperRomanDataProvider
      *
-     * @param $result
-     * @param $input
+     * @param string $expected
+     * @param int $num
      */
-    public function testUpperRoman($result, $input)
+    public function testUpperRoman(string $expected, int $num)
     {
-        $upperRoman = Number::upperRoman($input);
-        self::assertSame($result, $upperRoman);
+        self::assertSame($expected, Number::upperRoman($num));
     }
 
     /**
      * @dataProvider lowerRomanDataProvider
      *
-     * @param $result
-     * @param $input
+     * @param string $expected
+     * @param int $num
      */
-    public function testLowerRoman($result, $input)
+    public function testLowerRoman(string $expected, int $num)
     {
-        $lower = Number::lowerRoman($input);
-        self::assertSame($result, $lower);
+        self::assertSame($expected, Number::lowerRoman($num));
     }
 
     /**
      * @dataProvider makeNumericDataProvider
      *
-     * @param $result
-     * @param $input
+     * @param mixed $expected
+     * @param mixed $var
      */
-    public function testMakeNumeric($result, $input)
+    public function testMakeNumeric($expected, $var)
     {
-        $numeric = Number::makeNumeric($input);
-        self::assertSame($result, $numeric);
+        self::assertSame($expected, Number::makeNumeric($var));
     }
 
     /**
@@ -124,8 +118,6 @@ class NumberHelperTest extends Unit
         return [
             ['ii', 2],
             ['', 0],
-            ['mmmmmmmmmmmmmmmmmmmmmmcxxxii', 22132.22],
-            ['', (int)7283231231231231292139.793123123123211237913231],
             ['l', 50],
             ['mi', 1001]
         ];
@@ -139,8 +131,6 @@ class NumberHelperTest extends Unit
         return [
             ['II', 2],
             ['', 0],
-            ['MMMMMMMMMMMMMMMMMMMMMMCXXXII', 22132.22],
-            ['', (int)7283231231231231292139.793123123123211237913231],
             ['L', 50],
             ['MI', 1001]
         ];
@@ -172,8 +162,6 @@ class NumberHelperTest extends Unit
             ['', 0],
             ['BC', 55],
             ['FHIM', 111111],
-            ['AFSF', 22132.22],
-            ['', (int)7283231231231231292139.793123123123211237913231]
         ];
     }
 
@@ -189,8 +177,6 @@ class NumberHelperTest extends Unit
             ['', 0],
             ['bc', 55],
             ['fhim', 111111],
-            ['afsf', 22132.22],
-            ['', (int)7283231231231231292139.793123123123211237913231]
         ];
     }
 }

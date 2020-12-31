@@ -456,16 +456,23 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      */
     public function modifyElementsQuery(ElementQueryInterface $query, $value)
     {
-        if ($value === null) {
+        if (empty($value)) {
             return null;
         }
 
-        /** @var ElementQuery $query */
-        if ($value === 'not :empty:') {
-            $value = ':notempty:';
+        if (!is_array($value)) {
+            $value = [$value];
         }
 
-        if ($value === ':notempty:' || $value === ':empty:') {
+        /** @var ElementQuery $query */
+        $conditions = [];
+
+        if (isset($value[0]) && in_array($value[0], [':notempty:', ':empty:', 'not :empty:'])) {
+            $emptyCondition = array_shift($value);
+            if ($emptyCondition === 'not :empty:') {
+                $emptyCondition = ':notempty:';
+            }
+
             $ns = $this->handle . '_' . StringHelper::randomString(5);
             $condition = [
                 'exists', (new Query())
@@ -485,12 +492,14 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
                     ->andWhere(['not', ["elements_sites_$ns.enabled" => false]])
             ];
 
-            if ($value === ':notempty:') {
-                $query->subQuery->andWhere($condition);
+            if ($emptyCondition === ':notempty:') {
+                $conditions[] = $condition;
             } else {
-                $query->subQuery->andWhere(['not', $condition]);
+                $conditions[] = ['not', $condition];
             }
-        } else {
+        }
+
+        if (!empty($value)) {
             $parser = new ElementRelationParamParser([
                 'fields' => [
                     $this->handle => $this,
@@ -500,13 +509,17 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
                 'targetElement' => $value,
                 'field' => $this->handle,
             ]);
-
-            if ($condition === false) {
-                return false;
+            if ($condition !== false) {
+                $conditions[] = $condition;
             }
-
-            $query->subQuery->andWhere($condition);
         }
+
+        if (empty($conditions)) {
+            return false;
+        }
+
+        array_unshift($conditions, 'or');
+        $query->subQuery->andWhere($conditions);
 
         return null;
     }
@@ -815,39 +828,34 @@ JS;
         }
 
         return
-            $view->renderTemplateMacro('_includes/forms', 'checkboxField', [
-                [
-                    'label' => Craft::t('app', 'Relate {type} from a specific site?', ['type' => $pluralType]),
-                    'name' => 'useTargetSite',
-                    'checked' => $showTargetSite,
-                    'toggle' => 'target-site-field',
-                    'reverseToggle' => 'show-site-menu-field',
-                ]
+            Cp::checkboxFieldHtml([
+                'checkboxLabel' => Craft::t('app', 'Relate {type} from a specific site?', ['type' => $pluralType]),
+                'name' => 'useTargetSite',
+                'checked' => $showTargetSite,
+                'toggle' => 'target-site-field',
+                'reverseToggle' => 'show-site-menu-field',
             ]) .
-            $view->renderTemplateMacro('_includes/forms', 'selectField', [
-                [
-                    'fieldClass' => !$showTargetSite ? 'hidden' : null,
-                    'label' => Craft::t('app', 'Which site should {type} be related from?', ['type' => $pluralType]),
-                    'id' => 'target-site',
-                    'name' => 'targetSiteId',
-                    'options' => $siteOptions,
-                    'value' => $this->targetSiteId,
-                ]
+            Cp::selectFieldHtml([
+                'fieldClass' => !$showTargetSite ? ['hidden'] : null,
+                'label' => Craft::t('app', 'Which site should {type} be related from?', ['type' => $pluralType]),
+                'id' => 'target-site',
+                'name' => 'targetSiteId',
+                'options' => $siteOptions,
+                'value' => $this->targetSiteId,
             ]) .
-            $view->renderTemplateMacro('_includes/forms', 'checkboxField', [
-                [
-                    'fieldClass' => $showTargetSite ? 'hidden' : null,
-                    'label' => Craft::t('app', 'Show the site menu'),
-                    'instructions' => Craft::t('app', 'Whether the site menu should be shown for {type} selection modals.', [
-                        'type' => $type,
-                    ]),
-                    'warning' => Craft::t('app', 'Relations don’t store the selected site, so this should only be enabled if some {type} aren’t propagated to all sites.', [
-                        'type' => $pluralType,
-                    ]),
-                    'id' => 'show-site-menu',
-                    'name' => 'showSiteMenu',
-                    'checked' => $this->showSiteMenu,
-                ]
+            Cp::checkboxFieldHtml([
+                'fieldset' => true,
+                'fieldClass' => $showTargetSite ? ['hidden'] : null,
+                'checkboxLabel' => Craft::t('app', 'Show the site menu'),
+                'instructions' => Craft::t('app', 'Whether the site menu should be shown for {type} selection modals.', [
+                    'type' => $type,
+                ]),
+                'warning' => Craft::t('app', 'Relations don’t store the selected site, so this should only be enabled if some {type} aren’t propagated to all sites.', [
+                    'type' => $pluralType,
+                ]),
+                'id' => 'show-site-menu',
+                'name' => 'showSiteMenu',
+                'checked' => $this->showSiteMenu,
             ]);
     }
 
@@ -870,15 +878,13 @@ JS;
             $viewModeOptions[] = ['label' => $label, 'value' => $key];
         }
 
-        return Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'selectField', [
-            [
-                'label' => Craft::t('app', 'View Mode'),
-                'instructions' => Craft::t('app', 'Choose how the field should look for authors.'),
-                'id' => 'viewMode',
-                'name' => 'viewMode',
-                'options' => $viewModeOptions,
-                'value' => $this->viewMode
-            ]
+        return Cp::selectFieldHtml([
+            'label' => Craft::t('app', 'View Mode'),
+            'instructions' => Craft::t('app', 'Choose how the field should look for authors.'),
+            'id' => 'viewMode',
+            'name' => 'viewMode',
+            'options' => $viewModeOptions,
+            'value' => $this->viewMode,
         ]);
     }
 

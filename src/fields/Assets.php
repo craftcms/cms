@@ -28,6 +28,7 @@ use craft\helpers\ElementHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Gql;
 use craft\helpers\Html;
+use craft\models\GqlSchema;
 use craft\web\UploadedFile;
 use GraphQL\Type\Definition\Type;
 use yii\base\InvalidConfigException;
@@ -446,6 +447,14 @@ class Assets extends BaseRelationField
     public function resolveDynamicPathToFolderId(ElementInterface $element = null): int
     {
         return $this->_determineUploadFolderId($element, true);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function includeInGqlSchema(GqlSchema $schema): bool
+    {
+        return Gql::canQueryAssets($schema);
     }
 
     /**
