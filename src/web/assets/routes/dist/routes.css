@@ -28,7 +28,7 @@ body.ltr .route .uri-container { float: left; }
 
 body.rtl .route .uri-container { float: right; }
 
-.route .uri-container:after { display: block; content: '.'; text-indent: -100%; overflow: hidden; position: absolute; top: 0; width: 15px; height: 32px; background-repeat: no-repeat; }
+.route .uri-container:after { display: block; content: ''; text-indent: -100%; overflow: hidden; position: absolute; top: 0; width: 15px; height: 32px; background-repeat: no-repeat; }
 
 body.ltr .route .uri-container:after { right: -15px; }
 

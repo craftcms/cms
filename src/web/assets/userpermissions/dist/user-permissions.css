@@ -30,7 +30,7 @@ body.rtl .user-permissions h3, body.rtl .user-permissions .select-all { float: r
 
 .user-permissions ul { clear: both; }
 
-.user-permissions ul ul li:before { display: block; position: absolute; margin-top: 8px; content: '.'; font-size: 0; width: 10px; height: 0; border-top: 1px solid #eee; }
+.user-permissions ul ul li:before { display: block; position: absolute; margin-top: 8px; content: ''; font-size: 0; width: 10px; height: 0; border-top: 1px solid #eee; }
 
 body.ltr .user-permissions ul ul li:before { left: 20px; }
 

@@ -44,7 +44,7 @@ html.noscroll, html.noscroll body {
   margin-top: -4px;
   margin-left: -3px;
   display: inline-block;
-  content: ' ';
+  content: '';
 }
 
 .modal.imageeditor .icon.rotate-left::before {
@@ -281,7 +281,7 @@ html.noscroll, html.noscroll body {
         position: relative;
 
         &:after {
-          content: "";
+          content: '';
           display: block;
           position: absolute;
           right: -24px;
