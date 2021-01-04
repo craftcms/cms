@@ -291,7 +291,6 @@ body.dragging {
     width: calc(100% - 20px);
     height: 4px;
     content: '';
-    font-size: 0;
     background-color: $grey100;
     border-radius: 2px;
   }

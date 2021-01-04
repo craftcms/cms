@@ -1172,7 +1172,6 @@ ul.icons {
 .btn.icon.add.loading:after {
   position: absolute;
   content: '';
-  font-size: 0;
   display: block;
   width: 24px;
   height: 100%;
@@ -2253,7 +2252,6 @@ $elementInnerSpacing: 5px;
 
     &:after {
       content: '';
-      font-size: 0;
       position: absolute;
       bottom: 0;
       @include right(3px);
@@ -2278,7 +2276,6 @@ $checkboxPadding: $checkboxSize + 4;
     &:after {
       display: block;
       content: '';
-      font-size: 0;
       position: absolute;
       top: 0;
       left: -24px;
@@ -2714,7 +2711,6 @@ table.editable {
 
           &:after {
             content: '';
-            font-size: 0;
             position: absolute;
             top: 0;
             left: 0;
@@ -3073,7 +3069,6 @@ ul.tree,
     &:after {
       display: block;
       content: '';
-      font-size: 0;
       position: absolute;
       top: 0;
       left: -24px;
@@ -3558,7 +3553,6 @@ ul.tree,
   &.loading {
     &:after {
       content: '';
-      font-size: 0;
       display: block;
       position: absolute;
       width: 100%;
@@ -4384,7 +4378,6 @@ div.checkbox:empty {
 input.checkbox + label:empty:after,
 div.checkbox:empty:after {
   content: '';
-  font-size: 0;
 }
 
 /* fixes a RTL bug */
@@ -4398,7 +4391,6 @@ div.checkbox:before {
   height: $checkboxSize;
   box-sizing: border-box;;
   content: '';
-  font-size: 0;
   background-color: hsl(212, 50%, 99%);
   border: 1px solid transparentize($inputColor, 0.6);
   background-clip: padding-box;
@@ -5098,7 +5090,6 @@ ul.errors li {
         height: 100%;
         visibility: visible;
         content: '';
-        font-size: 0;
         border-radius: $smallBorderRadius;
         box-shadow: inset 0 1px 3px -1px darken($grey200, 10%);
         user-select: none;
