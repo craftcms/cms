@@ -116,16 +116,24 @@ class Craft extends Yii2
     public function _initialize()
     {
         parent::_initialize();
-
         self::$instance = $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function _beforeSuite($settings = []): void
+    {
+        parent::_beforeSuite($settings);
 
         if ($this->_getConfig('fullMock') !== true) {
             $this->setupDb();
         }
+
     }
 
     /**
-     * @throws YiiBaseErrorException
+     * @inheritdoc
      */
     public function _afterSuite()
     {
