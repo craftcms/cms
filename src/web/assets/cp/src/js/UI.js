@@ -266,7 +266,7 @@ Craft.ui =
 
             var $label = $('<label/>', {
                 'for': id,
-                text: config.label
+                html: config.label,
             });
 
             // Should we include a hidden input first?

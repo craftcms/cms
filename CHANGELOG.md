@@ -11,6 +11,7 @@
 - Fixed an error that could occur when saving elements with Matrix fields, if there were any custom fields whose handles conflicted with `craft\elements\db\ElementQuery` getter methods, such as `criteria`. ([#7335](https://github.com/craftcms/cms/issues/7335))
 - Fixed a bug where file uploading via mutations would not work for some file types. ([#7327](https://github.com/craftcms/cms/issues/7327))
 - Fixed a bug where Dropdown, Multi-select, and Number fields’ inputs weren’t getting `id` attributes that matched their labels’ `for` attributes. ([#7319](https://github.com/craftcms/cms/issues/7319))
+- Fixed a bug where the “All” checkbox label was getting HTML-encoded when using `Craft.ui.createCheckboxSelect()`.
 
 ## 3.5.17.1 - 2020-12-17
 
