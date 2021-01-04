@@ -924,7 +924,7 @@ h2 + .actions { margin-top: -54px; }
 /* ----------------------------------------
 /*  Tables
 /* ----------------------------------------*/
-.tablepane { margin: -24px -24px 0; overflow-x: auto; }
+.tablepane { margin: -24px; overflow-x: auto; }
 
 body.ltr .tablepane table th:first-child, body.ltr .tablepane table td:first-child { padding-left: 24px; }
 
@@ -934,7 +934,29 @@ body.ltr .tablepane table th:last-child, body.ltr .tablepane table td:last-child
 
 body.rtl .tablepane table th:last-child, body.rtl .tablepane table td:last-child { padding-left: 24px; }
 
-.tablepane table thead th, .tablepane table thead td { border-bottom-left-radius: 0 !important; border-bottom-right-radius: 0 !important; }
+body.ltr .tablepane table thead th, body.ltr .tablepane table thead td { border-bottom-left-radius: 0; }
+
+body.rtl .tablepane table thead th, body.rtl .tablepane table thead td { border-bottom-right-radius: 0; }
+
+body.ltr .tablepane table thead th, body.ltr .tablepane table thead td { border-bottom-right-radius: 0; }
+
+body.rtl .tablepane table thead th, body.rtl .tablepane table thead td { border-bottom-left-radius: 0; }
+
+body.ltr .tablepane table thead:first-child tr:first-child th:first-child, body.ltr .tablepane table thead:first-child tr:first-child td:first-child, body.ltr .tablepane table tbody:first-child tr:first-child th:first-child, body.ltr .tablepane table tbody:first-child tr:first-child td:first-child, body.ltr .tablepane table tfoot:first-child tr:first-child th:first-child, body.ltr .tablepane table tfoot:first-child tr:first-child td:first-child { border-top-left-radius: 5px; }
+
+body.rtl .tablepane table thead:first-child tr:first-child th:first-child, body.rtl .tablepane table thead:first-child tr:first-child td:first-child, body.rtl .tablepane table tbody:first-child tr:first-child th:first-child, body.rtl .tablepane table tbody:first-child tr:first-child td:first-child, body.rtl .tablepane table tfoot:first-child tr:first-child th:first-child, body.rtl .tablepane table tfoot:first-child tr:first-child td:first-child { border-top-right-radius: 5px; }
+
+body.ltr .tablepane table thead:first-child tr:first-child th:last-child, body.ltr .tablepane table thead:first-child tr:first-child td:last-child, body.ltr .tablepane table tbody:first-child tr:first-child th:last-child, body.ltr .tablepane table tbody:first-child tr:first-child td:last-child, body.ltr .tablepane table tfoot:first-child tr:first-child th:last-child, body.ltr .tablepane table tfoot:first-child tr:first-child td:last-child { border-top-right-radius: 5px; }
+
+body.rtl .tablepane table thead:first-child tr:first-child th:last-child, body.rtl .tablepane table thead:first-child tr:first-child td:last-child, body.rtl .tablepane table tbody:first-child tr:first-child th:last-child, body.rtl .tablepane table tbody:first-child tr:first-child td:last-child, body.rtl .tablepane table tfoot:first-child tr:first-child th:last-child, body.rtl .tablepane table tfoot:first-child tr:first-child td:last-child { border-top-left-radius: 5px; }
+
+body.ltr .tablepane table thead:last-child tr:last-child th:first-child, body.ltr .tablepane table thead:last-child tr:last-child td:first-child, body.ltr .tablepane table tbody:last-child tr:last-child th:first-child, body.ltr .tablepane table tbody:last-child tr:last-child td:first-child, body.ltr .tablepane table tfoot:last-child tr:last-child th:first-child, body.ltr .tablepane table tfoot:last-child tr:last-child td:first-child { border-bottom-left-radius: 5px; }
+
+body.rtl .tablepane table thead:last-child tr:last-child th:first-child, body.rtl .tablepane table thead:last-child tr:last-child td:first-child, body.rtl .tablepane table tbody:last-child tr:last-child th:first-child, body.rtl .tablepane table tbody:last-child tr:last-child td:first-child, body.rtl .tablepane table tfoot:last-child tr:last-child th:first-child, body.rtl .tablepane table tfoot:last-child tr:last-child td:first-child { border-bottom-right-radius: 5px; }
+
+body.ltr .tablepane table thead:last-child tr:last-child th:last-child, body.ltr .tablepane table thead:last-child tr:last-child td:last-child, body.ltr .tablepane table tbody:last-child tr:last-child th:last-child, body.ltr .tablepane table tbody:last-child tr:last-child td:last-child, body.ltr .tablepane table tfoot:last-child tr:last-child th:last-child, body.ltr .tablepane table tfoot:last-child tr:last-child td:last-child { border-bottom-right-radius: 5px; }
+
+body.rtl .tablepane table thead:last-child tr:last-child th:last-child, body.rtl .tablepane table thead:last-child tr:last-child td:last-child, body.rtl .tablepane table tbody:last-child tr:last-child th:last-child, body.rtl .tablepane table tbody:last-child tr:last-child td:last-child, body.rtl .tablepane table tfoot:last-child tr:last-child th:last-child, body.rtl .tablepane table tfoot:last-child tr:last-child td:last-child { border-bottom-left-radius: 5px; }
 
 table.fixed-layout { table-layout: fixed; }
 
@@ -1014,13 +1036,15 @@ table.data tbody tr:not(.disabled):hover th, table.data tbody tr:not(.disabled):
 
 table.data tbody tr:not(.disabled).sel th, table.data tbody tr:not(.disabled).sel td { background-color: #cdd8e4; }
 
-table.data tbody th, table.data tbody td { border-top: 1px solid transparent; padding-top: 7px; padding-bottom: 7px; background-clip: padding-box; }
+table.data tbody th, table.data tbody td { padding-top: 7px; padding-bottom: 7px; background-clip: padding-box; }
 
 table.data tbody td.timestamp { vertical-align: bottom; white-space: nowrap; color: #606d7b; }
 
 body.ltr table.data tbody td.timestamp { text-align: right; }
 
 body.rtl table.data tbody td.timestamp { text-align: left; }
+
+table.data thead + tbody tr th, table.data thead + tbody tr td, table.data tr + tr th, table.data tr + tr td { border-top: 1px solid transparent; }
 
 table.collapsed { width: auto; }
 
@@ -3168,7 +3192,7 @@ body.rtl .content-pane.square { border-top-right-radius: 0; }
 
 .content-pane > hr { margin-left: -24px; margin-right: -24px; }
 
-#footer { z-index: 1; margin: 24px -24px -24px; padding: 10px 24px; background-color: #f3f7fc; border-radius: 0 0 5px 5px; }
+#footer { z-index: 1; margin: 25px -24px -24px; padding: 10px 24px; background-color: #f3f7fc; border-radius: 0 0 5px 5px; }
 
 #footer:empty { display: none; }
 
