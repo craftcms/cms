@@ -207,6 +207,7 @@ abstract class BaseField extends FieldLayoutElement
         $statusClass = $this->statusClass($element, $static);
 
         return Cp::fieldHtml($inputHtml, [
+            'fieldset' => $this->useFieldset(),
             'id' => $this->id(),
             'fieldAttributes' => $this->containerAttributes($element, $static),
             'inputContainerAttributes' => $this->inputContainerAttributes($element, $static),
@@ -237,6 +238,17 @@ abstract class BaseField extends FieldLayoutElement
             $this->defaultLabel(),
             $this->attribute(),
         ]);
+    }
+
+    /**
+     * Returns whether the element’s form HTML should use a `<fieldset>` + `<legend>` instead of a `<div>` + `<label>`.
+     *
+     * @return bool
+     * @since 3.6.0
+     */
+    protected function useFieldset(): bool
+    {
+        return false;
     }
 
     /**

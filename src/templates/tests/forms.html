@@ -34,6 +34,18 @@
         values: ['one', 'three'],
     }) }}
 
+    <h2>Radio Buttons</h2>
+    {{ forms.radioGroupField({
+        label: "Radio button group",
+        name: 'radioGroup',
+        options: [
+            { value: 'one', label: 'One' },
+            { value: 'two', label: 'Two' },
+            { value: 'three', label: 'Three' },
+        ],
+        value: 'two',
+    }) }}
+
     <h2>Multi-select</h2>
 
     {{ forms.multiselectField({
