@@ -11,7 +11,6 @@
 - Field layout designers will no longer create a new tab if no tab name is entered in the prompt. ([#7333](https://github.com/craftcms/cms/issues/7333))
 - The `allowedFileExtensions` config setting now includes several file extensions used by caption and subtitle file formats by default. ([#7304](https://github.com/craftcms/cms/issues/7304))
 - Craft no longer reports user deprecation errors logged with `E_USER_DEPRECATED`.
-- Made it easier to extend Craft’s Codeception testing module with custom code. ([#7339](https://github.com/craftcms/cms/issues/7339))
 - Updated Yii to 2.0.40.
 
 ### Deprecated
