@@ -354,7 +354,7 @@ Craft.ui =
                         label: option.label,
                         name: (config.name ? config.name + '[]' : null),
                         value: option.value,
-                        checked: (allChecked || Craft.inArray(option.value, config.values)),
+                        checked: allChecked || (config.values || []).includes(option.value),
                         disabled: allChecked
                     })
                 );
