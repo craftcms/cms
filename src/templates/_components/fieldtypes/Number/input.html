@@ -10,6 +10,7 @@
     {% endif %}
     <div>
         {{ text({
+            id: field.handle|id,
             name: field.handle ~ '[value]',
             value: value,
             inputmode: field.decimals ? 'decimal' : 'numeric',
