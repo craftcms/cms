@@ -76,9 +76,9 @@
 {% endblock %}
 
 {% js %}
-var $body = $('#content .body');
+var $content = $('#content');
 
-$body.append(Craft.ui.createCheckboxSelectField({
+$content.append(Craft.ui.createCheckboxSelectField({
     label: 'Checkbox select with “All” option (JS)',
     options: [
         { value: 'one', label: 'One' },
@@ -88,7 +88,7 @@ $body.append(Craft.ui.createCheckboxSelectField({
     showAllOption: true,
 }));
 
-$body.append(Craft.ui.createCheckboxSelectField({
+$content.append(Craft.ui.createCheckboxSelectField({
     label: 'Checkbox select without “All” option (JS)',
     options: [
         { value: 'one', label: 'One' },
