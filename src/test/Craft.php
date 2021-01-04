@@ -116,6 +116,10 @@ class Craft extends Yii2
     public function _initialize()
     {
         parent::_initialize();
+
+        // Create a Craft::$app object
+        TestSetup::warmCraft();
+
         self::$instance = $this;
     }
 
@@ -222,9 +226,6 @@ class Craft extends Yii2
     {
         ob_start();
         try {
-            // Create a Craft::$app object
-            TestSetup::warmCraft();
-
             // Prevent's a static properties bug.
             ProjectConfig::reset();
 
