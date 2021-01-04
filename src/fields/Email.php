@@ -75,7 +75,7 @@ class Email extends Field implements PreviewableFieldInterface
     {
         return Craft::$app->getView()->renderTemplate('_includes/forms/text', [
             'type' => 'email',
-            'id' => $this->handle,
+            'id' => Html::id($this->handle),
             'name' => $this->handle,
             'inputmode' => 'email',
             'placeholder' => Craft::t('site', $this->placeholder),
