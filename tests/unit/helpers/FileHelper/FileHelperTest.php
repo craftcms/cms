@@ -40,7 +40,7 @@ class FileHelperTest extends Unit
         self::assertDirectoryExists($location);
 
         FileHelper::removeDirectory($location);
-        self::assertDirectoryDoesNotExist($location);
+        self::assertDirectoryNotExists($location);
 
         self::assertNull(FileHelper::removeDirectory('notadir'));
     }
