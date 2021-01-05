@@ -58,24 +58,14 @@
 {% if hasLabels -%}
     <div class="lightswitch-outer-container">
         {% if hasLabels %}
-            {% if hasOnLabel %}
-                {{ tag('span', {
-                    id: descriptionId,
-                    class: 'visually-hidden',
-                    text: 'Check for {onLabel}.'|t('app', {
-                        onLabel: onLabel,
-                    }),
-                }) }}
-            {% endif %}
-            {% if hasOffLabel %}
-                {{ tag('span', {
-                    id: descriptionId,
-                    class: 'visually-hidden',
-                    text: 'Uncheck for {offLabel}.'|t('app', {
-                        offLabel: offLabel,
-                    }),
-                }) }}
-            {% endif %}
+            {{ tag('span', {
+                id: descriptionId,
+                class: 'visually-hidden',
+                text: [
+                    onLabel ? 'Check for {onLabel}.'|t('app', {onLabel: onLabel}),
+                    offLabel ? 'Uncheck for {offLabel}.'|t('app', {offLabel: offLabel}),
+                ]|filter|join(' '),
+            }) }}
         {% endif %}
         <div class="lightswitch-inner-container">
             {% if hasOffLabel %}
