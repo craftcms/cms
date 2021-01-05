@@ -265,7 +265,7 @@ Craft.ui =
 
             var $label = $('<label/>', {
                 'for': id,
-                text: config.label
+                html: config.label,
             });
 
             // Should we include a hidden input first?
@@ -354,7 +354,7 @@ Craft.ui =
                         label: option.label,
                         name: (config.name ? config.name + '[]' : null),
                         value: option.value,
-                        checked: (allChecked || Craft.inArray(option.value, config.values)),
+                        checked: allChecked || (config.values || []).includes(option.value),
                         disabled: allChecked
                     })
                 );
@@ -366,6 +366,7 @@ Craft.ui =
         },
 
         createCheckboxSelectField: function(config) {
+            config.fieldset = true;
             if (!config.id) {
                 config.id = 'checkboxselect' + Math.floor(Math.random() * 1000000000);
             }
@@ -813,7 +814,7 @@ Craft.ui =
             var label = (config.label && config.label !== '__blank__' ? config.label : null),
                 siteId = (Craft.isMultiSite && config.siteId ? config.siteId : null);
 
-            var $field = $('<div/>', {
+            var $field = $(config.fieldset ? '<fieldset/>' : '<div/>', {
                 'class': 'field',
                 'id': config.fieldId || (config.id ? config.id + '-field' : null)
             });
@@ -825,10 +826,10 @@ Craft.ui =
             if (label) {
                 var $heading = $('<div class="heading"/>').appendTo($field);
 
-                var $label = $('<label/>', {
-                    'id': config.labelId || (config.id ? `${config.id}-label` : null),
+                var $label = $(config.fieldset ? '<legend/>' : '<label/>', {
+                    'id': config.labelId || (config.id ? `${config.id}-${config.fieldset ? 'legend' : 'label'}` : null),
                     'class': (config.required ? 'required' : null),
-                    'for': config.id,
+                    'for': !config.fieldset && config.id,
                     text: label
                 }).appendTo($heading);
             }

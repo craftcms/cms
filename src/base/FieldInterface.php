@@ -114,6 +114,14 @@ interface FieldInterface extends SavableComponentInterface
     public function getTranslationKey(ElementInterface $element): string;
 
     /**
+     * Returns whether the field should use a `<fieldset>` + `<legend>` instead of a `<div>` + `<label>`.
+     *
+     * @return bool
+     * @since 3.6.0
+     */
+    public function useFieldset(): bool;
+
+    /**
      * Returns the field’s input HTML.
      *
      * An extremely simple implementation would be to directly return some HTML:

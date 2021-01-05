@@ -140,9 +140,7 @@ class ImageHelperTest extends Unit
     public function testNoResourceImageByStreamExceptions()
     {
         $this->tester->expectThrowable(TypeError::class, function() {
-            $db_link = @mysqli_connect('localhost', 'not_a_user', 'not_a_pass');
-            /** @noinspection PhpParamsInspection */
-            Image::imageSizeByStream($db_link);
+            Image::imageSizeByStream(1);
         });
     }
 

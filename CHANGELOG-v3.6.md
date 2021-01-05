@@ -12,9 +12,11 @@
 - User indexes can now include a “Groups” column. ([#7211](https://github.com/craftcms/cms/issues/7211))
 - Volumes now have “Title Translation Method” and “Title Translation Key Format” settings, like entry types. ([#7135](https://github.com/craftcms/cms/issues/7135))
 - It’s now possible to set sites’ Name settings to environment variables.
+- Added the “Captions/Subtitles” file kind. ([#7304](https://github.com/craftcms/cms/issues/7304))
 - Added the `users/list-admins` and `users/set-password` commands. ([#7067](https://github.com/craftcms/cms/issues/7067))
 - Added the `disableGraphqlTransformDirective` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
 - Added the `enableGraphqlIntrospection` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
+- Added the `handleCasing` config setting, which determines the default casing that should be used when autogenerating component handles. ([#4276](https://github.com/craftcms/cms/issues/4276))
 - Added the `maxGraphqlComplexity` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
 - Added the `maxGraphqlDepth` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
 - Added the `maxGraphqlResults` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
@@ -26,6 +28,7 @@
 - Added `craft\base\ElementExporterInterface::isFormattable()`.
 - Added `craft\base\ElementInterface::getIsUnpublishedDraft()`.
 - Added `craft\base\FieldInterface::includeInGqlSchema()`. ([#7244](https://github.com/craftcms/cms/pull/7244))
+- Added `craft\base\FieldInterface::useFieldset()`, which custom fields can override to return `true` if a `<fieldset>` and `<legend>` should be used, rather than a `<div>` and `<label>`.
 - Added `craft\base\VolumeTrait::$titleTranslationKeyFormat`.
 - Added `craft\base\VolumeTrait::$titleTranslationMethod`.
 - Added `craft\console\Controller::passwordPrompt()`.
@@ -42,6 +45,7 @@
 - Added `craft\events\RegisterGqlArgumentHandlersEvent`.
 - Added `craft\events\SearchEvent::$results`. ([#7237](https://github.com/craftcms/cms/issues/7237))
 - Added `craft\fieldlayoutelements\AssetTitleField`.
+- Added `craft\fieldlayoutelements\BaseField::useFieldset()`.
 - Added `craft\gql\ArgumentManager`.
 - Added `craft\gql\base\ArgumentHandler`.
 - Added `craft\gql\base\ArgumentHandlerInterface`.
@@ -71,6 +75,7 @@
 - Added `craft\helpers\Gql::eagerLoadComplexity()`.
 - Added `craft\helpers\Gql::nPlus1Complexity()`.
 - Added `craft\helpers\Gql::singleQueryComplexity()`.
+- Added `craft\helpers\Template::paginateQuery()`.
 - Added `craft\log\Dispatcher`.
 - Added `craft\models\FieldLayout::EVENT_CREATE_FORM`. ([#7258](https://github.com/craftcms/cms/issues/7258))
 - Added `craft\models\Site::getName()`.
@@ -100,8 +105,11 @@
 - Relational fields now include all related elements’ titles as search keywords, including disabled elements. ([#7079](https://github.com/craftcms/cms/issues/7079))
 - Improved the performance of project config change diffs. ([#7218](https://github.com/craftcms/cms/issues/7218))
 - Improved the accessibility of info icons.
+- Checkbox and radio button group fields now use `<fieldset>`s and `<legend>`s throughout the control panel.
 - The Settings → Plugin page now shows which developer created each plugin. ([#7254](https://github.com/craftcms/cms/issues/7254))
+- Field layout designers will no longer create a new tab if no tab name is entered in the prompt. ([#7333](https://github.com/craftcms/cms/issues/7333))
 - Site URLs that are generated on the front-end of disabled sites now include the `siteToken` param, if one was passed to the current page. ([#7264](https://github.com/craftcms/cms/issues/7264))
+- The `allowedFileExtensions` config setting now includes several file extensions used by caption and subtitle file formats by default. ([#7304](https://github.com/craftcms/cms/issues/7304))
 - The `withoutKey` Twig filter can now accept an array, for removing multiple keys at once. ([#7230](https://github.com/craftcms/cms/issues/7230))
 - It’s now possible to add new log targets by overriding `components.log.targets` in `config/app.php`, rather than the entire `log` component config.
 - The `_includes/forms/field.html` control panel template and `craft\helpers\Cp::fieldHtml()` now accept a `fieldset` variable/config key, which can be set to `true` to cause the resulting field to be a `<fieldset>` instead of a `<div>`, and the label to be a `<legend>` instead of a `<label>`.
@@ -121,7 +129,8 @@
 - `craft\services\Gql::getValidationRules()` now has an `$isIntrospectionQuery` argument.
 - Craft no longer reports PHP deprecation errors.
 - GraphQL queries now support eager-loading for arguments provided as input objects.
-- Updated Yii to 2.0.39.
+- Made it easier to extend Craft’s Codeception testing module with custom code. ([#7339](https://github.com/craftcms/cms/issues/7339))
+- Updated Yii to 2.0.40.
 - Updated Guzzle to 7.x, for projects that don’t have any plugins that require Guzzle 6. ([#6997](https://github.com/craftcms/cms/issues/6997))
 - Updated Composer to 2.0.8.
 - Updated LitEmoji to 2.x.
@@ -140,6 +149,7 @@
 - Deprecated `craft\gql\base\Resolver::getArrayableArguments()`.
 - Deprecated `craft\gql\base\Resolver::prepareArguments()`.
 - Deprecated `craft\helpers\App::logConfig()`.
+- Deprecated `craft\helpers\Template::paginateCriteria()`. `paginateQuery()` should be used instead.
 - Deprecated `craft\services\Composer::$disablePackagist`.
 - Deprecated `craft\services\Drafts::applyDraft()`. `publishDraft()` should be used instead.
 - Deprecated `craft\services\Drafts::EVENT_AFTER_APPLY_DRAFT`. `EVENT_AFTER_PUBLISH_DRAFT` should be used instead.
@@ -162,6 +172,7 @@
 - Removed `craft\test\fixtures\FieldLayoutFixture::linkFieldToLayout()`.
 
 ### Fixed
+- Fixed an error that occurred when a schema change was made within a transaction, if using MySQL and PHP 8. ([#7174](https://github.com/craftcms/cms/issues/7174))
 - Fixed a bug where asset queries’ `withTransforms` param wasn’t being respected for eager-loaded assets. ([#6140](https://github.com/craftcms/cms/issues/6140))
 - Fixed a bug where `craft\db\Connection::getPrimaryKeyName()`, `getForeignKeyName()`, and `getIndexName()` could generate non-unique object names. ([#7153](https://github.com/craftcms/cms/issues/7153))
 - Fixed a bug where number strings were not correctly typecast to the right PHP numeric type when using the Number GraphQL type.

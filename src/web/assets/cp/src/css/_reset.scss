@@ -39,6 +39,13 @@ a {
   text-decoration: none;
 }
 
+button {
+  appearance: none;
+  background-color: transparent;
+  border: none;
+  padding: 0;
+}
+
 input, textarea {
   margin: 0;
   font-family: 'Lucida Grande', sans-serif;
