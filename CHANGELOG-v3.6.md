@@ -12,6 +12,7 @@
 - User indexes can now include a “Groups” column. ([#7211](https://github.com/craftcms/cms/issues/7211))
 - Volumes now have “Title Translation Method” and “Title Translation Key Format” settings, like entry types. ([#7135](https://github.com/craftcms/cms/issues/7135))
 - It’s now possible to set sites’ Name settings to environment variables.
+- The `project-config/apply` command now displays a list of changes it is applying. ([#7235](https://github.com/craftcms/cms/issues/7235))
 - Added the “Captions/Subtitles” file kind. ([#7304](https://github.com/craftcms/cms/issues/7304))
 - Added the `users/list-admins` and `users/set-password` commands. ([#7067](https://github.com/craftcms/cms/issues/7067))
 - Added the `disableGraphqlTransformDirective` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
