@@ -37,7 +37,7 @@
     aria: {
         checked: on ? 'true' : (indeterminate ? 'mixed' : 'false'),
         labelledby: labelId ?? null,
-        describedby: hasBothLabels ? "##{descriptionId}" : null,
+        describedby: hasBothLabels ? descriptionId : null,
     },
 }|merge(containerAttributes ?? [], recursive=true) %}
 
