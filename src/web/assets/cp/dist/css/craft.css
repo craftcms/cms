@@ -803,7 +803,7 @@ body.rtl .color .color-preview > .color-preview-input { right: 0; }
 
 .lightswitch-outer-container .lightswitch-inner-container { border: 1px solid rgba(51, 64, 77, 0.1); border-radius: 3px; display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; }
 
-.lightswitch-outer-container .lightswitch-inner-container span { padding: 7px 0; color: #596673; }
+.lightswitch-outer-container .lightswitch-inner-container span { padding: 7px 0; color: #596673; cursor: default; }
 
 body.ltr .lightswitch-outer-container .lightswitch-inner-container span[data-toggle=on] { padding-right: 10px; }
 

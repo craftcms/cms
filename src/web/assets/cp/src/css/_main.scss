@@ -1621,6 +1621,7 @@ div.btn.submit input {
     span {
       padding: 7px 0;
       color: $mediumTextColor;
+      cursor: default;
 
       &[data-toggle=on] {
         @include padding-right(10px);
