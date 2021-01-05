@@ -235,6 +235,14 @@ class CustomField extends BaseField
     /**
      * @inheritdoc
      */
+    protected function useFieldset(): bool
+    {
+        return $this->_field->useFieldset();
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function inputHtml(ElementInterface $element = null, bool $static = false): string
     {
         $value = $element ? $element->getFieldValue($this->_field->handle) : $this->_field->normalizeValue(null);

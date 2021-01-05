@@ -53,6 +53,14 @@ class Checkboxes extends BaseOptionsField
     /**
      * @inheritdoc
      */
+    public function useFieldset(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function inputHtml($value, ElementInterface $element = null): string
     {
         /** @var MultiOptionsFieldData $value */

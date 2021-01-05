@@ -1171,7 +1171,7 @@ ul.icons {
 
 .btn.icon.add.loading:after {
   position: absolute;
-  content: '.';
+  content: '';
   font-size: 0;
   display: block;
   width: 24px;
@@ -1801,7 +1801,7 @@ h2 + .actions {
 /* ----------------------------------------*/
 
 .tablepane {
-  margin: -24px -24px 0;
+  margin: -24px;
   overflow-x: auto;
 
   table {
@@ -1818,8 +1818,35 @@ h2 + .actions {
     thead {
       th,
       td {
-        border-bottom-left-radius: 0 !important;
-        border-bottom-right-radius: 0 !important;
+        @include border-bottom-left-radius(0);
+        @include border-bottom-right-radius(0);
+      }
+    }
+
+    thead,
+    tbody,
+    tfoot {
+      &:first-child tr:first-child {
+        th,
+        td {
+          &:first-child {
+            @include border-top-left-radius($largeBorderRadius);
+          }
+          &:last-child {
+            @include border-top-right-radius($largeBorderRadius);
+          }
+        }
+      }
+      &:last-child tr:last-child {
+        th,
+        td {
+          &:first-child {
+            @include border-bottom-left-radius($largeBorderRadius);
+          }
+          &:last-child {
+            @include border-bottom-right-radius($largeBorderRadius);
+          }
+        }
       }
     }
   }
@@ -1976,7 +2003,6 @@ table {
 
       th,
       td {
-        border-top: 1px solid transparent;
         padding-top: 7px;
         padding-bottom: 7px;
         background-clip: padding-box;
@@ -1989,6 +2015,14 @@ table {
           white-space: nowrap;
           color: $lightTextColor;
         }
+      }
+    }
+
+    thead + tbody tr,
+    tr + tr {
+      th,
+      td {
+        border-top: 1px solid transparent;
       }
     }
   }
@@ -2252,7 +2286,7 @@ $elementInnerSpacing: 5px;
     @include padding-right($baseElementSidePadding + 24);
 
     &:after {
-      content: '.';
+      content: '';
       font-size: 0;
       position: absolute;
       bottom: 0;
@@ -2277,7 +2311,7 @@ $checkboxPadding: $checkboxSize + 4;
 
     &:after {
       display: block;
-      content: '.';
+      content: '';
       font-size: 0;
       position: absolute;
       top: 0;
@@ -2713,7 +2747,7 @@ table.editable {
           opacity: 1;
 
           &:after {
-            content: '.';
+            content: '';
             font-size: 0;
             position: absolute;
             top: 0;
@@ -3072,7 +3106,7 @@ ul.tree,
 
     &:after {
       display: block;
-      content: '.';
+      content: '';
       font-size: 0;
       position: absolute;
       top: 0;
@@ -3561,7 +3595,7 @@ ul.tree,
 
   &.loading {
     &:after {
-      content: '.';
+      content: '';
       font-size: 0;
       display: block;
       position: absolute;
@@ -4392,7 +4426,7 @@ div.checkbox:empty {
 
 input.checkbox + label:empty:after,
 div.checkbox:empty:after {
-  content: '.';
+  content: '';
   font-size: 0;
 }
 
@@ -4406,7 +4440,7 @@ div.checkbox:before {
   width: $checkboxSize !important;
   height: $checkboxSize;
   box-sizing: border-box;;
-  content: '.';
+  content: '';
   font-size: 0;
   background-color: hsl(212, 50%, 99%);
   border: 1px solid transparentize($inputColor, 0.6);
@@ -5108,7 +5142,7 @@ ul.errors li {
         width: 100%;
         height: 100%;
         visibility: visible;
-        content: '.';
+        content: '';
         font-size: 0;
         border-radius: $smallBorderRadius;
         box-shadow: inset 0 1px 3px -1px darken($grey200, 10%);
