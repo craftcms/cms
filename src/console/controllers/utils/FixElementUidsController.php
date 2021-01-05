@@ -51,7 +51,7 @@ class FixElementUidsController extends Controller
 
         $this->stdout("Found {$total} elements with duplicate UIDs." . PHP_EOL);
 
-        foreach ($query->each() as $result) {
+        foreach (Db::each($query) as $result) {
             if (!isset($uids[$result['uid']])) {
                 // This is the first time this UID was issued
                 $uids[$result['uid']] = true;

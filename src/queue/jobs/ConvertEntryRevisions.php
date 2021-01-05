@@ -123,7 +123,7 @@ class ConvertEntryRevisions extends BaseJob
 
         $total = $query->count();
 
-        foreach ($query->each() as $i => $result) {
+        foreach (Db::each($query) as $i => $result) {
             $this->setProgress($this->queue, $i / $total, 'Draft ' . $i . ' of ' . $total);
             try {
                 $this->convertDraft($result);
@@ -201,7 +201,7 @@ class ConvertEntryRevisions extends BaseJob
 
         $total = $query->count();
 
-        foreach ($query->each() as $i => $result) {
+        foreach (Db::each($query) as $i => $result) {
             $this->setProgress($this->queue, $i / $total, 'Revision ' . $i . ' of ' . $total);
             try {
                 $this->convertVersion($result);
