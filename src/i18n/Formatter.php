@@ -199,7 +199,7 @@ class Formatter extends \yii\i18n\Formatter
         // If it were up to 7 days ago, display the weekday name.
         if (DateTimeHelper::isWithinLast($timestamp, '7 days')) {
             $day = $timestamp->format('w');
-            $dayName = Craft::$app->getI18n()->getLocaleById($this->locale)->getWeekDayName($day);
+            $dayName = Craft::$app->getI18n()->getLocaleById(Craft::$app->language)->getWeekDayName($day);
             return $withPreposition ? Craft::t('app', 'on {day}', ['day' => $dayName]) : $dayName;
         }
 
