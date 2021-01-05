@@ -12,6 +12,7 @@
 - Fixed a bug where file uploading via mutations would not work for some file types. ([#7327](https://github.com/craftcms/cms/issues/7327))
 - Fixed a bug where Dropdown, Multi-select, and Number fields’ inputs weren’t getting `id` attributes that matched their labels’ `for` attributes. ([#7319](https://github.com/craftcms/cms/issues/7319))
 - Fixed a bug where the “All” checkbox label was getting HTML-encoded when using `Craft.ui.createCheckboxSelect()`.
+- Fixed a bug where week day and month names were being translated based on the current formatting locale, rather than the current language. ([#7312](https://github.com/craftcms/cms/issues/7312))
 
 ## 3.5.17.1 - 2020-12-17
 
