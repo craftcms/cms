@@ -4,6 +4,7 @@
 - Improved the error message that is output when running the `clear-caches/cp-resources` command, if the `@webroot` alias isn’t explicitly set. ([#7286](https://github.com/craftcms/cms/issues/7286))
 - Improved the accessibility of the Login page. ([#7268](https://github.com/craftcms/cms/issues/7268), [#7287](https://github.com/craftcms/cms/issues/7287), [#7288](https://github.com/craftcms/cms/issues/7288))
 - Added `aria-label` or `aria-hidden` attributes to control panel icons, where appropriate. ([#7302](https://github.com/craftcms/cms/pull/7302))
+- Timestamps that show the week day name are now always translated using the application language, even if the formatting locale is different. ([#7312](https://github.com/craftcms/cms/issues/7312))
 
 ### Fixed
 - Fixed a bug where field layout tabs’ settings buttons could become inaccessible if the tab name began with a long word without any hyphens. ([#7298](https://github.com/craftcms/cms/issues/7298))
