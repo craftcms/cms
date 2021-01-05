@@ -371,15 +371,16 @@ JS;
 
     private function _datepickerOptions(Locale $locale, User $currentUser = null, GeneralConfig $generalConfig): array
     {
+        $langLocale = Craft::$app->getI18n()->getLocaleById(Craft::$app->language);
         return [
             'constrainInput' => false,
             'dateFormat' => $locale->getDateFormat(Locale::LENGTH_SHORT, Locale::FORMAT_JUI),
-            'dayNames' => $locale->getWeekDayNames(Locale::LENGTH_FULL),
-            'dayNamesMin' => $locale->getWeekDayNames(Locale::LENGTH_ABBREVIATED),
-            'dayNamesShort' => $locale->getWeekDayNames(Locale::LENGTH_SHORT),
+            'dayNames' => $langLocale->getWeekDayNames(Locale::LENGTH_FULL),
+            'dayNamesMin' => $langLocale->getWeekDayNames(Locale::LENGTH_ABBREVIATED),
+            'dayNamesShort' => $langLocale->getWeekDayNames(Locale::LENGTH_SHORT),
             'firstDay' => (int)(($currentUser ? $currentUser->getPreference('weekStartDay') : null) ?? $generalConfig->defaultWeekStartDay),
-            'monthNames' => $locale->getMonthNames(Locale::LENGTH_FULL),
-            'monthNamesShort' => $locale->getMonthNames(Locale::LENGTH_ABBREVIATED),
+            'monthNames' => $langLocale->getMonthNames(Locale::LENGTH_FULL),
+            'monthNamesShort' => $langLocale->getMonthNames(Locale::LENGTH_ABBREVIATED),
             'nextText' => Craft::t('app', 'Next'),
             'prevText' => Craft::t('app', 'Prev'),
         ];

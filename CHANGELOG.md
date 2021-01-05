@@ -4,7 +4,6 @@
 - Improved the error message that is output when running the `clear-caches/cp-resources` command, if the `@webroot` alias isn’t explicitly set. ([#7286](https://github.com/craftcms/cms/issues/7286))
 - Improved the accessibility of the Login page. ([#7268](https://github.com/craftcms/cms/issues/7268), [#7287](https://github.com/craftcms/cms/issues/7287), [#7288](https://github.com/craftcms/cms/issues/7288))
 - Added `aria-label` or `aria-hidden` attributes to control panel icons, where appropriate. ([#7302](https://github.com/craftcms/cms/pull/7302))
-- Timestamps that show the week day name are now always translated using the application language, even if the formatting locale is different. ([#7312](https://github.com/craftcms/cms/issues/7312))
 
 ### Fixed
 - Fixed a bug where field layout tabs’ settings buttons could become inaccessible if the tab name began with a long word without any hyphens. ([#7298](https://github.com/craftcms/cms/issues/7298))
@@ -13,6 +12,7 @@
 - Fixed a bug where file uploading via mutations would not work for some file types. ([#7327](https://github.com/craftcms/cms/issues/7327))
 - Fixed a bug where Dropdown, Multi-select, and Number fields’ inputs weren’t getting `id` attributes that matched their labels’ `for` attributes. ([#7319](https://github.com/craftcms/cms/issues/7319))
 - Fixed a bug where the “All” checkbox label was getting HTML-encoded when using `Craft.ui.createCheckboxSelect()`.
+- Fixed a bug where week day and month names were being translated based on the current formatting locale, rather than the current language. ([#7312](https://github.com/craftcms/cms/issues/7312))
 
 ## 3.5.17.1 - 2020-12-17
 
