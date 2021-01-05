@@ -1421,7 +1421,7 @@ return [
     'URL' => 'URL',
     'Unable to find the template “{template}”.' => 'Unable to find the template “{template}”.',
     'Unauthorized' => 'Unauthorized',
-    'Uncheck for {offLabel}' => 'Uncheck for {offLabel}',
+    'Uncheck for {offLabel}.' => 'Uncheck for {offLabel}.',
     'Underline links' => 'Underline links',
     'Unformatted' => 'Unformatted',
     'Uninstall' => 'Uninstall',
