@@ -370,7 +370,7 @@ body.rtl th.right, body.rtl td.right { text-align: left; }
 
 .success { color: #27AB83 !important; }
 
-.notice { color: #127FBF !important; }
+.notice { color: #0B69A3 !important; }
 
 .warning { color: #B44D12 !important; }
 
@@ -746,11 +746,11 @@ body.rtl .btn.big[data-icon]:before, body.rtl #preview-btn:before, body.rtl #sha
 
 .btn.submit:not(.disabled):not(.inactive):active, .btn.submit:not(.disabled):not(.inactive).active { background-color: #c01b26 !important; }
 
-.secondary-buttons .btn.submit, .btn.secondary { background-color: #8b96a2 !important; }
+.secondary-buttons .btn.submit, .btn.secondary { background-color: #606d7b !important; }
 
-.secondary-buttons .btn.submit:not(.disabled):not(.inactive):hover, .secondary-buttons .btn.submit:not(.disabled):not(.inactive).hover, .secondary-buttons .btn.submit:not(.disabled):not(.inactive):focus, .btn.secondary:not(.disabled):not(.inactive):hover, .btn.secondary:not(.disabled):not(.inactive).hover, .btn.secondary:not(.disabled):not(.inactive):focus { background-color: #7d8997 !important; }
+.secondary-buttons .btn.submit:not(.disabled):not(.inactive):hover, .secondary-buttons .btn.submit:not(.disabled):not(.inactive).hover, .secondary-buttons .btn.submit:not(.disabled):not(.inactive):focus, .btn.secondary:not(.disabled):not(.inactive):hover, .btn.secondary:not(.disabled):not(.inactive).hover, .btn.secondary:not(.disabled):not(.inactive):focus { background-color: #55616d !important; }
 
-.secondary-buttons .btn.submit:not(.disabled):not(.inactive):active, .secondary-buttons .btn.submit:not(.disabled):not(.inactive).active, .btn.secondary:not(.disabled):not(.inactive):active, .btn.secondary:not(.disabled):not(.inactive).active { background-color: #6f7c8b !important; }
+.secondary-buttons .btn.submit:not(.disabled):not(.inactive):active, .secondary-buttons .btn.submit:not(.disabled):not(.inactive).active, .btn.secondary:not(.disabled):not(.inactive):active, .btn.secondary:not(.disabled):not(.inactive).active { background-color: #4a545e !important; }
 
 div.btn.submit { position: relative; overflow: hidden; }
 
@@ -2358,7 +2358,7 @@ body.rtl .timewrapper .text:before { right: 7px; }
 
 .select:not(.selectize), .select:not(.selectize) select { position: relative; border-radius: 5px; white-space: nowrap; }
 
-.select:not(.selectize) { position: relative; }
+.select:not(.selectize) { max-width: 100%; position: relative; }
 
 :not(.flex) > .select:not(.selectize) { display: inline-block; }
 
@@ -2368,7 +2368,7 @@ body.ltr .select:not(.selectize):after { right: 9px; }
 
 body.rtl .select:not(.selectize):after { left: 9px; }
 
-.select:not(.selectize) select { display: block; position: relative; border: none; font-size: 14px; line-height: 20px; color: #3f4d5a; background-color: rgba(96, 125, 159, 0.25); -webkit-appearance: none; appearance: none; white-space: pre; }
+.select:not(.selectize) select { display: block; position: relative; max-width: 100%; border: none; font-size: 14px; line-height: 20px; color: #3f4d5a; background-color: rgba(96, 125, 159, 0.25); -webkit-appearance: none; appearance: none; white-space: pre; }
 
 body.ltr .select:not(.selectize) select { padding: 7px 22px 7px 10px ; }
 
@@ -2396,7 +2396,7 @@ body .selectize-dropdown { border: none; }
 /* single select styles */
 .selectize.select .selectize-control, .selectize.select .selectize-control .selectize-input { position: relative; border-radius: 5px; white-space: nowrap; }
 
-.selectize.select .selectize-control { position: relative; }
+.selectize.select .selectize-control { max-width: 100%; position: relative; }
 
 :not(.flex) > .selectize.select .selectize-control { display: inline-block; }
 
@@ -2406,7 +2406,7 @@ body.ltr .selectize.select .selectize-control:after { right: 9px; }
 
 body.rtl .selectize.select .selectize-control:after { left: 9px; }
 
-.selectize.select .selectize-control .selectize-input { display: block; position: relative; border: none; font-size: 14px; line-height: 20px; color: #3f4d5a; background-color: rgba(96, 125, 159, 0.25); -webkit-appearance: none; appearance: none; }
+.selectize.select .selectize-control .selectize-input { display: block; position: relative; max-width: 100%; border: none; font-size: 14px; line-height: 20px; color: #3f4d5a; background-color: rgba(96, 125, 159, 0.25); -webkit-appearance: none; appearance: none; }
 
 body.ltr .selectize.select .selectize-control .selectize-input { padding: 7px 22px 7px 10px ; }
 
@@ -3044,7 +3044,7 @@ body.rtl #user-info { margin-left: 14px; }
 
 #notifications .notification { padding: 5px 10px; border-radius: 0 0 3px 3px; border-width: 0 1px 1px; color: #fff !important; pointer-events: auto; -moz-osx-font-smoothing: grayscale; -webkit-font-smoothing: antialiased; font-weight: 500; box-shadow: 0 1px 5px -1px rgba(31, 41, 51, 0.2); }
 
-#notifications .notification.notice { background-color: #127FBF; }
+#notifications .notification.notice { background-color: #0B69A3; }
 
 #notifications .notification.error { background-color: #E12D39; }
 
