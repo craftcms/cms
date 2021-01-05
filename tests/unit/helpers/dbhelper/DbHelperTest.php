@@ -283,13 +283,9 @@ class DbHelperTest extends Unit
      */
     public function testBatch()
     {
-        $called = false;
-        $result = Db::batch((new Query())->from([Table::SITES]), 50, function() use(&$called) {
-            $called = true;
-        });
+        $result = Db::batch((new Query())->from([Table::SITES]), 50);
         self::assertFalse($result->each);
         self::assertSame(50, $result->batchSize);
-        self::assertTrue($called);
     }
 
     /**
@@ -297,13 +293,9 @@ class DbHelperTest extends Unit
      */
     public function testEach()
     {
-        $called = false;
-        $result = Db::each((new Query())->from([Table::SITES]), 50, function() use(&$called) {
-            $called = true;
-        });
+        $result = Db::each((new Query())->from([Table::SITES]), 50);
         self::assertTrue($result->each);
         self::assertSame(50, $result->batchSize);
-        self::assertTrue($called);
     }
 
     /**
