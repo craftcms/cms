@@ -398,7 +398,7 @@ html.noscroll, html.noscroll body {
 
 .slide-rule .graduations ul li {
   display: inline-block;
-  font-size: 8px;
+  font-size: px-to-rem(8px);
   position: relative;
   width: 10px;
 }

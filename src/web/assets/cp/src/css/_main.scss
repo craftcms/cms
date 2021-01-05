@@ -54,8 +54,8 @@ html.noscroll body {
 body {
   width: 100vw;
   overflow-x: hidden;
-  font-size: 14px;
-  line-height: 20px;
+  font-size: px-to-rem(14px);
+  line-height: px-to-rem(20px);
   color: $textColor;
   -webkit-font-smoothing: subpixel-antialiased;
 }
@@ -125,13 +125,13 @@ textarea.nicetext {
   border: 1px solid $yellow500;
   border-radius: $smallBorderRadius;
   color: $yellow500;
-  font-size: 9px;
+  font-size: px-to-rem(9px);
 }
 
 .secure:before,
 .insecure:before {
   margin-top: -3px;
-  font-size: 14px;
+  font-size: px-to-rem(14px);
 }
 
 [data-icon]:before {
@@ -213,16 +213,16 @@ body.rtl [data-icon-after=structure]:after {
 /* headings */
 h1 {
   margin-bottom: 24px;
-  font-size: 18px;
+  font-size: px-to-rem(18px);
   font-weight: bold;
   line-height: 1.2;
 }
 
 h2 {
   margin: 14px 0;
-  font-size: 16px;
+  font-size: px-to-rem(16px);
   font-weight: bold;
-  line-height: 20px;
+  line-height: px-to-rem(20px);
 }
 
 h3 {
@@ -254,7 +254,7 @@ h1[data-icon]:before {
 
 h2[data-icon]:before {
   @include margin(-4px, 6px, 0, 0);
-  font-size: 19px;
+  font-size: px-to-rem(19px);
 }
 
 /* horizontal rule */
@@ -337,7 +337,7 @@ li.sel a {
 }
 
 .go:after {
-  font-size: 11px;
+  font-size: px-to-rem(11px);
   margin-top: -1px;
   @include padding-left(4px);
   color: $lightTextColor;
@@ -368,7 +368,7 @@ li.sel a {
 .alert-icon {
   padding: 5px;
   margin-bottom: 0 !important;
-  line-height: 10px;
+  line-height: px-to-rem(10px);
   border-radius: 20px;
   cursor: pointer;
 
@@ -486,20 +486,20 @@ strong, b, i em {
 }
 
 .smalltext {
-  font-size: 12px;
+  font-size: px-to-rem(12px);
   line-height: 1.2;
 }
 
 .largetext {
-  font-size: 16px;
+  font-size: px-to-rem(16px);
   line-height: 1.2;
 }
 
 .zilch {
   padding: 100px 0;
   text-align: center;
-  font-size: 20px;
-  line-height: 24px;
+  font-size: px-to-rem(20px);
+  line-height: px-to-rem(24px);
   color: $lightTextColor;
 }
 
@@ -510,7 +510,7 @@ input.checkbox + label.smalltext {
 .required:after {
   content: 'asterisk';
   @include margin(-2px, 0, 0, 5px);
-  font-size: 7px;
+  font-size: px-to-rem(7px);
   color: $errorColor;
 }
 
@@ -585,8 +585,8 @@ td.right {
   top: 0;
   left: 0;
   width: 100%;
-  font-size: 9px;
-  line-height: 17px;
+  font-size: px-to-rem(9px);
+  line-height: px-to-rem(17px);
   content: 'asterisk';
   text-indent: 0;
 }
@@ -872,7 +872,7 @@ td.right {
 .customize-sources-item.heading .label {
   text-transform: uppercase;
   color: $lightTextColor;
-  font-size: 12px;
+  font-size: px-to-rem(12px);
   font-weight: bold;
 }
 
@@ -923,8 +923,8 @@ ul.icons {
         top: 0;
         left: 0;
         width: 100%;
-        font-size: 40px;
-        line-height: 60px;
+        font-size: px-to-rem(40px);
+        line-height: px-to-rem(60px);
       }
 
       .icon {
@@ -1158,7 +1158,7 @@ ul.icons {
 .btn.small[data-icon]:before,
 .btn.small[data-icon-after]:after,
 .btn.icon.small:before {
-  font-size: 10px;
+  font-size: px-to-rem(10px);
 }
 
 .btn.icon.add.loading {
@@ -1328,7 +1328,7 @@ ul.icons {
     padding: 0 5px;
 
     input {
-      font-size: 11px !important;
+      font-size: px-to-rem(11px) !important;
       height: 20px;
     }
   }
@@ -1427,8 +1427,8 @@ ul.icons {
 .btngroup.small .btn,
 .btn.small {
   padding: 0 7px !important;
-  font-size: 12px;
-  line-height: 22px;
+  font-size: px-to-rem(12px);
+  line-height: px-to-rem(22px);
 }
 
 .btngroup.small,
@@ -1442,8 +1442,8 @@ ul.icons {
 .btngroup.big .btn,
 .btn.big {
   padding: 0 14px;
-  font-size: 14px;
-  line-height: 36px;
+  font-size: px-to-rem(14px);
+  line-height: px-to-rem(36px);
 }
 
 .btn.big[data-icon]:before,
@@ -2322,7 +2322,7 @@ $checkboxPadding: $checkboxSize + 4;
       position: absolute;
       top: calc(50% - 11px);
       @include margin-left(-14px);
-      font-size: 11px;
+      font-size: px-to-rem(11px);
       text-decoration: none;
     }
 
@@ -3121,7 +3121,7 @@ ul.tree,
       & > .heading {
         flex: 0 0 105px;
         @include margin(0, 7px, 0, 0);
-        line-height: 18px;
+        line-height: px-to-rem(18px);
       }
 
       &.lightswitch-field > .heading {
@@ -3427,7 +3427,7 @@ ul.tree,
       @include margin(-6px, 0, 0, -58px);
       @include floatleft;
       content: 'alert';
-      font-size: 40px;
+      font-size: px-to-rem(40px);
       color: $lightTextColor;
     }
   }
@@ -3440,7 +3440,7 @@ ul.tree,
       @include margin(-14px, 0, 0, -56px);
       @include floatleft;
       content: 'secure';
-      font-size: 58px;
+      font-size: px-to-rem(58px);
       color: $lightTextColor;
     }
   }
@@ -3803,7 +3803,7 @@ ul.tree,
   .options {
     label {
       display: inline-block;
-      line-height: 30px;
+      line-height: px-to-rem(30px);
     }
   }
 
@@ -3879,7 +3879,7 @@ ul.tree,
             &:before {
               @include floatleft;
               @include margin(3px, 0, 0, -17px);
-              font-size: 14px;
+              font-size: px-to-rem(14px);
               color: $lightTextColor;
             }
 
@@ -3898,7 +3898,7 @@ ul.tree,
     li {
       a {
         @include menu-option-styles;
-        font-size: 14px;
+        font-size: px-to-rem(14px);
 
         &:not(.flex) {
           display: block !important;
@@ -3932,7 +3932,7 @@ ul.tree,
           top: 36px;
           @include left(7px);
           content: 'check';
-          font-size: 14px;
+          font-size: px-to-rem(14px);
           color: $lightTextColor;
         }
       }
@@ -3952,7 +3952,7 @@ ul.tree,
     width: 10px;
     @include margin-right(10px);
     text-align: center;
-    font-size: 14px;
+    font-size: px-to-rem(14px);
     color: $lightTextColor;
   }
 }
@@ -4101,8 +4101,8 @@ textarea.text,
 .text > textarea,
 table.editable textarea,
 .selectize-text > .selectize-control > .selectize-input {
-  font-size: 14px;
-  line-height: 20px;
+  font-size: px-to-rem(14px);
+  line-height: px-to-rem(20px);
   color: $textColor;
   min-height: 3px;
   box-sizing: border-box;
@@ -4110,7 +4110,7 @@ table.editable textarea,
 }
 
 .selectize-text > .selectize-control > .selectize-input {
-  line-height: 18px;
+  line-height: px-to-rem(18px);
 }
 
 textarea.text.fullwidth {
@@ -4209,9 +4209,9 @@ fieldset {
     position: absolute;
     top: -3px;
     @include left(-19px);
-    font-size: 9px;
+    font-size: px-to-rem(14px);
     font-weight: bold;
-    line-height: 15px;
+    line-height: px-to-rem(15px);
     width: 15px;
     text-align: center;
     cursor: default;
@@ -4318,7 +4318,7 @@ fieldset {
   width: 30px;
   height: 17px;
   padding: 0;
-  line-height: 16px;
+  line-height: px-to-rem(16px);
   border-radius: $smallBorderRadius;
   color: $mediumDarkTextColor;
 
@@ -4356,7 +4356,7 @@ div.checkbox {
   clear: none;
   position: relative;
   @include padding-left($checkboxSize + 5);
-  line-height: 16px;
+  line-height: px-to-rem(16px);
   height: 16px;
   cursor: pointer;
 
@@ -4417,13 +4417,13 @@ input.checkbox:checked:not(:indeterminate) + label:before,
 div.checkbox.checked:not(.indeterminate):before,
 .sel div.checkbox:not(.indeterminate):before {
   content: 'check';
-  font-size: 15px;
+  font-size: px-to-rem(15px);
 }
 
 input.checkbox:indeterminate + label:before,
 div.checkbox.indeterminate:before {
   content: 'minus';
-  font-size: 7px;
+  font-size: px-to-rem(7px);
   text-align: center;
 }
 
@@ -4451,7 +4451,7 @@ fieldset {
 /* multiselect */
 .multiselect > select {
   color: $textColor;
-  font-size: 14px;
+  font-size: px-to-rem(14px);
   appearance: none;
 
   &:focus {
@@ -4477,8 +4477,8 @@ fieldset {
 
   &.readable {
     padding: 16px 18px;
-    font-size: 16px;
-    line-height: 22px;
+    font-size: px-to-rem(16px);
+    line-height: px-to-rem(22px);
 
     & + .chars-left {
       margin-top: -23px;
@@ -4658,7 +4658,7 @@ fieldset {
   .text:before {
     top: calc(50% - 5px);
     @include left(7px);
-    font-size: 11px;
+    font-size: px-to-rem(11px);
     content: 'time';
   }
 }
@@ -4718,7 +4718,7 @@ fieldset {
 .select:not(.selectize).small select {
   padding-top: 4px !important;
   padding-bottom: 4px !important;
-  font-size: 11px;
+  font-size: px-to-rem(11px);
 }
 
 /* selectize reset */
@@ -4881,7 +4881,7 @@ body .selectize-dropdown .active {
 .ui-datepicker-calendar td a {
   display: block;
   width: 26px;
-  line-height: 26px;
+  line-height: px-to-rem(26px);
   text-align: center;
   color: $textColor;
 }
@@ -5228,7 +5228,7 @@ ul.errors li {
         @include icon;
         @include margin(-2px, 0, 0, 4px);
         content: 'asterisk';
-        font-size: 8px;
+        font-size: px-to-rem(8px);
       }
     }
   }
@@ -5488,11 +5488,11 @@ body.sitepicker {
       border: 1px solid $hairlineColor;
       border-radius: $mediumBorderRadius;
       @include padding(9px, 42px, 9px, 15px);
-      font-size: 16px;
+      font-size: px-to-rem(16px);
       line-height: 1.4;
 
       &:after {
-        font-size: 14px;
+        font-size: px-to-rem(14px);
         position: absolute;
         top: calc(50% - 7px);
         @include right(12px);

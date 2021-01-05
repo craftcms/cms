@@ -90,7 +90,7 @@ $gridColor: hsl(212, 50%, 95%);
 .fld-tab .settings:before,
 .fld-element .settings:before {
   margin-top: -2px;
-  font-size: 16px;
+  font-size: px-to-rem(16px);
   opacity: 0.5;
 }
 
@@ -267,7 +267,7 @@ $gridColor: hsl(212, 50%, 95%);
     &:after {
       @include icon;
       content: 'asterisk';
-      font-size: 8px;
+      font-size: px-to-rem(8px);
       line-height: 1;
     }
   }

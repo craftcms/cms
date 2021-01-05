@@ -11,8 +11,8 @@ body,
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
-  line-height: 20px;
+  font-size: px-to-rem(14px);
+  line-height: px-to-rem(20px);
   color: $textColor;
   -webkit-font-smoothing: subpixel-antialiased;
 
@@ -49,7 +49,7 @@ body,
     background-color: $grey050;
 
     span:not(.history-label) {
-      font-size: 14px;
+      font-size: px-to-rem(14px);
     }
   }
   .graphiql-container,
@@ -63,7 +63,7 @@ body,
 
       .title {
         @include sans-serif-font;
-        font-size: 18px;
+        font-size: px-to-rem(18px);
         font-weight: bold;
         line-height: 1.2;
         color: $textColor;
@@ -175,7 +175,7 @@ body,
             content: 'check';
             @include floatleft;
             @include margin(3px, 0, 0, -17px);
-            font-size: 14px;
+            font-size: px-to-rem(14px);
             color: $lightTextColor;
           }
 
@@ -227,7 +227,7 @@ body,
           &:before {
             @include icon;
             content: 'plus';
-            font-size: 14.4px;
+            font-size: px-to-rem(14.4px);
           }
 
           span {

@@ -15,7 +15,7 @@ hr {
 }
 
 h1 {
-  font-size: 18px;
+  font-size: px-to-rem(18px);
 }
 
 h2 {
@@ -126,8 +126,8 @@ input.error {
       @apply .relative .inline-block .flex-shrink .text-white;
       top: -1px;
       padding: 0 6px;
-      font-size: 11px;
-      line-height: 16px;
+      font-size: px-to-rem(11px);
+      line-height: px-to-rem(16px);
       border-radius: 1em;
       background: $primaryColor;
     }

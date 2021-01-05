@@ -25,8 +25,8 @@
   }
 
   .body {
-    font-size: 12px;
-    line-height: 16px;
+    font-size: px-to-rem(12px);
+    line-height: px-to-rem(16px);
     font-family: Courier, monospace;
     color: $mediumTextColor;
   }

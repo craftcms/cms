@@ -80,8 +80,8 @@
             & > .edition-name,
             & > .edition-trial {
               padding: 0 6px;
-              font-size: 11px;
-              line-height: 16px;
+              font-size: px-to-rem(11px);
+              line-height: px-to-rem(16px);
               font-weight: normal;
             }
 
@@ -197,7 +197,7 @@
 
             input.text {
               font-weight: bold;
-              font-size: 11px !important;
+              font-size: px-to-rem(11px) !important;
               padding: 3px 7px 1px;
               width: 19em;
             }

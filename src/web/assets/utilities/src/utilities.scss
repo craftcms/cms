@@ -30,7 +30,7 @@ form.utility .utility-status .progressbar.has-status {
 form.utility .utility-status .progressbar-status {
   margin-top: 17px;
   @include left(0);
-  font-size: 12px;
+  font-size: px-to-rem(12px);
   color: $mediumTextColor;
   text-align: center;
   @include padding-left(10px);

@@ -189,7 +189,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   .progress-label {
     display: block;
     color: $grey300;
-    font-size: 11px;
+    font-size: px-to-rem(11px);
     line-height: 1.5;
   }
 }
@@ -216,7 +216,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
       padding-right: 14px;
 
       &.menubtn {
-        line-height: 26px;
+        line-height: px-to-rem(26px);
       }
 
       &.external:after {
@@ -265,7 +265,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
       li a {
         @include padding(3px, 14px, 3px, 42px, !important);
-        font-size: 12px;
+        font-size: px-to-rem(12px);
 
         &:not(.active) {
           color: $sidebarLinkSecondaryColor;
@@ -287,7 +287,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: px-to-rem(12px);
   color: $grey600;
   text-align: center;
 
@@ -312,12 +312,12 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   display: inline-flex;
   height: 20px;
   box-sizing: content-box;
-  font-size: 11px;
+  font-size: px-to-rem(11px);
 
   & > .edition-name,
   & > .edition-trial {
     padding: 6px 7px 5px;
-    line-height: 8px;
+    line-height: px-to-rem(8px);
   }
 
   & > .edition-name {
@@ -394,7 +394,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
       @include icon;
       @include margin(-1px, 3px, 0, 0);
       content: 'alert';
-      font-size: 16px;
+      font-size: px-to-rem(16px);
     }
 
     a {
@@ -437,7 +437,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   display: flex;
   flex-direction: row;
   align-items: center;
-  font-size: 13px;
+  font-size: px-to-rem(13px);
 
   &.empty {
     display: none;
@@ -631,7 +631,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   }
 
   h1 {
-    line-height: 32px;
+    line-height: px-to-rem(32px);
     margin-top: 0;
     margin-bottom: 0;
     min-width: 0;
@@ -856,7 +856,7 @@ $toolbarIconColor: darken($inputColor, 10%);
     width: 30px;
     height: 17px;
     padding: 0;
-    line-height: 16px;
+    line-height: px-to-rem(16px);
     border-radius: $smallBorderRadius;
     color: $mediumDarkTextColor;
 
@@ -1073,7 +1073,7 @@ $toolbarIconColor: darken($inputColor, 10%);
     justify-content: center;
     width: 36px;
     height: 50px;
-    line-height: 26px;
+    line-height: px-to-rem(26px);
     color: $grey300;
     text-align: center;
     @include margin-left(-10px);
@@ -1081,7 +1081,7 @@ $toolbarIconColor: darken($inputColor, 10%);
     &:before {
       @include icon;
       content: 'menu';
-      font-size: 16px;
+      font-size: px-to-rem(16px);
       line-height: 0;
     }
 
@@ -1202,7 +1202,7 @@ $toolbarIconColor: darken($inputColor, 10%);
 
   &:before {
     @include margin(1px, 0, 0, -22px);
-    font-size: 15px;
+    font-size: px-to-rem(15px);
   }
 
   img {
@@ -1329,7 +1329,7 @@ $toolbarIconColor: darken($inputColor, 10%);
   padding: 14px 0;
   width: $sidebarWidth;
   box-sizing: border-box;
-  font-size: 13px;
+  font-size: px-to-rem(13px);
   background-color: $grey050;
 
   .heading {
@@ -1344,7 +1344,7 @@ $toolbarIconColor: darken($inputColor, 10%);
       margin: 0 -5px;
       text-transform: uppercase;
       color: $mediumTextColor;
-      font-size: 11px;
+      font-size: px-to-rem(11px);
       font-weight: bold;
     }
   }
@@ -1436,7 +1436,7 @@ $toolbarIconColor: darken($inputColor, 10%);
           }
 
           span[data-icon] {
-            font-size: 16px;
+            font-size: px-to-rem(16px);
 
             &::before {
               display: block;
@@ -1452,8 +1452,8 @@ $toolbarIconColor: darken($inputColor, 10%);
           @include margin(0, -4px, 0, 10px);
           flex-shrink: 1;
           padding: 0 6px;
-          font-size: 11px;
-          line-height: 16px;
+          font-size: px-to-rem(11px);
+          line-height: px-to-rem(16px);
           border-radius: 8px;
           background-color: $mediumTextColor;
           color: $white;

@@ -28,7 +28,7 @@
 
 .cp-chart .ticks-axis g.tick text {
   fill: $black;
-  font-size: 11px;
+  font-size: px-to-rem(11px);
 }
 
 .cp-chart .axis text {

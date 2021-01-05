@@ -109,7 +109,7 @@ body {
 
 #forgot-password,
 #remember-password {
-  font-size: 11px;
+  font-size: px-to-rem(11px);
   color: $mediumTextColor;
 }
 
@@ -169,6 +169,6 @@ body {
   top: 24px;
   @include left(24px);
   content: 'mail';
-  font-size: 30px;
+  font-size: px-to-rem(30px);
   color: $linkColor;
 }

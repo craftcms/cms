@@ -26,7 +26,7 @@
   .uri-container,
   .template {
     padding: 7px 14px;
-    line-height: 18px;
+    line-height: px-to-rem(18px);
     min-height: 18px;
   }
 
