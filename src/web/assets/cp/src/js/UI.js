@@ -378,13 +378,13 @@ Craft.ui =
             var value = config.value || '1';
             var indeterminateValue = config.indeterminateValue || '-';
 
-            var $container = $('<div/>', {
+            var $container = $('<button/>', {
+                'type': 'button',
                 'class': 'lightswitch',
-                tabindex: '0',
                 'data-value': value,
                 'data-indeterminate-value': indeterminateValue,
                 id: config.id,
-                role: 'switch',
+                role: 'checkbox',
                 'aria-checked': config.on ? 'true' : (config.indeterminate ? 'mixed' : 'false'),
                 'aria-labelledby': config.labelId,
                 'data-target': config.toggle,

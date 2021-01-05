@@ -242,7 +242,7 @@
 {% macro lightswitchField(config) %}
     {% set config = config|merge({
         id: config.id ?? "lightswitch#{random()}",
-        labelId: config.labelId ?? "#lightswitchlabel#{random()}",
+        labelId: config.labelId ?? "lightswitchlabel#{random()}",
         fieldClass: (config.fieldClass ?? [])|explodeClass|push('lightswitch-field'),
     }) %}
     {{ _self.field(config, _self.lightswitch(config|withoutKey('label'))) }}

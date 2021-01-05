@@ -1,6 +1,7 @@
 # Release Notes for Craft CMS 3.x
 
 ### Changed
+- Improved the accessibility of lightswitches in the control panel. ([#7313](https://github.com/craftcms/cms/issues/7313))
 - Improved the error message that is output when running the `clear-caches/cp-resources` command, if the `@webroot` alias isn’t explicitly set. ([#7286](https://github.com/craftcms/cms/issues/7286))
 - Improved the accessibility of the Login page. ([#7268](https://github.com/craftcms/cms/issues/7268), [#7287](https://github.com/craftcms/cms/issues/7287), [#7288](https://github.com/craftcms/cms/issues/7288))
 - Added `aria-label` or `aria-hidden` attributes to control panel icons, where appropriate. ([#7302](https://github.com/craftcms/cms/pull/7302))
