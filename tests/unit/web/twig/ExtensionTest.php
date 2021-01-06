@@ -64,20 +64,20 @@ class ExtensionTest extends Unit
         Craft::$app->getRequest()->setRawBody('This is a raw body');
 
         // Current user
-        $this->extensionRenderTest(
-            '{{ currentUser.firstName }} | {{ currentUser.lastName }}',
-            'John | Smith'
+        $this->testRenderResult(
+            'John | Smith',
+            '{{ currentUser.firstName }} | {{ currentUser.lastName }}'
         );
 
         // Craft variable - poke various calls.
-        $this->extensionRenderTest(
-            '{{ craft.app.user.getIdentity().firstName }}',
-            'John'
+        $this->testRenderResult(
+            'John',
+            '{{ craft.app.user.getIdentity().firstName }}'
         );
 
-        $this->extensionRenderTest(
-            '{{ craft.app.request.getRawBody() }}',
-            'This is a raw body'
+        $this->testRenderResult(
+            'This is a raw body',
+            '{{ craft.app.request.getRawBody() }}'
         );
     }
 
@@ -90,9 +90,9 @@ class ExtensionTest extends Unit
     {
         Craft::$app->setEdition(Craft::Pro);
         Craft::$app->getView()->setTemplateMode(View::TEMPLATE_MODE_CP);
-        $this->extensionRenderTest(
-            Craft::$app->getEdition() . ' | 0 | 1',
-            '' . Craft::$app->getEdition() . ' | ' . Craft::Solo . ' | ' . Craft::Pro
+        $this->testRenderResult(
+            '' . Craft::$app->getEdition() . ' | ' . Craft::Solo . ' | ' . Craft::Pro,
+            Craft::$app->getEdition() . ' | 0 | 1'
         );
     }
 
@@ -103,9 +103,9 @@ class ExtensionTest extends Unit
     public function testGlobalsWithUninstalledCraft()
     {
         Craft::$app->setIsInstalled(false);
-        $this->extensionRenderTest(
-            '{{ systemName }} | {{ currentSite }} | {{ siteName }} | {{ siteUrl }}',
-            ' |  |  | '
+        $this->testRenderResult(
+            ' |  |  | ',
+            '{{ systemName }} | {{ currentSite }} | {{ siteName }} | {{ siteUrl }}'
         );
     }
 
@@ -120,9 +120,9 @@ class ExtensionTest extends Unit
     public function testSiteGlobals()
     {
         Craft::$app->getProjectConfig()->set('system.name', 'Im a test system');
-        $this->extensionRenderTest(
-            '{{ systemName }} | {{ currentSite.handle }} {{ currentSite }} {{ siteUrl }}',
-            'Im a test system | default Craft test site ' . TestSetup::SITE_URL
+        $this->testRenderResult(
+            'Im a test system | default Craft test site ' . TestSetup::SITE_URL,
+            '{{ systemName }} | {{ currentSite.handle }} {{ currentSite }} {{ siteUrl }}'
         );
     }
 
@@ -135,9 +135,9 @@ class ExtensionTest extends Unit
     {
         Craft::$app->getView()->setTemplateMode(View::TEMPLATE_MODE_SITE);
 
-        $this->extensionRenderTest(
-            '{{ aGlobalSet }} | {{ aDifferentGlobalSet }}',
-            'A global set | A different global set'
+        $this->testRenderResult(
+            'A global set | A different global set',
+            '{{ aGlobalSet }} | {{ aDifferentGlobalSet }}'
         );
     }
 
@@ -148,16 +148,16 @@ class ExtensionTest extends Unit
     public function testCsrfInputFunction()
     {
         Craft::$app->getConfig()->getGeneral()->enableCsrfProtection = true;
-        $this->extensionRenderTest(
-            '{{ csrfInput() }}',
-            '<input type="hidden" name="CRAFT_CSRF_TOKEN" value="' . Craft::$app->getRequest()->getCsrfToken() . '">'
+        $this->testRenderResult(
+            '<input type="hidden" name="CRAFT_CSRF_TOKEN" value="' . Craft::$app->getRequest()->getCsrfToken() . '">',
+            '{{ csrfInput() }}'
         );
 
         // Custom name - just to be sure.
         Craft::$app->getRequest()->csrfParam = 'HACKER_POOF';
-        $this->extensionRenderTest(
-            '{{ csrfInput() }}',
-            '<input type="hidden" name="HACKER_POOF" value="' . Craft::$app->getRequest()->getCsrfToken() . '">'
+        $this->testRenderResult(
+            '<input type="hidden" name="HACKER_POOF" value="' . Craft::$app->getRequest()->getCsrfToken() . '">',
+            '{{ csrfInput() }}'
         );
     }
 
@@ -169,14 +169,14 @@ class ExtensionTest extends Unit
      */
     public function testRedirectInputFunction()
     {
-        $this->extensionRenderTest(
-            '{{ redirectInput("A URL") }}',
-            '<input type="hidden" name="redirect" value="' . Craft::$app->getSecurity()->hashData('A URL') . '">'
+        $this->testRenderResult(
+            '<input type="hidden" name="redirect" value="' . Craft::$app->getSecurity()->hashData('A URL') . '">',
+            '{{ redirectInput("A URL") }}'
         );
 
-        $this->extensionRenderTest(
-            '{{ redirectInput("A URL WITH CHARS !@#$%^*()😋") }}',
-            '<input type="hidden" name="redirect" value="' . Craft::$app->getSecurity()->hashData('A URL WITH CHARS !@#$%^*()😋') . '">'
+        $this->testRenderResult(
+            '<input type="hidden" name="redirect" value="' . Craft::$app->getSecurity()->hashData('A URL WITH CHARS !@#$%^*()😋') . '">',
+            '{{ redirectInput("A URL WITH CHARS !@#$%^*()😋") }}'
         );
     }
 
@@ -186,14 +186,14 @@ class ExtensionTest extends Unit
      */
     public function testActionInputFunction()
     {
-        $this->extensionRenderTest(
-            '{{ actionInput("A URL") }}',
-            '<input type="hidden" name="action" value="A URL">'
+        $this->testRenderResult(
+            '<input type="hidden" name="action" value="A URL">',
+            '{{ actionInput("A URL") }}'
         );
 
-        $this->extensionRenderTest(
-            '{{ actionInput("A URL WITH CHARS !@#$%^&*()😋") }}',
-            '<input type="hidden" name="action" value="A URL WITH CHARS !@#$%^&amp;*()😋">'
+        $this->testRenderResult(
+            '<input type="hidden" name="action" value="A URL WITH CHARS !@#$%^&amp;*()😋">',
+            '{{ actionInput("A URL WITH CHARS !@#$%^&*()😋") }}'
         );
     }
 
@@ -204,17 +204,17 @@ class ExtensionTest extends Unit
     public function testRenderObjectTemplateFunction()
     {
         // This is some next level inception stuff IMO.....
-        $this->extensionRenderTest(
-            '{{ renderObjectTemplate("{{ object.firstName}}", {firstName: "John"}) }}',
-            'John'
+        $this->testRenderResult(
+            'John',
+            '{{ renderObjectTemplate("{{ object.firstName}}", {firstName: "John"}) }}'
         );
     }
 
     public function testExpression()
     {
-        $this->extensionRenderTest(
-            '{% set expression =  expression("Im an expression", ["var"]) %}{{ expression }} | {{ expression.params[0] }} | {{ expression.expression }}',
-            'Im an expression | var | Im an expression'
+        $this->testRenderResult(
+            'Im an expression | var | Im an expression',
+            '{% set expression =  expression("Im an expression", ["var"]) %}{{ expression }} | {{ expression.params[0] }} | {{ expression.expression }}'
         );
     }
 
@@ -224,9 +224,9 @@ class ExtensionTest extends Unit
      */
     public function testGetenvFunction()
     {
-        $this->extensionRenderTest(
-            '{{ getenv("FROM_EMAIL_NAME") }} | {{ getenv("FROM_EMAIL_ADDRESS") }}',
-            'Craft CMS | info@craftcms.com'
+        $this->testRenderResult(
+            'Craft CMS | info@craftcms.com',
+            '{{ getenv("FROM_EMAIL_NAME") }} | {{ getenv("FROM_EMAIL_ADDRESS") }}'
         );
     }
 
@@ -236,14 +236,14 @@ class ExtensionTest extends Unit
      */
     public function testParseEnvFunction()
     {
-        $this->extensionRenderTest(
-            '{{ parseEnv("$FROM_EMAIL_NAME") }}',
-            'Craft CMS'
+        $this->testRenderResult(
+            'Craft CMS',
+            '{{ parseEnv("$FROM_EMAIL_NAME") }}'
         );
 
-        $this->extensionRenderTest(
-            '{{ parseEnv("FROM_EMAIL_NAME") }}',
-            'FROM_EMAIL_NAME'
+        $this->testRenderResult(
+            'FROM_EMAIL_NAME',
+            '{{ parseEnv("FROM_EMAIL_NAME") }}'
         );
     }
 
@@ -255,19 +255,19 @@ class ExtensionTest extends Unit
     {
         $arrayObject = new ArrayObject(['John', 'Smith']);
 
-        $this->extensionRenderTest(
-            '{{ "Im a string"|indexOf("a") }}',
-            '3'
+        $this->testRenderResult(
+            '3',
+            '{{ "Im a string"|indexOf("a") }}'
         );
 
-        $this->extensionRenderTest(
-            '{{ [2, 3, 4, 5]|indexOf(3) }}',
-            '1'
-        );
-
-        $this->extensionRenderTest(
-            '{{ ArrayObject|indexOf("Smith") }}',
+        $this->testRenderResult(
             '1',
+            '{{ [2, 3, 4, 5]|indexOf(3) }}'
+        );
+
+        $this->testRenderResult(
+            '1',
+            '{{ ArrayObject|indexOf("Smith") }}',
             ['ArrayObject' => $arrayObject]
         );
     }
@@ -279,9 +279,9 @@ class ExtensionTest extends Unit
     public function testShuffleFunction()
     {
         // 1 means true (string version of bool)
-        $this->extensionRenderTest(
-            '{% set a = [0,1,2,3,4,5,6,7,8,9,"a","b","c","d","e","f"] %}{{ a != shuffle(a) or a != shuffle(a) }}',
-            '1'
+        $this->testRenderResult(
+            '1',
+            '{% set a = [0,1,2,3,4,5,6,7,8,9,"a","b","c","d","e","f"] %}{{ a != shuffle(a) or a != shuffle(a) }}'
         );
     }
 
@@ -291,13 +291,13 @@ class ExtensionTest extends Unit
      */
     public function testWithoutFilter()
     {
-        $this->extensionRenderTest(
-            '{{ ["foo","bar","baz"]|without("baz")|join(",") }}',
-            'foo,bar'
+        $this->testRenderResult(
+            'foo,bar',
+            '{{ ["foo","bar","baz"]|without("baz")|join(",") }}'
         );
-        $this->extensionRenderTest(
-            '{{ ["foo","bar","baz"]|without(["bar","baz"])|join(",") }}',
-            'foo'
+        $this->testRenderResult(
+            'foo',
+            '{{ ["foo","bar","baz"]|without(["bar","baz"])|join(",") }}'
         );
     }
 
@@ -307,24 +307,24 @@ class ExtensionTest extends Unit
      */
     public function testWithoutKeyFilter()
     {
-        $this->extensionRenderTest(
-            '{{ {a:"foo",b:"bar",c:"baz"}|withoutKey("c")|join(",") }}',
-            'foo,bar'
+        $this->testRenderResult(
+            'foo,bar',
+            '{{ {a:"foo",b:"bar",c:"baz"}|withoutKey("c")|join(",") }}'
         );
-        $this->extensionRenderTest(
-            '{{ {a:"foo",b:"bar",c:"baz"}|withoutKey(["b","c"])|join(",") }}',
-            'foo'
+        $this->testRenderResult(
+            'foo',
+            '{{ {a:"foo",b:"bar",c:"baz"}|withoutKey(["b","c"])|join(",") }}'
         );
     }
 
     /**
-     * @param string $renderString
      * @param string $expectedString
+     * @param string $renderString
      * @param array $variables
      * @throws LoaderError
      * @throws SyntaxError
      */
-    protected function extensionRenderTest(string $renderString, string $expectedString, array $variables = [])
+    protected function testRenderResult(string $expectedString, string $renderString, array $variables = [])
     {
         $result = $this->view->renderString($renderString, $variables);
         self::assertSame(
