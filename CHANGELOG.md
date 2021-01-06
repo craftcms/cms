@@ -14,6 +14,7 @@
 - Checkbox and radio button group fields now use `<fieldset>`s and `<legend>`s throughout the control panel.
 - The `project-config/apply` command now displays a list of changes it is applying. ([#7235](https://github.com/craftcms/cms/issues/7235))
 - The `allowedFileExtensions` config setting now includes several file extensions used by caption and subtitle file formats by default. ([#7304](https://github.com/craftcms/cms/issues/7304))
+- The `currency`, `filesize`, `number`, `percentage`, and `timestamp` Twig filters now return the passed-in value verbatim if it wasn’t a valid number.
 - Craft no longer reports user deprecation errors logged with `E_USER_DEPRECATED`.
 - Made it easier to extend Craft’s Codeception testing module with custom code. ([#7339](https://github.com/craftcms/cms/issues/7339))
 - Updated Yii to 2.0.40.
