@@ -5,6 +5,7 @@
 ### Added
 - Added the “Captions/Subtitles” file kind. ([#7304](https://github.com/craftcms/cms/issues/7304))
 - Added the `handleCasing` config setting, which determines the default casing that should be used when autogenerating component handles. ([#4276](https://github.com/craftcms/cms/issues/4276))
+- The `project-config/apply` command now displays a list of changes it is applying. ([#7235](https://github.com/craftcms/cms/issues/7235))
 - Added `craft\base\FieldInterface::useFieldset()`, which custom fields can override to return `true` if a `<fieldset>` and `<legend>` should be used, rather than a `<div>` and `<label>`.
 - Added `craft\fieldlayoutelements\BaseField::useFieldset()`.
 - Added `craft\helpers\Template::paginateQuery()`.
