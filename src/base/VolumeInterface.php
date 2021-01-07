@@ -50,7 +50,7 @@ interface VolumeInterface extends SavableComponentInterface
      * @param bool $recursive whether to fetch file list recursively, defaults to true
      * @return Generator|VolumeListing[]
      */
-    public function getFileList(string $directory, bool $recursive = true): Generator;
+    public function getFileList(string $directory = '', bool $recursive = true): Generator;
 
     /**
      * Return the metadata about a file.

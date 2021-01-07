@@ -119,7 +119,7 @@ class Local extends Volume implements LocalVolumeInterface
     /**
      * @inheritdoc
      */
-    public function getFileList(string $directory, bool $recursive = true): Generator
+    public function getFileList(string $directory = '', bool $recursive = true): Generator
     {
         $targetDir = $this->prefixPath($directory);
         $iterator = $recursive ? $this->getRecursiveIterator($targetDir) : new DirectoryIterator($targetDir);
@@ -133,7 +133,7 @@ class Local extends Volume implements LocalVolumeInterface
             $filePath = StringHelper::removeLeft($listing->getRealPath(), $this->prefixPath());
 
             yield new VolumeListing([
-                ' path' => pathinfo($filePath, PATHINFO_DIRNAME),
+                'path' => pathinfo($filePath, PATHINFO_DIRNAME),
                 'filename' => $listing->getFilename(),
                 'type' => $listing->isDir() ? 'dir' : 'file',
                 'volume' => $this
@@ -277,7 +277,7 @@ class Local extends Volume implements LocalVolumeInterface
      * @return string
      * @throws VolumeException if path is not contained.
      */
-    protected function prefixPath(string $path): string
+    protected function prefixPath(string $path = ''): string
     {
         if (!Path::ensurePathIsContained($path)) {
             throw new VolumeException("The path `$path` is not contained.");
