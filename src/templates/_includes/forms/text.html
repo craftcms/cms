@@ -22,6 +22,8 @@
     autocapitalize: (autocapitalize ?? true) ? false : 'off',
     disabled: disabled ?? false,
     readonly: readonly ?? false,
+    'aria-label': attribute(_context, 'aria-label')|default(false),
+    'aria-describedby': attribute(_context, 'aria-describedby')|default(false),
     title: title ?? false,
     placeholder: placeholder ?? false,
     step: step ?? false,
