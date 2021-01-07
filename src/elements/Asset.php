@@ -998,6 +998,9 @@ class Asset extends Element
 
             $sizeTransform = $transform ? $transform->toArray() : [];
 
+            // Having handle or name here will override dimensions, so we don't want that.
+            unset($sizeTransform['handle'], $sizeTransform['name']);
+
             if ($unit === 'w') {
                 $sizeTransform['width'] = (int)$value;
             } else {
