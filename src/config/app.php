@@ -229,12 +229,18 @@ return [
                 if ($id) {
                     // If they have a preferred locale, use it
                     $usersService = Craft::$app->getUsers();
-                    if (($locale = $usersService->getUserPreference($id, 'locale')) !== null) {
+                    if (
+                        ($locale = $usersService->getUserPreference($id, 'locale')) !== null &&
+                        $i18n->validateAppLocaleId($locale)
+                    ) {
                         return $i18n->getLocaleById($locale);
                     }
 
                     // Otherwise see if they have a preferred language
-                    if (($language = $usersService->getUserPreference($id, 'language')) !== null) {
+                    if (
+                        ($language = $usersService->getUserPreference($id, 'language')) !== null &&
+                        $i18n->validateAppLocaleId($language)
+                    ) {
                         return $i18n->getLocaleById($language);
                     }
                 }

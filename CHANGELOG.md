@@ -9,6 +9,7 @@
 - Added `craft\base\FieldInterface::useFieldset()`, which custom fields can override to return `true` if a `<fieldset>` and `<legend>` should be used, rather than a `<div>` and `<label>`.
 - Added `craft\fieldlayoutelements\BaseField::useFieldset()`.
 - Added `craft\helpers\Template::paginateQuery()`.
+- Added `craft\i18n\I18N::validateAppLocaleId()`.
 
 ### Changed
 - Field layout designers will no longer create a new tab if no tab name is entered in the prompt. ([#7333](https://github.com/craftcms/cms/issues/7333))

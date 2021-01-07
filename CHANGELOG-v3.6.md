@@ -77,6 +77,7 @@
 - Added `craft\helpers\Gql::nPlus1Complexity()`.
 - Added `craft\helpers\Gql::singleQueryComplexity()`.
 - Added `craft\helpers\Template::paginateQuery()`.
+- Added `craft\i18n\I18N::validateAppLocaleId()`.
 - Added `craft\log\Dispatcher`.
 - Added `craft\models\FieldLayout::EVENT_CREATE_FORM`. ([#7258](https://github.com/craftcms/cms/issues/7258))
 - Added `craft\models\Site::getName()`.

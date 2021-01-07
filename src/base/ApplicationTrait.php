@@ -1490,7 +1490,11 @@ trait ApplicationTrait
             // Don't actually try to fetch the user, as plugins haven't been loaded yet.
             $session = $this->getSession();
             $id = $session->getHasSessionId() || $session->getIsActive() ? $session->get($this->getUser()->idParam) : null;
-            if ($id && ($language = $this->getUsers()->getUserPreference($id, 'language')) !== null) {
+            if (
+                $id &&
+                ($language = $this->getUsers()->getUserPreference($id, 'language')) !== null &&
+                Craft::$app->getI18n()->validateAppLocaleId($language)
+            ) {
                 return $language;
             }
         }
