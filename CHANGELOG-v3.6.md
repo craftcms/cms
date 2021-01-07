@@ -182,3 +182,4 @@
 - Fixed a bug where `craft\helpers\Db::prepareValuesForDb()` would omit or JSON-encode `DateTime` objects, depending on the PHP version, rather than converting them to ISO-8601-formatted strings.
 - Fixed a bug where info icons’ content was focusable before the icon was activated. ([#7257](https://github.com/craftcms/cms/issues/7257))
 - Fixed a bug where generated URLs would include the token from the current request, even if it had expired or met its usage limit.
+- Fixed a bug where Number field settings and input values could be stored incorrectly if the user’s formatting locale used a different decimal character that the application language.

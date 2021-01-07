@@ -1,8 +1,9 @@
 {% import "_includes/forms" as forms %}
 
-{{ hiddenInput('defaultValue[locale]', craft.app.language) }}
-{{ hiddenInput('min[locale]', craft.app.language) }}
-{{ hiddenInput('max[locale]', craft.app.language) }}
+{% set locale = craft.app.locale.id %}
+{{ hiddenInput('defaultValue[locale]', locale) }}
+{{ hiddenInput('min[locale]', locale) }}
+{{ hiddenInput('max[locale]', locale) }}
 
 {{ forms.textField({
     label: "Default Value"|t('app'),
