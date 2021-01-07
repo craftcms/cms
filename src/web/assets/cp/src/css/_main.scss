@@ -4643,17 +4643,12 @@ fieldset {
       top: calc(50% - 10px);
       @include left(14px);
       z-index: 0;
-      color: $lightTextColor;
 
       &,
       &:before {
         user-select: none;
         pointer-events: none;
         z-index: 1;
-      }
-
-      #details & {
-        color: $darkHairlineColor;
       }
     }
 

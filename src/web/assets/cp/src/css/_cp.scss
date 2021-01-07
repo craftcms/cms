@@ -1007,12 +1007,6 @@ $toolbarIconColor: darken($inputColor, 10%);
       }
     }
 
-    .text::placeholder,
-    .datewrapper .text:placeholder-shown + div[data-icon],
-    .timewrapper .text:placeholder-shown + div[data-icon] {
-      color: $grey300;
-    }
-
     .ui-datepicker {
       @include margin(0, 0, 0, -8px);
     }
