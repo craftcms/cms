@@ -759,6 +759,109 @@ class ExtensionTest extends Unit
     }
 
     /**
+     *
+     */
+    public function testCurrencyFilter()
+    {
+        $this->testRenderResult(
+            '',
+            '{{ null|currency }}'
+        );
+
+        $this->testRenderResult(
+            '$299.00',
+            '{{ 299|currency }}'
+        );
+
+        $this->testRenderResult(
+            '$299',
+            '{{ 299|currency(stripZeros=true) }}'
+        );
+
+        // |currency should swallow the InvalidArgumentException here
+        $this->testRenderResult(
+            'foo',
+            '{{ "foo"|currency }}'
+        );
+    }
+
+    /**
+     *
+     */
+    public function testFilesizeFilter()
+    {
+        $this->testRenderResult(
+            '',
+            '{{ null|filesize }}'
+        );
+
+        $this->testRenderResult(
+            '1 KB',
+            '{{ 1000|filesize }}'
+        );
+
+        // |filesize should swallow the InvalidArgumentException here
+        $this->testRenderResult(
+            'foo',
+            '{{ "foo"|filesize }}'
+        );
+    }
+
+    /**
+     *
+     */
+    public function testNumberFilter()
+    {
+        $this->testRenderResult(
+            '',
+            '{{ null|number }}'
+        );
+
+        $this->testRenderResult(
+            '1,000',
+            '{{ 1000|number }}'
+        );
+
+        $this->testRenderResult(
+            '1,000.00',
+            '{{ 1000|number(decimals=2) }}'
+        );
+
+        // |number should swallow the InvalidArgumentException here
+        $this->testRenderResult(
+            'foo',
+            '{{ "foo"|number }}'
+        );
+    }
+
+    /**
+     *
+     */
+    public function testPercentageFilter()
+    {
+        $this->testRenderResult(
+            '',
+            '{{ null|percentage }}'
+        );
+
+        $this->testRenderResult(
+            '80%',
+            '{{ 0.8|percentage }}'
+        );
+
+        $this->testRenderResult(
+            '80.0%',
+            '{{ 0.8|percentage(decimals=1) }}'
+        );
+
+        // |percentage should swallow the InvalidArgumentException here
+        $this->testRenderResult(
+            'foo',
+            '{{ "foo"|percentage }}'
+        );
+    }
+
+    /**
      * @throws LoaderError
      * @throws SyntaxError
      */
