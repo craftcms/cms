@@ -16,6 +16,9 @@ Craft.Preview = Garnish.Base.extend({
     $iframeContainer: null,
     $targetBtn: null,
     $targetMenu: null,
+    $breakpointButtons: null,
+    $zoomMenu: null,
+    $deviceMask: null,
     $iframe: null,
     iframeLoaded: false,
     $tempInput: null,
@@ -138,16 +141,42 @@ Craft.Preview = Garnish.Base.extend({
 
                 // Breakpoint buttons
                 this.$breakpointButtons = $('<div/>', {'class': 'btngroup lp-breakpoints'}).appendTo($previewHeader);
-                // TODO convert element syntax
-                $('<div class="lp-breakpoint-btn lp-breakpoint-btn--mobile" data-width="375" data-height="653" data-breakpoint="mobile" title="' + Craft.t('app', 'Mobile') + '" />').appendTo(this.$breakpointButtons);
-                $('<div class="lp-breakpoint-btn lp-breakpoint-btn--tablet" data-width="768" data-height="1006" data-breakpoint="tablet" title="' + Craft.t('app', 'Tablet') + '" />').appendTo(this.$breakpointButtons);
-                $('<div class="lp-breakpoint-btn lp-breakpoint-btn--desktop lp-breakpoint-btn--active" data-width="" data-height="" data-breakpoint="desktop" title="' + Craft.t('app', 'Desktop') + '" />').appendTo(this.$breakpointButtons);
+                $('<div/>', {
+                    'class': 'lp-breakpoint-btn lp-breakpoint-btn--mobile',
+                    title: Craft.t('app', 'Mobile'),
+                    data: {
+                        width: 375,
+                        height: 653,
+                        breakpoint: 'mobile'
+                    }
+                }).appendTo(this.$breakpointButtons);
+                $('<div/>', {
+                    'class': 'lp-breakpoint-btn lp-breakpoint-btn--tablet',
+                    title: Craft.t('app', 'Tablet'),
+                    data: {
+                        width: 768,
+                        height: 1006,
+                        breakpoint: 'tablet'
+                    }
+                }).appendTo(this.$breakpointButtons);
+                $('<div/>', {
+                    'class': 'lp-breakpoint-btn lp-breakpoint-btn--desktop lp-breakpoint-btn--active',
+                    title: Craft.t('app', 'Desktop'),
+                    data: {
+                        width: '',
+                        height: '',
+                        breakpoint: 'desktop'
+                    }
+                }).appendTo(this.$breakpointButtons);
 
                 // Zoom
-                // TODO convert element syntax
                 // TODO hide until activated
-                const $zoomMenuBtn = $('<div class="btn menubtn">' + Craft.t('app', 'Zoom') + '</div>').appendTo($previewBtnGroup);
-                this.$zoomMenu = $('<div class="menu" />').appendTo($previewBtnGroup);
+                const $zoomMenuBtn = $('<div/>', {
+                    type: 'button',
+                    'class': 'btn menubtn',
+                    text: Craft.t('app', 'Zoom'),
+                }).appendTo($previewBtnGroup);
+                this.$zoomMenu = $('<div/>', {'class': 'menu'}).appendTo($previewBtnGroup);
                 const $zoomMenuUl = $('<ul />', {'class': 'padded'}).appendTo(this.$zoomMenu);
 
                 $('<li><a data-zoom="full">100%</a></li>').appendTo($zoomMenuUl);
@@ -155,20 +184,42 @@ Craft.Preview = Garnish.Base.extend({
                 $('<li><a data-zoom="half">50%</a></li>').appendTo($zoomMenuUl);
 
                 // TODO
-                this.zoomMenuBtn = new Garnish.MenuBtn($zoomMenuBtn, {
+                new Garnish.MenuBtn($zoomMenuBtn, {
                     // onOptionSelect: $.proxy(this, 'onZoom')
                 });
-
 
                 // Orientation toggle
                 // TODO convert element syntax
                 // TODO hide until activated
-                const $orientationToggle = $('<div class="btn" data-icon="refresh"></div>').appendTo($previewBtnGroup);
+                const $orientationToggle = $('<div/>', {
+                    'class': 'btn',
+                    'data-icon': 'refresh'
+                }).appendTo($previewBtnGroup);
                 // TODO
                 // this.addListener($orientationToggle, 'activate', 'toggleOrientation');
+
+
+                // Breakpoint button click handlers
+                this.addListener($('.lp-breakpoint-btn', this.$breakpointButtons), 'activate', 'switchBreakpoint');
+
+
+                // TODO: Set the window to the last breakpoint we have in the cookie
+                // var currentBreakpoint = Cookies.get('portal_breakpoint');
+                // if (currentBreakpoint) {
+                //     this.$breakpointButtons.find('.portal-lp-btn[data-breakpoint="' + currentBreakpoint + '"]').click();
+                // }
+
+                // Device mask
+                this.$deviceMask = $('<div/>', {
+                    'class': 'lp-device-mask'
+                });
             }
 
             this.$iframeContainer = $('<div/>', {'class': 'lp-iframe-container'}).appendTo(this.$previewContainer);
+
+            if (this.$deviceMask) {
+                this.$iframeContainer.append(this.$deviceMask);
+            }
 
             this.dragger = new Garnish.BaseDrag(this.$dragHandle, {
                 axis: Garnish.X_AXIS,
@@ -439,6 +490,63 @@ Craft.Preview = Garnish.Base.extend({
 
             this.slideIn();
         });
+    },
+
+    switchBreakpoint: function(ev) {
+
+        let $btn = $(ev.target),
+            w = $btn.data('width'),
+            h = $btn.data('height'),
+            bp = $btn.data('breakpoint');
+
+
+        // Set the breakpoint cookie
+        // Cookies.set('portal_breakpoint', bp);
+
+
+        // Active state on the button
+        $('.lp-breakpoint-btn', this.$toolbar).removeClass('lp-breakpoint-btn--active');
+        $btn.addClass('lp-breakpoint-btn--active');
+
+
+        // Check the orientation and switch if needed
+        // var orientation = Cookies.get('portal_orientation');
+        // if (orientation && orientation === 'landscape') {
+        //     w = $btn.data('height');
+        //     h = $btn.data('width');
+        //     Craft.livePreview.$iframeContainer.addClass('portal-lp--landscape');
+        // }
+
+
+        // Change the size of the iframe if we can
+        if (w !== '' && h !== '') {
+
+            // Toggle classes
+            // if (this.targetMenuBtn) this.targetMenuBtn.menu.$container.addClass('dark');
+            // if (this.zoomMenuBtn) this.zoomMenuBtn.menu.$container.addClass('dark');
+
+            this.$iframeContainer.addClass('lp-iframe-container--resized');
+
+            if (bp === 'tablet') {
+                this.$iframeContainer.addClass('lp-iframe-container--tablet');
+            } else {
+                this.$iframeContainer.removeClass('lp-iframe-container--tablet');
+            }
+
+            // Make the size change
+            this.$iframe.css({
+                width: w + 'px',
+                height: h + 'px',
+                marginLeft: '-'+(w/2)+'px'
+            });
+
+        } else {
+
+            // Desktop
+            // this.resetIframe();
+
+        }
+
     },
 
     _getClone: function($field) {

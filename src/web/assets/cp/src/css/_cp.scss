@@ -1356,6 +1356,10 @@ $toolbarIconColor: darken($inputColor, 10%);
     }
   }
 
+  .lp-device-mask {
+    display: none;
+  }
+
   .lp-iframe-container {
     flex: 1;
     overflow: auto;
@@ -1364,6 +1368,51 @@ $toolbarIconColor: darken($inputColor, 10%);
       display: block;
       width: 100%;
       min-height: 100%;
+    }
+
+    &--resized {
+      flex: none;
+
+      .lp-device-mask {
+        display: block;
+        position: absolute;
+        z-index: 1;
+
+        top: -24px;
+        left: 50%;
+        margin-left: -213px;
+        margin-bottom: 24px;
+
+        width: 426px;
+        height: 853px;
+
+        background-image: url(../images/live-preview/iphone.svg);
+        background-repeat: no-repeat;
+
+        transform: scale(0.75) rotate(0deg);
+        transition: transform .3s, top .3s;
+      }
+
+      .lp-preview {
+        position: absolute;
+        z-index: 2;
+        min-height: auto;
+        top: 74px;
+        margin-bottom: 24px;
+
+        left: 50%;
+        margin-left: -187.5px;
+
+        background: #fff !important;
+        background-image: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#f9fafa));
+        background-image: linear-gradient(#fff, #f9fafa);
+        -webkit-box-shadow: 0 0px 10px 0px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 0px 10px 0px rgba(0, 0, 0, 0.2);
+
+        opacity: 1;
+        transform: scale(0.75) rotate(0deg);
+        transition: opacity .3s, transform .3s, top .3s;
+      }
     }
   }
 }
