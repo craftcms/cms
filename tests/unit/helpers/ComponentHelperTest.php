@@ -74,14 +74,14 @@ class ComponentHelperTest extends Unit
     }
 
     /**
-     * @dataProvider settingsArraysDataProvider
+     * @dataProvider mergeSettingsDataProvider
      *
-     * @param $mergeable
-     * @param $result
+     * @param array $expected
+     * @param array $config
      */
-    public function testSettingsMerging($mergeable, $result)
+    public function testMergeSettings(array $expected, array $config)
     {
-        self::assertSame($result, Component::mergeSettings($mergeable));
+        self::assertSame($expected, Component::mergeSettings($config));
     }
 
     /**
@@ -104,7 +104,8 @@ class ComponentHelperTest extends Unit
             ],
             'dependency-heavy' => [
                 function() {
-                    return Component::createComponent([
+                    /** @var DependencyHeavyComponentExample $component */
+                    $component = Component::createComponent([
                         'type' => DependencyHeavyComponentExample::class,
                         'dependency1' => 'value1',
                         'dependency2' => 'value2',
@@ -112,6 +113,11 @@ class ComponentHelperTest extends Unit
                             'settingsdependency1' => 'value'
                         ]
                     ]);
+
+                    $this->assertEquals('value1', $component->dependency1);
+                    $this->assertEquals('value2', $component->dependency2);
+                    $this->assertEquals('value', $component->settingsdependency1);
+                    return $component;
                 }
             ]
         ];
@@ -169,7 +175,7 @@ class ComponentHelperTest extends Unit
     /**
      * @return array
      */
-    public function settingsArraysDataProvider(): array
+    public function mergeSettingsDataProvider(): array
     {
         $mergedComponentArray = [
             'name' => 'Component',
@@ -180,6 +186,7 @@ class ComponentHelperTest extends Unit
 
         return [
             'json-basic' => [
+                $mergedComponentArray,
                 [
                     'name' => 'Component',
                     'description' => 'Lorem ipsum',
@@ -188,9 +195,9 @@ class ComponentHelperTest extends Unit
                         'setting2' => 'stuff2'
                     ])
                 ],
-                $mergedComponentArray,
             ],
             'basic-component-array' => [
+                $mergedComponentArray,
                 [
                     'name' => 'Component',
                     'description' => 'Lorem ipsum',
@@ -199,7 +206,6 @@ class ComponentHelperTest extends Unit
                         'setting2' => 'stuff2'
                     ]
                 ],
-                $mergedComponentArray
             ],
             'nested-doesnt-change' => [
                 [
@@ -213,16 +219,16 @@ class ComponentHelperTest extends Unit
                         'name' => 'Component',
                         'settings' => ['setting1' => 'stuff'],
                     ]
-                ]
+                ],
             ],
             'key-isnt-removed' => [
                 ['settings'],
-                ['settings']
+                ['settings'],
             ],
             'empty-array' => [
                 [],
                 [],
-            ]
+            ],
         ];
     }
 }

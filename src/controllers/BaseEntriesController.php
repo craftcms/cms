@@ -105,6 +105,28 @@ abstract class BaseEntriesController extends Controller
     }
 
     /**
+     * Enforces entry deletion permissions.
+     *
+     * @param Entry $entry
+     * @throws ForbiddenHttpException
+     * @since 3.6.0
+     */
+    protected function enforceDeleteEntryPermissions(Entry $entry)
+    {
+        $currentUser = Craft::$app->getUser()->getIdentity();
+        $section = $entry->getSection();
+
+        if ($entry->getIsDraft()) {
+            /** @var Entry|DraftBehavior $entry */
+            if (!$entry->creatorId || $entry->creatorId != $currentUser->id) {
+                $this->requirePermission("deletePeerEntryDrafts:$section->uid");
+            }
+        } else if (!$entry->getIsDeletable()) {
+            throw new ForbiddenHttpException('User is not permitted to perform this action');
+        }
+    }
+
+    /**
      * Returns the document title that should be used on an Edit Entry page.
      *
      * @param Entry
@@ -133,7 +155,7 @@ abstract class BaseEntriesController extends Controller
      */
     protected function pageTitle(Entry $entry): string
     {
-        if ($entry->getIsUnsavedDraft()) {
+        if ($entry->getIsUnpublishedDraft()) {
             return Craft::t('app', 'Create a new entry');
         }
         return trim($entry->title) ?: Craft::t('app', 'Edit Entry');

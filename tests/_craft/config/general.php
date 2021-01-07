@@ -10,8 +10,8 @@ use craft\test\Craft;
  */
 return [
     'devMode' => true,
+    'omitScriptNameInUrls' => true,
     'cpTrigger' => 'adminustriggerus',
-    'siteUrl' => 'https://test.craftcms.test/index.php',
     'slugWordSeparator' => '--',
     'allowUppercaseInSlug' => true,
     'securityKey' => getenv('SECURITY_KEY'),

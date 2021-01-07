@@ -52,7 +52,7 @@
             <li>
                 {{ sourceLink(key, source, not keyPrefix, elementType) }}
                 {% if source.nested is defined and source.nested is not empty %}
-                    <div class="toggle"></div>
+                    <button class="toggle" aria-expanded="false" aria-label="{{ 'Show nested sources'|t('app') }}"></button>
                     {% include "_elements/sources" with {
                         keyPrefix: key ~ '/',
                         sources: source.nested

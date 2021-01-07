@@ -385,7 +385,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
 #alerts {
   background-color: $errorColor;
-  padding: 9px 0;
+  padding: 11px 0;
   text-align: center;
   color: $white;
 
@@ -533,11 +533,16 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
 #notifications {
   position: fixed;
-  width: calc(100% - #{$sidebarWidth});
+  top: 0;
+  width: 100%;
   z-index: 101;
   display: flex;
   justify-content: center;
   align-items: flex-start;
+
+  @media only screen and (min-width: $minFullUiWidth) {
+    width: calc(100% - #{$sidebarWidth});
+  }
 
   .notification {
     padding: 5px 10px;
@@ -1353,7 +1358,7 @@ $toolbarIconColor: darken($inputColor, 10%);
     }
 
     & > .toggle {
-      @include left(5px + 14px * $level);
+      @include left(14px * $level);
     }
   }
 
@@ -1462,12 +1467,10 @@ $toolbarIconColor: darken($inputColor, 10%);
         position: absolute;
         height: 34px;
         top: 0;
-        padding: 0 4px;
-
-        &:before {
-          position: relative;
-          top: 14px;
-        }
+        width: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
 
       ul {

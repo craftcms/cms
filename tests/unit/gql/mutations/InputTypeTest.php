@@ -7,42 +7,63 @@
 
 namespace craftunit\gql\mutations;
 
-use Codeception\Stub\Expected;
 use Codeception\Test\Unit;
-use Craft;
+use craft\base\Field;
+use craft\fields\Checkboxes;
+use craft\fields\Dropdown;
 use craft\fields\Matrix as MatrixField;
+use craft\fields\MultiSelect;
 use craft\fields\PlainText;
+use craft\fields\RadioButtons;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\input\File;
 use craft\gql\types\input\Matrix;
 use craft\models\MatrixBlockType;
 use GraphQL\Type\Definition\InputType;
+use GraphQL\Type\Definition\ListOfType;
+use GraphQL\Type\Definition\NonNull;
 
 class InputTypeTest extends Unit
 {
-    /**
-     * @var \UnitTester
-     */
-    protected $tester;
-
-    protected function _before()
-    {
-    }
-
-    protected function _after()
-    {
-    }
-
     public function testFileInput()
     {
         self::assertInstanceOf(InputType::class, File::getType());
     }
 
     /**
+     * Test allowed multiple options for field types.
+     *
+     * @param Field $field
+     * @param bool $isMulti
+     * @dataProvider multipleOptionsDataProvider
+     */
+    public function testMultipleOptions(Field $field, bool $isMulti)
+    {
+        $type = $field->getContentGqlMutationArgumentType();
+
+        if (is_array($type)) {
+            $type = $type['type'];
+        }
+
+        while ($type instanceof NonNull) {
+            $type = $type->getWrappedType();
+        }
+
+        if ($isMulti) {
+            $this->assertInstanceOf(ListOfType::class, $type);
+        } else {
+            $this->assertNotInstanceOf(ListOfType::class, $type);
+        }
+    }
+
+    /**
      * @dataProvider testMatrixInputDataProvider
+     * @param $matrixField
+     * @param $blockTypes
      */
     public function testMatrixInput($matrixField, $blockTypes)
     {
+        // Trigger addition to the registry
         $inputType = Matrix::getType($matrixField);
 
         $fieldTypeName = $matrixField->handle . '_MatrixInput';
@@ -59,13 +80,15 @@ class InputTypeTest extends Unit
      * Test Matrix input type normalizing values
      *
      * @dataProvider matrixInputValueNormalizerDataProvider
+     * @param $input
+     * @param $normalized
      */
     public function testMatrixInputValueNormalization($input, $normalized)
     {
         self::assertEquals($normalized, Matrix::normalizeValue($input));
     }
 
-    public function testMatrixInputDataProvider()
+    public function testMatrixInputDataProvider(): array
     {
         $data = [];
 
@@ -99,7 +122,7 @@ class InputTypeTest extends Unit
         return $data;
     }
 
-    public function matrixInputValueNormalizerDataProvider()
+    public function matrixInputValueNormalizerDataProvider(): array
     {
         return [
             [
@@ -184,6 +207,16 @@ class InputTypeTest extends Unit
                     ]
                 ],
             ]
+        ];
+    }
+
+    public function multipleOptionsDataProvider(): array
+    {
+        return [
+            [new RadioButtons(['handle' => 'someField']), false],
+            [new Dropdown(['handle' => 'someField']), false],
+            [new Checkboxes(['handle' => 'someField']), true],
+            [new MultiSelect(['handle' => 'someField']), true],
         ];
     }
 }

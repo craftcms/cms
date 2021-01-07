@@ -254,20 +254,6 @@ class CustomField extends BaseField
     /**
      * @inheritdoc
      */
-    protected function orientation(ElementInterface $element = null, bool $static = false): string
-    {
-        if (!$element || !$this->_field->getIsTranslatable($element)) {
-            return parent::orientation();
-        }
-
-        $site = $element->getSite();
-        $locale = Craft::$app->getI18n()->getLocaleById($site->language);
-        return $locale->getOrientation();
-    }
-
-    /**
-     * @inheritdoc
-     */
     protected function translatable(ElementInterface $element = null, bool $static = false): bool
     {
         return $this->_field->getIsTranslatable($element);

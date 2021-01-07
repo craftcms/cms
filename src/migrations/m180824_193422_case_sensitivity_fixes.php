@@ -27,9 +27,9 @@ class m180824_193422_case_sensitivity_fixes extends Migration
             $this->createIndex(null, Table::USERS, ['username']);
         } else {
             // Postgres is case-sensitive
-            $this->createIndex($this->db->getIndexName(Table::ELEMENTS_SITES, ['uri', 'siteId']), Table::ELEMENTS_SITES, ['lower([[uri]])', 'siteId']);
-            $this->createIndex($this->db->getIndexName(Table::USERS, ['email']), Table::USERS, ['lower([[email]])']);
-            $this->createIndex($this->db->getIndexName(Table::USERS, ['username']), Table::USERS, ['lower([[username]])']);
+            $this->createIndex(null, Table::ELEMENTS_SITES, ['lower([[uri]])', 'siteId']);
+            $this->createIndex(null, Table::USERS, ['lower([[email]])']);
+            $this->createIndex(null, Table::USERS, ['lower([[username]])']);
         }
     }
 

@@ -8,6 +8,7 @@
 namespace craft\base;
 
 use craft\elements\db\ElementQueryInterface;
+use craft\models\GqlSchema;
 use craft\records\FieldGroup;
 use GraphQL\Type\Definition\Type;
 use yii\validators\Validator;
@@ -341,6 +342,15 @@ interface FieldInterface extends SavableComponentInterface
      * @return FieldGroup|null
      */
     public function getGroup();
+
+    /**
+     * Returns whether the field should be included in the given GraphQL schema.
+     *
+     * @param GqlSchema
+     * @return bool
+     * @since 3.6.0
+     */
+    public function includeInGqlSchema(GqlSchema $schema): bool;
 
     /**
      * Returns the GraphQL type to be used for this field type.

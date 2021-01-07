@@ -294,7 +294,7 @@ class Globals extends Component
         }
 
         if ($isNewSet) {
-            $globalSet->uid = StringHelper::UUID();
+            $globalSet->uid = $globalSet->uid ?: StringHelper::UUID();
         } else if (!$globalSet->uid) {
             $globalSet->uid = Db::uidById(Table::GLOBALSETS, $globalSet->id);
         }
@@ -425,8 +425,19 @@ class Globals extends Component
             return false;
         }
 
-        Craft::$app->getProjectConfig()->remove(self::CONFIG_GLOBALSETS_KEY . '.' . $globalSet->uid, "Delete the “{$globalSet->handle}” global set");
+        $this->deleteSet($globalSet);
         return true;
+    }
+
+    /**
+     * Deletes a global set by its ID.
+     *
+     * @param GlobalSet $globalSet
+     * @since 3.6.0
+     */
+    public function deleteSet(GlobalSet $globalSet): void
+    {
+        Craft::$app->getProjectConfig()->remove(self::CONFIG_GLOBALSETS_KEY . '.' . $globalSet->uid, "Delete the “{$globalSet->handle}” global set");
     }
 
     /**
@@ -507,6 +518,16 @@ class Globals extends Component
 
         // Allow events again
         $projectConfig->muteEvents = false;
+    }
+
+    /**
+     * Resets the memoized globals.
+     *
+     * @since 3.6.0
+     */
+    public function reset(): void
+    {
+        $this->_allGlobalSets = $this->_editableGlobalSets = null;
     }
 
     /**

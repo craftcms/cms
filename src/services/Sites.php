@@ -1207,6 +1207,7 @@ class Sites extends Component
                 if ($site->primary) {
                     $this->_primarySite = $site;
 
+                    // todo: remove in Craft 4
                     if (is_string($generalConfig->siteName)) {
                         $site->overrideName($generalConfig->siteName);
                     }
@@ -1215,6 +1216,7 @@ class Sites extends Component
                     }
                 }
 
+                // todo: remove in Craft 4
                 if (is_array($generalConfig->siteName) && isset($generalConfig->siteName[$site->handle])) {
                     $site->overrideName($generalConfig->siteName[$site->handle]);
                 }

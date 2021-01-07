@@ -452,51 +452,6 @@ class View extends \yii\web\View
     }
 
     /**
-     * Renders a macro within a given Twig template.
-     *
-     * @param string $template The name of the template the macro lives in.
-     * @param string $macro The name of the macro.
-     * @param array $args Any arguments that should be passed to the macro.
-     * @param string|null $templateMode The template mode to use.
-     * @return string The rendered macro output.
-     * @throws TwigLoaderError
-     * @throws TwigRuntimeError
-     * @throws TwigSyntaxError
-     * @throws Exception if $templateMode is invalid
-     */
-    public function renderTemplateMacro(string $template, string $macro, array $args = [], string $templateMode = null): string
-    {
-        if ($templateMode === null) {
-            $templateMode = $this->getTemplateMode();
-        }
-
-        $oldTemplateMode = $this->getTemplateMode();
-        $this->setTemplateMode($templateMode);
-
-        $twig = $this->getTwig();
-        $twigTemplate = $twig->loadTemplate($template);
-
-        $renderingTemplate = $this->_renderingTemplate;
-        $this->_renderingTemplate = $template;
-
-        $e = null;
-        try {
-            $output = call_user_func_array([$twigTemplate, 'macro_' . $macro], $args);
-        } catch (\Throwable $e) {
-            // throw it later
-        }
-
-        $this->_renderingTemplate = $renderingTemplate;
-        $this->setTemplateMode($oldTemplateMode);
-
-        if ($e !== null) {
-            throw $e;
-        }
-
-        return (string)$output;
-    }
-
-    /**
      * Renders a template defined in a string.
      *
      * @param string $template The source template string.

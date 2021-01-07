@@ -13,9 +13,6 @@ use craft\services\Gql as GqlService;
 use craft\services\ProjectConfig as ProjectConfigService;
 use craft\services\Sites;
 use craft\services\UserGroups;
-use SebastianBergmann\Diff\Differ;
-use SebastianBergmann\Diff\Output\UnifiedDiffOutputBuilder;
-use Symfony\Component\Yaml\Yaml;
 use yii\base\InvalidConfigException;
 use yii\caching\ChainedDependency;
 use yii\caching\ExpressionDependency;
@@ -389,7 +386,7 @@ class ProjectConfig
      * @param string|null $path
      * @return bool whether the config was split
      */
-    private static function splitConfigIntoComponentsInternal(array &$config, array &$splitConfig, string $path = null): bool
+    private static function splitConfigIntoComponentsInternal(array &$config, array &$splitConfig, ?string $path = null): bool
     {
         $split = false;
 
@@ -460,26 +457,13 @@ class ProjectConfig
         $cacheKey = ProjectConfigService::DIFF_CACHE_KEY . ($invert ? ':reverse' : '');
 
         return Craft::$app->getCache()->getOrSet($cacheKey, function() use ($projectConfig, $invert): string {
-            $currentConfig = $projectConfig->get();
-            $pendingConfig = $projectConfig->get(null, true);
-            $currentYaml = Yaml::dump(static::cleanupConfig($currentConfig), 20, 2);
-            $pendingYaml = Yaml::dump(static::cleanupConfig($pendingConfig), 20, 2);
-            $builder = new UnifiedDiffOutputBuilder('');
-            $differ = new Differ($builder);
+            $currentConfig = static::cleanupConfig($projectConfig->get());
+            $pendingConfig = static::cleanupConfig($projectConfig->get(null, true));
 
             if ($invert) {
-                $diff = $differ->diff($pendingYaml, $currentYaml);
-            } else {
-                $diff = $differ->diff($currentYaml, $pendingYaml);
+                return Diff::diff($pendingConfig, $currentConfig);
             }
-
-            // Cleanup
-            $diff = preg_replace("/^@@ @@\n/", '', $diff);
-            $diff = preg_replace('/^[\+\-]?/m', '$0 ', $diff);
-            $diff = str_replace(' @@ @@', '...', $diff);
-            $diff = rtrim($diff);
-
-            return $diff;
+            return Diff::diff($currentConfig, $pendingConfig);
         }, null, new ChainedDependency([
             'dependencies' => [
                 $projectConfig->getCacheDependency(),
@@ -498,7 +482,7 @@ class ProjectConfig
      * @param int|null $timestamp The updated `dateModified` value. If `null`, the current time will be used.
      * @since 3.5.14
      */
-    public static function touch(int $timestamp = null)
+    public static function touch(?int $timestamp = null)
     {
         if ($timestamp === null) {
             $timestamp = time();

@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
 use craft\fields\data\ColorData;
+use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\validators\ColorValidator;
 use yii\db\Schema;
@@ -56,14 +57,12 @@ class Color extends Field implements PreviewableFieldInterface
     /** @inheritdoc */
     public function getSettingsHtml()
     {
-        return Craft::$app->getView()->renderTemplateMacro('_includes/forms.html', 'colorField', [
-            [
-                'label' => Craft::t('app', 'Default Color'),
-                'id' => 'default-color',
-                'name' => 'defaultColor',
-                'value' => $this->defaultColor,
-                'errors' => $this->getErrors('defaultColor'),
-            ]
+        return Cp::colorFieldHtml([
+            'label' => Craft::t('app', 'Default Color'),
+            'id' => 'default-color',
+            'name' => 'defaultColor',
+            'value' => $this->defaultColor,
+            'errors' => $this->getErrors('defaultColor'),
         ]);
     }
 

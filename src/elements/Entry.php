@@ -25,6 +25,7 @@ use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
 use craft\errors\UnsupportedSiteException;
+use craft\events\DefineEntryTypesEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
@@ -56,6 +57,14 @@ class Entry extends Element
     const STATUS_LIVE = 'live';
     const STATUS_PENDING = 'pending';
     const STATUS_EXPIRED = 'expired';
+
+    /**
+     * @event DefineEntryTypesEvent The event that is triggered when defining the available entry types for the entry
+     *
+     * @see getAvailableEntryTypes()
+     * @since 3.6.0
+     */
+    const EVENT_DEFINE_ENTRY_TYPES = 'defineEntryTypes';
 
     /**
      * @inheritdoc
@@ -427,13 +436,13 @@ class Entry extends Element
                 }
 
                 // Delete?
-                $canDeleteEntries = $userSession->checkPermission('deleteEntries:' . $section->uid);
-                $canDeletePeerEntries = $userSession->checkPermission('deletePeerEntries:' . $section->uid);
-
-                if ($canDeleteEntries || $canDeletePeerEntries) {
+                if ($userSession->checkPermission("deleteEntries:$section->uid")) {
                     $actions[] = Delete::class;
 
-                    if ($section->type === Section::TYPE_STRUCTURE && $canDeleteEntries && $canDeletePeerEntries) {
+                    if (
+                        $section->type === Section::TYPE_STRUCTURE &&
+                        $userSession->checkPermission("deletePeerEntries:$section->uid")
+                    ) {
                         $actions[] = [
                             'type' => Delete::class,
                             'withDescendants' => true,
@@ -1025,6 +1034,29 @@ class Entry extends Element
     }
 
     /**
+     * Returns the available entry types for the entry.
+     *
+     * @return EntryType[]
+     * @throws InvalidConfigException
+     * @since 3.6.0
+     */
+    public function getAvailableEntryTypes(): array
+    {
+        $entryTypes = $this->getSection()->getEntryTypes();
+
+        // Fire a 'defineEntryTypes' event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_ENTRY_TYPES)) {
+            $event = new DefineEntryTypesEvent([
+                'entryTypes' => $entryTypes,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_ENTRY_TYPES, $event);
+            $entryTypes = $event->entryTypes;
+        }
+
+        return $entryTypes;
+    }
+
+    /**
      * Returns the entry type.
      *
      * ---
@@ -1180,9 +1212,15 @@ class Entry extends Element
      */
     public function getIsDeletable(): bool
     {
+        $section = $this->getSection();
+        if ($section === Section::TYPE_SINGLE) {
+            return false;
+        }
         $userSession = Craft::$app->getUser();
-        $prefix = $userSession->getId() == $this->authorId ? 'deleteEntries' : 'deletePeerEntries';
-        return $userSession->checkPermission("$prefix:" . $this->getSection()->uid);
+        return (
+            $userSession->checkPermission("deleteEntries:$section->uid") &&
+            ($this->authorId == $userSession->getId() || $userSession->checkPermission("deletePeerEntries:$section->uid"))
+        );
     }
 
     /**
@@ -1295,7 +1333,7 @@ class Entry extends Element
 
         // Show the Entry Type field?
         if ($this->id === null) {
-            $entryTypes = $this->getSection()->getEntryTypes();
+            $entryTypes = $this->getAvailableEntryTypes();
 
             if (count($entryTypes) > 1) {
                 $entryTypeOptions = [];
@@ -1307,13 +1345,11 @@ class Entry extends Element
                     ];
                 }
 
-                $html .= Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'selectField', [
-                    [
-                        'label' => Craft::t('app', 'Entry Type'),
-                        'id' => 'entryType',
-                        'value' => $this->typeId,
-                        'options' => $entryTypeOptions,
-                    ]
+                $html .= Cp::selectFieldHtml([
+                    'label' => Craft::t('app', 'Entry Type'),
+                    'id' => 'entryType',
+                    'value' => $this->typeId,
+                    'options' => $entryTypeOptions,
                 ]);
 
                 $typeInputId = $view->namespaceInputId('entryType');

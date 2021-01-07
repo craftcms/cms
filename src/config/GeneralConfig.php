@@ -350,7 +350,7 @@ class GeneralConfig extends BaseObject
     public $defaultFileMode;
 
     /**
-     * @var int The quality level Craft will use when saving JPG and PNG files. Ranges from 0 (worst quality, smallest file) to
+     * @var int The quality level Craft will use when saving JPG and PNG files. Ranges from 1 (worst quality, smallest file) to
      * 100 (best quality, biggest file).
      * @group Image Handling
      */
@@ -1010,15 +1010,20 @@ class GeneralConfig extends BaseObject
 
     /**
      * @var mixed The amount of time to wait before Craft purges drafts of new elements that were never formally saved.
-     *
-     * Set to `0` to disable this feature.
-     *
-     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
-     *
      * @since 3.2.0
      * @group Garbage Collection
+     * @deprecated in 3.6.0
      */
-    public $purgeUnsavedDraftsDuration = 2592000;
+    public $purgeUnsavedDraftsDuration = 0;
+
+    /**
+     * @var bool Whether SVG thumbnails should be rasterized.
+     *
+     * Note this will only work if ImageMagick is installed, and <config:imageDriver> is set to either `auto` or `imagick`.
+     *
+     * @since 3.6.0
+     */
+    public $rasterizeSvgThumbs = false;
 
     /**
      * @var mixed The amount of time Craft will remember a username and pre-populate it on the control panel’s Login page.
@@ -1168,8 +1173,8 @@ class GeneralConfig extends BaseObject
      * If this is set, Craft will redirect [.well-known/change-password requests](https://w3c.github.io/webappsec-change-password-url/) to this URI.
      *
      * ::: tip
-     * You will also need to set the <config:setPasswordPath> config setting, which determines the URI and template path for your Set Password form,
-     * which is where the user will actually reset their password, once they’ve clicked the link in the Password Reset email.
+     * You’ll also need to set [setPasswordPath](config3:setPasswordPath), which determines the URI and template path for the Set Password form
+     * where the user resets their password after following the link in the Password Reset email.
      * :::
      *
      * @see getSetPasswordRequestPath()
@@ -1194,6 +1199,8 @@ class GeneralConfig extends BaseObject
      * This can be set to a string, which will override the primary site’s name only, or an array with site handles used as the keys.
      *
      * @group System
+     * @deprecated in 3.6.0. Set your sites’ Name settings on a per-environment basis using environment variables instead.
+     * See [Environmental Configuration](https://craftcms.com/docs/3.x/config/#environmental-configuration) for more info.
      */
     public $siteName;
 
@@ -1219,6 +1226,8 @@ class GeneralConfig extends BaseObject
      * ```
      *
      * @group Routing
+     * @deprecated in 3.6.0. Set your sites’ Base URL settings on a per-environment basis using aliases or environment variables instead.
+     * See [Environmental Configuration](https://craftcms.com/docs/3.x/config/#environmental-configuration) for more info.
      */
     public $siteUrl;
 
@@ -1391,7 +1400,7 @@ class GeneralConfig extends BaseObject
 
     /**
      * @var bool|string Determines what protocol/schema Craft will use when generating tokenized URLs. If set to `'auto'`, Craft will check the
-     * <config3:siteUrl> and the protocol of the current request and if either of them are https will use `https` in the tokenized URL. If not,
+     * current site’s base URL and the protocol of the current request and if either of them are https will use `https` in the tokenized URL. If not,
      * will use `http`.
      *
      * If set to `false`, Craft will always use `http`. If set to `true`, then, Craft will always use `https`.
@@ -1426,7 +1435,7 @@ class GeneralConfig extends BaseObject
     /**
      * @var bool Whether the project config should be saved to the `config/` folder.
      * @since 3.1.0
-     * @deprecated since 3.5.0. Craft now always saves the project config out to the `config/` folder.
+     * @deprecated in 3.5.0. Craft now always saves the project config out to the `config/` folder.
      */
     public $useProjectConfigFile = true;
 
@@ -1563,7 +1572,6 @@ class GeneralConfig extends BaseObject
         $this->elevatedSessionDuration = ConfigHelper::durationInSeconds($this->elevatedSessionDuration);
         $this->invalidLoginWindowDuration = ConfigHelper::durationInSeconds($this->invalidLoginWindowDuration);
         $this->purgePendingUsersDuration = ConfigHelper::durationInSeconds($this->purgePendingUsersDuration);
-        $this->purgeUnsavedDraftsDuration = ConfigHelper::durationInSeconds($this->purgeUnsavedDraftsDuration);
         $this->rememberUsernameDuration = ConfigHelper::durationInSeconds($this->rememberUsernameDuration);
         $this->rememberedUserSessionDuration = ConfigHelper::durationInSeconds($this->rememberedUserSessionDuration);
         $this->softDeleteDuration = ConfigHelper::durationInSeconds($this->softDeleteDuration);
@@ -1591,6 +1599,26 @@ class GeneralConfig extends BaseObject
                     throw new InvalidConfigException($e->getMessage(), 0, $e);
                 }
             }
+        }
+
+        if ($this->siteName) {
+            if (is_array($this->siteName) && count($this->siteName) > 1) {
+                $fix = 'You can set your sites’ Name settings on a per-environment basis using environment variables.';
+            } else {
+                $fix = 'You can set your site’s Name setting on a per-environment basis using an environment variable.';
+            }
+            Craft::$app->getDeprecator()->log('siteName', "The `siteName` config setting has been deprecated. $fix " .
+                'See [Environmental Configuration](https://craftcms.com/docs/3.x/config/#environmental-configuration) for more info.');
+        }
+
+        if ($this->siteUrl) {
+            if (is_array($this->siteUrl) && count($this->siteUrl) > 1) {
+                $fix = 'You can set your sites’ Base URL settings on a per-environment basis using aliases or environment variables.';
+            } else {
+                $fix = 'You can set your site’s Base URL setting on a per-environment basis using an alias or environment variable.';
+            }
+            Craft::$app->getDeprecator()->log('siteUrl', "The `siteUrl` config setting has been deprecated. $fix " .
+                'See [Environmental Configuration](https://craftcms.com/docs/3.x/config/#environmental-configuration) for more info.');
         }
 
         // Always use project config files

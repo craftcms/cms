@@ -21,8 +21,21 @@
     ]|filter)|join(' ') -}}
 {% endmacro %}
 
-<table id="{{ id }}" class="editable{% if fullWidth %} fullwidth{% endif %}{% if static %} static{% endif %}"
-       {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
+{% set tableAttributes = {
+    id: id,
+    class: [
+        'editable',
+        fullWidth ? 'fullwidth',
+        static ? 'static',
+        rows|length == 0 ? 'hidden',
+    ]|filter,
+} %}
+
+{%- if block('attr') is defined %}
+  {%- set tableAttributes = tableAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
+{% endif %}
+
+<table {{ attr(tableAttributes) }}>
     <thead>
         <tr>
             {% for col in cols %}
@@ -130,7 +143,7 @@
                                         {% if static %}
                                             <pre class="disabled">{{ value }}</pre>
                                         {% else %}
-                                            <textarea name="{{ cellName }}" rows="1"{% if col.placeholder is defined %} placeholder="{{ col.placeholder }}"{% endif %}>{{ value }}</textarea>
+                                            <textarea name="{{ cellName }}" rows="{{ col.rows ?? 1 }}"{% if col.placeholder is defined %} placeholder="{{ col.placeholder }}"{% endif %}>{{ value }}</textarea>
                                         {% endif %}
                                 {%- endswitch -%}
                             {% endblock %}

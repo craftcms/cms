@@ -112,7 +112,7 @@ const actions = {
                     // Set default values
                     item.autoRenew = false
 
-                    switch(item.type) {
+                    switch (item.type) {
                         case 'plugin-edition': {
                             const pluginLicenseInfo = rootGetters['craft/getPluginLicenseInfo'](item.plugin)
 
@@ -254,7 +254,7 @@ const actions = {
                         if (info.edition) {
                             const pluginEdition = plugin.editions.find(edition => edition.handle === info.edition)
 
-                            if(pluginEdition && rootGetters['pluginStore/isPluginEditionFree'](pluginEdition)) {
+                            if (pluginEdition && rootGetters['pluginStore/isPluginEditionFree'](pluginEdition)) {
                                 continue
                             }
                         }

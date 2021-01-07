@@ -160,7 +160,9 @@ class Craft extends Yii2
             return;
         }
 
-        $this->resetProjectConfig();
+        if ($this->_getConfig('dbSetup')['setupCraft']) {
+            $this->resetProjectConfig();
+        }
     }
 
     /**
@@ -368,6 +370,28 @@ class Craft extends Yii2
     public function saveElement(ElementInterface $element, bool $failHard = true): bool
     {
         if (!\Craft::$app->getElements()->saveElement($element)) {
+            if ($failHard) {
+                throw new InvalidArgumentException(
+                    implode(', ', $element->getErrorSummary(true))
+                );
+            }
+
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * @param ElementInterface $element
+     * @param bool $hardDelete
+     * @param bool $failHard
+     * @return bool
+     * @throws Throwable
+     */
+    public function deleteElement(ElementInterface $element, bool $hardDelete = true, bool $failHard = true): bool
+    {
+        if (!\Craft::$app->getElements()->deleteElement($element, $hardDelete)) {
             if ($failHard) {
                 throw new InvalidArgumentException(
                     implode(', ', $element->getErrorSummary(true))

@@ -19,11 +19,11 @@ use craft\elements\db\ElementQueryInterface;
 use craft\elements\exporters\Raw;
 use craft\events\ElementActionEvent;
 use craft\helpers\ElementHelper;
+use yii\base\InvalidValueException;
 use yii\db\Expression;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
-use yii\web\ServerErrorHttpException;
 
 /**
  * The ElementIndexesController class is a controller that handles various element index related actions.
@@ -291,53 +291,46 @@ class ElementIndexesController extends BaseElementsController
         $exporter = $this->_exporter();
         $exporter->setElementType($this->elementType);
 
-        $this->response->data = $exporter->export($this->elementQuery);
-        $this->response->format = $this->request->getBodyParam('format', 'csv');
-        $this->response->setDownloadHeaders($exporter->getFilename() . ".{$this->response->format}");
+        // Set the filename header before calling export() in case export() starts outputting the data
+        $filename = $exporter->getFilename();
+        if ($exporter::isFormattable()) {
+            $this->response->format = $this->request->getBodyParam('format', 'csv');
+            $filename .= '.' . $this->response->format;
+        }
+        $this->response->setDownloadHeaders($filename);
 
-        switch ($this->response->format) {
-            case Response::FORMAT_JSON:
-                $this->response->formatters[Response::FORMAT_JSON]['prettyPrint'] = true;
-                break;
-            case Response::FORMAT_XML:
-                Craft::$app->language = 'en-US';
-                /** @var string|ElementInterface $elementType */
-                $elementType = $this->elementType;
-                $this->response->formatters[Response::FORMAT_XML]['rootTag'] = $elementType::pluralLowerDisplayName();
-                break;
+        $export = $exporter->export($this->elementQuery);
+
+        if ($exporter::isFormattable()) {
+            if (!is_array($export)) {
+                throw new InvalidValueException(get_class($exporter) . '::export() must return an array since isFormattable() returns true.');
+            }
+
+            $this->response->data = $export;
+
+            switch ($this->response->format) {
+                case Response::FORMAT_JSON:
+                    $this->response->formatters[Response::FORMAT_JSON]['prettyPrint'] = true;
+                    break;
+                case Response::FORMAT_XML:
+                    Craft::$app->language = 'en-US';
+                    /** @var string|ElementInterface $elementType */
+                    $elementType = $this->elementType;
+                    $this->response->formatters[Response::FORMAT_XML]['rootTag'] = $elementType::pluralLowerDisplayName();
+                    break;
+            }
+        } else if (
+            is_resource($export) ||
+            (is_array($export) && isset($export[0]) && is_resource($export[0]))
+        ) {
+            // todo: check for is_callable() here if https://github.com/yiisoft/yii2/pull/18394 gets accepted
+            $this->response->stream = $export;
+        } else {
+            $this->response->data = $export;
+            $this->response->format = Response::FORMAT_RAW;
         }
 
         return $this->response;
-    }
-
-    /**
-     * Creates an export token.
-     *
-     * @return Response
-     * @throws BadRequestHttpException
-     * @throws ServerErrorHttpException
-     * @since 3.2.0
-     * @deprecated in 3.4.4
-     */
-    public function actionCreateExportToken(): Response
-    {
-        $exporter = $this->_exporter();
-        $token = Craft::$app->getTokens()->createToken([
-            'export/export',
-            [
-                'elementType' => $this->elementType,
-                'sourceKey' => $this->sourceKey,
-                'criteria' => $this->request->getBodyParam('criteria', []),
-                'exporter' => get_class($exporter),
-                'format' => $this->request->getBodyParam('format', 'csv'),
-            ]
-        ], 1, (new \DateTime())->add(new \DateInterval('PT1H')));
-
-        if (!$token) {
-            throw new ServerErrorHttpException('Could not create an export token.');
-        }
-
-        return $this->asJson(compact('token'));
     }
 
     /**
@@ -683,6 +676,7 @@ class ElementIndexesController extends BaseElementsController
             $exporterData[] = [
                 'type' => get_class($exporter),
                 'name' => $exporter::displayName(),
+                'formattable' => $exporter::isFormattable(),
             ];
         }
 

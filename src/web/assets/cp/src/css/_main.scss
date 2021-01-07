@@ -400,6 +400,14 @@ li.sel a {
 }
 
 /* toggles */
+button.toggle {
+  appearance: none;
+  color: inherit;
+  background: none;
+  border: none;
+  padding: 0;
+}
+
 .toggle:before,
 a.fieldtoggle:before {
   @include angle(right);
@@ -1833,7 +1841,6 @@ table {
       font-weight: bold;
       @include alignleft;
       vertical-align: top;
-      color: $mediumTextColor;
     }
   }
 
@@ -2794,9 +2801,7 @@ table.editable {
   & + .btn.add {
     display: block;
     width: 100%;
-    border-radius: 0 0 $mediumBorderRadius $mediumBorderRadius;
     border: 1px dashed $mediumHairlineColor;
-    border-top-width: 0;
     background-color: transparent;
     box-shadow: none;
 
@@ -2804,6 +2809,11 @@ table.editable {
       border-style: solid;
       border-color: $blue600;
     }
+  }
+
+  &:not(.hidden) + .btn.add {
+    border-top-width: 0;
+    border-radius: 0 0 $mediumBorderRadius $mediumBorderRadius;
   }
 }
 
@@ -3107,6 +3117,10 @@ ul.tree,
           content: 'plus';
           color: $lightTextColor;
         }
+
+        .input {
+          width: 100%;
+        }
       }
 
       & > .heading {
@@ -3238,6 +3252,10 @@ ul.tree,
         padding: 0 0 6px;
         width: 100%;
         list-style-type: none;
+      }
+
+      & > .clear-btn {
+        @include margin-right(-24px);
       }
     }
   }
@@ -4234,7 +4252,8 @@ fieldset {
     margin-top: -5px;
     margin-bottom: 5px;
 
-    & > label {
+    & > label,
+    & > legend {
       font-weight: bold;
       color: $mediumDarkTextColor;
 
@@ -4266,17 +4285,21 @@ fieldset {
     margin-bottom: 5px;
   }
 
-  & > .notice,
-  & > .warning {
-    margin: 5px 0 0;
-  }
-
   & > .input {
     position: relative;
 
     &:after {
       @include clearafter;
     }
+
+    & + .instructions {
+      margin: 5px 0 0;
+    }
+  }
+
+  & > .notice,
+  & > .warning {
+    margin: 5px 0 0;
   }
 }
 
@@ -4574,24 +4597,26 @@ fieldset {
   & > .datewrapper + .timewrapper {
     @include margin-left(5px);
   }
+}
 
-  .clear-btn {
-    width: 20px;
-    @include margin-left(4px);
-    cursor: pointer;
-    color: $darkHairlineColor;
-    border: none;
-    padding: 0;
-    background: transparent;
+.clear-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 24px;
+  cursor: pointer;
+  color: $darkHairlineColor;
+  border: none;
+  padding: 0;
+  background: transparent;
 
-    &:before {
-      @include icon;
-      content: 'remove';
-    }
+  &:before {
+    @include icon;
+    content: 'remove';
+  }
 
-    &:hover {
-      color: $mediumTextColor;
-    }
+  &:hover {
+    color: $mediumTextColor;
   }
 }
 

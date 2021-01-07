@@ -28,17 +28,17 @@ class ModelTest extends Unit
      *
      * @dataProvider hasErrorsDataProvider
      *
-     * @param $result
-     * @param $input
-     * @param $searchParam
-     * @param $paramName
+     * @param bool $expected
+     * @param string $attribute
+     * @param string $error
+     * @param string $searchParam
      */
-    public function testHasErrors($result, $input, $searchParam, $paramName)
+    public function testHasErrors(bool $expected, string $attribute, string $error, string $searchParam)
     {
         $model1 = new ExampleModel();
-        $model1->addError($paramName, $input);
+        $model1->addError($attribute, $error);
 
-        self::assertSame($result, $model1->hasErrors($searchParam));
+        self::assertSame($expected, $model1->hasErrors($searchParam));
     }
 
     /**
@@ -161,13 +161,12 @@ class ModelTest extends Unit
     public function hasErrorsDataProvider(): array
     {
         return [
-            [true, 'error', 'fields.*', 'fields[body]'],
-            [true, 'error', 'fields.*', 'fields.body'],
-            [true, 'error', 'fields.*', 'fields[body'],
-            [true, 'error', 'fields.*', 'fields.[body'],
-            [true, 'error', 'fields.*', 'fields.[body]'],
-
-            [true, 'error', 'exampleParam', 'exampleParam'],
+            [true, 'fields[body]', 'error', 'fields.*'],
+            [true, 'fields.body', 'error', 'fields.*'],
+            [true, 'fields[body', 'error', 'fields.*'],
+            [true, 'fields.[body', 'error', 'fields.*'],
+            [true, 'fields.[body]', 'error', 'fields.*'],
+            [true, 'exampleParam', 'error', 'exampleParam'],
         ];
     }
 }

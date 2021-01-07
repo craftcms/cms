@@ -14,6 +14,7 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\records\Session;
 use UnitTester;
+use yii\db\Exception;
 
 /**
  * Unit tests for Paginator
@@ -193,7 +194,7 @@ class PaginatorTest extends Unit
     }
 
     /**
-     * @throws \yii\db\Exception
+     * @throws Exception
      */
     protected function resetPaginator()
     {

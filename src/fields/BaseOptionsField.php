@@ -18,6 +18,7 @@ use craft\fields\data\SingleOptionFieldData;
 use craft\gql\arguments\OptionField as OptionFieldArguments;
 use craft\gql\resolvers\OptionField as OptionFieldResolver;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\Json;
 use GraphQL\Type\Definition\Type;
@@ -216,19 +217,16 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             $rows[] = $option;
         }
 
-        return Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'editableTableField',
-            [
-                [
-                    'label' => $this->optionsSettingLabel(),
-                    'instructions' => Craft::t('app', 'Define the available options.'),
-                    'id' => 'options',
-                    'name' => 'options',
-                    'addRowLabel' => Craft::t('app', 'Add an option'),
-                    'cols' => $cols,
-                    'rows' => $rows,
-                    'errors' => $this->getErrors('options'),
-                ]
-            ]);
+        return Cp::editableTableFieldHtml([
+            'label' => $this->optionsSettingLabel(),
+            'instructions' => Craft::t('app', 'Define the available options.'),
+            'id' => 'options',
+            'name' => 'options',
+            'addRowLabel' => Craft::t('app', 'Add an option'),
+            'cols' => $cols,
+            'rows' => $rows,
+            'errors' => $this->getErrors('options'),
+        ]);
     }
 
     /**
@@ -429,7 +427,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
 
         return [
             'name' => $this->handle,
-            'type' => Type::string(),
+            'type' => $this->multi ? Type::listOf(Type::string()) : Type::string(),
             'description' => Craft::t('app', 'The allowed values are [{values}]', ['values' => implode(', ', $values)]),
         ];
     }

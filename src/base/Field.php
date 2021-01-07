@@ -19,6 +19,7 @@ use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
+use craft\models\GqlSchema;
 use craft\records\Field as FieldRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
@@ -559,6 +560,14 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
+    public function includeInGqlSchema(GqlSchema $schema): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getContentGqlType()
     {
         return Type::string();
@@ -749,7 +758,7 @@ abstract class Field extends SavableComponent implements FieldInterface
         }
 
         if ($element) {
-            return $this->_isFresh = $element->getHasFreshContent();
+            return $element->getHasFreshContent();
         }
 
         return true;

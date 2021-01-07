@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\base\FieldInterface;
 use craft\base\FieldLayoutElementInterface;
 use craft\base\Model;
+use craft\events\CreateFieldLayoutFormEvent;
 use craft\events\DefineFieldLayoutElementsEvent;
 use craft\events\DefineFieldLayoutFieldsEvent;
 use craft\fieldlayoutelements\BaseField;
@@ -81,6 +82,47 @@ class FieldLayout extends Model
      * @since 3.5.0
      */
     const EVENT_DEFINE_UI_ELEMENTS = 'defineUiElements';
+
+    /**
+     * @event CreateFieldLayoutFormEvent The event that is triggered when creating a new field layout form.
+     *
+     * ```php
+     * use craft\elements\Entry;
+     * use craft\events\CreateFieldLayoutFormEvent;
+     * use craft\fieldlayoutelements\HorizontalRule;
+     * use craft\fieldlayoutelements\StandardTextField;
+     * use craft\fieldlayoutelements\Template;
+     * use craft\models\FieldLayout;
+     * use craft\models\FieldLayoutTab;
+     * use yii\base\Event;
+     *
+     * Event::on(
+     *     FieldLayout::class,
+     *     FieldLayout::EVENT_CREATE_FORM,
+     *     function(CreateFieldLayoutFormEvent $event) {
+     *         if ($event->element instanceof Entry) {
+     *             $event->tabs[] = new FieldLayoutTab([
+     *                 'name' => 'My Tab',
+     *                 'elements' => [
+     *                     new StandardTextField([
+     *                         'attribute' => 'myTextField',
+     *                         'label' => 'My Text Field',
+     *                     ]),
+     *                     new HorizontalRule(),
+     *                     new Template([
+     *                         'template' => '_layout-elements/info'
+     *                     ]),
+     *                 ],
+     *             ]);
+     *         }
+     *     }
+     * );
+     * ```
+     *
+     * @see createForm()
+     * @since 3.6.0
+     */
+    const EVENT_CREATE_FORM = 'createForm';
 
     /**
      * Creates a new field layout from the given config.
@@ -467,9 +509,23 @@ class FieldLayout extends Model
         if ($namespace !== null) {
             $view->setNamespace($view->namespaceInputName($namespace));
         }
-        $form = new FieldLayoutForm($config);
 
-        foreach ($this->getTabs() as $tab) {
+        $form = new FieldLayoutForm($config);
+        $tabs = $this->getTabs();
+
+        // Fine a 'createForm' event
+        if ($this->hasEventHandlers(self::EVENT_CREATE_FORM)) {
+            $event = new CreateFieldLayoutFormEvent([
+                'form' => $form,
+                'element' => $element,
+                'static' => $static,
+                'tabs' => $tabs,
+            ]);
+            $this->trigger(self::EVENT_CREATE_FORM, $event);
+            $tabs = $event->tabs;
+        }
+
+        foreach ($tabs as $tab) {
             $tabHtml = [];
 
             foreach ($tab->elements as $formElement) {

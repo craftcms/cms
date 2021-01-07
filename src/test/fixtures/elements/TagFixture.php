@@ -7,34 +7,27 @@
 
 namespace craft\test\fixtures\elements;
 
-
 use Craft;
+use craft\base\ElementInterface;
 use craft\elements\Tag;
 
 /**
  * Class TagFixture
- *
- * Credit to: https://github.com/robuust/craft-fixtures
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author  Robuust digital | Bob Olde Hampsink <bob@robuust.digital>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since  3.2
  */
-abstract class TagFixture extends ElementFixture
+abstract class TagFixture extends BaseElementFixture
 {
-    /**
-     * {@inheritdoc}
-     */
-    public $modelClass = Tag::class;
-
     /**
      * @var array
      */
     protected $groupIds = [];
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function init()
     {
@@ -46,10 +39,10 @@ abstract class TagFixture extends ElementFixture
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
-    protected function isPrimaryKey(string $key): bool
+    protected function createElement(): ElementInterface
     {
-        return parent::isPrimaryKey($key) || in_array($key, ['groupId', 'title']);
+        return new Tag();
     }
 }

@@ -53,7 +53,7 @@ class Plugins extends Component
      */
     const EVENT_BEFORE_ENABLE_PLUGIN = 'beforeEnablePlugin';
     /**
-     * @event PluginEvent The event that is triggered before a plugin is enabled
+     * @event PluginEvent The event that is triggered after a plugin is enabled
      */
     const EVENT_AFTER_ENABLE_PLUGIN = 'afterEnablePlugin';
 
@@ -62,7 +62,7 @@ class Plugins extends Component
      */
     const EVENT_BEFORE_DISABLE_PLUGIN = 'beforeDisablePlugin';
     /**
-     * @event PluginEvent The event that is triggered before a plugin is disabled
+     * @event PluginEvent The event that is triggered after a plugin is disabled
      */
     const EVENT_AFTER_DISABLE_PLUGIN = 'afterDisablePlugin';
 
@@ -72,7 +72,7 @@ class Plugins extends Component
     const EVENT_BEFORE_INSTALL_PLUGIN = 'beforeInstallPlugin';
 
     /**
-     * @event PluginEvent The event that is triggered before a plugin is installed
+     * @event PluginEvent The event that is triggered after a plugin is installed
      */
     const EVENT_AFTER_INSTALL_PLUGIN = 'afterInstallPlugin';
 
@@ -82,7 +82,7 @@ class Plugins extends Component
     const EVENT_BEFORE_UNINSTALL_PLUGIN = 'beforeUninstallPlugin';
 
     /**
-     * @event PluginEvent The event that is triggered before a plugin is uninstalled
+     * @event PluginEvent The event that is triggered after a plugin is uninstalled
      */
     const EVENT_AFTER_UNINSTALL_PLUGIN = 'afterUninstallPlugin';
 
@@ -92,7 +92,7 @@ class Plugins extends Component
     const EVENT_BEFORE_SAVE_PLUGIN_SETTINGS = 'beforeSavePluginSettings';
 
     /**
-     * @event PluginEvent The event that is triggered before a plugin's settings are saved
+     * @event PluginEvent The event that is triggered after a plugin's settings are saved
      */
     const EVENT_AFTER_SAVE_PLUGIN_SETTINGS = 'afterSavePluginSettings';
 
@@ -231,21 +231,25 @@ class Plugins extends Component
             }
 
             if ($plugin !== null) {
-                // If we're not updating, check if the plugin's version number changed, but not its schema version.
-                if (!Craft::$app->getIsInMaintenanceMode() && $this->hasPluginVersionNumberChanged($plugin) && !$this->doesPluginRequireDatabaseUpdate($plugin)) {
-                    if (
-                        $plugin->minVersionRequired &&
-                        strpos($row['version'], 'dev-') !== 0 &&
-                        !StringHelper::endsWith($row['version'], '-dev') &&
-                        version_compare($row['version'], $plugin->minVersionRequired, '<')
-                    ) {
-                        throw new HttpException(200, Craft::t('app', 'You need to be on at least {plugin} {version} before you can update to {plugin} {targetVersion}.', [
-                            'version' => $plugin->minVersionRequired,
-                            'targetVersion' => $plugin->version,
-                            'plugin' => $plugin->name
-                        ]));
-                    }
+                $hasVersionChanged = $this->hasPluginVersionNumberChanged($plugin);
 
+                // If the plugin’s version just changed, make sure the old version is >= the min allowed version
+                if (
+                    $hasVersionChanged &&
+                    $plugin->minVersionRequired &&
+                    strpos($row['version'], 'dev-') !== 0 &&
+                    !StringHelper::endsWith($row['version'], '-dev') &&
+                    version_compare($row['version'], $plugin->minVersionRequired, '<')
+                ) {
+                    throw new HttpException(200, Craft::t('app', 'You need to be on at least {plugin} {version} before you can update to {plugin} {targetVersion}.', [
+                        'version' => $plugin->minVersionRequired,
+                        'targetVersion' => $plugin->version,
+                        'plugin' => $plugin->name
+                    ]));
+                }
+
+                // If we're not updating, check if the plugin's version number changed, but not its schema version.
+                if (!Craft::$app->getIsInMaintenanceMode() && $hasVersionChanged && !$this->doesPluginRequireDatabaseUpdate($plugin)) {
                     // Update our record of the plugin's version number
                     Db::update(Table::PLUGINS, [
                         'version' => $plugin->getVersion(),
@@ -504,6 +508,14 @@ class Plugins extends Component
                 'schemaVersion' => $plugin->schemaVersion,
                 'installDate' => Db::prepareDateForDb(new \DateTime()),
             ];
+
+            // Make sure the plugin doesn't have a row in the `plugins` or `migrations` tables first, just in case
+            Db::delete(Table::PLUGINS, [
+                'handle' => $handle,
+            ]);
+            Db::delete(Table::MIGRATIONS, [
+                'track' => "plugin:$handle",
+            ]);
 
             Db::insert(Table::PLUGINS, $info);
 
@@ -821,7 +833,11 @@ class Plugins extends Component
             return null;
         }
 
-        $configData = $this->_getPluginConfigData($handle);
+        try {
+            $configData = $this->_getPluginConfigData($handle);
+        } catch (InvalidPluginException $e) {
+            return null;
+        }
 
         $row['settings'] = $configData['settings'] ?? [];
         $row['enabled'] = $configData['enabled'] ?? false;

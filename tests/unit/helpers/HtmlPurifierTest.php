@@ -22,15 +22,14 @@ use HTMLPurifier_Config;
 class HtmlPurifierTest extends Unit
 {
     /**
-     * @dataProvider utf8CleanDataProvider
+     * @dataProvider cleanUtf8DataProvider
      *
-     * @param $result
-     * @param $input
+     * @param string $expected
+     * @param string $string
      */
-    public function testCleanUtf8($result, $input)
+    public function testCleanUtf8(string $expected, string $string)
     {
-        $cleaned = HtmlPurifier::cleanUtf8($input);
-        self::assertSame($result, $cleaned);
+        self::assertSame($expected, HtmlPurifier::cleanUtf8($string));
     }
 
     /**
@@ -48,7 +47,7 @@ class HtmlPurifierTest extends Unit
     /**
      * @return array
      */
-    public function utf8CleanDataProvider(): array
+    public function cleanUtf8DataProvider(): array
     {
         // https://github.com/ezyang/htmlpurifier/blob/master/tests/HTMLPurifier/EncoderTest.php#L21
         return [

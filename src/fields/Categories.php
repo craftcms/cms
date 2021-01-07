@@ -19,6 +19,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Gql;
+use craft\models\GqlSchema;
 use GraphQL\Type\Definition\Type;
 
 /**
@@ -154,6 +155,14 @@ class Categories extends BaseRelationField
 
     /**
      * @inheritdoc
+     */
+    public function includeInGqlSchema(GqlSchema $schema): bool
+    {
+        return Gql::canQueryCategories($schema);
+    }
+
+    /**
+     * @inheritdoc
      * @since 3.3.0
      */
     public function getContentGqlType()
@@ -166,7 +175,6 @@ class Categories extends BaseRelationField
             'complexity' => Gql::eagerLoadComplexity()
         ];
     }
-
 
     /**
      * @inheritdoc

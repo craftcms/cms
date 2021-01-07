@@ -550,7 +550,7 @@ class Cp extends Component
         $rootLength = strlen($root);
 
         foreach (Craft::$app->getSites()->getAllSites() as $site) {
-            $sites[$site->handle] = Craft::t('site', $site->name);
+            $sites[$site->handle] = Craft::t('site', $site->getName());
         }
 
         foreach ($files as $file) {

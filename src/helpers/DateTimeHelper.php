@@ -273,7 +273,7 @@ class DateTimeHelper
      * @return string The translated date string
      * @deprecated in 3.0.6. Use [[\craft\i18n\Formatter::asDate()]] instead.
      */
-    public static function translateDate(string $str, string $language = null): string
+    public static function translateDate(string $str, ?string $language = null): string
     {
         Craft::$app->getDeprecator()->log(__METHOD__, '`' . __METHOD__ . '` is deprecated. Use `craft\i18n\Formatter::asDate()` instead.');
 

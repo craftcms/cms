@@ -1,140 +1,138 @@
 (function($) {
     /** global: Craft */
     /** global: Garnish */
-    Craft.TableFieldSettings = Garnish.Base.extend(
-        {
-            columnsTableName: null,
-            defaultsTableName: null,
-            columnsData: null,
-            columnsTableId: null,
-            defaultsTableId: null,
-            columnsTableInputPath: null,
-            defaultsTableInputPath: null,
+    Craft.TableFieldSettings = Garnish.Base.extend({
+        columnsTableName: null,
+        defaultsTableName: null,
+        columnsData: null,
+        columnsTableId: null,
+        defaultsTableId: null,
+        columnsTableInputPath: null,
+        defaultsTableInputPath: null,
 
-            defaults: null,
-            columnSettings: null,
+        defaults: null,
+        columnSettings: null,
 
-            dropdownSettingsHtml: null,
-            dropdownSettingsCols: null,
+        dropdownSettingsHtml: null,
+        dropdownSettingsCols: null,
 
-            columnsTable: null,
-            defaultsTable: null,
+        columnsTable: null,
+        defaultsTable: null,
 
-            init: function(columnsTableName, defaultsTableName, columnsData, defaults, columnSettings, dropdownSettingsHtml, dropdownSettingsCols) {
-                this.columnsTableName = columnsTableName;
-                this.defaultsTableName = defaultsTableName;
-                this.columnsData = columnsData;
+        init: function(columnsTableName, defaultsTableName, columnsData, defaults, columnSettings, dropdownSettingsHtml, dropdownSettingsCols) {
+            this.columnsTableName = columnsTableName;
+            this.defaultsTableName = defaultsTableName;
+            this.columnsData = columnsData;
 
-                this.columnsTableId = Craft.formatInputId(this.columnsTableName);
-                this.defaultsTableId = Craft.formatInputId(this.defaultsTableName);
+            this.columnsTableId = Craft.formatInputId(this.columnsTableName);
+            this.defaultsTableId = Craft.formatInputId(this.defaultsTableName);
 
-                this.columnsTableInputPath = Craft.filterArray(this.columnsTableName.split(/[\[\]]+/));
-                this.defaultsTableInputPath = Craft.filterArray(this.defaultsTableName.split(/[\[\]]+/));
+            this.columnsTableInputPath = Craft.filterArray(this.columnsTableName.split(/[\[\]]+/));
+            this.defaultsTableInputPath = Craft.filterArray(this.defaultsTableName.split(/[\[\]]+/));
 
-                this.defaults = defaults;
-                this.columnSettings = columnSettings;
+            this.defaults = defaults;
+            this.columnSettings = columnSettings;
 
-                this.dropdownSettingsHtml = dropdownSettingsHtml;
-                this.dropdownSettingsCols = dropdownSettingsCols;
+            this.dropdownSettingsHtml = dropdownSettingsHtml;
+            this.dropdownSettingsCols = dropdownSettingsCols;
 
-                this.initColumnsTable();
-                this.initDefaultsTable();
-            },
+            this.initColumnsTable();
+            this.initDefaultsTable();
+        },
 
-            initColumnsTable: function() {
-                this.columnsTable = new ColumnTable(this, this.columnsTableId, this.columnsTableName, this.columnSettings, {
-                    rowIdPrefix: 'col',
-                    defaultValues: {
-                        type: 'singleline'
-                    },
-                    onAddRow: $.proxy(this, 'onAddColumn'),
-                    onDeleteRow: $.proxy(this, 'reconstructDefaultsTable')
-                });
-            },
+        initColumnsTable: function() {
+            this.columnsTable = new ColumnTable(this, this.columnsTableId, this.columnsTableName, this.columnSettings, {
+                rowIdPrefix: 'col',
+                defaultValues: {
+                    type: 'singleline'
+                },
+                onAddRow: $.proxy(this, 'onAddColumn'),
+                onDeleteRow: $.proxy(this, 'reconstructDefaultsTable')
+            });
+        },
 
-            initDefaultsTable: function() {
-                this.defaultsTable = new Craft.EditableTable(this.defaultsTableId, this.defaultsTableName, this.columnsData, {
-                    rowIdPrefix: 'row'
-                });
-            },
+        initDefaultsTable: function() {
+            this.defaultsTable = new Craft.EditableTable(this.defaultsTableId, this.defaultsTableName, this.columnsData, {
+                rowIdPrefix: 'row'
+            });
+        },
 
-            onAddColumn: function($tr) {
-                this.reconstructDefaultsTable();
-                this.initColumnSettingInputs($tr);
-            },
+        onAddColumn: function($tr) {
+            this.reconstructDefaultsTable();
+            this.initColumnSettingInputs($tr);
+        },
 
-            initColumnSettingInputs: function($container) {
-                var $textareas = $container.find('td:first-child textarea, td:nth-child(3) textarea');
-                this.addListener($textareas, 'input', 'reconstructDefaultsTable');
-            },
+        initColumnSettingInputs: function($container) {
+            var $textareas = $container.find('td:first-child textarea, td:nth-child(3) textarea');
+            this.addListener($textareas, 'input', 'reconstructDefaultsTable');
+        },
 
-            reconstructDefaultsTable: function() {
-                this.columnsData = Craft.expandPostArray(Garnish.getPostData(this.columnsTable.$tbody));
-                var defaults = Craft.expandPostArray(Garnish.getPostData(this.defaultsTable.$tbody));
+        reconstructDefaultsTable: function() {
+            this.columnsData = Craft.expandPostArray(Garnish.getPostData(this.columnsTable.$tbody));
+            var defaults = Craft.expandPostArray(Garnish.getPostData(this.defaultsTable.$tbody));
 
-                var i, key;
+            var i, key;
 
-                for (i = 0; i < this.columnsTableInputPath.length; i++) {
-                    key = this.columnsTableInputPath[i];
-                    this.columnsData = this.columnsData[key];
-                }
-
-                // Add in the dropdown options
-                for (let colId in this.columnsData) {
-                    if (this.columnsData.hasOwnProperty(colId) && this.columnsData[colId].type === 'select') {
-                        var rowObj = this.columnsTable.$tbody.find('tr[data-id="' + colId + '"]').data('editable-table-row');
-                        this.columnsData[colId].options = rowObj.options || [];
-                    }
-                }
-
-                for (i = 0; i < this.defaultsTableInputPath.length; i++) {
-                    key = this.defaultsTableInputPath[i];
-
-                    if (typeof defaults[key] === 'undefined') {
-                        defaults = {};
-                        break;
-                    }
-                    else {
-                        defaults = defaults[key];
-                    }
-                }
-
-                var theadHtml = '<thead>' +
-                    '<tr>';
-
-                for (let colId in this.columnsData) {
-                    if (!this.columnsData.hasOwnProperty(colId)) {
-                        continue;
-                    }
-
-                    theadHtml += '<th scope="col">' + (this.columnsData[colId].heading ? this.columnsData[colId].heading : '&nbsp;') + '</th>';
-                }
-
-                theadHtml += '<th colspan="2"></th>' +
-                    '</tr>' +
-                    '</thead>';
-
-                var $table = $('<table/>', {
-                    id: this.defaultsTableId,
-                    'class': 'editable fullwidth'
-                }).append(theadHtml);
-
-                var $tbody = $('<tbody/>').appendTo($table);
-
-                for (var rowId in defaults) {
-                    if (!defaults.hasOwnProperty(rowId)) {
-                        continue;
-                    }
-
-                    Craft.EditableTable.createRow(rowId, this.columnsData, this.defaultsTableName, defaults[rowId]).appendTo($tbody);
-                }
-
-                this.defaultsTable.$table.replaceWith($table);
-                this.defaultsTable.destroy();
-                delete this.defaultsTable;
-                this.initDefaultsTable();
+            for (i = 0; i < this.columnsTableInputPath.length; i++) {
+                key = this.columnsTableInputPath[i];
+                this.columnsData = this.columnsData[key];
             }
-        });
+
+            // Add in the dropdown options
+            for (let colId in this.columnsData) {
+                if (this.columnsData.hasOwnProperty(colId) && this.columnsData[colId].type === 'select') {
+                    var rowObj = this.columnsTable.$tbody.find('tr[data-id="' + colId + '"]').data('editable-table-row');
+                    this.columnsData[colId].options = rowObj.options || [];
+                }
+            }
+
+            for (i = 0; i < this.defaultsTableInputPath.length; i++) {
+                key = this.defaultsTableInputPath[i];
+
+                if (typeof defaults[key] === 'undefined') {
+                    defaults = {};
+                    break;
+                } else {
+                    defaults = defaults[key];
+                }
+            }
+
+            var theadHtml = '<thead>' +
+                '<tr>';
+
+            for (let colId in this.columnsData) {
+                if (!this.columnsData.hasOwnProperty(colId)) {
+                    continue;
+                }
+
+                theadHtml += '<th scope="col">' + (this.columnsData[colId].heading ? this.columnsData[colId].heading : '&nbsp;') + '</th>';
+            }
+
+            theadHtml += '<th colspan="2"></th>' +
+                '</tr>' +
+                '</thead>';
+
+            var $table = $('<table/>', {
+                id: this.defaultsTableId,
+                'class': 'editable fullwidth'
+            }).append(theadHtml);
+
+            var $tbody = $('<tbody/>').appendTo($table);
+
+            for (var rowId in defaults) {
+                if (!defaults.hasOwnProperty(rowId)) {
+                    continue;
+                }
+
+                Craft.EditableTable.createRow(rowId, this.columnsData, this.defaultsTableName, defaults[rowId]).appendTo($tbody);
+            }
+
+            this.defaultsTable.$table.replaceWith($table);
+            this.defaultsTable.destroy();
+            delete this.defaultsTable;
+            this.initDefaultsTable();
+        }
+    });
 
     var ColumnTable = Craft.EditableTable.extend({
         fieldSettings: null,
@@ -264,7 +262,7 @@
             this.options = [];
             var $rows = this.optionsTable.$table.find('tbody tr');
             for (var i = 0; i < $rows.length; i++) {
-                let $row  = $rows.eq(i);
+                let $row = $rows.eq(i);
                 this.options.push({
                     label: $row.find('.option-label textarea').val(),
                     value: $row.find('.option-value textarea').val(),

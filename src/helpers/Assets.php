@@ -79,11 +79,11 @@ class Assets
      *
      * @param VolumeInterface $volume
      * @param Asset $asset
-     * @param string $uri Asset URI to use. Defaults to the filename.
+     * @param string|null $uri Asset URI to use. Defaults to the filename.
      * @param AssetTransformIndex|null $transformIndex Transform index, for which the URL is being generated, if any
      * @return string
      */
-    public static function generateUrl(VolumeInterface $volume, Asset $asset, string $uri = null, AssetTransformIndex $transformIndex = null): string
+    public static function generateUrl(VolumeInterface $volume, Asset $asset, ?string $uri = null, ?AssetTransformIndex $transformIndex = null): string
     {
         $baseUrl = $volume->getRootUrl();
         $folderPath = $asset->folderPath;
@@ -100,7 +100,7 @@ class Assets
      * @param AssetTransformIndex|null $transformIndex Transform index, for which the URL is being generated, if any
      * @return string
      */
-    public static function urlAppendix(VolumeInterface $volume, Asset $file, AssetTransformIndex $transformIndex = null): string
+    public static function urlAppendix(VolumeInterface $volume, Asset $file, ?AssetTransformIndex $transformIndex = null): string
     {
         $appendix = '';
 
@@ -359,7 +359,7 @@ class Assets
      * @return array
      * @throws Exception if the file location is invalid
      */
-    public static function parseFileLocation($location)
+    public static function parseFileLocation(string $location): array
     {
         if (!preg_match('/^\{folder:(\d+)\}(.+)$/', $location, $matches)) {
             throw new Exception('Invalid file location format: ' . $location);

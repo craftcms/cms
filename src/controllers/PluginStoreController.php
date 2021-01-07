@@ -32,12 +32,12 @@ class PluginStoreController extends Controller
     /**
      * @inheritdoc
      */
-    public function init()
+    public function beforeAction($action)
     {
-        parent::init();
-
         // All plugin store actions require an admin
         $this->requireAdmin();
+
+        return parent::beforeAction($action);
     }
 
     /**

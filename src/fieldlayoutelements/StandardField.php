@@ -145,7 +145,7 @@ abstract class StandardField extends BaseField
      */
     protected function orientation(ElementInterface $element = null, bool $static = false): string
     {
-        return $this->orientation ?? parent::orientation();
+        return $this->orientation ?? parent::orientation($element, $static);
     }
 
     /**

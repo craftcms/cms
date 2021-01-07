@@ -42,8 +42,21 @@ class EnvAttributeParserBehavior extends Behavior
     public $owner;
 
     /**
-     * @var string[] The attributes names that can be set to environment
+     * @var string[]|callable[] The attributes names that can be set to environment
      * variables (`$VARIABLE_NAME`) and/or aliases (`@aliasName`).
+     *
+     * If the raw (unparsed) attribute value can’t be obtained from the attribute directly (`$model->foo`),
+     * then the attribute name should be specified as an array key instead, and the value should be set to the
+     * raw value, or a callable that returns the raw value. For example:
+     *
+     * ```php
+     * 'attributes' => [
+     *     'foo' => '$FOO',
+     *     'bar' => function() {
+     *         return $this->_bar;
+     *     },
+     * ],
+     * ```
      */
     public $attributes = [];
 
@@ -70,8 +83,18 @@ class EnvAttributeParserBehavior extends Behavior
     {
         $this->_values = [];
 
-        foreach ($this->attributes as $attribute) {
-            $value = $this->owner->$attribute;
+        foreach ($this->attributes as $i => $attribute) {
+            if (is_string($i)) {
+                if (is_callable($attribute)) {
+                    $value = $attribute();
+                } else {
+                    $value = $attribute;
+                }
+                $attribute = $i;
+            } else {
+                $value = $this->owner->$attribute;
+            }
+
             if (($parsed = Craft::parseEnv($value)) !== $value) {
                 $this->_values[$attribute] = $value;
                 $this->owner->$attribute = $parsed;

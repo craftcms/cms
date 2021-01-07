@@ -30,7 +30,7 @@
 
 {% block content %}
     {{ actionInput('user-settings/save-group') }}
-    {{ redirectInput('settings/users') }}
+    {{ redirectInput('settings/users/groups/{id}') }}
 
     {% if not isNewGroup %}{{ hiddenInput('groupId', group.id) }}{% endif %}
 

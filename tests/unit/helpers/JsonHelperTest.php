@@ -26,17 +26,17 @@ class JsonHelperTest extends Test
     protected $tester;
 
     /**
-     * @dataProvider jsonDecodableDataProvider
+     * @dataProvider decodeIfJsonDataProvider
      *
-     * @param $result
-     * @param $input
+     * @param mixed $expected
+     * @param string $str
      */
-    public function testDecodeIfJson($result, $input)
+    public function testDecodeIfJson($expected, string $str)
     {
-        self::assertSame($result, Json::decodeIfJson($input));
+        self::assertSame($expected, Json::decodeIfJson($str));
     }
 
-    public function jsonDecodableDataProvider(): array
+    public function decodeIfJsonDataProvider(): array
     {
         $basicArray = [
             'WHAT DO WE WANT' => 'JSON',
@@ -52,12 +52,12 @@ class JsonHelperTest extends Test
     /**
      * @dataProvider isJsonObjectDataProvider
      *
-     * @param bool $result
-     * @param string $input
+     * @param bool $expected
+     * @param string $str
      */
-    public function testIsJsonObject(bool $result, string $input)
+    public function testIsJsonObject(bool $expected, string $str)
     {
-        self::assertSame($result, Json::isJsonObject($input));
+        self::assertSame($expected, Json::isJsonObject($str));
     }
 
     public function isJsonObjectDataProvider(): array

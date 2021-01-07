@@ -1,4 +1,4 @@
-jQuery.parseFragmentString = function (value) {
+jQuery.parseFragmentString = function(value) {
     var
         // Object that holds names => values.
         params = {},

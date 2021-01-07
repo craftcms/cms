@@ -10,7 +10,7 @@
                     {% for type, info in widgetTypes|filter(t => t.selectable) %}
                         <li>
                             <a data-type="{{ type }}" data-name="{{ info.name }}">
-                                <span class="icon">{{ info.iconSvg|raw }}</span>
+                                <span class="icon">{{ svg(info.iconSvg, sanitize=false) }}</span>
                                 {{ info.name }}
                             </a>
                         </li>

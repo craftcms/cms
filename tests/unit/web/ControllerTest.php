@@ -9,10 +9,9 @@ namespace crafttests\unit\web;
 
 use Codeception\Test\Unit;
 use Craft;
-use craft\helpers\UrlHelper;
 use craft\test\mockclasses\controllers\TestController;
+use craft\test\TestSetup;
 use craft\web\Response;
-use craft\web\ServiceUnavailableHttpException;
 use craft\web\View;
 use UnitTester;
 use yii\base\Action;
@@ -20,6 +19,7 @@ use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidRouteException;
 use yii\web\BadRequestHttpException;
+use yii\web\ForbiddenHttpException;
 
 /**
  * Unit tests for Controller
@@ -47,7 +47,7 @@ class ControllerTest extends Unit
     {
         Craft::$app->getConfig()->getGeneral()->isSystemLive = true;
 
-        $this->tester->expectThrowable(ServiceUnavailableHttpException::class, function() {
+        $this->tester->expectThrowable(ForbiddenHttpException::class, function() {
             // AllowAnonymous should redirect and Craft::$app->exit(); I.E. An exit exception
             $this->controller->beforeAction(new Action('not-allow-anonymous', $this->controller));
         });
@@ -113,22 +113,18 @@ class ControllerTest extends Unit
      */
     public function testRedirectToPostedUrl()
     {
-        $baseUrl = $this->_getBaseUrlForRedirect();
         $redirect = Craft::$app->getSecurity()->hashData('craft/do/stuff');
 
         // Default
         $default = $this->controller->redirectToPostedUrl();
 
         // Test that with nothing passed in. It defaults to the base. See self::getBaseUrlForRedirect() for more info.
-        self::assertSame(
-            $baseUrl,
-            $default->headers->get('Location')
-        );
+        self::assertSame(TestSetup::SITE_URL, $default->headers->get('Location'));
 
         // What happens when we pass in a param.
         Craft::$app->getRequest()->setBodyParams(['redirect' => $redirect]);
         $default = $this->controller->redirectToPostedUrl();
-        self::assertSame($baseUrl . '?' . urldecode(http_build_query(['p' => 'craft/do/stuff'])), $default->headers->get('Location'));
+        self::assertSame(TestSetup::SITE_URL . 'craft/do/stuff', $default->headers->get('Location'));
     }
 
     /**
@@ -136,9 +132,8 @@ class ControllerTest extends Unit
      */
     public function testRedirectToPostedWithSetDefault()
     {
-        $baseUrl = $this->_getBaseUrlForRedirect();
         $withDefault = $this->controller->redirectToPostedUrl(null, 'craft/do/stuff');
-        self::assertSame($baseUrl . '?' . urldecode(http_build_query(['p' => 'craft/do/stuff'])), $withDefault->headers->get('Location'));
+        self::assertSame(TestSetup::SITE_URL . 'craft/do/stuff', $withDefault->headers->get('Location'));
     }
 
     /**
@@ -176,16 +171,10 @@ class ControllerTest extends Unit
      */
     public function testRedirect()
     {
-        self::assertSame(
-            $this->_getBaseUrlForRedirect() . '?' . urldecode(http_build_query(['p' => 'do/stuff'])),
-            $this->controller->redirect('do/stuff')->headers->get('Location')
-        );
+        self::assertSame(TestSetup::SITE_URL . 'do/stuff', $this->controller->redirect('do/stuff')->headers->get('Location'));
 
         // We dont use _getBaseUrlForRedirect because the :port80 wont work with urlWithScheme.
-        self::assertSame(
-            'https://test.craftcms.test:80/index.php',
-            $this->controller->redirect(null)->headers->get('Location')
-        );
+        self::assertSame(rtrim(TestSetup::SITE_URL, '/') . ':80/', $this->controller->redirect(null)->headers->get('Location'));
 
         // Absolute url
         self::assertSame(
@@ -208,16 +197,5 @@ class ControllerTest extends Unit
         parent::_before();
         $_SERVER['REQUEST_URI'] = 'https://craftcms.com/admin/dashboard';
         $this->controller = new TestController('test', Craft::$app);
-    }
-
-    private function _determineUrlScheme(): string
-    {
-        return !Craft::$app->getRequest()->getIsConsoleRequest() && Craft::$app->getRequest()->getIsSecureConnection() ? 'https' : 'http';
-    }
-
-    private function _getBaseUrlForRedirect(): string
-    {
-        $scheme = $this->_determineUrlScheme();
-        return UrlHelper::urlWithScheme(Craft::$app->getConfig()->getGeneral()->siteUrl, $scheme);
     }
 }

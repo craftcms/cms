@@ -13,6 +13,7 @@ use craft\elements\db\EagerLoadPlan;
 use craft\fields\Assets;
 use craft\fields\Entries;
 use craft\fields\Matrix;
+use craft\gql\ArgumentManager;
 use craft\gql\ElementQueryConditionBuilder;
 use craft\models\MatrixBlockType;
 use crafttests\fixtures\GqlSchemasFixture;
@@ -117,7 +118,8 @@ class ExtractEagerLoadingParameterTest extends Unit
 
         $conditionBuilder = Craft::createObject([
             'class' => ElementQueryConditionBuilder::class,
-            'resolveInfo' => $resolveInfo
+            'resolveInfo' => $resolveInfo,
+            'argumentManager' => new ArgumentManager()
         ]);
         $extractedConditions = $conditionBuilder->extractQueryConditions();
 
@@ -177,7 +179,7 @@ GQL;
 
         $complexResult = [
             'with' => [
-                new EagerLoadPlan(['handle' => 'neverAllowed', 'alias' => 'neverAllowed', 'criteria' => ['id' => 0]]),
+                new EagerLoadPlan(['handle' => 'neverAllowed', 'alias' => 'neverAllowed', 'criteria' => ['id' => ['and', 1, 2]]]),
                 new EagerLoadPlan(['handle' => 'matrixField', 'alias' => 'matrixField', 'when' => function () {}, 'nested' => [
                     new EagerLoadPlan(['handle' => 'mockedBlockHandle:image', 'alias' => 'im',  'criteria' => ['volumeId' => 2], 'when' => function () {}]),
                     new EagerLoadPlan(['handle' => 'mockedBlockHandle:image', 'alias' => 'im',  'criteria' => ['volumeId' => 2], 'when' => function () {}]),
@@ -270,7 +272,7 @@ GQL;
             [
                 '{ entry { assetField (volumeId: 4) { filename }}}',
                 [],
-                ['with' => [new EagerLoadPlan(['handle' => 'assetField', 'alias' => 'assetField', 'criteria' => ['id' => 0]])]],
+                ['with' => [new EagerLoadPlan(['handle' => 'assetField', 'alias' => 'assetField', 'criteria' => ['id' => ['and', 1, 2]]])]],
                 'EntryInterface',
             ],
             [

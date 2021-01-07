@@ -129,4 +129,15 @@ class Request extends \yii\console\Request
     {
         return null;
     }
+
+    /**
+     * Returns the site token submitted with the request, if there is one.
+     *
+     * @return string|null The token, or `null` if there isn’t one.
+     * @since 3.6.0
+     */
+    public function getSiteToken(): ?string
+    {
+        return null;
+    }
 }
