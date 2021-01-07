@@ -107,6 +107,7 @@
 - Improved the performance of project config change diffs. ([#7218](https://github.com/craftcms/cms/issues/7218))
 - Improved the accessibility of info icons.
 - Checkbox and radio button group fields now use `<fieldset>`s and `<legend>`s throughout the control panel.
+- Number field settings and input values are now fully formatted, unless the Preview Format setting is set to “Unformatted”.
 - The Settings → Plugin page now shows which developer created each plugin. ([#7254](https://github.com/craftcms/cms/issues/7254))
 - Field layout designers will no longer create a new tab if no tab name is entered in the prompt. ([#7333](https://github.com/craftcms/cms/issues/7333))
 - Site URLs that are generated on the front-end of disabled sites now include the `siteToken` param, if one was passed to the current page. ([#7264](https://github.com/craftcms/cms/issues/7264))
