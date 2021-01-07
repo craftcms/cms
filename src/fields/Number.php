@@ -242,7 +242,7 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
                 $value = Craft::$app->getFormatter()->asDecimal($value, $this->decimals);
             } else if ($this->decimals) {
                 // Just make sure we're using the right decimal symbol
-                $decimalSeparator = Craft::$app->getLocale()->getNumberSymbol(Locale::SYMBOL_DECIMAL_SEPARATOR);
+                $decimalSeparator = Craft::$app->getFormattingLocale()->getNumberSymbol(Locale::SYMBOL_DECIMAL_SEPARATOR);
                 try {
                     $value = number_format($value, $this->decimals, $decimalSeparator, '');
                 } catch (\Throwable $e) {

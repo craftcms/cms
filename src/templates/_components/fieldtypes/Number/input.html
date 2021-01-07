@@ -1,6 +1,6 @@
 {% from '_includes/forms' import text %}
 
-{{ hiddenInput("#{field.handle}[locale]", craft.app.locale.id) }}
+{{ hiddenInput("#{field.handle}[locale]", craft.app.formattingLocale.id) }}
 
 <div class="flex">
     {% if field.prefix %}

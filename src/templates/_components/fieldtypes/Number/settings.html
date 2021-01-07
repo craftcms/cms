@@ -1,6 +1,6 @@
 {% import "_includes/forms" as forms %}
 
-{% set locale = craft.app.locale.id %}
+{% set locale = craft.app.formattingLocale.id %}
 {{ hiddenInput('defaultValue[locale]', locale) }}
 {{ hiddenInput('min[locale]', locale) }}
 {{ hiddenInput('max[locale]', locale) }}

@@ -286,6 +286,7 @@ JS;
         $request = Craft::$app->getRequest();
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         $sitesService = Craft::$app->getSites();
+        $formattingLocale = Craft::$app->getFormattingLocale();
         $locale = Craft::$app->getLocale();
         $orientation = $locale->getOrientation();
         $userSession = Craft::$app->getUser();
@@ -318,7 +319,7 @@ JS;
             'canAccessQueueManager' => $userSession->checkPermission('utility:queue-manager'),
             'clientOs' => $request->getClientOs(),
             'cpTrigger' => $generalConfig->cpTrigger,
-            'datepickerOptions' => $this->_datepickerOptions($locale, $currentUser, $generalConfig),
+            'datepickerOptions' => $this->_datepickerOptions($formattingLocale, $locale, $currentUser, $generalConfig),
             'defaultCookieOptions' => $this->_defaultCookieOptions(),
             'defaultIndexCriteria' => [],
             'deltaNames' => $view->getDeltaNames(),
@@ -358,7 +359,7 @@ JS;
             'slugWordSeparator' => $generalConfig->slugWordSeparator,
             'Solo' => Craft::Solo,
             'systemUid' => Craft::$app->getSystemUid(),
-            'timepickerOptions' => $this->_timepickerOptions($locale, $orientation),
+            'timepickerOptions' => $this->_timepickerOptions($formattingLocale, $orientation),
             'timezone' => Craft::$app->getTimeZone(),
             'tokenParam' => $generalConfig->tokenParam,
             'translations' => ['' => ''], // force encode as JS object
@@ -375,18 +376,17 @@ JS;
         return $data;
     }
 
-    private function _datepickerOptions(Locale $locale, User $currentUser = null, GeneralConfig $generalConfig): array
+    private function _datepickerOptions(Locale $formattingLocale, Locale $locale, User $currentUser = null, GeneralConfig $generalConfig): array
     {
-        $langLocale = Craft::$app->getI18n()->getLocaleById(Craft::$app->language);
         return [
             'constrainInput' => false,
-            'dateFormat' => $locale->getDateFormat(Locale::LENGTH_SHORT, Locale::FORMAT_JUI),
-            'dayNames' => $langLocale->getWeekDayNames(Locale::LENGTH_FULL),
-            'dayNamesMin' => $langLocale->getWeekDayNames(Locale::LENGTH_ABBREVIATED),
-            'dayNamesShort' => $langLocale->getWeekDayNames(Locale::LENGTH_SHORT),
+            'dateFormat' => $formattingLocale->getDateFormat(Locale::LENGTH_SHORT, Locale::FORMAT_JUI),
+            'dayNames' => $locale->getWeekDayNames(Locale::LENGTH_FULL),
+            'dayNamesMin' => $locale->getWeekDayNames(Locale::LENGTH_ABBREVIATED),
+            'dayNamesShort' => $locale->getWeekDayNames(Locale::LENGTH_SHORT),
             'firstDay' => (int)(($currentUser ? $currentUser->getPreference('weekStartDay') : null) ?? $generalConfig->defaultWeekStartDay),
-            'monthNames' => $langLocale->getMonthNames(Locale::LENGTH_FULL),
-            'monthNamesShort' => $langLocale->getMonthNames(Locale::LENGTH_ABBREVIATED),
+            'monthNames' => $locale->getMonthNames(Locale::LENGTH_FULL),
+            'monthNamesShort' => $locale->getMonthNames(Locale::LENGTH_ABBREVIATED),
             'nextText' => Craft::t('app', 'Next'),
             'prevText' => Craft::t('app', 'Prev'),
         ];
@@ -490,18 +490,18 @@ JS;
         return $sites;
     }
 
-    private function _timepickerOptions(Locale $locale, string $orientation): array
+    private function _timepickerOptions(Locale $formattingLocale, string $orientation): array
     {
         return [
             'closeOnWindowScroll' => false,
             'lang' => [
-                'AM' => $locale->getAMName(),
-                'am' => mb_strtolower($locale->getAMName()),
-                'PM' => $locale->getPMName(),
-                'pm' => mb_strtolower($locale->getPMName()),
+                'AM' => $formattingLocale->getAMName(),
+                'am' => mb_strtolower($formattingLocale->getAMName()),
+                'PM' => $formattingLocale->getPMName(),
+                'pm' => mb_strtolower($formattingLocale->getPMName()),
             ],
             'orientation' => $orientation[0],
-            'timeFormat' => $locale->getTimeFormat(Locale::LENGTH_SHORT, Locale::FORMAT_PHP),
+            'timeFormat' => $formattingLocale->getTimeFormat(Locale::LENGTH_SHORT, Locale::FORMAT_PHP),
         ];
     }
 }

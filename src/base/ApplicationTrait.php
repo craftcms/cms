@@ -72,6 +72,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read \craft\db\MigrationManager $contentMigrator The content migration manager
  * @property-read \craft\db\MigrationManager $migrator The application’s migration manager
  * @property-read \craft\feeds\Feeds $feeds The feeds service
+ * @property-read \craft\i18n\Locale $formattingLocale The Locale object that should be used to define the formatter
  * @property-read \craft\i18n\Locale $locale The Locale object for the target language
  * @property-read \craft\mail\Mailer $mailer The mailer component
  * @property-read \craft\services\Api $api The API service
@@ -1043,6 +1044,17 @@ trait ApplicationTrait
     {
         /** @var WebApplication|ConsoleApplication $this */
         return $this->get('fields');
+    }
+
+    /**
+     * Returns the locale that should be used to define the formatter.
+     *
+     * @return Locale
+     * @since 3.6.0
+     */
+    public function getFormattingLocale(): Locale
+    {
+        return $this->get('formattingLocale');
     }
 
     /**

@@ -216,10 +216,10 @@ return [
         },
 
         'formatter' => function() {
-            return Craft::$app->getLocale()->getFormatter();
+            return Craft::$app->getFormattingLocale()->getFormatter();
         },
 
-        'locale' => function() {
+        'formattingLocale' => function() {
             $i18n = Craft::$app->getI18n();
 
             if (Craft::$app->getRequest()->getIsCpRequest() && !Craft::$app->getResponse()->isSent) {
@@ -246,8 +246,12 @@ return [
                 }
             }
 
-            // Default to the application language
-            return $i18n->getLocaleById(Craft::$app->language);
+            // Default to the application locale
+            return Craft::$app->getLocale();
+        },
+
+        'locale' => function() {
+            return Craft::$app->getI18n()->getLocaleById(Craft::$app->language);
         },
 
         'mailer' => function() {
