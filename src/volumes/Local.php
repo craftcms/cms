@@ -161,7 +161,7 @@ class Local extends Volume implements LocalVolumeInterface
      */
     public function writeFileFromStream(string $path, $stream, array $config): void
     {
-        $this->ensureDirectory($path);
+        $this->createDir(pathinfo($path, PATHINFO_DIRNAME));
         $fullPath = $this->prefixPath($path);
 
         $targetStream = @fopen($fullPath, 'w+b');
@@ -235,7 +235,8 @@ class Local extends Volume implements LocalVolumeInterface
      */
     public function createDir(string $path): void
     {
-        FileHelper::createDirectory($this->prefixPath($path), $this->dirMode, true);
+        $dirPath = StringHelper::removeRight($this->prefixPath($path), '.');
+        FileHelper::createDirectory($dirPath, $this->dirMode, true);
     }
 
     /**
