@@ -2027,6 +2027,7 @@ $.extend($.fn,
                                 type: 'button',
                                 class: 'clear-btn',
                                 title: Craft.t('app', 'Clear'),
+                                ['aria-label']: Craft.t('app', 'Clear'),
                             })
                                 .appendTo($wrapper)
                                 .on('click', () => {
