@@ -412,6 +412,7 @@ class Locale extends BaseObject
     {
         if ($this->_formatter === null) {
             $config = [
+                'class' => Formatter::class,
                 'locale' => $this->id,
                 'sizeFormatBase' => 1000,
             ];
@@ -453,7 +454,7 @@ class Locale extends BaseObject
                 ];
             }
 
-            $this->_formatter = new Formatter($config);
+            $this->_formatter = Craft::createObject($config);
         }
 
         return $this->_formatter;

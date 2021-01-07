@@ -696,6 +696,18 @@ td.right {
   display: none !important;
 }
 
+// Visually hide without hiding from screen readers
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  border: 0;
+}
+
 .invisible {
   visibility: hidden;
 }
@@ -1606,9 +1618,10 @@ div.btn.submit input {
     display: flex;
     align-items: center;
 
-    label {
+    span {
       padding: 7px 0;
       color: $mediumTextColor;
+      cursor: default;
 
       &[data-toggle=on] {
         @include padding-right(10px);
@@ -1711,12 +1724,12 @@ div.btn.submit input {
   &.indeterminate {
     &:not(.small) {
       .lightswitch-container {
-        @include margin-left(-12px / 2);
+        @include margin-left(0.5 * -12px);
       }
     }
     &.small {
       .lightswitch-container {
-        @include margin-left(-10px / 2);
+        @include margin-left(0.5 * -10px);
       }
     }
   }
