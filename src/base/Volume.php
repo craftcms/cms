@@ -29,10 +29,17 @@ abstract class Volume extends SavableComponent implements VolumeInterface
 {
     use VolumeTrait;
 
+    public const CONFIG_MIMETYPE = 'mimetype';
+    public const CONFIG_VISIBILITY = 'visibility';
+
+    public const VISIBILITY_DEFAULT = 'default';
+    public const VISIBILITY_HIDDEN = 'hidden';
+    public const VISIBILITY_PUBLIC = 'public';
+
     /**
      * @inheritdoc
      */
-    public function behaviors()
+    public function behaviors(): array
     {
         $behaviors = parent::behaviors();
         $behaviors['fieldLayout'] = [
@@ -45,7 +52,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     /**
      * @inheritdoc
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'url' => Craft::t('app', 'URL'),

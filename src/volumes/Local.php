@@ -27,18 +27,30 @@ use RecursiveIteratorIterator;
  * @see http://craftcms.com
  * @package craft.app.volumes
  * @since 3.0.0
+ *
+ * @property-read mixed $settingsHtml
+ * @property-read string $rootPath
  */
 class Local extends Volume implements LocalVolumeInterface
 {
-    /**
-     * @var int Default file mode when writing new files
-     */
-    private int $fileMode = 0644;
+    public const VISIBILITY_FILE = 'file';
+    public const VISIBILITY_DIR = 'dir';
 
     /**
-     * @var int Default directory mode when creating new directories
+     * @var int[][] Visibility map
      */
-    private int $dirMode = 0644;
+    protected array $visibilityMap = [
+        self::VISIBILITY_FILE => [
+            self::VISIBILITY_DEFAULT => 0644,
+            self::VISIBILITY_PUBLIC => 0644,
+            self::VISIBILITY_HIDDEN => 0600,
+        ],
+        self::VISIBILITY_DIR => [
+            self::VISIBILITY_DEFAULT => 0775,
+            self::VISIBILITY_PUBLIC => 0775,
+            self::VISIBILITY_HIDDEN => 0700
+        ]
+    ];
 
     /**
      * @inheritdoc
@@ -66,8 +78,13 @@ class Local extends Volume implements LocalVolumeInterface
 
         $generalConfig = Craft::$app->getConfig()->getGeneral();
 
-        $this->fileMode = $generalConfig->defaultFileMode ?: $this->fileMode;
-        $this->dirMode = $generalConfig->defaultDirMode ?: $this->dirMode;
+        if ($generalConfig->defaultFileMode) {
+            $this->visibilityMap[self::VISIBILITY_FILE][self::VISIBILITY_DEFAULT] = $generalConfig->defaultFileMode;
+        }
+
+        if ($generalConfig->defaultFileMode) {
+            $this->visibilityMap[self::VISIBILITY_DIR][self::VISIBILITY_DEFAULT] = $generalConfig->defaultDirMode;
+        }
     }
 
     /**
@@ -159,9 +176,9 @@ class Local extends Volume implements LocalVolumeInterface
     /**
      * @inheritdoc
      */
-    public function writeFileFromStream(string $path, $stream, array $config): void
+    public function writeFileFromStream(string $path, $stream, array $config = []): void
     {
-        $this->createDir(pathinfo($path, PATHINFO_DIRNAME));
+        $this->createDir(pathinfo($path, PATHINFO_DIRNAME), []);
         $fullPath = $this->prefixPath($path);
 
         $targetStream = @fopen($fullPath, 'w+b');
@@ -171,7 +188,12 @@ class Local extends Volume implements LocalVolumeInterface
         }
 
         fclose($targetStream);
-        @chmod($fullPath, $this->fileMode);
+
+        $visibility = $this->resolveVisibility(self::VISIBILITY_FILE, $config);
+
+        if ($visibility) {
+            @chmod($fullPath, $visibility);
+        }
     }
 
     /**
@@ -201,7 +223,7 @@ class Local extends Volume implements LocalVolumeInterface
      */
     public function renameFile(string $path, string $newPath): void
     {
-        $this->ensureDirectoryOnVolume($newPath);
+        $this->createDir($newPath);
         @rename($this->prefixPath($path), $this->prefixPath($newPath));
     }
 
@@ -210,7 +232,7 @@ class Local extends Volume implements LocalVolumeInterface
      */
     public function copyFile(string $path, string $newPath): void
     {
-        $this->ensureDirectoryOnVolume($newPath);
+        $this->createDir($newPath);
         @copy($this->prefixPath($path), $this->prefixPath($newPath));
     }
 
@@ -233,10 +255,10 @@ class Local extends Volume implements LocalVolumeInterface
     /**
      * @inheritdoc
      */
-    public function createDir(string $path): void
+    public function createDir(string $path, array $config = []): void
     {
         $dirPath = StringHelper::removeRight($this->prefixPath($path), '.');
-        FileHelper::createDirectory($dirPath, $this->dirMode, true);
+        FileHelper::createDirectory($dirPath, $this->resolveVisibility(self::VISIBILITY_DIR, $config), true);
     }
 
     /**
@@ -275,6 +297,7 @@ class Local extends Volume implements LocalVolumeInterface
     /**
      * Prefix the path with the root path.
      *
+     * @param string $path
      * @return string
      * @throws VolumeException if path is not contained.
      */
@@ -288,14 +311,18 @@ class Local extends Volume implements LocalVolumeInterface
     }
 
     /**
-     * Makes sure a directory exists at a given volume path.
+     * Resolve visibility by a config array and type.
      *
-     * @param $path
-     * @throws VolumeException
-     * @throws \yii\base\Exception
+     * @param string $type
+     * @param array $config
+     * @return int
      */
-    protected function ensureDirectoryOnVolume($path): void
+    protected function resolveVisibility(string $type, array $config = []): int
     {
-        FileHelper::createDirectory(pathinfo($this->prefixPath($path), PATHINFO_DIRNAME), $this->dirMode, true);
+        if (empty($config[self::CONFIG_VISIBILITY])) {
+            return $this->visibilityMap[$type][self::VISIBILITY_DEFAULT];
+        }
+
+        return $this->visibilityMap[$type][$config[self::CONFIG_VISIBILITY]];
     }
 }

@@ -66,7 +66,7 @@ interface VolumeInterface extends SavableComponentInterface
      *
      * @param string $path The path of the file, relative to the source’s root
      * @param resource $stream The stream to file
-     * @param array $config Additional config options to pass to the adapter
+     * @param array $config Additional config options to pass on
      * @throws VolumeObjectExistsException if a file already exists at the path on the Volume
      * @throws VolumeException if something else goes wrong
      * @deprecated in 4.0.0. Use `writeFileFromStream()` instead.
@@ -78,7 +78,7 @@ interface VolumeInterface extends SavableComponentInterface
      *
      * @param string $path The path of the file, relative to the source’s root
      * @param resource $stream The new contents of the file as a stream
-     * @param array $config Additional config options to pass to the adapter
+     * @param array $config Additional config options to pass on
      * @throws VolumeObjectNotFoundException if the file to be updated cannot be found
      * @throws VolumeException if something else goes wrong
      * @deprecated in 4.0.0.  Use `writeFileFromStream()` instead.
@@ -90,11 +90,11 @@ interface VolumeInterface extends SavableComponentInterface
      *
      * @param string $path The path of the file, relative to the source’s root
      * @param resource $stream The new contents of the file as a stream
-     * @param array $config Additional config options to pass to the adapter
+     * @param array $config Additional config options to pass on
      * @throws VolumeObjectNotFoundException if the file to be updated cannot be found
      * @throws VolumeException if something else goes wrong
      */
-    public function writeFileFromStream(string $path, $stream, array $config): void;
+    public function writeFileFromStream(string $path, $stream, array $config = []): void;
 
     /**
      * Returns whether a file exists.
@@ -168,7 +168,7 @@ interface VolumeInterface extends SavableComponentInterface
      * @throws VolumeObjectExistsException if a directory with such name already exists
      * @throws VolumeException if something else goes wrong
      */
-    public function createDir(string $path): void;
+    public function createDir(string $path, array $config = []): void;
 
     /**
      * Deletes a directory.

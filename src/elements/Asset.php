@@ -10,6 +10,7 @@ namespace craft\elements;
 use Craft;
 use craft\base\Element;
 use craft\base\LocalVolumeInterface;
+use craft\base\Volume;
 use craft\base\VolumeInterface;
 use craft\db\Query;
 use craft\db\Table;
@@ -2051,7 +2052,7 @@ class Asset extends Element
 
             // Upload the file to the new location
             $newVolume->writeFileFromStream($newPath, $stream, [
-                'mimetype' => FileHelper::getMimeType($tempPath)
+                Volume::CONFIG_MIMETYPE => FileHelper::getMimeType($tempPath),
             ]);
 
             // Rackspace will disconnect the stream automatically
