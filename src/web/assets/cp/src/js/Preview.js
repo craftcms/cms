@@ -189,25 +189,21 @@ Craft.Preview = Garnish.Base.extend({
                 });
 
                 // Orientation toggle
-                // TODO convert element syntax
                 // TODO hide until activated
                 const $orientationToggle = $('<div/>', {
                     'class': 'btn',
                     'data-icon': 'refresh'
                 }).appendTo($previewBtnGroup);
-                // TODO
-                // this.addListener($orientationToggle, 'activate', 'toggleOrientation');
-
+                this.addListener($orientationToggle, 'activate', 'toggleOrientation');
 
                 // Breakpoint button click handlers
                 this.addListener($('.lp-breakpoint-btn', this.$breakpointButtons), 'activate', 'switchBreakpoint');
 
-
-                // TODO: Set the window to the last breakpoint we have in the cookie
-                // var currentBreakpoint = Cookies.get('portal_breakpoint');
-                // if (currentBreakpoint) {
-                //     this.$breakpointButtons.find('.portal-lp-btn[data-breakpoint="' + currentBreakpoint + '"]').click();
-                // }
+                // Set the window to the last breakpoint we have in the cookie
+                const currentBreakpoint = Craft.getLocalStorage('LivePreview.breakpoint');
+                if (currentBreakpoint) {
+                    this.$breakpointButtons.find('.lp-breakpoint-btn[data-breakpoint="' + currentBreakpoint + '"]').click();
+                }
 
                 // Device mask
                 this.$deviceMask = $('<div/>', {
@@ -494,28 +490,26 @@ Craft.Preview = Garnish.Base.extend({
 
     switchBreakpoint: function(ev) {
 
-        let $btn = $(ev.target),
-            w = $btn.data('width'),
-            h = $btn.data('height'),
-            bp = $btn.data('breakpoint');
+        const $btn = $(ev.target),
+              bp = $btn.data('breakpoint');
+        let   w = $btn.data('width'),
+              h = $btn.data('height');
 
-
-        // Set the breakpoint cookie
-        // Cookies.set('portal_breakpoint', bp);
-
+        // Store the breakpoint
+        Craft.setLocalStorage('LivePreview.breakpoint', bp);
 
         // Active state on the button
-        $('.lp-breakpoint-btn', this.$toolbar).removeClass('lp-breakpoint-btn--active');
+        $('.lp-breakpoint-btn', this.$breakpointButtons).removeClass('lp-breakpoint-btn--active');
         $btn.addClass('lp-breakpoint-btn--active');
 
 
         // Check the orientation and switch if needed
-        // var orientation = Cookies.get('portal_orientation');
-        // if (orientation && orientation === 'landscape') {
-        //     w = $btn.data('height');
-        //     h = $btn.data('width');
-        //     Craft.livePreview.$iframeContainer.addClass('portal-lp--landscape');
-        // }
+        const orientation = Craft.getLocalStorage('LivePreview.orientation');
+        if (orientation && orientation === 'landscape') {
+            w = $btn.data('height');
+            h = $btn.data('width');
+            this.$iframeContainer.addClass('lp-iframe-container--landscape');
+        }
 
 
         // Change the size of the iframe if we can
@@ -541,12 +535,88 @@ Craft.Preview = Garnish.Base.extend({
             });
 
         } else {
-
             // Desktop
-            // this.resetIframe();
-
+            this.resetIframe();
         }
 
+    },
+
+    toggleOrientation: function(ev)
+    {
+
+        var $btn = $(ev.target);
+
+        if ($btn.data('lp-rotating')) {
+            return;
+        }
+
+        $btn.data('lp-rotating', true);
+
+
+        // Track it in local storage and toggle state classes
+        let orientation = Craft.getLocalStorage('LivePreview.orientation');
+
+        if (!orientation || orientation === 'portrait') {
+            orientation = 'landscape';
+            this.$iframeContainer.addClass('lp-iframe-container--landscape');
+        } else {
+            orientation = 'portrait';
+            this.$iframeContainer.removeClass('lp-iframe-container--landscape');
+        }
+
+        Craft.setLocalStorage('LivePreview.orientation', orientation);
+
+
+        // Make the switch
+        const bp = Craft.getLocalStorage('LivePreview.breakpoint');
+
+        if (bp && bp !== 'desktop') {
+
+            clearTimeout(this.rotatingTimeout);
+            this.$iframeContainer.addClass('lp-iframe-container--rotating');
+
+            this.rotatingTimeout = setTimeout($.proxy(function() {
+
+                const w = this.$iframe.outerWidth(),
+                      h = this.$iframe.outerHeight();
+
+                // Check actual and intended orientation line up, if not then invert
+                if ((orientation === 'portrait' && w > h) || orientation === 'landscape' && w < h) {
+                    this.$iframe.css({
+                        width: h + 'px',
+                        height: w + 'px',
+                        marginLeft: '-'+(h/2)+'px'
+                    });
+                }
+
+                this.$iframeContainer.addClass('lp-iframe-container--rotating-done');
+                this.$iframeContainer.removeClass('lp-iframe-container--rotating');
+                setTimeout($.proxy(function() {
+                    this.$iframeContainer.removeClass('lp-iframe-container--rotating-done');
+                    $btn.data('lp-rotating', false);
+                }, this), 50);
+
+            }, this), 350);
+
+        } else {
+            $btn.data('lp-rotating', false);
+        }
+
+    },
+
+    resetIframe: function()
+    {
+        // if (this.targetMenuBtn) this.targetMenuBtn.menu.$container.removeClass('dark');
+        // if (this.zoomMenuBtn) this.zoomMenuBtn.menu.$container.removeClass('dark');
+
+        this.$iframeContainer.removeClass('lp-iframe-container--resized');
+        this.$iframeContainer.removeClass('lp-iframe-container--tablet');
+        this.$iframeContainer.removeClass('lp-iframe-container--landscape');
+        this.$iframe.css({
+            width: '100%',
+            height: '100%',
+            marginLeft: '0'
+        });
     },
 
     _getClone: function($field) {

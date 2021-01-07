@@ -1370,29 +1370,11 @@ $toolbarIconColor: darken($inputColor, 10%);
       min-height: 100%;
     }
 
+    // Default is mobile
     &--resized {
       flex: none;
 
-      .lp-device-mask {
-        display: block;
-        position: absolute;
-        z-index: 1;
-
-        top: -24px;
-        left: 50%;
-        margin-left: -213px;
-        margin-bottom: 24px;
-
-        width: 426px;
-        height: 853px;
-
-        background-image: url(../images/live-preview/iphone.svg);
-        background-repeat: no-repeat;
-
-        transform: scale(0.75) rotate(0deg);
-        transition: transform .3s, top .3s;
-      }
-
+      // iframe
       .lp-preview {
         position: absolute;
         z-index: 2;
@@ -1413,7 +1395,168 @@ $toolbarIconColor: darken($inputColor, 10%);
         transform: scale(0.75) rotate(0deg);
         transition: opacity .3s, transform .3s, top .3s;
       }
+
+      // Device mask
+      .lp-device-mask {
+        display: block;
+        position: absolute;
+        z-index: 1;
+
+        top: -24px;
+        left: 50%;
+        margin-left: -213px;
+        margin-bottom: 24px;
+
+        width: 426px;
+        height: 853px;
+
+        background-image: url(../images/live-preview/iphone.svg);
+        background-repeat: no-repeat;
+
+        transform: scale(0.75) rotate(0deg);
+        transition: transform .3s, top .3s;
+      }
+
+      // Zoomed portrait
+      //&.portal-lp--zoom-full {
+      //  .lp-iframe {
+      //    top: 181px;
+      //    transform: scale(1) rotate(0deg);
+      //  }
+      //  .portal-lp-device-mask {
+      //    top: 83px;
+      //    transform: scale(1) rotate(0deg);
+      //  }
+      //}
+      //&.portal-lp--zoom-half {
+      //  .lp-iframe {
+      //    top: -33px;
+      //    transform: scale(0.5) rotate(0deg);
+      //  }
+      //  .portal-lp-device-mask {
+      //    top: -131px;
+      //    transform: scale(0.5) rotate(0deg);
+      //  }
+      //}
+
+      // Tablet
+      &.lp-iframe-container--tablet {
+
+        // iframe
+        .lp-preview {
+          top: 51px;
+        }
+
+        // Device mask
+        .lp-device-mask {
+          top: -74px;
+          background-image: url(../images/live-preview/ipad.svg);
+          margin-left: -420.5px;
+          width: 841px;
+          height: 1252px;
+        }
+
+        // Zoomed portrait
+        //&.portal-lp--zoom-full {
+        //  .lp-iframe {
+        //    top: 208px;
+        //  }
+        //  .portal-lp-device-mask {
+        //    top: 83px;
+        //  }
+        //}
+        //&.portal-lp--zoom-half {
+        //  .lp-iframe {
+        //    top: -105px;
+        //  }
+        //  .portal-lp-device-mask {
+        //    top: -230px;
+        //  }
+        //}
+      }
     }
+
+    // Landscape
+    &--landscape {
+
+      // Toolbar
+      .lp-preview-header {
+
+        .lp-breakpoint-btn--tablet::before,
+        .lp-breakpoint-btn--mobile::before {
+          transform: scale(0.75) rotate(-90deg);
+          transition-duration: .3s;
+        }
+
+      }
+
+      // Iframe - mobile
+      .lp-preview {
+        top: 55px;
+      }
+
+      // Device mask - mobile
+      .lp-device-mask {
+        top: -184px;
+        transform: scale(0.75) rotate(-90deg);
+        margin-left: -((426px/2)-2); // no idea why this is happening
+      }
+
+
+      // Zoomed landscape - mobile
+      //&.portal-lp--zoom-full {
+      //  .lp-iframe {
+      //    top: 107px;
+      //  }
+      //  .portal-lp-device-mask {
+      //    top: -131px;
+      //    transform: scale(1) rotate(-90deg);
+      //  }
+      //}
+      //&.portal-lp--zoom-half {
+      //  .lp-iframe {
+      //    top: 2px;
+      //  }
+      //  .portal-lp-device-mask {
+      //    top: -237px;
+      //    transform: scale(0.5) rotate(-90deg);
+      //  }
+      //}
+
+
+      // Tablet mode
+      &.lp-iframe-container--tablet {
+
+        .lp-preview {
+          top: 14px;
+        }
+
+        .lp-device-mask {
+          top: -228px;
+          margin-left: -((841px/2)+2);
+        }
+
+        //&.portal-lp--zoom-full {
+        //  .lp-iframe {
+        //    top: 118px;
+        //  }
+        //  .portal-lp-device-mask {
+        //    top: -123px;
+        //  }
+        //}
+        //&.portal-lp--zoom-half {
+        //  .lp-iframe {
+        //    top: -91px;
+        //  }
+        //  .portal-lp-device-mask {
+        //    top: -333px;
+        //  }
+        //}
+
+      }
+
+    }
+
   }
 }
 

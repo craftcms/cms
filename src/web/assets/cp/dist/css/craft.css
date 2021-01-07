@@ -3349,9 +3349,23 @@ body.rtl .lp-editor-container .lp-draghandle { left: -2px; }
 
 .lp-preview-container .lp-iframe-container--resized { -webkit-flex: none; flex: none; }
 
+.lp-preview-container .lp-iframe-container--resized .lp-preview { position: absolute; z-index: 2; min-height: auto; top: 74px; margin-bottom: 24px; left: 50%; margin-left: -187.5px; background: #fff !important; background-image: -o-linear-gradient(#fff, #f9fafa); background-image: linear-gradient(#fff, #f9fafa); box-shadow: 0 0px 10px 0px rgba(0, 0, 0, 0.2); opacity: 1; -webkit-transform: scale(0.75) rotate(0deg); -o-transform: scale(0.75) rotate(0deg); transform: scale(0.75) rotate(0deg); transition: opacity .3s, top .3s, -webkit-transform .3s; -o-transition: opacity .3s, top .3s, -o-transform .3s; transition: opacity .3s, transform .3s, top .3s; transition: opacity .3s, transform .3s, top .3s, -webkit-transform .3s, -o-transform .3s; }
+
 .lp-preview-container .lp-iframe-container--resized .lp-device-mask { display: block; position: absolute; z-index: 1; top: -24px; left: 50%; margin-left: -213px; margin-bottom: 24px; width: 426px; height: 853px; background-image: url(../images/live-preview/iphone.svg); background-repeat: no-repeat; -webkit-transform: scale(0.75) rotate(0deg); -o-transform: scale(0.75) rotate(0deg); transform: scale(0.75) rotate(0deg); transition: top .3s, -webkit-transform .3s; -o-transition: top .3s, -o-transform .3s; transition: transform .3s, top .3s; transition: transform .3s, top .3s, -webkit-transform .3s, -o-transform .3s; }
 
-.lp-preview-container .lp-iframe-container--resized .lp-preview { position: absolute; z-index: 2; min-height: auto; top: 74px; margin-bottom: 24px; left: 50%; margin-left: -187.5px; background: #fff !important; background-image: -o-linear-gradient(#fff, #f9fafa); background-image: linear-gradient(#fff, #f9fafa); box-shadow: 0 0px 10px 0px rgba(0, 0, 0, 0.2); opacity: 1; -webkit-transform: scale(0.75) rotate(0deg); -o-transform: scale(0.75) rotate(0deg); transform: scale(0.75) rotate(0deg); transition: opacity .3s, top .3s, -webkit-transform .3s; -o-transition: opacity .3s, top .3s, -o-transform .3s; transition: opacity .3s, transform .3s, top .3s; transition: opacity .3s, transform .3s, top .3s, -webkit-transform .3s, -o-transform .3s; }
+.lp-preview-container .lp-iframe-container--resized.lp-iframe-container--tablet .lp-preview { top: 51px; }
+
+.lp-preview-container .lp-iframe-container--resized.lp-iframe-container--tablet .lp-device-mask { top: -74px; background-image: url(../images/live-preview/ipad.svg); margin-left: -420.5px; width: 841px; height: 1252px; }
+
+.lp-preview-container .lp-iframe-container--landscape .lp-preview-header .lp-breakpoint-btn--tablet::before, .lp-preview-container .lp-iframe-container--landscape .lp-preview-header .lp-breakpoint-btn--mobile::before { -webkit-transform: scale(0.75) rotate(-90deg); -o-transform: scale(0.75) rotate(-90deg); transform: scale(0.75) rotate(-90deg); -o-transition-duration: .3s; transition-duration: .3s; }
+
+.lp-preview-container .lp-iframe-container--landscape .lp-preview { top: 55px; }
+
+.lp-preview-container .lp-iframe-container--landscape .lp-device-mask { top: -184px; -webkit-transform: scale(0.75) rotate(-90deg); -o-transform: scale(0.75) rotate(-90deg); transform: scale(0.75) rotate(-90deg); margin-left: -211px; }
+
+.lp-preview-container .lp-iframe-container--landscape.lp-iframe-container--tablet .lp-preview { top: 14px; }
+
+.lp-preview-container .lp-iframe-container--landscape.lp-iframe-container--tablet .lp-device-mask { top: -228px; margin-left: -422.5px; }
 
 /* Sidebar */
 .sidebar { padding: 14px 0; width: 226px; box-sizing: border-box; font-size: 13px; background-color: #f3f7fc; }
