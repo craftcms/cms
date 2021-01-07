@@ -4611,7 +4611,7 @@ fieldset {
     width: 20px;
     @include margin-left(4px);
     cursor: pointer;
-    color: $darkHairlineColor;
+    color: $lightTextColor;
     border: none;
     padding: 0;
     background: transparent;
@@ -4622,7 +4622,7 @@ fieldset {
     }
 
     &:hover {
-      color: $mediumTextColor;
+      color: $errorColor;
     }
   }
 }
