@@ -69,7 +69,7 @@ interface VolumeInterface extends SavableComponentInterface
      * @param array $config Additional config options to pass to the adapter
      * @throws VolumeObjectExistsException if a file already exists at the path on the Volume
      * @throws VolumeException if something else goes wrong
-     * @deprecated Use `writeFileFromStream()` instead.
+     * @deprecated in 4.0.0. Use `writeFileFromStream()` instead.
      */
     public function createFileByStream(string $path, $stream, array $config): void;
 
@@ -81,7 +81,7 @@ interface VolumeInterface extends SavableComponentInterface
      * @param array $config Additional config options to pass to the adapter
      * @throws VolumeObjectNotFoundException if the file to be updated cannot be found
      * @throws VolumeException if something else goes wrong
-     * @deprecated Use `writeFileFromStream()` instead.
+     * @deprecated in 4.0.0.  Use `writeFileFromStream()` instead.
      */
     public function updateFileByStream(string $path, $stream, array $config): void;
 
@@ -140,7 +140,7 @@ interface VolumeInterface extends SavableComponentInterface
      * @param string $uriPath
      * @param string $targetPath
      * @return int amount of bytes copied
-     * @deprecated This method is deprecated, please use `\craft\helpers\Assets::downloadFile()` instead.
+     * @deprecated in 4.0.0. Use `\craft\helpers\Assets::downloadFile()` instead.
      */
     public function saveFileLocally(string $uriPath, string $targetPath): int;
 
