@@ -1330,7 +1330,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         }
 
         // Remove the XML declaration
-        $svg = preg_replace('/<\?xml.*?\?>/', '', $svg);
+        $svg = preg_replace('/<\?xml.*?\?>\s*/', '', $svg);
 
         // Namespace class names and IDs
         if ($namespace) {

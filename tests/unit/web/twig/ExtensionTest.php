@@ -10,6 +10,7 @@ namespace crafttests\unit\web\twig;
 use ArrayObject;
 use Codeception\Test\Unit;
 use Craft;
+use craft\elements\Entry;
 use craft\elements\User;
 use craft\fields\MissingField;
 use craft\fields\PlainText;
@@ -862,6 +863,143 @@ class ExtensionTest extends Unit
     }
 
     /**
+     *
+     */
+    public function testCloneFunction()
+    {
+        $this->testRenderResult(
+            'yes',
+            '{% set q2 = clone(q) %}{{ q2.sectionId == q.sectionId and q2 is not same as(q) ? "yes" : "no" }}',
+            [
+                'q' => Entry::find()->sectionId(10)
+            ]
+        );
+    }
+
+    /**
+     *
+     */
+    public function testDataUrlFunction()
+    {
+        $path = dirname(__DIR__, 3) . '/_data/assets/files/craft-logo.svg';
+        $dataUrl = $this->view->renderString('{{ dataUrl(path) }}', compact('path'));
+        self::assertStringStartsWith('data:image/svg+xml;base64,', $dataUrl);
+    }
+
+    public function testExpressionFunction()
+    {
+        $this->testRenderResult(
+            'Im an expression | var | Im an expression',
+            '{% set expression =  expression("Im an expression", ["var"]) %}{{ expression }} | {{ expression.params[0] }} | {{ expression.expression }}'
+        );
+    }
+
+    /**
+     *
+     */
+    public function testGqlFunction()
+    {
+        $this->testRenderResult(
+            '{"data":{"ping":"pong"}}',
+            '{{ gql("{ping}")|json_encode }}'
+        );
+    }
+
+    /**
+     *
+     */
+    public function testPluginFunction()
+    {
+        $this->testRenderResult(
+            'invalid',
+            '{{ plugin("no-a-real-plugin") is same as(null) ? "invalid" }}'
+        );
+    }
+
+    /**
+     * @deprecated
+     */
+    public function testRoundFunction()
+    {
+        $this->testRenderResult(
+            '5',
+            '{{ round(4.8) }}'
+        );
+    }
+
+    /**
+     * @throws LoaderError
+     * @throws SyntaxError
+     */
+    public function testShuffleFunction()
+    {
+        $array = [
+            0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+            'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'
+        ];
+
+        $this->testRenderResult(
+            'yes',
+            '{{ array != shuffle(array) or array != shuffle(array) ? "yes" : "no" }}',
+            compact('array')
+        );
+
+        $this->testRenderResult(
+            'yes',
+            '{{ array != shuffle(array) or array != shuffle(array) ? "yes" : "no" }}',
+            [
+                'array' => new ArrayObject($array),
+            ]
+        );
+    }
+
+    /**
+     *
+     */
+    public function testSvgFunction()
+    {
+        $path = dirname(__DIR__, 3) . '/_data/assets/files/craft-logo.svg';
+        $contents = file_get_contents($path);
+
+        $svg = $this->view->renderString('{{ svg(path) }}', compact('path'));
+        self::assertStringStartsWith('<svg', $svg);
+        self::assertStringContainsString('id="Symbols"', $svg);
+
+        $svg = $this->view->renderString('{{ svg(contents) }}', compact('contents'));
+        self::assertStringStartsWith("<svg", $svg);
+        self::assertRegExp('/id="\w+\-Symbols"/', $svg);
+
+        $svg = $this->view->renderString('{{ svg(contents, namespace=false) }}', compact('contents'));
+        self::assertStringStartsWith("<svg", $svg);
+        self::assertStringContainsString('id="Symbols"', $svg);
+
+        // deprecated
+        $svg = $this->view->renderString('{{ svg(contents, class="foobar") }}', compact('contents'));
+        self::assertStringContainsString('class="foobar"', $svg);
+    }
+
+    /**
+     *
+     */
+    public function testTagFunction()
+    {
+        $this->testRenderResult(
+            '<p class="foo">Hello</p>',
+            '{{ tag("p", {text: "Hello", class: "foo"}) }}'
+        );
+
+        $this->testRenderResult(
+            '<p>&lt;script&gt;alert(&#039;Hello&#039;);&lt;/script&gt;</p>',
+            '{{ tag("p", {text: "<script>alert(\'Hello\');</script>"}) }}'
+        );
+
+        $this->testRenderResult(
+            '<p><script>alert(\'Hello\');</script></p>',
+            '{{ tag("p", {html: "<script>alert(\'Hello\');</script>"}) }}'
+        );
+    }
+
+    /**
      * @throws LoaderError
      * @throws SyntaxError
      */
@@ -930,14 +1068,6 @@ class ExtensionTest extends Unit
         );
     }
 
-    public function testExpression()
-    {
-        $this->testRenderResult(
-            'Im an expression | var | Im an expression',
-            '{% set expression =  expression("Im an expression", ["var"]) %}{{ expression }} | {{ expression.params[0] }} | {{ expression.expression }}'
-        );
-    }
-
     /**
      * @throws LoaderError
      * @throws SyntaxError
@@ -964,19 +1094,6 @@ class ExtensionTest extends Unit
         $this->testRenderResult(
             'FROM_EMAIL_NAME',
             '{{ parseEnv("FROM_EMAIL_NAME") }}'
-        );
-    }
-
-    /**
-     * @throws LoaderError
-     * @throws SyntaxError
-     */
-    public function testShuffleFunction()
-    {
-        // 1 means true (string version of bool)
-        $this->testRenderResult(
-            '1',
-            '{% set a = [0,1,2,3,4,5,6,7,8,9,"a","b","c","d","e","f"] %}{{ a != shuffle(a) or a != shuffle(a) }}'
         );
     }
 
