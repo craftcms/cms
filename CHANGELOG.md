@@ -14,7 +14,7 @@
 - Fixed a bug where Dropdown, Multi-select, and Number fields’ inputs weren’t getting `id` attributes that matched their labels’ `for` attributes. ([#7319](https://github.com/craftcms/cms/issues/7319))
 - Fixed a bug where the “All” checkbox label was getting HTML-encoded when using `Craft.ui.createCheckboxSelect()`.
 - Fixed a bug where week day and month names were being translated based on the current formatting locale, rather than the current language. ([#7312](https://github.com/craftcms/cms/issues/7312))
-- Fixed a bug where incorrect source set would be returned for Assets that had a named transform set on them. ([#7352](https://github.com/craftcms/cms/issues/7352))
+- Fixed a bug where `craft\elements\Asset::getSrcset()` could return the wrong value if the asset had a named transform set on it. ([#7352](https://github.com/craftcms/cms/issues/7352))
 
 ## 3.5.17.1 - 2020-12-17
 
