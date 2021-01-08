@@ -26,7 +26,9 @@ Craft.Preview = Garnish.Base.extend({
 
     isActive: false,
     isVisible: false,
+    isRotating: false,
     activeTarget: 0,
+    currentBreakpoint: 'desktop',
     draftId: null,
     url: null,
     fields: null,
@@ -199,13 +201,6 @@ Craft.Preview = Garnish.Base.extend({
 
                 // Breakpoint button click handlers
                 this.addListener($('.lp-breakpoint-btn', this.$breakpointButtons), 'activate', 'switchBreakpoint');
-
-                // TODO
-                // Set the window to the last breakpoint we have in storage
-                // const currentBreakpoint = Craft.getLocalStorage('LivePreview.breakpoint');
-                // if (currentBreakpoint) {
-                //     this.$breakpointButtons.find('.lp-breakpoint-btn[data-breakpoint="' + currentBreakpoint + '"]').click();
-                // }
 
                 // Device mask
                 this.$deviceMask = $('<div/>', {
@@ -493,20 +488,18 @@ Craft.Preview = Garnish.Base.extend({
 
     switchBreakpoint: function(ev) {
 
-        const $btn = $(ev.target),
-              bp = $btn.data('breakpoint');
+        const $btn = $(ev.target);
         let   w = $btn.data('width'),
               h = $btn.data('height');
 
         // Store the breakpoint
-        Craft.setLocalStorage('LivePreview.breakpoint', bp);
+        this.currentBreakpoint = $btn.data('breakpoint');
 
         // Active state on the button
         $('.lp-breakpoint-btn', this.$breakpointButtons).removeClass('lp-breakpoint-btn--active');
         $btn.addClass('lp-breakpoint-btn--active');
 
-
-        // Check the orientation and switch if needed
+        // Check the stored orientation and set if needed
         const orientation = Craft.getLocalStorage('LivePreview.orientation');
         if (orientation && orientation === 'landscape') {
             w = $btn.data('height');
@@ -514,16 +507,17 @@ Craft.Preview = Garnish.Base.extend({
             this.$iframeContainer.addClass('lp-iframe-container--landscape');
         }
 
+        // Check the stored zoom and set if needed
+        const zoom = Craft.getLocalStorage('LivePreview.zoom');
+        if (zoom) {
+            this.switchZoom(zoom);
+        }
 
         // Change the size of the iframe if we can
         if (w !== '' && h !== '') {
-
-            // TODO Toggle classes
-            // if (this.zoomMenuBtn) this.zoomMenuBtn.menu.$container.addClass('dark');
-
             this.$iframeContainer.addClass('lp-iframe-container--resized');
 
-            if (bp === 'tablet') {
+            if (this.currentBreakpoint === 'tablet') {
                 this.$iframeContainer.addClass('lp-iframe-container--tablet');
             } else {
                 this.$iframeContainer.removeClass('lp-iframe-container--tablet');
@@ -545,17 +539,13 @@ Craft.Preview = Garnish.Base.extend({
 
     toggleOrientation: function(ev)
     {
-
-        var $btn = $(ev.target);
-
-        if ($btn.data('lp-rotating')) {
+        if (this.isRotating) {
             return;
         }
 
-        $btn.data('lp-rotating', true);
+        this.isRotating = true;
 
-
-        // Track it in local storage and toggle state classes
+        // Get it from local storage and toggle state classes
         let orientation = Craft.getLocalStorage('LivePreview.orientation');
 
         if (!orientation || orientation === 'portrait') {
@@ -568,11 +558,8 @@ Craft.Preview = Garnish.Base.extend({
 
         Craft.setLocalStorage('LivePreview.orientation', orientation);
 
-
         // Make the switch
-        const bp = Craft.getLocalStorage('LivePreview.breakpoint');
-
-        if (bp && bp !== 'desktop') {
+        if (this.currentBreakpoint !== 'desktop') {
 
             clearTimeout(this.rotatingTimeout);
             this.$iframeContainer.addClass('lp-iframe-container--rotating');
@@ -595,13 +582,13 @@ Craft.Preview = Garnish.Base.extend({
                 this.$iframeContainer.removeClass('lp-iframe-container--rotating');
                 setTimeout($.proxy(function() {
                     this.$iframeContainer.removeClass('lp-iframe-container--rotating-done');
-                    $btn.data('lp-rotating', false);
+                    this.isRotating = false;
                 }, this), 50);
 
             }, this), 350);
 
         } else {
-            $btn.data('lp-rotating', false);
+            this.isRotating = false;
         }
 
     },
@@ -638,10 +625,9 @@ Craft.Preview = Garnish.Base.extend({
 
     resetDevicePreview: function()
     {
-        // TODO
-        // if (this.targetMenuBtn) this.targetMenuBtn.menu.$container.removeClass('dark');
-        // if (this.zoomMenuBtn) this.zoomMenuBtn.menu.$container.removeClass('dark');
-
+        this.currentBreakpoint = 'desktop';
+        $('.lp-breakpoint-btn', this.$breakpointButtons).removeClass('lp-breakpoint-btn--active');
+        this.$breakpointButtons.find('.lp-breakpoint-btn--desktop').addClass('lp-breakpoint-btn--active');
         this.$iframeContainer.removeClass('lp-iframe-container--zoom-full');
         this.$iframeContainer.removeClass('lp-iframe-container--zoom-half');
         this.$iframeContainer.removeClass('lp-iframe-container--resized');
