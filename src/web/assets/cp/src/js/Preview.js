@@ -14,10 +14,13 @@ Craft.Preview = Garnish.Base.extend({
     $dragHandle: null,
     $previewContainer: null,
     $iframeContainer: null,
+    $previewBtnGroup: null,
     $targetBtn: null,
     $targetMenu: null,
     $breakpointButtons: null,
+    $zoomBtn: null,
     $zoomMenu: null,
+    $orientationBtn: null,
     $deviceMask: null,
     $iframe: null,
     iframeLoaded: false,
@@ -114,7 +117,7 @@ Craft.Preview = Garnish.Base.extend({
 
             if (Craft.Pro) {
                 const $previewHeader = $('<header/>', {'class': 'lp-preview-header flex flex-nowrap'}).appendTo(this.$previewContainer);
-                const $previewBtnGroup = $('<div/>', {'class': 'btngroup'}).appendTo($previewHeader);
+                this.$previewBtnGroup = $('<div/>', {'class': 'btngroup'}).appendTo($previewHeader);
 
                 // Preview targets
                 if (this.draftEditor.settings.previewTargets.length > 1) {
@@ -122,7 +125,7 @@ Craft.Preview = Garnish.Base.extend({
                         type: 'button',
                         'class': 'btn menubtn',
                         text: this.draftEditor.settings.previewTargets[0].label,
-                    }).appendTo($previewBtnGroup);
+                    }).appendTo(this.$previewBtnGroup);
                     this.$targetMenu = $('<div/>', {'class': 'menu lp-target-menu'}).insertAfter(this.$targetBtn);
                     const $ul = $('<ul/>', {'class': 'padded'}).appendTo(this.$targetMenu);
                     let $li, $a;
@@ -172,32 +175,24 @@ Craft.Preview = Garnish.Base.extend({
                 }).appendTo(this.$breakpointButtons);
 
                 // Zoom
-                // TODO hide until activated
-                const $zoomBtn = $('<div/>', {
+                this.$zoomBtn = $('<div/>', {
                     type: 'button',
                     'class': 'btn menubtn',
                     text: Craft.t('app', 'Zoom'),
-                }).appendTo($previewBtnGroup);
-                this.$zoomMenu = $('<div/>', {'class': 'menu'}).appendTo($previewBtnGroup);
+                });
+                this.$zoomMenu = $('<div/>', {'class': 'menu'});
                 const $zoomUl = $('<ul />', {'class': 'padded'}).appendTo(this.$zoomMenu);
 
                 $('<li><a data-zoom="100">100%</a></li>').appendTo($zoomUl);
                 $('<li><a data-zoom="75" class="sel">75%</a></li>').appendTo($zoomUl);
                 $('<li><a data-zoom="50">50%</a></li>').appendTo($zoomUl);
 
-                new Garnish.MenuBtn($zoomBtn, {
-                    onOptionSelect: option => {
-                        this.switchZoom($(option).data('zoom'));
-                    },
-                });
-
                 // Orientation toggle
-                // TODO hide until activated
-                const $orientationToggle = $('<div/>', {
+                this.$orientationBtn = $('<div/>', {
                     'class': 'btn',
                     'data-icon': 'refresh'
-                }).appendTo($previewBtnGroup);
-                this.addListener($orientationToggle, 'activate', 'toggleOrientation');
+                });
+                this.addListener(this.$orientationBtn, 'activate', 'toggleOrientation');
 
                 // Breakpoint button click handlers
                 this.addListener($('.lp-breakpoint-btn', this.$breakpointButtons), 'activate', 'switchBreakpoint');
@@ -515,6 +510,17 @@ Craft.Preview = Garnish.Base.extend({
 
         // Change the size of the iframe if we can
         if (w !== '' && h !== '') {
+            this.$previewBtnGroup
+                .append(this.$zoomBtn)
+                .append(this.$zoomMenu)
+                .append(this.$orientationBtn);
+
+            new Garnish.MenuBtn(this.$zoomBtn, {
+                onOptionSelect: option => {
+                    this.switchZoom($(option).data('zoom'));
+                },
+            });
+
             this.$iframeContainer.addClass('lp-iframe-container--resized');
 
             if (this.currentBreakpoint === 'tablet') {
@@ -628,6 +634,9 @@ Craft.Preview = Garnish.Base.extend({
         this.currentBreakpoint = 'desktop';
         $('.lp-breakpoint-btn', this.$breakpointButtons).removeClass('lp-breakpoint-btn--active');
         this.$breakpointButtons.find('.lp-breakpoint-btn--desktop').addClass('lp-breakpoint-btn--active');
+        this.$zoomBtn.detach();
+        this.$zoomMenu.detach();
+        this.$orientationBtn.detach();
         this.$iframeContainer.removeClass('lp-iframe-container--zoom-full');
         this.$iframeContainer.removeClass('lp-iframe-container--zoom-half');
         this.$iframeContainer.removeClass('lp-iframe-container--resized');
