@@ -1,0 +1,422 @@
+@charset "UTF-8";
+@import "../../../../../../node_modules/craftcms-sass/mixins";
+
+.lp-editor-container,
+.lp-preview-container {
+  position: fixed;
+  top: 0;
+  height: 100%;
+  background-color: $white;
+  z-index: 100;
+
+  header {
+    padding: 8px 24px;
+    background-color: $grey100;
+    box-shadow: 0 1px 0 transparentize($grey700, 0.8);
+    box-sizing: border-box;
+
+    @supports (backdrop-filter: blur(10px)) {
+      & {
+        position: absolute;
+        z-index: 2;
+        top: 0;
+        left: 0;
+        width: 100%;
+        background-color: transparentize($grey100, 0.25);
+        backdrop-filter: blur(10px);
+
+        & + .lp-editor {
+          padding-top: #{10 + 34 + 10 + 24}px;
+        }
+      }
+    }
+
+    .btn, .spinner, .checkmark-icon {
+      margin-bottom: 0;
+    }
+  }
+}
+
+.lp-editor-container {
+  display: flex;
+  flex-direction: column;
+  box-shadow: 1px 0 0 transparentize($grey700, 0.8);
+
+  .lp-editor {
+    flex: 1;
+    padding: 24px;
+    overflow: auto;
+    box-sizing: border-box;
+
+    & > .field:last-child {
+      margin-bottom: 24px !important;
+    }
+  }
+
+  .lp-draghandle {
+    position: absolute;
+    z-index: 6;
+    top: 0;
+    @include right(-2px);
+    width: 4px;
+    height: 100%;
+    cursor: col-resize;
+  }
+}
+
+.lp-preview-container {
+  display: flex;
+  flex-direction: column;
+
+  &.dragging:after {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    content: '';
+    font-size: 0;
+  }
+
+  .lp-preview-header {
+    justify-content: space-between;
+
+    .btngroup {
+      margin-bottom: 0;
+    }
+
+    & + .lp-iframe-container {
+      padding-top: 50px;
+    }
+
+    .lp-breakpoint-btn {
+      cursor: pointer;
+      opacity: 0.65;
+      transition-duration: .1s;
+
+      &--active,
+      &:hover {
+        opacity: 1;
+      }
+
+      &::before {
+        width: 34px;
+        height: 28px;
+        display: inline-block;
+        content: ' ';
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+        transition-duration: .3s;
+      }
+
+      // Hover state
+      //&:active::before { background-size: 38px 38px; }
+
+      // Not for currently active btn
+      //&--active:active::before { background-size: 40px 40px; }
+
+      // SVGs
+      &--mobile::before  { background-image: url(../images/live-preview/iphone.svg);   }
+      &--tablet::before  { background-image: url(../images/live-preview/ipad.svg);   }
+      &--desktop::before { background-image: url(../images/live-preview/imac.svg);   }
+
+      // Fix spacing
+      &--tablet { margin-left: 6px; }
+      &--desktop { margin-left: 16px; }
+    }
+  }
+
+  .lp-device-mask {
+    display: none;
+  }
+
+  .lp-iframe-container {
+    flex: 1;
+    overflow: auto;
+
+    .lp-preview {
+      display: block;
+      width: 100%;
+      min-height: 100%;
+    }
+
+    // Default is mobile
+    &--resized {
+      flex: none;
+
+      // iframe
+      .lp-preview {
+        position: absolute;
+        z-index: 2;
+        min-height: auto;
+        top: 74px;
+        margin-bottom: 24px;
+
+        left: 50%;
+        margin-left: -187.5px;
+
+        background: #fff !important;
+        background-image: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#f9fafa));
+        background-image: linear-gradient(#fff, #f9fafa);
+        -webkit-box-shadow: 0 0px 10px 0px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 0px 10px 0px rgba(0, 0, 0, 0.2);
+
+        opacity: 1;
+        transform: scale(0.75) rotate(0deg);
+        transition: opacity .3s, transform .3s, top .3s;
+      }
+
+      // Device mask
+      .lp-device-mask {
+        display: block;
+        position: absolute;
+        z-index: 1;
+
+        top: -24px;
+        left: 50%;
+        margin-left: -213px;
+        margin-bottom: 24px;
+
+        width: 426px;
+        height: 853px;
+
+        background-image: url(../images/live-preview/iphone.svg);
+        background-repeat: no-repeat;
+
+        transform: scale(0.75) rotate(0deg);
+        transition: transform .3s, top .3s;
+      }
+
+      // Zoomed portrait
+      //&.portal-lp--zoom-full {
+      //  .lp-iframe {
+      //    top: 181px;
+      //    transform: scale(1) rotate(0deg);
+      //  }
+      //  .portal-lp-device-mask {
+      //    top: 83px;
+      //    transform: scale(1) rotate(0deg);
+      //  }
+      //}
+      //&.portal-lp--zoom-half {
+      //  .lp-iframe {
+      //    top: -33px;
+      //    transform: scale(0.5) rotate(0deg);
+      //  }
+      //  .portal-lp-device-mask {
+      //    top: -131px;
+      //    transform: scale(0.5) rotate(0deg);
+      //  }
+      //}
+
+      // Tablet
+      &.lp-iframe-container--tablet {
+
+        // iframe
+        .lp-preview {
+          top: 51px;
+        }
+
+        // Device mask
+        .lp-device-mask {
+          top: -74px;
+          background-image: url(../images/live-preview/ipad.svg);
+          margin-left: -420.5px;
+          width: 841px;
+          height: 1252px;
+        }
+
+        // Zoomed portrait
+        //&.portal-lp--zoom-full {
+        //  .lp-iframe {
+        //    top: 208px;
+        //  }
+        //  .portal-lp-device-mask {
+        //    top: 83px;
+        //  }
+        //}
+        //&.portal-lp--zoom-half {
+        //  .lp-iframe {
+        //    top: -105px;
+        //  }
+        //  .portal-lp-device-mask {
+        //    top: -230px;
+        //  }
+        //}
+      }
+    }
+
+    // Landscape
+    &--landscape {
+
+      // Toolbar
+      .lp-preview-header {
+
+        .lp-breakpoint-btn--tablet::before,
+        .lp-breakpoint-btn--mobile::before {
+          transform: scale(0.75) rotate(-90deg);
+          transition-duration: .3s;
+        }
+
+      }
+
+      // Iframe - mobile
+      .lp-preview {
+        top: 55px;
+      }
+
+      // Device mask - mobile
+      .lp-device-mask {
+        top: -184px;
+        transform: scale(0.75) rotate(-90deg);
+        margin-left: -((426px/2)-2); // no idea why this is happening
+      }
+
+
+      // Zoomed landscape - mobile
+      //&.portal-lp--zoom-full {
+      //  .lp-iframe {
+      //    top: 107px;
+      //  }
+      //  .portal-lp-device-mask {
+      //    top: -131px;
+      //    transform: scale(1) rotate(-90deg);
+      //  }
+      //}
+      //&.portal-lp--zoom-half {
+      //  .lp-iframe {
+      //    top: 2px;
+      //  }
+      //  .portal-lp-device-mask {
+      //    top: -237px;
+      //    transform: scale(0.5) rotate(-90deg);
+      //  }
+      //}
+
+
+      // Tablet mode
+      &.lp-iframe-container--tablet {
+
+        .lp-preview {
+          top: 14px;
+        }
+
+        .lp-device-mask {
+          top: -228px;
+          margin-left: -((841px/2)+2);
+        }
+
+        //&.portal-lp--zoom-full {
+        //  .lp-iframe {
+        //    top: 118px;
+        //  }
+        //  .portal-lp-device-mask {
+        //    top: -123px;
+        //  }
+        //}
+        //&.portal-lp--zoom-half {
+        //  .lp-iframe {
+        //    top: -91px;
+        //  }
+        //  .portal-lp-device-mask {
+        //    top: -333px;
+        //  }
+        //}
+
+      }
+
+    }
+
+    // Whilst rotating the iframe mid animation
+    &--rotating {
+
+      // iframe
+      .lp-preview {
+        opacity: 0.3;
+        top: 214px;
+        transform: scale(0.75) rotate(90deg);
+        transition: transform .3s, opacity .3s, top .3s;
+      }
+
+      //&.portal-lp--zoom-full .lp-iframe {
+      //  top: 320px;
+      //  transform: scale(1) rotate(90deg);
+      //}
+      //&.portal-lp--zoom-half .lp-iframe {
+      //  top: 107px;
+      //  transform: scale(0.5) rotate(90deg);
+      //}
+
+      &.lp-iframe-container--landscape {
+        .lp-preview {
+          top: -84px;
+          transform: scale(0.75) rotate(-90deg);
+        }
+        //&.portal-lp--zoom-full .lp-iframe {
+        //  top: -31px;
+        //  transform: scale(1) rotate(-90deg);
+        //}
+        //&.portal-lp--zoom-half .lp-iframe {
+        //  top: -137px;
+        //  transform: scale(0.5) rotate(-90deg);
+        //}
+      }
+
+      &.lp-iframe-container--tablet {
+        .lp-preview {
+          top: 170px;
+        }
+
+        //&.portal-lp--zoom-full .lp-iframe {
+        //  top: 327px;
+        //}
+        //&.portal-lp--zoom-half .lp-iframe {
+        //  top: 13px;
+        //}
+
+        &.lp-iframe-container--landscape {
+          .lp-preview {
+            top: -105px;
+          }
+          //&.portal-lp--zoom-full .lp-iframe {
+          //  top: 0;
+          //}
+          //&.portal-lp--zoom-half .lp-iframe {
+          //  top: -210px;
+          //}
+        }
+      }
+
+    }
+
+    // To fix the fact that we can’t animate only specific transforms
+    // we have another class that gets added and removed slightly after the main
+    // rotating one.
+    &--rotating-done {
+      .lp-preview {
+        transform: scale(0.75) rotate(0deg);
+        transition: opacity .3s, transform 0s, top 0s;
+      }
+      //&.portal-lp--zoom-full .lp-iframe {
+      //  transform: scale(1) rotate(0deg);
+      //}
+      //&.portal-lp--zoom-half .lp-iframe {
+      //  transform: scale(0.5) rotate(0deg);
+      //}
+
+      &.lp-iframe-container--landscape {
+        .lp-preview {
+          transform: scale(0.75) rotate(0deg);
+          transition: opacity .3s, transform 0s, top 0s;
+        }
+        //&.portal-lp--zoom-full .lp-iframe {
+        //  transform: scale(1) rotate(0deg);
+        //}
+        //&.portal-lp--zoom-half .lp-iframe {
+        //  transform: scale(0.5) rotate(0deg);
+        //}
+      }
+    }
+  }
+}
