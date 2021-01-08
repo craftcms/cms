@@ -3437,7 +3437,7 @@ body.rtl .lp-editor-container .lp-draghandle { left: -2px; }
 
 .lp-preview-container.dragging:after { position: absolute; top: 0; left: 0; width: 100%; height: 100%; content: ''; font-size: 0; }
 
-.lp-preview-container .lp-preview-header { -webkit-justify-content: space-between; justify-content: space-between; }
+.lp-preview-container .lp-preview-header { display: grid; grid-template-columns: 1fr 124px 1fr; }
 
 .lp-preview-container .lp-preview-header .btngroup { margin-bottom: 0; }
 
@@ -3455,9 +3455,9 @@ body.rtl .lp-editor-container .lp-draghandle { left: -2px; }
 
 .lp-preview-container .lp-preview-header .lp-breakpoint-btn--desktop::before { background-image: url(../images/live-preview/imac.svg); }
 
-.lp-preview-container .lp-preview-header .lp-breakpoint-btn--tablet { margin-left: 6px; }
+.lp-preview-container .lp-preview-header .lp-breakpoint-btn--tablet { margin-right: 6px; }
 
-.lp-preview-container .lp-preview-header .lp-breakpoint-btn--desktop { margin-left: 16px; }
+.lp-preview-container .lp-preview-header .lp-breakpoint-btn--desktop { margin-right: 16px; }
 
 .lp-preview-container .lp-device-mask { display: none; }
 

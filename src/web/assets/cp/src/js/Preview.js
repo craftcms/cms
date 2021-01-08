@@ -116,7 +116,7 @@ Craft.Preview = Garnish.Base.extend({
             this.$statusIcon = $('<div/>', {'class': 'invisible'}).appendTo($editorHeader);
 
             if (Craft.Pro) {
-                const $previewHeader = $('<header/>', {'class': 'lp-preview-header flex flex-nowrap'}).appendTo(this.$previewContainer);
+                const $previewHeader = $('<header/>', {'class': 'lp-preview-header'}).appendTo(this.$previewContainer);
                 this.$previewBtnGroup = $('<div/>', {'class': 'btngroup'}).appendTo($previewHeader);
 
                 // Preview targets
@@ -147,12 +147,12 @@ Craft.Preview = Garnish.Base.extend({
                 // Breakpoint buttons
                 this.$breakpointButtons = $('<div/>', {'class': 'btngroup lp-breakpoints'}).appendTo($previewHeader);
                 $('<div/>', {
-                    'class': 'lp-breakpoint-btn lp-breakpoint-btn--mobile',
-                    title: Craft.t('app', 'Mobile'),
+                    'class': 'lp-breakpoint-btn lp-breakpoint-btn--desktop lp-breakpoint-btn--active',
+                    title: Craft.t('app', 'Desktop'),
                     data: {
-                        width: 375,
-                        height: 653,
-                        breakpoint: 'mobile'
+                        width: '',
+                        height: '',
+                        breakpoint: 'desktop'
                     }
                 }).appendTo(this.$breakpointButtons);
                 $('<div/>', {
@@ -165,12 +165,12 @@ Craft.Preview = Garnish.Base.extend({
                     }
                 }).appendTo(this.$breakpointButtons);
                 $('<div/>', {
-                    'class': 'lp-breakpoint-btn lp-breakpoint-btn--desktop lp-breakpoint-btn--active',
-                    title: Craft.t('app', 'Desktop'),
+                    'class': 'lp-breakpoint-btn lp-breakpoint-btn--mobile',
+                    title: Craft.t('app', 'Mobile'),
                     data: {
-                        width: '',
-                        height: '',
-                        breakpoint: 'desktop'
+                        width: 375,
+                        height: 653,
+                        breakpoint: 'mobile'
                     }
                 }).appendTo(this.$breakpointButtons);
 

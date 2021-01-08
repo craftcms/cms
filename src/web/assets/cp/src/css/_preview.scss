@@ -79,7 +79,8 @@
   }
 
   .lp-preview-header {
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: 1fr 124px 1fr;
 
     .btngroup {
       margin-bottom: 0;
@@ -122,8 +123,8 @@
       &--desktop::before { background-image: url(../images/live-preview/imac.svg);   }
 
       // Fix spacing
-      &--tablet { margin-left: 6px; }
-      &--desktop { margin-left: 16px; }
+      &--tablet { margin-right: 6px; }
+      &--desktop { margin-right: 16px; }
     }
   }
 
