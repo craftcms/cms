@@ -471,6 +471,7 @@ Craft.Preview = Garnish.Base.extend({
 
             this.url = url;
             this.$iframe = $iframe;
+            this.$breakpointButtons.find('.lp-breakpoint-btn--active').trigger('click');
 
             this.trigger('afterUpdateIframe', {
                 previewTarget: this.draftEditor.settings.previewTargets[this.activeTarget],
