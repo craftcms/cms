@@ -171,21 +171,22 @@ Craft.Preview = Garnish.Base.extend({
 
                 // Zoom
                 // TODO hide until activated
-                const $zoomMenuBtn = $('<div/>', {
+                const $zoomBtn = $('<div/>', {
                     type: 'button',
                     'class': 'btn menubtn',
                     text: Craft.t('app', 'Zoom'),
                 }).appendTo($previewBtnGroup);
                 this.$zoomMenu = $('<div/>', {'class': 'menu'}).appendTo($previewBtnGroup);
-                const $zoomMenuUl = $('<ul />', {'class': 'padded'}).appendTo(this.$zoomMenu);
+                const $zoomUl = $('<ul />', {'class': 'padded'}).appendTo(this.$zoomMenu);
 
-                $('<li><a data-zoom="full">100%</a></li>').appendTo($zoomMenuUl);
-                $('<li><a data-zoom="threequarters" class="sel">75%</a></li>').appendTo($zoomMenuUl);
-                $('<li><a data-zoom="half">50%</a></li>').appendTo($zoomMenuUl);
+                $('<li><a data-zoom="100">100%</a></li>').appendTo($zoomUl);
+                $('<li><a data-zoom="75" class="sel">75%</a></li>').appendTo($zoomUl);
+                $('<li><a data-zoom="50">50%</a></li>').appendTo($zoomUl);
 
-                // TODO
-                new Garnish.MenuBtn($zoomMenuBtn, {
-                    // onOptionSelect: $.proxy(this, 'onZoom')
+                new Garnish.MenuBtn($zoomBtn, {
+                    onOptionSelect: option => {
+                        this.switchZoom($(option).data('zoom'));
+                    },
                 });
 
                 // Orientation toggle
@@ -199,11 +200,12 @@ Craft.Preview = Garnish.Base.extend({
                 // Breakpoint button click handlers
                 this.addListener($('.lp-breakpoint-btn', this.$breakpointButtons), 'activate', 'switchBreakpoint');
 
-                // Set the window to the last breakpoint we have in the cookie
-                const currentBreakpoint = Craft.getLocalStorage('LivePreview.breakpoint');
-                if (currentBreakpoint) {
-                    this.$breakpointButtons.find('.lp-breakpoint-btn[data-breakpoint="' + currentBreakpoint + '"]').click();
-                }
+                // TODO
+                // Set the window to the last breakpoint we have in storage
+                // const currentBreakpoint = Craft.getLocalStorage('LivePreview.breakpoint');
+                // if (currentBreakpoint) {
+                //     this.$breakpointButtons.find('.lp-breakpoint-btn[data-breakpoint="' + currentBreakpoint + '"]').click();
+                // }
 
                 // Device mask
                 this.$deviceMask = $('<div/>', {
@@ -347,6 +349,7 @@ Craft.Preview = Garnish.Base.extend({
 
         this.$previewContainer.velocity('stop').animateRight(-this.getIframeWidth(), 'slow', () => {
             this.$previewContainer.hide();
+            this.resetDevicePreview();
         });
 
         this.draftEditor.off('update', this._updateIframeProxy);
@@ -515,8 +518,7 @@ Craft.Preview = Garnish.Base.extend({
         // Change the size of the iframe if we can
         if (w !== '' && h !== '') {
 
-            // Toggle classes
-            // if (this.targetMenuBtn) this.targetMenuBtn.menu.$container.addClass('dark');
+            // TODO Toggle classes
             // if (this.zoomMenuBtn) this.zoomMenuBtn.menu.$container.addClass('dark');
 
             this.$iframeContainer.addClass('lp-iframe-container--resized');
@@ -536,7 +538,7 @@ Craft.Preview = Garnish.Base.extend({
 
         } else {
             // Desktop
-            this.resetIframe();
+            this.resetDevicePreview();
         }
 
     },
@@ -604,11 +606,44 @@ Craft.Preview = Garnish.Base.extend({
 
     },
 
-    resetIframe: function()
+    switchZoom: function(zoom)
     {
+        // Update menu sel class
+        this.$zoomMenu.find('a.sel').removeClass('sel');
+        this.$zoomMenu.find('a[data-zoom="'+zoom+'"]').addClass('sel');
+
+        // Store the zoom level
+        Craft.setLocalStorage('LivePreview.zoom', zoom);
+
+        // Toggle the container class
+        switch (zoom) {
+
+            case 100:
+                this.$iframeContainer.removeClass('lp-iframe-container--zoom-half');
+                this.$iframeContainer.addClass('lp-iframe-container--zoom-full');
+                break;
+
+            case 50:
+                this.$iframeContainer.removeClass('lp-iframe-container--zoom-full');
+                this.$iframeContainer.addClass('lp-iframe-container--zoom-half');
+                break;
+
+            // Default is 75% as that gives the best fit for most laptop and desktop screens
+            default:
+                this.$iframeContainer.removeClass('lp-iframe-container--zoom-full');
+                this.$iframeContainer.removeClass('lp-iframe-container--zoom-half');
+
+        }
+    },
+
+    resetDevicePreview: function()
+    {
+        // TODO
         // if (this.targetMenuBtn) this.targetMenuBtn.menu.$container.removeClass('dark');
         // if (this.zoomMenuBtn) this.zoomMenuBtn.menu.$container.removeClass('dark');
 
+        this.$iframeContainer.removeClass('lp-iframe-container--zoom-full');
+        this.$iframeContainer.removeClass('lp-iframe-container--zoom-half');
         this.$iframeContainer.removeClass('lp-iframe-container--resized');
         this.$iframeContainer.removeClass('lp-iframe-container--tablet');
         this.$iframeContainer.removeClass('lp-iframe-container--landscape');
