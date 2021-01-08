@@ -157,11 +157,12 @@
         left: 50%;
         margin-left: -187.5px;
 
-        background: #fff !important;
-        background-image: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#f9fafa));
-        background-image: linear-gradient(#fff, #f9fafa);
-        -webkit-box-shadow: 0 0px 10px 0px rgba(0, 0, 0, 0.2);
-        box-shadow: 0 0px 10px 0px rgba(0, 0, 0, 0.2);
+        border: 2px solid #2f2f2f;
+        //background: #fff !important;
+        //background-image: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#f9fafa));
+        //background-image: linear-gradient(#fff, #f9fafa);
+        //-webkit-box-shadow: 0 0px 10px 0px rgba(0, 0, 0, 0.2);
+        //box-shadow: 0 0px 10px 0px rgba(0, 0, 0, 0.2);
 
         opacity: 1;
         transform: scale(0.75) rotate(0deg);
