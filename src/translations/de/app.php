@@ -1272,7 +1272,7 @@ return [
     'The URL/URI to use for this target.' => 'Die URL/URI, die für dieses Ziel verwendet werden soll.',
     'The `@web` alias is not recommended if it is determined automatically.' => 'Der `@web`-Alias sollte nicht verwendet werden, wenn er automatisch ermittelt wird.',
     'The `Authorization` header that should be sent with GraphQL API requests to use this token.' => 'Der "Autorisierungsheader", welcher mit der GraphQL API versendet werden sollte, fordert die Benutzung dieses Tokens an.',
-    'The allowed values are [{values}]' => 'Die erlaubten Werte sein [{values}]',
+    'The allowed values are [{values}]' => 'Die erlaubten Werte sind [{values}]',
     'The asset you’re trying to download does not exist.' => 'Das Asset, das Sie versuchen herunterzuladen, ist nicht vorhanden.',
     'The asset you’re trying to edit does not exist.' => 'Die Datei, die Sie versuchen zu bearbeiten, ist nicht vorhanden.',
     'The base URL for the site.' => 'Die Basis-URL für diese Website.',
