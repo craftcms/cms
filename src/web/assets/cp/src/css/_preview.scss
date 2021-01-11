@@ -111,12 +111,7 @@
         transition-duration: .3s;
       }
 
-      // Hover state
-      //&:active::before { background-size: 38px 38px; }
-
-      // Not for currently active btn
-      //&--active:active::before { background-size: 40px 40px; }
-
+      // TODO replace these
       // SVGs
       &--mobile::before  { background-image: url(../images/live-preview/iphone.svg);   }
       &--tablet::before  { background-image: url(../images/live-preview/ipad.svg);   }
@@ -152,7 +147,7 @@
         z-index: 2;
         min-height: auto;
         opacity: 1;
-        transition: opacity .3s, transform .3s, top .3s;
+        transition: opacity .3s;
       }
 
       // Device mask
@@ -165,13 +160,13 @@
         background-position: top center, bottom center;
         background-repeat: no-repeat;
         background-size: contain;
-        background-color: red; // TODO: change to white after debugging
+        background-color: #fff; // TODO: change to white after debugging
         box-shadow: 0 0 58px rgba(6,67,117,.3);
         border-radius: 30px;
 
         width: 375px;
         height: 814px;
-        transition: transform .3s, top .3s;
+        transition: transform .3s;
       }
 
       // 75% zoom positioning (default)
@@ -307,8 +302,9 @@
 
     }
 
-    // Hide the iframe whilst rotating
-    &--rotating {
+    // Hide the iframe whilst rotating and zooming
+    &--rotating,
+    &--zooming {
       .lp-preview {
         opacity: 0;
         transition: opacity 0s,

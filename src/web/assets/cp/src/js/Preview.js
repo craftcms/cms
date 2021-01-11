@@ -30,9 +30,11 @@ Craft.Preview = Garnish.Base.extend({
     isActive: false,
     isVisible: false,
     isRotating: false,
+    isZooming: false,
     activeTarget: 0,
     currentBreakpoint: 'desktop',
     rotatingTimeout: null,
+    zoomingTimeout: null,
     draftId: null,
     url: null,
     fields: null,
@@ -597,12 +599,21 @@ Craft.Preview = Garnish.Base.extend({
 
     switchZoom: function(zoom)
     {
+        if (this.isZooming) {
+            return;
+        }
+
+        this.isZooming = true;
+
         // Update menu sel class
         this.$zoomMenu.find('a.sel').removeClass('sel');
         this.$zoomMenu.find('a[data-zoom="'+zoom+'"]').addClass('sel');
 
         // Store the zoom level
         Craft.setLocalStorage('LivePreview.zoom', zoom);
+
+        clearTimeout(this.zoomingTimeout);
+        this.$iframeContainer.addClass('lp-iframe-container--zooming');
 
         // Toggle the container class
         switch (zoom) {
@@ -623,6 +634,13 @@ Craft.Preview = Garnish.Base.extend({
                 this.$iframeContainer.removeClass('lp-iframe-container--zoom-half');
 
         }
+
+        this.zoomingTimeout = setTimeout($.proxy(function() {
+
+            this.$iframeContainer.removeClass('lp-iframe-container--zooming');
+            this.isZooming = false;
+
+        }, this), 300);
     },
 
     resetDevicePreview: function()
