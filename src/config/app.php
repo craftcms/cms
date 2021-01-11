@@ -3,7 +3,7 @@
 return [
     'id' => 'CraftCMS',
     'name' => 'Craft CMS',
-    'version' => '3.6.0-RC2.1',
+    'version' => '3.6.0-RC3',
     'schemaVersion' => '3.6.0',
     'minVersionRequired' => '2.6.2788',
     'basePath' => dirname(__DIR__), // Defines the @app alias
@@ -216,10 +216,10 @@ return [
         },
 
         'formatter' => function() {
-            return Craft::$app->getLocale()->getFormatter();
+            return Craft::$app->getFormattingLocale()->getFormatter();
         },
 
-        'locale' => function() {
+        'formattingLocale' => function() {
             $i18n = Craft::$app->getI18n();
 
             if (Craft::$app->getRequest()->getIsCpRequest() && !Craft::$app->getResponse()->isSent) {
@@ -229,12 +229,18 @@ return [
                 if ($id) {
                     // If they have a preferred locale, use it
                     $usersService = Craft::$app->getUsers();
-                    if (($locale = $usersService->getUserPreference($id, 'locale')) !== null) {
+                    if (
+                        ($locale = $usersService->getUserPreference($id, 'locale')) !== null &&
+                        $i18n->validateAppLocaleId($locale)
+                    ) {
                         return $i18n->getLocaleById($locale);
                     }
 
                     // Otherwise see if they have a preferred language
-                    if (($language = $usersService->getUserPreference($id, 'language')) !== null) {
+                    if (
+                        ($language = $usersService->getUserPreference($id, 'language')) !== null &&
+                        $i18n->validateAppLocaleId($language)
+                    ) {
                         return $i18n->getLocaleById($language);
                     }
                 }
@@ -246,8 +252,12 @@ return [
                 }
             }
 
-            // Default to the application language
-            return $i18n->getLocaleById(Craft::$app->language);
+            // Default to the application locale
+            return Craft::$app->getLocale();
+        },
+
+        'locale' => function() {
+            return Craft::$app->getI18n()->getLocaleById(Craft::$app->language);
         },
 
         'mailer' => function() {

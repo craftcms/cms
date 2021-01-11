@@ -590,7 +590,7 @@ class DateTimeHelper
         }
 
         // Get the locale's short date format
-        $format = Craft::$app->getLocale()->getDateFormat(Locale::LENGTH_SHORT, Locale::FORMAT_PHP);
+        $format = Craft::$app->getFormattingLocale()->getDateFormat(Locale::LENGTH_SHORT, Locale::FORMAT_PHP);
 
         // Make sure it's a 4-digit year
         $format = StringHelper::replace($format, 'y', 'Y');
@@ -631,13 +631,13 @@ class DateTimeHelper
             return [$value, 'H:i' . (isset($matches[1]) ? ':s' : '')];
         }
 
-        // Get the locale's short time format
-        $locale = Craft::$app->getLocale();
-        $format = $locale->getTimeFormat(Locale::LENGTH_SHORT, Locale::FORMAT_PHP);
+        // Get the formatting locale's short time format
+        $formattingLocale = Craft::$app->getFormattingLocale();
+        $format = $formattingLocale->getTimeFormat(Locale::LENGTH_SHORT, Locale::FORMAT_PHP);
 
         // Replace the localized "AM" and "PM"
-        $am = $locale->getAMName();
-        $pm = $locale->getPMName();
+        $am = $formattingLocale->getAMName();
+        $pm = $formattingLocale->getPMName();
 
         if (preg_match('/(.*)(' . preg_quote($am, '/') . '|' . preg_quote($pm, '/') . ')(.*)/iu', $value, $matches)) {
             $value = $matches[1] . $matches[3];
@@ -730,13 +730,9 @@ class DateTimeHelper
     private static function _getDateTranslations(string $language): array
     {
         if (!isset(self::$_translationPairs[$language])) {
-            if (strpos(Craft::$app->language, 'en') === 0) {
-                $sourceLocale = Craft::$app->getLocale();
-            } else {
-                $sourceLocale = Craft::$app->getI18n()->getLocaleById('en-US');
-            }
-
-            $targetLocale = Craft::$app->getI18n()->getLocaleById($language);
+            $i18n = Craft::$app->getI18n();
+            $sourceLocale = $i18n->getLocaleById('en-US');
+            $targetLocale = $i18n->getLocaleById($language);
 
             $amName = $targetLocale->getAMName();
             $pmName = $targetLocale->getPMName();

@@ -373,7 +373,7 @@ abstract class Controller extends \yii\web\Controller
      */
     public function requireToken()
     {
-        if ($this->request->getToken() === null) {
+        if (!$this->request->getHadToken()) {
             throw new BadRequestHttpException('Valid token required');
         }
     }

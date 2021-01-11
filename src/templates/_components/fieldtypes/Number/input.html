@@ -1,6 +1,6 @@
 {% from '_includes/forms' import text %}
 
-{{ hiddenInput("#{field.handle}[locale]", craft.app.language) }}
+{{ hiddenInput("#{field.handle}[locale]", craft.app.formattingLocale.id) }}
 
 <div class="flex">
     {% if field.prefix %}
@@ -10,6 +10,7 @@
     {% endif %}
     <div>
         {{ text({
+            id: field.handle|id,
             name: field.handle ~ '[value]',
             value: value,
             inputmode: field.decimals ? 'decimal' : 'numeric',

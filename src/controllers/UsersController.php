@@ -35,12 +35,14 @@ use craft\web\Request;
 use craft\web\ServiceUnavailableHttpException;
 use craft\web\UploadedFile;
 use craft\web\View;
+use DateTime;
 use yii\base\InvalidArgumentException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
+use yii\web\ServerErrorHttpException;
 
 /** @noinspection ClassOverridesFieldOfSuperClassInspection */
 
@@ -105,6 +107,7 @@ class UsersController extends Controller
         'session-info' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'login' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'logout' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
+        'impersonate-with-token' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'save-user' => self::ALLOW_ANONYMOUS_LIVE,
         'send-activation-email' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'send-password-reset-email' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
@@ -180,9 +183,10 @@ class UsersController extends Controller
     }
 
     /**
-     * Logs a user in for impersonation. Requires you to be an administrator.
+     * Logs a user in for impersonation.
      *
      * @return Response|null
+     * @throws BadRequestHttpException
      * @throws ForbiddenHttpException
      */
     public function actionImpersonate()
@@ -191,14 +195,15 @@ class UsersController extends Controller
 
         $userSession = Craft::$app->getUser();
         $session = Craft::$app->getSession();
-        $userId = $this->request->getBodyParam('userId');
+        $userId = $this->request->getRequiredBodyParam('userId');
+        $user = Craft::$app->getUsers()->getUserById($userId);
+
+        if (!$user) {
+            throw new BadRequestHttpException("Invalid user ID: $userId");
+        }
 
         // Make sure they're allowed to impersonate this user
-        $usersService = Craft::$app->getUsers();
-        $impersonatee = $usersService->getUserById($userId);
-        if (!$usersService->canImpersonate($userSession->getIdentity(), $impersonatee)) {
-            throw new ForbiddenHttpException('You do not have sufficient permissions to impersonate this user');
-        }
+        $this->_enforceImpersonatePermission($user);
 
         // Save the original user ID to the session now so User::findIdentity()
         // knows not to worry if the user isn't active yet
@@ -212,6 +217,83 @@ class UsersController extends Controller
         }
 
         return $this->_handleSuccessfulLogin();
+    }
+
+    /**
+     * Generates and returns a new impersonation URL
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     * @throws ForbiddenHttpException
+     * @throws ServerErrorHttpException
+     * @since 3.6.0
+     */
+    public function actionGetImpersonationUrl(): Response
+    {
+        $this->requirePostRequest();
+
+        $userId = $this->request->getBodyParam('userId');
+        $user = Craft::$app->getUsers()->getUserById($userId);
+
+        if (!$user) {
+            throw new BadRequestHttpException("Invalid user ID: $userId");
+        }
+
+        // Make sure they're allowed to impersonate this user
+        $this->_enforceImpersonatePermission($user);
+
+        // Create a single-use token that expires in an hour
+        $token = Craft::$app->getTokens()->createToken([
+            'users/impersonate-with-token', [
+                'userId' => $userId,
+            ]
+        ], 1, new DateTime('+1 hour'));
+
+        if (!$token) {
+            throw new ServerErrorHttpException('Unable to create the invalidation token.');
+        }
+
+        $url = $user->can('accessCp') ? UrlHelper::cpUrl() : UrlHelper::siteUrl();
+        $url = UrlHelper::urlWithToken($url, $token);
+
+        return $this->asJson(compact('url'));
+    }
+
+    /**
+     * Logs a user in for impersonation via an impersonation token.
+     *
+     * @param int|null $userId
+     * @return Response|null
+     * @throws BadRequestHttpException
+     * @throws ForbiddenHttpException
+     * @since 3.6.0
+     */
+    public function actionImpersonateWithToken(?int $userId)
+    {
+        $this->requireToken();
+
+        $userSession = Craft::$app->getUser();
+
+        if (!$userSession->loginByUserId($userId)) {
+            $this->setFailFlash(Craft::t('app', 'There was a problem impersonating this user.'));
+            Craft::error($userSession->getIdentity()->username . ' tried to impersonate userId: ' . $userId . ' but something went wrong.', __METHOD__);
+            return null;
+        }
+
+        return $this->_handleSuccessfulLogin();
+    }
+
+    /**
+     * Ensures that the current user has permission to impersonate the given user.
+     *
+     * @param User $user
+     * @throws ForbiddenHttpException
+     */
+    private function _enforceImpersonatePermission(User $user): void
+    {
+        if (!Craft::$app->getUsers()->canImpersonate(Craft::$app->getUser()->getIdentity(), $user)) {
+            throw new ForbiddenHttpException('You do not have sufficient permissions to impersonate this user');
+        }
     }
 
     /**
@@ -727,6 +809,10 @@ class UsersController extends Controller
                     $sessionActions[] = [
                         'action' => 'users/impersonate',
                         'label' => Craft::t('app', 'Login as {user}', ['user' => $user->getName()])
+                    ];
+                    $sessionActions[] = [
+                        'id' => 'copy-impersonation-url',
+                        'label' => Craft::t('app', 'Copy impersonation URL')
                     ];
                 }
 

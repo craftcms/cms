@@ -72,7 +72,7 @@ class D3Asset extends AssetBundle
             return $def;
         }
 
-        $language = Craft::$app->getLocale()->getLanguageID();
+        $language = Craft::$app->getFormattingLocale()->getLanguageID();
 
         // Do we have a default for this language ID?
         if (

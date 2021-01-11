@@ -339,6 +339,14 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
+    public function useFieldset(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function normalizeValue($value, ElementInterface $element = null)
     {
         return $value;

@@ -39,6 +39,14 @@ class RadioButtons extends BaseOptionsField implements SortableFieldInterface
     /**
      * @inheritdoc
      */
+    public function useFieldset(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function inputHtml($value, ElementInterface $element = null): string
     {
         /** @var SingleOptionFieldData $value */

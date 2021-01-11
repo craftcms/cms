@@ -12,6 +12,7 @@
 {%- set hasOnLabel = onLabel is not same as(false) %}
 {%- set hasOffLabel = offLabel is not same as(false) %}
 {%- set hasLabels = hasOnLabel or hasOffLabel %}
+{%- set descriptionId = descriptionId ?? "#{id}-desc" %}
 
 {%- set containerAttributes = {
     id: id,
@@ -24,17 +25,18 @@
         toggle or reverseToggle ? 'fieldtoggle' : null,
         disabled ? 'disabled' : null,
     ]|filter,
-    tabindex: '0',
     data: {
         'value': value != '1' ? value : false,
         'indeterminate-value': indeterminateValue != '-' ? indeterminateValue : false,
         'target': toggle ?: false,
         'reverse-target': reverseToggle ?: false,
     },
-    role: 'switch',
+    type: 'button',
+    role: 'checkbox',
     aria: {
         checked: on ? 'true' : (indeterminate ? 'mixed' : 'false'),
         labelledby: labelId ?? null,
+        describedby: hasLabels ? descriptionId : null,
     },
 }|merge(containerAttributes ?? [], recursive=true) %}
 
@@ -43,25 +45,35 @@
 {% endif %}
 
 {% set input %}
-    <div {{ attr(containerAttributes) }}>
+    <button {{ attr(containerAttributes) }}>
         <div class="lightswitch-container">
             <div class="handle"></div>
         </div>
         {% if name is defined -%}
             {{ hiddenInput(name, on ? value : (indeterminate ? indeterminateValue : ''), {disabled: disabled}) }}
         {%- endif %}
-    </div>
+    </button>
 {% endset %}
 
 {% if hasLabels -%}
     <div class="lightswitch-outer-container">
+        {% if hasLabels %}
+            {{ tag('span', {
+                id: descriptionId,
+                class: 'visually-hidden',
+                text: [
+                    onLabel ? 'Check for {onLabel}.'|t('app', {onLabel: onLabel}),
+                    offLabel ? 'Uncheck for {offLabel}.'|t('app', {offLabel: offLabel}),
+                ]|filter|join(' '),
+            }) }}
+        {% endif %}
         <div class="lightswitch-inner-container">
             {% if hasOffLabel %}
-                <label for="{{ id }}" data-toggle="off">{{ offLabel }}</label>
+                <span data-toggle="off" aria-hidden="true">{{ offLabel }}</span>
             {% endif %}
             {{ input }}
             {% if hasOnLabel %}
-                <label for="{{ id }}" data-toggle="on">{{ onLabel }}</label>
+                <span data-toggle="on" aria-hidden="true">{{ onLabel }}</span>
             {% endif %}
         </div>
     </div>

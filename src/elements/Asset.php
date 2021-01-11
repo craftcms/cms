@@ -104,6 +104,10 @@ class Asset extends Element
 
     const KIND_ACCESS = 'access';
     const KIND_AUDIO = 'audio';
+    /**
+     * @since 3.6.0
+     */
+    const KIND_CAPTIONS_SUBTITLES = 'captionsSubtitles';
     const KIND_COMPRESSED = 'compressed';
     const KIND_EXCEL = 'excel';
     const KIND_FLASH = 'flash';
@@ -993,6 +997,9 @@ class Asset extends Element
             [$value, $unit] = Assets::parseSrcsetSize($size);
 
             $sizeTransform = $transform ? $transform->toArray() : [];
+
+            // Having handle or name here will override dimensions, so we don't want that.
+            unset($sizeTransform['handle'], $sizeTransform['name']);
 
             if ($unit === 'w') {
                 $sizeTransform['width'] = (int)$value;

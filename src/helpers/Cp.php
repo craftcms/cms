@@ -376,15 +376,15 @@ class Cp
     public static function fieldHtml(string $input, array $config = []): string
     {
         // Set the ID before rendering the field so it's consistent
-        $config['id'] = $config['id'] ?? 'field' . mt_rand();
+        $id = $config['id'] = $config['id'] ?? 'field' . mt_rand();
 
         if (StringHelper::startsWith($input, 'template:')) {
             $input = static::renderTemplate(substr($input, 9), $config);
         }
 
         $fieldset = $config['fieldset'] ?? false;
-        $fieldId = $config['fieldId'] ?? "{$config['id']}-field";
-        $labelId = $config['labelId'] ?? "$fieldId-" . ($fieldset ? 'legend' : 'label');
+        $fieldId = $config['fieldId'] ?? "$id-field";
+        $labelId = $config['labelId'] ?? "$id-" . ($fieldset ? 'legend' : 'label');
         $instructionsId = $config['instructionsId'] ?? "$fieldId-instructions";
         $status = $config['status'] ?? null;
         $label = $config['fieldLabel'] ?? $config['label'] ?? null;
@@ -452,7 +452,7 @@ class Cp
                         ? Html::tag($fieldset ? 'legend' : 'label', $label, ArrayHelper::merge([
                             'id' => $labelId,
                             'class' => $required ? ['required'] : [],
-                            'for' => ($config['id'] ?? false) && !$fieldset ? $config['id'] : null,
+                            'for' => !$fieldset ? $id : null,
                         ], $config['labelAttributes'] ?? []))
                         : '') .
                     ($translatable
@@ -468,7 +468,7 @@ class Cp
                         ? Html::tag('div', '', [
                             'class' => ['flex-grow'],
                         ]) . static::renderTemplate('_includes/forms/copytextbtn', [
-                            'id' => "$fieldId-attribute",
+                            'id' => "$id-attribute",
                             'class' => ['code', 'small', 'light'],
                             'value' => $config['attribute'],
                         ])
@@ -523,6 +523,20 @@ class Cp
     }
 
     /**
+     * Renders a checkbox select field’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 3.6.0
+     */
+    public static function checkboxSelectFieldHtml(array $config): string
+    {
+        $config['fieldset'] = true;
+        return static::fieldHtml('template:_includes/forms/checkboxSelect', $config);
+    }
+
+    /**
      * Renders a color field’s HTML.
      *
      * @param array $config
@@ -566,6 +580,18 @@ class Cp
         unset($config['label']);
 
         return static::fieldHtml('template:_includes/forms/lightswitch', $config);
+    }
+
+    /**
+     * Renders a select input.
+     *
+     * @param array $config
+     * @return string
+     * @since 3.6.0
+     */
+    public static function selectHtml(array $config): string
+    {
+        return static::renderTemplate('_includes/forms/select', $config);
     }
 
     /**

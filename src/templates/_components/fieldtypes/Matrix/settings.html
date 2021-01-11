@@ -14,7 +14,7 @@
                                 <h4>
                                     {{ blockType.name }}
                                     {% if blockType.hasFieldErrors %}
-                                        <span data-icon="alert"></span>
+                                        <span data-icon="alert" aria-label="{{ 'Error'|t('app') }}"></span>
                                     {% endif %}
                                 </h4>
                                 <div class="smalltext light code">{{ blockType.handle }}</div>
@@ -48,7 +48,7 @@
                                         {%- else -%}
                                             <em class="light">{{ '(blank)'|t('app') }}</em>
                                         {%- endif -%}
-                                        {%- if field.hasErrors() %} <span data-icon="alert"></span>{% endif -%}
+                                        {%- if field.hasErrors() %} <span data-icon="alert" aria-label="{{ 'Error'|t('app') }}"></span>{% endif -%}
                                     </h4>
                                     <div class="smalltext light code">{{ field.handle }}</div>
                                 </div>
