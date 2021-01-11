@@ -32,6 +32,7 @@ Craft.Preview = Garnish.Base.extend({
     isRotating: false,
     activeTarget: 0,
     currentBreakpoint: 'desktop',
+    rotatingTimeout: null,
     draftId: null,
     url: null,
     fields: null,
@@ -583,14 +584,10 @@ Craft.Preview = Garnish.Base.extend({
                     });
                 }
 
-                this.$iframeContainer.addClass('lp-iframe-container--rotating-done');
                 this.$iframeContainer.removeClass('lp-iframe-container--rotating');
-                setTimeout($.proxy(function() {
-                    this.$iframeContainer.removeClass('lp-iframe-container--rotating-done');
-                    this.isRotating = false;
-                }, this), 50);
+                this.isRotating = false;
 
-            }, this), 350);
+            }, this), 300);
 
         } else {
             this.isRotating = false;

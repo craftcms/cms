@@ -242,7 +242,7 @@
     // Landscape
     &--landscape {
 
-      // TODO: Mobile
+      // Mobile (default)
 
       // 75% zoom positioning (default)
       .lp-preview {
@@ -307,97 +307,11 @@
 
     }
 
-
-    // TODO - hide iframe on rotate, resize then display on finish
-
-    // Whilst rotating the iframe mid animation
+    // Hide the iframe whilst rotating
     &--rotating {
-
-      // iframe
       .lp-preview {
-        opacity: 0.3;
-        top: 214px;
-        transform: scale(0.75) rotate(90deg);
-        transition: transform .3s, opacity .3s, top .3s;
-      }
-
-      &.lp-iframe-container--zoom-full .lp-preview {
-        top: 320px;
-        transform: scale(1) rotate(90deg);
-      }
-      &.lp-iframe-container--zoom-half .lp-preview {
-        top: 107px;
-        transform: scale(0.5) rotate(90deg);
-      }
-
-      &.lp-iframe-container--landscape {
-        .lp-preview {
-          top: -84px;
-          transform: scale(0.75) rotate(-90deg);
-        }
-        &.lp-iframe-container--zoom-full .lp-preview {
-          top: -31px;
-          transform: scale(1) rotate(-90deg);
-        }
-        &.lp-iframe-container--zoom-half .lp-preview {
-          top: -137px;
-          transform: scale(0.5) rotate(-90deg);
-        }
-      }
-
-      &.lp-iframe-container--tablet {
-        .lp-preview {
-          top: 170px;
-        }
-
-        &.lp-iframe-container--zoom-full .lp-preview {
-          top: 327px;
-        }
-        &.lp-iframe-container--zoom-half .lp-preview {
-          top: 13px;
-        }
-
-        &.lp-iframe-container--landscape {
-          .lp-preview {
-            top: -105px;
-          }
-          &.lp-iframe-container--zoom-full .lp-preview {
-            top: 0;
-          }
-          &.lp-iframe-container--zoom-half .lp-preview {
-            top: -210px;
-          }
-        }
-      }
-
-    }
-
-    // To fix the fact that we can’t animate only specific transforms
-    // we have another class that gets added and removed slightly after the main
-    // rotating one.
-    &--rotating-done {
-      .lp-preview {
-        transform: scale(0.75) rotate(0deg);
-        transition: opacity .3s, transform 0s, top 0s;
-      }
-      &.lp-iframe-container--zoom-full .lp-preview {
-        transform: scale(1) rotate(0deg);
-      }
-      &.lp-iframe-container--zoom-half .lp-preview {
-        transform: scale(0.5) rotate(0deg);
-      }
-
-      &.lp-iframe-container--landscape {
-        .lp-preview {
-          transform: scale(0.75) rotate(0deg);
-          transition: opacity .3s, transform 0s, top 0s;
-        }
-        &.lp-iframe-container--zoom-full .lp-preview {
-          transform: scale(1) rotate(0deg);
-        }
-        &.lp-iframe-container--zoom-half .lp-preview {
-          transform: scale(0.5) rotate(0deg);
-        }
+        opacity: 0;
+        transition: opacity 0s,
       }
     }
   }
