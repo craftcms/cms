@@ -112,11 +112,10 @@
         transition-duration: .3s;
       }
 
-      // TODO replace these
       // SVGs
-      &--mobile::before  { background-image: url(../images/live-preview/iphone.svg);   }
-      &--tablet::before  { background-image: url(../images/live-preview/ipad.svg);   }
-      &--desktop::before { background-image: url(../images/live-preview/imac.svg);   }
+      &--mobile::before  { background-image: url(../images/live-preview/mobile.svg);   }
+      &--tablet::before  { background-image: url(../images/live-preview/tablet.svg);   }
+      &--desktop::before { background-image: url(../images/live-preview/desktop.svg);   }
 
       // Fix spacing
       &--tablet { margin-right: 6px; }

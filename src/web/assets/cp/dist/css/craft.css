@@ -3449,11 +3449,11 @@ body.rtl .lp-editor-container .lp-draghandle { left: -2px; }
 
 .lp-preview-container .lp-preview-header .lp-breakpoint-btn::before { width: 34px; height: 28px; display: inline-block; content: ' '; -o-background-size: contain; background-size: contain; background-repeat: no-repeat; background-position: center; -o-transition-duration: .3s; transition-duration: .3s; }
 
-.lp-preview-container .lp-preview-header .lp-breakpoint-btn--mobile::before { background-image: url(../images/live-preview/iphone.svg); }
+.lp-preview-container .lp-preview-header .lp-breakpoint-btn--mobile::before { background-image: url(../images/live-preview/mobile.svg); }
 
-.lp-preview-container .lp-preview-header .lp-breakpoint-btn--tablet::before { background-image: url(../images/live-preview/ipad.svg); }
+.lp-preview-container .lp-preview-header .lp-breakpoint-btn--tablet::before { background-image: url(../images/live-preview/tablet.svg); }
 
-.lp-preview-container .lp-preview-header .lp-breakpoint-btn--desktop::before { background-image: url(../images/live-preview/imac.svg); }
+.lp-preview-container .lp-preview-header .lp-breakpoint-btn--desktop::before { background-image: url(../images/live-preview/desktop.svg); }
 
 .lp-preview-container .lp-preview-header .lp-breakpoint-btn--tablet { margin-right: 6px; }
 
