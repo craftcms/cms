@@ -143,9 +143,9 @@ class Url extends Field implements PreviewableFieldInterface
      */
     public function normalizeValue($value, ElementInterface $element = null)
     {
-        if (is_array($value) && isset($value['type'])) {
-            $type = $value['type'];
-            $value = trim($value[$type]);
+        if (is_array($value) && isset($value['value'])) {
+            $type = $value['type'] ?? self::TYPE_URL;
+            $value = trim($value['value']);
 
             if ($value) {
                 switch ($type) {
@@ -199,7 +199,6 @@ class Url extends Field implements PreviewableFieldInterface
 
         $id = Html::id($this->handle);
         $typeOptions = [];
-        $typeInputs = [];
 
         foreach ($this->types as $type) {
             switch ($type) {
@@ -219,50 +218,57 @@ class Url extends Field implements PreviewableFieldInterface
                     throw new InvalidConfigException("Invalid URL type: $type");
             }
 
+            $typeOptions[] = ['label' => $label, 'value' => $type];
+
             if ($type === $valueType && $prefix) {
                 $value = StringHelper::removeLeft($value, $prefix);
             }
+        }
 
-            $typeOptions[] = ['label' => $label, 'value' => $type];
-            $typeInputs[] = Craft::$app->getView()->renderTemplate('_includes/forms/text', [
-                'id' => "$id-$type",
-                'class' => array_filter([
-                    'fullwidth',
-                    $type !== $valueType ? 'hidden' : null,
-                ]),
-                'type' => $type,
-                'name' => "$this->handle[$type]",
-                'inputmode' => $type,
-                'value' => $type === $valueType ? $value : null,
-                'inputAttributes' => [
-                    'aria' => [
-                        'label' => Craft::t('site', $this->name),
-                    ],
+        $input = Craft::$app->getView()->renderTemplate('_includes/forms/text', [
+            'id' => $id,
+            'class' => ['flex-grow', 'fullwidth'],
+            'type' => $valueType,
+            'name' => "$this->handle[value]",
+            'inputmode' => $valueType,
+            'value' => $value,
+            'inputAttributes' => [
+                'aria' => [
+                    'label' => Craft::t('site', $this->name),
                 ],
-            ]);
+            ],
+        ]);
+
+        if (count($this->types) === 1) {
+            return $input;
         }
 
-        if (count($typeInputs) === 1) {
-            return Html::hiddenInput("$this->handle[type]", reset($this->types)) .
-                reset($typeInputs);
-        }
+        $view = Craft::$app->getView();
+        $namespacedId = $view->namespaceInputId($id);
+        $js = <<<JS
+$('#$namespacedId-type').on('change', e => { 
+  const type = $('#$namespacedId-type').val();
+  $('#$namespacedId')
+    .attr('type', type)
+    .attr('inputmode', type);
+});
+JS;
+        $view->registerJs($js);
 
         return Html::tag(
             'div',
             Cp::selectHtml([
-                'id' => $id,
+                'id' => "$id-type",
                 'name' => "$this->handle[type]",
                 'options' => $typeOptions,
                 'value' => $valueType,
-                'toggle' => true,
-                'targetPrefix' => "$id-",
                 'inputAttributes' => [
                     'aria' => [
                         'label' => Craft::t('app', 'URL type'),
                     ],
                 ],
             ]) .
-            Html::tag('div', implode("\n", $typeInputs), ['class' => 'flex-grow']),
+            $input,
             [
                 'class' => ['flex', 'flex-nowrap'],
             ]
