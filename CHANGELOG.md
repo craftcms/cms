@@ -3,15 +3,20 @@
 ## Unreleased
 
 ### Added
+- URL fields now have an “Allowed URL Types” setting, which adds the ability to accept telephone and email URLs. ([#5497](https://github.com/craftcms/cms/issues/5497))
 - Added the “Captions/Subtitles” file kind. ([#7304](https://github.com/craftcms/cms/issues/7304))
 - Added the `handleCasing` config setting, which determines the default casing that should be used when autogenerating component handles. ([#4276](https://github.com/craftcms/cms/issues/4276))
 - Added `craft\base\ApplicationTrait::getFormattingLocale()`, which returns the locale that should be used for date/time formatting.
 - Added `craft\base\FieldInterface::useFieldset()`, which custom fields can override to return `true` if a `<fieldset>` and `<legend>` should be used, rather than a `<div>` and `<label>`.
 - Added `craft\fieldlayoutelements\BaseField::useFieldset()`.
+- Added `craft\fields\Url::TYPE_EMAIL`.
+- Added `craft\fields\Url::TYPE_TEL`.
+- Added `craft\fields\Url::TYPE_URL`.
 - Added `craft\helpers\Cp::checkboxSelectFieldHtml()`.
 - Added `craft\helpers\Cp::selectHtml()`.
 - Added `craft\helpers\Template::paginateQuery()`.
 - Added `craft\i18n\I18N::validateAppLocaleId()`.
+- Added `craft\validators\UrlValidator::URL_PATTERN`.
 
 ### Changed
 - Field layout designers will no longer create a new tab if no tab name is entered in the prompt. ([#7333](https://github.com/craftcms/cms/issues/7333))
@@ -27,6 +32,9 @@
 
 ### Deprecated
 - Deprecated `craft\helpers\Template::paginateCriteria()`. `paginateQuery()` should be used instead.
+
+### Removed
+- Removed the “Placeholder” setting from URL fields. ([#7303](https://github.com/craftcms/cms/issues/7303))
 
 ### Fixed
 - Fixed an error that occurred when a schema change was made within a transaction, if using MySQL and PHP 8. ([#7174](https://github.com/craftcms/cms/issues/7174))

@@ -12,6 +12,7 @@
 - User indexes can now include a “Groups” column. ([#7211](https://github.com/craftcms/cms/issues/7211))
 - Volumes now have “Title Translation Method” and “Title Translation Key Format” settings, like entry types. ([#7135](https://github.com/craftcms/cms/issues/7135))
 - It’s now possible to set sites’ Name settings to environment variables.
+- URL fields now have an “Allowed URL Types” setting, which adds the ability to accept telephone and email URLs. ([#5497](https://github.com/craftcms/cms/issues/5497))
 - Added the “Captions/Subtitles” file kind. ([#7304](https://github.com/craftcms/cms/issues/7304))
 - Added the `users/list-admins` and `users/set-password` commands. ([#7067](https://github.com/craftcms/cms/issues/7067))
 - Added the `disableGraphqlTransformDirective` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
@@ -47,6 +48,9 @@
 - Added `craft\events\SearchEvent::$results`. ([#7237](https://github.com/craftcms/cms/issues/7237))
 - Added `craft\fieldlayoutelements\AssetTitleField`.
 - Added `craft\fieldlayoutelements\BaseField::useFieldset()`.
+- Added `craft\fields\Url::TYPE_EMAIL`.
+- Added `craft\fields\Url::TYPE_TEL`.
+- Added `craft\fields\Url::TYPE_URL`.
 - Added `craft\gql\ArgumentManager`.
 - Added `craft\gql\base\ArgumentHandler`.
 - Added `craft\gql\base\ArgumentHandlerInterface`.
@@ -99,6 +103,7 @@
 - Added `craft\test\DbFixtureTrait`.
 - Added `craft\test\fixtures\elements\BaseElementFixture`.
 - Added `craft\test\TestSetup::SITE_URL`.
+- Added `craft\validators\UrlValidator::URL_PATTERN`.
 - Added `craft\web\Request::getHadToken()`.
 - Added `craft\web\Request::getSiteToken()`.
 - Added `craft\web\Request::setToken()`.
@@ -169,6 +174,7 @@
 - Deprecated `craft\web\View::renderTemplateMacro()`.
 
 ### Removed
+- Removed the “Placeholder” setting from URL fields. ([#7303](https://github.com/craftcms/cms/issues/7303))
 - Removed `craft\controllers\ElementIndexesController::actionCreateExportToken()`.
 - Removed `craft\controllers\ExportController`.
 - Removed `craft\services\Api::getComposerWhitelist()`.
