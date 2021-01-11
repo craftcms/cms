@@ -523,6 +523,20 @@ class Cp
     }
 
     /**
+     * Renders a checkbox select field’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 3.6.0
+     */
+    public static function checkboxSelectFieldHtml(array $config): string
+    {
+        $config['fieldset'] = true;
+        return static::fieldHtml('template:_includes/forms/checkboxSelect', $config);
+    }
+
+    /**
      * Renders a color field’s HTML.
      *
      * @param array $config
@@ -566,6 +580,18 @@ class Cp
         unset($config['label']);
 
         return static::fieldHtml('template:_includes/forms/lightswitch', $config);
+    }
+
+    /**
+     * Renders a select input.
+     *
+     * @param array $config
+     * @return string
+     * @since 3.6.0
+     */
+    public static function selectHtml(array $config): string
+    {
+        return static::renderTemplate('_includes/forms/select', $config);
     }
 
     /**

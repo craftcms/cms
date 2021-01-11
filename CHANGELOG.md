@@ -8,6 +8,8 @@
 - Added `craft\base\ApplicationTrait::getFormattingLocale()`, which returns the locale that should be used for date/time formatting.
 - Added `craft\base\FieldInterface::useFieldset()`, which custom fields can override to return `true` if a `<fieldset>` and `<legend>` should be used, rather than a `<div>` and `<label>`.
 - Added `craft\fieldlayoutelements\BaseField::useFieldset()`.
+- Added `craft\helpers\Cp::checkboxSelectFieldHtml()`.
+- Added `craft\helpers\Cp::selectHtml()`.
 - Added `craft\helpers\Template::paginateQuery()`.
 - Added `craft\i18n\I18N::validateAppLocaleId()`.
 

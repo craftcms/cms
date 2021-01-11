@@ -65,11 +65,13 @@
 - Added `craft\gql\types\input\criteria\User`.
 - Added `craft\helpers\App::phpSizeToBytes()`.
 - Added `craft\helpers\Cp::checkboxFieldHtml()`.
+- Added `craft\helpers\Cp::checkboxSelectFieldHtml()`.
 - Added `craft\helpers\Cp::colorFieldHtml()`.
 - Added `craft\helpers\Cp::editableTableFieldHtml()`.
 - Added `craft\helpers\Cp::lightswitchFieldHtml()`.
 - Added `craft\helpers\Cp::renderTemplate()`.
 - Added `craft\helpers\Cp::selectFieldHtml()`.
+- Added `craft\helpers\Cp::selectHtml()`.
 - Added `craft\helpers\Cp::textareaFieldHtml()`.
 - Added `craft\helpers\Cp::textFieldHtml()`.
 - Added `craft\helpers\Diff`.
