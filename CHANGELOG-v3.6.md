@@ -167,7 +167,6 @@
 - Deprecated `craft\web\View::renderTemplateMacro()`.
 
 ### Removed
-- Removed Minify and jsmin-php.
 - Removed `craft\controllers\ElementIndexesController::actionCreateExportToken()`.
 - Removed `craft\controllers\ExportController`.
 - Removed `craft\services\Api::getComposerWhitelist()`.
@@ -176,6 +175,7 @@
 - Removed `craft\test\fixtures\FieldLayoutFixture::extractTabsFromFieldLayout()`.
 - Removed `craft\test\fixtures\FieldLayoutFixture::getTabsForFieldLayout()`.
 - Removed `craft\test\fixtures\FieldLayoutFixture::linkFieldToLayout()`.
+- Removed Minify and jsmin-php.
 
 ### Fixed
 - Fixed an error that occurred when a schema change was made within a transaction, if using MySQL and PHP 8. ([#7174](https://github.com/craftcms/cms/issues/7174))
