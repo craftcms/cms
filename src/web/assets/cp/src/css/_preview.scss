@@ -151,10 +151,7 @@
         position: absolute;
         z-index: 2;
         min-height: auto;
-        left: 50%;
-        margin-left: -187.5px;
         opacity: 1;
-        transform: scale(0.75) rotate(0deg);
         transition: opacity .3s, transform .3s, top .3s;
       }
 
@@ -164,56 +161,50 @@
         position: absolute;
         z-index: 1;
 
-        left: 50%;
-        margin-left: -187.5px;
-
-        width: 375px;
-        height: 812px;
-
         background-image: url(../images/live-preview/mobile_top.svg), url(../images/live-preview/mobile_bottom.svg);
         background-position: top center, bottom center;
         background-repeat: no-repeat;
         background-size: contain;
-        background-color: red;
-
+        background-color: red; // TODO: change to white after debugging
         box-shadow: 0 0 58px rgba(6,67,117,.3);
         border-radius: 30px;
 
-        transform: scale(0.75) rotate(0deg);
+        width: 375px;
+        height: 814px;
         transition: transform .3s, top .3s;
       }
 
-      // Default positioning (75% zoom)
+      // 75% zoom positioning (default)
       .lp-preview {
-        top: 65px;
+        left: 50%;
+        transform: scale(0.75) translate(-66.666666%, 0) rotate(0deg);
       }
       .lp-device-mask {
-        top: 7px;
+        left: 50%;
+        transform: scale(0.75) translate(-66.666666%, -77px) rotate(0deg);
       }
 
-      // Zoomed positioning
+      // 100% zoom positioning
       &.lp-iframe-container--zoom-full {
         .lp-preview {
-          top: 162px;
-          transform: scale(1) rotate(0deg);
+          transform: scale(1) translate(-50%, 111px) rotate(0deg);
         }
         .lp-device-mask {
-          top: 109px;
-          transform: scale(1) rotate(0deg);
-        }
-      }
-      &.lp-iframe-container--zoom-half {
-        .lp-preview {
-          top: -41px;
-          transform: scale(0.5) rotate(0deg);
-        }
-        .lp-device-mask {
-          top: -104px;
-          transform: scale(0.5) rotate(0deg);
+          transform: scale(1) translate(-50%, 58px) rotate(0deg);
         }
       }
 
-      // Tablet
+      // 50% zoom positioning
+      &.lp-iframe-container--zoom-half {
+        .lp-preview {
+          transform: scale(0.5) translate(-100%, -221px) rotate(0deg);
+        }
+        .lp-device-mask {
+          transform: scale(0.5) translate(-100%, -347px) rotate(0deg);
+        }
+      }
+
+      // TODO: Tablet
       &.lp-iframe-container--tablet {
 
         .lp-preview {
@@ -231,10 +222,10 @@
         // Zoomed positioning
         &.lp-iframe-container--zoom-full {
           .lp-preview {
-            top: 208px;
+            //top: 208px;
           }
           .lp-device-mask {
-            top: 83px;
+            //top: 83px;
           }
         }
         &.lp-iframe-container--zoom-half {
@@ -251,38 +242,38 @@
     // Landscape
     &--landscape {
 
-      // Mobile
+      // TODO: Mobile
+
+      // 75% zoom positioning (default)
       .lp-preview {
-        top: 55px;
+        transform: scale(0.75) translate(-69.666666%, 216px) rotate(0deg);
       }
-
       .lp-device-mask {
-        top: -184px;
-        transform: scale(0.75) rotate(-90deg);
-        margin-left: -((426px/2)-2); // no idea why this is happening
+        transform: scale(0.75) translate(-66.666666%, -77px) rotate(-90deg);
       }
 
-      // Zoomed positioning
+      // 100% zoom positioning
       &.lp-iframe-container--zoom-full {
         .lp-preview {
-          top: 107px;
+          transform: scale(1) translate(-53%, 278px) rotate(0deg);
         }
         .lp-device-mask {
-          top: -131px;
-          transform: scale(1) rotate(-90deg);
-        }
-      }
-      &.lp-iframe-container--zoom-half {
-        .lp-preview {
-          top: 2px;
-        }
-        .lp-device-mask {
-          top: -237px;
-          transform: scale(0.5) rotate(-90deg);
+          transform: scale(1) translate(-50%, 58px) rotate(-90deg);
         }
       }
 
-      // Tablet
+      // 50% zoom positioning
+      &.lp-iframe-container--zoom-half {
+        .lp-preview {
+          transform: scale(0.5) translate(-103%, 92px) rotate(0deg);
+        }
+        .lp-device-mask {
+          transform: scale(0.5) translate(-100%, -347px) rotate(-90deg);
+        }
+      }
+
+
+      // TODO: Tablet
       &.lp-iframe-container--tablet {
 
         .lp-preview {

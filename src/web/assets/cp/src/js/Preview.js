@@ -169,7 +169,7 @@ Craft.Preview = Garnish.Base.extend({
                     title: Craft.t('app', 'Mobile'),
                     data: {
                         width: 375,
-                        height: 665,
+                        height: 667,
                         breakpoint: 'mobile'
                     }
                 }).appendTo(this.$breakpointButtons);
@@ -533,8 +533,7 @@ Craft.Preview = Garnish.Base.extend({
             // Make the size change
             this.$iframe.css({
                 width: w + 'px',
-                height: h + 'px',
-                marginLeft: '-'+(w/2)+'px'
+                height: h + 'px'
             });
 
         } else {
@@ -580,8 +579,7 @@ Craft.Preview = Garnish.Base.extend({
                 if ((orientation === 'portrait' && w > h) || orientation === 'landscape' && w < h) {
                     this.$iframe.css({
                         width: h + 'px',
-                        height: w + 'px',
-                        marginLeft: '-'+(h/2)+'px'
+                        height: w + 'px'
                     });
                 }
 
@@ -645,8 +643,7 @@ Craft.Preview = Garnish.Base.extend({
         this.$iframeContainer.removeClass('lp-iframe-container--landscape');
         this.$iframe.css({
             width: '100%',
-            height: '100%',
-            marginLeft: '0'
+            height: '100%'
         });
     },
 
