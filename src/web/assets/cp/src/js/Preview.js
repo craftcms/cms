@@ -163,7 +163,7 @@ Craft.Preview = Garnish.Base.extend({
                     title: Craft.t('app', 'Tablet'),
                     data: {
                         width: 768,
-                        height: 1006,
+                        height: 1024,
                         breakpoint: 'tablet'
                     }
                 }).appendTo(this.$breakpointButtons);

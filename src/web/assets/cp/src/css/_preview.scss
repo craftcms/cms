@@ -161,19 +161,19 @@
         background-position: top center, bottom center;
         background-repeat: no-repeat;
         background-size: contain;
-        background-color: #fff; // TODO: change to white after debugging
+        background-color: #fff;
         box-shadow: 0 0 58px rgba(6,67,117,.3);
-        border-radius: 30px;
+        border-radius: 18px;
 
         width: 375px;
-        height: 814px;
+        height: 753px;
         transition: transform .3s;
       }
 
       // 75% zoom positioning (default)
       .lp-preview {
         left: 50%;
-        transform: scale(0.75) translate(-66.666666%, 0) rotate(0deg);
+        transform: scale(0.75) translate(-66.666666%, -32px) rotate(0deg);
       }
       .lp-device-mask {
         left: 50%;
@@ -183,7 +183,7 @@
       // 100% zoom positioning
       &.lp-iframe-container--zoom-full {
         .lp-preview {
-          transform: scale(1) translate(-50%, 111px) rotate(0deg);
+          transform: scale(1) translate(-50%, 89px) rotate(0deg);
         }
         .lp-device-mask {
           transform: scale(1) translate(-50%, 58px) rotate(0deg);
@@ -193,43 +193,44 @@
       // 50% zoom positioning
       &.lp-iframe-container--zoom-half {
         .lp-preview {
-          transform: scale(0.5) translate(-100%, -221px) rotate(0deg);
+          transform: scale(0.5) translate(-100%, -244px) rotate(0deg);
         }
         .lp-device-mask {
-          transform: scale(0.5) translate(-100%, -347px) rotate(0deg);
+          transform: scale(0.5) translate(-100%, -317px) rotate(0deg);
         }
       }
 
-      // TODO: Tablet
+      // Tablet
       &.lp-iframe-container--tablet {
 
         .lp-preview {
-          top: 51px;
+          transform: scale(0.75) translate(-66.666666%, -80px) rotate(0deg);
         }
 
         .lp-device-mask {
-          top: -74px;
-          background-image: url(../images/live-preview/ipad.svg);
-          margin-left: -420.5px;
-          width: 841px;
-          height: 1252px;
+          background-image: url(../images/live-preview/tablet_top.svg), url(../images/live-preview/tablet_bottom.svg);
+          width: 768px;
+          height: 1110px;
+          transform: scale(0.75) translate(-66.666666%, -125px) rotate(0deg);
         }
 
-        // Zoomed positioning
+        // 100% zoom positioning
         &.lp-iframe-container--zoom-full {
           .lp-preview {
-            //top: 208px;
+            transform: scale(1) translate(-50%, 89px) rotate(0deg);
           }
           .lp-device-mask {
-            //top: 83px;
+            transform: scale(1) translate(-50%, 58px) rotate(0deg);
           }
         }
+
+        // 50% zoom positioning
         &.lp-iframe-container--zoom-half {
           .lp-preview {
-            top: -105px;
+            transform: scale(0.5) translate(-100%, -421px) rotate(0deg);
           }
           .lp-device-mask {
-            top: -230px;
+            transform: scale(0.5) translate(-100%, -495px) rotate(0deg);
           }
         }
       }
@@ -242,7 +243,7 @@
 
       // 75% zoom positioning (default)
       .lp-preview {
-        transform: scale(0.75) translate(-69.666666%, 216px) rotate(0deg);
+        transform: scale(0.75) translate(-68.444444%, 175px) rotate(0deg);
       }
       .lp-device-mask {
         transform: scale(0.75) translate(-66.666666%, -77px) rotate(-90deg);
@@ -251,7 +252,7 @@
       // 100% zoom positioning
       &.lp-iframe-container--zoom-full {
         .lp-preview {
-          transform: scale(1) translate(-53%, 278px) rotate(0deg);
+          transform: scale(1) translate(-51.777777%, 247px) rotate(0deg);
         }
         .lp-device-mask {
           transform: scale(1) translate(-50%, 58px) rotate(-90deg);
@@ -261,46 +262,44 @@
       // 50% zoom positioning
       &.lp-iframe-container--zoom-half {
         .lp-preview {
-          transform: scale(0.5) translate(-103%, 92px) rotate(0deg);
+          transform: scale(0.5) translate(-101.77777%, 30px) rotate(0deg);
         }
         .lp-device-mask {
           transform: scale(0.5) translate(-100%, -347px) rotate(-90deg);
         }
       }
 
-
-      // TODO: Tablet
+      // Tablet
       &.lp-iframe-container--tablet {
 
         .lp-preview {
-          top: 14px;
+          transform: scale(0.75) translate(-67.88888%, 103px) rotate(0deg);
         }
 
         .lp-device-mask {
-          top: -228px;
-          margin-left: -((841px/2)+2);
+          transform: scale(0.75) translate(-66.666666%, -125px) rotate(-90deg);
         }
 
-        // Zoomed positioning
+        // 100% zoom positioning
         &.lp-iframe-container--zoom-full {
           .lp-preview {
-            top: 118px;
+            transform: scale(1) translate(-51.111111%, 229px) rotate(0deg);
           }
           .lp-device-mask {
-            top: -123px;
+            transform: scale(1) translate(-50%, 58px) rotate(-90deg);
           }
         }
+
+        // 50% zoom positioning
         &.lp-iframe-container--zoom-half {
           .lp-preview {
-            top: -91px;
+            transform: scale(0.5) translate(-101.15%, -153px) rotate(0deg);
           }
           .lp-device-mask {
-            top: -333px;
+            transform: scale(0.5) translate(-100%, -495px) rotate(-90deg);
           }
         }
-
       }
-
     }
 
     // Hide the iframe whilst rotating and zooming
