@@ -102,7 +102,7 @@ class CpHelperTest extends Unit
     public function testFieldHtml()
     {
         self::assertStringContainsString('<div class="input ltr"><input></div>', Cp::fieldHtml('<input>'));
-        self::assertStringContainsString('<label id="id-field-label" for="id">Label</label>', Cp::fieldHtml('<input>', ['label' => 'Label', 'id' => 'id']));
+        self::assertStringContainsString('<label id="id-label" for="id">Label</label>', Cp::fieldHtml('<input>', ['label' => 'Label', 'id' => 'id']));
         self::assertStringNotContainsString('<label', Cp::fieldHtml('<input>', ['label' => '__blank__',]));
         // invalid site ID
         $this->tester->expectThrowable(InvalidArgumentException::class, function() {
