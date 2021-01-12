@@ -1306,6 +1306,7 @@ return [
     'The maximum number of rows the field is allowed to have.' => 'A mezőben lehetséges maximális sorok száma.',
     'The minimum number of blocks the field is allowed to have.' => 'A mezőhöz engedélyezett blokkok minimális száma.',
     'The minimum number of rows the field is allowed to have.' => 'A mezőhöz engedélyezett sorok minimális száma.',
+    'The number of minutes that timepicker options should be incremented by. (Authors can enter a specific time manually.)' => 'The number of minutes that timepicker options should be incremented by. (Authors can enter a specific time manually.)',
     'The number of seconds that the `Retry-After` HTTP header should be set to for 503 responses when the system is offline.' => 'Másodpercek száma, amelyre a „Újrapróbálkozás” HTTP-fejlécet be kívánja állítani az offline rendszer esetén kapott 503 válaszok esetén.',
     'The path to a template file within your `templates/` folder.' => 'A `templates/` mappában lévő sablonfájlhoz vezető útvonal.',
     'The path to the volume’s directory on the file system.' => 'A kötet könyvtárának elérési útja a fájlrendszerben.',
