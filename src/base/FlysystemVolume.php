@@ -30,6 +30,11 @@ abstract class FlysystemVolume extends Volume
     protected $foldersHaveTrailingSlashes = true;
 
     /**
+     * @var array An array of cached metadata by path.
+     */
+    private $_cachedMetadata = [];
+
+    /**
      * @var AdapterInterface|null The Flysystem adapter, created by [[createAdapter()]]
      */
     private $_adapter;
@@ -54,11 +59,30 @@ abstract class FlysystemVolume extends Volume
      */
     public function getFileMetadata(string $uri): array
     {
-        try {
-            return $this->filesystem()->getMetadata($uri);
-        } catch (FileNotFoundException $e) {
-            throw new VolumeObjectNotFoundException($e->getMessage(), 0, $e);
-        }
+        Craft::$app->getDeprecator()->log('getFileMetadata', "The `getFileMetadata()` method has been deprecated. Use `getDateModified()` and `getFileSize()` instead.");
+
+        return $this->fetchFileMetadata($uri, true);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDateModified(string $uri)
+    {
+        $metadata = $this->fetchFileMetadata($uri);
+
+        return $metadata['timestamp'] ?? null;
+
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getFileSize(string $uri)
+    {
+        $metadata = $this->fetchFileMetadata($uri);
+
+        return $metadata['size'] ?? null;
     }
 
     /**
@@ -342,5 +366,32 @@ abstract class FlysystemVolume extends Volume
     protected function visibility(): string
     {
         return $this->hasUrls ? AdapterInterface::VISIBILITY_PUBLIC : AdapterInterface::VISIBILITY_PRIVATE;
+    }
+
+    /**
+     * Fetch the file metadata from the volume, optionally caching the result.
+     *
+     * @param string $uri
+     * @param false $bypassCache
+     * @return array|false|mixed
+     * @throws VolumeObjectNotFoundException
+     */
+    protected function fetchFileMetadata(string $uri, $bypassCache = false)
+    {
+        if ($bypassCache || empty($this->_cachedMetadata[$uri])) {
+            try {
+                $metadata = $this->filesystem()->getMetadata($uri);
+            } catch (FileNotFoundException $e) {
+                throw new VolumeObjectNotFoundException($e->getMessage(), 0, $e);
+            }
+
+            if ($bypassCache) {
+                return $metadata;
+            }
+
+            $this->_cachedMetadata[$uri] = $metadata;
+        }
+
+        return $this->_cachedMetadata[$uri];
     }
 }
