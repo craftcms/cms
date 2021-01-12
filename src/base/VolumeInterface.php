@@ -63,19 +63,19 @@ interface VolumeInterface extends SavableComponentInterface
      * Returns the file size.
      *
      * @param string $uri
-     * @return mixed
+     * @return int|null
      * @since 3.6.0
      */
-    public function getFileSize(string $uri);
+    public function getFileSize(string $uri): ?int;
 
     /**
      * Returns the last time the file was modified.
      *
      * @param string $uri
-     * @return mixed
+     * @return int|null
      * @since 3.6.0
      */
-    public function getDateModified(string $uri);
+    public function getDateModified(string $uri): ?int;
 
     /**
      * Creates a file.

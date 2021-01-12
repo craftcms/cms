@@ -66,7 +66,7 @@ abstract class FlysystemVolume extends Volume
     /**
      * @inheritdoc
      */
-    public function getDateModified(string $uri)
+    public function getDateModified(string $uri): ?int
     {
         $metadata = $this->fetchFileMetadata($uri);
         return $metadata['timestamp'] ?? null;
@@ -76,7 +76,7 @@ abstract class FlysystemVolume extends Volume
     /**
      * @inheritdoc
      */
-    public function getFileSize(string $uri)
+    public function getFileSize(string $uri): ?int
     {
         $metadata = $this->fetchFileMetadata($uri);
         return $metadata['size'] ?? null;
