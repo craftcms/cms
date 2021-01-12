@@ -282,6 +282,7 @@ class GeneralConfig extends BaseObject
      * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
      *
      * @group System
+     * @defaultAlt 1 day
      */
     public $cacheDuration = 86400;
 
@@ -305,6 +306,7 @@ class GeneralConfig extends BaseObject
      * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
      *
      * @group Security
+     * @defaultAlt 5 minutes
      */
     public $cooldownDuration = 300;
 
@@ -458,6 +460,7 @@ class GeneralConfig extends BaseObject
      * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
      *
      * @group Security
+     * @defaultAlt 1 day
      */
     public $defaultTokenDuration = 86400;
 
@@ -475,6 +478,7 @@ class GeneralConfig extends BaseObject
      * - `6` – Saturday
      *
      * @group System
+     * @defaultAlt Monday
      */
     public $defaultWeekStartDay = 1;
 
@@ -564,6 +568,7 @@ class GeneralConfig extends BaseObject
      * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
      *
      * @group Security
+     * @defaultAlt 5 minutes
      */
     public $elevatedSessionDuration = 300;
 
@@ -729,6 +734,7 @@ class GeneralConfig extends BaseObject
      * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
      *
      * @group Security
+     * @defaultAlt 5 minutes
      */
     public $invalidLoginWindowDuration = 3600;
 
@@ -836,6 +842,7 @@ class GeneralConfig extends BaseObject
      *
      * See [[ConfigHelper::sizeInBytes()]] for a list of supported value types.
      * @group Assets
+     * @defaultAlt 16MB
      */
     public $maxUploadFileSize = 16777216;
 
@@ -1045,6 +1052,7 @@ class GeneralConfig extends BaseObject
      *
      * @since 3.3.0
      * @group Garbage Collection
+     * @defaultAlt 90 days
      */
     public $purgeStaleUserSessionDuration = 7776000;
 
@@ -1057,6 +1065,7 @@ class GeneralConfig extends BaseObject
      *
      * @since 3.2.0
      * @group Garbage Collection
+     * @defaultAlt 30 days
      */
     public $purgeUnsavedDraftsDuration = 2592000;
 
@@ -1068,6 +1077,7 @@ class GeneralConfig extends BaseObject
      * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
      *
      * @group Session
+     * @defaultAlt 1 year
      */
     public $rememberUsernameDuration = 31536000;
 
@@ -1079,6 +1089,7 @@ class GeneralConfig extends BaseObject
      * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
      *
      * @group Session
+     * @defaultAlt 14 days
      */
     public $rememberedUserSessionDuration = 1209600;
 
@@ -1303,6 +1314,7 @@ class GeneralConfig extends BaseObject
      *
      * @since 3.1.0
      * @group Garbage Collection
+     * @defaultAlt 30 days
      */
     public $softDeleteDuration = 2592000;
 
@@ -1462,6 +1474,7 @@ class GeneralConfig extends BaseObject
      * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
      *
      * @group Session
+     * @defaultAlt 1 hour
      */
     public $userSessionDuration = 3600;
 
@@ -1490,6 +1503,7 @@ class GeneralConfig extends BaseObject
      * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
      *
      * @group Security
+     * @defaultAlt 1 day
      */
     public $verificationCodeDuration = 86400;
 
