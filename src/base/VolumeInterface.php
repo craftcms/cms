@@ -64,6 +64,7 @@ interface VolumeInterface extends SavableComponentInterface
      *
      * @param string $uri
      * @return mixed
+     * @since 3.6.0
      */
     public function getFileSize(string $uri);
 
@@ -72,6 +73,7 @@ interface VolumeInterface extends SavableComponentInterface
      *
      * @param string $uri
      * @return mixed
+     * @since 3.6.0
      */
     public function getDateModified(string $uri);
 
