@@ -33,7 +33,7 @@
 - Updated Yii to 2.0.40.
 
 ### Deprecated
-- Deprecated `craft\base\VolumeInterface::getFileMetadata()`. `getFileSize()` and `getDateModified()` instead.
+- Deprecated `craft\base\VolumeInterface::getFileMetadata()`. `getFileSize()` and `getDateModified()` should be used instead.
 - Deprecated `craft\helpers\Template::paginateCriteria()`. `paginateQuery()` should be used instead.
 
 ### Removed

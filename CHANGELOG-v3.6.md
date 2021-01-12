@@ -160,7 +160,7 @@
 - Deprecated the `relatedToAll` GraphQL query argument.
 - Deprecated the `isUnsavedDraft` GraphQL field.
 - Deprecated `craft\base\Element::getIsUnsavedDraft()`. `getIsUnpublishedDraft()` should be used instead.
-- Deprecated `craft\base\VolumeInterface::getFileMetadata()`. `getFileSize()` and `getDateModified()` instead.
+- Deprecated `craft\base\VolumeInterface::getFileMetadata()`. `getFileSize()` and `getDateModified()` should be used instead.
 - Deprecated `craft\db\Connection::trimObjectName()`.
 - Deprecated `craft\gql\base\Resolver::getArrayableArguments()`.
 - Deprecated `craft\gql\base\Resolver::prepareArguments()`.
