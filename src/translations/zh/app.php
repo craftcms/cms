@@ -1306,6 +1306,7 @@ return [
     'The maximum number of rows the field is allowed to have.' => '字段允许拥有的最大行数。',
     'The minimum number of blocks the field is allowed to have.' => '字段允许拥有的最小块数。',
     'The minimum number of rows the field is allowed to have.' => '字段允许拥有的最小行数。',
+    'The number of minutes that timepicker options should be incremented by. (Authors can enter a specific time manually.)' => 'The number of minutes that timepicker options should be incremented by. (Authors can enter a specific time manually.)',
     'The number of seconds that the `Retry-After` HTTP header should be set to for 503 responses when the system is offline.' => '当系统离线时，应为 503 响应设置的 `Retry-After` HTTP 标头的秒数。',
     'The path to a template file within your `templates/` folder.' => '到您的 `templates/` 文件夹中模板文件的路径。',
     'The path to the volume’s directory on the file system.' => '文件系统上卷目录的路径。',
