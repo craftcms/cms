@@ -1306,6 +1306,7 @@ return [
     'The maximum number of rows the field is allowed to have.' => 'الحد الأقصى لعدد الصفوف التي يسمح بوجودها في الحقل.',
     'The minimum number of blocks the field is allowed to have.' => 'الحد الأدنى لعدد الكتل التي يسمح بوجودها في الحقل.',
     'The minimum number of rows the field is allowed to have.' => 'الحد الأدنى لعدد الصفوف التي يسمح بوجودها في الحقل.',
+    'The number of minutes that timepicker options should be incremented by. (Authors can enter a specific time manually.)' => 'The number of minutes that timepicker options should be incremented by. (Authors can enter a specific time manually.)',
     'The number of seconds that the `Retry-After` HTTP header should be set to for 503 responses when the system is offline.' => 'عدد الثواني التي يجب تعيين رأس HTTP "إعادة المحاولة بعد" فيها لـ 503 استجابة عندما يكون النظام غير متصل بالإنترنت.',
     'The path to a template file within your `templates/` folder.' => 'المسار إلى ملف قالب داخل مجلد `قوالب/` الخاص بك.',
     'The path to the volume’s directory on the file system.' => 'المسار إلى دليل وحدة التخزين في نظام الملفات.',
