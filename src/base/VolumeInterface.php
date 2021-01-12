@@ -64,6 +64,7 @@ interface VolumeInterface extends SavableComponentInterface
      *
      * @param string $uri
      * @return int|null
+     * @throws VolumeObjectNotFoundException if the file cannot be found
      * @since 3.6.0
      */
     public function getFileSize(string $uri): ?int;
@@ -73,6 +74,7 @@ interface VolumeInterface extends SavableComponentInterface
      *
      * @param string $uri
      * @return int|null
+     * @throws VolumeObjectNotFoundException if the file cannot be found
      * @since 3.6.0
      */
     public function getDateModified(string $uri): ?int;
