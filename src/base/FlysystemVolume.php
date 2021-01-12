@@ -70,7 +70,6 @@ abstract class FlysystemVolume extends Volume
     {
         $metadata = $this->fetchFileMetadata($uri);
         return $metadata['timestamp'] ?? null;
-
     }
 
     /**
