@@ -18,6 +18,7 @@
 - Fixed a bug where `craft\elements\Asset::getSrcset()` could return the wrong value if the asset had a named transform set on it. ([#7352](https://github.com/craftcms/cms/issues/7352))
 - Fixed a bug where user registration forms could get a “Username cannot be blank” error even if the `useEmailAsUsername` config setting was enabled. ([#7357](https://github.com/craftcms/cms/issues/7357))
 - Fixed a bug where clearing control panel resources would delete the `.gitignore` file as well. ([#7361](https://github.com/craftcms/cms/issues/7361))
+- Fixed a bug where auto-created Matrix blocks were taking over the focus when creating a new entry. ([#7363](https://github.com/craftcms/cms/issues/7363))
 
 ## 3.5.17.1 - 2020-12-17
 

@@ -688,7 +688,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         if ($createDefaultBlocks) {
             $blockTypeJs = Json::encode($blockTypes[0]->handle);
             for ($i = count($value); $i < $this->minBlocks; $i++) {
-                $js .= "\nmatrixInput.addBlock({$blockTypeJs});";
+                $js .= "\nmatrixInput.addBlock($blockTypeJs, null, false);";
             }
         }
 
