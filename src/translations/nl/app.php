@@ -1306,6 +1306,7 @@ return [
     'The maximum number of rows the field is allowed to have.' => 'Het maximum aantal rijen dat het veld mag bevatten.',
     'The minimum number of blocks the field is allowed to have.' => 'Het minimum aantal blokken dat het veld mag bevatten.',
     'The minimum number of rows the field is allowed to have.' => 'Het minimum aantal rijen dat het veld mag bevatten.',
+    'The number of minutes that timepicker options should be incremented by. (Authors can enter a specific time manually.)' => 'The number of minutes that timepicker options should be incremented by. (Authors can enter a specific time manually.)',
     'The number of seconds that the `Retry-After` HTTP header should be set to for 503 responses when the system is offline.' => 'Het aantal seconden om de http-kop \'Retry-After\' op in te stellen voor 503-antwoorden als het systeem offline is.',
     'The path to a template file within your `templates/` folder.' => 'Het pad naar een sjabloonbestand in uw map "templates/".',
     'The path to the volume’s directory on the file system.' => 'Het pad naar de directory van het volume op het bestandssysteem.',
