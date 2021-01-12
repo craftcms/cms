@@ -1306,6 +1306,7 @@ return [
     'The maximum number of rows the field is allowed to have.' => 'Максимальное разрешенное количество строк для этого поля.',
     'The minimum number of blocks the field is allowed to have.' => 'Минимальное разрешенное количество блоков для этого поля.',
     'The minimum number of rows the field is allowed to have.' => 'Минимальное разрешенное количество строк для этого поля.',
+    'The number of minutes that timepicker options should be incremented by. (Authors can enter a specific time manually.)' => 'The number of minutes that timepicker options should be incremented by. (Authors can enter a specific time manually.)',
     'The number of seconds that the `Retry-After` HTTP header should be set to for 503 responses when the system is offline.' => 'Количество секунд, которое необходимо установить для заголовка HTTP `Retry-After` для отклика на ошибку 503, когда система находится в автономном режиме.',
     'The path to a template file within your `templates/` folder.' => 'Путь к файлу шаблона в папке «templates/».',
     'The path to the volume’s directory on the file system.' => 'Путь к директории тома в файловой системе.',
