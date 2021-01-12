@@ -36,7 +36,6 @@
     "enshrined/svg-sanitize": "~0.13.3",
     "guzzlehttp/guzzle": "^7.2.0",
     "laminas/laminas-feed": "^2.12.3",
-
     "league/oauth2-client": "^2.6.0",
     "mikehaertl/php-shellcommand": "^1.6.2",
     "pixelandtonic/imagine": "~1.2.4.1",
