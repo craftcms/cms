@@ -1306,6 +1306,7 @@ return [
     'The maximum number of rows the field is allowed to have.' => 'Le nombre maximum de lignes autorisé pour ce champ.',
     'The minimum number of blocks the field is allowed to have.' => 'Le nombre minimum de blocs autorisé pour ce champ.',
     'The minimum number of rows the field is allowed to have.' => 'Le nombre minimum de lignes autorisé pour ce champ.',
+    'The number of minutes that timepicker options should be incremented by. (Authors can enter a specific time manually.)' => 'The number of minutes that timepicker options should be incremented by. (Authors can enter a specific time manually.)',
     'The number of seconds that the `Retry-After` HTTP header should be set to for 503 responses when the system is offline.' => 'Le nombre de secondes pour lesquelles l\'en-tête HTTP « Retry-After » doit être défini pour les réponses 503 lorsque le système est hors ligne.',
     'The path to a template file within your `templates/` folder.' => 'Le chemin vers un fichier de modèle dans votre dossier « templates/ ».',
     'The path to the volume’s directory on the file system.' => 'Le chemin vers le répertoire du volume dans le système de fichiers.',
