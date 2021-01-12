@@ -10,7 +10,7 @@
     {%- set fieldsetAttributes = fieldsetAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
 {% endif %}
 
-<fieldset {{ attr(fieldsetAttributes) }}>
+{% tag 'fieldset' with fieldsetAttributes %}
     {% if name ?? false %}
         {{ hiddenInput(name, '') }}
     {% endif -%}
@@ -28,4 +28,4 @@
             }|merge(option) only %}
         </div>
     {%- endfor %}
-</fieldset>
+{% endtag %}

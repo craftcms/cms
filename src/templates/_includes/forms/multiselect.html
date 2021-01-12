@@ -3,12 +3,19 @@
 {%- set values = values ?? [] -%}
 {%- set hasOptgroups = false -%}
 
+{% set containerAttributes = {
+  class: (class ?? [])|explodeClass,
+}|merge(containerAttributes ?? [], recursive=true) %}
+
+{%- if block('attr') is defined %}
+  {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
+{% endif %}
+
 {% if name ?? false %}
     {{ hiddenInput(name, '') }}
 {% endif -%}
 
-<div class="{{ class|join(' ') }}"
-        {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
+{% tag 'div' with containerAttributes %}
     <select multiple
             {%- if id is defined %} id="{{ id }}"{% endif %}
             {%- if name ?? false %} name="{{ name }}[]"{% endif %}
@@ -31,4 +38,4 @@
             {% endif %}
         {%- endfor %}
     </select>
-</div>
+{% endtag %}

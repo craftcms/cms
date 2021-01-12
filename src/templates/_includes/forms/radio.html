@@ -1,7 +1,12 @@
 {%- set value = (value is defined ? value : '1') -%}
 
-<label
-        {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
+{% set containerAttributes = {} %}
+
+{%- if block('attr') is defined %}
+    {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
+{% endif %}
+
+{% tag 'label' with containerAttributes %}
     <input type="radio" value="{{ value }}"
         {%- if id ?? false %} id="{{ id }}"{% endif %}
         {%- if class ?? false %} class="{{ class }}"{% endif %}
@@ -10,4 +15,4 @@
         {%- if (autofocus ?? false) and not craft.app.request.isMobileBrowser(true) %} autofocus{% endif %}
         {%- if disabled ?? false %} disabled{% endif %}>
     {% if label is defined %}{{ label|raw }}{% endif %}
-</label>
+{% endtag %}

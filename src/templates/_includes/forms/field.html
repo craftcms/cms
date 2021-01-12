@@ -94,11 +94,11 @@
         </div>
     {% endif %}
     {{ instructionsPosition == 'before' ? instructionsHtml|raw }}
-    <div {{ attr(inputContainerAttributes) }}>
+    {% tag 'div' with inputContainerAttributes %}
         {% block input %}
             {{ input|raw }}
         {% endblock %}
-    </div>
+    {% endtag %}
     {{ instructionsPosition == 'after' ? instructionsHtml|raw }}
     {% if tip %}
         {{ tag('p', {

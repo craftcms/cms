@@ -18,7 +18,7 @@
     {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
 {% endif %}
 
-<fieldset {{ attr(containerAttributes) }}>
+{% tag 'fieldset' with containerAttributes %}
     {%- for key, option in options %}
         {%- if option is not iterable %}
             {%- set option = {label: option, value: key} %}
@@ -32,4 +32,4 @@
             }|merge(option) only %}
         </div>
     {% endfor %}
-</fieldset>
+{% endtag %}

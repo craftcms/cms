@@ -28,8 +28,8 @@
   },
 }|merge(inputAttributes ?? [], recursive=true) %}
 
-<div {{ attr(containerAttributes) }}>
-    <select {{ attr(inputAttributes) }}>
+{% tag 'div' with containerAttributes %}
+    {% tag 'select' with inputAttributes %}
         {% for key, option in options %}
             {% if option.optgroup is defined %}
                 {% if hasOptgroups %}
@@ -48,5 +48,5 @@
         {% if hasOptgroups %}
             </optgroup>
         {% endif %}
-    </select>
-</div>
+    {% endtag %}
+{% endtag %}

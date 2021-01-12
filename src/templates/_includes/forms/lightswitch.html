@@ -45,14 +45,14 @@
 {% endif %}
 
 {% set input %}
-    <button {{ attr(containerAttributes) }}>
+    {% tag 'button' with containerAttributes %}
         <div class="lightswitch-container">
             <div class="handle"></div>
         </div>
         {% if name is defined -%}
             {{ hiddenInput(name, on ? value : (indeterminate ? indeterminateValue : ''), {disabled: disabled}) }}
         {%- endif %}
-    </button>
+    {% endtag %}
 {% endset %}
 
 {% if hasLabels -%}
