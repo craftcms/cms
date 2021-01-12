@@ -174,7 +174,7 @@ class ClearCaches extends Utility
                     }
 
                     FileHelper::clearDirectory(Craft::getAlias($basePath), [
-                        'except' => ['/.gitignore']
+                        'except' => ['.gitignore']
                     ]);
                 },
             ],
