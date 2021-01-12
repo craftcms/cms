@@ -1306,6 +1306,7 @@ return [
     'The maximum number of rows the field is allowed to have.' => 'حداکثر تعداد ردیفی که این فیلد مجاز است داشته باشد.',
     'The minimum number of blocks the field is allowed to have.' => 'حداقل تعداد بلوکی که این فیلد مجاز است داشته باشد.',
     'The minimum number of rows the field is allowed to have.' => 'حداقل تعداد ردیفی که این فیلد مجاز است داشته باشد.',
+    'The number of minutes that timepicker options should be incremented by. (Authors can enter a specific time manually.)' => 'The number of minutes that timepicker options should be incremented by. (Authors can enter a specific time manually.)',
     'The number of seconds that the `Retry-After` HTTP header should be set to for 503 responses when the system is offline.' => 'تعداد ثانیه‌هایی که باید برای هدر HTTP «تلاش مجدد بعد از» برای 503 پاسخ در حالت آفلاین سیستم تعیین گردد.',
     'The path to a template file within your `templates/` folder.' => 'مسیر یک فایل قالب ذر پوشه `templates/` شما.',
     'The path to the volume’s directory on the file system.' => 'مسیر پوشه مخزن در فایل سیستمی.',
