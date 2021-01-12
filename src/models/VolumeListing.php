@@ -90,15 +90,8 @@ class VolumeListing extends Model
     /**
      * @return string
      */
-    public function getUri(): string {
-        return $this->path . ($this->path ? DIRECTORY_SEPARATOR : ''). $this->filename;
-    }
-
-    /**
-     * @return VolumeListingMetadata
-     */
-    public function getMetadata(): VolumeListingMetadata
+    public function getUri(): string
     {
-        return $this->volume->getFileMetadata($this->getUri());
+        return $this->path . ($this->path ? DIRECTORY_SEPARATOR : '') . $this->filename;
     }
 }

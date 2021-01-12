@@ -53,13 +53,22 @@ interface VolumeInterface extends SavableComponentInterface
     public function getFileList(string $directory = '', bool $recursive = true): Generator;
 
     /**
-     * Return the metadata about a file.
+     * Return the file size.
      *
-     * @param string $uri URI to the file on the volume
-     * @return VolumeListingMetadata
-     * @throws VolumeObjectNotFoundException if the file cannot be found
+     * @param string $uri
+     * @return mixed
+     * @since 3.6.0
      */
-    public function getFileMetadata(string $uri): VolumeListingMetadata;
+    public function getFileSize(string $uri);
+
+    /**
+     * Return the last time the file was modified.
+     *
+     * @param string $uri
+     * @return mixed
+     * @since 3.6.0
+     */
+    public function getDateModified(string $uri);
 
     /**
      * Creates a file.

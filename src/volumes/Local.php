@@ -161,16 +161,21 @@ class Local extends Volume implements LocalVolumeInterface
     /**
      * @inheritdoc
      */
-    public function getFileMetadata(string $uri): VolumeListingMetadata
+    public function getFileSize(string $uri)
     {
         $targetPath = $this->prefixPath($uri);
         clearstatcache();
+        return is_dir($targetPath) ? null : @filesize($targetPath);
+    }
 
-        $lastModified = @filemtime($targetPath);
-        $filesize = is_dir($targetPath) ? null : @filesize($targetPath);
-        $mimeType = FileHelper::getMimeType($targetPath);
-
-        return new VolumeListingMetadata(compact('lastModified', 'filesize', 'mimeType'));
+    /**
+     * @inheritdoc
+     */
+    public function getDateModified(string $uri)
+    {
+        $targetPath = $this->prefixPath($uri);
+        clearstatcache();
+        return @filemtime($targetPath);
     }
 
     /**
