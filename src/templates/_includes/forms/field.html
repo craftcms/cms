@@ -1,7 +1,8 @@
 {%- set fieldset = fieldset ?? false %}
-{%- set fieldId = fieldId ?? ((id ?? false) ? "#{id}-field" : "field#{random()}") %}
-{%- set labelId = labelId ?? "#{fieldId}-" ~ (fieldset ? 'legend' : 'label') %}
-{%- set instructionsId = instructionsId ?? "#{fieldId}-instructions"  %}
+{%- set id = id ?? "field#{random()}" %}
+{%- set fieldId = fieldId ?? "#{id}-field" %}
+{%- set labelId = labelId ?? "#{id}-#{fieldset ? 'legend' : 'label'}" %}
+{%- set instructionsId = instructionsId ?? "#{id}-instructions"  %}
 {%- set status = status ?? null %}
 {%- set label = fieldLabel ?? label ?? block('label') ?? null %}
 {%- if label == '__blank__' %}
