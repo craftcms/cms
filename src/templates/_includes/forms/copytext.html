@@ -9,11 +9,13 @@
         type: 'button',
         id: buttonId,
         class: (buttonClass ?? [])|explodeClass|push('btn'),
+        title: 'Copy to clipboard'|t('app'),
+        aria: {
+            label: 'Copy to clipboard'|t('app'),
+        },
         data: {
             icon: 'clipboard',
         },
-        title: 'Copy to clipboard'|t('app'),
-        'aria-label': 'Copy to clipboard'|t('app'),
     }) -}}
 </div>
 
