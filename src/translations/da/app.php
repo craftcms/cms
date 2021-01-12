@@ -1307,6 +1307,7 @@ return [
     'The maximum number of rows the field is allowed to have.' => 'Det maksimale antal rækker, som er tilladt i feltet.',
     'The minimum number of blocks the field is allowed to have.' => 'Det mindste antal blokke, som er tilladt i feltet.',
     'The minimum number of rows the field is allowed to have.' => 'Mindsteantallet af rækker, som er tilladt i feltet.',
+    'The number of minutes that timepicker options should be incremented by. (Authors can enter a specific time manually.)' => 'The number of minutes that timepicker options should be incremented by. (Authors can enter a specific time manually.)',
     'The number of seconds that the `Retry-After` HTTP header should be set to for 503 responses when the system is offline.' => 'Antallet af sekunder, som HTTP-overskriften `Retry-After` skal indstilles til for 503 svar, når systemet er offline.',
     'The path to a template file within your `templates/` folder.' => 'Stien til skabelonfilen i din `templates/`-mappe.',
     'The path to the volume’s directory on the file system.' => 'Stien til diskenhedens bibliotek i filsystemet.',
