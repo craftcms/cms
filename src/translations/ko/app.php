@@ -1306,6 +1306,7 @@ return [
     'The maximum number of rows the field is allowed to have.' => '필드가 보유할 수 있는 열의 최대 수입니다.',
     'The minimum number of blocks the field is allowed to have.' => '필드가 보유할 수 있는 블록의 최소 수입니다.',
     'The minimum number of rows the field is allowed to have.' => '필드가 보유할 수 있는 열의 최소 수입니다.',
+    'The number of minutes that timepicker options should be incremented by. (Authors can enter a specific time manually.)' => 'The number of minutes that timepicker options should be incremented by. (Authors can enter a specific time manually.)',
     'The number of seconds that the `Retry-After` HTTP header should be set to for 503 responses when the system is offline.' => '시스템이 오프라인인 경우 503 응답에 대해 `Retry-After` HTTP 헤더가 설정되어야 하는 시간(초)입니다.',
     'The path to a template file within your `templates/` folder.' => '`templates/` 폴더 내의 템플릿 파일에 대한 경로.',
     'The path to the volume’s directory on the file system.' => '파일 시스템의 볼륨 디렉터리에 대한 경로입니다.',
