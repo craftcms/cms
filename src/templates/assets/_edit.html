@@ -68,7 +68,9 @@
                 class: 'value',
                 text: formattedSize,
                 title: formattedSizeInBytes,
-                'aria-label': formattedSizeInBytes,
+                aria: {
+                    label: formattedSizeInBytes,
+                },
             }) }}
         </div>
     {% endif %}

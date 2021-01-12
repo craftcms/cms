@@ -84,6 +84,7 @@ Craft.ui =
                 'class': 'btn',
                 'data-icon': 'clipboard',
                 title: Craft.t('app', 'Copy to clipboard'),
+                'aria-label': Craft.t('app', 'Copy to clipboard'),
             }).appendTo($container);
 
             $btn.on('click', () => {
