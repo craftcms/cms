@@ -1306,6 +1306,7 @@ return [
     'The maximum number of rows the field is allowed to have.' => 'Alanda olabilecek maksimum satır sayısı.',
     'The minimum number of blocks the field is allowed to have.' => 'Alanda bulunabilecek minimum blok sayısı.',
     'The minimum number of rows the field is allowed to have.' => 'Alanda olabilecek minimum satır sayısı.',
+    'The number of minutes that timepicker options should be incremented by. (Authors can enter a specific time manually.)' => 'The number of minutes that timepicker options should be incremented by. (Authors can enter a specific time manually.)',
     'The number of seconds that the `Retry-After` HTTP header should be set to for 503 responses when the system is offline.' => 'Sistem çevrimdışıyken HTTP \'Retry-After\' başlığının 503 yanıtı için ayarlanması gereken saniye sayısı.',
     'The path to a template file within your `templates/` folder.' => '"templates/" klasörünüzdeki şablon dosyasının yolu.',
     'The path to the volume’s directory on the file system.' => 'Dosya sisteminde birim dizinine giden yol.',
