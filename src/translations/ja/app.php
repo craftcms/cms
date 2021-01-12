@@ -1306,6 +1306,7 @@ return [
     'The maximum number of rows the field is allowed to have.' => 'フィールドが持つことのできる最大行数。',
     'The minimum number of blocks the field is allowed to have.' => 'フィールドに含めることができる最小ブロック数。',
     'The minimum number of rows the field is allowed to have.' => 'フィールドが持つことのできる最小行数。',
+    'The number of minutes that timepicker options should be incremented by. (Authors can enter a specific time manually.)' => 'The number of minutes that timepicker options should be incremented by. (Authors can enter a specific time manually.)',
     'The number of seconds that the `Retry-After` HTTP header should be set to for 503 responses when the system is offline.' => 'システムがオフラインの場合に503レスポンスの `Retry-After` HTTPヘッダーに設定する秒数。',
     'The path to a template file within your `templates/` folder.' => '`templates/` フォルダ内のテンプレートファイルのパス。',
     'The path to the volume’s directory on the file system.' => 'ファイルシステム上のボリュームのディレクトリへのパス。',
