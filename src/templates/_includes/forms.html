@@ -121,17 +121,7 @@
 
 {% macro textField(config) %}
     {% set config = config|merge({id: config.id ?? "text#{random()}"}) %}
-    {% if config.unit is defined %}
-        {% set input %}
-            <div class="flex">
-                <div class="textwrapper">{{ _self.text(config) }}</div>
-                <div class="label light">{{ config.unit }}</div>
-            </div>
-        {% endset %}
-    {% else %}
-        {% set input = _self.text(config) %}
-    {% endif %}
-    {{ _self.field(config, input) }}
+    {{ _self.field(config, _self.text(config)) }}
 {% endmacro %}
 
 

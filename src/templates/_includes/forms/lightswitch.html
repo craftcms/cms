@@ -35,8 +35,8 @@
     role: 'checkbox',
     aria: {
         checked: on ? 'true' : (indeterminate ? 'mixed' : 'false'),
-        labelledby: labelId ?? null,
-        describedby: hasLabels ? descriptionId : null,
+        labelledby: labelId ?? false,
+        describedby: hasLabels ? descriptionId : false,
     },
 }|merge(containerAttributes ?? [], recursive=true) %}
 

@@ -8,20 +8,24 @@
 }|merge(containerAttributes ?? [], recursive=true) %}
 
 {%- if block('attr') is defined %}
-  {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
+    {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
 {% endif %}
 
 {% if name ?? false %}
     {{ hiddenInput(name, '') }}
 {% endif -%}
 
+{% set inputAttributes = {
+    multiple: true,
+    id: id ?? false,
+    name: (name ?? false) ? "#{name}[]" : false,
+    autofocus: (autofocus ?? false) and not craft.app.request.isMobileBrowser(true),
+    disabled: disabled ?? false,
+    size: size ?? false,
+}|merge(inputAttributes ?? [], recursive=true) %}
+
 {% tag 'div' with containerAttributes %}
-    <select multiple
-            {%- if id is defined %} id="{{ id }}"{% endif %}
-            {%- if name ?? false %} name="{{ name }}[]"{% endif %}
-            {%- if (autofocus ?? false) and not craft.app.request.isMobileBrowser(true) %} autofocus{% endif %}
-            {%- if disabled ?? false %} disabled{% endif %}
-            {%- if size is defined %} size="{{ size }}"{% endif %}>
+    {% tag 'select' with inputAttributes %}
         {%- for key, option in options %}
             {% if option.optgroup is defined %}
                 {% if hasOptgroups %}
@@ -37,5 +41,8 @@
                 <option value="{{ optionValue }}"{% if optionValue in values %} selected{% endif %}{% if optionDisabled %} disabled{% endif %}>{{ optionLabel }}</option>
             {% endif %}
         {%- endfor %}
-    </select>
+        {% if hasOptgroups %}
+            </optgroup>
+        {% endif %}
+    {% endtag %}
 {% endtag %}

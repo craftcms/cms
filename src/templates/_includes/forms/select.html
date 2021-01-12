@@ -8,24 +8,24 @@
 {%- set hasOptgroups = false -%}
 
 {%- set containerAttributes = {
-  class: class,
+    class: class,
 }|merge(containerAttributes ?? [], recursive=true) %}
 
 {%- if block('attr') is defined %}
-  {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
+    {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
 {% endif %}
 
 {% set inputAttributes = {
-  id: id ?? false,
-  class: [
-    (toggle ?? false) ? 'fieldtoggle' : null,
-  ]|filter,
-  name: name ?? false,
-  autofocus: (autofocus ?? false) and not craft.app.request.isMobileBrowser(true),
-  disabled: disabled ?? false,
-  data: {
-    'target-prefix': (toggle ?? false) ? (targetPrefix ?? '') : false,
-  },
+    id: id ?? false,
+    class: [
+        (toggle ?? false) ? 'fieldtoggle' : null,
+    ]|filter,
+    name: name ?? false,
+    autofocus: (autofocus ?? false) and not craft.app.request.isMobileBrowser(true),
+    disabled: disabled ?? false,
+    data: {
+        'target-prefix': (toggle ?? false) ? (targetPrefix ?? '') : false,
+    },
 }|merge(inputAttributes ?? [], recursive=true) %}
 
 {% tag 'div' with containerAttributes %}

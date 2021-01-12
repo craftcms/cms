@@ -44,4 +44,13 @@
     }, recursive=true) %}
 {%- endif %}
 
-{{- tag('input', inputAttributes) }}
+{%- set input = tag('input', inputAttributes) %}
+
+{%- if unit ?? false %}
+    <div class="flex">
+        <div class="textwrapper">{{ input|raw }}</div>
+        <div class="label light">{{ config.unit }}</div>
+    </div>
+{%- else %}
+    {{- input|raw }}
+{%- endif %}
