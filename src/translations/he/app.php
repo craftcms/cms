@@ -1306,6 +1306,7 @@ return [
     'The maximum number of rows the field is allowed to have.' => 'המספר המקסימלי של שורות ששדה זה יכול להכיל.',
     'The minimum number of blocks the field is allowed to have.' => 'המספר המינימלי של בלוקים ששדה זה יכול להכיל.',
     'The minimum number of rows the field is allowed to have.' => 'המספר המינימלי של שורות ששדה זה יכול להכיל.',
+    'The number of minutes that timepicker options should be incremented by. (Authors can enter a specific time manually.)' => 'The number of minutes that timepicker options should be incremented by. (Authors can enter a specific time manually.)',
     'The number of seconds that the `Retry-After` HTTP header should be set to for 503 responses when the system is offline.' => 'מספר השניות שיוגדרו עבור כותרת ה-HTTP `Retry-After` ל-503 תגובות כאשר המערכת אינה מקוונת.',
     'The path to a template file within your `templates/` folder.' => 'הנתיב לקובץ תבנית בתיקיית `templates/` שלך.',
     'The path to the volume’s directory on the file system.' => 'הנתיב לספריית אמצעי האחסון במערכת הקבצים.',
