@@ -33,8 +33,8 @@
 - Updated Yii to 2.0.40.
 
 ### Deprecated
-- Deprecated `craft\helpers\Template::paginateCriteria()`. `paginateQuery()` should be used instead.
 - Deprecated `craft\base\VolumeInterface::getFileMetadata()`. `getFileSize()` and `getDateModified()` instead.
+- Deprecated `craft\helpers\Template::paginateCriteria()`. `paginateQuery()` should be used instead.
 
 ### Removed
 - Removed the “Placeholder” setting from URL fields. ([#7303](https://github.com/craftcms/cms/issues/7303))

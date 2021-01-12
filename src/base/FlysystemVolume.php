@@ -60,7 +60,6 @@ abstract class FlysystemVolume extends Volume
     public function getFileMetadata(string $uri): array
     {
         Craft::$app->getDeprecator()->log('getFileMetadata', "The `getFileMetadata()` method has been deprecated. Use `getDateModified()` and `getFileSize()` instead.");
-
         return $this->fetchFileMetadata($uri, true);
     }
 
@@ -70,7 +69,6 @@ abstract class FlysystemVolume extends Volume
     public function getDateModified(string $uri)
     {
         $metadata = $this->fetchFileMetadata($uri);
-
         return $metadata['timestamp'] ?? null;
 
     }
@@ -81,7 +79,6 @@ abstract class FlysystemVolume extends Volume
     public function getFileSize(string $uri)
     {
         $metadata = $this->fetchFileMetadata($uri);
-
         return $metadata['size'] ?? null;
     }
 
@@ -375,6 +372,7 @@ abstract class FlysystemVolume extends Volume
      * @param false $bypassCache
      * @return array|false|mixed
      * @throws VolumeObjectNotFoundException
+     * @since 3.6.0
      */
     protected function fetchFileMetadata(string $uri, $bypassCache = false)
     {
