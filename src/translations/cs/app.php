@@ -1306,6 +1306,7 @@ return [
     'The maximum number of rows the field is allowed to have.' => 'Maximální počet řádků, který může toto pole obsahovat.',
     'The minimum number of blocks the field is allowed to have.' => 'Minimální množství bloků, kterého může toto pole dosáhnout.',
     'The minimum number of rows the field is allowed to have.' => 'Minimální počet řádků, který může toto pole obsahovat.',
+    'The number of minutes that timepicker options should be incremented by. (Authors can enter a specific time manually.)' => 'The number of minutes that timepicker options should be incremented by. (Authors can enter a specific time manually.)',
     'The number of seconds that the `Retry-After` HTTP header should be set to for 503 responses when the system is offline.' => 'Počet sekund, na který by měla být nastavena HTTP hlavička `Retry-After` ("Nový pokus za") pro odpovědi 503, když je systém offline.',
     'The path to a template file within your `templates/` folder.' => 'Cesta k souboru šablony ve vaší složce `templates/`.',
     'The path to the volume’s directory on the file system.' => 'Cesta k adresáři svazku v systému souborů.',
