@@ -21,6 +21,7 @@
         <div>
             {% include "_includes/forms/checkbox" with {
                 id: id ?? null,
+                instructionsId: instructionsId ?? false,
                 class: 'all',
                 label: raw("<b>#{allLabel}</b>"),
                 name: name ?? null,

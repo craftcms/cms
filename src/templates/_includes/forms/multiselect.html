@@ -22,6 +22,9 @@
     autofocus: (autofocus ?? false) and not craft.app.request.isMobileBrowser(true),
     disabled: disabled ?? false,
     size: size ?? false,
+    aria: {
+        describedby: instructionsId ?? false,
+    },
 }|merge(inputAttributes ?? [], recursive=true) %}
 
 {% tag 'div' with containerAttributes %}

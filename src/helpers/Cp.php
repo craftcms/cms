@@ -375,8 +375,9 @@ class Cp
      */
     public static function fieldHtml(string $input, array $config = []): string
     {
-        // Set the ID before rendering the field so it's consistent
+        // Set the ID and instructionsId before rendering the field so it's consistent
         $id = $config['id'] = $config['id'] ?? 'field' . mt_rand();
+        $instructionsId = $config['instructionsId'] = $config['instructionsId'] ?? "$id-instructions";
 
         if (StringHelper::startsWith($input, 'template:')) {
             $input = static::renderTemplate(substr($input, 9), $config);
@@ -385,7 +386,6 @@ class Cp
         $fieldset = $config['fieldset'] ?? false;
         $fieldId = $config['fieldId'] ?? "$id-field";
         $labelId = $config['labelId'] ?? "$id-" . ($fieldset ? 'legend' : 'label');
-        $instructionsId = $config['instructionsId'] ?? "$id-instructions";
         $status = $config['status'] ?? null;
         $label = $config['fieldLabel'] ?? $config['label'] ?? null;
         if ($label === '__blank__') {

@@ -26,6 +26,7 @@
         <div>
             {% include "_includes/forms/radio" with {
                 id: loop.first ? (id ?? null) : null,
+                instructionsId: instructionsId ?? null,
                 name: name ?? null,
                 checked: (option.value is defined and option.value == value),
                 autofocus: loop.first and (autofocus ?? false) and not craft.app.request.isMobileBrowser(true),

@@ -5,6 +5,9 @@
     name: name ?? false,
     autofocus: (autofocus ?? false) and not craft.app.request.isMobileBrowser(true),
     disabled: disabled ?? false,
+    aria: {
+        describedby: instructionsId ?? false,
+    }
 }|merge(inputAttributes ?? [], recursive=true) %}
 
 {%- if block('attr') is defined %}

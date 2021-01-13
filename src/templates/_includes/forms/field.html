@@ -29,9 +29,6 @@
 {%- set fieldAttributes = {
     class: fieldClass,
     id: fieldId,
-    aria: {
-        describedby: instructions ? instructionsId : false,
-    }
 }|merge(fieldAttributes ?? [], recursive=true) %}
 
 {%- if block('attr') is defined %}

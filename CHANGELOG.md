@@ -23,6 +23,7 @@
 ### Changed
 - Field layout designers will no longer create a new tab if no tab name is entered in the prompt. ([#7333](https://github.com/craftcms/cms/issues/7333))
 - Checkbox and radio button group fields now use `<fieldset>`s and `<legend>`s throughout the control panel.
+- Field containers no longer set the `aria-describedby` attribute, leaving it up to the actual inputs to do so. ([#7365](https://github.com/craftcms/cms/issues/7365))
 - Number field settings and input values are now fully formatted, unless the Preview Format setting is set to “Unformatted”.
 - The `project-config/apply` command now displays a list of changes it is applying. ([#7235](https://github.com/craftcms/cms/issues/7235))
 - The `allowedFileExtensions` config setting now includes several file extensions used by caption and subtitle file formats by default. ([#7304](https://github.com/craftcms/cms/issues/7304))
