@@ -52,7 +52,7 @@
 {%- if unit ?? false %}
     <div class="flex">
         <div class="textwrapper">{{ input|raw }}</div>
-        <div class="label light">{{ config.unit }}</div>
+        <div class="label light">{{ unit }}</div>
     </div>
 {%- else %}
     {{- input|raw }}
