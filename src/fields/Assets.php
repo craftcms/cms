@@ -804,13 +804,15 @@ class Assets extends BaseRelationField
             }
 
             // Sanitize the subpath
-            $segments = explode('/', $renderedSubpath);
-            foreach ($segments as &$segment) {
-                $segment = FileHelper::sanitizeFilename($segment, [
-                    'asciiOnly' => Craft::$app->getConfig()->getGeneral()->convertFilenamesToAscii
+            $segments = array_filter(explode('/', $renderedSubpath), function(string $segment): bool {
+                return $segment !== ':ignore:';
+            });
+            $generalConfig = Craft::$app->getConfig()->getGeneral();
+            $segments = array_map(function(string $segment) use ($generalConfig): string {
+                return FileHelper::sanitizeFilename($segment, [
+                    'asciiOnly' => $generalConfig->convertFilenamesToAscii
                 ]);
-            }
-            unset($segment);
+            }, $segments);
             $subpath = implode('/', $segments);
 
             $folder = $assetsService->findFolder([
