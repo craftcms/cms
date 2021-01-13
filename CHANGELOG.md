@@ -8,6 +8,8 @@
 - Added the `handleCasing` config setting, which determines the default casing that should be used when autogenerating component handles. ([#4276](https://github.com/craftcms/cms/issues/4276))
 - Added `craft\base\ApplicationTrait::getFormattingLocale()`, which returns the locale that should be used for date/time formatting.
 - Added `craft\base\FieldInterface::useFieldset()`, which custom fields can override to return `true` if a `<fieldset>` and `<legend>` should be used, rather than a `<div>` and `<label>`.
+- Added `craft\base\VolumeInterface::getDateModified()`.
+- Added `craft\base\VolumeInterface::getFileSize()`.
 - Added `craft\fieldlayoutelements\BaseField::useFieldset()`.
 - Added `craft\fields\Url::TYPE_EMAIL`.
 - Added `craft\fields\Url::TYPE_TEL`.
@@ -31,6 +33,7 @@
 - Updated Yii to 2.0.40.
 
 ### Deprecated
+- Deprecated `craft\base\VolumeInterface::getFileMetadata()`. `getFileSize()` and `getDateModified()` should be used instead.
 - Deprecated `craft\helpers\Template::paginateCriteria()`. `paginateQuery()` should be used instead.
 
 ### Removed

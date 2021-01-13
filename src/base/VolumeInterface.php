@@ -55,8 +55,29 @@ interface VolumeInterface extends SavableComponentInterface
      * @param string $uri URI to the file on the volume
      * @return array
      * @throws VolumeObjectNotFoundException if the file cannot be found
+     * @deprecated in Craft 3.6.0. Use [[getFileSize()]] and [[getDateModified()]] instead.
      */
     public function getFileMetadata(string $uri): array;
+
+    /**
+     * Returns the file size.
+     *
+     * @param string $uri
+     * @return int|null
+     * @throws VolumeObjectNotFoundException if the file cannot be found
+     * @since 3.6.0
+     */
+    public function getFileSize(string $uri): ?int;
+
+    /**
+     * Returns the last time the file was modified.
+     *
+     * @param string $uri
+     * @return int|null
+     * @throws VolumeObjectNotFoundException if the file cannot be found
+     * @since 3.6.0
+     */
+    public function getDateModified(string $uri): ?int;
 
     /**
      * Creates a file.
