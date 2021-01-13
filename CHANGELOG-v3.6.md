@@ -122,6 +122,7 @@
 - Field layout designers will no longer create a new tab if no tab name is entered in the prompt. ([#7333](https://github.com/craftcms/cms/issues/7333))
 - Site URLs that are generated on the front-end of disabled sites now include the `siteToken` param, if one was passed to the current page. ([#7264](https://github.com/craftcms/cms/issues/7264))
 - Renamed the `backup` and `restore` commands to `db/backup` and `db/restore`. ([#7023](https://github.com/craftcms/cms/issues/7023))
+- The `migrate/all` command now lists the migrations that will be applied. ([#7381](https://github.com/craftcms/cms/issues/7381))
 - The `project-config/apply` command now displays a list of changes it is applying. ([#7235](https://github.com/craftcms/cms/issues/7235))
 - The `allowedFileExtensions` config setting now includes several file extensions used by caption and subtitle file formats by default. ([#7304](https://github.com/craftcms/cms/issues/7304))
 - The `currency`, `filesize`, `number`, `percentage`, and `timestamp` Twig filters now return the passed-in value verbatim if it wasn’t a valid number.
