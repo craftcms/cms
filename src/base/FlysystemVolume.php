@@ -224,7 +224,7 @@ abstract class FlysystemVolume extends Volume
     public function createDir(string $path)
     {
         Craft::$app->getDeprecator()->log('createDir', "The `createDir()` method has been deprecated. Use `createDirectory()` instead.");
-        $this->deleteDirectory($path);
+        $this->createDirectory($path);
     }
 
     /**
