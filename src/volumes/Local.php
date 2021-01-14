@@ -99,7 +99,7 @@ class Local extends FlysystemVolume implements LocalVolumeInterface
     /**
      * @inheritdoc
      */
-    public function renameDir(string $path, string $newName): void
+    public function renameDir(string $path, string $newName)
     {
         $parentDir = dirname($path);
         $newPath = ($parentDir && $parentDir !== '.' ? $parentDir . '/' : '') . $newName;
