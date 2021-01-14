@@ -10,6 +10,7 @@ namespace craft\volumes;
 use craft\base\MissingComponentInterface;
 use craft\base\MissingComponentTrait;
 use craft\base\Volume;
+use craft\errors\VolumeException;
 use yii\base\NotSupportedException;
 
 /**
@@ -17,6 +18,8 @@ use yii\base\NotSupportedException;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ *
+ * @property-read false $rootUrl
  */
 class MissingVolume extends Volume implements MissingComponentInterface
 {
@@ -33,33 +36,9 @@ class MissingVolume extends Volume implements MissingComponentInterface
     /**
      * @inheritdoc
      */
-    public function getFileList(string $directory, bool $recursive): array
+    public function getFileList(string $directory = '', bool $recursive = true): array
     {
         throw new NotSupportedException('getFileList() is not implemented.');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getFileMetadata(string $uri): array
-    {
-        throw new NotSupportedException('getFileMetadata() is not implemented.');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function writeFileFromStream(string $path, $stream, array $config)
-    {
-        throw new NotSupportedException('createFileByStream() is not implemented.');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function updateFileByStream(string $path, $stream, array $config)
-    {
-        throw new NotSupportedException('updateFileByStream() is not implemented.');
     }
 
     /**
@@ -73,7 +52,7 @@ class MissingVolume extends Volume implements MissingComponentInterface
     /**
      * @inheritdoc
      */
-    public function deleteFile(string $path)
+    public function deleteFile(string $path): void
     {
         throw new NotSupportedException('deleteFile() is not implemented.');
     }
@@ -81,7 +60,7 @@ class MissingVolume extends Volume implements MissingComponentInterface
     /**
      * @inheritdoc
      */
-    public function renameFile(string $path, string $newPath)
+    public function renameFile(string $path, string $newPath): void
     {
         throw new NotSupportedException('renameFile() is not implemented.');
     }
@@ -89,7 +68,7 @@ class MissingVolume extends Volume implements MissingComponentInterface
     /**
      * @inheritdoc
      */
-    public function copyFile(string $path, string $newPath)
+    public function copyFile(string $path, string $newPath): void
     {
         throw new NotSupportedException('copyFile() is not implemented.');
     }
@@ -121,7 +100,7 @@ class MissingVolume extends Volume implements MissingComponentInterface
     /**
      * @inheritdoc
      */
-    public function createDir(string $path)
+    public function createDirectory(string $path, array $config = []): void
     {
         throw new NotSupportedException('createDir() is not implemented.');
     }
@@ -129,16 +108,40 @@ class MissingVolume extends Volume implements MissingComponentInterface
     /**
      * @inheritdoc
      */
-    public function deleteDir(string $path)
+    public function deleteDirectory(string $path): void
     {
-        throw new NotSupportedException('deleteDir() is not implemented.');
+        throw new NotSupportedException('deleteDirectory() is not implemented.');
     }
 
     /**
      * @inheritdoc
      */
-    public function renameDir(string $path, string $newName)
+    public function renameDirectory(string $path, string $newName): void
     {
         throw new NotSupportedException('renameDir() is not implemented.');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getFileSize(string $uri)
+    {
+        throw new NotSupportedException('getFileSize() is not implemented.');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDateModified(string $uri)
+    {
+        throw new NotSupportedException('writeFileFromStream() is not implemented.');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function writeFileFromStream(string $path, $stream, array $config = []): void
+    {
+        throw new NotSupportedException('writeFileFromStream() is not implemented.');
     }
 }
