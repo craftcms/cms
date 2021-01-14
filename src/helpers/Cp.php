@@ -375,8 +375,9 @@ class Cp
      */
     public static function fieldHtml(string $input, array $config = []): string
     {
-        // Set the ID before rendering the field so it's consistent
+        // Set the ID and instructionsId before rendering the field so it's consistent
         $id = $config['id'] = $config['id'] ?? 'field' . mt_rand();
+        $instructionsId = $config['instructionsId'] = $config['instructionsId'] ?? "$id-instructions";
 
         if (StringHelper::startsWith($input, 'template:')) {
             $input = static::renderTemplate(substr($input, 9), $config);
@@ -385,7 +386,6 @@ class Cp
         $fieldset = $config['fieldset'] ?? false;
         $fieldId = $config['fieldId'] ?? "$id-field";
         $labelId = $config['labelId'] ?? "$id-" . ($fieldset ? 'legend' : 'label');
-        $instructionsId = $config['instructionsId'] ?? "$fieldId-instructions";
         $status = $config['status'] ?? null;
         $label = $config['fieldLabel'] ?? $config['label'] ?? null;
         if ($label === '__blank__') {
@@ -457,8 +457,11 @@ class Cp
                         : '') .
                     ($translatable
                         ? Html::tag('div', '', [
-                            'title' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
                             'class' => ['t9n-indicator'],
+                            'title' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
+                            'aria' => [
+                                'label' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
+                            ],
                             'data' => [
                                 'icon' => 'language',
                             ],
@@ -512,6 +515,8 @@ class Cp
      */
     public static function checkboxFieldHtml(array $config): string
     {
+        $config['id'] = $config['id'] ?? 'checkbox' . mt_rand();
+
         $config['fieldClass'] = Html::explodeClass($config['fieldClass'] ?? []);
         $config['fieldClass'][] = 'checkboxfield';
         $config['instructionsPosition'] = $config['instructionsPosition'] ?? 'after';
@@ -532,6 +537,7 @@ class Cp
      */
     public static function checkboxSelectFieldHtml(array $config): string
     {
+        $config['id'] = $config['id'] ?? 'checkboxselect' . mt_rand();
         $config['fieldset'] = true;
         return static::fieldHtml('template:_includes/forms/checkboxSelect', $config);
     }
@@ -546,6 +552,7 @@ class Cp
      */
     public static function colorFieldHtml(array $config): string
     {
+        $config['id'] = $config['id'] ?? 'color' . mt_rand();
         return static::fieldHtml('template:_includes/forms/color', $config);
     }
 
@@ -559,6 +566,7 @@ class Cp
      */
     public static function editableTableFieldHtml(array $config): string
     {
+        $config['id'] = $config['id'] ?? 'editabletable' . mt_rand();
         return static::fieldHtml('template:_includes/forms/editableTable', $config);
     }
 
@@ -572,6 +580,8 @@ class Cp
      */
     public static function lightswitchFieldHtml(array $config): string
     {
+        $config['id'] = $config['id'] ?? 'lightswitch' . mt_rand();
+
         $config['fieldClass'] = Html::explodeClass($config['fieldClass'] ?? []);
         $config['fieldClass'][] = 'lightswitch-field';
 
@@ -604,6 +614,7 @@ class Cp
      */
     public static function selectFieldHtml(array $config): string
     {
+        $config['id'] = $config['id'] ?? 'select' . mt_rand();
         return static::fieldHtml('template:_includes/forms/select', $config);
     }
 
@@ -618,18 +629,7 @@ class Cp
     public static function textFieldHtml(array $config): string
     {
         $config['id'] = $config['id'] ?? 'text' . mt_rand();
-        $input = static::renderTemplate('_includes/forms/text', $config);
-
-        if (isset($config['unit'])) {
-            $input = Html::tag('div',
-                Html::tag('div', $input, ['class' => 'textwrapper']) .
-                Html::tag('div', Html::encode($config['unit']), ['class' => ['label', 'light']]),
-                [
-                    'class' => 'flex',
-                ]);
-        }
-
-        return static::fieldHtml($input, $config);
+        return static::fieldHtml('template:_includes/forms/text', $config);
     }
 
     /**
@@ -642,6 +642,7 @@ class Cp
      */
     public static function textareaFieldHtml(array $config): string
     {
+        $config['id'] = $config['id'] ?? 'textarea' . mt_rand();
         return static::fieldHtml('template:_includes/forms/textarea', $config);
     }
 }

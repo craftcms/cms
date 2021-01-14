@@ -115,58 +115,61 @@
 
 
 {% macro field(config, input) %}
+    {% set id = config.id ?? "field#{random()}" %}
+    {% set config = config|merge({
+        id: id,
+        labelId: config.labelId ?? "#{id}-label",
+        instructionsId: config.instructionsId ?? "#{id}-instructions",
+    }) %}
+    {% if input starts with 'template:' %}
+        {% set input = include(input[9:], config) %}
+    {% endif %}
     {% include "_includes/forms/field" with config|merge({ input: input }) only %}
 {% endmacro %}
 
 
 {% macro textField(config) %}
     {% set config = config|merge({id: config.id ?? "text#{random()}"}) %}
-    {% if config.unit is defined %}
-        {% set input %}
-            <div class="flex">
-                <div class="textwrapper">{{ _self.text(config) }}</div>
-                <div class="label light">{{ config.unit }}</div>
-            </div>
-        {% endset %}
-    {% else %}
-        {% set input = _self.text(config) %}
-    {% endif %}
-    {{ _self.field(config, input) }}
+    {{ _self.field(config, 'template:_includes/forms/text') }}
 {% endmacro %}
 
 
 {% macro copytextField(config) %}
     {% set config = config|merge({id: config.id ?? "copytext#{random()}"}) %}
-    {{ _self.field(config, _self.copytext(config)) }}
+    {{ _self.field(config, 'template:_includes/forms/copytext') }}
 {% endmacro %}
 
 
 {% macro passwordField(config) %}
     {% set config = config|merge({id: config.id ?? "password#{random()}"}) %}
-    {{ _self.field(config, _self.password(config)) }}
+    {{ _self.field(config, 'template:_includes/forms/password') }}
 {% endmacro %}
 
 
 {% macro dateField(config) %}
     {% set config = config|merge({id: config.id ?? "date#{random()}"}) %}
-    {{ _self.field(config, _self.date(config)) }}
+    {{ _self.field(config, 'template:_includes/forms/date') }}
 {% endmacro %}
 
 
 {% macro timeField(config) %}
     {% set config = config|merge({id: config.id ?? "time#{random()}"}) %}
-    {{ _self.field(config, _self.time(config)) }}
+    {{ _self.field(config, 'template:_includes/forms/time') }}
 {% endmacro %}
 
 
 {% macro colorField(config) %}
     {% set config = config|merge({id: config.id ?? "color#{random()}"}) %}
-    {{ _self.field(config, _self.color(config)) }}
+    {{ _self.field(config, 'template:_includes/forms/color') }}
 {% endmacro %}
 
 
 {% macro dateTimeField(config) %}
-    {% set config = config|merge({id: config.id ?? "datetime#{random()}"}) %}
+    {% set id = config.id ?? "datetime#{random()}" %}
+    {% set config = config|merge({
+        id: id,
+        instructionsId: config.instructionsId ?? "#{id}-instructions",
+    }) %}
     {% set input %}
         <div class="datetimewrapper">
             {{ _self.date(config) }}
@@ -179,19 +182,19 @@
 
 {% macro textareaField(config) %}
     {% set config = config|merge({id: config.id ?? "textarea#{random()}"}) %}
-    {{ _self.field(config, _self.textarea(config)) }}
+    {{ _self.field(config, 'template:_includes/forms/textarea') }}
 {% endmacro %}
 
 
 {% macro selectField(config) %}
     {% set config = config|merge({id: config.id ?? "select#{random()}"}) %}
-    {{ _self.field(config, _self.select(config)) }}
+    {{ _self.field(config, 'template:_includes/forms/select') }}
 {% endmacro %}
 
 
 {% macro multiselectField(config) %}
     {% set config = config|merge({id: config.id ?? "multiselect#{random()}"}) %}
-    {{ _self.field(config, _self.multiselect(config)) }}
+    {{ _self.field(config, 'template:_includes/forms/multiselect') }}
 {% endmacro %}
 
 
@@ -204,7 +207,7 @@
         checkboxLabel: config.label ?? null,
         instructionsPosition: config.instructionsPosition ?? 'after',
     })|withoutKey('label') %}
-    {{ _self.field(config, _self.checkbox(config)) }}
+    {{ _self.field(config, 'template:_includes/forms/checkbox') }}
 {% endmacro %}
 
 
@@ -213,7 +216,7 @@
         fieldset: true,
         id: config.id ?? "checkboxgroup#{random()}",
     }) %}
-    {{ _self.field(config, _self.checkboxGroup(config)) }}
+    {{ _self.field(config, 'template:_includes/forms/checkboxGroup') }}
 {% endmacro %}
 
 
@@ -222,7 +225,7 @@
         fieldset: true,
         id: config.id ?? "checkboxselect#{random()}",
     }) %}
-    {{ _self.field(config, _self.checkboxSelect(config)) }}
+    {{ _self.field(config, 'template:_includes/forms/checkboxSelect') }}
 {% endmacro %}
 
 
@@ -231,36 +234,35 @@
         fieldset: true,
         id: config.id ?? "radiogroup#{random()}",
     }) %}
-    {{ _self.field(config, _self.radioGroup(config)) }}
+    {{ _self.field(config, 'template:_includes/forms/radioGroup') }}
 {% endmacro %}
 
 
 {% macro fileField(config) %}
     {% set config = config|merge({id: config.id ?? "file#{random()}"}) %}
-    {{ _self.field(config, _self.file(config)) }}
+    {{ _self.field(config, 'template:_includes/forms/file') }}
 {% endmacro %}
 
 
 {% macro lightswitchField(config) %}
     {% set config = config|merge({
         id: config.id ?? "lightswitch#{random()}",
-        labelId: config.labelId ?? "lightswitchlabel#{random()}",
         fieldClass: (config.fieldClass ?? [])|explodeClass|push('lightswitch-field'),
-    }) %}
-    {{ _self.field(config, _self.lightswitch(config|withoutKey('label'))) }}
+        fieldLabel: config.fieldLabel ?? config.label ?? null,
+    })|withoutKey('label') %}
+    {{ _self.field(config, 'template:_includes/forms/lightswitch') }}
 {% endmacro %}
 
 
 {% macro editableTableField(config) %}
     {% set config = config|merge({id: config.id ?? "editabletable#{random()}"}) %}
-    {% set input %}{% include "_includes/forms/editableTable" with config only %}{% endset %}
-    {{ _self.field(config, input) }}
+    {{ _self.field(config, 'template:_includes/forms/editableTable') }}
 {% endmacro %}
 
 
 {% macro elementSelectField(config) %}
     {% set config = config|merge({id: config.id ?? "elementselect#{random()}"}) %}
-    {{ _self.field(config, _self.elementSelect(config)) }}
+    {{ _self.field(config, 'template:_includes/forms/elementSelect') }}
 {% endmacro %}
 
 
@@ -284,14 +286,14 @@
         {% endif %}
     {% endif %}
 
-    {{ _self.field(config, _self.autosuggest(config)) }}
+    {{ _self.field(config, 'template:_includes/forms/autosuggest') }}
 {% endmacro %}
 
 
 {% macro fieldLayoutDesignerField(config) %}
     {{ _self.field({
         label: 'Field Layout'|t('app'),
-    }|merge(config), _self.fieldLayoutDesigner(config)) }}
+    }|merge(config), 'template:_includes/forms/fieldLayoutDesigner') }}
 {% endmacro %}
 
 

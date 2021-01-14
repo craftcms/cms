@@ -14,6 +14,7 @@ use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\gql\types\Number as NumberType;
 use craft\helpers\Db;
+use craft\helpers\Html;
 use craft\helpers\Localization;
 use craft\i18n\Locale;
 
@@ -252,6 +253,7 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
         }
 
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Number/input', [
+            'id' => Html::id($this->handle),
             'field' => $this,
             'value' => $value,
         ]);

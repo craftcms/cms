@@ -10,7 +10,7 @@
     {%- set fieldsetAttributes = fieldsetAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
 {% endif %}
 
-<fieldset {{ attr(fieldsetAttributes) }}>
+{% tag 'fieldset' with fieldsetAttributes %}
     {% if name ?? false %}
         {{ hiddenInput(name, '') }}
     {% endif -%}
@@ -22,10 +22,11 @@
         <div>
             {% include "_includes/forms/checkbox" with {
                 id: loop.first ? (id ?? null) : null,
+                instructionsId: instructionsId ?? false,
                 name: optionName,
                 checked: (option.value is defined and option.value in values),
                 autofocus: loop.first and (autofocus ?? false) and not craft.app.request.isMobileBrowser(true)
             }|merge(option) only %}
         </div>
     {%- endfor %}
-</fieldset>
+{% endtag %}

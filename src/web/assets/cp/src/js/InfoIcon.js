@@ -33,12 +33,12 @@ Craft.InfoIcon = Garnish.Base.extend({
             const $parent = this.$icon.parent();
             if (!$parent.hasClass('nowrap')) {
                 // Find the last word in the text
-                const m = this.$icon[0].previousSibling.nodeValue.match(/\w+\s*$/);
+                const m = this.$icon[0].previousSibling.nodeValue.match(/[^\s\-]+\s*$/);
                 if (m) {
                     this.$icon[0].previousSibling.nodeValue = this.$icon[0].previousSibling.nodeValue.substr(0, m.index);
-                    $('<div/>', {
+                    $('<span/>', {
                         class: 'nowrap',
-                        html: m[0].replace(/\s+$/, ''),
+                        html: m[0].replace(/\s+$/, '') + ' ',
                     })
                         .insertAfter(this.$icon[0].previousSibling)
                         .append(this.$icon);

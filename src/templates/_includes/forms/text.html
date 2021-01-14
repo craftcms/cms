@@ -22,12 +22,14 @@
     autocapitalize: (autocapitalize ?? true) ? false : 'off',
     disabled: disabled ?? false,
     readonly: readonly ?? false,
-    'aria-label': attribute(_context, 'aria-label')|default(false),
     title: title ?? false,
     placeholder: placeholder ?? false,
     step: step ?? false,
     min: min ?? false,
     max: max ?? false,
+    aria: {
+        describedby: instructionsId ?? false,
+    },
 }|merge(inputAttributes ?? [], recursive=true) %}
 
 {%- if block('attr') is defined %}
@@ -45,4 +47,13 @@
     }, recursive=true) %}
 {%- endif %}
 
-{{- tag('input', inputAttributes) }}
+{%- set input = tag('input', inputAttributes) %}
+
+{%- if unit ?? false %}
+    <div class="flex">
+        <div class="textwrapper">{{ input|raw }}</div>
+        <div class="label light">{{ unit }}</div>
+    </div>
+{%- else %}
+    {{- input|raw }}
+{%- endif %}
