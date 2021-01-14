@@ -29,7 +29,7 @@ interface VolumeInterface extends SavableComponentInterface
      * @return FieldLayout|null
      * @since 3.5.0
      */
-    public function getFieldLayout(): ?FieldLayout;
+    public function getFieldLayout();
 
     /**
      * Returns the URL to the source, if it’s accessible via HTTP traffic.
@@ -85,11 +85,10 @@ interface VolumeInterface extends SavableComponentInterface
      * @param string $path The path of the file, relative to the source’s root
      * @param resource $stream The stream to file
      * @param array $config Additional config options to pass to the adapter
-     * @return void
      * @throws VolumeObjectExistsException if a file already exists at the path on the Volume
      * @throws VolumeException if something else goes wrong
      */
-    public function createFileByStream(string $path, $stream, array $config): void;
+    public function createFileByStream(string $path, $stream, array $config);
 
     /**
      * Updates a file.
@@ -97,11 +96,10 @@ interface VolumeInterface extends SavableComponentInterface
      * @param string $path The path of the file, relative to the source’s root
      * @param resource $stream The new contents of the file as a stream
      * @param array $config Additional config options to pass to the adapter
-     * @return void
      * @throws VolumeObjectNotFoundException if the file to be updated cannot be found
      * @throws VolumeException if something else goes wrong
      */
-    public function updateFileByStream(string $path, $stream, array $config): void;
+    public function updateFileByStream(string $path, $stream, array $config);
 
     /**
      * Returns whether a file exists.
@@ -115,34 +113,31 @@ interface VolumeInterface extends SavableComponentInterface
      * Deletes a file.
      *
      * @param string $path The path of the file, relative to the source’s root
-     * @return void
      * @throws VolumeException if something goes wrong
      */
-    public function deleteFile(string $path): void;
+    public function deleteFile(string $path);
 
     /**
      * Renames a file.
      *
      * @param string $path The old path of the file, relative to the source’s root
      * @param string $newPath The new path of the file, relative to the source’s root
-     * @return void
      * @throws VolumeObjectExistsException if a file with such a name exists already
      * @throws VolumeObjectNotFoundException if the file to be renamed cannot be found
      * @throws VolumeException if something else goes wrong
      */
-    public function renameFile(string $path, string $newPath): void;
+    public function renameFile(string $path, string $newPath);
 
     /**
      * Copies a file.
      *
      * @param string $path The path of the file, relative to the source’s root
      * @param string $newPath The path of the new file, relative to the source’s root
-     * @return void
      * @throws VolumeObjectExistsException if a file with such a name exists already
      * @throws VolumeObjectNotFoundException if the file to be renamed cannot be found
      * @throws VolumeException if something else goes wrong
      */
-    public function copyFile(string $path, string $newPath): void;
+    public function copyFile(string $path, string $newPath);
 
     /**
      * Save a file from the source's uriPath to a local target path.
@@ -174,64 +169,58 @@ interface VolumeInterface extends SavableComponentInterface
      * Creates a directory.
      *
      * @param string $path The path of the directory, relative to the source’s root
-     * @return void
      * @throws VolumeObjectExistsException if a directory with such name already exists
      * @throws VolumeException if something else goes wrong
      * @deprecated in 3.6.0. Use [[createDirectory()]] instead.
      */
-    public function createDir(string $path): void;
+    public function createDir(string $path);
 
     /**
      * Creates a directory.
      *
      * @param string $path The path of the directory, relative to the source’s root
-     * @return void
      * @throws VolumeObjectExistsException if a directory with such name already exists
      * @throws VolumeException if something else goes wrong
      */
-    public function createDirectory(string $path): void;
+    public function createDirectory(string $path);
 
     /**
      * Deletes a directory.
      *
      * @param string $path The path of the directory, relative to the source’s root
-     * @return void
      * @throws VolumeException if something goes wrong
      * @deprecated in 3.6.0. Use [[deleteDirectory()]] instead.
      */
-    public function deleteDir(string $path): void;
+    public function deleteDir(string $path);
 
     /**
      * Deletes a directory.
      *
      * @param string $path The path of the directory, relative to the source’s root
-     * @return void
      * @throws VolumeException if something goes wrong
      */
-    public function deleteDirectory(string $path): void;
+    public function deleteDirectory(string $path);
 
     /**
      * Renames a directory.
      *
      * @param string $path The path of the directory, relative to the source’s root
      * @param string $newName The new path of the directory, relative to the source’s root
-     * @return void
      * @throws VolumeObjectNotFoundException if a directory with such name already exists
      * @throws VolumeObjectExistsException if a directory with such name already exists
      * @throws VolumeException if something else goes wrong
      * @deprecated in 3.6.0. Use [[renameDirectory()]] instead.
      */
-    public function renameDir(string $path, string $newName): void;
+    public function renameDir(string $path, string $newName);
 
     /**
      * Renames a directory.
      *
      * @param string $path The path of the directory, relative to the source’s root
      * @param string $newName The new path of the directory, relative to the source’s root
-     * @return void
      * @throws VolumeObjectNotFoundException if a directory with such name already exists
      * @throws VolumeObjectExistsException if a directory with such name already exists
      * @throws VolumeException if something else goes wrong
      */
-    public function renameDirectory(string $path, string $newName): void;
+    public function renameDirectory(string $path, string $newName);
 }
