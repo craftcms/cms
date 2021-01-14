@@ -548,6 +548,7 @@ Craft.Preview = Garnish.Base.extend({
         }, this), 300);
     },
 
+    // TODO: listen to window resize and updateWidths() so we can re-run this
     updateDevicePreview: function()
     {
         if (this.deviceWidth !== '' && this.deviceHeight !== '') {
