@@ -167,23 +167,24 @@
 
         top: 50%;
         left: 50%;
-        width: 375px;
-        height: 753px;
-        transition: transform .3s;
       }
 
       // Tablet
       &.lp-iframe-container--tablet {
         .lp-device-mask {
           background-image: url(../images/live-preview/tablet_top.svg), url(../images/live-preview/tablet_bottom.svg);
-          width: 768px;
-          height: 1110px;
         }
       }
     }
 
-    // Hide the iframe whilst animating
     &--animating {
+      // Animate only the transform
+      .lp-device-mask {
+        transition-duration: .3s;
+        transition-property: transform;
+      }
+
+      // Hide the iframe whilst animating
       .lp-preview {
         opacity: 0;
         transition: opacity 0s,
