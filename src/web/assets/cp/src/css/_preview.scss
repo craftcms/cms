@@ -158,8 +158,9 @@
       .lp-device-mask {
         display: block;
         position: absolute;
+        top: 50%;
+        left: 50%;
         z-index: 1;
-
         background-image: url(../images/live-preview/mobile_top.svg), url(../images/live-preview/mobile_bottom.svg);
         background-position: top center, bottom center;
         background-repeat: no-repeat;
@@ -167,9 +168,6 @@
         background-color: #fff;
         box-shadow: 0 0 58px rgba(6,67,117,.3);
         border-radius: 18px;
-
-        top: 50%;
-        left: 50%;
       }
 
       // Tablet
