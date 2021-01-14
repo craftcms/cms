@@ -35,6 +35,7 @@
 - Added `craft\base\VolumeInterface::deleteDirectory()`.
 - Added `craft\base\VolumeInterface::getDateModified()`.
 - Added `craft\base\VolumeInterface::getFileSize()`.
+- Added `craft\base\VolumeInterface::renameDirectory()`.
 - Added `craft\base\VolumeTrait::$titleTranslationKeyFormat`.
 - Added `craft\base\VolumeTrait::$titleTranslationMethod`.
 - Added `craft\console\Controller::passwordPrompt()`.
@@ -167,6 +168,7 @@
 - Deprecated `craft\base\VolumeInterface::createDir()`. `createDirectory()` should be used instead.
 - Deprecated `craft\base\VolumeInterface::deleteDir()`. `deleteDirectory()` should be used instead.
 - Deprecated `craft\base\VolumeInterface::getFileMetadata()`. `getFileSize()` and `getDateModified()` should be used instead.
+- Deprecated `craft\base\VolumeInterface::renameDir()`. `renameDirectory()` should be used instead.
 - Deprecated `craft\db\Connection::trimObjectName()`.
 - Deprecated `craft\gql\base\Resolver::getArrayableArguments()`.
 - Deprecated `craft\gql\base\Resolver::prepareArguments()`.

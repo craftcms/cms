@@ -271,6 +271,15 @@ abstract class FlysystemVolume extends Volume
      */
     public function renameDir(string $path, string $newName)
     {
+        Craft::$app->getDeprecator()->log('renameDir', "The `renameDir()` method has been deprecated. Use `renameDirectory()` instead.");
+        $this->renameDirectory($path, $newName);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function renameDirectory(string $path, string $newName)
+    {
         // Get the list of dir contents
         $fileList = $this->getFileList($path, true);
         $directoryList = [$path];

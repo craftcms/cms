@@ -10,6 +10,9 @@ namespace craft\volumes;
 use craft\base\MissingComponentInterface;
 use craft\base\MissingComponentTrait;
 use craft\base\Volume;
+use craft\errors\VolumeException;
+use craft\errors\VolumeObjectExistsException;
+use craft\errors\VolumeObjectNotFoundException;
 use yii\base\NotSupportedException;
 
 /**
@@ -140,6 +143,14 @@ class MissingVolume extends Volume implements MissingComponentInterface
     public function getFileSize(string $uri): ?int
     {
         throw new NotSupportedException('getFileSize() is not implemented.');
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function renameDirectory(string $path, string $newName)
+    {
+        throw new NotSupportedException('renameDirectory() is not implemented.');
     }
 
     /**

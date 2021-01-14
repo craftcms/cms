@@ -285,7 +285,7 @@ class Assets extends Component
 
         $volume = $folder->getVolume();
 
-        $volume->renameDir(rtrim($folder->path, '/'), $newName);
+        $volume->renameDirectory(rtrim($folder->path, '/'), $newName);
         $descendantFolders = $this->getAllDescendantFolders($folder);
 
         foreach ($descendantFolders as $descendantFolder) {
