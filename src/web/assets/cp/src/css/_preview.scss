@@ -137,7 +137,6 @@
       min-height: 100%;
     }
 
-    // Note: the default is mobile, 75% zoom, portrait
     &--resized {
       flex: none;
 
@@ -173,18 +172,8 @@
         transition: transform .3s;
       }
 
-      .lp-preview {
-        // TODO: set this in JS now as well, it should be dynamic ...
-        //transform: scale(0.75) translate(-66.666666%, calc(-68.4% + 50px)) rotate(0deg);
-      }
-
       // Tablet
       &.lp-iframe-container--tablet {
-
-        //.lp-preview {
-        //  transform: scale(0.75) translate(-66.666666%, -80px) rotate(0deg);
-        //}
-
         .lp-device-mask {
           background-image: url(../images/live-preview/tablet_top.svg), url(../images/live-preview/tablet_bottom.svg);
           width: 768px;

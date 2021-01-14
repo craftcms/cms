@@ -18,8 +18,6 @@ Craft.Preview = Garnish.Base.extend({
     $targetBtn: null,
     $targetMenu: null,
     $breakpointButtons: null,
-    $zoomBtn: null,
-    $zoomMenu: null,
     $orientationBtn: null,
     $deviceMask: null,
     $iframe: null,
@@ -178,19 +176,6 @@ Craft.Preview = Garnish.Base.extend({
                         breakpoint: 'mobile'
                     }
                 }).appendTo(this.$breakpointButtons);
-
-                // Zoom
-                this.$zoomBtn = $('<div/>', {
-                    type: 'button',
-                    'class': 'btn menubtn',
-                    text: Craft.t('app', 'Zoom'),
-                });
-                this.$zoomMenu = $('<div/>', {'class': 'menu'});
-                const $zoomUl = $('<ul />', {'class': 'padded'}).appendTo(this.$zoomMenu);
-
-                $('<li><a data-zoom="1">100%</a></li>').appendTo($zoomUl);
-                $('<li><a data-zoom="0.75" class="sel">75%</a></li>').appendTo($zoomUl);
-                $('<li><a data-zoom="0.5">50%</a></li>').appendTo($zoomUl);
 
                 // Orientation toggle
                 this.$orientationBtn = $('<div/>', {
@@ -520,15 +505,6 @@ Craft.Preview = Garnish.Base.extend({
         this.updateDevicePreview();
     },
 
-    switchZoom: function(zoom)
-    {
-        // Store the zoom level
-        Craft.setLocalStorage('LivePreview.zoom', zoom);
-
-        // Update the device preview
-        this.updateDevicePreview();
-    },
-
     updateDevicePreview: function()
     {
         if (this.isDeviceAnimating) {
@@ -543,24 +519,10 @@ Craft.Preview = Garnish.Base.extend({
             this.$iframeContainer.addClass('lp-iframe-container--animating');
 
             // Get the data persisted in storage
-            const zoom = Craft.getLocalStorage('LivePreview.zoom');
             const orientation = Craft.getLocalStorage('LivePreview.orientation');
 
-            // Update zoom active class
-            this.$zoomMenu.find('a.sel').removeClass('sel');
-            this.$zoomMenu.find('a[data-zoom="'+zoom+'"]').addClass('sel');
-
-            // Add our buttons to the header bar
-            this.$previewBtnGroup
-                .append(this.$zoomBtn)
-                .append(this.$zoomMenu)
-                .append(this.$orientationBtn);
-
-            new Garnish.MenuBtn(this.$zoomBtn, {
-                onOptionSelect: option => {
-                    this.switchZoom($(option).data('zoom'));
-                },
-            });
+            // Add the orientation button to the header bar
+            this.$previewBtnGroup.append(this.$orientationBtn);
 
             // Trigger the resized css mods
             this.$iframeContainer.addClass('lp-iframe-container--resized');
@@ -572,13 +534,21 @@ Craft.Preview = Garnish.Base.extend({
                 this.$iframeContainer.removeClass('lp-iframe-container--tablet');
             }
 
+            // Figure out the best zoom
+            // TODO: currently only based on height
+            let pHeight = (this.$previewContainer.height() - 50) - 48; // 50px for the header bar and 24px clearance top and bottom
+            let dHeight = this.$deviceMask.height() + (58 * 2); // 58px is the box shadow blur radius
+            if (pHeight < dHeight) {
+                zoom = pHeight / dHeight;
+            }
+
             // Figure out the css values
-            const translateBase = -((100/zoom)/2);
+            const translate = -((100/zoom)/2);
             const rotationDeg = orientation === 'landscape' ? '-90deg' : '0deg';
 
             // Apply first to the device mask
             this.$deviceMask.css({
-                transform: 'scale('+zoom+') translate('+translateBase+'%, calc('+translateBase+'% + 50px)) rotate('+rotationDeg+')'
+                transform: 'scale('+zoom+') translate('+translate+'%, calc('+translate+'% + 50px)) rotate('+rotationDeg+')'
             });
 
             // Add a timeout that’s the same as the css transition value
@@ -589,15 +559,17 @@ Craft.Preview = Garnish.Base.extend({
                     this.$iframe.css({
                         width: this.deviceHeight + 'px',
                         height: this.deviceWidth + 'px',
-                        transform: 'scale('+zoom+') translate('+translateBase+'%, calc('+translateBase+'% + 50px))',
-                        marginTop: '-' + (12*zoom) + 'px'
+                        transform: 'scale('+zoom+') translate('+translate+'%, calc('+translate+'% + 50px))',
+                        marginTop: 0,
+                        marginLeft: '-' + (12*zoom) + 'px'
                     });
                 } else {
                     this.$iframe.css({
                         width: this.deviceWidth + 'px',
                         height: this.deviceHeight + 'px',
-                        transform: 'scale('+zoom+') translate('+translateBase+'%, calc('+translateBase+'% + 50px))',
-                        marginTop: '-' + (12*zoom) + 'px'
+                        transform: 'scale('+zoom+') translate('+translate+'%, calc('+translate+'% + 50px))',
+                        marginTop: '-' + (12*zoom) + 'px',
+                        marginLeft: 0
                     });
                 }
 
@@ -619,14 +591,15 @@ Craft.Preview = Garnish.Base.extend({
         this.currentBreakpoint = 'desktop';
         $('.lp-breakpoint-btn', this.$breakpointButtons).removeClass('lp-breakpoint-btn--active');
         this.$breakpointButtons.find('.lp-breakpoint-btn--desktop').addClass('lp-breakpoint-btn--active');
-        this.$zoomBtn.detach();
-        this.$zoomMenu.detach();
         this.$orientationBtn.detach();
         this.$iframeContainer.removeClass('lp-iframe-container--resized');
         this.$iframeContainer.removeClass('lp-iframe-container--tablet');
         this.$iframe.css({
             width: '100%',
-            height: '100%'
+            height: '100%',
+            transform: 'none',
+            marginTop: 0,
+            marginLeft: 0
         });
         this.isDeviceAnimating = false;
     },
