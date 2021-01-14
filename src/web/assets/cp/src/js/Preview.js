@@ -568,8 +568,9 @@ Craft.Preview = Garnish.Base.extend({
 
             // Figure out the best zoom
             // TODO: currently only based on height
-            let pHeight = (this.$previewContainer.height() - 50) - 48; // 50px for the header bar and 24px clearance top and bottom
-            let dHeight = this.deviceMaskDimensions[this.currentBreakpoint].height + (58 * 2); // 58px is the box shadow blur radius
+            let zoom = 1;
+            let pHeight = (this.$previewContainer.height() - 51) - 24; // 51px for the header bar and 24px clearance top and bottom
+            let dHeight = this.deviceMaskDimensions[this.currentBreakpoint].height; // 58px is the box shadow blur radius
             if (pHeight < dHeight) {
                 zoom = pHeight / dHeight;
             }
@@ -582,7 +583,7 @@ Craft.Preview = Garnish.Base.extend({
             this.$deviceMask.css({
                 width: this.deviceMaskDimensions[this.currentBreakpoint].width + 'px',
                 height: this.deviceMaskDimensions[this.currentBreakpoint].height + 'px',
-                transform: 'scale('+zoom+') translate('+translate+'%, calc('+translate+'% + 74px)) rotate('+rotationDeg+')'
+                transform: 'scale('+zoom+') translate('+translate+'%, calc('+translate+'%)) rotate('+rotationDeg+')'
             });
 
             // Then make the size change to the iframe
@@ -590,7 +591,7 @@ Craft.Preview = Garnish.Base.extend({
                 this.$iframe.css({
                     width: this.deviceHeight + 'px',
                     height: this.deviceWidth + 'px',
-                    transform: 'scale('+zoom+') translate('+translate+'%, calc('+translate+'% + 74px))',
+                    transform: 'scale('+zoom+') translate('+translate+'%, calc('+translate+'%))',
                     marginTop: 0,
                     marginLeft: '-' + (12*zoom) + 'px'
                 });
@@ -598,7 +599,7 @@ Craft.Preview = Garnish.Base.extend({
                 this.$iframe.css({
                     width: this.deviceWidth + 'px',
                     height: this.deviceHeight + 'px',
-                    transform: 'scale('+zoom+') translate('+translate+'%, calc('+translate+'% + 74px))',
+                    transform: 'scale('+zoom+') translate('+translate+'%, calc('+translate+'%))',
                     marginTop: '-' + (12*zoom) + 'px',
                     marginLeft: 0
                 });

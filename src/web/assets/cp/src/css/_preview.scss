@@ -88,7 +88,10 @@
     }
 
     & + .lp-iframe-container {
-      padding-top: 50px;
+      position: relative;
+      top: 51px;
+      height: calc(100% - 51px);
+      width: 100%;
     }
 
     .lp-breakpoint-btn {
