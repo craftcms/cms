@@ -232,7 +232,7 @@ class Assets extends Component
         $path = rtrim($folder->path, '/');
 
         try {
-            $volume->createDir($path);
+            $volume->createDirectory($path);
         } catch (VolumeObjectExistsException $e) {
             // Already there, so just log a warning about it
             Craft::warning("Couldn’t create volume folder at $path because it already exists.");
@@ -923,7 +923,7 @@ class Assets extends Component
                 // Ensure a physical folder exists, if needed.
                 if (!$justRecord) {
                     try {
-                        $volume->createDir($path);
+                        $volume->createDirectory($path);
                     } catch (VolumeObjectExistsException $e) {
                         // Already there, so just log a warning about it
                         Craft::warning("Couldn’t create volume folder at $path because it already exists.");

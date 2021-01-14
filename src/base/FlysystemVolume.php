@@ -223,6 +223,15 @@ abstract class FlysystemVolume extends Volume
      */
     public function createDir(string $path)
     {
+        Craft::$app->getDeprecator()->log('createDir', "The `createDir()` method has been deprecated. Use `createDirectory()` instead.");
+        $this->deleteDirectory($path);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function createDirectory(string $path)
+    {
         if ($this->folderExists($path)) {
             throw new VolumeObjectExistsException("$path already exists on the volume");
         }
