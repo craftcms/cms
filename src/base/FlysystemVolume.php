@@ -223,6 +223,15 @@ abstract class FlysystemVolume extends Volume
      */
     public function createDir(string $path)
     {
+        Craft::$app->getDeprecator()->log('createDir', "The `createDir()` method has been deprecated. Use `createDirectory()` instead.");
+        $this->createDirectory($path);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function createDirectory(string $path)
+    {
         if ($this->folderExists($path)) {
             throw new VolumeObjectExistsException("$path already exists on the volume");
         }
@@ -236,6 +245,15 @@ abstract class FlysystemVolume extends Volume
      * @inheritdoc
      */
     public function deleteDir(string $path)
+    {
+        Craft::$app->getDeprecator()->log('deleteDir', "The `deleteDir()` method has been deprecated. Use `deleteDirectory()` instead.");
+        $this->deleteDirectory($path);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function deleteDirectory(string $path)
     {
         try {
             $success = $this->filesystem()->deleteDir($path);
@@ -252,6 +270,15 @@ abstract class FlysystemVolume extends Volume
      * @inheritdoc
      */
     public function renameDir(string $path, string $newName)
+    {
+        Craft::$app->getDeprecator()->log('renameDir', "The `renameDir()` method has been deprecated. Use `renameDirectory()` instead.");
+        $this->renameDirectory($path, $newName);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function renameDirectory(string $path, string $newName)
     {
         // Get the list of dir contents
         $fileList = $this->getFileList($path, true);
@@ -285,7 +312,7 @@ abstract class FlysystemVolume extends Volume
         // The files are moved, but the directories remain. Delete them.
         foreach ($directoryList as $dir) {
             try {
-                $this->deleteDir($dir);
+                $this->deleteDirectory($dir);
             } catch (\Throwable $e) {
                 // This really varies between volume types and whether folders are virtual or real
                 // So just in case, catch the exception, log it and then move on
