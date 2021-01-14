@@ -183,7 +183,7 @@ class Local extends Volume implements LocalVolumeInterface
      */
     public function writeFileFromStream(string $path, $stream, array $config = []): void
     {
-        $this->createDir(pathinfo($path, PATHINFO_DIRNAME), []);
+        $this->createDirectory(pathinfo($path, PATHINFO_DIRNAME), []);
         $fullPath = $this->prefixPath($path);
 
         $targetStream = @fopen($fullPath, 'w+b');
@@ -228,7 +228,7 @@ class Local extends Volume implements LocalVolumeInterface
      */
     public function renameFile(string $path, string $newPath): void
     {
-        $this->createDir($newPath);
+        $this->createDirectory($newPath);
         @rename($this->prefixPath($path), $this->prefixPath($newPath));
     }
 
@@ -237,7 +237,7 @@ class Local extends Volume implements LocalVolumeInterface
      */
     public function copyFile(string $path, string $newPath): void
     {
-        $this->createDir($newPath);
+        $this->createDirectory($newPath);
         @copy($this->prefixPath($path), $this->prefixPath($newPath));
     }
 
@@ -260,7 +260,7 @@ class Local extends Volume implements LocalVolumeInterface
     /**
      * @inheritdoc
      */
-    public function createDir(string $path, array $config = []): void
+    public function createDirectory(string $path, array $config = []): void
     {
         $dirPath = StringHelper::removeRight($this->prefixPath($path), '.');
         FileHelper::createDirectory($dirPath, $this->resolveVisibility(self::VISIBILITY_DIR, $config), true);
@@ -269,7 +269,7 @@ class Local extends Volume implements LocalVolumeInterface
     /**
      * @inheritdoc
      */
-    public function deleteDir(string $path): void
+    public function deleteDirectory(string $path): void
     {
         FileHelper::removeDirectory($this->prefixPath($path));
     }
@@ -277,7 +277,7 @@ class Local extends Volume implements LocalVolumeInterface
     /**
      * @inheritdoc
      */
-    public function renameDir(string $path, string $newName): void
+    public function renameDirectory(string $path, string $newName): void
     {
         if (is_dir($this->prefixPath($path))) {
             @rename($path, $this->prefixPath($path));
