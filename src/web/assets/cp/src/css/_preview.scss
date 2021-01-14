@@ -88,11 +88,7 @@
     }
 
     & + .lp-iframe-container {
-      position: relative;
-      top: 51px;
-      height: calc(100% - 51px);
-      width: 100%;
-      background-color: $grey100;
+      padding-top: 50px;
     }
 
     .lp-breakpoint-btn {
@@ -143,6 +139,12 @@
 
     &--resized {
       flex: none;
+      padding-top: 0 !important;
+      position: relative;
+      top: 50px;
+      height: calc(100% - 50px);
+      width: 100%;
+      background-color: $grey100;
 
       // iframe
       .lp-preview {

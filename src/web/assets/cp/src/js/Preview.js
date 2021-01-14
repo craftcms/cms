@@ -386,6 +386,10 @@ Craft.Preview = Garnish.Base.extend({
     },
 
     _useIframeResizer: function() {
+        if (this.currentBreakpoint !== 'desktop') {
+            return false;
+        }
+
         return Craft.previewIframeResizerOptions !== false;
     },
 
@@ -478,7 +482,8 @@ Craft.Preview = Garnish.Base.extend({
 
             this.url = url;
             this.$iframe = $iframe;
-            this.$breakpointButtons.find('.lp-breakpoint-btn--active').trigger('click');
+
+            this.updateDevicePreview();
 
             this.trigger('afterUpdateIframe', {
                 previewTarget: this.draftEditor.settings.previewTargets[this.activeTarget],
@@ -501,6 +506,9 @@ Craft.Preview = Garnish.Base.extend({
         // Set the active state on the button
         $('.lp-breakpoint-btn', this.$breakpointButtons).removeClass('lp-breakpoint-btn--active');
         $btn.addClass('lp-breakpoint-btn--active');
+
+        // Ping the iframe so iframeResizer gets reset
+        this.updateIframe(true);
 
         // Update the device preview
         this.updateDevicePreview();
@@ -551,7 +559,6 @@ Craft.Preview = Garnish.Base.extend({
         }, this), 300);
     },
 
-    // TODO: listen to window resize and updateWidths() so we can re-run this
     updateDevicePreview: function()
     {
         if (this.currentBreakpoint !== 'desktop') {
@@ -573,7 +580,7 @@ Craft.Preview = Garnish.Base.extend({
             let hZoom = 1;
             let wZoom = 1;
             let zoom = 1;
-            let previewHeight = (this.$previewContainer.height() - 51) - 48; // 51px for the header bar and 24px clearance
+            let previewHeight = (this.$previewContainer.height() - 50) - 48; // 50px for the header bar and 24px clearance
             let previewWidth = this.$previewContainer.width() - 48;
             let maskHeight = this.deviceMaskDimensions[this.currentBreakpoint].height;
             let maskWidth = this.deviceMaskDimensions[this.currentBreakpoint].width;
@@ -607,7 +614,7 @@ Craft.Preview = Garnish.Base.extend({
             this.$deviceMask.css({
                 width: this.deviceMaskDimensions[this.currentBreakpoint].width + 'px',
                 height: this.deviceMaskDimensions[this.currentBreakpoint].height + 'px',
-                transform: 'scale('+zoom+') translate('+translate+'%, calc('+translate+'%)) rotate('+rotationDeg+')'
+                transform: 'scale('+zoom+') translate('+translate+'%, '+translate+'%) rotate('+rotationDeg+')'
             });
 
             // Then make the size change to the iframe
@@ -615,7 +622,7 @@ Craft.Preview = Garnish.Base.extend({
                 this.$iframe.css({
                     width: this.deviceHeight + 'px',
                     height: this.deviceWidth + 'px',
-                    transform: 'scale('+zoom+') translate('+translate+'%, calc('+translate+'%))',
+                    transform: 'scale('+zoom+') translate('+translate+'%, '+translate+'%)',
                     marginTop: 0,
                     marginLeft: '-' + (12*zoom) + 'px'
                 });
@@ -623,7 +630,7 @@ Craft.Preview = Garnish.Base.extend({
                 this.$iframe.css({
                     width: this.deviceWidth + 'px',
                     height: this.deviceHeight + 'px',
-                    transform: 'scale('+zoom+') translate('+translate+'%, calc('+translate+'%))',
+                    transform: 'scale('+zoom+') translate('+translate+'%, '+translate+'%)',
                     marginTop: '-' + (12*zoom) + 'px',
                     marginLeft: 0
                 });
