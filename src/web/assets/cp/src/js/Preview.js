@@ -567,8 +567,8 @@ Craft.Preview = Garnish.Base.extend({
             }
 
             // Figure out the best zoom
-            let hZoom;
-            let wZoom;
+            let hZoom = 1;
+            let wZoom = 1;
             let zoom = 1;
             let previewHeight = (this.$previewContainer.height() - 51) - 24; // 51px for the header bar and 24px clearance
             let previewWidth = this.$previewContainer.width() - 24;
@@ -608,7 +608,7 @@ Craft.Preview = Garnish.Base.extend({
             });
 
             // Then make the size change to the iframe
-            if (this.deviceOrientation && this.deviceOrientation === 'landscape') {
+            if (this.deviceOrientation === 'landscape') {
                 this.$iframe.css({
                     width: this.deviceHeight + 'px',
                     height: this.deviceWidth + 'px',
