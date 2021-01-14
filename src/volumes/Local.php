@@ -160,21 +160,29 @@ class Local extends Volume implements LocalVolumeInterface
     /**
      * @inheritdoc
      */
-    public function getFileSize(string $uri)
+    public function getFileSize(string $uri): int
     {
         $targetPath = $this->prefixPath($uri);
         clearstatcache();
-        return is_dir($targetPath) ? null : @filesize($targetPath);
+        $fileSize = is_file($targetPath) ? filesize($targetPath) : false;
+
+        if ($fileSize === false) {
+            throw new VolumeException("Unable to get file size for “{$uri}”");
+        }
     }
 
     /**
      * @inheritdoc
      */
-    public function getDateModified(string $uri)
+    public function getDateModified(string $uri): int
     {
         $targetPath = $this->prefixPath($uri);
         clearstatcache();
-        return @filemtime($targetPath);
+        $dateModified = filemtime($targetPath);
+
+        if ($dateModified === false) {
+            throw new VolumeException("Unable to get date modified for “{$uri}”");
+        }
     }
 
     /**
