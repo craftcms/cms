@@ -94,6 +94,8 @@
 - Added `craft\models\Site::getName()`.
 - Added `craft\models\Site::setBaseUrl()`.
 - Added `craft\models\Site::setName()`.
+- Added `craft\mutex\MysqlMutex`.
+- Added `craft\mutex\PgsqlMutex`.
 - Added `craft\services\Drafts::EVENT_AFTER_APPLY_DRAFT`.
 - Added `craft\services\Drafts::EVENT_BEFORE_APPLY_DRAFT`.
 - Added `craft\services\Drafts::publishDraft()`.
@@ -124,6 +126,7 @@
 - The Settings → Plugin page now shows which developer created each plugin. ([#7254](https://github.com/craftcms/cms/issues/7254))
 - Field layout designers will no longer create a new tab if no tab name is entered in the prompt. ([#7333](https://github.com/craftcms/cms/issues/7333))
 - Site URLs that are generated on the front-end of disabled sites now include the `siteToken` param, if one was passed to the current page. ([#7264](https://github.com/craftcms/cms/issues/7264))
+- Mutex lock names are now prefixed with the application ID, to avoid lock conflicts if two Craft installs shared the same database. ([#7384](https://github.com/craftcms/cms/issues/7384))
 - Renamed the `backup` and `restore` commands to `db/backup` and `db/restore`. ([#7023](https://github.com/craftcms/cms/issues/7023))
 - The `migrate/all` command now lists the migrations that will be applied. ([#7381](https://github.com/craftcms/cms/issues/7381))
 - The `project-config/apply` command now displays a list of changes it is applying. ([#7235](https://github.com/craftcms/cms/issues/7235))

@@ -22,6 +22,8 @@ use craft\mail\Mailer;
 use craft\mail\Message;
 use craft\mail\transportadapters\Sendmail;
 use craft\models\MailSettings;
+use craft\mutex\MysqlMutex;
+use craft\mutex\PgsqlMutex;
 use craft\services\ProjectConfig as ProjectConfigService;
 use craft\web\AssetManager;
 use craft\web\Request;
@@ -33,8 +35,6 @@ use craft\web\View;
 use yii\base\InvalidArgumentException;
 use yii\helpers\Inflector;
 use yii\mutex\FileMutex;
-use yii\mutex\MysqlMutex;
-use yii\mutex\PgsqlMutex;
 use yii\web\JsonParser;
 
 /**
@@ -562,6 +562,7 @@ class App
         return [
             'class' => $db->getIsMysql() ? MysqlMutex::class : PgsqlMutex::class,
             'db' => $db,
+            'namePrefix' => Craft::$app->id,
         ];
     }
 
