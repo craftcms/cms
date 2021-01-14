@@ -3509,7 +3509,7 @@ body.rtl .lp-editor-container .lp-draghandle { left: -2px; }
 
 .lp-preview-container .lp-iframe-container--resized.lp-iframe-container--tablet .lp-device-mask { background-image: url(../images/live-preview/tablet_top.svg), url(../images/live-preview/tablet_bottom.svg); width: 768px; height: 1110px; }
 
-.lp-preview-container .lp-iframe-container--rotating .lp-preview, .lp-preview-container .lp-iframe-container--zooming .lp-preview { opacity: 0; -o-transition: opacity 0s; transition: opacity 0s; }
+.lp-preview-container .lp-iframe-container--animating .lp-preview { opacity: 0; -o-transition: opacity 0s; transition: opacity 0s; }
 
 .layoutdesigner { display: -webkit-flex; display: flex; -webkit-align-items: stretch; align-items: stretch; position: relative; border-radius: 3px; border: 1px solid rgba(96, 125, 159, 0.25); background-color: #fbfcfe; box-shadow: inset 0 1px 4px -1px rgba(96, 125, 159, 0.25); background-clip: padding-box; overflow: hidden; box-shadow: none; min-height: 500px; }
 

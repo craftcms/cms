@@ -306,9 +306,8 @@
       }
     }
 
-    // Hide the iframe whilst rotating and zooming
-    &--rotating,
-    &--zooming {
+    // Hide the iframe whilst animating
+    &--animating {
       .lp-preview {
         opacity: 0;
         transition: opacity 0s,
