@@ -588,13 +588,16 @@ Craft.Preview = Garnish.Base.extend({
                 if (orientation && orientation === 'landscape') {
                     this.$iframe.css({
                         width: this.deviceHeight + 'px',
-                        height: this.deviceWidth + 'px'
+                        height: this.deviceWidth + 'px',
+                        transform: 'scale('+zoom+') translate('+translateBase+'%, calc('+translateBase+'% + 50px))',
+                        marginTop: '-' + (12*zoom) + 'px'
                     });
-                    this.$iframeContainer.addClass('lp-iframe-container--landscape');
                 } else {
                     this.$iframe.css({
                         width: this.deviceWidth + 'px',
-                        height: this.deviceHeight + 'px'
+                        height: this.deviceHeight + 'px',
+                        transform: 'scale('+zoom+') translate('+translateBase+'%, calc('+translateBase+'% + 50px))',
+                        marginTop: '-' + (12*zoom) + 'px'
                     });
                 }
 
