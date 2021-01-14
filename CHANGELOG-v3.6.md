@@ -31,6 +31,8 @@
 - Added `craft\base\ElementInterface::getIsUnpublishedDraft()`.
 - Added `craft\base\FieldInterface::includeInGqlSchema()`. ([#7244](https://github.com/craftcms/cms/pull/7244))
 - Added `craft\base\FieldInterface::useFieldset()`, which custom fields can override to return `true` if a `<fieldset>` and `<legend>` should be used, rather than a `<div>` and `<label>`.
+- Added `craft\base\VolumeInterface::createDirectory()`.
+- Added `craft\base\VolumeInterface::deleteDirectory()`.
 - Added `craft\base\VolumeInterface::getDateModified()`.
 - Added `craft\base\VolumeInterface::getFileSize()`.
 - Added `craft\base\VolumeTrait::$titleTranslationKeyFormat`.
