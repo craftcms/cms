@@ -567,12 +567,33 @@ Craft.Preview = Garnish.Base.extend({
             }
 
             // Figure out the best zoom
-            // TODO: currently only based on height
+            let hZoom;
+            let wZoom;
             let zoom = 1;
-            let pHeight = (this.$previewContainer.height() - 51) - 24; // 51px for the header bar and 24px clearance top and bottom
-            let dHeight = this.deviceMaskDimensions[this.currentBreakpoint].height; // 58px is the box shadow blur radius
-            if (pHeight < dHeight) {
-                zoom = pHeight / dHeight;
+            let previewHeight = (this.$previewContainer.height() - 51) - 24; // 51px for the header bar and 24px clearance
+            let previewWidth = this.$previewContainer.width() - 24;
+            let maskHeight = this.deviceMaskDimensions[this.currentBreakpoint].height;
+            let maskWidth = this.deviceMaskDimensions[this.currentBreakpoint].width;
+
+            if (this.deviceOrientation === 'landscape') {
+                if (previewWidth < maskHeight) {
+                    hZoom = previewWidth / maskHeight;
+                }
+                if (previewHeight < maskWidth) {
+                    wZoom = previewHeight / maskWidth;
+                }
+            } else {
+                if (previewHeight < maskHeight) {
+                    hZoom = previewHeight / maskHeight;
+                }
+                if (previewWidth < maskWidth) {
+                    wZoom = previewWidth / maskWidth;
+                }
+            }
+
+            zoom = hZoom;
+            if (wZoom < hZoom) {
+                zoom = wZoom;
             }
 
             // Figure out the css values
