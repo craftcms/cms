@@ -57,14 +57,14 @@ abstract class BaseElementFixture extends DbFixture
      */
     public function load()
     {
-        foreach ($this->loadData($this->dataFile) as $key => $data) {
+        foreach ($this->loadData($this->dataFile) as $key => $attributes) {
             $element = $this->createElement();
 
             // If they want to add a date deleted. Store it but dont set that as an element property
-            $dateDeleted = ArrayHelper::remove($data, 'dateDeleted');
+            $dateDeleted = ArrayHelper::remove($attributes, 'dateDeleted');
 
             // Set the field layout
-            $fieldLayoutType = ArrayHelper::remove($data, 'fieldLayoutType');
+            $fieldLayoutType = ArrayHelper::remove($attributes, 'fieldLayoutType');
             if ($fieldLayoutType) {
                 $fieldLayout = Craft::$app->getFields()->getLayoutByType($fieldLayoutType);
                 if ($fieldLayout) {
@@ -74,11 +74,13 @@ abstract class BaseElementFixture extends DbFixture
                 }
             }
 
-            $this->populateElement($element, $data);
+            $this->populateElement($element, $attributes);
 
             if (!$this->saveElement($element)) {
                 throw new InvalidElementException($element, implode(' ', $element->getErrorSummary(true)));
             }
+
+            $this->afterSaveElement($element, $attributes);
 
             if ($dateDeleted) {
                 // Now that the element exists, update its dateDeleted value
@@ -90,7 +92,7 @@ abstract class BaseElementFixture extends DbFixture
                 Craft::$app->getSearch()->indexElementAttributes($element);
             }
 
-            $this->_elements[$key] = $element;
+            $this->populateLoadedElements($element, $key, $attributes);
         }
     }
 
@@ -139,6 +141,15 @@ abstract class BaseElementFixture extends DbFixture
     }
 
     /**
+     * @param ElementInterface $element
+     * @param array $attributes
+     */
+    protected function populateLoadedElements(ElementInterface $element, int|string $key, array $attributes): void
+    {
+        $this->_elements[$key] = $element;
+    }
+
+    /**
      * Saves an element.
      *
      * @param ElementInterface $element The element to be saved
@@ -147,6 +158,17 @@ abstract class BaseElementFixture extends DbFixture
     protected function saveElement(ElementInterface $element): bool
     {
         return Craft::$app->getElements()->saveElement($element, true, true, false);
+    }
+
+    /**
+     * Performs actions after an element is saved.
+     *
+     * @param ElementInterface $element
+     * @param array $attributes
+     */
+    protected function afterSaveElement(ElementInterface $element, array $attributes): void
+    {
+        // Do nothing by default
     }
 
     /**
