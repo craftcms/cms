@@ -11,6 +11,7 @@ namespace craft\base;
 use Craft;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\Asset;
+use craft\models\FieldLayout;
 use craft\records\Volume as VolumeRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
@@ -82,7 +83,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
      * @inheritdoc
      * @since 3.5.0
      */
-    public function getFieldLayout()
+    public function getFieldLayout(): ?FieldLayout
     {
         /** @var FieldLayoutBehavior $behavior */
         $behavior = $this->getBehavior('fieldLayout');
