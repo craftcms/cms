@@ -380,6 +380,9 @@ Craft.Preview = Garnish.Base.extend({
     updateWidths: function() {
         this.$editorContainer.css('width', this.editorWidthInPx + 'px');
         this.$previewContainer.width(this.getIframeWidth());
+        if (this.currentBreakpoint !== 'desktop') {
+            this.updateDevicePreview();
+        }
     },
 
     _useIframeResizer: function() {
@@ -551,7 +554,7 @@ Craft.Preview = Garnish.Base.extend({
     // TODO: listen to window resize and updateWidths() so we can re-run this
     updateDevicePreview: function()
     {
-        if (this.deviceWidth !== '' && this.deviceHeight !== '') {
+        if (this.currentBreakpoint !== 'desktop') {
 
             // Add the orientation button to the header bar
             this.$previewBtnGroup.append(this.$orientationBtn);
