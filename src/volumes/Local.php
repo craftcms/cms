@@ -10,7 +10,6 @@ use craft\helpers\FileHelper;
 use craft\helpers\Path;
 use craft\helpers\StringHelper;
 use craft\models\VolumeListing;
-use craft\models\VolumeListingMetadata;
 use DirectoryIterator;
 use FilesystemIterator;
 use Generator;

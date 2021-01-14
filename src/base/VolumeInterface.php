@@ -13,7 +13,6 @@ use craft\errors\VolumeObjectExistsException;
 use craft\errors\VolumeObjectNotFoundException;
 use craft\models\FieldLayout;
 use craft\models\VolumeListing;
-use craft\models\VolumeListingMetadata;
 use Generator;
 
 /**
