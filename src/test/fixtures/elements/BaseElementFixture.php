@@ -80,8 +80,6 @@ abstract class BaseElementFixture extends DbFixture
                 throw new InvalidElementException($element, implode(' ', $element->getErrorSummary(true)));
             }
 
-            $this->afterSaveElement($element, $attributes);
-
             if ($dateDeleted) {
                 // Now that the element exists, update its dateDeleted value
                 Db::update(Table::ELEMENTS, [
@@ -92,7 +90,7 @@ abstract class BaseElementFixture extends DbFixture
                 Craft::$app->getSearch()->indexElementAttributes($element);
             }
 
-            $this->populateLoadedElements($element, $key, $attributes);
+            $this->_elements[$key] = $element;
         }
     }
 
@@ -141,15 +139,6 @@ abstract class BaseElementFixture extends DbFixture
     }
 
     /**
-     * @param ElementInterface $element
-     * @param array $attributes
-     */
-    protected function populateLoadedElements(ElementInterface $element, int|string $key, array $attributes): void
-    {
-        $this->_elements[$key] = $element;
-    }
-
-    /**
      * Saves an element.
      *
      * @param ElementInterface $element The element to be saved
@@ -158,17 +147,6 @@ abstract class BaseElementFixture extends DbFixture
     protected function saveElement(ElementInterface $element): bool
     {
         return Craft::$app->getElements()->saveElement($element, true, true, false);
-    }
-
-    /**
-     * Performs actions after an element is saved.
-     *
-     * @param ElementInterface $element
-     * @param array $attributes
-     */
-    protected function afterSaveElement(ElementInterface $element, array $attributes): void
-    {
-        // Do nothing by default
     }
 
     /**
