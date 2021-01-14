@@ -276,6 +276,7 @@
 - Improved the error message that is output when running the `clear-caches/cp-resources` command, if the `@webroot` alias isn’t explicitly set. ([#7286](https://github.com/craftcms/cms/issues/7286))
 - Improved the accessibility of the Login page. ([#7268](https://github.com/craftcms/cms/issues/7268), [#7287](https://github.com/craftcms/cms/issues/7287), [#7288](https://github.com/craftcms/cms/issues/7288))
 - Added `aria-label` or `aria-hidden` attributes to control panel icons, where appropriate. ([#7302](https://github.com/craftcms/cms/pull/7302))
+- Dynamic Assets field subfolder paths can now output `:ignore:` to avoid an invalid subpath error if no segment is intended. ([#7353](https://github.com/craftcms/cms/issues/7353))
 - `craft\i18n\I18N::getFormatter()` now instantiates the formatter via `Craft::createObject()`. ([#7341](https://github.com/craftcms/cms/issues/7341))
 
 ### Fixed
@@ -290,6 +291,7 @@
 - Fixed a bug where user registration forms could get a “Username cannot be blank” error even if the `useEmailAsUsername` config setting was enabled. ([#7357](https://github.com/craftcms/cms/issues/7357))
 - Fixed a bug where clearing control panel resources would delete the `.gitignore` file as well. ([#7361](https://github.com/craftcms/cms/issues/7361))
 - Fixed a bug where auto-created Matrix blocks were taking over the focus when creating a new entry. ([#7363](https://github.com/craftcms/cms/issues/7363))
+- Fixed an error that could occur due to a race condition when generating `CustomFieldBehavior` classes. ([#7379](https://github.com/craftcms/cms/issues/7379))
 
 ## 3.5.17.1 - 2020-12-17
 
