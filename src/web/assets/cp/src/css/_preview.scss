@@ -171,67 +171,72 @@
 
       // 75% zoom positioning (default)
       .lp-preview {
+        display: none !important;
+        top: 50%;
         left: 50%;
-        transform: scale(0.75) translate(-66.666666%, -32px) rotate(0deg);
+        transform: scale(0.75) translate(-66.666666%, calc(-68.4% + 50px)) rotate(0deg);
       }
       .lp-device-mask {
+        top: 50%;
         left: 50%;
-        transform: scale(0.75) translate(-66.666666%, -77px) rotate(0deg);
+        //transform: scale(0.75) translate(-66.666666%, calc(-66.6% + 50px)) rotate(0deg);
       }
+
+
 
       // 100% zoom positioning
-      &.lp-iframe-container--zoom-full {
-        .lp-preview {
-          transform: scale(1) translate(-50%, 89px) rotate(0deg);
-        }
-        .lp-device-mask {
-          transform: scale(1) translate(-50%, 58px) rotate(0deg);
-        }
-      }
-
-      // 50% zoom positioning
-      &.lp-iframe-container--zoom-half {
-        .lp-preview {
-          transform: scale(0.5) translate(-100%, -244px) rotate(0deg);
-        }
-        .lp-device-mask {
-          transform: scale(0.5) translate(-100%, -317px) rotate(0deg);
-        }
-      }
+      //&.lp-iframe-container--zoom-full {
+      //  .lp-preview {
+      //    transform: scale(1) translate(-50%, calc(-51.8% + 50px)) rotate(0deg);
+      //  }
+      //  .lp-device-mask {
+      //    transform: scale(1) translate(-50%, calc(-50% + 50px)) rotate(0deg);
+      //  }
+      //}
+      //
+      //// 50% zoom positioning
+      //&.lp-iframe-container--zoom-half {
+      //  .lp-preview {
+      //    transform: scale(0.5) translate(-100%, calc(-101.9% + 50px)) rotate(0deg);
+      //  }
+      //  .lp-device-mask {
+      //    transform: scale(0.5) translate(-100%, calc(-100% + 50px)) rotate(0deg);
+      //  }
+      //}
 
       // Tablet
       &.lp-iframe-container--tablet {
 
-        .lp-preview {
-          transform: scale(0.75) translate(-66.666666%, -80px) rotate(0deg);
-        }
+        //.lp-preview {
+        //  transform: scale(0.75) translate(-66.666666%, -80px) rotate(0deg);
+        //}
 
         .lp-device-mask {
           background-image: url(../images/live-preview/tablet_top.svg), url(../images/live-preview/tablet_bottom.svg);
           width: 768px;
           height: 1110px;
-          transform: scale(0.75) translate(-66.666666%, -125px) rotate(0deg);
+          //transform: scale(0.75) translate(-66.666666%, -125px) rotate(0deg);
         }
 
         // 100% zoom positioning
-        &.lp-iframe-container--zoom-full {
-          .lp-preview {
-            transform: scale(1) translate(-50%, 89px) rotate(0deg);
-          }
-          .lp-device-mask {
-            transform: scale(1) translate(-50%, 58px) rotate(0deg);
-          }
-        }
-
-        // 50% zoom positioning
-        &.lp-iframe-container--zoom-half {
-          .lp-preview {
-            transform: scale(0.5) translate(-100%, -421px) rotate(0deg);
-          }
-          .lp-device-mask {
-            transform: scale(0.5) translate(-100%, -495px) rotate(0deg);
-          }
-        }
+        //&.lp-iframe-container--zoom-full {
+        //  .lp-preview {
+        //    transform: scale(1) translate(-50%, 89px) rotate(0deg);
+        //  }
+        //  .lp-device-mask {
+        //    transform: scale(1) translate(-50%, 58px) rotate(0deg);
+        //  }
+        //}
+        //
+        //// 50% zoom positioning
+        //&.lp-iframe-container--zoom-half {
+        //  .lp-preview {
+        //    transform: scale(0.5) translate(-100%, -421px) rotate(0deg);
+        //  }
+        //  .lp-device-mask {
+        //    transform: scale(0.5) translate(-100%, -495px) rotate(0deg);
+        //  }
+        //}
       }
     }
 
@@ -241,63 +246,63 @@
       // Mobile (default)
 
       // 75% zoom positioning (default)
-      .lp-preview {
-        transform: scale(0.75) translate(-68.444444%, 175px) rotate(0deg);
-      }
-      .lp-device-mask {
-        transform: scale(0.75) translate(-66.666666%, -77px) rotate(-90deg);
-      }
+      //.lp-preview {
+      //  transform: scale(0.75) translate(-68.444444%, 175px) rotate(0deg);
+      //}
+      //.lp-device-mask {
+      //  transform: scale(0.75) translate(-66.666666%, -77px) rotate(-90deg);
+      //}
 
       // 100% zoom positioning
-      &.lp-iframe-container--zoom-full {
-        .lp-preview {
-          transform: scale(1) translate(-51.777777%, 247px) rotate(0deg);
-        }
-        .lp-device-mask {
-          transform: scale(1) translate(-50%, 58px) rotate(-90deg);
-        }
-      }
-
-      // 50% zoom positioning
-      &.lp-iframe-container--zoom-half {
-        .lp-preview {
-          transform: scale(0.5) translate(-101.77777%, 30px) rotate(0deg);
-        }
-        .lp-device-mask {
-          transform: scale(0.5) translate(-100%, -347px) rotate(-90deg);
-        }
-      }
+      //&.lp-iframe-container--zoom-full {
+      //  .lp-preview {
+      //    transform: scale(1) translate(-51.777777%, 247px) rotate(0deg);
+      //  }
+      //  .lp-device-mask {
+      //    transform: scale(1) translate(-50%, 58px) rotate(-90deg);
+      //  }
+      //}
+      //
+      //// 50% zoom positioning
+      //&.lp-iframe-container--zoom-half {
+      //  .lp-preview {
+      //    transform: scale(0.5) translate(-101.77777%, 30px) rotate(0deg);
+      //  }
+      //  .lp-device-mask {
+      //    transform: scale(0.5) translate(-100%, -347px) rotate(-90deg);
+      //  }
+      //}
 
       // Tablet
       &.lp-iframe-container--tablet {
 
-        .lp-preview {
-          transform: scale(0.75) translate(-67.88888%, 103px) rotate(0deg);
-        }
-
-        .lp-device-mask {
-          transform: scale(0.75) translate(-66.666666%, -125px) rotate(-90deg);
-        }
-
-        // 100% zoom positioning
-        &.lp-iframe-container--zoom-full {
-          .lp-preview {
-            transform: scale(1) translate(-51.111111%, 229px) rotate(0deg);
-          }
-          .lp-device-mask {
-            transform: scale(1) translate(-50%, 58px) rotate(-90deg);
-          }
-        }
-
-        // 50% zoom positioning
-        &.lp-iframe-container--zoom-half {
-          .lp-preview {
-            transform: scale(0.5) translate(-101.15%, -153px) rotate(0deg);
-          }
-          .lp-device-mask {
-            transform: scale(0.5) translate(-100%, -495px) rotate(-90deg);
-          }
-        }
+        //.lp-preview {
+        //  transform: scale(0.75) translate(-67.88888%, 103px) rotate(0deg);
+        //}
+        //
+        //.lp-device-mask {
+        //  transform: scale(0.75) translate(-66.666666%, -125px) rotate(-90deg);
+        //}
+        //
+        //// 100% zoom positioning
+        //&.lp-iframe-container--zoom-full {
+        //  .lp-preview {
+        //    transform: scale(1) translate(-51.111111%, 229px) rotate(0deg);
+        //  }
+        //  .lp-device-mask {
+        //    transform: scale(1) translate(-50%, 58px) rotate(-90deg);
+        //  }
+        //}
+        //
+        //// 50% zoom positioning
+        //&.lp-iframe-container--zoom-half {
+        //  .lp-preview {
+        //    transform: scale(0.5) translate(-101.15%, -153px) rotate(0deg);
+        //  }
+        //  .lp-device-mask {
+        //    transform: scale(0.5) translate(-100%, -495px) rotate(-90deg);
+        //  }
+        //}
       }
     }
 

@@ -186,9 +186,9 @@ Craft.Preview = Garnish.Base.extend({
                 this.$zoomMenu = $('<div/>', {'class': 'menu'});
                 const $zoomUl = $('<ul />', {'class': 'padded'}).appendTo(this.$zoomMenu);
 
-                $('<li><a data-zoom="100">100%</a></li>').appendTo($zoomUl);
-                $('<li><a data-zoom="75" class="sel">75%</a></li>').appendTo($zoomUl);
-                $('<li><a data-zoom="50">50%</a></li>').appendTo($zoomUl);
+                $('<li><a data-zoom="1">100%</a></li>').appendTo($zoomUl);
+                $('<li><a data-zoom="0.75" class="sel">75%</a></li>').appendTo($zoomUl);
+                $('<li><a data-zoom="0.5">50%</a></li>').appendTo($zoomUl);
 
                 // Orientation toggle
                 this.$orientationBtn = $('<div/>', {
@@ -597,8 +597,10 @@ Craft.Preview = Garnish.Base.extend({
 
     },
 
+    // TODO This should be a general method that adjusts zoom, orientation and breakpoint
     switchZoom: function(zoom)
     {
+        // TODO: This should be something like isDeviceAnimating
         if (this.isZooming) {
             return;
         }
@@ -615,25 +617,14 @@ Craft.Preview = Garnish.Base.extend({
         clearTimeout(this.zoomingTimeout);
         this.$iframeContainer.addClass('lp-iframe-container--zooming');
 
-        // Toggle the container class
-        switch (zoom) {
+        // Figure out the css
+        const translateBase = -((100/zoom)/2);
+        const orientation = Craft.getLocalStorage('LivePreview.orientation');
+        const rotation = orientation === 'landscape' ? '-90deg' : '0deg';
 
-            case 100:
-                this.$iframeContainer.removeClass('lp-iframe-container--zoom-half');
-                this.$iframeContainer.addClass('lp-iframe-container--zoom-full');
-                break;
-
-            case 50:
-                this.$iframeContainer.removeClass('lp-iframe-container--zoom-full');
-                this.$iframeContainer.addClass('lp-iframe-container--zoom-half');
-                break;
-
-            // Default is 75% as that gives the best fit for most laptop and desktop screens
-            default:
-                this.$iframeContainer.removeClass('lp-iframe-container--zoom-full');
-                this.$iframeContainer.removeClass('lp-iframe-container--zoom-half');
-
-        }
+        this.$deviceMask.css({
+            transform: 'scale('+zoom+') translate('+translateBase+'%, calc('+translateBase+'% + 50px)) rotate('+rotation+')'
+        });
 
         this.zoomingTimeout = setTimeout($.proxy(function() {
 
