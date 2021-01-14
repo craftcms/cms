@@ -316,7 +316,7 @@ class Assets extends Component
             if ($folder) {
                 if ($deleteDir) {
                     $volume = $folder->getVolume();
-                    $volume->deleteDir($folder->path);
+                    $volume->deleteDirectory($folder->path);
                 }
             }
         }

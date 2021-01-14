@@ -237,6 +237,15 @@ abstract class FlysystemVolume extends Volume
      */
     public function deleteDir(string $path)
     {
+        Craft::$app->getDeprecator()->log('deleteDir', "The `deleteDir()` method has been deprecated. Use `deleteDirectory()` instead.");
+        $this->deleteDirectory($path);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function deleteDirectory(string $path)
+    {
         try {
             $success = $this->filesystem()->deleteDir($path);
         } catch (\Throwable $e) {
@@ -285,7 +294,7 @@ abstract class FlysystemVolume extends Volume
         // The files are moved, but the directories remain. Delete them.
         foreach ($directoryList as $dir) {
             try {
-                $this->deleteDir($dir);
+                $this->deleteDirectory($dir);
             } catch (\Throwable $e) {
                 // This really varies between volume types and whether folders are virtual or real
                 // So just in case, catch the exception, log it and then move on

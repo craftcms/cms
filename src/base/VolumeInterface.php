@@ -179,8 +179,17 @@ interface VolumeInterface extends SavableComponentInterface
      *
      * @param string $path The path of the directory, relative to the source’s root
      * @throws VolumeException if something goes wrong
+     * @deprecated in 3.6.0. Use [[deleteDirectory()]] instead.
      */
     public function deleteDir(string $path);
+
+    /**
+     * Deletes a directory.
+     *
+     * @param string $path The path of the directory, relative to the source’s root
+     * @throws VolumeException if something goes wrong
+     */
+    public function deleteDirectory(string $path);
 
     /**
      * Renames a directory.
