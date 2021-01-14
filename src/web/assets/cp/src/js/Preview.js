@@ -573,8 +573,8 @@ Craft.Preview = Garnish.Base.extend({
             let hZoom = 1;
             let wZoom = 1;
             let zoom = 1;
-            let previewHeight = (this.$previewContainer.height() - 51) - 24; // 51px for the header bar and 24px clearance
-            let previewWidth = this.$previewContainer.width() - 24;
+            let previewHeight = (this.$previewContainer.height() - 51) - 48; // 51px for the header bar and 24px clearance
+            let previewWidth = this.$previewContainer.width() - 48;
             let maskHeight = this.deviceMaskDimensions[this.currentBreakpoint].height;
             let maskWidth = this.deviceMaskDimensions[this.currentBreakpoint].width;
 
