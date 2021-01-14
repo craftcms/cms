@@ -3473,7 +3473,7 @@ body.rtl .lp-editor-container .lp-draghandle { left: -2px; }
 
 .lp-preview-container .lp-preview-header .btngroup { margin-bottom: 0; margin-right: 24px; }
 
-.lp-preview-container .lp-preview-header + .lp-iframe-container { position: relative; top: 51px; height: calc(100% - 51px); width: 100%; }
+.lp-preview-container .lp-preview-header + .lp-iframe-container { position: relative; top: 51px; height: calc(100% - 51px); width: 100%; background-color: #e4edf6; }
 
 .lp-preview-container .lp-preview-header .lp-breakpoint-btn { cursor: pointer; opacity: 0.65; -o-transition-duration: .1s; transition-duration: .1s; }
 
