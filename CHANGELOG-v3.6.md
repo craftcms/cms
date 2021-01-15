@@ -150,6 +150,7 @@
 - `craft\models\Site::getBaseUrl()` now has a `$parse` argument, which can be set to `false` to return the raw (unparsed) base URL.
 - `craft\services\Composer::install()` no longer has an `$allowlist` argument.
 - `craft\services\Gql::getValidationRules()` now has an `$isIntrospectionQuery` argument.
+- `Craft.formatNumber()` and other D3-based number formatting now uses a dynamically-generated locale definition based on info pulled from the application’s formatting locale. ([#7341](https://github.com/craftcms/cms/issues/7341))
 - Craft no longer reports PHP deprecation errors.
 - GraphQL queries now support eager-loading for arguments provided as input objects.
 - Made it easier to extend Craft’s Codeception testing module with custom code. ([#7339](https://github.com/craftcms/cms/issues/7339))

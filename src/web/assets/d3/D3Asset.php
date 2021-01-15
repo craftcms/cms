@@ -10,6 +10,8 @@ namespace craft\web\assets\d3;
 use Craft;
 use craft\helpers\ChartHelper;
 use craft\helpers\Json;
+use craft\i18n\Locale;
+use craft\volumes\Local;
 use craft\web\AssetBundle;
 use craft\web\View;
 
@@ -51,10 +53,35 @@ class D3Asset extends AssetBundle
         parent::registerAssetFiles($view);
 
         // Add locale definition JS variables
-        $libPath = Craft::getAlias('@lib');
-        $js = 'window.d3FormatLocaleDefinition = ' . $this->formatDef($libPath . '/d3-format') . ';';
-        $js .= 'window.d3TimeFormatLocaleDefinition = ' . $this->formatDef($libPath . '/d3-time-format') . ';';
-        $js .= 'window.d3Formats = ' . Json::encode(ChartHelper::formats()) . ';';
+        $locale = Craft::$app->getFormattingLocale();
+        $formatter = Craft::$app->getFormatter();
+
+        // https://github.com/d3/d3-format#formatLocale
+        $localeDef = [
+            'decimal' => $locale->getNumberSymbol(Locale::SYMBOL_DECIMAL_SEPARATOR),
+            'thousands' => $locale->getNumberSymbol(Locale::SYMBOL_GROUPING_SEPARATOR),
+            'grouping' => [3],
+            'currency' => $locale->getCurrencySymbol('USD'),
+            'numerals' => [
+                $formatter->asDecimal(0),
+                $formatter->asDecimal(1),
+                $formatter->asDecimal(2),
+                $formatter->asDecimal(3),
+                $formatter->asDecimal(4),
+                $formatter->asDecimal(5),
+                $formatter->asDecimal(6),
+                $formatter->asDecimal(7),
+                $formatter->asDecimal(8),
+                $formatter->asDecimal(9),
+            ],
+            'percent' => $locale->getNumberSymbol(Locale::SYMBOL_PERCENT),
+            'minus' => $locale->getNumberSymbol(Locale::SYMBOL_MINUS_SIGN),
+            'nan' => $locale->getNumberSymbol(Locale::SYMBOL_NAN),
+        ];
+
+        $js = 'window.d3FormatLocaleDefinition = ' . Json::encode($localeDef) . ";\n" .
+            'window.d3TimeFormatLocaleDefinition = ' . $this->formatDef(Craft::getAlias('@lib/d3-time-format')) . ";\n" .
+            'window.d3Formats = ' . Json::encode(ChartHelper::formats()) . ';';
 
         $view->registerJs($js, View::POS_BEGIN);
     }

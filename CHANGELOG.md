@@ -37,6 +37,7 @@
 - The `currency`, `filesize`, `number`, `percentage`, and `timestamp` Twig filters now return the passed-in value verbatim if it wasn’t a valid number.
 - Craft no longer reports user deprecation errors logged with `E_USER_DEPRECATED`.
 - `craft\base\ApplicationTrait::getLocale()` now returns the same locale that the application language is set to.
+- `Craft.formatNumber()` and other D3-based number formatting now uses a dynamically-generated locale definition based on info pulled from the application’s formatting locale. ([#7341](https://github.com/craftcms/cms/issues/7341))
 - Made it easier to extend Craft’s Codeception testing module with custom code. ([#7339](https://github.com/craftcms/cms/issues/7339))
 - Updated Yii to 2.0.40.
 
