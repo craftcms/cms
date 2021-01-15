@@ -613,7 +613,7 @@ Craft.Preview = Garnish.Base.extend({
         });
 
         // Ping the iframe so iframeResizer gets reset
-        this.updateIframe();
+        this.updateIframe(true);
 
         // After the animation duration we can update the iframe sizes and show it
         if (this.deviceAnimationTimeout) {
