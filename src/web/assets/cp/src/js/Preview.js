@@ -200,7 +200,7 @@ Craft.Preview = Garnish.Base.extend({
                 this.deviceOrientation = Craft.getLocalStorage('LivePreview.orientation');
 
                 // Breakpoint button click handlers
-                this.addListener($('.lp-breakpoint-btn', this.$breakpointButtons), 'activate', 'switchBreakpoint');
+                this.addListener($('.lp-breakpoint-btn', this.$breakpointButtons), 'click', 'switchBreakpoint');
 
                 // Device mask
                 this.$deviceMask = $('<div/>', {
