@@ -146,13 +146,13 @@
       width: 100%;
       background-color: $grey100;
 
-      // iframe
-      .lp-preview {
+      // Preview container
+      .lp-device-preview-container {
         position: absolute;
         top: 50%;
         left: 50%;
         z-index: 2;
-        min-height: auto;
+        overflow: auto;
         opacity: 1;
         transition: opacity .3s;
       }
@@ -189,7 +189,7 @@
       }
 
       // Hide the iframe whilst animating
-      .lp-preview {
+      .lp-device-preview-container {
         opacity: 0;
         transition: opacity 0s,
       }

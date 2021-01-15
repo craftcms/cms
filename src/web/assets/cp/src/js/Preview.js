@@ -20,6 +20,7 @@ Craft.Preview = Garnish.Base.extend({
     $breakpointButtons: null,
     $orientationBtn: null,
     $deviceMask: null,
+    $devicePreviewContainer: null,
     $iframe: null,
     iframeLoaded: false,
     $tempInput: null,
@@ -386,10 +387,6 @@ Craft.Preview = Garnish.Base.extend({
     },
 
     _useIframeResizer: function() {
-        if (this.currentBreakpoint !== 'desktop') {
-            return false;
-        }
-
         return Craft.previewIframeResizerOptions !== false;
     },
 
@@ -453,6 +450,24 @@ Craft.Preview = Garnish.Base.extend({
                 $iframe.appendTo(this.$iframeContainer);
             }
 
+            // If we’re on a device breakpoint then wrap the iframe in our own container
+            // so we can keep all the iFrameResizer() stuff working
+            // TODO
+            if (this.currentBreakpoint !== 'desktop') {
+
+                console.log('updateIframe:in');
+                if (!this.$devicePreviewContainer) {
+                    console.log('updateIframe:run');
+                    this.$devicePreviewContainer = $('<div/>', {
+                        'class': 'lp-device-preview-container'
+                    });
+                    $iframe.wrap('<div class="lp-device-preview-container"></div>');
+                    this.$devicePreviewContainer = this.$iframeContainer.find('.lp-device-preview-container');
+                }
+            }
+
+            console.log('updateIframe:post');
+
             // Keep the iframe height consistent with its content
             if (this._useIframeResizer()) {
                 if (!resetScroll && this.iframeHeight !== null) {
@@ -483,7 +498,9 @@ Craft.Preview = Garnish.Base.extend({
             this.url = url;
             this.$iframe = $iframe;
 
-            this.updateDevicePreview();
+            if (this.currentBreakpoint !== 'desktop') {
+                this.updateDevicePreview();
+            }
 
             this.trigger('afterUpdateIframe', {
                 previewTarget: this.draftEditor.settings.previewTargets[this.activeTarget],
@@ -510,8 +527,12 @@ Craft.Preview = Garnish.Base.extend({
         $('.lp-breakpoint-btn', this.$breakpointButtons).removeClass('lp-breakpoint-btn--active');
         $btn.addClass('lp-breakpoint-btn--active');
 
-        // Update the device preview
-        this.updateDevicePreview();
+        // Update or reset
+        if (this.currentBreakpoint === 'desktop') {
+            this.resetDevicePreview();
+        } else {
+            this.updateDevicePreview();
+        }
     },
 
     switchOrientation: function(ev)
@@ -536,107 +557,100 @@ Craft.Preview = Garnish.Base.extend({
 
     updateDevicePreview: function()
     {
-        if (this.currentBreakpoint !== 'desktop') {
-
-            if (this.isDeviceUpdating) {
-                return false;
-            }
-
-            this.isDeviceUpdating = true;
-            this.$iframeContainer.addClass('lp-iframe-container--animating');
-
-            // Add the orientation button to the header bar
-            this.$previewBtnGroup.append(this.$orientationBtn);
-
-            // Trigger the resized css mods
-            this.$iframeContainer.addClass('lp-iframe-container--resized');
-
-            // Add the tablet class if needed
-            if (this.currentBreakpoint === 'tablet') {
-                this.$iframeContainer.addClass('lp-iframe-container--tablet');
-            } else {
-                this.$iframeContainer.removeClass('lp-iframe-container--tablet');
-            }
-
-            // Figure out the best zoom
-            let hZoom = 1;
-            let wZoom = 1;
-            let zoom = 1;
-            let previewHeight = (this.$previewContainer.height() - 50) - 48; // 50px for the header bar and 24px clearance
-            let previewWidth = this.$previewContainer.width() - 48;
-            let maskHeight = this.deviceMaskDimensions[this.currentBreakpoint].height;
-            let maskWidth = this.deviceMaskDimensions[this.currentBreakpoint].width;
-
-            if (this.deviceOrientation === 'landscape') {
-                if (previewWidth < maskHeight) {
-                    hZoom = previewWidth / maskHeight;
-                }
-                if (previewHeight < maskWidth) {
-                    wZoom = previewHeight / maskWidth;
-                }
-            } else {
-                if (previewHeight < maskHeight) {
-                    hZoom = previewHeight / maskHeight;
-                }
-                if (previewWidth < maskWidth) {
-                    wZoom = previewWidth / maskWidth;
-                }
-            }
-
-            zoom = hZoom;
-            if (wZoom < hZoom) {
-                zoom = wZoom;
-            }
-
-            // Figure out the css values
-            const translate = -((100/zoom)/2);
-            const rotationDeg = this.deviceOrientation === 'landscape' ? '-90deg' : '0deg';
-
-            // Apply first to the device mask
-            this.$deviceMask.css({
-                width: this.deviceMaskDimensions[this.currentBreakpoint].width + 'px',
-                height: this.deviceMaskDimensions[this.currentBreakpoint].height + 'px',
-                transform: 'scale('+zoom+') translate('+translate+'%, '+translate+'%) rotate('+rotationDeg+')'
-            });
-
-            // Ping the iframe so iframeResizer gets reset
-            this.updateIframe(true);
-
-            // After the animation duration we can update the iframe sizes and show it
-            if (this.deviceAnimationTimeout) {
-                clearTimeout(this.deviceAnimationTimeout);
-            }
-            this.deviceAnimationTimeout = setTimeout($.proxy(function() {
-
-                // Then make the size change to the iframe
-                if (this.deviceOrientation === 'landscape') {
-                    this.$iframe.css({
-                        width: this.deviceHeight + 'px',
-                        height: this.deviceWidth + 'px',
-                        transform: 'scale('+zoom+') translate('+translate+'%, '+translate+'%)',
-                        marginTop: 0,
-                        marginLeft: '-' + (12*zoom) + 'px'
-                    });
-                } else {
-                    this.$iframe.css({
-                        width: this.deviceWidth + 'px',
-                        height: this.deviceHeight + 'px',
-                        transform: 'scale('+zoom+') translate('+translate+'%, '+translate+'%)',
-                        marginTop: '-' + (12*zoom) + 'px',
-                        marginLeft: 0
-                    });
-                }
-
-                // Remove the animating class and show the iframe
-                this.$iframeContainer.removeClass('lp-iframe-container--animating');
-                this.isDeviceUpdating = false;
-
-            }, this), 300);
-
-        } else {
-            // Desktop
-            this.resetDevicePreview();
+        if (this.isDeviceUpdating) {
+            return false;
         }
+
+        this.isDeviceUpdating = true;
+        this.$iframeContainer.addClass('lp-iframe-container--animating');
+
+        // Add the orientation button to the header bar
+        this.$previewBtnGroup.append(this.$orientationBtn);
+
+        // Trigger the resized css mods
+        this.$iframeContainer.addClass('lp-iframe-container--resized');
+
+        // Add the tablet class if needed
+        if (this.currentBreakpoint === 'tablet') {
+            this.$iframeContainer.addClass('lp-iframe-container--tablet');
+        } else {
+            this.$iframeContainer.removeClass('lp-iframe-container--tablet');
+        }
+
+        // Figure out the best zoom
+        let hZoom = 1;
+        let wZoom = 1;
+        let zoom = 1;
+        let previewHeight = (this.$previewContainer.height() - 50) - 48; // 50px for the header bar and 24px clearance
+        let previewWidth = this.$previewContainer.width() - 48;
+        let maskHeight = this.deviceMaskDimensions[this.currentBreakpoint].height;
+        let maskWidth = this.deviceMaskDimensions[this.currentBreakpoint].width;
+
+        if (this.deviceOrientation === 'landscape') {
+            if (previewWidth < maskHeight) {
+                hZoom = previewWidth / maskHeight;
+            }
+            if (previewHeight < maskWidth) {
+                wZoom = previewHeight / maskWidth;
+            }
+        } else {
+            if (previewHeight < maskHeight) {
+                hZoom = previewHeight / maskHeight;
+            }
+            if (previewWidth < maskWidth) {
+                wZoom = previewWidth / maskWidth;
+            }
+        }
+
+        zoom = hZoom;
+        if (wZoom < hZoom) {
+            zoom = wZoom;
+        }
+
+        // Figure out the css values
+        const translate = -((100/zoom)/2);
+        const rotationDeg = this.deviceOrientation === 'landscape' ? '-90deg' : '0deg';
+
+        // Apply first to the device mask
+        this.$deviceMask.css({
+            width: this.deviceMaskDimensions[this.currentBreakpoint].width + 'px',
+            height: this.deviceMaskDimensions[this.currentBreakpoint].height + 'px',
+            transform: 'scale('+zoom+') translate('+translate+'%, '+translate+'%) rotate('+rotationDeg+')'
+        });
+
+        // Ping the iframe so iframeResizer gets reset
+        this.updateIframe();
+
+        // After the animation duration we can update the iframe sizes and show it
+        if (this.deviceAnimationTimeout) {
+            clearTimeout(this.deviceAnimationTimeout);
+        }
+        this.deviceAnimationTimeout = setTimeout($.proxy(function() {
+
+            // Then make the size change to the preview container
+            if (this.deviceOrientation === 'landscape') {
+                this.$devicePreviewContainer.css({
+                    width: this.deviceHeight + 'px',
+                    height: this.deviceWidth + 'px',
+                    transform: 'scale('+zoom+') translate('+translate+'%, '+translate+'%)',
+                    marginTop: 0,
+                    marginLeft: '-' + (12*zoom) + 'px'
+                });
+            } else {
+                this.$devicePreviewContainer.css({
+                    width: this.deviceWidth + 'px',
+                    height: this.deviceHeight + 'px',
+                    transform: 'scale('+zoom+') translate('+translate+'%, '+translate+'%)',
+                    marginTop: '-' + (12*zoom) + 'px',
+                    marginLeft: 0
+                });
+            }
+
+            // Remove the animating class and show the iframe
+            this.$iframeContainer.removeClass('lp-iframe-container--animating');
+            this.isDeviceUpdating = false;
+
+        }, this), 300);
     },
 
     resetDevicePreview: function()
@@ -645,19 +659,19 @@ Craft.Preview = Garnish.Base.extend({
             clearTimeout(this.deviceAnimationTimeout);
         }
         this.currentBreakpoint = 'desktop';
-        $('.lp-breakpoint-btn', this.$breakpointButtons).removeClass('lp-breakpoint-btn--active');
+        this.$breakpointButtons.find('.lp-breakpoint-btn').removeClass('lp-breakpoint-btn--active');
         this.$breakpointButtons.find('.lp-breakpoint-btn--desktop').addClass('lp-breakpoint-btn--active');
         this.$orientationBtn.detach();
         this.$iframeContainer.removeClass('lp-iframe-container--animating');
         this.$iframeContainer.removeClass('lp-iframe-container--resized');
         this.$iframeContainer.removeClass('lp-iframe-container--tablet');
-        this.$iframe.css({
-            width: '100%',
-            height: '100%',
-            transform: 'none',
-            marginTop: 0,
-            marginLeft: 0
-        });
+
+        // Clone the iframe then remove our wrapper and re-add
+        this.$iframe = this.$devicePreviewContainer.find('.lp-preview').clone();
+        this.$devicePreviewContainer.detach();
+        this.$devicePreviewContainer = null;
+        this.$iframe.appendTo(this.$iframeContainer);
+        this.updateIframe();
         this.isDeviceUpdating = false;
     },
 
