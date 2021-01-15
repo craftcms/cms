@@ -452,12 +452,8 @@ Craft.Preview = Garnish.Base.extend({
 
             // If we’re on a device breakpoint then wrap the iframe in our own container
             // so we can keep all the iFrameResizer() stuff working
-            // TODO
             if (this.currentBreakpoint !== 'desktop') {
-
-                console.log('updateIframe:in');
                 if (!this.$devicePreviewContainer) {
-                    console.log('updateIframe:run');
                     this.$devicePreviewContainer = $('<div/>', {
                         'class': 'lp-device-preview-container'
                     });
@@ -466,7 +462,8 @@ Craft.Preview = Garnish.Base.extend({
                 }
             }
 
-            console.log('updateIframe:post');
+            // TODO: for some reason the iframe disappears briefly and iFrameResize throws
+            //       some warnings
 
             // Keep the iframe height consistent with its content
             if (this._useIframeResizer()) {
