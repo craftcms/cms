@@ -511,9 +511,15 @@ Craft.Preview = Garnish.Base.extend({
         }
 
         const $btn = $(ev.target);
+        const newBreakpoint = $btn.data('breakpoint');
 
-        // Store the breakpoint details
-        this.currentBreakpoint = $btn.data('breakpoint');
+        // Bail if we’re just smashing the same button
+        if (newBreakpoint === this.currentBreakpoint) {
+            return false;
+        }
+
+        // Store breakpoint data
+        this.currentBreakpoint = newBreakpoint;
         this.deviceWidth = $btn.data('width');
         this.deviceHeight = $btn.data('height');
 
