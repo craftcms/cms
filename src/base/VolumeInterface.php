@@ -75,7 +75,6 @@ interface VolumeInterface extends SavableComponentInterface
      * @param string $path The path of the file, relative to the source’s root
      * @param resource $stream The stream to file
      * @param array $config Additional config options to pass on
-     * @return void
      * @throws VolumeObjectExistsException if a file already exists at the path on the Volume
      * @throws VolumeException if something else goes wrong
      * @deprecated in 4.0.0. Use `writeFileFromStream()` instead.
@@ -88,7 +87,6 @@ interface VolumeInterface extends SavableComponentInterface
      * @param string $path The path of the file, relative to the source’s root
      * @param resource $stream The new contents of the file as a stream
      * @param array $config Additional config options to pass on
-     * @return void
      * @throws VolumeObjectNotFoundException if the file to be updated cannot be found
      * @throws VolumeException if something else goes wrong
      * @deprecated in 4.0.0.  Use `writeFileFromStream()` instead.
@@ -101,7 +99,6 @@ interface VolumeInterface extends SavableComponentInterface
      * @param string $path The path of the file, relative to the source’s root
      * @param resource $stream The new contents of the file as a stream
      * @param array $config Additional config options to pass on
-     * @return void
      * @throws VolumeObjectNotFoundException if the file to be updated cannot be found
      * @throws VolumeException if something else goes wrong
      */
@@ -119,7 +116,6 @@ interface VolumeInterface extends SavableComponentInterface
      * Deletes a file.
      *
      * @param string $path The path of the file, relative to the source’s root
-     * @return void
      * @throws VolumeException if something goes wrong
      */
     public function deleteFile(string $path): void;
@@ -129,7 +125,6 @@ interface VolumeInterface extends SavableComponentInterface
      *
      * @param string $path The old path of the file, relative to the source’s root
      * @param string $newPath The new path of the file, relative to the source’s root
-     * @return void
      * @throws VolumeObjectExistsException if a file with such a name exists already
      * @throws VolumeObjectNotFoundException if the file to be renamed cannot be found
      * @throws VolumeException if something else goes wrong
@@ -141,7 +136,6 @@ interface VolumeInterface extends SavableComponentInterface
      *
      * @param string $path The path of the file, relative to the source’s root
      * @param string $newPath The path of the new file, relative to the source’s root
-     * @return void
      * @throws VolumeObjectExistsException if a file with such a name exists already
      * @throws VolumeObjectNotFoundException if the file to be renamed cannot be found
      * @throws VolumeException if something else goes wrong
@@ -181,7 +175,6 @@ interface VolumeInterface extends SavableComponentInterface
      *
      * @param string $path The path of the directory, relative to the source’s root
      * @param array $config The config to use
-     * @return void
      * @throws VolumeObjectExistsException if a directory with such name already exists
      * @throws VolumeException if something goes wrong
      */
@@ -191,7 +184,6 @@ interface VolumeInterface extends SavableComponentInterface
      * Deletes a directory.
      *
      * @param string $path The path of the directory, relative to the source’s root
-     * @return void
      * @throws VolumeException if something goes wrong
      */
     public function deleteDirectory(string $path): void;
@@ -201,7 +193,6 @@ interface VolumeInterface extends SavableComponentInterface
      *
      * @param string $path The path of the directory, relative to the source’s root
      * @param string $newName The new path of the directory, relative to the source’s root
-     * @return void
      * @throws VolumeObjectNotFoundException if a directory with such name already exists
      * @throws VolumeObjectExistsException if a directory with such name already exists
      * @throws VolumeException if something else goes wrong
