@@ -31,6 +31,13 @@
       }
     }
 
+    @supports (-moz-appearance:none) {
+      & {
+        position: relative;
+        z-index: 1;
+      }
+    }
+
     .btn, .spinner, .checkmark-icon {
       margin-bottom: 0;
     }
@@ -79,11 +86,60 @@
   }
 
   .lp-preview-header {
-    justify-content: center;
+    display: grid;
+    grid-template-columns: 1fr 124px 1fr;
+    grid-gap: 24px;
+
+    @supports (-moz-appearance:none) {
+      background-color: transparentize($grey100, 0.25);
+    }
+
+    > .btn {
+      &:first-child {
+        justify-self: start;
+      }
+      &:last-child {
+        justify-self: end;
+      }
+    }
 
     & + .lp-iframe-container {
       padding-top: 50px;
+
+      @supports (-moz-appearance:none) {
+        padding-top: 0;
+      }
     }
+
+    .lp-device-type {
+      .btn {
+        &::before {
+          width: 27px;
+          height: 22px;
+          display: block;
+          content: '';
+          background-size: contain;
+          background-repeat: no-repeat;
+          background-position: center;
+          transition-duration: .3s;
+        }
+
+        // SVGs
+        &.lp-device-type-btn--phone::before {
+          background-image: url(../images/preview/icon-phone.svg);
+        }
+        &.lp-device-type-btn--tablet::before {
+          background-image: url(../images/preview/icon-tablet.svg);
+        }
+        &.lp-device-type-btn--desktop::before {
+          background-image: url(../images/preview/icon-desktop.svg);
+        }
+      }
+    }
+  }
+
+  .lp-device-mask {
+    display: none;
   }
 
   .lp-iframe-container {
@@ -94,6 +150,71 @@
       display: block;
       width: 100%;
       min-height: 100%;
+    }
+
+    &--has-device-preview {
+      flex: none;
+      padding-top: 0 !important;
+      position: relative;
+      top: 50px;
+      height: calc(100% - 50px);
+      width: 100%;
+      background-color: $grey100;
+
+      @supports (-moz-appearance:none) {
+        top: 0;
+      }
+
+      // Preview container
+      .lp-device-preview-container {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        z-index: 2;
+        overflow: auto;
+        opacity: 1;
+        transition: opacity .3s;
+      }
+
+      // Device mask
+      .lp-device-mask {
+        display: block;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        z-index: 1;
+        background-image: url(../images/preview/chrome-phone-top.svg), url(../images/preview/chrome-phone-bottom.svg);
+        background-position: top center, bottom center;
+        background-repeat: no-repeat;
+        background-size: contain;
+        background-color: #fff;
+        box-shadow: 0 0 58px rgba(6,67,117,.3);
+        border-radius: 18px;
+      }
+
+      // Tablet
+      &.lp-iframe-container--tablet {
+        .lp-device-mask {
+          background-image: url(../images/preview/chrome-tablet-top.svg), url(../images/preview/chrome-tablet-bottom.svg);
+        }
+      }
+    }
+
+    // Animate only the transform (scale, translate and rotate)
+    &--animating {
+      .lp-device-mask {
+        transition-duration: .3s;
+        transition-property: transform;
+      }
+    }
+
+    // Hide the iframe whilst animating or updating
+    &--animating,
+    &--updating {
+      .lp-device-preview-container {
+        opacity: 0;
+        transition: opacity 0s,
+      }
     }
   }
 }
