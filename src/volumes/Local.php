@@ -213,7 +213,13 @@ class Local extends Volume implements LocalVolumeInterface
      */
     public function fileExists(string $path): bool
     {
-        return file_exists($this->prefixPath($path));
+        try {
+            return file_exists($this->prefixPath($path));
+        } catch (VolumeException $exception) {
+            Craft::$app->getErrorHandler()->logException($exception);
+        }
+
+        return false;
     }
 
     /**
