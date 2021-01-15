@@ -111,35 +111,30 @@
       }
     }
 
-    .lp-breakpoint-btn {
-      cursor: pointer;
-      opacity: 0.65;
-      transition-duration: .1s;
+    .lp-device-type {
+      .btn {
+        &::before {
+          width: 27px;
+          height: 22px;
+          display: block;
+          content: '';
+          background-size: contain;
+          background-repeat: no-repeat;
+          background-position: center;
+          transition-duration: .3s;
+        }
 
-      &--active,
-      &:hover {
-        opacity: 1;
+        // SVGs
+        &.lp-device-type-btn--phone::before {
+          background-image: url(../images/preview/icon-phone.svg);
+        }
+        &.lp-device-type-btn--tablet::before {
+          background-image: url(../images/preview/icon-tablet.svg);
+        }
+        &.lp-device-type-btn--desktop::before {
+          background-image: url(../images/preview/icon-desktop.svg);
+        }
       }
-
-      &::before {
-        width: 34px;
-        height: 28px;
-        display: inline-block;
-        content: ' ';
-        background-size: contain;
-        background-repeat: no-repeat;
-        background-position: center;
-        transition-duration: .3s;
-      }
-
-      // SVGs
-      &--mobile::before  { background-image: url(../images/live-preview/mobile.svg);   }
-      &--tablet::before  { background-image: url(../images/live-preview/tablet.svg);   }
-      &--desktop::before { background-image: url(../images/live-preview/desktop.svg);   }
-
-      // Fix spacing
-      &--tablet { margin-right: 6px; }
-      &--desktop { margin-right: 16px; }
     }
   }
 
@@ -188,7 +183,7 @@
         top: 50%;
         left: 50%;
         z-index: 1;
-        background-image: url(../images/live-preview/mobile_top.svg), url(../images/live-preview/mobile_bottom.svg);
+        background-image: url(../images/preview/chrome-phone-top.svg), url(../images/preview/chrome-phone-bottom.svg);
         background-position: top center, bottom center;
         background-repeat: no-repeat;
         background-size: contain;
@@ -200,7 +195,7 @@
       // Tablet
       &.lp-iframe-container--tablet {
         .lp-device-mask {
-          background-image: url(../images/live-preview/tablet_top.svg), url(../images/live-preview/tablet_bottom.svg);
+          background-image: url(../images/preview/chrome-tablet-top.svg), url(../images/preview/chrome-tablet-bottom.svg);
         }
       }
     }

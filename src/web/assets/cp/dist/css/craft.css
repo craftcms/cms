@@ -3483,21 +3483,13 @@ body.rtl .lp-editor-container .lp-draghandle { left: -2px; }
 
 @supports (-moz-appearance: none) { .lp-preview-container .lp-preview-header + .lp-iframe-container { padding-top: 0; } }
 
-.lp-preview-container .lp-preview-header .lp-breakpoint-btn { cursor: pointer; opacity: 0.65; -o-transition-duration: .1s; transition-duration: .1s; }
+.lp-preview-container .lp-preview-header .lp-device-type .btn::before { width: 27px; height: 22px; display: block; content: ''; -o-background-size: contain; background-size: contain; background-repeat: no-repeat; background-position: center; -o-transition-duration: .3s; transition-duration: .3s; }
 
-.lp-preview-container .lp-preview-header .lp-breakpoint-btn--active, .lp-preview-container .lp-preview-header .lp-breakpoint-btn:hover { opacity: 1; }
+.lp-preview-container .lp-preview-header .lp-device-type .btn.lp-device-type-btn--phone::before { background-image: url(../images/preview/icon-phone.svg); }
 
-.lp-preview-container .lp-preview-header .lp-breakpoint-btn::before { width: 34px; height: 28px; display: inline-block; content: ' '; -o-background-size: contain; background-size: contain; background-repeat: no-repeat; background-position: center; -o-transition-duration: .3s; transition-duration: .3s; }
+.lp-preview-container .lp-preview-header .lp-device-type .btn.lp-device-type-btn--tablet::before { background-image: url(../images/preview/icon-tablet.svg); }
 
-.lp-preview-container .lp-preview-header .lp-breakpoint-btn--mobile::before { background-image: url(../images/live-preview/mobile.svg); }
-
-.lp-preview-container .lp-preview-header .lp-breakpoint-btn--tablet::before { background-image: url(../images/live-preview/tablet.svg); }
-
-.lp-preview-container .lp-preview-header .lp-breakpoint-btn--desktop::before { background-image: url(../images/live-preview/desktop.svg); }
-
-.lp-preview-container .lp-preview-header .lp-breakpoint-btn--tablet { margin-right: 6px; }
-
-.lp-preview-container .lp-preview-header .lp-breakpoint-btn--desktop { margin-right: 16px; }
+.lp-preview-container .lp-preview-header .lp-device-type .btn.lp-device-type-btn--desktop::before { background-image: url(../images/preview/icon-desktop.svg); }
 
 .lp-preview-container .lp-device-mask { display: none; }
 
@@ -3511,9 +3503,9 @@ body.rtl .lp-editor-container .lp-draghandle { left: -2px; }
 
 .lp-preview-container .lp-iframe-container--has-device-preview .lp-device-preview-container { position: absolute; top: 50%; left: 50%; z-index: 2; overflow: auto; opacity: 1; -o-transition: opacity .3s; transition: opacity .3s; }
 
-.lp-preview-container .lp-iframe-container--has-device-preview .lp-device-mask { display: block; position: absolute; top: 50%; left: 50%; z-index: 1; background-image: url(../images/live-preview/mobile_top.svg), url(../images/live-preview/mobile_bottom.svg); background-position: top center, bottom center; background-repeat: no-repeat; -o-background-size: contain; background-size: contain; background-color: #fff; box-shadow: 0 0 58px rgba(6, 67, 117, 0.3); border-radius: 18px; }
+.lp-preview-container .lp-iframe-container--has-device-preview .lp-device-mask { display: block; position: absolute; top: 50%; left: 50%; z-index: 1; background-image: url(../images/preview/chrome-phone-top.svg), url(../images/preview/chrome-phone-bottom.svg); background-position: top center, bottom center; background-repeat: no-repeat; -o-background-size: contain; background-size: contain; background-color: #fff; box-shadow: 0 0 58px rgba(6, 67, 117, 0.3); border-radius: 18px; }
 
-.lp-preview-container .lp-iframe-container--has-device-preview.lp-iframe-container--tablet .lp-device-mask { background-image: url(../images/live-preview/tablet_top.svg), url(../images/live-preview/tablet_bottom.svg); }
+.lp-preview-container .lp-iframe-container--has-device-preview.lp-iframe-container--tablet .lp-device-mask { background-image: url(../images/preview/chrome-tablet-top.svg), url(../images/preview/chrome-tablet-bottom.svg); }
 
 .lp-preview-container .lp-iframe-container--animating .lp-device-mask { -o-transition-duration: .3s; transition-duration: .3s; transition-property: -webkit-transform; -o-transition-property: -o-transform; transition-property: transform; transition-property: transform, -webkit-transform, -o-transform; }
 

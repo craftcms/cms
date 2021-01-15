@@ -17,7 +17,7 @@ Craft.Preview = Garnish.Base.extend({
     $previewHeader: null,
     $targetBtn: null,
     $targetMenu: null,
-    $breakpointButtons: null,
+    $deviceTypeContainer: null,
     $orientationBtn: null,
     $deviceMask: null,
     $devicePreviewContainer: null,
@@ -32,12 +32,12 @@ Craft.Preview = Garnish.Base.extend({
 
     isDeviceUpdating: false,
     deviceAnimationTimeout: null,
-    currentBreakpoint: 'desktop',
+    currentDeviceType: 'desktop',
     deviceOrientation: null,
     deviceWidth: '',
     deviceHeight: '',
     deviceMaskDimensions: {
-        mobile: {
+        phone: {
             width: 375,
             height: 753
         },
@@ -158,38 +158,59 @@ Craft.Preview = Garnish.Base.extend({
                     });
                 }
 
-                // Breakpoint buttons
-                this.$breakpointButtons = $('<div/>', {'class': 'btngroup lp-breakpoints'}).appendTo(this.$previewHeader);
-                $('<div/>', {
-                    'class': 'lp-breakpoint-btn lp-breakpoint-btn--desktop lp-breakpoint-btn--active',
+                // Device type buttons
+                this.$deviceTypeContainer = $('<div/>', {
+                    class: 'btngroup lp-device-type',
+                    role: 'listbox',
+                    'aria-label': Craft.t('app', 'Device type'),
+                    tabindex: '0',
+                }).appendTo(this.$previewHeader);
+                $('<button/>', {
+                    type: 'button',
+                    role: 'option',
+                    'class': 'btn lp-device-type-btn--desktop active',
                     title: Craft.t('app', 'Desktop'),
+                    'aria-label': Craft.t('app', 'Desktop'),
+                    'aria-selected': 'true',
+                    tabindex: '-1',
                     data: {
                         width: '',
                         height: '',
-                        breakpoint: 'desktop'
+                        deviceType: 'desktop'
                     }
-                }).appendTo(this.$breakpointButtons);
-                $('<div/>', {
-                    'class': 'lp-breakpoint-btn lp-breakpoint-btn--tablet',
+                }).appendTo(this.$deviceTypeContainer);
+                $('<button/>', {
+                    type: 'button',
+                    role: 'option',
+                    'class': 'btn lp-device-type-btn--tablet',
                     title: Craft.t('app', 'Tablet'),
+                    'aria-label': Craft.t('app', 'Tablet'),
+                    'aria-selected': 'false',
+                    tabindex: '-1',
                     data: {
                         width: 768,
                         height: 1024,
-                        breakpoint: 'tablet'
+                        deviceType: 'tablet'
                     }
-                }).appendTo(this.$breakpointButtons);
-                $('<div/>', {
-                    'class': 'lp-breakpoint-btn lp-breakpoint-btn--mobile',
+                }).appendTo(this.$deviceTypeContainer);
+                $('<button/>', {
+                    type: 'button',
+                    role: 'option',
+                    'class': 'btn lp-device-type-btn--phone',
                     title: Craft.t('app', 'Mobile'),
+                    'aria-label': Craft.t('app', 'Mobile'),
+                    'aria-selected': 'false',
+                    tabindex: '-1',
                     data: {
                         width: 375,
                         height: 667,
-                        breakpoint: 'mobile'
+                        deviceType: 'phone'
                     }
-                }).appendTo(this.$breakpointButtons);
+                }).appendTo(this.$deviceTypeContainer);
 
                 // Orientation toggle
                 this.$orientationBtn = $('<button/>', {
+                    type: 'button',
                     'class': 'btn',
                     'data-icon': 'refresh',
                     'text': Craft.t('app', 'Rotate')
@@ -199,8 +220,8 @@ Craft.Preview = Garnish.Base.extend({
                 // Get the last stored orientation
                 this.deviceOrientation = Craft.getLocalStorage('LivePreview.orientation');
 
-                // Breakpoint button click handlers
-                this.addListener($('.lp-breakpoint-btn', this.$breakpointButtons), 'click', 'switchBreakpoint');
+                // Device type button click handler
+                this.addListener($('.btn', this.$deviceTypeContainer), 'click', 'switchDeviceType');
 
                 // Device mask
                 this.$deviceMask = $('<div/>', {
@@ -450,7 +471,7 @@ Craft.Preview = Garnish.Base.extend({
                 $iframe.appendTo(this.$iframeContainer);
             }
 
-            // If we’re on a device breakpoint then wrap the iframe in our own container
+            // If we’re on tablet/phone then wrap the iframe in our own container
             // so we can keep all the iFrameResizer() stuff working
             if (this._devicePreviewIsActive()) {
                 if (!this.$devicePreviewContainer) {
@@ -506,10 +527,10 @@ Craft.Preview = Garnish.Base.extend({
     },
 
     _devicePreviewIsActive: function() {
-        return this.currentBreakpoint !== 'desktop';
+        return this.currentDeviceType !== 'desktop';
     },
 
-    switchBreakpoint: function(ev) {
+    switchDeviceType: function(ev) {
         if (this.isDeviceUpdating) {
             return false;
         }
@@ -517,24 +538,29 @@ Craft.Preview = Garnish.Base.extend({
         this.$iframeContainer.removeClass('lp-iframe-container--animating');
 
         const $btn = $(ev.target);
-        const newBreakpoint = $btn.data('breakpoint');
+        const newDeviceType = $btn.data('deviceType');
 
         // Bail if we’re just smashing the same button
-        if (newBreakpoint === this.currentBreakpoint) {
+        if (newDeviceType === this.currentDeviceType) {
             return false;
         }
 
-        // Store new breakpoint data
-        this.currentBreakpoint = newBreakpoint;
+        // Store new device type data
+        this.currentDeviceType = newDeviceType;
         this.deviceWidth = $btn.data('width');
         this.deviceHeight = $btn.data('height');
 
         // Set the active state on the button
-        this.$breakpointButtons.find('.lp-breakpoint-btn').removeClass('lp-breakpoint-btn--active');
-        $btn.addClass('lp-breakpoint-btn--active');
+        this.$deviceTypeContainer.find('.btn')
+            .removeClass('active')
+            .attr('aria-selected', 'false');
+
+        $btn
+            .addClass('active')
+            .attr('aria-selected', 'true');
 
         // Update or reset
-        if (this.currentBreakpoint === 'desktop') {
+        if (this.currentDeviceType === 'desktop') {
             this.resetDevicePreview();
         } else {
             this.$iframeContainer.addClass('lp-iframe-container--updating');
@@ -581,7 +607,7 @@ Craft.Preview = Garnish.Base.extend({
         this.$iframeContainer.addClass('lp-iframe-container--has-device-preview');
 
         // Add the tablet class if needed
-        if (this.currentBreakpoint === 'tablet') {
+        if (this.currentDeviceType === 'tablet') {
             this.$iframeContainer.addClass('lp-iframe-container--tablet');
         } else {
             this.$iframeContainer.removeClass('lp-iframe-container--tablet');
@@ -593,8 +619,8 @@ Craft.Preview = Garnish.Base.extend({
         let zoom = 1;
         let previewHeight = (this.$previewContainer.height() - 50) - 48; // 50px for the header bar and 24px clearance
         let previewWidth = this.$previewContainer.width() - 48;
-        let maskHeight = this.deviceMaskDimensions[this.currentBreakpoint].height;
-        let maskWidth = this.deviceMaskDimensions[this.currentBreakpoint].width;
+        let maskHeight = this.deviceMaskDimensions[this.currentDeviceType].height;
+        let maskWidth = this.deviceMaskDimensions[this.currentDeviceType].width;
 
         if (this.deviceOrientation === 'landscape') {
             if (previewWidth < maskHeight) {
@@ -623,8 +649,8 @@ Craft.Preview = Garnish.Base.extend({
 
         // Apply first to the device mask
         this.$deviceMask.css({
-            width: this.deviceMaskDimensions[this.currentBreakpoint].width + 'px',
-            height: this.deviceMaskDimensions[this.currentBreakpoint].height + 'px',
+            width: this.deviceMaskDimensions[this.currentDeviceType].width + 'px',
+            height: this.deviceMaskDimensions[this.currentDeviceType].height + 'px',
             transform: 'scale('+zoom+') translate('+translate+'%, '+translate+'%) rotate('+rotationDeg+')'
         });
 
@@ -666,9 +692,13 @@ Craft.Preview = Garnish.Base.extend({
         if (this.deviceAnimationTimeout) {
             clearTimeout(this.deviceAnimationTimeout);
         }
-        this.currentBreakpoint = 'desktop';
-        this.$breakpointButtons.find('.lp-breakpoint-btn').removeClass('lp-breakpoint-btn--active');
-        this.$breakpointButtons.find('.lp-breakpoint-btn--desktop').addClass('lp-breakpoint-btn--active');
+        this.currentDeviceType = 'desktop';
+        this.$deviceTypeContainer.find('.btn')
+            .removeClass('active')
+            .attr('aria-selected', 'false');
+        this.$deviceTypeContainer.find('.lp-device-type-btn--desktop')
+            .addClass('active')
+            .attr('aria-selected', 'true');
         this.$orientationBtn.detach();
         this.$iframeContainer.removeClass('lp-iframe-container--animating');
         this.$iframeContainer.removeClass('lp-iframe-container--has-device-preview');
