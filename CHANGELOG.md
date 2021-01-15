@@ -21,6 +21,8 @@
 - Added `craft\helpers\Cp::selectHtml()`.
 - Added `craft\helpers\Template::paginateQuery()`.
 - Added `craft\i18n\I18N::validateAppLocaleId()`.
+- Added `craft\mutex\MysqlMutex`.
+- Added `craft\mutex\PgsqlMutex`.
 - Added `craft\validators\UrlValidator::URL_PATTERN`.
 
 ### Changed
@@ -28,12 +30,14 @@
 - Checkbox and radio button group fields now use `<fieldset>`s and `<legend>`s throughout the control panel.
 - Field containers no longer set the `aria-describedby` attribute, leaving it up to the actual inputs to do so. ([#7365](https://github.com/craftcms/cms/issues/7365))
 - Number field settings and input values are now fully formatted, unless the Preview Format setting is set to “Unformatted”.
+- Mutex lock names are now prefixed with the application ID, to avoid lock conflicts if two Craft installs shared the same database. ([#7384](https://github.com/craftcms/cms/issues/7384))
 - The `migrate/all` command now lists the migrations that will be applied. ([#7381](https://github.com/craftcms/cms/issues/7381))
 - The `project-config/apply` command now displays a list of changes it is applying. ([#7235](https://github.com/craftcms/cms/issues/7235))
 - The `allowedFileExtensions` config setting now includes several file extensions used by caption and subtitle file formats by default. ([#7304](https://github.com/craftcms/cms/issues/7304))
 - The `currency`, `filesize`, `number`, `percentage`, and `timestamp` Twig filters now return the passed-in value verbatim if it wasn’t a valid number.
 - Craft no longer reports user deprecation errors logged with `E_USER_DEPRECATED`.
 - `craft\base\ApplicationTrait::getLocale()` now returns the same locale that the application language is set to.
+- `Craft.formatNumber()` and other D3-based number formatting now uses a dynamically-generated locale definition based on info pulled from the application’s formatting locale. ([#7341](https://github.com/craftcms/cms/issues/7341))
 - Made it easier to extend Craft’s Codeception testing module with custom code. ([#7339](https://github.com/craftcms/cms/issues/7339))
 - Updated Yii to 2.0.40.
 
@@ -293,6 +297,7 @@
 - Fixed a bug where Dropdown, Multi-select, and Number fields’ inputs weren’t getting `id` attributes that matched their labels’ `for` attributes. ([#7319](https://github.com/craftcms/cms/issues/7319))
 - Fixed a bug where the “All” checkbox label was getting HTML-encoded when using `Craft.ui.createCheckboxSelect()`.
 - Fixed a bug where week day and month names were being translated based on the current formatting locale, rather than the current language. ([#7312](https://github.com/craftcms/cms/issues/7312))
+- Fixed a bug where `Craft.formatNumber()` could format numbers based on the user’s preferred language rather than the preferred formatting locale.
 - Fixed a bug where `craft\elements\Asset::getSrcset()` could return the wrong value if the asset had a named transform set on it. ([#7352](https://github.com/craftcms/cms/issues/7352))
 - Fixed a bug where user registration forms could get a “Username cannot be blank” error even if the `useEmailAsUsername` config setting was enabled. ([#7357](https://github.com/craftcms/cms/issues/7357))
 - Fixed a bug where clearing control panel resources would delete the `.gitignore` file as well. ([#7361](https://github.com/craftcms/cms/issues/7361))

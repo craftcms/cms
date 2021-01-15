@@ -10,9 +10,9 @@ namespace craft\mutex;
 /**
  * @inheritdoc
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0.0
- * @deprecated in 3.1.14. Use [[\yii\mutex\FileMutex]] instead.
+ * @since 3.6.0
  */
-class FileMutex extends \yii\mutex\FileMutex
+class MysqlMutex extends \yii\mutex\MysqlMutex
 {
+    use PrefixedMutexTrait;
 }
