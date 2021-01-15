@@ -185,7 +185,7 @@
       // Animate only the transform
       .lp-device-mask {
         transition-duration: .3s;
-        transition-property: transform;
+        transition-property: transform, width, height;
       }
 
       // Hide the iframe whilst animating

@@ -3505,7 +3505,7 @@ body.rtl .lp-editor-container .lp-draghandle { left: -2px; }
 
 .lp-preview-container .lp-iframe-container--resized.lp-iframe-container--tablet .lp-device-mask { background-image: url(../images/live-preview/tablet_top.svg), url(../images/live-preview/tablet_bottom.svg); }
 
-.lp-preview-container .lp-iframe-container--animating .lp-device-mask { -o-transition-duration: .3s; transition-duration: .3s; transition-property: -webkit-transform; -o-transition-property: -o-transform; transition-property: transform; transition-property: transform, -webkit-transform, -o-transform; }
+.lp-preview-container .lp-iframe-container--animating .lp-device-mask { -o-transition-duration: .3s; transition-duration: .3s; transition-property: width, height, -webkit-transform; -o-transition-property: width, height, -o-transform; transition-property: transform, width, height; transition-property: transform, width, height, -webkit-transform, -o-transform; }
 
 .lp-preview-container .lp-iframe-container--animating .lp-preview { opacity: 0; -o-transition: opacity 0s; transition: opacity 0s; }
 

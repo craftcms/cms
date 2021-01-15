@@ -29,7 +29,7 @@ Craft.Preview = Garnish.Base.extend({
     isVisible: false,
     activeTarget: 0,
 
-    isDeviceAnimating: false,
+    isDeviceUpdating: false,
     deviceAnimationTimeout: null,
     currentBreakpoint: 'desktop',
     deviceOrientation: null,
@@ -495,6 +495,9 @@ Craft.Preview = Garnish.Base.extend({
     },
 
     switchBreakpoint: function(ev) {
+        if (this.isDeviceUpdating) {
+            return false;
+        }
 
         const $btn = $(ev.target);
 
@@ -507,23 +510,15 @@ Craft.Preview = Garnish.Base.extend({
         $('.lp-breakpoint-btn', this.$breakpointButtons).removeClass('lp-breakpoint-btn--active');
         $btn.addClass('lp-breakpoint-btn--active');
 
-        // Ping the iframe so iframeResizer gets reset
-        this.updateIframe(true);
-
         // Update the device preview
         this.updateDevicePreview();
     },
 
     switchOrientation: function(ev)
     {
-        if (this.isDeviceAnimating) {
-            return;
+        if (this.isDeviceUpdating) {
+            return false;
         }
-
-        // Set up for the animation
-        this.isDeviceAnimating = true;
-        clearTimeout(this.deviceAnimationTimeout);
-        this.$iframeContainer.addClass('lp-iframe-container--animating');
 
         // Switch to whichever orientation is currently not stored
         if (!this.deviceOrientation || this.deviceOrientation === 'portrait') {
@@ -535,33 +530,20 @@ Craft.Preview = Garnish.Base.extend({
         // Store the new one
         Craft.setLocalStorage('LivePreview.orientation', this.deviceOrientation);
 
-        // Apply the rotation with the current transform so we get the css animation on the rotation only
-        let transform = this.$deviceMask[0].style['transform'].toString();
-        if (this.deviceOrientation === 'landscape') {
-            this.$deviceMask.css({
-                transform: transform.replace(/rotate\(0deg\)/, 'rotate(-90deg)')
-            });
-        } else {
-            this.$deviceMask.css({
-                transform: transform.replace(/rotate\(-90deg\)/, 'rotate(0deg)')
-            });
-        }
-
-        // After the animation duration we can update the rest of the device
-        this.deviceAnimationTimeout = setTimeout($.proxy(function() {
-            // Remove the animating class and show the iframe
-            this.$iframeContainer.removeClass('lp-iframe-container--animating');
-            this.isDeviceAnimating = false;
-
-            // Update the device preview
-            this.updateDevicePreview();
-
-        }, this), 300);
+        // Update the device preview
+        this.updateDevicePreview();
     },
 
     updateDevicePreview: function()
     {
         if (this.currentBreakpoint !== 'desktop') {
+
+            if (this.isDeviceUpdating) {
+                return false;
+            }
+
+            this.isDeviceUpdating = true;
+            this.$iframeContainer.addClass('lp-iframe-container--animating');
 
             // Add the orientation button to the header bar
             this.$previewBtnGroup.append(this.$orientationBtn);
@@ -617,24 +599,39 @@ Craft.Preview = Garnish.Base.extend({
                 transform: 'scale('+zoom+') translate('+translate+'%, '+translate+'%) rotate('+rotationDeg+')'
             });
 
-            // Then make the size change to the iframe
-            if (this.deviceOrientation === 'landscape') {
-                this.$iframe.css({
-                    width: this.deviceHeight + 'px',
-                    height: this.deviceWidth + 'px',
-                    transform: 'scale('+zoom+') translate('+translate+'%, '+translate+'%)',
-                    marginTop: 0,
-                    marginLeft: '-' + (12*zoom) + 'px'
-                });
-            } else {
-                this.$iframe.css({
-                    width: this.deviceWidth + 'px',
-                    height: this.deviceHeight + 'px',
-                    transform: 'scale('+zoom+') translate('+translate+'%, '+translate+'%)',
-                    marginTop: '-' + (12*zoom) + 'px',
-                    marginLeft: 0
-                });
+            // Ping the iframe so iframeResizer gets reset
+            this.updateIframe(true);
+
+            // After the animation duration we can update the iframe sizes and show it
+            if (this.deviceAnimationTimeout) {
+                clearTimeout(this.deviceAnimationTimeout);
             }
+            this.deviceAnimationTimeout = setTimeout($.proxy(function() {
+
+                // Then make the size change to the iframe
+                if (this.deviceOrientation === 'landscape') {
+                    this.$iframe.css({
+                        width: this.deviceHeight + 'px',
+                        height: this.deviceWidth + 'px',
+                        transform: 'scale('+zoom+') translate('+translate+'%, '+translate+'%)',
+                        marginTop: 0,
+                        marginLeft: '-' + (12*zoom) + 'px'
+                    });
+                } else {
+                    this.$iframe.css({
+                        width: this.deviceWidth + 'px',
+                        height: this.deviceHeight + 'px',
+                        transform: 'scale('+zoom+') translate('+translate+'%, '+translate+'%)',
+                        marginTop: '-' + (12*zoom) + 'px',
+                        marginLeft: 0
+                    });
+                }
+
+                // Remove the animating class and show the iframe
+                this.$iframeContainer.removeClass('lp-iframe-container--animating');
+                this.isDeviceUpdating = false;
+
+            }, this), 300);
 
         } else {
             // Desktop
@@ -644,10 +641,14 @@ Craft.Preview = Garnish.Base.extend({
 
     resetDevicePreview: function()
     {
+        if (this.deviceAnimationTimeout) {
+            clearTimeout(this.deviceAnimationTimeout);
+        }
         this.currentBreakpoint = 'desktop';
         $('.lp-breakpoint-btn', this.$breakpointButtons).removeClass('lp-breakpoint-btn--active');
         this.$breakpointButtons.find('.lp-breakpoint-btn--desktop').addClass('lp-breakpoint-btn--active');
         this.$orientationBtn.detach();
+        this.$iframeContainer.removeClass('lp-iframe-container--animating');
         this.$iframeContainer.removeClass('lp-iframe-container--resized');
         this.$iframeContainer.removeClass('lp-iframe-container--tablet');
         this.$iframe.css({
@@ -657,7 +658,7 @@ Craft.Preview = Garnish.Base.extend({
             marginTop: 0,
             marginLeft: 0
         });
-        this.isDeviceAnimating = false;
+        this.isDeviceUpdating = false;
     },
 
     _getClone: function($field) {
