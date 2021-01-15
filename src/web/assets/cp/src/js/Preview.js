@@ -381,7 +381,7 @@ Craft.Preview = Garnish.Base.extend({
     updateWidths: function() {
         this.$editorContainer.css('width', this.editorWidthInPx + 'px');
         this.$previewContainer.width(this.getIframeWidth());
-        if (this.currentBreakpoint !== 'desktop') {
+        if (this._devicePreviewIsActive()) {
             this.updateDevicePreview();
         }
     },
@@ -452,7 +452,7 @@ Craft.Preview = Garnish.Base.extend({
 
             // If we’re on a device breakpoint then wrap the iframe in our own container
             // so we can keep all the iFrameResizer() stuff working
-            if (this.currentBreakpoint !== 'desktop') {
+            if (this._devicePreviewIsActive()) {
                 if (!this.$devicePreviewContainer) {
                     this.$devicePreviewContainer = $('<div/>', {
                         'class': 'lp-device-preview-container'
@@ -492,7 +492,7 @@ Craft.Preview = Garnish.Base.extend({
             this.url = url;
             this.$iframe = $iframe;
 
-            if (this.currentBreakpoint !== 'desktop') {
+            if (this._devicePreviewIsActive()) {
                 this.updateDevicePreview();
             }
 
@@ -503,6 +503,10 @@ Craft.Preview = Garnish.Base.extend({
 
             this.slideIn();
         });
+    },
+
+    _devicePreviewIsActive: function() {
+        return this.currentBreakpoint !== 'desktop';
     },
 
     switchBreakpoint: function(ev) {
