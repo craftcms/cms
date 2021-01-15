@@ -7,7 +7,6 @@
 
 namespace craft\base;
 
-use craft\errors\AssetException;
 use craft\errors\VolumeException;
 use craft\errors\VolumeObjectExistsException;
 use craft\errors\VolumeObjectNotFoundException;
@@ -48,6 +47,7 @@ interface VolumeInterface extends SavableComponentInterface
      * @param string $directory The path of the directory to list files of
      * @param bool $recursive whether to fetch file list recursively, defaults to true
      * @return Generator|VolumeListing[]
+     * @throws VolumeException
      */
     public function getFileList(string $directory = '', bool $recursive = true): Generator;
 
@@ -57,6 +57,7 @@ interface VolumeInterface extends SavableComponentInterface
      * @param string $uri
      * @return int
      * @since 3.6.0
+     * @throws VolumeException
      */
     public function getFileSize(string $uri): int;
 
@@ -66,6 +67,7 @@ interface VolumeInterface extends SavableComponentInterface
      * @param string $uri
      * @return int
      * @since 3.6.0
+     * @throws VolumeException
      */
     public function getDateModified(string $uri): int;
 
@@ -99,7 +101,6 @@ interface VolumeInterface extends SavableComponentInterface
      * @param string $path The path of the file, relative to the source’s root
      * @param resource $stream The new contents of the file as a stream
      * @param array $config Additional config options to pass on
-     * @throws VolumeObjectNotFoundException if the file to be updated cannot be found
      * @throws VolumeException if something else goes wrong
      */
     public function writeFileFromStream(string $path, $stream, array $config = []): void;
@@ -109,6 +110,7 @@ interface VolumeInterface extends SavableComponentInterface
      *
      * @param string $path The path of the file, relative to the source’s root
      * @return bool
+     * @throws VolumeException if something else goes wrong
      */
     public function fileExists(string $path): bool;
 
@@ -125,9 +127,7 @@ interface VolumeInterface extends SavableComponentInterface
      *
      * @param string $path The old path of the file, relative to the source’s root
      * @param string $newPath The new path of the file, relative to the source’s root
-     * @throws VolumeObjectExistsException if a file with such a name exists already
-     * @throws VolumeObjectNotFoundException if the file to be renamed cannot be found
-     * @throws VolumeException if something else goes wrong
+     * @throws VolumeException if something goes wrong
      */
     public function renameFile(string $path, string $newPath): void;
 
@@ -136,9 +136,7 @@ interface VolumeInterface extends SavableComponentInterface
      *
      * @param string $path The path of the file, relative to the source’s root
      * @param string $newPath The path of the new file, relative to the source’s root
-     * @throws VolumeObjectExistsException if a file with such a name exists already
-     * @throws VolumeObjectNotFoundException if the file to be renamed cannot be found
-     * @throws VolumeException if something else goes wrong
+     * @throws VolumeException if something goes wrong
      */
     public function copyFile(string $path, string $newPath): void;
 
@@ -157,7 +155,7 @@ interface VolumeInterface extends SavableComponentInterface
      *
      * @param string $uriPath
      * @return resource
-     * @throws AssetException if a stream cannot be created
+     * @throws VolumeException if a stream cannot be created
      */
     public function getFileStream(string $uriPath);
 
@@ -193,8 +191,6 @@ interface VolumeInterface extends SavableComponentInterface
      *
      * @param string $path The path of the directory, relative to the source’s root
      * @param string $newName The new path of the directory, relative to the source’s root
-     * @throws VolumeObjectNotFoundException if a directory with such name already exists
-     * @throws VolumeObjectExistsException if a directory with such name already exists
      * @throws VolumeException if something else goes wrong
      */
     public function renameDirectory(string $path, string $newName): void;
