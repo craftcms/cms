@@ -982,7 +982,6 @@ class Assets extends Component
      *
      * @param User|null $user
      * @return VolumeFolder
-     * @throws VolumeException
      */
     public function getUserTemporaryUploadFolder(User $user = null)
     {
