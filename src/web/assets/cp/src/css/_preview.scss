@@ -31,6 +31,13 @@
       }
     }
 
+    @supports (-moz-appearance:none) {
+      & {
+        position: relative;
+        z-index: 1;
+      }
+    }
+
     .btn, .spinner, .checkmark-icon {
       margin-bottom: 0;
     }
@@ -82,6 +89,10 @@
     display: grid;
     grid-template-columns: 1fr 124px 1fr;
 
+    @supports (-moz-appearance:none) {
+      background-color: transparentize($grey100, 0.25);
+    }
+
     .btngroup {
       margin-bottom: 0;
       margin-right: 24px;
@@ -89,6 +100,10 @@
 
     & + .lp-iframe-container {
       padding-top: 50px;
+
+      @supports (-moz-appearance:none) {
+        padding-top: 0;
+      }
     }
 
     .lp-breakpoint-btn {
@@ -145,6 +160,10 @@
       height: calc(100% - 50px);
       width: 100%;
       background-color: $grey100;
+
+      @supports (-moz-appearance:none) {
+        top: 0;
+      }
 
       // Preview container
       .lp-device-preview-container {
