@@ -16,6 +16,7 @@
 - Fixed a bug where Dropdown, Multi-select, and Number fields’ inputs weren’t getting `id` attributes that matched their labels’ `for` attributes. ([#7319](https://github.com/craftcms/cms/issues/7319))
 - Fixed a bug where the “All” checkbox label was getting HTML-encoded when using `Craft.ui.createCheckboxSelect()`.
 - Fixed a bug where week day and month names were being translated based on the current formatting locale, rather than the current language. ([#7312](https://github.com/craftcms/cms/issues/7312))
+- Fixed a bug where `Craft.formatNumber()` could format numbers based on the user’s preferred language rather than the preferred formatting locale.
 - Fixed a bug where `craft\elements\Asset::getSrcset()` could return the wrong value if the asset had a named transform set on it. ([#7352](https://github.com/craftcms/cms/issues/7352))
 - Fixed a bug where user registration forms could get a “Username cannot be blank” error even if the `useEmailAsUsername` config setting was enabled. ([#7357](https://github.com/craftcms/cms/issues/7357))
 - Fixed a bug where clearing control panel resources would delete the `.gitignore` file as well. ([#7361](https://github.com/craftcms/cms/issues/7361))
