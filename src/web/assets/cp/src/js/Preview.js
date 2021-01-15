@@ -514,6 +514,8 @@ Craft.Preview = Garnish.Base.extend({
             return false;
         }
 
+        this.$iframeContainer.removeClass('lp-iframe-container--animating');
+
         const $btn = $(ev.target);
         const newBreakpoint = $btn.data('breakpoint');
 
@@ -522,19 +524,20 @@ Craft.Preview = Garnish.Base.extend({
             return false;
         }
 
-        // Store breakpoint data
+        // Store new breakpoint data
         this.currentBreakpoint = newBreakpoint;
         this.deviceWidth = $btn.data('width');
         this.deviceHeight = $btn.data('height');
 
         // Set the active state on the button
-        $('.lp-breakpoint-btn', this.$breakpointButtons).removeClass('lp-breakpoint-btn--active');
+        this.$breakpointButtons.find('.lp-breakpoint-btn').removeClass('lp-breakpoint-btn--active');
         $btn.addClass('lp-breakpoint-btn--active');
 
         // Update or reset
         if (this.currentBreakpoint === 'desktop') {
             this.resetDevicePreview();
         } else {
+            this.updateIframe();
             this.updateDevicePreview();
         }
     },
@@ -555,6 +558,9 @@ Craft.Preview = Garnish.Base.extend({
         // Store the new one
         Craft.setLocalStorage('LivePreview.orientation', this.deviceOrientation);
 
+        // Allow the animation to take place
+        this.$iframeContainer.addClass('lp-iframe-container--animating');
+
         // Update the device preview
         this.updateDevicePreview();
     },
@@ -565,14 +571,14 @@ Craft.Preview = Garnish.Base.extend({
             return false;
         }
 
+        this.$iframeContainer.addClass('lp-iframe-container--updating');
         this.isDeviceUpdating = true;
-        this.$iframeContainer.addClass('lp-iframe-container--animating');
 
         // Add the orientation button to the header bar
         this.$previewHeader.append(this.$orientationBtn);
 
         // Trigger the resized css mods
-        this.$iframeContainer.addClass('lp-iframe-container--resized');
+        this.$iframeContainer.addClass('lp-iframe-container--has-device-preview');
 
         // Add the tablet class if needed
         if (this.currentBreakpoint === 'tablet') {
@@ -622,11 +628,6 @@ Craft.Preview = Garnish.Base.extend({
             transform: 'scale('+zoom+') translate('+translate+'%, '+translate+'%) rotate('+rotationDeg+')'
         });
 
-        // Ping the iframe
-        // TODO: if we just pass true here we lose the scroll position ... should only pass it if coming from a device click
-        // TODO: also, in this method we should not run iFrameResizer if the device preview is active
-        this.updateIframe();
-
         // After the animation duration we can update the iframe sizes and show it
         if (this.deviceAnimationTimeout) {
             clearTimeout(this.deviceAnimationTimeout);
@@ -654,6 +655,7 @@ Craft.Preview = Garnish.Base.extend({
 
             // Remove the animating class and show the iframe
             this.$iframeContainer.removeClass('lp-iframe-container--animating');
+            this.$iframeContainer.removeClass('lp-iframe-container--updating');
             this.isDeviceUpdating = false;
 
         }, this), 300);
@@ -669,7 +671,7 @@ Craft.Preview = Garnish.Base.extend({
         this.$breakpointButtons.find('.lp-breakpoint-btn--desktop').addClass('lp-breakpoint-btn--active');
         this.$orientationBtn.detach();
         this.$iframeContainer.removeClass('lp-iframe-container--animating');
-        this.$iframeContainer.removeClass('lp-iframe-container--resized');
+        this.$iframeContainer.removeClass('lp-iframe-container--has-device-preview');
         this.$iframeContainer.removeClass('lp-iframe-container--tablet');
 
         // Flat out remove the iframe and let it get regenerated

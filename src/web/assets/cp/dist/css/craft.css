@@ -3505,19 +3505,19 @@ body.rtl .lp-editor-container .lp-draghandle { left: -2px; }
 
 .lp-preview-container .lp-iframe-container .lp-preview { display: block; width: 100%; min-height: 100%; }
 
-.lp-preview-container .lp-iframe-container--resized { -webkit-flex: none; flex: none; padding-top: 0 !important; position: relative; top: 50px; height: calc(100% - 50px); width: 100%; background-color: #e4edf6; }
+.lp-preview-container .lp-iframe-container--has-device-preview { -webkit-flex: none; flex: none; padding-top: 0 !important; position: relative; top: 50px; height: calc(100% - 50px); width: 100%; background-color: #e4edf6; }
 
-@supports (-moz-appearance: none) { .lp-preview-container .lp-iframe-container--resized { top: 0; } }
+@supports (-moz-appearance: none) { .lp-preview-container .lp-iframe-container--has-device-preview { top: 0; } }
 
-.lp-preview-container .lp-iframe-container--resized .lp-device-preview-container { position: absolute; top: 50%; left: 50%; z-index: 2; overflow: auto; opacity: 1; -o-transition: opacity .3s; transition: opacity .3s; }
+.lp-preview-container .lp-iframe-container--has-device-preview .lp-device-preview-container { position: absolute; top: 50%; left: 50%; z-index: 2; overflow: auto; opacity: 1; -o-transition: opacity .3s; transition: opacity .3s; }
 
-.lp-preview-container .lp-iframe-container--resized .lp-device-mask { display: block; position: absolute; top: 50%; left: 50%; z-index: 1; background-image: url(../images/live-preview/mobile_top.svg), url(../images/live-preview/mobile_bottom.svg); background-position: top center, bottom center; background-repeat: no-repeat; -o-background-size: contain; background-size: contain; background-color: #fff; box-shadow: 0 0 58px rgba(6, 67, 117, 0.3); border-radius: 18px; }
+.lp-preview-container .lp-iframe-container--has-device-preview .lp-device-mask { display: block; position: absolute; top: 50%; left: 50%; z-index: 1; background-image: url(../images/live-preview/mobile_top.svg), url(../images/live-preview/mobile_bottom.svg); background-position: top center, bottom center; background-repeat: no-repeat; -o-background-size: contain; background-size: contain; background-color: #fff; box-shadow: 0 0 58px rgba(6, 67, 117, 0.3); border-radius: 18px; }
 
-.lp-preview-container .lp-iframe-container--resized.lp-iframe-container--tablet .lp-device-mask { background-image: url(../images/live-preview/tablet_top.svg), url(../images/live-preview/tablet_bottom.svg); }
+.lp-preview-container .lp-iframe-container--has-device-preview.lp-iframe-container--tablet .lp-device-mask { background-image: url(../images/live-preview/tablet_top.svg), url(../images/live-preview/tablet_bottom.svg); }
 
-.lp-preview-container .lp-iframe-container--animating .lp-device-mask { -o-transition-duration: .3s; transition-duration: .3s; transition-property: width, height, -webkit-transform; -o-transition-property: width, height, -o-transform; transition-property: transform, width, height; transition-property: transform, width, height, -webkit-transform, -o-transform; }
+.lp-preview-container .lp-iframe-container--animating .lp-device-mask { -o-transition-duration: .3s; transition-duration: .3s; transition-property: -webkit-transform; -o-transition-property: -o-transform; transition-property: transform; transition-property: transform, -webkit-transform, -o-transform; }
 
-.lp-preview-container .lp-iframe-container--animating .lp-device-preview-container { opacity: 0; -o-transition: opacity 0s; transition: opacity 0s; }
+.lp-preview-container .lp-iframe-container--animating .lp-device-preview-container, .lp-preview-container .lp-iframe-container--updating .lp-device-preview-container { opacity: 0; -o-transition: opacity 0s; transition: opacity 0s; }
 
 .layoutdesigner { display: -webkit-flex; display: flex; -webkit-align-items: stretch; align-items: stretch; position: relative; border-radius: 3px; border: 1px solid rgba(96, 125, 159, 0.25); background-color: #fbfcfe; box-shadow: inset 0 1px 4px -1px rgba(96, 125, 159, 0.25); background-clip: padding-box; overflow: hidden; box-shadow: none; min-height: 500px; }
 

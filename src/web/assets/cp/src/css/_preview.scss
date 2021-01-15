@@ -157,7 +157,7 @@
       min-height: 100%;
     }
 
-    &--resized {
+    &--has-device-preview {
       flex: none;
       padding-top: 0 !important;
       position: relative;
@@ -205,14 +205,17 @@
       }
     }
 
+    // Animate only the transform (scale, translate and rotate)
     &--animating {
-      // Animate only the transform
       .lp-device-mask {
         transition-duration: .3s;
-        transition-property: transform, width, height;
+        transition-property: transform;
       }
+    }
 
-      // Hide the iframe whilst animating
+    // Hide the iframe whilst animating or updating
+    &--animating,
+    &--updating {
       .lp-device-preview-container {
         opacity: 0;
         transition: opacity 0s,
