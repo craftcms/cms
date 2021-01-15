@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Added tablet and phone viewport emulation to Live Preview (Craft Pro only.) ([#1006](https://github.com/craftcms/cms/issues/1006))
 - URL fields now have an “Allowed URL Types” setting, which adds the ability to accept telephone and email URLs. ([#5497](https://github.com/craftcms/cms/issues/5497))
 - Added the “Captions/Subtitles” file kind. ([#7304](https://github.com/craftcms/cms/issues/7304))
 - Added the `handleCasing` config setting, which determines the default casing that should be used when autogenerating component handles. ([#4276](https://github.com/craftcms/cms/issues/4276))
