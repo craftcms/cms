@@ -462,9 +462,6 @@ Craft.Preview = Garnish.Base.extend({
                 }
             }
 
-            // TODO: for some reason the iframe disappears briefly and iFrameResize throws
-            //       some warnings
-
             // Keep the iframe height consistent with its content
             if (this._useIframeResizer()) {
                 if (!resetScroll && this.iframeHeight !== null) {
@@ -663,12 +660,18 @@ Craft.Preview = Garnish.Base.extend({
         this.$iframeContainer.removeClass('lp-iframe-container--resized');
         this.$iframeContainer.removeClass('lp-iframe-container--tablet');
 
-        // Clone the iframe then remove our wrapper and re-add
-        this.$iframe = this.$devicePreviewContainer.find('.lp-preview').clone();
-        this.$devicePreviewContainer.detach();
-        this.$devicePreviewContainer = null;
-        this.$iframe.appendTo(this.$iframeContainer);
-        this.updateIframe();
+        // Flat out remove the iframe and let it get regenerated
+        if (this.$devicePreviewContainer) {
+            // If using iFrameResizer then remove the listeners first so we don’t get zombie instances
+            if (this._useIframeResizer()) {
+                this.$iframe[0].iFrameResizer.removeListeners();
+            }
+            this.$devicePreviewContainer.detach();
+            this.$devicePreviewContainer = null;
+            this.$iframe = null;
+            this.updateIframe();
+        }
+
         this.isDeviceUpdating = false;
     },
 
