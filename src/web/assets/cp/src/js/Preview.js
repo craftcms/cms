@@ -539,7 +539,7 @@ Craft.Preview = Garnish.Base.extend({
         }
     },
 
-    switchOrientation: function(ev)
+    switchOrientation: function()
     {
         if (this.isDeviceUpdating) {
             return false;
@@ -622,8 +622,10 @@ Craft.Preview = Garnish.Base.extend({
             transform: 'scale('+zoom+') translate('+translate+'%, '+translate+'%) rotate('+rotationDeg+')'
         });
 
-        // Ping the iframe so iframeResizer gets reset
-        this.updateIframe(true);
+        // Ping the iframe
+        // TODO: if we just pass true here we lose the scroll position ... should only pass it if coming from a device click
+        // TODO: also, in this method we should not run iFrameResizer if the device preview is active
+        this.updateIframe();
 
         // After the animation duration we can update the iframe sizes and show it
         if (this.deviceAnimationTimeout) {
