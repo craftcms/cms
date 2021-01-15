@@ -537,6 +537,7 @@ Craft.Preview = Garnish.Base.extend({
         if (this.currentBreakpoint === 'desktop') {
             this.resetDevicePreview();
         } else {
+            this.$iframeContainer.addClass('lp-iframe-container--updating');
             this.updateIframe();
             this.updateDevicePreview();
         }
@@ -571,7 +572,6 @@ Craft.Preview = Garnish.Base.extend({
             return false;
         }
 
-        this.$iframeContainer.addClass('lp-iframe-container--updating');
         this.isDeviceUpdating = true;
 
         // Add the orientation button to the header bar
