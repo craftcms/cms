@@ -14,7 +14,7 @@ Craft.Preview = Garnish.Base.extend({
     $dragHandle: null,
     $previewContainer: null,
     $iframeContainer: null,
-    $previewBtnGroup: null,
+    $previewHeader: null,
     $targetBtn: null,
     $targetMenu: null,
     $breakpointButtons: null,
@@ -131,8 +131,7 @@ Craft.Preview = Garnish.Base.extend({
             this.$statusIcon = $('<div/>', {'class': 'invisible'}).appendTo($editorHeader);
 
             if (Craft.Pro) {
-                const $previewHeader = $('<header/>', {'class': 'lp-preview-header'}).appendTo(this.$previewContainer);
-                this.$previewBtnGroup = $('<div/>', {'class': 'btngroup'}).appendTo($previewHeader);
+                this.$previewHeader = $('<header/>', {'class': 'lp-preview-header'}).appendTo(this.$previewContainer);
 
                 // Preview targets
                 if (this.draftEditor.settings.previewTargets.length > 1) {
@@ -140,7 +139,7 @@ Craft.Preview = Garnish.Base.extend({
                         type: 'button',
                         'class': 'btn menubtn',
                         text: this.draftEditor.settings.previewTargets[0].label,
-                    }).appendTo(this.$previewBtnGroup);
+                    }).appendTo(this.$previewHeader);
                     this.$targetMenu = $('<div/>', {'class': 'menu lp-target-menu'}).insertAfter(this.$targetBtn);
                     const $ul = $('<ul/>', {'class': 'padded'}).appendTo(this.$targetMenu);
                     let $li, $a;
@@ -160,7 +159,7 @@ Craft.Preview = Garnish.Base.extend({
                 }
 
                 // Breakpoint buttons
-                this.$breakpointButtons = $('<div/>', {'class': 'btngroup lp-breakpoints'}).appendTo($previewHeader);
+                this.$breakpointButtons = $('<div/>', {'class': 'btngroup lp-breakpoints'}).appendTo(this.$previewHeader);
                 $('<div/>', {
                     'class': 'lp-breakpoint-btn lp-breakpoint-btn--desktop lp-breakpoint-btn--active',
                     title: Craft.t('app', 'Desktop'),
@@ -190,11 +189,12 @@ Craft.Preview = Garnish.Base.extend({
                 }).appendTo(this.$breakpointButtons);
 
                 // Orientation toggle
-                this.$orientationBtn = $('<div/>', {
+                this.$orientationBtn = $('<button/>', {
                     'class': 'btn',
-                    'data-icon': 'refresh'
+                    'data-icon': 'refresh',
+                    'text': Craft.t('app', 'Rotate')
                 });
-                this.addListener(this.$orientationBtn, 'activate', 'switchOrientation');
+                this.addListener(this.$orientationBtn, 'click', 'switchOrientation');
 
                 // Get the last stored orientation
                 this.deviceOrientation = Craft.getLocalStorage('LivePreview.orientation');
@@ -565,7 +565,7 @@ Craft.Preview = Garnish.Base.extend({
         this.$iframeContainer.addClass('lp-iframe-container--animating');
 
         // Add the orientation button to the header bar
-        this.$previewBtnGroup.append(this.$orientationBtn);
+        this.$previewHeader.append(this.$orientationBtn);
 
         // Trigger the resized css mods
         this.$iframeContainer.addClass('lp-iframe-container--resized');

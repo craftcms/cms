@@ -88,14 +88,19 @@
   .lp-preview-header {
     display: grid;
     grid-template-columns: 1fr 124px 1fr;
+    grid-gap: 24px;
 
     @supports (-moz-appearance:none) {
       background-color: transparentize($grey100, 0.25);
     }
 
-    .btngroup {
-      margin-bottom: 0;
-      margin-right: 24px;
+    > .btn {
+      &:first-child {
+        justify-self: start;
+      }
+      &:last-child {
+        justify-self: end;
+      }
     }
 
     & + .lp-iframe-container {

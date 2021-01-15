@@ -218,6 +218,7 @@ JS;
             'Reorder',
             'Replace it',
             'Replace the folder (all existing files will be deleted)',
+            'Rotate',
             'Save and continue editing',
             'Save as a new asset',
             'Save draft',
