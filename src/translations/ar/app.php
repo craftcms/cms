@@ -1455,7 +1455,7 @@ return [
     'Updating…' => 'جارٍ التحديث...',
     'Upgrade Craft CMS' => 'ترقية Craft CMS',
     'Upgrade to Craft Pro' => 'Upgrade to Craft Pro',
-    'Upload a file' => 'Upload a file',
+    'Upload a file' => 'تحميل ملف',
     'Upload a photo' => 'تحميل الصورة',
     'Upload failed for {filename}' => 'فشل تحميل {filename}',
     'Upload files' => 'تحميل الملفات',
