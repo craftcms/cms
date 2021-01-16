@@ -124,7 +124,7 @@ return [
     'Ascending' => 'تصاعدي',
     'Ask on Stack Exchange' => 'سؤال على موقع Stack Exchange',
     'Asset Indexes' => 'فهارس الأصول',
-    'Asset Location' => 'Asset Location',
+    'Asset Location' => 'موقع الأصل',
     'Asset Settings' => 'إعدادات الأصول',
     'Asset caches' => 'الذاكرة المؤقتة للأصول',
     'Asset deleted.' => 'تم حذف الأصل.',
