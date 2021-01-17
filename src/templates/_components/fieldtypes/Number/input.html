@@ -14,8 +14,8 @@
         id: descriptionId,
         class: 'visually-hidden',
         text: [
-            prefix ? 'Value prefixed by {prefix}.'|t('app', {prefix: prefix|md(inlineOnly=true)|raw}),
-            suffix ? 'Value suffixed by {suffix}.'|t('app', {suffix: suffix|md(inlineOnly=true)|raw}),
+            prefix ? 'Value prefixed by {prefix}.'|t('app', {prefix: prefix}),
+            suffix ? 'Value suffixed by {suffix}.'|t('app', {suffix: suffix}),
         ]|filter|join(' '),
     }) }}
 {% endif %}
@@ -33,7 +33,9 @@
             value: value,
             inputmode: field.decimals ? 'decimal' : 'numeric',
             size: field.size,
-            'aria-describedby': descriptionId,
+            aria: {
+                describedby: descriptionId,
+            },
         }) }}
     </div>
     {% if hasSuffix %}
