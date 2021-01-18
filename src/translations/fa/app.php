@@ -1669,6 +1669,8 @@ return [
     'updated {timestamp}' => 'به روزرسانی در {timestamp}',
     'user' => 'کاربر',
     'users' => 'کاربرها',
+    'Value prefixed by “{prefix}”.' => 'Value prefixed by “{prefix}”.',
+    'Value suffixed by “{suffix}”.' => 'Value suffixed by “{suffix}”.',
     'verify_new_email_body' => "سلام {{user.friendlyName}},\n\nلطفا با کلیک کردن روی این لینک آدرس پست الکترونیکی جدید خود را تایید نمایید.\n\n<{{link}}>\n\nدر صورتی که انتظار این پیام را نداشتید آن را نادیده بگیرید.",
     'verify_new_email_heading' => 'زمانی که شخصی آدرس پست الکنرونیکی  خود را تغییر می دهد:',
     'verify_new_email_subject' => 'پست الکترونیکی جدیدتان را تایید نمایید',
