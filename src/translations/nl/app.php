@@ -1669,6 +1669,8 @@ return [
     'updated {timestamp}' => 'bijgewerkt {timestamp}',
     'user' => 'gebruiker',
     'users' => 'gebruikers',
+    'Value prefixed by “{prefix}”.' => 'Value prefixed by “{prefix}”.',
+    'Value suffixed by “{suffix}”.' => 'Value suffixed by “{suffix}”.',
     'verify_new_email_body' => "Hallo {{user.friendlyName}},\n\nKlik op deze link om je nieuwe e-mailadres te bevestigen:\n\n<{{link}}>\n\nAls je deze e-mail niet verwachtte, kun je hem gewoon negeren.",
     'verify_new_email_heading' => 'Als iemand zijn e-mailadres wijzigt:',
     'verify_new_email_subject' => 'Bevestig je nieuwe e-mailadres',

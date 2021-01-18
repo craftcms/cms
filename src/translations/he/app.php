@@ -1669,6 +1669,8 @@ return [
     'updated {timestamp}' => '{timestamp} מעודכן',
     'user' => 'משתמש',
     'users' => 'משתמשים',
+    'Value prefixed by “{prefix}”.' => 'Value prefixed by “{prefix}”.',
+    'Value suffixed by “{suffix}”.' => 'Value suffixed by “{suffix}”.',
     'verify_new_email_body' => "שלום {{user.friendlyName}},\n\nבבקשה אשר את כתובת האימייל החדשה שלך על-ידי לחיצה על הלינק:\n\n<{{link}}>\n\nאם לא ציפית לקבל את האימייל הזה, פשוט התעלם ממנו.",
     'verify_new_email_heading' => 'כאשר מישהו משנה את כתבות האימייל שלו:',
     'verify_new_email_subject' => 'אמת את כתובת האימייל שלך',

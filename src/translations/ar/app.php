@@ -1669,6 +1669,8 @@ return [
     'updated {timestamp}' => 'تم التحديث في {timestamp}',
     'user' => 'المستخدم',
     'users' => 'المستخدمين',
+    'Value prefixed by “{prefix}”.' => 'Value prefixed by “{prefix}”.',
+    'Value suffixed by “{suffix}”.' => 'Value suffixed by “{suffix}”.',
     'verify_new_email_body' => "مرحبا {{user.friendlyName}}،\n\nفضلاً أكد صحة عنوان بريدك الإلكتروني الجديد بالنقر على الرابط التالي:\n\n<{{link}}>\n\nإذا لم تكن تتوقع هذه الرسالة، ما عليك سوى تجاهلها.",
     'verify_new_email_heading' => 'عندما يقوم أحدهم بتغيير عنوان بريده الإلكتروني:',
     'verify_new_email_subject' => 'تأكيد صحة عنوان بريدك الإلكتروني الجديد',

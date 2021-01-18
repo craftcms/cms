@@ -1671,6 +1671,8 @@ Tebrikler! Craft eposta göndermeyi başardı.Gerkli ayarlar şu şekilde: {{ se
     'updated {timestamp}' => '{timestamp} tarihinde güncellendi',
     'user' => 'kullanıcı',
     'users' => 'kullanıcılar',
+    'Value prefixed by “{prefix}”.' => 'Value prefixed by “{prefix}”.',
+    'Value suffixed by “{suffix}”.' => 'Value suffixed by “{suffix}”.',
     'verify_new_email_body' => "Merhaba {{user.friendlyName}},\n\nLütfen eposta adresinizi şu bağlantıya tıklayarak onaylayın:\n\n<{{link}}>\n\nBu epostayı beklemiyorduysanız, görmezden gelin.",
     'verify_new_email_heading' => 'Birisi eposta adresini değiştirdiği zaman:',
     'verify_new_email_subject' => 'Yeni e-posta adresinizi doğrulayın',

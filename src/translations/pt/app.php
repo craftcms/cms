@@ -1669,6 +1669,8 @@ return [
     'updated {timestamp}' => 'atualizado {timestamp}',
     'user' => 'utilizador',
     'users' => 'usuários',
+    'Value prefixed by “{prefix}”.' => 'Value prefixed by “{prefix}”.',
+    'Value suffixed by “{suffix}”.' => 'Value suffixed by “{suffix}”.',
     'verify_new_email_body' => "Olá {{user.friendlyName}},\n\nPor favor, verifique o seu novo endereço de e-mail, clicando neste link:\n\n<{{link}}>\n\nSe você não solicitou este e-mail, simplesmente ignore.",
     'verify_new_email_heading' => 'Quando alguém muda seu endereço de e-mail:',
     'verify_new_email_subject' => 'Verifique o seu novo endereço de e-mail',

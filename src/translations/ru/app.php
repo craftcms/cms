@@ -1669,6 +1669,8 @@ return [
     'updated {timestamp}' => 'обновлено {timestamp}',
     'user' => 'пользователь',
     'users' => 'пользователи',
+    'Value prefixed by “{prefix}”.' => 'Value prefixed by “{prefix}”.',
+    'Value suffixed by “{suffix}”.' => 'Value suffixed by “{suffix}”.',
     'verify_new_email_body' => "Привет, {{user.friendlyName}}!\n\nПожалуйста, подтвердите свой адрес электронной почты, перейдя по следующей ссылке:\n\n{{link}}\n\nЕсли вы считаете, что получили это письмо по ошибке, просто проигнорируйте его.",
     'verify_new_email_heading' => 'Когда кто-то изменяет свой адрес электронной почты:',
     'verify_new_email_subject' => 'Подтвердите свой новый адрес электронной почты',

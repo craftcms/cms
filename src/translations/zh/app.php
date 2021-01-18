@@ -1669,6 +1669,8 @@ return [
     'updated {timestamp}' => '{timestamp} 更新',
     'user' => '用户',
     'users' => '用户',
+    'Value prefixed by “{prefix}”.' => 'Value prefixed by “{prefix}”.',
+    'Value suffixed by “{suffix}”.' => 'Value suffixed by “{suffix}”.',
     'verify_new_email_body' => "{{user.friendlyName}}，您好！\n\n请单击下方链接验证您的新电子邮件地址：\n\n<{{link}}>\n\n如果您无法识别此邮件，请忽略它。",
     'verify_new_email_heading' => '当用户更改他们的电子邮件地址时：',
     'verify_new_email_subject' => '验证您的新电子邮件地址',

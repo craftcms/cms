@@ -1669,6 +1669,8 @@ return [
     'updated {timestamp}' => '{timestamp} 업데이트함',
     'user' => '사용자',
     'users' => '사용자',
+    'Value prefixed by “{prefix}”.' => 'Value prefixed by “{prefix}”.',
+    'Value suffixed by “{suffix}”.' => 'Value suffixed by “{suffix}”.',
     'verify_new_email_body' => "안녕하세요 {{user.friendlyName}}님,\n\n다음 링크를 클릭하여 새로운 이메일 주소를 확인해 주세요:\n\n<{{link}}>\n\n이 이메일에 관해 모르신다면, 그냥 무시해 주세요.",
     'verify_new_email_heading' => '누군가 자신의 이메일 주소를 변경했을 때:',
     'verify_new_email_subject' => '새로운 이메일 주소를 확인해 주세요',

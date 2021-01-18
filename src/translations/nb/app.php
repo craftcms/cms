@@ -1671,6 +1671,8 @@ Gratulerer! Craft var i stand til å sende e-post. Her er innstillingene du beny
     'updated {timestamp}' => 'oppdatert {timestamp}',
     'user' => 'bruker',
     'users' => 'brukere',
+    'Value prefixed by “{prefix}”.' => 'Value prefixed by “{prefix}”.',
+    'Value suffixed by “{suffix}”.' => 'Value suffixed by “{suffix}”.',
     'verify_new_email_body' => "Hei, {{user.friendlyName}}\n\nBekreft din nye e-postadresse ved å trykke på lenken:\n\n<{{link}}>\n\nHar du ikke bedt om denne e-posten, vennligst se bort fra den.",
     'verify_new_email_heading' => 'Når noen endrer e-postadressen sin:',
     'verify_new_email_subject' => 'Bekreft din nye e-postadresse',
