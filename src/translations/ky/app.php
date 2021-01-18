@@ -1669,6 +1669,8 @@ return [
     'updated {timestamp}' => 'updated {timestamp}',
     'user' => 'user',
     'users' => 'колдонуучулар',
+    'Value prefixed by “{prefix}”.' => 'Value prefixed by “{prefix}”.',
+    'Value suffixed by “{suffix}”.' => 'Value suffixed by “{suffix}”.',
     'verify_new_email_body' => "Hey {{user.friendlyName}},\n\nPlease verify your new email address by clicking on this link:\n\n<{{link}}>\n\nIf you were not expecting this email, just ignore it.",
     'verify_new_email_heading' => 'When someone changes their email address:',
     'verify_new_email_subject' => 'Verify your new email address',
