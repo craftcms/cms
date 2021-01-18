@@ -1671,6 +1671,8 @@ Congratulazioni! Craft ti ha inviato una email con successo. Ecco le impostazion
     'updated {timestamp}' => '{timestamp} aggiornato',
     'user' => 'utente',
     'users' => 'utenti',
+    'Value prefixed by “{prefix}”.' => 'Value prefixed by “{prefix}”.',
+    'Value suffixed by “{suffix}”.' => 'Value suffixed by “{suffix}”.',
     'verify_new_email_body' => "Ciao {{user.friendlyName}},\n\nTi preghiamo di verificare il tuo nuovo indirizzo email cliccando su questo link:\n\n<{{link}}>\n\nSe non aspettavi questa email, ignorala semplicemente.",
     'verify_new_email_heading' => 'Quando qualcuno cambia il proprio indirizzo email:',
     'verify_new_email_subject' => 'Verifica il tuo nuovo indirizzo email',
