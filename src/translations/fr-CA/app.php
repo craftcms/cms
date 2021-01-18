@@ -1669,6 +1669,8 @@ return [
     'updated {timestamp}' => 'mis à jour le {timestamp}',
     'user' => 'utilisateur',
     'users' => 'utilisateurs',
+    'Value prefixed by “{prefix}”.' => 'Value prefixed by “{prefix}”.',
+    'Value suffixed by “{suffix}”.' => 'Value suffixed by “{suffix}”.',
     'verify_new_email_body' => "Bonjour {{user.friendlyName}},\n\nMerci de vérifier votre nouveau courriel en cliquant sur le lien suivant :\n\n<{{link}}>\n\nSi vous n’attendiez aucun courriel de ce type, ignorez-le, tout simplement.",
     'verify_new_email_heading' => 'Lorsqu\'une adresse courriel est modifiée :',
     'verify_new_email_subject' => 'Vérifiez votre nouveau courriel',
