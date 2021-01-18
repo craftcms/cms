@@ -1459,12 +1459,14 @@ class Asset extends Element
      * Get a temporary copy of the actual file.
      *
      * @return string
+     * @throws VolumeException If unable to fetch file from volume.
+     * @throws InvalidConfigException If no volume can be found.
      */
     public function getCopyOfFile(): string
     {
         $tempFilename = uniqid(pathinfo($this->filename, PATHINFO_FILENAME), true) . '.' . $this->getExtension();
         $tempPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $tempFilename;
-        $this->getVolume()->saveFileLocally($this->getPath(), $tempPath);
+        Assets::downloadFile($this->getVolume(), $this->getPath(), $tempPath);
 
         return $tempPath;
     }
@@ -2065,7 +2067,7 @@ class Asset extends Element
             } else {
                 $tempFilename = uniqid(pathinfo($filename, PATHINFO_FILENAME), true) . '.' . pathinfo($filename, PATHINFO_EXTENSION);
                 $tempPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $tempFilename;
-                $oldVolume->saveFileLocally($oldPath, $tempPath);
+                Assets::downloadFile($oldVolume, $oldPath, $tempPath);
             }
 
             // Try to open a file stream

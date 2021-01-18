@@ -22,6 +22,7 @@ use craft\models\AssetIndexData;
 use craft\records\AssetIndexData as AssetIndexDataRecord;
 use yii\base\Component;
 use yii\base\Exception;
+use yii\base\InvalidConfigException;
 
 /**
  * Class AssetIndexer
@@ -467,6 +468,7 @@ class AssetIndexer extends Component
      * @throws MissingAssetException if the asset record doesn't exist and $createIfMissing is false
      * @throws AssetDisallowedExtensionException if the extension of the file is not allowed.
      * @throws AssetLogicException if trying to index a file in a folder that does not exist.
+     * @throws InvalidConfigException
      */
     private function _indexFileByIndexData(AssetIndexData $indexEntry, bool $createIfMissing = true, bool $cacheImages)
     {
@@ -560,7 +562,7 @@ class AssetIndexer extends Component
                     // if $dimensions is not an array by now, either smart-guessing failed or the user wants to cache this.
                     if (!is_array($dimensions)) {
                         $tempPath = AssetsHelper::tempFilePath(pathinfo($filename, PATHINFO_EXTENSION));
-                        $volume->saveFileLocally($indexEntry->uri, $tempPath);
+                        AssetsHelper::downloadFile($volume, $indexEntry->uri, $tempPath);
                         $dimensions = Image::imageSize($tempPath);
                     }
                 }

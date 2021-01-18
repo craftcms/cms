@@ -38,6 +38,7 @@ use DateTime;
 use yii\base\Application;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
+use yii\base\InvalidConfigException;
 use yii\di\Instance;
 
 /**
@@ -1051,8 +1052,9 @@ class AssetTransforms extends Component
      *
      * @param Asset $asset
      * @return string
-     * @throws VolumeException If there was an error downloading the remote file.
      * @throws VolumeObjectNotFoundException If the file cannot be found.
+     * @throws VolumeException If unable to fetch file from volume.
+     * @throws InvalidConfigException If no volume can be found.
      */
     public function getLocalImageSource(Asset $asset): string
     {
@@ -1085,7 +1087,8 @@ class AssetTransforms extends Component
                             FileHelper::unlink($filePath);
                         }
                     }
-                    $volume->saveFileLocally($asset->getPath(), $tempFilePath);
+
+                    AssetsHelper::downloadFile($volume, $asset->getPath(), $tempFilePath);
 
                     if (!is_file($tempFilePath) || filesize($tempFilePath) === 0) {
                         if (!FileHelper::unlink($tempFilePath)) {
