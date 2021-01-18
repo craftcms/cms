@@ -292,6 +292,7 @@
 - Improved the accessibility of lightswitches in the control panel. ([#7313](https://github.com/craftcms/cms/issues/7313))
 - Improved the error message that is output when running the `clear-caches/cp-resources` command, if the `@webroot` alias isn’t explicitly set. ([#7286](https://github.com/craftcms/cms/issues/7286))
 - Improved the accessibility of the Login page. ([#7268](https://github.com/craftcms/cms/issues/7268), [#7287](https://github.com/craftcms/cms/issues/7287), [#7288](https://github.com/craftcms/cms/issues/7288))
+- Improved the accessibility of Number fields. ([#7367](https://github.com/craftcms/cms/issues/7367))
 - Added `aria-label` or `aria-hidden` attributes to control panel icons, where appropriate. ([#7302](https://github.com/craftcms/cms/pull/7302))
 - Dynamic Assets field subfolder paths can now output `:ignore:` to avoid an invalid subpath error if no segment is intended. ([#7353](https://github.com/craftcms/cms/issues/7353))
 - `craft\i18n\I18N::getFormatter()` now instantiates the formatter via `Craft::createObject()`. ([#7341](https://github.com/craftcms/cms/issues/7341))
