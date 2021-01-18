@@ -7,7 +7,7 @@
 - URL fields now have an “Allowed URL Types” setting, which adds the ability to accept telephone and email URLs. ([#5497](https://github.com/craftcms/cms/issues/5497))
 - Added the “Captions/Subtitles” file kind. ([#7304](https://github.com/craftcms/cms/issues/7304))
 - Added the `handleCasing` config setting, which determines the default casing that should be used when autogenerating component handles. ([#4276](https://github.com/craftcms/cms/issues/4276))
-- Added the `sanitizeCpImageUploads` config setting which determines whether images uploaded via CP should be cleansed. ([#3060](https://github.com/craftcms/cms/issues/3060))
+- Added the `sanitizeCpImageUploads` config setting, which determines whether images uploaded via the control panel should be sanitized. ([#3060](https://github.com/craftcms/cms/issues/3060))
 - Added `craft\base\ApplicationTrait::getFormattingLocale()`, which returns the locale that should be used for date/time formatting.
 - Added `craft\base\FieldInterface::useFieldset()`, which custom fields can override to return `true` if a `<fieldset>` and `<legend>` should be used, rather than a `<div>` and `<label>`.
 - Added `craft\base\VolumeInterface::createDirectory()`.

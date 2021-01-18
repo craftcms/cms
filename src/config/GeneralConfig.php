@@ -1249,7 +1249,9 @@ class GeneralConfig extends BaseObject
     public $runQueueAutomatically = true;
 
     /**
-     * @var bool Whether images uploaded via Control Panel should be sanitized. Defaults to `true`.
+     * @var bool Whether images uploaded via the control panel should be sanitized.
+     * @since 3.6.0
+     * @group Security
      */
     public $sanitizeCpImageUploads = true;
 
