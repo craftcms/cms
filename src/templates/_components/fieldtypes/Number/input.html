@@ -14,8 +14,8 @@
         id: descriptionId,
         class: 'visually-hidden',
         text: [
-            hasPrefix ? 'Value prefixed by {prefix}.'|t('app', {prefix: prefix}),
-            hasSuffix ? 'Value suffixed by {suffix}.'|t('app', {suffix: suffix}),
+            hasPrefix ? 'Value prefixed by “{prefix}”.'|t('app', {prefix: prefix}),
+            hasSuffix ? 'Value suffixed by “{suffix}”.'|t('app', {suffix: suffix}),
         ]|filter|join(' '),
     }) }}
 {% endif %}
