@@ -100,6 +100,7 @@
 - Added `craft\models\Site::setName()`.
 - Added `craft\mutex\MysqlMutex`.
 - Added `craft\mutex\PgsqlMutex`.
+- Added `craft\services\Assets::$generatePendingTransformsViaQueue`. ([#7360](https://github.com/craftcms/cms/issues/7360))
 - Added `craft\services\Drafts::EVENT_AFTER_APPLY_DRAFT`.
 - Added `craft\services\Drafts::EVENT_BEFORE_APPLY_DRAFT`.
 - Added `craft\services\Drafts::publishDraft()`.

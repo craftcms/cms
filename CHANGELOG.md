@@ -27,6 +27,7 @@
 - Added `craft\i18n\Locale::setDateTimeFormats()`. ([#7394](https://github.com/craftcms/cms/issues/7394))
 - Added `craft\mutex\MysqlMutex`.
 - Added `craft\mutex\PgsqlMutex`.
+- Added `craft\services\Assets::$generatePendingTransformsViaQueue`. ([#7360](https://github.com/craftcms/cms/issues/7360))
 - Added `craft\validators\UrlValidator::URL_PATTERN`.
 
 ### Changed
