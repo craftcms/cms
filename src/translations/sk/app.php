@@ -1669,6 +1669,8 @@ return [
     'updated {timestamp}' => 'aktualizované {timestamp}',
     'user' => 'používateľ',
     'users' => 'používatelia',
+    'Value prefixed by “{prefix}”.' => 'Value prefixed by “{prefix}”.',
+    'Value suffixed by “{suffix}”.' => 'Value suffixed by “{suffix}”.',
     'verify_new_email_body' => "Ahoj {{user.friendlyName}},\n\nProsím, potvrď svoju novú emailovú adresu kliknutím na tento odkaz:\n\n<{{link}}>\n\nAk si tento email neočakával, jednoducho ho ignoruj.",
     'verify_new_email_heading' => 'Keď niekto zmení svoju emailovú adresu:',
     'verify_new_email_subject' => 'Overiť novú emailovú adresu',
