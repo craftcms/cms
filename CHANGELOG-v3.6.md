@@ -23,6 +23,7 @@
 - Added the `maxGraphqlDepth` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
 - Added the `maxGraphqlResults` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
 - Added the `rasterizeSvgThumbs` config setting. ([#7146](https://github.com/craftcms/cms/issues/7146))
+- Added the `sanitizeCpImageUploads` config setting which determines whether images uploaded via CP should be cleansed. ([#3060](https://github.com/craftcms/cms/issues/3060))
 - Added the `{% tag %}` Twig tag.
 - Added the `withGroups` user query param.
 - Added the `relatedToAssets`, `relatedToCategories`, `relatedToEntries`, `relatedToTags`, and `relatedToUsers` arguments to GraphQL queries. ([#7110](https://github.com/craftcms/cms/issues/7110))

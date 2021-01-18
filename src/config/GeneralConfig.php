@@ -1249,6 +1249,11 @@ class GeneralConfig extends BaseObject
     public $runQueueAutomatically = true;
 
     /**
+     * @var bool Whether images uploaded via Control Panel should be sanitized. Defaults to `true`.
+     */
+    public $sanitizeCpImageUploads = true;
+
+    /**
      * @var string The [SameSite](https://www.owasp.org/index.php/SameSite) value that should be set on Craft cookies, if any.
      *
      * This can be set to `'Lax'`, `'Strict'`, or `null`.

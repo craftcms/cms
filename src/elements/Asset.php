@@ -1823,9 +1823,13 @@ class Asset extends Element
     public function afterSave(bool $isNew)
     {
         if (!$this->propagating) {
+            $isCpRequest = Craft::$app->getRequest()->getIsCpRequest();
+            $sanitizeCpImageUploads = Craft::$app->getConfig()->getGeneral()->sanitizeCpImageUploads;
+            
             if (
                 \in_array($this->getScenario(), [self::SCENARIO_REPLACE, self::SCENARIO_CREATE], true) &&
-                AssetsHelper::getFileKindByExtension($this->tempFilePath) === static::KIND_IMAGE
+                AssetsHelper::getFileKindByExtension($this->tempFilePath) === static::KIND_IMAGE &&
+                !($isCpRequest && !$sanitizeCpImageUploads)
             ) {
                 Image::cleanImageByPath($this->tempFilePath);
             }

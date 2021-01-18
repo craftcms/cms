@@ -71,7 +71,11 @@ class RebrandController extends Controller
         move_uploaded_file($file->tempName, $fileDestination);
 
         $imagesService = Craft::$app->getImages();
-        Image::cleanImageByPath($fileDestination);
+
+        if (Craft::$app->getConfig()->getGeneral()->sanitizeCpImageUploads) {
+            Image::cleanImageByPath($fileDestination);
+        }
+
         $imagesService->loadImage($fileDestination)->scaleToFit(300, 300)->saveAs($fileDestination);
         $html = $this->getView()->renderTemplate('settings/general/_images/' . $type);
 
