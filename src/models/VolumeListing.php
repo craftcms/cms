@@ -18,7 +18,8 @@ use craft\base\VolumeInterface;
  * @property-read string $type "file" or "dir"
  * @property-read VolumeInterface $volume The volume containing the listing.
  * @property-read string $uri Listing URI
- * @property-read VolumeListingMetadata $metadata The listing's meta data
+ * @property-read null|int $fileSize
+ * @property-read int $dateModified
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
@@ -40,6 +41,16 @@ class VolumeListing extends Model
      */
     private string $type;
 
+    /**
+     * @var int|null The filesize.
+     */
+    private ?int $fileSize;
+
+    /**
+     * @var int|null Timestamp of date modified.
+     */
+    private int $dateModified;
+
     private VolumeInterface $volume;
 
     /**
@@ -51,6 +62,11 @@ class VolumeListing extends Model
         $this->filename = $config['filename'];
         $this->type = $config['type'];
         $this->volume = $config['volume'];
+        $this->dateModified = $config['dateModified'] ?? null;
+
+        if ($this->type === 'file') {
+            $this->fileSize = $config['fileSize'];
+        }
 
         parent::__construct([]);
     }
@@ -77,6 +93,22 @@ class VolumeListing extends Model
     public function getFilename(): string
     {
         return $this->filename;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getFileSize(): ?int
+    {
+        return $this->type !== 'dir' ? $this->fileSize : null;
+    }
+
+    /**
+     * @return int
+     */
+    public function getDateModified(): int
+    {
+        return $this->dateModified;
     }
 
     /**

@@ -152,6 +152,8 @@ class Local extends Volume implements LocalVolumeInterface
                 'path' => pathinfo($filePath, PATHINFO_DIRNAME),
                 'filename' => $listing->getFilename(),
                 'type' => $listing->isDir() ? 'dir' : 'file',
+                'dateModified' => filemtime($listing->getRealPath()),
+                'fileSize' => !$listing->isDir() ? filesize($listing->getRealPath()) : null,
                 'volume' => $this
             ]);
         }
