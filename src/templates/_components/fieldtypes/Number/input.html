@@ -33,8 +33,10 @@
             value: value,
             inputmode: field.decimals ? 'decimal' : 'numeric',
             size: field.size,
-            aria: {
-                describedby: descriptionId,
+            inputAttributes: {
+                aria: {
+                    describedby: descriptionId,
+                },
             },
         }) }}
     </div>
