@@ -1194,49 +1194,51 @@ class AssetTransforms extends Component
      * @param Asset $asset
      * @return mixed|string
      * @throws AssetLogicException If attempting to detect an image format for a non-image.
+     * @throws VolumeException If unable to fetch file from volume.
+     * @throws InvalidConfigException If no volume can be found.
      */
-    public function detectAutoTransformFormat(Asset $asset)
+    public function detectAutoTransformFormat(Asset $asset): string
     {
         if (in_array(mb_strtolower($asset->getExtension()), Image::webSafeFormats(), true)) {
             return $asset->getExtension();
         }
 
-        if ($asset->kind === Asset::KIND_IMAGE) {
-            // The only reasonable way to check for transparency is with Imagick. If Imagick is not present, then
-            // we fallback to jpg
-            $images = Craft::$app->getImages();
-            if ($images->getIsGd() || !method_exists(\Imagick::class, 'getImageAlphaChannel')) {
-                return 'jpg';
-            }
-
-            $volume = $asset->getVolume();
-
-            $tempFilename = uniqid(pathinfo($asset->filename, PATHINFO_FILENAME), true) . '.' . $asset->getExtension();
-            $tempPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $tempFilename;
-            $volume->saveFileLocally($asset->getPath(), $tempPath);
-
-            $image = $images->loadImage($tempPath);
-
-            if ($image->getIsTransparent()) {
-                $format = 'png';
-            } else {
-                $format = 'jpg';
-            }
-
-            if (!$volume instanceof LocalVolumeInterface) {
-                // Store for potential later use and queue for deletion if needed.
-                $asset->setTransformSource($tempPath);
-                $this->queueSourceForDeletingIfNecessary($tempPath);
-            } else {
-                // For local, though, we just delete the temp file.
-                FileHelper::unlink($tempPath);
-            }
-
-            return $format;
+        if ($asset->kind !== Asset::KIND_IMAGE) {
+            throw new AssetLogicException(Craft::t('app',
+                'Tried to detect the appropriate image format for a non-image!'));
         }
 
-        throw new AssetLogicException(Craft::t('app',
-            'Tried to detect the appropriate image format for a non-image!'));
+        // The only reasonable way to check for transparency is with Imagick. If Imagick is not present, then
+        // we fallback to jpg
+        $images = Craft::$app->getImages();
+        if ($images->getIsGd() || !method_exists(\Imagick::class, 'getImageAlphaChannel')) {
+            return 'jpg';
+        }
+
+        $volume = $asset->getVolume();
+
+        $tempFilename = uniqid(pathinfo($asset->filename, PATHINFO_FILENAME), true) . '.' . $asset->getExtension();
+        $tempPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $tempFilename;
+        AssetsHelper::downloadFile($volume, $asset->getPath(), $tempPath);
+
+        $image = $images->loadImage($tempPath);
+
+        if ($image->getIsTransparent()) {
+            $format = 'png';
+        } else {
+            $format = 'jpg';
+        }
+
+        if (!$volume instanceof LocalVolumeInterface) {
+            // Store for potential later use and queue for deletion if needed.
+            $asset->setTransformSource($tempPath);
+            $this->queueSourceForDeletingIfNecessary($tempPath);
+        } else {
+            // For local, though, we just delete the temp file.
+            FileHelper::unlink($tempPath);
+        }
+
+        return $format;
     }
 
     /**
