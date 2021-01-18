@@ -1673,6 +1673,8 @@ Köszönjük, hogy regsiztráltál, a felhasználói filókod aktiváláshoz kat
     'updated {timestamp}' => 'frissített {timestamp}',
     'user' => 'felhasználó',
     'users' => 'felhasználók',
+    'Value prefixed by “{prefix}”.' => 'Value prefixed by “{prefix}”.',
+    'Value suffixed by “{suffix}”.' => 'Value suffixed by “{suffix}”.',
     'verify_new_email_body' => "Hello {{user.friendlyName}},\n\nKérjük erősitsd meg az új email címedet az alábbi linkre kattintva:\n\n<{{link}}>\n\nAmennyiben nem neked szól ez a levél, egyszerűen csak hagyd figyelmen kívül.",
     'verify_new_email_heading' => 'Amikor valaki e-mail címet változtat:',
     'verify_new_email_subject' => 'Ellenőrizze e-mail címét',
