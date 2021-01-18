@@ -74,6 +74,7 @@
 - Added `craft\gql\types\input\criteria\Entry`.
 - Added `craft\gql\types\input\criteria\Tag`.
 - Added `craft\gql\types\input\criteria\User`.
+- Added `craft\helpers\App::createFormattingLocale()`.
 - Added `craft\helpers\App::phpSizeToBytes()`.
 - Added `craft\helpers\Cp::checkboxFieldHtml()`.
 - Added `craft\helpers\Cp::checkboxSelectFieldHtml()`.
@@ -91,6 +92,7 @@
 - Added `craft\helpers\Gql::singleQueryComplexity()`.
 - Added `craft\helpers\Template::paginateQuery()`.
 - Added `craft\i18n\I18N::validateAppLocaleId()`.
+- Added `craft\i18n\Locale::setDateTimeFormats()`. ([#7394](https://github.com/craftcms/cms/issues/7394))
 - Added `craft\log\Dispatcher`.
 - Added `craft\models\FieldLayout::EVENT_CREATE_FORM`. ([#7258](https://github.com/craftcms/cms/issues/7258))
 - Added `craft\models\Site::getName()`.

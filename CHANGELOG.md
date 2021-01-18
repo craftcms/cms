@@ -19,10 +19,12 @@
 - Added `craft\fields\Url::TYPE_EMAIL`.
 - Added `craft\fields\Url::TYPE_TEL`.
 - Added `craft\fields\Url::TYPE_URL`.
+- Added `craft\helpers\App::createFormattingLocale()`.
 - Added `craft\helpers\Cp::checkboxSelectFieldHtml()`.
 - Added `craft\helpers\Cp::selectHtml()`.
 - Added `craft\helpers\Template::paginateQuery()`.
 - Added `craft\i18n\I18N::validateAppLocaleId()`.
+- Added `craft\i18n\Locale::setDateTimeFormats()`. ([#7394](https://github.com/craftcms/cms/issues/7394))
 - Added `craft\mutex\MysqlMutex`.
 - Added `craft\mutex\PgsqlMutex`.
 - Added `craft\validators\UrlValidator::URL_PATTERN`.
