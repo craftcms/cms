@@ -36,6 +36,7 @@
 - Field containers no longer set the `aria-describedby` attribute, leaving it up to the actual inputs to do so. ([#7365](https://github.com/craftcms/cms/issues/7365))
 - Number field settings and input values are now fully formatted, unless the Preview Format setting is set to “Unformatted”.
 - Mutex lock names are now prefixed with the application ID, to avoid lock conflicts if two Craft installs shared the same database. ([#7384](https://github.com/craftcms/cms/issues/7384))
+- Action URLs are now always based on the control panel URL when running Craft in headless mode. ([#5553](https://github.com/craftcms/cms/issues/5553))
 - The `migrate/all` command now lists the migrations that will be applied. ([#7381](https://github.com/craftcms/cms/issues/7381))
 - The `project-config/apply` command now displays a list of changes it is applying. ([#7235](https://github.com/craftcms/cms/issues/7235))
 - The `allowedFileExtensions` config setting now includes several file extensions used by caption and subtitle file formats by default. ([#7304](https://github.com/craftcms/cms/issues/7304))
