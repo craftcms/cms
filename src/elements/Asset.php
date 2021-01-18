@@ -29,6 +29,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\errors\AssetException;
 use craft\errors\AssetTransformException;
 use craft\errors\FileException;
+use craft\errors\VolumeException;
 use craft\errors\VolumeObjectNotFoundException;
 use craft\events\AssetEvent;
 use craft\helpers\ArrayHelper;
@@ -1473,7 +1474,7 @@ class Asset extends Element
      *
      * @return resource
      * @throws InvalidConfigException if [[volumeId]] is missing or invalid
-     * @throws AssetException if a stream could not be created
+     * @throws VolumeException if a stream cannot be created
      */
     public function getStream()
     {
@@ -2026,9 +2027,10 @@ class Asset extends Element
     /**
      * Relocates the file after the element has been saved.
      *
-     * @throws FileException if the file is being moved but cannot be read
+     * @throws VolumeException if a file operation errored
+     * @throws Exception if something else goes wrong
      */
-    private function _relocateFile()
+    private function _relocateFile(): void
     {
         $assetsService = Craft::$app->getAssets();
 
@@ -2077,14 +2079,25 @@ class Asset extends Element
                 $oldVolume->deleteFile($oldPath);
             }
 
-            // Upload the file to the new location
-            $newVolume->writeFileFromStream($newPath, $stream, [
-                Volume::CONFIG_MIMETYPE => FileHelper::getMimeType($tempPath),
-            ]);
+            $exception = null;
 
-            // Rackspace will disconnect the stream automatically
-            if (is_resource($stream)) {
-                fclose($stream);
+            // Upload the file to the new location
+            try {
+                $newVolume->writeFileFromStream($newPath, $stream, [
+                    Volume::CONFIG_MIMETYPE => FileHelper::getMimeType($tempPath),
+                ]);
+            } catch (VolumeException $exception) {
+                Craft::$app->getErrorHandler()->logException($exception);
+            } finally {
+                // If the volume has not already disconnected the stream, clean it up.
+                if (is_resource($stream)) {
+                    fclose($stream);
+                }
+            }
+
+            // Re-throw it, after we've made sure that the stream is disconnected.
+            if ($exception !== null) {
+                throw $exception;
             }
         }
 

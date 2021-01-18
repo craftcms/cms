@@ -13,6 +13,7 @@ use craft\base\VolumeInterface;
 use craft\elements\Asset;
 use craft\enums\PeriodType;
 use craft\errors\AssetException;
+use craft\errors\VolumeException;
 use craft\events\RegisterAssetFileKindsEvent;
 use craft\events\SetAssetFilenameEvent;
 use craft\models\AssetTransformIndex;
@@ -767,7 +768,7 @@ class Assets
      * @param string $uriPath
      * @param string $localPath
      * @return int
-     * @throws AssetException
+     * @throws VolumeException if stream cannot be created.
      */
     public static function downloadFile(VolumeInterface $volume, string $uriPath, string $localPath): int
     {

@@ -13,6 +13,7 @@ use craft\elements\Asset;
 use craft\errors\AssetException;
 use craft\errors\AssetLogicException;
 use craft\errors\UploadFailedException;
+use craft\errors\VolumeException;
 use craft\fields\Assets as AssetsField;
 use craft\helpers\App;
 use craft\helpers\Assets;
@@ -752,7 +753,12 @@ class AssetsController extends Controller
         ]);
 
         if (!$existingFolder) {
-            $existingFolder = $targetVolume->folderExists(rtrim($destinationFolder->path, '/') . '/' . $folderToMove->name);
+            try {
+                $existingFolder = $targetVolume->folderExists(rtrim($destinationFolder->path, '/') . '/' . $folderToMove->name);
+            } catch (VolumeException $exception) {
+                Craft::$app->getErrorHandler()->logException($exception);
+                return $this->asErrorJson(Craft::t('app', 'An error was encountered while attempting the operation.'));
+            }
         }
 
         // If this a conflict and no force or merge flags were passed in then STOP RIGHT THERE!
@@ -799,7 +805,12 @@ class AssetsController extends Controller
                     }
                 } else if ($existingFolder && $force) {
                     // An un-indexed folder is conflicting. If we're forcing things, just remove it.
-                    $targetVolume->deleteDirectory(rtrim($destinationFolder->path, '/') . '/' . $folderToMove->name);
+                    try {
+                        $targetVolume->deleteDirectory(rtrim($destinationFolder->path, '/') . '/' . $folderToMove->name);
+                    } catch (VolumeException $exception) {
+                        Craft::$app->getErrorHandler()->logException($exception);
+                        return $this->asErrorJson(Craft::t('app', 'Unable to delete directory while moving assets.'));
+                    }
                 }
 
                 // Mirror the structure, passing along the exsting folder map

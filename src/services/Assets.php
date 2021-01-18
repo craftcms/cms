@@ -50,6 +50,7 @@ use craft\records\VolumeFolder as VolumeFolderRecord;
 use craft\volumes\Temp;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
+use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 
 /**
@@ -206,8 +207,8 @@ class Assets extends Component
      * @param VolumeFolder $folder
      * @param bool $indexExisting Set to true to just index the folder if it already exists on volume.
      * @throws AssetConflictException if a folder already exists with such a name
-     * @throws InvalidArgumentException if $folder doesn’t have a parent
-     * @throws VolumeObjectExistsException if the file actually exists on the volume, but on in the index
+     * @throws VolumeException if something went catastrophically wrong creating the folder.
+     * @throws InvalidConfigException
      */
     public function createFolder(VolumeFolder $folder, bool $indexExisting = false)
     {
@@ -231,13 +232,7 @@ class Assets extends Component
         $volume = $parent->getVolume();
         $path = rtrim($folder->path, '/');
 
-        try {
-            $volume->createDirectory($path);
-        } catch (VolumeObjectExistsException $e) {
-            // Already there, so just log a warning about it
-            Craft::warning("Couldn’t create volume folder at $path because it already exists.");
-            Craft::$app->getErrorHandler()->logException($e);
-        }
+        $volume->createDirectory($path);
 
         $this->storeFolderRecord($folder);
     }
@@ -248,10 +243,10 @@ class Assets extends Component
      * @param int $folderId
      * @param string $newName
      * @return string The new folder name after cleaning it.
+     * @throws AssetConflictException
      * @throws AssetLogicException If the folder to be renamed can't be found or trying to rename the top folder.
-     * @throws VolumeObjectExistsException If a folder already exists with such name in the Volume, but not in Index
-     * @throws VolumeObjectNotFoundException If the folder to be renamed can't be found in the Volume.
-     * @throws AssetConflictException If a folder already exists with such name in Assets Index
+     * @throws InvalidConfigException
+     * @throws VolumeException
      */
     public function renameFolderById(int $folderId, string $newName): string
     {
@@ -306,7 +301,9 @@ class Assets extends Component
      *
      * @param array|int $folderIds
      * @param bool $deleteDir Should the volume directory be deleted along the record, if applicable. Defaults to true.
-     * @throws VolumeException If deleting a single folder and it cannot be deleted.
+     * @throws InvalidConfigException if the volume cannot be fetched from folder.
+     * @throws VolumeException if a folder cannot be deleted.
+     * @throws \Throwable if an asset cannot be deleted
      */
     public function deleteFoldersByIds($folderIds, bool $deleteDir = true)
     {
@@ -888,7 +885,7 @@ class Assets extends Component
      * @param VolumeInterface $volume
      * @param bool $justRecord If set to false, will also make sure the physical folder exists on Volume.
      * @return int
-     * @throws VolumeException If the volume cannot be found.
+     * @throws VolumeException if something went catastrophically wrong creating the folder.
      */
     public function ensureFolderByFullPathAndVolume(string $fullPath, VolumeInterface $volume, bool $justRecord = true): int
     {
@@ -922,13 +919,7 @@ class Assets extends Component
 
                 // Ensure a physical folder exists, if needed.
                 if (!$justRecord) {
-                    try {
-                        $volume->createDirectory($path);
-                    } catch (VolumeObjectExistsException $e) {
-                        // Already there, so just log a warning about it
-                        Craft::warning("Couldn’t create volume folder at $path because it already exists.");
-                        Craft::$app->getErrorHandler()->logException($e);
-                    }
+                    $volume->createDirectory($path);
                 }
 
                 // Set the variables for next iteration.

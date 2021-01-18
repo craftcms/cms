@@ -116,7 +116,6 @@ interface VolumeInterface extends SavableComponentInterface
      * Deletes a file.
      *
      * @param string $path The path of the file, relative to the source’s root
-     * @throws VolumeException if something goes wrong
      */
     public function deleteFile(string $path): void;
 
@@ -171,7 +170,6 @@ interface VolumeInterface extends SavableComponentInterface
      *
      * @param string $path The path of the directory, relative to the source’s root
      * @param array $config The config to use
-     * @throws VolumeObjectExistsException if a directory with such name already exists
      * @throws VolumeException if something goes wrong
      */
     public function createDirectory(string $path, array $config = []): void;
@@ -189,7 +187,6 @@ interface VolumeInterface extends SavableComponentInterface
      *
      * @param string $path The path of the directory, relative to the source’s root
      * @param string $newName The new path of the directory, relative to the source’s root
-     * @throws VolumeException if something else goes wrong
      */
     public function renameDirectory(string $path, string $newName): void;
 }

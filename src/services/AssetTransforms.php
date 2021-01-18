@@ -18,7 +18,6 @@ use craft\errors\AssetException;
 use craft\errors\AssetLogicException;
 use craft\errors\AssetTransformException;
 use craft\errors\VolumeException;
-use craft\errors\VolumeObjectExistsException;
 use craft\errors\VolumeObjectNotFoundException;
 use craft\events\AssetTransformEvent;
 use craft\events\AssetTransformImageEvent;
@@ -806,11 +805,15 @@ class AssetTransforms extends Component
             $to = $asset->folderPath . $this->getTransformSubpath($asset, $index);
 
             // Sanity check
-            if ($volume->fileExists($to)) {
-                return true;
-            }
+            try {
+                if ($volume->fileExists($to)) {
+                    return true;
+                }
 
-            $volume->copyFile($from, $to);
+                $volume->copyFile($from, $to);
+            } catch (VolumeException $exception) {
+                throw new AssetTransformException('There was a problem re-using an existing transform.', 0, $exception);
+            }
         } else {
             $this->_createTransformForAsset($asset, $index);
         }
@@ -1607,8 +1610,8 @@ class AssetTransforms extends Component
 
         try {
             $volume->writeFileFromStream($transformPath, $stream, []);
-        } catch (VolumeObjectExistsException $e) {
-            // We're fine with that.
+        } catch (VolumeException $e) {
+            Craft::$app->getErrorHandler()->logException($e);
         }
 
         FileHelper::unlink($tempPath);
