@@ -107,7 +107,7 @@ class PasswordValidatorTest extends Unit
     public function testToStringExpectException()
     {
         $passVal = $this->passwordValidator;
-        $this->tester->expectThrowable(ErrorException::class, function() use ($passVal) {
+        $this->tester->expectThrowable(\TypeError::class, function() use ($passVal) {
             $passVal->isEmpty = 'craft_increment';
             $passVal->isEmpty(1);
         });
