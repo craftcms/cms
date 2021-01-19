@@ -1,5 +1,32 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.5.18 - 2021-01-19
+
+### Changed
+- Improved the accessibility of lightswitches in the control panel. ([#7313](https://github.com/craftcms/cms/issues/7313))
+- Improved the accessibility of the Login page. ([#7268](https://github.com/craftcms/cms/issues/7268), [#7287](https://github.com/craftcms/cms/issues/7287), [#7288](https://github.com/craftcms/cms/issues/7288))
+- Improved the accessibility of Number fields. ([#7367](https://github.com/craftcms/cms/issues/7367))
+- Added `aria-label` or `aria-hidden` attributes to control panel icons, where appropriate. ([#7302](https://github.com/craftcms/cms/pull/7302))
+- Dynamic subfolder paths in Assets fields can now output `:ignore:` to avoid an invalid subpath error if no segment is intended. ([#7353](https://github.com/craftcms/cms/issues/7353))
+- Improved the error message that is output when running the `clear-caches/cp-resources` command, if the `@webroot` alias isn’t explicitly set. ([#7286](https://github.com/craftcms/cms/issues/7286))
+- `craft\i18n\I18N::getFormatter()` now instantiates the formatter via `Craft::createObject()`. ([#7341](https://github.com/craftcms/cms/issues/7341))
+
+### Fixed
+- Fixed a bug where auto-created Matrix blocks were taking over the focus when creating a new entry. ([#7363](https://github.com/craftcms/cms/issues/7363))
+- Fixed an error that could occur due to a race condition when generating `CustomFieldBehavior` classes. ([#7379](https://github.com/craftcms/cms/issues/7379))
+- Fixed a bug where field layout tabs’ settings buttons could become inaccessible if the tab name began with a long word without any hyphens. ([#7298](https://github.com/craftcms/cms/issues/7298))
+- Fixed a bug where Dropdown, Multi-select, and Number fields’ inputs weren’t getting `id` attributes that matched their labels’ `for` attributes. ([#7319](https://github.com/craftcms/cms/issues/7319))
+- Fixed a bug where week day and month names were being translated based on the current formatting locale, rather than the current language. ([#7312](https://github.com/craftcms/cms/issues/7312))
+- Fixed a bug where Matrix blocks weren’t getting validated when autosaving entry drafts.
+- Fixed an error that could occur when saving elements with Matrix fields, if there were any custom fields whose handles conflicted with `craft\elements\db\ElementQuery` getter methods, such as `criteria`. ([#7335](https://github.com/craftcms/cms/issues/7335))
+- Fixed a bug where it wasn’t possible to upload some file types via GraphQL mutations. ([#7327](https://github.com/craftcms/cms/issues/7327))
+- Fixed an error that could occur on console requests if Craft didn’t think it was installed yet. ([#7309](https://github.com/craftcms/cms/issues/7309))
+- Fixed a bug where clearing control panel resources would delete the `.gitignore` file as well. ([#7361](https://github.com/craftcms/cms/issues/7361))
+- Fixed a bug where user registration forms could get a “Username cannot be blank” error even if the `useEmailAsUsername` config setting was enabled. ([#7357](https://github.com/craftcms/cms/issues/7357))
+- Fixed a bug where `craft\elements\Asset::getSrcset()` could return the wrong value if the asset had a named transform set on it. ([#7352](https://github.com/craftcms/cms/issues/7352))
+- Fixed a bug where the “All” checkbox label was getting HTML-encoded when using `Craft.ui.createCheckboxSelect()`.
+- Fixed a bug where `Craft.formatNumber()` could format numbers based on the user’s preferred language rather than the preferred formatting locale.
+
 ## 3.5.17.1 - 2020-12-17
 
 ### Fixed

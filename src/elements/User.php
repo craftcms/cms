@@ -698,9 +698,13 @@ class User extends Element implements IdentityInterface
         $rules[] = [['email', 'unverifiedEmail'], 'email', 'enableIDN' => $enableIdn];
         $rules[] = [['email', 'password', 'unverifiedEmail'], 'string', 'max' => 255];
         $rules[] = [['username', 'firstName', 'lastName', 'verificationCode'], 'string', 'max' => 100];
-        $rules[] = [['username', 'email'], 'required'];
-        $rules[] = [['username'], UsernameValidator::class];
+        $rules[] = [['email'], 'required'];
         $rules[] = [['lastLoginAttemptIp'], 'string', 'max' => 45];
+
+        if (!Craft::$app->getConfig()->getGeneral()->useEmailAsUsername) {
+            $rules[] = [['username'], 'required'];
+            $rules[] = [['username'], UsernameValidator::class];
+        }
 
         if (Craft::$app->getIsInstalled()) {
             $rules[] = [

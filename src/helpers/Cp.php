@@ -423,8 +423,11 @@ class Cp
                         : '') .
                     ($translatable
                         ? Html::tag('div', '', [
-                            'title' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
                             'class' => ['t9n-indicator'],
+                            'title' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
+                            'aria' => [
+                                'label' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
+                            ],
                             'data' => [
                                 'icon' => 'language',
                             ],

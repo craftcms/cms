@@ -383,7 +383,7 @@ Craft.CustomizeSourcesModal.Source = Craft.CustomizeSourcesModal.BaseSource.exte
                 .append('<div class="icon move"/>')
                 .append(
                     Craft.ui.createCheckbox({
-                        label: label,
+                        label: Craft.escapeHtml(label),
                         name: 'sources[' + this.sourceData.key + '][tableAttributes][]',
                         value: key,
                         checked: checked,

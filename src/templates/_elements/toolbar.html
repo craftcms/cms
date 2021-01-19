@@ -42,9 +42,9 @@
                 <ul class="padded">
                     {% set draftsExist = elementInstance.find().draftOf(false).anyStatus().siteId('*').limit(1).exists() %}
                     {% if draftsExist %}
-                        <li><a data-drafts><span class="icon" data-icon="draft"></span>{{ 'Drafts'|t('app') }}</a></li>
+                        <li><a data-drafts><span class="icon" data-icon="draft" aria-hidden="true"></span>{{ 'Drafts'|t('app') }}</a></li>
                     {% endif %}
-                    <li><a data-trashed><span class="icon" data-icon="trash"></span>{{ "Trashed"|t('app') }}</a></li>
+                    <li><a data-trashed><span class="icon" data-icon="trash" aria-hidden="true"></span>{{ "Trashed"|t('app') }}</a></li>
                 </ul>
             {% endif %}
         </div>
@@ -56,7 +56,11 @@
 <div class="flex-grow texticon search icon clearable">
     {{ text({
         placeholder: "Search"|t('app'),
-        'aria-label': "Search"|t('app'),
+        inputAttributes: {
+            aria: {
+                label: 'Search'|t('app'),
+            },
+        },
     }) }}
     <div class="clear hidden" title="{{ 'Clear'|t('app') }}" aria-label="{{ 'Clear'|t('app') }}"></div>
 </div>

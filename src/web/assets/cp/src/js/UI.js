@@ -84,6 +84,7 @@ Craft.ui =
                 'class': 'btn',
                 'data-icon': 'clipboard',
                 title: Craft.t('app', 'Copy to clipboard'),
+                'aria-label': Craft.t('app', 'Copy to clipboard'),
             }).appendTo($container);
 
             $btn.on('click', () => {
@@ -266,7 +267,7 @@ Craft.ui =
 
             var $label = $('<label/>', {
                 'for': id,
-                text: config.label
+                html: config.label,
             });
 
             // Should we include a hidden input first?
@@ -378,13 +379,13 @@ Craft.ui =
             var value = config.value || '1';
             var indeterminateValue = config.indeterminateValue || '-';
 
-            var $container = $('<div/>', {
+            var $container = $('<button/>', {
+                'type': 'button',
                 'class': 'lightswitch',
-                tabindex: '0',
                 'data-value': value,
                 'data-indeterminate-value': indeterminateValue,
                 id: config.id,
-                role: 'switch',
+                role: 'checkbox',
                 'aria-checked': config.on ? 'true' : (config.indeterminate ? 'mixed' : 'false'),
                 'aria-labelledby': config.labelId,
                 'data-target': config.toggle,

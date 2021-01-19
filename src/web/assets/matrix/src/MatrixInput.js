@@ -201,7 +201,7 @@
                 }
             },
 
-            addBlock: function(type, $insertBefore) {
+            addBlock: function(type, $insertBefore, autofocus) {
                 if (!this.canAddMoreBlocks()) {
                     return;
                 }
@@ -296,11 +296,12 @@
                     this.updateAddBlockBtn();
 
                     Garnish.requestAnimationFrame(function() {
-                        // Scroll to the block
-                        Garnish.scrollContainerToElement($block);
-
-                        // Focus on the first text input
-                        $block.find('.text,[contenteditable]').first().trigger('focus');
+                        if (typeof autofocus === 'undefined' || autofocus) {
+                            // Scroll to the block
+                            Garnish.scrollContainerToElement($block);
+                            // Focus on the first text input
+                            $block.find('.text,[contenteditable]').first().trigger('focus');
+                        }
 
                         // Resume the draft editor
                         if (window.draftEditor) {

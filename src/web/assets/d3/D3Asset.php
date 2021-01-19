@@ -67,12 +67,14 @@ class D3Asset extends AssetBundle
      */
     public function formatDef(string $dir): string
     {
-        // Do we have locale data for that exact language?
-        if (($def = $this->_def($dir, Craft::$app->language)) !== null) {
+        $locale = Craft::$app->getLocale();
+
+        // Do we have locale data for that exact formatting locale?
+        if (($def = $this->_def($dir, $locale->id)) !== null) {
             return $def;
         }
 
-        $language = Craft::$app->getLocale()->getLanguageID();
+        $language = $locale->getLanguageID();
 
         // Do we have a default for this language ID?
         if (

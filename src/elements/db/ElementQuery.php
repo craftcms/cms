@@ -1666,7 +1666,17 @@ class ElementQuery extends Query implements ElementQueryInterface
         foreach ((new \ReflectionClass($behavior))->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
             if (
                 !$property->isStatic() &&
-                !in_array($property->getName(), ['hasMethods', 'owner'], true)
+                !in_array($property->getName(), [
+                    'hasMethods',
+                    'owner',
+                    // avoid conflicts with ElementQuery getters
+                    'iterator',
+                    'cachedResult',
+                    'criteria',
+                    'behaviors',
+                    'behavior',
+                    'rawSql',
+                ], true)
             ) {
                 $names[] = $property->getName();
             }

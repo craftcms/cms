@@ -105,7 +105,7 @@ class Url extends Field implements PreviewableFieldInterface
     {
         return Craft::$app->getView()->renderTemplate('_includes/forms/text', [
             'type' => 'url',
-            'id' => $this->handle,
+            'id' => Html::id($this->handle),
             'name' => $this->handle,
             'inputmode' => 'url',
             'placeholder' => Craft::t('site', $this->placeholder),

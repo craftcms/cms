@@ -12,43 +12,23 @@ body {
   justify-content: center;
 }
 
-#login-form {
-  display: block;
+#login {
   width: 300px;
-  background: no-repeat center top;
 }
 
-#login-form.has-logo {
-  padding-top: 116px;
-}
-
-#login-form h1 {
+#login h1 {
   text-align: center;
   font-size: 3em;
-  color: $textColor;
   word-wrap: break-word;
 }
 
-#login-fields {
-  position: relative;
-  padding: 1px;
+#login-logo {
+  width: 100%;
+  height: auto;
+}
 
-  &:after {
-    position: absolute;
-    z-index: 1;
-    top: 0;
-    right: 0;
-    left: 0;
-    bottom: 0;
-    display: block;
-    content: '.';
-    font-size: 0;
-    @include input-styles;
-    background-color: transparent;
-    border-color: transparent;
-    user-select: none;
-    pointer-events: none;
-  }
+#login-form-top {
+  padding: 1px;
 
   .text {
     box-shadow: none;
@@ -63,26 +43,45 @@ body {
   display: block;
 }
 
-.passwordwrapper .password-toggle {
-  z-index: 1;
-}
-
 #loginName {
-  margin: -1px -1px 0;
+  margin: 0 -1px;
   width: calc(100% + 2px);
   padding: 14px 16px;
-  border-radius: $largeBorderRadius $largeBorderRadius 0 0;
-  border-bottom-width: 0;
+  border-radius: $largeBorderRadius;
+}
 
-  &:focus {
-    border-bottom-width: 1px;
-    margin-bottom: -1px;
+#remember-password {
+  display: none;
+}
+
+#login-form.remember-me:not(.reset-password) #login-form-bottom {
+  justify-content: space-between;
+}
+
+#login-form:not(.reset-password) {
+  #loginName {
+    margin: -1px -1px 0;
+    border-radius: $largeBorderRadius $largeBorderRadius 0 0;
+    border-bottom-width: 0;
+
+    &:focus {
+      border-bottom-width: 1px;
+      margin-bottom: -1px;
+    }
   }
 }
 
-#login-form.reset-password #loginName {
-  border-bottom-left-radius: $largeBorderRadius;
-  border-bottom-right-radius: $largeBorderRadius;
+#login-form.reset-password {
+
+  #password-field,
+  #rememberMe-field,
+  #forgot-password {
+    display: none;
+  }
+
+  #remember-password {
+    display: block;
+  }
 }
 
 .passwordwrapper {
@@ -98,69 +97,34 @@ body {
   }
 }
 
-#password-fields {
+#login-form-bottom {
   margin-top: 24px;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
 }
 
 #rememberMe-field {
   @include margin-right(14px);
 }
 
-#forgot-password {
-  position: relative;
-  z-index: 1;
-  display: block;
-  font-style: normal;
+#forgot-password,
+#remember-password {
   font-size: 11px;
   color: $mediumTextColor;
-
-  &:only-child {
-    width: 100%;
-    text-align: center;
-    margin-top: -20px;
-  }
 }
 
-#forgot-password:hover {
+#forgot-password:hover,
+#forgot-password:focus,
+#remember-password:hover,
+#remember-password:focus {
   color: $linkColor;
-  text-decoration: none;
-}
-
-#login-form .buttons {
-  position: relative;
-  text-align: center;
-}
-
-#login-form #ssl-icon {
-  position: absolute;
-  top: 0;
-  @include left(0);
-  z-index: 1;
-  line-height: 30px;
-  width: 2.2em;
-  color: $white;
-  text-align: center;
-  cursor: pointer;
-}
-
-#login-form #ssl-icon.disabled {
-  opacity: 0.75;
-  cursor: default;
-}
-
-#login-form #ssl-icon + #submit {
-  @include padding-left(2em);
 }
 
 #login-form .submit {
   display: block;
-  float: none;
   padding: 14px 16px;
   height: auto;
   width: 100%;
-  border-radius: 4px;
 }
 
 #spinner {
@@ -170,8 +134,10 @@ body {
   margin-left: -12px;
 }
 
-p.error {
+#login-errors {
   text-align: center;
+  color: $errorColor;
+  margin-top: 1em;
 }
 
 #poweredby {
@@ -179,13 +145,11 @@ p.error {
   text-align: center;
   margin-top: 70px;
   margin-bottom: 48px;
-  opacity: .6;
+  opacity: .8;
 }
 
-#poweredby:hover {
-  opacity: 0.8;
-}
-
+#poweredby:hover,
+#poweredby:focus,
 #poweredby:active {
   opacity: 1;
 }
@@ -207,14 +171,4 @@ p.error {
   content: 'mail';
   font-size: 30px;
   color: $linkColor;
-}
-
-@media only screen and (-webkit-min-device-pixel-ratio: 1.5),
-only screen and (-moz-min-device-pixel-ratio: 1.5),
-only screen and (-o-min-device-pixel-ratio: 3/2),
-only screen and (min-device-pixel-ratio: 1.5),
-only screen and (min-resolution: 1.5dppx) {
-  #login-form {
-    background-size: 202px;
-  }
 }

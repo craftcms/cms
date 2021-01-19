@@ -142,7 +142,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
 
         return Craft::$app->getView()->renderTemplate('_includes/forms/lightswitch',
             [
-                'id' => $id,
+                'id' => Html::id($this->handle),
                 'labelId' => $id . '-label',
                 'name' => $this->handle,
                 'on' => (bool)$value,
