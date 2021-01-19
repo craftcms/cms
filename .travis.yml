@@ -1,10 +1,10 @@
 language: php
-dist: bionic
+dist: xenial
 group: edge
 os: linux
 env:
   global:
-  - DEFAULT_COMPOSER_FLAGS="--no-interaction --no-ansi --no-progress --no-suggest"
+  - DEFAULT_COMPOSER_FLAGS="--no-interaction --no-ansi --no-progress --no-suggest" PHP_8=false
 branches:
   only:
   - develop
@@ -15,8 +15,12 @@ services:
 jobs:
   fast_finish: true
   include:
+  - php: 8.0
+    env: DB=mysql PHP_8=true
+  - php: 8.0
+    env: DB=pgsql PHP_8=true
   - php: 7.4
-    env: DB=mysql TASK_TESTS_COVERAGE=1
+    env: DB=mysql TASK_TESTS_COVERAGE=1 XDEBUG_MODE=coverage
   - php: 7.4
     env: DB=pgsql
   - php: 7.3
@@ -25,7 +29,7 @@ jobs:
     env: DB=pgsql
   - php: 7.2
     env: DB=mysql
-  - php: 7.2
+  - php: 7.2.5
     env: DB=pgsql
 cache:
   directories:
@@ -57,10 +61,13 @@ before_script:
 - travis_retry mysql -e 'CREATE DATABASE `craft_test`;';
 - mysql -e "SET GLOBAL sql_mode = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';";
 - psql -U postgres -c 'CREATE DATABASE "craft_test";';
-- pear config-set preferred_state beta
-- pecl channel-update pecl.php.net
-- yes | pecl install imagick
 - cp tests/.env.example.$DB tests/.env
+- |
+  if [[ $PHP_8 == "false" ]]; then
+    pear config-set preferred_state beta
+    pecl channel-update pecl.php.net
+    yes | pecl install imagick
+  fi
 - |
   if [[ $DB == "pgsql" ]]; then
     sed -i 's/DB_USER=root/DB_USER=postgres/' tests/.env
