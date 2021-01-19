@@ -9,11 +9,8 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
 use craft\errors\AssetDisallowedExtensionException;
-use craft\errors\AssetException;
-use craft\errors\AssetLogicException;
 use craft\errors\MissingAssetException;
 use craft\errors\VolumeException;
-use craft\errors\VolumeObjectNotFoundException;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
@@ -22,6 +19,8 @@ use craft\helpers\StringHelper;
 use craft\models\AssetIndexData;
 use craft\models\VolumeListing;
 use craft\records\AssetIndexData as AssetIndexDataRecord;
+use Generator;
+use Spatie\Ray\Ray;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
@@ -121,43 +120,31 @@ class AssetIndexer extends Component
      *
      * @param VolumeInterface $volume The Volume to perform indexing on.
      * @param string $directory Optional path to get index list on a subfolder.
-     * @return array
+     * @return Generator|VolumeListing[]
      */
-    public function getIndexListOnVolume(VolumeInterface $volume, string $directory = ''): array
+    public function getIndexListOnVolume(VolumeInterface $volume, string $directory = ''): Generator
     {
         try {
-            $fileList = $volume->getFileList($directory, true);
+            $fileList = $volume->getFileList($directory);
         } catch (VolumeException $exception) {
             Craft::$app->getErrorHandler()->logException($exception);
-            return [];
+            return;
         }
 
-        // Filter out any files that live in directories that begin with at underscore
-        $fileList = array_filter($fileList, function(VolumeListing $value) {
-            $path = $value->getPath();
+        foreach ($fileList as $listing) {
+            $path = $listing->getUri();
             $segments = explode('/', $path);
             $lastSegmentIndex = count($segments) - 1;
 
             foreach ($segments as $i => $segment) {
-                if (strpos($segment, '_') === 0 && ($value->getType() === 'dir' || $i < $lastSegmentIndex)) {
-                    return false;
+                // Ignore if contained in or is a directory beginning with _
+                if (strpos($segment, '_') === 0 && ($listing->getType() === 'dir' || $i < $lastSegmentIndex)) {
+                    continue 2;
                 }
             }
 
-            return true;
-        });
-
-        // Sort by number of slashes to ensure that parent folders are listed earlier than their children
-        uasort($fileList, function(VolumeListing $a, VolumeListing $b) {
-            $a = substr_count($a->getPath(), '/');
-            $b = substr_count($b->getPath(), '/');
-            if ($a === $b) {
-                return 0;
-            }
-            return $a < $b ? -1 : 1;
-        });
-
-        return $fileList;
+            yield $listing;
+        }
     }
 
     /**
@@ -386,8 +373,8 @@ class AssetIndexer extends Component
     public function indexFile(VolumeInterface $volume, string $path, string $sessionId = '', bool $cacheImages = false, bool $createIfMissing = true): Asset
     {
         $listing = new VolumeListing([
-            'path' => $path,
-            'filename' => pathinfo($path, PATHINFO_BASENAME),
+            'dirname' => $path,
+            'basename' => pathinfo($path, PATHINFO_BASENAME),
             'type' => 'file',
             'dateModified' => $volume->getDateModified($path),
             'fileSize' => $volume->getFileSize($path),
@@ -413,7 +400,7 @@ class AssetIndexer extends Component
         $indexEntry = new AssetIndexData([
             'volumeId' => $volume->id,
             'sessionId' => $sessionId ?: $this->getIndexingSessionId(),
-            'uri' => $listing->getPath(),
+            'uri' => $listing->getUri(),
             'size' => $listing->getFileSize(),
             'timestamp' => $listing->getDateModified(),
             'inProgress' => true,
@@ -519,10 +506,11 @@ class AssetIndexer extends Component
         ]);
 
         if (!$folder) {
+            $volume = Craft::$app->getVolumes()->getVolumeById($indexEntry->volumeId);
             $folder = $assets->ensureFolderByFullPathAndVolume($path, $volume);
+        } else {
+            $volume = $folder->getVolume();
         }
-
-        $volume = $folder->getVolume();
 
         // Check if the extension is allowed
         $extension = pathinfo($indexEntry->uri, PATHINFO_EXTENSION);

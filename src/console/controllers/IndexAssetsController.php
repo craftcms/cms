@@ -121,6 +121,7 @@ class IndexAssetsController extends Controller
     private function _indexAssets(array $volumes, string $path = '', $startAt = 0): int
     {
         $assetIndexer = Craft::$app->getAssetIndexer();
+        $assetService = Craft::$app->getAssets();
         $sessionId = $assetIndexer->getIndexingSessionId();
 
         $this->stdout(PHP_EOL);
@@ -129,11 +130,9 @@ class IndexAssetsController extends Controller
             $this->stdout('Indexing assets in ', Console::FG_YELLOW);
             $this->stdout($volume->name, Console::FG_CYAN);
             $this->stdout(' ...' . PHP_EOL, Console::FG_YELLOW);
-            $fileList = array_filter($assetIndexer->getIndexListOnVolume($volume, $path), function(VolumeListing  $entry) {
-                return $entry->getType() !== 'dir';
-            });
+            $fileList = $assetIndexer->getIndexListOnVolume($volume, $path);
 
-            $startAt = (is_numeric($startAt) && $startAt < count($fileList)) ? (int)$startAt : 0;
+            $startAt = is_numeric($startAt) ? (int)$startAt : 0;
 
             $index = 0;
             /** @var MissingAssetException[] $missingRecords */
@@ -142,9 +141,14 @@ class IndexAssetsController extends Controller
 
             /** @var VolumeListing $item */
             foreach ($fileList as $item) {
+                if ($item->getType() === 'dir') {
+                    $assetService->ensureFolderByFullPathAndVolume($item->getDirname(), $volume);
+                    continue;
+                }
+
                 $count = $index;
                 $this->stdout('    > #' . $count . ': ');
-                $this->stdout($item->getPath(), Console::FG_CYAN);
+                $this->stdout($item->getUri(), Console::FG_CYAN);
                 $this->stdout(' ... ');
                 if ($index++ < $startAt) {
                     $this->stdout('skipped' . PHP_EOL, Console::FG_YELLOW);

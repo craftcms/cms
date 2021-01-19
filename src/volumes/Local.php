@@ -149,8 +149,8 @@ class Local extends Volume implements LocalVolumeInterface
             $filePath = StringHelper::removeLeft($listing->getRealPath(), $this->prefixPath());
 
             yield new VolumeListing([
-                'path' => pathinfo($filePath, PATHINFO_DIRNAME),
-                'filename' => $listing->getFilename(),
+                'dirname' => pathinfo($filePath, PATHINFO_DIRNAME),
+                'basename' => $listing->getFilename(),
                 'type' => $listing->isDir() ? 'dir' : 'file',
                 'dateModified' => filemtime($listing->getRealPath()),
                 'fileSize' => !$listing->isDir() ? filesize($listing->getRealPath()) : null,

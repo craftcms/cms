@@ -13,8 +13,8 @@ use craft\base\VolumeInterface;
 /**
  * The VolumeListing model class.
  *
- * @property-read string $path The path to the file
- * @property-read string $filename
+ * @property-read string $dirname The path to the file
+ * @property-read string $basename
  * @property-read string $type "file" or "dir"
  * @property-read VolumeInterface $volume The volume containing the listing.
  * @property-read string $uri Listing URI
@@ -29,12 +29,12 @@ class VolumeListing extends Model
     /**
      * @var string The path for the listing
      */
-    private string $path;
+    private string $dirname;
 
     /**
      * @var string The filename of the listing
      */
-    private string $filename;
+    private string $basename;
 
     /**
      * @var string Type of listing. Can be "file" or "dir".
@@ -59,6 +59,9 @@ class VolumeListing extends Model
     public function __construct($config = [])
     {
         foreach ($config as $property => $value) {
+            if ($property === 'dirname') {
+                $value = ltrim($value, './');
+            }
             $this->{$property} = $value;
         }
 
@@ -76,17 +79,17 @@ class VolumeListing extends Model
     /**
      * @return string
      */
-    public function getPath(): string
+    public function getDirname(): string
     {
-        return $this->path;
+        return $this->dirname;
     }
 
     /**
      * @return string
      */
-    public function getFilename(): string
+    public function getBasename(): string
     {
-        return $this->filename;
+        return $this->basename;
     }
 
     /**
@@ -118,6 +121,6 @@ class VolumeListing extends Model
      */
     public function getUri(): string
     {
-        return $this->path . ($this->path ? DIRECTORY_SEPARATOR : '') . $this->filename;
+        return $this->dirname . ($this->dirname ? DIRECTORY_SEPARATOR : '') . $this->basename;
     }
 }
