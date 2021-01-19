@@ -1,5 +1,7 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.5.18 - 2021-01-19
+
 ### Changed
 - Improved the accessibility of lightswitches in the control panel. ([#7313](https://github.com/craftcms/cms/issues/7313))
 - Improved the accessibility of the Login page. ([#7268](https://github.com/craftcms/cms/issues/7268), [#7287](https://github.com/craftcms/cms/issues/7287), [#7288](https://github.com/craftcms/cms/issues/7288))
