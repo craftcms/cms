@@ -51,17 +51,17 @@ class AssetLocationValidator extends Validator
     /**
      * @var string[]|null Allowed file extensions
      */
-    public ?array $allowedExtensions;
+    public ?array $allowedExtensions = null;
 
     /**
      * @var string|null User-defined error message used when the extension is disallowed.
      */
-    public ?string $disallowedExtension;
+    public ?string $disallowedExtension = null;
 
     /**
      * @var string|null User-defined error message used when a file already exists with the same name.
      */
-    public ?string $filenameConflict;
+    public ?string $filenameConflict = null;
 
     /**
      * @var bool Whether Asset should avoid filename conflicts when saved.
