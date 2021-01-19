@@ -1669,6 +1669,8 @@ return [
     'updated {timestamp}' => '{timestamp}に更新',
     'user' => 'ユーザー',
     'users' => 'ユーザー',
+    'Value prefixed by “{prefix}”.' => 'Value prefixed by “{prefix}”.',
+    'Value suffixed by “{suffix}”.' => 'Value suffixed by “{suffix}”.',
     'verify_new_email_body' => "こんにちは、{{user.friendlyName}} さん、\n\nこのリンクをクリックして新しいメールアドレスを確認してください：\n\n<{{link}}>\n\nこのメールに心当たりがない場合は無視してください。",
     'verify_new_email_heading' => '誰かがメールアドレスを変更する時：',
     'verify_new_email_subject' => '新しいメールアドレスを確認する',

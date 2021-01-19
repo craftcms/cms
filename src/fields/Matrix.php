@@ -712,7 +712,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     public function getElementValidationRules(): array
     {
         return [
-            'validateBlocks',
+            [
+                'validateBlocks',
+                'on' => [Element::SCENARIO_ESSENTIALS, Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE],
+            ],
             [
                 ArrayValidator::class,
                 'min' => $this->minBlocks ?: null,
@@ -745,11 +748,15 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         $value = $element->getFieldValue($this->handle);
         $blocks = $value->all();
         $allBlocksValidate = true;
+        $scenario = $element->getScenario();
 
         foreach ($blocks as $i => $block) {
             /** @var MatrixBlock $block */
-            if ($block->enabled && $element->getScenario() === Element::SCENARIO_LIVE) {
-                $block->setScenario(Element::SCENARIO_LIVE);
+            if (
+                $scenario === Element::SCENARIO_ESSENTIALS ||
+                ($block->enabled && $scenario === Element::SCENARIO_LIVE)
+            ) {
+                $block->setScenario($scenario);
             }
 
             if (!$block->validate()) {

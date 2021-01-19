@@ -1671,6 +1671,8 @@ Gratulacje! Craft z powodzeniem może wysyłać e-maile. Zostały użyte poniżs
     'updated {timestamp}' => '{timestamp} zaktualizowano',
     'user' => 'użytkownik',
     'users' => 'użytkownicy',
+    'Value prefixed by “{prefix}”.' => 'Value prefixed by “{prefix}”.',
+    'Value suffixed by “{suffix}”.' => 'Value suffixed by “{suffix}”.',
     'verify_new_email_body' => "Cześć {{user.friendlyName}},\n\nProszę zweryfikuj swój nowy adres e-mail poprzez kliknięcie w poniższy link:\n\n<{{link}}>\n\nJeżeli nie spodziewałeś/aś się tego e-maila, po prostu zignoruj go.",
     'verify_new_email_heading' => 'Gdy ktoś zmienia swój adres e-mail:',
     'verify_new_email_subject' => 'Zweryfikuj swój nowy adres e-mail',

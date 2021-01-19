@@ -1671,6 +1671,8 @@ Glückwunsch! Craft konnte erfolgreich eine E-Mail versenden. Hier sind die von 
     'updated {timestamp}' => '{timestamp} aktualisiert',
     'user' => 'Benutzer',
     'users' => 'Benutzer',
+    'Value prefixed by “{prefix}”.' => 'Value prefixed by “{prefix}”.',
+    'Value suffixed by “{suffix}”.' => 'Value suffixed by “{suffix}”.',
     'verify_new_email_body' => "Hallo {{user.friendlyName}},\n\nbitte bestätigen Sie Ihre neue E-Mail-Adresse, indem Sie auf folgenden Link klicken:\n\n<{{link}}>\n\nWenn Sie diese E-Mail nicht erwartet haben, ignorieren Sie sie bitte einfach.",
     'verify_new_email_heading' => 'Wenn jemand seine Emailadresse ändert:',
     'verify_new_email_subject' => 'Bestätigen Sie Ihre neue E-Mail-Adresse',

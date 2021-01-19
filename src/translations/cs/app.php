@@ -1671,6 +1671,8 @@ Gratulujeme, Craftu se podařilo odeslat email.Byla pro to použita následujíc
     'updated {timestamp}' => 'aktualizováno {timestamp}',
     'user' => 'uživatel',
     'users' => 'uživatelé',
+    'Value prefixed by “{prefix}”.' => 'Value prefixed by “{prefix}”.',
+    'Value suffixed by “{suffix}”.' => 'Value suffixed by “{suffix}”.',
     'verify_new_email_body' => "Dobrý den {{user.friendlyName}},\n\nprosím ověřte Vaši novou emailovou adresu kliknutím na následující odkaz:\n\n<{{link}}>\n\nPokud nevíte, o co se jedná, tuto zprávu klidně ignorujte.",
     'verify_new_email_heading' => 'Když někdo změní svoji emailovou adresu:',
     'verify_new_email_subject' => 'Ověřte svou novou emailovou adresu',

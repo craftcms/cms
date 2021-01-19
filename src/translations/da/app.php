@@ -1674,6 +1674,8 @@ Hvis du ikke forventede denne e-mail, bare ignorere den.",
     'updated {timestamp}' => 'opdateret {timestamp}',
     'user' => 'bruger',
     'users' => 'brugere',
+    'Value prefixed by “{prefix}”.' => 'Value prefixed by “{prefix}”.',
+    'Value suffixed by “{suffix}”.' => 'Value suffixed by “{suffix}”.',
     'verify_new_email_body' => "Hej {{user.friendlyName}}. Bekræft din nye e-mailadresse ved at klikke på dette link:
 
 <{{link}}>
