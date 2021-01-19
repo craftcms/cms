@@ -21,8 +21,9 @@ use craft\helpers\Json;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\models\FieldLayout;
+use craft\models\VolumeFolder;
 use craft\records\Volume as AssetVolumeRecord;
-use craft\records\VolumeFolder;
+use craft\records\VolumeFolder as VolumeFolderRecord;
 use craft\volumes\Local;
 use craft\volumes\MissingVolume;
 use yii\base\Component;
@@ -434,7 +435,7 @@ class Volumes extends Component
             ]);
 
             if ($rootFolder === null) {
-                $rootFolderRecord = new VolumeFolder([
+                $rootFolderRecord = new VolumeFolderRecord([
                     'volumeId' => $volumeRecord->id,
                     'parentId' => null,
                     'path' => '',
@@ -584,27 +585,26 @@ class Volumes extends Component
      * Ensures a top level folder exists that matches the model.
      *
      * @param VolumeInterface $volume
-     * @return int
+     * @return VolumeFolder
      */
-    public function ensureTopFolder(VolumeInterface $volume): int
+    public function ensureTopFolder(VolumeInterface $volume): VolumeFolder
     {
-        $folder = VolumeFolder::findOne(
-            [
-                'name' => $volume->name,
-                'volumeId' => $volume->id
-            ]
-        );
+        $assetsService = Craft::$app->getAssets();
+        $folder = $assetsService->findFolder([
+            'name' => $volume->name,
+            'volumeId' => $volume->id
+        ]);
 
-        if (empty($folder)) {
+        if ($folder === null) {
             $folder = new VolumeFolder();
             $folder->volumeId = $volume->id;
             $folder->parentId = null;
             $folder->name = $volume->name;
             $folder->path = '';
-            $folder->save();
+            $assetsService->storeFolderRecord($folder);
         }
 
-        return $folder->id;
+        return $folder;
     }
 
     /**

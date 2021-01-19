@@ -889,8 +889,9 @@ class Assets extends Component
      */
     public function ensureFolderByFullPathAndVolume(string $fullPath, VolumeInterface $volume, bool $justRecord = true): VolumeFolder
     {
-        $parentId = Craft::$app->getVolumes()->ensureTopFolder($volume);
-        $folderId = $parentId;
+        $parentFolder = Craft::$app->getVolumes()->ensureTopFolder($volume);
+        $folderModel = $parentFolder;
+        $parentId = $parentFolder->id;
 
         if ($fullPath) {
             // If we don't have a folder matching these, create a new one

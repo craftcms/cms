@@ -78,7 +78,7 @@ class AssetIndexer extends Component
             unset($skippedItem);
 
             $indexedFolderIds = [];
-            $indexedFolderIds[Craft::$app->getVolumes()->ensureTopFolder($volume)] = true;
+            $indexedFolderIds[Craft::$app->getVolumes()->ensureTopFolder($volume)->id] = true;
 
             // Ensure folders are in the DB
             $assets = Craft::$app->getAssets();

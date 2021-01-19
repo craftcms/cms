@@ -11,6 +11,7 @@
 ### Changed
 - Local Volume no longer uses the FlySystem package.
 - `craft\services\Assets::ensureFolderByFullPathAndVolume()` now returns an instance of `craft\models\VolumeFolder` instead of the folder id.
+- `craft\services\Assets::ensureTopFolder()` now returns an instance of `craft\models\VolumeFolder` instead of the folder id.
 
 ### Deprecated
 - Deprecated `craft\base\VolumeInterface::createFileByStream()`.
