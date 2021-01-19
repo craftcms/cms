@@ -884,10 +884,10 @@ class Assets extends Component
      * @param string $fullPath The path to ensure the folder exists at.
      * @param VolumeInterface $volume
      * @param bool $justRecord If set to false, will also make sure the physical folder exists on Volume.
-     * @return int
+     * @return VolumeFolder
      * @throws VolumeException if something went catastrophically wrong creating the folder.
      */
-    public function ensureFolderByFullPathAndVolume(string $fullPath, VolumeInterface $volume, bool $justRecord = true): int
+    public function ensureFolderByFullPathAndVolume(string $fullPath, VolumeInterface $volume, bool $justRecord = true): VolumeFolder
     {
         $parentId = Craft::$app->getVolumes()->ensureTopFolder($volume);
         $folderId = $parentId;
@@ -928,7 +928,7 @@ class Assets extends Component
             }
         }
 
-        return $folderId;
+        return $folderModel;
     }
 
     /**
@@ -997,11 +997,7 @@ class Assets extends Component
             }
             $path = (isset($assetSettings['tempSubpath']) ? $assetSettings['tempSubpath'] . '/' : '') .
                 $folderName;
-            $folderId = $this->ensureFolderByFullPathAndVolume($path, $volume, false);
-            return $this->findFolder([
-                'volumeId' => $volume->id,
-                'id' => $folderId,
-            ]);
+            return $this->ensureFolderByFullPathAndVolume($path, $volume, false);
         }
 
         $volumeTopFolder = $this->findFolder([

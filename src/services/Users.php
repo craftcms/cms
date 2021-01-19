@@ -520,7 +520,7 @@ class Users extends Component
             }
         }
 
-        return Craft::$app->getAssets()->ensureFolderByFullPathAndVolume($subpath, $volume);
+        return Craft::$app->getAssets()->ensureFolderByFullPathAndVolume($subpath, $volume)->id;
     }
 
     /**

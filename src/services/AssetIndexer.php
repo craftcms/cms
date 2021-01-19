@@ -12,6 +12,7 @@ use craft\errors\AssetDisallowedExtensionException;
 use craft\errors\AssetException;
 use craft\errors\AssetLogicException;
 use craft\errors\MissingAssetException;
+use craft\errors\VolumeException;
 use craft\errors\VolumeObjectNotFoundException;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Db;
@@ -19,6 +20,7 @@ use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\StringHelper;
 use craft\models\AssetIndexData;
+use craft\models\VolumeListing;
 use craft\records\AssetIndexData as AssetIndexDataRecord;
 use yii\base\Component;
 use yii\base\Exception;
@@ -81,8 +83,8 @@ class AssetIndexer extends Component
             // Ensure folders are in the DB
             $assets = Craft::$app->getAssets();
             foreach ($foldersFound as $fullPath) {
-                $folderId = $assets->ensureFolderByFullPathAndVolume(rtrim($fullPath, '/') . '/', $volume);
-                $indexedFolderIds[$folderId] = true;
+                $folder = $assets->ensureFolderByFullPathAndVolume(rtrim($fullPath, '/') . '/', $volume);
+                $indexedFolderIds[$folder->id] = true;
             }
 
             // Compile a list of missing folders.
@@ -123,16 +125,21 @@ class AssetIndexer extends Component
      */
     public function getIndexListOnVolume(VolumeInterface $volume, string $directory = ''): array
     {
-        $fileList = $volume->getFileList($directory, true);
+        try {
+            $fileList = $volume->getFileList($directory, true);
+        } catch (VolumeException $exception) {
+            Craft::$app->getErrorHandler()->logException($exception);
+            return [];
+        }
 
         // Filter out any files that live in directories that begin with at underscore
-        $fileList = array_filter($fileList, function($value) {
-            $path = $value['path'];
+        $fileList = array_filter($fileList, function(VolumeListing $value) {
+            $path = $value->getPath();
             $segments = explode('/', $path);
             $lastSegmentIndex = count($segments) - 1;
 
             foreach ($segments as $i => $segment) {
-                if (strpos($segment, '_') === 0 && ($value['type'] === 'dir' || $i < $lastSegmentIndex)) {
+                if (strpos($segment, '_') === 0 && ($value->getType() === 'dir' || $i < $lastSegmentIndex)) {
                     return false;
                 }
             }
@@ -141,9 +148,9 @@ class AssetIndexer extends Component
         });
 
         // Sort by number of slashes to ensure that parent folders are listed earlier than their children
-        uasort($fileList, function($a, $b) {
-            $a = substr_count($a['path'], '/');
-            $b = substr_count($b['path'], '/');
+        uasort($fileList, function(VolumeListing $a, VolumeListing $b) {
+            $a = substr_count($a->getPath(), '/');
+            $b = substr_count($b->getPath(), '/');
             if ($a === $b) {
                 return 0;
             }
@@ -370,25 +377,45 @@ class AssetIndexer extends Component
      * @param string $sessionId optional indexing session id.
      * @param bool $cacheImages Whether remotely-stored images should be downloaded and stored locally, to speed up transform generation.
      * @param bool $createIfMissing Whether the asset record should be created if it doesn't exist yet
-     * @return bool|Asset
-     * @throws MissingAssetException if the asset record doesn't exist and $createIfMissing is false
-     * @throws VolumeObjectNotFoundException If the file to be indexed cannot be found.
+     * @return Asset
+     * @throws AssetDisallowedExtensionException if attempting to index an Asset with a disallowed extension
+     * @throws InvalidConfigException if misconfigured volume
+     * @throws MissingAssetException if asset not found and `createIfMissing` set to `false`.
+     * @throws VolumeException if unable to read metadata.
      */
-    public function indexFile(VolumeInterface $volume, string $path, string $sessionId = '', bool $cacheImages = false, bool $createIfMissing = true)
+    public function indexFile(VolumeInterface $volume, string $path, string $sessionId = '', bool $cacheImages = false, bool $createIfMissing = true): Asset
     {
-        $fileInfo = $volume->getFileMetadata($path);
-        $folderPath = dirname($path);
+        $listing = new VolumeListing([
+            'path' => $path,
+            'filename' => pathinfo($path, PATHINFO_BASENAME),
+            'type' => 'file',
+            'dateModified' => $volume->getDateModified($path),
+            'fileSize' => $volume->getFileSize($path),
+            'volume' => $volume
+        ]);
 
-        if ($folderPath !== '.') {
-            Craft::$app->getAssets()->ensureFolderByFullPathAndVolume($folderPath . '/', $volume);
-        }
+        return $this->indexFileByListing($listing, $sessionId, $cacheImages, $createIfMissing);
+    }
 
+    /**
+     * @param VolumeListing $listing
+     * @param string $sessionId
+     * @param bool $cacheImages
+     * @param bool $createIfMissing
+     * @return Asset
+     * @throws AssetDisallowedExtensionException if attempting to index an Asset with a disallowed extension
+     * @throws InvalidConfigException if misconfigured volume
+     * @throws MissingAssetException if asset not found and `createIfMissing` set to `false`.
+     */
+    public function indexFileByListing(VolumeListing $listing, string $sessionId = '', bool $cacheImages = false, bool $createIfMissing = true): Asset
+    {
+        $volume = $listing->getVolume();
         $indexEntry = new AssetIndexData([
             'volumeId' => $volume->id,
             'sessionId' => $sessionId ?: $this->getIndexingSessionId(),
-            'uri' => $path,
-            'size' => $fileInfo['size'],
-            'timestamp' => $fileInfo['timestamp'],
+            'uri' => $listing->getPath(),
+            'size' => $listing->getFileSize(),
+            'timestamp' => $listing->getDateModified(),
             'inProgress' => true,
             'completed' => false
         ]);
@@ -403,9 +430,9 @@ class AssetIndexer extends Component
      * @param bool $cacheImages Whether remotely-stored images should be downloaded and stored locally, to speed up transform generation.
      * @param bool $createIfMissing Whether the asset record should be created if it doesn't exist yet
      * @return bool|Asset
-     * @throws MissingAssetException if the asset record doesn't exist and $createIfMissing is false
-     * @throws VolumeObjectNotFoundException If the file to be indexed cannot be found.
      * @throws AssetDisallowedExtensionException If the file being indexed has a disallowed extension
+     * @throws InvalidConfigException
+     * @throws MissingAssetException if the asset record doesn't exist and $createIfMissing is false
      */
     public function indexFileByEntry(AssetIndexData $indexEntry, bool $cacheImages = false, bool $createIfMissing = true)
     {
@@ -425,6 +452,7 @@ class AssetIndexer extends Component
             $this->updateIndexEntry($indexEntry->id, ['completed' => true, 'inProgress' => false]);
             throw $exception;
         }
+
         return $asset;
     }
 
@@ -465,10 +493,9 @@ class AssetIndexer extends Component
      * @param bool $createIfMissing Whether the asset record should be created if none exists
      * @param bool $cacheImages Whether remotely-stored images should be downloaded and stored locally, to speed up transform generation.
      * @return Asset
-     * @throws MissingAssetException if the asset record doesn't exist and $createIfMissing is false
      * @throws AssetDisallowedExtensionException if the extension of the file is not allowed.
-     * @throws AssetLogicException if trying to index a file in a folder that does not exist.
      * @throws InvalidConfigException
+     * @throws MissingAssetException
      */
     private function _indexFileByIndexData(AssetIndexData $indexEntry, bool $createIfMissing = true, bool $cacheImages)
     {
@@ -492,7 +519,7 @@ class AssetIndexer extends Component
         ]);
 
         if (!$folder) {
-            throw new AssetLogicException("The folder {$path} does not exist");
+            $folder = $assets->ensureFolderByFullPathAndVolume($path, $volume);
         }
 
         $volume = $folder->getVolume();
@@ -554,7 +581,7 @@ class AssetIndexer extends Component
                                 $dimensions = Image::imageSizeByStream($stream);
                                 fclose($stream);
                             }
-                        } catch (AssetException $e) {
+                        } catch (VolumeException $e) {
                             Craft::info($e->getMessage());
                         }
                     }

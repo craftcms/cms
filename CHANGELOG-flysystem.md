@@ -6,9 +6,11 @@
 - Added `craft\base\Volume::VISIBILITY_HIDDEN`.
 - Added `craft\base\Volume::VISIBILITY_PUBLIC`.
 - Added `craft\models\VolumeListing`.
+- Added `craft\services\AssetIndexer::indexFileByListing()`.
 
 ### Changed
 - Local Volume no longer uses the FlySystem package.
+- `craft\services\Assets::ensureFolderByFullPathAndVolume()` now returns an instance of `craft\models\VolumeFolder` instead of the folder id.
 
 ### Deprecated
 - Deprecated `craft\base\VolumeInterface::createFileByStream()`.

@@ -13,8 +13,10 @@ use craft\console\Controller;
 use craft\db\Table;
 use craft\errors\AssetDisallowedExtensionException;
 use craft\errors\MissingAssetException;
+use craft\errors\VolumeException;
 use craft\errors\VolumeObjectNotFoundException;
 use craft\helpers\Db;
+use craft\models\VolumeListing;
 use yii\console\ExitCode;
 use yii\db\Exception;
 use yii\helpers\Console;
@@ -127,8 +129,8 @@ class IndexAssetsController extends Controller
             $this->stdout('Indexing assets in ', Console::FG_YELLOW);
             $this->stdout($volume->name, Console::FG_CYAN);
             $this->stdout(' ...' . PHP_EOL, Console::FG_YELLOW);
-            $fileList = array_filter($assetIndexer->getIndexListOnVolume($volume, $path), function($entry) {
-                return $entry['type'] !== 'dir';
+            $fileList = array_filter($assetIndexer->getIndexListOnVolume($volume, $path), function(VolumeListing  $entry) {
+                return $entry->getType() !== 'dir';
             });
 
             $startAt = (is_numeric($startAt) && $startAt < count($fileList)) ? (int)$startAt : 0;
@@ -138,17 +140,18 @@ class IndexAssetsController extends Controller
             $missingRecords = [];
             $missingRecordsByFilename = [];
 
+            /** @var VolumeListing $item */
             foreach ($fileList as $item) {
                 $count = $index;
                 $this->stdout('    > #' . $count . ': ');
-                $this->stdout($item['path'], Console::FG_CYAN);
+                $this->stdout($item->getPath(), Console::FG_CYAN);
                 $this->stdout(' ... ');
                 if ($index++ < $startAt) {
                     $this->stdout('skipped' . PHP_EOL, Console::FG_YELLOW);
                     continue;
                 }
                 try {
-                    $assetIndexer->indexFile($volume, $item['path'], $sessionId, $this->cacheRemoteImages, $this->createMissingAssets);
+                    $assetIndexer->indexFileByListing($item, $sessionId, $this->cacheRemoteImages, $this->createMissingAssets);
                 } catch (MissingAssetException $e) {
                     $this->stdout('missing' . PHP_EOL, Console::FG_YELLOW);
                     $missingRecords[] = $e;
@@ -156,9 +159,6 @@ class IndexAssetsController extends Controller
                     continue;
                 } catch (AssetDisallowedExtensionException $e) {
                     $this->stdout('skipped: ' . $e->getMessage() . PHP_EOL, Console::FG_YELLOW);
-                    continue;
-                } catch (VolumeObjectNotFoundException $e) {
-                    $this->stdout('skipped: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
                     continue;
                 } catch (\Throwable $e) {
                     $this->stdout('error: ' . $e->getMessage() . PHP_EOL . PHP_EOL, Console::FG_RED);

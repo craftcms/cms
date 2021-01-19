@@ -58,14 +58,8 @@ class VolumeListing extends Model
      */
     public function __construct($config = [])
     {
-        $this->path = $config['path'];
-        $this->filename = $config['filename'];
-        $this->type = $config['type'];
-        $this->volume = $config['volume'];
-        $this->dateModified = $config['dateModified'] ?? null;
-
-        if ($this->type === 'file') {
-            $this->fileSize = $config['fileSize'];
+        foreach ($config as $property => $value) {
+            $this->{$property} = $value;
         }
 
         parent::__construct([]);
