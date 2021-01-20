@@ -113,6 +113,7 @@
 - Added `craft\services\Gql::GRAPHQL_COMPLEXITY_SIMPLE_FIELD`.
 - Added `craft\test\ActiveFixture`.
 - Added `craft\test\DbFixtureTrait`.
+- Added `craft\test\fixtures\elements\BaseContentFixture`.
 - Added `craft\test\fixtures\elements\BaseElementFixture`.
 - Added `craft\test\TestSetup::SITE_URL`.
 - Added `craft\validators\UrlValidator::URL_PATTERN`.

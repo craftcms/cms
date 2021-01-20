@@ -1,5 +1,13 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Added
+- Added `craft\test\fixtures\elements\BaseContentFixture`.
+
+### Fixed
+- Fixed a bug where D3-formatted numbers were getting extra `.00`s added to them if the Intl extension wasn’t installed. ([#7402](https://github.com/craftcms/cms/issues/7402))
+
 ## 3.6.0-RC4 - 2020-01-19
 
 ### Added
