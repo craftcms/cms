@@ -216,38 +216,15 @@ return [
         },
 
         'formatter' => function() {
-            return Craft::$app->getLocale()->getFormatter();
+            return Craft::$app->getFormattingLocale()->getFormatter();
+        },
+
+        'formattingLocale' => function() {
+            return craft\helpers\App::createFormattingLocale();
         },
 
         'locale' => function() {
-            $i18n = Craft::$app->getI18n();
-
-            if (Craft::$app->getRequest()->getIsCpRequest() && !Craft::$app->getResponse()->isSent) {
-                // Is someone logged in?
-                $session = Craft::$app->getSession();
-                $id = $session->getHasSessionId() || $session->getIsActive() ? $session->get(Craft::$app->getUser()->idParam) : null;
-                if ($id) {
-                    // If they have a preferred locale, use it
-                    $usersService = Craft::$app->getUsers();
-                    if (($locale = $usersService->getUserPreference($id, 'locale')) !== null) {
-                        return $i18n->getLocaleById($locale);
-                    }
-
-                    // Otherwise see if they have a preferred language
-                    if (($language = $usersService->getUserPreference($id, 'language')) !== null) {
-                        return $i18n->getLocaleById($language);
-                    }
-                }
-
-                // If the defaultCpLocale setting is set, go with that
-                $generalConfig = Craft::$app->getConfig()->getGeneral();
-                if ($generalConfig->defaultCpLocale) {
-                    return $i18n->getLocaleById($generalConfig->defaultCpLocale);
-                }
-            }
-
-            // Default to the application language
-            return $i18n->getLocaleById(Craft::$app->language);
+            return Craft::$app->getI18n()->getLocaleById(Craft::$app->language);
         },
 
         'mailer' => function() {

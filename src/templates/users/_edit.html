@@ -53,15 +53,15 @@
 
 {% block content %}
     {% set formAttributes = {
-        'id': 'userform',
-        'method': 'post',
+        id: 'userform',
+        method: 'post',
         'accept-charset': 'UTF-8',
-        'data': {
-            'saveshortcut': true,
+        data: {
+            saveshortcut: true,
             'saveshortcut-redirect':  (user.getIsCurrent() ? 'myaccount' : (CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users/{id}' : 'dashboard'))|hash,
             'saveshortcut-scroll': true,
             'confirm-unload': true,
-            'delta': true,
+            delta: true,
         },
     } %}
     <form {{ attr(formAttributes) }}>

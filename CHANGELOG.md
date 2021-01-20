@@ -1,25 +1,69 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.6.0-RC4 - 2020-01-19
 
 ### Added
+- Added tablet and phone viewport emulation to Live Preview (Craft Pro only.) ([#1006](https://github.com/craftcms/cms/issues/1006))
+- URL fields now have an “Allowed URL Types” setting, which adds the ability to accept telephone and email URLs. ([#5497](https://github.com/craftcms/cms/issues/5497))
 - Added the “Captions/Subtitles” file kind. ([#7304](https://github.com/craftcms/cms/issues/7304))
 - Added the `handleCasing` config setting, which determines the default casing that should be used when autogenerating component handles. ([#4276](https://github.com/craftcms/cms/issues/4276))
+- Added the `sanitizeCpImageUploads` config setting, which determines whether images uploaded via the control panel should be sanitized. ([#3060](https://github.com/craftcms/cms/issues/3060))
+- Added `craft\base\ApplicationTrait::getFormattingLocale()`, which returns the locale that should be used for date/time formatting.
+- Added `craft\base\FieldInterface::useFieldset()`, which custom fields can override to return `true` if a `<fieldset>` and `<legend>` should be used, rather than a `<div>` and `<label>`.
+- Added `craft\base\VolumeInterface::createDirectory()`.
+- Added `craft\base\VolumeInterface::deleteDirectory()`.
+- Added `craft\base\VolumeInterface::getDateModified()`.
+- Added `craft\base\VolumeInterface::getFileSize()`.
+- Added `craft\base\VolumeInterface::renameDirectory()`.
+- Added `craft\fieldlayoutelements\BaseField::useFieldset()`.
+- Added `craft\fields\Url::TYPE_EMAIL`.
+- Added `craft\fields\Url::TYPE_TEL`.
+- Added `craft\fields\Url::TYPE_URL`.
+- Added `craft\helpers\App::createFormattingLocale()`.
+- Added `craft\helpers\Cp::checkboxSelectFieldHtml()`.
+- Added `craft\helpers\Cp::selectHtml()`.
 - Added `craft\helpers\Template::paginateQuery()`.
+- Added `craft\i18n\I18N::validateAppLocaleId()`.
+- Added `craft\i18n\Locale::setDateTimeFormats()`. ([#7394](https://github.com/craftcms/cms/issues/7394))
+- Added `craft\mutex\MysqlMutex`.
+- Added `craft\mutex\PgsqlMutex`.
+- Added `craft\services\Assets::$generatePendingTransformsViaQueue`. ([#7360](https://github.com/craftcms/cms/issues/7360))
+- Added `craft\validators\UrlValidator::URL_PATTERN`.
 
 ### Changed
 - Field layout designers will no longer create a new tab if no tab name is entered in the prompt. ([#7333](https://github.com/craftcms/cms/issues/7333))
+- Checkbox and radio button group fields now use `<fieldset>`s and `<legend>`s throughout the control panel.
+- Field containers no longer set the `aria-describedby` attribute, leaving it up to the actual inputs to do so. ([#7365](https://github.com/craftcms/cms/issues/7365))
+- Number field settings and input values are now fully formatted, unless the Preview Format setting is set to “Unformatted”.
+- Mutex lock names are now prefixed with the application ID, to avoid lock conflicts if two Craft installs shared the same database. ([#7384](https://github.com/craftcms/cms/issues/7384))
+- Action URLs are now always based on the control panel URL when running Craft in headless mode. ([#5553](https://github.com/craftcms/cms/issues/5553))
+- The `migrate/all` command now lists the migrations that will be applied. ([#7381](https://github.com/craftcms/cms/issues/7381))
+- The `project-config/apply` command now displays a list of changes it is applying. ([#7235](https://github.com/craftcms/cms/issues/7235))
 - The `allowedFileExtensions` config setting now includes several file extensions used by caption and subtitle file formats by default. ([#7304](https://github.com/craftcms/cms/issues/7304))
+- The `currency`, `filesize`, `number`, `percentage`, and `timestamp` Twig filters now return the passed-in value verbatim if it wasn’t a valid number.
 - Craft no longer reports user deprecation errors logged with `E_USER_DEPRECATED`.
+- `craft\base\ApplicationTrait::getLocale()` now returns the same locale that the application language is set to.
+- `Craft.formatNumber()` and other D3-based number formatting now uses a dynamically-generated locale definition based on info pulled from the application’s formatting locale. ([#7341](https://github.com/craftcms/cms/issues/7341))
+- Made it easier to extend Craft’s Codeception testing module with custom code. ([#7339](https://github.com/craftcms/cms/issues/7339))
 - Updated Yii to 2.0.40.
 
 ### Deprecated
+- Deprecated `craft\base\VolumeInterface::createDir()`. `createDirectory()` should be used instead.
+- Deprecated `craft\base\VolumeInterface::deleteDir()`. `deleteDirectory()` should be used instead.
+- Deprecated `craft\base\VolumeInterface::getFileMetadata()`. `getFileSize()` and `getDateModified()` should be used instead.
+- Deprecated `craft\base\VolumeInterface::renameDir()`. `renameDirectory()` should be used instead.
 - Deprecated `craft\helpers\Template::paginateCriteria()`. `paginateQuery()` should be used instead.
+
+### Removed
+- Removed the “Placeholder” setting from URL fields. ([#7303](https://github.com/craftcms/cms/issues/7303))
 
 ### Fixed
 - Fixed an error that occurred when a schema change was made within a transaction, if using MySQL and PHP 8. ([#7174](https://github.com/craftcms/cms/issues/7174))
 - Fixed a bug where the Edit Site page was appending a `/` to the end of the base URL, even if it was set to an environment variable.
 - Fixed a bug where the Handle setting on the Edit Site page wasn’t getting autogenerated when the Name setting was set.
+- Fixed a bug where Number field settings and input values could be stored incorrectly if the user’s formatting locale used a different decimal character that the application language.
+- Fixed a couple visual bugs with info icons. ([#7385](https://github.com/craftcms/cms/issues/7385))
+- Fixed a MySQL deadlock error that could occur when running background jobs. ([#7179](https://github.com/craftcms/cms/issues/7179))
 
 ## 3.6.0-RC3 - 2020-12-17
 
@@ -242,17 +286,32 @@
 - Removed Minify and jsmin-php.
 - Removed `craft\services\Api::getComposerWhitelist()`.
 
-## Unreleased (3.5)
+## 3.5.18 - 2021-01-19
 
 ### Changed
-- Improved the error message that is output when running the `clear-caches/cp-resources` command, if the `@webroot` alias isn’t explicitly set. ([#7286](https://github.com/craftcms/cms/issues/7286))
+- Improved the accessibility of lightswitches in the control panel. ([#7313](https://github.com/craftcms/cms/issues/7313))
 - Improved the accessibility of the Login page. ([#7268](https://github.com/craftcms/cms/issues/7268), [#7287](https://github.com/craftcms/cms/issues/7287), [#7288](https://github.com/craftcms/cms/issues/7288))
+- Improved the accessibility of Number fields. ([#7367](https://github.com/craftcms/cms/issues/7367))
 - Added `aria-label` or `aria-hidden` attributes to control panel icons, where appropriate. ([#7302](https://github.com/craftcms/cms/pull/7302))
+- Dynamic subfolder paths in Assets fields can now output `:ignore:` to avoid an invalid subpath error if no segment is intended. ([#7353](https://github.com/craftcms/cms/issues/7353))
+- Improved the error message that is output when running the `clear-caches/cp-resources` command, if the `@webroot` alias isn’t explicitly set. ([#7286](https://github.com/craftcms/cms/issues/7286))
+- `craft\i18n\I18N::getFormatter()` now instantiates the formatter via `Craft::createObject()`. ([#7341](https://github.com/craftcms/cms/issues/7341))
 
 ### Fixed
+- Fixed a bug where auto-created Matrix blocks were taking over the focus when creating a new entry. ([#7363](https://github.com/craftcms/cms/issues/7363))
+- Fixed an error that could occur due to a race condition when generating `CustomFieldBehavior` classes. ([#7379](https://github.com/craftcms/cms/issues/7379))
 - Fixed a bug where field layout tabs’ settings buttons could become inaccessible if the tab name began with a long word without any hyphens. ([#7298](https://github.com/craftcms/cms/issues/7298))
-- Fixed an error that could occur on console requests if Craft didn’t think it was installed yet. ([#7309](https://github.com/craftcms/cms/issues/7309))
+- Fixed a bug where Dropdown, Multi-select, and Number fields’ inputs weren’t getting `id` attributes that matched their labels’ `for` attributes. ([#7319](https://github.com/craftcms/cms/issues/7319))
+- Fixed a bug where week day and month names were being translated based on the current formatting locale, rather than the current language. ([#7312](https://github.com/craftcms/cms/issues/7312))
+- Fixed a bug where Matrix blocks weren’t getting validated when autosaving entry drafts.
 - Fixed an error that could occur when saving elements with Matrix fields, if there were any custom fields whose handles conflicted with `craft\elements\db\ElementQuery` getter methods, such as `criteria`. ([#7335](https://github.com/craftcms/cms/issues/7335))
+- Fixed a bug where it wasn’t possible to upload some file types via GraphQL mutations. ([#7327](https://github.com/craftcms/cms/issues/7327))
+- Fixed an error that could occur on console requests if Craft didn’t think it was installed yet. ([#7309](https://github.com/craftcms/cms/issues/7309))
+- Fixed a bug where clearing control panel resources would delete the `.gitignore` file as well. ([#7361](https://github.com/craftcms/cms/issues/7361))
+- Fixed a bug where user registration forms could get a “Username cannot be blank” error even if the `useEmailAsUsername` config setting was enabled. ([#7357](https://github.com/craftcms/cms/issues/7357))
+- Fixed a bug where `craft\elements\Asset::getSrcset()` could return the wrong value if the asset had a named transform set on it. ([#7352](https://github.com/craftcms/cms/issues/7352))
+- Fixed a bug where the “All” checkbox label was getting HTML-encoded when using `Craft.ui.createCheckboxSelect()`.
+- Fixed a bug where `Craft.formatNumber()` could format numbers based on the user’s preferred language rather than the preferred formatting locale.
 
 ## 3.5.17.1 - 2020-12-17
 

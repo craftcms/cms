@@ -799,7 +799,7 @@ class AssetsController extends Controller
                     }
                 } else if ($existingFolder && $force) {
                     // An un-indexed folder is conflicting. If we're forcing things, just remove it.
-                    $targetVolume->deleteDir(rtrim($destinationFolder->path, '/') . '/' . $folderToMove->name);
+                    $targetVolume->deleteDirectory(rtrim($destinationFolder->path, '/') . '/' . $folderToMove->name);
                 }
 
                 // Mirror the structure, passing along the exsting folder map

@@ -157,7 +157,7 @@ class ChartHelper
      */
     public static function shortDateFormats(): array
     {
-        $format = Craft::$app->getLocale()->getDateFormat('short');
+        $format = Craft::$app->getFormattingLocale()->getDateFormat('short');
 
         // Some of these are RTL versions
         $removals = [

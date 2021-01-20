@@ -10,10 +10,12 @@ namespace craft\console\controllers;
 use Craft;
 use craft\console\Controller;
 use craft\db\Table;
+use craft\events\ConfigEvent;
 use craft\helpers\Console;
 use craft\helpers\Db;
 use craft\helpers\ProjectConfig;
 use craft\services\Plugins;
+use craft\services\ProjectConfig as ProjectConfigService;
 use yii\console\ExitCode;
 
 /**
@@ -34,6 +36,12 @@ class ProjectConfigController extends Controller
      * @since 3.5.13
      */
     public $invert = false;
+
+    /**
+     * @var array Keeps track of announced processed paths
+     * @since 3.6.0
+     */
+    protected $announcedPaths = [];
 
     /**
      * @inheritdoc
@@ -141,11 +149,18 @@ class ProjectConfigController extends Controller
                 return ExitCode::UNSPECIFIED_ERROR;
             }
 
-            $this->stdout("Applying changes from your project config files ... ", Console::FG_YELLOW);
+            $this->stdout("Applying changes from your project config files ... " . PHP_EOL);
+
             try {
                 $forceUpdate = $projectConfig->forceUpdate;
                 $projectConfig->forceUpdate = $this->force;
+
+                $projectConfig->on(ProjectConfigService::EVENT_ADD_ITEM, $this->_generateOutputFunction('added:    '), null, false);
+                $projectConfig->on(ProjectConfigService::EVENT_REMOVE_ITEM, $this->_generateOutputFunction('removed:  '), null, false);
+                $projectConfig->on(ProjectConfigService::EVENT_UPDATE_ITEM, $this->_generateOutputFunction('modified: '), null, false);
+
                 $projectConfig->applyYamlChanges();
+
                 $projectConfig->forceUpdate = $forceUpdate;
             } catch (\Throwable $e) {
                 $this->stderr('error: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
@@ -154,7 +169,7 @@ class ProjectConfigController extends Controller
             }
         }
 
-        $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
+        $this->stdout('Finished applying changes' . PHP_EOL, Console::FG_GREEN);
         return ExitCode::OK;
     }
 
@@ -289,5 +304,26 @@ class ProjectConfigController extends Controller
         }
 
         return true;
+    }
+
+    /**
+     * Generate an output function for logging.
+     *
+     * @param $mode
+     * @return callable
+     */
+    private function _generateOutputFunction($mode): callable
+    {
+        return function (ConfigEvent $configEvent) use ($mode) {
+            $key = $mode . $configEvent->path;
+
+            if (isset($this->announcedPaths[$key])) {
+                return;
+            }
+            $this->announcedPaths[$key] = true;
+
+            $this->stdout('    ' . $mode);
+            $this->stdout($configEvent->path . PHP_EOL, Console::FG_CYAN);
+        };
     }
 }

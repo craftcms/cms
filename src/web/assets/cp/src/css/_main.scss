@@ -696,6 +696,18 @@ td.right {
   display: none !important;
 }
 
+// Visually hide without hiding from screen readers
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  border: 0;
+}
+
 .invisible {
   visibility: hidden;
 }
@@ -1606,9 +1618,10 @@ div.btn.submit input {
     display: flex;
     align-items: center;
 
-    label {
+    span {
       padding: 7px 0;
       color: $mediumTextColor;
+      cursor: default;
 
       &[data-toggle=on] {
         @include padding-right(10px);
@@ -1711,12 +1724,12 @@ div.btn.submit input {
   &.indeterminate {
     &:not(.small) {
       .lightswitch-container {
-        @include margin-left(-12px / 2);
+        @include margin-left(0.5 * -12px);
       }
     }
     &.small {
       .lightswitch-container {
-        @include margin-left(-10px / 2);
+        @include margin-left(0.5 * -10px);
       }
     }
   }
@@ -1801,7 +1814,7 @@ h2 + .actions {
 /* ----------------------------------------*/
 
 .tablepane {
-  margin: -24px -24px 0;
+  margin: -24px;
   overflow-x: auto;
 
   table {
@@ -1818,8 +1831,35 @@ h2 + .actions {
     thead {
       th,
       td {
-        border-bottom-left-radius: 0 !important;
-        border-bottom-right-radius: 0 !important;
+        @include border-bottom-left-radius(0);
+        @include border-bottom-right-radius(0);
+      }
+    }
+
+    thead,
+    tbody,
+    tfoot {
+      &:first-child tr:first-child {
+        th,
+        td {
+          &:first-child {
+            @include border-top-left-radius($largeBorderRadius);
+          }
+          &:last-child {
+            @include border-top-right-radius($largeBorderRadius);
+          }
+        }
+      }
+      &:last-child tr:last-child {
+        th,
+        td {
+          &:first-child {
+            @include border-bottom-left-radius($largeBorderRadius);
+          }
+          &:last-child {
+            @include border-bottom-right-radius($largeBorderRadius);
+          }
+        }
       }
     }
   }
@@ -1976,7 +2016,6 @@ table {
 
       th,
       td {
-        border-top: 1px solid transparent;
         padding-top: 7px;
         padding-bottom: 7px;
         background-clip: padding-box;
@@ -1989,6 +2028,14 @@ table {
           white-space: nowrap;
           color: $lightTextColor;
         }
+      }
+    }
+
+    thead + tbody tr,
+    tr + tr {
+      th,
+      td {
+        border-top: 1px solid transparent;
       }
     }
   }

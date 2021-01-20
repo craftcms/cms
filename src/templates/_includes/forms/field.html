@@ -1,7 +1,8 @@
 {%- set fieldset = fieldset ?? false %}
-{%- set fieldId = fieldId ?? ((id ?? false) ? "#{id}-field" : "field#{random()}") %}
-{%- set labelId = labelId ?? "#{fieldId}-" ~ (fieldset ? 'legend' : 'label') %}
-{%- set instructionsId = instructionsId ?? "#{fieldId}-instructions"  %}
+{%- set id = id ?? "field#{random()}" %}
+{%- set fieldId = fieldId ?? "#{id}-field" %}
+{%- set labelId = labelId ?? "#{id}-#{fieldset ? 'legend' : 'label'}" %}
+{%- set instructionsId = instructionsId ?? "#{id}-instructions"  %}
 {%- set status = status ?? null %}
 {%- set label = fieldLabel ?? label ?? block('label') ?? null %}
 {%- if label == '__blank__' %}
@@ -28,9 +29,6 @@
 {%- set fieldAttributes = {
     class: fieldClass,
     id: fieldId,
-    aria: {
-        describedby: instructions ? instructionsId : false,
-    }
 }|merge(fieldAttributes ?? [], recursive=true) %}
 
 {%- if block('attr') is defined %}
@@ -57,7 +55,9 @@
             class: ['status-badge', status[0]],
             text: status[1][0:1]|upper,
             title: status[1],
-            'aria-label': status[1],
+            aria: {
+                label: status[1],
+            },
         }) }}
     {% endif %}
     {% if label or showAttribute %}
@@ -73,11 +73,13 @@
                     {%- if translatable %}
                         {{ tag('div', {
                             class: 't9n-indicator',
+                            title: translationDescription ?? 'This field is translatable.'|t('app'),
+                            aria: {
+                                label: translationDescription ?? 'This field is translatable.'|t('app'),
+                            },
                             data: {
                                 icon: 'language',
                             },
-                            title: translationDescription ?? 'This field is translatable.'|t('app'),
-                            'aria-label': translationDescription ?? 'This field is translatable.'|t('app'),
                         }) }}
                     {% endif -%}
                 {% endif %}
@@ -93,11 +95,11 @@
         </div>
     {% endif %}
     {{ instructionsPosition == 'before' ? instructionsHtml|raw }}
-    <div {{ attr(inputContainerAttributes) }}>
+    {% tag 'div' with inputContainerAttributes %}
         {% block input %}
             {{ input|raw }}
         {% endblock %}
-    </div>
+    {% endtag %}
     {{ instructionsPosition == 'after' ? instructionsHtml|raw }}
     {% if tip %}
         {{ tag('p', {

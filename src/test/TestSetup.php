@@ -96,6 +96,11 @@ class TestSetup
     const SITE_URL = 'https://test.craftcms.test/';
 
     /**
+     * @since 3.6.0
+     */
+    const USERNAME = 'craftcms';
+
+    /**
      * @var array Project Config data
      */
     private static $_parsedProjectConfig = [];
@@ -481,7 +486,7 @@ class TestSetup
 
         $migration = new Install([
             'db' => $connection,
-            'username' => 'craftcms',
+            'username' => self::USERNAME,
             'password' => 'craftcms2018!!',
             'email' => 'support@craftcms.com',
             'site' => $site,

@@ -60,10 +60,12 @@ class Localization
     public static function normalizeNumber($number, ?string $localeId = null)
     {
         if (is_string($number)) {
-            if ($localeId !== null && $localeId !== Craft::$app->language) {
-                $locale = Craft::$app->getI18n()->getLocaleById($localeId);
-            } else {
+            if ($localeId === null) {
+                $locale = Craft::$app->getFormattingLocale();
+            } else if ($localeId === Craft::$app->language) {
                 $locale = Craft::$app->getLocale();
+            } else {
+                $locale = Craft::$app->getI18n()->getLocaleById($localeId);
             }
 
             $decimalSymbol = $locale->getNumberSymbol(Locale::SYMBOL_DECIMAL_SEPARATOR);
