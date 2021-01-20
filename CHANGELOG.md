@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Added
+- Added `craft\test\fixtures\elements\BaseContentFixture`.
+
 ## 3.6.0-RC4 - 2020-01-19
 
 ### Added
