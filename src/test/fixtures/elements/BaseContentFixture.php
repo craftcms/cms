@@ -108,7 +108,7 @@ abstract class BaseContentFixture extends DbFixture
     }
 
     /**
-     * Finds an element with the given criterai.
+     * Finds an element with the given criteria.
      *
      * @param array $data
      * @return ElementInterface|null
