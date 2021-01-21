@@ -6,6 +6,9 @@
 
 ### Added
 - Craft now requires PHP 7.2.5 or later.
+- Commercial plugins now receive license keys automatically when installed as trials.
+- It’s now possible for admins to purchase Craft and plugin licenses when `allowAdminChanges` is disabled.
+- It’s now possible to browse the Plugin Store when `allowAdminChanges` is disabled.
 - Added tablet and phone viewport emulation to Live Preview (Craft Pro only.) ([#1006](https://github.com/craftcms/cms/issues/1006))
 - Entries now begin life as “unpublished drafts” rather than “unsaved drafts”. They are no longer ephemeral; they will continue to exist until explicitly published or deleted. ([#5661](https://github.com/craftcms/cms/issues/5661), [#7216](https://github.com/craftcms/cms/issues/7216))
 - It’s now possible to delete entries for a specific site, if their section’s propagation method is set to “Let each entry choose which sites it should be saved to”. ([#7190](https://github.com/craftcms/cms/issues/7190))
