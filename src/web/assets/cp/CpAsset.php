@@ -313,6 +313,8 @@ JS;
         $data = [
             'actionTrigger' => $generalConfig->actionTrigger,
             'actionUrl' => UrlHelper::actionUrl(),
+            'allowAdminChanges' => $generalConfig->allowAdminChanges,
+            'allowUpdates' => $generalConfig->allowUpdates,
             'allowUppercaseInSlug' => (bool)$generalConfig->allowUppercaseInSlug,
             'apiParams' => Craft::$app->apiParams,
             'asciiCharMap' => StringHelper::asciiCharMap(true, Craft::$app->language),

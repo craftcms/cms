@@ -265,12 +265,13 @@ class Cp extends Component
                     'label' => Craft::t('app', 'Settings'),
                     'fontIcon' => 'settings'
                 ];
-                $navItems[] = [
-                    'url' => 'plugin-store',
-                    'label' => Craft::t('app', 'Plugin Store'),
-                    'fontIcon' => 'plugin'
-                ];
             }
+
+            $navItems[] = [
+                'url' => 'plugin-store',
+                'label' => Craft::t('app', 'Plugin Store'),
+                'fontIcon' => 'plugin'
+            ];
         }
 
         // Allow plugins to modify the nav

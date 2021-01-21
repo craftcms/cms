@@ -433,7 +433,7 @@ class AppController extends Controller
      */
     public function actionGetPluginLicenseInfo(): Response
     {
-        $this->requireAdmin();
+        $this->requireAdmin(false);
         $pluginLicenses = $this->request->getBodyParam('pluginLicenses');
         $result = $this->_pluginLicenseInfo($pluginLicenses);
         ArrayHelper::multisort($result, 'name');

@@ -68,6 +68,8 @@ class Cp
         }
 
         $updatesService = Craft::$app->getUpdates();
+        $canSettleUp = true;
+        $licenseAlerts = [];
 
         if ($updatesService->getIsUpdateInfoCached() || $fetch) {
             // Fetch the updates regardless of whether we're on the Updates page or not, because the other alerts are
@@ -96,7 +98,60 @@ class Cp
                         $message .= Craft::t('app', 'Please notify one of your site’s admins.');
                     }
 
-                    $alerts[] = $message;
+                    $licenseAlerts[] = $message;
+                }
+            }
+
+            // Any plugin issues?
+            if ($path != 'settings/plugins') {
+                $pluginsService = Craft::$app->getPlugins();
+                $issuePlugins = [];
+                foreach ($pluginsService->getAllPlugins() as $pluginHandle => $plugin) {
+                    if ($pluginsService->hasIssues($pluginHandle)) {
+                        $issuePlugins[] = $plugin->name;
+                    }
+                }
+                if (!empty($issuePlugins)) {
+                    if (count($issuePlugins) === 1) {
+                        $message = Craft::t('app', 'There’s a licensing issue with the {name} plugin.', [
+                            'name' => reset($issuePlugins),
+                        ]);
+                    } else {
+                        $message = Craft::t('app', '{num} plugins have licensing issues.', [
+                            'num' => count($issuePlugins),
+                        ]);
+                    }
+                    $message .= ' ';
+                    if ($user->admin) {
+                        if ($generalConfig->allowAdminChanges) {
+                            $message .= '<a class="go" href="' . UrlHelper::cpUrl('settings/plugins') . '">' . Craft::t('app', 'Resolve') . '</a>';
+                        } else {
+                            $message .= Craft::t('app', 'Please fix on an environment where administrative changes are allowed.');
+                        }
+                    } else {
+                        $message .= Craft::t('app', 'Please notify one of your site’s admins.');
+                    }
+
+                    $licenseAlerts[] = $message;
+
+                    // Is this reconcilable?
+                    foreach ($issuePlugins as $pluginHandle) {
+                        if (!$pluginsService->getPluginLicenseKeyStatus($pluginHandle) === LicenseKeyStatus::Trial) {
+                            $canSettleUp = false;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (!empty($licenseAlerts)) {
+                if ($canSettleUp) {
+                    if ($path !== 'plugin-store/buy-all-trials') {
+                        $alerts[] = Craft::t('app', 'There are license trials that require payment.') . ' ' .
+                            Html::a(Craft::t('app', 'Buy now'), UrlHelper::cpUrl('plugin-store/buy-all-trials'), ['class' => 'go']);
+                    }
+                } else {
+                    array_push($alerts, ...$licenseAlerts);
                 }
             }
 
@@ -134,40 +189,6 @@ class Cp
                 }
 
                 $alerts[] = $message . ' <a class="go" href="https://craftcms.com/support/resolving-mismatched-licenses">' . Craft::t('app', 'Learn more') . '</a>';
-            }
-
-            // Any plugin issues?
-            if ($path != 'settings/plugins') {
-                $pluginsService = Craft::$app->getPlugins();
-                $issuePlugins = [];
-                foreach ($pluginsService->getAllPlugins() as $pluginHandle => $plugin) {
-                    if ($pluginsService->hasIssues($pluginHandle)) {
-                        $issuePlugins[] = $plugin->name;
-                    }
-                }
-                if (!empty($issuePlugins)) {
-                    if (count($issuePlugins) === 1) {
-                        $message = Craft::t('app', 'There’s a licensing issue with the {name} plugin.', [
-                            'name' => reset($issuePlugins),
-                        ]);
-                    } else {
-                        $message = Craft::t('app', '{num} plugins have licensing issues.', [
-                            'num' => count($issuePlugins),
-                        ]);
-                    }
-                    $message .= ' ';
-                    if ($user->admin) {
-                        if ($generalConfig->allowAdminChanges) {
-                            $message .= '<a class="go" href="' . UrlHelper::cpUrl('settings/plugins') . '">' . Craft::t('app', 'Resolve') . '</a>';
-                        } else {
-                            $message .= Craft::t('app', 'Please fix on an environment where administrative changes are allowed.');
-                        }
-                    } else {
-                        $message .= Craft::t('app', 'Please notify one of your site’s admins.');
-                    }
-
-                    $alerts[] = $message;
-                }
             }
         }
 
