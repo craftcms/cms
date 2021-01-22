@@ -159,6 +159,7 @@
 - `craft\services\Gql::getValidationRules()` now has an `$isIntrospectionQuery` argument.
 - `Craft.formatNumber()` and other D3-based number formatting now uses a dynamically-generated locale definition based on info pulled from the application’s formatting locale. ([#7341](https://github.com/craftcms/cms/issues/7341))
 - Craft no longer reports PHP deprecation errors.
+- Exception JSON responses now include `exception`, `file`, `line`, and `trace` keys. ([#7406](https://github.com/craftcms/cms/issues/7406))
 - GraphQL queries now support eager-loading for arguments provided as input objects.
 - Made it easier to extend Craft’s Codeception testing module with custom code. ([#7339](https://github.com/craftcms/cms/issues/7339))
 - Updated Yii to 2.0.40.
