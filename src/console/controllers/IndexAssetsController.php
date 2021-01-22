@@ -192,9 +192,9 @@ class IndexAssetsController extends Controller
             if (!empty($missingFiles)) {
                 $totalMissing = count($missingFiles);
                 $this->stdout(($totalMissing === 1 ? 'One recorded asset is missing its file:' : "{$totalMissing} recorded assets are missing their files:") . PHP_EOL, Console::FG_YELLOW);
-                foreach ($missingFiles as $assetId => $path) {
-                    $this->stdout("- {$path} ({$assetId})");
-                    $filename = basename($path);
+                foreach ($missingFiles as $assetId => $filePath) {
+                    $this->stdout("- {$filePath} ({$assetId})");
+                    $filename = basename($filePath);
                     if (isset($missingRecordsByFilename[$filename])) {
                         $maybes = true;
                         $maybePaths = [];
@@ -213,11 +213,11 @@ class IndexAssetsController extends Controller
         $remainingMissingFiles = $missingFiles;
 
         if ($maybes && $this->confirm('Fix asset locations?')) {
-            foreach ($missingFiles as $assetId => $path) {
+            foreach ($missingFiles as $assetId => $filePath) {
                 unset($remainingMissingFiles[$assetId]);
-                $filename = basename($path);
+                $filename = basename($filePath);
                 if (isset($missingRecordsByFilename[$filename])) {
-                    $e = $this->_chooseMissingRecord($path, $missingRecordsByFilename[$filename]);
+                    $e = $this->_chooseMissingRecord($filePath, $missingRecordsByFilename[$filename]);
                     if (!$e) {
                         $this->stdout("Skipping asset {$assetId}" . PHP_EOL);
                         continue;
