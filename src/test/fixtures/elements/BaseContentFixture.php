@@ -133,7 +133,7 @@ abstract class BaseContentFixture extends DbFixture
     protected function populateElement(ElementInterface $element, array $data): void
     {
         if (isset($data['attributes'])) {
-            foreach ($attributes as $name => $value) {
+            foreach ($data['attributes'] as $name => $value) {
                 $element->$name = $value;
             }
         }
