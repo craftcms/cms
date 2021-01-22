@@ -733,7 +733,7 @@ return [
     'Last login fail' => 'Seneste mislykkede login',
     'Last login' => 'Seneste login',
     'Last update' => 'Seneste opdatering',
-    'Last {num, number} {num, plural, =1{day} other{days}}' => 'Seneste {num, number} {num, plural, one {} =1{dag} other{dage}}',
+    'Last {num, number} {num, plural, =1{day} other{days}}' => 'Seneste {num, number} {num, plural, =1{dag} other{dage}}',
     'Layout element types' => 'Layoutelementtyper',
     'Learn how' => 'Lær hvordan',
     'Learn more' => 'Lær mere',
