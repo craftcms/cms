@@ -58,19 +58,24 @@ abstract class Model extends \yii\base\Model
      */
     const EVENT_DEFINE_EXTRA_FIELDS = 'defineExtraFields';
 
+    public function __construct($config = [])
+    {
+        // Normalize the DateTime attributes
+        foreach ($this->datetimeAttributes() as $attribute) {
+            if (array_key_exists($attribute, $config) && $config[$attribute] !== null) {
+                $config[$attribute] = DateTimeHelper::toDateTime($config[$attribute]);
+            }
+        }
+
+        parent::__construct($config);
+    }
+
     /**
      * @inheritdoc
      */
     public function init()
     {
         parent::init();
-
-        // Normalize the DateTime attributes
-        foreach ($this->datetimeAttributes() as $attribute) {
-            if ($this->$attribute !== null) {
-                $this->$attribute = DateTimeHelper::toDateTime($this->$attribute);
-            }
-        }
 
         if ($this->hasEventHandlers(self::EVENT_INIT)) {
             $this->trigger(self::EVENT_INIT);
