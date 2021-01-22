@@ -9,6 +9,7 @@
     "@babel/core": "^7.10.1",
     "@babel/preset-env": "^7.10.1",
     "@benmajor/jquery-touch-events": "^2.0.3",
+    "@types/jquery": "^3.5.5",
     "axios": "^0.19.2",
     "babel-loader": "^8.1.0",
     "blueimp-file-upload": "^10.31.0",
