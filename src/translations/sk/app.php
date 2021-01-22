@@ -188,7 +188,7 @@ return [
     'Can contain Markdown formatting.' => 'Môže obsahovať formátovanie Markdown.',
     'Cancel' => 'Zrušiť',
     'Can’t run Craft CMS' => 'Craft CMS sa nedá spustiť',
-    'Captions/Subtitles' => 'Captions/Subtitles',
+    'Captions/Subtitles' => 'Popisky/Titulky',
     'Card number' => 'Číslo karty',
     'Cart' => 'Košík',
     'Categories not restored.' => 'Kategórie neboli obnovené.',
