@@ -651,7 +651,7 @@ return [
     'How should entry titles be translated?' => 'Wie sollen Eintragstitel übersetzt werden?',
     'How should this field’s values be translated?' => 'Wie sollen die Werte dieses Felds übersetzt werden?',
     'How the field should be presented in the control panel.' => 'Wie das Feld im Control Panel dargestellt werden soll.',
-    'How the related {type} should be displayed within element indexes.' => 'Wie die zusammenhängende {type} in Elementindizes dargestellt werden soll.',
+    'How the related {type} should be displayed within element indexes.' => 'Wie die zusammenhängenden {type} in Elementindizes dargestellt werden soll.',
     'How you’ll refer to this block type in the templates.' => 'Wie Sie in Templates auf diese Block-Art verweisen.',
     'How you’ll refer to this category group in the templates.' => 'Wie Sie in den Templates auf diese Kategorie-Gruppe verweisen.',
     'How you’ll refer to this entry type in the templates.' => 'Wie Sie in Templates auf diesen Eintragstyp verweisen.',
