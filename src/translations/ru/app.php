@@ -1697,7 +1697,7 @@ return [
     '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.' => 'Количество объектов, которое должно находиться в {attribute}: {count, number}{count, plural, one{} other{}}.',
     '{attribute} “{value}” has already been taken.' => '{attribute} «{value}» уже занято.',
     '{ctrl}C to copy.' => '{ctrl}C, чтобы скопировать.',
-    '{edition} edition' => 'Выпуск {edition}',
+    '{edition} edition' => 'Редакция {edition}',
     '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}-{last, number} из {total, number} {total, plural, =1{{item}} other{{items}}}',
     '{first}-{last} of {total}' => '{first}-{last} из {total}',
     '{id} – {name}' => '{id} – {name}',
