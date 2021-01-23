@@ -219,3 +219,6 @@
 - Fixed a bug where generated URLs would include the token from the current request, even if it had expired or met its usage limit.
 - Fixed a bug where Number field settings and input values could be stored incorrectly if the user’s formatting locale used a different decimal character that the application language.
 - Fixed a MySQL deadlock error that could occur when running background jobs. ([#7179](https://github.com/craftcms/cms/issues/7179))
+
+### Security
+- The default `allowedFileExtensions` config setting value no longer includes `htm` or `html`.
