@@ -1362,7 +1362,7 @@ return [
     'This is being overridden by the {setting} config setting.' => 'Dies wird durch die {setting}-Konfigurationseinstellung aufgehoben.',
     'This license is for the {name} edition.' => 'Diese Lizenz ist für die {name} Edition.',
     'This license is tied to another Craft install. Purchase a license for this install.' => 'Diese Lizenz ist an eine andere Craft-Installation gebunden. Kaufen Sie eine Lizenz für diese Installation.',
-    'This license is tied to another Craft install. Visit {accountLink} to detach it, or <a href="{buyUrl}">buy a new license</a>' => 'This license is tied to another Craft install. Visit {accountLink} to detach it, or <a href="{buyUrl}">buy a new license</a>',
+    'This license is tied to another Craft install. Visit {accountLink} to detach it, or <a href="{buyUrl}">buy a new license</a>' => 'Diese Lizenz ist an eine andere Craft Installation gebunden. Besuchen Sie {accountLink} um sie zu trennen, oder <a href="{buyUrl}">erwerben Sie eine neue Lizenz</a>',
     'This license is tied to another Craft install. Visit {accountLink} to detach it, or <a href="{buyUrl}">buy a new license</a>.' => 'This license is tied to another Craft install. Visit {accountLink} to detach it, or <a href="{buyUrl}">buy a new license</a>.',
     'This license is tied to another Craft install. Visit {accountLink} to detach it, or buy a new license.' => 'This license is tied to another Craft install. Visit {accountLink} to detach it, or buy a new license.',
     'This license isn’t allowed to run version {version}.' => 'Mit dieser Lizenz kann Version {version} nicht ausgeführt werden.',
