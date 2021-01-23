@@ -2,7 +2,7 @@
 
 return [
     '(blank)' => '(prázdne)',
-    '(trial)' => '(skušobná verzia)',
+    '(trial)' => '(skúšobná verzia)',
     '/path/to/folder' => '/cesta/k/priečinku',
     '1 job' => '1 úloha',
     '<a>Renew now</a> for another year of updates.' => '<a>Obnoviť teraz</a> pre ďalší rok aktualizácií.',
