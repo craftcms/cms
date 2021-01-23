@@ -120,7 +120,7 @@ return [
     'Are you sure you want to transfer your license to this domain?' => '라이센스를 이 도메인으로 전송하시겠습니까?',
     'Are you sure you want to uninstall {plugin}? You will lose all of its associated data.' => '{plugin}을(를) 제거하시겠습니까? 모든 관련 데이터가 손실됩니다.',
     'As currency values' => '통화 값으로',
-    'As decimal numbers' => '10진수로',
+    'As decimal numbers' => '십진수로',
     'Ascending' => '오름차순',
     'Ask on Stack Exchange' => 'Stack Exchange에 관하여 묻기',
     'Asset Indexes' => '에셋 인덱스',
