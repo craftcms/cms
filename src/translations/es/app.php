@@ -2,7 +2,7 @@
 
 return [
     '(blank)' => '(en blanco)',
-    '(trial)' => '(trial)',
+    '(trial)' => '(prueba)',
     '/path/to/folder' => '/ruta de acceso/a/carpeta',
     '1 job' => '1 trabajo',
     '<a>Renew now</a> for another year of updates.' => '<a>Renovar ahora</a> para otro año de actualizaciones.',
@@ -71,7 +71,7 @@ return [
     'Allow line breaks' => 'Permitir saltos de línea',
     'Allow public registration' => 'Permitir registro público',
     'Allow self relations' => 'Permitir relaciones consigo mismo',
-    'Allow uploading directly to the field' => 'Allow uploading directly to the field',
+    'Allow uploading directly to the field' => 'Permitir cargar directamente en el campo',
     'Already in your cart' => 'Ya está en su carro',
     'An error occurred when duplicating the category.' => 'Error al duplicar la categoría.',
     'An error occurred when duplicating the entry.' => 'Error al duplicar la entrada.',
@@ -85,7 +85,7 @@ return [
     'Applied' => 'Aplicado',
     'Apply Time' => 'Aplicar tiempo',
     'Apply YAML Changes' => 'Aplicar cambios YAML',
-    'Apply YAML changes' => 'Apply YAML changes',
+    'Apply YAML changes' => 'Aplicar cambios YAML',
     'Apply changes in your project config YAML files to the loaded project config.' => 'Aplicar los cambios de los archivos de su configuración de proyecto YAML a la configuración de proyecto cargada.',
     'Apply changes only' => 'Aplicar cambios solamente',
     'Apply new migrations' => 'Aplicar migraciones nuevas',
