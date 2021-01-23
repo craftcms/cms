@@ -1377,7 +1377,7 @@ return [
     'This field is translated for each site group.' => 'Dieses Feld wird für jede Websitegruppe übersetzt.',
     'This field is translated for each site.' => 'Dieses Feld wird für jede Website übersetzt.',
     'This field’s target subfolder path is invalid: {path}' => 'Der Pfad des Zielunterordners für dieses Feldes ungültig: {path}',
-    'This field’s values are used as search keywords.' => 'This field’s values are used as search keywords.',
+    'This field’s values are used as search keywords.' => 'Die Feldwerte werden als Suchschlüsselwörter verwendet.',
     'This global set doesn’t have any fields assigned to it in its field layout.' => 'Im Feldlayout sind dieser Gruppe von globalen Inhalten keine Felder zugewiesen.',
     'This group doesn’t have any fields yet.' => 'Diese Gruppe hat noch keine Felder.',
     'This is being overridden by the {setting} config setting.' => 'Dies wird durch die {setting}-Konfigurationseinstellung aufgehoben.',
