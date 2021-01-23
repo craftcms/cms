@@ -2,7 +2,7 @@
 
 return [
     '(blank)' => '(пусто)',
-    '(trial)' => '(trial)',
+    '(trial)' => '(пробная версия)',
     '/path/to/folder' => '/путь/к/папке',
     '1 job' => '1 задание',
     '<a>Renew now</a> for another year of updates.' => '<a>Перезаключить</a> для получения обновлений еще на год.',
