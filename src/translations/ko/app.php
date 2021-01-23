@@ -2,7 +2,7 @@
 
 return [
     '(blank)' => '(공백)',
-    '(trial)' => '(trial)',
+    '(trial)' => '(평가판)',
     '/path/to/folder' => '/경로/대상/폴더',
     '1 job' => '1개 작업',
     '<a>Renew now</a> for another year of updates.' => '<a>지금 갱신</a>하여 1년간 업데이트 서비스를 이용합니다.',
