@@ -1714,7 +1714,7 @@ Gratulacje! Craft z powodzeniem może wysyłać e-maile. Zostały użyte poniżs
     '{num, number} {num, plural, =1{second} other{seconds}}' => '{num, number} {num, plural, =1{s} other{s}}',
     '{num, number} {num, plural, =1{week} other{weeks}}' => '{num, number} {num, plural, =1{tydzień} other{tyg.}}',
     '{num, number} {num, plural, =1{year} other{years}}' => '{num, number} {num, plural, =1{rok} other{lat(a)}}',
-    '{num, number} {section} {num, plural, =1{entry} other{entries}}' => '{num, number} {section} {num, plural, =1{entry} other{entries}}',
+    '{num, number} {section} {num, plural, =1{entry} other{entries}}' => '{num, number} {num, plural, =1{wpis} few{wpisy} many{wpisów} other{wpisu}} {sekcji}',
     '{num} plugins have licensing issues.' => 'W przypadku następującej liczby wtyczek występują problemy z licencjonowaniem: {num}.',
     '{pct} width' => 'Szerokość {pct}',
     '{price} plus {renewalPrice}/year for updates' => '{price} plus {renewalPrice}/rok za aktualizacje',
