@@ -1575,7 +1575,7 @@ return [
     'What type of section is this?' => 'Milyen típusú szakasz ez?',
     'What type of volume is this?' => 'Milyen típusú kötet ez?',
     'When someone replaces a file, the record of who uploaded the file will be updated as well.' => 'Ha valaki lecserél egy fájlt, frissítődik a fájl feltöltőjéről szóló bejegyzés is.',
-    'Where assets should be stored when they are uploaded directly to the field, or via a front-end form.' => 'Where assets should be stored when they are uploaded directly to the field, or via a front-end form.',
+    'Where assets should be stored when they are uploaded directly to the field, or via a front-end form.' => 'Hol tárolja a tartalmakat, amelyeket közvetlenül a mezőből vagy a kezelőfelületről töltenek fel.',
     'Where do you want to store temporary asset uploads?' => 'Hova kívánja mentetni az ideiglenesen feltöltött tartalmakat?',
     'Where do you want to store user photos? Note that the subfolder path can contain variables like <code>{username}</code>.' => 'Hol szeretnéd tárolni a felhasználó fényképeit? Az almappa elérési útja a következőhöz hasonló változókat tartalmazhat: <code>{username}</code>.',
     'Where selected assets should be stored.' => 'Where selected assets should be stored.',
