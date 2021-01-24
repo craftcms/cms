@@ -2,7 +2,7 @@
 
 return [
     '(blank)' => '(tom)',
-    '(trial)' => '(trial)',
+    '(trial)' => '(testversion)',
     '/path/to/folder' => '/path/to/folder',
     '1 job' => '1 jobb',
     '<a>Renew now</a> for another year of updates.' => '<a>Förnya nu</a> för ytterligare ett år med uppdateringar.',
