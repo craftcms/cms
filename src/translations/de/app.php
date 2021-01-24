@@ -105,7 +105,7 @@ return [
     'Are you sure you want to delete the selected blocks?' => 'Sind Sie sicher, dass Sie die ausgewählten Blöcke löschen möchten?',
     'Are you sure you want to delete the selected {type} along with their descendants?' => 'Wollen Sie das ausgewählte {type} und seine Nachfolger wirklich entfernen?',
     'Are you sure you want to delete the selected {type}?' => 'Sind Sie sicher, dass Sie die ausgewählten {type} löschen wollen?',
-    'Are you sure you want to delete the {type} for this site?' => 'Are you sure you want to delete the {type} for this site?',
+    'Are you sure you want to delete the {type} for this site?' => 'Sind Sie sicher, dass Sie die {type} für diese Seite löschen wollen?',
     'Are you sure you want to delete this block type?' => 'Sind Sie sicher, dass Sie diese Block-Art wirklich löschen möchten?',
     'Are you sure you want to delete this draft?' => 'Sind Sie sicher, dass Sie diesen Entwurf wirklich löschen möchten?',
     'Are you sure you want to delete this field?' => 'Sind Sie sicher, dass Sie dieses Feld wirklich löschen möchten?',
