@@ -1272,7 +1272,7 @@ return [
     'Temp Uploads Location' => 'Speicheort für temporäre Uploads',
     'Temp files' => 'Temporäre Dateien',
     'Template caches' => 'Template-Cache',
-    'Template that defines the Title field’s custom “translation key” format. {type} titles will be copied to all sites that produce the same key. For example, to make titles translatable based on the first two characters of the site handle, you could enter `{site.handle[:2]}`.' => 'Template that defines the Title field’s custom “translation key” format. {type} titles will be copied to all sites that produce the same key. For example, to make titles translatable based on the first two characters of the site handle, you could enter `{site.handle[:2]}`.',
+    'Template that defines the Title field’s custom “translation key” format. {type} titles will be copied to all sites that produce the same key. For example, to make titles translatable based on the first two characters of the site handle, you could enter `{site.handle[:2]}`.' => 'Vorlage welche das benutzerdefinierte "Übersetzungsschlüssel"-Format definiert. {type} Titel werden von allen Seiten kopiert, die denselben Schlüssel erzeugen. Um z. B. alle Titel auf Basis der ersten zwei Zeichen des Identifikators übersetzbar zu machen, könnten Sie `{site.handle[:2]}` eingeben.',
     'Template' => 'Vorlage',
     'Templates' => 'Vorlagen',
     'Temporary Uploads' => 'Temporäre Uploads',
