@@ -2,7 +2,7 @@
 
 return [
     '(blank)' => '(ריק)',
-    '(trial)' => '(trial)',
+    '(trial)' => '(ניסיון)',
     '/path/to/folder' => 'נתיב/אל/תיקייה',
     '1 job' => 'עבודה 1',
     '<a>Renew now</a> for another year of updates.' => '<a>חדש כעת</a> לשנה נוספת של עדכונים.',
