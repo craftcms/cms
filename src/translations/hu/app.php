@@ -282,7 +282,7 @@ return [
     'Copied to clipboard.' => 'Vágólapra másolva.',
     'Copy URL' => 'URL-cím másolása',
     'Copy activation URL' => 'Aktivációs URL másolása',
-    'Copy impersonation URL' => 'Copy impersonation URL',
+    'Copy impersonation URL' => 'Megszemélyesítés URL-címének másolása',
     'Copy password reset URL' => 'Jelszó visszaállítás URL-jének másolása',
     'Copy reference tag' => 'Referenciacímke másolása',
     'Copy the URL' => 'Az URL-cím másolása',
