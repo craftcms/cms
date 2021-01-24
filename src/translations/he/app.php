@@ -2,7 +2,7 @@
 
 return [
     '(blank)' => '(ריק)',
-    '(trial)' => '(trial)',
+    '(trial)' => '(ניסיון)',
     '/path/to/folder' => 'נתיב/אל/תיקייה',
     '1 job' => 'עבודה 1',
     '<a>Renew now</a> for another year of updates.' => '<a>חדש כעת</a> לשנה נוספת של עדכונים.',
@@ -72,7 +72,7 @@ return [
     'Allow line breaks' => 'אפשר שבירת שורות',
     'Allow public registration' => 'אפשר הרשמה פומבית',
     'Allow self relations' => 'אפשר קשרים עצמיים',
-    'Allow uploading directly to the field' => 'Allow uploading directly to the field',
+    'Allow uploading directly to the field' => 'אפשר העלאה ישירות לשדה',
     'Allowed URL Types' => 'Allowed URL Types',
     'Already in your cart' => 'כבר בעגלה שלך',
     'An error occurred when duplicating the category.' => 'אירעה שגיאה בעת שכפול הקטגוריה.',
