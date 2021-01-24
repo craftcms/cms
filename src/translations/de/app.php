@@ -317,7 +317,7 @@ return [
     'Couldn’t duplicate entry.' => 'Eintrag konnte nicht dupliziert werden.',
     'Couldn’t enable plugin.' => 'Plug-in konnte nicht aktiviert werden.',
     'Couldn’t install plugin.' => 'Plug-ins konnten nicht installiert werden.',
-    'Couldn’t load CMS editions.' => 'Couldn’t load CMS editions.',
+    'Couldn’t load CMS editions.' => 'CMS Editionen konnten nicht geladen werden.',
     'Couldn’t load active trials.' => 'Aktive Testversion konnte nicht geladen werden.',
     'Couldn’t publish draft.' => 'Der Entwurf konnte nicht veröffentlicht werden.',
     'Couldn’t restore the database. How would you like to proceed?' => 'Datenbank konnte nicht wiederhergestellt werden. Wie möchten Sie fortfahren?',
