@@ -1454,7 +1454,7 @@ return [
     'Updating the plugin…' => 'A beépülő modul frissítése…',
     'Updating…' => 'Frissítés...',
     'Upgrade Craft CMS' => 'Craft CMS frissítése',
-    'Upgrade to Craft Pro' => 'Upgrade to Craft Pro',
+    'Upgrade to Craft Pro' => 'Frissítés Craft Pro verzióra',
     'Upload a file' => 'Upload a file',
     'Upload a photo' => 'Fotó feltöltése',
     'Upload failed for {filename}' => 'A(z) {filename} feltöltése nem sikerült.',
