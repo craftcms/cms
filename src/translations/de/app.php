@@ -188,7 +188,7 @@ return [
     'Can contain Markdown formatting.' => 'Kann Markdown-Formatierung enthalten.',
     'Cancel' => 'Abbrechen',
     'Can’t run Craft CMS' => 'Craft CMS kann nicht gestartet werden',
-    'Captions/Subtitles' => 'Captions/Subtitles',
+    'Captions/Subtitles' => 'Untertitel',
     'Card number' => 'Kartennummer',
     'Cart' => 'Warenkorb',
     'Categories not restored.' => 'Kategorien wurden nicht wiederhergestellt.',
