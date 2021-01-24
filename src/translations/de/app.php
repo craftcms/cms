@@ -1120,7 +1120,7 @@ return [
     'Save entries to other sites with the same language' => 'Speichere Einträge auf anderen Seiten mit derselben Sprache',
     'Save entries with the “{entryType}” entry type' => 'Einträge des Eintragstyp „{entryType}“ speichern',
     'Save tags in the “{tagGroup}” tag group' => 'Schlagwörter in der Schlagwort-Gruppe „{tagGroup}“ speichern',
-    'Save the loaded project config data to YAML files in your <code>{folder}</code> folder.' => 'Die geladene Projektkonfiguration als YAML Dateien in Ihrem <code>{folder}</code> Ordner speichern.',
+    'Save the loaded project config data to YAML files in your <code>{folder}</code> folder.' => 'Save the loaded project config data to YAML files in your <code>{folder}</code> folder.',
     'Save' => 'Speichern',
     'Saving' => 'Speichern',
     'Scale and crop' => 'Skalieren und zuschneiden',
