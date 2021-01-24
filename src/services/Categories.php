@@ -715,39 +715,12 @@ class Categories extends Component
      * Patches an array of categories, filling in any gaps in the tree.
      *
      * @param Category[] $categories
+     * @deprecated in 3.6.0
      */
     public function fillGapsInCategories(array &$categories)
     {
-        /** @var Category|null $prevCategory */
-        $prevCategory = null;
-        $patchedCategories = [];
-
-        foreach ($categories as $i => $category) {
-            // Did we just skip any categories?
-            if ($category->level != 1 && (
-                    ($i == 0) ||
-                    (!$category->isSiblingOf($prevCategory) && !$category->isChildOf($prevCategory))
-                )
-            ) {
-                // Merge in any missing ancestors
-                /** @var CategoryQuery $ancestorQuery */
-                $ancestorQuery = $category->getAncestors()
-                    ->anyStatus();
-
-                if ($prevCategory) {
-                    $ancestorQuery->andWhere(['>', 'structureelements.lft', $prevCategory->lft]);
-                }
-
-                foreach ($ancestorQuery->all() as $ancestor) {
-                    $patchedCategories[] = $ancestor;
-                }
-            }
-
-            $patchedCategories[] = $category;
-            $prevCategory = $category;
-        }
-
-        $categories = $patchedCategories;
+        Craft::$app->getDeprecator()->log(self::class . '::fillGapsInCategories()', '`' . self::class . '::fillGapsInCategories()` has been deprecated. Use `\craft\services\Structures::fillGapsInElements()` instead.');
+        Craft::$app->getStructures()->fillGapsInElements($categories);
     }
 
     /**
@@ -755,26 +728,12 @@ class Categories extends Component
      *
      * @param Category[] $categories
      * @param int $branchLimit
+     * @deprecated in 3.6.0
      */
     public function applyBranchLimitToCategories(array &$categories, int $branchLimit)
     {
-        $branchCount = 0;
-        $prevCategory = null;
-
-        foreach ($categories as $i => $category) {
-            // Is this a new branch?
-            if ($prevCategory === null || !$category->isDescendantOf($prevCategory)) {
-                $branchCount++;
-
-                // Have we gone over?
-                if ($branchCount > $branchLimit) {
-                    array_splice($categories, $i);
-                    break;
-                }
-            }
-
-            $prevCategory = $category;
-        }
+        Craft::$app->getDeprecator()->log(self::class . '::applyBranchLimitToCategories()', '`' . self::class . '::applyBranchLimitToCategories()` has been deprecated. Use `\craft\services\Structures::applyBranchLimitToElements()` instead.');
+        Craft::$app->getStructures()->applyBranchLimitToElements($categories);
     }
 
     /**
