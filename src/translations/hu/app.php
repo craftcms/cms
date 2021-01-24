@@ -1553,7 +1553,7 @@ return [
     'Where assets should be stored when they are uploaded directly to the field, or via a front-end form.' => 'Hol tárolja a tartalmakat, amelyeket közvetlenül a mezőből vagy a kezelőfelületről töltenek fel.',
     'Where do you want to store temporary asset uploads?' => 'Hova kívánja mentetni az ideiglenesen feltöltött tartalmakat?',
     'Where do you want to store user photos? Note that the subfolder path can contain variables like <code>{username}</code>.' => 'Hol szeretnéd tárolni a felhasználó fényképeit? Az almappa elérési útja a következőhöz hasonló változókat tartalmazhat: <code>{username}</code>.',
-    'Where selected assets should be stored.' => 'Where selected assets should be stored.',
+    'Where selected assets should be stored.' => 'Meghatározza, hogy hol tárolódjanak a kiválasztott tartalmak.',
     'Whether authors should be able to upload files directly to the field, rather than requiring them to select/upload assets via the selection modal.' => 'Whether authors should be able to upload files directly to the field, rather than requiring them to select/upload assets via the selection modal.',
     'Whether preview frames should be automatically refreshed when content changes.' => 'Fríssítse-e automatikusan az előnézet kereteit a tartalom változásakor.',
     'Whether remotely-stored images should be downloaded and stored locally, to speed up transform generation.' => 'Azt adja meg, hogy az átalakítás felgyorsítása érdekében le kell-e tölteni és helyileg tárolni a távoli helyen tárolt képeket.',
