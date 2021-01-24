@@ -35,7 +35,7 @@ return [
     'Activation email sent.' => 'Die Aktivierungs-E-Mail wurde verschickt.',
     'Active Trials' => 'Aktive Tests',
     'Active installs' => 'Aktive Installationen',
-    'Active trials added to the cart.' => 'Active trials added to the cart.',
+    'Active trials added to the cart.' => 'Aktive Proben wurden zum Warenkorb hinzugefügt.',
     'Active' => 'Aktiv',
     'Add Row Label' => 'Zeilenbeschriftung hinzufügen',
     'Add a block' => 'Block hinzufügen',
