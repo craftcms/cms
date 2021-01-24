@@ -208,7 +208,7 @@ return [
     'Characters' => 'תווים',
     'Charts' => 'תרשימים',
     'Check again' => 'בדוק שוב',
-    'Check for {onLabel}.' => 'בדוק אם קיים {onLabel}.',
+    'Check for {onLabel}.' => 'בדיקה עבור {onLabel}.',
     'Check your email for instructions to reset your password.' => 'בדוק את תיבת האימייל שלך בשביל הוראות לשחזור הסיסמה.',
     'Checkbox Options' => 'אפשרויות צ׳קבוקס',
     'Checkbox' => 'צ׳קבוקס',
