@@ -2,7 +2,7 @@
 
 return [
     '(blank)' => '(üres)',
-    '(trial)' => '(trial)',
+    '(trial)' => '(próbaverzió)',
     '/path/to/folder' => '/útvonal/a/mappához',
     '1 job' => '1 feladat',
     '<a>Renew now</a> for another year of updates.' => '<a>Újítsa fel most</a> egy további évnyi frissítéshez.',
