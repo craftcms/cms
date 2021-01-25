@@ -71,7 +71,7 @@ return [
     'Allow line breaks' => 'Zeilenumbrüche erlauben',
     'Allow public registration' => 'Öffentliche Registrierung erlauben',
     'Allow self relations' => 'Selbstbeziehungen erlauben',
-    'Allow uploading directly to the field' => 'Allow uploading directly to the field',
+    'Allow uploading directly to the field' => 'Direkten Upload in das Feld zulassen',
     'Already in your cart' => 'Bereits im Warenkorb',
     'An error occurred when duplicating the category.' => 'Bei der Duplizierung der Kategorie ist ein Fehler aufgetreten.',
     'An error occurred when duplicating the entry.' => 'Bei der Duplizierung des Eintrags ist ein Fehler aufgetreten.',
