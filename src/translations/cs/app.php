@@ -1714,7 +1714,7 @@ Gratulujeme, Craftu se podařilo odeslat email.Byla pro to použita následujíc
     '{num, number} {num, plural, =1{second} other{seconds}}' => '{num, number} {num, plural, =1{sekunda} other{sekundy}}',
     '{num, number} {num, plural, =1{week} other{weeks}}' => '{num, number} {num, plural, =1{týden} other{týdny}}',
     '{num, number} {num, plural, =1{year} other{years}}' => '{num, number} {num, plural, =1{rok} other{roky}}',
-    '{num, number} {section} {num, plural, =1{entry} other{entries}}' => '{num, number} {section} {num, plural, =1{záznam} other{záznamy}}',
+    '{num, number} {section} {num, plural, =1{entry} other{entries}}' => '{num, number} {section} {num, plural, =1{záznam} few {záznamy} other{záznamů}}',
     '{num} plugins have licensing issues.' => 'Následující počet pluginů má problémy s licencováním: {num}.',
     '{pct} width' => 'šířka {pct}',
     '{price} plus {renewalPrice}/year for updates' => '{price} plus {renewalPrice}/let pro aktualizace',
