@@ -2,7 +2,7 @@
 
 return [
     '(blank)' => '(leer)',
-    '(trial)' => '(trial)',
+    '(trial)' => '(Testversion)',
     '/path/to/folder' => '/Pfad/zum/Ordner',
     '1 job' => '1 Aufgabe',
     '<a>Renew now</a> for another year of updates.' => '<a>Jetzt erneuern</a>, um ein weiteres Jahr Updates zu erhalten.',
