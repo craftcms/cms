@@ -1550,7 +1550,7 @@ return [
     'What type of section is this?' => 'Quel type de section est-ce?',
     'What type of volume is this?' => 'Quel type de volume est-ce?',
     'When someone replaces a file, the record of who uploaded the file will be updated as well.' => 'Lorsqu’un utilisateur remplace un fichier, l’historique du téléversement est également mis à jour.',
-    'Where assets should be stored when they are uploaded directly to the field, or via a front-end form.' => 'Où les ressources doivent être stockées lorsqu\'elles sont téléversées directement vers le champ, ou via un formulaire.',
+    'Where assets should be stored when they are uploaded directly to the field, or via a front-end form.' => 'Où les ressources doivent être stockées lorsqu\'elles sont téléversées directement vers le champ, ou via un formulaire « front-end ».',
     'Where do you want to store temporary asset uploads?' => 'Où voulez-vous garder vos mises à jour temporaires d\'actifs?',
     'Where do you want to store user photos? Note that the subfolder path can contain variables like <code>{username}</code>.' => 'Où souhaitez-vous stocker les photos des utilisateurs? Prenez note que le chemin d’accès au sous-dossier peut contenir des variables comme <code>{username}</code>.',
     'Where selected assets should be stored.' => 'Où les ressources sélectionnées doivent être stockées.',
