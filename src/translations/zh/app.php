@@ -772,7 +772,7 @@ return [
     'MM / YY' => 'MM / YY',
     'Make not required' => '使非必需',
     'Make required' => '使必需',
-    'Make sure you’re not overwriting changes in the YAML files that were made on another environment.' => '请确保不会覆盖 YAML 文件中已在其他环境中做出的更改。',
+    'Make sure you’re not overwriting changes in the YAML files that were made on another environment.' => '请确保不会覆盖 YAML 文件中已在其他环境中进行的更改。',
     'Make sure you’ve followed the <a href="{url}" target="_blank">Environment Setup</a> instructions before applying project config YAML changes.' => '在应用项目配置 YAML 更改之前，请确保已遵循<a href="{url}" target="_blank">环境设置</a>说明。',
     'Make this the primary site' => '将此设为主站点',
     'Manage categories' => '管理分类',
