@@ -1712,7 +1712,7 @@ return [
     '{num, number} {num, plural, =1{second} other{seconds}}' => '{num, number} {num, plural, =0{seconde} =1{seconde} other{secondes}}',
     '{num, number} {num, plural, =1{week} other{weeks}}' => '{num, number} {num, plural, =0{semaine} =1{semaine} other{semaines}}',
     '{num, number} {num, plural, =1{year} other{years}}' => '{num, number} {num, plural, =0{an} =1{an} other{ans}}',
-    '{num, number} {section} {num, plural, =1{entry} other{entries}}' => '{num, number} {section} {num, plural, =1{entry} other{entries}}',
+    '{num, number} {section} {num, plural, =1{entry} other{entries}}' => '{num, number} {num, plural, one {} =1{entrée} other{entrées}} {section}',
     '{num} plugins have licensing issues.' => '{num} plug-ins ont des problèmes de licence.',
     '{pct} width' => 'largeur {pct}',
     '{price} plus {renewalPrice}/year for updates' => '{price} + {renewalPrice}/année pour les mises à jour',
