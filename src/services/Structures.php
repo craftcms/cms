@@ -118,6 +118,77 @@ class Structures extends Component
     }
 
     /**
+     * Patches an array of entries, filling in any gaps in the tree.
+     *
+     * @param ElementInterface[] $elements
+     * @return void
+     * @since 3.6.0
+     */
+    public function fillGapsInElements(array &$elements): void
+    {
+        /** @var ElementInterface|null $prevElement */
+        $prevElement = null;
+        $patchedElements = [];
+
+        foreach ($elements as $i => $element) {
+            // Did we just skip any elements?
+            if (
+                $element->level != 1 &&
+                (
+                    $i == 0 ||
+                    (!$element->isSiblingOf($prevElement) && !$element->isChildOf($prevElement))
+                )
+            ) {
+                // Merge in any missing ancestors
+                $ancestorQuery = $element->getAncestors()
+                    ->anyStatus();
+
+                if ($prevElement) {
+                    $ancestorQuery->andWhere(['>', 'structureelements.lft', $prevElement->lft]);
+                }
+
+                foreach ($ancestorQuery->all() as $ancestor) {
+                    $patchedElements[] = $ancestor;
+                }
+            }
+
+            $patchedElements[] = $element;
+            $prevElement = $element;
+        }
+
+        $elements = $patchedElements;
+    }
+
+    /**
+     * Filters an array of elements down to only <= X branches.
+     *
+     * @param ElementInterface[] $elements
+     * @param int $branchLimit
+     * @return void
+     * @since 3.6.0
+     */
+    public function applyBranchLimitToElements(array &$elements, int $branchLimit): void
+    {
+        $branchCount = 0;
+        $prevElement = null;
+
+        foreach ($elements as $i => $element) {
+            // Is this a new branch?
+            if ($prevElement === null || !$element->isDescendantOf($prevElement)) {
+                $branchCount++;
+
+                // Have we gone over?
+                if ($branchCount > $branchLimit) {
+                    array_splice($elements, $i);
+                    break;
+                }
+            }
+
+            $prevElement = $element;
+        }
+    }
+
+    /**
      * Saves a structure
      *
      * @param Structure $structure

@@ -3,12 +3,18 @@
 ## Unreleased
 
 ### Added
+- Added `craft\services\Structures::applyBranchLimitToElements()`.
+- Added `craft\services\Structures::fillGapsInElements()`.
 - Added `craft\test\DbFixtureTrait::$checkIntegrity`.
 - Added `craft\test\fixtures\elements\BaseContentFixture`.
 
 ### Changed
 - Exception JSON responses now include `exception`, `file`, `line`, and `trace` keys. ([#7406](https://github.com/craftcms/cms/issues/7406))
 - Updated svg-sanitizer to 0.14.
+
+### Deprecated
+- Deprecated `craft\services\Categories::applyBranchLimitToCategories()`. `craft\services\Structures::applyBranchLimitToElements()` should be used instead.
+- Deprecated `craft\services\Categories::fillGapsInCategories()`. `craft\services\Structures::fillGapsInElements()` should be used instead.
 
 ### Fixed
 - Fixed a bug where D3-formatted numbers were getting extra `.00`s added to them if the Intl extension wasn’t installed. ([#7402](https://github.com/craftcms/cms/issues/7402))

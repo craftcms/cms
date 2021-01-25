@@ -111,6 +111,8 @@
 - Added `craft\services\Gql::GRAPHQL_COMPLEXITY_NPLUS1`.
 - Added `craft\services\Gql::GRAPHQL_COMPLEXITY_QUERY`.
 - Added `craft\services\Gql::GRAPHQL_COMPLEXITY_SIMPLE_FIELD`.
+- Added `craft\services\Structures::applyBranchLimitToElements()`.
+- Added `craft\services\Structures::fillGapsInElements()`.
 - Added `craft\test\ActiveFixture`.
 - Added `craft\test\DbFixtureTrait`.
 - Added `craft\test\fixtures\elements\BaseContentFixture`.
@@ -187,6 +189,8 @@
 - Deprecated `craft\gql\base\Resolver::prepareArguments()`.
 - Deprecated `craft\helpers\App::logConfig()`.
 - Deprecated `craft\helpers\Template::paginateCriteria()`. `paginateQuery()` should be used instead.
+- Deprecated `craft\services\Categories::applyBranchLimitToCategories()`. `craft\services\Structures::applyBranchLimitToElements()` should be used instead.
+- Deprecated `craft\services\Categories::fillGapsInCategories()`. `craft\services\Structures::fillGapsInElements()` should be used instead.
 - Deprecated `craft\services\Composer::$disablePackagist`.
 - Deprecated `craft\services\Drafts::applyDraft()`. `publishDraft()` should be used instead.
 - Deprecated `craft\services\Drafts::EVENT_AFTER_APPLY_DRAFT`. `EVENT_AFTER_PUBLISH_DRAFT` should be used instead.
