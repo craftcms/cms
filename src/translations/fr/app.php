@@ -1098,7 +1098,7 @@ return [
     'Restore' => 'Restaurer',
     'Restoring database…' => 'Restauration de la base de données…',
     'Restrict allowed file types' => 'Restreindre les types de fichier autorisés',
-    'Restrict assets to a single folder' => 'Restrict assets to a single folder',
+    'Restrict assets to a single folder' => 'Restreindre les ressources à un seul dossier',
     'Retry Duration' => 'Durée des tentatives successives',
     'Retry all failed jobs' => 'Réessayer toutes les tâches échouées',
     'Retry' => 'Réessayer',
