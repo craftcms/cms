@@ -208,7 +208,7 @@ return [
     'Characters' => 'Zeichen',
     'Charts' => 'Diagramme',
     'Check again' => 'Erneut überprüfen',
-    'Check for {onLabel}.' => 'Überprüfen Sie auf {onLabel}. ',
+    'Check for {onLabel}.' => 'Überprüfen Sie auf {onLabel}.',
     'Check your email for instructions to reset your password.' => 'Sie erhalten eine E-Mail mit Anweisungen, wie Sie Ihr Passwort zurücksetzen können.',
     'Checkbox Options' => 'Auswahlmöglichkeiten der Auswahlbox',
     'Checkbox' => 'Auswahlbox',
