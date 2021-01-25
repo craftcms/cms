@@ -715,11 +715,10 @@ class Categories extends Component
      * Patches an array of categories, filling in any gaps in the tree.
      *
      * @param Category[] $categories
-     * @deprecated in 3.6.0
+     * @deprecated in 3.6.0. Use [[\craft\services\Structures::fillGapsInElements()]] instead.
      */
     public function fillGapsInCategories(array &$categories)
     {
-        Craft::$app->getDeprecator()->log(self::class . '::fillGapsInCategories()', '`' . self::class . '::fillGapsInCategories()` has been deprecated. Use `\craft\services\Structures::fillGapsInElements()` instead.');
         Craft::$app->getStructures()->fillGapsInElements($categories);
     }
 
@@ -728,11 +727,10 @@ class Categories extends Component
      *
      * @param Category[] $categories
      * @param int $branchLimit
-     * @deprecated in 3.6.0
+     * @deprecated in 3.6.0. Use [[\craft\services\Structures::applyBranchLimitToElements()]] instead.
      */
     public function applyBranchLimitToCategories(array &$categories, int $branchLimit)
     {
-        Craft::$app->getDeprecator()->log(self::class . '::applyBranchLimitToCategories()', '`' . self::class . '::applyBranchLimitToCategories()` has been deprecated. Use `\craft\services\Structures::applyBranchLimitToElements()` instead.');
         Craft::$app->getStructures()->applyBranchLimitToElements($categories);
     }
 

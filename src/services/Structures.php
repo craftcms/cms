@@ -121,8 +121,10 @@ class Structures extends Component
      * Patches an array of entries, filling in any gaps in the tree.
      *
      * @param ElementInterface[] $elements
+     * @return void
+     * @since 3.6.0
      */
-    public function fillGapsInElements(array &$elements)
+    public function fillGapsInElements(array &$elements): void
     {
         /** @var ElementInterface|null $prevElement */
         $prevElement = null;
@@ -161,8 +163,10 @@ class Structures extends Component
      *
      * @param ElementInterface[] $elements
      * @param int $branchLimit
+     * @return void
+     * @since 3.6.0
      */
-    public function applyBranchLimitToElements(array &$elements, int $branchLimit)
+    public function applyBranchLimitToElements(array &$elements, int $branchLimit): void
     {
         $branchCount = 0;
         $prevElement = null;
