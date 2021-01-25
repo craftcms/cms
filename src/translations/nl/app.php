@@ -2,7 +2,7 @@
 
 return [
     '(blank)' => '(leeg)',
-    '(trial)' => '(trial)',
+    '(trial)' => '(proef)',
     '/path/to/folder' => '/pad/naar/map',
     '1 job' => '1 taak',
     '<a>Renew now</a> for another year of updates.' => '<a>Verleng nu</a> voor weer een jaar updates.',
