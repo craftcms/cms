@@ -548,7 +548,7 @@ return [
     'Entry Type' => 'Typ záznamu',
     'Entry Types' => 'Typy záznamů',
     'Entry URI Format' => 'Formát URI zadávaných údajů',
-    'Entry deleted for site.' => 'Záznam pro stránku byl smazaný.',
+    'Entry deleted for site.' => 'Záznam pro stránku byl smazán.',
     'Entry deleted.' => 'Záznam smazán',
     'Entry reverted to past revision.' => 'Záznam vrácen do předchozí revize.',
     'Entry saved.' => 'Záznam uložen.',
