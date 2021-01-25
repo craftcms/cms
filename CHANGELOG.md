@@ -3,8 +3,8 @@
 ## Unreleased
 
 ### Added
+- Added `craft\test\DbFixtureTrait::$checkIntegrity`.
 - Added `craft\test\fixtures\elements\BaseContentFixture`.
-- Added `craft\test\fixtures\elements\BaseElementFixture::$checkIntegrity`.
 
 ### Changed
 - Exception JSON responses now include `exception`, `file`, `line`, and `trace` keys. ([#7406](https://github.com/craftcms/cms/issues/7406))

@@ -31,12 +31,6 @@ abstract class BaseElementFixture extends DbFixture
     use DbFixtureTrait;
 
     /**
-     * @var bool Whether database integrity checks should be explicitly enabled before deleting elements,
-     * and then re-disabled afterwards.
-     */
-    public $checkIntegrity = true;
-
-    /**
      * @var array
      */
     protected $siteIds = [];
@@ -105,7 +99,14 @@ abstract class BaseElementFixture extends DbFixture
      */
     public function unload()
     {
-        $this->deleteElements();
+        $this->checkIntegrity(true);
+
+        foreach ($this->_elements as $element) {
+            $this->deleteElement($element);
+        }
+
+        $this->checkIntegrity(false);
+        $this->_elements = [];
     }
 
     /**
@@ -146,28 +147,6 @@ abstract class BaseElementFixture extends DbFixture
     protected function saveElement(ElementInterface $element): bool
     {
         return Craft::$app->getElements()->saveElement($element, true, true, false);
-    }
-
-    /**
-     * Deletes all elements created by this fixture.
-     *
-     * @return void
-     */
-    protected function deleteElements(): void
-    {
-        if ($this->checkIntegrity) {
-            $this->checkIntegrity(true);
-        }
-
-        foreach ($this->_elements as $element) {
-            $this->deleteElement($element);
-        }
-
-        if ($this->checkIntegrity) {
-            $this->checkIntegrity(false);
-        }
-
-        $this->_elements = [];
     }
 
     /**
