@@ -1306,7 +1306,7 @@ return [
     'The maximum number of rows the field is allowed to have.' => 'Maximálny počet riadkov, ktoré môže pole obsahovať.',
     'The minimum number of blocks the field is allowed to have.' => 'Minimálny počet blokov povolených v poli.',
     'The minimum number of rows the field is allowed to have.' => 'Minimálny počet riadkov, ktoré môže pole obsahovať.',
-    'The number of minutes that timepicker options should be incremented by. (Authors can enter a specific time manually.)' => 'The number of minutes that timepicker options should be incremented by. (Authors can enter a specific time manually.)',
+    'The number of minutes that timepicker options should be incremented by. (Authors can enter a specific time manually.)' => 'Počet minút, o ktoré má byť časomiera zvýšená. (Autori môžu ručne zadať konkrétny čas.)',
     'The number of seconds that the `Retry-After` HTTP header should be set to for 503 responses when the system is offline.' => 'Keď je systém offline, počet sekúnd v hlavičke HTTP „Opakovať po“ by mal byť nastavený na 503 odpovedí.',
     'The path to a template file within your `templates/` folder.' => 'Cesta k súboru šablóny vo vašom priečinku `templates/`.',
     'The path to the volume’s directory on the file system.' => 'Cesta k adresáru zväzku v systéme súborov.',
