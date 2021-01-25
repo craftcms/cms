@@ -167,6 +167,7 @@
 - Updated Composer to 2.0.8.
 - Updated LitEmoji to 2.x.
 - Updated the Symfony Yaml component to 5.x.
+- Updated svg-sanitizer to 0.14.
 - Updated webonyx/graphql-php to 14.x.
 
 ### Deprecated
