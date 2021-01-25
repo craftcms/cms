@@ -3,10 +3,12 @@
 ## Unreleased
 
 ### Added
+- Added `craft\test\DbFixtureTrait::$checkIntegrity`.
 - Added `craft\test\fixtures\elements\BaseContentFixture`.
 
 ### Changed
 - Exception JSON responses now include `exception`, `file`, `line`, and `trace` keys. ([#7406](https://github.com/craftcms/cms/issues/7406))
+- Updated svg-sanitizer to 0.14.
 
 ### Fixed
 - Fixed a bug where D3-formatted numbers were getting extra `.00`s added to them if the Intl extension wasn’t installed. ([#7402](https://github.com/craftcms/cms/issues/7402))
