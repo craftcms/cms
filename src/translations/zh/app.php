@@ -1272,7 +1272,7 @@ return [
     'Temp Uploads Location' => '临时上传位置',
     'Temp files' => '临时文件',
     'Template caches' => '模板缓存',
-    'Template that defines the Title field’s custom “translation key” format. {type} titles will be copied to all sites that produce the same key. For example, to make titles translatable based on the first two characters of the site handle, you could enter `{site.handle[:2]}`.' => 'Template that defines the Title field’s custom “translation key” format. {type} titles will be copied to all sites that produce the same key. For example, to make titles translatable based on the first two characters of the site handle, you could enter `{site.handle[:2]}`.',
+    'Template that defines the Title field’s custom “translation key” format. {type} titles will be copied to all sites that produce the same key. For example, to make titles translatable based on the first two characters of the site handle, you could enter `{site.handle[:2]}`.' => '该模板用于定义标题字段的自定义“翻译键”格式。{type}标题将复制到生成相同键的所有站点。例如，要使标题可以基于站点句柄的前两个字符进行翻译，您可以输入 `{site.handle[:2]}`。',
     'Template' => '模板',
     'Templates' => '模板',
     'Temporary Uploads' => '临时上传',
