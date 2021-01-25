@@ -1137,7 +1137,7 @@ return [
     'Save entries to other sites with the same language' => 'Spara poster på andra webbplatser med samma språk',
     'Save entries with the “{entryType}” entry type' => 'Spara inlägg med inläggstypen “{entryType}”',
     'Save tags in the “{tagGroup}” tag group' => 'Spara taggar i taggruppen “{tagGroup}”',
-    'Save the loaded project config data to YAML files in your <code>{folder}</code> folder.' => 'Spara den laddade projektkonfigurationsdatan till YAML-filer i din<code>{folder}</code>-mapp.',
+    'Save the loaded project config data to YAML files in your <code>{folder}</code> folder.' => 'Spara den inlästa projektkonfigurationsdatan till YAML-filer i din mapp <code>{folder}</code>.',
     'Save' => 'Spara',
     'Saving' => 'Sparar',
     'Scale and crop' => 'Skala och beskär',
