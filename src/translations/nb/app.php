@@ -1714,7 +1714,7 @@ Gratulerer! Craft var i stand til å sende e-post. Her er innstillingene du beny
     '{num, number} {num, plural, =1{second} other{seconds}}' => '{num, number} {num, plural, one {} =1{sekund} other{sekunder}}',
     '{num, number} {num, plural, =1{week} other{weeks}}' => '{num, number} {num, plural, one {} =1{uke} other{uker}}',
     '{num, number} {num, plural, =1{year} other{years}}' => '{num, number} {num, plural, one {} =1{år} other{år}}',
-    '{num, number} {section} {num, plural, =1{entry} other{entries}}' => '{num, number} {section} {num, plural, =1{entry} other{entries}}',
+    '{num, number} {section} {num, plural, =1{entry} other{entries}}' => '{num, number} {section} {num, plural, one {} =1{post} other{poster}}',
     '{num} plugins have licensing issues.' => '{num} utvidelser har lisensproblemer.',
     '{pct} width' => '{pct} bredde',
     '{price} plus {renewalPrice}/year for updates' => '{price} pluss {renewalPrice}/år for oppdateringer',
