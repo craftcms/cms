@@ -989,7 +989,7 @@ return [
     'Prefix must be 5 or less characters long.' => 'Prefix måste vara 5 eller färre tecken långt.',
     'Prefix' => 'Prefix',
     'Prev' => 'Föregående',
-    'Preview Format' => 'Förhandsvisning av format',
+    'Preview Format' => 'Förhandsgranskningsformat',
     'Preview Mode' => 'Förhandsgranskningsläge',
     'Preview Targets' => 'Förhandsvisning av mål',
     'Preview file' => 'Förhandsgranska fil',
