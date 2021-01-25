@@ -12,7 +12,6 @@ use craft\base\MemoizableArray;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Category;
-use craft\elements\db\CategoryQuery;
 use craft\errors\CategoryGroupNotFoundException;
 use craft\events\CategoryGroupEvent;
 use craft\events\ConfigEvent;

@@ -132,13 +132,14 @@ class Structures extends Component
 
         foreach ($elements as $i => $element) {
             // Did we just skip any elements?
-            if ($element->level != 1 && (
-                ($i == 0) ||
+            if (
+                $element->level != 1 &&
+                (
+                    $i == 0 ||
                     (!$element->isSiblingOf($prevElement) && !$element->isChildOf($prevElement))
-            )
+                )
             ) {
                 // Merge in any missing ancestors
-                /** @var ElementQuery $ancestorQuery */
                 $ancestorQuery = $element->getAncestors()
                     ->anyStatus();
 
