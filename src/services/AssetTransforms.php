@@ -948,14 +948,32 @@ class AssetTransforms extends Component
     /**
      * Returns a list of pending transform index IDs.
      *
+     * @param int $limit
      * @return array
      */
-    public function getPendingTransformIndexIds(): array
+    public function getPendingTransformIndexIds($limit = 0): array
+    {
+        $query = $this->_createTransformIndexQuery()
+            ->select(['id'])
+            ->where(['fileExists' => false, 'inProgress' => false]);
+
+        if ($limit > 0) {
+            $query = $query->limit($limit);
+        }
+
+       return $query->column();
+    }
+
+    /**
+     * Counts pending transforms.
+     *
+     * @return int
+     */
+    public function countPendingTransformIndexIds(): int
     {
         return $this->_createTransformIndexQuery()
-            ->select(['id'])
             ->where(['fileExists' => false, 'inProgress' => false])
-            ->column();
+            ->count();
     }
 
     /**

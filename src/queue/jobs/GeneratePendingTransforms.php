@@ -8,6 +8,7 @@
 namespace craft\queue\jobs;
 
 use Craft;
+use craft\helpers\Queue;
 use craft\queue\BaseJob;
 
 /**
@@ -18,13 +19,15 @@ use craft\queue\BaseJob;
  */
 class GeneratePendingTransforms extends BaseJob
 {
+    public $limit;
+
     /**
      * @inheritdoc
      */
     public function execute($queue)
     {
         // Get all of the pending transform index IDs
-        $indexIds = Craft::$app->getAssetTransforms()->getPendingTransformIndexIds();
+        $indexIds = Craft::$app->getAssetTransforms()->getPendingTransformIndexIds($this->limit);
 
         $totalIndexes = count($indexIds);
         $assetTransformsService = Craft::$app->getAssetTransforms();
@@ -42,6 +45,12 @@ class GeneratePendingTransforms extends BaseJob
                 } catch (\Throwable $e) {
                 }
             }
+        }
+
+        $pendingImageTransformCount = Craft::$app->getAssetTransforms()->countPendingTransformIndexIds();
+
+        if ($pendingImageTransformCount > 0) {
+            Queue::push(new GeneratePendingTransforms(['limit' => $this->limit]));
         }
     }
 

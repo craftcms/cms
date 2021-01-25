@@ -94,6 +94,12 @@ class Assets extends Component
     const EVENT_REGISTER_PREVIEW_HANDLER = 'registerPreviewHandler';
 
     /**
+     * @var int limit's transform per queue operation
+     * @since 3.6.0
+     */
+    public int $generatePendingTransformsLimit = 0;
+
+    /**
      * @var
      */
     private $_foldersById = [];
@@ -626,7 +632,7 @@ class Assets extends Component
 
         // Queue up a new Generate Pending Transforms job
         if (!$this->_queuedGeneratePendingTransformsJob) {
-            Queue::push(new GeneratePendingTransforms());
+            Queue::push(new GeneratePendingTransforms(['limit' => $this->generatePendingTransformsLimit]));
             $this->_queuedGeneratePendingTransformsJob = true;
         }
 
