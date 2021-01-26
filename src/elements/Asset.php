@@ -329,6 +329,7 @@ class Asset extends Element
             $folder = Craft::$app->getAssets()->getFolderByUid($matches[1])
         ) {
             $volume = $folder->getVolume();
+            $isTemp = $volume instanceof Temp;
 
             $actions[] = [
                 'type' => PreviewAsset::class,
@@ -345,7 +346,7 @@ class Asset extends Element
             ];
 
             $userSession = Craft::$app->getUser();
-            if ($userSession->checkPermission("replaceFilesInVolume:$volume->uid")) {
+            if ($isTemp || $userSession->checkPermission("replaceFilesInVolume:$volume->uid")) {
                 // Rename/Replace File
                 $actions[] = RenameFile::class;
                 $actions[] = ReplaceFile::class;
@@ -363,12 +364,12 @@ class Asset extends Element
             ];
 
             // Edit Image
-            if ($userSession->checkPermission("editImagesInVolume:$volume->uid")) {
+            if ($isTemp || $userSession->checkPermission("editImagesInVolume:$volume->uid")) {
                 $actions[] = EditImage::class;
             }
 
             // Delete
-            if ($userSession->checkPermission("deleteFilesAndFoldersInVolume:$volume->uid")) {
+            if ($isTemp || $userSession->checkPermission("deleteFilesAndFoldersInVolume:$volume->uid")) {
                 $actions[] = DeleteAssets::class;
             }
         }
