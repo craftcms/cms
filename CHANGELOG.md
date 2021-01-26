@@ -1,6 +1,9 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.5.19 - 2020-01-26
+
+### Changed
+- The control panel is now fully translated in all supported languages.
 
 ### Fixed
 - Fixed a bug where Date fields with existing values were always considered dirty when saving an entry. ([#7404](https://github.com/craftcms/cms/issues/7404))
