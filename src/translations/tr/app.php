@@ -1137,7 +1137,7 @@ return [
     'Save entries to other sites with the same language' => 'Kaayıtları diğer sitelere aynı dilde kaydet',
     'Save entries with the “{entryType}” entry type' => '“{entryType}” kayıt türüne ait kayıtları kaydet',
     'Save tags in the “{tagGroup}” tag group' => '“{tagGroup}” etiket grubundaki etiketleri kaydedin',
-    'Save the loaded project config data to YAML files in your <code>{folder}</code> folder.' => 'Save the loaded project config data to YAML files in your <code>{folder}</code> folder.',
+    'Save the loaded project config data to YAML files in your <code>{folder}</code> folder.' => 'Yüklenen proje yapılandırma verilerini <code>{folder}</code> klasörünüzdeki YAML dosyalarına kaydedin.',
     'Save' => 'Kaydet',
     'Saving' => 'Kaydediliyor',
     'Scale and crop' => 'Ölçeklendir ve kırp',
