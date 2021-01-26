@@ -4691,6 +4691,17 @@ fieldset {
   overflow: auto;
 }
 
+/* Asset indexing related */
+tr.indexingSession td {
+  height: 34px;
+  padding: 0 10px;
+}
+tr.indexingSession td .progressbar {
+  left: 5%;
+  width: 90%;
+  top: 11px;
+}
+
 // Selects
 .select:not(.selectize),
 .select:not(.selectize) select {

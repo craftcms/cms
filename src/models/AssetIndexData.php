@@ -66,16 +66,6 @@ class AssetIndexData extends Model
     /**
      * @inheritdoc
      */
-    public function datetimeAttributes(): array
-    {
-        $attributes = parent::datetimeAttributes();
-        $attributes[] = 'timestamp';
-        return $attributes;
-    }
-
-    /**
-     * @inheritdoc
-     */
     protected function defineRules(): array
     {
         $rules = parent::defineRules();

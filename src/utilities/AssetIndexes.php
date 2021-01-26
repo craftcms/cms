@@ -69,9 +69,11 @@ class AssetIndexes extends Utility
         ]);
 
         $view->registerAssetBundle(AssetIndexesAsset::class);
-        $view->registerJs('new Craft.AssetIndexesUtility(\'asset-indexes\');');
+
+        $existingIndexingSessions = Craft::$app->getAssetIndexer()->getExistingIndexingSessions();
 
         return $view->renderTemplate('_components/utilities/AssetIndexes', [
+            'existingSessions' => $existingIndexingSessions,
             'checkboxSelectHtml' => $checkboxSelectHtml,
         ]);
     }

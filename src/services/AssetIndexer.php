@@ -12,11 +12,13 @@ use craft\errors\AssetDisallowedExtensionException;
 use craft\errors\MissingAssetException;
 use craft\errors\VolumeException;
 use craft\helpers\Assets as AssetsHelper;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\StringHelper;
 use craft\models\AssetIndexData;
+use craft\models\AssetIndexingSession;
 use craft\models\VolumeListing;
 use craft\records\AssetIndexData as AssetIndexDataRecord;
 use Generator;
@@ -145,6 +147,28 @@ class AssetIndexer extends Component
 
             yield $listing;
         }
+    }
+
+    /**
+     * Return a list of currently active indexing sessions.
+     *
+     * @return array
+     */
+    public function getExistingIndexingSessions(): array
+    {
+        $query = (new Query())
+            ->select(['id', 'totalEntries', 'processedEntries', 'queueId', 'actionRequired', 'dateCreated', 'dateUpdated'])
+            ->from(Table::ASSETINDEXINGSESSIONS);
+
+        $rows = $query->all();
+
+        $sessions = [];
+
+        foreach ($rows as $row) {
+            $sessions[] = new AssetIndexingSession($row);
+        }
+
+        return $sessions;
     }
 
     /**

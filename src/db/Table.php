@@ -16,6 +16,7 @@ namespace craft\db;
 abstract class Table
 {
     const ASSETINDEXDATA = '{{%assetindexdata}}';
+    const ASSETINDEXINGSESSIONS = '{{%assetindexingsessions}}';
     const ASSETS = '{{%assets}}';
     const ASSETTRANSFORMINDEX = '{{%assettransformindex}}';
     const ASSETTRANSFORMS = '{{%assettransforms}}';

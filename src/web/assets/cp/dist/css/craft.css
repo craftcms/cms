@@ -2352,6 +2352,11 @@ body.rtl .timewrapper .text:before { right: 7px; }
 /* Assets related */
 .hud.assetshud .body { max-height: 500px; overflow: auto; }
 
+/* Asset indexing related */
+tr.indexingSession td { height: 34px; padding: 0 10px; }
+
+tr.indexingSession td .progressbar { left: 5%; width: 90%; top: 11px; }
+
 .select:not(.selectize), .select:not(.selectize) select { position: relative; border-radius: 5px; white-space: nowrap; }
 
 .select:not(.selectize) { max-width: 100%; position: relative; }
