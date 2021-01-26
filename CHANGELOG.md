@@ -1,6 +1,11 @@
 # Release Notes for Craft CMS 3.x
 
-## 3.5.19 - 2020-01-26
+## 3.5.19.1 - 2021-01-28
+
+### Fixed
+- Fixed an error that could occur when validating dates. ([#7459](https://github.com/craftcms/cms/issues/7459))
+
+## 3.5.19 - 2021-01-26
 
 ### Changed
 - The control panel is now fully translated in all supported languages.
