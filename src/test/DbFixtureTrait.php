@@ -19,13 +19,19 @@ use yii\db\Connection;
 trait DbFixtureTrait
 {
     /**
+     * @var bool Whether database integrity checks should be explicitly enabled before deleting fixture data,
+     * and then re-disabled afterwards.
+     */
+    public $checkIntegrity = true;
+
+    /**
      * Toggles the DB integrity check.
      *
      * @param bool $check whether to turn on or off the integrity check.
      */
     protected function checkIntegrity(bool $check): void
     {
-        if (!$this->db instanceof Connection) {
+        if (!$this->checkIntegrity || !$this->db instanceof Connection) {
             return;
         }
         $this->db->createCommand()->checkIntegrity($check)->execute();

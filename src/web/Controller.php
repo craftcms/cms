@@ -209,7 +209,23 @@ abstract class Controller extends \yii\web\Controller
                 } else {
                     $statusCode = 500;
                 }
-                return $this->asErrorJson($message)
+
+                if (YII_DEBUG) {
+                    $response = $this->asJson([
+                        'error' => $message,
+                        'exception' => get_class($e),
+                        'file' => $e->getFile(),
+                        'line' => $e->getLine(),
+                        'trace' => array_map(function($step) {
+                            unset($step['args']);
+                            return $step;
+                        }, $e->getTrace()),
+                    ]);
+                } else {
+                    $response = $this->asErrorJson($message);
+                }
+
+                return $response
                     ->setStatusCode($statusCode);
             }
             throw $e;

@@ -133,8 +133,6 @@ class GeneralConfig extends BaseObject
         'gif',
         'gz',
         'gzip',
-        'htm',
-        'html',
         'itt',
         'jp2',
         'jpeg',

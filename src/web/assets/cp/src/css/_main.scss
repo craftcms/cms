@@ -1095,20 +1095,22 @@ ul.icons {
     }
   }
 
-  &:focus,
-  &.focus,
-  &:hover {
-    background-color: transparentize($inputColor, 0.65);
-  }
-
-  &:active,
-  &.active {
-    background-color: transparentize($inputColor, 0.5);
-
+  &:not(.disabled) {
     &:focus,
     &.focus,
-    .btngroup:focus & {
-      background-color: transparentize($inputColor, 0.4);
+    &:hover {
+      background-color: transparentize($inputColor, 0.65);
+    }
+
+    &:active,
+    &.active {
+      background-color: transparentize($inputColor, 0.5);
+
+      &:focus,
+      &.focus,
+      .btngroup:focus & {
+        background-color: transparentize($inputColor, 0.4);
+      }
     }
   }
 
@@ -1814,7 +1816,7 @@ h2 + .actions {
 /* ----------------------------------------*/
 
 .tablepane {
-  margin: -24px;
+  margin: -24px -24px -12px;
   overflow-x: auto;
 
   table {

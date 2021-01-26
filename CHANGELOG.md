@@ -3,10 +3,26 @@
 ## Unreleased
 
 ### Added
+- Added `craft\services\Structures::applyBranchLimitToElements()`.
+- Added `craft\services\Structures::fillGapsInElements()`.
+- Added `craft\test\DbFixtureTrait::$checkIntegrity`.
 - Added `craft\test\fixtures\elements\BaseContentFixture`.
+
+### Changed
+- When applying project config changes, Craft now installs new plugins _before_ uninstalling removed plugins. ([#7436](https://github.com/craftcms/cms/issues/7436))
+- `craft\base\ElementExporterInterface::export()` can now return a callable, if `isFormattable()` returns `false`. ([#7148](https://github.com/craftcms/cms/issues/7148))
+- Exception JSON responses now include `exception`, `file`, `line`, and `trace` keys. ([#7406](https://github.com/craftcms/cms/issues/7406))
+- Updated svg-sanitizer to 0.14.
+
+### Deprecated
+- Deprecated `craft\services\Categories::applyBranchLimitToCategories()`. `craft\services\Structures::applyBranchLimitToElements()` should be used instead.
+- Deprecated `craft\services\Categories::fillGapsInCategories()`. `craft\services\Structures::fillGapsInElements()` should be used instead.
 
 ### Fixed
 - Fixed a bug where D3-formatted numbers were getting extra `.00`s added to them if the Intl extension wasn’t installed. ([#7402](https://github.com/craftcms/cms/issues/7402))
+
+### Security
+- The default `allowedFileExtensions` config setting value no longer includes `htm` or `html`.
 
 ## 3.6.0-RC4 - 2020-01-19
 
@@ -293,6 +309,15 @@
 ### Removed
 - Removed Minify and jsmin-php.
 - Removed `craft\services\Api::getComposerWhitelist()`.
+
+## 3.5.19 - 2020-01-26
+
+### Changed
+- The control panel is now fully translated in all supported languages.
+
+### Fixed
+- Fixed a bug where Date fields with existing values were always considered dirty when saving an entry. ([#7404](https://github.com/craftcms/cms/issues/7404))
+- Fixed a bug where it wasn’t possible for non-admins to rename, replace, edit, or delete their own temporary assets. ([#7420](https://github.com/craftcms/cms/issues/7420))
 
 ## 3.5.18 - 2021-01-19
 

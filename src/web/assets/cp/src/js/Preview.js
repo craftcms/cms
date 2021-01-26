@@ -156,6 +156,8 @@ Craft.Preview = Garnish.Base.extend({
                             this.switchTarget($(option).data('target'));
                         },
                     });
+
+                    $('<div class="flex-grow"/>').appendTo(this.$previewHeader);
                 }
 
                 // Device type buttons
@@ -208,13 +210,17 @@ Craft.Preview = Garnish.Base.extend({
                     }
                 }).appendTo(this.$deviceTypeContainer);
 
+                $('<div class="flex-grow"/>').appendTo(this.$previewHeader);
+
                 // Orientation toggle
                 this.$orientationBtn = $('<button/>', {
                     type: 'button',
-                    'class': 'btn',
+                    'class': 'btn disabled',
                     'data-icon': 'refresh',
+                    disabled: '',
+                    'aria-hidden': '',
                     'text': Craft.t('app', 'Rotate')
-                });
+                }).appendTo(this.$previewHeader);
                 this.addListener(this.$orientationBtn, 'click', 'switchOrientation');
 
                 // Get the last stored orientation
@@ -571,7 +577,7 @@ Craft.Preview = Garnish.Base.extend({
 
     switchOrientation: function()
     {
-        if (this.isDeviceUpdating) {
+        if (this.isDeviceUpdating || !this._devicePreviewIsActive()) {
             return false;
         }
 
@@ -600,8 +606,11 @@ Craft.Preview = Garnish.Base.extend({
 
         this.isDeviceUpdating = true;
 
-        // Add the orientation button to the header bar
-        this.$previewHeader.append(this.$orientationBtn);
+        // Enable the orientation button
+        this.$orientationBtn
+            .removeClass('disabled')
+            .removeAttr('disabled')
+            .removeAttr('aria-hidden');
 
         // Trigger the resized css mods
         this.$iframeContainer.addClass('lp-iframe-container--has-device-preview');
@@ -699,7 +708,10 @@ Craft.Preview = Garnish.Base.extend({
         this.$deviceTypeContainer.find('.lp-device-type-btn--desktop')
             .addClass('active')
             .attr('aria-selected', 'true');
-        this.$orientationBtn.detach();
+        this.$orientationBtn
+            .addClass('disabled')
+            .attr('disabled', '')
+            .attr('aria-hidden', '');
         this.$iframeContainer.removeClass('lp-iframe-container--animating');
         this.$iframeContainer.removeClass('lp-iframe-container--has-device-preview');
         this.$iframeContainer.removeClass('lp-iframe-container--tablet');

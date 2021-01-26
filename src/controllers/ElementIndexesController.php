@@ -320,10 +320,10 @@ class ElementIndexesController extends BaseElementsController
                     break;
             }
         } else if (
+            is_callable($export) ||
             is_resource($export) ||
             (is_array($export) && isset($export[0]) && is_resource($export[0]))
         ) {
-            // todo: check for is_callable() here if https://github.com/yiisoft/yii2/pull/18394 gets accepted
             $this->response->stream = $export;
         } else {
             $this->response->data = $export;

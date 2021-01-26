@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-> {warning} If you have a custom session driver, make sure you update it for Yii 2.0.29 compatibility.
+> {warning} Read through the [Upgrading to Craft 3.6](https://craftcms.com/knowledge-base/upgrading-to-craft-3-6) guide before updating.
 
 ### Added
 - Craft now requires PHP 7.2.5 or later.
@@ -114,6 +114,8 @@
 - Added `craft\services\Gql::GRAPHQL_COMPLEXITY_NPLUS1`.
 - Added `craft\services\Gql::GRAPHQL_COMPLEXITY_QUERY`.
 - Added `craft\services\Gql::GRAPHQL_COMPLEXITY_SIMPLE_FIELD`.
+- Added `craft\services\Structures::applyBranchLimitToElements()`.
+- Added `craft\services\Structures::fillGapsInElements()`.
 - Added `craft\test\ActiveFixture`.
 - Added `craft\test\DbFixtureTrait`.
 - Added `craft\test\fixtures\elements\BaseContentFixture`.
@@ -141,6 +143,7 @@
 - The `migrate/all` command now lists the migrations that will be applied. ([#7381](https://github.com/craftcms/cms/issues/7381))
 - The `project-config/apply` command now displays a list of changes it is applying. ([#7235](https://github.com/craftcms/cms/issues/7235))
 - The `allowedFileExtensions` config setting now includes several file extensions used by caption and subtitle file formats by default. ([#7304](https://github.com/craftcms/cms/issues/7304))
+- When applying project config changes, Craft now installs new plugins _before_ uninstalling removed plugins. ([#7436](https://github.com/craftcms/cms/issues/7436))
 - The `currency`, `filesize`, `number`, `percentage`, and `timestamp` Twig filters now return the passed-in value verbatim if it wasn’t a valid number.
 - The `withoutKey` Twig filter can now accept an array, for removing multiple keys at once. ([#7230](https://github.com/craftcms/cms/issues/7230))
 - It’s now possible to add new log targets by overriding `components.log.targets` in `config/app.php`, rather than the entire `log` component config.
@@ -148,7 +151,7 @@
 - The `_includes/forms/field.html` control panel template and `craft\helpers\Cp::fieldHtml()` now accept an `instructionsPosition` variable/config key, which can be set to `'after'` to cause the field instructions to be rerdered after the input instead of before.
 - The `_includes/forms/field.html` control panel template and `craft\helpers\Cp::fieldHtml()` now accept a `fieldLabel` variable/config key, which will take precedence over `label`.
 - The `checkboxField` macro within the `_includes/forms.html` control panel template now returns a `<fieldset>` if a `fieldLabel` config key was passed.
-- `craft\base\ElementExporterInterface::export()` can now return raw response data, or a resource, if `isFormattable()` returns `false`. If a resource is returned, it will be streamed to the browser. ([#7148](https://github.com/craftcms/cms/issues/7148))
+- `craft\base\ElementExporterInterface::export()` can now return raw response data, a callable, or a resource, if `isFormattable()` returns `false`. If a callable or resource is returned, it will be streamed to the browser. ([#7148](https://github.com/craftcms/cms/issues/7148))
 - `craft\behaviors\EnvAttributeParserBehavior::$attributes` can now be set to an array with key/value pairs, where the key is the attribute name, and the value is the raw (unparsed) value, or a callable that returns the raw value.
 - `craft\behaviors\EnvAttributeParserBehavior::$attributes` can now be set to an array with key/value pairs, where the key is the attribute name, and the value is the raw (unparsed) value, or a callable that returns the raw value.
 - `craft\db\Connection::getPrimaryKeyName()`, `getForeignKeyName()`, and `getIndexName()` now generate completely random object names, rather than basing them on a table name, etc. ([#7153](https://github.com/craftcms/cms/issues/7153))
@@ -162,6 +165,7 @@
 - `craft\services\Gql::getValidationRules()` now has an `$isIntrospectionQuery` argument.
 - `Craft.formatNumber()` and other D3-based number formatting now uses a dynamically-generated locale definition based on info pulled from the application’s formatting locale. ([#7341](https://github.com/craftcms/cms/issues/7341))
 - Craft no longer reports PHP deprecation errors.
+- Exception JSON responses now include `exception`, `file`, `line`, and `trace` keys. ([#7406](https://github.com/craftcms/cms/issues/7406))
 - GraphQL queries now support eager-loading for arguments provided as input objects.
 - Made it easier to extend Craft’s Codeception testing module with custom code. ([#7339](https://github.com/craftcms/cms/issues/7339))
 - Updated Yii to 2.0.40.
@@ -169,6 +173,7 @@
 - Updated Composer to 2.0.8.
 - Updated LitEmoji to 2.x.
 - Updated the Symfony Yaml component to 5.x.
+- Updated svg-sanitizer to 0.14.
 - Updated webonyx/graphql-php to 14.x.
 
 ### Deprecated
@@ -188,6 +193,8 @@
 - Deprecated `craft\gql\base\Resolver::prepareArguments()`.
 - Deprecated `craft\helpers\App::logConfig()`.
 - Deprecated `craft\helpers\Template::paginateCriteria()`. `paginateQuery()` should be used instead.
+- Deprecated `craft\services\Categories::applyBranchLimitToCategories()`. `craft\services\Structures::applyBranchLimitToElements()` should be used instead.
+- Deprecated `craft\services\Categories::fillGapsInCategories()`. `craft\services\Structures::fillGapsInElements()` should be used instead.
 - Deprecated `craft\services\Composer::$disablePackagist`.
 - Deprecated `craft\services\Drafts::applyDraft()`. `publishDraft()` should be used instead.
 - Deprecated `craft\services\Drafts::EVENT_AFTER_APPLY_DRAFT`. `EVENT_AFTER_PUBLISH_DRAFT` should be used instead.
@@ -203,7 +210,7 @@
 - Removed `craft\controllers\ElementIndexesController::actionCreateExportToken()`.
 - Removed `craft\controllers\ExportController`.
 - Removed `craft\services\Api::getComposerWhitelist()`.
-- Removed `craft\test\fixtures\elements\ElementFixture`. `craft\test\fixtures\elements\BaseElementFixture` should be used instead.
+- Removed `craft\test\fixtures\elements\ElementFixture`. `craft\test\fixtures\elements\BaseElementFixture` or `BaseContentFixture` should be used instead.
 - Removed `craft\test\fixtures\FieldLayoutFixture::deleteAllByFieldHandle()`.
 - Removed `craft\test\fixtures\FieldLayoutFixture::extractTabsFromFieldLayout()`.
 - Removed `craft\test\fixtures\FieldLayoutFixture::getTabsForFieldLayout()`.
@@ -221,3 +228,6 @@
 - Fixed a bug where generated URLs would include the token from the current request, even if it had expired or met its usage limit.
 - Fixed a bug where Number field settings and input values could be stored incorrectly if the user’s formatting locale used a different decimal character that the application language.
 - Fixed a MySQL deadlock error that could occur when running background jobs. ([#7179](https://github.com/craftcms/cms/issues/7179))
+
+### Security
+- The default `allowedFileExtensions` config setting value no longer includes `htm` or `html`.

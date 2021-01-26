@@ -142,22 +142,27 @@ class ProjectConfigController extends Controller
             // Any plugins need to be installed/uninstalled?
             $loadedConfigPlugins = array_keys($projectConfig->get(Plugins::CONFIG_PLUGINS_KEY) ?? []);
             $yamlPlugins = array_keys($projectConfig->get(Plugins::CONFIG_PLUGINS_KEY, true) ?? []);
-            $this->_uninstallPlugins(array_diff($loadedConfigPlugins, $yamlPlugins));
 
             if (!$this->_installPlugins(array_diff($yamlPlugins, $loadedConfigPlugins))) {
                 $this->stdout('Aborting config apply process' . PHP_EOL, Console::FG_RED);
                 return ExitCode::UNSPECIFIED_ERROR;
             }
 
+            $this->_uninstallPlugins(array_diff($loadedConfigPlugins, $yamlPlugins));
+            
             $this->stdout("Applying changes from your project config files ... " . PHP_EOL);
 
             try {
                 $forceUpdate = $projectConfig->forceUpdate;
                 $projectConfig->forceUpdate = $this->force;
 
-                $projectConfig->on(ProjectConfigService::EVENT_ADD_ITEM, $this->_generateOutputFunction('added:    '), null, false);
-                $projectConfig->on(ProjectConfigService::EVENT_REMOVE_ITEM, $this->_generateOutputFunction('removed:  '), null, false);
-                $projectConfig->on(ProjectConfigService::EVENT_UPDATE_ITEM, $this->_generateOutputFunction('modified: '), null, false);
+                $projectConfig->on(ProjectConfigService::EVENT_ADD_ITEM, $this->_generateOutputFunction('adding '), null, false);
+                $projectConfig->on(ProjectConfigService::EVENT_REMOVE_ITEM, $this->_generateOutputFunction('removing '), null, false);
+                $projectConfig->on(ProjectConfigService::EVENT_UPDATE_ITEM, $this->_generateOutputFunction('updating '), null, false);
+
+                $projectConfig->on(ProjectConfigService::EVENT_ADD_ITEM, function () { $this->stdout(' ... '); $this->stdout('done' . PHP_EOL, Console::FG_GREEN);});
+                $projectConfig->on(ProjectConfigService::EVENT_REMOVE_ITEM, function () { $this->stdout(' ... '); $this->stdout('done' . PHP_EOL, Console::FG_GREEN);});
+                $projectConfig->on(ProjectConfigService::EVENT_UPDATE_ITEM, function () { $this->stdout(' ... '); $this->stdout('done' . PHP_EOL, Console::FG_GREEN);});
 
                 $projectConfig->applyYamlChanges();
 
@@ -322,8 +327,8 @@ class ProjectConfigController extends Controller
             }
             $this->announcedPaths[$key] = true;
 
-            $this->stdout('    ' . $mode);
-            $this->stdout($configEvent->path . PHP_EOL, Console::FG_CYAN);
+            $this->stdout(' - ' . $mode);
+            $this->stdout($configEvent->path, Console::FG_CYAN);
         };
     }
 }

@@ -286,12 +286,12 @@ class ConfigSyncController extends BaseUpdaterController
      */
     private function _nextApplyYamlAction(): string
     {
-        if (!empty($this->data['uninstallPlugins'])) {
-            return self::ACTION_UNINSTALL_PLUGIN;
-        }
-
         if (!empty($this->data['installPlugins'])) {
             return self::ACTION_INSTALL_PLUGIN;
+        }
+
+        if (!empty($this->data['uninstallPlugins'])) {
+            return self::ACTION_UNINSTALL_PLUGIN;
         }
 
         return self::ACTION_APPLY_YAML_CHANGES;
