@@ -22,12 +22,13 @@ class m210121_145800_asset_indexing_changes extends Migration
     {
         $this->truncateTable(Table::ASSETINDEXDATA);
         $this->alterColumn(Table::ASSETINDEXDATA, 'sessionId', $this->integer()->notNull());
-        $this->addColumn(Table::ASSETINDEXDATA, 'isSkipped', $this->boolean()->after('recordId'));
+        $this->addColumn(Table::ASSETINDEXDATA, 'isSkipped', $this->boolean()->defaultValue(false)->after('recordId'));
 
         $this->createTable(Table::ASSETINDEXINGSESSIONS, [
             'id' => $this->primaryKey(),
             'totalEntries' => $this->integer(),
             'processedEntries' => $this->integer()->notNull()->defaultValue(0),
+            'cacheRemoteImages' => $this->boolean(),
             'queueId' => $this->integer(),
             'actionRequired' => $this->boolean()->defaultValue(false),
             'dateCreated' => $this->dateTime()->notNull(),

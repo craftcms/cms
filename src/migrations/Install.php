@@ -89,14 +89,26 @@ class Install extends Migration
     {
         $this->createTable(Table::ASSETINDEXDATA, [
             'id' => $this->primaryKey(),
-            'sessionId' => $this->string(36)->notNull()->defaultValue(''),
+            'sessionId' => $this->integer()->notNull(),
             'volumeId' => $this->integer()->notNull(),
             'uri' => $this->text(),
             'size' => $this->bigInteger()->unsigned(),
             'timestamp' => $this->dateTime(),
             'recordId' => $this->integer(),
+            'isSkipped' => $this->boolean()->defaultValue(false),
             'inProgress' => $this->boolean()->defaultValue(false),
             'completed' => $this->boolean()->defaultValue(false),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable(Table::ASSETINDEXINGSESSIONS, [
+            'id' => $this->primaryKey(),
+            'totalEntries' => $this->integer(),
+            'processedEntries' => $this->integer()->notNull()->defaultValue(0),
+            'cacheRemoteImages' => $this->boolean(),
+            'queueId' => $this->integer(),
+            'actionRequired' => $this->boolean()->defaultValue(false),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
@@ -949,6 +961,7 @@ class Install extends Migration
     public function addForeignKeys()
     {
         $this->addForeignKey(null, Table::ASSETINDEXDATA, ['volumeId'], Table::VOLUMES, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, Table::ASSETINDEXDATA, ['sessionId'], Table::ASSETINDEXINGSESSIONS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ASSETS, ['folderId'], Table::VOLUMEFOLDERS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ASSETS, ['id'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ASSETS, ['uploaderId'], Table::USERS, ['id'], 'SET NULL', null);

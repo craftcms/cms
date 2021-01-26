@@ -157,7 +157,7 @@ class AssetIndexer extends Component
     public function getExistingIndexingSessions(): array
     {
         $query = (new Query())
-            ->select(['id', 'totalEntries', 'processedEntries', 'queueId', 'actionRequired', 'dateCreated', 'dateUpdated'])
+            ->select(['id', 'totalEntries', 'processedEntries', 'cacheRemoteImages', 'queueId', 'actionRequired', 'dateCreated', 'dateUpdated'])
             ->from(Table::ASSETINDEXINGSESSIONS);
 
         $rows = $query->all();
