@@ -572,11 +572,11 @@ body.rtl .buttons > .btn:not(.hidden) + .btn, body.rtl .buttons > .btn:not(.hidd
 
 .btn.chromeless:hover, .btn.chromeless:active { text-decoration: underline; }
 
-.btn:focus, .btn.focus, .btn:hover { background-color: rgba(96, 125, 159, 0.35); }
+.btn:not(.disabled):focus, .btn:not(.disabled).focus, .btn:not(.disabled):hover { background-color: rgba(96, 125, 159, 0.35); }
 
-.btn:active, .btn.active { background-color: rgba(96, 125, 159, 0.5); }
+.btn:not(.disabled):active, .btn:not(.disabled).active { background-color: rgba(96, 125, 159, 0.5); }
 
-.btn:active:focus, .btn:active.focus, .btngroup:focus .btn:active, .btn.active:focus, .btn.active.focus, .btngroup:focus .btn.active { background-color: rgba(96, 125, 159, 0.6); }
+.btn:not(.disabled):active:focus, .btn:not(.disabled):active.focus, .btngroup:focus .btn:not(.disabled):active, .btn:not(.disabled).active:focus, .btn:not(.disabled).active.focus, .btngroup:focus .btn:not(.disabled).active { background-color: rgba(96, 125, 159, 0.6); }
 
 .btn[type='color'] { padding: 6px !important; width: 36px; }
 
@@ -3471,13 +3471,9 @@ body.rtl .lp-editor-container .lp-draghandle { left: -2px; }
 
 .lp-preview-container.dragging:after { position: absolute; top: 0; left: 0; width: 100%; height: 100%; content: ''; font-size: 0; }
 
-.lp-preview-container .lp-preview-header { display: grid; grid-template-columns: 1fr 124px 1fr; grid-gap: 24px; }
+.lp-preview-container .lp-preview-header { display: -webkit-flex; display: flex; }
 
 @supports (-moz-appearance: none) { .lp-preview-container .lp-preview-header { background-color: rgba(228, 237, 246, 0.75); } }
-
-.lp-preview-container .lp-preview-header > .btn:first-child { justify-self: start; }
-
-.lp-preview-container .lp-preview-header > .btn:last-child { justify-self: end; }
 
 .lp-preview-container .lp-preview-header + .lp-iframe-container { padding-top: 50px; }
 

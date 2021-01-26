@@ -86,21 +86,10 @@
   }
 
   .lp-preview-header {
-    display: grid;
-    grid-template-columns: 1fr 124px 1fr;
-    grid-gap: 24px;
+    display: flex;
 
     @supports (-moz-appearance:none) {
       background-color: transparentize($grey100, 0.25);
-    }
-
-    > .btn {
-      &:first-child {
-        justify-self: start;
-      }
-      &:last-child {
-        justify-self: end;
-      }
     }
 
     & + .lp-iframe-container {
