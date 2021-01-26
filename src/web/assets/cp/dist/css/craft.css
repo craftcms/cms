@@ -926,7 +926,7 @@ h2 + .actions { margin-top: -54px; }
 /* ----------------------------------------
 /*  Tables
 /* ----------------------------------------*/
-.tablepane { margin: -24px; overflow-x: auto; }
+.tablepane { margin: -24px -24px -12px; overflow-x: auto; }
 
 body.ltr .tablepane table th:first-child, body.ltr .tablepane table td:first-child { padding-left: 24px; }
 
