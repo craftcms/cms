@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.6.0.1 - 2021-01-26
 
 ### Fixed
 - Fixed an error that could occur when validating dates.
