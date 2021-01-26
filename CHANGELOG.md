@@ -5,6 +5,7 @@
 > {warning} Read through the [Upgrading to Craft 3.6](https://craftcms.com/knowledge-base/upgrading-to-craft-3-6) guide before updating.
 
 ### Added
+- Craft now supports PHP 8. ([#7050](https://github.com/craftcms/cms/issues/7050))
 - Craft now requires PHP 7.2.5 or later.
 - Commercial plugins now receive license keys automatically when installed as trials.
 - It’s now possible for admins to purchase Craft and plugin licenses when `allowAdminChanges` is disabled.
