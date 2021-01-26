@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-> {warning} If you have a custom session driver, make sure you update it for Yii 2.0.29 compatibility.
+> {warning} Read through the [Upgrading to Craft 3.6](https://craftcms.com/knowledge-base/upgrading-to-craft-3-6) guide before updating.
 
 ### Added
 - Craft now requires PHP 7.2.5 or later.
@@ -206,7 +206,7 @@
 - Removed `craft\controllers\ElementIndexesController::actionCreateExportToken()`.
 - Removed `craft\controllers\ExportController`.
 - Removed `craft\services\Api::getComposerWhitelist()`.
-- Removed `craft\test\fixtures\elements\ElementFixture`. `craft\test\fixtures\elements\BaseElementFixture` should be used instead.
+- Removed `craft\test\fixtures\elements\ElementFixture`. `craft\test\fixtures\elements\BaseElementFixture` or `BaseContentFixture` should be used instead.
 - Removed `craft\test\fixtures\FieldLayoutFixture::deleteAllByFieldHandle()`.
 - Removed `craft\test\fixtures\FieldLayoutFixture::extractTabsFromFieldLayout()`.
 - Removed `craft\test\fixtures\FieldLayoutFixture::getTabsForFieldLayout()`.
