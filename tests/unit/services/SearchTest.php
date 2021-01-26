@@ -14,7 +14,7 @@ use craft\db\Table;
 use craft\elements\User;
 use craft\helpers\ArrayHelper;
 use craft\services\Search;
-use crafttests\fixtures\UsersFixture;
+use crafttests\fixtures\UserFixture;
 use UnitTester;
 
 /**
@@ -45,7 +45,7 @@ class SearchTest extends Unit
     {
         return [
             'users' => [
-                'class' => UsersFixture::class,
+                'class' => UserFixture::class,
             ]
         ];
     }

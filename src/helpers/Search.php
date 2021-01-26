@@ -26,7 +26,7 @@ class Search
      * @param string|null The language that the character map should be based on, if `$processCharMap` is `true`.
      * @return string The cleansed keywords.
      */
-    public static function normalizeKeywords($str, array $ignore = [], bool $processCharMap = true, string $language = null): string
+    public static function normalizeKeywords($str, array $ignore = [], bool $processCharMap = true, ?string $language = null): string
     {
         // Flatten
         if (is_array($str)) {

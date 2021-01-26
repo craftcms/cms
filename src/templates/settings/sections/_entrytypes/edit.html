@@ -66,7 +66,9 @@
         <div id="title-container"{% if not entryType.hasTitleField %} class="hidden"{% endif %}>
             {{ forms.selectField({
                 label: 'Title Translation Method'|t('app'),
-                instructions: 'How should entry titles be translated?'|t('app'),
+                instructions: 'How should {type} titles be translated?'|t('app', {
+                    type: lowerTypeName,
+                }),
                 id: 'translation-method',
                 name: 'titleTranslationMethod',
                 options: [
@@ -84,7 +86,9 @@
             <div id="translation-method-custom" {% if entryType.titleTranslationMethod != 'custom' %}class="hidden"{% endif %}>
                 {{ forms.textField({
                     label: 'Title Translation Key Format'|t('app'),
-                    instructions: 'Template that defines the Title field’s custom “translation key” format. Entry titles will be copied to all sites that produce the same key. For example, to make titles translatable based on the first two characters of the site handle, you could enter `{site.handle[:2]}`.',
+                    instructions: 'Template that defines the Title field’s custom “translation key” format. {type} titles will be copied to all sites that produce the same key. For example, to make titles translatable based on the first two characters of the site handle, you could enter `{site.handle[:2]}`.'|t('app', {
+                        type: typeName,
+                    }),
                     id: 'translation-key-format',
                     name: 'titleTranslationKeyFormat',
                     value: entryType.titleTranslationKeyFormat,

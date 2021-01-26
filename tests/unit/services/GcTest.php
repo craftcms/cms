@@ -20,7 +20,7 @@ use crafttests\fixtures\EntryFixture;
 use crafttests\fixtures\EntryTypeFixture;
 use crafttests\fixtures\SectionsFixture;
 use crafttests\fixtures\SessionsFixture;
-use crafttests\fixtures\UsersFixture;
+use crafttests\fixtures\UserFixture;
 use crafttests\fixtures\VolumesFixture;
 use DateInterval;
 use DateTime;
@@ -64,7 +64,7 @@ class GcTest extends Unit
                 'class' => EntryFixture::class
             ],
             'users' => [
-                'class' => UsersFixture::class
+                'class' => UserFixture::class
             ],
             'sections' => [
                 'class' => SectionsFixture::class

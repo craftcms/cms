@@ -28,18 +28,19 @@ Craft.VueAdminTable = Garnish.Base.extend({
             },
         }).$mount(this.settings.container);
     },
-},
-{
+}, {
     defaults: {
         actions: [],
         checkboxes: false,
-        checkboxStatus: function() { return true; },
+        checkboxStatus: function() {
+            return true;
+        },
         columns: [],
         container: null,
         deleteAction: null,
         reorderAction: null,
-        reorderSuccessMessage: Craft.t('app', 'Items reordered.') ,
-        reorderFailMessage:    Craft.t('app', 'Couldn’t reorder items.'),
+        reorderSuccessMessage: Craft.t('app', 'Items reordered.'),
+        reorderFailMessage: Craft.t('app', 'Couldn’t reorder items.'),
         search: false,
         searchPlaceholder: Craft.t('app', 'Search'),
         tableData: [],

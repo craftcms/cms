@@ -89,7 +89,7 @@ class Db
     public static function prepareValuesForDb($values): array
     {
         // Normalize to an array
-        $values = ArrayHelper::toArray($values);
+        $values = ArrayHelper::toArray($values, [], false);
 
         foreach ($values as $key => $value) {
             $values[$key] = static::prepareValueForDb($value);
@@ -153,7 +153,7 @@ class Db
      * @param string $columnType
      * @return int|false The min allowed number, or false if it can't be determined
      */
-    public static function getMinAllowedValueForNumericColumn($columnType)
+    public static function getMinAllowedValueForNumericColumn(string $columnType)
     {
         $shortColumnType = self::parseColumnType($columnType);
 
@@ -171,7 +171,7 @@ class Db
      * @param string $columnType
      * @return int|false The max allowed number, or false if it can't be determined
      */
-    public static function getMaxAllowedValueForNumericColumn($columnType)
+    public static function getMaxAllowedValueForNumericColumn(string $columnType)
     {
         $shortColumnType = self::parseColumnType($columnType);
 
@@ -192,7 +192,7 @@ class Db
      * @return string
      * @throws Exception if no column types can contain this
      */
-    public static function getNumericalColumnType(int $min = null, int $max = null, int $decimals = null): string
+    public static function getNumericalColumnType(?int $min = null, ?int $max = null, ?int $decimals = null): string
     {
         // Normalize the arguments
         if (!is_numeric($min)) {
@@ -215,7 +215,7 @@ class Db
         }
 
         // Figure out the smallest possible int column type that will fit our min/max
-        foreach (self::$_integerSizeRanges as $type => list($typeMin, $typeMax)) {
+        foreach (self::$_integerSizeRanges as $type => [$typeMin, $typeMax]) {
             if ($min >= $typeMin && $max <= $typeMax) {
                 return $type . "({$length})";
             }
@@ -231,7 +231,7 @@ class Db
      * @param Connection|null $db The database connection
      * @return int|null|false The storage capacity of the column type in bytes, null if unlimited, or false or it can't be determined.
      */
-    public static function getTextualColumnStorageCapacity(string $columnType, Connection $db = null)
+    public static function getTextualColumnStorageCapacity(string $columnType, ?Connection $db = null)
     {
         if ($db === null) {
             $db = self::db();
@@ -283,7 +283,7 @@ class Db
      * @return string
      * @throws Exception if using an unsupported connection type
      */
-    public static function getTextualColumnTypeByContentLength(int $contentLength, Connection $db = null): string
+    public static function getTextualColumnTypeByContentLength(int $contentLength, ?Connection $db = null): string
     {
         if ($db === null) {
             $db = self::db();
@@ -315,7 +315,7 @@ class Db
      * @param string $columnType
      * @return string|null
      */
-    public static function parseColumnType($columnType)
+    public static function parseColumnType(string $columnType): ?string
     {
         if (!preg_match('/^\w+/', $columnType, $matches)) {
             return null;
@@ -330,7 +330,7 @@ class Db
      * @param string $columnType
      * @return int|null
      */
-    public static function parseColumnLength($columnType)
+    public static function parseColumnLength(string $columnType): ?int
     {
         if (!preg_match('/^\w+\((\d+)\)/', $columnType, $matches)) {
             return null;
@@ -345,7 +345,7 @@ class Db
      * @param string $columnType
      * @return string
      */
-    public static function getSimplifiedColumnType($columnType)
+    public static function getSimplifiedColumnType(string $columnType): string
     {
         if (($shortColumnType = self::parseColumnType($columnType)) === null) {
             return $columnType;
@@ -371,7 +371,7 @@ class Db
      * @param string $typeB
      * @return bool
      */
-    public static function areColumnTypesCompatible($typeA, $typeB)
+    public static function areColumnTypesCompatible(string $typeA, string $typeB): bool
     {
         return static::getSimplifiedColumnType($typeA) === static::getSimplifiedColumnType($typeB);
     }
@@ -443,7 +443,7 @@ class Db
      * @param string|null $columnType The database column type the param is targeting
      * @return mixed
      */
-    public static function parseParam(string $column, $value, string $defaultOperator = '=', bool $caseInsensitive = false, string $columnType = null)
+    public static function parseParam(string $column, $value, string $defaultOperator = '=', bool $caseInsensitive = false, ?string $columnType = null)
     {
         if (is_string($value) && preg_match('/^not\s*$/', $value)) {
             return '';
@@ -649,7 +649,7 @@ class Db
      * @return mixed
      * @since 3.4.15
      */
-    public static function parseBooleanParam(string $column, $value, bool $defaultValue = null)
+    public static function parseBooleanParam(string $column, $value, ?bool $defaultValue = null)
     {
         self::_normalizeEmptyValue($value);
         $operator = self::_parseParamOperator($value, '=');
@@ -672,7 +672,7 @@ class Db
      * @return bool
      * @throws NotSupportedException
      */
-    public static function isTypeSupported(string $type, Connection $db = null): bool
+    public static function isTypeSupported(string $type, ?Connection $db = null): bool
     {
         if ($db === null) {
             $db = self::db();
@@ -698,7 +698,7 @@ class Db
      * @throws DbException if execution failed
      * @since 3.5.0
      */
-    public static function insert(string $table, array $columns, bool $includeAuditColumns = true, Connection $db = null): int
+    public static function insert(string $table, array $columns, bool $includeAuditColumns = true, ?Connection $db = null): int
     {
         if ($db === null) {
             $db = self::db();
@@ -723,7 +723,7 @@ class Db
      * @throws DbException if execution failed
      * @since 3.5.0
      */
-    public static function batchInsert(string $table, array $columns, array $rows, bool $includeAuditColumns = true, Connection $db = null): int
+    public static function batchInsert(string $table, array $columns, array $rows, bool $includeAuditColumns = true, ?Connection $db = null): int
     {
         if ($db === null) {
             $db = self::db();
@@ -756,7 +756,7 @@ class Db
      * @throws DbException if execution failed
      * @since 3.5.0
      */
-    public static function upsert(string $table, $insertColumns, $updateColumns = true, array $params = [], bool $includeAuditColumns = true, Connection $db = null): int
+    public static function upsert(string $table, $insertColumns, $updateColumns = true, array $params = [], bool $includeAuditColumns = true, ?Connection $db = null): int
     {
         if ($db === null) {
             $db = self::db();
@@ -783,7 +783,7 @@ class Db
      * @throws DbException if execution failed
      * @since 3.5.0
      */
-    public static function update(string $table, array $columns, $condition = '', array $params = [], bool $includeAuditColumns = true, Connection $db = null): int
+    public static function update(string $table, array $columns, $condition = '', array $params = [], bool $includeAuditColumns = true, ?Connection $db = null): int
     {
         if ($db === null) {
             $db = self::db();
@@ -809,7 +809,7 @@ class Db
      * @throws DbException if execution failed
      * @since 3.5.0
      */
-    public static function replace(string $table, string $column, string $find, string $replace, $condition = '', array $params = [], Connection $db = null): int
+    public static function replace(string $table, string $column, string $find, string $replace, $condition = '', array $params = [], ?Connection $db = null): int
     {
         if ($db === null) {
             $db = self::db();
@@ -832,7 +832,7 @@ class Db
      * @throws DbException if execution failed
      * @since 3.5.0
      */
-    public static function delete(string $table, $condition = '', array $params = [], Connection $db = null)
+    public static function delete(string $table, $condition = '', array $params = [], ?Connection $db = null)
     {
         if ($db === null) {
             $db = self::db();
@@ -856,7 +856,7 @@ class Db
      * @throws DbException execution failed
      * @since 3.0.12
      */
-    public static function deleteIfExists(string $table, $condition = '', array $params = [], Connection $db = null): int
+    public static function deleteIfExists(string $table, $condition = '', array $params = [], ?Connection $db = null): int
     {
         if ($db === null) {
             $db = self::db();
@@ -879,7 +879,7 @@ class Db
      * @return int|null
      * @since 3.1.0
      */
-    public static function idByUid(string $table, string $uid, Connection $db = null)
+    public static function idByUid(string $table, string $uid, ?Connection $db = null)
     {
         if ($db === null) {
             $db = self::db();
@@ -903,7 +903,7 @@ class Db
      * @return string[]
      * @since 3.1.0
      */
-    public static function idsByUids(string $table, array $uids, Connection $db = null): array
+    public static function idsByUids(string $table, array $uids, ?Connection $db = null): array
     {
         if ($db === null) {
             $db = self::db();
@@ -925,7 +925,7 @@ class Db
      * @return string|null
      * @since 3.1.0
      */
-    public static function uidById(string $table, int $id, Connection $db = null)
+    public static function uidById(string $table, int $id, ?Connection $db = null)
     {
         if ($db === null) {
             $db = self::db();
@@ -949,7 +949,7 @@ class Db
      * @return string[]
      * @since 3.1.0
      */
-    public static function uidsByIds(string $table, array $ids, Connection $db = null): array
+    public static function uidsByIds(string $table, array $ids, ?Connection $db = null): array
     {
         if ($db === null) {
             $db = self::db();
@@ -972,7 +972,7 @@ class Db
      * @throws InvalidArgumentException if $dsn is invalid
      * @since 3.4.0
      */
-    public static function parseDsn(string $dsn, string $key = null)
+    public static function parseDsn(string $dsn, ?string $key = null)
     {
         if (($pos = strpos($dsn, ':')) === false) {
             throw new InvalidArgumentException('Invalid DSN: ' . $dsn);
@@ -990,7 +990,7 @@ class Db
 
         $params = substr($dsn, $pos + 1);
         foreach (ArrayHelper::filterEmptyStringsFromArray(explode(';', $params)) as $param) {
-            list($n, $v) = array_pad(explode('=', $param, 2), 2, '');
+            [$n, $v] = array_pad(explode('=', $param, 2), 2, '');
             if ($key === $n) {
                 return $v;
             }

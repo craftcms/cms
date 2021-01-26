@@ -1,12 +1,18 @@
-{%- set fieldId = fieldId ?? ((id ?? false) ? "#{id}-field" : "field#{random()}") %}
-{%- set labelId = labelId ?? "#{fieldId}-label" %}
-{%- set instructionsId = instructionsId ?? "#{fieldId}-instructions"  %}
+{%- set fieldset = fieldset ?? false %}
+{%- set id = id ?? "field#{random()}" %}
+{%- set fieldId = fieldId ?? "#{id}-field" %}
+{%- set labelId = labelId ?? "#{id}-#{fieldset ? 'legend' : 'label'}" %}
+{%- set instructionsId = instructionsId ?? "#{id}-instructions"  %}
 {%- set status = status ?? null %}
-{%- set label = label is defined and label != '__blank__' ? label : (block('label') ?? null) %}
+{%- set label = fieldLabel ?? label ?? block('label') ?? null %}
+{%- if label == '__blank__' %}
+    {%- set label = null %}
+{%- endif %}
 {%- set siteId = craft.app.getIsMultiSite() ? (siteId ?? null) : null %}
 {%- set site = siteId ? craft.app.sites.getSiteById(siteId) : null %}
 {%- set required = required ?? false %}
 {%- set instructions = instructions ?? block('instructions') ?? null %}
+{%- set instructionsPosition = instructionsPosition ?? 'before' %}
 {%- set tip = tip ?? block('tip') ?? null %}
 {%- set warning = warning ?? block('warning') ?? null %}
 {%- set orientation = orientation ?? (site ? site.getLocale() : craft.app.locale).getOrientation() %}
@@ -23,9 +29,6 @@
 {%- set fieldAttributes = {
     class: fieldClass,
     id: fieldId,
-    aria: {
-        describedby: instructions ? instructionsId : false,
-    }
 }|merge(fieldAttributes ?? [], recursive=true) %}
 
 {%- if block('attr') is defined %}
@@ -40,7 +43,13 @@
     ]|filter,
 }|merge(inputContainerAttributes ?? [], recursive=true) %}
 
-<div {{ attr(fieldAttributes) }}>
+{%- set instructionsHtml = instructions ? tag('div', {
+    id: instructionsId,
+    class: ['instructions'],
+    html: instructions|md('gfm-comment')|replace('/&amp;(\\w+);/', '&$1;'),
+}) %}
+
+{% tag (fieldset ? 'fieldset' : 'div') with fieldAttributes %}
     {% if status %}
         {{ tag('div', {
             class: ['status-badge', status[0]],
@@ -55,10 +64,10 @@
         <div class="heading">
             {% block heading %}
                 {% if label %}
-                    {{ tag('label', {
+                    {{ tag(fieldset ? 'legend' : 'label', {
                         id: labelId,
                         class: required ? ['required'] : [],
-                        for: id ?? null,
+                        for: (id ?? false) and not fieldset ? id : null,
                         html: label,
                     }|merge(labelAttributes ?? [], recursive=true)) }}
                     {%- if translatable %}
@@ -85,18 +94,13 @@
             {% endblock %}
         </div>
     {% endif %}
-    {% if instructions %}
-        {{ tag('div', {
-            id: instructionsId,
-            class: ['instructions'],
-            html: instructions|md('gfm-comment')|replace('/&amp;(\\w+);/', '&$1;'),
-        }) }}
-    {% endif %}
-    <div {{ attr(inputContainerAttributes) }}>
+    {{ instructionsPosition == 'before' ? instructionsHtml|raw }}
+    {% tag 'div' with inputContainerAttributes %}
         {% block input %}
             {{ input|raw }}
         {% endblock %}
-    </div>
+    {% endtag %}
+    {{ instructionsPosition == 'after' ? instructionsHtml|raw }}
     {% if tip %}
         {{ tag('p', {
             class: ['notice', 'with-icon'],
@@ -110,4 +114,4 @@
         }) }}
     {% endif %}
     {% include "_includes/forms/errorList" with { errors: errors } %}
-</div>
+{% endtag %}

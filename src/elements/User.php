@@ -342,6 +342,7 @@ class User extends Element implements IdentityInterface
             'fullName' => ['label' => Craft::t('app', 'Full Name')],
             'firstName' => ['label' => Craft::t('app', 'First Name')],
             'lastName' => ['label' => Craft::t('app', 'Last Name')],
+            'groups' => ['label' => Craft::t('app', 'Groups')],
             'preferredLanguage' => ['label' => Craft::t('app', 'Preferred Language')],
             'preferredLocale' => ['label' => Craft::t('app', 'Preferred Locale')],
             'id' => ['label' => Craft::t('app', 'ID')],
@@ -363,6 +364,19 @@ class User extends Element implements IdentityInterface
             'dateCreated',
             'lastLoginDate',
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute)
+    {
+        /** @var UserQuery $elementQuery */
+        if ($attribute === 'groups') {
+            $elementQuery->withGroups();
+        } else {
+            parent::prepElementQueryForTableAttribute($elementQuery, $attribute);
+        }
     }
 
     /**
@@ -830,7 +844,7 @@ class User extends Element implements IdentityInterface
             return false;
         }
 
-        list($token, , $userAgent) = $data;
+        [$token, , $userAgent] = $data;
 
         if (!$this->_validateUserAgent($userAgent)) {
             return false;
@@ -1316,6 +1330,11 @@ class User extends Element implements IdentityInterface
         switch ($attribute) {
             case 'email':
                 return $this->email ? Html::mailto(Html::encode($this->email)) : '';
+
+            case 'groups':
+                return implode(', ', array_map(function(UserGroup $group) {
+                    return Html::encode(Craft::t('site', $group->name));
+                }, $this->getGroups()));
 
             case 'preferredLanguage':
                 $language = $this->getPreferredLanguage();

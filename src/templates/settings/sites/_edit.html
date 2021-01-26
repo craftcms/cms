@@ -22,13 +22,14 @@
     }) }}
 
     <div id="site-settings">
-        {{ forms.textField({
+        {{ forms.autosuggestField({
             first: true,
             label: "Name"|t('app'),
             instructions: "What this site will be called in the control panel."|t('app'),
             id: 'name',
             name: 'name',
-            value: site.originalName ?? site.name,
+            value: site.originalName ?? site.getName(false),
+            suggestEnvVars: true,
             errors: site.getErrors('name'),
             autofocus: true,
             required: true,
@@ -96,7 +97,7 @@
                 suggestEnvVars: true,
                 suggestAliases: true,
                 name: 'baseUrl',
-                value: site.originalBaseUrl ?? site.baseUrl,
+                value: site.originalBaseUrl ?? site.getBaseUrl(false),
                 errors: site.getErrors('baseUrl')
             }) }}
         </div>
@@ -120,7 +121,7 @@
 
 
 {% if not site.handle %}
-    {% js %}
+    {% js on ready %}
         new Craft.HandleGenerator('#name', '#handle');
     {% endjs %}
 {% endif %}

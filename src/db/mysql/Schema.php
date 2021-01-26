@@ -16,6 +16,7 @@ use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use mikehaertl\shellcommand\Command as ShellCommand;
 use yii\base\ErrorException;
+use yii\base\NotSupportedException;
 use yii\db\Exception;
 
 /**
@@ -234,7 +235,7 @@ class Schema extends \yii\db\mysql\Schema
      *
      * @param string $tableName The name of the table to get the indexes for.
      * @return array All indexes for the given table.
-     * @throws \yii\base\NotSupportedException
+     * @throws NotSupportedException
      */
     public function findIndexes(string $tableName): array
     {

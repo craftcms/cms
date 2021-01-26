@@ -44,42 +44,40 @@ class PgsqlDbHelperTest extends Unit
     }
 
     /**
-     * @dataProvider textualStorageDataProvider
+     * @dataProvider getTextualColumnStorageCapacityDataProvider
      *
-     * @param $result
-     * @param $input
+     * @param int|null|false $expected
+     * @param string $columnType
      */
-    public function testGetTextualColumnStorageCapacity($result, $input)
+    public function testGetTextualColumnStorageCapacity($expected, string $columnType)
     {
-        $capacity = Db::getTextualColumnStorageCapacity($input);
-        self::assertSame($result, $capacity);
+        self::assertSame($expected, Db::getTextualColumnStorageCapacity($columnType));
     }
 
     /**
      * @dataProvider parseParamDataProvider
      *
-     * @param $result
-     * @param $column
-     * @param $value
+     * @param mixed $expected
+     * @param string $column
+     * @param string|int|array $value
      * @param string $defaultOperator
      * @param bool $caseInsensitive
      */
-    public function testParseParamGeneral($result, $column, $value, $defaultOperator = '=', $caseInsensitive = false)
+    public function testParseParam($expected, string $column, $value, string $defaultOperator = '=', bool $caseInsensitive = false)
     {
-        self::assertSame($result, Db::parseParam($column, $value, $defaultOperator, $caseInsensitive));
+        self::assertSame($expected, Db::parseParam($column, $value, $defaultOperator, $caseInsensitive));
     }
 
     /**
-     * @dataProvider getTextualColumnTypeDataProvider
+     * @dataProvider getTextualColumnTypeByContentLengthDataProvider
      *
-     * @param $result
-     * @param $input
+     * @param string $expected
+     * @param int $contentLength
      * @throws Exception
      */
-    public function testGetTextualColumnTypeByContentLength($result, $input)
+    public function testGetTextualColumnTypeByContentLength(string $expected, int $contentLength)
     {
-        $textualCapacity = Db::getTextualColumnTypeByContentLength((int)$input);
-        self::assertSame($result, $textualCapacity);
+        self::assertSame($expected, Db::getTextualColumnTypeByContentLength($contentLength));
     }
 
     /**
@@ -120,15 +118,13 @@ class PgsqlDbHelperTest extends Unit
     /**
      * @return array
      */
-    public function getTextualColumnTypeDataProvider(): array
+    public function getTextualColumnTypeByContentLengthDataProvider(): array
     {
         return [
             ['text', 254],
             ['text', 65534],
             ['text', 16777214],
             ['text', 4294967294],
-            ['text', false],
-            ['text', null],
         ];
     }
 
@@ -156,7 +152,7 @@ class PgsqlDbHelperTest extends Unit
     /**
      * @return array
      */
-    public function textualStorageDataProvider(): array
+    public function getTextualColumnStorageCapacityDataProvider(): array
     {
         return [
             [null, Schema::TYPE_TEXT],

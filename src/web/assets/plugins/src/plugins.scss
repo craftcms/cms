@@ -167,22 +167,50 @@
           }
         }
 
-        p {
+        p,
+        ul.links {
           margin: 0.2em 0;
+        }
 
-          &.links {
+        ul.links {
+          display: flex;
+          white-space: nowrap;
+          flex-wrap: wrap;
+          color: $lightTextColor;
+
+          li {
             display: flex;
-            white-space: nowrap;
-            flex-wrap: wrap;
+            align-items: center;
 
-            a {
-              & + a {
-                margin-left: 14px;
-              }
+            &:not(:first-child) {
+              margin-left: 14px;
+            }
 
-              span[data-icon] {
-                margin-right: 3px;
+            a,
+            span {
+              &:before {
+                @include icon;
+                @include margin-right(4px);
+                margin-top: -2px;
+                color: $grey300;
               }
+            }
+
+            &.link-developer {
+              a,
+              span {
+                &:before {
+                  content: 'building';
+                }
+              }
+            }
+
+            &.link-docs a:before {
+              content: 'book';
+            }
+
+            &.link-settings a:before {
+              content: 'settings';
             }
           }
         }

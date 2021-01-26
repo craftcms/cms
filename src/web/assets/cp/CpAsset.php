@@ -120,27 +120,29 @@ JS;
             'Buy {name}',
             'Cancel',
             'Choose a user',
-            'Switching sites will lose unsaved changes. Are you sure you want to switch sites?',
             'Choose which table columns should be visible for this source, and in which order.',
             'Clear',
             'Close Preview',
             'Close',
             'Continue',
             'Copied to clipboard.',
-            'Copy the reference tag',
             'Copy the URL',
+            'Copy the reference tag',
             'Copy to clipboard',
             'Couldn’t delete “{name}”.',
             'Couldn’t save new order.',
             'Create',
+            'Delete draft',
             'Delete folder',
             'Delete heading',
             'Delete it',
             'Delete their content',
             'Delete them',
-            'Delete {num, plural, =1{user} other{users}}',
             'Delete {num, plural, =1{user} other{users}} and content',
+            'Delete {num, plural, =1{user} other{users}}',
             'Delete',
+            'Desktop',
+            'Device type',
             'Display as thumbnails',
             'Display in a table',
             'Done',
@@ -170,6 +172,7 @@ JS;
             'Hide sidebar',
             'Hide',
             'Incorrect password.',
+            'Information',
             'Instructions',
             'Keep both',
             'Keep me logged in',
@@ -182,9 +185,9 @@ JS;
             'Make required',
             'Merge the folder (any conflicting files will be replaced)',
             'More',
-            'Move',
-            'Move up',
             'Move down',
+            'Move up',
+            'Move',
             'Name',
             'New category',
             'New child',
@@ -205,8 +208,10 @@ JS;
             'Past {num} days',
             'Pay {price}',
             'Pending',
+            'Phone',
             'Previous Page',
-            'Publish changes',
+            'Publish and add another',
+            'Publish draft',
             'Really delete folder “{folder}”?',
             'Remove',
             'Rename folder',
@@ -214,6 +219,8 @@ JS;
             'Reorder',
             'Replace it',
             'Replace the folder (all existing files will be deleted)',
+            'Rotate',
+            'Save and continue editing',
             'Save as a new asset',
             'Save draft',
             'Save',
@@ -233,7 +240,9 @@ JS;
             'Source settings saved',
             'Structure',
             'Submit',
+            'Switching sites will lose unsaved changes. Are you sure you want to switch sites?',
             'Table Columns',
+            'Tablet',
             'The draft could not be saved.',
             'The draft has been saved.',
             'This can be left blank if you just want an unlabeled separator.',
@@ -282,6 +291,7 @@ JS;
         $request = Craft::$app->getRequest();
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         $sitesService = Craft::$app->getSites();
+        $formattingLocale = Craft::$app->getFormattingLocale();
         $locale = Craft::$app->getLocale();
         $orientation = $locale->getOrientation();
         $userSession = Craft::$app->getUser();
@@ -303,6 +313,8 @@ JS;
         $data = [
             'actionTrigger' => $generalConfig->actionTrigger,
             'actionUrl' => UrlHelper::actionUrl(),
+            'allowAdminChanges' => $generalConfig->allowAdminChanges,
+            'allowUpdates' => $generalConfig->allowUpdates,
             'allowUppercaseInSlug' => (bool)$generalConfig->allowUppercaseInSlug,
             'apiParams' => Craft::$app->apiParams,
             'asciiCharMap' => StringHelper::asciiCharMap(true, Craft::$app->language),
@@ -312,8 +324,9 @@ JS;
             'baseSiteUrl' => UrlHelper::siteUrl(),
             'baseUrl' => UrlHelper::url(),
             'canAccessQueueManager' => $userSession->checkPermission('utility:queue-manager'),
+            'clientOs' => $request->getClientOs(),
             'cpTrigger' => $generalConfig->cpTrigger,
-            'datepickerOptions' => $this->_datepickerOptions($locale, $currentUser, $generalConfig),
+            'datepickerOptions' => $this->_datepickerOptions($formattingLocale, $locale, $currentUser, $generalConfig),
             'defaultCookieOptions' => $this->_defaultCookieOptions(),
             'defaultIndexCriteria' => [],
             'deltaNames' => $view->getDeltaNames(),
@@ -321,6 +334,7 @@ JS;
             'edition' => Craft::$app->getEdition(),
             'elementTypeNames' => $elementTypeNames,
             'fileKinds' => Assets::getFileKinds(),
+            'handleCasing' => $generalConfig->handleCasing,
             'initialDeltaValues' => $view->getInitialDeltaValue(),
             'isImagick' => Craft::$app->getImages()->getIsImagick(),
             'isMultiSite' => Craft::$app->getIsMultiSite(),
@@ -352,7 +366,7 @@ JS;
             'slugWordSeparator' => $generalConfig->slugWordSeparator,
             'Solo' => Craft::Solo,
             'systemUid' => Craft::$app->getSystemUid(),
-            'timepickerOptions' => $this->_timepickerOptions($locale, $orientation),
+            'timepickerOptions' => $this->_timepickerOptions($formattingLocale, $orientation),
             'timezone' => Craft::$app->getTimeZone(),
             'tokenParam' => $generalConfig->tokenParam,
             'translations' => ['' => ''], // force encode as JS object
@@ -369,18 +383,17 @@ JS;
         return $data;
     }
 
-    private function _datepickerOptions(Locale $locale, User $currentUser = null, GeneralConfig $generalConfig): array
+    private function _datepickerOptions(Locale $formattingLocale, Locale $locale, User $currentUser = null, GeneralConfig $generalConfig): array
     {
-        $langLocale = Craft::$app->getI18n()->getLocaleById(Craft::$app->language);
         return [
             'constrainInput' => false,
-            'dateFormat' => $locale->getDateFormat(Locale::LENGTH_SHORT, Locale::FORMAT_JUI),
-            'dayNames' => $langLocale->getWeekDayNames(Locale::LENGTH_FULL),
-            'dayNamesMin' => $langLocale->getWeekDayNames(Locale::LENGTH_ABBREVIATED),
-            'dayNamesShort' => $langLocale->getWeekDayNames(Locale::LENGTH_SHORT),
+            'dateFormat' => $formattingLocale->getDateFormat(Locale::LENGTH_SHORT, Locale::FORMAT_JUI),
+            'dayNames' => $locale->getWeekDayNames(Locale::LENGTH_FULL),
+            'dayNamesMin' => $locale->getWeekDayNames(Locale::LENGTH_ABBREVIATED),
+            'dayNamesShort' => $locale->getWeekDayNames(Locale::LENGTH_SHORT),
             'firstDay' => (int)(($currentUser ? $currentUser->getPreference('weekStartDay') : null) ?? $generalConfig->defaultWeekStartDay),
-            'monthNames' => $langLocale->getMonthNames(Locale::LENGTH_FULL),
-            'monthNamesShort' => $langLocale->getMonthNames(Locale::LENGTH_ABBREVIATED),
+            'monthNames' => $locale->getMonthNames(Locale::LENGTH_FULL),
+            'monthNamesShort' => $locale->getMonthNames(Locale::LENGTH_ABBREVIATED),
             'nextText' => Craft::t('app', 'Next'),
             'prevText' => Craft::t('app', 'Prev'),
         ];
@@ -477,25 +490,25 @@ JS;
                 'handle' => $site->handle,
                 'id' => (int)$site->id,
                 'uid' => (string)$site->uid,
-                'name' => Craft::t('site', $site->name),
+                'name' => Craft::t('site', $site->getName()),
             ];
         }
 
         return $sites;
     }
 
-    private function _timepickerOptions(Locale $locale, string $orientation): array
+    private function _timepickerOptions(Locale $formattingLocale, string $orientation): array
     {
         return [
             'closeOnWindowScroll' => false,
             'lang' => [
-                'AM' => $locale->getAMName(),
-                'am' => mb_strtolower($locale->getAMName()),
-                'PM' => $locale->getPMName(),
-                'pm' => mb_strtolower($locale->getPMName()),
+                'AM' => $formattingLocale->getAMName(),
+                'am' => mb_strtolower($formattingLocale->getAMName()),
+                'PM' => $formattingLocale->getPMName(),
+                'pm' => mb_strtolower($formattingLocale->getPMName()),
             ],
             'orientation' => $orientation[0],
-            'timeFormat' => $locale->getTimeFormat(Locale::LENGTH_SHORT, Locale::FORMAT_PHP),
+            'timeFormat' => $formattingLocale->getTimeFormat(Locale::LENGTH_SHORT, Locale::FORMAT_PHP),
         ];
     }
 }

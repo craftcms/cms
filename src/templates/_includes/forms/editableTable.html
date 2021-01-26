@@ -35,7 +35,7 @@
   {%- set tableAttributes = tableAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
 {% endif %}
 
-<table {{ attr(tableAttributes) }}>
+{% tag 'table' with tableAttributes %}
     <thead>
         <tr>
             {% for col in cols %}
@@ -157,7 +157,8 @@
             </tr>
         {% endfor %}
     </tbody>
-</table>
+{% endtag %}
+
 {% if not staticRows and not fixedRows %}
     <button type="button" class="btn add icon">{{ addRowLabel ?? "Add a row"|t('app') }}</button>
 {% endif %}

@@ -67,7 +67,7 @@ class Application extends \yii\console\Application
     public function runAction($route, $params = [])
     {
         if (!$this->getIsInstalled()) {
-            list($firstSeg) = explode('/', $route, 2);
+            [$firstSeg] = explode('/', $route, 2);
             if ($route !== 'install/plugin' && !in_array($firstSeg, ['install', 'setup'], true)) {
                 // Is the connection valid at least?
                 if (!$this->getIsDbConnectionValid()) {

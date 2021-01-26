@@ -7,7 +7,7 @@
 {%- set hasPrefix = prefix is not same as(false) %}
 {%- set hasSuffix = suffix is not same as(false) %}
 
-{{ hiddenInput("#{field.handle}[locale]", craft.app.language) }}
+{{ hiddenInput("#{field.handle}[locale]", craft.app.formattingLocale.id) }}
 
 {% if hasPrefix or hasSuffix %}
     {{ tag('span', {
@@ -29,13 +29,13 @@
     <div>
         {{ text({
             id: id,
-            name: field.handle ~ '[value]',
+            name: "#{field.handle}[value]",
             value: value,
             inputmode: field.decimals ? 'decimal' : 'numeric',
             size: field.size,
             inputAttributes: {
                 aria: {
-                    describedby: descriptionId,
+                    describedby: ["#{id}-instructions", hasPrefix or hasSuffix ? descriptionId : null]|filter|join(' '),
                 },
             },
         }) }}

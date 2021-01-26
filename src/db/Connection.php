@@ -402,60 +402,33 @@ class Connection extends \yii\db\Connection
     }
 
     /**
-     * Returns a primary key name based on the table and column names.
+     * Generates a primary key name.
      *
-     * @param string $table
-     * @param string|array $columns
      * @return string
      */
-    public function getPrimaryKeyName(string $table, $columns): string
+    public function getPrimaryKeyName(): string
     {
-        $table = $this->_getTableNameWithoutPrefix($table);
-        if (is_string($columns)) {
-            $columns = StringHelper::split($columns);
-        }
-        $name = $this->tablePrefix . $table . '_' . implode('_', $columns) . '_pk';
-
-        return $this->trimObjectName($name);
+        return $this->_objectName('pk');
     }
 
     /**
-     * Returns a foreign key name based on the table and column names.
+     * Generates a foreign key name.
      *
-     * @param string $table
-     * @param string|array $columns
      * @return string
      */
-    public function getForeignKeyName(string $table, $columns): string
+    public function getForeignKeyName(): string
     {
-        $table = $this->_getTableNameWithoutPrefix($table);
-        if (is_string($columns)) {
-            $columns = StringHelper::split($columns);
-        }
-        $name = $this->tablePrefix . $table . '_' . implode('_', $columns) . '_fk';
-
-        return $this->trimObjectName($name);
+        return $this->_objectName('fk');
     }
 
     /**
-     * Returns an index name based on the table, column names, and whether
-     * it should be unique.
+     * Generates an index name.
      *
-     * @param string $table
-     * @param string|array $columns
-     * @param bool $unique
-     * @param bool $foreignKey
      * @return string
      */
-    public function getIndexName(string $table, $columns, bool $unique = false, bool $foreignKey = false): string
+    public function getIndexName(): string
     {
-        $table = $this->_getTableNameWithoutPrefix($table);
-        if (is_string($columns)) {
-            $columns = StringHelper::split($columns);
-        }
-        $name = $this->tablePrefix . $table . '_' . implode('_', $columns) . ($unique ? '_unq' : '') . ($foreignKey ? '_fk' : '_idx');
-
-        return $this->trimObjectName($name);
+        return $this->_objectName('idx');
     }
 
     /**
@@ -463,6 +436,7 @@ class Connection extends \yii\db\Connection
      *
      * @param string $name
      * @return string
+     * @deprecated in 3.6.0
      */
     public function trimObjectName(string $name): string
     {
@@ -501,15 +475,14 @@ class Connection extends \yii\db\Connection
     }
 
     /**
-     * Returns a table name without the table prefix
+     * Generates a FK, index, or PK name.
      *
-     * @param string $table
+     * @param string $prefix
      * @return string
      */
-    private function _getTableNameWithoutPrefix(string $table): string
+    private function _objectName(string $prefix): string
     {
-        $table = str_replace('%', '', $table);
-        return $this->getSchema()->getRawTableName($table);
+        return $this->tablePrefix . $prefix . '_' . StringHelper::randomString();
     }
 
     /**

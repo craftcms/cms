@@ -24,6 +24,7 @@ use craft\events\DefineFieldLayoutFieldsEvent;
 use craft\events\DeleteSiteEvent;
 use craft\events\EditionChangeEvent;
 use craft\events\FieldEvent;
+use craft\fieldlayoutelements\AssetTitleField;
 use craft\fieldlayoutelements\EntryTitleField;
 use craft\fieldlayoutelements\TitleField;
 use craft\helpers\App;
@@ -71,6 +72,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read \craft\db\MigrationManager $contentMigrator The content migration manager
  * @property-read \craft\db\MigrationManager $migrator The application’s migration manager
  * @property-read \craft\feeds\Feeds $feeds The feeds service
+ * @property-read \craft\i18n\Locale $formattingLocale The Locale object that should be used to define the formatter
  * @property-read \craft\i18n\Locale $locale The Locale object for the target language
  * @property-read \craft\mail\Mailer $mailer The mailer component
  * @property-read \craft\services\Api $api The API service
@@ -782,7 +784,7 @@ trait ApplicationTrait
         }
 
         try {
-            $name = $this->getSites()->getPrimarySite()->name;
+            $name = $this->getSites()->getPrimarySite()->getName();
         } catch (SiteNotFoundException $e) {
             $name = null;
         }
@@ -1042,6 +1044,17 @@ trait ApplicationTrait
     {
         /** @var WebApplication|ConsoleApplication $this */
         return $this->get('fields');
+    }
+
+    /**
+     * Returns the locale that should be used to define the formatter.
+     *
+     * @return Locale
+     * @since 3.6.0
+     */
+    public function getFormattingLocale(): Locale
+    {
+        return $this->get('formattingLocale');
     }
 
     /**
@@ -1477,7 +1490,11 @@ trait ApplicationTrait
             // Don't actually try to fetch the user, as plugins haven't been loaded yet.
             $session = $this->getSession();
             $id = $session->getHasSessionId() || $session->getIsActive() ? $session->get($this->getUser()->idParam) : null;
-            if ($id && ($language = $this->getUsers()->getUserPreference($id, 'language')) !== null) {
+            if (
+                $id &&
+                ($language = $this->getUsers()->getUserPreference($id, 'language')) !== null &&
+                Craft::$app->getI18n()->validateAppLocaleId($language)
+            ) {
                 return $language;
             }
         }
@@ -1517,6 +1534,8 @@ trait ApplicationTrait
 
             switch ($fieldLayout->type) {
                 case Asset::class:
+                    $event->fields[] = AssetTitleField::class;
+                    break;
                 case Category::class:
                     $event->fields[] = TitleField::class;
                     break;

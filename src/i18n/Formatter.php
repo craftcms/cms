@@ -180,7 +180,7 @@ class Formatter extends \yii\i18n\Formatter
         /** @var DateTime $timestamp */
         /** @var bool $hasTimeInfo */
         /** @var bool $hasDateInfo */
-        list($timestamp, $hasTimeInfo, $hasDateInfo) = $this->normalizeDatetimeValue($value, true);
+        [$timestamp, $hasTimeInfo, $hasDateInfo] = $this->normalizeDatetimeValue($value, true);
 
         // If it's today or missing date info, just return the local time.
         if (!$hasDateInfo || DateTimeHelper::isToday($timestamp)) {
@@ -199,7 +199,7 @@ class Formatter extends \yii\i18n\Formatter
         // If it were up to 7 days ago, display the weekday name.
         if (DateTimeHelper::isWithinLast($timestamp, '7 days')) {
             $day = $timestamp->format('w');
-            $dayName = Craft::$app->getI18n()->getLocaleById(Craft::$app->language)->getWeekDayName($day);
+            $dayName = Craft::$app->getLocale()->getWeekDayName($day);
             return $withPreposition ? Craft::t('app', 'on {day}', ['day' => $dayName]) : $dayName;
         }
 
@@ -352,7 +352,7 @@ class Formatter extends \yii\i18n\Formatter
 
         // Avoid time zone conversion for date-only values
         if ($type === 'date') {
-            list($timestamp, $hasTimeInfo) = $this->normalizeDatetimeValue($value, true);
+            [$timestamp, $hasTimeInfo] = $this->normalizeDatetimeValue($value, true);
 
             if (!$hasTimeInfo) {
                 $timeZone = $this->defaultTimeZone;

@@ -14,6 +14,7 @@ use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\gql\types\Number as NumberType;
 use craft\helpers\Db;
+use craft\helpers\Html;
 use craft\helpers\Localization;
 use craft\i18n\Locale;
 
@@ -237,17 +238,22 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
      */
     protected function inputHtml($value, ElementInterface $element = null): string
     {
-        // If decimals is 0 (or null, empty for whatever reason), don't run this
-        if ($value !== null && $this->decimals) {
-            $decimalSeparator = Craft::$app->getLocale()->getNumberSymbol(Locale::SYMBOL_DECIMAL_SEPARATOR);
-            try {
-                $value = number_format($value, $this->decimals, $decimalSeparator, '');
-            } catch (\Throwable $e) {
-                // NaN
+        if ($value !== null) {
+            if ($this->previewFormat !== self::FORMAT_NONE) {
+                $value = Craft::$app->getFormatter()->asDecimal($value, $this->decimals);
+            } else if ($this->decimals) {
+                // Just make sure we're using the right decimal symbol
+                $decimalSeparator = Craft::$app->getFormattingLocale()->getNumberSymbol(Locale::SYMBOL_DECIMAL_SEPARATOR);
+                try {
+                    $value = number_format($value, $this->decimals, $decimalSeparator, '');
+                } catch (\Throwable $e) {
+                    // NaN
+                }
             }
         }
 
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Number/input', [
+            'id' => Html::id($this->handle),
             'field' => $this,
             'value' => $value,
         ]);

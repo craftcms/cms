@@ -214,8 +214,10 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
      */
     protected function inputHtml($value, ElementInterface $element = null): string
     {
+        $id = Html::id($this->handle);
         $variables = [
-            'id' => Html::id($this->handle),
+            'id' => $id,
+            'instructionsId' => "$id-instructions",
             'name' => $this->handle,
             'value' => $value,
             'minuteIncrement' => $this->minuteIncrement

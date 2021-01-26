@@ -8,6 +8,7 @@
 namespace craft\base;
 
 use craft\elements\db\ElementQueryInterface;
+use craft\models\GqlSchema;
 use craft\records\FieldGroup;
 use GraphQL\Type\Definition\Type;
 use yii\validators\Validator;
@@ -111,6 +112,14 @@ interface FieldInterface extends SavableComponentInterface
      * @return string The translation key
      */
     public function getTranslationKey(ElementInterface $element): string;
+
+    /**
+     * Returns whether the field should use a `<fieldset>` + `<legend>` instead of a `<div>` + `<label>`.
+     *
+     * @return bool
+     * @since 3.6.0
+     */
+    public function useFieldset(): bool;
 
     /**
      * Returns the field’s input HTML.
@@ -341,6 +350,15 @@ interface FieldInterface extends SavableComponentInterface
      * @return FieldGroup|null
      */
     public function getGroup();
+
+    /**
+     * Returns whether the field should be included in the given GraphQL schema.
+     *
+     * @param GqlSchema
+     * @return bool
+     * @since 3.6.0
+     */
+    public function includeInGqlSchema(GqlSchema $schema): bool;
 
     /**
      * Returns the GraphQL type to be used for this field type.

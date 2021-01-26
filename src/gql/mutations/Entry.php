@@ -22,6 +22,7 @@ use craft\helpers\StringHelper;
 use craft\models\EntryType as EntryTypeModel;
 use craft\models\Section;
 use GraphQL\Type\Definition\Type;
+use yii\base\InvalidConfigException;
 
 /**
  * Class Entry
@@ -106,7 +107,7 @@ class Entry extends Mutation
      *
      * @param EntryTypeModel $entryType
      * @return array
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
     public static function createSaveMutations(EntryTypeModel $entryType, bool $createSaveDraftMutation): array
     {
@@ -143,7 +144,6 @@ class Entry extends Mutation
         $contentFields = $resolver->getResolutionData(ElementMutationResolver::CONTENT_FIELD_KEY);
         $entryMutationArguments = array_merge($entryMutationArguments, $contentFields);
         $draftMutationArguments = array_merge($draftMutationArguments, $contentFields);
-
 
         $mutations[] = [
             'name' => $mutationName,

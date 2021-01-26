@@ -31,20 +31,16 @@ const getters = {
                     {
                         name: "Ultra-flexible content modeling",
                         description: "Define custom content types, fields, and relations needed to perfectly contain your unique content requirements."
-                    },
-                    {
+                    }, {
                         name: "Powerful front-end tools",
                         description: "Develop custom front-end templates with Twig, or use Craft as a headless CMS."
-                    },
-                    {
+                    }, {
                         name: "Multi-Site",
                         description: "Run multiple related sites from a single installation, with shared content and user accounts."
-                    },
-                    {
+                    }, {
                         name: "Localization",
                         description: "Cater to distinct audiences from around the world with Craft’s best-in-class localization capabilities."
-                    },
-                    {
+                    }, {
                         name: "Single admin account",
                         description: "The Solo edition is limited to a single admin account."
                     }
@@ -53,20 +49,16 @@ const getters = {
                     {
                         name: "Unlimited user accounts",
                         description: "Create unlimited user accounts, user groups, user permissions, and public user registration.",
-                    },
-                    {
+                    }, {
                         name: "Enhanced content previewing",
                         description: "Preview your content from multiple targets, including single-page applications.",
-                    },
-                    {
+                    }, {
                         name: "GraphQL API",
                         description: "Make your content available to other applications with a self-generating GraphQL API.",
-                    },
-                    {
+                    }, {
                         name: "System branding",
                         description: "Personalize the control panel for your brand.",
-                    },
-                    {
+                    }, {
                         name: "Basic developer support",
                         description: "Get developer-to-developer support right from the Craft core development team.",
                     },
@@ -110,6 +102,19 @@ const getters = {
             }
 
             return true
+        }
+    },
+
+    getCmsEditionIndex(state) {
+        return editionHandle => {
+            switch (editionHandle) {
+                case 'solo':
+                    return state.CraftSolo
+                case 'pro':
+                    return state.CraftPro
+                default:
+                    return null
+            }
         }
     },
 }

@@ -10,7 +10,11 @@ namespace crafttests\unit\helpers;
 use Closure;
 use Codeception\Test\Unit;
 use craft\base\ComponentInterface;
+use craft\base\FieldInterface;
+use craft\base\FieldLayoutElementInterface;
 use craft\errors\MissingComponentException;
+use craft\fieldlayoutelements\HorizontalRule;
+use craft\fields\PlainText;
 use craft\helpers\Component;
 use craft\test\mockclasses\components\ComponentExample;
 use craft\test\mockclasses\components\DependencyHeavyComponentExample;
@@ -32,6 +36,23 @@ class ComponentHelperTest extends Unit
      * @var UnitTester
      */
     protected $tester;
+
+    /**
+     * @dataProvider validateComponentClassDataProvider
+     *
+     * @param bool $expected
+     * @param string $class
+     * @param string|null $instanceOf
+     * @param string $exceptionClass
+     */
+    public function testValidateComponentClass(bool $expected, string $class, ?string $instanceOf = null, string $exceptionClass = \Throwable::class)
+    {
+        self::assertSame($expected, Component::validateComponentClass($class, $instanceOf));
+        if (!$expected) {
+            self::expectException($exceptionClass);
+            Component::validateComponentClass($class, $instanceOf, true);
+        }
+    }
 
     /**
      * Tests whether the $callback will evaluate to an instance of the componentInterface.
@@ -70,18 +91,47 @@ class ComponentHelperTest extends Unit
      */
     public function testComponentCreation()
     {
-
     }
 
     /**
-     * @dataProvider settingsArraysDataProvider
+     * @dataProvider mergeSettingsDataProvider
      *
-     * @param $mergeable
-     * @param $result
+     * @param array $expected
+     * @param array $config
      */
-    public function testSettingsMerging($mergeable, $result)
+    public function testMergeSettings(array $expected, array $config)
     {
-        self::assertSame($result, Component::mergeSettings($mergeable));
+        self::assertSame($expected, Component::mergeSettings($config));
+    }
+
+    /**
+     * @dataProvider iconSvgDataProvider
+     *
+     * @param string $needle
+     * @param string|null $icon
+     * @param string $label
+     */
+    public function testIconSvg(string $needle, ?string $icon, string $label)
+    {
+        self::assertStringContainsString($needle, Component::iconSvg($icon, $label));
+    }
+
+    /**
+     * @return array
+     */
+    public function validateComponentClassDataProvider(): array
+    {
+        return [
+            [true, PlainText::class],
+            [true, PlainText::class, FieldInterface::class],
+            // fails because the class doesn't exist
+            [false, 'foo\\bar\\Baz', MissingComponentException::class],
+            // fails because it's not a ComponentInterface
+            [false, HorizontalRule::class, null, InvalidConfigException::class],
+            [false, HorizontalRule::class, FieldLayoutElementInterface::class, InvalidConfigException::class],
+            // fails because it's the wrong interface
+            [false, PlainText::class, FieldLayoutElementInterface::class, InvalidConfigException::class],
+        ];
     }
 
     /**
@@ -175,7 +225,7 @@ class ComponentHelperTest extends Unit
     /**
      * @return array
      */
-    public function settingsArraysDataProvider(): array
+    public function mergeSettingsDataProvider(): array
     {
         $mergedComponentArray = [
             'name' => 'Component',
@@ -186,6 +236,7 @@ class ComponentHelperTest extends Unit
 
         return [
             'json-basic' => [
+                $mergedComponentArray,
                 [
                     'name' => 'Component',
                     'description' => 'Lorem ipsum',
@@ -194,9 +245,9 @@ class ComponentHelperTest extends Unit
                         'setting2' => 'stuff2'
                     ])
                 ],
-                $mergedComponentArray,
             ],
             'basic-component-array' => [
+                $mergedComponentArray,
                 [
                     'name' => 'Component',
                     'description' => 'Lorem ipsum',
@@ -205,7 +256,6 @@ class ComponentHelperTest extends Unit
                         'setting2' => 'stuff2'
                     ]
                 ],
-                $mergedComponentArray
             ],
             'nested-doesnt-change' => [
                 [
@@ -219,16 +269,39 @@ class ComponentHelperTest extends Unit
                         'name' => 'Component',
                         'settings' => ['setting1' => 'stuff'],
                     ]
+                ],
+            ],
+            'settings-not-array' => [
+                [
+                    'foo' => 'bar',
+                ],
+                [
+                    'foo' => 'bar',
+                    'settings' => '"baz"',
                 ]
             ],
             'key-isnt-removed' => [
                 ['settings'],
-                ['settings']
+                ['settings'],
             ],
             'empty-array' => [
                 [],
                 [],
-            ]
+            ],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function iconSvgDataProvider(): array
+    {
+        return [
+            'default' => ['<title>Default</title>', null, 'Default'],
+            'svg-contents' => ['<svg/>', '<svg/>', 'Testing'],
+            'svg-file' => ['<svg ', dirname(__DIR__, 2) . '/_data/assets/files/craft-logo.svg', 'Default'],
+            'file-does-not-exist' => ['<title>Default</title>', '/file/does/not/exist.svg', 'Default'],
+            'not-an-svg' => ['<title>Default</title>', dirname(__DIR__, 2) . '/_data/assets/files/background.jpeg', 'Default'],
         ];
     }
 }

@@ -10,6 +10,9 @@ namespace craft\console;
 use craft\console\controllers\ResaveController;
 use craft\events\DefineConsoleActionsEvent;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Console;
+use craft\helpers\StringHelper;
+use Seld\CliPrompt\CliPrompt;
 use yii\base\Action;
 use yii\base\InvalidConfigException;
 use yii\console\Controller as YiiController;
@@ -311,5 +314,75 @@ class Controller extends YiiController
             isset($this->_actions[$this->_actionId]['options']) &&
             array_key_exists($name, $this->_actions[$this->_actionId]['options'])
         );
+    }
+
+    /**
+     * Prompts the user for a password and validates it.
+     *
+     * @param array $options options to customize the behavior of the prompt:
+     *
+     * - `label`: the prompt label
+     * - `required`: whether it is required or not (true by default)
+     * - `validator`: a callable function to validate input. The function must accept two parameters:
+     *     - `$input`: the user input to validate
+     *     - `$error`: the error value passed by reference if validation failed
+     * - `error`: the error message to show if the password is invalid
+     * - `confirm`: whether the user should be prompted for the password a second time to confirm their input
+     *   (true by default)
+     *
+     * An example of how to use the prompt method with a validator function.
+     *
+     * ```php
+     * $code = $this->passwordPrompt('Enter 4-Chars-Pin', ['required' => true, 'validator' => function($input, &$error) {
+     *     if (strlen($input) !== 4) {
+     *         $error = 'The Pin must be exactly 4 chars!';
+     *         return false;
+     *     }
+     *     return true;
+     * }]);
+     * ```
+     *
+     * @return string the user input
+     * @since 3.6.0
+     */
+    public function passwordPrompt(array $options = []): string
+    {
+        $options += [
+            'label' => 'Password: ',
+            'required' => true,
+            'validator' => null,
+            'error' => 'Invalid input.',
+            'confirm' => true,
+        ];
+
+        $options['label'] = StringHelper::ensureRight($options['label'], ' ');
+
+        // todo: would be nice to replace CliPrompt with a native Yii silent prompt
+        // (https://github.com/yiisoft/yii2/issues/10551)
+        top:
+        $this->stdout($options['label']);
+        $input = CliPrompt::hiddenPrompt(true);
+
+        if ($options['required'] && $input === '') {
+            $this->stdout($options['error'] . PHP_EOL);
+            goto top;
+        }
+
+        $error = null;
+
+        if ($options['validator'] && !$options['validator']($input, $error)) {
+            $this->stdout(($error ?? $options['error']) . PHP_EOL);
+            goto top;
+        }
+
+        if ($options['confirm']) {
+            $this->stdout('Confirm: ');
+            if (!($matched = ($input === CliPrompt::hiddenPrompt(true)))) {
+                $this->stdout('Passwords didn\'t match, try again.' . PHP_EOL, Console::FG_RED);
+                goto top;
+            }
+        }
+
+        return $input;
     }
 }

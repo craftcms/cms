@@ -57,8 +57,10 @@ class MultiSelect extends BaseOptionsField
             Craft::$app->getView()->setInitialDeltaValue($this->handle, null);
         }
 
+        $id = Html::id($this->handle);
         return Craft::$app->getView()->renderTemplate('_includes/forms/multiselect', [
-            'id' => Html::id($this->handle),
+            'id' => $id,
+            'instructionsId' => "$id-instructions",
             'name' => $this->handle,
             'values' => $value,
             'options' => $this->translatedOptions(),

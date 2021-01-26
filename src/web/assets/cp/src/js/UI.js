@@ -53,8 +53,7 @@ Craft.ui =
 
             if (config.type === 'password') {
                 return $('<div class="passwordwrapper"/>').append($input);
-            }
-            else {
+            } else {
                 return $input;
             }
         },
@@ -220,7 +219,7 @@ Craft.ui =
                         'value': option.value,
                         'selected': (option.value == config.value),
                         'disabled': typeof option.disabled !== 'undefined' ? option.disabled : false,
-                        'html':  option.label
+                        'html': option.label
                     }).appendTo($optgroup || $select);
                 }
             }
@@ -281,8 +280,7 @@ Craft.ui =
                     $input[0],
                     $label[0]
                 ]);
-            }
-            else {
+            } else {
                 return $([
                     $input[0],
                     $label[0]
@@ -357,7 +355,7 @@ Craft.ui =
                         label: option.label,
                         name: (config.name ? config.name + '[]' : null),
                         value: option.value,
-                        checked: (allChecked || Craft.inArray(option.value, config.values)),
+                        checked: allChecked || (config.values || []).includes(option.value),
                         disabled: allChecked
                     })
                 );
@@ -369,6 +367,7 @@ Craft.ui =
         },
 
         createCheckboxSelectField: function(config) {
+            config.fieldset = true;
             if (!config.id) {
                 config.id = 'checkboxselect' + Math.floor(Math.random() * 1000000000);
             }
@@ -486,9 +485,9 @@ Craft.ui =
         },
 
         createDateInput: function(config) {
-            var id = (config.id || 'date' + Math.floor(Math.random() * 1000000000))+'-date';
+            var id = (config.id || 'date' + Math.floor(Math.random() * 1000000000)) + '-date';
             var name = config.name || null;
-            var inputName = name ? name+'[date]' : null;
+            var inputName = name ? name + '[date]' : null;
             var value = config.value && typeof config.value.getMonth === 'function' ? config.value : null;
             var formattedValue = value ? Craft.formatDate(value) : null;
             var autofocus = config.autofocus && Garnish.isMobileBrowser(true);
@@ -513,7 +512,7 @@ Craft.ui =
             if (name) {
                 $('<input/>', {
                     type: 'hidden',
-                    name: name+'[timezone]',
+                    name: name + '[timezone]',
                     val: Craft.timezone
                 }).appendTo($container);
             }
@@ -549,7 +548,7 @@ Craft.ui =
                 ],
                 onChange: $.noop,
                 selected: null,
-                startDate:null,
+                startDate: null,
                 endDate: null,
             }, config);
 
@@ -767,9 +766,9 @@ Craft.ui =
         },
 
         createTimeInput: function(config) {
-            var id = (config.id || 'time' + Math.floor(Math.random() * 1000000000))+'-time';
+            var id = (config.id || 'time' + Math.floor(Math.random() * 1000000000)) + '-time';
             var name = config.name || null;
-            var inputName = name ? name+'[time]' : null;
+            var inputName = name ? name + '[time]' : null;
             var value = config.value && typeof config.value.getMonth === 'function' ? config.value : null;
             var autofocus = config.autofocus && Garnish.isMobileBrowser(true);
             var disabled = config.disabled || false;
@@ -792,14 +791,14 @@ Craft.ui =
             if (name) {
                 $('<input/>', {
                     type: 'hidden',
-                    name: name+'[timezone]',
+                    name: name + '[timezone]',
                     val: Craft.timezone
                 }).appendTo($container);
             }
 
             $input.timepicker(Craft.timepickerOptions);
             if (value) {
-                $input.timepicker('setTime', value.getHours()*3600 + value.getMinutes()*60 + value.getSeconds());
+                $input.timepicker('setTime', value.getHours() * 3600 + value.getMinutes() * 60 + value.getSeconds());
             }
 
             return $container;
@@ -816,7 +815,7 @@ Craft.ui =
             var label = (config.label && config.label !== '__blank__' ? config.label : null),
                 siteId = (Craft.isMultiSite && config.siteId ? config.siteId : null);
 
-            var $field = $('<div/>', {
+            var $field = $(config.fieldset ? '<fieldset/>' : '<div/>', {
                 'class': 'field',
                 'id': config.fieldId || (config.id ? config.id + '-field' : null)
             });
@@ -828,10 +827,10 @@ Craft.ui =
             if (label) {
                 var $heading = $('<div class="heading"/>').appendTo($field);
 
-                var $label = $('<label/>', {
-                    'id': config.labelId || (config.id ? `${config.id}-label` : null),
+                var $label = $(config.fieldset ? '<legend/>' : '<label/>', {
+                    'id': config.labelId || (config.id ? `${config.id}-${config.fieldset ? 'legend' : 'label'}` : null),
                     'class': (config.required ? 'required' : null),
-                    'for': config.id,
+                    'for': !config.fieldset && config.id,
                     text: label
                 }).appendTo($heading);
             }

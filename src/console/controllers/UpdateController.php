@@ -34,6 +34,8 @@ use yii\validators\EmailValidator;
  */
 class UpdateController extends Controller
 {
+    use BackupTrait;
+
     /**
      * @inheritdoc
      */
@@ -45,7 +47,7 @@ class UpdateController extends Controller
     public $force = false;
 
     /**
-     * @var bool Backup the database before updating
+     * @var bool|null Backup the database before updating
      */
     public $backup;
 
@@ -53,11 +55,6 @@ class UpdateController extends Controller
      * @var bool Run new database migrations after completing the update
      */
     public $migrate = true;
-
-    /**
-     * @var string|null The path to the database backup
-     */
-    private $_backupPath;
 
     /**
      * @inheritdoc
@@ -168,7 +165,7 @@ class UpdateController extends Controller
         }
 
         // Try to backup the DB
-        if (!$this->_backup()) {
+        if (!$this->backup($this->backup)) {
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
@@ -200,11 +197,8 @@ class UpdateController extends Controller
         $this->stdout('Performing Composer install ... ', Console::FG_YELLOW);
         $io = new BufferIO();
 
-        $composerService = Craft::$app->getComposer();
-        $composerService->disablePackagist = false;
-
         try {
-            $composerService->install(null, $io, false);
+            Craft::$app->getComposer()->install(null, $io);
         } catch (\Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);
             $this->stderr('error: ' . $e->getMessage() . PHP_EOL . PHP_EOL, Console::FG_RED);
@@ -252,7 +246,7 @@ class UpdateController extends Controller
             // Look for any specific versions that were requested
             foreach ($handles as $handle) {
                 if (strpos($handle, ':') !== false) {
-                    list($handle, $to) = explode(':', $handle, 2);
+                    [$handle, $to] = explode(':', $handle, 2);
                     if ($handle === 'craft') {
                         $handle = 'cms';
                     }
@@ -286,7 +280,7 @@ class UpdateController extends Controller
         } else {
             foreach ($handles as $handle) {
                 if (strpos($handle, ':') !== false) {
-                    list($handle, $to) = explode(':', $handle, 2);
+                    [$handle, $to] = explode(':', $handle, 2);
                 } else {
                     $to = null;
                 }
@@ -317,7 +311,7 @@ class UpdateController extends Controller
             $this->stdout($total === 1 ? 'one' : $total, Console::FG_GREEN, Console::BOLD);
             $this->stdout(' update' . ($total === 1 ? '' : 's') . ':' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
 
-            foreach ($info as list($handle, $from, $to, $critical, $status, $phpConstraint)) {
+            foreach ($info as [$handle, $from, $to, $critical, $status, $phpConstraint]) {
                 $this->_outputUpdate($handle, $from, $to, $critical, $status, $phpConstraint);
             }
 
@@ -369,72 +363,6 @@ class UpdateController extends Controller
         if ($update->packageName !== $oldPackageName) {
             $requirements[$oldPackageName] = false;
         }
-    }
-
-    /**
-     * Attempts to backup the database.
-     *
-     * @return bool
-     */
-    private function _backup(): bool
-    {
-        if (!$this->_shouldBackup()) {
-            $this->stdout('Skipping database backup.' . PHP_EOL, Console::FG_GREY);
-            return true;
-        }
-
-        $this->stdout('Backing up the database ... ', Console::FG_YELLOW);
-
-        try {
-            $this->_backupPath = Craft::$app->getDb()->backup();
-        } catch (\Throwable $e) {
-            $this->stdout('error: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
-
-            if (!$this->_backupWarning()) {
-                $this->stderr('Aborting update.' . PHP_EOL . PHP_EOL, Console::FG_RED);
-                return false;
-            }
-
-            return true;
-        }
-
-        $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
-        return true;
-    }
-
-    /**
-     * Outputs a warning about creating a database backup.
-     *
-     * @return bool
-     */
-    private function _backupWarning(): bool
-    {
-        if (!$this->interactive) {
-            return false;
-        }
-
-        Console::outputWarning('Please backup your database before continuing.');
-        return $this->confirm('Ready to continue?');
-    }
-
-    /**
-     * Returns whether the database should be backed up
-     *
-     * @return bool
-     */
-    private function _shouldBackup(): bool
-    {
-        if (is_bool($this->backup)) {
-            return $this->backup;
-        }
-
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
-
-        if (!$this->interactive) {
-            return $generalConfig->getBackupOnUpdate();
-        }
-
-        return $this->confirm('Backup the database?', $generalConfig->getBackupOnUpdate());
     }
 
     /**
@@ -509,7 +437,7 @@ class UpdateController extends Controller
     private function _restoreDb(): bool
     {
         if (
-            !$this->_backupPath ||
+            !$this->backupPath ||
             ($this->interactive && !$this->confirm('Restore the database backup?', true))
         ) {
             return false;
@@ -518,10 +446,10 @@ class UpdateController extends Controller
         $this->stdout('Restoring the database backup ... ', Console::FG_YELLOW);
 
         try {
-            Craft::$app->getDb()->restore($this->_backupPath);
+            Craft::$app->getDb()->restore($this->backupPath);
         } catch (\Throwable $e) {
             $this->stdout('error: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
-            $this->stdout('You can manually restore the backup file located at ' . $this->_backupPath . PHP_EOL);
+            $this->stdout('You can manually restore the backup file located at ' . $this->backupPath . PHP_EOL);
             return false;
         }
 

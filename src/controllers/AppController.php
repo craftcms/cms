@@ -98,7 +98,9 @@ class AppController extends Controller
         $this->requireCpRequest();
         $headers = $this->request->getRequiredBodyParam('headers');
         Api::processResponseHeaders($headers);
-        return $this->asJson(1);
+
+        // return the updated headers
+        return $this->asJson(Api::headers());
     }
 
     /**
@@ -431,7 +433,7 @@ class AppController extends Controller
      */
     public function actionGetPluginLicenseInfo(): Response
     {
-        $this->requireAdmin();
+        $this->requireAdmin(false);
         $pluginLicenses = $this->request->getBodyParam('pluginLicenses');
         $result = $this->_pluginLicenseInfo($pluginLicenses);
         ArrayHelper::multisort($result, 'name');

@@ -177,7 +177,7 @@ class ResolveEntryMutationsTest extends TestCase
             'requireSchemaAction' => Expected::once(true)
         ]);
         $this->tester->mockCraftMethods('drafts', [
-            'applyDraft' => Expected::once(new Entry(['id' => 1])),
+            'publishDraft' => Expected::once(new Entry(['id' => 1])),
         ]);
 
         $resolver->publishDraft(null, ['id' => 2], null, $this->make(ResolveInfo::class));

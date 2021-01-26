@@ -34,4 +34,10 @@ class SearchEvent extends BaseEvent
      * @var int|int[]|null The site ID(s) to filter by
      */
     public $siteId;
+
+    /**
+     * @var array|null The raw search result data
+     * @since 3.6.0
+     */
+    public $results;
 }

@@ -265,12 +265,13 @@ class Cp extends Component
                     'label' => Craft::t('app', 'Settings'),
                     'fontIcon' => 'settings'
                 ];
-                $navItems[] = [
-                    'url' => 'plugin-store',
-                    'label' => Craft::t('app', 'Plugin Store'),
-                    'fontIcon' => 'plugin'
-                ];
             }
+
+            $navItems[] = [
+                'url' => 'plugin-store',
+                'label' => Craft::t('app', 'Plugin Store'),
+                'fontIcon' => 'plugin'
+            ];
         }
 
         // Allow plugins to modify the nav
@@ -550,7 +551,7 @@ class Cp extends Component
         $rootLength = strlen($root);
 
         foreach (Craft::$app->getSites()->getAllSites() as $site) {
-            $sites[$site->handle] = Craft::t('site', $site->name);
+            $sites[$site->handle] = Craft::t('site', $site->getName());
         }
 
         foreach ($files as $file) {

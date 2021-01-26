@@ -17,7 +17,7 @@ use crafttests\fixtures\GlobalSetFixture;
 use crafttests\fixtures\SectionsFixture;
 use crafttests\fixtures\SitesFixture;
 use crafttests\fixtures\UserGroupsFixture;
-use crafttests\fixtures\UsersFixture;
+use crafttests\fixtures\UserFixture;
 use crafttests\fixtures\VolumesFixture;
 use UnitTester;
 use yii\db\Exception as YiiDbException;
@@ -53,7 +53,7 @@ class UserPermissionsTest extends TestCase
                 'class' => UserGroupsFixture::class
             ],
             'users' => [
-                'class' => UsersFixture::class
+                'class' => UserFixture::class
             ],
             'sites' => [
                 'class' => SitesFixture::class

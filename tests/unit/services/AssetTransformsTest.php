@@ -22,12 +22,13 @@ class AssetTransformsTest extends Unit
     /**
      * Makes sure that extending transform correctly updates it.
      *
+     * @dataProvider extendTransformDataProvider
+     *
      * @param AssetTransform $transform
      * @param array $parameters
      * @param array $resultCheck
-     * @dataProvider extendTransformDataProvider
      */
-    public function testExtendingTransform($transform, $parameters, $resultCheck)
+    public function testExtendTransform(AssetTransform $transform, array $parameters, array $resultCheck)
     {
         $extendedTransform = Craft::$app->getAssetTransforms()->extendTransform($transform, $parameters);
 

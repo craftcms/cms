@@ -28,6 +28,7 @@ use craft\helpers\ElementHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Gql;
 use craft\helpers\Html;
+use craft\models\GqlSchema;
 use craft\web\UploadedFile;
 use GraphQL\Type\Definition\Type;
 use yii\base\InvalidConfigException;
@@ -450,6 +451,14 @@ class Assets extends BaseRelationField
 
     /**
      * @inheritdoc
+     */
+    public function includeInGqlSchema(GqlSchema $schema): bool
+    {
+        return Gql::canQueryAssets($schema);
+    }
+
+    /**
+     * @inheritdoc
      * @since 3.3.0
      */
     public function getContentGqlType()
@@ -459,6 +468,7 @@ class Assets extends BaseRelationField
             'type' => Type::listOf(AssetInterface::getType()),
             'args' => AssetArguments::getArguments(),
             'resolve' => AssetResolver::class . '::resolve',
+            'complexity' => Gql::eagerLoadComplexity()
         ];
     }
 

@@ -85,12 +85,14 @@ class User extends Element
             'preferences' => [
                 'name' => 'preferences',
                 'type' => Type::string(),
-                'description' => 'The user’s preferences.'
+                'description' => 'The user’s preferences.',
+                'complexity' => Gql::nPlus1Complexity(),
             ],
             'preferredLanguage' => [
                 'name' => 'preferredLanguage',
                 'type' => Type::string(),
-                'description' => 'The user’s preferred language.'
+                'description' => 'The user’s preferred language.',
+                'complexity' => Gql::nPlus1Complexity(),
             ],
             'username' => [
                 'name' => 'username',
@@ -127,7 +129,8 @@ class User extends Element
                 'photo' => [
                     'name' => 'photo',
                     'type' => Asset::getType(),
-                    'description' => 'The user\'s photo.'
+                    'description' => 'The user\'s photo.',
+                    'complexity' => Gql::eagerLoadComplexity(),
                 ]
             ];
         }

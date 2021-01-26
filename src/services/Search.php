@@ -292,6 +292,7 @@ class Search extends Component
                     'elementIds' => array_keys($scoresByElementId),
                     'query' => $query,
                     'siteId' => $siteId,
+                    'results' => $results,
                 ]));
             }
 
@@ -318,6 +319,7 @@ class Search extends Component
                 'elementIds' => $elementIds,
                 'query' => $query,
                 'siteId' => $siteId,
+                'results' => $results,
             ]));
         }
 
@@ -548,7 +550,7 @@ SQL;
 
         foreach ($tokens as $obj) {
             // Get SQL and/or keywords
-            list($sql, $keywords) = $this->_getSqlFromTerm($obj, $siteId);
+            [$sql, $keywords] = $this->_getSqlFromTerm($obj, $siteId);
 
             if ($sql === false && $inclusive) {
                 return false;

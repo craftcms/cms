@@ -20,7 +20,6 @@ use craft\fields\BaseRelationField;
 use craft\fields\Categories as CategoryField;
 use craft\fields\Entries as EntryField;
 use craft\fields\Users as UserField;
-use craft\gql\base\ElementResolver;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\helpers\Gql as GqlHelper;
 use craft\helpers\StringHelper;
@@ -74,6 +73,12 @@ class ElementQueryConditionBuilder extends Component
      * @var ResolveInfo
      */
     private $_resolveInfo;
+
+    /**
+     * @var ArgumentManager
+     */
+    private $_argumentManager;
+
     private $_fragments;
     private $_eagerLoadableFieldsByContext = [];
     private $_transformableAssetProperties = ['url', 'width', 'height'];
@@ -116,6 +121,17 @@ class ElementQueryConditionBuilder extends Component
     }
 
     /**
+     * Set the current ResolveInfo object.
+     *
+     * @param ArgumentManager $argumentManager
+     * @since 3.6.0
+     */
+    public function setArgumentManager(ArgumentManager $argumentManager)
+    {
+        $this->_argumentManager = $argumentManager;
+    }
+
+    /**
      * Extract the query conditions based on the resolve information passed in the constructor.
      * Returns an array of [methodName => parameters] to be called on the element query.
      *
@@ -134,7 +150,7 @@ class ElementQueryConditionBuilder extends Component
 
         // Load up all eager loading rules.
         $extractedConditions = [
-            'with' => $this->_traversAndBuildPlans($startingNode, $startingParentField ? $startingParentField->context : 'global', $startingParentField, null, $rootPlan)
+            'with' => $this->_traversAndBuildPlans($startingNode, $rootPlan, $startingParentField, null, $startingParentField ? $startingParentField->context : 'global')
         ];
 
         if (!empty($rootPlan->criteria['withTransforms'])) {
@@ -170,17 +186,28 @@ class ElementQueryConditionBuilder extends Component
     {
         $argumentNodeValue = $argumentNode->value;
 
-        if (isset($argumentNodeValue->values)) {
-            $extractedValue = [];
-            foreach ($argumentNodeValue->values as $value) {
-                $extractedValue[] = $this->_extractArgumentValue($value);
+        if (in_array($argumentNode->kind, ['Argument', 'Variable', 'ListValue', 'ObjectField'], true)) {
+            switch ($argumentNodeValue->kind) {
+                case 'Variable':
+                    $extractedValue = $this->_resolveInfo->variableValues[$argumentNodeValue->name->value];
+                    break;
+                case 'ListValue':
+                    $extractedValue = [];
+
+                    foreach ($argumentNodeValue->values as $value) {
+                        $extractedValue[] = $this->_extractArgumentValue($value);
+                    }
+                    break;
+                case 'ObjectValue':
+                    foreach ($argumentNodeValue->fields as $fieldNode) {
+                        $extractedValue[$fieldNode->name->value] = $this->_extractArgumentValue($fieldNode);
+                    }
+                    break;
+                default:
+                    $extractedValue = $argumentNodeValue->value;
             }
         } else {
-            if (in_array($argumentNode->kind, ['Argument', 'Variable'], true)) {
-                $extractedValue = $argumentNodeValue->kind === 'Variable' ? $this->_resolveInfo->variableValues[$argumentNodeValue->name->value] : $argumentNodeValue->value;
-            } else {
-                $extractedValue = $argumentNodeValue;
-            }
+            $extractedValue = $argumentNode->kind === 'IntValue' ? (int)$argumentNodeValue : $argumentNodeValue;
         }
 
         return $extractedValue;
@@ -331,13 +358,13 @@ class ElementQueryConditionBuilder extends Component
      * for the resulting element query.
      *
      * @param Node $parentNode the parent node being traversed.
-     * @param string $context the context in which to search fields
-     * @param FieldInterface $parentField the current parent field, that we are in.
-     * @param Node|null $wrappingFragment the wrapping fragment node, if any
      * @param EagerLoadPlan $parentPlan The parent eager-loading plan
+     * @param FieldInterface|null $parentField the current parent field, that we are in.
+     * @param Node|null $wrappingFragment the wrapping fragment node, if any
+     * @param string $context the context in which to search fields
      * @return array
      */
-    private function _traversAndBuildPlans(Node $parentNode, $context = 'global', FieldInterface $parentField = null, Node $wrappingFragment = null, EagerLoadPlan $parentPlan): array
+    private function _traversAndBuildPlans(Node $parentNode, EagerLoadPlan $parentPlan, FieldInterface $parentField = null, Node $wrappingFragment = null, $context = 'global'): array
     {
         $subNodes = $parentNode->selectionSet->selections ?? [];
         $plans = [];
@@ -427,7 +454,7 @@ class ElementQueryConditionBuilder extends Component
 
                                     // If they wanted to filter by values that were not allowed by schema, make it impossible
                                     if (empty($allowed)) {
-                                        $arguments = ['id' => 0];
+                                        $arguments = ['id' => ['and', 1, 2]];
                                         break;
                                     }
 
@@ -442,7 +469,7 @@ class ElementQueryConditionBuilder extends Component
 
                         // For relational fields, prepare the arguments.
                         if ($craftContentField instanceof BaseRelationField) {
-                            $arguments = ElementResolver::prepareArguments($arguments);
+                            $arguments = $this->_argumentManager->prepareArguments($arguments);
                         }
                     }
 
@@ -485,7 +512,7 @@ class ElementQueryConditionBuilder extends Component
                             $traverseContext = $context;
                         }
 
-                        $plan->nested = $this->_traversAndBuildPlans($subNode, $traverseContext, $nodeName === self::LOCALIZED_NODENAME ? $parentField : $craftContentField, $wrappingFragment, $plan);
+                        $plan->nested = $this->_traversAndBuildPlans($subNode, $plan, $nodeName === self::LOCALIZED_NODENAME ? $parentField : $craftContentField, $wrappingFragment, $traverseContext);
                     }
                 }
                 // If not, see if it's a fragment
@@ -507,7 +534,7 @@ class ElementQueryConditionBuilder extends Component
                     // Build the prefix, load the context and proceed in a recursive manner
                     try {
                         $gqlFragmentEntity = $parentField->getGqlFragmentEntityByName($nodeName);
-                        $plan->nested = $this->_traversAndBuildPlans($subNode, $gqlFragmentEntity->getFieldContext(), $parentField, $wrappingFragment, $plan);
+                        $plan->nested = $this->_traversAndBuildPlans($subNode, $plan, $parentField, $wrappingFragment, $gqlFragmentEntity->getFieldContext());
 
                         // Correct the handles and, maybe, aliases.
                         foreach ($plan->nested as $nestedPlan) {
@@ -519,11 +546,11 @@ class ElementQueryConditionBuilder extends Component
                         }
                         // This is to be expected, depending on whether the fragment is targeted towards the field itself instead of its subtypes.
                     } catch (InvalidArgumentException $exception) {
-                        $plan->nested = $this->_traversAndBuildPlans($subNode, $context, $parentField, $wrappingFragment, $plan);
+                        $plan->nested = $this->_traversAndBuildPlans($subNode, $plan, $parentField, $wrappingFragment, $context);
                     }
                     // If we are not, just expand the fragment and traverse it as if on the same level in the query tree
                 } else {
-                    $plan->nested = $this->_traversAndBuildPlans($subNode, $context, $parentField, $wrappingFragment, $plan);
+                    $plan->nested = $this->_traversAndBuildPlans($subNode, $plan, $parentField, $wrappingFragment, $context);
                 }
             }
 

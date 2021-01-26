@@ -67,12 +67,12 @@ class GqlTest extends Unit
 
     /**
      * Test getting active schema errors out if none set
-     *
-     * @expectedException \craft\errors\GqlException
-     * @expectedExceptionMessage No schema is active.
      */
     public function testCreatingSchemaFail()
     {
+        $this->expectExceptionMessage("No schema is active.");
+        $this->expectException(GqlException::class);
+
         $gqlService = Craft::$app->getGql();
         $gqlService->setActiveSchema(null);
         $gqlService->getActiveSchema();
@@ -384,8 +384,6 @@ class GqlTest extends Unit
     public function testInvalidatingCache()
     {
         $gql = Craft::$app->getGql();
-        $elements = Craft::$app->getElements();
-
         $gql->invalidateCaches();
 
         $cacheKey = 'testKey';
@@ -401,34 +399,8 @@ class GqlTest extends Unit
 
         // Make sure saving a schema invalidates caches
         $gql->saveSchema($schema);
-        self::assertFalse($gql->getCachedResult($cacheKey));
-
-        // Reset
-        $gql->setCachedResult($cacheKey, $cacheValue);
-        self::assertEquals($gql->getCachedResult($cacheKey), $cacheValue);
-
-        // Make sure saving an element invalidates caches.
-        $user = new User();
-        $user->username = 'testUser' . StringHelper::randomString(5);
-        $user->email = 'user@a' . StringHelper::randomString(5) . '.com';
-        $elements->saveElement($user);
-        self::assertFalse($gql->getCachedResult($cacheKey));
-
-        // Reset
-        $gql->setCachedResult($cacheKey, $cacheValue);
-        self::assertEquals($gql->getCachedResult($cacheKey), $cacheValue);
-
-        // Make sure deleting an element invalidates caches.
-        $elements->deleteElement($user);
-        self::assertFalse($gql->getCachedResult($cacheKey));
-
-        // Reset
-        $gql->setCachedResult($cacheKey, $cacheValue);
-        self::assertEquals($gql->getCachedResult($cacheKey), $cacheValue);
-
-        // Make sure setting anything in project config invalidates caches.
-        Craft::$app->getProjectConfig()->set('test.value', true);
-        self::assertFalse($gql->getCachedResult($cacheKey));
+        self::assertNull($gql->getCachedResult($cacheKey));
+        $gql->deleteSchemaById($schema->id);
     }
 
     /**

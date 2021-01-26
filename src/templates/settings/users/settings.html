@@ -23,7 +23,7 @@
 {% set allVolumes = craft.app.volumes.getAllVolumes() %}
 {% set volumeList = [] %}
 {% for volume in allVolumes %}
-    {% set volumeList = volumeList|merge([{'value': volume.uid, 'label': volume.name}]) %}
+    {% set volumeList = volumeList|push({label: volume.name, value: volume.uid}) %}
 {% endfor %}
 
 {% macro assetLocationInput(volumeOptions, volumeUid, subpath) %}

@@ -8,7 +8,7 @@
 namespace crafttests\fixtures;
 
 use craft\records\Session;
-use craft\test\Fixture;
+use craft\test\ActiveFixture;
 
 /**
  * Class SessionsFixture
@@ -17,7 +17,7 @@ use craft\test\Fixture;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class SessionsFixture extends Fixture
+class SessionsFixture extends ActiveFixture
 {
     /**
      * @inheritdoc

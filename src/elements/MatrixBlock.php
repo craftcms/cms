@@ -119,7 +119,7 @@ class MatrixBlock extends Element implements BlockElementInterface
             return false;
         }
 
-        list($blockTypeHandle, $fieldHandle) = $handleParts;
+        [$blockTypeHandle, $fieldHandle] = $handleParts;
 
         // Get the block type
         $matrixFieldId = ArrayHelper::firstValue($sourceElements)->fieldId;

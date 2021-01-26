@@ -5,18 +5,19 @@
     title: 'Copy to clipboard'|t('app'),
     aria: {
         label: 'Copy to clipboard'|t('app'),
+        describedby: instructionsId ?? false,
     },
     tabindex: '0',
 } %}
 
-<div {{ attr(attributes) }}>
+{% tag 'div' with attributes %}
     {{ input('text', null, value, {
         readonly: true,
         size: value|length,
         tabindex: '-1',
     }) }}
     <span data-icon="clipboard" aria-hidden="true"></span>
-</div>
+{% endtag %}
 
 {% js %}
     {% block js %}

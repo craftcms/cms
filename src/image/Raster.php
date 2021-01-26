@@ -298,7 +298,7 @@ class Raster extends Image
                 $y2 = $newHeight;
             }
         } else {
-            list($verticalPosition, $horizontalPosition) = explode('-', $cropPosition);
+            [$verticalPosition, $horizontalPosition] = explode('-', $cropPosition);
 
             // Now crop.
             if ($newWidth - $targetWidth > 0) {

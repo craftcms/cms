@@ -8,7 +8,6 @@
 /.travis.yml export-ignore
 /CHANGELOG.md export-ignore
 /codeception.yml export-ignore
-/codeception.yml.example export-ignore
 /composer.lock export-ignore
 /crowdin.yml export-ignore
 /gulpfile.js export-ignore

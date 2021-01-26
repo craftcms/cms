@@ -148,6 +148,26 @@ class UserQuery extends ElementQuery
     public $lastLoginDate;
 
     /**
+     * @var bool Whether the users’ groups should be eager-loaded.
+     * ---
+     * ```php
+     * // fetch users with their user groups
+     * $users = \craft\elements\User::find()
+     *     ->withGroups()
+     *     ->all();
+     * ```
+     * ```twig
+     * {# fetch users with their user groups #}
+     * {% set users = craft.users()
+     *     .withGroups()
+     *     .all() %}
+     * ```
+     * @used-by withGroups()
+     * @since 3.6.0
+     */
+    public $withGroups = false;
+
+    /**
      * @inheritdoc
      */
     public function __construct($elementType, array $config = [])
@@ -576,6 +596,44 @@ class UserQuery extends ElementQuery
     }
 
     /**
+     * Causes the query to return matching users eager-loaded with their user groups.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches users…
+     * | - | -
+     * | `'>= 2018-04-01'` | that last logged-in on or after 2018-04-01.
+     * | `'< 2018-05-01'` | that last logged-in before 2018-05-01
+     * | `['and', '>= 2018-04-04', '< 2018-05-01']` | that last logged-in between 2018-04-01 and 2018-05-01.
+     *
+     * ---
+     *
+     * ```php
+     * // fetch users with their user groups
+     * $users = \craft\elements\User::find()
+     *     ->withGroups()
+     *     ->all();
+     * ```
+     *
+     * ```twig
+     * {# fetch users with their user groups #}
+     * {% set users = craft.users()
+     *     .withGroups()
+     *     .all() %}
+     * ```
+     *
+     * @param bool $value The property value (defaults to true)
+     * @return static self reference
+     * @uses $withGroups
+     * @since 3.6.0
+     */
+    public function withGroups(bool $value = true)
+    {
+        $this->withGroups = true;
+        return $this;
+    }
+
+    /**
      * @inheritdoc
      */
     protected function beforePrepare(): bool
@@ -744,5 +802,20 @@ class UserQuery extends ElementQuery
         }
 
         $this->subQuery->andWhere($condition);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterPopulate(array $elements): array
+    {
+        $elements = parent::afterPopulate($elements);
+
+        // Eager-load user groups?
+        if ($this->withGroups && !$this->asArray && Craft::$app->getEdition() === Craft::Pro) {
+            Craft::$app->getUserGroups()->eagerLoadGroups($elements);
+        }
+
+        return $elements;
     }
 }

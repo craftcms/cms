@@ -11,6 +11,8 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\enums\LicenseKeyStatus;
 use craft\events\RegisterCpAlertsEvent;
+use craft\web\twig\TemplateLoaderException;
+use craft\web\View;
 use yii\base\Event;
 use yii\base\InvalidArgumentException;
 use yii\helpers\Markdown;
@@ -38,11 +40,24 @@ class Cp
     const ELEMENT_SIZE_LARGE = 'large';
 
     /**
+     * Renders a control panel template.
+     *
+     * @param string $template
+     * @param array $variables
+     * @return string
+     * @throws TemplateLoaderException if `$template` is an invalid template path
+     */
+    public static function renderTemplate(string $template, array $variables = []): string
+    {
+        return Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP);
+    }
+
+    /**
      * @param string|null $path
      * @param bool $fetch
      * @return array
      */
-    public static function alerts(string $path = null, bool $fetch = false): array
+    public static function alerts(?string $path = null, bool $fetch = false): array
     {
         $alerts = [];
         $user = Craft::$app->getUser()->getIdentity();
@@ -53,6 +68,8 @@ class Cp
         }
 
         $updatesService = Craft::$app->getUpdates();
+        $canSettleUp = true;
+        $licenseAlerts = [];
 
         if ($updatesService->getIsUpdateInfoCached() || $fetch) {
             // Fetch the updates regardless of whether we're on the Updates page or not, because the other alerts are
@@ -81,7 +98,60 @@ class Cp
                         $message .= Craft::t('app', 'Please notify one of your site’s admins.');
                     }
 
-                    $alerts[] = $message;
+                    $licenseAlerts[] = $message;
+                }
+            }
+
+            // Any plugin issues?
+            if ($path != 'settings/plugins') {
+                $pluginsService = Craft::$app->getPlugins();
+                $issuePlugins = [];
+                foreach ($pluginsService->getAllPlugins() as $pluginHandle => $plugin) {
+                    if ($pluginsService->hasIssues($pluginHandle)) {
+                        $issuePlugins[] = $plugin->name;
+                    }
+                }
+                if (!empty($issuePlugins)) {
+                    if (count($issuePlugins) === 1) {
+                        $message = Craft::t('app', 'There’s a licensing issue with the {name} plugin.', [
+                            'name' => reset($issuePlugins),
+                        ]);
+                    } else {
+                        $message = Craft::t('app', '{num} plugins have licensing issues.', [
+                            'num' => count($issuePlugins),
+                        ]);
+                    }
+                    $message .= ' ';
+                    if ($user->admin) {
+                        if ($generalConfig->allowAdminChanges) {
+                            $message .= '<a class="go" href="' . UrlHelper::cpUrl('settings/plugins') . '">' . Craft::t('app', 'Resolve') . '</a>';
+                        } else {
+                            $message .= Craft::t('app', 'Please fix on an environment where administrative changes are allowed.');
+                        }
+                    } else {
+                        $message .= Craft::t('app', 'Please notify one of your site’s admins.');
+                    }
+
+                    $licenseAlerts[] = $message;
+
+                    // Is this reconcilable?
+                    foreach ($issuePlugins as $pluginHandle) {
+                        if (!$pluginsService->getPluginLicenseKeyStatus($pluginHandle) === LicenseKeyStatus::Trial) {
+                            $canSettleUp = false;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (!empty($licenseAlerts)) {
+                if ($canSettleUp) {
+                    if ($path !== 'plugin-store/buy-all-trials') {
+                        $alerts[] = Craft::t('app', 'There are license trials that require payment.') . ' ' .
+                            Html::a(Craft::t('app', 'Buy now'), UrlHelper::cpUrl('plugin-store/buy-all-trials'), ['class' => 'go']);
+                    }
+                } else {
+                    array_push($alerts, ...$licenseAlerts);
                 }
             }
 
@@ -119,40 +189,6 @@ class Cp
                 }
 
                 $alerts[] = $message . ' <a class="go" href="https://craftcms.com/support/resolving-mismatched-licenses">' . Craft::t('app', 'Learn more') . '</a>';
-            }
-
-            // Any plugin issues?
-            if ($path != 'settings/plugins') {
-                $pluginsService = Craft::$app->getPlugins();
-                $issuePlugins = [];
-                foreach ($pluginsService->getAllPlugins() as $pluginHandle => $plugin) {
-                    if ($pluginsService->hasIssues($pluginHandle)) {
-                        $issuePlugins[] = $plugin->name;
-                    }
-                }
-                if (!empty($issuePlugins)) {
-                    if (count($issuePlugins) === 1) {
-                        $message = Craft::t('app', 'There’s a licensing issue with the {name} plugin.', [
-                            'name' => reset($issuePlugins),
-                        ]);
-                    } else {
-                        $message = Craft::t('app', '{num} plugins have licensing issues.', [
-                            'num' => count($issuePlugins),
-                        ]);
-                    }
-                    $message .= ' ';
-                    if ($user->admin) {
-                        if ($generalConfig->allowAdminChanges) {
-                            $message .= '<a class="go" href="' . UrlHelper::cpUrl('settings/plugins') . '">' . Craft::t('app', 'Resolve') . '</a>';
-                        } else {
-                            $message .= Craft::t('app', 'Please fix on an environment where administrative changes are allowed.');
-                        }
-                    } else {
-                        $message .= Craft::t('app', 'Please notify one of your site’s admins.');
-                    }
-
-                    $alerts[] = $message;
-                }
             }
         }
 
@@ -204,7 +240,7 @@ class Cp
         ElementInterface $element,
         string $context = 'index',
         string $size = self::ELEMENT_SIZE_SMALL,
-        string $inputName = null,
+        ?string $inputName = null,
         bool $showStatus = true,
         bool $showThumb = true,
         bool $showLabel = true
@@ -255,7 +291,7 @@ class Cp
                 'data-label' => (string)$element,
                 'data-url' => $element->getUrl(),
                 'data-level' => $element->level,
-                'title' => $label . (Craft::$app->getIsMultiSite() ? ' – ' . $element->getSite()->name : ''),
+                'title' => $label . (Craft::$app->getIsMultiSite() ? ' – ' . Craft::t('site', $element->getSite()->getName()) : ''),
             ]);
 
         if ($context === 'field') {
@@ -349,21 +385,33 @@ class Cp
     }
 
     /**
-     * Renders a field’s HTML.
+     * Renders a field’s HTML, for the given input HTML or a template.
      *
-     * @param string $inputHtml
+     * @param string $input The input HTML or template path. If passing a template path, it must begin with `template:`.
      * @param array $config
      * @return string
+     * @throws TemplateLoaderException if $input begins with `template:` and is followed by an invalid template path
      * @throws InvalidArgumentException if `$config['siteId']` is invalid
      * @since 3.5.8
      */
-    public static function fieldHtml(string $inputHtml, array $config = []): string
+    public static function fieldHtml(string $input, array $config = []): string
     {
-        $fieldId = $config['fieldId'] ?? (isset($config['id']) ? "{$config['id']}-field" : ('field' . mt_rand()));
-        $labelId = $config['labelId'] ?? "$fieldId-label";
-        $instructionsId = $config['instructionsId'] ?? "$fieldId-instructions";
+        // Set the ID and instructionsId before rendering the field so it's consistent
+        $id = $config['id'] = $config['id'] ?? 'field' . mt_rand();
+        $instructionsId = $config['instructionsId'] = $config['instructionsId'] ?? "$id-instructions";
+
+        if (StringHelper::startsWith($input, 'template:')) {
+            $input = static::renderTemplate(substr($input, 9), $config);
+        }
+
+        $fieldset = $config['fieldset'] ?? false;
+        $fieldId = $config['fieldId'] ?? "$id-field";
+        $labelId = $config['labelId'] ?? "$id-" . ($fieldset ? 'legend' : 'label');
         $status = $config['status'] ?? null;
-        $label = isset($config['label']) && $config['label'] !== '__blank__' ? $config['label'] : null;
+        $label = $config['fieldLabel'] ?? $config['label'] ?? null;
+        if ($label === '__blank__') {
+            $label = null;
+        }
         $siteId = Craft::$app->getIsMultiSite() && isset($config['siteId']) ? (int)$config['siteId'] : null;
         if ($siteId) {
             $site = Craft::$app->getSites()->getSiteById($siteId);
@@ -375,6 +423,7 @@ class Cp
         }
         $required = (bool)($config['required'] ?? false);
         $instructions = $config['instructions'] ?? null;
+        $instructionsPosition = $config['instructionsPosition'] ?? 'before';
         $tip = $config['tip'] ?? null;
         $warning = $config['warning'] ?? null;
         $orientation = $config['orientation'] ?? ($site ? $site->getLocale() : Craft::$app->getLocale())->getOrientation();
@@ -404,8 +453,14 @@ class Cp
                 $errors ? 'errors' : null,
             ])
         ], $config['inputContainerAttributes'] ?? []);
+        $instructionsHtml = $instructions
+            ? Html::tag('div', preg_replace('/&amp;(\w+);/', '&$1;', Markdown::process($instructions, 'gfm-comment')), [
+                'id' => $instructionsId,
+                'class' => ['instructions'],
+            ])
+            : '';
 
-        return Html::tag('div',
+        return Html::tag($fieldset ? 'fieldset' : 'div',
             ($status
                 ? Html::tag('div', Html::encode(mb_strtoupper($status[1][0])), [
                     'class' => ['status-badge', $status[0]],
@@ -415,10 +470,10 @@ class Cp
             (($label || $showAttribute)
                 ? Html::tag('div',
                     ($label
-                        ? Html::tag('label', $label, ArrayHelper::merge([
+                        ? Html::tag($fieldset ? 'legend' : 'label', $label, ArrayHelper::merge([
                             'id' => $labelId,
                             'class' => $required ? ['required'] : [],
-                            'for' => $config['id'] ?? null,
+                            'for' => !$fieldset ? $id : null,
                         ], $config['labelAttributes'] ?? []))
                         : '') .
                     ($translatable
@@ -436,8 +491,8 @@ class Cp
                     ($showAttribute
                         ? Html::tag('div', '', [
                             'class' => ['flex-grow'],
-                        ]) . Craft::$app->getView()->renderTemplate('_includes/forms/copytextbtn', [
-                            'id' => "$fieldId-attribute",
+                        ]) . static::renderTemplate('_includes/forms/copytextbtn', [
+                            'id' => "$id-attribute",
                             'class' => ['code', 'small', 'light'],
                             'value' => $config['attribute'],
                         ])
@@ -447,13 +502,9 @@ class Cp
                     ]
                 )
                 : '') .
-            ($instructions
-                ? Html::tag('div', preg_replace('/&amp;(\w+);/', '&$1;', Markdown::process($instructions, 'gfm-comment')), [
-                    'id' => $instructionsId,
-                    'class' => ['instructions'],
-                ])
-                : '') .
-            Html::tag('div', $inputHtml, $inputContainerAttributes) .
+            ($instructionsPosition === 'before' ? $instructionsHtml : '') .
+            Html::tag('div', $input, $inputContainerAttributes) .
+            ($instructionsPosition === 'after' ? $instructionsHtml : '') .
             ($tip
                 ? Html::tag('p', preg_replace('/&amp;(\w+);/', '&$1;', Markdown::processParagraph($tip)), [
                     'class' => ['notice', 'with-icon'],
@@ -465,10 +516,154 @@ class Cp
                 ])
                 : '') .
             ($errors
-                ? Craft::$app->getView()->renderTemplate('_includes/forms/errorList', [
+                ? static::renderTemplate('_includes/forms/errorList', [
                     'errors' => $errors,
                 ])
                 : ''),
             $fieldAttributes);
+    }
+
+    /**
+     * Renders a checkbox field’s HTML.
+     *
+     * Note that unlike the `checkboxField` macro in `_includes/forms.html`, you must set the checkbox label via
+     * `$config['checkboxLabel']`.
+     *
+     * @param array $config
+     * @return string
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 3.6.0
+     */
+    public static function checkboxFieldHtml(array $config): string
+    {
+        $config['id'] = $config['id'] ?? 'checkbox' . mt_rand();
+
+        $config['fieldClass'] = Html::explodeClass($config['fieldClass'] ?? []);
+        $config['fieldClass'][] = 'checkboxfield';
+        $config['instructionsPosition'] = $config['instructionsPosition'] ?? 'after';
+
+        // Don't pass along `label` since it's ambiguous
+        unset($config['label']);
+
+        return static::fieldHtml('template:_includes/forms/checkbox', $config);
+    }
+
+    /**
+     * Renders a checkbox select field’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 3.6.0
+     */
+    public static function checkboxSelectFieldHtml(array $config): string
+    {
+        $config['id'] = $config['id'] ?? 'checkboxselect' . mt_rand();
+        $config['fieldset'] = true;
+        return static::fieldHtml('template:_includes/forms/checkboxSelect', $config);
+    }
+
+    /**
+     * Renders a color field’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 3.6.0
+     */
+    public static function colorFieldHtml(array $config): string
+    {
+        $config['id'] = $config['id'] ?? 'color' . mt_rand();
+        return static::fieldHtml('template:_includes/forms/color', $config);
+    }
+
+    /**
+     * Renders an editable table field’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 3.6.0
+     */
+    public static function editableTableFieldHtml(array $config): string
+    {
+        $config['id'] = $config['id'] ?? 'editabletable' . mt_rand();
+        return static::fieldHtml('template:_includes/forms/editableTable', $config);
+    }
+
+    /**
+     * Renders a lightswitch field’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 3.6.0
+     */
+    public static function lightswitchFieldHtml(array $config): string
+    {
+        $config['id'] = $config['id'] ?? 'lightswitch' . mt_rand();
+
+        $config['fieldClass'] = Html::explodeClass($config['fieldClass'] ?? []);
+        $config['fieldClass'][] = 'lightswitch-field';
+
+        // Don't pass along `label` since it's ambiguous
+        $config['fieldLabel'] = $config['fieldLabel'] ?? $config['label'] ?? null;
+        unset($config['label']);
+
+        return static::fieldHtml('template:_includes/forms/lightswitch', $config);
+    }
+
+    /**
+     * Renders a select input.
+     *
+     * @param array $config
+     * @return string
+     * @since 3.6.0
+     */
+    public static function selectHtml(array $config): string
+    {
+        return static::renderTemplate('_includes/forms/select', $config);
+    }
+
+    /**
+     * Renders a select field’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 3.6.0
+     */
+    public static function selectFieldHtml(array $config): string
+    {
+        $config['id'] = $config['id'] ?? 'select' . mt_rand();
+        return static::fieldHtml('template:_includes/forms/select', $config);
+    }
+
+    /**
+     * Renders a text field’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 3.6.0
+     */
+    public static function textFieldHtml(array $config): string
+    {
+        $config['id'] = $config['id'] ?? 'text' . mt_rand();
+        return static::fieldHtml('template:_includes/forms/text', $config);
+    }
+
+    /**
+     * Renders a textarea field’s HTML.
+     *
+     * @param array $config
+     * @return string
+     * @throws InvalidArgumentException if `$config['siteId']` is invalid
+     * @since 3.6.0
+     */
+    public static function textareaFieldHtml(array $config): string
+    {
+        $config['id'] = $config['id'] ?? 'textarea' . mt_rand();
+        return static::fieldHtml('template:_includes/forms/textarea', $config);
     }
 }

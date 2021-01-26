@@ -26,17 +26,17 @@
         disabled ? 'disabled' : null,
     ]|filter,
     data: {
-        'value': value != '1' ? value : false,
+        value: value != '1' ? value : false,
         'indeterminate-value': indeterminateValue != '-' ? indeterminateValue : false,
-        'target': toggle ?: false,
+        target: toggle ?: false,
         'reverse-target': reverseToggle ?: false,
     },
     type: 'button',
     role: 'checkbox',
     aria: {
         checked: on ? 'true' : (indeterminate ? 'mixed' : 'false'),
-        labelledby: labelId ?? null,
-        describedby: hasLabels ? descriptionId : null,
+        labelledby: labelId ?? false,
+        describedby: [instructionsId ?? null, hasLabels ? descriptionId : null]|filter|join(' ') ?: false,
     },
 }|merge(containerAttributes ?? [], recursive=true) %}
 
@@ -45,14 +45,14 @@
 {% endif %}
 
 {% set input %}
-    <button {{ attr(containerAttributes) }}>
+    {% tag 'button' with containerAttributes %}
         <div class="lightswitch-container">
             <div class="handle"></div>
         </div>
         {% if name is defined -%}
             {{ hiddenInput(name, on ? value : (indeterminate ? indeterminateValue : ''), {disabled: disabled}) }}
         {%- endif %}
-    </button>
+    {% endtag %}
 {% endset %}
 
 {% if hasLabels -%}
