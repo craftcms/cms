@@ -3,7 +3,7 @@
 ## 3.6.0.1 - 2021-01-26
 
 ### Fixed
-- Fixed an error that could occur when validating dates.
+- Fixed an error that could occur when validating dates. ([#7443](https://github.com/craftcms/cms/issues/7443))
 
 ## 3.6.0 - 2021-01-26
 
