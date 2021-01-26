@@ -1,5 +1,14 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.5.19 - 2020-01-26
+
+### Changed
+- The control panel is now fully translated in all supported languages.
+
+### Fixed
+- Fixed a bug where Date fields with existing values were always considered dirty when saving an entry. ([#7404](https://github.com/craftcms/cms/issues/7404))
+- Fixed a bug where it wasn’t possible for non-admins to rename, replace, edit, or delete their own temporary assets. ([#7420](https://github.com/craftcms/cms/issues/7420))
+
 ## 3.5.18 - 2021-01-19
 
 ### Changed
