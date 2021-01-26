@@ -1717,7 +1717,7 @@ return [
     '{attribute} should contain at most {max, number} {max, plural, one{item} other{items}}.' => '{attribute} باید حداکثر شامل {max, number} {max, plural, one{آیتم} other{آیتم}} باشد.',
     '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.' => '{attribute} باید حداکثر شامل {max, number} {max, plural, one{انتخاب} other{انتخاب}} باشد.',
     '{attribute} should contain {count, number} {count, plural, one{item} other{items}}.' => '{attribute} باید شامل {count, number} {count, plural, one{آیتم} other{آیتم}} باشد.',
-    '{attribute} “{value}” has already been taken.' => '{attribute} "{value}" از قبل گرفته شده است.',
+    '{attribute} “{value}” has already been taken.' => '{attribute} “{value}” از قبل گرفته شده است.',
     '{ctrl}C to copy.' => 'برای کپی از {ctrl}C استفاده نمایید.',
     '{edition} edition' => '{edition} edition',
     '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}',
