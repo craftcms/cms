@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.6.0.1 - 2021-01-26
+
+### Fixed
+- Fixed an error that could occur when validating dates.
+
 ## 3.6.0 - 2021-01-26
 
 > {warning} Read through the [Upgrading to Craft 3.6](https://craftcms.com/knowledge-base/upgrading-to-craft-3-6) guide before updating.
@@ -182,7 +187,7 @@
 - Deprecated the `purgeUnsavedDraftsDuration` config setting.
 - Deprecated the `siteName` config setting. Sites’ Name settings should be set to environment variables instead.
 - Deprecated the `siteUrl` config setting. Sites’ Base URL settings should be set to aliases or environment variables instead. ([#3205](https://github.com/craftcms/cms/issues/3205))
-- Deprecated the `relatedToAll` GraphQL query argument.
+- Deprecated the `relatedToAll` GraphQL query argument. `relatedTo: ["and", ...ids]` should be used instead.
 - Deprecated the `isUnsavedDraft` GraphQL field.
 - Deprecated `craft\base\Element::getIsUnsavedDraft()`. `getIsUnpublishedDraft()` should be used instead.
 - Deprecated `craft\base\VolumeInterface::createDir()`. `createDirectory()` should be used instead.
