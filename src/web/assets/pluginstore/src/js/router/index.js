@@ -6,6 +6,7 @@ import UpgradeCraft from '../pages/upgrade-craft'
 import DeveloperId from '../pages/developer/_id'
 import FeaturedHandle from '../pages/featured/_handle'
 import BuyPlugin from '../pages/buy/_plugin'
+import BuyAllTrials from '../pages/buy-all-trials'
 import Tests from '../pages/tests'
 import NotFound from '../pages/_not-found'
 import Search from '../pages/search'
@@ -18,8 +19,8 @@ export default new VueRouter({
 
     mode: 'history',
 
-    scrollBehavior () {
-        return { x: 0, y: 0 }
+    scrollBehavior() {
+        return {x: 0, y: 0}
     },
 
     routes: [
@@ -57,6 +58,11 @@ export default new VueRouter({
             path: '/buy/:plugin/:edition',
             name: 'BuyPlugin',
             component: BuyPlugin,
+        },
+        {
+            path: '/buy-all-trials',
+            name: 'BuyAllTrials',
+            component: BuyAllTrials,
         },
         {
             path: '/search',

@@ -1,5 +1,6 @@
-import {init, CraftGraphiQL} from './CraftGraphiQL.js';
+import {init} from './CraftGraphiQL.js';
 import ReactDOM from 'react-dom';
+
 require('whatwg-fetch');
 
 function initGraphiQl(domTarget) {
@@ -33,6 +34,6 @@ function initGraphiQl(domTarget) {
     ReactDOM.render(init(graphQLFetcher, schemas, selectedSchema), domTarget);
 }
 
-document.addEventListener("DOMContentLoaded", function(){
+document.addEventListener("DOMContentLoaded", function() {
     initGraphiQl(document.getElementById('graphiql'));
 });

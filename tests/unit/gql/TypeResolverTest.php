@@ -21,11 +21,11 @@ use craft\gql\resolvers\elements\MatrixBlock as MatrixBlockResolver;
 use craft\gql\resolvers\elements\User as UserResolver;
 use craft\helpers\StringHelper;
 use craft\test\mockclasses\elements\ExampleElement;
-use crafttests\fixtures\AssetsFixture;
+use crafttests\fixtures\AssetFixture;
 use crafttests\fixtures\EntryFixture;
 use crafttests\fixtures\GlobalSetFixture;
 use crafttests\fixtures\GqlSchemasFixture;
-use crafttests\fixtures\UsersFixture;
+use crafttests\fixtures\UserFixture;
 use GraphQL\Type\Definition\ResolveInfo;
 
 class TypeResolverTest extends Unit
@@ -54,10 +54,10 @@ class TypeResolverTest extends Unit
                 'class' => EntryFixture::class
             ],
             'assets' => [
-                'class' => AssetsFixture::class
+                'class' => AssetFixture::class
             ],
             'users' => [
-                'class' => UsersFixture::class
+                'class' => UserFixture::class
             ],
             'globalSets' => [
                 'class' => GlobalSetFixture::class
@@ -129,7 +129,7 @@ class TypeResolverTest extends Unit
 
         $filterParameters = [];
 
-        $resolveInfo = $this->make(ResolveInfo::class, ['fieldName' => 'someField']);
+        $resolveInfo = $this->make(ResolveInfo::class, ['fieldName' => 'someField', 'fieldNodes' => [null]]);
 
         $resolvedField = $resolverClass::resolve($sourceElement, $filterParameters, null, $resolveInfo);
 

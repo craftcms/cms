@@ -68,11 +68,11 @@ class DraftsTest extends Unit
     }
 
     /**
-     * Test applying draft changes to an entry
+     * Test publishing draft changes to an entry
      *
      * @throws Throwable
      */
-    public function testApplyDraft()
+    public function testPublishDraft()
     {
         $entry = Entry::find()
             ->title('Pending 1')
@@ -85,7 +85,7 @@ class DraftsTest extends Unit
         $draft->slug = 'not-pending';
 
         // Houston.... Ready for take-off
-        $this->drafts->applyDraft($draft);
+        $this->drafts->publishDraft($draft);
 
         // Re-get the entry (By the same id)
         $newEntry = Entry::find()->id($entry->id)->one();

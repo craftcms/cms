@@ -53,6 +53,8 @@ class TokenTest extends Unit
         self::assertSame(0, $tokenRec->usageCount);
         self::assertSame($dt->format('Y-m-d H:i:s'), $tokenRec->expiryDate);
         self::assertEquals(32, strlen($token));
+
+        $tokenRec->delete();
     }
 
     /**
@@ -76,6 +78,8 @@ class TokenTest extends Unit
         self::assertNull($tokenRec->usageLimit);
         self::assertNull($tokenRec->usageCount);
         self::assertSame($expiryDate->format('Y-m-d H:i:s'), $tokenRec->expiryDate);
+
+        $tokenRec->delete();
     }
 
     /**

@@ -12,6 +12,7 @@ use craft\base\EagerLoadingFieldInterface;
 use craft\base\ElementInterface;
 use craft\base\GqlInlineFragmentFieldInterface;
 use craft\elements\db\ElementQuery;
+use craft\gql\ArgumentManager;
 use craft\gql\ElementQueryConditionBuilder;
 use craft\helpers\Gql as GqlHelper;
 use GraphQL\Type\Definition\ResolveInfo;
@@ -24,16 +25,6 @@ use GraphQL\Type\Definition\ResolveInfo;
  */
 abstract class ElementResolver extends Resolver
 {
-    /**
-     * @inheritdoc
-     */
-    public static function getArrayableArguments(): array
-    {
-        return array_merge(parent::getArrayableArguments(), [
-            'siteId',
-        ]);
-    }
-
     /**
      * Resolve an element query to a single result.
      *
@@ -86,7 +77,10 @@ abstract class ElementResolver extends Resolver
      */
     protected static function prepareElementQuery($source, array $arguments, $context, ResolveInfo $resolveInfo)
     {
-        $arguments = self::prepareArguments($arguments);
+        /** @var ArgumentManager $argumentManager */
+        $argumentManager = empty($context['argumentManager']) ? Craft::createObject(['class' => ArgumentManager::class]) : $context['argumentManager'];
+        $arguments = $argumentManager->prepareArguments($arguments);
+
         $fieldName = GqlHelper::getFieldNameWithAlias($resolveInfo, $source, $context);
 
         $query = static::prepareQuery($source, $arguments, $fieldName);
@@ -104,7 +98,7 @@ abstract class ElementResolver extends Resolver
 
             // This will happen if something is either dynamically added or is inside an block element that didn't support eager-loading
             // and broke the eager-loading chain. In this case Craft has to provide the relevant context so the condition builder knows where it's at.
-            if (($context !== 'global' && $field instanceof GqlInlineFragmentFieldInterface) || $field instanceof EagerLoadingFieldInterface) {
+            if (($fieldContext !== 'global' && $field instanceof GqlInlineFragmentFieldInterface) || $field instanceof EagerLoadingFieldInterface) {
                 $parentField = $field;
             }
         }
@@ -112,6 +106,7 @@ abstract class ElementResolver extends Resolver
         /** @var ElementQueryConditionBuilder $conditionBuilder */
         $conditionBuilder = empty($context['conditionBuilder']) ? Craft::createObject(['class' => ElementQueryConditionBuilder::class]) : $context['conditionBuilder'];
         $conditionBuilder->setResolveInfo($resolveInfo);
+        $conditionBuilder->setArgumentManager($argumentManager);
 
         $conditions = $conditionBuilder->extractQueryConditions($parentField);
 
@@ -122,26 +117,20 @@ abstract class ElementResolver extends Resolver
             }
         }
 
-        return $query;
-    }
+        // Apply max result config
+        $maxGraphqlResults = Craft::$app->getConfig()->getGeneral()->maxGraphqlResults;
 
-    /**
-     * @inheritdoc
-     */
-    public static function prepareArguments(array $arguments): array
-    {
-        $arguments = parent::prepareArguments($arguments);
-
-        if (isset($arguments['relatedToAll'])) {
-            $ids = (array)$arguments['relatedToAll'];
-            $ids = array_map(function($value) {
-                return ['element' => $value];
-            }, $ids);
-            $arguments['relatedTo'] = array_merge(['and'], $ids);
-            unset($arguments['relatedToAll']);
+        // Reset negative limit to zero
+        if ((int)$query->limit < 0) {
+            $query->limit(0);
         }
 
-        return $arguments;
+        if ($maxGraphqlResults > 0) {
+            $queryLimit = is_null($query->limit) ? $maxGraphqlResults : min($maxGraphqlResults, $query->limit);
+            $query->limit($queryLimit);
+        }
+
+        return $query;
     }
 
     /**

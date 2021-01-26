@@ -1744,7 +1744,7 @@ abstract class Element extends Component implements ElementInterface
     public function validateCustomFieldAttribute(string $attribute, array $params = null)
     {
         /** @var array|null $params */
-        list($field, $method, $fieldParams) = $params;
+        [$field, $method, $fieldParams] = $params;
 
         if (is_string($method)) {
             $method = [$field, $method];
@@ -1875,6 +1875,18 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @inheritdoc
+     */
+    public function getIsUnpublishedDraft(): bool
+    {
+        return $this->getIsUnsavedDraft();
+    }
+
+    /**
+     * Returns whether the element is an unpublished draft.
+     *
+     * @return bool
+     * @since 3.2.0
+     * @deprecated in 3.6.0. Use [[getIsUnpublishedDraft()]] instead.
      */
     public function getIsUnsavedDraft(): bool
     {

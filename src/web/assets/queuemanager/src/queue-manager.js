@@ -13,7 +13,7 @@
  */
 new Vue({
     el: "#main",
-    delimiters: ['[[',']]'],
+    delimiters: ['[[', ']]'],
     data() {
         return {
             loading: false,
@@ -84,7 +84,7 @@ new Vue({
                     history.pushState({jobId: jobId}, '', this.url(jobId))
                 }
 
-                axios.get(Craft.getActionUrl('queue/get-job-details?id='+jobId+'', {})).then(response => {
+                axios.get(Craft.getActionUrl('queue/get-job-details?id=' + jobId + '', {})).then(response => {
                     if (response.data.id != this.activeJobId) {
                         resolve(false)
                         return

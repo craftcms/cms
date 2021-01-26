@@ -16,22 +16,13 @@ use craft\records\VolumeFolder;
 /**
  * Class AssetFixture.
  *
- * Credit to: https://github.com/robuust/craft-fixtures
- *
- * @todo https://github.com/robuust/craft-fixtures/blob/master/src/base/AssetFixture.php#L60 ? Why override?
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Robuust digital | Bob Olde Hampsink <bob@robuust.digital>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since  3.2
  */
-abstract class AssetFixture extends ElementFixture
+abstract class AssetFixture extends BaseElementFixture
 {
-    /**
-     * @inheritdoc
-     */
-    public $modelClass = Asset::class;
-
     /**
      * @var array
      */
@@ -88,25 +79,6 @@ abstract class AssetFixture extends ElementFixture
     }
 
     /**
-     * Get asset model.
-     *
-     * @param array $data
-     * @return ElementInterface
-     */
-    public function getElement(array $data = null)
-    {
-        /* @var Asset $element */
-        $element = parent::getElement($data);
-
-        if ($data === null) {
-            $element->avoidFilenameConflicts = true;
-            $element->setScenario(Asset::SCENARIO_REPLACE);
-        }
-
-        return $element;
-    }
-
-    /**
      * @inheritdoc
      */
     public function beforeLoad()
@@ -131,8 +103,8 @@ abstract class AssetFixture extends ElementFixture
     /**
      * @inheritdoc
      */
-    protected function isPrimaryKey(string $key): bool
+    protected function createElement(): ElementInterface
     {
-        return parent::isPrimaryKey($key) || in_array($key, ['volumeId', 'folderId', 'filename', 'title']);
+        return new Asset();
     }
 }

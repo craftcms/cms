@@ -16,6 +16,7 @@ use craft\gql\TypeManager;
 use craft\gql\types\DateTime;
 use craft\gql\types\generators\AssetType;
 use craft\helpers\Gql;
+use craft\services\Gql as GqlService;
 use GraphQL\Type\Definition\InterfaceType;
 use GraphQL\Type\Definition\Type;
 
@@ -115,13 +116,37 @@ class Asset extends Element
                 'name' => 'height',
                 'args' => Transform::getArguments(),
                 'type' => Type::int(),
-                'description' => 'The height in pixels or null if it\'s not an image.'
+                'description' => 'The height in pixels or null if it\'s not an image.',
+                'complexity' => function($childrenComplexity, $args) {
+                    if (empty($args)) {
+                        return $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_SIMPLE_FIELD;
+                    }
+
+                    // Likely to be already generated
+                    if (!empty($args['handle']) || !empty($args['transform'])) {
+                        return $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD;
+                    }
+
+                    return $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_CPU_HEAVY;
+                },
             ],
             'width' => [
                 'name' => 'width',
                 'args' => Transform::getArguments(),
                 'type' => Type::int(),
-                'description' => 'The width in pixels or null if it\'s not an image.'
+                'description' => 'The width in pixels or null if it\'s not an image.',
+                'complexity' => function($childrenComplexity, $args) {
+                    if (empty($args)) {
+                        return $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_SIMPLE_FIELD;
+                    }
+
+                    // Likely to be already generated
+                    if (!empty($args['handle']) || !empty($args['transform'])) {
+                        return $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD;
+                    }
+
+                    return $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_CPU_HEAVY;
+                },
             ],
             'img' => [
                 'name' => 'img',
@@ -144,7 +169,19 @@ class Asset extends Element
                 'name' => 'url',
                 'args' => Transform::getArguments(),
                 'type' => Type::string(),
-                'description' => 'The full URL of the asset. This field accepts the same fields as the `transform` directive.'
+                'description' => 'The full URL of the asset. This field accepts the same fields as the `transform` directive.',
+                'complexity' => function($childrenComplexity, $args) {
+                    if (empty($args)) {
+                        return $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_SIMPLE_FIELD;
+                    }
+
+                    // Likely to be already generated
+                    if (!empty($args['handle']) || !empty($args['transform'])) {
+                        return $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD;
+                    }
+
+                    return $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_CPU_HEAVY;
+                },
             ],
             'mimeType' => [
                 'name' => 'mimeType',
@@ -165,13 +202,19 @@ class Asset extends Element
                 'name' => 'prev',
                 'type' => self::getType(),
                 'args' => AssetArguments::getArguments(),
-                'description' => 'Returns the previous element relative to this one, from a given set of criteria. CAUTION: Applying arguments to this field severely degrades the performance of the query.',
+                'description' => 'Returns the previous element relative to this one, from a given set of criteria.',
+                'complexity' => function($childrenComplexity, $args) {
+                    return $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_NPLUS1 * (int)!empty($args);
+                },
             ],
             'next' => [
                 'name' => 'next',
                 'type' => self::getType(),
                 'args' => AssetArguments::getArguments(),
-                'description' => 'Returns the next element relative to this one, from a given set of criteria. CAUTION: Applying arguments to this field severely degrades the performance of the query.',
+                'description' => 'Returns the next element relative to this one, from a given set of criteria.',
+                'complexity' => function($childrenComplexity, $args) {
+                    return $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_NPLUS1 * (int)!empty($args);
+                },
             ],
         ]), self::getName());
     }

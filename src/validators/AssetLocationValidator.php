@@ -94,7 +94,7 @@ class AssetLocationValidator extends Validator
     public function validateAttribute($model, $attribute)
     {
         /** @var Asset $model */
-        list($folderId, $filename) = Assets::parseFileLocation($model->$attribute);
+        [$folderId, $filename] = Assets::parseFileLocation($model->$attribute);
 
         // Figure out which of them has changed
         $hasNewFolderId = $folderId != $model->{$this->folderIdAttribute};

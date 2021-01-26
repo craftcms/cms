@@ -100,6 +100,9 @@ class Tokens extends Component
             ->one();
 
         if (!$result) {
+            // Remove it from the request  so it doesn’t get added to generated URLs
+            Craft::$app->getRequest()->setToken(null);
+
             return false;
         }
 
@@ -112,6 +115,9 @@ class Tokens extends Component
             } else {
                 // Just delete it
                 $this->deleteTokenById($result['id']);
+
+                // Remove it from the request as well so it doesn’t get added to generated URLs
+                Craft::$app->getRequest()->setToken(null);
             }
         }
 

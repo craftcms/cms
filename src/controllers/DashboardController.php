@@ -448,7 +448,7 @@ class DashboardController extends Controller
             $parts[] = [
                 'name' => 'attachments[0]',
                 'contents' => fopen($zipPath, 'rb'),
-                'filename' => 'SupportAttachment-' . FileHelper::sanitizeFilename(Craft::$app->getSites()->getPrimarySite()->name) . '.zip',
+                'filename' => 'SupportAttachment-' . FileHelper::sanitizeFilename(Craft::$app->getSites()->getPrimarySite()->getName()) . '.zip',
             ];
         } catch (\Throwable $e) {
             Craft::warning('Error creating support zip: ' . $e->getMessage(), __METHOD__);

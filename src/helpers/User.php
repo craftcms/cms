@@ -23,7 +23,7 @@ class User
      * @param UserElement|null $user
      * @return string
      */
-    public static function getLoginFailureMessage(string $authError = null, UserElement $user = null): string
+    public static function getLoginFailureMessage(?string $authError = null, ?UserElement $user = null): string
     {
         switch ($authError) {
             case UserElement::AUTH_PENDING_VERIFICATION:

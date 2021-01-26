@@ -143,7 +143,7 @@ class Images extends Component
         // Imagick::getVersion() is static only since Imagick PECL extension 3.2.0b1, so instantiate it.
         /** @noinspection PhpStaticAsDynamicMethodCallInspection */
         $versionString = \Imagick::getVersion()['versionString'];
-        list($this->_imagickVersion) = sscanf($versionString, 'ImageMagick %s %04d-%02d-%02d %s %s');
+        [$this->_imagickVersion] = sscanf($versionString, 'ImageMagick %s %04d-%02d-%02d %s %s');
 
         return $this->_imagickVersion;
     }

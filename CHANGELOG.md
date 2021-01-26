@@ -1,5 +1,237 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.6.0 - 2020-01-26
+
+> {warning} Read through the [Upgrading to Craft 3.6](https://craftcms.com/knowledge-base/upgrading-to-craft-3-6) guide before updating.
+
+### Added
+- Craft now requires PHP 7.2.5 or later.
+- Commercial plugins now receive license keys automatically when installed as trials.
+- It’s now possible for admins to purchase Craft and plugin licenses when `allowAdminChanges` is disabled.
+- It’s now possible to browse the Plugin Store when `allowAdminChanges` is disabled.
+- Added tablet and phone viewport emulation to Live Preview (Craft Pro only.) ([#1006](https://github.com/craftcms/cms/issues/1006))
+- Entries now begin life as “unpublished drafts” rather than “unsaved drafts”. They are no longer ephemeral; they will continue to exist until explicitly published or deleted. ([#5661](https://github.com/craftcms/cms/issues/5661), [#7216](https://github.com/craftcms/cms/issues/7216))
+- It’s now possible to delete entries for a specific site, if their section’s propagation method is set to “Let each entry choose which sites it should be saved to”. ([#7190](https://github.com/craftcms/cms/issues/7190))
+- Added the “Copy impersonation URL” user action, which generates a URL that can be pasted into a private window to impersonate the user without losing the current session. ([#7281](https://github.com/craftcms/cms/issues/7281))
+- User indexes can now include a “Groups” column. ([#7211](https://github.com/craftcms/cms/issues/7211))
+- Volumes now have “Title Translation Method” and “Title Translation Key Format” settings, like entry types. ([#7135](https://github.com/craftcms/cms/issues/7135))
+- It’s now possible to set sites’ Name settings to environment variables.
+- URL fields now have an “Allowed URL Types” setting, which adds the ability to accept telephone and email URLs. ([#5497](https://github.com/craftcms/cms/issues/5497))
+- Added the “Captions/Subtitles” file kind. ([#7304](https://github.com/craftcms/cms/issues/7304))
+- Added the `users/list-admins` and `users/set-password` commands. ([#7067](https://github.com/craftcms/cms/issues/7067))
+- Added the `disableGraphqlTransformDirective` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
+- Added the `enableGraphqlIntrospection` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
+- Added the `handleCasing` config setting, which determines the default casing that should be used when autogenerating component handles. ([#4276](https://github.com/craftcms/cms/issues/4276))
+- Added the `maxGraphqlComplexity` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
+- Added the `maxGraphqlDepth` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
+- Added the `maxGraphqlResults` config setting. ([#6466](https://github.com/craftcms/cms/issues/6466))
+- Added the `rasterizeSvgThumbs` config setting. ([#7146](https://github.com/craftcms/cms/issues/7146))
+- Added the `sanitizeCpImageUploads` config setting, which determines whether images uploaded via the control panel should be sanitized. ([#3060](https://github.com/craftcms/cms/issues/3060))
+- Added the `{% tag %}` Twig tag.
+- Added the `withGroups` user query param.
+- Added the `relatedToAssets`, `relatedToCategories`, `relatedToEntries`, `relatedToTags`, and `relatedToUsers` arguments to GraphQL queries. ([#7110](https://github.com/craftcms/cms/issues/7110))
+- Added the `isUnpublishedDraft` GraphQL field.
+- Added `craft\base\ApplicationTrait::getFormattingLocale()`, which returns the locale that should be used for date/time formatting.
+- Added `craft\base\ElementExporterInterface::isFormattable()`.
+- Added `craft\base\ElementInterface::getIsUnpublishedDraft()`.
+- Added `craft\base\FieldInterface::includeInGqlSchema()`. ([#7244](https://github.com/craftcms/cms/pull/7244))
+- Added `craft\base\FieldInterface::useFieldset()`, which custom fields can override to return `true` if a `<fieldset>` and `<legend>` should be used, rather than a `<div>` and `<label>`.
+- Added `craft\base\VolumeInterface::createDirectory()`.
+- Added `craft\base\VolumeInterface::deleteDirectory()`.
+- Added `craft\base\VolumeInterface::getDateModified()`.
+- Added `craft\base\VolumeInterface::getFileSize()`.
+- Added `craft\base\VolumeInterface::renameDirectory()`.
+- Added `craft\base\VolumeTrait::$titleTranslationKeyFormat`.
+- Added `craft\base\VolumeTrait::$titleTranslationMethod`.
+- Added `craft\console\Controller::passwordPrompt()`.
+- Added `craft\console\Request::getHadToken()`.
+- Added `craft\console\Request::getSiteToken()`.
+- Added `craft\console\Request::setToken()`.
+- Added `craft\controllers\BaseEntriesController::enforceDeleteEntryPermissions()`.
+- Added `craft\elements\db\ElementQueryInterface::afterPopulate()`.
+- Added `craft\elements\db\ElementQueryInterface::createElement()`.
+- Added `craft\elements\Entry::EVENT_DEFINE_ENTRY_TYPES`. ([#7136](https://github.com/craftcms/cms/issues/7136))
+- Added `craft\elements\Entry::getAvailableEntryTypes()`.
+- Added `craft\events\CreateFieldLayoutFormEvent`.
+- Added `craft\events\DefineEntryTypesEvent`.
+- Added `craft\events\RegisterGqlArgumentHandlersEvent`.
+- Added `craft\events\SearchEvent::$results`. ([#7237](https://github.com/craftcms/cms/issues/7237))
+- Added `craft\fieldlayoutelements\AssetTitleField`.
+- Added `craft\fieldlayoutelements\BaseField::useFieldset()`.
+- Added `craft\fields\Url::TYPE_EMAIL`.
+- Added `craft\fields\Url::TYPE_TEL`.
+- Added `craft\fields\Url::TYPE_URL`.
+- Added `craft\gql\ArgumentManager`.
+- Added `craft\gql\base\ArgumentHandler`.
+- Added `craft\gql\base\ArgumentHandlerInterface`.
+- Added `craft\gql\base\Generator`.
+- Added `craft\gql\base\RelationArgumentHandler`.
+- Added `craft\gql\ElementQueryConditionBuilder::setArgumentManager()`.
+- Added `craft\gql\handlers\RelatedAssets`.
+- Added `craft\gql\handlers\RelatedCategories`.
+- Added `craft\gql\handlers\RelatedEntries`.
+- Added `craft\gql\handlers\RelatedTags`.
+- Added `craft\gql\handlers\RelatedUsers`.
+- Added `craft\gql\types\input\criteria\Asset`.
+- Added `craft\gql\types\input\criteria\Category`.
+- Added `craft\gql\types\input\criteria\Entry`.
+- Added `craft\gql\types\input\criteria\Tag`.
+- Added `craft\gql\types\input\criteria\User`.
+- Added `craft\helpers\App::createFormattingLocale()`.
+- Added `craft\helpers\App::phpSizeToBytes()`.
+- Added `craft\helpers\Cp::checkboxFieldHtml()`.
+- Added `craft\helpers\Cp::checkboxSelectFieldHtml()`.
+- Added `craft\helpers\Cp::colorFieldHtml()`.
+- Added `craft\helpers\Cp::editableTableFieldHtml()`.
+- Added `craft\helpers\Cp::lightswitchFieldHtml()`.
+- Added `craft\helpers\Cp::renderTemplate()`.
+- Added `craft\helpers\Cp::selectFieldHtml()`.
+- Added `craft\helpers\Cp::selectHtml()`.
+- Added `craft\helpers\Cp::textareaFieldHtml()`.
+- Added `craft\helpers\Cp::textFieldHtml()`.
+- Added `craft\helpers\Diff`.
+- Added `craft\helpers\Gql::eagerLoadComplexity()`.
+- Added `craft\helpers\Gql::nPlus1Complexity()`.
+- Added `craft\helpers\Gql::singleQueryComplexity()`.
+- Added `craft\helpers\Template::paginateQuery()`.
+- Added `craft\i18n\I18N::validateAppLocaleId()`.
+- Added `craft\i18n\Locale::setDateTimeFormats()`. ([#7394](https://github.com/craftcms/cms/issues/7394))
+- Added `craft\log\Dispatcher`.
+- Added `craft\models\FieldLayout::EVENT_CREATE_FORM`. ([#7258](https://github.com/craftcms/cms/issues/7258))
+- Added `craft\models\Site::getName()`.
+- Added `craft\models\Site::setBaseUrl()`.
+- Added `craft\models\Site::setName()`.
+- Added `craft\mutex\MysqlMutex`.
+- Added `craft\mutex\PgsqlMutex`.
+- Added `craft\services\Assets::$generatePendingTransformsViaQueue`. ([#7360](https://github.com/craftcms/cms/issues/7360))
+- Added `craft\services\Drafts::EVENT_AFTER_APPLY_DRAFT`.
+- Added `craft\services\Drafts::EVENT_BEFORE_APPLY_DRAFT`.
+- Added `craft\services\Drafts::publishDraft()`.
+- Added `craft\services\Globals::deleteSet()`.
+- Added `craft\services\Globals::reset()`.
+- Added `craft\services\Gql::GRAPHQL_COMPLEXITY_CPU_HEAVY`.
+- Added `craft\services\Gql::GRAPHQL_COMPLEXITY_EAGER_LOAD`.
+- Added `craft\services\Gql::GRAPHQL_COMPLEXITY_NPLUS1`.
+- Added `craft\services\Gql::GRAPHQL_COMPLEXITY_QUERY`.
+- Added `craft\services\Gql::GRAPHQL_COMPLEXITY_SIMPLE_FIELD`.
+- Added `craft\services\Structures::applyBranchLimitToElements()`.
+- Added `craft\services\Structures::fillGapsInElements()`.
+- Added `craft\test\ActiveFixture`.
+- Added `craft\test\DbFixtureTrait`.
+- Added `craft\test\fixtures\elements\BaseContentFixture`.
+- Added `craft\test\fixtures\elements\BaseElementFixture`.
+- Added `craft\test\TestSetup::SITE_URL`.
+- Added `craft\validators\UrlValidator::URL_PATTERN`.
+- Added `craft\web\Request::getHadToken()`.
+- Added `craft\web\Request::getSiteToken()`.
+- Added `craft\web\Request::setToken()`.
+- Added the `Craft.index()` JavaScript method.
+
+### Changed
+- Relational fields now include all related elements’ titles as search keywords, including disabled elements. ([#7079](https://github.com/craftcms/cms/issues/7079))
+- Improved the performance of project config change diffs. ([#7218](https://github.com/craftcms/cms/issues/7218))
+- Improved the accessibility of info icons.
+- Checkbox and radio button group fields now use `<fieldset>`s and `<legend>`s throughout the control panel.
+- Field containers no longer set the `aria-describedby` attribute, leaving it up to the actual inputs to do so. ([#7365](https://github.com/craftcms/cms/issues/7365))
+- Number field settings and input values are now fully formatted, unless the Preview Format setting is set to “Unformatted”.
+- The Settings → Plugin page now shows which developer created each plugin. ([#7254](https://github.com/craftcms/cms/issues/7254))
+- Field layout designers will no longer create a new tab if no tab name is entered in the prompt. ([#7333](https://github.com/craftcms/cms/issues/7333))
+- Site URLs that are generated on the front-end of disabled sites now include the `siteToken` param, if one was passed to the current page. ([#7264](https://github.com/craftcms/cms/issues/7264))
+- Mutex lock names are now prefixed with the application ID, to avoid lock conflicts if two Craft installs shared the same database. ([#7384](https://github.com/craftcms/cms/issues/7384))
+- Action URLs are now always based on the control panel URL when running Craft in headless mode. ([#5553](https://github.com/craftcms/cms/issues/5553))
+- Renamed the `backup` and `restore` commands to `db/backup` and `db/restore`. ([#7023](https://github.com/craftcms/cms/issues/7023))
+- The `migrate/all` command now lists the migrations that will be applied. ([#7381](https://github.com/craftcms/cms/issues/7381))
+- The `project-config/apply` command now displays a list of changes it is applying. ([#7235](https://github.com/craftcms/cms/issues/7235))
+- The `allowedFileExtensions` config setting now includes several file extensions used by caption and subtitle file formats by default. ([#7304](https://github.com/craftcms/cms/issues/7304))
+- When applying project config changes, Craft now installs new plugins _before_ uninstalling removed plugins. ([#7436](https://github.com/craftcms/cms/issues/7436))
+- The `currency`, `filesize`, `number`, `percentage`, and `timestamp` Twig filters now return the passed-in value verbatim if it wasn’t a valid number.
+- The `withoutKey` Twig filter can now accept an array, for removing multiple keys at once. ([#7230](https://github.com/craftcms/cms/issues/7230))
+- It’s now possible to add new log targets by overriding `components.log.targets` in `config/app.php`, rather than the entire `log` component config.
+- The `_includes/forms/field.html` control panel template and `craft\helpers\Cp::fieldHtml()` now accept a `fieldset` variable/config key, which can be set to `true` to cause the resulting field to be a `<fieldset>` instead of a `<div>`, and the label to be a `<legend>` instead of a `<label>`.
+- The `_includes/forms/field.html` control panel template and `craft\helpers\Cp::fieldHtml()` now accept an `instructionsPosition` variable/config key, which can be set to `'after'` to cause the field instructions to be rerdered after the input instead of before.
+- The `_includes/forms/field.html` control panel template and `craft\helpers\Cp::fieldHtml()` now accept a `fieldLabel` variable/config key, which will take precedence over `label`.
+- The `checkboxField` macro within the `_includes/forms.html` control panel template now returns a `<fieldset>` if a `fieldLabel` config key was passed.
+- `craft\base\ElementExporterInterface::export()` can now return raw response data, a callable, or a resource, if `isFormattable()` returns `false`. If a callable or resource is returned, it will be streamed to the browser. ([#7148](https://github.com/craftcms/cms/issues/7148))
+- `craft\behaviors\EnvAttributeParserBehavior::$attributes` can now be set to an array with key/value pairs, where the key is the attribute name, and the value is the raw (unparsed) value, or a callable that returns the raw value.
+- `craft\behaviors\EnvAttributeParserBehavior::$attributes` can now be set to an array with key/value pairs, where the key is the attribute name, and the value is the raw (unparsed) value, or a callable that returns the raw value.
+- `craft\db\Connection::getPrimaryKeyName()`, `getForeignKeyName()`, and `getIndexName()` now generate completely random object names, rather than basing them on a table name, etc. ([#7153](https://github.com/craftcms/cms/issues/7153))
+- `craft\base\ApplicationTrait::getLocale()` now returns the same locale that the application language is set to.
+- `craft\helpers\Cp::fieldHtml()` now accepts a control panel template path, prefixed with `template:`.
+- `craft\helpers\Gql::isSchemaAwareOf()`, `extractAllowedEntitiesFromSchema()`, `canSchema()`, `extractEntityAllowedActions()`, `canMutateEntries()`, `canMutateTags()`, `canMutateGlobalSets()`, `canMutateCategories()`, `canMutateAssets()`, `canQueryEntries()`, `canQueryAssets()`, `canQueryCategories()`, `canQueryTags()`, `canQueryGlobalSets()`, and `canQueryUsers()` now have `$schema` arguments.
+- `craft\models\Site::$baseUrl` is now a magic property, which returns the parsed base URL. ([#3964](https://github.com/craftcms/cms/issues/3964))
+- `craft\models\Site::$name` is now a magic property, which returns the parsed site name. ([#3964](https://github.com/craftcms/cms/issues/3964))
+- `craft\models\Site::getBaseUrl()` now has a `$parse` argument, which can be set to `false` to return the raw (unparsed) base URL.
+- `craft\services\Composer::install()` no longer has an `$allowlist` argument.
+- `craft\services\Gql::getValidationRules()` now has an `$isIntrospectionQuery` argument.
+- `Craft.formatNumber()` and other D3-based number formatting now uses a dynamically-generated locale definition based on info pulled from the application’s formatting locale. ([#7341](https://github.com/craftcms/cms/issues/7341))
+- Craft no longer reports PHP deprecation errors.
+- Exception JSON responses now include `exception`, `file`, `line`, and `trace` keys. ([#7406](https://github.com/craftcms/cms/issues/7406))
+- GraphQL queries now support eager-loading for arguments provided as input objects.
+- Made it easier to extend Craft’s Codeception testing module with custom code. ([#7339](https://github.com/craftcms/cms/issues/7339))
+- Updated Yii to 2.0.40.
+- Updated Guzzle to 7.x, for projects that don’t have any plugins that require Guzzle 6. ([#6997](https://github.com/craftcms/cms/issues/6997))
+- Updated Composer to 2.0.8.
+- Updated LitEmoji to 2.x.
+- Updated the Symfony Yaml component to 5.x.
+- Updated svg-sanitizer to 0.14.
+- Updated webonyx/graphql-php to 14.x.
+
+### Deprecated
+- Deprecated the `backup` and `restore` commands.
+- Deprecated the `purgeUnsavedDraftsDuration` config setting.
+- Deprecated the `siteName` config setting. Sites’ Name settings should be set to environment variables instead.
+- Deprecated the `siteUrl` config setting. Sites’ Base URL settings should be set to aliases or environment variables instead. ([#3205](https://github.com/craftcms/cms/issues/3205))
+- Deprecated the `relatedToAll` GraphQL query argument.
+- Deprecated the `isUnsavedDraft` GraphQL field.
+- Deprecated `craft\base\Element::getIsUnsavedDraft()`. `getIsUnpublishedDraft()` should be used instead.
+- Deprecated `craft\base\VolumeInterface::createDir()`. `createDirectory()` should be used instead.
+- Deprecated `craft\base\VolumeInterface::deleteDir()`. `deleteDirectory()` should be used instead.
+- Deprecated `craft\base\VolumeInterface::getFileMetadata()`. `getFileSize()` and `getDateModified()` should be used instead.
+- Deprecated `craft\base\VolumeInterface::renameDir()`. `renameDirectory()` should be used instead.
+- Deprecated `craft\db\Connection::trimObjectName()`.
+- Deprecated `craft\gql\base\Resolver::getArrayableArguments()`.
+- Deprecated `craft\gql\base\Resolver::prepareArguments()`.
+- Deprecated `craft\helpers\App::logConfig()`.
+- Deprecated `craft\helpers\Template::paginateCriteria()`. `paginateQuery()` should be used instead.
+- Deprecated `craft\services\Categories::applyBranchLimitToCategories()`. `craft\services\Structures::applyBranchLimitToElements()` should be used instead.
+- Deprecated `craft\services\Categories::fillGapsInCategories()`. `craft\services\Structures::fillGapsInElements()` should be used instead.
+- Deprecated `craft\services\Composer::$disablePackagist`.
+- Deprecated `craft\services\Drafts::applyDraft()`. `publishDraft()` should be used instead.
+- Deprecated `craft\services\Drafts::EVENT_AFTER_APPLY_DRAFT`. `EVENT_AFTER_PUBLISH_DRAFT` should be used instead.
+- Deprecated `craft\services\Drafts::EVENT_BEFORE_APPLY_DRAFT`. `EVENT_BEFORE_PUBLISH_DRAFT` should be used instead.
+- Deprecated `craft\services\Drafts::purgeUnsavedDrafts()`.
+- Deprecated `craft\test\Fixture`. `craft\test\ActiveFixture` should be used instead.
+- Deprecated `craft\web\View::$minifyCss`.
+- Deprecated `craft\web\View::$minifyJs`.
+- Deprecated `craft\web\View::renderTemplateMacro()`.
+
+### Removed
+- Removed the “Placeholder” setting from URL fields. ([#7303](https://github.com/craftcms/cms/issues/7303))
+- Removed `craft\controllers\ElementIndexesController::actionCreateExportToken()`.
+- Removed `craft\controllers\ExportController`.
+- Removed `craft\services\Api::getComposerWhitelist()`.
+- Removed `craft\test\fixtures\elements\ElementFixture`. `craft\test\fixtures\elements\BaseElementFixture` or `BaseContentFixture` should be used instead.
+- Removed `craft\test\fixtures\FieldLayoutFixture::deleteAllByFieldHandle()`.
+- Removed `craft\test\fixtures\FieldLayoutFixture::extractTabsFromFieldLayout()`.
+- Removed `craft\test\fixtures\FieldLayoutFixture::getTabsForFieldLayout()`.
+- Removed `craft\test\fixtures\FieldLayoutFixture::linkFieldToLayout()`.
+- Removed Minify and jsmin-php.
+
+### Fixed
+- Fixed an error that occurred when a schema change was made within a transaction, if using MySQL and PHP 8. ([#7174](https://github.com/craftcms/cms/issues/7174))
+- Fixed a bug where asset queries’ `withTransforms` param wasn’t being respected for eager-loaded assets. ([#6140](https://github.com/craftcms/cms/issues/6140))
+- Fixed a bug where `craft\db\Connection::getPrimaryKeyName()`, `getForeignKeyName()`, and `getIndexName()` could generate non-unique object names. ([#7153](https://github.com/craftcms/cms/issues/7153))
+- Fixed a bug where number strings were not correctly typecast to the right PHP numeric type when using the Number GraphQL type.
+- Fixed a bug where it wasn’t possible to save a Global set with a predefined UID.
+- Fixed a bug where `craft\helpers\Db::prepareValuesForDb()` would omit or JSON-encode `DateTime` objects, depending on the PHP version, rather than converting them to ISO-8601-formatted strings.
+- Fixed a bug where info icons’ content was focusable before the icon was activated. ([#7257](https://github.com/craftcms/cms/issues/7257))
+- Fixed a bug where generated URLs would include the token from the current request, even if it had expired or met its usage limit.
+- Fixed a bug where Number field settings and input values could be stored incorrectly if the user’s formatting locale used a different decimal character that the application language.
+- Fixed a MySQL deadlock error that could occur when running background jobs. ([#7179](https://github.com/craftcms/cms/issues/7179))
+
+### Security
+- The default `allowedFileExtensions` config setting value no longer includes `htm` or `html`.
+
 ## 3.5.19 - 2020-01-26
 
 ### Changed

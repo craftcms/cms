@@ -19,7 +19,6 @@ use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
 use UnitTester;
 use yii\base\ErrorException;
-use yii\web\HttpException;
 
 /**
  * Unit tests for ErrorHandler
@@ -60,27 +59,6 @@ class ErrorHandlerTest extends TestCase
     }
 
     /**
-     * @throws Exception
-     */
-    public function testHandle404Exception()
-    {
-        // Disable clear output as this throws: Test code or tested code did not (only) close its own output buffers
-        $this->errorHandler = Stub::construct(ErrorHandler::class, [], [
-            'logException' => self::assertObjectIsInstanceOfClassCallback(HttpException::class),
-            'clearOutput' => null,
-            'renderException' => self::assertObjectIsInstanceOfClassCallback(HttpException::class)
-        ]);
-
-        // Oops. Page not found
-        $exception = new HttpException('I am an error.');
-        $exception->statusCode = 404;
-
-        // Test 404's are treated with a different file
-        $this->errorHandler->handleException($exception);
-        self::assertSame(Craft::getAlias('@crafttestsfolder/storage/logs/web-404s.log'), Craft::$app->getLog()->targets[0]->logFile);
-    }
-
-    /**
      * @dataProvider exceptionTypeAndNameDataProvider
      *
      * @param Throwable $exception
@@ -94,14 +72,14 @@ class ErrorHandlerTest extends TestCase
     /**
      * @dataProvider getTypeUrlDataProvider
      *
-     * @param $result
-     * @param $class
-     * @param $method
+     * @param string|null $expected
+     * @param string $class
+     * @param string|null $method
      * @throws ReflectionException
      */
-    public function testGetTypeUrl($result, $class, $method)
+    public function testGetTypeUrl(?string $expected, string $class, ?string $method)
     {
-        self::assertSame($result, $this->invokeMethod($this->errorHandler, 'getTypeUrl', [$class, $method]));
+        self::assertSame($expected, $this->invokeMethod($this->errorHandler, 'getTypeUrl', [$class, $method]));
     }
 
     /**
@@ -119,13 +97,12 @@ class ErrorHandlerTest extends TestCase
     /**
      * @dataProvider isCoreFileDataProvider
      *
-     * @param $result
-     * @param $input
+     * @param bool $expected
+     * @param string $file
      */
-    public function testIsCoreFile($result, $input)
+    public function testIsCoreFile(bool $expected, string $file)
     {
-        $isCore = $this->errorHandler->isCoreFile(Craft::getAlias($input));
-        self::assertSame($result, $isCore);
+        self::assertSame($expected, $this->errorHandler->isCoreFile(Craft::getAlias($file)));
     }
 
     /**

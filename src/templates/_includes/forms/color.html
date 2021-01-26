@@ -8,16 +8,28 @@
 {% set autofocus = (autofocus ?? false) and not craft.app.request.isMobileBrowser(true) -%}
 {% set disabled = disabled ?? false -%}
 
+{% set containerAttributes = {
+    id: containerId,
+    class: ['flex', 'color-container'],
+}|merge(containerAttributes ?? [], recursive=true) %}
+
+{%- if block('attr') is defined %}
+    {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
+{% endif %}
+
 {% spaceless %}
-    <div id="{{ containerId }}" class="flex color-container"
-            {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
-        <div class="color static{% if small %} small{% endif %}">
-            <div class="color-preview"
-                {%- if value %} style="background-color: {{ value }};"{% endif -%}
-            ></div>
-        </div>
+    {% tag 'div' with containerAttributes %}
+        {% tag 'div' with {
+            class: ['color', 'static', small ? 'small']|filter,
+        } %}
+            {{ tag('div', {
+                class: ['color-preview'],
+                style: {'background-color': value}|filter,
+            }) }}
+        {% endtag %}
         {{ forms.text({
             id: id,
+            instructionsId: instructionsId ?? false,
             name: name,
             value: value,
             size: 10,
@@ -25,7 +37,7 @@
             autofocus: autofocus,
             disabled: disabled
         }) }}
-    </div>
+    {% endtag %}
 {% endspaceless -%}
 
 {% js %}

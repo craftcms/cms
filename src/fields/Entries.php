@@ -16,6 +16,7 @@ use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\resolvers\elements\Entry as EntryResolver;
 use craft\helpers\Db;
 use craft\helpers\Gql;
+use craft\models\GqlSchema;
 use GraphQL\Type\Definition\Type;
 
 /**
@@ -56,6 +57,14 @@ class Entries extends BaseRelationField
     public static function valueType(): string
     {
         return EntryQuery::class;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function includeInGqlSchema(GqlSchema $schema): bool
+    {
+        return Gql::canQueryEntries($schema);
     }
 
     /**

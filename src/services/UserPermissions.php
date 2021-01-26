@@ -148,8 +148,9 @@ class UserPermissions extends Component
 
             foreach ($sites as $site) {
                 $permissions[$label]['editSite:' . $site->uid] = [
-                    'label' => Craft::t('app', 'Edit “{title}”',
-                        ['title' => Craft::t('site', $site->name)])
+                    'label' => Craft::t('app', 'Edit “{title}”', [
+                        'title' => Craft::t('site', $site->getName()),
+                    ])
                 ];
             }
         }

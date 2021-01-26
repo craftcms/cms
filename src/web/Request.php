@@ -185,7 +185,13 @@ class Request extends \yii\web\Request
     private $_encodedBodyParams = false;
 
     /**
-     * @var string|false
+     * @var bool|null Whether the request initially had a token
+     * @see getHadToken()
+     */
+    private $_hadToken;
+
+    /**
+     * @var string|null
      * @see getToken()
      */
     public $_token;
@@ -230,8 +236,8 @@ class Request extends \yii\web\Request
                     $site = $this->_requestedSite($siteScore);
                 }
 
-                if ($site->baseUrl) {
-                    $baseUrl = rtrim($site->getBaseUrl(), '/');
+                if ($siteBaseUrl = $site->getBaseUrl()) {
+                    $baseUrl = rtrim($siteBaseUrl, '/');
                 }
             }
         } catch (SiteNotFoundException $e) {
@@ -490,6 +496,19 @@ class Request extends \yii\web\Request
     }
 
     /**
+     * Returns whether the request initially had a token.
+     *
+     * @return bool
+     * @throws BadRequestHttpException
+     * @since 3.6.0
+     */
+    public function getHadToken(): bool
+    {
+        $this->_findToken();
+        return $this->_hadToken;
+    }
+
+    /**
      * Returns the token submitted with the request, if there is one.
      *
      * Tokens must be sent either as a query string param named after the <config3:tokenParam> config setting (`token` by
@@ -500,19 +519,63 @@ class Request extends \yii\web\Request
      * @see \craft\services\Tokens::createToken()
      * @see Controller::requireToken()
      */
-    public function getToken()
+    public function getToken(): ?string
     {
-        if ($this->_token === null) {
-            $this->_token = $this->getQueryParam($this->generalConfig->tokenParam)
-                ?? $this->getHeaders()->get('X-Craft-Token')
-                ?? false;
-            if ($this->_token && !preg_match('/^[A-Za-z0-9_-]+$/', $this->_token)) {
-                $this->_token = false;
-                throw new BadRequestHttpException('Invalid token');
-            }
+        $this->_findToken();
+        return $this->_token;
+    }
+
+    /**
+     * Sets the token value.
+     *
+     * @param ?string $token
+     * @since 3.6.0
+     */
+    public function setToken(?string $token): void
+    {
+        // Make sure $this->_hadToken has been set
+        try {
+            $this->_findToken();
+        } catch (BadRequestHttpException $e) {
         }
 
-        return $this->_token ?: null;
+        $this->_token = $token;
+    }
+
+    /**
+     * Looks for a token on the request.
+     *
+     * @throws BadRequestHttpException
+     */
+    private function _findToken(): void
+    {
+        if ($this->_hadToken !== null) {
+            return;
+        }
+
+        $this->_token = ($this->getQueryParam($this->generalConfig->tokenParam) ?? $this->getHeaders()->get('X-Craft-Token')) ?: null;
+
+        if ($this->_token && !preg_match('/^[A-Za-z0-9_-]+$/', $this->_token)) {
+            $this->_token = null;
+            $this->_hadToken = false;
+            throw new BadRequestHttpException('Invalid token');
+        }
+
+        $this->_hadToken = $this->_token !== null;
+    }
+
+    /**
+     * Returns the site token submitted with the request, if there is one.
+     *
+     * Tokens must be sent either as a query string param named after the <config3:siteToken> config setting
+     * (`siteToken` by default), or an `X-Craft-Site-Token` HTTP header on the request.
+     *
+     * @return string|null The token, or `null` if there isn’t one.
+     * @since 3.6.0
+     */
+    public function getSiteToken(): ?string
+    {
+        return $this->getQueryParam($this->generalConfig->siteToken) ?? $this->getHeaders()->get('X-Craft-Site-Token');
     }
 
     /**
@@ -1250,7 +1313,7 @@ class Request extends \yii\web\Request
             throw new NotFoundHttpException(Craft::t('yii', 'Page not found.'));
         }
 
-        list($route, $params) = $result;
+        [$route, $params] = $result;
 
         /** @noinspection AdditionOperationOnArraysInspection */
         return [$route, $params + $this->getQueryParams()];
@@ -1333,7 +1396,7 @@ class Request extends \yii\web\Request
             return false;
         }
 
-        list($nonce,) = $splitToken;
+        [$nonce,] = $splitToken;
 
         // Check that this token is for the current user
         $passwordHash = $currentUser->password;
@@ -1418,8 +1481,8 @@ class Request extends \yii\web\Request
      */
     private function _scoreSite(Site $site): int
     {
-        if ($site->baseUrl) {
-            $score = $this->_scoreUrl($site->getBaseUrl());
+        if ($baseUrl = $site->getBaseUrl()) {
+            $score = $this->_scoreUrl($baseUrl);
         } else {
             $score = 0;
         }

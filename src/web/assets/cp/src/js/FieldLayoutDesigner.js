@@ -212,14 +212,18 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend({
             return;
         }
 
-        let $labelSpan = $tab.find('.tabs .tab span');
-        let oldName = $labelSpan.text();
-        let newName = prompt(Craft.t('app', 'Give your tab a name.'), oldName);
+        const $labelSpan = $tab.find('.tabs .tab span');
+        const oldName = $labelSpan.text();
+        const newName = this.promptForTabName(oldName);
 
         if (newName && newName !== oldName) {
             $labelSpan.text(newName);
             $tab.find('.placement-input').attr('name', this.getElementPlacementInputName(newName));
         }
+    },
+
+    promptForTabName: function(oldName) {
+        return prompt(Craft.t('app', 'Give your tab a name.'), oldName);
     },
 
     removeTab: function($tab) {
@@ -261,11 +265,16 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend({
             return;
         }
 
-        let $tab = $(`
+        const name = this.promptForTabName();
+        if (!name) {
+            return;
+        }
+
+        const $tab = $(`
 <div class="fld-tab">
   <div class="tabs">
     <div class="tab sel draggable">
-      <span>Tab ${this.tabGrid.$items.length + 1}</span>
+      <span>${name}</span>
       <a class="settings icon" title="${Craft.t('app', 'Rename')}"></a>
     </div>
   </div>
@@ -278,7 +287,6 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend({
         this.tabDrag.addItems($tab);
 
         this.initTab($tab);
-        this.renameTab($tab);
     },
 
     getElementPlacementInputName: function(tabName) {
@@ -292,7 +300,6 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend({
         elementConfigInputName: 'elementConfigs[__ELEMENT_KEY__]',
     }
 });
-
 
 Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
     designer: null,
@@ -500,7 +507,6 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
     }
 });
 
-
 Craft.FieldLayoutDesigner.BaseDrag = Garnish.Drag.extend({
     designer: null,
     $insertion: null,
@@ -654,7 +660,6 @@ Craft.FieldLayoutDesigner.BaseDrag = Garnish.Drag.extend({
     }
 });
 
-
 Craft.FieldLayoutDesigner.TabDrag = Craft.FieldLayoutDesigner.BaseDrag.extend({
     /**
      * Constructor
@@ -744,7 +749,6 @@ Craft.FieldLayoutDesigner.TabDrag = Craft.FieldLayoutDesigner.BaseDrag.extend({
 `);
     },
 });
-
 
 Craft.FieldLayoutDesigner.ElementDrag = Craft.FieldLayoutDesigner.BaseDrag.extend({
     draggingLibraryElement: false,

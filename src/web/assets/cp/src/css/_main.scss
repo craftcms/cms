@@ -1095,20 +1095,22 @@ ul.icons {
     }
   }
 
-  &:focus,
-  &.focus,
-  &:hover {
-    background-color: transparentize($inputColor, 0.65);
-  }
-
-  &:active,
-  &.active {
-    background-color: transparentize($inputColor, 0.5);
-
+  &:not(.disabled) {
     &:focus,
     &.focus,
-    .btngroup:focus & {
-      background-color: transparentize($inputColor, 0.4);
+    &:hover {
+      background-color: transparentize($inputColor, 0.65);
+    }
+
+    &:active,
+    &.active {
+      background-color: transparentize($inputColor, 0.5);
+
+      &:focus,
+      &.focus,
+      .btngroup:focus & {
+        background-color: transparentize($inputColor, 0.4);
+      }
     }
   }
 
@@ -1814,7 +1816,7 @@ h2 + .actions {
 /* ----------------------------------------*/
 
 .tablepane {
-  margin: -24px -24px 0;
+  margin: -24px -24px -12px;
   overflow-x: auto;
 
   table {
@@ -1831,8 +1833,35 @@ h2 + .actions {
     thead {
       th,
       td {
-        border-bottom-left-radius: 0 !important;
-        border-bottom-right-radius: 0 !important;
+        @include border-bottom-left-radius(0);
+        @include border-bottom-right-radius(0);
+      }
+    }
+
+    thead,
+    tbody,
+    tfoot {
+      &:first-child tr:first-child {
+        th,
+        td {
+          &:first-child {
+            @include border-top-left-radius($largeBorderRadius);
+          }
+          &:last-child {
+            @include border-top-right-radius($largeBorderRadius);
+          }
+        }
+      }
+      &:last-child tr:last-child {
+        th,
+        td {
+          &:first-child {
+            @include border-bottom-left-radius($largeBorderRadius);
+          }
+          &:last-child {
+            @include border-bottom-right-radius($largeBorderRadius);
+          }
+        }
       }
     }
   }
@@ -1989,7 +2018,6 @@ table {
 
       th,
       td {
-        border-top: 1px solid transparent;
         padding-top: 7px;
         padding-bottom: 7px;
         background-clip: padding-box;
@@ -2002,6 +2030,14 @@ table {
           white-space: nowrap;
           color: $lightTextColor;
         }
+      }
+    }
+
+    thead + tbody tr,
+    tr + tr {
+      th,
+      td {
+        border-top: 1px solid transparent;
       }
     }
   }
@@ -3266,6 +3302,10 @@ ul.tree,
         width: 100%;
         list-style-type: none;
       }
+
+      & > .clear-btn {
+        @include margin-right(-24px);
+      }
     }
   }
 
@@ -4261,7 +4301,8 @@ fieldset {
     margin-top: -5px;
     margin-bottom: 5px;
 
-    & > label {
+    & > label,
+    & > legend {
       font-weight: bold;
       color: $mediumDarkTextColor;
 
@@ -4293,17 +4334,21 @@ fieldset {
     margin-bottom: 5px;
   }
 
-  & > .notice,
-  & > .warning {
-    margin: 5px 0 0;
-  }
-
   & > .input {
     position: relative;
 
     &:after {
       @include clearafter;
     }
+
+    & + .instructions {
+      margin: 5px 0 0;
+    }
+  }
+
+  & > .notice,
+  & > .warning {
+    margin: 5px 0 0;
   }
 }
 
@@ -4606,24 +4651,26 @@ fieldset {
   & > .datewrapper + .timewrapper {
     @include margin-left(5px);
   }
+}
 
-  .clear-btn {
-    width: 20px;
-    @include margin-left(4px);
-    cursor: pointer;
-    color: $darkHairlineColor;
-    border: none;
-    padding: 0;
-    background: transparent;
+.clear-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 24px;
+  cursor: pointer;
+  color: $darkHairlineColor;
+  border: none;
+  padding: 0;
+  background: transparent;
 
-    &:before {
-      @include icon;
-      content: 'remove';
-    }
+  &:before {
+    @include icon;
+    content: 'remove';
+  }
 
-    &:hover {
-      color: $mediumTextColor;
-    }
+  &:hover {
+    color: $mediumTextColor;
   }
 }
 

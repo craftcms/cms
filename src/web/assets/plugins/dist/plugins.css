@@ -66,13 +66,25 @@ body.ltr #plugins tbody .plugin-infos .details .plugin-id .version { margin-left
 
 body.rtl #plugins tbody .plugin-infos .details .plugin-id .version { margin-right: 14px; }
 
-#plugins tbody .plugin-infos .details p { margin: 0.2em 0; }
+#plugins tbody .plugin-infos .details p, #plugins tbody .plugin-infos .details ul.links { margin: 0.2em 0; }
 
-#plugins tbody .plugin-infos .details p.links { display: -webkit-flex; display: flex; white-space: nowrap; -webkit-flex-wrap: wrap; flex-wrap: wrap; }
+#plugins tbody .plugin-infos .details ul.links { display: -webkit-flex; display: flex; white-space: nowrap; -webkit-flex-wrap: wrap; flex-wrap: wrap; color: #606d7b; }
 
-#plugins tbody .plugin-infos .details p.links a + a { margin-left: 14px; }
+#plugins tbody .plugin-infos .details ul.links li { display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; }
 
-#plugins tbody .plugin-infos .details p.links a span[data-icon] { margin-right: 3px; }
+#plugins tbody .plugin-infos .details ul.links li:not(:first-child) { margin-left: 14px; }
+
+#plugins tbody .plugin-infos .details ul.links li a:before, #plugins tbody .plugin-infos .details ul.links li span:before { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; user-select: none; opacity: 0.8; margin-top: -2px; color: #9aa5b1; }
+
+body.ltr #plugins tbody .plugin-infos .details ul.links li a:before, body.ltr #plugins tbody .plugin-infos .details ul.links li span:before { margin-right: 4px; }
+
+body.rtl #plugins tbody .plugin-infos .details ul.links li a:before, body.rtl #plugins tbody .plugin-infos .details ul.links li span:before { margin-left: 4px; }
+
+#plugins tbody .plugin-infos .details ul.links li.link-developer a:before, #plugins tbody .plugin-infos .details ul.links li.link-developer span:before { content: 'building'; }
+
+#plugins tbody .plugin-infos .details ul.links li.link-docs a:before { content: 'book'; }
+
+#plugins tbody .plugin-infos .details ul.links li.link-settings a:before { content: 'settings'; }
 
 #plugins tbody .plugin-infos .details .license-key { margin-top: 1em; }
 

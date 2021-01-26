@@ -14,6 +14,7 @@ use craft\fields\data\ColorData;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\generators\TableRowType as TableRowTypeGenerator;
 use craft\gql\types\TableRow;
+use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
@@ -277,16 +278,14 @@ class Table extends Field
             ],
         ];
 
-        $dropdownSettingsHtml = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'editableTableField', [
-            [
-                'label' => Craft::t('app', 'Dropdown Options'),
-                'instructions' => Craft::t('app', 'Define the available options.'),
-                'id' => '__ID__',
-                'name' => '__NAME__',
-                'addRowLabel' => Craft::t('app', 'Add an option'),
-                'cols' => $dropdownSettingsCols,
-                'initJs' => false,
-            ]
+        $dropdownSettingsHtml = Cp::editableTableFieldHtml([
+            'label' => Craft::t('app', 'Dropdown Options'),
+            'instructions' => Craft::t('app', 'Define the available options.'),
+            'id' => '__ID__',
+            'name' => '__NAME__',
+            'addRowLabel' => Craft::t('app', 'Add an option'),
+            'cols' => $dropdownSettingsCols,
+            'initJs' => false,
         ]);
 
         $view = Craft::$app->getView();
@@ -309,16 +308,14 @@ class Table extends Field
             'errors' => $this->getErrors('columns'),
         ]);
 
-        $defaultsField = $view->renderTemplateMacro('_includes/forms', 'editableTableField', [
-            [
-                'label' => Craft::t('app', 'Default Values'),
-                'instructions' => Craft::t('app', 'Define the default values for the field.'),
-                'id' => 'defaults',
-                'name' => 'defaults',
-                'cols' => $this->columns,
-                'rows' => $this->defaults,
-                'initJs' => false,
-            ]
+        $defaultsField = Cp::editableTableFieldHtml([
+            'label' => Craft::t('app', 'Default Values'),
+            'instructions' => Craft::t('app', 'Define the default values for the field.'),
+            'id' => 'defaults',
+            'name' => 'defaults',
+            'cols' => $this->columns,
+            'rows' => $this->defaults,
+            'initJs' => false,
         ]);
 
         return $view->renderTemplate('_components/fieldtypes/Table/settings', [

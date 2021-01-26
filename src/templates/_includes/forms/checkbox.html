@@ -1,19 +1,22 @@
 {%- spaceless %}
 
 {% set id = id ?? "checkbox#{random()}" %}
-{% set label = label ?? null %}
+{% set label = checkboxLabel ?? label ?? null %}
 
 {% set inputAttributes = {
-    'id': id,
-    'class': (class ?? [])|explodeClass|merge([
+    id: id,
+    class: (class ?? [])|explodeClass|merge([
         (toggle ?? reverseToggle ?? false) ? 'fieldtoggle' : null,
         'checkbox'
     ]|filter),
-    'checked': (checked ?? false) and checked,
-    'autofocus': (autofocus ?? false) and not craft.app.request.isMobileBrowser(true),
-    'disabled': (disabled ?? false) ? true : false,
-    'data': {
-        'target': toggle ?? false,
+    checked: (checked ?? false) and checked,
+    autofocus: (autofocus ?? false) and not craft.app.request.isMobileBrowser(true),
+    disabled: (disabled ?? false) ? true : false,
+    aria: {
+        describedby: instructionsId ?? false,
+    },
+    data: {
+        target: toggle ?? false,
         'reverse-target': reverseToggle ?? false,
     }
 }|merge(inputAttributes ?? [], recursive=true) %}

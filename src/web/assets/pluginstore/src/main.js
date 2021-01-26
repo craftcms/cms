@@ -185,7 +185,7 @@ Garnish.$doc.ready(function() {
                     }
                 }.bind(this))
 
-                this.$on('cartChange', function (cart) {
+                this.$on('cartChange', function(cart) {
                     let totalQty = 0
 
                     if (cart) {

@@ -17,6 +17,7 @@ use craft\test\mockclasses\elements\MockElementQuery;
 use craft\test\TestCase;
 use GraphQL\Type\Definition\ResolveInfo;
 use GuzzleHttp\Client;
+use GuzzleHttp\Psr7\Response;
 
 class ResolveAssetMutationsTest extends TestCase
 {
@@ -196,7 +197,7 @@ class ResolveAssetMutationsTest extends TestCase
     {
         $resolver = $this->make(AssetResolver::class, [
             'createGuzzleClient' => $this->make(Client::class, [
-                'request' => null
+                'request' => $this->make(Response::class)
             ])
         ]);
 

@@ -366,7 +366,7 @@ class Application extends \yii\web\Application
         }
 
         // Did the request include user credentials?
-        list($username, $password) = $this->getRequest()->getAuthCredentials();
+        [$username, $password] = $this->getRequest()->getAuthCredentials();
 
         if (!$username || !$password) {
             return;

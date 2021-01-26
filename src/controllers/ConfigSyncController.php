@@ -103,7 +103,7 @@ class ConfigSyncController extends BaseUpdaterController
     public function actionInstallPlugin(): Response
     {
         $handle = array_shift($this->data['installPlugins']);
-        list($success, , $errorDetails) = $this->installPlugin($handle);
+        [$success, , $errorDetails] = $this->installPlugin($handle);
 
         if (!$success) {
             $info = Craft::$app->getPlugins()->getComposerPluginInfo($handle);
@@ -286,12 +286,12 @@ class ConfigSyncController extends BaseUpdaterController
      */
     private function _nextApplyYamlAction(): string
     {
-        if (!empty($this->data['uninstallPlugins'])) {
-            return self::ACTION_UNINSTALL_PLUGIN;
-        }
-
         if (!empty($this->data['installPlugins'])) {
             return self::ACTION_INSTALL_PLUGIN;
+        }
+
+        if (!empty($this->data['uninstallPlugins'])) {
+            return self::ACTION_UNINSTALL_PLUGIN;
         }
 
         return self::ACTION_APPLY_YAML_CHANGES;

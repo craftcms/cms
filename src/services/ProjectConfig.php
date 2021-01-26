@@ -1149,7 +1149,7 @@ class ProjectConfig extends Component
         // Make sure the event handlers are sorted from least-to-most specific
         $this->_sortChangeEventHandlers($event->name);
 
-        foreach ($this->_changeEventHandlers[$event->name] as list($pattern, $handler, $data)) {
+        foreach ($this->_changeEventHandlers[$event->name] as [$pattern, $handler, $data]) {
             if (preg_match($pattern, $event->path, $matches)) {
                 // Is this a nested path?
                 if (isset($matches['extra'])) {
@@ -1289,7 +1289,7 @@ class ProjectConfig extends Component
                 $paths = [];
 
                 // Grab a list of all deferred event paths
-                foreach ($this->_deferredEvents as list($deferredEvent)) {
+                foreach ($this->_deferredEvents as [$deferredEvent]) {
                     // Save us the trouble of filtering out duplicates later
                     $paths[$deferredEvent->path] = true;
                 }
@@ -1301,7 +1301,7 @@ class ProjectConfig extends Component
             /** @var ConfigEvent $event */
             /** @var string[]|null $tokenMatches */
             /** @var callable $handler */
-            list($event, $tokenMatches, $handler) = array_shift($this->_deferredEvents);
+            [$event, $tokenMatches, $handler] = array_shift($this->_deferredEvents);
             Craft::info('Re-triggering deferred event for ' . $event->path, __METHOD__);
             $event->tokenMatches = $tokenMatches;
             $handler($event);

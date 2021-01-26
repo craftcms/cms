@@ -39,34 +39,71 @@
                                         <div class="plugin-id">
                                             <h2>{{ config.name }}</h2>
                                             {% if config.hasMultipleEditions or config.isTrial %}
-                                                {{ (config.upgradeAvailable ? '<a href="' ~ pluginStoreUrl ~ '"' : '<div')|raw }} class="edition">
+                                                {% tag (config.upgradeAvailable ? 'a' : 'div') with {
+                                                    class: 'edition',
+                                                    href: config.upgradeAvailable ? pluginStoreUrl : false,
+                                                } %}
                                                     {% if config.hasMultipleEditions %}<div class="edition-name">{{ config.edition }}</div>{% endif %}
                                                     {% if config.isTrial %}<div class="edition-trial">{{ 'Trial'|t('app') }}</div>{% endif %}
-                                                {{ (config.upgradeAvailable ? '</a>' : '</div>')|raw }}
+                                                {% endtag %}
                                             {% endif %}
                                             <span class="version">{{ config.version }}</span>
                                         </div>
                                         {% if config.description %}
                                             <p>{{ config.description }}</p>
                                         {% endif %}
-                                        {% if config.developerUrl or config.developer or config.hasCpSettings or config.documentationUrl %}
-                                            <p class="links">
+                                        {% if config.developer or config.documentationUrl or config.hasCpSettings %}
+                                            <ul class="links">
                                                 {%- spaceless %}
-                                                {% if config.documentationUrl %}
-                                                    <a href="{{ config.documentationUrl }}" rel="noopener" target="_blank">{{ "Documentation"|t('app') }}</a>
-                                                {% endif %}
-                                                {% if config.hasCpSettings %}
-                                                    <a href="{{ url('settings/plugins/'~config.moduleId) }}"><span data-icon="settings" aria-hidden="true"></span>{{ "Settings"|t('app') }}</a>
-                                                {% endif %}
+                                                    {% if config.developer %}
+                                                        <li class="link-developer">
+                                                            {% if config.developerUrl %}
+                                                                {{ tag('a', {
+                                                                    href: config.developerUrl,
+                                                                    rel: 'noopener',
+                                                                    target: '_blank',
+                                                                    text: config.developer,
+                                                                }) }}
+                                                            {% else %}
+                                                                <span>{{ config.developer }}</span>
+                                                            {% endif %}
+                                                        </li>
+                                                    {% endif %}
+                                                    {% if config.documentationUrl %}
+                                                        <li class="link-docs">
+                                                            {{ tag('a', {
+                                                                href: config.documentationUrl,
+                                                                rel: 'noopener',
+                                                                target: '_blank',
+                                                                text: 'Documentation'|t('app'),
+                                                            }) }}
+                                                        </li>
+                                                    {% endif %}
+                                                    {% if config.hasCpSettings %}
+                                                        <li class="link-settings">
+                                                            {{ tag('a', {
+                                                                href: url('settings/plugins/'~config.moduleId),
+                                                                text: 'Settings'|t('app'),
+                                                            }) }}
+                                                        </li>
+                                                    {% endif %}
                                                 {% endspaceless -%}
-                                            </p>
+                                            </ul>
                                         {% endif %}
                                         {% set showLicenseKey = config.licenseKey or config.licenseKeyStatus != 'unknown' %}
                                         <div class="flex license-key{% if not showLicenseKey %} hidden{% endif %}">
                                             <div class="pane">
                                                 <input class="text code{% if config.licenseIssues is not empty %} error{% endif %}" size="29" value="{{ config.licenseKey[0:1] == '$' ? config.licenseKey : (config.licenseKey|replace('/.{4}/', '$0-')|trim('-')) }}" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX-XXXX" readonly>
                                             </div>
-                                            <a class="btn{% if config.licenseIssues is not empty %} submit{% endif %}{% if not (showLicenseKey and not config.licenseKey) %} hidden{% endif %}" href="{{ url('plugin-store/buy/'~handle~'/'~config.edition)}}">{{ "Buy now"|t('app') }}</a>
+                                            {{ tag('a', {
+                                                text: 'Buy now'|t('app'),
+                                                class: [
+                                                    'btn',
+                                                    config.licenseIssues is not empty ? 'submit',
+                                                    config.licenseKeyStatus != 'trial' ? 'hidden',
+                                                ]|filter,
+                                                href: url('plugin-store/buy/'~handle~'/'~config.edition),
+                                            }) }}
                                             <div class="spinner hidden"></div>
                                         </div>
                                         {% for issue in config.licenseIssues %}
@@ -76,6 +113,8 @@
                                                         {{ 'This license is for the {name} edition.'|t('app', {
                                                             name: config.licensedEdition|ucfirst
                                                         }) }}
+                                                    {% case 'no_trials' %}
+                                                        {{ 'Plugin trials are not allowed on this domain.'|t('app') }}
                                                     {% case 'mismatched' %}
                                                         {{ 'This license is tied to another Craft install. Visit {accountLink} to detach it, or <a href="{buyUrl}">buy a new license</a>.'|t('app', {
                                                             accountLink: '<a href="https://id.craftcms.com" rel="noopener" target="_blank">id.craftcms.com</a>',
@@ -140,7 +179,7 @@
             </table>
         </div>
     {% else %}
-        <p id="no-plugins">{{ "There are no available plugins."|t('app') }}
+        <p id="no-plugins" class="zilch">{{ "There are no available plugins."|t('app') }}
     {% endif %}
 {% endblock %}
 

@@ -87,7 +87,6 @@ const jquiGlob = [
 ];
 
 const d3LocaleData = [
-    {srcGlob: 'node_modules/d3-format/locale/*.json', dest: `${libPath}/d3-format`},
     {srcGlob: 'node_modules/d3-time-format/locale/*.json', dest: `${libPath}/d3-time-format`},
 ];
 

@@ -8,10 +8,13 @@
 namespace tests\gql;
 
 use Craft;
+use craft\models\GqlSchema;
 use crafttests\fixtures\EntryWithFieldsFixture;
 use crafttests\fixtures\GlobalSetFixture;
 use crafttests\fixtures\GqlSchemasFixture;
+use crafttests\fixtures\GqlTokensFixture;
 use FunctionalTester;
+use yii\base\Exception;
 
 class GqlCest
 {
@@ -33,11 +36,19 @@ class GqlCest
         ];
     }
 
+    private $tokenStatus;
+
     /**
      * @param FunctionalTester $I
      */
     public function _before(FunctionalTester $I)
     {
+        $gql = Craft::$app->getGql();
+        $token = $gql->getPublicToken();
+        $this->tokenStatus = $token->enabled;
+        $token->enabled = false;
+        $gql->saveToken($token);
+
         $this->_setSchema(1000);
     }
 
@@ -46,19 +57,23 @@ class GqlCest
      */
     public function _after(FunctionalTester $I)
     {
-        $gqlService = Craft::$app->getGql();
-        $gqlService->flushCaches();
+        $gql = Craft::$app->getGql();
+        $token = $gql->getPublicToken();
+        $token->enabled = $this->tokenStatus;
+        $gql->saveToken($token);
+
+        $gql->flushCaches();
     }
 
     /**
-     * @param int $tokenId
-     * @return \craft\models\GqlSchema|null
-     * @throws \yii\base\Exception
+     * @param int $schemaId
+     * @return GqlSchema|null
+     * @throws Exception
      */
-    public function _setSchema(int $tokenId)
+    public function _setSchema(int $schemaId)
     {
         $gqlService = Craft::$app->getGql();
-        $schema = $gqlService->getSchemaById($tokenId);
+        $schema = $gqlService->getSchemaById($schemaId);
         $gqlService->setActiveSchema($schema);
 
         return $schema;
@@ -117,7 +132,7 @@ class GqlCest
     public function testWrongGqlQueryParameter(FunctionalTester $I)
     {
         $I->amOnPage('?action=graphql/api&query={entries(limit:[5,2]){title}}');
-        $I->see('"debugMessage":"Expected');
+        $I->see('requires type Int');
     }
 
     /**

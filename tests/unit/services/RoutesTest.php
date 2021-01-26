@@ -37,22 +37,17 @@ class RoutesTest extends Unit
     /**
      * @dataProvider saveRouteDataProvider
      *
-     * @param $result
+     * @param array $expected
      * @param array $uriParts
      * @param string $template
      * @param string|null $siteUid
      * @param string|null $routeUid
      */
-    public function testSaveRoute($result, array $uriParts, string $template, string $siteUid = null, string $routeUid = null)
+    public function testSaveRoute(array $expected, array $uriParts, string $template, ?string $siteUid = null, ?string $routeUid = null)
     {
-        $routeUUID = $this->routes->saveRoute($uriParts, $template, $siteUid, $routeUid);
-
-        self::assertSame(
-            $result,
-            Craft::$app->getProjectConfig()->get(Routes::CONFIG_ROUTES_KEY . '.' . $routeUUID)
-        );
-
-        self::assertTrue(StringHelper::isUUID($routeUUID));
+        $uid = $this->routes->saveRoute($uriParts, $template, $siteUid, $routeUid);
+        self::assertTrue(StringHelper::isUUID($uid));
+        self::assertSame($expected, Craft::$app->getProjectConfig()->get(Routes::CONFIG_ROUTES_KEY . '.' . $uid));
     }
 
     /**

@@ -35,7 +35,7 @@ class PluginStoreController extends Controller
     public function beforeAction($action)
     {
         // All plugin store actions require an admin
-        $this->requireAdmin();
+        $this->requireAdmin(false);
 
         return parent::beforeAction($action);
     }
@@ -56,9 +56,6 @@ class PluginStoreController extends Controller
             'edition' => strtolower(Craft::$app->getEditionName()),
         ];
 
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
-        $allowUpdates = $generalConfig->allowUpdates && $generalConfig->allowAdminChanges;
-
         $craftIdAccessToken = $this->getCraftIdAccessToken();
 
         $view = $this->getView();
@@ -66,7 +63,6 @@ class PluginStoreController extends Controller
         $view->registerJs('window.craftApiEndpoint = "' . Craft::$app->getPluginStore()->craftApiEndpoint . '";', View::POS_BEGIN);
         $view->registerJs('window.pluginStoreAppBaseUrl = "' . $pluginStoreAppBaseUrl . '";', View::POS_BEGIN);
         $view->registerJs('window.cmsInfo = ' . Json::encode($cmsInfo) . ';', View::POS_BEGIN);
-        $view->registerJs('window.allowUpdates = ' . Json::encode($allowUpdates) . ';', View::POS_BEGIN);
         $view->registerJs('window.cmsLicenseKey = ' . Json::encode(App::licenseKey()) . ';', View::POS_BEGIN);
         $view->registerJs('window.craftIdAccessToken = ' . Json::encode($craftIdAccessToken) . ';', View::POS_BEGIN);
 

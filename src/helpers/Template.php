@@ -114,12 +114,25 @@ class Template
     }
 
     /**
-     * Paginates a query's results
+     * Paginates a query.
      *
      * @param QueryInterface $query
      * @return array
+     * @deprecated in 3.6.0. Use [[paginateQuery()]] instead.
      */
     public static function paginateCriteria(QueryInterface $query): array
+    {
+        return static::paginateQuery($query);
+    }
+
+    /**
+     * Paginates a query.
+     *
+     * @param QueryInterface $query
+     * @return array
+     * @since 3.6.0
+     */
+    public static function paginateQuery(QueryInterface $query): array
     {
         /** @var Query $query */
         $paginatorQuery = clone $query;
@@ -335,7 +348,7 @@ class Template
      * @throws InvalidConfigException
      * @since 3.5.6
      */
-    public static function css(string $css, array $options = [], string $key = null)
+    public static function css(string $css, array $options = [], ?string $key = null)
     {
         // Is this a CSS file?
         if (preg_match('/^[^\r\n]+\.css$/i', $css)) {
@@ -356,7 +369,7 @@ class Template
      * @throws InvalidConfigException
      * @since 3.5.6
      */
-    public static function js(string $js, array $options = [], string $key = null)
+    public static function js(string $js, array $options = [], ?string $key = null)
     {
         // Is this a JS file?
         if (preg_match('/^[^\r\n]+\.js$/i', $js)) {

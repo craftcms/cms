@@ -91,6 +91,16 @@ use yii\mutex\Mutex;
 class TestSetup
 {
     /**
+     * @since 3.6.0
+     */
+    const SITE_URL = 'https://test.craftcms.test/';
+
+    /**
+     * @since 3.6.0
+     */
+    const USERNAME = 'craftcms';
+
+    /**
      * @var array Project Config data
      */
     private static $_parsedProjectConfig = [];
@@ -448,7 +458,7 @@ class TestSetup
             'name' => 'Craft test site',
             'handle' => 'default',
             'hasUrls' => true,
-            'baseUrl' => 'https://craftcms.com',
+            'baseUrl' => self::SITE_URL,
             'language' => 'en-US',
             'primary' => true,
         ];
@@ -476,7 +486,7 @@ class TestSetup
 
         $migration = new Install([
             'db' => $connection,
-            'username' => 'craftcms',
+            'username' => self::USERNAME,
             'password' => 'craftcms2018!!',
             'email' => 'support@craftcms.com',
             'site' => $site,

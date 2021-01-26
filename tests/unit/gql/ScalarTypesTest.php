@@ -65,6 +65,18 @@ class ScalarTypesTest extends Unit
     }
 
     /**
+     * Test DateTime parsing value correctly.
+     * @throws \GraphQL\Error\Error
+     */
+    public function testDateTimeParseValueAndLiteral()
+    {
+        $timeAsStr = (new \DateTime('now'))->format("Y-m-d H:i:s");
+
+        $this->assertInstanceOf(\DateTime::class, (new DateTime())->parseValue($timeAsStr));
+        $this->assertInstanceOf(\DateTime::class, (new DateTime())->parseLiteral(new StringValueNode(['value' => $timeAsStr])));
+    }
+
+    /**
      * Test parsing a value provided as a query variable
      *
      * @dataProvider parsingLiteralDataProvider
@@ -124,8 +136,6 @@ class ScalarTypesTest extends Unit
         GqlEntityRegistry::setPrefix('');
 
         return [
-            [DateTime::getType(), $time = time(), (string)$time, false],
-
             [Number::getType(), 2, 2, false],
             [Number::getType(), 2.0, 2.0, false],
             [Number::getType(), null, null, false],
@@ -147,7 +157,6 @@ class ScalarTypesTest extends Unit
         GqlEntityRegistry::setPrefix('');
 
         return [
-            [DateTime::getType(), new StringValueNode(['value' => $time = time()]), (string)$time, false],
             [DateTime::getType(), new IntValueNode(['value' => 2]), null, GqlException::class],
 
             [Number::getType(), new StringValueNode(['value' => '2.4']), 2.4, false],

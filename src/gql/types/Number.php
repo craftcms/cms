@@ -62,7 +62,7 @@ class Number extends ScalarType
      */
     public function serialize($value)
     {
-        if (is_string($value) || is_numeric($value)) {
+        if (is_numeric($value)) {
             if ((int)$value == $value) {
                 return (int)$value;
             }

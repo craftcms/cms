@@ -34,14 +34,13 @@ class UsernameValidatorTest extends Unit
     /**
      * @dataProvider validateValueDataProvider
      *
-     * @param $result
-     * @param $input
+     * @param array|null $expected
+     * @param string|null $value
      * @throws NotSupportedException
      */
-    public function testValidateValue($result, $input)
+    public function testValidateValue(?array $expected, ?string $value)
     {
-        $validated = $this->usernameValidator->validateValue($input);
-        self::assertSame($result, $validated);
+        self::assertSame($expected, $this->usernameValidator->validateValue($value));
     }
 
     public function validateValueDataProvider(): array

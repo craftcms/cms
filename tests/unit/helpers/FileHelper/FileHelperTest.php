@@ -87,29 +87,27 @@ class FileHelperTest extends Unit
     }
 
     /**
-     * @dataProvider pathNormalizedDataProvider
+     * @dataProvider normalizePathDataProvider
      *
-     * @param $result
-     * @param $path
-     * @param $dirSeparator
+     * @param string $expected
+     * @param string $path
+     * @param string $ds
      */
-    public function testPathNormalization($result, $path, $dirSeparator)
+    public function testNormalizePath(string $expected, string $path, string $ds)
     {
-        $normalized = FileHelper::normalizePath($path, $dirSeparator);
-        self::assertSame($result, $normalized);
+        self::assertSame($expected, FileHelper::normalizePath($path, $ds));
     }
 
     /**
-     * @dataProvider isDirEmptyDataProvider
+     * @dataProvider isDirectoryEmptyDataProvider
      *
-     * @param $result
-     * @param $input
+     * @param bool $expected
+     * @param string $dir
      * @throws ErrorException
      */
-    public function testIsDirEmpty($result, $input)
+    public function testIsDirectoryEmpty(bool $expected, string $dir)
     {
-        $isEmpty = FileHelper::isDirectoryEmpty($input);
-        self::assertSame($result, $isEmpty);
+        self::assertSame($expected, FileHelper::isDirectoryEmpty($dir));
     }
 
     /**
@@ -129,46 +127,17 @@ class FileHelperTest extends Unit
     }
 
     /**
-     * @dataProvider isWritableDataProvider
-     *
-     * @param $result
-     * @param $input
-     *
-     * @throws ErrorException
-     */
-    public function testIsWritable($result, $input)
-    {
-        $isWritable = FileHelper::isWritable($input);
-        self::assertTrue($result, $isWritable);
-    }
-
-    /**
      * @dataProvider mimeTypeDataProvider
      *
-     * @param $file
-     * @param $magicFile
-     * @param $checkExtension
-     * @param $actualMimeType
+     * @param string|null $expected
+     * @param string $file
+     * @param string|null $magicFile
+     * @param bool $checkExtension
      * @throws InvalidConfigException
      */
-    public function testGetMimeType($file, $magicFile, $checkExtension, $actualMimeType)
+    public function testGetMimeType(?string $expected, string $file, ?string $magicFile, bool $checkExtension)
     {
-        $mimeType = FileHelper::getMimeType($file, $magicFile, $checkExtension);
-        self::assertSame($actualMimeType, $mimeType);
-    }
-
-    /**
-     * @dataProvider mimeTypeFalseDataProvider
-     *
-     * @param $result
-     * @param $file
-     *
-     * @throws InvalidConfigException
-     */
-    public function testGetMimeTypeOnFalse($result, $file)
-    {
-        $mimeType = FileHelper::getMimeType($file, null, false);
-        self::assertSame($result, $mimeType);
+        self::assertSame($expected, FileHelper::getMimeType($file, $magicFile, $checkExtension));
     }
 
     /**
@@ -182,52 +151,41 @@ class FileHelperTest extends Unit
     }
 
     /**
-     * @dataProvider sanitizedFilenameDataProvider
+     * @dataProvider sanitizeFilenameDataProvider
      *
-     * @param $result
-     * @param $input
-     * @param $options
+     * @param string $expected
+     * @param string $filename
+     * @param array $options
      */
-    public function testFilenameSanitation($result, $input, $options)
+    public function testSanitizeFilename(string $expected, string $filename, array $options)
     {
-        $sanitized = FileHelper::sanitizeFilename($input, $options);
-        self::assertSame($result, $sanitized);
+        self::assertSame($expected, FileHelper::sanitizeFilename($filename, $options));
     }
 
     /**
-     * @dataProvider mimeTypeDataProvider
+     * @dataProvider isSvgDataProvider
      *
-     * @param $input
-     * @param $magicFile
-     * @param $checkExtension
+     * @param bool $expected
+     * @param string $file
+     * @param string|null $magicFile
+     * @param bool $checkExtension
      */
-    public function testIsSvg($input, $magicFile, $checkExtension)
+    public function testIsSvg(bool $expected, string $file, ?string $magicFile, bool $checkExtension)
     {
-        $result = false;
-        if (strpos($input, '.svg') !== false) {
-            $result = true;
-        }
-
-        $isSvg = FileHelper::isSvg($input, $magicFile, $checkExtension);
-        self::assertSame($result, $isSvg);
+        self::assertSame($expected, FileHelper::isSvg($file, $magicFile, $checkExtension));
     }
 
     /**
-     * @dataProvider mimeTypeDataProvider
+     * @dataProvider isGifDataProvider
      *
-     * @param $input
-     * @param $magicFile
-     * @param $checkExtension
+     * @param bool $expected
+     * @param string $input
+     * @param string|null $magicFile
+     * @param bool $checkExtension
      */
-    public function testIsGif($input, $magicFile, $checkExtension)
+    public function testIsGif(bool $expected, string $input, ?string $magicFile, bool $checkExtension)
     {
-        $result = false;
-        if (strpos($input, '.gif') !== false) {
-            $result = true;
-        }
-
-        $isSvg = FileHelper::isGif($input, $magicFile, $checkExtension);
-        self::assertSame($result, $isSvg);
+        self::assertSame($expected, FileHelper::isGif($input, $magicFile, $checkExtension));
     }
 
     /**
@@ -288,7 +246,7 @@ class FileHelperTest extends Unit
     /**
      * @return array
      */
-    public function pathNormalizedDataProvider(): array
+    public function normalizePathDataProvider(): array
     {
         return [
             ['Im a string', 'Im a string', DIRECTORY_SEPARATOR],
@@ -308,48 +266,58 @@ class FileHelperTest extends Unit
     /**
      * @return array
      */
-    public function isWritableDataProvider(): array
-    {
-        return [
-            [true, __DIR__ . '/sandbox/iswritable/dir'],
-            [true, __DIR__ . '/sandbox/iswritable/dirwithfile'],
-            [true, __DIR__.'/sandbox/iswritable/dirwithfile/test.text'],
-            [true, 'i/dont/exist/as/a/dir/'],
-        ];
-    }
-
-    /**
-     * @return array
-     */
     public function mimeTypeDataProvider(): array
     {
         return [
-            [dirname(__DIR__, 3) . '/_data/assets/files/pdf-sample.pdf', null, true, 'application/pdf'],
-            [dirname(__DIR__, 3) . '/_data/assets/files/empty-file.text', null, true, 'application/x-empty'],
-            [dirname(__DIR__, 3) . '/_data/assets/files/test.html', null, true, 'text/html'],
-            [dirname(__DIR__, 3) . '/_data/assets/files/example-gif.gif', null, true, 'image/gif'],
-            [dirname(__DIR__, 3) . '/_data/assets/files/pdf-sample.pdf', null, true, 'application/pdf'],
-            [dirname(__DIR__, 3) . '/_data/assets/files/gng.svg', null, true, 'image/svg+xml'],
-            [dirname(__DIR__, 3) . '/_data/assets/files/random.xml', null, true, 'application/xml'],
-            [__DIR__, null, true, 'directory'],
+            ['application/pdf', dirname(__DIR__, 3) . '/_data/assets/files/pdf-sample.pdf', null, true],
+            ['text/html', dirname(__DIR__, 3) . '/_data/assets/files/test.html', null, true],
+            ['image/gif', dirname(__DIR__, 3) . '/_data/assets/files/example-gif.gif', null, true],
+            ['application/pdf', dirname(__DIR__, 3) . '/_data/assets/files/pdf-sample.pdf', null, true],
+            ['image/svg+xml', dirname(__DIR__, 3) . '/_data/assets/files/gng.svg', null, true],
+            ['application/xml', dirname(__DIR__, 3) . '/_data/assets/files/random.xml', null, true],
+            ['text/plain', dirname(__DIR__, 3) . '/_data/assets/files/test.html', null, false],
+            ['directory', __DIR__, null, true],
         ];
     }
 
     /**
      * @return array
      */
-    public function mimeTypeFalseDataProvider(): array
+    public function isSvgDataProvider(): array
     {
         return [
-            ['text/plain', dirname(__DIR__, 3) . '/_data/assets/files/test.html'],
-
+            [true, dirname(__DIR__, 3) . '/_data/assets/files/gng.svg', null, true],
+            [false, dirname(__DIR__, 3) . '/_data/assets/files/pdf-sample.pdf', null, true],
+            [false, dirname(__DIR__, 3) . '/_data/assets/files/empty-file.text', null, true],
+            [false, dirname(__DIR__, 3) . '/_data/assets/files/test.html', null, true],
+            [false, dirname(__DIR__, 3) . '/_data/assets/files/example-gif.gif', null, true],
+            [false, dirname(__DIR__, 3) . '/_data/assets/files/pdf-sample.pdf', null, true],
+            [false, dirname(__DIR__, 3) . '/_data/assets/files/random.xml', null, true],
+            [false, __DIR__, null, true],
         ];
     }
 
     /**
      * @return array
      */
-    public function isDirEmptyDataProvider(): array
+    public function isGifDataProvider(): array
+    {
+        return [
+            [true, dirname(__DIR__, 3) . '/_data/assets/files/example-gif.gif', null, true],
+            [false, dirname(__DIR__, 3) . '/_data/assets/files/pdf-sample.pdf', null, true],
+            [false, dirname(__DIR__, 3) . '/_data/assets/files/empty-file.text', null, true],
+            [false, dirname(__DIR__, 3) . '/_data/assets/files/test.html', null, true],
+            [false, dirname(__DIR__, 3) . '/_data/assets/files/pdf-sample.pdf', null, true],
+            [false, dirname(__DIR__, 3) . '/_data/assets/files/gng.svg', null, true],
+            [false, dirname(__DIR__, 3) . '/_data/assets/files/random.xml', null, true],
+            [false, __DIR__, null, true],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function isDirectoryEmptyDataProvider(): array
     {
         return [
             [true, __DIR__ . '/sandbox/isdirempty/yes'],
@@ -361,7 +329,7 @@ class FileHelperTest extends Unit
     /**
      * @return array
      */
-    public function sanitizedFilenameDataProvider(): array
+    public function sanitizeFilenameDataProvider(): array
     {
         return [
             ['notafile', 'notafile', []],
