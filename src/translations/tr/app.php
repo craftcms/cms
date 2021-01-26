@@ -772,7 +772,7 @@ return [
     'MM / YY' => 'AA / YY',
     'Make not required' => 'Gereklilikten çıkar',
     'Make required' => 'Gereklli Yap',
-    'Make sure you’re not overwriting changes in the YAML files that were made on another environment.' => 'Make sure you’re not overwriting changes in the YAML files that were made on another environment.',
+    'Make sure you’re not overwriting changes in the YAML files that were made on another environment.' => 'Başka bir ortamda yapılan YAML dosyalarındaki değişikliklerin üzerine yazmadığınızdan emin olun.',
     'Make sure you’ve followed the <a href="{url}" target="_blank">Environment Setup</a> instructions before applying project config YAML changes.' => 'Proje yapılandırması YAML değişikliklerini uygulamadan önce <a href="{url}" target="_blank">Ortam Kurulum</a> talimatlarını uyguladığınızdan emin olun.',
     'Make this the primary site' => 'Bu birincil site yapılsın mı',
     'Manage categories' => 'Kategorileri yönetin',
