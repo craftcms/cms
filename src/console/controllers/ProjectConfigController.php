@@ -142,13 +142,14 @@ class ProjectConfigController extends Controller
             // Any plugins need to be installed/uninstalled?
             $loadedConfigPlugins = array_keys($projectConfig->get(Plugins::CONFIG_PLUGINS_KEY) ?? []);
             $yamlPlugins = array_keys($projectConfig->get(Plugins::CONFIG_PLUGINS_KEY, true) ?? []);
-            $this->_uninstallPlugins(array_diff($loadedConfigPlugins, $yamlPlugins));
 
             if (!$this->_installPlugins(array_diff($yamlPlugins, $loadedConfigPlugins))) {
                 $this->stdout('Aborting config apply process' . PHP_EOL, Console::FG_RED);
                 return ExitCode::UNSPECIFIED_ERROR;
             }
 
+            $this->_uninstallPlugins(array_diff($loadedConfigPlugins, $yamlPlugins));
+            
             $this->stdout("Applying changes from your project config files ... " . PHP_EOL);
 
             try {
