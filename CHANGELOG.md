@@ -9,6 +9,7 @@
 - Added `craft\test\fixtures\elements\BaseContentFixture`.
 
 ### Changed
+- `craft\base\ElementExporterInterface::export()` can now return a callable, if `isFormattable()` returns `false`. ([#7148](https://github.com/craftcms/cms/issues/7148))
 - Exception JSON responses now include `exception`, `file`, `line`, and `trace` keys. ([#7406](https://github.com/craftcms/cms/issues/7406))
 - Updated svg-sanitizer to 0.14.
 
