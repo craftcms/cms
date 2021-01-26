@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## 3.6.0 - 2020-01-26
+## 3.6.0 - 2021-01-26
 
 > {warning} Read through the [Upgrading to Craft 3.6](https://craftcms.com/knowledge-base/upgrading-to-craft-3-6) guide before updating.
 
@@ -232,7 +232,7 @@
 ### Security
 - The default `allowedFileExtensions` config setting value no longer includes `htm` or `html`.
 
-## 3.5.19 - 2020-01-26
+## 3.5.19 - 2021-01-26
 
 ### Changed
 - The control panel is now fully translated in all supported languages.
