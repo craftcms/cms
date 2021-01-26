@@ -188,7 +188,7 @@ return [
     'Can contain Markdown formatting.' => 'İşaretleme biçimlendirmesi içerebilir.',
     'Cancel' => 'İptal',
     'Can’t run Craft CMS' => 'Craft CMS çalıştırılamıyor',
-    'Captions/Subtitles' => 'Captions/Subtitles',
+    'Captions/Subtitles' => 'Başlıklar/Altyazılar',
     'Card number' => 'Kart numarası',
     'Cart' => 'Sepet',
     'Categories not restored.' => 'Kategoriler geri yüklenmedi.',
