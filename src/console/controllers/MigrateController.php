@@ -349,7 +349,7 @@ class MigrateController extends BaseMigrateController
             $total += $n;
         }
 
-        if ($total && $this->interactive && !$this->confirm('Apply the above ' . ($total === 1 ? 'migration' : 'migrations') . '?')) {
+        if ($total && !$this->confirm('Apply the above ' . ($total === 1 ? 'migration' : 'migrations') . '?')) {
             return ExitCode::OK;
         }
 
