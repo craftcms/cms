@@ -1578,7 +1578,7 @@ return [
     'Where assets should be stored when they are uploaded directly to the field, or via a front-end form.' => 'Místo, kde by měly být objekty uloženy, když jsou nahrány přímo do pole nebo prostřednictvím front-endového formuláře.',
     'Where do you want to store temporary asset uploads?' => 'Kde chcete mít uloženy uploady dočasných objektů?',
     'Where do you want to store user photos? Note that the subfolder path can contain variables like <code>{username}</code>.' => 'Kam chcete ukládat fotografie uživatele? Cesta k podsložce může obsahovat proměnné jako <code>{username}</code>.',
-    'Where selected assets should be stored.' => 'Místo, kam se mají ukládat vybrané objekty.',
+    'Where selected assets should be stored.' => 'Kde se mají ukládat vybrané objekty.',
     'Whether authors should be able to upload files directly to the field, rather than requiring them to select/upload assets via the selection modal.' => 'Určuje, zda mají mít autoři umožněno nahrávat soubory přímo do pole, spíše než vyžadovat od nich výběr / nahrávání objektů pomocí modálního výběru.',
     'Whether preview frames should be automatically refreshed when content changes.' => 'Zda se náhledové snímky mají automaticky aktualizovat při změně obsahu.',
     'Whether remotely-stored images should be downloaded and stored locally, to speed up transform generation.' => 'Určuje, zda se vzdáleně ukládané obrázky mají stahovat a ukládat lokálně, aby se urychlilo generování transformace.',

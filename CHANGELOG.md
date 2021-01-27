@@ -1,9 +1,22 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.6.1 - 2021-01-27
+
+### Added
+- Added `craft\console\ControllerTrait::checkTty()`.
+
+### Changed
+- The `setup/welcome` command that is run automatically after installing Craft via `composer create-project craftcms/craft` can now initiate the setup process automatically, if using Composer 2.
+- `craft\console\Controller::$interactive` is now set to `false` automatically for non-interactive shells.
+
+### Fixed
+- Fixed a bug where the `migrate/all` command wasn’t working when executed from a Composer script in a non-interactive shell, unless `--interactive=0` was explicitly passed. ([#7381](https://github.com/craftcms/cms/issues/7381))
+- Fixed an error that occurred when saving a Categories field with a branch limit. ([#7449](https://github.com/craftcms/cms/pull/7449))
+
 ## 3.6.0.1 - 2021-01-26
 
 ### Fixed
-- Fixed an error that could occur when validating dates.
+- Fixed an error that could occur when validating dates. ([#7443](https://github.com/craftcms/cms/issues/7443))
 
 ## 3.6.0 - 2021-01-26
 
