@@ -5,6 +5,9 @@
 ### Changed
 - `craft\test\console\CommandTest::stdOut()`, `outputCommand()`, and `stderr()` now accept an array of possible expected strings.
 
+### Fixed
+- Fixed a bug where any license key inputs on the Settings → Plugins page that were set to environment variable names would get replaced with the actual license key after a short period of time.
+
 ## 3.6.1 - 2021-01-27
 
 ### Added
