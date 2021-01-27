@@ -352,7 +352,6 @@ return [
     'Couldn’t unsuspend user.' => 'ユーザーを停止解除できませんでした。',
     'Couldn’t update password.' => 'パスワートを更新できませんでした。',
     'Coupon Code' => 'クーポンコード',
-    'Craft CMS Update' => 'Craft CMS アップデート',
     'Craft CMS does not support backtracking to this version. Please update to Craft CMS {version} or later.' => 'Craft CMS は、このバージョンへのバックトラッキングをサポートしていません。Craft CMS {version} 以降にアップデートしてください。',
     'Craft CMS is running in Dev Mode.' => 'Craft CMS は Dev モードで実行しています。',
     'Craft Support' => 'Craft サポート',
