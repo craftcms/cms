@@ -1,5 +1,16 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Added
+- Added `craft\console\ControllerTrait::checkTty()`.
+
+### Changed
+- `craft\console\Controller::$interactive` is now set to `false` automatically for non-interactive shells.
+
+### Fixed
+- Fixed a bug where the `migrate/all` command wasn’t working when executed from a Composer script in a non-interactive shell, unless `--interactive=0` was explicitly passed. ([#7381](https://github.com/craftcms/cms/issues/7381))
+
 ## 3.6.0.1 - 2021-01-26
 
 ### Fixed

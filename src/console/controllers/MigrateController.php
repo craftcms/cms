@@ -7,6 +7,7 @@
 
 namespace craft\console\controllers;
 
+use Composer\Util\Platform;
 use Craft;
 use craft\base\PluginInterface;
 use craft\console\ControllerTrait;
@@ -121,6 +122,7 @@ class MigrateController extends BaseMigrateController
     public function init()
     {
         parent::init();
+        $this->checkTty();
 
         $this->templateFile = Craft::getAlias('@app/updates/migration.php.template');
     }
@@ -298,6 +300,14 @@ class MigrateController extends BaseMigrateController
      */
     public function actionAll(): int
     {
+        $this->stdout('interactive: ' . ($this->interactive ? 'yes' : 'no') . PHP_EOL);
+        if ($this->confirm('testing?')) {
+            $this->stdout("yes\n");
+        } else {
+            $this->stdout("no\n");
+        }
+        return ExitCode::OK;
+
         $updatesService = Craft::$app->getUpdates();
 
         // Get the handles in need of an update
