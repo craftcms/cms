@@ -47,6 +47,7 @@ class CommandTest
 
     /**
      * @var bool
+     * @todo rename to ignoreStdout in 4.0
      */
     protected $ignoreStdOut = false;
 
@@ -135,6 +136,7 @@ class CommandTest
     /**
      * @param string $desiredOutput
      * @return CommandTest
+     * @todo rename to stdout() in 4.0
      */
     public function stdOut(string $desiredOutput): CommandTest
     {
@@ -264,6 +266,7 @@ class CommandTest
 
     /**
      * @return Closure
+     * @todo rename to stdoutHandler in 4.0
      */
     protected function stdOutHandler(): Closure
     {
