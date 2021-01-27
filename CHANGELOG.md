@@ -11,6 +11,7 @@
 
 ### Fixed
 - Fixed a bug where the `migrate/all` command wasn’t working when executed from a Composer script in a non-interactive shell, unless `--interactive=0` was explicitly passed. ([#7381](https://github.com/craftcms/cms/issues/7381))
+- Fixed an error that occurred when saving a Categories field with a branch limit. ([#7449](https://github.com/craftcms/cms/pull/7449))
 
 ## 3.6.0.1 - 2021-01-26
 
