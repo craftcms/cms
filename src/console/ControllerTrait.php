@@ -37,10 +37,9 @@ trait ControllerTrait
     /**
      * @param string $command
      * @param bool $withScriptName
-     * @return mixed
      */
     protected function outputCommand(string $command, bool $withScriptName = true)
     {
-        return Console::outputCommand($command, $withScriptName);
+        Console::outputCommand($command, $withScriptName);
     }
 }

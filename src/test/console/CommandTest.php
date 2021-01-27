@@ -118,9 +118,8 @@ class CommandTest
         }
 
         $exitCode = $this->controller->run($this->actionId, $this->parameters);
-        $test = $this->test;
-        $test::assertSame($this->desiredExitCode, $exitCode);
-        $test::assertCount($this->eventChainItemsHandled, $this->eventChain);
+        $this->test::assertSame($this->desiredExitCode, $exitCode);
+        $this->test::assertCount($this->eventChainItemsHandled, $this->eventChain);
     }
 
     /**
@@ -258,15 +257,8 @@ class CommandTest
     {
         return function($out, $withScriptName = true) {
             $nextItem = $this->runHandlerCheck($out, self::OUTPUT_COMMAND);
-            $test = $this->test;
-            $test::assertSame(
-                $nextItem->withScriptName,
-                $withScriptName
-            );
-            $test::assertSame(
-                $nextItem->desiredOutput,
-                $out
-            );
+            $this->test::assertSame($nextItem->withScriptName, $withScriptName);
+            $this->test::assertSame($nextItem->desiredOutput, $out);
         };
     }
 
@@ -278,8 +270,7 @@ class CommandTest
         return function($out) {
             if (!$this->ignoreStdOut) {
                 $nextItem = $this->runHandlerCheck($out, self::STD_OUT);
-                $test = $this->test;
-                $test::assertSame($nextItem->desiredOutput, $out);
+                $this->test::assertSame($nextItem->desiredOutput, $out);
             }
         };
     }
@@ -291,11 +282,7 @@ class CommandTest
     {
         return function($out) {
             $nextItem = $this->runHandlerCheck($out, self::STD_ERR);
-            $test = $this->test;
-            $test::assertSame(
-                $nextItem->desiredOutput,
-                $out
-            );
+            $this->test::assertSame($nextItem->desiredOutput, $out);
         };
     }
 
@@ -306,15 +293,8 @@ class CommandTest
     {
         return function($text, $options = []) {
             $nextItem = $this->runHandlerCheck('A prompt with value: ' . $text, self::PROMPT);
-            $test = $this->test;
-            $test::assertSame(
-                $nextItem->prompt,
-                $text
-            );
-            $test::assertSame(
-                $nextItem->options,
-                $options
-            );
+            $this->test::assertSame($nextItem->prompt, $text);
+            $this->test::assertSame($nextItem->options, $options);
             return $nextItem->returnValue;
         };
     }
@@ -326,15 +306,8 @@ class CommandTest
     {
         return function($message, $default = false) {
             $nextItem = $this->runHandlerCheck('A confirm with value: ' . $message, self::CONFIRM);
-            $test = $this->test;
-            $test::assertSame(
-                $nextItem->message,
-                $message
-            );
-            $test::assertSame(
-                $nextItem->default,
-                $default
-            );
+            $this->test::assertSame($nextItem->message, $message);
+            $this->test::assertSame($nextItem->default, $default);
             return $nextItem->returnValue;
         };
     }
@@ -346,15 +319,8 @@ class CommandTest
     {
         return function($prompt, $options = []) {
             $nextItem = $this->runHandlerCheck('A select with value: ' . $prompt, self::SELECT);
-            $test = $this->test;
-            $test::assertSame(
-                $nextItem->prompt,
-                $prompt
-            );
-            $test::assertSame(
-                $nextItem->options,
-                $options
-            );
+            $this->test::assertSame($nextItem->prompt, $prompt);
+            $this->test::assertSame($nextItem->options, $options);
             return $nextItem->returnValue;
         };
     }
@@ -362,18 +328,16 @@ class CommandTest
     /**
      * @param $out
      * @param $type
-     *
      * @return CommandTestItem
      */
     protected function runHandlerCheck($out, $type): CommandTestItem
     {
         $nextItem = $this->getNextItem();
-        $test = $this->test;
         if (!$nextItem) {
-            $test::fail("There are no more items however: $out was printed");
+            $this->test::fail("There are no more items however: $out was printed");
         }
         if ($nextItem->type !== $type) {
-            $test::fail("A $type message was expected but $nextItem->type was given");
+            $this->test::fail("A $type message was expected but $nextItem->type was given");
         }
         $this->eventChainItemsHandled++;
         return $nextItem;
@@ -393,9 +357,7 @@ class CommandTest
         }
 
         $eventChainItem = $this->eventChain[$this->currentIndex];
-
         $this->currentIndex++;
-
         return $eventChainItem;
     }
 
@@ -407,7 +369,6 @@ class CommandTest
     protected function addEventChainItem(array $config): CommandTest
     {
         $this->eventChain[] = new CommandTestItem($config);
-
         return $this;
     }
 }
