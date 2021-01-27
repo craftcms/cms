@@ -352,7 +352,6 @@ return [
     'Couldn’t unsuspend user.' => 'Impossible de rétablir l’utilisateur.',
     'Couldn’t update password.' => 'Le mot de passe n’a pu être mis à jour.',
     'Coupon Code' => 'Code coupon',
-    'Craft CMS Update' => 'Mise à jour de Craft CMS',
     'Craft CMS does not support backtracking to this version. Please update to Craft CMS {version} or later.' => 'Craft CMS ne propose pas de retour vers cette version. Veuillez effectuer une mise à jour vers Craft CMS {version} ou version ultérieure.',
     'Craft CMS is running in Dev Mode.' => 'Craft CMS fonctionne en mode Dev.',
     'Craft Support' => 'Support Craft',
