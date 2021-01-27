@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.6.1 - 2021-01-27
 
 ### Added
 - Added `craft\console\ControllerTrait::checkTty()`.
