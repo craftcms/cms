@@ -11,6 +11,7 @@ use Closure;
 use Codeception\Stub;
 use Craft;
 use craft\console\Controller;
+use Traversable;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
@@ -134,11 +135,11 @@ class CommandTest
     }
 
     /**
-     * @param string $desiredOutput
+     * @param string|string[]|Traversable $desiredOutput
      * @return CommandTest
      * @todo rename to stdout() in 4.0
      */
-    public function stdOut(string $desiredOutput): CommandTest
+    public function stdOut($desiredOutput): CommandTest
     {
         return $this->addEventChainItem([
             'type' => self::STD_OUT,
@@ -147,11 +148,11 @@ class CommandTest
     }
 
     /**
-     * @param string $desiredOutput
+     * @param string|string[]|Traversable $desiredOutput
      * @param bool $withScriptName
      * @return CommandTest
      */
-    public function outputCommand(string $desiredOutput, bool $withScriptName = true): CommandTest
+    public function outputCommand($desiredOutput, bool $withScriptName = true): CommandTest
     {
         return $this->addEventChainItem([
             'type' => self::OUTPUT_COMMAND,
@@ -161,10 +162,10 @@ class CommandTest
     }
 
     /**
-     * @param string $desiredOutput
+     * @param string|string[]|Traversable $desiredOutput
      * @return CommandTest
      */
-    public function stderr(string $desiredOutput): CommandTest
+    public function stderr($desiredOutput): CommandTest
     {
         return $this->addEventChainItem([
             'type' => self::STD_ERR,
@@ -260,7 +261,11 @@ class CommandTest
         return function($out, $withScriptName = true) {
             $nextItem = $this->runHandlerCheck($out, self::OUTPUT_COMMAND);
             $this->test::assertSame($nextItem->withScriptName, $withScriptName);
-            $this->test::assertSame($nextItem->desiredOutput, $out);
+            if (is_string($nextItem->desiredOutput)) {
+                $this->test::assertSame($nextItem->desiredOutput, $out);
+            } else {
+                $this->test::assertContains($out, $nextItem->desiredOutput);
+            }
         };
     }
 
@@ -273,7 +278,11 @@ class CommandTest
         return function($out) {
             if (!$this->ignoreStdOut) {
                 $nextItem = $this->runHandlerCheck($out, self::STD_OUT);
-                $this->test::assertSame($nextItem->desiredOutput, $out);
+                if (is_string($nextItem->desiredOutput)) {
+                    $this->test::assertSame($nextItem->desiredOutput, $out);
+                } else {
+                    $this->test::assertContains($out, $nextItem->desiredOutput);
+                }
             }
         };
     }
@@ -285,7 +294,11 @@ class CommandTest
     {
         return function($out) {
             $nextItem = $this->runHandlerCheck($out, self::STD_ERR);
-            $this->test::assertSame($nextItem->desiredOutput, $out);
+            if (is_string($nextItem->desiredOutput)) {
+                $this->test::assertSame($nextItem->desiredOutput, $out);
+            } else {
+                $this->test::assertContains($out, $nextItem->desiredOutput);
+            }
         };
     }
 

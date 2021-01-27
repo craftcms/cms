@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Changed
+- `craft\test\console\CommandTest::stdOut()`, `outputCommand()`, and `stderr()` now accept an array of possible expected strings.
+
 ## 3.6.1 - 2021-01-27
 
 ### Added
