@@ -6,6 +6,7 @@
 - Added `craft\console\ControllerTrait::checkTty()`.
 
 ### Changed
+- The `setup/welcome` command that is run automatically after installing Craft via `composer create-project craftcms/craft` can now initiate the setup process automatically, if using Composer 2.
 - `craft\console\Controller::$interactive` is now set to `false` automatically for non-interactive shells.
 
 ### Fixed

@@ -159,9 +159,15 @@ EOD;
         // Can't do anything interactive here (https://github.com/composer/composer/issues/3299)
         $this->run('app-id');
         $this->run('security-key');
-        $this->stdout(PHP_EOL . 'Welcome to Craft CMS! Run the following command if you want to setup Craft from your terminal:' . PHP_EOL);
-        $this->_outputCommand('setup');
-        return ExitCode::OK;
+        $this->stdout(PHP_EOL . 'Welcome to Craft CMS!' . PHP_EOL . PHP_EOL);
+
+        if (!$this->interactive || !$this->confirm('Are you ready to begin the setup?')) {
+            $this->stdout('Run the following command if you want to setup Craft from your terminal:' . PHP_EOL);
+            $this->_outputCommand('setup');
+            return ExitCode::OK;
+        }
+
+        return $this->run('index');
     }
 
     /**
