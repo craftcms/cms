@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Added `craft\gql\handlers\Site`.
 - Added `craft\service\Gql::handleQueryErrors()`.
 
 ### Changed
@@ -13,6 +14,7 @@
 ### Fixed
 - Fixed a bug where any license key inputs on the Settings → Plugins page that were set to environment variable names would get replaced with the actual license key after a short period of time.
 - Fixed a bug where some GraphQL queries could not be executed if `devMode` was disabled. ([#7452](https://github.com/craftcms/cms/issues/7452))
+- Fixed a regression bug with multi-site GraphQL queries. ([#5079](https://github.com/craftcms/cms/issues/5079))
 
 ## 3.6.1 - 2021-01-27
 
