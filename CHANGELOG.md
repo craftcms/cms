@@ -8,11 +8,11 @@
 ### Changed
 - `craft\test\console\CommandTest::stdOut()`, `outputCommand()`, and `stderr()` now accept an array of possible expected strings.
 - Improved GraphQL error reporting.
-- Locked webonyx/graphql-php to 14.4.1. ([#7452](https://github.com/craftcms/cms/issues/7452)
+- Set the webonyx/graphql-php version constraint to `~14.4.1`. ([#7452](https://github.com/craftcms/cms/issues/7452))
 
 ### Fixed
 - Fixed a bug where any license key inputs on the Settings → Plugins page that were set to environment variable names would get replaced with the actual license key after a short period of time.
-- Fixed a bug where some GraphQL queries could not be executed if `devMode` was disabled. ([#7452](https://github.com/craftcms/cms/issues/7452)
+- Fixed a bug where some GraphQL queries could not be executed if `devMode` was disabled. ([#7452](https://github.com/craftcms/cms/issues/7452))
 
 ## 3.6.1 - 2021-01-27
 
