@@ -46,7 +46,7 @@
     "twig/twig": "~2.14.3",
     "voku/portable-utf8": "^5.4.51",
     "voku/stringy": "^6.4.0",
-    "webonyx/graphql-php": "^14.5.0",
+    "webonyx/graphql-php": "14.4.1",
     "yii2tech/ar-softdelete": "^1.0.4",
     "yiisoft/yii2": "~2.0.40.0",
     "yiisoft/yii2-debug": "^2.1.16",
