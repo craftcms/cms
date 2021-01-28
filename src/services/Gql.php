@@ -1213,6 +1213,7 @@ class Gql extends Component
      * @param Error[] $errors
      * @param callable $formatter
      * @return Error[]
+     * @since 3.6.2
      */
     public function handleQueryErrors(array $errors, callable $formatter)
     {
