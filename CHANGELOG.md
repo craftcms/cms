@@ -1,5 +1,11 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Changed
+- Entry indexes now include draft entries in the main entry listings. ([#7401](https://github.com/craftcms/cms/issues/7401))
+- Entry queries’ `drafts` param can now be set to `null`, indicating that both normal entries _and_ drafts can be included in the results.
+
 ## 3.6.2 - 2021-01-29
 
 ### Added

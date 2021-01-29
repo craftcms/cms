@@ -376,6 +376,12 @@ class Cp
                 $html .= $encodedLabel;
             }
 
+            if ($element->getIsDraft()) {
+                $html .= Html::tag('span', Craft::t('app', 'Draft'), [
+                    'class' => 'draft-label',
+                ]);
+            }
+
             $html .= '</span></div>';
         }
 
