@@ -15,6 +15,7 @@
 - Fixed a bug where any license key inputs on the Settings → Plugins page that were set to environment variable names would get replaced with the actual license key after a short period of time.
 - Fixed a bug where some GraphQL queries could not be executed when Dev Mode was disabled. ([#7452](https://github.com/craftcms/cms/issues/7452))
 - Fixed a bug where GraphQL queries which set `site: '*'` would result in an error. ([#5079](https://github.com/craftcms/cms/issues/5079))
+- Fixed a bug where sections’ Template setting values weren’t getting auto-generated based on the Name setting, for new sections.
 
 ## 3.6.1 - 2021-01-27
 
