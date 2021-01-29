@@ -1403,7 +1403,7 @@ return [
     'Title Format' => 'Titel-format',
     'Title Translation Key Format' => 'Oversættelsestitel med nøgleværdiformat',
     'Title Translation Method' => 'Oversættelsesmetode til titel',
-    'Title' => 'Tittel',
+    'Title' => 'Titel',
     'To complete the update, some changes must be made to your database.' => 'For at afslutte opdateringen skal visse ændringer foretages i databasen.',
     'To {date}' => 'Til {date}',
     'To' => 'Til',
