@@ -1412,12 +1412,20 @@ ul.icons {
   display: inline-block;
   vertical-align: bottom;
   @include spinner;
-}
 
-.spinner.big {
-  width: 48px;
-  height: 48px;
-  background: url(../images/spinner_big.gif) no-repeat 50% 50%;
+  &.over-bg {
+    background-image: url(../images/spinner_bg.gif);
+  }
+
+  &.big {
+    width: 48px;
+    height: 48px;
+    background: url(../images/spinner_big.gif) no-repeat 50% 50%;
+
+    &.over-bg {
+      background-image: url(../images/spinner_big_bg.gif);
+    }
+  }
 }
 
 .btn + .spinner {
@@ -5613,9 +5621,17 @@ only screen and (min-resolution: 1.5dppx) {
     background-image: url(../images/spinner_2x.gif);
     background-size: 20px;
   }
-  .spinner.big {
-    background-image: url(../images/spinner_big_2x.gif);
-    background-size: 48px;
+  .spinner {
+    &.over-bg {
+      background-image: url(../images/spinner_bg_2x.gif);
+    }
+    &.big {
+      background-image: url(../images/spinner_big_2x.gif);
+      background-size: 48px;
+      &.over-bg {
+        background-image: url(../images/spinner_big_bg_2x.gif);
+      }
+    }
   }
 
   .btn.icon.add.loading:after {

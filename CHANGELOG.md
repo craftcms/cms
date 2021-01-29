@@ -1,5 +1,25 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.6.2 - 2021-01-29
+
+### Added
+- Added `craft\gql\handlers\Site`.
+- Added `craft\service\Gql::handleQueryErrors()`.
+
+### Changed
+- The web-based installer now respects the `postCpLoginRedirect` config setting. ([#5648](https://github.com/craftcms/cms/issues/5648))
+- Improved GraphQL error reporting.
+- `craft\test\console\CommandTest::stdOut()`, `outputCommand()`, and `stderr()` now accept an array of possible expected strings.
+- Downgraded webonyx/graphql-php to 14.4. ([#7452](https://github.com/craftcms/cms/issues/7452))
+
+### Fixed
+- Fixed a bug where any license key inputs on the Settings → Plugins page that were set to environment variable names would get replaced with the actual license key after a short period of time.
+- Fixed a bug where some GraphQL queries could not be executed when Dev Mode was disabled. ([#7452](https://github.com/craftcms/cms/issues/7452))
+- Fixed a bug where GraphQL queries which set `site: '*'` would result in an error. ([#5079](https://github.com/craftcms/cms/issues/5079))
+- Fixed a bug where sections’ Template setting values weren’t getting auto-generated based on the Name setting, for new sections.
+- Fixed a PHP error that could occur when running the `update` command if specific versions were requested.
+- Fixed an error that could occur if a deprecation warning was logged before Craft was installed.
+
 ## 3.6.1 - 2021-01-27
 
 ### Added

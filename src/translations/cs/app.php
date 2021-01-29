@@ -352,7 +352,6 @@ return [
     'Couldn’t unsuspend user.' => 'Blokování uživatele nelze zrušit.',
     'Couldn’t update password.' => 'Nepodařilo se uložit heslo.',
     'Coupon Code' => 'Kód kupónu',
-    'Craft CMS Update' => 'Aktualizace Craft CMS',
     'Craft CMS does not support backtracking to this version. Please update to Craft CMS {version} or later.' => 'Craft CMS nepodporuje zpětné vyhledání na tuto verzi. Aktualizujte prosím na verzi Craft CMS {version} nebo pozdější.',
     'Craft CMS is running in Dev Mode.' => 'Craft CMS běží v módu pro vývojáře.',
     'Craft Support' => 'Podpora systému Craft',

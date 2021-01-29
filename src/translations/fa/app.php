@@ -352,7 +352,6 @@ return [
     'Couldn’t unsuspend user.' => 'نتوانست کاربر را از تعلیق خارج نماید.',
     'Couldn’t update password.' => 'نتوانست رمز عبور را بروز نماید.',
     'Coupon Code' => 'کد تخفیف',
-    'Craft CMS Update' => 'بروزرسانی Craft CMS',
     'Craft CMS does not support backtracking to this version. Please update to Craft CMS {version} or later.' => 'Craft CMS بازگشت به این نسخه را پشتیبانی نمی نماید. لطفا به نسخه {version} یا بالاتر Craft CMS بروزرسانی نمایید.',
     'Craft CMS is running in Dev Mode.' => 'Craft CMS در حالت توسعه در حال اجرا می باشد.',
     'Craft Support' => 'پشتیبانی Craft',
