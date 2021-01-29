@@ -48,13 +48,32 @@ use ZipArchive;
  */
 class AssetIndexesController extends Controller
 {
+    /**
+     * @inheritdoc
+     */
+    public function beforeAction($action)
+    {
+        // No permission no bueno
+        $this->requirePermission('utility:asset-indexes');
+
+        return parent::beforeAction($action);
+    }
 
     public function actionStartIndexing(): Response
     {
         $this->requireAcceptsJson();
 
-        return $this->asJson(['some' => 'data']);
-        // todo require permissions
+        $request = Craft::$app->getRequest();
+        $volumes = (array)$request->getRequiredBodyParam('volumes');
+        $cacheRemoteImages = (bool)$request->getBodyParam('cacheImages', false);
+        $asQueueJob = (bool)$request->getBodyParam('useQueue', false);
 
+        if (empty($volumes)) {
+            return $this->asErrorJson(Craft::t('app', 'No volumes specified'));
+        }
+
+        $indexingSession = Craft::$app->getAssetIndexer()->startIndexingSession($volumes, $cacheRemoteImages, $asQueueJob);
+
+        return $this->asJson(['session' => $indexingSession->toArray([])]);
     }
 }
