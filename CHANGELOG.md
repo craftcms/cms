@@ -17,6 +17,7 @@
 - Fixed a bug where GraphQL queries which set `site: '*'` would result in an error. ([#5079](https://github.com/craftcms/cms/issues/5079))
 - Fixed a bug where sections’ Template setting values weren’t getting auto-generated based on the Name setting, for new sections.
 - Fixed a PHP error that could occur when running the `update` command if specific versions were requested.
+- Fixed an error that could occur if a deprecation warning was logged before Craft was installed.
 
 ## 3.6.1 - 2021-01-27
 
