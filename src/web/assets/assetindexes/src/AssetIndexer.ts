@@ -149,7 +149,7 @@ class AssetIndexingSession {
         const $progressCell = $('<td class="progress"></td>').data('total', this.indexingSessionData.totalEntries).data('processed', this.indexingSessionData.processedEntries).css('position', 'relative');
         const progressBar = new Craft.ProgressBar($progressCell, false);
         progressBar.setItemCount(this.indexingSessionData.totalEntries);
-        progressBar.setProcessedItemCount(this.indexingSessionData.processedEntries)
+        progressBar.setProcessedItemCount(this.indexingSessionData.processedEntries);
         progressBar.updateProgressBar();
         progressBar.showProgressBar();
         $tr.append($progressCell.data('progressBar', progressBar));
