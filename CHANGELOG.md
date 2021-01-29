@@ -7,6 +7,7 @@
 - Added `craft\service\Gql::handleQueryErrors()`.
 
 ### Changed
+- The web-based installer now respects the `postCpLoginRedirect` config setting. ([#5648](https://github.com/craftcms/cms/issues/5648))
 - Improved GraphQL error reporting.
 - `craft\test\console\CommandTest::stdOut()`, `outputCommand()`, and `stderr()` now accept an array of possible expected strings.
 - Downgraded webonyx/graphql-php to 14.4. ([#7452](https://github.com/craftcms/cms/issues/7452))
