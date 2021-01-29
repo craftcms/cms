@@ -6,6 +6,9 @@
 - Entry indexes now include draft entries in the main entry listings. ([#7401](https://github.com/craftcms/cms/issues/7401))
 - Entry queries’ `drafts` param can now be set to `null`, indicating that both normal entries _and_ drafts can be included in the results.
 
+### Fixed
+- Fixed a bug where Edit Entry pages would get a “Create a new entry” heading when editing an existing draft entry.
+
 ## 3.6.2 - 2021-01-29
 
 ### Added

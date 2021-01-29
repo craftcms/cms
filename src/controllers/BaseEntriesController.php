@@ -155,10 +155,14 @@ abstract class BaseEntriesController extends Controller
      */
     protected function pageTitle(Entry $entry): string
     {
+        if ($title = trim($entry->title)) {
+            return $title;
+        }
+
         if ($entry->getIsUnpublishedDraft()) {
             return Craft::t('app', 'Create a new entry');
         }
-        return trim($entry->title) ?: Craft::t('app', 'Edit Entry');
+        return Craft::t('app', 'Edit Entry');
     }
 
     /**
