@@ -15,13 +15,18 @@ interface ProgressBarInterface {
 }
 
 enum SessionStatus {
-    STOPPED,
-    RUNNING,
+    ACTIONREQUIRED,
+    ACTIVE,
     QUEUE
 }
 
 enum IndexingActions {
     STOP = 'asset-indexes/stop-indexing-session'
+};
+
+enum IndexerStatus {
+    STOPPED,
+    RUNNING
 };
 
 // Declare existing variables, mock the things we'll use.
@@ -40,6 +45,7 @@ type AssetIndexingSessionModel = {
     readonly dateCreated: string,
     readonly dateUpdated: string,
     readonly queueId?: number,
+    readonly actionRequired: boolean
 }
 
 type CraftResponse = {
@@ -61,9 +67,7 @@ class AssetIndexer {
         [key: number]: AssetIndexingSession
     } = {}
 
-    private runningSessions: {
-        [key: number]: boolean
-    } = {}
+    private status: IndexerStatus
 
     /**
      * @param $element The indexing session table
@@ -72,14 +76,10 @@ class AssetIndexer {
     constructor($indexingSessionTable: JQuery, sessions: AssetIndexingSessionModel[]) {
         this.$indexingSessionTable = $indexingSessionTable;
         this.indexingSessions = {};
-        this.runningSessions = {};
+        this.status = IndexerStatus.STOPPED;
 
         for (const session of sessions) {
             this.updateIndexingSessionData(session);
-        }
-
-        if (sessions.length > 0) {
-            this.$indexingSessionTable.removeClass('hidden');
         }
     }
 
@@ -102,6 +102,11 @@ class AssetIndexer {
 
         if (!this.indexingSessions[session.getSessionId()]) {
             this.$indexingSessionTable.find('tr[data-session-id="' + session.getSessionId() + '"]').remove();
+
+            if (this.$indexingSessionTable.find('tbody tr').length == 0) {
+                this.$indexingSessionTable.addClass('hidden');
+            }
+
             return;
         }
 
@@ -114,6 +119,8 @@ class AssetIndexer {
         } else {
             this.$indexingSessionTable.find('tbody').append($row);
         }
+
+        this.$indexingSessionTable.removeClass('hidden');
     }
 
     /**
@@ -124,7 +131,6 @@ class AssetIndexer {
     protected discardIndexingSession(sessionId: number): void {
         const session = this.indexingSessions[sessionId];
         delete this.indexingSessions[sessionId];
-        delete this.runningSessions[sessionId];
 
         this.renderIndexingSessionRow(session)
     }
@@ -144,7 +150,6 @@ class AssetIndexer {
         if (response.session) {
             const session = this.createSessionFromModel(response.session);
             this.indexingSessions[session.getSessionId()] = session;
-            this.runningSessions[session.getSessionId()] = true;
             this.renderIndexingSessionRow(session);
         }
 
@@ -164,31 +169,16 @@ class AssetIndexer {
      * @private
      */
     private createSessionFromModel(sessionData: AssetIndexingSessionModel): AssetIndexingSession {
-        return new AssetIndexingSession(sessionData, this.getSessionStatus(sessionData), this);
-    }
-
-    /**
-     * Get session stat
-     * @param session
-     * @private
-     */
-    private getSessionStatus(sessionData: AssetIndexingSessionModel): SessionStatus {
-        if (sessionData.queueId) {
-            return SessionStatus.QUEUE;
-        }
-
-        return this.runningSessions[sessionData.id] ? SessionStatus.RUNNING : SessionStatus.STOPPED;
+        return new AssetIndexingSession(sessionData, this);
     }
 }
 
 class AssetIndexingSession {
     private readonly indexingSessionData: AssetIndexingSessionModel
-    private readonly status: SessionStatus
     private readonly indexer: AssetIndexer
 
-    constructor(model: AssetIndexingSessionModel, status: SessionStatus, indexer: AssetIndexer) {
+    constructor(model: AssetIndexingSessionModel,indexer: AssetIndexer) {
         this.indexingSessionData = model;
-        this.status = status;
         this.indexer = indexer;
     }
 
@@ -197,6 +187,18 @@ class AssetIndexingSession {
      */
     public getSessionId(): number {
         return this.indexingSessionData.id;
+    }
+
+    public getSessionStatus(): SessionStatus {
+        if (this.indexingSessionData.queueId) {
+            return SessionStatus.QUEUE;
+        }
+
+        if (this.indexingSessionData.actionRequired) {
+            return SessionStatus.ACTIONREQUIRED;
+        }
+
+        return SessionStatus.ACTIVE;
     }
 
     /**
@@ -232,44 +234,46 @@ class AssetIndexingSession {
      * @private
      */
     public getActionButtons(): JQuery {
-        if (this.status === SessionStatus.QUEUE) {
+        if (this.getSessionStatus() === SessionStatus.QUEUE) {
             return $();
         }
 
         const $buttons = $('<div class="buttons"></div>');
-        let startStopMessage: string;
 
-        switch (this.status) {
-            case SessionStatus.RUNNING:
-                startStopMessage = Craft.t('app', 'Stop');
-                break;
-            case SessionStatus.STOPPED:
-                startStopMessage = Craft.t('app', 'Start');
-                const endMessage = Craft.t('app', 'Cancel');
-                $buttons.append($('<button />', {
-                    type: 'button',
-                    'class': 'btn submit',
-                    title: endMessage,
-                    "aria-label": endMessage,
-                }).text(endMessage)).on('click', ev => {
-                    const $container = $(ev.target).parent();
+        if (this.getSessionStatus() == SessionStatus.ACTIONREQUIRED) {
+            const reviewMessage = Craft.t('app', 'Review');
+            $buttons.append($('<button />', {
+                type: 'button',
+                'class': 'btn submit',
+                title: reviewMessage,
+                "aria-label": reviewMessage,
+            }).text(reviewMessage)).on('click', ev => {
+                const $container = $(ev.target).parent();
 
-                    if ($container.hasClass('disabled')) {
-                        return;
-                    }
-                    $container.addClass('disabled');
+                if ($container.hasClass('disabled')) {
+                    return;
+                }
+                $container.addClass('disabled');
 
-                    this.indexer.stopIndexingSession(this.getSessionId());
-                });
-                break;
+                // review indexing session.
+            });
         }
 
-        $buttons.prepend($('<button />', {
+        const discardMessage = Craft.t('app', 'Discard');
+        $buttons.append($('<button />', {
             type: 'button',
             'class': 'btn submit',
-            title: startStopMessage,
-            "aria-label": startStopMessage,
-        }).text(startStopMessage));
+            title: discardMessage,
+            "aria-label": discardMessage,
+        }).text(discardMessage)).on('click', ev => {
+            if ($buttons.hasClass('disabled')) {
+                return;
+            }
+
+            $buttons.addClass('disabled');
+
+            this.indexer.stopIndexingSession(this.getSessionId());
+        });
 
         return $buttons;
     }
@@ -280,12 +284,12 @@ class AssetIndexingSession {
      * @param status
      */
     public getSessionStatusMessage(): string {
-        switch (this.status) {
-            case SessionStatus.STOPPED:
-                return Craft.t('app', 'Waiting');
+        switch (this.getSessionStatus()) {
+            case SessionStatus.ACTIONREQUIRED:
+                return Craft.t('app', 'Waiting for review');
                 break;
-            case SessionStatus.RUNNING:
-                return Craft.t('app', 'Running');
+            case SessionStatus.ACTIVE:
+                return Craft.t('app', 'Active');
                 break;
             case SessionStatus.QUEUE:
                 return Craft.t('app', 'Running in background');

@@ -1,14 +1,20 @@
 "use strict";
 var SessionStatus;
 (function (SessionStatus) {
-    SessionStatus[SessionStatus["STOPPED"] = 0] = "STOPPED";
-    SessionStatus[SessionStatus["RUNNING"] = 1] = "RUNNING";
+    SessionStatus[SessionStatus["ACTIONREQUIRED"] = 0] = "ACTIONREQUIRED";
+    SessionStatus[SessionStatus["ACTIVE"] = 1] = "ACTIVE";
     SessionStatus[SessionStatus["QUEUE"] = 2] = "QUEUE";
 })(SessionStatus || (SessionStatus = {}));
 var IndexingActions;
 (function (IndexingActions) {
     IndexingActions["STOP"] = "asset-indexes/stop-indexing-session";
 })(IndexingActions || (IndexingActions = {}));
+;
+var IndexerStatus;
+(function (IndexerStatus) {
+    IndexerStatus[IndexerStatus["STOPPED"] = 0] = "STOPPED";
+    IndexerStatus[IndexerStatus["RUNNING"] = 1] = "RUNNING";
+})(IndexerStatus || (IndexerStatus = {}));
 ;
 /**
  * Actual classes start here
@@ -22,15 +28,11 @@ class AssetIndexer {
      */
     constructor($indexingSessionTable, sessions) {
         this.indexingSessions = {};
-        this.runningSessions = {};
         this.$indexingSessionTable = $indexingSessionTable;
         this.indexingSessions = {};
-        this.runningSessions = {};
+        this.status = IndexerStatus.STOPPED;
         for (const session of sessions) {
             this.updateIndexingSessionData(session);
-        }
-        if (sessions.length > 0) {
-            this.$indexingSessionTable.removeClass('hidden');
         }
     }
     /**
@@ -50,6 +52,9 @@ class AssetIndexer {
         let $row;
         if (!this.indexingSessions[session.getSessionId()]) {
             this.$indexingSessionTable.find('tr[data-session-id="' + session.getSessionId() + '"]').remove();
+            if (this.$indexingSessionTable.find('tbody tr').length == 0) {
+                this.$indexingSessionTable.addClass('hidden');
+            }
             return;
         }
         $row = session.getIndexingSessionRowHtml();
@@ -60,6 +65,7 @@ class AssetIndexer {
         else {
             this.$indexingSessionTable.find('tbody').append($row);
         }
+        this.$indexingSessionTable.removeClass('hidden');
     }
     /**
      * Remove an indexing session
@@ -69,7 +75,6 @@ class AssetIndexer {
     discardIndexingSession(sessionId) {
         const session = this.indexingSessions[sessionId];
         delete this.indexingSessions[sessionId];
-        delete this.runningSessions[sessionId];
         this.renderIndexingSessionRow(session);
     }
     /**
@@ -86,7 +91,6 @@ class AssetIndexer {
         if (response.session) {
             const session = this.createSessionFromModel(response.session);
             this.indexingSessions[session.getSessionId()] = session;
-            this.runningSessions[session.getSessionId()] = true;
             this.renderIndexingSessionRow(session);
         }
         if (response.stop) {
@@ -103,24 +107,12 @@ class AssetIndexer {
      * @private
      */
     createSessionFromModel(sessionData) {
-        return new AssetIndexingSession(sessionData, this.getSessionStatus(sessionData), this);
-    }
-    /**
-     * Get session stat
-     * @param session
-     * @private
-     */
-    getSessionStatus(sessionData) {
-        if (sessionData.queueId) {
-            return SessionStatus.QUEUE;
-        }
-        return this.runningSessions[sessionData.id] ? SessionStatus.RUNNING : SessionStatus.STOPPED;
+        return new AssetIndexingSession(sessionData, this);
     }
 }
 class AssetIndexingSession {
-    constructor(model, status, indexer) {
+    constructor(model, indexer) {
         this.indexingSessionData = model;
-        this.status = status;
         this.indexer = indexer;
     }
     /**
@@ -128,6 +120,15 @@ class AssetIndexingSession {
      */
     getSessionId() {
         return this.indexingSessionData.id;
+    }
+    getSessionStatus() {
+        if (this.indexingSessionData.queueId) {
+            return SessionStatus.QUEUE;
+        }
+        if (this.indexingSessionData.actionRequired) {
+            return SessionStatus.ACTIONREQUIRED;
+        }
+        return SessionStatus.ACTIVE;
     }
     /**
      * Create row html as a JQuery object based on an indexing sessions
@@ -158,39 +159,39 @@ class AssetIndexingSession {
      * @private
      */
     getActionButtons() {
-        if (this.status === SessionStatus.QUEUE) {
+        if (this.getSessionStatus() === SessionStatus.QUEUE) {
             return $();
         }
         const $buttons = $('<div class="buttons"></div>');
-        let startStopMessage;
-        switch (this.status) {
-            case SessionStatus.RUNNING:
-                startStopMessage = Craft.t('app', 'Stop');
-                break;
-            case SessionStatus.STOPPED:
-                startStopMessage = Craft.t('app', 'Start');
-                const endMessage = Craft.t('app', 'Cancel');
-                $buttons.append($('<button />', {
-                    type: 'button',
-                    'class': 'btn submit',
-                    title: endMessage,
-                    "aria-label": endMessage,
-                }).text(endMessage)).on('click', ev => {
-                    const $container = $(ev.target).parent();
-                    if ($container.hasClass('disabled')) {
-                        return;
-                    }
-                    $container.addClass('disabled');
-                    this.indexer.stopIndexingSession(this.getSessionId());
-                });
-                break;
+        if (this.getSessionStatus() == SessionStatus.ACTIONREQUIRED) {
+            const reviewMessage = Craft.t('app', 'Review');
+            $buttons.append($('<button />', {
+                type: 'button',
+                'class': 'btn submit',
+                title: reviewMessage,
+                "aria-label": reviewMessage,
+            }).text(reviewMessage)).on('click', ev => {
+                const $container = $(ev.target).parent();
+                if ($container.hasClass('disabled')) {
+                    return;
+                }
+                $container.addClass('disabled');
+                // review indexing session.
+            });
         }
-        $buttons.prepend($('<button />', {
+        const discardMessage = Craft.t('app', 'Discard');
+        $buttons.append($('<button />', {
             type: 'button',
             'class': 'btn submit',
-            title: startStopMessage,
-            "aria-label": startStopMessage,
-        }).text(startStopMessage));
+            title: discardMessage,
+            "aria-label": discardMessage,
+        }).text(discardMessage)).on('click', ev => {
+            if ($buttons.hasClass('disabled')) {
+                return;
+            }
+            $buttons.addClass('disabled');
+            this.indexer.stopIndexingSession(this.getSessionId());
+        });
         return $buttons;
     }
     /**
@@ -199,12 +200,12 @@ class AssetIndexingSession {
      * @param status
      */
     getSessionStatusMessage() {
-        switch (this.status) {
-            case SessionStatus.STOPPED:
-                return Craft.t('app', 'Waiting');
+        switch (this.getSessionStatus()) {
+            case SessionStatus.ACTIONREQUIRED:
+                return Craft.t('app', 'Waiting for review');
                 break;
-            case SessionStatus.RUNNING:
-                return Craft.t('app', 'Running');
+            case SessionStatus.ACTIVE:
+                return Craft.t('app', 'Active');
                 break;
             case SessionStatus.QUEUE:
                 return Craft.t('app', 'Running in background');
