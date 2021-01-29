@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.6.2 - 2021-01-29
 
 ### Added
 - Added `craft\gql\handlers\Site`.
