@@ -13,6 +13,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\RequestOptions;
 use Psr\Http\Message\ResponseInterface;
 use yii\base\Component;
 
