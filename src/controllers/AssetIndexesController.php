@@ -55,14 +55,13 @@ class AssetIndexesController extends Controller
     {
         // No permission no bueno
         $this->requirePermission('utility:asset-indexes');
+        $this->requireAcceptsJson();
 
         return parent::beforeAction($action);
     }
 
     public function actionStartIndexing(): Response
     {
-        $this->requireAcceptsJson();
-
         $request = Craft::$app->getRequest();
         $volumes = (array)$request->getRequiredBodyParam('volumes');
         $cacheRemoteImages = (bool)$request->getBodyParam('cacheImages', false);
@@ -73,7 +72,22 @@ class AssetIndexesController extends Controller
         }
 
         $indexingSession = Craft::$app->getAssetIndexer()->startIndexingSession($volumes, $cacheRemoteImages, $asQueueJob);
+        $sessionData = $indexingSession->toArray();
+        $sessionData['dateCreated'] = $indexingSession->dateCreated->format('Y-m-d H:i');
+        $sessionData['dateUpdated'] = $indexingSession->dateUpdated->format('Y-m-d H:i');
 
-        return $this->asJson(['session' => $indexingSession->toArray([])]);
+        return $this->asJson(['session' => $sessionData]);
+    }
+
+    public function actionStopIndexingSession(): Response
+    {
+        $sessionId = (int) Craft::$app->getRequest()->getRequiredBodyParam('sessionId');
+
+        if (empty($sessionId)) {
+            return $this->asErrorJson(Craft::t('app', 'No indexing session specified'));
+        }
+
+        Craft::$app->getAssetIndexer()->stopIndexingSession($sessionId);
+        return $this->asJson(['stop' => $sessionId]);
     }
 }

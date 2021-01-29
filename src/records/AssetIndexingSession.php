@@ -21,6 +21,7 @@ use DateTime;
  * @property int|null $queueId If set, refers to the queue job id.
  * @property bool $actionRequired Whether action is required.
  * @property DateTime $dateUpdated Time when indexing session was last updated.
+ * @property DateTime $dateCreated Time when indexing session was last updated.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0

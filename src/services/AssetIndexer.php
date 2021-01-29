@@ -217,6 +217,22 @@ class AssetIndexer extends Component
     }
 
     /**
+     * Stop an indexing session by its id.
+     *
+     * @param int $sessionId
+     * @throws \Throwable
+     * @throws \yii\db\StaleObjectException
+     */
+    public function stopIndexingSession(int $sessionId): void
+    {
+        $sessionRecord = AssetIndexingSessionRecord::findOne($sessionId);
+
+        if ($sessionRecord) {
+            $sessionRecord->delete();
+        }
+    }
+
+    /**
      * Create a new indexing session.
      *
      * @param bool $cacheRemoteImages Whether remote images should be cached.
@@ -256,6 +272,8 @@ class AssetIndexer extends Component
         $record->save();
 
         $session->id = $record->id;
+        $session->dateUpdated = DateTimeHelper::toDateTime($record->dateUpdated);
+        $session->dateCreated = DateTimeHelper::toDateTime($record->dateCreated);
     }
 
     /**

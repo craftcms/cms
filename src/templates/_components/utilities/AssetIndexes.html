@@ -54,8 +54,8 @@
             totalEntries: {{ session.totalEntries }},
             processedEntries: {{ session.processedEntries }},
             queueId: {{ session.queueId ?? 0 }},
-            started: "{{ session.dateCreated|date("Y-m-d H:i") }}",
-            updated: "{{ session.dateUpdated|date("Y-m-d H:i") }}",
+            dateCreated: "{{ session.dateCreated|date("Y-m-d H:i") }}",
+            dateUpdated: "{{ session.dateUpdated|date("Y-m-d H:i") }}",
         };
 
         indexingSessions.push(data);
@@ -64,13 +64,26 @@
     Craft.AssetIndexer = new AssetIndexer($('#indexing-sessions'), indexingSessions);
 
     $('form#asset-indexes').on('submit', function (ev) {
+        const $submitButton = $('form#asset-indexes button.submit:last');
+
+        if ($submitButton.hasClass('disabled')) {
+            return false;
+        }
+
         const data = {};
         for (let param of $(ev.target).serialize().split('&')) {
             let parts = param.split('=');
             data[parts[0]] = parts[1];
         }
 
-        Craft.postActionRequest('asset-indexes/start-indexing', data, Craft.AssetIndexer.processResponse);
+        $submitButton.addClass('disabled').after('<div class="spinner"></div>');
+
+        Craft.postActionRequest('asset-indexes/start-indexing', data, function (response, textStatus) {
+            Craft.AssetIndexer.processResponse(response, textStatus);
+
+            $('form#asset-indexes .spinner').remove();
+            $submitButton.removeClass('disabled')
+        });
         return false;
     });
 {% endjs %}
