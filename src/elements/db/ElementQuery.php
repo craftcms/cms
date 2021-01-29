@@ -1832,7 +1832,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                     $row['draftName'],
                     $row['draftNotes'],
                     $row['draftTrackChanges'],
-                    $row['draftDateLastMerged'],
+                    $row['draftDateLastMerged']
                 );
             }
         }
