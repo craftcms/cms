@@ -731,7 +731,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         if ($value instanceof ElementInterface) {
             $this->draftOf = $value->getSourceId();
-        } else if (is_numeric($value) || $value === false) {
+        } else if (is_numeric($value) || $value === '*' || $value === false) {
             $this->draftOf = $value;
         } else {
             throw new InvalidArgumentException('Invalid draftOf value');

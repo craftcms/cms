@@ -8,6 +8,7 @@
 
 ### Fixed
 - Fixed a bug where Edit Entry pages would get a “Create a new entry” heading when editing an existing draft entry.
+- Fixed a bug where `craft\elements\db\ElementQuery::draftOf()` didn’t accept passing in `'*'`. ([#7470](https://github.com/craftcms/cms/issues/7470))
 
 ## 3.6.2 - 2021-01-29
 
