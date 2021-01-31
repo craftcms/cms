@@ -2845,7 +2845,7 @@ body.rtl .sitepicker-group li a:after { left: 12px; }
 /*  Retina graphics
 /* ----------------------------------------*/
 @media only screen and (-webkit-min-device-pixel-ratio: 1.5), only screen and (-moz-min-device-pixel-ratio: 1.5), only screen and (-o-min-device-pixel-ratio: 3 / 2), only screen and (min-device-pixel-ratio: 1.5), only screen and (-o-min-device-pixel-ratio: 3/2), only screen and (min-resolution: 1.5dppx) { table.data thead th.ordered.loading { background-image: url(../images/spinner_tableheader_2x.gif); -o-background-size: 26px; background-size: 26px; }
-  .spinner .elements.busy:after { background-image: url(../images/spinner_2x.gif); -o-background-size: 20px; background-size: 20px; }
+  .spinner, .elements.busy:after { background-image: url(../images/spinner_2x.gif); -o-background-size: 20px; background-size: 20px; }
   .spinner.over-bg { background-image: url(../images/spinner_bg_2x.gif); }
   .spinner.big { background-image: url(../images/spinner_big_2x.gif); -o-background-size: 48px; background-size: 48px; }
   .spinner.big.over-bg { background-image: url(../images/spinner_big_bg_2x.gif); }

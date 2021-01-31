@@ -5633,7 +5633,7 @@ only screen and (min-resolution: 1.5dppx) {
     }
   }
 
-  .spinner
+  .spinner,
   .elements.busy:after {
     background-image: url(../images/spinner_2x.gif);
     background-size: 20px;
