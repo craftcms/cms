@@ -190,7 +190,7 @@ class AssetIndexer extends Component
             $volumeList = $volumeService->getAllVolumes();
         } else {
             foreach ($volumes as $volumeId) {
-                if ($volume = $volumeService->getVolumeById($volumeId)) {
+                if ($volume = $volumeService->getVolumeById((int)$volumeId)) {
                     $volumeList[] = $volume;
                 }
             }
@@ -242,7 +242,6 @@ class AssetIndexer extends Component
     protected function createIndexingSession(array $volumeList, bool $cacheRemoteImages = true): AssetIndexingSession
     {
         $indexedVolumes = array_map(fn (Volume $volume) => $volume->name, $volumeList);
-
         $session = new AssetIndexingSession([
             'totalEntries' => 0,
             'indexedVolumes' => implode(', ', $indexedVolumes),
