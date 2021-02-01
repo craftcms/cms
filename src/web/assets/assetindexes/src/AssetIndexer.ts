@@ -24,11 +24,6 @@ enum IndexingActions {
     STOP = 'asset-indexes/stop-indexing-session'
 };
 
-enum IndexerStatus {
-    STOPPED,
-    RUNNING
-};
-
 // Declare existing variables, mock the things we'll use.
 declare var Craft: {
     ProgressBar: ProgressBarInterface,
@@ -64,11 +59,11 @@ type CraftResponse = {
 class AssetIndexer {
     private $indexingSessionTable: JQuery;
 
+    private currentIndexingSession: number | null;
+
     private indexingSessions: {
         [key: number]: AssetIndexingSession
     } = {}
-
-    private status: IndexerStatus
 
     /**
      * @param $element The indexing session table
@@ -77,7 +72,7 @@ class AssetIndexer {
     constructor($indexingSessionTable: JQuery, sessions: AssetIndexingSessionModel[]) {
         this.$indexingSessionTable = $indexingSessionTable;
         this.indexingSessions = {};
-        this.status = IndexerStatus.STOPPED;
+        this.currentIndexingSession = null;
 
         for (const session of sessions) {
             this.updateIndexingSessionData(session);
@@ -133,6 +128,10 @@ class AssetIndexer {
         const session = this.indexingSessions[sessionId];
         delete this.indexingSessions[sessionId];
 
+        if (this.currentIndexingSession === sessionId) {
+            this.currentIndexingSession = null;
+        }
+
         this.renderIndexingSessionRow(session)
     }
 
@@ -152,11 +151,22 @@ class AssetIndexer {
             const session = this.createSessionFromModel(response.session);
             this.indexingSessions[session.getSessionId()] = session;
             this.renderIndexingSessionRow(session);
+
+            if (!this.currentIndexingSession) {
+                this.currentIndexingSession = session.getSessionId();
+            }
+
+            this.performIndexingStep();
         }
 
         if (response.stop) {
             this.discardIndexingSession(response.stop);
         }
+    }
+
+    public performIndexingStep(): void
+    {
+
     }
 
     public stopIndexingSession(sessionId: number): void {

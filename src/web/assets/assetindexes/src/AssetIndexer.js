@@ -10,12 +10,6 @@ var IndexingActions;
     IndexingActions["STOP"] = "asset-indexes/stop-indexing-session";
 })(IndexingActions || (IndexingActions = {}));
 ;
-var IndexerStatus;
-(function (IndexerStatus) {
-    IndexerStatus[IndexerStatus["STOPPED"] = 0] = "STOPPED";
-    IndexerStatus[IndexerStatus["RUNNING"] = 1] = "RUNNING";
-})(IndexerStatus || (IndexerStatus = {}));
-;
 /**
  * Actual classes start here
  */
@@ -30,7 +24,7 @@ class AssetIndexer {
         this.indexingSessions = {};
         this.$indexingSessionTable = $indexingSessionTable;
         this.indexingSessions = {};
-        this.status = IndexerStatus.STOPPED;
+        this.currentIndexingSession = null;
         for (const session of sessions) {
             this.updateIndexingSessionData(session);
         }
@@ -75,6 +69,9 @@ class AssetIndexer {
     discardIndexingSession(sessionId) {
         const session = this.indexingSessions[sessionId];
         delete this.indexingSessions[sessionId];
+        if (this.currentIndexingSession === sessionId) {
+            this.currentIndexingSession = null;
+        }
         this.renderIndexingSessionRow(session);
     }
     /**
@@ -92,10 +89,16 @@ class AssetIndexer {
             const session = this.createSessionFromModel(response.session);
             this.indexingSessions[session.getSessionId()] = session;
             this.renderIndexingSessionRow(session);
+            if (!this.currentIndexingSession) {
+                this.currentIndexingSession = session.getSessionId();
+            }
+            this.performIndexingStep();
         }
         if (response.stop) {
             this.discardIndexingSession(response.stop);
         }
+    }
+    performIndexingStep() {
     }
     stopIndexingSession(sessionId) {
         Craft.postActionRequest(IndexingActions.STOP, { sessionId: sessionId }, this.processResponse.bind(this));
@@ -136,9 +139,9 @@ class AssetIndexingSession {
      * @private
      */
     getIndexingSessionRowHtml() {
-        console.log(this.indexingSessionData);
         const $tr = $('<tr class="indexingSession" data-session-id="' + this.getSessionId() + '">');
         $tr.data('session-id', this.indexingSessionData.id).data('as-queue', this.indexingSessionData.queueId ? this.indexingSessionData.queueId : null);
+        $tr.append('<td>' + this.indexingSessionData.indexedVolumes + '</td>');
         $tr.append('<td>' + this.indexingSessionData.dateCreated + '</td>');
         $tr.append('<td>' + this.indexingSessionData.dateUpdated + '</td>');
         const $progressCell = $('<td class="progress"></td>').data('total', this.indexingSessionData.totalEntries).data('processed', this.indexingSessionData.processedEntries).css('position', 'relative');
