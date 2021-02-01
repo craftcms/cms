@@ -24,6 +24,11 @@ class AssetIndexingSession extends Model
     public ?int $id = null;
 
     /**
+     * @var string Textual list of volumes being indexed
+     */
+    public string $indexedVolumes;
+
+    /**
      * @var int|null The total amount of entries.
      */
     public ?int $totalEntries;

@@ -15,6 +15,7 @@ use DateTime;
  * Class AssetIndexData record.
  *
  * @property int $id ID
+ * @property string $indexedVolumes Textual list of volumes being indexed
  * @property int|null $totalEntries The total amount of entries.
  * @property int|null $processedEntries The number of processed entries.
  * @property bool $cacheRemoteImages Whether remote images should be cached locally.

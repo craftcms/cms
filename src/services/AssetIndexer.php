@@ -159,7 +159,7 @@ class AssetIndexer extends Component
     public function getExistingIndexingSessions(): array
     {
         $query = (new Query())
-            ->select(['id', 'totalEntries', 'processedEntries', 'cacheRemoteImages', 'queueId', 'actionRequired', 'dateCreated', 'dateUpdated'])
+            ->select(['id', 'indexedVolumes', 'totalEntries', 'processedEntries', 'cacheRemoteImages', 'queueId', 'actionRequired', 'dateCreated', 'dateUpdated'])
             ->from(Table::ASSETINDEXINGSESSIONS);
 
         $rows = $query->all();
@@ -196,7 +196,7 @@ class AssetIndexer extends Component
             }
         }
 
-        $session = $this->createIndexingSession($cacheRemoteImages);
+        $session = $this->createIndexingSession($volumeList, $cacheRemoteImages);
         $total = 0;
 
         /** @var VolumeInterface $volume */
@@ -235,13 +235,17 @@ class AssetIndexer extends Component
     /**
      * Create a new indexing session.
      *
+     * @param array $volumeList
      * @param bool $cacheRemoteImages Whether remote images should be cached.
      * @return AssetIndexingSession
      */
-    protected function createIndexingSession(bool $cacheRemoteImages = true): AssetIndexingSession
+    protected function createIndexingSession(array $volumeList, bool $cacheRemoteImages = true): AssetIndexingSession
     {
+        $indexedVolumes = array_map(fn (Volume $volume) => $volume->name, $volumeList);
+
         $session = new AssetIndexingSession([
             'totalEntries' => 0,
+            'indexedVolumes' => implode(', ', $indexedVolumes),
             'processedEntries' => 0,
             'cacheRemoteImages' => $cacheRemoteImages,
             'actionRequired' => false,
@@ -254,6 +258,12 @@ class AssetIndexer extends Component
         return $session;
     }
 
+    /**
+     * Store an indexing session to DB.
+     *
+     * @param AssetIndexingSession $session
+     * @throws \Exception
+     */
     protected function storeIndexingSession(AssetIndexingSession $session): void
     {
         if ($session->id !== null) {
@@ -262,6 +272,7 @@ class AssetIndexer extends Component
 
         $record = $record ?? new AssetIndexingSessionRecord();
 
+        $record->indexedVolumes = $session->indexedVolumes;
         $record->totalEntries = $session->totalEntries;
         $record->processedEntries = $session->processedEntries;
         $record->cacheRemoteImages = $session->cacheRemoteImages;
