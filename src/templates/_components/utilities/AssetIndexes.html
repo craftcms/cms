@@ -5,6 +5,7 @@
     <table id="indexing-sessions" class="hidden">
         <thead>
             <tr>
+                <th>Volumes being indexed</th>
                 <th>Time started</th>
                 <th>Last change</th>
                 <th>Progress</th>
@@ -51,6 +52,7 @@
     {% for session in existingSessions %}
         data = {
             id: {{ session.id }},
+            indexedVolumes: "{{ session.indexedVolumes }}",
             totalEntries: {{ session.totalEntries }},
             processedEntries: {{ session.processedEntries }},
             queueId: {{ session.queueId ?? 0 }},

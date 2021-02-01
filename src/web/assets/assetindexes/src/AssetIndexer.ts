@@ -40,6 +40,7 @@ declare var Garnish: any;
 
 type AssetIndexingSessionModel = {
     readonly id: number,
+    readonly indexedVolumes: string,
     readonly totalEntries: number,
     readonly processedEntries: number,
     readonly dateCreated: string,
@@ -207,9 +208,9 @@ class AssetIndexingSession {
      * @private
      */
     public getIndexingSessionRowHtml(): JQuery {
-        console.log(this.indexingSessionData);
         const $tr = $('<tr class="indexingSession" data-session-id="' + this.getSessionId() + '">');
         $tr.data('session-id', this.indexingSessionData.id).data('as-queue', this.indexingSessionData.queueId ? this.indexingSessionData.queueId : null);
+        $tr.append('<td>' + this.indexingSessionData.indexedVolumes + '</td>');
         $tr.append('<td>' + this.indexingSessionData.dateCreated + '</td>');
         $tr.append('<td>' + this.indexingSessionData.dateUpdated + '</td>');
 
