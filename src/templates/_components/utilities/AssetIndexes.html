@@ -75,7 +75,7 @@
         const data = {};
         for (let param of $(ev.target).serialize().split('&')) {
             let parts = param.split('=');
-            data[parts[0]] = parts[1];
+            data[unescape(parts[0])] = parts[1];
         }
 
         $submitButton.addClass('disabled').after('<div class="spinner"></div>');
