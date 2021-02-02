@@ -2,14 +2,10 @@
   "private": true,
   "main": "gulpfile.js",
   "scripts": {
-    "preinstall": "npx npm-force-resolutions",
     "gulp:cp": "gulp cp",
     "gulp:cp-sass": "gulp cp-sass",
     "gulp:cp-js": "gulp cp-js",
     "gulp:deps": "gulp deps"
-  },
-  "resolutions": {
-    "graceful-fs": "^4.2.4"
   },
   "devDependencies": {
     "@babel/core": "^7.10.1",
