@@ -1351,7 +1351,7 @@ return [
     'The {field} field’s {setting} setting has an invalid subpath (“{subpath}”).' => 'A(z) {field} mező {setting} beállítása érvénytelen alútvonalat tartalmaz („{subpath}”).',
     'The {field} field’s {setting} setting is set to an invalid volume.' => 'A(z) {field} mező {setting} beállítása érvénytelen kötetre van állítva.',
     'The “From” name Craft CMS will use when sending email.' => 'A Craft CMS által az e-mailek küldéséhez használt küldőnév.',
-    'There are license trials that require payment.' => 'Vannak próbalicencek, amelyek fizetést igényelnek.',
+    'There are trial licenses that require payment.' => 'There are trial licenses that require payment.',
     'There are no available plugins.' => 'Nincs beépülő modul telepítve.',
     'There aren’t any pending project config changes to apply.' => 'A projekt konfigurációjában nincsenek alkalmazandó függőben lévő változások.',
     'There was a problem activating the user.' => 'Probléma lépett fel a felhasználó aktiválása során.',
