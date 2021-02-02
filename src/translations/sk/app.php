@@ -1351,7 +1351,7 @@ return [
     'The {field} field’s {setting} setting has an invalid subpath (“{subpath}”).' => 'Nastavenie {setting} poľa {field} má neplatnú podradenú cestu („{subpath}“).',
     'The {field} field’s {setting} setting is set to an invalid volume.' => 'Nastavenie {setting} poľa {field} je nastavené na neplatný zväzok.',
     'The “From” name Craft CMS will use when sending email.' => 'Meno "Od", ktoré bude Craft CMS používať pri odosielaní emailov.',
-    'There are trial licenses that require payment.' => 'There are trial licenses that require payment.',
+    'There are trial licenses that require payment.' => 'Existujú skúšobné licencie, ktoré vyžadujú platbu.',
     'There are no available plugins.' => 'Nie sú k dispozícii žiadne pluginy.',
     'There aren’t any pending project config changes to apply.' => 'Neexistujú žiadne použiteľné čakajúce zmeny v nastavení projektu.',
     'There was a problem activating the user.' => 'Vyskytol sa problém s aktiváciou používateľa.',
