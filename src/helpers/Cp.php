@@ -302,7 +302,7 @@ class Cp
             $htmlAttributes['class'] .= ' error';
         }
 
-        if ($element::hasStatuses()) {
+        if ($showStatus && $element::hasStatuses()) {
             $htmlAttributes['class'] .= ' hasstatus';
         }
 
