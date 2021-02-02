@@ -661,6 +661,15 @@ interface ElementInterface extends ComponentInterface
     public function getUiLabel(): string;
 
     /**
+     * Defines what the element should be called within the control panel.
+     *
+     * @param string|null $label
+     * @return void
+     * @since 3.6.3
+     */
+    public function setUiLabel(?string $label): void;
+
+    /**
      * Returns the reference string to this element.
      *
      * @return string|null

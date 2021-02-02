@@ -876,6 +876,8 @@ abstract class Element extends Component implements ElementInterface
                 return self::_mapLocalized($sourceElements);
             case 'currentRevision':
                 return self::_mapCurrentRevisions($sourceElements);
+            case 'drafts':
+                return self::_mapDrafts($sourceElements);
             case 'draftCreator':
                 return self::_mapDraftCreators($sourceElements);
             case 'revisionCreator':
@@ -1154,6 +1156,34 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
+     * Returns an eager-loading map for the source elements’ current revisions.
+     *
+     * @param ElementInterface[] $sourceElements An array of the source elements
+     * @return array The eager-loading element ID mappings
+     */
+    private static function _mapDrafts(array $sourceElements): array
+    {
+        // Get the source element IDs
+        $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id');
+
+        $map = (new Query())
+            ->select([
+                'source' => 'd.sourceId',
+                'target' => 'e.id',
+            ])
+            ->from(['d' => Table::DRAFTS])
+            ->innerJoin(['e' => Table::ELEMENTS, '[[e.draftId]] = [[d.id]]'])
+            ->where(['d.sourceId' => $sourceElementIds])
+            ->all();
+
+        return [
+            'elementType' => static::class,
+            'map' => $map,
+            'criteria' => ['drafts' => true],
+        ];
+    }
+
+    /**
      * Returns an eager-loading map for the source elements’ draft creators.
      *
      * @param ElementInterface[] $sourceElements An array of the source elements
@@ -1423,6 +1453,13 @@ abstract class Element extends Component implements ElementInterface
      * @see setEnabledForSite()
      */
     private $_enabledForSite = true;
+
+    /**
+     * @var string|null
+     * @see getUiLabel()
+     * @see setUiLabel()
+     */
+    private $_uiLabel;
 
     /**
      * @inheritdoc
@@ -2094,7 +2131,15 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getUiLabel(): string
     {
-        return (string)$this;
+        return $this->_uiLabel ?? (string)$this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setUiLabel(?string $label): void
+    {
+        $this->_uiLabel = $label;
     }
 
     /**

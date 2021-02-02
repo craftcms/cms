@@ -2,10 +2,20 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\base\ElementInterface::setUiLabel()`.
+- Added `craft\fields\BaseRelationField::tableAttributeHtml()`.
+- Added `craft\helpers\Cp::elementPreviewHtml()`.
+
 ### Changed
 - Entry indexes now include draft entries in the main entry listings. ([#7401](https://github.com/craftcms/cms/issues/7401))
+- Entry indexes can now show a “Drafts” column, which lists the entries’ drafts. ([#7473](https://github.com/craftcms/cms/issues/7473))
 - Entry queries’ `drafts` param can now be set to `null`, indicating that both normal entries _and_ drafts can be included in the results.
+- Entries can now be eager-loaded with `drafts`.
 - `craft\helpers\Cp::elementHtml` now has a `$showDraftBadge` argument.
+
+### Removed
+- Removed `craft\fields\BaseRelationField::elementPreviewHtml()`.
 
 ### Fixed
 - Fixed a bug where Edit Entry pages would get a “Create a new entry” heading when editing an existing draft entry.

@@ -393,6 +393,49 @@ class Cp
     }
 
     /**
+     * Returns element preview HTML, for a list of elements.
+     *
+     * @param ElementInterface[] $elements The elements
+     * @param string $size The size of the element (`small` or `large`)
+     * @param bool $showStatus Whether the element status should be shown (if the element type has statuses)
+     * @param bool $showThumb Whether the element thumb should be shown (if the element has one)
+     * @param bool $showLabel Whether the element label should be shown
+     * @param bool $showDraftBadge Whether to show the “Draft” badge beside the label if the element is a draft
+     * @return string
+     * @since 3.6.3
+     */
+    public static function elementPreviewHtml(
+        array $elements,
+        string $size = self::ELEMENT_SIZE_SMALL,
+        bool $showStatus = true,
+        bool $showThumb = true,
+        bool $showLabel = true,
+        bool $showDraftBadge = true
+    ): string {
+        if (empty($elements)) {
+            return '';
+        }
+
+        $first = array_shift($elements);
+        $html = static::elementHtml($first, 'index', $size, null, $showStatus, $showThumb, $showLabel, $showDraftBadge);
+
+        if (!empty($elements)) {
+            $otherHtml = '';
+            foreach ($elements as $other) {
+                $otherHtml .= static::elementHtml($other, 'index', $size, null, $showStatus, $showThumb, $showLabel, $showDraftBadge);
+            }
+            $html .= Html::tag('span', '+' . Craft::$app->getFormatter()->asInteger(count($elements)), [
+                'title' => implode(', ', ArrayHelper::getColumn($elements, 'title')),
+                'class' => 'btn small',
+                'role' => 'button',
+                'onclick' => 'jQuery(this).replaceWith(' . Json::encode($otherHtml) . ')',
+            ]);
+        }
+
+        return $html;
+    }
+
+    /**
      * Renders a field’s HTML, for the given input HTML or a template.
      *
      * @param string $input The input HTML or template path. If passing a template path, it must begin with `template:`.
