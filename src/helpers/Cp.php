@@ -233,6 +233,7 @@ class Cp
      * @param bool $showStatus Whether the element status should be shown (if the element type has statuses)
      * @param bool $showThumb Whether the element thumb should be shown (if the element has one)
      * @param bool $showLabel Whether the element label should be shown
+     * @param bool $showDraftBadge Whether to show the “Draft” badge beside the label if the element is a draft
      * @return string
      * @since 3.5.8
      */
@@ -243,7 +244,8 @@ class Cp
         ?string $inputName = null,
         bool $showStatus = true,
         bool $showThumb = true,
-        bool $showLabel = true
+        bool $showLabel = true,
+        bool $showDraftBadge = true
     ): string {
         $label = $element->getUiLabel();
 
@@ -376,7 +378,7 @@ class Cp
                 $html .= $encodedLabel;
             }
 
-            if ($element->getIsDraft()) {
+            if ($showDraftBadge && $element->getIsDraft()) {
                 $html .= Html::tag('span', Craft::t('app', 'Draft'), [
                     'class' => 'draft-label',
                 ]);
