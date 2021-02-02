@@ -1351,7 +1351,7 @@ return [
     'The {field} field’s {setting} setting has an invalid subpath (“{subpath}”).' => 'يحتوي إعداد {field} الحقل {setting} على مسار فرعي غير صالح (“{subpath}”).',
     'The {field} field’s {setting} setting is set to an invalid volume.' => 'تم تعيين إعداد {setting} الحقل {field} إلى وحدة تخزين غير صالحة.',
     'The “From” name Craft CMS will use when sending email.' => 'اسم "المرسل" الذي سوف يستخدمه Craft CMS عند إرسال بريد إلكتروني.',
-    'There are trial licenses that require payment.' => 'There are trial licenses that require payment.',
+    'There are trial licenses that require payment.' => 'هناك فترات تجريبية مرخصة تتطلب الدفع.',
     'There are no available plugins.' => 'لا تتوفر أي ملحقات.',
     'There aren’t any pending project config changes to apply.' => 'ليست هناك أي تغييرات معلقة خاصة بتكوين المشروع ليتم تطبيقها.',
     'There was a problem activating the user.' => 'حدثت مشكلة أثناء تنشيط المستخدم.',
