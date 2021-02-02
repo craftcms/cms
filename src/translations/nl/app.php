@@ -1351,7 +1351,7 @@ return [
     'The {field} field’s {setting} setting has an invalid subpath (“{subpath}”).' => 'De instelling {setting} van het veld {field} heeft een ongeldig subpad (“{subpath}”).',
     'The {field} field’s {setting} setting is set to an invalid volume.' => 'De instelling {setting} van het veld {field} is ingesteld op een ongeldig volume.',
     'The “From” name Craft CMS will use when sending email.' => 'De \'Van\' naam die Craft CMS gebruikt bij het verzenden van e-mails.',
-    'There are license trials that require payment.' => 'Er zijn licentieproefversies waarvoor betaling vereist is.',
+    'There are trial licenses that require payment.' => 'There are trial licenses that require payment.',
     'There are no available plugins.' => 'Er zijn geen invoegtoepassingen beschikbaar.',
     'There aren’t any pending project config changes to apply.' => 'Er zijn geen projectconfiguratiewijzigingen in behandeling om toe te passen.',
     'There was a problem activating the user.' => 'Er was een probleem met het activeren van de gebruiker.',
