@@ -1351,7 +1351,7 @@ return [
     'The {field} field’s {setting} setting has an invalid subpath (“{subpath}”).' => 'ההגדרה {setting} של השדה {field} כוללת נתיב משני לא חוקי ("{subpath}").',
     'The {field} field’s {setting} setting is set to an invalid volume.' => 'ההגדרה {setting} של השדה {field} מוגדר לאמצעי אחסון לא חוקי.',
     'The “From” name Craft CMS will use when sending email.' => 'השם שבו תשתמש template בשורת "מאת" במשלוח דואר אלקטרוני.',
-    'There are license trials that require payment.' => 'קיימים רישיונות בתקופת ניסיון עבורם נדרש תשלום.',
+    'There are trial licenses that require payment.' => 'קיימים רישיונות בתקופת ניסיון עבורם נדרש תשלום.',
     'There are no available plugins.' => 'אין תוספים זמינים.',
     'There aren’t any pending project config changes to apply.' => 'אין כל שינויי תצורה שממתינים להחלה.',
     'There was a problem activating the user.' => 'הייתה בעיה בהפעלת המשתמש.',

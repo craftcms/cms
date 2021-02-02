@@ -147,7 +147,7 @@ class Cp
             if (!empty($licenseAlerts)) {
                 if ($canSettleUp) {
                     if ($path !== 'plugin-store/buy-all-trials') {
-                        $alerts[] = Craft::t('app', 'There are license trials that require payment.') . ' ' .
+                        $alerts[] = Craft::t('app', 'There are trial licenses that require payment.') . ' ' .
                             Html::a(Craft::t('app', 'Buy now'), UrlHelper::cpUrl('plugin-store/buy-all-trials'), ['class' => 'go']);
                     }
                 } else {

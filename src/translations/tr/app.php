@@ -1351,7 +1351,7 @@ return [
     'The {field} field’s {setting} setting has an invalid subpath (“{subpath}”).' => '{field} alanının {setting} ayarında geçersiz bir alt dizin yolu ("{subpath}") var.',
     'The {field} field’s {setting} setting is set to an invalid volume.' => '{field} alanının {setting} ayarı için geçersiz bir birim girildi.',
     'The “From” name Craft CMS will use when sending email.' => 'Craft CMS\'in eposta gönderirken "Kimden" için kullanacağı ad',
-    'There are license trials that require payment.' => 'Ödeme gerektiren lisans denemeleri var.',
+    'There are trial licenses that require payment.' => 'Ödeme gerektiren lisans denemeleri var.',
     'There are no available plugins.' => 'Hiçbir uygun eklenti bulunamadı.',
     'There aren’t any pending project config changes to apply.' => 'Uygulanmak üzere bekleyen proje yapılandırma değişikliği yok.',
     'There was a problem activating the user.' => 'Kullanıcının etkinleştirilmesinde bir problem oluştu.',

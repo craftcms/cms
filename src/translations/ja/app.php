@@ -1351,7 +1351,7 @@ return [
     'The {field} field’s {setting} setting has an invalid subpath (“{subpath}”).' => '「{field}」フィールドの「{setting}」設定が無効なサブパス (「{subpath}」) に設定されています。',
     'The {field} field’s {setting} setting is set to an invalid volume.' => '「{field}」フィールドの「{setting}」設定が無効なボリュームに設定されています。',
     'The “From” name Craft CMS will use when sending email.' => 'Eメール送信の際にCraft CMSが使用する「送信者」名',
-    'There are license trials that require payment.' => '支払いが必要なトライアルライセンスがあります。',
+    'There are trial licenses that require payment.' => '支払いが必要なトライアルライセンスがあります。',
     'There are no available plugins.' => 'プラグインがありません。',
     'There aren’t any pending project config changes to apply.' => '適用する保留中のプロジェクト構成の変更はありません。',
     'There was a problem activating the user.' => 'ユーザーを有効にしようとしましたが問題が生じました。',
