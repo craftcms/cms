@@ -1172,7 +1172,7 @@ abstract class Element extends Component implements ElementInterface
                 'target' => 'e.id',
             ])
             ->from(['d' => Table::DRAFTS])
-            ->innerJoin(['e' => Table::ELEMENTS, '[[e.draftId]] = [[d.id]]'])
+            ->innerJoin(['e' => Table::ELEMENTS], '[[e.draftId]] = [[d.id]]')
             ->where(['d.sourceId' => $sourceElementIds])
             ->all();
 
