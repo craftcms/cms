@@ -230,7 +230,7 @@ class Cp
      * @param string $context The context the element is going to be shown in (`index`, `field`, etc.)
      * @param string $size The size of the element (`small` or `large`)
      * @param string|null $inputName The `name` attribute that should be set on the hidden input, if `$context` is set to `field`
-     * @param bool $showStatus Whether the elemnet status should be shown (if the element type has statuses)
+     * @param bool $showStatus Whether the element status should be shown (if the element type has statuses)
      * @param bool $showThumb Whether the element thumb should be shown (if the element has one)
      * @param bool $showLabel Whether the element label should be shown
      * @return string
