@@ -1351,7 +1351,7 @@ return [
     'The {field} field’s {setting} setting has an invalid subpath (“{subpath}”).' => 'تنظیم {setting} فیلد یک زیر مسیر غیر معتبر دارد ("{subpath}").',
     'The {field} field’s {setting} setting is set to an invalid volume.' => 'تنظیم {setting} فیلد {field} به یک مخزن نامعتبر تنظیم شده است.',
     'The “From” name Craft CMS will use when sending email.' => 'نام "ارسال کننده" که Craft CMS در هنگام ارسال یک پست الکترونیکی استفاده می نماید.',
-    'There are license trials that require payment.' => 'یک سری دوره‌های آزمایشی لایسنس هست که مستلزم پرداخت است.',
+    'There are trial licenses that require payment.' => 'There are trial licenses that require payment.',
     'There are no available plugins.' => 'پلاگینی موجود نیست.',
     'There aren’t any pending project config changes to apply.' => 'تغییرات در حال انتظار پیکربندی پروژه برای اعمال وجود ندارد.',
     'There was a problem activating the user.' => 'مشکلی در هنگام فعال کردن کاربر وجود داشت.',
