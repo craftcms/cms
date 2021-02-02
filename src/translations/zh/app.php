@@ -1351,7 +1351,7 @@ return [
     'The {field} field’s {setting} setting has an invalid subpath (“{subpath}”).' => '{field} 字段的 {setting} 设置具有无效的子路径（“{subpath}”）。',
     'The {field} field’s {setting} setting is set to an invalid volume.' => '{field} 字段的 {setting} 设置被设置为无效的存储卷。',
     'The “From” name Craft CMS will use when sending email.' => 'Craft CMS 发送邮件时要使用的“发件人”姓名。',
-    'There are license trials that require payment.' => '有需要付款的试用版许可证。',
+    'There are trial licenses that require payment.' => 'There are trial licenses that require payment.',
     'There are no available plugins.' => '没有可用的插件。',
     'There aren’t any pending project config changes to apply.' => '没有任何要应用的待定项目配置更改。',
     'There was a problem activating the user.' => '激活用户时发生问题。',
