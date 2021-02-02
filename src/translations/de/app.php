@@ -1351,7 +1351,7 @@ return [
     'The {field} field’s {setting} setting has an invalid subpath (“{subpath}”).' => 'Die {setting}-Einstellung des {field}-Feldes verfügt über einen ungültigen Unterpfad („{subpath}“).',
     'The {field} field’s {setting} setting is set to an invalid volume.' => 'Die {setting}-Einstellung des {field}-Feldes ist auf ein ungültiges Volumen eingestellt.',
     'The “From” name Craft CMS will use when sending email.' => 'Den "Von" Namen, den Craft CMS beim Verschicken einer Email nutzen wird.',
-    'There are license trials that require payment.' => 'Es sind Probelizenzen vorhanden, welche Bezahlung erfordern.',
+    'There are trial licenses that require payment.' => 'There are trial licenses that require payment.',
     'There are no available plugins.' => 'Es sind keine Plug-ins verfügbar.',
     'There aren’t any pending project config changes to apply.' => 'Es gibt keine ausstehenden Änderungen an der Projektkonfiguration anzuwenden.',
     'There was a problem activating the user.' => 'Beim Aktivieren des Benutzers ist ein Problem aufgetreten.',
