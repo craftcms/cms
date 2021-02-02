@@ -262,13 +262,13 @@ class UsersController extends Controller
     /**
      * Logs a user in for impersonation via an impersonation token.
      *
-     * @param int|null $userId
+     * @param int $userId
      * @return Response|null
      * @throws BadRequestHttpException
      * @throws ForbiddenHttpException
      * @since 3.6.0
      */
-    public function actionImpersonateWithToken(?int $userId)
+    public function actionImpersonateWithToken(int $userId)
     {
         $this->requireToken();
 
