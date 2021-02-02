@@ -1351,7 +1351,7 @@ return [
     'The {field} field’s {setting} setting has an invalid subpath (“{subpath}”).' => '{field}-fältets {setting}-inställning innehåller en ogiltig underordnad sökväg (”{subpath}”).',
     'The {field} field’s {setting} setting is set to an invalid volume.' => '{field}-fältets {setting}-inställning anger en ogiltig volym.',
     'The “From” name Craft CMS will use when sending email.' => 'Avsändarnamnet Craft CMS kommer använda vid skickande av e-post.',
-    'There are license trials that require payment.' => 'Det finns testversioner med licens som kräver betalning.',
+    'There are trial licenses that require payment.' => 'There are trial licenses that require payment.',
     'There are no available plugins.' => 'Det finns inga tillgängliga tillägg',
     'There aren’t any pending project config changes to apply.' => 'Det finns inga väntande projektkonfigurationsändringar att tillämpa.',
     'There was a problem activating the user.' => 'Det uppstod ett problem vid aktivering av användaren.',
