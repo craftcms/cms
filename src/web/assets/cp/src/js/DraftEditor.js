@@ -176,6 +176,19 @@ Craft.DraftEditor = Garnish.Base.extend({
         if (Craft.autosaveDrafts) {
             this.listenForChanges();
         }
+
+        if (this.settings.canUpdateSource) {
+            Garnish.shortcutManager.registerShortcut({
+                keyCode: Garnish.S_KEY,
+                ctrl: true,
+                alt: true
+            }, () => {
+                Craft.submitForm(Craft.cp.$primaryForm, {
+                    action: this.settings.publishDraftAction,
+                    redirect: this.settings.hashedCpEditUrl,
+                });
+            }, 0);
+        }
     },
 
     mergeChanges: function() {
@@ -753,6 +766,7 @@ Craft.DraftEditor = Garnish.Base.extend({
                             type: 'button',
                             class: 'btn secondary formsubmit',
                             text: Craft.t('app', 'Publish draft'),
+                            title: Craft.shortcutText('S', false, true),
                             data: {
                                 action: this.settings.publishDraftAction,
                                 redirect: this.settings.hashedCpEditUrl,
@@ -800,7 +814,7 @@ Craft.DraftEditor = Garnish.Base.extend({
                                                 .prepend(
                                                     $('<span/>', {
                                                         class: 'shortcut',
-                                                        text: (Craft.clientOs === 'Mac' ? '⌘' : 'Ctrl+') + 'S',
+                                                        text: Craft.shortcutText('S'),
                                                     })
                                                 )
                                         )
