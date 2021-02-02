@@ -1351,7 +1351,7 @@ return [
     'The {field} field’s {setting} setting has an invalid subpath (“{subpath}”).' => 'Dette {field} feltets {setting} innstilling har en ugyldig underkatalog («{subpath}»).',
     'The {field} field’s {setting} setting is set to an invalid volume.' => 'Dette {field} feltets {setting} innstilling er satt til et ugyldig volum.',
     'The “From” name Craft CMS will use when sending email.' => 'Avsendernavnet Craft CMS bruker ved sending av e-post.',
-    'There are trial licenses that require payment.' => 'There are trial licenses that require payment.',
+    'There are trial licenses that require payment.' => 'Det finnes prøversjonslisenser som må betales.',
     'There are no available plugins.' => 'Ingen utvidelser tilgjengelig.',
     'There aren’t any pending project config changes to apply.' => 'Det finnes ingen ventende endringer i prosjektkonfigurasjonen.',
     'There was a problem activating the user.' => 'Det oppsto et problem med å aktivere brukeren.',
