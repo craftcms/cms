@@ -1351,7 +1351,7 @@ return [
     'The {field} field’s {setting} setting has an invalid subpath (“{subpath}”).' => 'Настройка {setting} поля {field} имеет недействительный подпуть («{subpath}»).',
     'The {field} field’s {setting} setting is set to an invalid volume.' => 'Для настройки {setting} поля {field} установлен недействительный объем.',
     'The “From” name Craft CMS will use when sending email.' => 'Имя «С», используемое CMS Craft при отправке электронной почты.',
-    'There are trial licenses that require payment.' => 'There are trial licenses that require payment.',
+    'There are trial licenses that require payment.' => 'Существуют пробные версии, требующие оплаты лицензии.',
     'There are no available plugins.' => 'Нет доступных плагинов.',
     'There aren’t any pending project config changes to apply.' => 'Отсутствуют незавершенные изменения в конфигурации проекта.',
     'There was a problem activating the user.' => 'Возникла проблема при активизации этого пользователя.',
