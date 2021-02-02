@@ -1351,7 +1351,7 @@ return [
     'The {field} field’s {setting} setting has an invalid subpath (“{subpath}”).' => 'The {field} field’s {setting} setting has an invalid subpath (“{subpath}”).',
     'The {field} field’s {setting} setting is set to an invalid volume.' => 'The {field} field’s {setting} setting is set to an invalid volume.',
     'The “From” name Craft CMS will use when sending email.' => 'The “From” name Craft CMS will use when sending email.',
-    'There are license trials that require payment.' => 'There are licence trials that require payment.',
+    'There are trial licenses that require payment.' => 'There are trial licenses that require payment.',
     'There are no available plugins.' => 'There are no available plugins.',
     'There aren’t any pending project config changes to apply.' => 'There aren’t any pending project config changes to apply.',
     'There was a problem activating the user.' => 'There was a problem activating the user.',
