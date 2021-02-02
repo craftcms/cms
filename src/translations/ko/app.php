@@ -1351,7 +1351,7 @@ return [
     'The {field} field’s {setting} setting has an invalid subpath (“{subpath}”).' => '{field} 필드의 {setting} 설정에 잘못된 하위 경로(“{subpath}”)가 있습니다.',
     'The {field} field’s {setting} setting is set to an invalid volume.' => '{field} 필드의 {setting} 설정이 잘못된 볼륨으로 설정되었습니다.',
     'The “From” name Craft CMS will use when sending email.' => 'Craft CMS가 이메일을 보낼 때 "송신" 항목에 사용할 이름.',
-    'There are trial licenses that require payment.' => 'There are trial licenses that require payment.',
+    'There are trial licenses that require payment.' => '지불이 필요한 라이선스 평가판이 있습니다.',
     'There are no available plugins.' => '이용 가능한 플러그인이 없습니다.',
     'There aren’t any pending project config changes to apply.' => '적용 보류 중인 프로젝트 구성의 변경 사항이 없습니다.',
     'There was a problem activating the user.' => '사용자 활성화 작업에 문제가 있습니다.',
