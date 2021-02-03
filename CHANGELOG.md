@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.6.3 - 2021-02-03
 
 ### Added
 - Added `craft\base\ElementInterface::setUiLabel()`.
