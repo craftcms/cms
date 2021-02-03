@@ -107,11 +107,11 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *     ->one();
      * ```
      *
-     * @param bool $value The property value (defaults to true)
+     * @param bool|null $value The property value (defaults to true)
      * @return static self reference
      * @since 3.2.0
      */
-    public function drafts(bool $value = true);
+    public function drafts(?bool $value = true);
 
     /**
      * Narrows the query results based on the {elements}’ draft’s ID (from the `drafts` table).

@@ -27,7 +27,7 @@ jobs:
     env: DB=mysql
   - php: 7.3
     env: DB=pgsql
-  - php: 7.2
+  - php: 7.2.5
     env: DB=mysql
   - php: 7.2.5
     env: DB=pgsql

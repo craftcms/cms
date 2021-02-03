@@ -14,6 +14,7 @@ use craft\db\Table as DbTable;
 use craft\elements\Asset;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQuery;
+use craft\elements\db\ElementQueryInterface;
 use craft\errors\InvalidSubpathException;
 use craft\errors\InvalidVolumeException;
 use craft\errors\VolumeObjectNotFoundException;
@@ -475,9 +476,9 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected function elementPreviewHtml(ElementInterface $element): string
+    protected function tableAttributeHtml(array $elements): string
     {
-        return Cp::elementHtml($element, 'index', Cp::ELEMENT_SIZE_SMALL, null, false, true, $this->previewMode === self::PREVIEW_MODE_FULL);
+        return Cp::elementPreviewHtml($elements, Cp::ELEMENT_SIZE_SMALL, false, true, $this->previewMode === self::PREVIEW_MODE_FULL);
     }
 
     // Events

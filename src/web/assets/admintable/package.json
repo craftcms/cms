@@ -20,7 +20,7 @@
   "dependencies": {
     "@pixelandtonic/craftui": "~0.3.8",
     "lodash": "^4.17.20",
-    "sortablejs": "^1.12.0",
+    "sortablejs": "^1.13.0",
     "vue": "^2.5.17",
     "vuetable-2": "^1.7.5",
     "vuex": "^3.6.0"

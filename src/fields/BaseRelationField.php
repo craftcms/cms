@@ -625,39 +625,19 @@ JS;
             $value = $this->_all($value, $element)->all();
         }
 
-        if (empty($value)) {
-            return '';
-        }
-
-        $first = array_shift($value);
-        $html = $this->elementPreviewHtml($first);
-
-        if (!empty($value)) {
-            $otherHtml = '';
-            foreach ($value as $other) {
-                $otherHtml .= $this->elementPreviewHtml($other);
-            }
-            $html .= Html::tag('span', '+' . Craft::$app->getFormatter()->asInteger(count($value)), [
-                'title' => implode(', ', ArrayHelper::getColumn($value, 'title')),
-                'class' => 'btn small',
-                'role' => 'button',
-                'onclick' => 'jQuery(this).replaceWith(' . Json::encode($otherHtml) . ')',
-            ]);
-        }
-
-        return $html;
+        return $this->tableAttributeHtml($value);
     }
 
     /**
-     * Renders a related element’s HTML for the element index.
+     * Returns the HTML that should be shown for this field in Table View.
      *
-     * @param ElementInterface $element
+     * @param ElementInterface[] $elements
      * @return string
-     * @since 3.5.11
+     * @since 3.6.3
      */
-    protected function elementPreviewHtml(ElementInterface $element): string
+    protected function tableAttributeHtml(array $elements): string
     {
-        return Cp::elementHtml($element);
+        return Cp::elementPreviewHtml($elements);
     }
 
     /**

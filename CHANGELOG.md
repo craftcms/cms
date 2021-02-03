@@ -1,5 +1,28 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.6.3 - 2021-02-03
+
+### Added
+- Added `craft\base\ElementInterface::setUiLabel()`.
+- Added `craft\fields\BaseRelationField::tableAttributeHtml()`.
+- Added `craft\helpers\Cp::elementPreviewHtml()`.
+
+### Changed
+- Entry indexes now include draft entries in the main entry listings. ([#7401](https://github.com/craftcms/cms/issues/7401))
+- Entry indexes can now show a “Drafts” column, which lists the entries’ drafts. ([#7473](https://github.com/craftcms/cms/issues/7473))
+- The “Publish draft” button on Edit Entry pages can now be activated using a <kbd>Ctrl</kbd>/<kbd>Command</kbd> + <kbd>Alt</kbd>/<kbd>Option</kbd> + <kbd>S</kbd> keyboard shortcut.
+- Entry queries’ `drafts` param can now be set to `null`, indicating that both normal entries _and_ drafts can be included in the results.
+- Entries can now be eager-loaded with `drafts`.
+- `craft\helpers\Cp::elementHtml` now has a `$showDraftBadge` argument.
+
+### Removed
+- Removed `craft\fields\BaseRelationField::elementPreviewHtml()`.
+
+### Fixed
+- Fixed a bug where Edit Entry pages would get a “Create a new entry” heading when editing an existing draft entry.
+- Fixed a bug where user impersonation URLs only worked for active users. ([#7475](https://github.com/craftcms/cms/issues/7475))
+- Fixed a bug where `craft\elements\db\ElementQuery::draftOf()` didn’t accept passing in `'*'`. ([#7470](https://github.com/craftcms/cms/issues/7470))
+
 ## 3.6.2 - 2021-01-29
 
 ### Added

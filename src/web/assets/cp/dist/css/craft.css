@@ -1107,6 +1107,12 @@ table.collapsed tbody [data-title] form { display: inline-block; }
 
 .element .label { display: inline-block; }
 
+.element .label .draft-label { -webkit-user-select: none; user-select: none; border: 1px solid #596673; border-radius: 3px; display: inline-block; height: 16px; padding: 0 5px 0 4px; font-size: 11px; line-height: 16px; font-weight: normal; letter-spacing: 1px; text-transform: uppercase; color: #596673; }
+
+body.ltr .element .label .draft-label { margin-left: 7px; }
+
+body.rtl .element .label .draft-label { margin-right: 7px; }
+
 .element.small, .element.large:not(.hasthumb) { display: inline-block; padding: 7px; box-sizing: border-box; }
 
 body.ltr .element.small.hasstatus, body.ltr .element.large:not(.hasthumb).hasstatus { padding-left: 22px; }
@@ -2839,7 +2845,7 @@ body.rtl .sitepicker-group li a:after { left: 12px; }
 /*  Retina graphics
 /* ----------------------------------------*/
 @media only screen and (-webkit-min-device-pixel-ratio: 1.5), only screen and (-moz-min-device-pixel-ratio: 1.5), only screen and (-o-min-device-pixel-ratio: 3 / 2), only screen and (min-device-pixel-ratio: 1.5), only screen and (-o-min-device-pixel-ratio: 3/2), only screen and (min-resolution: 1.5dppx) { table.data thead th.ordered.loading { background-image: url(../images/spinner_tableheader_2x.gif); -o-background-size: 26px; background-size: 26px; }
-  .spinner .elements.busy:after { background-image: url(../images/spinner_2x.gif); -o-background-size: 20px; background-size: 20px; }
+  .spinner, .elements.busy:after { background-image: url(../images/spinner_2x.gif); -o-background-size: 20px; background-size: 20px; }
   .spinner.over-bg { background-image: url(../images/spinner_bg_2x.gif); }
   .spinner.big { background-image: url(../images/spinner_big_2x.gif); -o-background-size: 48px; background-size: 48px; }
   .spinner.big.over-bg { background-image: url(../images/spinner_big_bg_2x.gif); }

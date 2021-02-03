@@ -179,7 +179,7 @@ class ProjectConfigController extends Controller
     }
 
     /**
-     * Alias for `apply`.
+     * DEPRECATED. Use `project-config/apply` instead.
      *
      * @return int
      * @deprecated in 3.5.0. Use [[actionApply()]] instead.

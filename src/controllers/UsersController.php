@@ -246,6 +246,7 @@ class UsersController extends Controller
         $token = Craft::$app->getTokens()->createToken([
             'users/impersonate-with-token', [
                 'userId' => $userId,
+                'prevUserId' => Craft::$app->getUser()->getId(),
             ]
         ], 1, new DateTime('+1 hour'));
 
@@ -262,19 +263,26 @@ class UsersController extends Controller
     /**
      * Logs a user in for impersonation via an impersonation token.
      *
-     * @param int|null $userId
+     * @param int $userId
+     * @param int $prevUserId
      * @return Response|null
      * @throws BadRequestHttpException
      * @throws ForbiddenHttpException
      * @since 3.6.0
      */
-    public function actionImpersonateWithToken(?int $userId)
+    public function actionImpersonateWithToken(int $userId, int $prevUserId)
     {
         $this->requireToken();
 
+        $session = Craft::$app->getSession();
         $userSession = Craft::$app->getUser();
 
+        // Save the original user ID to the session now so User::findIdentity()
+        // knows not to worry if the user isn't active yet
+        $session->set(User::IMPERSONATE_KEY, $prevUserId);
+
         if (!$userSession->loginByUserId($userId)) {
+            $session->remove(User::IMPERSONATE_KEY);
             $this->setFailFlash(Craft::t('app', 'There was a problem impersonating this user.'));
             Craft::error($userSession->getIdentity()->username . ' tried to impersonate userId: ' . $userId . ' but something went wrong.', __METHOD__);
             return null;

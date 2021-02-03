@@ -1149,6 +1149,7 @@ class GeneralConfig extends BaseObject
      *
      * Note this will only work if ImageMagick is installed, and <config:imageDriver> is set to either `auto` or `imagick`.
      *
+     * @group Image Handling
      * @since 3.6.0
      */
     public $rasterizeSvgThumbs = false;
