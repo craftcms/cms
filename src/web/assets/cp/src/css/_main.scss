@@ -4609,19 +4609,20 @@ fieldset {
 
 .passwordwrapper {
   position: relative;
-  display: flex;
-  align-items: center;
 
   .password {
-    flex: 1;
     border: none;
     background: transparent;
     box-shadow: none;
+    padding-right: 4rem;
   }
 
   .password-toggle {
-    @include padding-right(7px);
     color: $linkColor;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
 
     &:hover {
       text-decoration: underline;
