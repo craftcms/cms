@@ -18,7 +18,7 @@ body {
 *:focus {
   outline-style: solid;
   outline-color: transparent;
-  box-shadow: 0 0 0 1px $blue700, 0 0 0 3px transparentize($blue700, 0.5);
+  box-shadow: 0 0 0 1px $darkFocusColor, 0 0 0 3px transparentize($darkFocusColor, 0.5);
 }
 
 #global-container {
@@ -52,7 +52,7 @@ $sidebarLinkSecondaryColor: $grey200;
   }
 
   *:focus {
-    box-shadow: 0 0 0 1px $blue600, 0 0 0 3px transparentize($blue600, 0.5);
+    box-shadow: 0 0 0 1px $lightFocusColor, 0 0 0 3px transparentize($lightFocusColor, 0.5);
   }
 
   & > a,
