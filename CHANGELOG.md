@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed a JavaScript error that could occur in the control panel. ([#7492](https://github.com/craftcms/cms/issues/7492))
+- Fixed a bug where the Edit Site page’s title could be set to the raw site’s name setting, if it was set to an environment variable.
 
 ## 3.6.3 - 2021-02-03
 

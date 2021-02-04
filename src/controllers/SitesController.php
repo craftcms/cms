@@ -176,7 +176,7 @@ class SitesController extends Controller
                 }
             }
 
-            $title = trim($site->getName(false)) ?: Craft::t('app', 'Edit Site');
+            $title = trim($site->getName()) ?: Craft::t('app', 'Edit Site');
         } else {
             if ($site === null) {
                 $site = new Site();
