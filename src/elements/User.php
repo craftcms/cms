@@ -141,6 +141,14 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
+    public static function trackChanges(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function hasContent(): bool
     {
         return true;
@@ -1380,7 +1388,7 @@ class User extends Element implements IdentityInterface
      * @inheritdoc
      * @throws Exception if reasons
      */
-    public function afterSave(bool $isNew)
+    public function afterSave(bool $isNew): void
     {
         // Get the user record
         if (!$isNew) {
@@ -1436,12 +1444,17 @@ class User extends Element implements IdentityInterface
             $this->newPassword = null;
         }
 
+        // Capture the dirty attributes from the record
+        $dirtyAttributes = array_keys($record->getDirtyAttributes());
+
         $record->save(false);
 
         // Make sure that the photo is located in the right place
         if (!$isNew && $this->photoId) {
             Craft::$app->getUsers()->relocateUserPhoto($this);
         }
+
+        $this->setDirtyAttributes($dirtyAttributes);
 
         parent::afterSave($isNew);
 
