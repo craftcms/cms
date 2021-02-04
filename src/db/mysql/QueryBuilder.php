@@ -40,13 +40,17 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
     public function createTable($table, $columns, $options = null): string
     {
         // Default to InnoDb
-        if ($options === null || strpos($options, 'ENGINE=') === false) {
-            $options = ($options !== null ? $options . ' ' : '') . 'ENGINE=InnoDb';
+        if ($options === null || !preg_match('/\bENGINE\b/i', $options) === false) {
+            $options = ($options !== null ? $options . ' ' : '') . 'ENGINE = InnoDb';
         }
 
-        // Use the default charset
-        if (strpos($options, 'DEFAULT CHARSET=') === false) {
-            $options .= ' DEFAULT CHARSET=' . Craft::$app->getConfig()->getDb()->charset;
+        // Use the default charset and collation
+        $dbConfig = Craft::$app->getConfig()->getDb();
+        if (!preg_match('/\bCHARACTER +SET\b/i', $options)) {
+            $options .= " DEFAULT CHARACTER SET = $dbConfig->charset";
+        }
+        if ($dbConfig->collation !== null && !preg_match('/\bCOLLATE\b/i', $options)) {
+            $options .= " DEFAULT COLLATE = $dbConfig->collation";
         }
 
         return parent::createTable($table, $columns, $options);
