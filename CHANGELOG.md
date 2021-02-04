@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a JavaScript error that could occur in the control panel. ([#7492](https://github.com/craftcms/cms/issues/7492))
+
 ## 3.6.3 - 2021-02-03
 
 ### Added
