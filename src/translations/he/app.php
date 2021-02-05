@@ -1,7 +1,6 @@
 <?php
 
 return [
-    '(Untitled)' => '(Untitled)',
     '(blank)' => '(ריק)',
     '(trial)' => '(ניסיון)',
     '/path/to/folder' => 'נתיב/אל/תיקייה',
@@ -1454,6 +1453,7 @@ return [
     'Unlimited video training' => 'הדרכות וידיאו ללא הגבלה',
     'Unlock' => 'פתח',
     'Unsuspend' => 'בטל השעיה',
+    'Untitled entry' => 'Untitled entry',
     'Update YAML Files' => 'עדכן קובצי YAML',
     'Update YAML files' => 'עדכן קובצי YAML',
     'Update aborted.' => 'העדכון בוטל.',
