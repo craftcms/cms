@@ -43,6 +43,22 @@ class GeneralConfig extends BaseObject
     const SNAKE_CASE = 'snake';
 
     /**
+     * @var array The default user accessibility preferences that should be applied to users that haven’t saved their preferences yet.
+     *
+     * The array can contain the following keys:
+     *
+     * - `useShapes` – Whether shapes should be used to represent statuses
+     * - `underlineLinks` – Whether links should be underlined
+     *
+     * @group System
+     * @since 3.6.4
+     */
+    public $accessibilityDefaults = [
+        'useShapes' => false,
+        'underlineLinks' => false,
+    ];
+
+    /**
      * @var string The URI segment Craft should look for when determining if the current request should be routed to a controller action.
      * @group Routing
      */
