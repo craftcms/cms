@@ -25,6 +25,7 @@
 - Fixed a bug where unpublished drafts were revealing their temporary slugs in the URI and Slug columns of entry indexes, if a slug hadn’t been chosen yet.
 - Fixed a bug that could break some autosuggest inputs.
 - Fixed a bug where Craft wasn’t recording entry-specific attribute changes.
+- Fixed a bug where `craft\helpers\Html::namespaceAttributes()` was ignoring `url()` references if multiple existed on the same line. ([#7496](https://github.com/craftcms/cms/pull/7496))
 
 ## 3.6.3 - 2021-02-03
 
