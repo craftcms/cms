@@ -1,6 +1,7 @@
 <?php
 
 return [
+    '(Untitled)' => '(Untitled)',
     '(blank)' => '(leer)',
     '(trial)' => '(Testversion)',
     '/path/to/folder' => '/Pfad/zum/Ordner',
