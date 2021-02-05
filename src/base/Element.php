@@ -3164,6 +3164,10 @@ abstract class Element extends Component implements ElementInterface
     {
         switch ($attribute) {
             case 'link':
+                if (ElementHelper::isDraftOrRevision($this)) {
+                    return '';
+                }
+
                 $url = $this->getUrl();
 
                 if ($url !== null) {
@@ -3178,6 +3182,10 @@ abstract class Element extends Component implements ElementInterface
                 return '';
 
             case 'uri':
+                if ($this->getIsDraft() && ElementHelper::isTempSlug($this->slug)) {
+                    return '';
+                }
+
                 $url = $this->getUrl();
 
                 if ($url !== null) {
@@ -3211,6 +3219,13 @@ abstract class Element extends Component implements ElementInterface
                 }
 
                 return '';
+
+            case 'slug':
+                if ($this->getIsDraft() && ElementHelper::isTempSlug($this->slug)) {
+                    return '';
+                }
+
+                return Html::encode($this->slug);
 
             default:
                 // Is this a custom field?
