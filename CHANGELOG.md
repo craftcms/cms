@@ -7,6 +7,7 @@
 - Added the `collation` database config setting, which determines the default collation that should be used when creating tables, rather than leaving it up to the character set’s default collation. (MySQL only.)
 - Added the `db/change-charset` command, which can be used to convert all databsae tables’ and textual columns’ character sets and collations in one fell swoop.
 - Added `craft\base\ElementInterface::uiLabel()`.
+- Added `craft\services\Drafts::insertDraftRow()`.
 
 ### Changed
 - Unpublished drafts with no titles are now labeled as “(Untitled)” rather than by their ID. ([#7500](https://github.com/craftcms/cms/issues/7500))
@@ -27,6 +28,7 @@
 - Fixed a bug where Craft wasn’t recording entry-specific attribute changes.
 - Fixed a bug where `craft\helpers\Html::namespaceAttributes()` was ignoring `url()` references if multiple existed on the same line. ([#7496](https://github.com/craftcms/cms/pull/7496))
 - Fixed an error that could occur when editing an element with a URL field without a value. ([#7506](https://github.com/craftcms/cms/pull/7506))
+- Fixed a bug where duplicating an unpublished draft wouldn’t create a new row in the `drafts` table, so the two drafts would be joined at the hip. ([#7508](https://github.com/craftcms/cms/issues/7508))
 
 ## 3.6.3 - 2021-02-03
 

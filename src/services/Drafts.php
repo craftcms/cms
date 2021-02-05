@@ -167,7 +167,7 @@ class Drafts extends Component
         $transaction = $this->db->beginTransaction();
         try {
             // Create the draft row
-            $draftId = $this->_insertDraftRow($source->id, $creatorId, $name, $notes, $source::trackChanges());
+            $draftId = $this->insertDraftRow($name, $notes, $creatorId, $source->id, $source::trackChanges());
 
             $newAttributes['draftId'] = $draftId;
             $newAttributes['behaviors']['draft'] = [
@@ -206,20 +206,20 @@ class Drafts extends Component
      * Saves an element as a draft.
      *
      * @param ElementInterface $element
-     * @param int $creatorId
+     * @param int|null $creatorId
      * @param string|null $name
      * @param string|null $notes
      * @return bool
      * @throws \Throwable
      */
-    public function saveElementAsDraft(ElementInterface $element, int $creatorId, string $name = null, string $notes = null): bool
+    public function saveElementAsDraft(ElementInterface $element, ?int $creatorId = null, string $name = null, string $notes = null): bool
     {
         if ($name === null) {
             $name = Craft::t('app', 'First draft');
         }
 
         // Create the draft row
-        $draftId = $this->_insertDraftRow(null, $creatorId, $name, $notes);
+        $draftId = $this->insertDraftRow($name, $notes, $creatorId);
 
         $element->draftId = $draftId;
         $element->attachBehavior('draft', new DraftBehavior([
@@ -501,15 +501,16 @@ class Drafts extends Component
     /**
      * Creates a new row in the `drafts` table.
      *
-     * @param int|null $sourceId
-     * @param int $creatorId
      * @param string|null $name
      * @param string|null $notes
+     * @param int|null $creatorId
+     * @param int|null $sourceId
      * @param bool $trackChanges
      * @return int The new draft ID
      * @throws DbException
+     * @since 3.6.4
      */
-    private function _insertDraftRow(int $sourceId = null, int $creatorId, string $name = null, string $notes = null, bool $trackChanges = false): int
+    public function insertDraftRow(?string $name, ?string $notes = null, int $creatorId = null, ?int $sourceId = null, bool $trackChanges = false): int
     {
         Db::insert(Table::DRAFTS, [
             'sourceId' => $sourceId,

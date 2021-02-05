@@ -987,6 +987,12 @@ class Elements extends Component
             throw new UnsupportedSiteException($element, $mainClone->siteId, 'Attempting to duplicate an element in an unsupported site.');
         }
 
+        // If this is a draft, create a new draft row
+        if ($mainClone->draftId) {
+            /** @var ElementInterface|DraftBehavior $element */
+            $mainClone->draftId = Craft::$app->getDrafts()->insertDraftRow(Craft::t('app', 'First draft'), null, Craft::$app->getUser()->getId());
+        }
+
         // Validate
         $mainClone->setScenario(Element::SCENARIO_ESSENTIALS);
         $mainClone->validate();
