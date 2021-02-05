@@ -5,6 +5,10 @@
 ### Added
 - Added the `collation` database config setting, which determines the default collation that should be used when creating tables, rather than leaving it up to the character set’s default collation. (MySQL only.)
 - Added the `db/change-charset` command, which can be used to convert all databsae tables’ and textual columns’ character sets and collations in one fell swoop.
+- Added `craft\base\ElementInterface::uiLabel()`.
+
+### Changed
+- Unpublished draft entries with no titles are now labeled as “(Untitled)” rather than by their ID. ([#7500](https://github.com/craftcms/cms/issues/7500))
 
 ### Fixed
 - Fixed a JavaScript error that could occur in the control panel. ([#7492](https://github.com/craftcms/cms/issues/7492))

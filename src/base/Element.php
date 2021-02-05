@@ -2131,7 +2131,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getUiLabel(): string
     {
-        return $this->_uiLabel ?? (string)$this;
+        return $this->_uiLabel ?? $this->uiLabel() ?? (string)$this;
     }
 
     /**
@@ -2140,6 +2140,17 @@ abstract class Element extends Component implements ElementInterface
     public function setUiLabel(?string $label): void
     {
         $this->_uiLabel = $label;
+    }
+
+    /**
+     * Returns what the element should be called within the control panel.
+     *
+     * @return string|null
+     * @since 3.6.4
+     */
+    protected function uiLabel(): ?string
+    {
+        return null;
     }
 
     /**
