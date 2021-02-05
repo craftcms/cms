@@ -1,7 +1,6 @@
 <?php
 
 return [
-    '(Untitled)' => '(Untitled)',
     '(blank)' => '(空白)',
     '(trial)' => '(トライアル)',
     '/path/to/folder' => '/path/to/folder',
@@ -1454,6 +1453,7 @@ return [
     'Unlimited video training' => '無制限のビデオトレーニング',
     'Unlock' => 'アンロック',
     'Unsuspend' => '停止を解除する',
+    'Untitled entry' => 'Untitled entry',
     'Update YAML Files' => 'YAMLファイルを更新',
     'Update YAML files' => 'YAMLファイルを更新',
     'Update aborted.' => 'アップデートが中止されました。',
