@@ -1,6 +1,7 @@
 <?php
 
 return [
+    '(Untitled)' => '(Untitled)',
     '(blank)' => '(공백)',
     '(trial)' => '(평가판)',
     '/path/to/folder' => '/경로/대상/폴더',
