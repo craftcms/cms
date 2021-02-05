@@ -10,6 +10,7 @@
 - Fixed a JavaScript error that could occur in the control panel. ([#7492](https://github.com/craftcms/cms/issues/7492))
 - Fixed a bug where the Edit Site page’s title could be set to the raw site’s name setting, if it was set to an environment variable.
 - Fixed a bug where some ASCII character mappings included a trailing `'` character. ([#7491](https://github.com/craftcms/cms/issues/7491))
+- Fixed an error that could occur on the System Report utility. ([#7493](https://github.com/craftcms/cms/issues/7493))
 
 ## 3.6.3 - 2021-02-03
 

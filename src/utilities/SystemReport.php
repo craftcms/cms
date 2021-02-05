@@ -112,12 +112,30 @@ class SystemReport extends Utility
         }
 
         if (class_exists(InstalledVersions::class, false)) {
-            $info['Yii version'] = InstalledVersions::getPrettyVersion('yiisoft/yii2');
-            $info['Twig version'] = InstalledVersions::getPrettyVersion('twig/twig');
-            $info['Guzzle version'] = InstalledVersions::getPrettyVersion('guzzlehttp/guzzle');
+            self::_addVersion($info, 'Yii version', 'yiisoft/yii2');
+            self::_addVersion($info, 'Twig version', 'twig/twig');
+            self::_addVersion($info, 'Guzzle version', 'guzzlehttp/guzzle');
         }
 
         return $info;
+    }
+
+    /**
+     * @param array $info
+     * @param string $label
+     * @param string $packageName
+     */
+    private static function _addVersion(array &$info, string $label, string $packageName): void
+    {
+        try {
+            $version = InstalledVersions::getPrettyVersion($packageName) ?? InstalledVersions::getVersion($packageName);
+        } catch (\OutOfBoundsException $e) {
+            return;
+        }
+
+        if ($version !== null) {
+            $info[$label] = $version;
+        }
     }
 
     /**
