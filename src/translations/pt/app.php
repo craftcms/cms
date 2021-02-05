@@ -1,6 +1,7 @@
 <?php
 
 return [
+    '(Untitled)' => '(Untitled)',
     '(blank)' => '(vazio)',
     '(trial)' => '(avaliação)',
     '/path/to/folder' => '/path/to/folder',
