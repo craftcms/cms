@@ -345,7 +345,7 @@ class Cp
         }
 
         if ($showStatus && $element::hasStatuses()) {
-            $status = $element->getStatus();
+            $status = !$isDraft && !$isRevision ? $element->getStatus() : null;
             $html .= Html::tag('span', '', [
                 'class' => array_filter([
                     'status',
