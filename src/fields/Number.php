@@ -149,6 +149,14 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
         if ($this->size !== null && !$this->size) {
             $this->size = null;
         }
+
+        if ($this->prefix === '') {
+            $this->prefix = null;
+        }
+
+        if ($this->suffix === '') {
+            $this->suffix = null;
+        }
     }
 
     /**
