@@ -1,6 +1,7 @@
 <?php
 
 return [
+    '(Untitled)' => '(Untitled)',
     '(blank)' => '(boş)',
     '(trial)' => '(deneme)',
     '/path/to/folder' => '/klasöre/giden/yol',
