@@ -1,7 +1,6 @@
 <?php
 
 return [
-    '(Untitled)' => '(Untitled)',
     '(blank)' => '（空）',
     '(trial)' => '（试用版）',
     '/path/to/folder' => '/到/文件夹的/路径',
@@ -1454,6 +1453,7 @@ return [
     'Unlimited video training' => '无限制的视频培训',
     'Unlock' => '解锁',
     'Unsuspend' => '取消挂起',
+    'Untitled entry' => 'Untitled entry',
     'Update YAML Files' => '更新 YAML 文件',
     'Update YAML files' => '更新 YAML 文件',
     'Update aborted.' => '更新已中止。',
