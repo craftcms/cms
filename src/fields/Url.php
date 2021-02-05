@@ -220,7 +220,7 @@ class Url extends Field implements PreviewableFieldInterface
 
             $typeOptions[] = ['label' => $label, 'value' => $type];
 
-            if ($value && $type === $valueType && $prefix) {
+            if (is_string($value) && $type === $valueType && $prefix) {
                 $value = StringHelper::removeLeft($value, $prefix);
             }
         }
