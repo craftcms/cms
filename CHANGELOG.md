@@ -10,6 +10,7 @@
 ### Changed
 - Unpublished drafts with no titles are now labeled as “(Untitled)” rather than by their ID. ([#7500](https://github.com/craftcms/cms/issues/7500))
 - Unpublished drafts no longer show a value for URL columns in entry indexes.
+- Entry selection modals no longer show unpublished drafts.
 
 ### Fixed
 - Fixed a JavaScript error that could occur in the control panel. ([#7492](https://github.com/craftcms/cms/issues/7492))
