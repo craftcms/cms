@@ -1,6 +1,7 @@
 <?php
 
 return [
+    '(Untitled)' => '(Untitled)',
     '(blank)' => '（空）',
     '(trial)' => '（试用版）',
     '/path/to/folder' => '/到/文件夹的/路径',
