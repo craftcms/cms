@@ -1,7 +1,6 @@
 <?php
 
 return [
-    '(Untitled)' => '(Untitled)',
     '(blank)' => '(бош)',
     '(trial)' => '(trial)',
     '/path/to/folder' => '/path/to/folder',
@@ -1454,6 +1453,7 @@ return [
     'Unlimited video training' => 'Unlimited video training',
     'Unlock' => 'Unlock',
     'Unsuspend' => 'Unsuspend',
+    'Untitled entry' => 'Untitled entry',
     'Update YAML Files' => 'Update YAML Files',
     'Update YAML files' => 'Update YAML files',
     'Update aborted.' => 'Update aborted.',
