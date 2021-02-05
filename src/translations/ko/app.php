@@ -1453,6 +1453,7 @@ return [
     'Unlimited video training' => '무제한 비디오 교육',
     'Unlock' => '잠금 해제',
     'Unsuspend' => '중지 해제',
+    'Untitled entry' => 'Untitled entry',
     'Update YAML Files' => 'YAML 파일 업데이트',
     'Update YAML files' => 'YAML 파일 업데이트',
     'Update aborted.' => '업데이트가 중단되었습니다.',

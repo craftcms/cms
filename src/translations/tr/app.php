@@ -1453,6 +1453,7 @@ return [
     'Unlimited video training' => 'Sınırsız video eğitimi',
     'Unlock' => 'Aç',
     'Unsuspend' => 'Askıdan çıkar',
+    'Untitled entry' => 'Untitled entry',
     'Update YAML Files' => 'YAML Dosyalarını Güncelle',
     'Update YAML files' => 'YAML dosyalarını güncelle',
     'Update aborted.' => 'Güncelleme durduruldu.',

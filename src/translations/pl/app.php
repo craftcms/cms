@@ -1453,6 +1453,7 @@ return [
     'Unlimited video training' => 'Szkolenie wideo bez ograniczeń',
     'Unlock' => 'Odblokuj',
     'Unsuspend' => 'Odwieś',
+    'Untitled entry' => 'Untitled entry',
     'Update YAML Files' => 'Zaktualizuj pliki YAML',
     'Update YAML files' => 'Zaktualizuj pliki YAML',
     'Update aborted.' => 'Aktualizacja przerwana.',
