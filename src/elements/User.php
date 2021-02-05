@@ -1388,7 +1388,7 @@ class User extends Element implements IdentityInterface
      * @inheritdoc
      * @throws Exception if reasons
      */
-    public function afterSave(bool $isNew): void
+    public function afterSave(bool $isNew)
     {
         // Get the user record
         if (!$isNew) {
