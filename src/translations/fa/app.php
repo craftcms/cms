@@ -1,6 +1,7 @@
 <?php
 
 return [
+    '(Untitled)' => '(Untitled)',
     '(blank)' => '(خالی)',
     '(trial)' => '(دوره آزمایشی)',
     '/path/to/folder' => '/مسیر/به/شاخه',
