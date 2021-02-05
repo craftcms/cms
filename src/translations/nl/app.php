@@ -1,6 +1,7 @@
 <?php
 
 return [
+    '(Untitled)' => '(Untitled)',
     '(blank)' => '(leeg)',
     '(trial)' => '(proef)',
     '/path/to/folder' => '/pad/naar/map',
