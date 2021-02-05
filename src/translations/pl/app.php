@@ -1,7 +1,6 @@
 <?php
 
 return [
-    '(Untitled)' => '(Untitled)',
     '(blank)' => '(pusty)',
     '(trial)' => '(wersja próbna)',
     '/path/to/folder' => '/ścieżka/do/folderu',
@@ -1454,6 +1453,7 @@ return [
     'Unlimited video training' => 'Szkolenie wideo bez ograniczeń',
     'Unlock' => 'Odblokuj',
     'Unsuspend' => 'Odwieś',
+    'Untitled entry' => 'Untitled entry',
     'Update YAML Files' => 'Zaktualizuj pliki YAML',
     'Update YAML files' => 'Zaktualizuj pliki YAML',
     'Update aborted.' => 'Aktualizacja przerwana.',
