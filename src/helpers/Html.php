@@ -618,7 +618,7 @@ class Html extends \yii\helpers\Html
 
         // ID references in url() calls
         $html = preg_replace_callback(
-            "/(?<=url\\(#)[^'\"\s]*(?=\\))/i",
+            "/(?<=url\\(#)[^'\"\s\)]*(?=\\))/i",
             function(array $match) use ($namespace, $ids): string {
                 if (isset($ids[$match[0]])) {
                     return $namespace . '-' . $match[0];
