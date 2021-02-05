@@ -20,6 +20,7 @@
 - Fixed a bug where Number field inputs were slightly indented. ([#7498](https://github.com/craftcms/cms/issues/7498))
 - Fixed a bug where built-in Composer features weren’t reading credentials from the global `auth.json` file. ([#7466](https://github.com/craftcms/cms/issues/7466))
 - Fixed a bug where unpublished drafts were revealing their temporary slugs in the URI and Slug columns of entry indexes, if a slug hadn’t been chosen yet.
+- Fixed a bug that could break some autosuggest inputs.
 
 ## 3.6.3 - 2021-02-03
 
