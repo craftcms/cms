@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.6.4.1 - 2021-02-05
+
+### Fixed
+- Fixed a bug where extra rows could be created in the `drafts` table.
+
 ## 3.6.4 - 2021-02-05
 
 ### Added
