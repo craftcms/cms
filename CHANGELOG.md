@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.6.4 - 2021-02-05
 
 ### Added
 - Added the `accessibilityDefaults` config setting, which determines users’ default accessibility preferences. ([#7504](https://github.com/craftcms/cms/issues/7504))
@@ -10,7 +10,7 @@
 - Added `craft\services\Drafts::insertDraftRow()`.
 
 ### Changed
-- Unpublished drafts with no titles are now labeled as “(Untitled)” rather than by their ID. ([#7500](https://github.com/craftcms/cms/issues/7500))
+- Unpublished drafts with no titles are now labeled as “Untitled entry” rather than by their ID. ([#7500](https://github.com/craftcms/cms/issues/7500))
 - Unpublished drafts no longer show a value for URL columns in entry indexes.
 - Entry selection modals no longer show unpublished drafts.
 - Entry drafts no longer get a status color in entry indexes.
