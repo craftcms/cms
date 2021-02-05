@@ -1,6 +1,7 @@
 <?php
 
 return [
+    '(Untitled)' => '(Untitled)',
     '(blank)' => '(пусто)',
     '(trial)' => '(пробная версия)',
     '/path/to/folder' => '/путь/к/папке',
