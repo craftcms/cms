@@ -12,6 +12,7 @@
 - Fixed a bug where some ASCII character mappings included a trailing `'` character. ([#7491](https://github.com/craftcms/cms/issues/7491))
 - Fixed an error that could occur on the System Report utility. ([#7493](https://github.com/craftcms/cms/issues/7493))
 - Fixed a bug where Number field inputs were slightly indented. ([#7498](https://github.com/craftcms/cms/issues/7498))
+- Fixed a bug where built-in Composer features weren’t reading credentials from the global `auth.json` file. ([#7466](https://github.com/craftcms/cms/issues/7466))
 
 ## 3.6.3 - 2021-02-03
 
