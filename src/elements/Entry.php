@@ -956,7 +956,7 @@ class Entry extends Element
     protected function uiLabel(): ?string
     {
         if ($this->title === null || trim($this->title) === '') {
-            return Craft::t('app', '(Untitled)');
+            return Craft::t('app', 'Untitled entry');
         }
 
         return null;
