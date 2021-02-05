@@ -1,6 +1,7 @@
 <?php
 
 return [
+    '(Untitled)' => '(Untitled)',
     '(blank)' => '(prázdné)',
     '(trial)' => '(zkušební verze)',
     '/path/to/folder' => 'cesta/ke/složce',
