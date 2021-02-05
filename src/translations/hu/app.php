@@ -1,6 +1,7 @@
 <?php
 
 return [
+    '(Untitled)' => '(Untitled)',
     '(blank)' => '(üres)',
     '(trial)' => '(próbaverzió)',
     '/path/to/folder' => '/útvonal/a/mappához',
