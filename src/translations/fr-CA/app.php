@@ -1,6 +1,7 @@
 <?php
 
 return [
+    '(Untitled)' => '(Untitled)',
     '(blank)' => '(vide)',
     '(trial)' => '(essai)',
     '/path/to/folder' => '/chemin/vers/dossier',
