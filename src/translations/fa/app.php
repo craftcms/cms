@@ -1,7 +1,6 @@
 <?php
 
 return [
-    '(Untitled)' => '(Untitled)',
     '(blank)' => '(خالی)',
     '(trial)' => '(دوره آزمایشی)',
     '/path/to/folder' => '/مسیر/به/شاخه',
@@ -1454,6 +1453,7 @@ return [
     'Unlimited video training' => 'آموزش ویدیویی نامحدود',
     'Unlock' => 'قفل گشایی',
     'Unsuspend' => 'از تعلیق در آوردن',
+    'Untitled entry' => 'Untitled entry',
     'Update YAML Files' => 'به‌روزرسانی فایل‌های YAML',
     'Update YAML files' => 'به‌روزرسانی از فایل‌های YAML',
     'Update aborted.' => 'بروزرسانی ناقص ماند.',
