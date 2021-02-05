@@ -1,7 +1,6 @@
 <?php
 
 return [
-    '(Untitled)' => '(Untitled)',
     '(blank)' => '(üres)',
     '(trial)' => '(próbaverzió)',
     '/path/to/folder' => '/útvonal/a/mappához',
@@ -1454,6 +1453,7 @@ return [
     'Unlimited video training' => 'Korlátlan videós oktatás',
     'Unlock' => 'Engedélyez',
     'Unsuspend' => 'Engedélyez',
+    'Untitled entry' => 'Untitled entry',
     'Update YAML Files' => 'YAML-fájlok feltöltése',
     'Update YAML files' => 'YAML-fájlok feltöltése',
     'Update aborted.' => 'A frissítés megszakítva.',
