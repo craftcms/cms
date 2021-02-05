@@ -1,6 +1,7 @@
 <?php
 
 return [
+    '(Untitled)' => '(Untitled)',
     '(blank)' => '(en blanco)',
     '(trial)' => '(prueba)',
     '/path/to/folder' => '/ruta de acceso/a/carpeta',
