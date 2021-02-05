@@ -26,6 +26,7 @@
 - Fixed a bug that could break some autosuggest inputs.
 - Fixed a bug where Craft wasn’t recording entry-specific attribute changes.
 - Fixed a bug where `craft\helpers\Html::namespaceAttributes()` was ignoring `url()` references if multiple existed on the same line. ([#7496](https://github.com/craftcms/cms/pull/7496))
+- Fixed an error that could occur when editing an element with a URL field without a value. ([#7506](https://github.com/craftcms/cms/pull/7506))
 
 ## 3.6.3 - 2021-02-03
 
