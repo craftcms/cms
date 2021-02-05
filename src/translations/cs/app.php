@@ -1453,6 +1453,7 @@ return [
     'Unlimited video training' => 'Neomezený videotrénink',
     'Unlock' => 'Odemknout',
     'Unsuspend' => 'Obnovit',
+    'Untitled entry' => 'Untitled entry',
     'Update YAML Files' => 'Aktualizovat YAML soubory',
     'Update YAML files' => 'Aktualizovat YAML soubory',
     'Update aborted.' => 'Aktualizace byla zrušena.',

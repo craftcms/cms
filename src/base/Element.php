@@ -2131,7 +2131,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getUiLabel(): string
     {
-        return $this->_uiLabel ?? (string)$this;
+        return $this->_uiLabel ?? $this->uiLabel() ?? (string)$this;
     }
 
     /**
@@ -2140,6 +2140,17 @@ abstract class Element extends Component implements ElementInterface
     public function setUiLabel(?string $label): void
     {
         $this->_uiLabel = $label;
+    }
+
+    /**
+     * Returns what the element should be called within the control panel.
+     *
+     * @return string|null
+     * @since 3.6.4
+     */
+    protected function uiLabel(): ?string
+    {
+        return null;
     }
 
     /**
@@ -3153,6 +3164,10 @@ abstract class Element extends Component implements ElementInterface
     {
         switch ($attribute) {
             case 'link':
+                if (ElementHelper::isDraftOrRevision($this)) {
+                    return '';
+                }
+
                 $url = $this->getUrl();
 
                 if ($url !== null) {
@@ -3167,6 +3182,10 @@ abstract class Element extends Component implements ElementInterface
                 return '';
 
             case 'uri':
+                if ($this->getIsDraft() && ElementHelper::isTempSlug($this->slug)) {
+                    return '';
+                }
+
                 $url = $this->getUrl();
 
                 if ($url !== null) {
@@ -3200,6 +3219,13 @@ abstract class Element extends Component implements ElementInterface
                 }
 
                 return '';
+
+            case 'slug':
+                if ($this->getIsDraft() && ElementHelper::isTempSlug($this->slug)) {
+                    return '';
+                }
+
+                return Html::encode($this->slug);
 
             default:
                 // Is this a custom field?

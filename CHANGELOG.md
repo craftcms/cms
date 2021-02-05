@@ -1,5 +1,35 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.6.4 - 2021-02-05
+
+### Added
+- Added the `accessibilityDefaults` config setting, which determines users’ default accessibility preferences. ([#7504](https://github.com/craftcms/cms/issues/7504))
+- Added the `collation` database config setting, which determines the default collation that should be used when creating tables, rather than leaving it up to the character set’s default collation. (MySQL only.)
+- Added the `db/change-charset` command, which can be used to convert all databsae tables’ and textual columns’ character sets and collations in one fell swoop.
+- Added `craft\base\ElementInterface::uiLabel()`.
+- Added `craft\services\Drafts::insertDraftRow()`.
+
+### Changed
+- Unpublished drafts with no titles are now labeled as “Untitled entry” rather than by their ID. ([#7500](https://github.com/craftcms/cms/issues/7500))
+- Unpublished drafts no longer show a value for URL columns in entry indexes.
+- Entry selection modals no longer show unpublished drafts.
+- Entry drafts no longer get a status color in entry indexes.
+- `craft\elements\User::getDirtyAttributes()` now accurately reports changed attributes. ([#7505](https://github.com/craftcms/cms/pull/7505))
+
+### Fixed
+- Fixed a JavaScript error that could occur in the control panel. ([#7492](https://github.com/craftcms/cms/issues/7492))
+- Fixed a bug where the Edit Site page’s title could be set to the raw site’s name setting, if it was set to an environment variable.
+- Fixed a bug where some ASCII character mappings included a trailing `'` character. ([#7491](https://github.com/craftcms/cms/issues/7491))
+- Fixed an error that could occur on the System Report utility. ([#7493](https://github.com/craftcms/cms/issues/7493))
+- Fixed a bug where Number field inputs were slightly indented. ([#7498](https://github.com/craftcms/cms/issues/7498))
+- Fixed a bug where built-in Composer features weren’t reading credentials from the global `auth.json` file. ([#7466](https://github.com/craftcms/cms/issues/7466))
+- Fixed a bug where unpublished drafts were revealing their temporary slugs in the URI and Slug columns of entry indexes, if a slug hadn’t been chosen yet.
+- Fixed a bug that could break some autosuggest inputs.
+- Fixed a bug where Craft wasn’t recording entry-specific attribute changes.
+- Fixed a bug where `craft\helpers\Html::namespaceAttributes()` was ignoring `url()` references if multiple existed on the same line. ([#7496](https://github.com/craftcms/cms/pull/7496))
+- Fixed an error that could occur when editing an element with a URL field without a value. ([#7506](https://github.com/craftcms/cms/pull/7506))
+- Fixed a bug where duplicating an unpublished draft wouldn’t create a new row in the `drafts` table, so the two drafts would be joined at the hip. ([#7508](https://github.com/craftcms/cms/issues/7508))
+
 ## 3.6.3 - 2021-02-03
 
 ### Added

@@ -953,6 +953,18 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
+    protected function uiLabel(): ?string
+    {
+        if ($this->title === null || trim($this->title) === '') {
+            return Craft::t('app', 'Untitled entry');
+        }
+
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function previewTargets(): array
     {
         return array_map(function ($previewTarget) {

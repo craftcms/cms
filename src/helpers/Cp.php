@@ -247,6 +247,8 @@ class Cp
         bool $showLabel = true,
         bool $showDraftBadge = true
     ): string {
+        $isDraft = $element->getIsDraft();
+        $isRevision = !$isDraft && $element->getIsRevision();
         $label = $element->getUiLabel();
 
         // Create the thumb/icon image, if there is one
@@ -343,7 +345,7 @@ class Cp
         }
 
         if ($showStatus && $element::hasStatuses()) {
-            $status = $element->getStatus();
+            $status = !$isDraft && !$isRevision ? $element->getStatus() : null;
             $html .= Html::tag('span', '', [
                 'class' => array_filter([
                     'status',
@@ -367,9 +369,9 @@ class Cp
                 !$element->trashed &&
                 ($cpEditUrl = $element->getCpEditUrl())
             ) {
-                if ($element->getIsDraft()) {
+                if ($isDraft) {
                     $cpEditUrl = UrlHelper::urlWithParams($cpEditUrl, ['draftId' => $element->draftId]);
-                } else if ($element->getIsRevision()) {
+                } else if ($isRevision) {
                     $cpEditUrl = UrlHelper::urlWithParams($cpEditUrl, ['revisionId' => $element->revisionId]);
                 }
 
@@ -378,7 +380,7 @@ class Cp
                 $html .= $encodedLabel;
             }
 
-            if ($showDraftBadge && $element->getIsDraft()) {
+            if ($showDraftBadge && $isDraft) {
                 $html .= Html::tag('span', Craft::t('app', 'Draft'), [
                     'class' => 'draft-label',
                 ]);

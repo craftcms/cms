@@ -1453,6 +1453,7 @@ return [
     'Unlimited video training' => 'Ubegrenset videoopplæring',
     'Unlock' => 'Lås opp',
     'Unsuspend' => 'Opphev suspensasjon',
+    'Untitled entry' => 'Untitled entry',
     'Update YAML Files' => 'Oppdater YAML-filer',
     'Update YAML files' => 'Oppdater YAML-filer',
     'Update aborted.' => 'Oppdatering avbrutt.',
