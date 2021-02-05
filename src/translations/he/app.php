@@ -1,6 +1,7 @@
 <?php
 
 return [
+    '(Untitled)' => '(Untitled)',
     '(blank)' => '(ריק)',
     '(trial)' => '(ניסיון)',
     '/path/to/folder' => 'נתיב/אל/תיקייה',
