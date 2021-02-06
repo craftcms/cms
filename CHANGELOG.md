@@ -8,6 +8,9 @@
 - Added `craft\services\ElementIndexes::EVENT_DEFINE_SOURCE_SORT_OPTIONS`. ([#7515](https://github.com/craftcms/cms/issues/7515))
 - Added `craft\services\ElementIndexes::EVENT_DEFINE_SOURCE_TABLE_ATTRIBUTES`. ([#7515](https://github.com/craftcms/cms/issues/7515))
 
+### Changed
+- The Entries index page no longer shows unpublished drafts when filtering by entry status.
+
 ## 3.6.4.1 - 2021-02-05
 
 ### Fixed
