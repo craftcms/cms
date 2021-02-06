@@ -245,15 +245,10 @@ class ElementIndexes extends Component
             $sourceKey = substr($sourceKey, 0, $slash);
         }
 
-        $event = new DefineSourceTableAttributesEvent([
-            'elementType' => $elementType,
-            'source' => $sourceKey,
-            'attributes' => array_merge(
-                $this->getAvailableTableAttributes($elementType),
-                $this->getSourceTableAttributes($elementType, $sourceKey)
-            ),
-        ]);
-        $this->trigger(self::EVENT_DEFINE_SOURCE_TABLE_ATTRIBUTES, $event);
+        $availableAttributes = array_merge(
+            $this->getAvailableTableAttributes($elementType),
+            $this->getSourceTableAttributes($elementType, $sourceKey)
+        );
 
         // Get the source settings
         $settings = $this->getSettings($elementType);
@@ -262,7 +257,7 @@ class ElementIndexes extends Component
 
         // Start with the first available attribute, no matter what
         $firstKey = null;
-        foreach ($event->attributes as $key => $attributeInfo) {
+        foreach ($availableAttributes as $key => $attributeInfo) {
             $firstKey = $key;
             if (isset($settings['sources'][$sourceKey]['headerColHeading'])) {
                 $attributeInfo['defaultLabel'] = $attributeInfo['label'];
@@ -281,8 +276,8 @@ class ElementIndexes extends Component
 
         // Assemble the remainder of the list
         foreach ($attributeKeys as $key) {
-            if ($key != $firstKey && isset($event->attributes[$key])) {
-                $attributes[] = [$key, $event->attributes[$key]];
+            if ($key != $firstKey && isset($availableAttributes[$key])) {
+                $attributes[] = [$key, $availableAttributes[$key]];
             }
         }
 
@@ -359,22 +354,29 @@ class ElementIndexes extends Component
      */
     public function getSourceTableAttributes(string $elementType, string $sourceKey): array
     {
+        $event = new DefineSourceTableAttributesEvent([
+            'elementType' => $elementType,
+            'source' => $sourceKey,
+        ]);
+
         $processedFieldIds = [];
-        $attributes = [];
+
         foreach ($this->getFieldLayoutsForSource($elementType, $sourceKey) as $fieldLayout) {
             foreach ($fieldLayout->getFields() as $field) {
                 if (
                     $field instanceof PreviewableFieldInterface &&
                     !isset($processedFieldIds[$field->id])
                 ) {
-                    $attributes["field:$field->id"] = [
+                    $event->attributes["field:$field->id"] = [
                         'label' => Craft::t('site', $field->name),
                     ];
                     $processedFieldIds[$field->id] = true;
                 }
             }
         }
-        return $attributes;
+
+        $this->trigger(self::EVENT_DEFINE_SOURCE_TABLE_ATTRIBUTES, $event);
+        return $event->attributes;
     }
 
     /**

@@ -41,5 +41,5 @@ class DefineSourceTableAttributesEvent extends Event
      * doesn’t have any effect on the table body, because the first column is reserved for displaying whatever
      * the elements’ [[\craft\base\ElementInterface::getUiLabel()|getUiLabel()]] methods return.
      */
-    public $attributes;
+    public $attributes = [];
 }
