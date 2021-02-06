@@ -14,6 +14,7 @@ use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\db\Query;
 use craft\db\Table;
+use craft\events\DefineSourceSortOptionEvent;
 use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\models\FieldLayout;
@@ -28,6 +29,12 @@ use yii\base\Component;
  */
 class ElementIndexes extends Component
 {
+    /**
+     * @event DefineSourceSortOptionEvent The event that is triggered when defining a source-specific sort option.
+     * @since 3.6.5
+     */
+    const EVENT_DEFINE_SOURCE_SORT_OPTION = 'defineSourceSortOption';
+
     private $_indexSettings;
 
     /**
@@ -314,8 +321,16 @@ class ElementIndexes extends Component
                     if (!isset($sortOption['attribute'])) {
                         $sortOption['attribute'] = $sortOption['orderBy'];
                     }
-                    yield $sortOption;
-                    $processedFieldIds[$field->id] = true;
+                    $event = new DefineSourceSortOptionEvent([
+                        'elementType' => $elementType,
+                        'sourceKey' => $sourceKey,
+                        'sortOption' => $sortOption,
+                    ]);
+                    $this->trigger(self::EVENT_DEFINE_SOURCE_SORT_OPTION, $event);
+                    if ($event->sortOption !== null) {
+                        yield $sortOption;
+                        $processedFieldIds[$field->id] = true;
+                    }
                 }
             }
         }

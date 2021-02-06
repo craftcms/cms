@@ -1,5 +1,11 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Added
+- Added `craft\events\DefineSourceSortOptionEvent`. ([#7515](https://github.com/craftcms/cms/issues/7515))
+- Added `craft\services\ElementIndexes::EVENT_DEFINE_SOURCE_SORT_OPTION`. ([#7515](https://github.com/craftcms/cms/issues/7515))
+
 ## 3.6.4.1 - 2021-02-05
 
 ### Fixed
