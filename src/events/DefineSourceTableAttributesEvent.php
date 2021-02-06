@@ -30,8 +30,11 @@ class DefineSourceTableAttributesEvent extends Event
     /**
      * @var array The available columns that can be shown.
      *
-     * This should be set to an array whose keys represent element attribute names, and whose values make up
-     * the table’s column headers.
+     * This should be set to an array whose keys represent element attribute names, and whose values are
+     * nested arrays with the following keys:
+     *
+     * - `label` – The table column header
+     * - `icon` _(optional)_ – The name of the icon that should be shown instead of a textual label (e.g. `'world'`)
      *
      * The first item in the array will determine the first table column’s header (and which
      * [[\craft\base\ElementInterface::sortOptions()|sort option]] it should be mapped to, if any), however it
