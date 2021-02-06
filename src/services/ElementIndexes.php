@@ -14,7 +14,8 @@ use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\db\Query;
 use craft\db\Table;
-use craft\events\DefineSourceSortOptionEvent;
+use craft\events\DefineSourceSortOptionsEvent;
+use craft\events\DefineSourceTableAttributesEvent;
 use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\models\FieldLayout;
@@ -30,10 +31,16 @@ use yii\base\Component;
 class ElementIndexes extends Component
 {
     /**
-     * @event DefineSourceSortOptionEvent The event that is triggered when defining a source-specific sort option.
+     * @event DefineSourceTableAttributesEvent The event that is triggered when defining the available table attributes for a source.
      * @since 3.6.5
      */
-    const EVENT_DEFINE_SOURCE_SORT_OPTION = 'defineSourceSortOption';
+    const EVENT_DEFINE_SOURCE_TABLE_ATTRIBUTES = 'defineSourceTableAttributes';
+
+    /**
+     * @event DefineSourceSortOptionsEvent The event that is triggered when defining the available sort options for a source.
+     * @since 3.6.5
+     */
+    const EVENT_DEFINE_SOURCE_SORT_OPTIONS = 'defineSourceSortOptions';
 
     private $_indexSettings;
 
@@ -238,10 +245,15 @@ class ElementIndexes extends Component
             $sourceKey = substr($sourceKey, 0, $slash);
         }
 
-        $availableAttributes = array_merge(
-            $this->getAvailableTableAttributes($elementType),
-            $this->getSourceTableAttributes($elementType, $sourceKey)
-        );
+        $event = new DefineSourceTableAttributesEvent([
+            'elementType' => $elementType,
+            'source' => $sourceKey,
+            'attributes' => array_merge(
+                $this->getAvailableTableAttributes($elementType),
+                $this->getSourceTableAttributes($elementType, $sourceKey)
+            ),
+        ]);
+        $this->trigger(self::EVENT_DEFINE_SOURCE_TABLE_ATTRIBUTES, $event);
 
         // Get the source settings
         $settings = $this->getSettings($elementType);
@@ -250,7 +262,7 @@ class ElementIndexes extends Component
 
         // Start with the first available attribute, no matter what
         $firstKey = null;
-        foreach ($availableAttributes as $key => $attributeInfo) {
+        foreach ($event->attributes as $key => $attributeInfo) {
             $firstKey = $key;
             if (isset($settings['sources'][$sourceKey]['headerColHeading'])) {
                 $attributeInfo['defaultLabel'] = $attributeInfo['label'];
@@ -269,8 +281,8 @@ class ElementIndexes extends Component
 
         // Assemble the remainder of the list
         foreach ($attributeKeys as $key) {
-            if ($key != $firstKey && isset($availableAttributes[$key])) {
-                $attributes[] = [$key, $availableAttributes[$key]];
+            if ($key != $firstKey && isset($event->attributes[$key])) {
+                $attributes[] = [$key, $event->attributes[$key]];
             }
         }
 
@@ -305,12 +317,18 @@ class ElementIndexes extends Component
      *
      * @param string $elementType The element type class
      * @param string $sourceKey The element source key
-     * @return \Generator
+     * @return array
      * @since 3.5.0
      */
-    public function getSourceSortOptions(string $elementType, string $sourceKey): \Generator
+    public function getSourceSortOptions(string $elementType, string $sourceKey): array
     {
+        $event = new DefineSourceSortOptionsEvent([
+            'elementType' => $elementType,
+            'source' => $sourceKey,
+        ]);
+
         $processedFieldIds = [];
+
         foreach ($this->getFieldLayoutsForSource($elementType, $sourceKey) as $fieldLayout) {
             foreach ($fieldLayout->getFields() as $field) {
                 if (
@@ -321,19 +339,14 @@ class ElementIndexes extends Component
                     if (!isset($sortOption['attribute'])) {
                         $sortOption['attribute'] = $sortOption['orderBy'];
                     }
-                    $event = new DefineSourceSortOptionEvent([
-                        'elementType' => $elementType,
-                        'source' => $sourceKey,
-                        'sortOption' => $sortOption,
-                    ]);
-                    $this->trigger(self::EVENT_DEFINE_SOURCE_SORT_OPTION, $event);
-                    if ($event->sortOption !== null) {
-                        yield $sortOption;
-                        $processedFieldIds[$field->id] = true;
-                    }
+                    $event->sortOptions[] = $sortOption;
+                    $processedFieldIds[$field->id] = true;
                 }
             }
         }
+
+        $this->trigger(self::EVENT_DEFINE_SOURCE_SORT_OPTIONS, $event);
+        return $event->sortOptions;
     }
 
     /**
