@@ -323,7 +323,7 @@ class ElementIndexes extends Component
                     }
                     $event = new DefineSourceSortOptionEvent([
                         'elementType' => $elementType,
-                        'sourceKey' => $sourceKey,
+                        'source' => $sourceKey,
                         'sortOption' => $sortOption,
                     ]);
                     $this->trigger(self::EVENT_DEFINE_SOURCE_SORT_OPTION, $event);

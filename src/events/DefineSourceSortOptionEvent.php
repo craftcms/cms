@@ -25,7 +25,7 @@ class DefineSourceSortOptionEvent extends Event
     /**
      * @var string The element source key
      */
-    public $sourceKey;
+    public $source;
 
     /**
      * @var array|null The sort option definition.
