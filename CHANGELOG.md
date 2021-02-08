@@ -24,7 +24,7 @@
 ### Added
 - Added the `accessibilityDefaults` config setting, which determines users’ default accessibility preferences. ([#7504](https://github.com/craftcms/cms/issues/7504))
 - Added the `collation` database config setting, which determines the default collation that should be used when creating tables, rather than leaving it up to the character set’s default collation. (MySQL only.)
-- Added the `db/change-charset` command, which can be used to convert all databsae tables’ and textual columns’ character sets and collations in one fell swoop.
+- Added the `db/change-charset` command, which can be used to convert all database tables’ and textual columns’ character sets and collations in one fell swoop.
 - Added `craft\base\ElementInterface::uiLabel()`.
 - Added `craft\services\Drafts::insertDraftRow()`.
 
