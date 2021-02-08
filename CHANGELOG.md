@@ -11,6 +11,9 @@
 ### Changed
 - The Entries index page no longer shows unpublished drafts when filtering by entry status.
 
+### Fixed
+- Fixed a bug where saving an entry to a site other than default would return `null` when using the GraphiQL API mutations. ([#7468](https://github.com/craftcms/cms/issues/7468))
+
 ## 3.6.4.1 - 2021-02-05
 
 ### Fixed
