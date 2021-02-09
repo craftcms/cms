@@ -9,6 +9,7 @@ namespace craft\helpers;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\behaviors\DraftBehavior;
 use craft\enums\LicenseKeyStatus;
 use craft\events\RegisterCpAlertsEvent;
 use craft\web\twig\TemplateLoaderException;
@@ -233,7 +234,7 @@ class Cp
      * @param bool $showStatus Whether the element status should be shown (if the element type has statuses)
      * @param bool $showThumb Whether the element thumb should be shown (if the element has one)
      * @param bool $showLabel Whether the element label should be shown
-     * @param bool $showDraftBadge Whether to show the “Draft” badge beside the label if the element is a draft
+     * @param bool $showDraftName Whether to show the draft name beside the label if the element is a draft of a published element
      * @return string
      * @since 3.5.8
      */
@@ -245,11 +246,12 @@ class Cp
         bool $showStatus = true,
         bool $showThumb = true,
         bool $showLabel = true,
-        bool $showDraftBadge = true
+        bool $showDraftName = true
     ): string {
         $isDraft = $element->getIsDraft();
         $isRevision = !$isDraft && $element->getIsRevision();
         $label = $element->getUiLabel();
+        $showStatus = $showStatus && ($isDraft || $element::hasStatuses());
 
         // Create the thumb/icon image, if there is one
         if ($showThumb) {
@@ -306,7 +308,7 @@ class Cp
             $htmlAttributes['class'] .= ' error';
         }
 
-        if ($showStatus && $element::hasStatuses()) {
+        if ($showStatus) {
             $htmlAttributes['class'] .= ' hasstatus';
         }
 
@@ -344,15 +346,27 @@ class Cp
                 ]);
         }
 
-        if ($showStatus && $element::hasStatuses()) {
-            $status = !$isDraft && !$isRevision ? $element->getStatus() : null;
-            $html .= Html::tag('span', '', [
-                'class' => array_filter([
-                    'status',
-                    $status,
-                    $status ? ($element::statuses()[$status]['color'] ?? null) : null,
-                ]),
-            ]);
+        if ($showStatus) {
+            if ($isDraft) {
+                $html .= Html::tag('span', '', [
+                    'class' => ['icon'],
+                    'aria' => [
+                        'hidden' => 'true',
+                    ],
+                    'data' => [
+                        'icon' => 'draft',
+                    ],
+                ]);
+            } else {
+                $status = !$isRevision ? $element->getStatus() : null;
+                $html .= Html::tag('span', '', [
+                    'class' => array_filter([
+                        'status',
+                        $status,
+                        $status ? ($element::statuses()[$status]['color'] ?? null) : null,
+                    ]),
+                ]);
+            }
         }
 
         $html .= $imgHtml;
@@ -362,6 +376,13 @@ class Cp
             $html .= '<span class="title">';
 
             $encodedLabel = Html::encode($label);
+
+            if ($showDraftName && $isDraft && !$element->getIsUnpublishedDraft()) {
+                /* @var DraftBehavior|ElementInterface $element */
+                $encodedLabel .= Html::tag('span', $element->draftName ?: Craft::t('app', 'Draft'), [
+                    'class' => 'draft-label',
+                ]);
+            }
 
             // Should we make the element a link?
             if (
@@ -380,12 +401,6 @@ class Cp
                 $html .= $encodedLabel;
             }
 
-            if ($showDraftBadge && $isDraft) {
-                $html .= Html::tag('span', Craft::t('app', 'Draft'), [
-                    'class' => 'draft-label',
-                ]);
-            }
-
             $html .= '</span></div>';
         }
 
@@ -402,7 +417,7 @@ class Cp
      * @param bool $showStatus Whether the element status should be shown (if the element type has statuses)
      * @param bool $showThumb Whether the element thumb should be shown (if the element has one)
      * @param bool $showLabel Whether the element label should be shown
-     * @param bool $showDraftBadge Whether to show the “Draft” badge beside the label if the element is a draft
+     * @param bool $showDraftName Whether to show the draft name beside the label if the element is a draft of a published element
      * @return string
      * @since 3.6.3
      */
@@ -412,19 +427,19 @@ class Cp
         bool $showStatus = true,
         bool $showThumb = true,
         bool $showLabel = true,
-        bool $showDraftBadge = true
+        bool $showDraftName = true
     ): string {
         if (empty($elements)) {
             return '';
         }
 
         $first = array_shift($elements);
-        $html = static::elementHtml($first, 'index', $size, null, $showStatus, $showThumb, $showLabel, $showDraftBadge);
+        $html = static::elementHtml($first, 'index', $size, null, $showStatus, $showThumb, $showLabel, $showDraftName);
 
         if (!empty($elements)) {
             $otherHtml = '';
             foreach ($elements as $other) {
-                $otherHtml .= static::elementHtml($other, 'index', $size, null, $showStatus, $showThumb, $showLabel, $showDraftBadge);
+                $otherHtml .= static::elementHtml($other, 'index', $size, null, $showStatus, $showThumb, $showLabel, $showDraftName);
             }
             $html .= Html::tag('span', '+' . Craft::$app->getFormatter()->asInteger(count($elements)), [
                 'title' => implode(', ', ArrayHelper::getColumn($elements, 'title')),

@@ -14,6 +14,7 @@
 
 ### Changed
 - The Entries index page no longer shows unpublished drafts when filtering by entry status.
+- Improved the styling of entry drafts within entry indexes. ([#7517](https://github.com/craftcms/cms/issues/7517))
 - Field groups are now soft-deleted.
 - Color fields’ text inputs are now updated based on the color input’s `input` event rather than `change`. ([#7529](https://github.com/craftcms/cms/issues/7529))
 
