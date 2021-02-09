@@ -181,8 +181,6 @@ JS;
                     'id' => $ids,
                 ]);
             }
-        } else {
-
         }
 
         if ($this->successMessage !== null) {
