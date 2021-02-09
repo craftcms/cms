@@ -3,7 +3,9 @@
 ## Unreleased
 
 ### Added
+- Users can now be soft-deleted. ([#4420](https://github.com/craftcms/cms/issues/4420))
 - Added `craft\controllers\UsersController::EVENT_INVALID_USER_TOKEN`. ([#7520](https://github.com/craftcms/cms/issues/7520))
+- Added `craft\elements\actions\DeleteActionInterface`.
 - Added `craft\events\DefineSourceSortOptionsEvent`. ([#7515](https://github.com/craftcms/cms/issues/7515))
 - Added `craft\events\DefineSourceTableAttributesEvent`. ([#7515](https://github.com/craftcms/cms/issues/7515))
 - Added `craft\events\InvalidUserTokenEvent`. ([#7520](https://github.com/craftcms/cms/issues/7520))
