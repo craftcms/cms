@@ -36,11 +36,15 @@ Craft.ColorInput = Garnish.Base.extend({
             .addClass('color-preview-input')
             .appendTo(this.$colorPreview);
 
+        this.addListener(this.$colorInput, 'click', function (ev) {
+            ev.stopPropagation();
+        });
+
         this.addListener(this.$colorContainer, 'click', function() {
             this.$colorInput.trigger('click');
         });
 
-        this.addListener(this.$colorInput, 'change', 'updateColor');
+        this.addListener(this.$colorInput, 'input', 'updateColor');
     },
 
     updateColor: function() {

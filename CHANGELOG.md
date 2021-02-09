@@ -15,10 +15,12 @@
 ### Changed
 - The Entries index page no longer shows unpublished drafts when filtering by entry status.
 - Field groups are now soft-deleted.
+- Color fields’ text inputs are now updated based on the color input’s `input` event rather than `change`. ([#7529](https://github.com/craftcms/cms/issues/7529))
 
 ### Fixed
 - Fixed a bug where saving an entry to a site other than default would return `null` when using the GraphiQL API mutations. ([#7468](https://github.com/craftcms/cms/issues/7468))
 - Fixed a bug where some content could go missing when applying project config changes, if a field group had been deleted and its fields had been moved to a different group. ([#7526](https://github.com/craftcms/cms/issues/7526))
+- Fixed a JavaScript error that occurred when clickin on a color input. ([#7529](https://github.com/craftcms/cms/issues/7529))
 
 ## 3.6.4.1 - 2021-02-05
 
