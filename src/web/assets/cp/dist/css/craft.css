@@ -312,6 +312,8 @@ body.rtl .rightalign { text-align: left; }
 
 .zilch { padding: 100px 0; text-align: center; font-size: 20px; line-height: 24px; color: #606d7b; }
 
+.zilch.small { padding: 24px 0; font-size: 16px; }
+
 input.checkbox + label.smalltext { padding-top: 2px; }
 
 .required:after { content: 'asterisk'; font-size: 7px; color: #CF1124; }
@@ -1107,11 +1109,11 @@ table.collapsed tbody [data-title] form { display: inline-block; }
 
 .element .label { display: inline-block; }
 
-.element .label .draft-label { display: inline-block; padding: 2px 7px; font-weight: normal; text-decoration: none !important; color: #606d7b; background: #e4edf6; border-radius: 4px; }
+.element .label .draft-label { display: inline-block; padding: 1px 5px; font-weight: normal; text-decoration: none !important; color: #606d7b; background: #e4edf6; border-radius: 5px; }
 
-body.ltr .element .label .draft-label { margin: -2px 0 -2px 7px ; }
+body.ltr .element .label .draft-label { margin: -1px 0 -1px 7px ; }
 
-body.rtl .element .label .draft-label { margin: -2px 7px -2px 0 ; }
+body.rtl .element .label .draft-label { margin: -1px 7px -1px 0 ; }
 
 .element.small, .element.large:not(.hasthumb) { display: inline-block; padding: 7px; box-sizing: border-box; }
 

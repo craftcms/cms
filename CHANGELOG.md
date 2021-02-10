@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Added the “My Drafts” dashboard widget. ([#7517](https://github.com/craftcms/cms/issues/7517))
 - Users can now be soft-deleted. ([#4420](https://github.com/craftcms/cms/issues/4420))
 - Added `craft\controllers\UsersController::EVENT_INVALID_USER_TOKEN`. ([#7520](https://github.com/craftcms/cms/issues/7520))
 - Added `craft\elements\actions\DeleteActionInterface`.
