@@ -731,6 +731,7 @@ return [
     'Job retried.' => 'Job forsøgt igen.',
     'Job' => 'Job',
     'Keep both' => 'Behold begge',
+    'Keep it' => 'Keep it',
     'Keep me logged in' => 'Forbliv logget ind',
     'Keep them' => 'Behold dem',
     'Label' => 'Etiket',
@@ -1640,6 +1641,7 @@ return [
     'Your system isn’t set up to save content for the site “{site}”.' => 'Dit system er ikke konfigureret til at gemme indhold for sitet “{site}”.',
     'Your {folder} folder isn’t writable.' => 'Din {folder}- mappe er ikke skrivbar.',
     'You’re all up-to-date!' => 'Du helt up-to-date!',
+    'You’re now editing a draft.' => 'You’re now editing a draft.',
     'You’re running Craft {edition} with a Craft {licensedEdition} license.' => 'Du kører Craft {edition} med et Craft {licensedEdition} licens.',
     'Zip Code' => 'Postnummer',
     'account_activation_body' => "Hej {{user.friendlyName}}. Tak fordi du opretter en konto med {{siteName}}! Aktiver din konto ved at klikke på følgende link:
