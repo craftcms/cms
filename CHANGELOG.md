@@ -9,11 +9,13 @@
 - Added `craft\events\DefineSourceSortOptionsEvent`. ([#7515](https://github.com/craftcms/cms/issues/7515))
 - Added `craft\events\DefineSourceTableAttributesEvent`. ([#7515](https://github.com/craftcms/cms/issues/7515))
 - Added `craft\events\InvalidUserTokenEvent`. ([#7520](https://github.com/craftcms/cms/issues/7520))
+- Added `craft\services\Drafts::generateDraftName()`.
 - Added `craft\services\ElementIndexes::EVENT_DEFINE_SOURCE_SORT_OPTIONS`. ([#7515](https://github.com/craftcms/cms/issues/7515))
 - Added `craft\services\ElementIndexes::EVENT_DEFINE_SOURCE_TABLE_ATTRIBUTES`. ([#7515](https://github.com/craftcms/cms/issues/7515))
 
 ### Changed
 - The Entries index page no longer shows unpublished drafts when filtering by entry status.
+- The “Drafts” entry status now shows all entry drafts; not just unpublished drafts. ([#6632](https://github.com/craftcms/cms/issues/6632), [#7517](https://github.com/craftcms/cms/issues/7517))
 - Improved the styling of entry drafts within entry indexes. ([#7517](https://github.com/craftcms/cms/issues/7517))
 - Field groups are now soft-deleted.
 - Color fields’ text inputs are now updated based on the color input’s `input` event rather than `change`. ([#7529](https://github.com/craftcms/cms/issues/7529))

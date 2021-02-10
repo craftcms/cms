@@ -604,7 +604,9 @@ Craft.BaseElementIndex = Garnish.Base.extend({
         // Only set drafts/draftOf/trashed params when needed, so we don't potentially override a source's criteria
         if (this.drafts || (this.settings.context === 'index' && !this.status)) {
             criteria.drafts = this.drafts || null;
-            criteria.draftOf = false;
+            if (!this.drafts) {
+                criteria.draftOf = false;
+            }
         }
         if (this.trashed) {
             criteria.trashed = true;

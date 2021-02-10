@@ -989,8 +989,24 @@ class Elements extends Component
 
         // If we are duplicating a draft as another draft, create a new draft row
         if ($mainClone->draftId && $mainClone->draftId === $element->draftId) {
-            /** @var ElementInterface|DraftBehavior $element */
-            $mainClone->draftId = Craft::$app->getDrafts()->insertDraftRow(Craft::t('app', 'First draft'), null, Craft::$app->getUser()->getId());
+            /* @var ElementInterface|DraftBehavior $element */
+            /* @var DraftBehavior $draftBehavior */
+            $draftBehavior = $mainClone->getBehavior('draft');
+            $draftsService = Craft::$app->getDrafts();
+            // Are we duplicating a draft of a published element?
+            if ($element->sourceId) {
+                $draftBehavior->draftName = $draftsService->generateDraftName($element->sourceId);
+            } else {
+                $draftBehavior->draftName = Craft::t('app', 'First draft');
+            }
+            $draftBehavior->draftNotes = null;
+            $mainClone->draftId = $draftsService->insertDraftRow(
+                $draftBehavior->draftName,
+                null,
+                Craft::$app->getUser()->getId(),
+                $draftBehavior->sourceId,
+                $draftBehavior->trackChanges
+            );
         }
 
         // Validate
