@@ -19,7 +19,7 @@
 - The Entries index page no longer shows unpublished drafts when filtering by entry status.
 - The “Drafts” entry status now shows all entry drafts; not just unpublished drafts. ([#6632](https://github.com/craftcms/cms/issues/6632), [#7517](https://github.com/craftcms/cms/issues/7517))
 - Improved the styling of entry drafts within entry indexes. ([#7517](https://github.com/craftcms/cms/issues/7517))
-- The Edit Entry page now notifies the author that they’re editing a draft after closing Live Preview, if a draft was auto-created for them. ([#4549](https://github.com/craftcms/cms/issues/4549))
+- The Edit Entry page now notifies the author that they’re editing a draft after closing Live Preview, if a draft was auto-created for them. ([#6681](https://github.com/craftcms/cms/issues/6681))
 - Field groups are now soft-deleted.
 - Color fields’ text inputs are now updated based on the color input’s `input` event rather than `change`. ([#7529](https://github.com/craftcms/cms/issues/7529))
 - Entry drafts’ search keywords now get partially indexed.
