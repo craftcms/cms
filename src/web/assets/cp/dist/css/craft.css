@@ -552,6 +552,8 @@ body.ltr .flex > *.spinner { margin-left: 0 !important; }
 
 body.rtl .flex > *.spinner { margin-right: 0 !important; }
 
+.centeralign .flex { -webkit-justify-content: center; justify-content: center; }
+
 .flex-grow { -webkit-flex: 1; flex: 1; }
 
 .flex-center { -webkit-align-items: center; align-items: center; }
@@ -745,7 +747,7 @@ body.rtl .btn.big[data-icon]:before, body.rtl #preview-btn:before, body.rtl #sha
 
 .btngroup.big, .btngroup.big input.btn, .btn.big, .btn.big + .spinner { height: 36px; }
 
-/* submit buttons */
+/* special buttons */
 .btn.submit, .btn.submit:before, .btn.submit:after, .btn.secondary, .btn.secondary:before, .btn.secondary:after { color: #fff !important; -moz-osx-font-smoothing: grayscale; -webkit-font-smoothing: antialiased; font-weight: 500; }
 
 .btn.submit { background-color: #E12D39 !important; }
@@ -753,6 +755,12 @@ body.rtl .btn.big[data-icon]:before, body.rtl #preview-btn:before, body.rtl #sha
 .btn.submit:not(.disabled):not(.inactive):hover, .btn.submit:not(.disabled):not(.inactive).hover, .btn.submit:not(.disabled):not(.inactive):focus { background-color: #d61f2b !important; }
 
 .btn.submit:not(.disabled):not(.inactive):active, .btn.submit:not(.disabled):not(.inactive).active { background-color: #c01b26 !important; }
+
+.btn.caution { background-color: #FFE3E3 !important; color: #CF1124; }
+
+.btn.caution:hover, .btn.caution.hover, .btn.caution:focus { background-color: #ffcaca !important; }
+
+.btn.caution:active, .btn.caution.active { background-color: #FFBDBD !important; }
 
 .secondary-buttons .btn.submit, .btn.secondary { background-color: #606d7b !important; }
 

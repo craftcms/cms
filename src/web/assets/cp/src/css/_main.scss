@@ -1030,6 +1030,10 @@ ul.icons {
       @include margin-left(0 !important);
     }
   }
+
+  .centeralign & {
+    justify-content: center;
+  }
 }
 
 .flex-grow {
@@ -1487,30 +1491,51 @@ ul.icons {
   height: 36px;
 }
 
-/* submit buttons */
-.btn.submit,
-.btn.secondary {
-  &,
-  &:before,
-  &:after {
-    color: $white !important;
-    @include light-on-dark-text;
+/* special buttons */
+.btn {
+
+  &.submit,
+  &.secondary {
+    &,
+    &:before,
+    &:after {
+      color: $white !important;
+      @include light-on-dark-text;
+    }
   }
-}
 
-.btn.submit {
-  background-color: $primaryColor !important;
-}
+  &.submit {
+    background-color: $primaryColor !important;
 
-.btn.submit:not(.disabled):not(.inactive):hover,
-.btn.submit:not(.disabled):not(.inactive).hover,
-.btn.submit:not(.disabled):not(.inactive):focus {
-  background-color: darken($primaryColor, 5%) !important;
-}
+    &:not(.disabled):not(.inactive) {
+      &:hover,
+      &.hover,
+      &:focus {
+        background-color: darken($primaryColor, 5%) !important;
+      }
 
-.btn.submit:not(.disabled):not(.inactive):active,
-.btn.submit:not(.disabled):not(.inactive).active {
-  background-color: darken($primaryColor, 10%) !important;
+      &:active,
+      &.active {
+        background-color: darken($primaryColor, 10%) !important;
+      }
+    }
+  }
+
+  &.caution {
+    background-color: $red050 !important;
+    color: $errorColor;
+
+    &:hover,
+    &.hover,
+    &:focus {
+      background-color: darken($red050, 5%) !important;
+    }
+
+    &:active,
+    &.active {
+      background-color: $red100 !important;
+    }
+  }
 }
 
 .secondary-buttons .btn.submit,
