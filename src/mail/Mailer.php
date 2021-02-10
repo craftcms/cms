@@ -75,15 +75,7 @@ class Mailer extends \yii\swiftmailer\Mailer
     }
 
     /**
-     * Sends the given email message.
-     *
-     * This method will log a message about the email being sent.
-     * If [[useFileTransport]] is true, it will save the email as a file under [[fileTransportPath]].
-     * Otherwise, it will call [[sendMessage()]] to send the email to its recipient(s).
-     * Child classes should implement [[sendMessage()]] with the actual email sending logic.
-     *
-     * @param MessageInterface $message The email message instance to be sent.
-     * @return bool Whether the message has been sent successfully.
+     * @inheritdoc
      */
     public function send($message)
     {
