@@ -13,6 +13,7 @@ use craft\console\Controller;
 use craft\db\Table;
 use craft\errors\AssetDisallowedExtensionException;
 use craft\errors\MissingAssetException;
+use craft\errors\MissingVolumeFolderException;
 use craft\errors\VolumeException;
 use craft\errors\VolumeObjectNotFoundException;
 use craft\helpers\Db;
@@ -108,6 +109,21 @@ class IndexAssetsController extends Controller
     }
 
     /**
+     * Removes all CLI indexing sessions.
+     *
+     * @return int
+     * @since 4.0.0
+     */
+    public function actionCleanup(): int
+    {
+        $total = Craft::$app->getAssetIndexer()->removeCliIndexingSessions();
+
+        $this->stdout('Removed ' . $total . ' CLI indexing session' . ($total !== 1 ? 's' : '') . PHP_EOL, Console::FG_GREEN);
+
+        return ExitCode::OK;
+    }
+
+    /**
      * Indexes the assets in the given volumes.
      *
      * @param VolumeInterface[] $volumes
@@ -122,9 +138,10 @@ class IndexAssetsController extends Controller
     {
         $assetIndexer = Craft::$app->getAssetIndexer();
         $assetService = Craft::$app->getAssets();
-        $sessionId = $assetIndexer->getIndexingSessionId();
 
         $this->stdout(PHP_EOL);
+
+        $session = $assetIndexer->createIndexingSession($volumes, $this->cacheRemoteImages, true);
 
         foreach ($volumes as $volume) {
             $this->stdout('Indexing assets in ', Console::FG_YELLOW);
@@ -141,25 +158,29 @@ class IndexAssetsController extends Controller
 
             /** @var VolumeListing $item */
             foreach ($fileList as $item) {
-                if ($item->getType() === 'dir') {
-                    $assetService->ensureFolderByFullPathAndVolume($item->getDirname(), $volume);
-                    continue;
-                }
-
                 $count = $index;
                 $this->stdout('    > #' . $count . ': ');
-                $this->stdout($item->getUri(), Console::FG_CYAN);
+                $this->stdout($item->getUri() . ($item->getIsDir() ? '/' : ''), Console::FG_CYAN);
                 $this->stdout(' ... ');
                 if ($index++ < $startAt) {
                     $this->stdout('skipped' . PHP_EOL, Console::FG_YELLOW);
                     continue;
                 }
+
                 try {
-                    $assetIndexer->indexFileByListing($item, $sessionId, $this->cacheRemoteImages, $this->createMissingAssets);
+                    if ($item->getIsDir()) {
+                        $assetIndexer->indexFolderByListing($item, $session->id, $this->createMissingAssets);
+                    } else {
+                        $assetIndexer->indexFileByListing($item, $session->id, $this->cacheRemoteImages, $this->createMissingAssets);
+                    }
                 } catch (MissingAssetException $e) {
                     $this->stdout('missing' . PHP_EOL, Console::FG_YELLOW);
                     $missingRecords[] = $e;
                     $missingRecordsByFilename[$e->filename][] = $e;
+                    continue;
+                } catch (MissingVolumeFolderException $e) {
+                    $this->stdout('missing' . PHP_EOL, Console::FG_YELLOW);
+                    $missingRecords[] = $e;
                     continue;
                 } catch (AssetDisallowedExtensionException $e) {
                     $this->stdout('skipped: ' . $e->getMessage() . PHP_EOL, Console::FG_YELLOW);
@@ -179,35 +200,40 @@ class IndexAssetsController extends Controller
 
             if (!$this->createMissingAssets && !empty($missingRecords)) {
                 $totalMissing = count($missingRecords);
-                $this->stdout(($totalMissing === 1 ? 'One file is missing its record:' : "{$totalMissing} files are missing their records:") . PHP_EOL, Console::FG_YELLOW);
+                $this->stdout(($totalMissing === 1 ? 'One record is missing:' : "{$totalMissing} records are missing:") . PHP_EOL, Console::FG_YELLOW);
                 foreach ($missingRecords as $e) {
-                    $this->stdout("- {$e->volume->name}/{$e->indexEntry->uri}" . PHP_EOL);
+                    $this->stdout("- {$e->volume->name}/{$e->indexEntry->uri}" . ($e instanceof MissingVolumeFolderException ? '/' : '') . PHP_EOL);
                 }
                 $this->stdout(PHP_EOL);
             }
+        }
 
-            $missingFiles = $assetIndexer->getMissingFiles($sessionId);
-            $maybes = false;
+        // Manually close the indexing session.
+        $session->actionRequired = true;
+        $missingEntries = $assetIndexer->getMissingEntriesForSession($session);
+        $missingFiles = $missingEntries['files'];
+        $missingFolders = $missingEntries['folders'];
 
-            if (!empty($missingFiles)) {
-                $totalMissing = count($missingFiles);
-                $this->stdout(($totalMissing === 1 ? 'One recorded asset is missing its file:' : "{$totalMissing} recorded assets are missing their files:") . PHP_EOL, Console::FG_YELLOW);
-                foreach ($missingFiles as $assetId => $filePath) {
-                    $this->stdout("- {$filePath} ({$assetId})");
-                    $filename = basename($filePath);
-                    if (isset($missingRecordsByFilename[$filename])) {
-                        $maybes = true;
-                        $maybePaths = [];
-                        foreach ($missingRecordsByFilename[$filename] as $e) {
-                            /** @var MissingAssetException $e */
-                            $maybePaths[] = "{$e->volume->name}/{$e->indexEntry->uri}";
-                        }
-                        $this->stdout(' (maybe ' . implode(', ', $maybePaths) . ')');
+        $maybes = false;
+
+        if (!empty($missingFiles)) {
+            $totalMissing = count($missingFiles);
+            $this->stdout(($totalMissing === 1 ? 'One recorded asset is missing its file:' : "{$totalMissing} recorded assets are missing their files:") . PHP_EOL, Console::FG_YELLOW);
+            foreach ($missingFiles as $assetId => $filePath) {
+                $this->stdout("- {$filePath} ({$assetId})");
+                $filename = basename($filePath);
+                if (isset($missingRecordsByFilename[$filename])) {
+                    $maybes = true;
+                    $maybePaths = [];
+                    foreach ($missingRecordsByFilename[$filename] as $e) {
+                        /** @var MissingAssetException $e */
+                        $maybePaths[] = "{$e->volume->name}/{$e->indexEntry->uri}";
                     }
-                    $this->stdout(PHP_EOL);
+                    $this->stdout(' (maybe ' . implode(', ', $maybePaths) . ')');
                 }
                 $this->stdout(PHP_EOL);
             }
+            $this->stdout(PHP_EOL);
         }
 
         $remainingMissingFiles = $missingFiles;
@@ -239,17 +265,28 @@ class IndexAssetsController extends Controller
         }
 
         if (!empty($remainingMissingFiles) && $this->deleteMissingAssets) {
+            $assetIds = array_keys($remainingMissingFiles);
             $totalMissingFiles = count($remainingMissingFiles);
             $this->stdout('Deleting the' . ($totalMissingFiles > 1 ? ' ' . $totalMissingFiles : '') . ' missing asset record' . ($totalMissingFiles > 1 ? 's' : '') . ' ... ');
 
+            Craft::$app->getAssetTransforms()->deleteTransformIndexDataByAssetIds($assetIds);
             Db::delete(Table::ASSETS, [
-                'id' => array_keys($remainingMissingFiles),
+                'id' => $assetIds,
             ]);
 
             $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
         }
 
-        $assetIndexer->deleteStaleIndexingData();
+        if (!empty($missingFolders) && $this->deleteMissingAssets) {
+            $totalMissingFolders = count($missingFolders);
+            $this->stdout('Deleting the' . ($totalMissingFolders > 1 ? ' ' . $totalMissingFolders : '') . ' missing folder record' . ($totalMissingFolders > 1 ? 's' : '') . ' ... ');
+
+            Craft::$app->getAssets()->deleteFoldersByIds(array_keys($missingFolders), false);
+
+            $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
+        }
+
+        $assetIndexer->stopIndexingSession($session);
 
         return ExitCode::OK;
     }

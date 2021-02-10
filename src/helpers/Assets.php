@@ -769,6 +769,7 @@ class Assets
      * @param string $localPath
      * @return int
      * @throws VolumeException if stream cannot be created.
+     * @since 4.0.0
      */
     public static function downloadFile(VolumeInterface $volume, string $uriPath, string $localPath): int
     {

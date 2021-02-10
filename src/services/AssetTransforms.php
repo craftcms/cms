@@ -1036,6 +1036,19 @@ class AssetTransforms extends Component
     }
 
     /**
+     * Delete transform records by Asset ids
+     *
+     * @param int[] $assetIds
+     * @since 4.0.0
+     */
+    public function deleteTransformIndexDataByAssetIds(array $assetIds)
+    {
+        Db::delete(Table::ASSETTRANSFORMINDEX, [
+            'assetId' => $assetIds,
+        ], [], $this->db);
+    }
+
+    /**
      * Delete a transform index by.
      *
      * @param int $indexId

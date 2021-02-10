@@ -10,21 +10,24 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
 use craft\errors\AssetDisallowedExtensionException;
+use craft\errors\AssetException;
 use craft\errors\MissingAssetException;
+use craft\errors\MissingVolumeFolderException;
 use craft\errors\VolumeException;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
+use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\models\AssetIndexData;
 use craft\models\AssetIndexingSession;
+use craft\models\VolumeFolder;
 use craft\models\VolumeListing;
 use craft\records\AssetIndexData as AssetIndexDataRecord;
 use craft\records\AssetIndexingSession as AssetIndexingSessionRecord;
 use Generator;
-use Spatie\Ray\Ray;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
@@ -41,16 +44,6 @@ use yii\base\InvalidConfigException;
  */
 class AssetIndexer extends Component
 {
-    /**
-     * Returns a unique indexing session id.
-     *
-     * @return string
-     */
-    public function getIndexingSessionId(): string
-    {
-        return StringHelper::UUID();
-    }
-
     /**
      * Gets the index list for a volume.
      *
@@ -142,7 +135,7 @@ class AssetIndexer extends Component
 
             foreach ($segments as $i => $segment) {
                 // Ignore if contained in or is a directory beginning with _
-                if (strpos($segment, '_') === 0 && ($listing->getType() === 'dir' || $i < $lastSegmentIndex)) {
+                if (strpos($segment, '_') === 0 && ($listing->getIsDir() || $i < $lastSegmentIndex)) {
                     continue 2;
                 }
             }
@@ -155,13 +148,11 @@ class AssetIndexer extends Component
      * Return a list of currently active indexing sessions.
      *
      * @return array
+     * @since 4.0.0
      */
     public function getExistingIndexingSessions(): array
     {
-        $query = (new Query())
-            ->select(['id', 'indexedVolumes', 'totalEntries', 'processedEntries', 'cacheRemoteImages', 'queueId', 'actionRequired', 'dateCreated', 'dateUpdated'])
-            ->from(Table::ASSETINDEXINGSESSIONS);
-
+        $query = $this->_createAssetIndexingSessionQuery();
         $rows = $query->all();
 
         $sessions = [];
@@ -174,12 +165,46 @@ class AssetIndexer extends Component
     }
 
     /**
+     * Remove all CLI-based indexing sessions.
+     *
+     * @return int
+     * @throws \yii\db\Exception
+     * @since 4.0.0
+     */
+    public function removeCliIndexingSessions(): int
+    {
+        return Db::delete(Table::ASSETINDEXINGSESSIONS, [
+            'isCli' => true
+        ]);
+    }
+
+    /**
+     * Get an indexing session by its id.
+     *
+     * @param int $sessionId
+     * @return AssetIndexingSession|null
+     * @since 4.0.0
+     */
+    public function getIndexingSessionById(int $sessionId): ?AssetIndexingSession
+    {
+        $query = $this->_createAssetIndexingSessionQuery();
+        $row = $query->where(['id' => $sessionId])->one();
+
+        if (!$row) {
+            return null;
+        }
+
+        return new AssetIndexingSession($row);
+    }
+
+    /**
      * Start an indexing session for an array of volumes. If first element of array is "all", all volumes wil be indexed.
      *
      * @param array $volumes
      * @param bool $cacheRemoteImages
      * @param bool $asQueueJob
      * @return AssetIndexingSession
+     * @since 4.0.0
      */
     public function startIndexingSession(array $volumes, bool $cacheRemoteImages = true, bool $asQueueJob = false): AssetIndexingSession
     {
@@ -217,15 +242,15 @@ class AssetIndexer extends Component
     }
 
     /**
-     * Stop an indexing session by its id.
+     * Stop an indexing session.
      *
-     * @param int $sessionId
+     * @param AssetIndexingSession $session the indexing session to stop.
      * @throws \Throwable
-     * @throws \yii\db\StaleObjectException
+     * @since 4.0.0
      */
-    public function stopIndexingSession(int $sessionId): void
+    public function stopIndexingSession(AssetIndexingSession $session): void
     {
-        $sessionRecord = AssetIndexingSessionRecord::findOne($sessionId);
+        $sessionRecord = AssetIndexingSessionRecord::findOne($session->id);
 
         if ($sessionRecord) {
             $sessionRecord->delete();
@@ -235,20 +260,29 @@ class AssetIndexer extends Component
     /**
      * Create a new indexing session.
      *
-     * @param array $volumeList
+     * @param VolumeInterface[] $volumeList
      * @param bool $cacheRemoteImages Whether remote images should be cached.
+     * @param bool $isCli Whether indexing is run via CLI
      * @return AssetIndexingSession
+     * @throws \Exception
+     * @since 4.0.0
      */
-    protected function createIndexingSession(array $volumeList, bool $cacheRemoteImages = true): AssetIndexingSession
+    public function createIndexingSession(array $volumeList, bool $cacheRemoteImages = true, $isCli = false): AssetIndexingSession
     {
-        $indexedVolumes = array_map(fn (Volume $volume) => $volume->name, $volumeList);
+        $indexedVolumes = [];
+
+        foreach ($volumeList as $volume) {
+            $indexedVolumes[$volume->id] = $volume->name;
+        }
+
         $session = new AssetIndexingSession([
             'totalEntries' => 0,
-            'indexedVolumes' => implode(', ', $indexedVolumes),
+            'indexedVolumes' => Json::encode($indexedVolumes),
             'processedEntries' => 0,
             'cacheRemoteImages' => $cacheRemoteImages,
             'actionRequired' => false,
             'queueId' => null,
+            'isCli' => $isCli,
             'dateUpdated' => null,
         ]);
 
@@ -277,8 +311,7 @@ class AssetIndexer extends Component
         $record->cacheRemoteImages = $session->cacheRemoteImages;
         $record->actionRequired = $session->actionRequired;
         $record->queueId = $session->queueId;
-        $record->dateUpdated = $session->dateUpdated;
-
+        $record->isCli = $session->isCli;
         $record->save();
 
         $session->id = $record->id;
@@ -345,63 +378,180 @@ class AssetIndexer extends Component
      */
     public function storeIndexList(Generator $indexList, int $sessionId, int $volumeId): int
     {
-        $attributes = ['volumeId', 'sessionId', 'uri', 'size', 'timestamp', 'inProgress', 'completed'];
+        $attributes = ['volumeId', 'sessionId', 'uri', 'size', 'timestamp', 'isDir', 'inProgress', 'completed'];
         $values = [];
 
         /** @var VolumeListing $volumeListing */
         foreach ($indexList as $volumeListing) {
-            $values[] = [$volumeId, $sessionId, $volumeListing->getUri(), $volumeListing->getFileSize(), Db::prepareDateForDb(new \DateTime('@' . $volumeListing->getDateModified())), false, false];
+            $values[] = [
+                $volumeId,
+                $sessionId,
+                $volumeListing->getUri(),
+                $volumeListing->getFileSize(),
+                Db::prepareDateForDb(new \DateTime('@' . $volumeListing->getDateModified())),
+                $volumeListing->getIsDir(),
+                false,
+                false
+            ];
         }
 
         return Db::batchInsert(Table::ASSETINDEXDATA, $attributes, $values);
     }
 
     /**
-     * Process index for a volume.
+     * Process an indexing session step.
      *
-     * @param string $sessionId Session id.
-     * @param int $volumeId Volume id.
-     * @param bool $cacheImages Whether remotely-stored images should be downloaded and stored locally, to speed up transform generation.
-     * @return mixed
+     * @param AssetIndexingSession $indexingSession
+     * @return AssetIndexingSession
+     * @throws Exception
+     * @throws InvalidConfigException
+     * @throws MissingAssetException
+     * @throws VolumeException
+     * @since 4.0.0
      */
-    public function processIndexForVolume(string $sessionId, int $volumeId, bool $cacheImages = false)
+    public function processIndexSession(AssetIndexingSession $indexingSession): AssetIndexingSession
     {
         $mutex = Craft::$app->getMutex();
-        $lockName = 'idx--' . $sessionId;
+        $lockName = 'idx--' . $indexingSession->id . '--';
 
         if (!$mutex->acquire($lockName, 5)) {
-            throw new Exception('Could not acquire a lock for the indexing session "' . $sessionId . '".');
+            throw new Exception('Could not acquire a lock for the indexing session "' . $indexingSession->id . '".');
         }
 
-        if (($indexEntryModel = $this->getNextIndexEntry($sessionId, $volumeId)) === null) {
-            return false;
+        $indexEntry = $this->getNextIndexEntry($indexingSession);
+
+        // The most likely scenario is that the last entry is being worked on.
+        if (!$indexEntry) {
+            $mutex->release($lockName);
+            return $indexingSession;
         }
 
         // Mark as started.
-        $this->updateIndexEntry($indexEntryModel->id, ['inProgress' => true]);
-
+        $this->updateIndexEntry($indexEntry->id, ['inProgress' => true]);
         $mutex->release($lockName);
 
         try {
-            $asset = $this->_indexFileByIndexData($indexEntryModel, true, $cacheImages);
-            $this->updateIndexEntry($indexEntryModel->id, ['completed' => true, 'inProgress' => false, 'recordId' => $asset->id]);
+            if ($indexEntry->isDir) {
+                $volume = Craft::$app->getVolumes()->getVolumeById($indexEntry->volumeId);
+                $recordId = Craft::$app->getAssets()->ensureFolderByFullPathAndVolume($indexEntry->uri, $volume)->id;
+            } else {
+                $recordId = $this->_indexFileByIndexData($indexEntry, true, $indexingSession->cacheRemoteImages)->id;
+            }
 
-            return ['result' => $asset->id];
+            $this->updateIndexEntry($indexEntry->id, ['completed' => true, 'inProgress' => false, 'recordId' => $recordId]);
         } catch (AssetDisallowedExtensionException $exception) {
-            $this->updateIndexEntry($indexEntryModel->id, ['completed' => true, 'inProgress' => false]);
+            $this->updateIndexEntry($indexEntry->id, ['completed' => true, 'inProgress' => false, 'isSkipped' => true]);
         }
 
-        return ['result' => false];
+        $session = $this->incrementProcessedEntryCount($indexingSession);
+
+
+        if ($session->processedEntries == $session->totalEntries) {
+            $session->actionRequired = true;
+            $this->storeIndexingSession($session);
+        }
+
+        return $indexingSession;
+    }
+
+    /**
+     * Get skipped items for an indexing session.
+     *
+     * @param AssetIndexingSession $session
+     * @return array
+     * @since 4.0.0
+     */
+    public function getSkippedItemsForSession(AssetIndexingSession $session): array
+    {
+        $skippedItems = (new Query())
+            ->select(['volumeId', 'uri'])
+            ->where(['sessionId' => $session->id])
+            ->andWhere(['isSkipped' => true])
+            ->from([Table::ASSETINDEXDATA])
+            ->all();
+
+        $skipped = [];
+        $volumes = Craft::$app->getVolumes();
+
+        foreach ($skippedItems as ['volumeId' => $volumeId, 'uri' => $uri]) {
+            $skipped[] = $volumes->getVolumeById($volumeId)->name . '/' . $uri;
+        }
+
+        return $skipped;
+    }
+
+    /**
+     * Get missing entries after an indexing session.
+     *
+     * @param AssetIndexingSession $session
+     * @return array with `files` and `folders` keys, containing missing entries.
+     * @throws AssetException
+     * @since 4.0.0
+     */
+    public function getMissingEntriesForSession(AssetIndexingSession $session): array
+    {
+        if (!$session->actionRequired) {
+            throw new AssetException('A session must be finished before missing entries can be fetched');
+        }
+
+        $cutoff = Db::prepareDateForDb($session->dateCreated);
+
+        $volumeList = Json::decodeIfJson($session->indexedVolumes);
+        if (!$volumeList || !is_array($volumeList)) {
+            return [];
+        }
+
+        $volumeList = array_keys($volumeList);
+
+        $missingFolders = (new Query())
+            ->select(['path' => 'folders.path', 'volumeName' => 'volumes.name', 'folderId' => 'folders.id'])
+            ->from(['folders' => Table::VOLUMEFOLDERS])
+            ->leftJoin(['volumes' => Table::VOLUMES], '[[volumes.id]] = [[folders.volumeId]]')
+            ->leftJoin(['indexData' => Table::ASSETINDEXDATA], ['and', '[[folders.id]] = [[indexData.recordId]]', ['indexData.isDir' => true]])
+            ->where(['<', 'folders.dateCreated', $cutoff])
+            ->andWhere(['folders.volumeId' => $volumeList])
+            ->andWhere(['not', ['folders.parentId' => null]])
+            ->andWhere(['indexData.id' => null]);
+
+        $missingFolders = $missingFolders
+            ->all();
+
+        $missingFiles = (new Query())
+            ->select(['path' => 'folders.path', 'volumeName' => 'volumes.name', 'filename' => 'assets.filename', 'assetId' => 'assets.id'])
+            ->from(['assets' => Table::ASSETS])
+            ->leftJoin(['elements' => Table::ELEMENTS], '[[elements.id]] = [[assets.id]]')
+            ->leftJoin(['folders' => Table::VOLUMEFOLDERS], '[[folders.id]] = [[assets.folderId]]')
+            ->leftJoin(['volumes' => Table::VOLUMES], '[[volumes.id]] = [[assets.volumeId]]')
+            ->leftJoin(['indexData' => Table::ASSETINDEXDATA], ['and', '[[assets.id]] = [[indexData.recordId]]', ['indexData.isDir' => false]])
+            ->where(['<', 'assets.dateCreated', $cutoff])
+            ->andWhere(['assets.volumeId' => $volumeList])
+            ->andWhere(['elements.dateDeleted' => null])
+            ->andWhere(['indexData.id' => null])
+            ->all();
+
+        $missing = [
+            'folders' => [],
+            'files' => []
+        ];
+
+        foreach ($missingFolders as ['folderId' => $folderId, 'path' => $path, 'volumeName' => $volumeName]) {
+            $missing['folders'][$folderId] = $volumeName . '/' . $path;
+        }
+
+        foreach ($missingFiles as ['assetId' => $assetId, 'path' => $path, 'volumeName' => $volumeName, 'filename' => $filename]) {
+            $missing['files'][$assetId] = $volumeName . '/' . $path . $filename;
+        }
+
+        return $missing;
     }
 
     /**
      * Returns the next item to index in an indexing session.
      *
-     * @param string $sessionId Session id.
-     * @param int $volumeId Volume id.
+     * @param AssetIndexingSession $session
      * @return AssetIndexData|null
      */
-    public function getNextIndexEntry(string $sessionId, int $volumeId)
+    public function getNextIndexEntry(AssetIndexingSession $session): ?AssetIndexData
     {
         $result = (new Query())
             ->select([
@@ -410,18 +560,20 @@ class AssetIndexer extends Component
                 'sessionId',
                 'uri',
                 'size',
-                'recordId',
                 'timestamp',
+                'isDir',
+                'recordId',
+                'isSkipped',
                 'completed',
                 'inProgress',
             ])
             ->from([Table::ASSETINDEXDATA])
             ->where([
-                'volumeId' => $volumeId,
-                'sessionId' => $sessionId,
+                'sessionId' => $session->id,
                 'completed' => false,
                 'inProgress' => false
             ])
+            ->orderBy(['id' => SORT_ASC])
             ->one();
 
         return $result ? new AssetIndexData($result) : null;
@@ -436,7 +588,7 @@ class AssetIndexer extends Component
     public function updateIndexEntry(int $entryId, array $data)
     {
         // Only allow a few fields to be updated.
-        $data = array_intersect_key($data, array_flip(['inProgress', 'completed', 'recordId']));
+        $data = array_intersect_key($data, array_flip(['inProgress', 'completed', 'recordId', 'isSkipped', 'processedEntries']));
         Db::update(Table::ASSETINDEXDATA, $data, [
             'id' => $entryId,
         ]);
@@ -502,7 +654,7 @@ class AssetIndexer extends Component
      *
      * @param VolumeInterface $volume
      * @param string $path
-     * @param string $sessionId optional indexing session id.
+     * @param int $sessionId optional indexing session id.
      * @param bool $cacheImages Whether remotely-stored images should be downloaded and stored locally, to speed up transform generation.
      * @param bool $createIfMissing Whether the asset record should be created if it doesn't exist yet
      * @return Asset
@@ -511,7 +663,7 @@ class AssetIndexer extends Component
      * @throws MissingAssetException if asset not found and `createIfMissing` set to `false`.
      * @throws VolumeException if unable to read metadata.
      */
-    public function indexFile(VolumeInterface $volume, string $path, string $sessionId = '', bool $cacheImages = false, bool $createIfMissing = true): Asset
+    public function indexFile(VolumeInterface $volume, string $path, int $sessionId, bool $cacheImages = false, bool $createIfMissing = true): Asset
     {
         $listing = new VolumeListing([
             'dirname' => $path,
@@ -527,28 +679,63 @@ class AssetIndexer extends Component
 
     /**
      * @param VolumeListing $listing
-     * @param string $sessionId
+     * @param int $sessionId
      * @param bool $cacheImages
      * @param bool $createIfMissing
      * @return Asset
      * @throws AssetDisallowedExtensionException if attempting to index an Asset with a disallowed extension
      * @throws InvalidConfigException if misconfigured volume
      * @throws MissingAssetException if asset not found and `createIfMissing` set to `false`.
+     * @since 4.0.0
      */
-    public function indexFileByListing(VolumeListing $listing, string $sessionId = '', bool $cacheImages = false, bool $createIfMissing = true): Asset
+    public function indexFileByListing(VolumeListing $listing, int $sessionId, bool $cacheImages = false, bool $createIfMissing = true): Asset
     {
         $volume = $listing->getVolume();
         $indexEntry = new AssetIndexData([
+            'id' => null,
             'volumeId' => $volume->id,
-            'sessionId' => $sessionId ?: $this->getIndexingSessionId(),
+            'sessionId' => $sessionId,
             'uri' => $listing->getUri(),
             'size' => $listing->getFileSize(),
             'timestamp' => $listing->getDateModified(),
+            'isDir' => $listing->getIsDir(),
+            'recordId' => null,
             'inProgress' => true,
+            'isSkipped' => null,
             'completed' => false
         ]);
 
         return $this->indexFileByEntry($indexEntry, $cacheImages, $createIfMissing);
+    }
+
+    /**
+     * @param VolumeListing $listing
+     * @param int $sessionId
+     * @param bool $cacheImages
+     * @param bool $createIfMissing
+     * @return VolumeFolder
+     * @throws InvalidConfigException if misconfigured volume
+     * @throws MissingAssetException if asset not found and `createIfMissing` set to `false`.
+     * @since 4.0.0
+     */
+    public function indexFolderByListing(VolumeListing $listing, int $sessionId, bool $createIfMissing = true): VolumeFolder
+    {
+        $volume = $listing->getVolume();
+        $indexEntry = new AssetIndexData([
+            'id' => null,
+            'volumeId' => $volume->id,
+            'sessionId' => $sessionId,
+            'uri' => $listing->getUri(),
+            'size' => $listing->getFileSize(),
+            'timestamp' => $listing->getDateModified(),
+            'isDir' => $listing->getIsDir(),
+            'recordId' => null,
+            'inProgress' => true,
+            'isSkipped' => null,
+            'completed' => false
+        ]);
+
+        return $this->indexFolderByEntry($indexEntry, $createIfMissing);
     }
 
     /**
@@ -557,12 +744,13 @@ class AssetIndexer extends Component
      * @param AssetIndexData $indexEntry
      * @param bool $cacheImages Whether remotely-stored images should be downloaded and stored locally, to speed up transform generation.
      * @param bool $createIfMissing Whether the asset record should be created if it doesn't exist yet
-     * @return bool|Asset
+     * @return Asset
      * @throws AssetDisallowedExtensionException If the file being indexed has a disallowed extension
      * @throws InvalidConfigException
-     * @throws MissingAssetException if the asset record doesn't exist and $createIfMissing is false
+     * @throws MissingAssetException
+     * @throws VolumeException
      */
-    public function indexFileByEntry(AssetIndexData $indexEntry, bool $cacheImages = false, bool $createIfMissing = true)
+    public function indexFileByEntry(AssetIndexData $indexEntry, bool $cacheImages = false, bool $createIfMissing = true): Asset
     {
         $indexEntry->inProgress = true;
         $indexEntry->completed = false;
@@ -570,18 +758,48 @@ class AssetIndexer extends Component
 
         $record = new AssetIndexDataRecord($recordData);
         $record->save();
-
         $indexEntry->id = $record->id;
 
         try {
             $asset = $this->_indexFileByIndexData($indexEntry, $createIfMissing, $cacheImages);
             $this->updateIndexEntry($indexEntry->id, ['completed' => true, 'inProgress' => false, 'recordId' => $asset->id]);
         } catch (AssetDisallowedExtensionException $exception) {
-            $this->updateIndexEntry($indexEntry->id, ['completed' => true, 'inProgress' => false]);
+            $this->updateIndexEntry($indexEntry->id, ['completed' => true, 'inProgress' => false, 'isSkipped' => true]);
             throw $exception;
         }
 
         return $asset;
+    }
+
+    /**
+     * Indexes a folder by its index entry.
+     *
+     * @param AssetIndexData $indexEntry
+     * @param bool $createIfMissing Whether the asset record should be created if it doesn't exist yet
+     * @return VolumeFolder
+     * @since 4.0.0
+     */
+    public function indexFolderByEntry(AssetIndexData $indexEntry, bool $createIfMissing = true): VolumeFolder
+    {
+        $indexEntry->inProgress = true;
+        $indexEntry->completed = false;
+        $recordData = $indexEntry->toArray();
+
+        $record = new AssetIndexDataRecord($recordData);
+        $record->save();
+        $indexEntry->id = $record->id;
+
+        $folder = Craft::$app->getAssets()->findFolder(['path' => $indexEntry->uri . '/', 'volumeId' => $indexEntry->volumeId]);
+        $volume = Craft::$app->getVolumes()->getVolumeById($indexEntry->volumeId);
+
+        if (!$folder && !$createIfMissing) {
+            throw new MissingVolumeFolderException($indexEntry, $volume, $indexEntry->uri);
+        }
+
+        $folder = Craft::$app->getAssets()->ensureFolderByFullPathAndVolume($indexEntry->uri, $volume);
+        $this->updateIndexEntry($indexEntry->id, ['completed' => true, 'inProgress' => false, 'recordId' => $folder->id]);
+
+        return $folder;
     }
 
     /**
@@ -615,6 +833,34 @@ class AssetIndexer extends Component
     }
 
     /**
+     * Increment the processed entry count on a session.
+     *
+     * @param AssetIndexingSession $session
+     * @return AssetIndexingSession
+     * @throws Exception
+     */
+    protected function incrementProcessedEntryCount(AssetIndexingSession $session): AssetIndexingSession
+    {
+        // Make SURE the counter proceeds correctly across multiple indexing jobs.
+        $mutex = Craft::$app->getMutex();
+        $lockName = 'idx--update-' . $session->id . '--';
+
+        if (!$mutex->acquire($lockName, 5)) {
+            throw new Exception('Could not acquire a lock for the indexing session "' . $session->id . '".');
+        }
+
+        /** @var AssetIndexingSessionRecord $record */
+        $record = AssetIndexingSessionRecord::findOne($session->id);
+        $record->processedEntries++;
+        $record->save();
+        $mutex->release($lockName);
+
+        $session->processedEntries = (int)$record->processedEntries;
+
+        return $session;
+    }
+
+    /**
      * Indexes a file.
      *
      * @param AssetIndexData $indexEntry Asset Index Data entry that contains information for the Asset-to-be.
@@ -624,8 +870,9 @@ class AssetIndexer extends Component
      * @throws AssetDisallowedExtensionException if the extension of the file is not allowed.
      * @throws InvalidConfigException
      * @throws MissingAssetException
+     * @throws VolumeException
      */
-    private function _indexFileByIndexData(AssetIndexData $indexEntry, bool $createIfMissing = true, bool $cacheImages)
+    private function _indexFileByIndexData(AssetIndexData $indexEntry, bool $createIfMissing = true, bool $cacheImages = false): Asset
     {
         // Determine the parent folder
         $uriPath = $indexEntry->uri;
@@ -749,5 +996,27 @@ class AssetIndexer extends Component
         }
 
         return $asset;
+    }
+
+    /**
+     * @return Query
+     */
+    private function _createAssetIndexingSessionQuery(): Query
+    {
+        $query = (new Query())
+            ->select([
+                'id',
+                'indexedVolumes',
+                'totalEntries',
+                'processedEntries',
+                'cacheRemoteImages',
+                'queueId',
+                'isCli',
+                'actionRequired',
+                'dateCreated',
+                'dateUpdated'
+            ])
+            ->from(Table::ASSETINDEXINGSESSIONS);
+        return $query;
     }
 }

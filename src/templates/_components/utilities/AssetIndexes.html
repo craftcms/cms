@@ -52,10 +52,14 @@
     {% for session in existingSessions %}
         data = {
             id: {{ session.id }},
-            indexedVolumes: "{{ session.indexedVolumes }}",
+            indexedVolumes: {{ session.indexedVolumes|raw }},
             totalEntries: {{ session.totalEntries }},
             processedEntries: {{ session.processedEntries }},
             queueId: {{ session.queueId ?? 0 }},
+            isCli: {{ session.isCli + 0 }},
+            actionRequired: {{ session.actionRequired + 0 }},
+            skippedEntries: [],
+            missingEntries: [],
             dateCreated: "{{ session.dateCreated|date("Y-m-d H:i") }}",
             dateUpdated: "{{ session.dateUpdated|date("Y-m-d H:i") }}",
         };

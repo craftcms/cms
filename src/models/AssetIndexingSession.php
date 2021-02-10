@@ -49,6 +49,13 @@ class AssetIndexingSession extends Model
     public ?int $queueId;
 
     /**
+     * Whether this session runs in CLI.
+     *
+     * @var bool
+     */
+    public bool $isCli = false;
+
+    /**
      * @var bool Whether actions is required.
      */
     public bool $actionRequired;
@@ -62,4 +69,14 @@ class AssetIndexingSession extends Model
      * @var DateTime|null Time when indexing session was last updated.
      */
     public ?DateTime $dateUpdated = null;
+
+    /**
+     * @var array The skipped entries.
+     */
+    public array $skippedEntries = [];
+
+    /**
+     * @var array The missing entries.
+     */
+    public array $missingEntries = [];
 }
