@@ -28,6 +28,7 @@
 - Fixed a bug where saving an entry to a site other than default would return `null` when using the GraphiQL API mutations. ([#7468](https://github.com/craftcms/cms/issues/7468))
 - Fixed a bug where some content could go missing when applying project config changes, if a field group had been deleted and its fields had been moved to a different group. ([#7526](https://github.com/craftcms/cms/issues/7526))
 - Fixed a JavaScript error that occurred when clickin on a color input. ([#7529](https://github.com/craftcms/cms/issues/7529))
+- Fixed an error that could occur on element index pages. ([#7535](https://github.com/craftcms/cms/issues/7535))
 
 ## 3.6.4.1 - 2021-02-05
 

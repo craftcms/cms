@@ -602,7 +602,10 @@ Craft.BaseElementIndex = Garnish.Base.extend({
         };
 
         // Only set drafts/draftOf/trashed params when needed, so we don't potentially override a source's criteria
-        if (this.drafts || (this.settings.context === 'index' && !this.status)) {
+        if (
+            this.settings.canHaveDrafts &&
+            (this.drafts || (this.settings.context === 'index' && !this.status))
+        ) {
             criteria.drafts = this.drafts || null;
             if (!this.drafts) {
                 criteria.draftOf = false;
@@ -2048,6 +2051,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
         submitActionsAction: 'element-indexes/perform-action',
         defaultSiteId: null,
         defaultSource: null,
+        canHaveDrafts: false,
 
         onAfterInit: $.noop,
         onSelectSource: $.noop,
