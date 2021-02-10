@@ -1616,7 +1616,7 @@ class Fields extends Component
 
         try {
             $fieldRecord = $this->_getFieldRecord($fieldUid);
-            $groupRecord = $this->_getGroupRecord($groupUid);
+            $groupRecord = $groupUid ? $this->_getGroupRecord($groupUid) : null;
             $isNewField = $fieldRecord->getIsNewRecord();
             $oldSettings = $fieldRecord->getOldAttribute('settings');
 
@@ -1700,7 +1700,7 @@ class Fields extends Component
             }
 
             $fieldRecord->uid = $fieldUid;
-            $fieldRecord->groupId = $groupRecord->id;
+            $fieldRecord->groupId = $groupRecord->id ?? null;
             $fieldRecord->name = $data['name'];
             $fieldRecord->handle = $data['handle'];
             $fieldRecord->context = $context;
@@ -1890,7 +1890,7 @@ class Fields extends Component
     /**
      * Gets a field group record or creates a new one.
      *
-     * @param mixed $criteria ID or UID of the field group.
+     * @param int|string $criteria ID or UID of the field group.
      * @param bool $withTrashed Whether to include trashed field groups in search
      * @return FieldGroupRecord
      */
