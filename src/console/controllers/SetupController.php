@@ -484,7 +484,7 @@ EOD;
                 $script = '~' . substr($script, strlen($home));
             }
         }
-        $this->stdout(PHP_EOL . '    ' . $script . ' ' . $command . PHP_EOL . PHP_EOL);
+        $this->stdout(PHP_EOL . '    php ' . $script . ' ' . $command . PHP_EOL . PHP_EOL);
     }
 
     /**
