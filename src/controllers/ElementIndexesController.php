@@ -13,6 +13,7 @@ use craft\base\ElementActionInterface;
 use craft\base\ElementExporterInterface;
 use craft\base\ElementInterface;
 use craft\elements\actions\Delete;
+use craft\elements\actions\DeleteActionInterface;
 use craft\elements\actions\Restore;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
@@ -567,7 +568,7 @@ class ElementIndexesController extends BaseElementsController
             }
 
             if ($this->elementQuery->trashed) {
-                if ($action instanceof Delete && !$action->withDescendants) {
+                if ($action instanceof DeleteActionInterface && $action->canHardDelete()) {
                     $action->hard = true;
                 } else if (!$action instanceof Restore) {
                     unset($actions[$i]);

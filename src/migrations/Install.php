@@ -335,6 +335,7 @@ class Install extends Migration
             'name' => $this->string()->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
+            'dateDeleted' => $this->dateTime()->null(),
             'uid' => $this->uid(),
         ]);
         $this->createTable(Table::FIELDLAYOUTFIELDS, [
@@ -808,7 +809,8 @@ class Install extends Migration
         $this->createIndex(null, Table::ENTRYTYPES, ['sectionId'], false);
         $this->createIndex(null, Table::ENTRYTYPES, ['fieldLayoutId'], false);
         $this->createIndex(null, Table::ENTRYTYPES, ['dateDeleted'], false);
-        $this->createIndex(null, Table::FIELDGROUPS, ['name']);
+        $this->createIndex(null, Table::FIELDGROUPS, ['name'], false);
+        $this->createIndex(null, Table::FIELDGROUPS, ['dateDeleted', 'name'], false);
         $this->createIndex(null, Table::FIELDLAYOUTFIELDS, ['layoutId', 'fieldId'], true);
         $this->createIndex(null, Table::FIELDLAYOUTFIELDS, ['sortOrder'], false);
         $this->createIndex(null, Table::FIELDLAYOUTFIELDS, ['tabId'], false);

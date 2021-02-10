@@ -61,6 +61,7 @@ class Gc extends Component
             Table::ELEMENTS, // elements should always go first
             Table::CATEGORYGROUPS,
             Table::ENTRYTYPES,
+            Table::FIELDGROUPS,
             Table::SECTIONS,
             Table::TAGGROUPS,
             Table::VOLUMES,

@@ -14,6 +14,8 @@ use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\db\Query;
 use craft\db\Table;
+use craft\events\DefineSourceSortOptionsEvent;
+use craft\events\DefineSourceTableAttributesEvent;
 use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\models\FieldLayout;
@@ -28,6 +30,18 @@ use yii\base\Component;
  */
 class ElementIndexes extends Component
 {
+    /**
+     * @event DefineSourceTableAttributesEvent The event that is triggered when defining the available table attributes for a source.
+     * @since 3.6.5
+     */
+    const EVENT_DEFINE_SOURCE_TABLE_ATTRIBUTES = 'defineSourceTableAttributes';
+
+    /**
+     * @event DefineSourceSortOptionsEvent The event that is triggered when defining the available sort options for a source.
+     * @since 3.6.5
+     */
+    const EVENT_DEFINE_SOURCE_SORT_OPTIONS = 'defineSourceSortOptions';
+
     private $_indexSettings;
 
     /**
@@ -298,12 +312,18 @@ class ElementIndexes extends Component
      *
      * @param string $elementType The element type class
      * @param string $sourceKey The element source key
-     * @return \Generator
+     * @return array
      * @since 3.5.0
      */
-    public function getSourceSortOptions(string $elementType, string $sourceKey): \Generator
+    public function getSourceSortOptions(string $elementType, string $sourceKey): array
     {
+        $event = new DefineSourceSortOptionsEvent([
+            'elementType' => $elementType,
+            'source' => $sourceKey,
+        ]);
+
         $processedFieldIds = [];
+
         foreach ($this->getFieldLayoutsForSource($elementType, $sourceKey) as $fieldLayout) {
             foreach ($fieldLayout->getFields() as $field) {
                 if (
@@ -314,11 +334,14 @@ class ElementIndexes extends Component
                     if (!isset($sortOption['attribute'])) {
                         $sortOption['attribute'] = $sortOption['orderBy'];
                     }
-                    yield $sortOption;
+                    $event->sortOptions[] = $sortOption;
                     $processedFieldIds[$field->id] = true;
                 }
             }
         }
+
+        $this->trigger(self::EVENT_DEFINE_SOURCE_SORT_OPTIONS, $event);
+        return $event->sortOptions;
     }
 
     /**
@@ -331,22 +354,29 @@ class ElementIndexes extends Component
      */
     public function getSourceTableAttributes(string $elementType, string $sourceKey): array
     {
+        $event = new DefineSourceTableAttributesEvent([
+            'elementType' => $elementType,
+            'source' => $sourceKey,
+        ]);
+
         $processedFieldIds = [];
-        $attributes = [];
+
         foreach ($this->getFieldLayoutsForSource($elementType, $sourceKey) as $fieldLayout) {
             foreach ($fieldLayout->getFields() as $field) {
                 if (
                     $field instanceof PreviewableFieldInterface &&
                     !isset($processedFieldIds[$field->id])
                 ) {
-                    $attributes["field:$field->id"] = [
+                    $event->attributes["field:$field->id"] = [
                         'label' => Craft::t('site', $field->name),
                     ];
                     $processedFieldIds[$field->id] = true;
                 }
             }
         }
-        return $attributes;
+
+        $this->trigger(self::EVENT_DEFINE_SOURCE_TABLE_ATTRIBUTES, $event);
+        return $event->attributes;
     }
 
     /**

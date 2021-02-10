@@ -1,5 +1,36 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.6.5 - 2021-02-10
+
+### Added
+- Added the “My Drafts” dashboard widget. ([#7517](https://github.com/craftcms/cms/issues/7517))
+- Users can now be soft-deleted. ([#4420](https://github.com/craftcms/cms/issues/4420))
+- Added `craft\controllers\UsersController::EVENT_INVALID_USER_TOKEN`. ([#7520](https://github.com/craftcms/cms/issues/7520))
+- Added `craft\elements\actions\DeleteActionInterface`.
+- Added `craft\events\DefineSourceSortOptionsEvent`. ([#7515](https://github.com/craftcms/cms/issues/7515))
+- Added `craft\events\DefineSourceTableAttributesEvent`. ([#7515](https://github.com/craftcms/cms/issues/7515))
+- Added `craft\events\InvalidUserTokenEvent`. ([#7520](https://github.com/craftcms/cms/issues/7520))
+- Added `craft\mail\Mailer::EVENT_BEFORE_PREP`. ([#7501](https://github.com/craftcms/cms/issues/7501))
+- Added `craft\services\Drafts::generateDraftName()`.
+- Added `craft\services\ElementIndexes::EVENT_DEFINE_SOURCE_SORT_OPTIONS`. ([#7515](https://github.com/craftcms/cms/issues/7515))
+- Added `craft\services\ElementIndexes::EVENT_DEFINE_SOURCE_TABLE_ATTRIBUTES`. ([#7515](https://github.com/craftcms/cms/issues/7515))
+
+### Changed
+- The Entries index page no longer shows unpublished drafts when filtering by entry status.
+- The “Drafts” entry status now shows all entry drafts; not just unpublished drafts. ([#6632](https://github.com/craftcms/cms/issues/6632), [#7517](https://github.com/craftcms/cms/issues/7517))
+- Improved the styling of entry drafts within entry indexes. ([#7517](https://github.com/craftcms/cms/issues/7517))
+- The Edit Entry page now notifies the author that they’re editing a draft after closing Live Preview, if a draft was auto-created for them. ([#4549](https://github.com/craftcms/cms/issues/4549))
+- Field groups are now soft-deleted.
+- Color fields’ text inputs are now updated based on the color input’s `input` event rather than `change`. ([#7529](https://github.com/craftcms/cms/issues/7529))
+- Entry drafts’ search keywords now get partially indexed.
+- The `resave/entries` command now supports a `--drafts` flag.
+
+### Fixed
+- Fixed a bug where saving an entry to a site other than the primary via GraphQL would return `null`. ([#7468](https://github.com/craftcms/cms/issues/7468))
+- Fixed a bug where some content could go missing when applying project config changes, if a field group had been deleted and its fields had been moved to a different group. ([#7526](https://github.com/craftcms/cms/issues/7526))
+- Fixed a JavaScript error that occurred when clickin on a color input. ([#7529](https://github.com/craftcms/cms/issues/7529))
+- Fixed an error that could occur on element index pages. ([#7535](https://github.com/craftcms/cms/issues/7535))
+
 ## 3.6.4.1 - 2021-02-05
 
 ### Fixed
@@ -10,7 +41,7 @@
 ### Added
 - Added the `accessibilityDefaults` config setting, which determines users’ default accessibility preferences. ([#7504](https://github.com/craftcms/cms/issues/7504))
 - Added the `collation` database config setting, which determines the default collation that should be used when creating tables, rather than leaving it up to the character set’s default collation. (MySQL only.)
-- Added the `db/change-charset` command, which can be used to convert all databsae tables’ and textual columns’ character sets and collations in one fell swoop.
+- Added the `db/change-charset` command, which can be used to convert all database tables’ and textual columns’ character sets and collations in one fell swoop.
 - Added `craft\base\ElementInterface::uiLabel()`.
 - Added `craft\services\Drafts::insertDraftRow()`.
 

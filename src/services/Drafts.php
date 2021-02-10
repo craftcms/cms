@@ -152,16 +152,7 @@ class Drafts extends Component
         $notes = $event->draftNotes;
 
         if ($name === null || $name === '') {
-            $draftNames = (new Query())
-                ->select(['name'])
-                ->from([Table::DRAFTS])
-                ->where(['sourceId' => $source->id])
-                ->column();
-            $draftNames = array_flip($draftNames);
-            $num = count($draftNames);
-            do {
-                $name = Craft::t('app', 'Draft {num}', ['num' => ++$num]);
-            } while (isset($draftNames[$name]));
+            $name = $this->generateDraftName($source->id);
         }
 
         $transaction = $this->db->beginTransaction();
@@ -200,6 +191,32 @@ class Drafts extends Component
         }
 
         return $draft;
+    }
+
+    /**
+     * Returns the next auto-generated draft name that should be assigned, for the given source element.
+     *
+     * @param int $sourceId The source element’s ID
+     * @return string
+     * @since 3.6.5
+     */
+    public function generateDraftName(int $sourceId): string
+    {
+        // Get all of the source's current draft names
+        $draftNames = (new Query())
+            ->select(['name'])
+            ->from([Table::DRAFTS])
+            ->where(['sourceId' => $sourceId])
+            ->column();
+        $draftNames = array_flip($draftNames);
+
+        // Find one that isn't taken
+        $num = count($draftNames);
+        do {
+            $name = Craft::t('app', 'Draft {num}', ['num' => ++$num]);
+        } while (isset($draftNames[$name]));
+
+        return $name;
     }
 
     /**

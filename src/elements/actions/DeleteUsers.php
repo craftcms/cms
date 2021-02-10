@@ -9,6 +9,7 @@ namespace craft\elements\actions;
 
 use Craft;
 use craft\base\ElementAction;
+use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\User;
 use craft\helpers\Json;
@@ -20,7 +21,7 @@ use yii\base\Exception;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class DeleteUsers extends ElementAction
+class DeleteUsers extends ElementAction implements DeleteActionInterface
 {
     /**
      * @var int|null The user ID that the deleted user’s content should be transferred to
@@ -28,10 +29,36 @@ class DeleteUsers extends ElementAction
     public $transferContentTo;
 
     /**
+     * @var bool Whether to permanently delete the elements.
+     * @since 3.6.5
+     */
+    public $hard = false;
+
+    /**
+     * @inheritdoc
+     */
+    public function canHardDelete(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setHardDelete(): void
+    {
+        $this->hard = true;
+    }
+
+    /**
      * @inheritdoc
      */
     public function getTriggerLabel(): string
     {
+        if ($this->hard) {
+            return Craft::t('app', 'Delete permanently');
+        }
+
         return Craft::t('app', 'Delete…');
     }
 
@@ -48,6 +75,10 @@ class DeleteUsers extends ElementAction
      */
     public function getTriggerHtml()
     {
+        if ($this->hard) {
+            return '<div class="btn formsubmit">' . $this->getTriggerLabel() . '</div>';
+        }
+
         $type = Json::encode(static::class);
         $undeletableIds = Json::encode($this->_getUndeletableUserIds());
         $redirect = Json::encode(Craft::$app->getSecurity()->hashData(Craft::$app->getEdition() === Craft::Pro ? 'users' : 'dashboard'));
@@ -101,6 +132,20 @@ JS;
     /**
      * @inheritdoc
      */
+    public function getConfirmationMessage()
+    {
+        if ($this->hard) {
+            return Craft::t('app', 'Are you sure you want to permanently delete the selected {type}?', [
+                'type' => User::pluralLowerDisplayName(),
+            ]);
+        }
+
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function performAction(ElementQueryInterface $query): bool
     {
         /** @var User[] $users */
@@ -127,7 +172,7 @@ JS;
         foreach ($users as $user) {
             if (!in_array($user->id, $undeletableIds, false)) {
                 $user->inheritorOnDelete = $transferContentTo;
-                $elementsService->deleteElement($user);
+                $elementsService->deleteElement($user, $this->hard);
             }
         }
 
