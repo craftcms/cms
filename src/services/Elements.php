@@ -2529,7 +2529,7 @@ class Elements extends Component
         }
 
         // Update search index
-        if ($updateSearchIndex && !$isDraftOrRevision) {
+        if ($updateSearchIndex && !$element->getIsRevision()) {
             if (Craft::$app->getRequest()->getIsConsoleRequest()) {
                 Craft::$app->getSearch()->indexElementAttributes($element);
             } else {
@@ -2537,7 +2537,7 @@ class Elements extends Component
                     'elementType' => get_class($element),
                     'elementId' => $element->id,
                     'siteId' => $propagate ? '*' : $element->siteId,
-                    'fieldHandles' => $element->getDirtyFields(),
+                    'fieldHandles' => $element->getIsDraft() ? [] : $element->getDirtyFields(),
                 ]), 2048);
             }
         }

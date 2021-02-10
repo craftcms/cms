@@ -17,6 +17,8 @@
 - Improved the styling of entry drafts within entry indexes. ([#7517](https://github.com/craftcms/cms/issues/7517))
 - Field groups are now soft-deleted.
 - Color fields’ text inputs are now updated based on the color input’s `input` event rather than `change`. ([#7529](https://github.com/craftcms/cms/issues/7529))
+- Entry drafts’ search keywords now get partially indexed.
+- The `resave/entries` command now supports a `--drafts` flag.
 
 ### Fixed
 - Fixed a bug where saving an entry to a site other than default would return `null` when using the GraphiQL API mutations. ([#7468](https://github.com/craftcms/cms/issues/7468))
