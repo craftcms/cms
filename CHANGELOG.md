@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.6.5.1 - 2021-02-10
 
 ### Fixed
 - Fixed a bug where all fields were getting assigned to a field group on save, even if they weren’t global. ([#7540](https://github.com/craftcms/cms/issues/7540))
