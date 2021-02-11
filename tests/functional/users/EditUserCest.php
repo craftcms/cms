@@ -59,7 +59,7 @@ class EditUserCest
             'firstName' => 'IM A CHANGED FIRSTNAME',
         ]);
 
-        $I->see('User saved');
+        $I->see('User saved.');
         $I->seeInTitle('Users');
 
         // Check that the Db was updated.
