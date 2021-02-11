@@ -71,6 +71,8 @@ use craft\models\GqlToken;
 use craft\models\Section;
 use craft\records\GqlSchema as GqlSchemaRecord;
 use craft\records\GqlToken as GqlTokenRecord;
+use GraphQL\Error\DebugFlag;
+use GraphQL\Error\Error;
 use GraphQL\GraphQL;
 use GraphQL\Type\Schema;
 use GraphQL\Validator\DocumentValidator;
@@ -540,7 +542,9 @@ class Gql extends Component
                     $event->operationName,
                     null,
                     $this->getValidationRules($debugMode, $isIntrospectionQuery)
-                )->toArray($debugMode);
+                )
+                ->setErrorsHandler([$this, 'handleQueryErrors'])
+                ->toArray($debugMode ? DebugFlag::INCLUDE_DEBUG_MESSAGE | DebugFlag::INCLUDE_TRACE : false);
 
                 $dep = $elementsService->stopCollectingCacheTags();
 
@@ -1201,6 +1205,39 @@ class Gql extends Component
         }
 
         return $this->_contentFieldCache[$elementClass];
+    }
+
+    /**
+     * Custom error handler for GraphQL query errors
+     *
+     * @param Error[] $errors
+     * @param callable $formatter
+     * @return Error[]
+     * @since 3.6.2
+     */
+    public function handleQueryErrors(array $errors, callable $formatter)
+    {
+        $devMode = Craft::$app->getConfig()->getGeneral()->devMode;
+
+        /** @var Error $error */
+        foreach ($errors as &$error) {
+            $originException = $nextException = $error;
+
+            // Get the origin exception.
+            while ($nextException = $nextException->getPrevious()) {
+                $originException = $nextException;
+            }
+
+            // If devMode enabled, substitute the original exception here.
+            if ($devMode) {
+                $error = $originException;
+            }
+
+            // Otherwise, just log it.
+            Craft::$app->getErrorHandler()->logException($originException);
+        }
+
+        return array_map($formatter, $errors);
     }
 
     /**

@@ -501,6 +501,11 @@ strong, b, i em {
   font-size: 20px;
   line-height: 24px;
   color: $lightTextColor;
+
+  &.small {
+    padding: 24px 0;
+    font-size: 16px;
+  }
 }
 
 input.checkbox + label.smalltext {
@@ -1025,6 +1030,10 @@ ul.icons {
       @include margin-left(0 !important);
     }
   }
+
+  .centeralign & {
+    justify-content: center;
+  }
 }
 
 .flex-grow {
@@ -1412,12 +1421,20 @@ ul.icons {
   display: inline-block;
   vertical-align: bottom;
   @include spinner;
-}
 
-.spinner.big {
-  width: 48px;
-  height: 48px;
-  background: url(../images/spinner_big.gif) no-repeat 50% 50%;
+  &.over-bg {
+    background-image: url(../images/spinner_bg.gif);
+  }
+
+  &.big {
+    width: 48px;
+    height: 48px;
+    background: url(../images/spinner_big.gif) no-repeat 50% 50%;
+
+    &.over-bg {
+      background-image: url(../images/spinner_big_bg.gif);
+    }
+  }
 }
 
 .btn + .spinner {
@@ -1474,30 +1491,51 @@ ul.icons {
   height: 36px;
 }
 
-/* submit buttons */
-.btn.submit,
-.btn.secondary {
-  &,
-  &:before,
-  &:after {
-    color: $white !important;
-    @include light-on-dark-text;
+/* special buttons */
+.btn {
+
+  &.submit,
+  &.secondary {
+    &,
+    &:before,
+    &:after {
+      color: $white !important;
+      @include light-on-dark-text;
+    }
   }
-}
 
-.btn.submit {
-  background-color: $primaryColor !important;
-}
+  &.submit {
+    background-color: $primaryColor !important;
 
-.btn.submit:not(.disabled):not(.inactive):hover,
-.btn.submit:not(.disabled):not(.inactive).hover,
-.btn.submit:not(.disabled):not(.inactive):focus {
-  background-color: darken($primaryColor, 5%) !important;
-}
+    &:not(.disabled):not(.inactive) {
+      &:hover,
+      &.hover,
+      &:focus {
+        background-color: darken($primaryColor, 5%) !important;
+      }
 
-.btn.submit:not(.disabled):not(.inactive):active,
-.btn.submit:not(.disabled):not(.inactive).active {
-  background-color: darken($primaryColor, 10%) !important;
+      &:active,
+      &.active {
+        background-color: darken($primaryColor, 10%) !important;
+      }
+    }
+  }
+
+  &.caution {
+    background-color: $red050 !important;
+    color: $errorColor;
+
+    &:hover,
+    &.hover,
+    &:focus {
+      background-color: darken($red050, 5%) !important;
+    }
+
+    &:active,
+    &.active {
+      background-color: $red100 !important;
+    }
+  }
 }
 
 .secondary-buttons .btn.submit,
@@ -2193,6 +2231,17 @@ $elementInnerSpacing: 5px;
 
   .label {
     display: inline-block;
+
+    .draft-label {
+      display: inline-block;
+      @include margin(-1px, 0, -1px, 7px);
+      padding: 1px 5px;
+      font-weight: normal;
+      text-decoration: none !important;
+      color: $lightTextColor;
+      background: $grey100;
+      border-radius: $largeBorderRadius;
+    }
   }
 
   &.small,
@@ -2208,6 +2257,13 @@ $elementInnerSpacing: 5px;
         position: absolute;
         @include left($baseElementSidePadding);
         top: calc(50% - 5px);
+      }
+
+
+      .icon {
+        position: absolute;
+        @include left($baseElementSidePadding - 1);
+        top: calc(50% - 11px);
       }
     }
 
@@ -5608,14 +5664,22 @@ only screen and (min-resolution: 1.5dppx) {
     }
   }
 
-  .spinner
+  .spinner,
   .elements.busy:after {
     background-image: url(../images/spinner_2x.gif);
     background-size: 20px;
   }
-  .spinner.big {
-    background-image: url(../images/spinner_big_2x.gif);
-    background-size: 48px;
+  .spinner {
+    &.over-bg {
+      background-image: url(../images/spinner_bg_2x.gif);
+    }
+    &.big {
+      background-image: url(../images/spinner_big_2x.gif);
+      background-size: 48px;
+      &.over-bg {
+        background-image: url(../images/spinner_big_bg_2x.gif);
+      }
+    }
   }
 
   .btn.icon.add.loading:after {

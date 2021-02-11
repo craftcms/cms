@@ -730,7 +730,7 @@ class Categories extends Component
      */
     public function applyBranchLimitToCategories(array &$categories, int $branchLimit)
     {
-        Craft::$app->getStructures()->applyBranchLimitToElements($categories);
+        Craft::$app->getStructures()->applyBranchLimitToElements($categories, $branchLimit);
     }
 
     /**

@@ -76,7 +76,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read \craft\i18n\Locale $locale The Locale object for the target language
  * @property-read \craft\mail\Mailer $mailer The mailer component
  * @property-read \craft\services\Api $api The API service
- * @property-read \craft\services\AssetIndexer $assetIndexing The asset indexer service
+ * @property-read \craft\services\AssetIndexer $assetIndexer The asset indexer service
  * @property-read \craft\services\Assets $assets The assets service
  * @property-read \craft\services\AssetTransforms $assetTransforms The asset transforms service
  * @property-read \craft\services\Categories $categories The categories service

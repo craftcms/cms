@@ -7,6 +7,7 @@
 
 namespace craft\console;
 
+use Composer\Util\Platform;
 use craft\console\controllers\ResaveController;
 use craft\events\DefineConsoleActionsEvent;
 use craft\helpers\ArrayHelper;
@@ -125,6 +126,7 @@ class Controller extends YiiController
     public function init()
     {
         parent::init();
+        $this->checkTty();
 
         $this->_actions = [];
         foreach ($this->defineActions() as $id => $action) {

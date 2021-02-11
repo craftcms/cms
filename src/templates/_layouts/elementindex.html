@@ -67,7 +67,8 @@
         context: '{{ context }}',
         storageKey: 'elementindex.{{ elementType|e("js") }}',
         criteria: Craft.defaultIndexCriteria,
-        toolbarSelector: '#toolbar'
+        toolbarSelector: '#toolbar',
+        canHaveDrafts: {{ (canHaveDrafts ?? false) ? 'true' : 'false' }},
     });
 {% endblock %}
 

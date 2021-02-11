@@ -89,7 +89,7 @@ class MigrateController extends BaseMigrateController
     public $track = MigrationManager::TRACK_CONTENT;
 
     /**
-     * @var string|null The type of migrations we're dealing with here. Can be 'app', 'plugin', or 'content'.
+     * @var string|null DEPRECATED. Use `--track` instead.
      * @deprecated in 3.5.0. Use [[track]] instead.
      */
     public $type;
@@ -121,6 +121,7 @@ class MigrateController extends BaseMigrateController
     public function init()
     {
         parent::init();
+        $this->checkTty();
 
         $this->templateFile = Craft::getAlias('@app/updates/migration.php.template');
     }
@@ -349,7 +350,7 @@ class MigrateController extends BaseMigrateController
             $total += $n;
         }
 
-        if ($total && $this->interactive && !$this->confirm('Apply the above ' . ($total === 1 ? 'migration' : 'migrations') . '?')) {
+        if ($total && !$this->confirm('Apply the above ' . ($total === 1 ? 'migration' : 'migrations') . '?')) {
             return ExitCode::OK;
         }
 

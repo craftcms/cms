@@ -9,6 +9,7 @@ namespace craft\helpers;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\behaviors\DraftBehavior;
 use craft\enums\LicenseKeyStatus;
 use craft\events\RegisterCpAlertsEvent;
 use craft\web\twig\TemplateLoaderException;
@@ -147,7 +148,7 @@ class Cp
             if (!empty($licenseAlerts)) {
                 if ($canSettleUp) {
                     if ($path !== 'plugin-store/buy-all-trials') {
-                        $alerts[] = Craft::t('app', 'There are license trials that require payment.') . ' ' .
+                        $alerts[] = Craft::t('app', 'There are trial licenses that require payment.') . ' ' .
                             Html::a(Craft::t('app', 'Buy now'), UrlHelper::cpUrl('plugin-store/buy-all-trials'), ['class' => 'go']);
                     }
                 } else {
@@ -230,9 +231,10 @@ class Cp
      * @param string $context The context the element is going to be shown in (`index`, `field`, etc.)
      * @param string $size The size of the element (`small` or `large`)
      * @param string|null $inputName The `name` attribute that should be set on the hidden input, if `$context` is set to `field`
-     * @param bool $showStatus Whether the elemnet status should be shown (if the element type has statuses)
+     * @param bool $showStatus Whether the element status should be shown (if the element type has statuses)
      * @param bool $showThumb Whether the element thumb should be shown (if the element has one)
      * @param bool $showLabel Whether the element label should be shown
+     * @param bool $showDraftName Whether to show the draft name beside the label if the element is a draft of a published element
      * @return string
      * @since 3.5.8
      */
@@ -243,9 +245,13 @@ class Cp
         ?string $inputName = null,
         bool $showStatus = true,
         bool $showThumb = true,
-        bool $showLabel = true
+        bool $showLabel = true,
+        bool $showDraftName = true
     ): string {
+        $isDraft = $element->getIsDraft();
+        $isRevision = !$isDraft && $element->getIsRevision();
         $label = $element->getUiLabel();
+        $showStatus = $showStatus && ($isDraft || $element::hasStatuses());
 
         // Create the thumb/icon image, if there is one
         if ($showThumb) {
@@ -302,7 +308,7 @@ class Cp
             $htmlAttributes['class'] .= ' error';
         }
 
-        if ($element::hasStatuses()) {
+        if ($showStatus) {
             $htmlAttributes['class'] .= ' hasstatus';
         }
 
@@ -340,15 +346,27 @@ class Cp
                 ]);
         }
 
-        if ($showStatus && $element::hasStatuses()) {
-            $status = $element->getStatus();
-            $html .= Html::tag('span', '', [
-                'class' => array_filter([
-                    'status',
-                    $status,
-                    $status ? ($element::statuses()[$status]['color'] ?? null) : null,
-                ]),
-            ]);
+        if ($showStatus) {
+            if ($isDraft) {
+                $html .= Html::tag('span', '', [
+                    'class' => ['icon'],
+                    'aria' => [
+                        'hidden' => 'true',
+                    ],
+                    'data' => [
+                        'icon' => 'draft',
+                    ],
+                ]);
+            } else {
+                $status = !$isRevision ? $element->getStatus() : null;
+                $html .= Html::tag('span', '', [
+                    'class' => array_filter([
+                        'status',
+                        $status,
+                        $status ? ($element::statuses()[$status]['color'] ?? null) : null,
+                    ]),
+                ]);
+            }
         }
 
         $html .= $imgHtml;
@@ -359,15 +377,22 @@ class Cp
 
             $encodedLabel = Html::encode($label);
 
+            if ($showDraftName && $isDraft && !$element->getIsUnpublishedDraft()) {
+                /* @var DraftBehavior|ElementInterface $element */
+                $encodedLabel .= Html::tag('span', $element->draftName ?: Craft::t('app', 'Draft'), [
+                    'class' => 'draft-label',
+                ]);
+            }
+
             // Should we make the element a link?
             if (
                 $context === 'index' &&
                 !$element->trashed &&
                 ($cpEditUrl = $element->getCpEditUrl())
             ) {
-                if ($element->getIsDraft()) {
+                if ($isDraft) {
                     $cpEditUrl = UrlHelper::urlWithParams($cpEditUrl, ['draftId' => $element->draftId]);
-                } else if ($element->getIsRevision()) {
+                } else if ($isRevision) {
                     $cpEditUrl = UrlHelper::urlWithParams($cpEditUrl, ['revisionId' => $element->revisionId]);
                 }
 
@@ -380,6 +405,49 @@ class Cp
         }
 
         $html .= '</div>';
+
+        return $html;
+    }
+
+    /**
+     * Returns element preview HTML, for a list of elements.
+     *
+     * @param ElementInterface[] $elements The elements
+     * @param string $size The size of the element (`small` or `large`)
+     * @param bool $showStatus Whether the element status should be shown (if the element type has statuses)
+     * @param bool $showThumb Whether the element thumb should be shown (if the element has one)
+     * @param bool $showLabel Whether the element label should be shown
+     * @param bool $showDraftName Whether to show the draft name beside the label if the element is a draft of a published element
+     * @return string
+     * @since 3.6.3
+     */
+    public static function elementPreviewHtml(
+        array $elements,
+        string $size = self::ELEMENT_SIZE_SMALL,
+        bool $showStatus = true,
+        bool $showThumb = true,
+        bool $showLabel = true,
+        bool $showDraftName = true
+    ): string {
+        if (empty($elements)) {
+            return '';
+        }
+
+        $first = array_shift($elements);
+        $html = static::elementHtml($first, 'index', $size, null, $showStatus, $showThumb, $showLabel, $showDraftName);
+
+        if (!empty($elements)) {
+            $otherHtml = '';
+            foreach ($elements as $other) {
+                $otherHtml .= static::elementHtml($other, 'index', $size, null, $showStatus, $showThumb, $showLabel, $showDraftName);
+            }
+            $html .= Html::tag('span', '+' . Craft::$app->getFormatter()->asInteger(count($elements)), [
+                'title' => implode(', ', ArrayHelper::getColumn($elements, 'title')),
+                'class' => 'btn small',
+                'role' => 'button',
+                'onclick' => 'jQuery(this).replaceWith(' . Json::encode($otherHtml) . ')',
+            ]);
+        }
 
         return $html;
     }

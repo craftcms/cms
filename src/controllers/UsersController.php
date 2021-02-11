@@ -15,6 +15,7 @@ use craft\elements\User;
 use craft\errors\UploadFailedException;
 use craft\errors\UserLockedException;
 use craft\events\DefineUserContentSummaryEvent;
+use craft\events\InvalidUserTokenEvent;
 use craft\events\LoginFailureEvent;
 use craft\events\RegisterUserActionsEvent;
 use craft\events\UserEvent;
@@ -98,6 +99,12 @@ class UsersController extends Controller
      * @since 3.0.13
      */
     const EVENT_DEFINE_CONTENT_SUMMARY = 'defineContentSummary';
+
+    /**
+     * @event InvalidUserTokenEvent The event that is triggered when an invalid user token is sent.
+     * @since 3.6.5
+     */
+    const EVENT_INVALID_USER_TOKEN = 'invalidUserToken';
 
     /**
      * @inheritdoc
@@ -246,6 +253,7 @@ class UsersController extends Controller
         $token = Craft::$app->getTokens()->createToken([
             'users/impersonate-with-token', [
                 'userId' => $userId,
+                'prevUserId' => Craft::$app->getUser()->getId(),
             ]
         ], 1, new DateTime('+1 hour'));
 
@@ -262,19 +270,26 @@ class UsersController extends Controller
     /**
      * Logs a user in for impersonation via an impersonation token.
      *
-     * @param int|null $userId
+     * @param int $userId
+     * @param int $prevUserId
      * @return Response|null
      * @throws BadRequestHttpException
      * @throws ForbiddenHttpException
      * @since 3.6.0
      */
-    public function actionImpersonateWithToken(?int $userId)
+    public function actionImpersonateWithToken(int $userId, int $prevUserId)
     {
         $this->requireToken();
 
+        $session = Craft::$app->getSession();
         $userSession = Craft::$app->getUser();
 
+        // Save the original user ID to the session now so User::findIdentity()
+        // knows not to worry if the user isn't active yet
+        $session->set(User::IMPERSONATE_KEY, $prevUserId);
+
         if (!$userSession->loginByUserId($userId)) {
+            $session->remove(User::IMPERSONATE_KEY);
             $this->setFailFlash(Craft::t('app', 'There was a problem impersonating this user.'));
             Craft::error($userSession->getIdentity()->username . ' tried to impersonate userId: ' . $userId . ' but something went wrong.', __METHOD__);
             return null;
@@ -2120,6 +2135,10 @@ class UsersController extends Controller
      */
     private function _processInvalidToken(User $user = null): Response
     {
+        $this->trigger(self::EVENT_INVALID_USER_TOKEN, new InvalidUserTokenEvent([
+            'user' => $user,
+        ]));
+
         if ($this->request->getAcceptsJson()) {
             return $this->asErrorJson('InvalidVerificationCode');
         }

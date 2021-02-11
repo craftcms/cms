@@ -9,10 +9,12 @@ namespace craft\console\controllers;
 
 use Craft;
 use craft\console\Controller;
+use craft\db\Query;
 use craft\helpers\Console;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use yii\console\ExitCode;
+use yii\db\Exception;
 
 /**
  * Performs database operations.
@@ -177,6 +179,57 @@ class DbController extends Controller
             $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
         }
 
+        return ExitCode::OK;
+    }
+
+    /**
+     * Converts tables’ character sets and collations. (MySQL only)
+     *
+     * @param string|null $charset The character set
+     * @param string|null $collation
+     * @return int
+     */
+    public function actionConvertCharset(?string $charset = null, ?string $collation = null): int
+    {
+        $db = Craft::$app->getDb();
+
+        if (!$db->getIsMysql()) {
+            $this->stderr('This command is only available when using MySQL.' . PHP_EOL, Console::FG_RED);
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
+        $schema = $db->getSchema();
+        $tableNames = $schema->getTableNames();
+
+        if (empty($tableNames)) {
+            $this->stderr('Could not find any database tables.' . PHP_EOL, Console::FG_RED);
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
+        $dbConfig = Craft::$app->getConfig()->getDb();
+
+        if ($charset === null) {
+            $charset = $this->prompt('Which character set should be used?', [
+                'default' => $dbConfig->charset ?? 'utf8',
+            ]);
+        }
+
+        if ($collation === null) {
+            $collation = $this->prompt('Which collation should be used?', [
+                'default' => $dbConfig->collation ?? 'utf8_unicode_ci',
+            ]);
+        }
+
+        foreach ($tableNames as $tableName) {
+            $tableName = $schema->getRawTableName($tableName);
+            $this->stdout('Converting ');
+            $this->stdout($tableName, Console::FG_CYAN);
+            $this->stdout(' ... ');
+            $db->createCommand("ALTER TABLE `$tableName` CONVERT TO CHARACTER SET $charset COLLATE $collation")->execute();
+            $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
+        }
+
+        $this->stdout("Finished converting tables to $charset/$collation." . PHP_EOL, Console::FG_GREEN);
         return ExitCode::OK;
     }
 }

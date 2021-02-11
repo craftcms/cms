@@ -7,6 +7,7 @@
 
 namespace craft\web\assets\installer;
 
+use craft\helpers\Json;
 use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
 
@@ -40,4 +41,15 @@ class InstallerAsset extends AssetBundle
     public $js = [
         'install.min.js',
     ];
+
+    /**
+     * @inheritdoc
+     */
+    public function registerAssetFiles($view)
+    {
+        parent::registerAssetFiles($view);
+
+        $redirect = Json::encode(\Craft::$app->getConfig()->getGeneral()->postCpLoginRedirect);
+        $view->registerJs("window.postCpLoginRedirect = $redirect;");
+    }
 }

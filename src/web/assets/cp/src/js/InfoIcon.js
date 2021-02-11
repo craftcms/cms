@@ -28,7 +28,7 @@ Craft.InfoIcon = Garnish.Base.extend({
 
         this.$icon.data('infoicon', this);
 
-        if (this.$icon[0].previousSibling.nodeType === Node.TEXT_NODE) {
+        if (this.$icon[0].previousSibling && this.$icon[0].previousSibling.nodeType === Node.TEXT_NODE) {
             // Make sure it's in a .nowrap container
             const $parent = this.$icon.parent();
             if (!$parent.hasClass('nowrap')) {

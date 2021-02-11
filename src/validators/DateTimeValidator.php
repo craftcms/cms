@@ -78,7 +78,7 @@ class DateTimeValidator extends Validator
     {
         $value = $model->$attribute;
         if ($normalized = (!$value instanceof \DateTime)) {
-            $value = DateTimeHelper::toDateTime();
+            $value = DateTimeHelper::toDateTime($value);
         }
 
         if (!$value) {

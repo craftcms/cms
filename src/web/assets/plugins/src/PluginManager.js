@@ -326,7 +326,7 @@
             var showLicenseKey = info.licenseKey || info.licenseKeyStatus !== 'unknown';
             if (showLicenseKey) {
                 this.$keyContainer.removeClass('hidden');
-                if (info.licenseKey) {
+                if (info.licenseKey && !this.$keyInput.val().match(/^\$/)) {
                     this.$keyInput.val(Craft.PluginManager.normalizeUserKey(info.licenseKey));
                 }
             } else {

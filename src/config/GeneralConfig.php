@@ -43,6 +43,22 @@ class GeneralConfig extends BaseObject
     const SNAKE_CASE = 'snake';
 
     /**
+     * @var array The default user accessibility preferences that should be applied to users that haven’t saved their preferences yet.
+     *
+     * The array can contain the following keys:
+     *
+     * - `useShapes` – Whether shapes should be used to represent statuses
+     * - `underlineLinks` – Whether links should be underlined
+     *
+     * @group System
+     * @since 3.6.4
+     */
+    public $accessibilityDefaults = [
+        'useShapes' => false,
+        'underlineLinks' => false,
+    ];
+
+    /**
      * @var string The URI segment Craft should look for when determining if the current request should be routed to a controller action.
      * @group Routing
      */
@@ -407,7 +423,6 @@ class GeneralConfig extends BaseObject
      * ```
      *
      * @deprecated in 3.0.10. Any corrections to ASCII char mappings should be submitted to [Stringy](https://github.com/voku/Stringy).
-     * @group System
      */
     public $customAsciiCharMappings = [];
 
@@ -1139,7 +1154,6 @@ class GeneralConfig extends BaseObject
     /**
      * @var mixed The amount of time to wait before Craft purges drafts of new elements that were never formally saved.
      * @since 3.2.0
-     * @group Garbage Collection
      * @deprecated in 3.6.0
      */
     public $purgeUnsavedDraftsDuration = 0;
@@ -1147,8 +1161,9 @@ class GeneralConfig extends BaseObject
     /**
      * @var bool Whether SVG thumbnails should be rasterized.
      *
-     * Note this will only work if ImageMagick is installed, and <config:imageDriver> is set to either `auto` or `imagick`.
+     * Note this will only work if ImageMagick is installed, and <config3:imageDriver> is set to either `auto` or `imagick`.
      *
+     * @group Image Handling
      * @since 3.6.0
      */
     public $rasterizeSvgThumbs = false;
@@ -1339,7 +1354,6 @@ class GeneralConfig extends BaseObject
      *
      * This can be set to a string, which will override the primary site’s name only, or an array with site handles used as the keys.
      *
-     * @group System
      * @deprecated in 3.6.0. Set your sites’ Name settings on a per-environment basis using environment variables instead.
      * See [Environmental Configuration](https://craftcms.com/docs/3.x/config/#environmental-configuration) for more info.
      */
@@ -1366,7 +1380,6 @@ class GeneralConfig extends BaseObject
      * ],
      * ```
      *
-     * @group Routing
      * @deprecated in 3.6.0. Set your sites’ Base URL settings on a per-environment basis using aliases or environment variables instead.
      * See [Environmental Configuration](https://craftcms.com/docs/3.x/config/#environmental-configuration) for more info.
      */
@@ -1426,7 +1439,6 @@ class GeneralConfig extends BaseObject
      * If it is set to `true`, the errors will still be logged to Craft’s log files.
      *
      * @deprecated in 3.3.0
-     * @group System
      */
     public $suppressTemplateErrors = false;
 

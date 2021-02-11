@@ -14,6 +14,7 @@ use craft\helpers\Template;
 use craft\web\View;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
+use yii\mail\MailEvent;
 use yii\mail\MessageInterface;
 
 /**
@@ -25,6 +26,12 @@ use yii\mail\MessageInterface;
  */
 class Mailer extends \yii\swiftmailer\Mailer
 {
+    /**
+     * @event MailEvent The event that is triggered before a message is prepped to be sent.
+     * @since 3.6.5
+     */
+    const EVENT_BEFORE_PREP = 'beforePrep';
+
     /**
      * @var string|null The email template that should be used
      */
@@ -75,18 +82,15 @@ class Mailer extends \yii\swiftmailer\Mailer
     }
 
     /**
-     * Sends the given email message.
-     *
-     * This method will log a message about the email being sent.
-     * If [[useFileTransport]] is true, it will save the email as a file under [[fileTransportPath]].
-     * Otherwise, it will call [[sendMessage()]] to send the email to its recipient(s).
-     * Child classes should implement [[sendMessage()]] with the actual email sending logic.
-     *
-     * @param MessageInterface $message The email message instance to be sent.
-     * @return bool Whether the message has been sent successfully.
+     * @inheritdoc
      */
     public function send($message)
     {
+        // fire a beforePrep event
+        $this->trigger(self::EVENT_BEFORE_PREP, new MailEvent([
+            'message' => $message,
+        ]));
+
         $generalConfig = Craft::$app->getConfig()->getGeneral();
 
         if ($message instanceof Message && $message->key !== null) {

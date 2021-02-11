@@ -197,7 +197,7 @@ class InstallController extends Controller
     }
 
     /**
-     * Installs a plugin. (DEPRECATED -- use plugin/install instead.)
+     * DEPRECATED. Use `plugin/install` instead.
      *
      * @param string $handle
      * @return int

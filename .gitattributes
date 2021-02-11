@@ -15,6 +15,26 @@
 /package-lock.json export-ignore
 /README.md export-ignore
 /SECURITY.md export-ignore
+/src/translations/a*/app.php linguist-generated=true
+/src/translations/c*/app.php linguist-generated=true
+/src/translations/d*/app.php linguist-generated=true
+/src/translations/en-GB/app.php linguist-generated=true
+/src/translations/es/app.php linguist-generated=true
+/src/translations/f*/app.php linguist-generated=true
+/src/translations/h*/app.php linguist-generated=true
+/src/translations/i*/app.php linguist-generated=true
+/src/translations/j*/app.php linguist-generated=true
+/src/translations/k*/app.php linguist-generated=true
+/src/translations/n*/app.php linguist-generated=true
+/src/translations/p*/app.php linguist-generated=true
+/src/translations/r*/app.php linguist-generated=true
+/src/translations/s*/app.php linguist-generated=true
+/src/translations/t*/app.php linguist-generated=true
+/src/translations/z*/app.php linguist-generated=true
+/src/web/assets/**/dist/**/*.css linguist-generated=true
+/src/web/assets/**/dist/**/*.css.map linguist-generated=true
+/src/web/assets/**/dist/**/*.min.js linguist-generated=true
+/src/web/assets/**/dist/**/*.min.js.map linguist-generated=true
 /tests/ export-ignore
 
 # Auto detect text files and perform LF normalization

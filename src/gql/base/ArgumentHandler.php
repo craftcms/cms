@@ -44,7 +44,7 @@ abstract class ArgumentHandler implements ArgumentHandlerInterface
      */
     public function handleArgumentCollection(array $argumentList = []): array
     {
-        $argumentList[$this->argumentName] = $this->handleArgument($this->argumentName);
+        $argumentList[$this->argumentName] = $this->handleArgument($argumentList[$this->argumentName]);
 
         return $argumentList;
     }

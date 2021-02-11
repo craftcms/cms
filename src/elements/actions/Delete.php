@@ -24,7 +24,7 @@ use craft\helpers\Json;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Delete extends ElementAction
+class Delete extends ElementAction implements DeleteActionInterface
 {
     /**
      * @var bool Whether to delete the element’s descendants as well.
@@ -47,6 +47,22 @@ class Delete extends ElementAction
      * @var string|null The message that should be shown after the elements get deleted
      */
     public $successMessage;
+
+    /**
+     * @inheritdoc
+     */
+    public function canHardDelete(): bool
+    {
+        return !$this->withDescendants;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setHardDelete(): void
+    {
+        $this->hard = true;
+    }
 
     /**
      * @inheritdoc
@@ -181,8 +197,6 @@ JS;
                     'id' => $ids,
                 ]);
             }
-        } else {
-
         }
 
         if ($this->successMessage !== null) {
