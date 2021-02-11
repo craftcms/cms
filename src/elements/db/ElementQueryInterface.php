@@ -153,6 +153,8 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      * | - | -
      * | `1` | for the {element} with an ID of 1.
      * | a [[{element-class}]] object | for the {element} represented by the object.
+     * | `'*'` | for any {element}
+     * | `false` | that aren’t associated with a published {element}
      *
      * ---
      *
@@ -170,7 +172,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *     ->all();
      * ```
      *
-     * @param int|ElementInterface|null $value The property value
+     * @param int|ElementInterface|string|false|null $value The property value
      * @return static self reference
      * @since 3.2.0
      */
