@@ -46,7 +46,7 @@
 ## 3.6.4.1 - 2021-02-05
 
 ### Fixed
-- Fixed a bug where extra rows could be created in the `drafts` table.
+- Fixed a bug where extra rows could be created in the `drafts` table. ([#7542](https://github.com/craftcms/cms/issues/7542))
 
 ## 3.6.4 - 2021-02-05
 
