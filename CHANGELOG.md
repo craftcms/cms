@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where Craft wasn’t deleting unpublished drafts when converting a Channel or Structure section to a Single. ([#37542](https://github.com/craftcms/cms/issues/7542))
+
 ## 3.6.5.1 - 2021-02-10
 
 ### Fixed

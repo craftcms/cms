@@ -1528,6 +1528,7 @@ class Sections extends Component
 
         $elementsService = Craft::$app->getElements();
         $otherEntriesQuery = Entry::find()
+            ->drafts(null)
             ->sectionId($section->id)
             ->siteId('*')
             ->unique()
