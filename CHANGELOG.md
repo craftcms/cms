@@ -6,6 +6,7 @@
 - Fixed a bug where Craft wasn’t deleting unpublished drafts when converting a Channel or Structure section to a Single. ([#37542](https://github.com/craftcms/cms/issues/7542))
 - Fixed a bug where it was possible for admins to delete a Single entry from the Edit Entry page. ([#7547](https://github.com/craftcms/cms/issues/7547))
 - Fixed an error that occurred when attempting to reposition an unpublished draft within a Structure section.
+- Fixed a bug where Craft was adding an extra site when running a test suite with a custom project config. ([#7412](https://github.com/craftcms/cms/issues/7412))
 
 ## 3.6.5.1 - 2021-02-10
 
