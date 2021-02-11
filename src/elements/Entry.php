@@ -1232,7 +1232,7 @@ class Entry extends Element
     public function getIsDeletable(): bool
     {
         $section = $this->getSection();
-        if ($section === Section::TYPE_SINGLE) {
+        if ($section->type === Section::TYPE_SINGLE) {
             return false;
         }
         $userSession = Craft::$app->getUser();
