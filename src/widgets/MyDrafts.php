@@ -30,6 +30,14 @@ class MyDrafts extends Widget
     }
 
     /**
+     * @inheritdoc
+     */
+    protected static function allowMultipleInstances(): bool
+    {
+        return false;
+    }
+
+    /**
      * @var int The total number of drafts that the widget should show
      */
     public $limit = 10;
