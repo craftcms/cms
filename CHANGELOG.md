@@ -18,6 +18,7 @@
 - Fixed a CSS bug that prevented elements within relational fields from being easily reordered. ([#7549](https://github.com/craftcms/cms/issues/7549))
 - Fixed a bug where the “My Drafts” dashboard widget wasn’t listing disabled drafts. ([#7546](https://github.com/craftcms/cms/issues/7546))
 - Fixed a bug where Craft wasn’t fully applying custom project configs when running tests. ([#7412](https://github.com/craftcms/cms/issues/7412), [#1953](https://github.com/craftcms/commerce/issues/1953))
+- Fixed a bug where the `config/project/` folder within the test directory wasn’t getting deleted after a test suite was run.
 
 ## 3.6.5.1 - 2021-02-10
 
