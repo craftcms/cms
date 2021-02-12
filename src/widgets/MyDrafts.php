@@ -30,6 +30,14 @@ class MyDrafts extends Widget
     }
 
     /**
+     * @inheritdoc
+     */
+    protected static function allowMultipleInstances(): bool
+    {
+        return false;
+    }
+
+    /**
      * @var int The total number of drafts that the widget should show
      */
     public $limit = 10;
@@ -74,6 +82,7 @@ class MyDrafts extends Widget
     {
         $drafts = Entry::find()
             ->drafts()
+            ->anyStatus()
             ->draftCreator(Craft::$app->getUser()->getId())
             ->orderBy(['dateUpdated' => SORT_DESC])
             ->limit($this->limit)

@@ -950,7 +950,7 @@ class EntryQuery extends ElementQuery
     }
 
     /**
-     * Normalizes the groupId param to an array of IDs or null
+     * Normalizes the sectionId param to an array of IDs or null
      */
     private function _normalizeSectionId()
     {
