@@ -396,8 +396,11 @@ class Entry extends Element
                 ]);
             }
 
-            // Channel/Structure-only actions
-            if ($source !== '*' && $source !== 'singles') {
+            if ($source === '*') {
+                // Delete
+                $actions[] = Delete::class;
+            } else if ($source !== 'singles') {
+                // Channel/Structure-only actions
                 $section = $sections[0];
 
                 // New child?

@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- It’s now possible to delete entries from the “All entries” source. ([#7545](https://github.com/craftcms/cms/issues/7545))
+
 ### Fixed
 - Fixed a bug where Craft wasn’t deleting unpublished drafts when converting a Channel or Structure section to a Single. ([#37542](https://github.com/craftcms/cms/issues/7542))
 - Fixed a bug where it was possible for admins to delete a Single entry from the Edit Entry page. ([#7547](https://github.com/craftcms/cms/issues/7547))
