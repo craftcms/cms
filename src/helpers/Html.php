@@ -106,7 +106,7 @@ class Html extends \yii\helpers\Html
     /**
      * Generates a hidden `failMessage` input tag.
      *
-     * @param string $message The flash message to shown on success
+     * @param string $message The flash message to shown on failure
      * @param array $options The tag options in terms of name-value pairs. These will be rendered as
      * the attributes of the resulting tag. The values will be HTML-encoded using [[encode()]].
      * If a value is null, the corresponding attribute will not be rendered.
