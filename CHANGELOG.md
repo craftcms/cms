@@ -3,7 +3,7 @@
 ## Unreleased
 
 ### Added
-- Added `successMessageInput()` and `failMessageInput()` functions for quickly generating hidden flash message fields.
+- Added the `successMessageInput()` and `failMessageInput()` Twig functions. ([#7561](https://github.com/craftcms/cms/pull/7561))
 - Added the `prefixGqlRootTypes` setting to be used in conjunction with the `gqlTypePrefix` setting. ([#7552](https://github.com/craftcms/cms/issues/7552))
 - Added `craft\helpers\Html::failMessageInput()`.
 - Added `craft\helpers\Html::successMessageInput()`.
