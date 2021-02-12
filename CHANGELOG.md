@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Added
+- Added `successMessageInput()` and `failMessageInput()` functions for quickly generating hidden flash message fields.
+- Added `craft\helpers\Html::failMessageInput()`.
+- Added `craft\helpers\Html::successMessageInput()`.
+
 ### Changed
 - It’s now possible to delete entries from the “All entries” source. ([#7545](https://github.com/craftcms/cms/issues/7545))
 
