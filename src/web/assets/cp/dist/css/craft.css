@@ -1135,11 +1135,11 @@ body.ltr .element.small.hasstatus .status, body.ltr .element.large:not(.hasthumb
 
 body.rtl .element.small.hasstatus .status, body.rtl .element.large:not(.hasthumb).hasstatus .status { right: 7px; }
 
-.element.small.hasstatus .icon, .element.large:not(.hasthumb).hasstatus .icon { position: absolute; top: calc(50% - 11px); }
+.element.small.hasstatus .icon:not(.delete), .element.large:not(.hasthumb).hasstatus .icon:not(.delete) { position: absolute; top: calc(50% - 11px); }
 
-body.ltr .element.small.hasstatus .icon, body.ltr .element.large:not(.hasthumb).hasstatus .icon { left: 6px; }
+body.ltr .element.small.hasstatus .icon:not(.delete), body.ltr .element.large:not(.hasthumb).hasstatus .icon:not(.delete) { left: 6px; }
 
-body.rtl .element.small.hasstatus .icon, body.rtl .element.large:not(.hasthumb).hasstatus .icon { right: 6px; }
+body.rtl .element.small.hasstatus .icon:not(.delete), body.rtl .element.large:not(.hasthumb).hasstatus .icon:not(.delete) { right: 6px; }
 
 body.ltr .element.small.hasthumb, body.ltr .element.large:not(.hasthumb).hasthumb { padding-left: 39px; }
 
