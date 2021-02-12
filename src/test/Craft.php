@@ -143,9 +143,7 @@ class Craft extends Yii2
     {
         parent::_afterSuite();
 
-        if (TestSetup::useProjectConfig()) {
-            TestSetup::removeProjectConfigFolders(CRAFT_CONFIG_PATH . DIRECTORY_SEPARATOR . 'project');
-        }
+        TestSetup::removeProjectConfigFolders(CRAFT_CONFIG_PATH . DIRECTORY_SEPARATOR . 'project');
     }
 
     /**
@@ -417,7 +415,7 @@ class Craft extends Yii2
      * @param string $elementType
      * @param array $searchProperties
      * @param int $amount
-     * @param bool $searchAll - Wether anyStatus() and trashed(null) should be applied
+     * @param bool $searchAll - Whether anyStatus() and trashed(null) should be applied
      * @return array
      */
     public function assertElementsExist(string $elementType, array $searchProperties = [], int $amount = 1, bool $searchAll = false): array
