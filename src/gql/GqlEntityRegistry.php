@@ -36,7 +36,13 @@ class GqlEntityRegistry
      */
     public static function prefixTypeName(string $typeName): string
     {
-        return self::getPrefix() . $typeName;
+        $rootTypes = ['Query', 'Mutation', 'Subscription'];
+
+        if (Craft::$app->getConfig()->getGeneral()->prefixGqlRootTypes || !in_array($typeName, $rootTypes)) {
+            return self::getPrefix() . $typeName;
+        }
+
+        return $typeName;
     }
 
     /**

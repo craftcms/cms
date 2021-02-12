@@ -1055,6 +1055,11 @@ class GeneralConfig extends BaseObject
     public $postLogoutRedirect = '';
 
     /**
+     * @var bool Should GraphQL root types also be prefixed, if the `gqlTypePrefix` option is used.
+     */
+    public $prefixGqlRootTypes = true;
+
+    /**
      * @var bool Whether CMYK should be preserved as the colorspace when manipulating images.
      *
      * Setting this to `true` will prevent Craft from transforming CMYK images to sRGB, but on some ImageMagick versions it can cause

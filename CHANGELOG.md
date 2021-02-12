@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+### Added
+- Added the `prefixGqlRootTypes` setting to be used in conjunction with the `gqlTypePrefix` setting. ([#7552](https://github.com/craftcms/cms/issues/7552))
 ### Changed
 - It’s now possible to delete entries from the “All entries” source. ([#7545](https://github.com/craftcms/cms/issues/7545))
 
