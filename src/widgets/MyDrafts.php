@@ -82,6 +82,7 @@ class MyDrafts extends Widget
     {
         $drafts = Entry::find()
             ->drafts()
+            ->anyStatus()
             ->draftCreator(Craft::$app->getUser()->getId())
             ->orderBy(['dateUpdated' => SORT_DESC])
             ->limit($this->limit)
