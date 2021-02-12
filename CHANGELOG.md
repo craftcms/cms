@@ -3,7 +3,11 @@
 ## Unreleased
 
 ### Added
+- Added the `successMessageInput()` and `failMessageInput()` Twig functions. ([#7561](https://github.com/craftcms/cms/pull/7561))
 - Added the `prefixGqlRootTypes` setting to be used in conjunction with the `gqlTypePrefix` setting. ([#7552](https://github.com/craftcms/cms/issues/7552))
+- Added `craft\helpers\Html::failMessageInput()`.
+- Added `craft\helpers\Html::successMessageInput()`.
+
 ### Changed
 - It’s now possible to delete entries from the “All entries” source. ([#7545](https://github.com/craftcms/cms/issues/7545))
 
