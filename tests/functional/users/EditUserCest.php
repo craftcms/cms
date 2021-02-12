@@ -45,28 +45,4 @@ class EditUserCest
 
         Craft::$app->setEdition(Craft::Pro);
     }
-
-    /**
-     * @param FunctionalTester $I
-     */
-    public function testMyAccountPage(FunctionalTester $I)
-    {
-        $I->amOnPage('/' . $this->cpTrigger . '/myaccount');
-
-        $I->see('My Account');
-
-        $I->submitForm('#userform', [
-            'firstName' => 'IM A CHANGED FIRSTNAME',
-        ]);
-
-        $I->seeInTitle('Users');
-
-        // Check that the Db was updated.
-        $I->assertSame(
-            'IM A CHANGED FIRSTNAME',
-            User::find()
-                ->id($this->currentUser->id)
-                ->one()->firstName
-        );
-    }
 }
