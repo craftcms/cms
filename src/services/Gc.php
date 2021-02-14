@@ -9,6 +9,13 @@ namespace craft\services;
 
 use Craft;
 use craft\db\Table;
+use craft\elements\Asset;
+use craft\elements\Category;
+use craft\elements\Entry;
+use craft\elements\GlobalSet;
+use craft\elements\MatrixBlock;
+use craft\elements\Tag;
+use craft\elements\User;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use yii\base\Component;
@@ -67,6 +74,14 @@ class Gc extends Component
             Table::VOLUMES,
         ]);
 
+        $this->deletePartialElements(Asset::class, Table::ASSETS);
+        $this->deletePartialElements(Category::class, Table::CATEGORIES);
+        $this->deletePartialElements(Entry::class, Table::ENTRIES);
+        $this->deletePartialElements(GlobalSet::class, Table::GLOBALSETS);
+        $this->deletePartialElements(MatrixBlock::class, Table::MATRIXBLOCKS);
+        $this->deletePartialElements(Tag::class, Table::TAGS);
+        $this->deletePartialElements(User::class, Table::USERS);
+
         $this->_deleteOrphanedDraftsAndRevisions();
         Craft::$app->getSearch()->deleteOrphanedIndexes();
 
@@ -114,6 +129,43 @@ class Gc extends Component
         foreach ($tables as $table) {
             Db::delete($table, $condition);
         }
+    }
+
+    /**
+     * Deletes elements that are missing data in the given element extension table.
+     *
+     * @param string $elementType The element type
+     * @param string $table The extension table name
+     * @param string $fk The column name that contains the foreign key to `elements.id`
+     * @return void
+     * @since 3.6.6
+     */
+    public function deletePartialElements(string $elementType, string $table, string $fk = 'id'): void
+    {
+        $db = Craft::$app->getDb();
+        $elementsTable = Table::ELEMENTS;
+
+        if ($db->getIsMysql()) {
+            $sql = <<<SQL
+DELETE [[e]].* FROM $elementsTable [[e]]
+LEFT JOIN $table [[t]] ON [[t.$fk]] = [[e.id]]
+WHERE
+  [[e.type]] = :type AND
+  [[t.$fk]] IS NULL
+SQL;
+        } else {
+            $sql = <<<SQL
+DELETE FROM $elementsTable
+USING $elementsTable [[e]]
+LEFT JOIN $table [[t]] ON [[t.$fk]] = [[e.id]]
+WHERE
+  $elementsTable.[[id]] = [[e.id]] AND
+  [[e.type]] = :type AND
+  [[t.$fk]] IS NULL
+SQL;
+        }
+
+        $db->createCommand($sql, ['type' => $elementType])->execute();
     }
 
     /**
