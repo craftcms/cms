@@ -716,7 +716,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function draftId(int $value = null)
     {
         $this->draftId = $value;
-        if ($value !== null) {
+        if ($value !== null && $this->drafts === false) {
             $this->drafts = true;
         }
         return $this;
@@ -736,7 +736,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         } else {
             throw new InvalidArgumentException('Invalid draftOf value');
         }
-        if ($value !== null) {
+        if ($value !== null && $this->drafts === false) {
             $this->drafts = true;
         }
         return $this;
@@ -756,7 +756,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         } else {
             throw new InvalidArgumentException('Invalid draftCreator value');
         }
-        if ($value !== null) {
+        if ($value !== null && $this->drafts === false) {
             $this->drafts = true;
         }
         return $this;
