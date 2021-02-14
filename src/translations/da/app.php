@@ -356,6 +356,7 @@ return [
     'Craft CMS is running in Dev Mode.' => 'Craft CMS kører i Dev tilstand.',
     'Craft Support' => 'Craft Support',
     'Craft isn’t installed yet.' => 'Craft er ikke installeret endnu.',
+    'Create a draft' => 'Create a draft',
     'Create a new GraphQL Schema' => 'Opret et nyt GraphQL-skema',
     'Create a new GraphQL token' => 'Opret et nyt GraphQL-token',
     'Create a new asset volume' => 'Opret ny diskenhed til aktiver',
