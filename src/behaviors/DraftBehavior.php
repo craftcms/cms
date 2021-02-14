@@ -113,9 +113,11 @@ class DraftBehavior extends BaseRevisionBehavior
      */
     public function handleDelete()
     {
-        Db::delete(Table::DRAFTS, [
-            'id' => $this->owner->draftId,
-        ]);
+        if ($this->owner->hardDelete) {
+            Db::delete(Table::DRAFTS, [
+                'id' => $this->owner->draftId,
+            ]);
+        }
     }
 
     /**
