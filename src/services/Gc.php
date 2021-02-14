@@ -67,6 +67,7 @@ class Gc extends Component
             Table::VOLUMES,
         ]);
 
+        $this->_deleteOrphanedDraftsAndRevisions();
         Craft::$app->getSearch()->deleteOrphanedIndexes();
 
         // Fire a 'run' event
@@ -131,5 +132,37 @@ class Gc extends Component
         $pastTime = $expire->sub($interval);
 
         Db::delete(Table::SESSIONS, ['<', 'dateUpdated', Db::prepareDateForDb($pastTime)]);
+    }
+
+    /**
+     * Deletes any orphaned rows in the `drafts` and `revisions` tables.
+     *
+     * @return void
+     */
+    private function _deleteOrphanedDraftsAndRevisions(): void
+    {
+        $db = Craft::$app->getDb();
+        $elementsTable = Table::ELEMENTS;
+
+        foreach (['draftId' => Table::DRAFTS, 'revisionId' => Table::REVISIONS] as $fk => $table) {
+            if ($db->getIsMysql()) {
+                $sql = <<<SQL
+DELETE [[t]].* FROM $table [[t]]
+LEFT JOIN $elementsTable [[e]] ON [[e.$fk]] = [[t.id]]
+WHERE [[e.id]] IS NULL
+SQL;
+            } else {
+                $sql = <<<SQL
+DELETE FROM $table
+USING $table [[t]]
+LEFT JOIN $elementsTable [[e]] ON [[e.$fk]] = [[t.id]]
+WHERE
+  $table.[[id]] = [[t.id]] AND
+  [[e.id]] IS NULL
+SQL;
+            }
+
+            $db->createCommand($sql)->execute();
+        }
     }
 }

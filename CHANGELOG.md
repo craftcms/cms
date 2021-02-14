@@ -10,6 +10,7 @@
 
 ### Changed
 - It’s now possible to delete entries from the “All entries” source. ([#7545](https://github.com/craftcms/cms/issues/7545))
+- Garbage collection now deletes orphaned rows in the `drafts` and `revisions` tables.
 
 ### Fixed
 - Fixed a bug where Craft wasn’t deleting unpublished drafts when converting a Channel or Structure section to a Single. ([#37542](https://github.com/craftcms/cms/issues/7542))
