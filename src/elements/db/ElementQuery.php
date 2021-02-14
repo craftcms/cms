@@ -163,6 +163,12 @@ class ElementQuery extends Query implements ElementQueryInterface
     public $draftCreator;
 
     /**
+     * @var bool Whether only unpublished drafts which have been saved after initial creation should be included in the results.
+     * @since 3.6.6
+     */
+    public $savedDraftsOnly = false;
+
+    /**
      * @var bool Whether revision elements should be returned.
      * @since 3.2.0
      */
@@ -759,6 +765,16 @@ class ElementQuery extends Query implements ElementQueryInterface
         if ($value !== null && $this->drafts === false) {
             $this->drafts = true;
         }
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     * @uses $savedDraftsOnly
+     */
+    public function savedDraftsOnly(bool $value = true)
+    {
+        $this->savedDraftsOnly = $value;
         return $this;
     }
 
@@ -2533,6 +2549,15 @@ class ElementQuery extends Query implements ElementQueryInterface
 
             if ($this->draftCreator) {
                 $this->subQuery->andWhere(['drafts.creatorId' => $this->draftCreator]);
+            }
+
+            if ($this->savedDraftsOnly) {
+                $this->subQuery->andWhere([
+                    'or',
+                    ['elements.draftId' => null],
+                    ['not', ['drafts.sourceId' => null]],
+                    ['drafts.saved' => true]
+                ]);
             }
         } else {
             $this->subQuery->andWhere($this->_placeholderCondition(['elements.draftId' => null]));

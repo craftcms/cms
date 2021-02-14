@@ -1159,11 +1159,17 @@ class GeneralConfig extends BaseObject
     public $purgeStaleUserSessionDuration = 7776000;
 
     /**
-     * @var mixed The amount of time to wait before Craft purges drafts of new elements that were never formally saved.
+     * @var mixed The amount of time to wait before Craft purges unpublished drafts that were never updated with content.
+     *
+     * Set to `0` to disable this feature.
+     *
+     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
+     *
      * @since 3.2.0
-     * @deprecated in 3.6.0
+     * @group Garbage Collection
+     * @defaultAlt 30 days
      */
-    public $purgeUnsavedDraftsDuration = 0;
+    public $purgeUnsavedDraftsDuration = 2592000;
 
     /**
      * @var bool Whether SVG thumbnails should be rasterized.

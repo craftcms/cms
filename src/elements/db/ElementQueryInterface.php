@@ -211,6 +211,33 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
     public function draftCreator($value);
 
     /**
+     * Narrows the query results to only unpublished drafts which have been saved after initial creation.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch saved, unpublished draft {elements} #}
+     * {% set {elements-var} = {twig-function}
+     *     .draftOf(false)
+     *     .savedDraftsOnly()
+     *     .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch saved, unpublished draft {elements}
+     * ${elements-var} = {element-class}::find()
+     *     ->draftOf(false)
+     *     ->savedDraftsOnly()
+     *     ->all();
+     * ```
+     *
+     * @param bool $value The property value (defaults to true)
+     * @return static self reference
+     * @since 3.6.6
+     */
+    public function savedDraftsOnly(bool $value = true);
+
+    /**
      * Narrows the query results to only revision {elements}.
      *
      * ---

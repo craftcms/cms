@@ -5,12 +5,16 @@
 ### Added
 - Added the `successMessageInput()` and `failMessageInput()` Twig functions. ([#7561](https://github.com/craftcms/cms/pull/7561))
 - Added the `prefixGqlRootTypes` config setting, which determines whether the `gqlTypePrefix` config setting should impact `query`, `mutation`, and `subscription` types. ([#7552](https://github.com/craftcms/cms/issues/7552))
+- Added the `savedDraftsOnly` entry query param.
+- Added `craft\behaviors\DraftBehavior::$markAsSaved`.
 - Added `craft\helpers\Html::failMessageInput()`.
 - Added `craft\helpers\Html::successMessageInput()`.
 - Added `craft\services\Gc::deletePartialElements()`.
 
 ### Changed
+- The Entries index page no longer shows unpublished drafts that have never been updated with content.
 - It’s now possible to delete entries from the “All entries” source. ([#7545](https://github.com/craftcms/cms/issues/7545))
+- Garbage collection now deletes unpublished drafts that were never updated with content, per the (no longer deprecated) `purgeUnsavedDraftsDuration` config setting.
 - Garbage collection now deletes orphaned rows in the `drafts` and `revisions` tables.
 - Garbage collection now deletes incomplete element data, for built-in element types. ([#6434](https://github.com/craftcms/cms/issues/6434))
 

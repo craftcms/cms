@@ -240,6 +240,7 @@ class Install extends Migration
             'notes' => $this->text(),
             'trackChanges' => $this->boolean()->notNull()->defaultValue(false),
             'dateLastMerged' => $this->dateTime(),
+            'saved' => $this->boolean()->notNull()->defaultValue(true),
         ]);
         $this->createTable(Table::ELEMENTINDEXSETTINGS, [
             'id' => $this->primaryKey(),
@@ -786,6 +787,7 @@ class Install extends Migration
         $this->createIndex(null, Table::CONTENT, ['siteId'], false);
         $this->createIndex(null, Table::CONTENT, ['title'], false);
         $this->createIndex(null, Table::DEPRECATIONERRORS, ['key', 'fingerprint'], true);
+        $this->createIndex(null, Table::DRAFTS, ['saved'], false);
         $this->createIndex(null, Table::ELEMENTINDEXSETTINGS, ['type'], true);
         $this->createIndex(null, Table::ELEMENTS, ['dateDeleted'], false);
         $this->createIndex(null, Table::ELEMENTS, ['fieldLayoutId'], false);
