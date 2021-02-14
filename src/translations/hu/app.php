@@ -356,6 +356,7 @@ return [
     'Craft CMS is running in Dev Mode.' => 'A Craft CMS fejlesztői üzemmódban fut.',
     'Craft Support' => 'Craft-támogatás',
     'Craft isn’t installed yet.' => 'A Craft még nincs telepítve.',
+    'Create a draft' => 'Create a draft',
     'Create a new GraphQL Schema' => 'Új GraphQL séma létrehozása',
     'Create a new GraphQL token' => 'Új GraphQL token létrehozása',
     'Create a new asset volume' => 'Új eszközkötet létrehozása',

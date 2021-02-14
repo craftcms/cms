@@ -356,6 +356,7 @@ return [
     'Craft CMS is running in Dev Mode.' => 'Craft CMS가 개발 모드에서 작동 중입니다.',
     'Craft Support' => 'Craft 지원',
     'Craft isn’t installed yet.' => 'Craft가 아직 설치되지 않았습니다.',
+    'Create a draft' => 'Create a draft',
     'Create a new GraphQL Schema' => '새로운 GraphQL 스키마 작성',
     'Create a new GraphQL token' => '새로운 GraphQL 토큰 작성',
     'Create a new asset volume' => '새 에셋 볼륨 생성',

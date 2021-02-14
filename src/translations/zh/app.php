@@ -356,6 +356,7 @@ return [
     'Craft CMS is running in Dev Mode.' => 'Craft CMS 的开发者模式。',
     'Craft Support' => 'Craft 技术支持',
     'Craft isn’t installed yet.' => '尚未安装 Craft。',
+    'Create a draft' => 'Create a draft',
     'Create a new GraphQL Schema' => '新建 GraphQL 架构',
     'Create a new GraphQL token' => '新建 GraphQL 令牌',
     'Create a new asset volume' => '创建新资源存储卷',

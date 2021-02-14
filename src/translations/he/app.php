@@ -356,6 +356,7 @@ return [
     'Craft CMS is running in Dev Mode.' => 'Craft CMS פועלת במצב פיתוח.',
     'Craft Support' => 'תמיכת Craft',
     'Craft isn’t installed yet.' => 'Craft אינו מותקן עדיין.',
+    'Create a draft' => 'Create a draft',
     'Create a new GraphQL Schema' => 'צור סכימת GraphQL חדשה',
     'Create a new GraphQL token' => 'צור אסימון GraphQL',
     'Create a new asset volume' => 'צור אמצעי אחסון של נכס חדש',
