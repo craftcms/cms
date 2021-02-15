@@ -83,6 +83,13 @@ class Gc extends Component
         $this->deletePartialElements(Tag::class, Table::TAGS, 'id');
         $this->deletePartialElements(User::class, Table::USERS, 'id');
 
+        $this->deletePartialElements(Asset::class, Table::CONTENT, 'elementId');
+        $this->deletePartialElements(Category::class, Table::CONTENT, 'elementId');
+        $this->deletePartialElements(Entry::class, Table::CONTENT, 'elementId');
+        $this->deletePartialElements(GlobalSet::class, Table::CONTENT, 'elementId');
+        $this->deletePartialElements(Tag::class, Table::CONTENT, 'elementId');
+        $this->deletePartialElements(User::class, Table::CONTENT, 'elementId');
+
         $this->_deleteOrphanedDraftsAndRevisions();
         Craft::$app->getSearch()->deleteOrphanedIndexes();
 
