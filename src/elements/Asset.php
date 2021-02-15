@@ -865,9 +865,13 @@ class Asset extends Element
      */
     public function getIsDeletable(): bool
     {
-        $userSession = Craft::$app->getUser();
         $volume = $this->getVolume();
 
+        if ($volume instanceof Temp) {
+            return true;
+        }
+
+        $userSession = Craft::$app->getUser();
         return (
             $userSession->checkPermission("deleteFilesAndFoldersInVolume:$volume->uid") &&
             ($userSession->getId() == $this->uploaderId || $userSession->checkPermission("deletePeerFilesInVolume:$volume->uid"))
@@ -1929,15 +1933,15 @@ class Asset extends Element
             $attributes['data-image-height'] = $this->getHeight();
         }
 
+        $volume = $this->getVolume();
         $userSession = Craft::$app->getUser();
         $imageEditable = $context === 'index' && $this->getSupportsImageEditor();
 
-        if ($userSession->getId() == $this->uploaderId) {
+        if ($volume instanceof Temp || $userSession->getId() == $this->uploaderId) {
             $attributes['data-own-file'] = null;
             $movable = $replaceable = true;
         } else {
             $attributes['data-peer-file'] = null;
-            $volume = $this->getVolume();
             $movable = (
                 $userSession->checkPermission("editPeerFilesInVolume:$volume->uid") &&
                 $userSession->checkPermission("deletePeerFilesInVolume:$volume->uid")
