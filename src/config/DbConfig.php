@@ -51,8 +51,38 @@ class DbConfig extends BaseObject
 
     /**
      * @var string The charset to use when creating tables.
+     *
+     * ::: tip
+     * You can change the character set and collation across all existing database tables using this terminal command:
+     *
+     * ```bash
+     * > php craft db/convert-charset
+     * ```
+     * :::
      */
     public $charset = 'utf8';
+
+    /**
+     * @var string|null The collation to use when creating tables.
+     *
+     * This is only used by MySQL. If null, the [[$charset|charset’s]] default collation will be used.
+     *
+     * | Charset   | Default collation    |
+     * | --------- | -------------------- |
+     * | `utf8`    | `utf8_general_ci`    |
+     * | `utf8mb4` | `utf8mb4_0900_ai_ci` |
+     *
+     * ::: tip
+     * You can change the character set and collation across all existing database tables using this terminal command:
+     *
+     * ```bash
+     * > php craft db/convert-charset
+     * ```
+     * :::
+     *
+     * @since 3.6.4
+     */
+    public $collation;
 
     /**
      * @var string The Data Source Name (“DSN”) that tells Craft how to connect to the database.

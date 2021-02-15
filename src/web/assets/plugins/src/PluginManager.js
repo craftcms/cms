@@ -326,6 +326,9 @@
             var showLicenseKey = info.licenseKey || info.licenseKeyStatus !== 'unknown';
             if (showLicenseKey) {
                 this.$keyContainer.removeClass('hidden');
+                if (info.licenseKey && !this.$keyInput.val().match(/^\$/)) {
+                    this.$keyInput.val(Craft.PluginManager.normalizeUserKey(info.licenseKey));
+                }
             } else {
                 this.$keyContainer.addClass('hidden');
             }
@@ -344,6 +347,9 @@
                 var $p, $form, message;
                 for (var i = 0; i < info.licenseIssues.length; i++) {
                     switch (info.licenseIssues[i]) {
+                        case 'no_trials':
+                            message = Craft.t('app', 'Plugin trials are not allowed on this domain.');
+                            break;
                         case 'wrong_edition':
                             message = Craft.t('app', 'This license is for the {name} edition.', {
                                 name: info.licensedEdition.charAt(0).toUpperCase() + info.licensedEdition.substring(1)
@@ -424,7 +430,7 @@
             }
 
             // show/hide the Buy button
-            if (showLicenseKey && !info.licenseKey) {
+            if (info.licenseKeyStatus === 'trial') {
                 this.$buyBtn.removeClass('hidden');
                 if (info.licenseIssues.length) {
                     this.$buyBtn.addClass('submit');

@@ -206,7 +206,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function getFilters(): array
     {
-        $formatter = Craft::$app->getFormatter();
         $security = Craft::$app->getSecurity();
 
         return [
@@ -217,7 +216,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('camel', [$this, 'camelFilter']),
             new TwigFilter('column', [ArrayHelper::class, 'getColumn']),
             new TwigFilter('contains', [ArrayHelper::class, 'contains']),
-            new TwigFilter('currency', [$formatter, 'asCurrency']),
+            new TwigFilter('currency', [$this, 'currencyFilter']),
             new TwigFilter('date', [$this, 'dateFilter'], ['needs_environment' => true]),
             new TwigFilter('datetime', [$this, 'datetimeFilter'], ['needs_environment' => true]),
             new TwigFilter('diff', 'array_diff'),
@@ -225,7 +224,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('encenc', [$this, 'encencFilter']),
             new TwigFilter('explodeClass', [Html::class, 'explodeClass']),
             new TwigFilter('explodeStyle', [Html::class, 'explodeStyle']),
-            new TwigFilter('filesize', [$formatter, 'asShortSize']),
+            new TwigFilter('filesize', [$this, 'filesizeFilter']),
             new TwigFilter('filter', [$this, 'filterFilter'], ['needs_environment' => true]),
             new TwigFilter('filterByValue', [ArrayHelper::class, 'where'], ['deprecated' => '3.5.0', 'alternative' => 'where']),
             new TwigFilter('group', [$this, 'groupFilter']),
@@ -248,11 +247,11 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('ns', [$this->view, 'namespaceInputs'], ['is_safe' => ['html']]),
             new TwigFilter('namespaceInputName', [$this->view, 'namespaceInputName']),
             new TwigFilter('namespaceInputId', [$this->view, 'namespaceInputId']),
-            new TwigFilter('number', [$formatter, 'asDecimal']),
+            new TwigFilter('number', [$this, 'numberFilter']),
             new TwigFilter('parseAttr', [$this, 'parseAttrFilter']),
             new TwigFilter('parseRefs', [$this, 'parseRefsFilter'], ['is_safe' => ['html']]),
             new TwigFilter('pascal', [$this, 'pascalFilter']),
-            new TwigFilter('percentage', [$formatter, 'asPercent']),
+            new TwigFilter('percentage', [$this, 'percentageFilter']),
             new TwigFilter('prepend', [$this, 'prependFilter'], ['is_safe' => ['html']]),
             new TwigFilter('purify', [$this, 'purifyFilter'], ['is_safe' => ['html']]),
             new TwigFilter('push', [$this, 'pushFilter']),
@@ -260,7 +259,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('rss', [$this, 'rssFilter'], ['needs_environment' => true]),
             new TwigFilter('snake', [$this, 'snakeFilter']),
             new TwigFilter('time', [$this, 'timeFilter'], ['needs_environment' => true]),
-            new TwigFilter('timestamp', [$formatter, 'asTimestamp']),
+            new TwigFilter('timestamp', [$this, 'timestampFilter']),
             new TwigFilter('translate', [$this, 'translateFilter']),
             new TwigFilter('truncate', [$this, 'truncateFilter']),
             new TwigFilter('t', [$this, 'translateFilter']),
@@ -430,6 +429,120 @@ class Extension extends AbstractExtension implements GlobalsInterface
         return StringHelper::toSnakeCase((string)$string);
     }
 
+    /**
+     * Formats the value as a currency number.
+     *
+     * @param mixed $value
+     * @param string|null $currency
+     * @param array $options
+     * @param array $textOptions
+     * @param bool $stripZeros
+     * @return string
+     * @since 3.6.0
+     */
+    public function currencyFilter($value, ?string $currency = null, array $options = [], array $textOptions = [], bool $stripZeros = false): string
+    {
+        if ($value === null || $value === '') {
+            return '';
+        }
+
+        try {
+            return Craft::$app->getFormatter()->asCurrency($value, $currency, $options, $textOptions, $stripZeros);
+        } catch (InvalidArgumentException $e) {
+            return $value;
+        }
+    }
+
+    /**
+     * Formats the value in bytes as a size in human readable form for example `12 kB`.
+     *
+     * @param mixed $value
+     * @param int|null $decimals
+     * @param array $options
+     * @param array $textOptions
+     * @return string
+     * @since 3.6.0
+     */
+    public function filesizeFilter($value, ?int $decimals = null, array $options = [], array $textOptions = []): string
+    {
+        if ($value === null || $value === '') {
+            return '';
+        }
+
+        try {
+            return Craft::$app->getFormatter()->asShortSize($value, $decimals, $options, $textOptions);
+        } catch (InvalidArgumentException $e) {
+            return $value;
+        }
+    }
+
+    /**
+     * Formats the value as a decimal number.
+     *
+     * @param $value
+     * @param int|null $decimals
+     * @param array $options
+     * @param array $textOptions
+     * @return string
+     * @since 3.6.0
+     */
+    public function numberFilter($value, ?int $decimals = null, array $options = [], array $textOptions = []): string
+    {
+        if ($value === null || $value === '') {
+            return '';
+        }
+
+        try {
+            return Craft::$app->getFormatter()->asDecimal($value, $decimals, $options, $textOptions);
+        } catch (InvalidArgumentException $e) {
+            return $value;
+        }
+    }
+
+    /**
+     * Formats the value as a percent number with "%" sign.
+     *
+     * @param $value
+     * @param int|null $decimals
+     * @param array $options
+     * @param array $textOptions
+     * @return string
+     * @since 3.6.0
+     */
+    public function percentageFilter($value, ?int $decimals = null, array $options = [], array $textOptions = []): string
+    {
+        if ($value === null || $value === '') {
+            return '';
+        }
+
+        try {
+            return Craft::$app->getFormatter()->asPercent($value, $decimals, $options, $textOptions);
+        } catch (InvalidArgumentException $e) {
+            return $value;
+        }
+    }
+
+    /**
+     * Formats the value as a human-readable timestamp.
+     *
+     * @param mixed $value
+     * @param string|null $format
+     * @param bool $withPreposition
+     * @return string
+     * @since 3.6.0
+     */
+    public function timestampFilter($value, ?string $format = null, bool $withPreposition = false): string
+    {
+        if ($value === null || $value === '') {
+            return '';
+        }
+
+        try {
+            return Craft::$app->getFormatter()->asTimestamp($value, $format, $withPreposition);
+        } catch (InvalidArgumentException $e) {
+            return $value;
+        }
+    }
 
     /**
      * This method will JSON encode a variable. We're overriding Twig's default implementation to set some stricter
@@ -1015,10 +1128,12 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('actionInput', [Html::class, 'actionInput'], ['is_safe' => ['html']]),
             new TwigFunction('attr', [Html::class, 'renderTagAttributes'], ['is_safe' => ['html']]),
             new TwigFunction('csrfInput', [Html::class, 'csrfInput'], ['is_safe' => ['html']]),
+            new TwigFunction('failMessageInput', [Html::class, 'failMessageInput'], ['is_safe' => ['html']]),
             new TwigFunction('hiddenInput', [Html::class, 'hiddenInput'], ['is_safe' => ['html']]),
             new TwigFunction('input', [Html::class, 'input'], ['is_safe' => ['html']]),
             new TwigFunction('ol', [Html::class, 'ol'], ['is_safe' => ['html']]),
             new TwigFunction('redirectInput', [Html::class, 'redirectInput'], ['is_safe' => ['html']]),
+            new TwigFunction('successMessageInput', [Html::class, 'successMessageInput'], ['is_safe' => ['html']]),
             new TwigFunction('svg', [$this, 'svgFunction'], ['is_safe' => ['html']]),
             new TwigFunction('tag', [$this, 'tagFunction'], ['is_safe' => ['html']]),
             new TwigFunction('ul', [Html::class, 'ul'], ['is_safe' => ['html']]),
@@ -1217,7 +1332,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         }
 
         // Remove the XML declaration
-        $svg = preg_replace('/<\?xml.*?\?>/', '', $svg);
+        $svg = preg_replace('/<\?xml.*?\?>\s*/', '', $svg);
 
         // Namespace class names and IDs
         if ($namespace) {

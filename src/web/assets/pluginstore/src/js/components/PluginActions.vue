@@ -155,7 +155,7 @@
             },
 
             allowUpdates() {
-                return window.allowUpdates
+                return Craft.allowUpdates && Craft.allowAdminChanges
             },
 
             csrfTokenName() {

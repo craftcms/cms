@@ -16,6 +16,7 @@ use craft\test\TestCase;
 use stdClass;
 use UnitTester;
 use yii\base\Component;
+use yii\base\InvalidArgumentException;
 
 /**
  * Unit tests for the App Helper class.
@@ -34,22 +35,76 @@ class AppHelperTest extends TestCase
     /**
      *
      */
+    public function testIsNitro()
+    {
+        $old = $_SERVER['CRAFT_NITRO'] ?? false;
+        $_SERVER['CRAFT_NITRO'] = '1';
+        self::assertTrue(App::isNitro());
+        if ($old !== false) {
+            $_SERVER['CRAFT_NITRO'] = $old;
+        } else {
+            unset($_SERVER['CRAFT_NITRO']);
+        }
+    }
+
+    /**
+     *
+     */
     public function testEditions()
     {
         self::assertEquals([Craft::Solo, Craft::Pro], App::editions());
     }
 
     /**
+     * @dataProvider editionHandleDataProvider
      *
+     * @param string|false $expected
+     * @param int $edition
      */
-    public function testEditionName()
+    public function testEditionHandle($expected, int $edition)
     {
-        self::assertEquals('Solo', App::editionName(Craft::Solo));
-        self::assertEquals('Pro', App::editionName(Craft::Pro));
+        if ($expected === false) {
+            self::expectException(InvalidArgumentException::class);
+            App::editionHandle($edition);
+        } else {
+            self::assertSame($expected, App::editionHandle($edition));
+        }
     }
 
     /**
-     * @dataProvider validEditionsDataProviders
+     * @dataProvider editionNameDataProvider
+     *
+     * @param string|false $expected
+     * @param int $edition
+     */
+    public function testEditionName($expected, int $edition)
+    {
+        if ($expected === false) {
+            self::expectException(InvalidArgumentException::class);
+            App::editionName($edition);
+        } else {
+            self::assertSame($expected, App::editionName($edition));
+        }
+    }
+
+    /**
+     * @dataProvider editionIdByHandleDataProvider
+     *
+     * @param int|false $expected
+     * @param string $handle
+     */
+    public function testEditionIdByHandle($expected, string $handle)
+    {
+        if ($expected === false) {
+            self::expectException(InvalidArgumentException::class);
+            App::editionIdByHandle($handle);
+        } else {
+            self::assertSame($expected, App::editionIdByHandle($handle));
+        }
+    }
+
+    /**
+     * @dataProvider validEditionsDataProvider
      *
      * @param bool $expected
      * @param mixed $edition
@@ -87,6 +142,17 @@ class AppHelperTest extends TestCase
 
         self::assertFalse(App::phpConfigValueAsBool(''));
         self::assertFalse(App::phpConfigValueAsBool('This is not a config value'));
+    }
+
+    /**
+     * @dataProvider phpSizeToBytesDataProvider
+     *
+     * @param int|float $expected
+     * @param string $value
+     */
+    public function testPhpSizeToBytes($expected, string $value)
+    {
+        self::assertSame($expected, App::phpSizeToBytes($value));
     }
 
     /**
@@ -180,7 +246,44 @@ class AppHelperTest extends TestCase
     /**
      * @return array
      */
-    public function validEditionsDataProviders(): array
+    public function editionHandleDataProvider(): array
+    {
+        return [
+            ['solo', Craft::Solo],
+            ['pro', Craft::Pro],
+            [false, -1],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function editionNameDataProvider(): array
+    {
+        return [
+            ['Solo', Craft::Solo],
+            ['Pro', Craft::Pro],
+            [false, -1],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function editionIdByHandleDataProvider(): array
+    {
+        return [
+            [Craft::Solo, 'solo'],
+            [Craft::Pro, 'pro'],
+            [false, 'personal'],
+            [false, 'client'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function validEditionsDataProvider(): array
     {
         return [
             [true, Craft::Pro],
@@ -211,6 +314,19 @@ class AppHelperTest extends TestCase
             ['logConfig', ['class']],
             ['sessionConfig', ['class', 'flashParam', 'authAccessParam', 'name', 'cookieParams']],
             ['userConfig', ['class', 'identityClass', 'enableAutoLogin', 'autoRenewCookie', 'loginUrl', 'authTimeout', 'identityCookie', 'usernameCookie', 'idParam', 'authTimeoutParam', 'absoluteAuthTimeoutParam', 'returnUrlParam']],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function phpSizeToBytesDataProvider(): array
+    {
+        return [
+            [1, '1B'],
+            [1024, '1K'],
+            [pow(1024, 2), '1M'],
+            [pow(1024, 3), '1G'],
         ];
     }
 

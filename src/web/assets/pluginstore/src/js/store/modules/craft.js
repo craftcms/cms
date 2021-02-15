@@ -104,6 +104,19 @@ const getters = {
             return true
         }
     },
+
+    getCmsEditionIndex(state) {
+        return editionHandle => {
+            switch (editionHandle) {
+                case 'solo':
+                    return state.CraftSolo
+                case 'pro':
+                    return state.CraftPro
+                default:
+                    return null
+            }
+        }
+    },
 }
 
 /**

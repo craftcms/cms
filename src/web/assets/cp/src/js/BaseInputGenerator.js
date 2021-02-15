@@ -98,8 +98,11 @@ Craft.BaseInputGenerator = Garnish.Base.extend({
         var targetVal = this.generateTargetValue(sourceVal);
 
         this.$target.val(targetVal);
-        this.$target.trigger('change');
+
         for (let i = 0; i < this.$target.length; i++) {
+            this.$target[i].dispatchEvent(new InputEvent('input', {
+                inputType: 'insertText',
+            }));
             this.$target[i].dispatchEvent(new Event('input'));
         }
 

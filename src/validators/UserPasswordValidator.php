@@ -20,6 +20,16 @@ use yii\validators\StringValidator;
 class UserPasswordValidator extends StringValidator
 {
     /**
+     * @since 3.5.18
+     */
+    const MIN_PASSWORD_LENGTH = 6;
+
+    /**
+     * @since 3.5.18
+     */
+    const MAX_PASSWORD_LENGTH = 160;
+
+    /**
      * @var bool Whether the password must be different from the existing password.
      */
     public $forceDifferent = false;
@@ -41,12 +51,12 @@ class UserPasswordValidator extends StringValidator
     {
         // Default min
         if (!isset($config['min'])) {
-            $config['min'] = 6;
+            $config['min'] = self::MIN_PASSWORD_LENGTH;
         }
 
         // Default max
         if (!isset($config['max'])) {
-            $config['max'] = 160;
+            $config['max'] = self::MAX_PASSWORD_LENGTH;
         }
 
         parent::__construct($config);

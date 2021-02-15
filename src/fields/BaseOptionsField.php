@@ -376,14 +376,14 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             $labels = [];
 
             foreach ($value as $option) {
-                $labels[] = $option->label;
+                $labels[] = Craft::t('site', $option->label);
             }
 
             return implode(', ', $labels);
         }
 
         /** @var SingleOptionFieldData $value */
-        return (string)$value->label;
+        return Craft::t('site', (string)$value->label);
     }
 
     /**

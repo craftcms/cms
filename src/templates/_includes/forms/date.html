@@ -2,8 +2,15 @@
 {% set name = name ?? null -%}
 {% set value = (value ?? false) ? date(value, false) : null -%}
 
-<div class="datewrapper"
-        {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
+{% set containerAttributes = {
+    class: ['datewrapper']|merge((class ?? [])|explodeClass),
+}|merge(containerAttributes ?? [], recursive=true) %}
+
+{%- if block('attr') is defined %}
+    {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
+{% endif %}
+
+{% tag 'div' with containerAttributes %}
     {%- include "_includes/forms/text" with {
         name: name ? "#{name}[date]" : null,
         autocomplete: false,
@@ -15,7 +22,7 @@
     {% if name -%}
         {{ hiddenInput("#{name}[timezone]", craft.app.getTimeZone()) }}
     {%- endif -%}
-</div>
+{% endtag %}
 
 {%- js %}
     $('#{{ id|namespaceInputId|e('js') }}').datepicker($.extend({

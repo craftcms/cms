@@ -114,12 +114,25 @@ class Template
     }
 
     /**
-     * Paginates a query's results
+     * Paginates a query.
      *
      * @param QueryInterface $query
      * @return array
+     * @deprecated in 3.6.0. Use [[paginateQuery()]] instead.
      */
     public static function paginateCriteria(QueryInterface $query): array
+    {
+        return static::paginateQuery($query);
+    }
+
+    /**
+     * Paginates a query.
+     *
+     * @param QueryInterface $query
+     * @return array
+     * @since 3.6.0
+     */
+    public static function paginateQuery(QueryInterface $query): array
     {
         /** @var Query $query */
         $paginatorQuery = clone $query;

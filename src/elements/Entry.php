@@ -9,7 +9,9 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
+use craft\base\ElementInterface;
 use craft\base\Field;
+use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
 use craft\controllers\ElementIndexesController;
 use craft\db\Query;
@@ -32,6 +34,7 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
+use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\models\EntryType;
 use craft\models\Section;
@@ -393,8 +396,11 @@ class Entry extends Element
                 ]);
             }
 
-            // Channel/Structure-only actions
-            if ($source !== '*' && $source !== 'singles') {
+            if ($source === '*') {
+                // Delete
+                $actions[] = Delete::class;
+            } else if ($source !== 'singles') {
+                // Channel/Structure-only actions
                 $section = $sections[0];
 
                 // New child?
@@ -474,7 +480,7 @@ class Entry extends Element
             'uri' => Craft::t('app', 'URI'),
             [
                 'label' => Craft::t('app', 'Post Date'),
-                'orderBy' => function(int $dir) {
+                'orderBy' => function (int $dir) {
                     if ($dir === SORT_ASC) {
                         if (Craft::$app->getDb()->getIsMysql()) {
                             return new Expression('[[postDate]] IS NOT NULL DESC, [[postDate]] ASC');
@@ -537,6 +543,7 @@ class Entry extends Element
             'dateUpdated' => ['label' => Craft::t('app', 'Date Updated')],
             'revisionNotes' => ['label' => Craft::t('app', 'Revision Notes')],
             'revisionCreator' => ['label' => Craft::t('app', 'Last Edited By')],
+            'drafts' => ['label' => Craft::t('app', 'Drafts')],
         ];
 
         // Hide Author & Last Edited By from Craft Solo
@@ -638,6 +645,9 @@ class Entry extends Element
                 break;
             case 'revisionCreator':
                 $elementQuery->andWith('currentRevision.revisionCreator');
+                break;
+            case 'drafts':
+                $elementQuery->andWith(['drafts', ['status' => null, 'orderBy' => ['dateUpdated' => SORT_DESC]]]);
                 break;
             default:
                 parent::prepElementQueryForTableAttribute($elementQuery, $attribute);
@@ -946,9 +956,21 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
+    protected function uiLabel(): ?string
+    {
+        if ($this->title === null || trim($this->title) === '') {
+            return Craft::t('app', 'Untitled entry');
+        }
+
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function previewTargets(): array
     {
-        return array_map(function($previewTarget) {
+        return array_map(function ($previewTarget) {
             $previewTarget['label'] = Craft::t('site', $previewTarget['label']);
             return $previewTarget;
         }, $this->getSection()->previewTargets);
@@ -1213,7 +1235,7 @@ class Entry extends Element
     public function getIsDeletable(): bool
     {
         $section = $this->getSection();
-        if ($section === Section::TYPE_SINGLE) {
+        if ($section->type === Section::TYPE_SINGLE) {
             return false;
         }
         $userSession = Craft::$app->getUser();
@@ -1318,6 +1340,20 @@ class Entry extends Element
                     return '';
                 }
                 return Cp::elementHtml($creator);
+
+            case 'drafts':
+                if (!$this->hasEagerLoadedElements('drafts')) {
+                    return '';
+                }
+
+                $drafts = $this->getEagerLoadedElements('drafts');
+
+                foreach ($drafts as $draft) {
+                    /** @var ElementInterface|DraftBehavior $draft */
+                    $draft->setUiLabel($draft->draftName);
+                }
+
+                return Cp::elementPreviewHtml($drafts, Cp::ELEMENT_SIZE_SMALL, true, false, true, false);
         }
 
         return parent::tableAttributeHtml($attribute);

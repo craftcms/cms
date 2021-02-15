@@ -1,11 +1,21 @@
 export default {
     computed: {
         licenseMismatched() {
-            return this.pluginLicenseInfo && this.pluginLicenseInfo.licenseKeyStatus === 'mismatched'
+            return this.getLicenseMismatched(this.pluginLicenseInfo)
         },
 
         licenseValidOrAstray() {
-            return (this.pluginLicenseInfo.licenseKeyStatus === 'valid' || this.pluginLicenseInfo.licenseKeyStatus === 'astray')
+            return this.getLicenseValidOrAstray(this.pluginLicenseInfo)
         }
+    },
+
+    methods: {
+        getLicenseMismatched(pluginLicenseInfo) {
+            return pluginLicenseInfo && pluginLicenseInfo.licenseKeyStatus === 'mismatched'
+        },
+
+        getLicenseValidOrAstray(pluginLicenseInfo) {
+            return (pluginLicenseInfo.licenseKeyStatus === 'valid' || pluginLicenseInfo.licenseKeyStatus === 'astray')
+        },
     }
 }

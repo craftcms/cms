@@ -326,7 +326,7 @@ class Fields extends Component
         $data = $event->newValue;
         $uid = $event->tokenMatches[0];
 
-        $groupRecord = $this->_getGroupRecord($uid);
+        $groupRecord = $this->_getGroupRecord($uid, true);
         $isNewGroup = $groupRecord->getIsNewRecord();
 
         // If this is a new group, set the UID we want.
@@ -335,7 +335,12 @@ class Fields extends Component
         }
 
         $groupRecord->name = $data['name'];
-        $groupRecord->save(false);
+
+        if ($groupRecord->dateDeleted) {
+            $groupRecord->restore();
+        } else {
+            $groupRecord->save(false);
+        }
 
         // Update caches
         $this->_groups = null;
@@ -376,7 +381,9 @@ class Fields extends Component
             ]));
         }
 
-        $groupRecord->delete();
+        Craft::$app->getDb()->createCommand()
+            ->softDelete(Table::FIELDGROUPS, ['id' => $groupRecord->id])
+            ->execute();
 
         // Update caches
         $this->_groups = null;
@@ -1599,7 +1606,7 @@ class Fields extends Component
     {
         $groupUid = $data['fieldGroup'];
 
-        // Ensure we have the field group in place first
+        // Ensure we have the field group in the place first
         if ($groupUid) {
             Craft::$app->getProjectConfig()->processConfigChanges(self::CONFIG_FIELDGROUP_KEY . '.' . $groupUid);
         }
@@ -1609,7 +1616,7 @@ class Fields extends Component
 
         try {
             $fieldRecord = $this->_getFieldRecord($fieldUid);
-            $groupRecord = $this->_getGroupRecord($groupUid);
+            $groupRecord = $groupUid ? $this->_getGroupRecord($groupUid) : null;
             $isNewField = $fieldRecord->getIsNewRecord();
             $oldSettings = $fieldRecord->getOldAttribute('settings');
 
@@ -1693,7 +1700,7 @@ class Fields extends Component
             }
 
             $fieldRecord->uid = $fieldUid;
-            $fieldRecord->groupId = $groupRecord->id;
+            $fieldRecord->groupId = $groupRecord->id ?? null;
             $fieldRecord->name = $data['name'];
             $fieldRecord->handle = $data['handle'];
             $fieldRecord->context = $context;
@@ -1777,6 +1784,12 @@ class Fields extends Component
      */
     private function _createGroupQuery(): Query
     {
+        // todo: remove schema version condition after next beakpoint
+        $condition = null;
+        if (version_compare(Craft::$app->getInstalledSchemaVersion(), '3.6.2', '>=')) {
+            $condition = ['dateDeleted' => null];
+        }
+
         return (new Query())
             ->select([
                 'id',
@@ -1784,6 +1797,7 @@ class Fields extends Component
                 'uid',
             ])
             ->from([Table::FIELDGROUPS])
+            ->where($condition)
             ->orderBy(['name' => SORT_ASC]);
     }
 
@@ -1876,18 +1890,21 @@ class Fields extends Component
     /**
      * Gets a field group record or creates a new one.
      *
-     * @param mixed $criteria ID or UID of the field group.
+     * @param int|string $criteria ID or UID of the field group.
+     * @param bool $withTrashed Whether to include trashed field groups in search
      * @return FieldGroupRecord
      */
-    private function _getGroupRecord($criteria): FieldGroupRecord
+    private function _getGroupRecord($criteria, bool $withTrashed = false): FieldGroupRecord
     {
+        $query = $withTrashed ? FieldGroupRecord::findWithTrashed() : FieldGroupRecord::find();
+
         if (is_numeric($criteria)) {
-            $groupRecord = FieldGroupRecord::findOne($criteria);
+            $query->where(['id' => $criteria]);
         } else if (\is_string($criteria)) {
-            $groupRecord = FieldGroupRecord::findOne(['uid' => $criteria]);
+            $query->where(['uid' => $criteria]);
         }
 
-        return $groupRecord ?? new FieldGroupRecord();
+        return $query->one() ?? new FieldGroupRecord();
     }
 
     /**

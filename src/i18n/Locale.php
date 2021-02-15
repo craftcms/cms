@@ -8,6 +8,7 @@
 namespace craft\i18n;
 
 use Craft;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Localization;
 use DateTime;
 use IntlDateFormatter;
@@ -412,12 +413,34 @@ class Locale extends BaseObject
     {
         if ($this->_formatter === null) {
             $config = [
+                'class' => Formatter::class,
                 'locale' => $this->id,
                 'sizeFormatBase' => 1000,
+                'dateTimeFormats' => [
+                    self::LENGTH_SHORT => [
+                        'date' => $this->getDateFormat(self::LENGTH_SHORT),
+                        'time' => $this->getTimeFormat(self::LENGTH_SHORT),
+                        'datetime' => $this->getDateTimeFormat(self::LENGTH_SHORT),
+                    ],
+                    self::LENGTH_MEDIUM => [
+                        'date' => $this->getDateFormat(self::LENGTH_MEDIUM),
+                        'time' => $this->getTimeFormat(self::LENGTH_MEDIUM),
+                        'datetime' => $this->getDateTimeFormat(self::LENGTH_MEDIUM),
+                    ],
+                    self::LENGTH_LONG => [
+                        'date' => $this->getDateFormat(self::LENGTH_LONG),
+                        'time' => $this->getTimeFormat(self::LENGTH_LONG),
+                        'datetime' => $this->getDateTimeFormat(self::LENGTH_LONG),
+                    ],
+                    self::LENGTH_FULL => [
+                        'date' => $this->getDateFormat(self::LENGTH_FULL),
+                        'time' => $this->getTimeFormat(self::LENGTH_FULL),
+                        'datetime' => $this->getDateTimeFormat(self::LENGTH_FULL),
+                    ],
+                ],
             ];
 
             if (!Craft::$app->getI18n()->getIsIntlLoaded()) {
-                $config['dateTimeFormats'] = $this->_data['dateTimeFormats'];
                 $config['standAloneMonthNames'] = $this->_data['standAloneMonthNames'];
                 $config['monthNames'] = $this->_data['monthNames'];
                 $config['standAloneWeekDayNames'] = $this->_data['standAloneWeekDayNames'];
@@ -428,32 +451,9 @@ class Locale extends BaseObject
                 $config['decimalSeparator'] = $this->getNumberSymbol(self::SYMBOL_DECIMAL_SEPARATOR);
                 $config['thousandSeparator'] = $this->getNumberSymbol(self::SYMBOL_GROUPING_SEPARATOR);
                 $config['currencyCode'] = $this->getNumberSymbol(self::SYMBOL_INTL_CURRENCY);
-            } else {
-                $config['dateTimeFormats'] = [
-                    'short' => [
-                        'date' => $this->getDateFormat(self::LENGTH_SHORT),
-                        'time' => $this->getTimeFormat(self::LENGTH_SHORT),
-                        'datetime' => $this->getDateTimeFormat(self::LENGTH_SHORT),
-                    ],
-                    'medium' => [
-                        'date' => $this->getDateFormat(self::LENGTH_MEDIUM),
-                        'time' => $this->getTimeFormat(self::LENGTH_MEDIUM),
-                        'datetime' => $this->getDateTimeFormat(self::LENGTH_MEDIUM),
-                    ],
-                    'long' => [
-                        'date' => $this->getDateFormat(self::LENGTH_LONG),
-                        'time' => $this->getTimeFormat(self::LENGTH_LONG),
-                        'datetime' => $this->getDateTimeFormat(self::LENGTH_LONG),
-                    ],
-                    'full' => [
-                        'date' => $this->getDateFormat(self::LENGTH_FULL),
-                        'time' => $this->getTimeFormat(self::LENGTH_FULL),
-                        'datetime' => $this->getDateTimeFormat(self::LENGTH_FULL),
-                    ],
-                ];
             }
 
-            $this->_formatter = new Formatter($config);
+            $this->_formatter = Craft::createObject($config);
         }
 
         return $this->_formatter;
@@ -496,6 +496,34 @@ class Locale extends BaseObject
     public function getDateTimeFormat(string $length = null, string $format = self::FORMAT_ICU): string
     {
         return $this->_getDateTimeFormat($length, true, true, $format);
+    }
+
+    /**
+     * Sets the date/time formats used by this locale.
+     *
+     * You should pass an array with keys `short`, `medium`, `long`, and/or `full`, set to sub-arrays
+     * with keys `date`, `time`, and/or `datetime`, which should be set to the date/time formats using
+     * [ICU date/time formatting syntax](https://unicode-org.github.io/icu/userguide/format_parse/datetime/#datetime-format-syntax).
+     *
+     * For example:
+     *
+     * ```php
+     * [
+     *     'short' => [
+     *         'date' => 'd/M/y',
+     *         'time' => 'HH:mm',
+     *         'datetime' => 'd/M/y HH:mm',
+     *     ],
+     * ]
+     * ```
+     *
+     * @param array $formats
+     * @return void
+     * @since 3.6.0
+     */
+    public function setDateTimeFormats(array $formats): void
+    {
+        $this->_data['dateTimeFormats'] = ArrayHelper::merge($this->_data['dateTimeFormats'] ?? [], $formats);
     }
 
     /**
@@ -914,6 +942,12 @@ class Locale extends BaseObject
             $length = self::LENGTH_MEDIUM;
         }
 
+        // See if it's been explicitly defined already
+        $type = ($withDate ? 'date' : '') . ($withTime ? 'time' : '');
+        if (isset($this->_data['dateTimeFormats'][$length][$type])) {
+            return $this->_data['dateTimeFormats'][$length][$type];
+        }
+
         if (Craft::$app->getI18n()->getIsIntlLoaded()) {
             // Convert length to IntlDateFormatter constants
             switch ($length) {
@@ -947,19 +981,6 @@ class Locale extends BaseObject
                 'yyyy' => 'yyyy',
                 'yy' => 'yyyy',
             ]);
-        }
-
-        $type = ($withDate ? 'date' : '') . ($withTime ? 'time' : '');
-
-        switch ($length) {
-            case self::LENGTH_SHORT:
-                return $this->_data['dateTimeFormats']['short'][$type];
-            case self::LENGTH_MEDIUM:
-                return $this->_data['dateTimeFormats']['medium'][$type];
-            case self::LENGTH_LONG:
-                return $this->_data['dateTimeFormats']['long'][$type];
-            case self::LENGTH_FULL:
-                return $this->_data['dateTimeFormats']['full'][$type];
         }
 
         return null;

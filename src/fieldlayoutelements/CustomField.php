@@ -148,17 +148,6 @@ class CustomField extends BaseField
     /**
      * @inheritdoc
      */
-    protected function labelAttributes(ElementInterface $element = null, bool $static = false): array
-    {
-        return [
-            'id' => "{$this->_field->handle}-label",
-            'for' => $this->_field->handle,
-        ];
-    }
-
-    /**
-     * @inheritdoc
-     */
     protected function defaultLabel(ElementInterface $element = null, bool $static = false)
     {
         if ($this->_field->name !== '' && $this->_field->name !== null && $this->_field->name !== '__blank__') {
@@ -230,6 +219,14 @@ class CustomField extends BaseField
         $view->setNamespace($namespace);
 
         return $html;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function useFieldset(): bool
+    {
+        return $this->_field->useFieldset();
     }
 
     /**

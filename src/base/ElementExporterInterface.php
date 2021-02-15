@@ -37,11 +37,12 @@ interface ElementExporterInterface extends ComponentInterface
      *
      * If [[isFormattable()]] returns `true`, then this **must** return an array.
      *
-     * If [[isFormattable()]] returns `false`, a resource can be returned, which will
-     * get streamed out to the browser.
+     * If [[isFormattable()]] returns `false`, a callable (ideally a
+     * [generator function](https://www.php.net/manual/en/language.generators.overview.php) or a resource can
+     * be returned, which will get streamed out to the browser.
      *
      * @param ElementQueryInterface $query The element query
-     * @return array|string|resource
+     * @return array|string|callable|resource
      */
     public function export(ElementQueryInterface $query);
 

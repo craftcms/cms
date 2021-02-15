@@ -413,13 +413,13 @@ interface ElementInterface extends ComponentInterface
     /**
      * Defines all of the available columns that can be shown in table views.
      *
-     * This method should return an array whose keys map to attribute names and database columns that can be sorted
-     * against when querying for elements, and whose values make up the table’s column headers.
-     * The *first* item that this array returns will just identify the database column name, and the table column’s
-     * header, but will **not** have any effect on what shows up in the table’s body. That’s because the first column is
-     * reserved for displaying whatever your element’s __toString() method returns.
-     * All other items besides the first one will also define which element attribute should be shown within the data
-     * cells. (The actual HTML to be shown can be customized with [[getTableAttributeHtml()]].)
+     * This method should return an array whose keys represent element attribute names, and whose values make
+     * up the table’s column headers.
+     *
+     * The first item in the array will determine the first table column’s header (and which
+     * [[\craft\base\ElementInterface::sortOptions()|sort option]] it should be mapped to, if any), however it
+     * doesn’t have any effect on the table body, because the first column is reserved for displaying whatever
+     * the elements’ [[\craft\base\ElementInterface::getUiLabel()|getUiLabel()]] methods return.
      *
      * @return array The table attributes.
      */
@@ -659,6 +659,15 @@ interface ElementInterface extends ComponentInterface
      * @since 3.2.0
      */
     public function getUiLabel(): string;
+
+    /**
+     * Defines what the element should be called within the control panel.
+     *
+     * @param string|null $label
+     * @return void
+     * @since 3.6.3
+     */
+    public function setUiLabel(?string $label): void;
 
     /**
      * Returns the reference string to this element.

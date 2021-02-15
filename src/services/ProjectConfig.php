@@ -546,7 +546,7 @@ class ProjectConfig extends Component
         $lockName = 'project-config-sync';
 
         if (!$mutex->acquire($lockName, 15)) {
-            throw new Exception('Could not acquire a lock for the syncing project config.');
+            throw new Exception('Could not acquire a lock to apply project config changes.');
         }
 
         // Disable read/write splitting for the remainder of this request

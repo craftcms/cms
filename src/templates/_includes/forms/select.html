@@ -8,28 +8,31 @@
 {%- set hasOptgroups = false -%}
 
 {%- set containerAttributes = {
-  class: class,
+    class: class,
 }|merge(containerAttributes ?? [], recursive=true) %}
 
 {%- if block('attr') is defined %}
-  {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
+    {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
 {% endif %}
 
 {% set inputAttributes = {
-  id: id ?? false,
-  class: [
-    (toggle ?? false) ? 'fieldtoggle' : null,
-  ]|filter,
-  name: name ?? false,
-  autofocus: (autofocus ?? false) and not craft.app.request.isMobileBrowser(true),
-  disabled: disabled ?? false,
-  data: {
-    'target-prefix': (toggle ?? false) ? (targetPrefix ?? '') : false,
-  },
+    id: id ?? false,
+    class: [
+        (toggle ?? false) ? 'fieldtoggle' : null,
+    ]|filter,
+    name: name ?? false,
+    autofocus: (autofocus ?? false) and not craft.app.request.isMobileBrowser(true),
+    disabled: disabled ?? false,
+    aria: {
+        describedby: instructionsId ?? false,
+    },
+    data: {
+        'target-prefix': (toggle ?? false) ? (targetPrefix ?? '') : false,
+    },
 }|merge(inputAttributes ?? [], recursive=true) %}
 
-<div {{ attr(containerAttributes) }}>
-    <select {{ attr(inputAttributes) }}>
+{% tag 'div' with containerAttributes %}
+    {% tag 'select' with inputAttributes %}
         {% for key, option in options %}
             {% if option.optgroup is defined %}
                 {% if hasOptgroups %}
@@ -48,5 +51,5 @@
         {% if hasOptgroups %}
             </optgroup>
         {% endif %}
-    </select>
-</div>
+    {% endtag %}
+{% endtag %}

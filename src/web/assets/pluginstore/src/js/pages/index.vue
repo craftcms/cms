@@ -78,7 +78,7 @@
                 })
 
             // load active trial plugins
-            this.$store.dispatch('cart/getActiveTrialPlugins')
+            this.$store.dispatch('cart/getActiveTrials')
                 .then(() => {
                     this.activeTrialsLoaded = true
                     this.$emit('dataLoaded')

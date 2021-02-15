@@ -225,6 +225,18 @@ $.extend(Craft,
         },
 
         /**
+         * @param {string} key
+         * @param {boolean} shift
+         * @param {boolean} alt
+         */
+        shortcutText: function (key, shift, alt) {
+            if (Craft.clientOs === 'Mac') {
+                return (alt ? '⌥' : '') + (shift ? '⇧' : '') + '⌘' + key;
+            }
+            return 'Ctrl+' + (alt ? 'Alt+' : '') + (shift ? 'Shift+' : '') + key;
+        },
+
+        /**
          * Escapes some HTML.
          *
          * @param {string} str
@@ -637,8 +649,6 @@ $.extend(Craft,
             });
         },
 
-        _processedApiHeaders: false,
-
         /**
          * Sends a request to the Craftnet API.
          * @param {string} method The request action to use ('GET' or 'POST')
@@ -651,8 +661,10 @@ $.extend(Craft,
             return new Promise((resolve, reject) => {
                 options = options ? $.extend({}, options) : {};
                 let cancelToken = options.cancelToken || null;
+
                 // Get the latest headers
-                this.getApiHeaders(cancelToken).then(apiHeaders => {
+                this._getApiHeaders(cancelToken).then(apiHeaders => {
+                    // Send the API request
                     options.method = method;
                     options.baseURL = Craft.baseApiUrl;
                     options.url = uri;
@@ -662,35 +674,17 @@ $.extend(Craft,
                         v: new Date().getTime(),
                     });
 
+                    // Force the API to process the Craft headers if this is the first API request
+                    if (!this._apiHeaders) {
+                        options.params.processCraftHeaders = 1;
+                    }
+
                     axios.request(options).then((apiResponse) => {
-                        // Send the API response back immediately
-                        resolve(apiResponse.data);
-
-                        if (!this._processedApiHeaders) {
-                            if (apiResponse.headers['x-craft-license-status']) {
-                                this._processedApiHeaders = true;
-                                this.sendActionRequest('POST', 'app/process-api-response-headers', {
-                                    data: {
-                                        headers: apiResponse.headers,
-                                    },
-                                    cancelToken: cancelToken,
-                                });
-
-                                // If we just got a new license key, set it and then resolve the header waitlist
-                                if (this._apiHeaders && this._apiHeaders['X-Craft-License'] === '__REQUEST__') {
-                                    this._apiHeaders['X-Craft-License'] = window.cmsLicenseKey = apiResponse.headers['x-craft-license'];
-                                    this._resolveHeaderWaitlist();
-                                }
-                            } else if (
-                                this._apiHeaders &&
-                                this._apiHeaders['X-Craft-License'] === '__REQUEST__' &&
-                                this._apiHeaderWaitlist.length
-                            ) {
-                                // The request didn't send headers. Go ahead and resolve the next request on the
-                                // header waitlist.
-                                this._apiHeaderWaitlist.shift()[0](this._apiHeaders);
-                            }
-                        }
+                        // Process the response headers
+                        this._processApiHeaders(apiResponse.headers, cancelToken).then(() => {
+                            // Finally return the API response data
+                            resolve(apiResponse.data);
+                        }).catch(reject);
                     }).catch(reject);
                 }).catch(reject);
             });
@@ -706,7 +700,7 @@ $.extend(Craft,
          * @param {Object|null} cancelToken
          * @return {Promise}
          */
-        getApiHeaders: function(cancelToken) {
+        _getApiHeaders: function(cancelToken) {
             return new Promise((resolve, reject) => {
                 // Are we already loading them?
                 if (this._loadingApiHeaders) {
@@ -730,32 +724,53 @@ $.extend(Craft,
                         return;
                     }
 
-                    this._apiHeaders = response.data;
-                    resolve(this._apiHeaders);
-
-                    // If we are requesting a new Craft license, hold off on
-                    // resolving other API requests until we have one
-                    if (response.data['X-Craft-License'] !== '__REQUEST__') {
-                        this._resolveHeaderWaitlist();
-                    }
+                    resolve(response.data);
                 }).catch(e => {
-                    this._loadingApiHeaders = false;
-                    reject(e)
-
-                    // Was anything else waiting for them?
-                    while (this._apiHeaderWaitlist.length) {
-                        this._apiHeaderWaitlist.shift()[1](e);
-                    }
+                    this._rejectApiRequests(reject, e);
                 });
             });
         },
 
-        _resolveHeaderWaitlist: function() {
-            this._loadingApiHeaders = false;
+        _processApiHeaders: function(headers, cancelToken) {
+            return new Promise((resolve, reject) => {
+                // Have we already processed them?
+                if (this._apiHeaders) {
+                    resolve();
+                    return;
+                }
 
-            // Was anything else waiting for them?
+                this.sendActionRequest('POST', 'app/process-api-response-headers', {
+                    data: {
+                        headers: headers,
+                    },
+                    cancelToken: cancelToken,
+                }).then(response => {
+                    // Make sure we even are waiting for these anymore
+                    if (!this._loadingApiHeaders) {
+                        reject(e);
+                        return;
+                    }
+
+                    this._apiHeaders = response.data;
+                    this._loadingApiHeaders = false;
+
+                    resolve();
+
+                    // Was anything else waiting for them?
+                    while (this._apiHeaderWaitlist.length) {
+                        this._apiHeaderWaitlist.shift()[0](this._apiHeaders);
+                    }
+                }).catch(e => {
+                    this._rejectApiRequests(reject, e);
+                });
+            });
+        },
+
+        _rejectApiRequests: function(reject, e) {
+            this._loadingApiHeaders = false;
+            reject(e);
             while (this._apiHeaderWaitlist.length) {
-                this._apiHeaderWaitlist.shift()[0](this._apiHeaders);
+                this._apiHeaderWaitlist.shift()[1](e);
             }
         },
 
@@ -764,7 +779,6 @@ $.extend(Craft,
          */
         clearCachedApiHeaders: function() {
             this._apiHeaders = null;
-            this._processedApiHeaders = false;
             this._loadingApiHeaders = false;
 
             // Reject anything in the header waitlist

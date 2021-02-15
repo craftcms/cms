@@ -104,6 +104,42 @@ class Html extends \yii\helpers\Html
     }
 
     /**
+     * Generates a hidden `failMessage` input tag.
+     *
+     * @param string $message The flash message to shown on failure
+     * @param array $options The tag options in terms of name-value pairs. These will be rendered as
+     * the attributes of the resulting tag. The values will be HTML-encoded using [[encode()]].
+     * If a value is null, the corresponding attribute will not be rendered.
+     * See [[renderTagAttributes()]] for details on how attributes are being rendered.
+     * @return string The generated hidden input tag
+     * @throws Exception if the validation key could not be written
+     * @throws InvalidConfigException when HMAC generation fails
+     * @since 3.6.6
+     */
+    public static function failMessageInput(string $message, array $options = []): string
+    {
+        return static::hiddenInput('failMessage', Craft::$app->getSecurity()->hashData($message), $options);
+    }
+
+    /**
+     * Generates a hidden `successMessage` input tag.
+     *
+     * @param string $message The flash message to shown on success
+     * @param array $options The tag options in terms of name-value pairs. These will be rendered as
+     * the attributes of the resulting tag. The values will be HTML-encoded using [[encode()]].
+     * If a value is null, the corresponding attribute will not be rendered.
+     * See [[renderTagAttributes()]] for details on how attributes are being rendered.
+     * @return string The generated hidden input tag
+     * @throws Exception if the validation key could not be written
+     * @throws InvalidConfigException when HMAC generation fails
+     * @since 3.6.6
+     */
+    public static function successMessageInput(string $message, array $options = []): string
+    {
+        return static::hiddenInput('successMessage', Craft::$app->getSecurity()->hashData($message), $options);
+    }
+
+    /**
      * @inheritdoc
      * @since 3.3.0
      */
@@ -618,7 +654,7 @@ class Html extends \yii\helpers\Html
 
         // ID references in url() calls
         $html = preg_replace_callback(
-            "/(?<=url\\(#)[^'\"\s]*(?=\\))/i",
+            "/(?<=url\\(#)[^'\"\s\)]*(?=\\))/i",
             function(array $match) use ($namespace, $ids): string {
                 if (isset($ids[$match[0]])) {
                     return $namespace . '-' . $match[0];

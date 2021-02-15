@@ -57,6 +57,7 @@
         computed: {
             ...mapGetters({
                 getCmsEditionFeatures: 'craft/getCmsEditionFeatures',
+                getCmsEditionIndex: 'craft/getCmsEditionIndex',
             }),
 
             editionDescription() {
@@ -71,14 +72,7 @@
             },
 
             editionIndex() {
-                switch (this.edition.handle) {
-                    case 'solo':
-                        return this.$store.state.craft.CraftSolo
-                    case 'pro':
-                        return this.$store.state.craft.CraftPro
-                    default:
-                        return null
-                }
+                return this.getCmsEditionIndex(this.edition.handle)
             },
 
             features() {

@@ -21,6 +21,7 @@ use craft\records\Widget as WidgetRecord;
 use craft\widgets\CraftSupport as CraftSupportWidget;
 use craft\widgets\Feed as FeedWidget;
 use craft\widgets\MissingWidget;
+use craft\widgets\MyDrafts;
 use craft\widgets\NewUsers as NewUsersWidget;
 use craft\widgets\QuickPost as QuickPostWidget;
 use craft\widgets\RecentEntries as RecentEntriesWidget;
@@ -92,6 +93,7 @@ class Dashboard extends Component
             NewUsersWidget::class,
             QuickPostWidget::class,
             RecentEntriesWidget::class,
+            MyDrafts::class,
             UpdatesWidget::class,
         ];
 

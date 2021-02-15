@@ -76,7 +76,10 @@ class DateTimeValidator extends Validator
      */
     public function validateAttribute($model, $attribute)
     {
-        $value = DateTimeHelper::toDateTime($model->$attribute);
+        $value = $model->$attribute;
+        if ($normalized = (!$value instanceof \DateTime)) {
+            $value = DateTimeHelper::toDateTime($value);
+        }
 
         if (!$value) {
             $this->addError($model, $attribute, $this->message);
@@ -107,7 +110,9 @@ class DateTimeValidator extends Validator
             }
         }
 
-        // Update the value on the model to the DateTime object
-        $model->$attribute = $value;
+        if ($normalized) {
+            // Update the value on the model to the DateTime object
+            $model->$attribute = $value;
+        }
     }
 }

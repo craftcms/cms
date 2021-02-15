@@ -12,7 +12,7 @@ use craft\console\Controller;
 use craft\helpers\Console;
 
 /**
- * Allows you to create a new database backup.
+ * DEPRECATED. Use `db/backup` instead.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.1.21
@@ -49,7 +49,7 @@ class BackupController extends Controller
     }
 
     /**
-     * Alias of the db/backup command.
+     * DEPRECATED. Use `db/backup` instead.
      *
      * @return int
      */

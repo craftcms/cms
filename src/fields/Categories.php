@@ -111,12 +111,12 @@ class Categories extends BaseRelationField
                 ->all();
 
             // Fill in any gaps
-            $categoriesService = Craft::$app->getCategories();
-            $categoriesService->fillGapsInCategories($categories);
+            $structuresService = Craft::$app->getStructures();
+            $structuresService->fillGapsInElements($categories);
 
             // Enforce the branch limit
             if ($this->branchLimit) {
-                $categoriesService->applyBranchLimitToCategories($categories, $this->branchLimit);
+                $structuresService->applyBranchLimitToElements($categories, $this->branchLimit);
             }
 
             $value = ArrayHelper::getColumn($categories, 'id');

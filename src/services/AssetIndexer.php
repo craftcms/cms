@@ -375,7 +375,6 @@ class AssetIndexer extends Component
      */
     public function indexFile(VolumeInterface $volume, string $path, string $sessionId = '', bool $cacheImages = false, bool $createIfMissing = true)
     {
-        $fileInfo = $volume->getFileMetadata($path);
         $folderPath = dirname($path);
 
         if ($folderPath !== '.') {
@@ -386,8 +385,8 @@ class AssetIndexer extends Component
             'volumeId' => $volume->id,
             'sessionId' => $sessionId ?: $this->getIndexingSessionId(),
             'uri' => $path,
-            'size' => $fileInfo['size'],
-            'timestamp' => $fileInfo['timestamp'],
+            'size' => $volume->getFileSize($path),
+            'timestamp' => $volume->getDateModified($path),
             'inProgress' => true,
             'completed' => false
         ]);

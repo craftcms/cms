@@ -4,8 +4,15 @@
 
 {% do view.registerAssetBundle('craft\\web\\assets\\timepicker\\TimepickerAsset') -%}
 
-<div class="timewrapper"
-        {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
+{% set containerAttributes = {
+    class: ['timewrapper']|merge((class ?? [])|explodeClass),
+}|merge(containerAttributes ?? [], recursive=true) %}
+
+{%- if block('attr') is defined %}
+    {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
+{% endif %}
+
+{% tag 'div' with containerAttributes %}
     {%- include "_includes/forms/text" with {
         name: name ? "#{name}[time]" : null,
         autocomplete: false,
@@ -17,7 +24,7 @@
     {% if name -%}
         {{ hiddenInput("#{name}[timezone]", craft.app.getTimeZone()) }}
     {%- endif -%}
-</div>
+{% endtag %}
 
 {% set options = {
     minTime: minTime ?? null,

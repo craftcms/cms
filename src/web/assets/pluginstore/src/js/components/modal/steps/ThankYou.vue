@@ -6,7 +6,8 @@
                 <h2>{{ "Thank You!"|t('app') }}</h2>
                 <p class="light">{{ "Your order has been processed successfully."|t('app') }}</p>
                 <div class="mt-6">
-                    <btn kind="primary" :href="managePluginsUrl">{{ "Manage plugins"|t('app') }}</btn>
+                    <btn v-if="allowAdminChanges" kind="primary" :href="managePluginsUrl">{{ "Manage plugins"|t('app') }}</btn>
+                    <btn v-else kind="primary" :href="dashboardUrl">{{ "Go to Dashboard"|t('app') }}</btn>
                 </div>
             </div>
         </template>
@@ -24,8 +25,14 @@
         },
 
         computed: {
+            allowAdminChanges() {
+                return Craft.allowAdminChanges
+            },
             managePluginsUrl() {
                 return Craft.getCpUrl('settings/plugins')
+            },
+            dashboardUrl() {
+                return Craft.getCpUrl('dashboard')
             }
         },
     }

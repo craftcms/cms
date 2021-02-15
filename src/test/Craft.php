@@ -77,7 +77,7 @@ class Craft extends Yii2
     protected $addedConfig = [
         'migrations' => [],
         'plugins' => [],
-        'setupDb' => null,
+        'dbSetup' => null,
         'projectConfig' => null,
         'fullMock' => false,
         'edition' => \Craft::Solo
@@ -117,23 +117,33 @@ class Craft extends Yii2
     {
         parent::_initialize();
 
+        // Create a Craft::$app object
+        TestSetup::warmCraft();
+
         self::$instance = $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function _beforeSuite($settings = []): void
+    {
+        parent::_beforeSuite($settings);
 
         if ($this->_getConfig('fullMock') !== true) {
             $this->setupDb();
         }
+
     }
 
     /**
-     * @throws YiiBaseErrorException
+     * @inheritdoc
      */
     public function _afterSuite()
     {
         parent::_afterSuite();
 
-        if (TestSetup::useProjectConfig()) {
-            TestSetup::removeProjectConfigFolders(CRAFT_CONFIG_PATH . DIRECTORY_SEPARATOR . 'project');
-        }
+        TestSetup::removeProjectConfigFolders(CRAFT_CONFIG_PATH . DIRECTORY_SEPARATOR . 'project');
     }
 
     /**
@@ -214,9 +224,6 @@ class Craft extends Yii2
     {
         ob_start();
         try {
-            // Create a Craft::$app object
-            TestSetup::warmCraft();
-
             // Prevent's a static properties bug.
             ProjectConfig::reset();
 
@@ -408,7 +415,7 @@ class Craft extends Yii2
      * @param string $elementType
      * @param array $searchProperties
      * @param int $amount
-     * @param bool $searchAll - Wether anyStatus() and trashed(null) should be applied
+     * @param bool $searchAll - Whether anyStatus() and trashed(null) should be applied
      * @return array
      */
     public function assertElementsExist(string $elementType, array $searchProperties = [], int $amount = 1, bool $searchAll = false): array
