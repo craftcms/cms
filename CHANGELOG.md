@@ -8,6 +8,7 @@
 - `craft\base\Model::setAttributes()` now normalizes date attributes into `DateTime` objects.
 - `craft\base\Model::datetimeAttributes()` is now called from the constructor, instead of the `init()` method.
 - Updated Twig to 3.1.
+- Updated vue-autosuggest to 2.2.0.
 
 ### Deprecated
 - Deprecated `craft\helpers\ArrayHelper::append()`. `array_unshift()` should be used instead.
