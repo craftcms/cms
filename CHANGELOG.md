@@ -19,7 +19,7 @@
 - Garbage collection now deletes incomplete element data, for built-in element types. ([#6434](https://github.com/craftcms/cms/issues/6434))
 
 ### Fixed
-- Fixed a bug where Craft wasn’t deleting unpublished drafts when converting a Channel or Structure section to a Single. ([#37542](https://github.com/craftcms/cms/issues/7542))
+- Fixed a bug where Craft wasn’t deleting unpublished drafts when converting a Channel or Structure section to a Single. ([#7542](https://github.com/craftcms/cms/issues/7542))
 - Fixed a bug where it was possible for admins to delete a Single entry from the Edit Entry page. ([#7547](https://github.com/craftcms/cms/issues/7547))
 - Fixed an error that occurred when attempting to reposition an unpublished draft within a Structure section.
 - Fixed a CSS bug that prevented elements within relational fields from being easily reordered. ([#7549](https://github.com/craftcms/cms/issues/7549))
