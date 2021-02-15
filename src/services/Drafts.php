@@ -226,10 +226,11 @@ class Drafts extends Component
      * @param int|null $creatorId
      * @param string|null $name
      * @param string|null $notes
+     * @param bool $markAsSaved
      * @return bool
      * @throws \Throwable
      */
-    public function saveElementAsDraft(ElementInterface $element, ?int $creatorId = null, string $name = null, string $notes = null): bool
+    public function saveElementAsDraft(ElementInterface $element, ?int $creatorId = null, ?string $name = null, ?string $notes = null, bool $markAsSaved = true): bool
     {
         if ($name === null) {
             $name = Craft::t('app', 'First draft');
@@ -243,6 +244,7 @@ class Drafts extends Component
             'creatorId' => $creatorId,
             'draftName' => $name,
             'draftNotes' => $notes,
+            'markAsSaved' => $markAsSaved,
         ]));
 
         // Try to save and return the result
@@ -509,10 +511,53 @@ class Drafts extends Component
     /**
      * Deletes any sourceless drafts that were never formally saved.
      *
-     * @deprecated in 3.6.0
+     * @return void
      */
-    public function purgeUnsavedDrafts()
+    public function purgeUnsavedDrafts(): void
     {
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+
+        if ($generalConfig->purgeUnsavedDraftsDuration === 0) {
+            return;
+        }
+
+        $interval = DateTimeHelper::secondsToInterval($generalConfig->purgeUnsavedDraftsDuration);
+        $expire = DateTimeHelper::currentUTCDateTime();
+        $pastTime = $expire->sub($interval);
+
+        $drafts = (new Query())
+            ->select(['e.draftId', 'e.type'])
+            ->from(['e' => Table::ELEMENTS])
+            ->innerJoin(['d' => Table::DRAFTS], '[[d.id]] = [[e.draftId]]')
+            ->where(['d.saved' => false])
+            ->andWhere(['d.sourceId' => null])
+            ->andWhere(['<', 'e.dateUpdated', Db::prepareDateForDb($pastTime)])
+            ->all();
+
+        $elementsService = Craft::$app->getElements();
+
+        foreach ($drafts as $draftInfo) {
+            /** @var ElementInterface|string $elementType */
+            $elementType = $draftInfo['type'];
+            $draft = $elementType::find()
+                ->draftId($draftInfo['draftId'])
+                ->anyStatus()
+                ->siteId('*')
+                ->one();
+
+            if ($draft) {
+                $elementsService->deleteElement($draft, true);
+            } else {
+                // Perhaps the draft's row in the `entries` table was deleted manually or something.
+                // Just drop its row in the `drafts` table, and let that cascade to `elements` and whatever other tables
+                // still have rows for the draft.
+                Db::delete(Table::DRAFTS, [
+                    'id' => $draftInfo['draftId'],
+                ], [], $this->db);
+            }
+
+            Craft::info("Deleted unsaved draft {$draftInfo['draftId']}", __METHOD__);
+        }
     }
 
     /**

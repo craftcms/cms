@@ -68,6 +68,7 @@ class StructuresController extends Controller
 
         /** @var ElementInterface|string $elementType */
         $this->_element = $elementType::find()
+            ->drafts(null)
             ->id($elementId)
             ->siteId($siteId)
             ->anyStatus()

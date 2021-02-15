@@ -356,6 +356,7 @@ return [
     'Craft CMS is running in Dev Mode.' => 'Craft CMS запущен в режиме разработчика.',
     'Craft Support' => 'Поддержка Craft',
     'Craft isn’t installed yet.' => 'Система Craft еще не установлена.',
+    'Create a draft' => 'Create a draft',
     'Create a new GraphQL Schema' => 'Создать новую схему GraphQL',
     'Create a new GraphQL token' => 'Создать новый токен GraphQL',
     'Create a new asset volume' => 'Создать новый том ресурсов',

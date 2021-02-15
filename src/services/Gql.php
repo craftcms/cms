@@ -103,7 +103,7 @@ class Gql extends Component
      * ---
      * ```php
      * use craft\events\RegisterGqlTypeEvent;
-     * use craft\services\GraphQl;
+     * use craft\services\Gql;
      * use yii\base\Event;
      *
      * Event::on(Gql::class, Gql::EVENT_REGISTER_GQL_TYPES, function(RegisterGqlTypeEvent $event) {
@@ -123,7 +123,7 @@ class Gql extends Component
      * ---
      * ```php
      * use craft\events\RegisterGqlQueriesEvent;
-     * use craft\services\GraphQl;
+     * use craft\services\Gql;
      * use yii\base\Event;
      * use GraphQL\Type\Definition\Type;
      *
@@ -131,7 +131,7 @@ class Gql extends Component
      *     // Add my GraphQL queries
      *     $event->queries['queryPluginData'] =
      *     [
-     *         'type' => Type::listOf(MyType::getType())),
+     *         'type' => Type::listOf(MyType::getType()),
      *         'args' => MyArguments::getArguments(),
      *         'resolve' => MyResolver::class . '::resolve'
      *     ];
@@ -149,7 +149,7 @@ class Gql extends Component
      * ---
      * ```php
      * use craft\events\RegisterGqlMutationsEvent;
-     * use craft\services\GraphQl;
+     * use craft\services\Gql;
      * use yii\base\Event;
      * use GraphQL\Type\Definition\Type;
      *
@@ -157,7 +157,7 @@ class Gql extends Component
      *     // Add my GraphQL queries
      *     $event->queries['mutationPluginData'] =
      *     [
-     *         'type' => Type::listOf(MyType::getType())),
+     *         'type' => Type::listOf(MyType::getType()),
      *         'args' => MyArguments::getArguments(),
      *     ];
      * });
@@ -174,7 +174,7 @@ class Gql extends Component
      * ---
      * ```php
      * use craft\events\RegisterGqlDirectivesEvent;
-     * use craft\services\GraphQl;
+     * use craft\services\Gql;
      * use yii\base\Event;
      *
      * Event::on(Gql::class,
@@ -208,7 +208,7 @@ class Gql extends Component
      * ---
      * ```php
      * use craft\events\DefineGqlValidationRulesEvent;
-     * use craft\services\GraphQl;
+     * use craft\services\Gql;
      * use yii\base\Event;
      * use GraphQL\Type\Definition\Type;
      * use GraphQL\Validator\Rules\DisableIntrospection;
@@ -229,7 +229,7 @@ class Gql extends Component
      * ---
      * ```php
      * use craft\events\ExecuteGqlQueryEvent;
-     * use craft\services\GraphQl;
+     * use craft\services\Gql;
      * use yii\base\Event;
      *
      * Event::on(Gql::class,
@@ -253,7 +253,7 @@ class Gql extends Component
      * ---
      * ```php
      * use craft\events\ExecuteGqlQueryEvent;
-     * use craft\services\GraphQl;
+     * use craft\services\Gql;
      * use yii\base\Event;
      *
      * Event::on(Gql::class,

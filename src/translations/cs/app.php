@@ -356,6 +356,7 @@ return [
     'Craft CMS is running in Dev Mode.' => 'Craft CMS běží v módu pro vývojáře.',
     'Craft Support' => 'Podpora systému Craft',
     'Craft isn’t installed yet.' => 'Aplikace Craft ještě není nainstalovaná.',
+    'Create a draft' => 'Create a draft',
     'Create a new GraphQL Schema' => 'Vytvořit nové schéma GraphQL',
     'Create a new GraphQL token' => 'Vytvořit nový token GraphQL',
     'Create a new asset volume' => 'Vytvořit nový svazek pro prostředky',

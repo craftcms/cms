@@ -396,8 +396,11 @@ class Entry extends Element
                 ]);
             }
 
-            // Channel/Structure-only actions
-            if ($source !== '*' && $source !== 'singles') {
+            if ($source === '*') {
+                // Delete
+                $actions[] = Delete::class;
+            } else if ($source !== 'singles') {
+                // Channel/Structure-only actions
                 $section = $sections[0];
 
                 // New child?
@@ -1232,7 +1235,7 @@ class Entry extends Element
     public function getIsDeletable(): bool
     {
         $section = $this->getSection();
-        if ($section === Section::TYPE_SINGLE) {
+        if ($section->type === Section::TYPE_SINGLE) {
             return false;
         }
         $userSession = Craft::$app->getUser();

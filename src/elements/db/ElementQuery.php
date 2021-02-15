@@ -163,6 +163,12 @@ class ElementQuery extends Query implements ElementQueryInterface
     public $draftCreator;
 
     /**
+     * @var bool Whether only unpublished drafts which have been saved after initial creation should be included in the results.
+     * @since 3.6.6
+     */
+    public $savedDraftsOnly = false;
+
+    /**
      * @var bool Whether revision elements should be returned.
      * @since 3.2.0
      */
@@ -716,7 +722,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function draftId(int $value = null)
     {
         $this->draftId = $value;
-        if ($value !== null) {
+        if ($value !== null && $this->drafts === false) {
             $this->drafts = true;
         }
         return $this;
@@ -731,12 +737,12 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         if ($value instanceof ElementInterface) {
             $this->draftOf = $value->getSourceId();
-        } else if (is_numeric($value) || $value === '*' || $value === false) {
+        } else if (is_numeric($value) || $value === '*' || $value === false || $value === null) {
             $this->draftOf = $value;
         } else {
             throw new InvalidArgumentException('Invalid draftOf value');
         }
-        if ($value !== null) {
+        if ($value !== null && $this->drafts === false) {
             $this->drafts = true;
         }
         return $this;
@@ -751,14 +757,24 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         if ($value instanceof User) {
             $this->draftCreator = $value->id;
-        } else if (is_numeric($value)) {
+        } else if (is_numeric($value) || $value === null) {
             $this->draftCreator = $value;
         } else {
             throw new InvalidArgumentException('Invalid draftCreator value');
         }
-        if ($value !== null) {
+        if ($value !== null && $this->drafts === false) {
             $this->drafts = true;
         }
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     * @uses $savedDraftsOnly
+     */
+    public function savedDraftsOnly(bool $value = true)
+    {
+        $this->savedDraftsOnly = $value;
         return $this;
     }
 
@@ -793,7 +809,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         if ($value instanceof ElementInterface) {
             $this->revisionOf = $value->getSourceId();
-        } else if (is_numeric($value)) {
+        } else if (is_numeric($value) || $value === null) {
             $this->revisionOf = $value;
         } else {
             throw new InvalidArgumentException('Invalid revisionOf value');
@@ -811,7 +827,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         if ($value instanceof User) {
             $this->revisionCreator = $value->id;
-        } else if (is_numeric($value)) {
+        } else if (is_numeric($value) || $value === null) {
             $this->revisionCreator = $value;
         } else {
             throw new InvalidArgumentException('Invalid revisionCreator value');
@@ -2533,6 +2549,15 @@ class ElementQuery extends Query implements ElementQueryInterface
 
             if ($this->draftCreator) {
                 $this->subQuery->andWhere(['drafts.creatorId' => $this->draftCreator]);
+            }
+
+            if ($this->savedDraftsOnly) {
+                $this->subQuery->andWhere([
+                    'or',
+                    ['elements.draftId' => null],
+                    ['not', ['drafts.sourceId' => null]],
+                    ['drafts.saved' => true]
+                ]);
             }
         } else {
             $this->subQuery->andWhere($this->_placeholderCondition(['elements.draftId' => null]));

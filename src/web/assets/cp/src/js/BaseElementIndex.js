@@ -607,6 +607,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
             (this.drafts || (this.settings.context === 'index' && !this.status))
         ) {
             criteria.drafts = this.drafts || null;
+            criteria.savedDraftsOnly = true;
             if (!this.drafts) {
                 criteria.draftOf = false;
             }

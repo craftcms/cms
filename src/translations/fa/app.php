@@ -356,6 +356,7 @@ return [
     'Craft CMS is running in Dev Mode.' => 'Craft CMS در حالت توسعه در حال اجرا می باشد.',
     'Craft Support' => 'پشتیبانی Craft',
     'Craft isn’t installed yet.' => 'Craft تا این لحظه نصب نشده است.',
+    'Create a draft' => 'Create a draft',
     'Create a new GraphQL Schema' => 'ایجاد یک طرح GraphQL جدید',
     'Create a new GraphQL token' => 'ایجاد یک توکن GraphQL جدید',
     'Create a new asset volume' => 'ایجاد یک مخزن جدید فایل پروژه',

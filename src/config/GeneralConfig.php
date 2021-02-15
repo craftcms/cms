@@ -50,8 +50,8 @@ class GeneralConfig extends BaseObject
      * - `useShapes` – Whether shapes should be used to represent statuses
      * - `underlineLinks` – Whether links should be underlined
      *
-     * @group System
      * @since 3.6.4
+     * @group System
      */
     public $accessibilityDefaults = [
         'useShapes' => false,
@@ -582,7 +582,7 @@ class GeneralConfig extends BaseObject
 
     /**
      * @var bool Whether the `transform` directive should be disabled for the GraphQL API.
-     * @since 4.0.0
+     * @since 3.6.0
      * @group GraphQL
      */
     public $disableGraphqlTransformDirective = false;
@@ -605,7 +605,7 @@ class GeneralConfig extends BaseObject
 
     /**
      * @var bool Whether GraphQL introspection queries are allowed. Defaults to `true` and is always allowed in the CP.
-     * @since 4.0.0
+     * @since 3.6.0
      * @group GraphQL
      */
     public $enableGraphqlIntrospection = true;
@@ -743,8 +743,8 @@ class GeneralConfig extends BaseObject
      * - `pascal` – for PascalCase (aka UpperCamelCase)
      * - `snake` – for snake_case
      *
-     * @group System
      * @since 3.6.0
+     * @group System
      */
     public $handleCasing = self::CAMEL_CASE;
 
@@ -884,21 +884,21 @@ class GeneralConfig extends BaseObject
 
     /**
      * @var int The maximum allowed complexity a GraphQL query is allowed to have. Set to `0` to allow any complexity.
-     * @since 4.0.0
+     * @since 3.6.0
      * @group GraphQL
      */
     public $maxGraphqlComplexity = 0;
 
     /**
      * @var int The maximum allowed depth a GraphQL query is allowed to reach. Set to `0` to allow any depth.
-     * @since 4.0.0
+     * @since 3.6.0
      * @group GraphQL
      */
     public $maxGraphqlDepth = 0;
 
     /**
      * @var int The maximum allowed results for a single GraphQL query. Set to `0` to disable any limits.
-     * @since 4.0.0
+     * @since 3.6.0
      * @group GraphQL
      */
     public $maxGraphqlResults = 0;
@@ -1055,6 +1055,13 @@ class GeneralConfig extends BaseObject
     public $postLogoutRedirect = '';
 
     /**
+     * @var bool Whether the <config3:gqlTypePrefix> config setting should have an impact on `query`, `mutation`, and `subscirption` types.
+     * @since 3.6.6
+     * @group GraphQL
+     */
+    public $prefixGqlRootTypes = true;
+
+    /**
      * @var bool Whether CMYK should be preserved as the colorspace when manipulating images.
      *
      * Setting this to `true` will prevent Craft from transforming CMYK images to sRGB, but on some ImageMagick versions it can cause
@@ -1152,19 +1159,25 @@ class GeneralConfig extends BaseObject
     public $purgeStaleUserSessionDuration = 7776000;
 
     /**
-     * @var mixed The amount of time to wait before Craft purges drafts of new elements that were never formally saved.
+     * @var mixed The amount of time to wait before Craft purges unpublished drafts that were never updated with content.
+     *
+     * Set to `0` to disable this feature.
+     *
+     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
+     *
      * @since 3.2.0
-     * @deprecated in 3.6.0
+     * @group Garbage Collection
+     * @defaultAlt 30 days
      */
-    public $purgeUnsavedDraftsDuration = 0;
+    public $purgeUnsavedDraftsDuration = 2592000;
 
     /**
      * @var bool Whether SVG thumbnails should be rasterized.
      *
      * Note this will only work if ImageMagick is installed, and <config3:imageDriver> is set to either `auto` or `imagick`.
      *
-     * @group Image Handling
      * @since 3.6.0
+     * @group Image Handling
      */
     public $rasterizeSvgThumbs = false;
 

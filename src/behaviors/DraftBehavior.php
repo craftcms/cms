@@ -48,6 +48,12 @@ class DraftBehavior extends BaseRevisionBehavior
     public $mergingChanges = false;
 
     /**
+     * @var bool Whether the draft should be marked as saved (if unpublished).
+     * @since 3.6.6
+     */
+    public $markAsSaved = true;
+
+    /**
      * @var array|null
      * @see _outdatedAttributes()
      */
@@ -103,6 +109,7 @@ class DraftBehavior extends BaseRevisionBehavior
             'name' => $this->draftName,
             'notes' => $this->draftNotes,
             'dateLastMerged' => Db::prepareDateForDb($this->dateLastMerged),
+            'saved' => $this->markAsSaved,
         ], [
             'id' => $this->owner->draftId,
         ], [], false);
@@ -113,9 +120,11 @@ class DraftBehavior extends BaseRevisionBehavior
      */
     public function handleDelete()
     {
-        Db::delete(Table::DRAFTS, [
-            'id' => $this->owner->draftId,
-        ]);
+        if ($this->owner->hardDelete) {
+            Db::delete(Table::DRAFTS, [
+                'id' => $this->owner->draftId,
+            ]);
+        }
     }
 
     /**

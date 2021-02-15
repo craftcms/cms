@@ -1,5 +1,34 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.6.6 - 2021-02-15
+
+### Added
+- Added the `successMessageInput()` and `failMessageInput()` Twig functions. ([#7561](https://github.com/craftcms/cms/pull/7561))
+- Added the `prefixGqlRootTypes` config setting, which determines whether the `gqlTypePrefix` config setting should impact `query`, `mutation`, and `subscription` types. ([#7552](https://github.com/craftcms/cms/issues/7552))
+- Added the `savedDraftsOnly` entry query param.
+- Added `craft\behaviors\DraftBehavior::$markAsSaved`.
+- Added `craft\helpers\Html::failMessageInput()`.
+- Added `craft\helpers\Html::successMessageInput()`.
+- Added `craft\services\Gc::deletePartialElements()`.
+
+### Changed
+- The Entries index page no longer shows unpublished drafts that have never been updated with content.
+- It’s now possible to delete entries from the “All entries” source. ([#7545](https://github.com/craftcms/cms/issues/7545))
+- Garbage collection now deletes unpublished drafts that were never updated with content, per the (no longer deprecated) `purgeUnsavedDraftsDuration` config setting.
+- Garbage collection now deletes orphaned rows in the `drafts` and `revisions` tables.
+- Garbage collection now deletes incomplete element data, for built-in element types. ([#6434](https://github.com/craftcms/cms/issues/6434))
+
+### Fixed
+- Fixed a bug where Craft wasn’t deleting unpublished drafts when converting a Channel or Structure section to a Single. ([#37542](https://github.com/craftcms/cms/issues/7542))
+- Fixed a bug where it was possible for admins to delete a Single entry from the Edit Entry page. ([#7547](https://github.com/craftcms/cms/issues/7547))
+- Fixed an error that occurred when attempting to reposition an unpublished draft within a Structure section.
+- Fixed a CSS bug that prevented elements within relational fields from being easily reordered. ([#7549](https://github.com/craftcms/cms/issues/7549))
+- Fixed a bug where the “My Drafts” dashboard widget wasn’t listing disabled drafts. ([#7546](https://github.com/craftcms/cms/issues/7546))
+- Fixed a bug where unpublished drafts weren’t getting soft-deleted along with other entries when their section or entry type was deleted, causing an error on the Dashboard if there was a “My Drafts” widget. ([#7550](https://github.com/craftcms/cms/issues/7550))
+- Fixed a bug where it wasn’t possible for non-admins to rename, replace, edit, or delete their own temporary assets. ([#7420](https://github.com/craftcms/cms/issues/7420))
+- Fixed a bug where Craft wasn’t fully applying custom project configs when running tests. ([#7412](https://github.com/craftcms/cms/issues/7412), [#1953](https://github.com/craftcms/commerce/issues/1953))
+- Fixed a bug where the `config/project/` folder within the test directory wasn’t getting deleted after a test suite was run.
+
 ## 3.6.5.1 - 2021-02-10
 
 ### Fixed
@@ -39,7 +68,7 @@
 ## 3.6.4.1 - 2021-02-05
 
 ### Fixed
-- Fixed a bug where extra rows could be created in the `drafts` table.
+- Fixed a bug where extra rows could be created in the `drafts` table. ([#7542](https://github.com/craftcms/cms/issues/7542))
 
 ## 3.6.4 - 2021-02-05
 
@@ -372,7 +401,6 @@
 
 ### Fixed
 - Fixed a bug where Date fields with existing values were always considered dirty when saving an entry. ([#7404](https://github.com/craftcms/cms/issues/7404))
-- Fixed a bug where it wasn’t possible for non-admins to rename, replace, edit, or delete their own temporary assets. ([#7420](https://github.com/craftcms/cms/issues/7420))
 
 ## 3.5.18 - 2021-01-19
 
