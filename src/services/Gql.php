@@ -131,7 +131,7 @@ class Gql extends Component
      *     // Add my GraphQL queries
      *     $event->queries['queryPluginData'] =
      *     [
-     *         'type' => Type::listOf(MyType::getType())),
+     *         'type' => Type::listOf(MyType::getType()),
      *         'args' => MyArguments::getArguments(),
      *         'resolve' => MyResolver::class . '::resolve'
      *     ];
@@ -157,7 +157,7 @@ class Gql extends Component
      *     // Add my GraphQL queries
      *     $event->queries['mutationPluginData'] =
      *     [
-     *         'type' => Type::listOf(MyType::getType())),
+     *         'type' => Type::listOf(MyType::getType()),
      *         'args' => MyArguments::getArguments(),
      *     ];
      * });
