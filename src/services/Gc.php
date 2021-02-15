@@ -75,13 +75,13 @@ class Gc extends Component
             Table::VOLUMES,
         ]);
 
-        $this->deletePartialElements(Asset::class, Table::ASSETS);
-        $this->deletePartialElements(Category::class, Table::CATEGORIES);
-        $this->deletePartialElements(Entry::class, Table::ENTRIES);
-        $this->deletePartialElements(GlobalSet::class, Table::GLOBALSETS);
-        $this->deletePartialElements(MatrixBlock::class, Table::MATRIXBLOCKS);
-        $this->deletePartialElements(Tag::class, Table::TAGS);
-        $this->deletePartialElements(User::class, Table::USERS);
+        $this->deletePartialElements(Asset::class, Table::ASSETS, 'id');
+        $this->deletePartialElements(Category::class, Table::CATEGORIES, 'id');
+        $this->deletePartialElements(Entry::class, Table::ENTRIES, 'id');
+        $this->deletePartialElements(GlobalSet::class, Table::GLOBALSETS, 'id');
+        $this->deletePartialElements(MatrixBlock::class, Table::MATRIXBLOCKS, 'id');
+        $this->deletePartialElements(Tag::class, Table::TAGS, 'id');
+        $this->deletePartialElements(User::class, Table::USERS, 'id');
 
         $this->_deleteOrphanedDraftsAndRevisions();
         Craft::$app->getSearch()->deleteOrphanedIndexes();
@@ -141,7 +141,7 @@ class Gc extends Component
      * @return void
      * @since 3.6.6
      */
-    public function deletePartialElements(string $elementType, string $table, string $fk = 'id'): void
+    public function deletePartialElements(string $elementType, string $table, string $fk): void
     {
         $db = Craft::$app->getDb();
         $elementsTable = Table::ELEMENTS;
