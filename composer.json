@@ -41,7 +41,7 @@
     "mikehaertl/php-shellcommand": "^1.6.3",
     "pixelandtonic/imagine": "~1.2.4.1",
     "seld/cli-prompt": "^1.0.4",
-    "symfony/yaml": "^5.2.1",
+    "symfony/yaml": "^5.2.3",
     "true/punycode": "^2.1.1",
     "twig/twig": "~3.3.0",
     "voku/portable-utf8": "^5.4.51",
