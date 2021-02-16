@@ -1641,7 +1641,7 @@ return [
     'Your system isn’t set up to save content for the site “{site}”.' => 'Váš systém nie je nastavený na ukladanie obsahu pre web {site}.',
     'Your {folder} folder isn’t writable.' => 'Do vášho priečinku {folder} nie je možné zapisovať.',
     'You’re all up-to-date!' => 'Všetko je aktuálne!',
-    'You’re now editing a draft.' => 'You’re now editing a draft.',
+    'You’re now editing a draft.' => 'Teraz upravujete koncept.',
     'You’re running Craft {edition} with a Craft {licensedEdition} license.' => 'Používate Craft {edition} s Craft {licensedEdition} licenciou.',
     'Zip Code' => 'PSČ',
     'account_activation_body' => "Ahoj {{user.friendlyName}},\n\nVďaka za vytvorenie účtu na {{siteName}}! Pre jeho aktiváciu prosím klikni na nasledujúci odkaz:\n\n<{{link}}>\n\nAk si tento email neočakával, jednoducho ho ignoruj.",
