@@ -143,7 +143,6 @@ class ErrorHandlerTest extends TestCase
             [true, $path . '/created_path'],
             [true, $vendorPath . '/twig/twig/LICENSE'],
             [true, $vendorPath . '/twig/twig/composer.json'],
-            [true, $craftPath . '/web/twig/Template.php'],
 
             [false, $craftPath . '/web/twig'],
             [false, __DIR__]
@@ -159,7 +158,7 @@ class ErrorHandlerTest extends TestCase
 
         // Create a dir in compiled templates. See self::144
         $path = Craft::getAlias('@crafttestsfolder/storage/runtime/compiled_templates');
-        mkdir($path . '/created_path');
+        mkdir($path . '/created_path', 0777, true);
 
         $this->errorHandler = Craft::createObject(ErrorHandler::class);
     }
