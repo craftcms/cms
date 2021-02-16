@@ -647,7 +647,7 @@ return [
     'Guides' => 'Guide',
     'HTML Email Template' => 'Template email HTML',
     'HTML' => 'HTML',
-    'Handle' => 'Gestire',
+    'Handle' => 'Puntatore',
     'Header Column Heading' => 'Titolo colonna impostazione',
     'Heading' => 'Intestazione',
     'Height' => 'Altezza',
