@@ -1641,7 +1641,7 @@ return [
     'Your system isn’t set up to save content for the site “{site}”.' => 'Sisteminiz "{site}" sitesi için içerik kaydedecek şekilde ayarlanmadı.',
     'Your {folder} folder isn’t writable.' => '{folder} klasörünüz yazılabilir değil.',
     'You’re all up-to-date!' => 'Tamamen Güncelsiniz!',
-    'You’re now editing a draft.' => 'You’re now editing a draft.',
+    'You’re now editing a draft.' => 'Bir taslağı düzenliyorsunuz.',
     'You’re running Craft {edition} with a Craft {licensedEdition} license.' => 'Craft {licensedEdition} lisansı ile Craft {edition} çalıştırıyorsunuz.',
     'Zip Code' => 'Posta Kodu',
     'account_activation_body' => "Merhaba {{user.friendlyName}},\n\n{{siteName}} ile bir hesap oluşturduğunuz için teşekkürler! Hesabınızı etkinleştirmek için şu bağlantıya tıklayınız:\n\n<{{link}}>\n\nBu epostayı neden aldığınızı bilmiyorsanız, kaale almayınız.",
