@@ -60,7 +60,7 @@
     "codeception/module-phpbrowser": "^1.0.0",
     "codeception/module-rest": "^1.0.0",
     "codeception/module-yii2": "^1.0.0",
-    "fzaninotto/faker": "^1.8",
+    "fakerphp/faker": "^1.13.0",
     "league/factory-muffin": "^3.0",
     "vlucas/phpdotenv": "^3.0"
   },
