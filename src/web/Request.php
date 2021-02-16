@@ -508,19 +508,6 @@ class Request extends \yii\web\Request
         return $this->_hadToken;
     }
 
-    public function getHostInfo()
-    {
-        if ($this->headers->has('X-Original-Host')) {
-            $secure = $this->getIsSecureConnection();
-            $http = $secure ? 'https' : 'http';
-
-            return $http . '://' . trim(explode(',', $this->headers->get('X-Original-Host'))[0]);
-        }
-
-        return parent::getHostInfo();
-    }
-
-
     /**
      * Returns the token submitted with the request, if there is one.
      *
