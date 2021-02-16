@@ -37,21 +37,21 @@ class Tag extends Query
                 'args' => TagArguments::getArguments(),
                 'resolve' => TagResolver::class . '::resolve',
                 'description' => 'This query is used to query for tags.',
-                'complexity' => GqlHelper::singleQueryComplexity(),
+                'complexity' => GqlHelper::relatedArgumentComplexity()
             ],
             'tagCount' => [
                 'type' => Type::nonNull(Type::int()),
                 'args' => TagArguments::getArguments(),
                 'resolve' => TagResolver::class . '::resolveCount',
                 'description' => 'This query is used to return the number of tags.',
-                'complexity' => GqlHelper::singleQueryComplexity(),
+                'complexity' => GqlHelper::relatedArgumentComplexity()
             ],
             'tag' => [
                 'type' => TagInterface::getType(),
                 'args' => TagArguments::getArguments(),
                 'resolve' => TagResolver::class . '::resolveOne',
                 'description' => 'This query is used to query for a single tag.',
-                'complexity' => GqlHelper::singleQueryComplexity(),
+                'complexity' => GqlHelper::relatedArgumentComplexity()
             ],
         ];
     }

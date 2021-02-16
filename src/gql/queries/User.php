@@ -37,21 +37,21 @@ class User extends Query
                 'args' => UserArguments::getArguments(),
                 'resolve' => UserResolver::class . '::resolve',
                 'description' => 'This query is used to query for users.',
-                'complexity' => GqlHelper::singleQueryComplexity(),
+                'complexity' => GqlHelper::relatedArgumentComplexity()
             ],
             'userCount' => [
                 'type' => Type::nonNull(Type::int()),
                 'args' => UserArguments::getArguments(),
                 'resolve' => UserResolver::class . '::resolveCount',
                 'description' => 'This query is used to return the number of users.',
-                'complexity' => GqlHelper::singleQueryComplexity(),
+                'complexity' => GqlHelper::relatedArgumentComplexity()
             ],
             'user' => [
                 'type' => UserInterface::getType(),
                 'args' => UserArguments::getArguments(),
                 'resolve' => UserResolver::class . '::resolveOne',
                 'description' => 'This query is used to query for a single user.',
-                'complexity' => GqlHelper::singleQueryComplexity(),
+                'complexity' => GqlHelper::relatedArgumentComplexity()
             ],
         ];
     }

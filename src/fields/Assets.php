@@ -28,8 +28,10 @@ use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Gql;
+use craft\helpers\Gql as GqlHelper;
 use craft\helpers\Html;
 use craft\models\GqlSchema;
+use craft\services\Gql as GqlService;
 use craft\web\UploadedFile;
 use GraphQL\Type\Definition\Type;
 use yii\base\InvalidConfigException;
@@ -469,7 +471,7 @@ class Assets extends BaseRelationField
             'type' => Type::listOf(AssetInterface::getType()),
             'args' => AssetArguments::getArguments(),
             'resolve' => AssetResolver::class . '::resolve',
-            'complexity' => Gql::eagerLoadComplexity()
+            'complexity' => GqlHelper::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD)
         ];
     }
 

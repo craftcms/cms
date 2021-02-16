@@ -91,27 +91,27 @@ abstract class ElementArguments extends Arguments
             ],
             'relatedToAssets' => [
                 'name' => 'relatedToAssets',
-                'type' => Asset::getType(),
+                'type' => Type::listOf(Asset::getType()),
                 'description' => 'Narrows the query results to elements that relate to an asset list defined with this argument.'
             ],
             'relatedToEntries' => [
                 'name' => 'relatedToEntries',
-                'type' => Entry::getType(),
+                'type' => Type::listOf(Entry::getType()),
                 'description' => 'Narrows the query results to elements that relate to an entry list defined with this argument.'
             ],
             'relatedToUsers' => [
                 'name' => 'relatedToUsers',
-                'type' => User::getType(),
+                'type' => Type::listOf(User::getType()),
                 'description' => 'Narrows the query results to elements that relate to a use list defined with this argument.'
             ],
             'relatedToCategories' => [
                 'name' => 'relatedToCategories',
-                'type' => Category::getType(),
+                'type' => Type::listOf(Category::getType()),
                 'description' => 'Narrows the query results to elements that relate to a category list defined with this argument.'
             ],
             'relatedToTags' => [
                 'name' => 'relatedToTags',
-                'type' => Tag::getType(),
+                'type' => Type::listOf(Tag::getType()),
                 'description' => 'Narrows the query results to elements that relate to a tag list defined with this argument.'
             ],
             'relatedToAll' => [

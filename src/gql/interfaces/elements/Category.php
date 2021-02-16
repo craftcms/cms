@@ -84,14 +84,14 @@ class Category extends Structure
                 'args' => CategoryArguments::getArguments(),
                 'type' => Type::listOf(static::getType()),
                 'description' => 'The category’s children.',
-                'complexity' => Gql::eagerLoadComplexity(),
+                'complexity' => Gql::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD)
             ],
             'parent' => [
                 'name' => 'parent',
                 'args' => CategoryArguments::getArguments(),
                 'type' => static::getType(),
                 'description' => 'The category’s parent.',
-                'complexity' => Gql::eagerLoadComplexity(),
+                'complexity' => Gql::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD)
             ],
             'url' => [
                 'name' => 'url',

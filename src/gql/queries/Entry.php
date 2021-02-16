@@ -12,6 +12,7 @@ use craft\gql\base\Query;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\resolvers\elements\Entry as EntryResolver;
 use craft\helpers\Gql as GqlHelper;
+use craft\services\Gql as GqlService;
 use GraphQL\Type\Definition\Type;
 
 /**
@@ -37,7 +38,7 @@ class Entry extends Query
                 'args' => EntryArguments::getArguments(),
                 'resolve' => EntryResolver::class . '::resolve',
                 'description' => 'This query is used to query for entries.',
-                'complexity' => GqlHelper::singleQueryComplexity(),
+                'complexity' => GqlHelper::relatedArgumentComplexity()
             ],
             'entryCount' => [
                 'type' => Type::nonNull(Type::int()),

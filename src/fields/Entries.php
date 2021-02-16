@@ -16,7 +16,9 @@ use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\resolvers\elements\Entry as EntryResolver;
 use craft\helpers\Db;
 use craft\helpers\Gql;
+use craft\helpers\Gql as GqlHelper;
 use craft\models\GqlSchema;
+use craft\services\Gql as GqlService;
 use GraphQL\Type\Definition\Type;
 
 /**
@@ -78,6 +80,7 @@ class Entries extends BaseRelationField
             'type' => Type::listOf(EntryInterface::getType()),
             'args' => EntryArguments::getArguments(),
             'resolve' => EntryResolver::class . '::resolve',
+            'complexity' => GqlHelper::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD)
         ];
     }
 

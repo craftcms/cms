@@ -107,14 +107,14 @@ class Entry extends Structure
                 'args' => EntryArguments::getArguments(),
                 'type' => Type::listOf(EntryInterface::getType()),
                 'description' => 'The entry’s children, if the section is a structure. Accepts the same arguments as the `entries` query.',
-                'complexity' => Gql::eagerLoadComplexity(),
+                'complexity' => Gql::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD)
             ],
             'parent' => [
                 'name' => 'parent',
                 'args' => EntryArguments::getArguments(),
                 'type' => EntryInterface::getType(),
                 'description' => 'The entry’s parent, if the section is a structure.',
-                'complexity' => Gql::eagerLoadComplexity(),
+                'complexity' => Gql::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD)
             ],
             'url' => [
                 'name' => 'url',

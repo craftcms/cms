@@ -37,21 +37,21 @@ class Category extends Query
                 'args' => CategoryArguments::getArguments(),
                 'resolve' => CategoryResolver::class . '::resolve',
                 'description' => 'This query is used to query for categories.',
-                'complexity' => GqlHelper::singleQueryComplexity(),
+                'complexity' => GqlHelper::relatedArgumentComplexity()
             ],
             'categoryCount' => [
                 'type' => Type::nonNull(Type::int()),
                 'args' => CategoryArguments::getArguments(),
                 'resolve' => CategoryResolver::class . '::resolveCount',
                 'description' => 'This query is used to return the number of categories.',
-                'complexity' => GqlHelper::singleQueryComplexity(),
+                'complexity' => GqlHelper::relatedArgumentComplexity()
             ],
             'category' => [
                 'type' => CategoryInterface::getType(),
                 'args' => CategoryArguments::getArguments(),
                 'resolve' => CategoryResolver::class . '::resolveOne',
                 'description' => 'This query is used to query for a single category.',
-                'complexity' => GqlHelper::singleQueryComplexity(),
+                'complexity' => GqlHelper::relatedArgumentComplexity()
             ],
         ];
     }

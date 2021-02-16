@@ -18,9 +18,11 @@ use craft\gql\interfaces\elements\Tag as TagInterface;
 use craft\gql\resolvers\elements\Tag as TagResolver;
 use craft\helpers\Db;
 use craft\helpers\Gql;
+use craft\helpers\Gql as GqlHelper;
 use craft\helpers\Html;
 use craft\models\GqlSchema;
 use craft\models\TagGroup;
+use craft\services\Gql as GqlService;
 use GraphQL\Type\Definition\Type;
 
 /**
@@ -133,7 +135,7 @@ class Tags extends BaseRelationField
             'type' => Type::listOf(TagInterface::getType()),
             'args' => TagArguments::getArguments(),
             'resolve' => TagResolver::class . '::resolve',
-            'complexity' => Gql::eagerLoadComplexity()
+            'complexity' => GqlHelper::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD)
         ];
     }
 

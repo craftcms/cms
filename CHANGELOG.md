@@ -1,5 +1,14 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Added
+- Added `craft\helpers\Gql::relatedArgumentComplexity()`.
+
+### Changed
+- The `relatedToAssets`, `relatedToCategories`, `relatedToEntries`, `relatedToTags`, and `relatedToUsers` GraphQL arguments now accept a list of criteria sets. If multiple sets are provided, an element is required to match all of requirements. ([#7528](https://github.com/craftcms/cms/issues/7528))
+- Tweaked GraphQL complexity values for relational fields.
+
 ## 3.6.6 - 2021-02-15
 
 ### Added
