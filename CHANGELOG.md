@@ -8,6 +8,7 @@
 ### Changed
 - The `relatedToAssets`, `relatedToCategories`, `relatedToEntries`, `relatedToTags`, and `relatedToUsers` GraphQL arguments now accept a list of multiple criteria sets. ([#7528](https://github.com/craftcms/cms/issues/7528))
 - Adjusted GraphQL complexity values for relational fields.
+- Updated Composer to 2.0.9.
 
 ## 3.6.6 - 2021-02-15
 
