@@ -134,17 +134,17 @@ class ArgumentHandlerTest extends Unit
 
         return [
             [[], ['relatedToAll' => [1, 2, 3]], 'relatedTo' => ['and', ['element' => 1], ['element' => 2], ['element' => 3]]],
-            [$handlers, ['relatedToAssets' => ['expected' => AssetQuery::class, 'return' => [1, 2]]], ['and', ['element' => [1, 2]]]],
-            [$handlers, ['relatedToEntries' => ['expected' => EntryQuery::class, 'return' => [3, 4]]], ['and', ['element' => [3, 4]]]],
-            [$handlers, ['relatedToCategories' => ['expected' => CategoryQuery::class, 'return' => [5, 6]]], ['and', ['element' => [5, 6]]]],
-            [$handlers, ['relatedToTags' => ['expected' => TagQuery::class, 'return' => [7, 8]]], ['and', ['element' => [7, 8]]]],
-            [$handlers, ['relatedToUsers' => ['expected' => UserQuery::class, 'return' => [9, 10]]], ['and', ['element' => [9, 10]]]],
+            [$handlers, ['relatedToAssets' => ['expected' => AssetQuery::class, 'return' => [[1, 2]]]], ['and', ['element' => [1, 2]]]],
+            [$handlers, ['relatedToEntries' => ['expected' => EntryQuery::class, 'return' => [[3], [4]]]], ['and', ['element' => [3]], ['element' => [4]]]],
+            [$handlers, ['relatedToCategories' => ['expected' => CategoryQuery::class, 'return' => []]], ['and', ['element' => [0]]]],
+            [$handlers, ['relatedToTags' => ['expected' => TagQuery::class, 'return' => [[7], [8]]]], ['and', ['element' => [7]], ['element' => [8]]]],
+            [$handlers, ['relatedToUsers' => ['expected' => UserQuery::class, 'return' => [[9, 10]]]], ['and', ['element' => [9, 10]]]],
 
             [
                 $handlers,
                 [
-                    'relatedToEntries' => ['expected' => EntryQuery::class, 'return' => [3, 4]],
-                    'relatedToAssets' => ['expected' => AssetQuery::class, 'return' => [9,10]]
+                    'relatedToEntries' => ['expected' => EntryQuery::class, 'return' => [[3, 4]]],
+                    'relatedToAssets' => ['expected' => AssetQuery::class, 'return' => [[9,10]]]
                 ],
                 [
                     'and',
@@ -155,19 +155,20 @@ class ArgumentHandlerTest extends Unit
             [
                 $handlers,
                 [
-                    'relatedToEntries' => ['expected' => EntryQuery::class, 'return' => [3, 4]],
+                    'relatedToEntries' => ['expected' => EntryQuery::class, 'return' => [[3], [4]]],
                     'relatedTo' => [8, 9]
                 ],
                 [
                     'and',
                     ['element' => [8, 9]],
-                    ['element' => [3, 4]],
+                    ['element' => [3]],
+                    ['element' => [4]],
                 ],
             ],
             [
                 $handlers,
                 [
-                    'relatedToEntries' => ['expected' => EntryQuery::class, 'return' => [3, 4]],
+                    'relatedToEntries' => ['expected' => EntryQuery::class, 'return' => [[3, 4]]],
                     'relatedTo' => ['and', 8, 9]
                 ],
                 [
