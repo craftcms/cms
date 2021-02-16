@@ -731,7 +731,7 @@ return [
     'Job retried.' => 'تم إعادة محاولة تشغيل المهمة.',
     'Job' => 'مهمة',
     'Keep both' => 'الاحتفاظ بالاثنين',
-    'Keep it' => 'Keep it',
+    'Keep it' => 'احتفظ به',
     'Keep me logged in' => 'الإبقاء على تسجيل دخولي',
     'Keep them' => 'حفظهم',
     'Label' => 'تسمية',
