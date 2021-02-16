@@ -10,6 +10,9 @@
 - Adjusted GraphQL complexity values for relational fields.
 - Updated Composer to 2.0.9.
 
+### Security
+- It’s no longer possible to save a Local volume with the File System Path setting set to a system directory (e.g. the `templates/` or `vendor/` folders).
+
 ## 3.6.6 - 2021-02-15
 
 ### Added

@@ -12,6 +12,7 @@ use craft\helpers\FileHelper;
 use League\Flysystem\Adapter\Local as LocalAdapter;
 use League\Flysystem\FileExistsException;
 use League\Flysystem\FileNotFoundException;
+use yii\validators\InlineValidator;
 
 /**
  * The local volume class. Handles the implementation of the local filesystem as a volume in
@@ -58,7 +59,59 @@ class Local extends FlysystemVolume implements LocalVolumeInterface
     {
         $rules = parent::defineRules();
         $rules[] = [['path'], 'required'];
+        $rules[] = [['path'], 'validatePath'];
         return $rules;
+    }
+
+    /**
+     * @param string $attribute
+     * @param array|null $params
+     * @param InlineValidator $validator
+     * @param string $path
+     * @return void
+     * @since 3.6.7
+     */
+    public function validatePath(string $attribute, ?array $params, InlineValidator $validator, string $path): void
+    {
+        if ($created = !file_exists($path)) {
+            FileHelper::createDirectory($path);
+        }
+
+        $path = realpath($this->getRootPath());
+
+        if ($path === false) {
+            return;
+        }
+
+        // Make sure it’s not within any of the system directories
+        $pathService = Craft::$app->getPath();
+        $systemDirs = [
+            Craft::getAlias('@contentMigrations'),
+            Craft::getAlias('@lib'),
+            $pathService->getComposerBackupsPath(false),
+            $pathService->getConfigBackupPath(false),
+            $pathService->getConfigDeltaPath(false),
+            $pathService->getConfigPath(),
+            $pathService->getDbBackupPath(false),
+            $pathService->getLogPath(false),
+            $pathService->getRebrandPath(false),
+            $pathService->getRuntimePath(false),
+            $pathService->getSiteTemplatesPath(),
+            $pathService->getSiteTranslationsPath(),
+            $pathService->getTestsPath(),
+            $pathService->getVendorPath(),
+        ];
+
+        foreach ($systemDirs as $dir) {
+            $dir = realpath($dir);
+            if ($dir !== false && strpos($path . DIRECTORY_SEPARATOR, $dir . DIRECTORY_SEPARATOR) === 0) {
+                $validator->addError($this, $attribute, Craft::t('app', 'Local volumes cannot be located within system directories.'));
+                if ($created) {
+                    FileHelper::removeDirectory($path);
+                }
+                break;
+            }
+        }
     }
 
     /**
