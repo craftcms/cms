@@ -61,7 +61,13 @@ type AssetIndexingSessionModel = {
 type CraftResponse = {
     session?: AssetIndexingSessionModel
     stop?: number
-    error?: string
+    error?: string,
+    skipDialog?: boolean
+}
+
+type ConcurrentTask = {
+    action: string,
+    params: any,
 }
 
 /**
@@ -72,8 +78,10 @@ type CraftResponse = {
 // =====================================================================================
 class AssetIndexer {
     private $indexingSessionTable: JQuery;
-
     private _currentIndexingSession: number | null = null;
+    private _maxConcurrentConnections: number;
+    private _currentConnectionCount = 0;
+    private _tasksWaiting: ConcurrentTask[] = [];
 
     private indexingSessions: {
         [key: number]: AssetIndexingSession
@@ -83,7 +91,8 @@ class AssetIndexer {
      * @param $element The indexing session table
      * @param sessions Existing indexing sessions
      */
-    constructor($indexingSessionTable: JQuery, sessions: AssetIndexingSessionModel[]) {
+    constructor($indexingSessionTable: JQuery, sessions: AssetIndexingSessionModel[], maxConcurrentConnections: number = 3) {
+        this._maxConcurrentConnections = maxConcurrentConnections;
         this.$indexingSessionTable = $indexingSessionTable;
         this.indexingSessions = {};
         let reviewSessionId: number = 0;
@@ -168,7 +177,9 @@ class AssetIndexer {
             this._currentIndexingSession = null;
         }
 
-        this.renderIndexingSessionRow(session)
+        this.renderIndexingSessionRow(session);
+
+        this.runTasks();
     }
 
     /**
@@ -178,8 +189,12 @@ class AssetIndexer {
      * @param textStatus
      */
     public processResponse(response: CraftResponse, textStatus: string): void {
+        this._currentConnectionCount--;
+
         if (textStatus === 'success' && response.error) {
             alert(response.error);
+            // A mere error shall not stop the party.
+            this.runTasks();
             return;
         }
 
@@ -192,7 +207,7 @@ class AssetIndexer {
                 this._currentIndexingSession = session.getSessionId();
             }
 
-            if (session.getSessionStatus() === SessionStatus.ACTIONREQUIRED) {
+            if (session.getSessionStatus() === SessionStatus.ACTIONREQUIRED && !response.skipDialog) {
                 this.reviewSession(session);
                 return;
             }
@@ -207,7 +222,12 @@ class AssetIndexer {
 
     public getReviewData(session: AssetIndexingSession): void
     {
-        Craft.postActionRequest(IndexingActions.OVERVIEW, {sessionId: session.getSessionId()}, this.processResponse.bind(this));
+        const task: ConcurrentTask = {
+            action: IndexingActions.OVERVIEW,
+            params: {sessionId: session.getSessionId()}
+        }
+
+        this.enqueueTask(task);
     }
 
     public reviewSession(session: AssetIndexingSession): void
@@ -215,8 +235,8 @@ class AssetIndexer {
         let $confirmBody = $('<div></div>');
 
         const missingEntries = session.getMissingEntries() as {files: StringHash, folders: StringHash};
-        const missingFiles = Object.entries(missingEntries.files);
-        const missingFolders = Object.entries(missingEntries.folders);
+        const missingFiles = missingEntries.files ? Object.entries(missingEntries.files) : [];
+        const missingFolders = missingEntries.folders ? Object.entries(missingEntries.folders) : [];
         const skippedFiles = session.getSkippedEntries();
 
         if (skippedFiles.length) {
@@ -313,31 +333,82 @@ class AssetIndexer {
             const postParams = Craft.expandPostArray(postData);
             postParams.sessionId = session.getSessionId();
 
-            Craft.postActionRequest(IndexingActions.FINISH, postParams, this.processResponse.bind(this));
+            // Make this the next task for sure?
+            const task: ConcurrentTask = {
+                action: IndexingActions.FINISH,
+                params: postParams
+            };
+
+            this.enqueueTask(task, true);
         });
     }
 
     public performIndexingStep(): void
     {
-        if (this._currentIndexingSession) {
-            Craft.postActionRequest(IndexingActions.PROCESS, {sessionId: this._currentIndexingSession}, this.processResponse.bind(this));
-            return;
-        } else {
-            for (const session of Object.values(this.indexingSessions)) {
-                if (session.getSessionStatus() !== SessionStatus.QUEUE && session.getSessionStatus() !== SessionStatus.CLI) {
-                    this._currentIndexingSession = session.getSessionId();
-                    break;
-                }
-            }
+        if (!this._currentIndexingSession) {
+            this._updateCurrentIndexingSession();
         }
 
-        if (this._currentIndexingSession) {
-            this.performIndexingStep();
+        if (!this._currentIndexingSession) {
+            return;
+        }
+
+        const session = this.indexingSessions[this._currentIndexingSession];
+        const concurrentSlots = this._maxConcurrentConnections - this._currentConnectionCount;
+
+        // Queue up at least enough tasks to use up all the free connections of finish the session.
+        for (let i = 0; i < Math.min(concurrentSlots, session.getEntriesRemaining()); i++){
+            const task: ConcurrentTask = {
+                action: IndexingActions.PROCESS,
+                params: {sessionId: this._currentIndexingSession}
+            };
+
+            this.enqueueTask(task);
         }
     }
 
     public stopIndexingSession(session: AssetIndexingSession): void {
-        Craft.postActionRequest(IndexingActions.STOP, {sessionId: session.getSessionId()}, this.processResponse.bind(this));
+        const task: ConcurrentTask = {
+            action: IndexingActions.STOP,
+            params: {sessionId: session.getSessionId()}
+        };
+
+        this.enqueueTask(task);
+    }
+
+    protected enqueueTask(task: ConcurrentTask, prioritize = false): void
+    {
+        if (prioritize) {
+            this._tasksWaiting.unshift(task);
+        } else {
+            this._tasksWaiting.push(task);
+        }
+
+        this.runTasks();
+    }
+
+    protected runTasks(): void
+    {
+        if (this._tasksWaiting.length === 0 || this._currentConnectionCount >= this._maxConcurrentConnections) {
+            return;
+        }
+
+        while (this._tasksWaiting.length !== 0 && this._currentConnectionCount < this._maxConcurrentConnections) {
+            console.log('cue the queue');
+            this._currentConnectionCount++;
+            const task = this._tasksWaiting.shift()!;
+            Craft.postActionRequest(task.action, task.params, this.processResponse.bind(this));
+        }
+    }
+
+    private _updateCurrentIndexingSession(): void
+    {
+        for (const session of Object.values(this.indexingSessions)) {
+            if (session.getSessionStatus() !== SessionStatus.QUEUE && session.getSessionStatus() !== SessionStatus.CLI) {
+                this._currentIndexingSession = session.getSessionId();
+                return;
+            }
+        }
     }
 
     /**
@@ -367,6 +438,17 @@ class AssetIndexingSession {
         return this.indexingSessionData.id;
     }
 
+    /**
+     * Get the remaining entry count for this sessions.
+     */
+    public getEntriesRemaining(): number
+    {
+        return this.indexingSessionData.totalEntries - this.indexingSessionData.processedEntries;
+    }
+
+    /**
+     * Get the session status.
+     */
     public getSessionStatus(): SessionStatus {
         if (this.indexingSessionData.isCli) {
             return SessionStatus.CLI;
@@ -432,7 +514,7 @@ class AssetIndexingSession {
                 'class': 'btn submit',
                 title: reviewMessage,
                 "aria-label": reviewMessage,
-            }).text(reviewMessage)).on('click', ev => {
+            }).text(reviewMessage).on('click', ev => {
                 const $container = $(ev.target).parent();
 
                 if ($container.hasClass('disabled')) {
@@ -441,7 +523,7 @@ class AssetIndexingSession {
                 $container.addClass('disabled');
 
                 this.indexer.getReviewData(this);
-            });
+            }));
         }
 
         const discardMessage = Craft.t('app', 'Discard');
@@ -450,7 +532,7 @@ class AssetIndexingSession {
             'class': 'btn submit',
             title: discardMessage,
             "aria-label": discardMessage,
-        }).text(discardMessage)).on('click', ev => {
+        }).text(discardMessage).on('click', ev => {
             if ($buttons.hasClass('disabled')) {
                 return;
             }
@@ -458,7 +540,7 @@ class AssetIndexingSession {
             $buttons.addClass('disabled');
 
             this.indexer.stopIndexingSession(this);
-        });
+        }));
 
         return $buttons;
     }

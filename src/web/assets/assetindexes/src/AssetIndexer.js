@@ -25,9 +25,12 @@ class AssetIndexer {
      * @param $element The indexing session table
      * @param sessions Existing indexing sessions
      */
-    constructor($indexingSessionTable, sessions) {
+    constructor($indexingSessionTable, sessions, maxConcurrentConnections = 3) {
         this._currentIndexingSession = null;
+        this._currentConnectionCount = 0;
+        this._tasksWaiting = [];
         this.indexingSessions = {};
+        this._maxConcurrentConnections = maxConcurrentConnections;
         this.$indexingSessionTable = $indexingSessionTable;
         this.indexingSessions = {};
         let reviewSessionId = 0;
@@ -95,6 +98,7 @@ class AssetIndexer {
             this._currentIndexingSession = null;
         }
         this.renderIndexingSessionRow(session);
+        this.runTasks();
     }
     /**
      * Process an indexing response.
@@ -103,8 +107,11 @@ class AssetIndexer {
      * @param textStatus
      */
     processResponse(response, textStatus) {
+        this._currentConnectionCount--;
         if (textStatus === 'success' && response.error) {
             alert(response.error);
+            // A mere error shall not stop the party.
+            this.runTasks();
             return;
         }
         if (textStatus === 'success' && response.session) {
@@ -114,7 +121,7 @@ class AssetIndexer {
             if (!this._currentIndexingSession) {
                 this._currentIndexingSession = session.getSessionId();
             }
-            if (session.getSessionStatus() === SessionStatus.ACTIONREQUIRED) {
+            if (session.getSessionStatus() === SessionStatus.ACTIONREQUIRED && !response.skipDialog) {
                 this.reviewSession(session);
                 return;
             }
@@ -125,13 +132,17 @@ class AssetIndexer {
         }
     }
     getReviewData(session) {
-        Craft.postActionRequest(IndexingActions.OVERVIEW, { sessionId: session.getSessionId() }, this.processResponse.bind(this));
+        const task = {
+            action: IndexingActions.OVERVIEW,
+            params: { sessionId: session.getSessionId() }
+        };
+        this.enqueueTask(task);
     }
     reviewSession(session) {
         let $confirmBody = $('<div></div>');
         const missingEntries = session.getMissingEntries();
-        const missingFiles = Object.entries(missingEntries.files);
-        const missingFolders = Object.entries(missingEntries.folders);
+        const missingFiles = missingEntries.files ? Object.entries(missingEntries.files) : [];
+        const missingFolders = missingEntries.folders ? Object.entries(missingEntries.folders) : [];
         const skippedFiles = session.getSkippedEntries();
         if (skippedFiles.length) {
             let skippedFilesList = '';
@@ -211,28 +222,66 @@ class AssetIndexer {
             const postData = Garnish.getPostData($body);
             const postParams = Craft.expandPostArray(postData);
             postParams.sessionId = session.getSessionId();
-            Craft.postActionRequest(IndexingActions.FINISH, postParams, this.processResponse.bind(this));
+            // Make this the next task for sure?
+            const task = {
+                action: IndexingActions.FINISH,
+                params: postParams
+            };
+            this.enqueueTask(task, true);
         });
     }
     performIndexingStep() {
-        if (this._currentIndexingSession) {
-            Craft.postActionRequest(IndexingActions.PROCESS, { sessionId: this._currentIndexingSession }, this.processResponse.bind(this));
+        if (!this._currentIndexingSession) {
+            this._updateCurrentIndexingSession();
+        }
+        if (!this._currentIndexingSession) {
             return;
         }
-        else {
-            for (const session of Object.values(this.indexingSessions)) {
-                if (session.getSessionStatus() !== SessionStatus.QUEUE && session.getSessionStatus() !== SessionStatus.CLI) {
-                    this._currentIndexingSession = session.getSessionId();
-                    break;
-                }
-            }
-        }
-        if (this._currentIndexingSession) {
-            this.performIndexingStep();
+        const session = this.indexingSessions[this._currentIndexingSession];
+        const concurrentSlots = this._maxConcurrentConnections - this._currentConnectionCount;
+        // Queue up at least enough tasks to use up all the free connections of finish the session.
+        for (let i = 0; i < Math.min(concurrentSlots, session.getEntriesRemaining()); i++) {
+            const task = {
+                action: IndexingActions.PROCESS,
+                params: { sessionId: this._currentIndexingSession }
+            };
+            this.enqueueTask(task);
         }
     }
     stopIndexingSession(session) {
-        Craft.postActionRequest(IndexingActions.STOP, { sessionId: session.getSessionId() }, this.processResponse.bind(this));
+        const task = {
+            action: IndexingActions.STOP,
+            params: { sessionId: session.getSessionId() }
+        };
+        this.enqueueTask(task);
+    }
+    enqueueTask(task, prioritize = false) {
+        if (prioritize) {
+            this._tasksWaiting.unshift(task);
+        }
+        else {
+            this._tasksWaiting.push(task);
+        }
+        this.runTasks();
+    }
+    runTasks() {
+        if (this._tasksWaiting.length === 0 || this._currentConnectionCount >= this._maxConcurrentConnections) {
+            return;
+        }
+        while (this._tasksWaiting.length !== 0 && this._currentConnectionCount < this._maxConcurrentConnections) {
+            console.log('cue the queue');
+            this._currentConnectionCount++;
+            const task = this._tasksWaiting.shift();
+            Craft.postActionRequest(task.action, task.params, this.processResponse.bind(this));
+        }
+    }
+    _updateCurrentIndexingSession() {
+        for (const session of Object.values(this.indexingSessions)) {
+            if (session.getSessionStatus() !== SessionStatus.QUEUE && session.getSessionStatus() !== SessionStatus.CLI) {
+                this._currentIndexingSession = session.getSessionId();
+                return;
+            }
+        }
     }
     /**
      * Create a session from the data model.
@@ -255,6 +304,15 @@ class AssetIndexingSession {
     getSessionId() {
         return this.indexingSessionData.id;
     }
+    /**
+     * Get the remaining entry count for this sessions.
+     */
+    getEntriesRemaining() {
+        return this.indexingSessionData.totalEntries - this.indexingSessionData.processedEntries;
+    }
+    /**
+     * Get the session status.
+     */
     getSessionStatus() {
         if (this.indexingSessionData.isCli) {
             return SessionStatus.CLI;
@@ -309,14 +367,14 @@ class AssetIndexingSession {
                 'class': 'btn submit',
                 title: reviewMessage,
                 "aria-label": reviewMessage,
-            }).text(reviewMessage)).on('click', ev => {
+            }).text(reviewMessage).on('click', ev => {
                 const $container = $(ev.target).parent();
                 if ($container.hasClass('disabled')) {
                     return;
                 }
                 $container.addClass('disabled');
                 this.indexer.getReviewData(this);
-            });
+            }));
         }
         const discardMessage = Craft.t('app', 'Discard');
         $buttons.append($('<button />', {
@@ -324,13 +382,13 @@ class AssetIndexingSession {
             'class': 'btn submit',
             title: discardMessage,
             "aria-label": discardMessage,
-        }).text(discardMessage)).on('click', ev => {
+        }).text(discardMessage).on('click', ev => {
             if ($buttons.hasClass('disabled')) {
                 return;
             }
             $buttons.addClass('disabled');
             this.indexer.stopIndexingSession(this);
-        });
+        }));
         return $buttons;
     }
     /**

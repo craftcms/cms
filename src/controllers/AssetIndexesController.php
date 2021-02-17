@@ -132,26 +132,30 @@ class AssetIndexesController extends Controller
             return $this->asJson(['stop' => $sessionId]);
         }
 
+        $skipDialog = false;
+
         // If action is not required, continue with indexing
         if (!$indexingSession->actionRequired) {
             $indexingSession = $assetIndexer->processIndexSession($indexingSession);
-        }
 
-        // If action is now required, we just processed the last entry
-        // To save a round-trip, just pull the session review data
-        if ($indexingSession->actionRequired) {
-            $indexingSession->skippedEntries = $assetIndexer->getSkippedItemsForSession($indexingSession);
-            $indexingSession->missingEntries = $assetIndexer->getMissingEntriesForSession($indexingSession);
+            // If action is now required, we just processed the last entry
+            // To save a round-trip, just pull the session review data
+            if ($indexingSession->actionRequired) {
+                $indexingSession->skippedEntries = $assetIndexer->getSkippedItemsForSession($indexingSession);
+                $indexingSession->missingEntries = $assetIndexer->getMissingEntriesForSession($indexingSession);
 
-            // If nothing out of ordinary, just end it.
-            if (empty($indexingSession->skippedEntries) && empty($indexingSession->missingEntries)) {
-                $assetIndexer->stopIndexingSession($indexingSession);
-                return $this->asJson(['stop' => $sessionId]);
+                // If nothing out of ordinary, just end it.
+                if (empty($indexingSession->skippedEntries) && empty($indexingSession->missingEntries)) {
+                    $assetIndexer->stopIndexingSession($indexingSession);
+                    return $this->asJson(['stop' => $sessionId]);
+                }
             }
+        } else {
+            $skipDialog = true;
         }
 
         $sessionData = $this->prepareSessionData($indexingSession);
-        return $this->asJson(['session' => $sessionData]);
+        return $this->asJson(['session' => $sessionData, 'skipDialog' => $skipDialog]);
     }
 
     /**
