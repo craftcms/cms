@@ -23,6 +23,7 @@ enum SessionStatus {
 }
 
 enum IndexingActions {
+    START = 'asset-indexes/start-indexing',
     STOP = 'asset-indexes/stop-indexing-session',
     PROCESS = 'asset-indexes/process-indexing-session',
     OVERVIEW = 'asset-indexes/indexing-session-overview',
@@ -66,6 +67,7 @@ type CraftResponse = {
 }
 
 type ConcurrentTask = {
+    sessionId: number,
     action: string,
     params: any,
 }
@@ -82,6 +84,8 @@ class AssetIndexer {
     private _maxConcurrentConnections: number;
     private _currentConnectionCount = 0;
     private _tasksWaiting: ConcurrentTask[] = [];
+    private _priorityTasks: ConcurrentTask[] = [];
+    private _prunedSessionIds: number[] = [];
 
     private indexingSessions: {
         [key: number]: AssetIndexingSession
@@ -141,7 +145,11 @@ class AssetIndexer {
     protected renderIndexingSessionRow(session: AssetIndexingSession) {
         let $row: JQuery;
 
-        if (!this.indexingSessions[session.getSessionId()]) {
+        if (session === undefined) {
+            return;
+        }
+
+        if (!this.indexingSessions[session.getSessionId()] || this._prunedSessionIds.includes(session.getSessionId())) {
             this.$indexingSessionTable.find('tr[data-session-id="' + session.getSessionId() + '"]').remove();
 
             if (this.$indexingSessionTable.find('tbody tr').length == 0) {
@@ -208,11 +216,16 @@ class AssetIndexer {
             }
 
             if (session.getSessionStatus() === SessionStatus.ACTIONREQUIRED && !response.skipDialog) {
-                this.reviewSession(session);
-                return;
+                if (!this._prunedSessionIds.includes(this._currentIndexingSession)) {
+                    this.reviewSession(session);
+                } else {
+                    this.runTasks();
+                }
+            } else if (!this._prunedSessionIds.includes(this._currentIndexingSession)) {
+                this.performIndexingStep();
+            } else {
+                this.runTasks();
             }
-
-            this.performIndexingStep();
         }
 
         if (textStatus === 'success' && response.stop) {
@@ -223,6 +236,7 @@ class AssetIndexer {
     public getReviewData(session: AssetIndexingSession): void
     {
         const task: ConcurrentTask = {
+            sessionId: session.getSessionId(),
             action: IndexingActions.OVERVIEW,
             params: {sessionId: session.getSessionId()}
         }
@@ -232,6 +246,7 @@ class AssetIndexer {
 
     public reviewSession(session: AssetIndexingSession): void
     {
+        this.pruneWaitingTasks(session.getSessionId());
         let $confirmBody = $('<div></div>');
 
         const missingEntries = session.getMissingEntries() as {files: StringHash, folders: StringHash};
@@ -335,11 +350,20 @@ class AssetIndexer {
 
             // Make this the next task for sure?
             const task: ConcurrentTask = {
+                sessionId: session.getSessionId(),
                 action: IndexingActions.FINISH,
                 params: postParams
             };
 
             this.enqueueTask(task, true);
+        });
+    }
+
+    public startIndexing(params: any, cb: () => void): void
+    {
+        Craft.postActionRequest(IndexingActions.START, params, (response: CraftResponse, textStatus: string) => {
+            cb();
+            this.processResponse(response, textStatus);
         });
     }
 
@@ -359,6 +383,7 @@ class AssetIndexer {
         // Queue up at least enough tasks to use up all the free connections of finish the session.
         for (let i = 0; i < Math.min(concurrentSlots, session.getEntriesRemaining()); i++){
             const task: ConcurrentTask = {
+                sessionId: session.getSessionId(),
                 action: IndexingActions.PROCESS,
                 params: {sessionId: this._currentIndexingSession}
             };
@@ -367,19 +392,52 @@ class AssetIndexer {
         }
     }
 
+    /**
+     * Stop and discard an indexing session.
+     *
+     * @param session
+     */
+
     public stopIndexingSession(session: AssetIndexingSession): void {
+        this.pruneWaitingTasks(session.getSessionId());
+
         const task: ConcurrentTask = {
+            sessionId: session.getSessionId(),
             action: IndexingActions.STOP,
             params: {sessionId: session.getSessionId()}
         };
 
-        this.enqueueTask(task);
+        this.enqueueTask(task, true);
+    }
+
+    /**
+     * Pune the waiting task list by removing all tasks for a session id.
+     *
+     * @param sessionId
+     */
+    public pruneWaitingTasks(sessionId: number): void {
+        const newTaskList = [];
+        let modified = false;
+
+        this._prunedSessionIds.push(sessionId);
+
+        for (const task of this._tasksWaiting) {
+            if (task.sessionId !== sessionId) {
+                newTaskList.push(task);
+            } else {
+                modified = true;
+            }
+        }
+
+        if (modified) {
+            this._tasksWaiting = newTaskList;
+        }
     }
 
     protected enqueueTask(task: ConcurrentTask, prioritize = false): void
     {
         if (prioritize) {
-            this._tasksWaiting.unshift(task);
+            this._priorityTasks.push(task);
         } else {
             this._tasksWaiting.push(task);
         }
@@ -389,14 +447,13 @@ class AssetIndexer {
 
     protected runTasks(): void
     {
-        if (this._tasksWaiting.length === 0 || this._currentConnectionCount >= this._maxConcurrentConnections) {
+        if (this._tasksWaiting.length + this._priorityTasks.length === 0 || this._currentConnectionCount >= this._maxConcurrentConnections) {
             return;
         }
 
-        while (this._tasksWaiting.length !== 0 && this._currentConnectionCount < this._maxConcurrentConnections) {
-            console.log('cue the queue');
+        while (this._tasksWaiting.length + this._priorityTasks.length !== 0 && this._currentConnectionCount < this._maxConcurrentConnections) {
             this._currentConnectionCount++;
-            const task = this._tasksWaiting.shift()!;
+            const task = this._priorityTasks.length > 0 ? this._priorityTasks.shift()! : this._tasksWaiting.shift()!;
             Craft.postActionRequest(task.action, task.params, this.processResponse.bind(this));
         }
     }

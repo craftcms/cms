@@ -84,10 +84,11 @@
 
         $submitButton.addClass('disabled').after('<div class="spinner"></div>');
 
-        Craft.AssetIndexer.enqueueTask({action: 'asset-indexes/start-indexing', params: data}, false, function () {
+        Craft.AssetIndexer.startIndexing(data, () => {
             $('form#asset-indexes .spinner').remove();
             $submitButton.removeClass('disabled')
         });
+
         return false;
     });
 {% endjs %}

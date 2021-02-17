@@ -9,6 +9,7 @@ var SessionStatus;
 })(SessionStatus || (SessionStatus = {}));
 var IndexingActions;
 (function (IndexingActions) {
+    IndexingActions["START"] = "asset-indexes/start-indexing";
     IndexingActions["STOP"] = "asset-indexes/stop-indexing-session";
     IndexingActions["PROCESS"] = "asset-indexes/process-indexing-session";
     IndexingActions["OVERVIEW"] = "asset-indexes/indexing-session-overview";
@@ -29,6 +30,8 @@ class AssetIndexer {
         this._currentIndexingSession = null;
         this._currentConnectionCount = 0;
         this._tasksWaiting = [];
+        this._priorityTasks = [];
+        this._prunedSessionIds = [];
         this.indexingSessions = {};
         this._maxConcurrentConnections = maxConcurrentConnections;
         this.$indexingSessionTable = $indexingSessionTable;
@@ -69,7 +72,10 @@ class AssetIndexer {
      */
     renderIndexingSessionRow(session) {
         let $row;
-        if (!this.indexingSessions[session.getSessionId()]) {
+        if (session === undefined) {
+            return;
+        }
+        if (!this.indexingSessions[session.getSessionId()] || this._prunedSessionIds.includes(session.getSessionId())) {
             this.$indexingSessionTable.find('tr[data-session-id="' + session.getSessionId() + '"]').remove();
             if (this.$indexingSessionTable.find('tbody tr').length == 0) {
                 this.$indexingSessionTable.addClass('hidden');
@@ -122,10 +128,19 @@ class AssetIndexer {
                 this._currentIndexingSession = session.getSessionId();
             }
             if (session.getSessionStatus() === SessionStatus.ACTIONREQUIRED && !response.skipDialog) {
-                this.reviewSession(session);
-                return;
+                if (!this._prunedSessionIds.includes(this._currentIndexingSession)) {
+                    this.reviewSession(session);
+                }
+                else {
+                    this.runTasks();
+                }
             }
-            this.performIndexingStep();
+            else if (!this._prunedSessionIds.includes(this._currentIndexingSession)) {
+                this.performIndexingStep();
+            }
+            else {
+                this.runTasks();
+            }
         }
         if (textStatus === 'success' && response.stop) {
             this.discardIndexingSession(response.stop);
@@ -133,12 +148,14 @@ class AssetIndexer {
     }
     getReviewData(session) {
         const task = {
+            sessionId: session.getSessionId(),
             action: IndexingActions.OVERVIEW,
             params: { sessionId: session.getSessionId() }
         };
         this.enqueueTask(task);
     }
     reviewSession(session) {
+        this.pruneWaitingTasks(session.getSessionId());
         let $confirmBody = $('<div></div>');
         const missingEntries = session.getMissingEntries();
         const missingFiles = missingEntries.files ? Object.entries(missingEntries.files) : [];
@@ -224,10 +241,17 @@ class AssetIndexer {
             postParams.sessionId = session.getSessionId();
             // Make this the next task for sure?
             const task = {
+                sessionId: session.getSessionId(),
                 action: IndexingActions.FINISH,
                 params: postParams
             };
             this.enqueueTask(task, true);
+        });
+    }
+    startIndexing(params, cb) {
+        Craft.postActionRequest(IndexingActions.START, params, (response, textStatus) => {
+            cb();
+            this.processResponse(response, textStatus);
         });
     }
     performIndexingStep() {
@@ -242,22 +266,51 @@ class AssetIndexer {
         // Queue up at least enough tasks to use up all the free connections of finish the session.
         for (let i = 0; i < Math.min(concurrentSlots, session.getEntriesRemaining()); i++) {
             const task = {
+                sessionId: session.getSessionId(),
                 action: IndexingActions.PROCESS,
                 params: { sessionId: this._currentIndexingSession }
             };
             this.enqueueTask(task);
         }
     }
+    /**
+     * Stop and discard an indexing session.
+     *
+     * @param session
+     */
     stopIndexingSession(session) {
+        this.pruneWaitingTasks(session.getSessionId());
         const task = {
+            sessionId: session.getSessionId(),
             action: IndexingActions.STOP,
             params: { sessionId: session.getSessionId() }
         };
-        this.enqueueTask(task);
+        this.enqueueTask(task, true);
+    }
+    /**
+     * Pune the waiting task list by removing all tasks for a session id.
+     *
+     * @param sessionId
+     */
+    pruneWaitingTasks(sessionId) {
+        const newTaskList = [];
+        let modified = false;
+        this._prunedSessionIds.push(sessionId);
+        for (const task of this._tasksWaiting) {
+            if (task.sessionId !== sessionId) {
+                newTaskList.push(task);
+            }
+            else {
+                modified = true;
+            }
+        }
+        if (modified) {
+            this._tasksWaiting = newTaskList;
+        }
     }
     enqueueTask(task, prioritize = false) {
         if (prioritize) {
-            this._tasksWaiting.unshift(task);
+            this._priorityTasks.push(task);
         }
         else {
             this._tasksWaiting.push(task);
@@ -265,13 +318,12 @@ class AssetIndexer {
         this.runTasks();
     }
     runTasks() {
-        if (this._tasksWaiting.length === 0 || this._currentConnectionCount >= this._maxConcurrentConnections) {
+        if (this._tasksWaiting.length + this._priorityTasks.length === 0 || this._currentConnectionCount >= this._maxConcurrentConnections) {
             return;
         }
-        while (this._tasksWaiting.length !== 0 && this._currentConnectionCount < this._maxConcurrentConnections) {
-            console.log('cue the queue');
+        while (this._tasksWaiting.length + this._priorityTasks.length !== 0 && this._currentConnectionCount < this._maxConcurrentConnections) {
             this._currentConnectionCount++;
-            const task = this._tasksWaiting.shift();
+            const task = this._priorityTasks.length > 0 ? this._priorityTasks.shift() : this._tasksWaiting.shift();
             Craft.postActionRequest(task.action, task.params, this.processResponse.bind(this));
         }
     }
