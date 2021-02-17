@@ -124,9 +124,7 @@ class AssetIndexer {
             const session = this.createSessionFromModel(response.session);
             this.indexingSessions[session.getSessionId()] = session;
             this.renderIndexingSessionRow(session);
-            if (!this._currentIndexingSession) {
-                this._currentIndexingSession = session.getSessionId();
-            }
+            this._updateCurrentIndexingSession();
             if (session.getSessionStatus() === SessionStatus.ACTIONREQUIRED && !response.skipDialog) {
                 if (!this._prunedSessionIds.includes(this._currentIndexingSession)) {
                     this.reviewSession(session);
@@ -142,6 +140,7 @@ class AssetIndexer {
                 this.runTasks();
             }
         }
+        this._updateCurrentIndexingSession();
         if (textStatus === 'success' && response.stop) {
             this.discardIndexingSession(response.stop);
         }
@@ -329,7 +328,9 @@ class AssetIndexer {
     }
     _updateCurrentIndexingSession() {
         for (const session of Object.values(this.indexingSessions)) {
-            if (session.getSessionStatus() !== SessionStatus.QUEUE && session.getSessionStatus() !== SessionStatus.CLI) {
+            if (session.getSessionStatus() !== SessionStatus.QUEUE
+                && session.getSessionStatus() !== SessionStatus.CLI
+                && session.getSessionStatus() !== SessionStatus.ACTIONREQUIRED) {
                 this._currentIndexingSession = session.getSessionId();
                 return;
             }
