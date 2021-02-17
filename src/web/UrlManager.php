@@ -8,6 +8,7 @@
 namespace craft\web;
 
 use Craft;
+use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\events\RegisterUrlRulesEvent;
 use craft\helpers\App;
@@ -390,8 +391,14 @@ class UrlManager extends \yii\web\UrlManager
         }
 
         $path = $request->getPathInfo();
-        /** @noinspection PhpUnhandledExceptionInspection */
-        $element = Craft::$app->getElements()->getElementByUri($path, Craft::$app->getSites()->getCurrentSite()->id, true);
+
+        // Don't allow routing to the homepage via /__home__
+        if ($path !== Element::HOMEPAGE_URI) {
+            $element = Craft::$app->getElements()->getElementByUri($path, Craft::$app->getSites()->getCurrentSite()->id, true);
+        } else {
+            $element = null;
+        }
+
         $this->setMatchedElement($element ?: false);
 
         if (YII_DEBUG) {
