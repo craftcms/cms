@@ -13,6 +13,7 @@
 ### Fixed
 - Fixed a JavaScript error that occurred after saving an entry from the Quick Post widget, preventing the widget from being used to create a second entry. ([#7582](https://github.com/craftcms/cms/issues/7582))
 - Fixed a bug where it was possible to access the homepage entry from `/__home__`. ([#7585](https://github.com/craftcms/cms/issues/7585))
+- Fixed a bug where URL fields weren’t getting validated properly if their “Allowed URL Types” setting was set to only “Telephone” or “Email”. ([#7588](https://github.com/craftcms/cms/issues/7588))
 
 ### Security
 - It’s no longer possible to save a Local volume with the File System Path setting set to a system directory (e.g. the `templates/` or `vendor/` folders).
