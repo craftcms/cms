@@ -24,7 +24,10 @@
 
 ### Removed
 - Removed `craft\controllers\UtilitiesController::actionAssetIndexPerformAction()`.
+- Removed `craft\services\AssetIndexer::deleteStaleIndexingData()`.
+- Removed `craft\services\AssetIndexer::extractFolderItemsFromIndexList`.
+- Removed `craft\services\AssetIndexer::extractSkippedItemsFromIndexList`.
 - Removed `craft\services\AssetIndexer::getIndexingSessionId()`.
+- Removed `craft\services\AssetIndexer::getMissingFiles`.
+- Removed `craft\services\AssetIndexer::prepareIndexList`.
 - Removed `craft\services\AssetIndexer::processIndexForVolume()`.
-
-
