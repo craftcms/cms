@@ -1125,7 +1125,6 @@ return [
     'Save and add another' => 'Lagre og lag en ny',
     'Save and continue editing' => 'Lagre og fortsett redigering',
     'Save and edit entry types' => 'Lagre og rediger oppføringstyper',
-    'Save as a draft' => 'Lagre som utkast',
     'Save as a new asset' => 'Lagre som ny fil',
     'Save as a new {type}' => 'Lagre som ny {type}',
     'Save as my new credit card' => 'Lagre som mitt nye kredittkort',
