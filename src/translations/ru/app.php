@@ -1125,7 +1125,6 @@ return [
     'Save and add another' => 'Сохранить и добавить еще один',
     'Save and continue editing' => 'Сохранить и продолжить редактирование',
     'Save and edit entry types' => 'Сохранить и отредактировать типы записей',
-    'Save as a draft' => 'Сохранить как черновик',
     'Save as a new asset' => 'Сохранить в качестве нового ресурса',
     'Save as a new {type}' => 'Сохранить в качестве нового ресурса {type}',
     'Save as my new credit card' => 'Сохранить как мою новую кредитную карту',

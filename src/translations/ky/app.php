@@ -1125,7 +1125,6 @@ return [
     'Save and add another' => 'Save and add another',
     'Save and continue editing' => 'Save and continue editing',
     'Save and edit entry types' => 'Save and edit entry types',
-    'Save as a draft' => 'Save as a draft',
     'Save as a new asset' => 'Save as a new asset',
     'Save as a new {type}' => 'Save as a new {type}',
     'Save as my new credit card' => 'Save as my new credit card',

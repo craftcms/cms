@@ -1125,7 +1125,6 @@ return [
     'Save and add another' => 'حفظ وإضافة آخر',
     'Save and continue editing' => 'حفظ وإكمال التحرير',
     'Save and edit entry types' => 'حفظ أنواع الإدخال وتحريرها',
-    'Save as a draft' => 'حفظ كمسودة',
     'Save as a new asset' => 'حفظ كأصل جديد',
     'Save as a new {type}' => 'حفظ كـ {type} جديد',
     'Save as my new credit card' => 'حفظ كبطاقة ائتمان جديدة',

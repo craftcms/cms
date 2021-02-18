@@ -1125,7 +1125,6 @@ return [
     'Save and add another' => '保存してからもう一つを制作する',
     'Save and continue editing' => '保存して編集を続ける',
     'Save and edit entry types' => '保存してエントリタイプを編集',
-    'Save as a draft' => '下書きとして保存',
     'Save as a new asset' => '新しいアセットとして保存',
     'Save as a new {type}' => '新しい{type}として保存',
     'Save as my new credit card' => '新しいクレジットカードとして保存',

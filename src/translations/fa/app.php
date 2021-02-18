@@ -1125,7 +1125,6 @@ return [
     'Save and add another' => 'ذخیره و اضافه کردن دیگری',
     'Save and continue editing' => 'ذخیره و ادامه دادن ویرایش',
     'Save and edit entry types' => 'ذخیره و ویرایش انواع ورودی',
-    'Save as a draft' => 'ذخیره به عنوان پیشنویس',
     'Save as a new asset' => 'ذخیره به عنوان یک فایل پروژه جدید',
     'Save as a new {type}' => 'ذخیره به عنوان {type}ی جدید',
     'Save as my new credit card' => 'ذخیره به عنوان کارت اعتباری جدید من',

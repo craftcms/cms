@@ -1125,7 +1125,6 @@ return [
     'Save and add another' => 'Spara och skapa ny',
     'Save and continue editing' => 'Spara och fortsätt redigera',
     'Save and edit entry types' => 'Spara och redigera typer av poster',
-    'Save as a draft' => 'Spara som utkast',
     'Save as a new asset' => 'Spara som en ny tillgång',
     'Save as a new {type}' => 'Spara som en ny {type}',
     'Save as my new credit card' => 'Spara som mitt nya kreditkort',

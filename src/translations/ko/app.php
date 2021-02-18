@@ -1125,7 +1125,6 @@ return [
     'Save and add another' => '저장하고 다른 것 추가하기',
     'Save and continue editing' => '저장하고 편집 계속하기',
     'Save and edit entry types' => '항목 유형 저장 및 편집',
-    'Save as a draft' => '드래프트로 저장',
     'Save as a new asset' => '새 자산으로 저장',
     'Save as a new {type}' => '새 {type} (으)로 저장',
     'Save as my new credit card' => '새 신용카드로 저장',

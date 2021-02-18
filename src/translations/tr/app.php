@@ -1125,7 +1125,6 @@ return [
     'Save and add another' => 'Kaydet ve bir tane daha ekle',
     'Save and continue editing' => 'Kaydet ve düzenlemeye devam et',
     'Save and edit entry types' => 'Giriş türlerini düzenle ve kaydet',
-    'Save as a draft' => 'Taslak olarak kaydet',
     'Save as a new asset' => 'Yeni bir varlık olarak kaydet',
     'Save as a new {type}' => 'Yeni {type} olarak kaydet',
     'Save as my new credit card' => 'Yeni kredi kartım olarak kaydet',

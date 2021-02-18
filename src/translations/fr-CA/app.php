@@ -1125,7 +1125,6 @@ return [
     'Save and add another' => 'Enregistrer puis ajouter une entrée',
     'Save and continue editing' => 'Enregistrer et continuer la modification',
     'Save and edit entry types' => 'Enregistrer et modifier les types d’entrée',
-    'Save as a draft' => 'Enregistrer comme brouillon',
     'Save as a new asset' => 'Enregistrer sous une nouvelle ressource',
     'Save as a new {type}' => 'Enregistrer en tant que nouveau {type}',
     'Save as my new credit card' => 'Enregistrer en tant que ma nouvelle carte de crédit',

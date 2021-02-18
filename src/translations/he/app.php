@@ -1125,7 +1125,6 @@ return [
     'Save and add another' => 'שמור והוסף עוד אחד',
     'Save and continue editing' => 'שמור והמשך לערוך',
     'Save and edit entry types' => 'שמור וערוך סוגי רשומות',
-    'Save as a draft' => 'שמור כטיוטא',
     'Save as a new asset' => 'שמור כנכס חדש',
     'Save as a new {type}' => 'שמור כקובץ חדש {type}',
     'Save as my new credit card' => 'שמור ככרטיס האשראי החדש שלי',
