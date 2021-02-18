@@ -224,9 +224,9 @@
         {% if isCurrent and saveDraftAction %}
             <div id="save-draft-btn-container">
                 {% if canUpdateSource and saveSourceAction %}
-                    <button type="button" id="save-draft-btn" class="btn">{{ 'Save as a draft'|t('app') }}</button>
+                    <button type="button" id="save-draft-btn" class="btn">{{ 'Create a draft'|t('app') }}</button>
                 {% else %}
-                    <button type="submit" id="save-draft-btn" class="btn submit">{{ 'Save as a draft'|t('app') }}</button>
+                    <button type="submit" id="save-draft-btn" class="btn submit">{{ 'Create a draft'|t('app') }}</button>
                     {% if formActions|length %}
                         <button type="button" class="btn menubtn" aria-label="{{ 'Actions'|t('app') }}" data-icon="settings"></button>
                         {% include '_layouts/components/form-action-menu' %}
