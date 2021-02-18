@@ -1126,7 +1126,6 @@ return [
     'Save and add another' => 'Gem og tilføj en mere',
     'Save and continue editing' => 'Gem og fortsæt med redigering',
     'Save and edit entry types' => 'Gem og rediger posttyper',
-    'Save as a draft' => 'Gem som kladde',
     'Save as a new asset' => 'Gem som nyt aktiv',
     'Save as a new {type}' => 'Gem som en ny {type}',
     'Save as my new credit card' => 'Gem som mit nye kreditkort',
