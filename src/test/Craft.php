@@ -134,6 +134,7 @@ class Craft extends Yii2
             $this->setupDb();
         }
 
+        TestSetup::removeProjectConfigFolders(CRAFT_CONFIG_PATH . DIRECTORY_SEPARATOR . 'project');
     }
 
     /**
