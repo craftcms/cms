@@ -1125,7 +1125,6 @@ return [
     'Save and add another' => 'Uložit a přidat další',
     'Save and continue editing' => 'Uložit a pokračovat v editaci',
     'Save and edit entry types' => 'Uložit a upravit typy záznamů',
-    'Save as a draft' => 'Uložit jako koncept',
     'Save as a new asset' => 'Uložit jako nový prostředek',
     'Save as a new {type}' => 'Uložit jako nový {type}',
     'Save as my new credit card' => 'Uložit jako moji novou kartu',
