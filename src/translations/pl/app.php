@@ -1125,7 +1125,6 @@ return [
     'Save and add another' => 'Zapisz i utwórz kolejny',
     'Save and continue editing' => 'Zapisz i kontynuuj edycję',
     'Save and edit entry types' => 'Zapisz i edytuj typy wpisów',
-    'Save as a draft' => 'Zapisz jako szkic',
     'Save as a new asset' => 'Zapisz jako nowy zasób',
     'Save as a new {type}' => 'Zapisz jako nowy {type}',
     'Save as my new credit card' => 'Zapisz jako moją nową kartę kredytową',
