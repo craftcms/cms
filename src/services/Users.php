@@ -1299,9 +1299,10 @@ class Users extends Component
             'id' => $user->uid
         ];
 
-        $scheme = UrlHelper::getSchemeForTokenizedUrl();
+        $cp = $user->can('accessCp');
+        $scheme = UrlHelper::getSchemeForTokenizedUrl($cp);
 
-        if (!$user->can('accessCp')) {
+        if (!$cp) {
             return UrlHelper::siteUrl($fePath, $params, $scheme);
         }
 
