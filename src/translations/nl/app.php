@@ -1125,7 +1125,6 @@ return [
     'Save and add another' => 'Bewaren en nog een toevoegen',
     'Save and continue editing' => 'Opslaan en doorgaan met aanpassen',
     'Save and edit entry types' => 'Recordtypen opslaan en bewerken',
-    'Save as a draft' => 'Opslaan als concept',
     'Save as a new asset' => 'Opslaan als nieuw materiaal',
     'Save as a new {type}' => 'Bewaren als een nieuwe {type}',
     'Save as my new credit card' => 'Opslaan als mijn nieuwe creditcard',
