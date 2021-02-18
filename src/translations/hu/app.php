@@ -1125,7 +1125,6 @@ return [
     'Save and add another' => 'Ment és hozzáad másikat',
     'Save and continue editing' => 'Ment és szerkesztés folytatása',
     'Save and edit entry types' => 'Bejegyzéstípusok mentése és szerkesztése',
-    'Save as a draft' => 'Mentés vázlatként',
     'Save as a new asset' => 'Mentés új eszközként',
     'Save as a new {type}' => 'Mentés mint új {type}',
     'Save as my new credit card' => 'Mentés új hitelkártyaként',
