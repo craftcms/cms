@@ -189,6 +189,8 @@ class CategoryQuery extends ElementQuery
      */
     protected function beforePrepare(): bool
     {
+        $this->_normalizeGroupId();
+
         // See if 'group' was set to an invalid handle
         if ($this->groupId === []) {
             return false;
@@ -227,7 +229,6 @@ class CategoryQuery extends ElementQuery
      */
     private function _applyGroupIdParam()
     {
-        $this->_normalizeGroupId();
         if ($this->groupId) {
             $this->subQuery->andWhere(['categories.groupId' => $this->groupId]);
 

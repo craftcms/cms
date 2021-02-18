@@ -815,6 +815,8 @@ class AssetQuery extends ElementQuery
      */
     protected function beforePrepare(): bool
     {
+        $this->_normalizeVolumeId();
+
         // See if 'volume' was set to an invalid handle
         if ($this->volumeId === []) {
             return false;
@@ -842,7 +844,6 @@ class AssetQuery extends ElementQuery
             $this->query->addSelect('assets.uploaderId');
         }
 
-        $this->_normalizeVolumeId();
         if ($this->volumeId) {
             if ($this->volumeId === ':empty:') {
                 $this->subQuery->andWhere(['assets.volumeId' => null]);

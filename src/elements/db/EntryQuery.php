@@ -773,6 +773,9 @@ class EntryQuery extends ElementQuery
      */
     protected function beforePrepare(): bool
     {
+        $this->_normalizeSectionId();
+        $this->_normalizeTypeId();
+
         // See if 'section', 'type', or 'authorGroup' were set to invalid handles
         if ($this->sectionId === [] || $this->typeId === [] || $this->authorGroupId === []) {
             return false;
@@ -803,7 +806,6 @@ class EntryQuery extends ElementQuery
             $this->subQuery->andWhere(Db::parseDateParam('entries.expiryDate', $this->expiryDate));
         }
 
-        $this->_normalizeTypeId();
         if ($this->typeId) {
             $this->subQuery->andWhere(['entries.typeId' => $this->typeId]);
         }
@@ -932,7 +934,6 @@ class EntryQuery extends ElementQuery
      */
     private function _applySectionIdParam()
     {
-        $this->_normalizeSectionId();
         if ($this->sectionId) {
             $this->subQuery->andWhere(['entries.sectionId' => $this->sectionId]);
 
