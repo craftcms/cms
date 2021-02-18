@@ -164,7 +164,12 @@ class Plugins extends Component
                 $plugin['packageName'] = $packageName;
                 // Normalize the base path (and find the actual path, not a possibly-symlinked path)
                 if (isset($plugin['basePath'])) {
-                    $plugin['basePath'] = FileHelper::normalizePath(realpath($plugin['basePath']));
+                    if (($basePath = realpath($plugin['basePath'])) !== false) {
+                        $plugin['basePath'] = FileHelper::normalizePath($basePath);
+                    } else {
+                        Craft::warning("Invalid plugin base path: {$plugin['basePath']}", __METHOD__);
+                        unset($plugin['basePath']);
+                    }
                 }
                 $handle = $this->_normalizeHandle(ArrayHelper::remove($plugin, 'handle'));
                 $this->_composerPluginInfo[$handle] = $plugin;
