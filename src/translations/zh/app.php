@@ -1125,7 +1125,6 @@ return [
     'Save and add another' => '保存并添加另一个',
     'Save and continue editing' => '保存并继续编辑',
     'Save and edit entry types' => '保存并编辑条目类型',
-    'Save as a draft' => '保存为草稿',
     'Save as a new asset' => '另存为新资源',
     'Save as a new {type}' => '保存为新{type}',
     'Save as my new credit card' => '保存为我的新信用卡',
