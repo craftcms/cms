@@ -85,4 +85,12 @@ class User extends ElementArguments
 
         return array_merge(parent::getContentArguments(), $contentArguments);
     }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getDraftArguments(): array
+    {
+        return [];
+    }
 }

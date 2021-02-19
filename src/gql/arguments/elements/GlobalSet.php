@@ -42,4 +42,12 @@ class GlobalSet extends ElementArguments
         $globalSetFieldArgument = Craft::$app->getGql()->getContentArguments(Craft::$app->getGlobals()->getAllSets(), GlobalSetElement::class);
         return array_merge(parent::getContentArguments(), $globalSetFieldArgument);
     }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getDraftArguments(): array
+    {
+        return [];
+    }
 }

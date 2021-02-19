@@ -43,4 +43,12 @@ class MatrixBlock extends ElementArguments
             ],
         ]);
     }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getDraftArguments(): array
+    {
+        return [];
+    }
 }

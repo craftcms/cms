@@ -98,4 +98,12 @@ class Asset extends ElementArguments
         $volumeFieldArguments = Craft::$app->getGql()->getContentArguments(Craft::$app->getVolumes()->getAllVolumes(), AssetElement::class);
         return array_merge(parent::getContentArguments(), $volumeFieldArguments);
     }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getDraftArguments(): array
+    {
+        return [];
+    }
 }

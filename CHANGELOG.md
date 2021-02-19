@@ -11,6 +11,9 @@
 - `craft\helpers\UrlHelper::getSchemeForTokenizedUrl()` and `urlWithToken()` now have a `$cp` argument, indicating whether the method call is for a control panel URL.
 - Updated Composer to 2.0.9.
 
+### Removed
+- Removed all draft arguments for assets, categories, global sets, matrix blocks, tags, and user blocks when querying via the GraphQL API.
+
 ### Fixed
 - Fixed a JavaScript error that occurred after saving an entry from the Quick Post widget, preventing the widget from being used to create a second entry. ([#7582](https://github.com/craftcms/cms/issues/7582))
 - Fixed a bug where it was possible to access the homepage entry from `/__home__`. ([#7585](https://github.com/craftcms/cms/issues/7585))

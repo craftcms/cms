@@ -53,4 +53,12 @@ class Category extends StructureElementArguments
         $categoryGroupFieldArguments = Craft::$app->getGql()->getContentArguments(Craft::$app->getCategories()->getAllGroups(), CategoryElement::class);
         return array_merge(parent::getContentArguments(), $categoryGroupFieldArguments);
     }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getDraftArguments(): array
+    {
+        return [];
+    }
 }
