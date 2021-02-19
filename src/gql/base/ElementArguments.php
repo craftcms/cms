@@ -28,22 +28,7 @@ abstract class ElementArguments extends Arguments
      */
     public static function getArguments(): array
     {
-        return array_merge(parent::getArguments(), static::getDraftArguments(), [
-            'status' => [
-                'name' => 'status',
-                'type' => Type::listOf(Type::string()),
-                'description' => 'Narrows the query results based on the elements’ statuses.'
-            ],
-            'archived' => [
-                'name' => 'archived',
-                'type' => Type::boolean(),
-                'description' => 'Narrows the query results to only elements that have been archived.'
-            ],
-            'trashed' => [
-                'name' => 'trashed',
-                'type' => Type::boolean(),
-                'description' => 'Narrows the query results to only elements that have been soft-deleted.'
-            ],
+        return array_merge(parent::getArguments(), static::getDraftArguments(), static::getStatusArguments(), [
             'site' => [
                 'name' => 'site',
                 'type' => Type::listOf(Type::string()),
@@ -160,6 +145,32 @@ abstract class ElementArguments extends Arguments
                 'description' => 'Sets the field the returned elements should be ordered by'
             ],
         ]);
+    }
+
+    /**
+     * Return the various status arguments.
+     *
+     * @return array
+     */
+    public static function getStatusArguments(): array
+    {
+        return [
+            'status' => [
+                'name' => 'status',
+                'type' => Type::listOf(Type::string()),
+                'description' => 'Narrows the query results based on the elements’ statuses.'
+            ],
+            'archived' => [
+                'name' => 'archived',
+                'type' => Type::boolean(),
+                'description' => 'Narrows the query results to only elements that have been archived.'
+            ],
+            'trashed' => [
+                'name' => 'trashed',
+                'type' => Type::boolean(),
+                'description' => 'Narrows the query results to only elements that have been soft-deleted.'
+            ],
+        ];
     }
 
     /**

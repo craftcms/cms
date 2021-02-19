@@ -13,6 +13,8 @@
 
 ### Removed
 - Removed all draft arguments for assets, categories, global sets, matrix blocks, tags, and user blocks when querying via the GraphQL API.
+- Removed the `status`, `archived` and `trashed` arguments for the global sets when querying via the GraphQL API.
+- Removed the `status` argument for assets when querying via the GraphQL API.
 
 ### Fixed
 - Fixed a JavaScript error that occurred after saving an entry from the Quick Post widget, preventing the widget from being used to create a second entry. ([#7582](https://github.com/craftcms/cms/issues/7582))
