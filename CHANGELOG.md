@@ -22,6 +22,7 @@
 - Fixed a bug where URL fields weren’t getting validated properly if their “Allowed URL Types” setting was set to only “Telephone” or “Email”. ([#7588](https://github.com/craftcms/cms/issues/7588))
 - Fixed a bug where Craft would set plugins’ base paths to the file system root directory, if they were configured with an invalid `basePath` in `vendor/craftcms/plugins.php`.
 - Fixed a bug where user verification and password-reset URLs would use `https` in some cases where they shouldn’t. ([#7581](https://github.com/craftcms/cms/issues/7581))
+- Fixed a bug where it wasn’t possible to override the `User-Agent` header sent by Guzzle from `config/guzzle.php`. ([#7597](https://github.com/craftcms/cms/issues/7597))
 
 ### Security
 - It’s no longer possible to save a Local volume with the File System Path setting set to a system directory (e.g. the `templates/` or `vendor/` folders).
