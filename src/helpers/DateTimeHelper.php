@@ -14,6 +14,7 @@ use DateTime;
 use DateTimeImmutable;
 use DateTimeZone;
 use yii\base\ErrorException;
+use yii\base\InvalidArgumentException;
 
 /**
  * Class DateTimeHelper
@@ -436,24 +437,35 @@ class DateTimeHelper
      * @param mixed $timeInterval The numeric value with space then time type.
      * Example of valid types: '6 hours', '2 days', '1 minute'.
      * @return bool Whether the $dateString was within the specified $timeInterval.
+     * @throws InvalidArgumentException
      */
     public static function isWithinLast($date, $timeInterval): bool
     {
+        $date = static::toDateTime($date);
+
+        if ($date === false) {
+            throw new InvalidArgumentException('Invalid date');
+        }
+
+        $timestamp = $date->getTimestamp();
+        $now = new DateTime();
+
+        // Bail early if it's in the future
+        if ($timestamp > $now->getTimestamp()) {
+            return false;
+        }
+
         if (is_numeric($timeInterval)) {
             $timeInterval .= ' days';
         }
 
-        $date = self::toDateTime($date);
-        $timestamp = $date->getTimestamp();
-
-        // Bail early if it's in the future
-        if ($timestamp > time()) {
-            return false;
+        try {
+            $earliestTimestamp = $now->modify("-$timeInterval")->getTimestamp();
+        } catch (\Throwable $e) {
+            throw new InvalidArgumentException("Invalid time interval: $timeInterval", 0, $e);
         }
 
-        $earliestTimestamp = strtotime('-' . $timeInterval);
-
-        return ($timestamp >= $earliestTimestamp);
+        return $timestamp >= $earliestTimestamp;
     }
 
     /**

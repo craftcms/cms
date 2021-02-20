@@ -16,6 +16,7 @@ use DateTime;
 use DateTimeZone;
 use Exception;
 use UnitTester;
+use yii\base\InvalidArgumentException;
 
 /**
  * Unit tests for the DateTime Helper class.
@@ -339,13 +340,18 @@ class DateTimeHelperTest extends Unit
     /**
      * @dataProvider isWithinLastDataProvider
      *
-     * @param bool $expected
+     * @param bool|null $expected
      * @param mixed $date
      * @param mixed $timeInterval
      */
-    public function testIsWithinLast(bool $expected, $date, $timeInterval)
+    public function testIsWithinLast(?bool $expected, $date, $timeInterval)
     {
-        self::assertSame($expected, DateTimeHelper::isWithinLast($date, $timeInterval));
+        if (is_bool($expected)) {
+            self::assertSame($expected, DateTimeHelper::isWithinLast($date, $timeInterval));
+        } else {
+            self::expectException(InvalidArgumentException::class);
+            DateTimeHelper::isWithinLast($date, $timeInterval);
+        }
     }
 
     /**
@@ -707,13 +713,15 @@ class DateTimeHelperTest extends Unit
 
         return [
             [true, $yesterday, 2],
-            [true, $yesterday, 'somestring'],
-            [true, $yesterday, ''],
             [true, $modable->format('Y-m-d H:i:s'), 3],
             [true, $hourAgo, '4 hours'],
 
             [false, $aYearAgo, 25],
             [false, $tomorrow, 0],
+
+            [null, $yesterday, 'somestring'],
+            [null, $yesterday, ''],
+            [null, 'notadate', 5],
         ];
     }
 
