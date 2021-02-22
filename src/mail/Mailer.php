@@ -101,8 +101,6 @@ class Mailer extends \yii\swiftmailer\Mailer
             }
 
             $systemMessage = Craft::$app->getSystemMessages()->getMessage($message->key, $message->language);
-            $subjectTemplate = $systemMessage->subject;
-            $textBodyTemplate = $systemMessage->body;
 
             // Use the message language
             $language = Craft::$app->language;
@@ -120,11 +118,13 @@ class Mailer extends \yii\swiftmailer\Mailer
             $generateTransformsBeforePageLoad = $generalConfig->generateTransformsBeforePageLoad;
             $generalConfig->generateTransformsBeforePageLoad = true;
 
-            // Render the subject and textBody
+            // Render the subject and body text
             $view = Craft::$app->getView();
-            $message->setSubject($view->renderString($subjectTemplate, $variables, View::TEMPLATE_MODE_SITE));
-            $textBody = $view->renderString($textBodyTemplate, $variables, View::TEMPLATE_MODE_SITE);
-            $message->setTextBody($textBody);
+            $subject = $view->renderString($systemMessage->subject, $variables, View::TEMPLATE_MODE_SITE);
+            $body = $view->renderString($systemMessage->body, $variables, View::TEMPLATE_MODE_SITE);
+
+            $message->setSubject($subject);
+            $message->setTextBody($body);
 
             // Is there a custom HTML template set?
             if (Craft::$app->getEdition() === Craft::Pro && $this->template) {
@@ -138,7 +138,7 @@ class Mailer extends \yii\swiftmailer\Mailer
 
             try {
                 $message->setHtmlBody($view->renderTemplate($template, array_merge($variables, [
-                    'body' => Template::raw(Markdown::process($textBody)),
+                    'body' => Template::raw(Markdown::process($body)),
                 ]), $templateMode));
             } catch (\Throwable $e) {
                 // Just log it and don't worry about the HTML body
