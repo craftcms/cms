@@ -145,7 +145,7 @@ class AssetsController extends Controller
         // See if the user is allowed to replace the file
         $userSession = Craft::$app->getUser();
         $canReplaceFile = (
-            $userSession->checkPermission("deleteFilesAndFoldersInVolume:{$volume->uid}") &&
+            $userSession->checkPermission("replaceFilesInVolume:{$volume->uid}") &&
             ($userSession->getId() == $asset->uploaderId || $userSession->checkPermission("replacePeerFilesInVolume:{$volume->uid}"))
         );
 
