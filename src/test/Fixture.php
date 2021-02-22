@@ -9,6 +9,7 @@ if (false) {
     /**
      * @deprecated in 3.6.0. Use [[ActiveFixture]] instead.
      */
-    class Fixture {
+    class Fixture
+    {
     }
 }

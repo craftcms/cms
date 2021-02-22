@@ -504,7 +504,7 @@ abstract class Element extends Component implements ElementInterface
     {
         return [
             self::STATUS_ENABLED => Craft::t('app', 'Enabled'),
-            self::STATUS_DISABLED => Craft::t('app', 'Disabled')
+            self::STATUS_DISABLED => Craft::t('app', 'Disabled'),
         ];
     }
 
@@ -543,7 +543,7 @@ abstract class Element extends Component implements ElementInterface
         // Give plugins a chance to modify them
         $event = new RegisterElementSourcesEvent([
             'context' => $context,
-            'sources' => $sources
+            'sources' => $sources,
         ]);
         Event::trigger(static::class, self::EVENT_REGISTER_SOURCES, $event);
 
@@ -573,7 +573,7 @@ abstract class Element extends Component implements ElementInterface
         // Give plugins a chance to modify them
         $event = new RegisterElementFieldLayoutsEvent([
             'source' => $source,
-            'fieldLayouts' => $fieldLayouts
+            'fieldLayouts' => $fieldLayouts,
         ]);
         Event::trigger(static::class, self::EVENT_REGISTER_FIELD_LAYOUTS, $event);
 
@@ -604,7 +604,7 @@ abstract class Element extends Component implements ElementInterface
         // Give plugins a chance to modify them
         $event = new RegisterElementActionsEvent([
             'source' => $source,
-            'actions' => $actions
+            'actions' => $actions,
         ]);
         Event::trigger(static::class, self::EVENT_REGISTER_ACTIONS, $event);
 
@@ -634,7 +634,7 @@ abstract class Element extends Component implements ElementInterface
         // Give plugins a chance to modify them
         $event = new RegisterElementExportersEvent([
             'source' => $source,
-            'exporters' => $exporters
+            'exporters' => $exporters,
         ]);
         Event::trigger(static::class, self::EVENT_REGISTER_EXPORTERS, $event);
 
@@ -666,7 +666,7 @@ abstract class Element extends Component implements ElementInterface
 
         // Give plugins a chance to modify them
         $event = new RegisterElementSearchableAttributesEvent([
-            'attributes' => $attributes
+            'attributes' => $attributes,
         ]);
         Event::trigger(static::class, self::EVENT_REGISTER_SEARCHABLE_ATTRIBUTES, $event);
 
@@ -771,7 +771,7 @@ abstract class Element extends Component implements ElementInterface
 
         // Give plugins a chance to modify them
         $event = new RegisterElementSortOptionsEvent([
-            'sortOptions' => $sortOptions
+            'sortOptions' => $sortOptions,
         ]);
         Event::trigger(static::class, self::EVENT_REGISTER_SORT_OPTIONS, $event);
 
@@ -806,7 +806,7 @@ abstract class Element extends Component implements ElementInterface
 
         // Give plugins a chance to modify them
         $event = new RegisterElementTableAttributesEvent([
-            'tableAttributes' => $tableAttributes
+            'tableAttributes' => $tableAttributes,
         ]);
         Event::trigger(static::class, self::EVENT_REGISTER_TABLE_ATTRIBUTES, $event);
 
@@ -834,7 +834,7 @@ abstract class Element extends Component implements ElementInterface
         // Give plugins a chance to modify them
         $event = new RegisterElementDefaultTableAttributesEvent([
             'source' => $source,
-            'tableAttributes' => $tableAttributes
+            'tableAttributes' => $tableAttributes,
         ]);
         Event::trigger(static::class, self::EVENT_REGISTER_DEFAULT_TABLE_ATTRIBUTES, $event);
 
@@ -894,7 +894,7 @@ abstract class Element extends Component implements ElementInterface
         // Give plugins a chance to provide custom mappings
         $event = new DefineEagerLoadingMapEvent([
             'sourceElements' => $sourceElements,
-            'handle' => $handle
+            'handle' => $handle,
         ]);
         Event::trigger(static::class, self::EVENT_DEFINE_EAGER_LOADING_MAP, $event);
         if ($event->elementType !== null) {
@@ -992,7 +992,7 @@ abstract class Element extends Component implements ElementInterface
 
         return [
             'elementType' => static::class,
-            'map' => $map
+            'map' => $map,
         ];
     }
 
@@ -1085,7 +1085,7 @@ abstract class Element extends Component implements ElementInterface
 
         return [
             'elementType' => static::class,
-            'map' => $map
+            'map' => $map,
         ];
     }
 
@@ -1121,7 +1121,7 @@ abstract class Element extends Component implements ElementInterface
             'map' => $map,
             'criteria' => [
                 'siteId' => $otherSiteIds,
-            ]
+            ],
         ];
     }
 
@@ -2439,7 +2439,7 @@ abstract class Element extends Component implements ElementInterface
             if ($dist === null) {
                 return $ancestors;
             }
-            return ArrayHelper::where($ancestors, function(self $element) use ($dist) {
+            return ArrayHelper::where($ancestors, function (self $element) use ($dist) {
                 return $element->level >= $this->level - $dist;
             }, true, true, false);
         }
@@ -2461,7 +2461,7 @@ abstract class Element extends Component implements ElementInterface
             if ($dist === null) {
                 return $descendants;
             }
-            return ArrayHelper::where($descendants, function(self $element) use ($dist) {
+            return ArrayHelper::where($descendants, function (self $element) use ($dist) {
                 return $element->level <= $this->level + $dist;
             }, true, true, false);
         }
@@ -2663,14 +2663,14 @@ abstract class Element extends Component implements ElementInterface
             return [
                 self::ATTR_STATUS_OUTDATED, Craft::t('app', 'Modified in source {type}', [
                     'type' => static::lowerDisplayName(),
-                ])
+                ]),
             ];
         }
         if ($outdated && $modified) {
             return [
                 self::ATTR_STATUS_CONFLICTED, Craft::t('app', 'Modified in draft and source {type}', [
                     'type' => static::lowerDisplayName(),
-                ])
+                ]),
             ];
         }
         return null;
@@ -2822,14 +2822,14 @@ abstract class Element extends Component implements ElementInterface
             return [
                 self::ATTR_STATUS_OUTDATED, Craft::t('app', 'Modified in source {type}', [
                     'type' => static::lowerDisplayName(),
-                ])
+                ]),
             ];
         }
         if ($outdated && $modified) {
             return [
                 self::ATTR_STATUS_CONFLICTED, Craft::t('app', 'Modified in draft and source {type}', [
                     'type' => static::lowerDisplayName(),
-                ])
+                ]),
             ];
         }
         return null;
@@ -3089,7 +3089,7 @@ abstract class Element extends Component implements ElementInterface
 
         // Give plugins a chance to modify them
         $event = new RegisterElementHtmlAttributesEvent([
-            'htmlAttributes' => $htmlAttributes
+            'htmlAttributes' => $htmlAttributes,
         ]);
         $this->trigger(self::EVENT_REGISTER_HTML_ATTRIBUTES, $event);
 
@@ -3115,7 +3115,7 @@ abstract class Element extends Component implements ElementInterface
     {
         // Give plugins a chance to set this
         $event = new SetElementTableAttributeHtmlEvent([
-            'attribute' => $attribute
+            'attribute' => $attribute,
         ]);
         $this->trigger(self::EVENT_SET_TABLE_ATTRIBUTE_HTML, $event);
 
@@ -3259,7 +3259,7 @@ abstract class Element extends Component implements ElementInterface
                 if ($value instanceof DateTime) {
                     $formatter = Craft::$app->getFormatter();
                     return Html::tag('span', $formatter->asTimestamp($value, Locale::LENGTH_SHORT), [
-                        'title' => $formatter->asDatetime($value, Locale::LENGTH_SHORT)
+                        'title' => $formatter->asDatetime($value, Locale::LENGTH_SHORT),
                     ]);
                 }
 

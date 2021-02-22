@@ -49,7 +49,7 @@ class Matrix extends InputObjectType
                 'id' => [
                     'name' => 'id',
                     'type' => Type::id(),
-                ]
+                ],
             ];
 
             // Get the field input types
@@ -63,8 +63,8 @@ class Matrix extends InputObjectType
                 'name' => $blockType->handle,
                 'type' => GqlEntityRegistry::createEntity($blockTypeGqlName, new InputObjectType([
                     'name' => $blockTypeGqlName,
-                    'fields' => $blockTypeFields
-                ]))
+                    'fields' => $blockTypeFields,
+                ])),
             ];
         }
 
@@ -73,26 +73,26 @@ class Matrix extends InputObjectType
         $blockTypeContainerName = $context->handle . '_MatrixBlockContainerInput';
         $blockContainerInputType = GqlEntityRegistry::createEntity($blockTypeContainerName, new InputObjectType([
             'name' => $blockTypeContainerName,
-            'fields' => function() use ($blockInputTypes) {
+            'fields' => function () use ($blockInputTypes) {
                 return $blockInputTypes;
-            }
+            },
         ]));
 
         $inputType = GqlEntityRegistry::createEntity($typeName, new InputObjectType([
             'name' => $typeName,
-            'fields' => function() use ($blockContainerInputType) {
+            'fields' => function () use ($blockContainerInputType) {
                 return [
                     'sortOrder' => [
                         'name' => 'sortOrder',
-                        'type' => Type::listOf(QueryArgument::getType())
+                        'type' => Type::listOf(QueryArgument::getType()),
                     ],
                     'blocks' => [
                         'name' => 'blocks',
-                        'type' => Type::listOf($blockContainerInputType)
-                    ]
+                        'type' => Type::listOf($blockContainerInputType),
+                    ],
                 ];
             },
-            'normalizeValue' => [self::class, 'normalizeValue']
+            'normalizeValue' => [self::class, 'normalizeValue'],
         ]));
 
         return $inputType;
@@ -122,7 +122,7 @@ class Matrix extends InputObjectType
 
                     $preparedBlocks[$blockId] = [
                         'type' => $type,
-                        'fields' => $block
+                        'fields' => $block,
                     ];
                 }
             }

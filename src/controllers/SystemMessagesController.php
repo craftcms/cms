@@ -57,7 +57,7 @@ class SystemMessagesController extends Controller
             'body' => $this->getView()->renderTemplate('_components/utilities/SystemMessages/message-modal', [
                 'message' => $message,
                 'language' => $language,
-            ])
+            ]),
         ]);
     }
 

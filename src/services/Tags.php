@@ -192,7 +192,7 @@ class Tags extends Component
         if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_GROUP)) {
             $this->trigger(self::EVENT_BEFORE_SAVE_GROUP, new TagGroupEvent([
                 'tagGroup' => $tagGroup,
-                'isNew' => $isNewTagGroup
+                'isNew' => $isNewTagGroup,
             ]));
         }
 
@@ -331,7 +331,7 @@ class Tags extends Component
         // Fire a 'beforeDeleteGroup' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_GROUP)) {
             $this->trigger(self::EVENT_BEFORE_DELETE_GROUP, new TagGroupEvent([
-                'tagGroup' => $tagGroup
+                'tagGroup' => $tagGroup,
             ]));
         }
 
@@ -399,7 +399,7 @@ class Tags extends Component
         // Fire an 'afterDeleteGroup' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_GROUP)) {
             $this->trigger(self::EVENT_AFTER_DELETE_GROUP, new TagGroupEvent([
-                'tagGroup' => $tagGroup
+                'tagGroup' => $tagGroup,
             ]));
         }
 

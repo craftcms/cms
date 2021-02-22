@@ -310,7 +310,7 @@ class Formatter extends \yii\i18n\Formatter
                     default:
                         // Make sure we are formatting the date with the right timezone consistently
                         if (!isset($timestamp)) {
-                            list($timestamp, $hasTimeInfo, $hasDateInfo) = $this->normalizeDatetimeValue($value, true);
+                            [$timestamp, $hasTimeInfo, $hasDateInfo] = $this->normalizeDatetimeValue($value, true);
                             if ($type === 'date' && !$hasTimeInfo || $type === 'time' && !$hasDateInfo) {
                                 $timeZone = $this->defaultTimeZone;
                             } else {

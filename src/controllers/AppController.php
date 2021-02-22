@@ -316,7 +316,7 @@ class AppController extends Controller
         }
 
         return $this->asJson([
-            'badgeCount' => $badgeCount
+            'badgeCount' => $badgeCount,
         ]);
     }
 
@@ -356,7 +356,7 @@ class AppController extends Controller
 
         if (Craft::$app->getUsers()->shunMessageForUser($user->id, $message, $tomorrow)) {
             return $this->asJson([
-                'success' => true
+                'success' => true,
             ]);
         }
 
@@ -401,7 +401,7 @@ class AppController extends Controller
         Craft::$app->setEdition($edition);
 
         return $this->asJson([
-            'success' => true
+            'success' => true,
         ]);
     }
 
@@ -482,10 +482,10 @@ class AppController extends Controller
 
         if ($update->status === Update::STATUS_EXPIRED) {
             $arr['statusText'] = Craft::t('app', '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.', [
-                'name' => $name
+                'name' => $name,
             ]);
             $arr['ctaText'] = Craft::t('app', 'Renew for {price}', [
-                'price' => Craft::$app->getFormatter()->asCurrency($update->renewalPrice, $update->renewalCurrency)
+                'price' => Craft::$app->getFormatter()->asCurrency($update->renewalPrice, $update->renewalCurrency),
             ]);
             $arr['ctaUrl'] = UrlHelper::url($update->renewalUrl);
         } else {
@@ -498,7 +498,7 @@ class AppController extends Controller
             } else {
                 if ($update->status === Update::STATUS_BREAKPOINT) {
                     $arr['statusText'] = Craft::t('app', '<strong>You’ve reached a breakpoint!</strong> More updates will become available after you install {update}.', [
-                        'update' => $name . ' ' . ($update->getLatest()->version ?? '')
+                        'update' => $name . ' ' . ($update->getLatest()->version ?? ''),
                     ]);
                 }
 
@@ -566,7 +566,7 @@ class AppController extends Controller
                         if ($pluginLicenseInfo['expired']) {
                             $result[$handle]['renewalUrl'] = $pluginLicenseInfo['renewalUrl'];
                             $result[$handle]['renewalText'] = Craft::t('app', 'Renew for {price}', [
-                                'price' => $formatter->asCurrency($pluginLicenseInfo['renewalPrice'], $pluginLicenseInfo['renewalCurrency'])
+                                'price' => $formatter->asCurrency($pluginLicenseInfo['renewalPrice'], $pluginLicenseInfo['renewalCurrency']),
                             ]);
                         }
                     }

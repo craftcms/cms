@@ -83,7 +83,7 @@ class GlobalsController extends Controller
 
             // Send the global set back to the template
             Craft::$app->getUrlManager()->setRouteParams([
-                'globalSet' => $globalSet
+                'globalSet' => $globalSet,
             ]);
 
             return null;

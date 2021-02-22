@@ -55,7 +55,7 @@ class AssetIndexes extends Utility
         foreach ($volumes as $volume) {
             $volumeOptions[] = [
                 'label' => Html::encode($volume->name),
-                'value' => $volume->id
+                'value' => $volume->id,
             ];
         }
 

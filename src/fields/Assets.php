@@ -14,7 +14,6 @@ use craft\db\Table as DbTable;
 use craft\elements\Asset;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQuery;
-use craft\elements\db\ElementQueryInterface;
 use craft\errors\InvalidSubpathException;
 use craft\errors\InvalidVolumeException;
 use craft\errors\VolumeObjectNotFoundException;
@@ -226,9 +225,9 @@ class Assets extends BaseRelationField
         $rules = parent::defineRules();
 
         $rules[] = [
-            ['allowedKinds'], 'required', 'when' => function(self $field): bool {
+            ['allowedKinds'], 'required', 'when' => function (self $field): bool {
                 return (bool)$field->restrictFiles;
-            }
+            },
         ];
 
         $rules[] = [['previewMode'], 'in', 'range' => [self::PREVIEW_MODE_FULL, self::PREVIEW_MODE_THUMBS], 'skipOnEmpty' => false];
@@ -247,7 +246,7 @@ class Assets extends BaseRelationField
             if (!isset($volume['heading'])) {
                 $sourceOptions[] = [
                     'label' => $volume['label'],
-                    'value' => $volume['key']
+                    'value' => $volume['key'],
                 ];
             }
         }
@@ -280,7 +279,7 @@ class Assets extends BaseRelationField
             return parent::inputHtml($value, $element);
         } catch (InvalidSubpathException $e) {
             return Html::tag('p', Craft::t('app', 'This field’s target subfolder path is invalid: {path}', [
-                'path' => '<code>' . $this->singleUploadLocationSubpath . '</code>'
+                'path' => '<code>' . $this->singleUploadLocationSubpath . '</code>',
             ]), [
                 'class' => ['warning', 'with-icon'],
             ]);
@@ -353,7 +352,7 @@ class Assets extends BaseRelationField
         foreach ($filenames as $filename) {
             if (!in_array(mb_strtolower(pathinfo($filename, PATHINFO_EXTENSION)), $allowedExtensions, true)) {
                 $element->addError($this->handle, Craft::t('app', '“{filename}” is not allowed in this field.', [
-                    'filename' => $filename
+                    'filename' => $filename,
                 ]));
             }
         }
@@ -386,7 +385,7 @@ class Assets extends BaseRelationField
 
         foreach ($filenames as $filename) {
             $element->addError($this->handle, Craft::t('app', '“{filename}” is too large.', [
-                'filename' => $filename
+                'filename' => $filename,
             ]));
         }
     }
@@ -471,7 +470,7 @@ class Assets extends BaseRelationField
             'type' => Type::listOf(AssetInterface::getType()),
             'args' => AssetArguments::getArguments(),
             'resolve' => AssetResolver::class . '::resolve',
-            'complexity' => GqlHelper::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD)
+            'complexity' => GqlHelper::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
         ];
     }
 
@@ -496,7 +495,7 @@ class Assets extends BaseRelationField
         $query = $element->getFieldValue($this->handle);
         $assetsService = Craft::$app->getAssets();
 
-        $getTargetFolderId = function() use ($element, $isDraftOrRevision): int {
+        $getTargetFolderId = function () use ($element, $isDraftOrRevision): int {
             static $targetFolderId;
             return $targetFolderId = $targetFolderId ?? $this->_determineUploadFolderId($element, !$isDraftOrRevision);
         };
@@ -558,7 +557,7 @@ class Assets extends BaseRelationField
             // Only enforce the single upload folder setting if this isn't a draft or revision
             if ($this->useSingleFolder && !$isDraftOrRevision) {
                 $targetFolderId = $getTargetFolderId();
-                $assetsToMove = ArrayHelper::where($assets, function(Asset $asset) use ($targetFolderId) {
+                $assetsToMove = ArrayHelper::where($assets, function (Asset $asset) use ($targetFolderId) {
                     return $asset->folderId != $targetFolderId;
                 });
             } else {
@@ -656,7 +655,7 @@ class Assets extends BaseRelationField
         // Now enforce the showUnpermittedVolumes setting
         if (!$this->showUnpermittedVolumes && !empty($sources)) {
             $userService = Craft::$app->getUser();
-            return ArrayHelper::where($sources, function(string $source) use ($assetsService, $userService) {
+            return ArrayHelper::where($sources, function (string $source) use ($assetsService, $userService) {
                 // If it's not a volume folder, let it through
                 if (strpos($source, 'folder:') !== 0) {
                     return true;
@@ -747,7 +746,7 @@ class Assets extends BaseRelationField
                     $uploadedFiles[] = [
                         'filename' => $filename,
                         'data' => $data,
-                        'type' => 'data'
+                        'type' => 'data',
                     ];
                 }
             }
@@ -763,7 +762,7 @@ class Assets extends BaseRelationField
                 $uploadedFiles[] = [
                     'filename' => $file->name,
                     'location' => $file->tempName,
-                    'type' => 'upload'
+                    'type' => 'upload',
                 ];
             }
         }
@@ -817,20 +816,20 @@ class Assets extends BaseRelationField
             }
 
             // Sanitize the subpath
-            $segments = array_filter(explode('/', $renderedSubpath), function(string $segment): bool {
+            $segments = array_filter(explode('/', $renderedSubpath), function (string $segment): bool {
                 return $segment !== ':ignore:';
             });
             $generalConfig = Craft::$app->getConfig()->getGeneral();
-            $segments = array_map(function(string $segment) use ($generalConfig): string {
+            $segments = array_map(function (string $segment) use ($generalConfig): string {
                 return FileHelper::sanitizeFilename($segment, [
-                    'asciiOnly' => $generalConfig->convertFilenamesToAscii
+                    'asciiOnly' => $generalConfig->convertFilenamesToAscii,
                 ]);
             }, $segments);
             $subpath = implode('/', $segments);
 
             $folder = $assetsService->findFolder([
                 'volumeId' => $volumeId,
-                'path' => $subpath . '/'
+                'path' => $subpath . '/',
             ]);
 
             // Ensure that the folder exists

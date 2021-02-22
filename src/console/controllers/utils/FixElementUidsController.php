@@ -39,7 +39,7 @@ class FixElementUidsController extends Controller
                     ->select(['uid'])
                     ->from([Table::ELEMENTS])
                     ->groupBy(['uid'])
-                    ->having('count([[uid]]) > 1')
+                    ->having('count([[uid]]) > 1'),
             ])
             ->orderBy(['id' => SORT_ASC]);
 

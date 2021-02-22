@@ -219,7 +219,7 @@ class CategoryQuery extends ElementQuery
         if ($this->editable) {
             // Limit the query to only the category groups the user has permission to edit
             $this->subQuery->andWhere([
-                'categories.groupId' => Craft::$app->getCategories()->getEditableGroupIds()
+                'categories.groupId' => Craft::$app->getCategories()->getEditableGroupIds(),
             ]);
         }
     }
@@ -289,7 +289,7 @@ class CategoryQuery extends ElementQuery
                     $condition[] = [
                         'and',
                         Db::parseParam('categorygroups.handle', $parts[0]),
-                        Db::parseParam('elements_sites.slug', $parts[1])
+                        Db::parseParam('elements_sites.slug', $parts[1]),
                     ];
                     $joinCategoryGroups = true;
                 }

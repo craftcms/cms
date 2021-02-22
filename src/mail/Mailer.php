@@ -15,7 +15,6 @@ use craft\web\View;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
 use yii\mail\MailEvent;
-use yii\mail\MessageInterface;
 
 /**
  * The Mailer component provides APIs for sending email in Craft.

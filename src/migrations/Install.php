@@ -1127,7 +1127,7 @@ class Install extends Migration
             'username' => $this->username,
             'newPassword' => $this->password,
             'email' => $this->email,
-            'admin' => true
+            'admin' => true,
         ]);
         Craft::$app->getElements()->saveElement($user);
         echo "done\n";

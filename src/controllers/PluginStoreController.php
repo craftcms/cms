@@ -103,7 +103,7 @@ class PluginStoreController extends Controller
                 'transferPluginLicense',
                 'deassociatePluginLicense',
             ],
-            'response_type' => 'token'
+            'response_type' => 'token',
         ]);
 
         return $this->redirect($authorizationUrl);
@@ -155,7 +155,7 @@ class PluginStoreController extends Controller
         $options = [
             'redirectUrl' => $redirectUrl,
             'error' => $this->request->getParam('error'),
-            'message' => $this->request->getParam('message')
+            'message' => $this->request->getParam('message'),
         ];
 
         $this->getView()->registerJs('new Craft.PluginStoreOauthCallback(' . Json::encode($options) . ');');
@@ -173,7 +173,7 @@ class PluginStoreController extends Controller
         $craftIdAccessToken = $this->getCraftIdAccessToken();
 
         return $this->renderTemplate('plugin-store/_special/oauth/modal-callback', [
-            'craftIdAccessToken' => $craftIdAccessToken
+            'craftIdAccessToken' => $craftIdAccessToken,
         ]);
     }
 
@@ -205,7 +205,7 @@ class PluginStoreController extends Controller
 
             return $this->asJson([
                 'success' => true,
-                'redirect' => UrlHelper::cpUrl('plugin-store/account')
+                'redirect' => UrlHelper::cpUrl('plugin-store/account'),
             ]);
         } catch (\Exception $e) {
             return $this->asErrorJson($e->getMessage());

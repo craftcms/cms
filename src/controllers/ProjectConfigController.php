@@ -54,8 +54,8 @@ class ProjectConfigController extends Controller
      * Discards any changes to the project config files.
      *
      * @return Response
-     * @since 3.5.6
      * @throws ForbiddenHttpException if the project config is in read-only mode
+     * @since 3.5.6
      */
     public function actionDiscard(): Response
     {

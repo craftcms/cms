@@ -64,7 +64,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
                     $options[] = [
                         'label' => $option,
                         'value' => $key,
-                        'default' => ''
+                        'default' => '',
                     ];
                 } else if (!empty($option['isOptgroup'])) {
                     // isOptgroup will be set if this is a settings request
@@ -194,18 +194,18 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
         $cols['label'] = [
             'heading' => Craft::t('app', 'Option Label'),
             'type' => 'singleline',
-            'autopopulate' => 'value'
+            'autopopulate' => 'value',
         ];
         $cols['value'] = [
             'heading' => Craft::t('app', 'Value'),
             'type' => 'singleline',
-            'class' => 'code'
+            'class' => 'code',
         ];
         $cols['default'] = [
             'heading' => Craft::t('app', 'Default?'),
             'type' => 'checkbox',
             'radioMode' => !$this->multi,
-            'class' => 'thin'
+            'class' => 'thin',
         ];
 
         $rows = [];
@@ -407,7 +407,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             'name' => $this->handle,
             'type' => $this->multi ? Type::listOf(Type::string()) : Type::string(),
             'args' => OptionFieldArguments::getArguments(),
-            'resolve' => OptionFieldResolver::class . '::resolve'
+            'resolve' => OptionFieldResolver::class . '::resolve',
         ];
     }
 
@@ -484,7 +484,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             } else {
                 $translatedOptions[] = [
                     'label' => Craft::t('site', $option['label']),
-                    'value' => $option['value']
+                    'value' => $option['value'],
                 ];
             }
         }

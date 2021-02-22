@@ -758,7 +758,7 @@ class DateTimeHelper
                     'AM' => mb_strtoupper($amName),
                     'PM' => mb_strtoupper($pmName),
                     'am' => mb_strtolower($amName),
-                    'pm' => mb_strtolower($pmName)
+                    'pm' => mb_strtolower($pmName),
                 ]
             );
         }

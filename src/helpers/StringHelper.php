@@ -462,7 +462,7 @@ class StringHelper extends \yii\helpers\StringHelper
         // UTF-32's hex encoding is the same as HTML's hex encoding.
         // So, by converting from UTF-8 to UTF-32, we magically
         // get the correct hex encoding.
-        return static::replaceMb4($str, static function($char) {
+        return static::replaceMb4($str, static function ($char) {
             $unpacked = unpack('H*', mb_convert_encoding($char, 'UTF-32', 'UTF-8'));
             return isset($unpacked[1]) ? '&#x' . ltrim($unpacked[1], '0') . ';' : '';
         });
@@ -1254,7 +1254,7 @@ class StringHelper extends \yii\helpers\StringHelper
             return $str;
         }
 
-        return preg_replace_callback('/./u', function(array $match) use ($replace): string {
+        return preg_replace_callback('/./u', function (array $match) use ($replace): string {
             if (strlen($match[0]) >= 4) {
                 return is_callable($replace) ? $replace($match[0]) : $replace;
             }
@@ -1623,7 +1623,7 @@ class StringHelper extends \yii\helpers\StringHelper
     public static function toKebabCase(string $str, string $glue = '-', bool $lower = true, bool $removePunctuation = true): string
     {
         $words = self::toWords($str, $lower, $removePunctuation);
-        $words = ArrayHelper::filterEmptyStringsFromArray(array_map(function($str) use ($glue) {
+        $words = ArrayHelper::filterEmptyStringsFromArray(array_map(function ($str) use ($glue) {
             return trim($str, $glue);
         }, $words));
 
@@ -1652,7 +1652,7 @@ class StringHelper extends \yii\helpers\StringHelper
         $words = self::toWords($str, true, true);
         $string = implode('', array_map([
             static::class,
-            'upperCaseFirst'
+            'upperCaseFirst',
         ], $words));
 
         return $string;

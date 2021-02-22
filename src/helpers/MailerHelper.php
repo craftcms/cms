@@ -63,7 +63,7 @@ class MailerHelper
         ];
 
         $event = new RegisterComponentTypesEvent([
-            'types' => $transportTypes
+            'types' => $transportTypes,
         ]);
         Event::trigger(static::class, self::EVENT_REGISTER_MAILER_TRANSPORT_TYPES, $event);
 

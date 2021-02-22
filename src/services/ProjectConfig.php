@@ -380,7 +380,7 @@ class ProjectConfig extends Component
      */
     public function init()
     {
-        Craft::$app->on(Application::EVENT_AFTER_REQUEST, function() {
+        Craft::$app->on(Application::EVENT_AFTER_REQUEST, function () {
             $this->saveModifiedConfigData();
         }, null, false);
 
@@ -827,7 +827,7 @@ class ProjectConfig extends Component
         if (!empty($this->_appliedChanges)) {
             $deltaEntry = [
                 'dateApplied' => date('Y-m-d H:i:s'),
-                'changes' => []
+                'changes' => [],
             ];
 
             $db = Craft::$app->getDb();
@@ -876,7 +876,7 @@ class ProjectConfig extends Component
 
                             if ($changeSet['removed'][$key] === $value) {
                                 unset($changeSet['removed'][$key], $changeSet['added'][$key]);
-                            } elseif (array_key_exists($key, $changeSet['removed'])) {
+                            } else if (array_key_exists($key, $changeSet['removed'])) {
                                 $changeSet['changed'][$key] = [
                                     'from' => $changeSet['removed'][$key],
                                     'to' => $changeSet['added'][$key],
@@ -968,7 +968,7 @@ class ProjectConfig extends Component
             $issues[] = [
                 'cause' => 'Craft CMS',
                 'existing' => $existingSchema,
-                'incoming' => $incomingSchema
+                'incoming' => $incomingSchema,
             ];
         }
 
@@ -983,7 +983,7 @@ class ProjectConfig extends Component
                 $issues[] = [
                     'cause' => $plugin->name,
                     'existing' => $existingSchema,
-                    'incoming' => $incomingSchema
+                    'incoming' => $incomingSchema,
                 ];
             }
         }
@@ -1450,7 +1450,7 @@ class ProjectConfig extends Component
         }
 
         // Sort by number of dots to ensure deepest paths listed first
-        $sorter = function($a, $b) {
+        $sorter = function ($a, $b) {
             $aDepth = substr_count($a, '.');
             $bDepth = substr_count($b, '.');
 
@@ -1518,7 +1518,7 @@ class ProjectConfig extends Component
         }
         return FileHelper::findFiles($path, [
             'only' => ['*.yaml'],
-            'caseSensitive' => false
+            'caseSensitive' => false,
         ]);
     }
 
@@ -1795,7 +1795,7 @@ class ProjectConfig extends Component
         }
 
         // See if we can get away with using the cached data
-        return Craft::$app->getCache()->getOrSet(self::STORED_CACHE_KEY, function() {
+        return Craft::$app->getCache()->getOrSet(self::STORED_CACHE_KEY, function () {
             $data = [];
             // Load the project config data
             $rows = $this->_createProjectConfigQuery()->orderBy('path')->pairs();
@@ -2104,7 +2104,7 @@ class ProjectConfig extends Component
             'publicToken' => [
                 'enabled' => (bool)($publicToken->enabled ?? false),
                 'expiryDate' => ($publicToken->expiryDate ?? false) ? $publicToken->expiryDate->getTimestamp() : null,
-            ]
+            ],
         ];
 
         foreach ($gqlService->getSchemas() as $schema) {

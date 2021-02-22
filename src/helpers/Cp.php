@@ -87,7 +87,7 @@ class Cp
                 } else if (Craft::$app->getHasWrongEdition()) {
                     $message = Craft::t('app', 'You’re running Craft {edition} with a Craft {licensedEdition} license.', [
                             'edition' => Craft::$app->getEditionName(),
-                            'licensedEdition' => Craft::$app->getLicensedEditionName()
+                            'licensedEdition' => Craft::$app->getLicensedEditionName(),
                         ]) . ' ';
                     if ($user->admin) {
                         if ($generalConfig->allowAdminChanges) {
@@ -172,7 +172,7 @@ class Cp
 
                 if (defined('CRAFT_LICENSE_KEY')) {
                     $message = Craft::t('app', 'The license key in use belongs to {domain}', [
-                        'domain' => $domainLink
+                        'domain' => $domainLink,
                     ]);
                 } else {
                     $keyPath = Craft::$app->getPath()->getLicenseKeyPath();
@@ -185,7 +185,7 @@ class Cp
 
                     $message = Craft::t('app', 'The license located at {file} belongs to {domain}.', [
                         'file' => $keyPath,
-                        'domain' => $domainLink
+                        'domain' => $domainLink,
                     ]);
                 }
 
@@ -247,7 +247,8 @@ class Cp
         bool $showThumb = true,
         bool $showLabel = true,
         bool $showDraftName = true
-    ): string {
+    ): string
+    {
         $isDraft = $element->getIsDraft();
         $isRevision = !$isDraft && $element->getIsRevision();
         $label = $element->getUiLabel();
@@ -428,7 +429,8 @@ class Cp
         bool $showThumb = true,
         bool $showLabel = true,
         bool $showDraftName = true
-    ): string {
+    ): string
+    {
         if (empty($elements)) {
             return '';
         }
@@ -519,7 +521,7 @@ class Cp
                 'input',
                 $orientation,
                 $errors ? 'errors' : null,
-            ])
+            ]),
         ], $config['inputContainerAttributes'] ?? []);
         $instructionsHtml = $instructions
             ? Html::tag('div', preg_replace('/&amp;(\w+);/', '&$1;', Markdown::process($instructions, 'gfm-comment')), [

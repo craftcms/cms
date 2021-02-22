@@ -193,7 +193,7 @@ class AssetTransform extends Model
         return [
             'crop' => Craft::t('app', 'Scale and crop'),
             'fit' => Craft::t('app', 'Scale to fit'),
-            'stretch' => Craft::t('app', 'Stretch to fit')
+            'stretch' => Craft::t('app', 'Stretch to fit'),
         ];
     }
 

@@ -193,8 +193,8 @@ class User extends Element implements IdentityInterface
             [
                 'key' => '*',
                 'label' => Craft::t('app', 'All users'),
-                'hasThumbs' => true
-            ]
+                'hasThumbs' => true,
+            ],
         ];
 
         if (Craft::$app->getEdition() === Craft::Pro) {
@@ -203,7 +203,7 @@ class User extends Element implements IdentityInterface
                 'key' => 'admins',
                 'label' => Craft::t('app', 'Admins'),
                 'criteria' => ['admin' => true],
-                'hasThumbs' => true
+                'hasThumbs' => true,
             ];
 
             $groups = Craft::$app->getUserGroups()->getAllGroups();
@@ -216,7 +216,7 @@ class User extends Element implements IdentityInterface
                         'key' => 'group:' . $group->uid,
                         'label' => Craft::t('site', $group->name),
                         'criteria' => ['groupId' => $group->id],
-                        'hasThumbs' => true
+                        'hasThumbs' => true,
                     ];
                 }
             }
@@ -405,7 +405,7 @@ class User extends Element implements IdentityInterface
 
             return [
                 'elementType' => Asset::class,
-                'map' => $map
+                'map' => $map,
             ];
         }
 
@@ -758,11 +758,11 @@ class User extends Element implements IdentityInterface
         ];
 
         $rules[] = [
-            ['firstName', 'lastName'], function($attribute, $params, Validator $validator) {
+            ['firstName', 'lastName'], function ($attribute, $params, Validator $validator) {
                 if (strpos($this->$attribute, '://') !== false) {
                     $validator->addError($this, $attribute, Craft::t('app', 'Invalid value “{value}”.'));
                 }
-            }
+            },
         ];
 
         return $rules;
@@ -862,7 +862,7 @@ class User extends Element implements IdentityInterface
             ->from([Table::SESSIONS])
             ->where([
                 'token' => $token,
-                'userId' => $this->id
+                'userId' => $this->id,
             ])
             ->exists();
     }
@@ -1059,7 +1059,7 @@ class User extends Element implements IdentityInterface
         if ($photo) {
             return $photo->getUrl([
                 'width' => $size,
-                'height' => $size
+                'height' => $size,
             ]);
         }
 
@@ -1340,7 +1340,7 @@ class User extends Element implements IdentityInterface
                 return $this->email ? Html::mailto(Html::encode($this->email)) : '';
 
             case 'groups':
-                return implode(', ', array_map(function(UserGroup $group) {
+                return implode(', ', array_map(function (UserGroup $group) {
                     return Html::encode(Craft::t('site', $group->name));
                 }, $this->getGroups()));
 
@@ -1500,7 +1500,7 @@ class User extends Element implements IdentityInterface
 
                 foreach ($userRefs as $table => $column) {
                     Db::update($table, [
-                        $column => $this->inheritorOnDelete->id
+                        $column => $this->inheritorOnDelete->id,
                     ], [
                         $column => $this->id,
                     ], [], false);

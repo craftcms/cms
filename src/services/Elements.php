@@ -1181,7 +1181,7 @@ class Elements extends Component
         // Fire a 'beforeUpdateSlugAndUri' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_UPDATE_SLUG_AND_URI)) {
             $this->trigger(self::EVENT_BEFORE_UPDATE_SLUG_AND_URI, new ElementEvent([
-                'element' => $element
+                'element' => $element,
             ]));
         }
 
@@ -1196,7 +1196,7 @@ class Elements extends Component
         // Fire a 'afterUpdateSlugAndUri' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_UPDATE_SLUG_AND_URI)) {
             $this->trigger(self::EVENT_AFTER_UPDATE_SLUG_AND_URI, new ElementEvent([
-                'element' => $element
+                'element' => $element,
             ]));
         }
 
@@ -1334,7 +1334,7 @@ class Elements extends Component
                         'fieldId' => $relation['fieldId'],
                         'sourceId' => $relation['sourceId'],
                         'sourceSiteId' => $relation['sourceSiteId'],
-                        'targetId' => $prevailingElement->id
+                        'targetId' => $prevailingElement->id,
                     ])
                     ->exists();
 
@@ -1360,7 +1360,7 @@ class Elements extends Component
                     ->from([Table::STRUCTUREELEMENTS])
                     ->where([
                         'structureId' => $structureElement['structureId'],
-                        'elementId' => $prevailingElement->id
+                        'elementId' => $prevailingElement->id,
                     ])
                     ->exists();
 
@@ -1397,7 +1397,7 @@ class Elements extends Component
             if ($this->hasEventHandlers(self::EVENT_AFTER_MERGE_ELEMENTS)) {
                 $this->trigger(self::EVENT_AFTER_MERGE_ELEMENTS, new MergeElementsEvent([
                     'mergedElementId' => $mergedElement->id,
-                    'prevailingElementId' => $prevailingElement->id
+                    'prevailingElementId' => $prevailingElement->id,
                 ]));
             }
 
@@ -1683,7 +1683,7 @@ class Elements extends Component
         ];
 
         $event = new RegisterComponentTypesEvent([
-            'types' => $elementTypes
+            'types' => $elementTypes,
         ]);
         $this->trigger(self::EVENT_REGISTER_ELEMENT_TYPES, $event);
 
@@ -1762,7 +1762,7 @@ class Elements extends Component
         $allRefTagTokens = [];
         $str = preg_replace_callback(
             '/\{([\w\\\\]+)\:([^@\:\}]+)(?:@([^\:\}]+))?(?:\:([^\}\| ]+))?(?: *\|\| *([^\}]+))?\}/',
-            function(array $matches) use (
+            function (array $matches) use (
                 $defaultSiteId,
                 $sitesService,
                 &$allRefTagTokens
@@ -2292,7 +2292,7 @@ class Elements extends Component
         if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_ELEMENT)) {
             $this->trigger(self::EVENT_BEFORE_SAVE_ELEMENT, new ElementEvent([
                 'element' => $element,
-                'isNew' => $isNewElement
+                'isNew' => $isNewElement,
             ]));
         }
 
@@ -2524,7 +2524,7 @@ class Elements extends Component
                     [
                         'and',
                         ['elementId' => $element->id],
-                        ['not', ['siteId' => $supportedSiteIds]]
+                        ['not', ['siteId' => $supportedSiteIds]],
                     ]
                 );
 
@@ -2534,7 +2534,7 @@ class Elements extends Component
                         [
                             'and',
                             ['elementId' => $element->id],
-                            ['not', ['siteId' => $supportedSiteIds]]
+                            ['not', ['siteId' => $supportedSiteIds]],
                         ]
                     );
                 }

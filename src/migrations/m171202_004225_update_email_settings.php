@@ -29,7 +29,7 @@ class m171202_004225_update_email_settings extends Migration
         if (isset($settings['transportType']) && $settings['transportType'] === 'craft\\mail\\transportadapters\\Php') {
             $settings['transportType'] = Sendmail::class;
             $this->update('{{%systemsettings}}', [
-                'settings' => Json::encode($settings)
+                'settings' => Json::encode($settings),
             ], ['category' => 'email'], [], false);
         }
     }

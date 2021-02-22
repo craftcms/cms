@@ -9,12 +9,10 @@ namespace craft\console\controllers;
 
 use Craft;
 use craft\console\Controller;
-use craft\db\Query;
 use craft\helpers\Console;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use yii\console\ExitCode;
-use yii\db\Exception;
 
 /**
  * Performs database operations.

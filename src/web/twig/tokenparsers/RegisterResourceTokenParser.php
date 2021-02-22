@@ -156,7 +156,7 @@ class RegisterResourceTokenParser extends AbstractTokenParser
             'allowPosition' => $this->allowPosition,
             'capture' => $capture,
             'position' => $position,
-            'first' => $first
+            'first' => $first,
         ];
 
         return new RegisterResourceNode($nodes, $attributes, $lineno, $this->getTag());

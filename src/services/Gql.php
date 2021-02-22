@@ -472,7 +472,7 @@ class Gql extends Component
 
         $event = new DefineGqlValidationRulesEvent([
             'validationRules' => $validationRules,
-            'debug' => $debug
+            'debug' => $debug,
         ]);
 
         $this->trigger(self::EVENT_DEFINE_GQL_VALIDATION_RULES, $event);
@@ -497,7 +497,8 @@ class Gql extends Component
         array $variables = null,
         string $operationName = null,
         bool $debugMode = false
-    ): array {
+    ): array
+    {
         $event = new ExecuteGqlQueryEvent([
             'schemaId' => $schema->id,
             'query' => $query,
@@ -508,9 +509,9 @@ class Gql extends Component
                     'class' => ElementQueryConditionBuilder::class,
                 ]),
                 'argumentManager' => Craft::createObject([
-                    'class' => ArgumentManager::class
-                ])
-            ]
+                    'class' => ArgumentManager::class,
+                ]),
+            ],
         ]);
 
         $this->trigger(self::EVENT_BEFORE_EXECUTE_GQL_QUERY, $event);
@@ -543,8 +544,8 @@ class Gql extends Component
                     null,
                     $this->getValidationRules($debugMode, $isIntrospectionQuery)
                 )
-                ->setErrorsHandler([$this, 'handleQueryErrors'])
-                ->toArray($debugMode ? DebugFlag::INCLUDE_DEBUG_MESSAGE | DebugFlag::INCLUDE_TRACE : false);
+                    ->setErrorsHandler([$this, 'handleQueryErrors'])
+                    ->toArray($debugMode ? DebugFlag::INCLUDE_DEBUG_MESSAGE | DebugFlag::INCLUDE_TRACE : false);
 
                 $dep = $elementsService->stopCollectingCacheTags();
 
@@ -737,7 +738,7 @@ class Gql extends Component
 
         if ($this->hasEventHandlers(self::EVENT_REGISTER_GQL_PERMISSIONS)) {
             $deprecatedEvent = new RegisterGqlPermissionsEvent([
-                'permissions' => $queries
+                'permissions' => $queries,
             ]);
 
             $this->trigger(self::EVENT_REGISTER_GQL_PERMISSIONS, $deprecatedEvent);
@@ -747,14 +748,14 @@ class Gql extends Component
 
         $event = new RegisterGqlSchemaComponentsEvent([
             'queries' => $queries,
-            'mutations' => $mutations
+            'mutations' => $mutations,
         ]);
 
         $this->trigger(self::EVENT_REGISTER_GQL_SCHEMA_COMPONENTS, $event);
 
         return [
             'queries' => $event->queries,
-            'mutations' => $event->mutations
+            'mutations' => $event->mutations,
         ];
     }
 
@@ -903,7 +904,7 @@ class Gql extends Component
         if ($token->accessToken === GqlToken::PUBLIC_TOKEN) {
             $data = [
                 'expiryDate' => $token->expiryDate ? $token->expiryDate->getTimestamp() : null,
-                'enabled' => (bool)$token->enabled
+                'enabled' => (bool)$token->enabled,
             ];
 
             Craft::$app->getProjectConfig()->set(self::CONFIG_GQL_PUBLIC_TOKEN_KEY, $data);
@@ -1259,7 +1260,8 @@ class Gql extends Component
         $context,
         array $variables = null,
         string $operationName = null
-    ) {
+    )
+    {
         // No cache key, if explicitly disabled
         $generalConfig = Craft::$app->getConfig()->getGeneral();
 
@@ -1350,12 +1352,12 @@ class Gql extends Component
 
 
         $event = new RegisterGqlQueriesEvent([
-            'queries' => array_merge(...$queryList)
+            'queries' => array_merge(...$queryList),
         ]);
 
         $this->trigger(self::EVENT_REGISTER_GQL_QUERIES, $event);
 
-        TypeLoader::registerType('Query', function() use ($event) {
+        TypeLoader::registerType('Query', function () use ($event) {
             return call_user_func(Query::class . '::getType', $event->queries);
         });
     }
@@ -1377,12 +1379,12 @@ class Gql extends Component
 
 
         $event = new RegisterGqlMutationsEvent([
-            'mutations' => array_merge(...$mutationList)
+            'mutations' => array_merge(...$mutationList),
         ]);
 
         $this->trigger(self::EVENT_REGISTER_GQL_MUTATIONS, $event);
 
-        TypeLoader::registerType('Mutation', function() use ($event) {
+        TypeLoader::registerType('Mutation', function () use ($event) {
             return call_user_func(Mutation::class . '::getType', $event->mutations);
         });
     }
@@ -1406,7 +1408,7 @@ class Gql extends Component
         }
 
         $event = new RegisterGqlDirectivesEvent([
-            'directives' => $directiveClasses
+            'directives' => $directiveClasses,
         ]);
 
         $this->trigger(self::EVENT_REGISTER_GQL_DIRECTIVES, $event);
@@ -1497,7 +1499,7 @@ class Gql extends Component
                         $suffix . ':create' => ['label' => Craft::t('app', 'Create assets in the “{volume}” volume', ['volume' => Craft::t('site', $volume->name)])],
                         $suffix . ':save' => ['label' => Craft::t('app', 'Modify assets in the “{volume}” volume', ['volume' => Craft::t('site', $volume->name)])],
                         $suffix . ':delete' => ['label' => Craft::t('app', 'Delete assets from the “{volume}” volume', ['volume' => Craft::t('site', $volume->name)])],
-                    ]
+                    ],
                 ];
             }
         }
@@ -1555,7 +1557,7 @@ class Gql extends Component
                     'nested' => [
                         $suffix . ':save' => ['label' => Craft::t('app', 'Save categories in the “{categoryGroup}” category group', ['categoryGroup' => Craft::t('site', $categoryGroup->name)])],
                         $suffix . ':delete' => ['label' => Craft::t('app', 'Delete categories from the “{categoryGroup}” category group', ['categoryGroup' => Craft::t('site', $categoryGroup->name)])],
-                    ]
+                    ],
                 ];
             }
         }
@@ -1587,7 +1589,7 @@ class Gql extends Component
                     'nested' => [
                         $suffix . ':save' => ['label' => Craft::t('app', 'Save tags in the “{tagGroup}” tag group', ['tagGroup' => Craft::t('site', $tagGroup->name)])],
                         $suffix . ':delete' => ['label' => Craft::t('app', 'Delete tags from the “{tagGroup}” tag group', ['tagGroup' => Craft::t('site', $tagGroup->name)])],
-                    ]
+                    ],
                 ];
             }
         }

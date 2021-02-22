@@ -694,7 +694,7 @@ class UserQuery extends ElementQuery
                 'exists', (new Query())
                     ->from(['ugu' => Table::USERGROUPS_USERS])
                     ->where('[[elements.id]] = [[ugu.userId]]')
-                    ->andWhere(Db::parseParam('groupId', $this->groupId))
+                    ->andWhere(Db::parseParam('groupId', $this->groupId)),
             ]);
         }
 
@@ -795,7 +795,7 @@ class UserQuery extends ElementQuery
             $condition = [
                 'or',
                 ['users.admin' => true],
-                ['elements.id' => $permittedUserIds]
+                ['elements.id' => $permittedUserIds],
             ];
         } else {
             $condition = ['users.admin' => true];

@@ -50,9 +50,9 @@ class TableRowType implements GeneratorInterface, SingleGeneratorInterface
 
         return GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new TableRow([
             'name' => $typeName,
-            'fields' => function() use ($contentFields) {
+            'fields' => function () use ($contentFields) {
                 return $contentFields;
-            }
+            },
         ]));
     }
 }
