@@ -6,6 +6,7 @@
 - Added `craft\helpers\Gql::relatedArgumentComplexity()`.
 
 ### Changed
+- URLs within plain text email bodies are no longer wrapped with `<` and `>` characters, fixing a bug where they could be removed by email providers for looking like HTML tags.
 - The `relatedToAssets`, `relatedToCategories`, `relatedToEntries`, `relatedToTags`, and `relatedToUsers` GraphQL arguments now accept a list of multiple criteria sets. ([#7528](https://github.com/craftcms/cms/issues/7528))
 - Adjusted GraphQL complexity values for relational fields.
 - `craft\helpers\UrlHelper::getSchemeForTokenizedUrl()` and `urlWithToken()` now have a `$cp` argument, indicating whether the method call is for a control panel URL.

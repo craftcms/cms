@@ -123,8 +123,11 @@ class Mailer extends \yii\swiftmailer\Mailer
             $subject = $view->renderString($systemMessage->subject, $variables, View::TEMPLATE_MODE_SITE);
             $body = $view->renderString($systemMessage->body, $variables, View::TEMPLATE_MODE_SITE);
 
+            // Remove </> from around URLs, so they’re not interpreted as HTML tags
+            $textBody = preg_replace('/<(https?:\/\/.+?)>/', '$1', $body);
+
             $message->setSubject($subject);
-            $message->setTextBody($body);
+            $message->setTextBody($textBody);
 
             // Is there a custom HTML template set?
             if (Craft::$app->getEdition() === Craft::Pro && $this->template) {
