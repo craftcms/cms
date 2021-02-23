@@ -121,7 +121,7 @@ class Tag extends Element
             $sources[] = [
                 'key' => 'taggroup:' . $tagGroup->uid,
                 'label' => Craft::t('site', $tagGroup->name),
-                'criteria' => ['groupId' => $tagGroup->id]
+                'criteria' => ['groupId' => $tagGroup->id],
             ];
         }
 
@@ -189,7 +189,7 @@ class Tag extends Element
         $rules[] = [
             ['title'],
             'validateTitle',
-            'when' => function(): bool {
+            'when' => function (): bool {
                 return !$this->hasErrors('groupId') && !$this->hasErrors('title');
             },
         ];

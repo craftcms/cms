@@ -320,7 +320,7 @@ class Gql
         $schema = new GqlSchema(['name' => 'Full Schema', 'uid' => '*']);
 
         // Fetch all nested components
-        $traverser = function($group) use ($schema, &$traverser) {
+        $traverser = function ($group) use ($schema, &$traverser) {
             foreach ($group as $component => $config) {
                 $schema->scope[] = $component;
 
@@ -408,7 +408,7 @@ class Gql
         }
 
         if ($value instanceof ListValueNode) {
-            return array_map(function($node) {
+            return array_map(function ($node) {
                 return self::_convertArgumentValue($node);
             }, iterator_to_array($value->values));
         }
@@ -452,7 +452,7 @@ class Gql
      */
     public static function eagerLoadComplexity(): callable
     {
-        return static function($childComplexity) {
+        return static function ($childComplexity) {
             return $childComplexity + GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD;
         };
     }
@@ -465,8 +465,39 @@ class Gql
      */
     public static function singleQueryComplexity(): callable
     {
-        return static function($childComplexity) {
+        return static function ($childComplexity) {
             return $childComplexity + GqlService::GRAPHQL_COMPLEXITY_QUERY;
+        };
+    }
+
+    /**
+     * Shorthand for returning the complexity function for a field that will add a single query to execution.
+     *
+     * @param int $baseComplexity The base complexity to use. Defaults to a single query.
+     *
+     * @return callable
+     * @since 3.6.7
+     */
+    public static function relatedArgumentComplexity(int $baseComplexity = GqlService::GRAPHQL_COMPLEXITY_QUERY): callable
+    {
+        return static function ($childComplexity, $args) use ($baseComplexity) {
+            $complexityScore = $childComplexity + $baseComplexity;
+            $relatedArguments = ['relatedToAssets', 'relatedToEntries', 'relatedToUsers', 'relatedToCategories', 'relatedToTags'];
+
+            foreach ($relatedArguments as $argumentName) {
+                if (!empty($args[$argumentName])) {
+                    $complexityScore += GqlService::GRAPHQL_COMPLEXITY_QUERY * count((array)$args[$argumentName]);
+                }
+            }
+
+            if (!empty($args['relatedTo'])) {
+                $complexityScore += GqlService::GRAPHQL_COMPLEXITY_QUERY;
+            }
+            if (!empty($args['relatedToAll'])) {
+                $complexityScore += GqlService::GRAPHQL_COMPLEXITY_QUERY;
+            }
+
+            return $complexityScore;
         };
     }
 
@@ -478,7 +509,7 @@ class Gql
      */
     public static function nPlus1Complexity(): callable
     {
-        return static function($childComplexity) {
+        return static function ($childComplexity) {
             return $childComplexity + GqlService::GRAPHQL_COMPLEXITY_NPLUS1;
         };
     }

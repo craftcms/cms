@@ -305,7 +305,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      */
     public static function filterEmptyStringsFromArray(array $array): array
     {
-        return array_filter($array, function($value): bool {
+        return array_filter($array, function ($value): bool {
             return $value !== '';
         });
     }

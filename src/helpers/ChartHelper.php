@@ -100,12 +100,12 @@ class ChartHelper
             'columns' => [
                 [
                     'type' => $intervalUnit === 'hour' ? 'datetime' : 'date',
-                    'label' => $options['categoryLabel']
+                    'label' => $options['categoryLabel'],
                 ],
                 [
                     'type' => $options['valueType'],
-                    'label' => $options['valueLabel']
-                ]
+                    'label' => $options['valueLabel'],
+                ],
             ],
             'rows' => $rows,
         ];
@@ -182,7 +182,7 @@ class ChartHelper
         $yiiToD3Formats = [
             'day' => ['dd' => '%-d', 'd' => '%-d'],
             'month' => ['MM' => '%-m', 'M' => '%-m'],
-            'year' => ['yyyy' => '%Y', 'yy' => '%y', 'y' => '%y']
+            'year' => ['yyyy' => '%Y', 'yy' => '%y', 'y' => '%y'],
         ];
 
         foreach ($shortDateFormats as $unit => $format) {

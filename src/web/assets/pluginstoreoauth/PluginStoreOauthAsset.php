@@ -24,7 +24,7 @@ class PluginStoreOauthAsset extends AssetBundle
      * @inheritdoc
      */
     public $depends = [
-        CpAsset::class
+        CpAsset::class,
     ];
 
     /**

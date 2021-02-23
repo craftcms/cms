@@ -1,5 +1,36 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.6.7 - 2021-02-23
+
+### Added
+- Added `craft\helpers\Gql::relatedArgumentComplexity()`.
+
+### Changed
+- The Updates utility and Plugin Store now identify abandoned plugins.
+- URLs within plain text email bodies are no longer wrapped with `<` and `>` characters, fixing a bug where they could be removed by email providers for looking like HTML tags.
+- The `relatedToAssets`, `relatedToCategories`, `relatedToEntries`, `relatedToTags`, and `relatedToUsers` GraphQL arguments now accept a list of multiple criteria sets. ([#7528](https://github.com/craftcms/cms/issues/7528))
+- Adjusted GraphQL complexity values for relational fields.
+- `craft\helpers\UrlHelper::getSchemeForTokenizedUrl()` and `urlWithToken()` now have a `$cp` argument, indicating whether the method call is for a control panel URL.
+- Updated Composer to 2.0.10.
+
+### Removed
+- Removed all draft arguments for assets, categories, global sets, matrix blocks, tags, and user blocks when querying via the GraphQL API.
+- Removed the `status`, `archived` and `trashed` arguments for the global sets when querying via the GraphQL API.
+- Removed the `status` argument for assets when querying via the GraphQL API.
+
+### Fixed
+- Fixed a JavaScript error that occurred after saving an entry from the Quick Post widget, preventing the widget from being used to create a second entry. ([#7582](https://github.com/craftcms/cms/issues/7582))
+- Fixed a bug where it was possible to access the homepage entry from `/__home__`. ([#7585](https://github.com/craftcms/cms/issues/7585))
+- Fixed a bug where URL fields weren’t getting validated properly if their “Allowed URL Types” setting was set to only “Telephone” or “Email”. ([#7588](https://github.com/craftcms/cms/issues/7588))
+- Fixed a bug where Craft would set plugins’ base paths to the file system root directory, if they were configured with an invalid `basePath` in `vendor/craftcms/plugins.php`.
+- Fixed a bug where user verification and password-reset URLs would use `https` in some cases where they shouldn’t. ([#7581](https://github.com/craftcms/cms/issues/7581))
+- Fixed a bug where it wasn’t possible to override the `User-Agent` header sent by Guzzle from `config/guzzle.php`. ([#7597](https://github.com/craftcms/cms/issues/7597))
+- Fixed a bug where non-admin users weren’t able to replace files from the Edit Asset page, unless they had the “Remove files and folders” permission. ([#7601](https://github.com/craftcms/cms/issues/7601))
+- Fixed a bug where links within info HUDs weren’t opening in a new window.
+
+### Security
+- It’s no longer possible to save a Local volume with the File System Path setting set to a system directory (e.g. the `templates/` or `vendor/` folders).
+
 ## 3.6.6 - 2021-02-15
 
 ### Added

@@ -36,7 +36,7 @@ class LocalizeRelations extends BaseJob
             ->from([Table::RELATIONS])
             ->where([
                 'fieldId' => $this->fieldId,
-                'sourceSiteId' => null
+                'sourceSiteId' => null,
             ])
             ->all();
 

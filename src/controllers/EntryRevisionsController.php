@@ -444,7 +444,7 @@ class EntryRevisionsController extends BaseEntriesController
 
             // Send the draft back to the template
             Craft::$app->getUrlManager()->setRouteParams([
-                'entry' => $draft
+                'entry' => $draft,
             ]);
             return null;
         }

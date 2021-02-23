@@ -64,7 +64,7 @@ class Migrations extends Utility
 
         return $view->renderTemplate('_components/utilities/Migrations', [
             'migrationHistory' => $migrationHistory,
-            'newMigrations' => $newMigrations
+            'newMigrations' => $newMigrations,
         ]);
     }
 }

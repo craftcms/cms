@@ -435,8 +435,8 @@ class Category extends Element
                 'template' => (string)$categoryGroupSiteSettings[$siteId]->template,
                 'variables' => [
                     'category' => $this,
-                ]
-            ]
+                ],
+            ],
         ];
     }
 
@@ -673,7 +673,7 @@ class Category extends Element
                         $source['fieldId'],
                         $source['sourceId'],
                         $source['sourceSiteId'],
-                        $categoryId
+                        $categoryId,
                     ];
                 }
             }

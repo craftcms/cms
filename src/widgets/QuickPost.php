@@ -113,7 +113,7 @@ class QuickPost extends Widget
         return Craft::$app->getView()->renderTemplate('_components/widgets/QuickPost/settings',
             [
                 'sections' => $sections,
-                'widget' => $this
+                'widget' => $this,
             ]);
     }
 
@@ -171,16 +171,18 @@ class QuickPost extends Widget
             [
                 'section' => $section,
                 'entryType' => $entryType,
-                'widget' => $this
+                'widget' => $this,
             ]);
 
         $fieldJs = $view->clearJsBuffer(false);
-
-        $view->registerJs('new Craft.QuickPostWidget(' .
-            $this->id . ', ' .
-            Json::encode($params) . ', ' .
-            "function() {\n" . $fieldJs .
-            "\n});");
+        $jsParams = Json::encode($params);
+        $jsHtml = Json::encode($html);
+        $js = <<<JS
+new Craft.QuickPostWidget($this->id, $jsParams, () => {
+  $fieldJs
+}, $jsHtml);
+JS;
+        $view->registerJs($js);
 
         return $html;
     }

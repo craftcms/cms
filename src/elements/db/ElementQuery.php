@@ -1869,7 +1869,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         if ($this->hasEventHandlers(self::EVENT_AFTER_POPULATE_ELEMENT)) {
             $event = new PopulateElementEvent([
                 'element' => $element,
-                'row' => $row
+                'row' => $row,
             ]);
             $this->trigger(self::EVENT_AFTER_POPULATE_ELEMENT, $event);
             return $event->element;
@@ -2287,7 +2287,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         $parser = new ElementRelationParamParser([
-            'fields' => $this->customFields ? ArrayHelper::index($this->customFields, 'handle') : []
+            'fields' => $this->customFields ? ArrayHelper::index($this->customFields, 'handle') : [],
         ]);
         $condition = $parser->parse($this->relatedTo);
 
@@ -2353,12 +2353,12 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->query->innerJoin(['structureelements' => Table::STRUCTUREELEMENTS], [
                 'and',
                 '[[structureelements.elementId]] = [[subquery.elementsId]]',
-                ['structureelements.structureId' => $this->structureId]
+                ['structureelements.structureId' => $this->structureId],
             ]);
             $this->subQuery->innerJoin(['structureelements' => Table::STRUCTUREELEMENTS], [
                 'and',
                 '[[structureelements.elementId]] = [[elements.id]]',
-                ['structureelements.structureId' => $this->structureId]
+                ['structureelements.structureId' => $this->structureId],
             ]);
         } else {
             $this->query
@@ -2400,7 +2400,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 'and',
                 ['<', 'structureelements.lft', $ancestorOf->lft],
                 ['>', 'structureelements.rgt', $ancestorOf->rgt],
-                ['structureelements.root' => $ancestorOf->root]
+                ['structureelements.root' => $ancestorOf->root],
             ]);
 
             if ($this->ancestorDist) {
@@ -2415,7 +2415,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 'and',
                 ['>', 'structureelements.lft', $descendantOf->lft],
                 ['<', 'structureelements.rgt', $descendantOf->rgt],
-                ['structureelements.root' => $descendantOf->root]
+                ['structureelements.root' => $descendantOf->root],
             ]);
 
             if ($this->descendantDist) {
@@ -2436,7 +2436,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                     'structureelements.level' => $siblingOf->level,
                     'structureelements.root' => $siblingOf->root,
                 ],
-                ['not', ['structureelements.elementId' => $siblingOf->id]]
+                ['not', ['structureelements.elementId' => $siblingOf->id]],
             ]);
 
             if ($siblingOf->level != 1) {
@@ -2449,7 +2449,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 $this->subQuery->andWhere([
                     'and',
                     ['>', 'structureelements.lft', $parent->lft],
-                    ['<', 'structureelements.rgt', $parent->rgt]
+                    ['<', 'structureelements.rgt', $parent->rgt],
                 ]);
             }
 
@@ -2477,7 +2477,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->subQuery->andWhere([
                 'and',
                 ['<', 'structureelements.lft', $positionedBefore->lft],
-                ['structureelements.root' => $positionedBefore->root]
+                ['structureelements.root' => $positionedBefore->root],
             ]);
         }
 
@@ -2556,7 +2556,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                     'or',
                     ['elements.draftId' => null],
                     ['not', ['drafts.sourceId' => null]],
-                    ['drafts.saved' => true]
+                    ['drafts.saved' => true],
                 ]);
             }
         } else {
@@ -2885,7 +2885,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             ->andWhere('[[subElements.id]] = [[tmpElements.id]]')
             ->orderBy([
                 new Expression($caseSql, $caseParams),
-                'elements_sites.id' => SORT_ASC
+                'elements_sites.id' => SORT_ASC,
             ])
             ->offset(0)
             ->limit(1)

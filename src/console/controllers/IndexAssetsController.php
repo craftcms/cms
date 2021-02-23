@@ -127,7 +127,7 @@ class IndexAssetsController extends Controller
             $this->stdout('Indexing assets in ', Console::FG_YELLOW);
             $this->stdout($volume->name, Console::FG_CYAN);
             $this->stdout(' ...' . PHP_EOL, Console::FG_YELLOW);
-            $fileList = array_filter($assetIndexer->getIndexListOnVolume($volume, $path), function($entry) {
+            $fileList = array_filter($assetIndexer->getIndexListOnVolume($volume, $path), function ($entry) {
                 return $entry['type'] !== 'dir';
             });
 
@@ -272,9 +272,9 @@ class IndexAssetsController extends Controller
         }
 
         $selection = $this->prompt('>', [
-            'validator' => function($input) use ($missingRecords) {
+            'validator' => function ($input) use ($missingRecords) {
                 return !$input || (is_numeric($input) && isset($missingRecords[$input - 1]));
-            }
+            },
         ]);
 
         return $selection ? $missingRecords[$selection - 1] : null;

@@ -57,7 +57,7 @@ class ApplyNewPropagationMethod extends BaseJob
         $elementsService = Craft::$app->getElements();
         $allSiteIds = Craft::$app->getSites()->getAllSiteIds();
 
-        $callback = function(BatchElementActionEvent $e) use ($elementType, $queue, $query, $total, $elementsService, $allSiteIds) {
+        $callback = function (BatchElementActionEvent $e) use ($elementType, $queue, $query, $total, $elementsService, $allSiteIds) {
             if ($e->query === $query) {
                 $this->setProgress($queue, ($e->position - 1) / $total, Craft::t('app', '{step} of {total}', [
                     'step' => $e->position,

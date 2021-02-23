@@ -150,7 +150,7 @@ class Globals extends Component
         if (!isset($this->_editableGlobalSets[$currentSiteId])) {
             $session = Craft::$app->getUser();
             $this->_editableGlobalSets[$currentSiteId] = ArrayHelper::where($this->_allSets($currentSiteId),
-                function(GlobalSet $globalSet) use ($session): bool {
+                function (GlobalSet $globalSet) use ($session): bool {
                     return $session->checkPermission("editGlobalSet:$globalSet->uid");
                 }, true, true, false);
         }
@@ -398,7 +398,7 @@ class Globals extends Component
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_GLOBAL_SET)) {
             $this->trigger(self::EVENT_AFTER_SAVE_GLOBAL_SET, new GlobalSetEvent([
                 'globalSet' => $this->getSetById($globalSetRecord->id),
-                'isNew' => $isNewSet
+                'isNew' => $isNewSet,
             ]));
         }
 

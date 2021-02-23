@@ -328,8 +328,8 @@ class m160807_144858_sites extends Migration
                         'or',
                         ['nestedUrlFormat' => null],
                         ['nestedUrlFormat' => ''],
-                        '[[nestedUrlFormat]] = [[uriFormat]]'
-                    ]
+                        '[[nestedUrlFormat]] = [[uriFormat]]',
+                    ],
                 ])
                 ->all($this->db);
 
@@ -394,8 +394,8 @@ class m160807_144858_sites extends Migration
                     Categories::class,
                     Entries::class,
                     Tags::class,
-                    Users::class
-                ]
+                    Users::class,
+                ],
             ])
             ->all($this->db);
 
@@ -503,7 +503,7 @@ class m160807_144858_sites extends Migration
 
         // Set the values
         $this->update($table, [
-            $column => new Expression(str_replace('%', "[[{$localeColumn}]]", $this->caseSql))
+            $column => new Expression(str_replace('%', "[[{$localeColumn}]]", $this->caseSql)),
         ], '', [], false);
 
         // In case there were any referenced locales that no longer exist.

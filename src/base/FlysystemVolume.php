@@ -364,7 +364,7 @@ abstract class FlysystemVolume extends Volume
     protected function addFileMetadataToConfig(array $config): array
     {
         $config = array_merge($config, [
-            'visibility' => $this->visibility()
+            'visibility' => $this->visibility(),
         ]);
 
         return $config;

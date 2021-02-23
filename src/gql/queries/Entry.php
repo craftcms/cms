@@ -37,7 +37,7 @@ class Entry extends Query
                 'args' => EntryArguments::getArguments(),
                 'resolve' => EntryResolver::class . '::resolve',
                 'description' => 'This query is used to query for entries.',
-                'complexity' => GqlHelper::singleQueryComplexity(),
+                'complexity' => GqlHelper::relatedArgumentComplexity(),
             ],
             'entryCount' => [
                 'type' => Type::nonNull(Type::int()),

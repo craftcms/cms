@@ -664,7 +664,7 @@ class Users extends Component
         // Fire an 'afterActivateUser' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_ACTIVATE_USER)) {
             $this->trigger(self::EVENT_AFTER_ACTIVATE_USER, new UserEvent([
-                'user' => $user
+                'user' => $user,
             ]));
         }
 
@@ -748,7 +748,7 @@ class Users extends Component
         // Fire an 'afterUnlockUser' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_UNLOCK_USER)) {
             $this->trigger(self::EVENT_AFTER_UNLOCK_USER, new UserEvent([
-                'user' => $user
+                'user' => $user,
             ]));
         }
 
@@ -790,7 +790,7 @@ class Users extends Component
         // Fire an 'afterSuspendUser' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SUSPEND_USER)) {
             $this->trigger(self::EVENT_AFTER_SUSPEND_USER, new UserEvent([
-                'user' => $user
+                'user' => $user,
             ]));
         }
 
@@ -836,7 +836,7 @@ class Users extends Component
         // Fire an 'afterUnsuspendUser' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_UNSUSPEND_USER)) {
             $this->trigger(self::EVENT_AFTER_UNSUSPEND_USER, new UserEvent([
-                'user' => $user
+                'user' => $user,
             ]));
         }
 
@@ -891,13 +891,13 @@ class Users extends Component
                 'and',
                 [
                     'userId' => $userId,
-                    'message' => $message
+                    'message' => $message,
                 ],
                 [
                     'or',
                     ['expiryDate' => null],
-                    ['>', 'expiryDate', Db::prepareDateForDb(new \DateTime())]
-                ]
+                    ['>', 'expiryDate', Db::prepareDateForDb(new \DateTime())],
+                ],
             ])
             ->exists();
     }
@@ -1068,7 +1068,7 @@ class Users extends Component
 
         // Fire a 'beforeAssignUserToDefaultGroup' event
         $event = new UserAssignGroupEvent([
-            'user' => $user
+            'user' => $user,
         ]);
         $this->trigger(self::EVENT_BEFORE_ASSIGN_USER_TO_DEFAULT_GROUP, $event);
 
@@ -1083,7 +1083,7 @@ class Users extends Component
         // Fire an 'afterAssignUserToDefaultGroup' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_ASSIGN_USER_TO_DEFAULT_GROUP)) {
             $this->trigger(self::EVENT_AFTER_ASSIGN_USER_TO_DEFAULT_GROUP, new UserAssignGroupEvent([
-                'user' => $user
+                'user' => $user,
             ]));
         }
 
@@ -1296,12 +1296,13 @@ class Users extends Component
 
         $params = [
             'code' => $unhashedVerificationCode,
-            'id' => $user->uid
+            'id' => $user->uid,
         ];
 
-        $scheme = UrlHelper::getSchemeForTokenizedUrl();
+        $cp = $user->can('accessCp');
+        $scheme = UrlHelper::getSchemeForTokenizedUrl($cp);
 
-        if (!$user->can('accessCp')) {
+        if (!$cp) {
             return UrlHelper::siteUrl($fePath, $params, $scheme);
         }
 

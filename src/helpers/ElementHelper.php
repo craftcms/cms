@@ -267,7 +267,7 @@ class ElementHelper
             $query->andWhere([
                 'not', [
                     'elements.id' => $sourceId,
-                ]
+                ],
             ]);
         }
 

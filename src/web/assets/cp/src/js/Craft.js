@@ -1499,6 +1499,14 @@ $.extend(Craft,
             $('.formsubmit', $container).formsubmit();
             $('.menubtn', $container).menubtn();
             $('.datetimewrapper', $container).datetime();
+
+            // Open outbound links in new windows
+            // hat tip: https://stackoverflow.com/a/2911045/1688568
+            $('a').each(function() {
+                if (this.hostname.length && this.hostname !== location.hostname && typeof $(this).attr('target') === 'undefined') {
+                    $(this).attr('rel', 'noopener').attr('target', '_blank')
+                }
+            });
         },
 
         _elementIndexClasses: {},

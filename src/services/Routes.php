@@ -201,7 +201,7 @@ class Routes extends Component
             'uriParts' => $uriParts,
             'uriPattern' => $uriPattern,
             'sortOrder' => (int)$sortOrder,
-            'siteUid' => $siteUid
+            'siteUid' => $siteUid,
         ];
 
         $projectConfig->set(self::CONFIG_ROUTES_KEY . '.' . $routeUid, $configData, 'Save route');

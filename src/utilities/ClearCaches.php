@@ -125,13 +125,13 @@ class ClearCaches extends Utility
                 'key' => 'data',
                 'label' => Craft::t('app', 'Data caches'),
                 'info' => Craft::t('app', 'Anything cached with `Craft::$app->cache->set()`'),
-                'action' => [Craft::$app->getCache(), 'flush']
+                'action' => [Craft::$app->getCache(), 'flush'],
             ],
             [
                 'key' => 'asset',
                 'label' => Craft::t('app', 'Asset caches'),
                 'info' => Craft::t('app', 'Local copies of remote images, generated thumbnails'),
-                'action' => function() use ($pathService) {
+                'action' => function () use ($pathService) {
                     $dirs = [
                         $pathService->getAssetSourcesPath(false),
                         $pathService->getAssetThumbsPath(false),
@@ -144,7 +144,7 @@ class ClearCaches extends Utility
                             // the directory doesn't exist
                         }
                     }
-                }
+                },
             ],
             [
                 'key' => 'compiled-templates',
@@ -160,7 +160,7 @@ class ClearCaches extends Utility
                 'info' => Craft::t('app', 'Contents of {path}', [
                     'path' => '`web/cpresources/`',
                 ]),
-                'action' => function() {
+                'action' => function () {
                     $basePath = Craft::$app->getConfig()->getGeneral()->resourceBasePath;
                     $request = Craft::$app->getRequest();
                     if (
@@ -174,7 +174,7 @@ class ClearCaches extends Utility
                     }
 
                     FileHelper::clearDirectory(Craft::getAlias($basePath), [
-                        'except' => ['.gitignore']
+                        'except' => ['.gitignore'],
                     ]);
                 },
             ],
@@ -190,25 +190,25 @@ class ClearCaches extends Utility
                 'key' => 'transform-indexes',
                 'label' => Craft::t('app', 'Asset transform index'),
                 'info' => Craft::t('app', 'Record of generated image transforms'),
-                'action' => function() {
+                'action' => function () {
                     Craft::$app->getDb()->createCommand()
                         ->truncateTable(Table::ASSETTRANSFORMINDEX)
                         ->execute();
-                }
+                },
             ],
             [
                 'key' => 'asset-indexing-data',
                 'label' => Craft::t('app', 'Asset indexing data'),
-                'action' => function() {
+                'action' => function () {
                     Craft::$app->getDb()->createCommand()
                         ->truncateTable(Table::ASSETINDEXDATA)
                         ->execute();
-                }
+                },
             ],
         ];
 
         $event = new RegisterCacheOptionsEvent([
-            'options' => $options
+            'options' => $options,
         ]);
         Event::trigger(self::class, self::EVENT_REGISTER_CACHE_OPTIONS, $event);
 
@@ -240,7 +240,7 @@ class ClearCaches extends Utility
         }
 
         $event = new RegisterCacheOptionsEvent([
-            'options' => $options
+            'options' => $options,
         ]);
         Event::trigger(self::class, self::EVENT_REGISTER_TAG_OPTIONS, $event);
 

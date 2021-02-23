@@ -423,7 +423,7 @@ class Application extends \yii\web\Application
                         UrlManager::class . '::_getMatchedUrlRoute',
                         UrlManager::class . '::_getTemplateRoute',
                         UrlManager::class . '::_getTokenRoute',
-                    ]
+                    ],
                 ],
                 'request' => RequestPanel::class,
                 'log' => LogPanel::class,

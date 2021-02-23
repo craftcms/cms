@@ -4,21 +4,20 @@
     Craft.QuickPostWidget = Garnish.Base.extend({
         params: null,
         initFields: null,
+        formHtml: null,
         $widget: null,
         $form: null,
-        $formClone: null,
         $spinner: null,
         $errorList: null,
         loading: false,
 
-        init: function(widgetId, params, initFields) {
+        init: function(widgetId, params, initFields, formHtml) {
             this.params = params;
             this.initFields = initFields;
+            this.formHtml = formHtml;
             this.$widget = $('#widget' + widgetId);
 
-            var $form = this.$widget.find('form:first');
-            this.$formClone = $form.clone();
-            this.initForm($form);
+            this.initForm(this.$widget.find('form:first'));
         },
 
         initForm: function($form) {
@@ -95,8 +94,9 @@
 
         onSave: function(response) {
             // Reset the widget
-            var $newForm = this.$formClone.clone();
+            var $newForm = $(this.formHtml);
             this.$form.replaceWith($newForm);
+            Craft.initUiElements($newForm);
             this.initForm($newForm);
 
             // Are there any Recent Entries widgets to notify?

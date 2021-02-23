@@ -105,7 +105,7 @@ class AssetIndexer extends Component
                 'volumeId' => $volumeId,
                 'total' => count($fileList),
                 'missingFolders' => $missingFolders,
-                'skippedFiles' => $skippedItems
+                'skippedFiles' => $skippedItems,
             ];
         } catch (\Throwable $exception) {
             Craft::$app->getErrorHandler()->logException($exception);
@@ -125,7 +125,7 @@ class AssetIndexer extends Component
         $fileList = $volume->getFileList($directory, true);
 
         // Filter out any files that live in directories that begin with at underscore
-        $fileList = array_filter($fileList, function($value) {
+        $fileList = array_filter($fileList, function ($value) {
             $path = $value['path'];
             $segments = explode('/', $path);
             $lastSegmentIndex = count($segments) - 1;
@@ -140,7 +140,7 @@ class AssetIndexer extends Component
         });
 
         // Sort by number of slashes to ensure that parent folders are listed earlier than their children
-        uasort($fileList, function($a, $b) {
+        uasort($fileList, function ($a, $b) {
             $a = substr_count($a['path'], '/');
             $b = substr_count($b['path'], '/');
             if ($a === $b) {
@@ -163,7 +163,7 @@ class AssetIndexer extends Component
         $isMysql = Craft::$app->getDb()->getIsMysql();
         $allowedExtensions = Craft::$app->getConfig()->getGeneral()->allowedFileExtensions;
 
-        $skippedItems = array_filter($indexList, function($entry) use ($isMysql, $allowedExtensions) {
+        $skippedItems = array_filter($indexList, function ($entry) use ($isMysql, $allowedExtensions) {
             if (preg_match(AssetsHelper::INDEX_SKIP_ITEMS_PATTERN, $entry['basename'])) {
                 return true;
             }
@@ -192,7 +192,7 @@ class AssetIndexer extends Component
      */
     public function extractFolderItemsFromIndexList(array &$indexList): array
     {
-        $folderItems = array_filter($indexList, function($entry) {
+        $folderItems = array_filter($indexList, function ($entry) {
             return $entry['type'] === 'dir';
         });
 
@@ -284,7 +284,7 @@ class AssetIndexer extends Component
                 'volumeId' => $volumeId,
                 'sessionId' => $sessionId,
                 'completed' => false,
-                'inProgress' => false
+                'inProgress' => false,
             ])
             ->one();
 
@@ -324,7 +324,7 @@ class AssetIndexer extends Component
             ->where([
                 'and',
                 ['sessionId' => $sessionId],
-                ['not', ['recordId' => null]]
+                ['not', ['recordId' => null]],
             ])
             ->column();
 
@@ -388,7 +388,7 @@ class AssetIndexer extends Component
             'size' => $volume->getFileSize($path),
             'timestamp' => $volume->getDateModified($path),
             'inProgress' => true,
-            'completed' => false
+            'completed' => false,
         ]);
 
         return $this->indexFileByEntry($indexEntry, $cacheImages, $createIfMissing);
@@ -485,7 +485,7 @@ class AssetIndexer extends Component
         $folder = $assets->findFolder([
             'volumeId' => $indexEntry->volumeId,
             'path' => $path,
-            'parentId' => $parentId
+            'parentId' => $parentId,
         ]);
 
         if (!$folder) {

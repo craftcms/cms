@@ -213,7 +213,7 @@ class ConfigSyncController extends BaseUpdaterController
                 'options' => [
                     $this->finishedState(['label' => Craft::t('app', 'Cancel')]),
                     $this->actionOption(Craft::t('app', 'Try again'), self::ACTION_RETRY, ['submit' => true]),
-                ]
+                ],
             ];
         }
 
@@ -229,7 +229,7 @@ class ConfigSyncController extends BaseUpdaterController
                     $this->actionOption(Craft::t('app', 'Use YAML files'), $this->_nextApplyYamlAction(), [
                         'submit' => true,
                     ]),
-                ]
+                ],
             ];
         }
 

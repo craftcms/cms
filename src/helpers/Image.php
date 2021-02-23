@@ -137,7 +137,7 @@ class Image
             2 => 'Truecolour',
             3 => 'Indexed-colour',
             4 => 'Greyscale with alpha',
-            6 => 'Truecolor with alpha'
+            6 => 'Truecolor with alpha',
         ];
 
         if (empty($type[$color])) {

@@ -30,12 +30,12 @@ abstract class Arguments
             'id' => [
                 'name' => 'id',
                 'type' => Type::listOf(QueryArgument::getType()),
-                'description' => 'Narrows the query results based on the elements’ IDs.'
+                'description' => 'Narrows the query results based on the elements’ IDs.',
             ],
             'uid' => [
                 'name' => 'uid',
                 'type' => Type::listOf(Type::string()),
-                'description' => 'Narrows the query results based on the elements’ UIDs.'
+                'description' => 'Narrows the query results based on the elements’ UIDs.',
             ],
         ];
     }

@@ -22,6 +22,19 @@
             <!-- body -->
             <div class="plugin-details-body">
                 <template v-if="!loading">
+                    <template v-if="plugin.abandoned">
+                        <div class="error mb-6 px-4 py-3 rounded border border-solid border-red flex flex-nowrap text-base">
+                            <svg class="w-8 h-8">
+                                <use :xlink:href="alertIcon + '#alert'"></use>
+                            </svg>
+
+                            <div class="flex-1 mb-0">
+                                <strong>{{ "This plugin is no longer maintained."|t('app') }} </strong>
+                                <span v-html="recommendedLabel"></span>
+                            </div>
+                        </div>
+                    </template>
+
                     <template v-if="plugin.screenshotUrls && plugin.screenshotUrls.length">
                         <plugin-screenshots :images="plugin.screenshotUrls"></plugin-screenshots>
 
@@ -156,6 +169,7 @@ c-2-26.8-24.8-53.5-42-72.5S0,169.8,0,144C0,76,64.8,32,128,32S256,76,256,144z"/>
                 defaultPluginSvg: state => state.craft.defaultPluginSvg,
                 plugin: state => state.pluginStore.plugin,
                 showingScreenshotModal: state => state.app.showingScreenshotModal,
+                alertIcon: state => state.craft.alertIcon,
             }),
 
             ...mapGetters({
@@ -205,6 +219,13 @@ c-2-26.8-24.8-53.5-42-72.5S0,169.8,0,144C0,76,64.8,32,128,32S256,76,256,144z"/>
             licenseMismatchedMessage() {
                 return this.$options.filters.t('This license is tied to another Craft install. Visit {accountLink} to detach it, or buy a new license.', 'app', {
                     accountLink: '<a href="https://id.craftcms.com" rel="noopener" target="_blank">id.craftcms.com</a>',
+                })
+            },
+
+            recommendedLabel() {
+                return this.$options.filters.t('The developer recommends using <a href="{url}">{name}</a> instead.', 'app', {
+                    name: this.plugin.replacementName,
+                    url: Craft.getCpUrl('plugin-store/' + this.plugin.replacementHandle)
                 })
             }
         },

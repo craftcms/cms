@@ -71,7 +71,7 @@ class Category extends Structure
             'groupId' => [
                 'name' => 'groupId',
                 'type' => Type::int(),
-                'description' => 'The ID of the group that contains the category.'
+                'description' => 'The ID of the group that contains the category.',
             ],
             'groupHandle' => [
                 'name' => 'groupHandle',
@@ -84,14 +84,14 @@ class Category extends Structure
                 'args' => CategoryArguments::getArguments(),
                 'type' => Type::listOf(static::getType()),
                 'description' => 'The category’s children.',
-                'complexity' => Gql::eagerLoadComplexity(),
+                'complexity' => Gql::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
             ],
             'parent' => [
                 'name' => 'parent',
                 'args' => CategoryArguments::getArguments(),
                 'type' => static::getType(),
                 'description' => 'The category’s parent.',
-                'complexity' => Gql::eagerLoadComplexity(),
+                'complexity' => Gql::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
             ],
             'url' => [
                 'name' => 'url',
@@ -110,7 +110,7 @@ class Category extends Structure
                 'type' => self::getType(),
                 'args' => CategoryArguments::getArguments(),
                 'description' => 'Returns the previous element relative to this one, from a given set of criteria.',
-                'complexity' => function($childrenComplexity, $args) {
+                'complexity' => function ($childrenComplexity, $args) {
                     return $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_NPLUS1 * (int)!empty($args);
                 },
             ],
@@ -119,7 +119,7 @@ class Category extends Structure
                 'type' => self::getType(),
                 'args' => CategoryArguments::getArguments(),
                 'description' => 'Returns the next element relative to this one, from a given set of criteria.',
-                'complexity' => function($childrenComplexity, $args) {
+                'complexity' => function ($childrenComplexity, $args) {
                     return $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_NPLUS1 * (int)!empty($args);
                 },
             ],

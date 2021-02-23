@@ -122,6 +122,7 @@ return [
     Composer\Semver\Semver::class,
     Composer\Util\Filesystem::class,
     Composer\Util\Git::class,
+    Composer\Util\Http\CurlResponse::class,
     Composer\Util\Http\RequestProxy::class,
     Composer\Util\Http\Response::class,
     Composer\Util\MetadataMinifier::class,

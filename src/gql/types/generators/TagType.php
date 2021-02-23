@@ -64,9 +64,9 @@ class TagType extends Generator implements GeneratorInterface, SingleGeneratorIn
 
         return GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new Tag([
             'name' => $typeName,
-            'fields' => function() use ($tagGroupFields) {
+            'fields' => function () use ($tagGroupFields) {
                 return $tagGroupFields;
-            }
+            },
         ]));
     }
 }

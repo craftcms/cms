@@ -67,8 +67,8 @@ class Element extends InterfaceType
                     'field' => [
                         'name' => 'field',
                         'type' => Type::nonNull(Type::string()),
-                        'description' => 'The handle of the field that holds the relations.'
-                    ]
+                        'description' => 'The handle of the field that holds the relations.',
+                    ],
                 ],
                 'description' => 'Return a number of related elements for a field.',
                 'complexity' => GqlHelper::eagerLoadComplexity(),
@@ -76,62 +76,62 @@ class Element extends InterfaceType
             'title' => [
                 'name' => 'title',
                 'type' => Type::string(),
-                'description' => 'The element’s title.'
+                'description' => 'The element’s title.',
             ],
             'slug' => [
                 'name' => 'slug',
                 'type' => Type::string(),
-                'description' => 'The element’s slug.'
+                'description' => 'The element’s slug.',
             ],
             'uri' => [
                 'name' => 'uri',
                 'type' => Type::string(),
-                'description' => 'The element’s URI.'
+                'description' => 'The element’s URI.',
             ],
             'enabled' => [
                 'name' => 'enabled',
                 'type' => Type::boolean(),
-                'description' => 'Whether the element is enabled or not.'
+                'description' => 'Whether the element is enabled or not.',
             ],
             'archived' => [
                 'name' => 'archived',
                 'type' => Type::boolean(),
-                'description' => 'Whether the element is archived or not.'
+                'description' => 'Whether the element is archived or not.',
             ],
             'siteId' => [
                 'name' => 'siteId',
                 'type' => Type::int(),
-                'description' => 'The ID of the site the element is associated with.'
+                'description' => 'The ID of the site the element is associated with.',
             ],
             'language' => [
                 'name' => 'language',
                 'type' => Type::string(),
-                'description' => 'The language of the site element is associated with.'
+                'description' => 'The language of the site element is associated with.',
             ],
             'searchScore' => [
                 'name' => 'searchScore',
                 'type' => Type::string(),
-                'description' => 'The element’s search score, if the `search` parameter was used when querying for the element.'
+                'description' => 'The element’s search score, if the `search` parameter was used when querying for the element.',
             ],
             'trashed' => [
                 'name' => 'trashed',
                 'type' => Type::boolean(),
-                'description' => 'Whether the element has been soft-deleted or not.'
+                'description' => 'Whether the element has been soft-deleted or not.',
             ],
             'status' => [
                 'name' => 'status',
                 'type' => Type::string(),
-                'description' => 'The element\'s status.'
+                'description' => 'The element\'s status.',
             ],
             'dateCreated' => [
                 'name' => 'dateCreated',
                 'type' => DateTime::getType(),
-                'description' => 'The date the element was created.'
+                'description' => 'The date the element was created.',
             ],
             'dateUpdated' => [
                 'name' => 'dateUpdated',
                 'type' => DateTime::getType(),
-                'description' => 'The date the element was last updated.'
+                'description' => 'The date the element was last updated.',
             ],
         ]), self::getName());
     }
@@ -188,7 +188,7 @@ class Element extends InterfaceType
                 'name' => 'draftNotes',
                 'type' => Type::string(),
                 'description' => 'The notes for the draft.',
-            ]
+            ],
         ];
     }
 

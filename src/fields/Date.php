@@ -220,7 +220,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
             'instructionsId' => "$id-instructions",
             'name' => $this->handle,
             'value' => $value,
-            'minuteIncrement' => $this->minuteIncrement
+            'minuteIncrement' => $this->minuteIncrement,
         ];
 
         $input = '';

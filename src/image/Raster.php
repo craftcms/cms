@@ -259,7 +259,7 @@ class Raster extends Image
             $newWidth = round($this->getWidth() / $factor);
 
             $this->resize($newWidth, $newHeight);
-        // If we need to upscale AND that's ok
+            // If we need to upscale AND that's ok
         } else if (($targetWidth > $this->getWidth() || $targetHeight > $this->getHeight()) && !$scaleIfSmaller) {
             // Figure the crop size reductions
             $factor = max($targetWidth / $this->getWidth(), $targetHeight / $this->getHeight());
@@ -718,7 +718,7 @@ class Raster extends Image
                 }
                 $options = [
                     'png_compression_level' => $normalizedQuality,
-                    'flatten' => false
+                    'flatten' => false,
                 ];
 
                 if ($this->_imageSourcePath) {
@@ -741,7 +741,7 @@ class Raster extends Image
 
             default:
                 return [
-                    'quality' => $quality
+                    'quality' => $quality,
                 ];
         }
     }

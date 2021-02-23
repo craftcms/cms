@@ -391,7 +391,7 @@ class Fields extends Component
         // Fire an 'afterDeleteFieldGroup' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_FIELD_GROUP)) {
             $this->trigger(self::EVENT_AFTER_DELETE_FIELD_GROUP, new FieldGroupEvent([
-                'group' => $group
+                'group' => $group,
             ]));
         }
     }
@@ -434,7 +434,7 @@ class Fields extends Component
         // Fire a 'beforeDeleteFieldGroup' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_FIELD_GROUP)) {
             $this->trigger(self::EVENT_BEFORE_DELETE_FIELD_GROUP, new FieldGroupEvent([
-                'group' => $group
+                'group' => $group,
             ]));
         }
 
@@ -483,7 +483,7 @@ class Fields extends Component
         ];
 
         $event = new RegisterComponentTypesEvent([
-            'types' => $fieldTypes
+            'types' => $fieldTypes,
         ]);
         $this->trigger(self::EVENT_REGISTER_FIELD_TYPES, $event);
 
@@ -641,7 +641,7 @@ class Fields extends Component
      */
     public function getFieldsWithContent(): array
     {
-        return ArrayHelper::where($this->getAllFields(), function(FieldInterface $field) {
+        return ArrayHelper::where($this->getAllFields(), function (FieldInterface $field) {
             return $field::hasContentColumn();
         }, true, true, false);
     }
@@ -1531,7 +1531,7 @@ class Fields extends Component
         // Fire a 'beforeDeleteFieldLayout' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_FIELD_LAYOUT)) {
             $this->trigger(self::EVENT_BEFORE_DELETE_FIELD_LAYOUT, new FieldLayoutEvent([
-                'layout' => $layout
+                'layout' => $layout,
             ]));
         }
 
@@ -1541,7 +1541,7 @@ class Fields extends Component
 
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE_FIELD_LAYOUT)) {
             $this->trigger(self::EVENT_AFTER_DELETE_FIELD_LAYOUT, new FieldLayoutEvent([
-                'layout' => $layout
+                'layout' => $layout,
             ]));
         }
 
@@ -1822,7 +1822,7 @@ class Fields extends Component
                 'fields.translationKeyFormat',
                 'fields.type',
                 'fields.settings',
-                'fields.uid'
+                'fields.uid',
             ])
             ->from(['fields' => Table::FIELDS])
             ->orderBy(['fields.name' => SORT_ASC, 'fields.handle' => SORT_ASC]);
@@ -1847,7 +1847,7 @@ class Fields extends Component
             ->select([
                 'id',
                 'type',
-                'uid'
+                'uid',
             ])
             ->from([Table::FIELDLAYOUTS]);
 
@@ -1873,7 +1873,7 @@ class Fields extends Component
                 'layoutId',
                 'name',
                 'sortOrder',
-                'uid'
+                'uid',
             ])
             ->from([Table::FIELDLAYOUTTABS])
             ->orderBy(['sortOrder' => SORT_ASC]);

@@ -102,7 +102,7 @@ class GqlEntityRegistry
 
         self::$_entities[$entityName] = $entity;
 
-        TypeLoader::registerType($entityName, function() use ($entity) {
+        TypeLoader::registerType($entityName, function () use ($entity) {
             return $entity;
         });
 

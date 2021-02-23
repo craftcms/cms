@@ -249,7 +249,7 @@ class Sections extends Component
         }
 
         $userSession = Craft::$app->getUser();
-        return ArrayHelper::where($this->getAllSections(), function(Section $section) use ($userSession) {
+        return ArrayHelper::where($this->getAllSections(), function (Section $section) use ($userSession) {
             return $userSession->checkPermission('editEntries:' . $section->uid);
         }, true, true, false);
     }
@@ -447,7 +447,7 @@ class Sections extends Component
         if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_SECTION)) {
             $this->trigger(self::EVENT_BEFORE_SAVE_SECTION, new SectionEvent([
                 'section' => $section,
-                'isNew' => $isNewSection
+                'isNew' => $isNewSection,
             ]));
         }
 
@@ -752,7 +752,7 @@ class Sections extends Component
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_SECTION)) {
             $this->trigger(self::EVENT_AFTER_SAVE_SECTION, new SectionEvent([
                 'section' => $section,
-                'isNew' => $isNewSection
+                'isNew' => $isNewSection,
             ]));
         }
 
@@ -1232,7 +1232,7 @@ class Sections extends Component
                     'siteId' => '*',
                     'unique' => true,
                     'status' => null,
-                ]
+                ],
             ]));
         }
 
@@ -1420,7 +1420,7 @@ class Sections extends Component
             $joinCondition = [
                 'and',
                 $joinCondition,
-                ['structures.dateDeleted' => null]
+                ['structures.dateDeleted' => null],
             ];
         }
 
@@ -1473,7 +1473,7 @@ class Sections extends Component
             throw new Exception('No site settings exist for section ' . $section->id);
         }
 
-        $sites = ArrayHelper::where(Craft::$app->getSites()->getAllSites(), function(Site $site) use ($siteSettings) {
+        $sites = ArrayHelper::where(Craft::$app->getSites()->getAllSites(), function (Site $site) use ($siteSettings) {
             // Only include it if it's one of this section's sites
             return isset($siteSettings[$site->uid]);
         }, true, true, false);
