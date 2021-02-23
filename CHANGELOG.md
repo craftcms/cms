@@ -25,6 +25,7 @@
 - Fixed a bug where user verification and password-reset URLs would use `https` in some cases where they shouldn’t. ([#7581](https://github.com/craftcms/cms/issues/7581))
 - Fixed a bug where it wasn’t possible to override the `User-Agent` header sent by Guzzle from `config/guzzle.php`. ([#7597](https://github.com/craftcms/cms/issues/7597))
 - Fixed a bug where non-admin users weren’t able to replace files from the Edit Asset page, unless they had the “Remove files and folders” permission. ([#7601](https://github.com/craftcms/cms/issues/7601))
+- Fixed a bug where links within info HUDs weren’t opening in a new window.
 
 ### Security
 - It’s no longer possible to save a Local volume with the File System Path setting set to a system directory (e.g. the `templates/` or `vendor/` folders).
