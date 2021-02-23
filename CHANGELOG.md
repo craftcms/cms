@@ -1,11 +1,12 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.6.7 - 2021-02-23
 
 ### Added
 - Added `craft\helpers\Gql::relatedArgumentComplexity()`.
 
 ### Changed
+- The Updates utility and Plugin Store now identify abandoned plugins.
 - URLs within plain text email bodies are no longer wrapped with `<` and `>` characters, fixing a bug where they could be removed by email providers for looking like HTML tags.
 - The `relatedToAssets`, `relatedToCategories`, `relatedToEntries`, `relatedToTags`, and `relatedToUsers` GraphQL arguments now accept a list of multiple criteria sets. ([#7528](https://github.com/craftcms/cms/issues/7528))
 - Adjusted GraphQL complexity values for relational fields.
