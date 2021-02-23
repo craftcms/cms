@@ -72,6 +72,7 @@ Craft.InfoIcon = Garnish.Base.extend({
                     });
                 },
             });
+            Craft.initUiElements(this.hud.$body);
         } else {
             this.hud.show();
         }
