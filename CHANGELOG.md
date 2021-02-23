@@ -10,7 +10,7 @@
 - The `relatedToAssets`, `relatedToCategories`, `relatedToEntries`, `relatedToTags`, and `relatedToUsers` GraphQL arguments now accept a list of multiple criteria sets. ([#7528](https://github.com/craftcms/cms/issues/7528))
 - Adjusted GraphQL complexity values for relational fields.
 - `craft\helpers\UrlHelper::getSchemeForTokenizedUrl()` and `urlWithToken()` now have a `$cp` argument, indicating whether the method call is for a control panel URL.
-- Updated Composer to 2.0.9.
+- Updated Composer to 2.0.10.
 
 ### Removed
 - Removed all draft arguments for assets, categories, global sets, matrix blocks, tags, and user blocks when querying via the GraphQL API.
