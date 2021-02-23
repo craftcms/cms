@@ -31,13 +31,6 @@
         on: true,
     }) }}
 
-    {{ forms.lightswitchField({
-        name: 'useQueue',
-        label: 'Use queue'|t('app'),
-        instructions: 'Whether indexing should be performed using a queue job.'|t('app'),
-        on: false,
-    }) }}
-
     <div class="buttons">
         <button type="submit" class="btn submit">{{ 'Update asset indexes'|t('app') }}</button>
         <div class="utility-status"></div>
@@ -55,8 +48,6 @@
             indexedVolumes: {{ session.indexedVolumes|raw }},
             totalEntries: {{ session.totalEntries }},
             processedEntries: {{ session.processedEntries }},
-            queueId: {{ session.queueId ?? 0 }},
-            isCli: {{ session.isCli + 0 }},
             actionRequired: {{ session.actionRequired + 0 }},
             skippedEntries: [],
             missingEntries: [],

@@ -109,7 +109,6 @@ class Install extends Migration
             'totalEntries' => $this->integer(),
             'processedEntries' => $this->integer()->notNull()->defaultValue(0),
             'cacheRemoteImages' => $this->boolean(),
-            'queueId' => $this->integer(),
             'isCli' => $this->boolean()->defaultValue(false),
             'actionRequired' => $this->boolean()->defaultValue(false),
             'dateCreated' => $this->dateTime()->notNull(),

@@ -17,9 +17,7 @@ interface ProgressBarInterface {
 enum SessionStatus {
     ACTIONREQUIRED,
     ACTIVE,
-    QUEUE,
     WAITING,
-    CLI
 }
 
 enum IndexingActions {
@@ -52,8 +50,6 @@ type AssetIndexingSessionModel = {
     readonly processedEntries: number,
     readonly dateCreated: string,
     readonly dateUpdated: string,
-    readonly queueId?: number,
-    readonly isCli: boolean,
     readonly actionRequired: boolean,
     readonly skippedEntries: string[],
     readonly missingEntries: StringHash,
@@ -110,8 +106,6 @@ class AssetIndexer {
 
             if (!reviewSessionId
                 && this._currentIndexingSession == null
-                && session.getSessionStatus() !== SessionStatus.QUEUE
-                && session.getSessionStatus() !== SessionStatus.CLI
                 && session.getSessionStatus() !== SessionStatus.ACTIONREQUIRED) {
 
                 this._currentIndexingSession = session.getSessionId();
@@ -460,10 +454,7 @@ class AssetIndexer {
     private _updateCurrentIndexingSession(): void
     {
         for (const session of Object.values(this.indexingSessions)) {
-            if (session.getSessionStatus() !== SessionStatus.QUEUE
-                && session.getSessionStatus() !== SessionStatus.CLI
-                && session.getSessionStatus() !== SessionStatus.ACTIONREQUIRED) {
-
+            if (session.getSessionStatus() !== SessionStatus.ACTIONREQUIRED) {
                 this._currentIndexingSession = session.getSessionId();
                 return;
             }
@@ -509,14 +500,6 @@ class AssetIndexingSession {
      * Get the session status.
      */
     public getSessionStatus(): SessionStatus {
-        if (this.indexingSessionData.isCli) {
-            return SessionStatus.CLI;
-        }
-
-        if (this.indexingSessionData.queueId) {
-            return SessionStatus.QUEUE;
-        }
-
         if (this.indexingSessionData.actionRequired) {
             return SessionStatus.ACTIONREQUIRED;
         }
@@ -560,10 +543,6 @@ class AssetIndexingSession {
      * @private
      */
     public getActionButtons(): JQuery {
-        if (this.getSessionStatus() === SessionStatus.QUEUE || this.getSessionStatus() === SessionStatus.CLI) {
-            return $();
-        }
-
         const $buttons = $('<div class="buttons"></div>');
 
         if (this.getSessionStatus() == SessionStatus.ACTIONREQUIRED) {
@@ -619,12 +598,6 @@ class AssetIndexingSession {
                 break;
             case SessionStatus.WAITING:
                 return Craft.t('app', 'Waiting');
-                break;
-            case SessionStatus.QUEUE:
-                return Craft.t('app', 'Running in background');
-                break;
-            case SessionStatus.CLI:
-                return Craft.t('app', 'Running via CLI');
                 break;
         }
     }

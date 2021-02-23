@@ -3,9 +3,7 @@ var SessionStatus;
 (function (SessionStatus) {
     SessionStatus[SessionStatus["ACTIONREQUIRED"] = 0] = "ACTIONREQUIRED";
     SessionStatus[SessionStatus["ACTIVE"] = 1] = "ACTIVE";
-    SessionStatus[SessionStatus["QUEUE"] = 2] = "QUEUE";
-    SessionStatus[SessionStatus["WAITING"] = 3] = "WAITING";
-    SessionStatus[SessionStatus["CLI"] = 4] = "CLI";
+    SessionStatus[SessionStatus["WAITING"] = 2] = "WAITING";
 })(SessionStatus || (SessionStatus = {}));
 var IndexingActions;
 (function (IndexingActions) {
@@ -44,8 +42,6 @@ class AssetIndexer {
             }
             if (!reviewSessionId
                 && this._currentIndexingSession == null
-                && session.getSessionStatus() !== SessionStatus.QUEUE
-                && session.getSessionStatus() !== SessionStatus.CLI
                 && session.getSessionStatus() !== SessionStatus.ACTIONREQUIRED) {
                 this._currentIndexingSession = session.getSessionId();
             }
@@ -328,9 +324,7 @@ class AssetIndexer {
     }
     _updateCurrentIndexingSession() {
         for (const session of Object.values(this.indexingSessions)) {
-            if (session.getSessionStatus() !== SessionStatus.QUEUE
-                && session.getSessionStatus() !== SessionStatus.CLI
-                && session.getSessionStatus() !== SessionStatus.ACTIONREQUIRED) {
+            if (session.getSessionStatus() !== SessionStatus.ACTIONREQUIRED) {
                 this._currentIndexingSession = session.getSessionId();
                 return;
             }
@@ -367,12 +361,6 @@ class AssetIndexingSession {
      * Get the session status.
      */
     getSessionStatus() {
-        if (this.indexingSessionData.isCli) {
-            return SessionStatus.CLI;
-        }
-        if (this.indexingSessionData.queueId) {
-            return SessionStatus.QUEUE;
-        }
         if (this.indexingSessionData.actionRequired) {
             return SessionStatus.ACTIONREQUIRED;
         }
@@ -409,9 +397,6 @@ class AssetIndexingSession {
      * @private
      */
     getActionButtons() {
-        if (this.getSessionStatus() === SessionStatus.QUEUE || this.getSessionStatus() === SessionStatus.CLI) {
-            return $();
-        }
         const $buttons = $('<div class="buttons"></div>');
         if (this.getSessionStatus() == SessionStatus.ACTIONREQUIRED) {
             const reviewMessage = Craft.t('app', 'Review');
@@ -459,12 +444,6 @@ class AssetIndexingSession {
                 break;
             case SessionStatus.WAITING:
                 return Craft.t('app', 'Waiting');
-                break;
-            case SessionStatus.QUEUE:
-                return Craft.t('app', 'Running in background');
-                break;
-            case SessionStatus.CLI:
-                return Craft.t('app', 'Running via CLI');
                 break;
         }
     }

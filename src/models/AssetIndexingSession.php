@@ -44,11 +44,6 @@ class AssetIndexingSession extends Model
     public bool $cacheRemoteImages;
 
     /**
-     * @var int|null If set, refers to the queue job id.
-     */
-    public ?int $queueId;
-
-    /**
      * Whether this session runs in CLI.
      *
      * @var bool

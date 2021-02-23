@@ -19,7 +19,6 @@ use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\Json;
-use craft\helpers\StringHelper;
 use craft\models\AssetIndexData;
 use craft\models\AssetIndexingSession;
 use craft\models\VolumeFolder;
@@ -83,8 +82,9 @@ class AssetIndexer extends Component
      */
     public function getExistingIndexingSessions(): array
     {
-        $query = $this->_createAssetIndexingSessionQuery();
-        $rows = $query->all();
+        $rows = $this->_createAssetIndexingSessionQuery()
+            ->where(['isCli' => false])
+            ->all();
 
         $sessions = [];
 
@@ -133,11 +133,10 @@ class AssetIndexer extends Component
      *
      * @param array $volumes
      * @param bool $cacheRemoteImages
-     * @param bool $asQueueJob
      * @return AssetIndexingSession
      * @since 4.0.0
      */
-    public function startIndexingSession(array $volumes, bool $cacheRemoteImages = true, bool $asQueueJob = false): AssetIndexingSession
+    public function startIndexingSession(array $volumes, bool $cacheRemoteImages = true): AssetIndexingSession
     {
         $volumeList = [];
         $volumeService = Craft::$app->getVolumes();
@@ -163,11 +162,6 @@ class AssetIndexer extends Component
 
         $session->totalEntries = $total;
         $this->storeIndexingSession($session);
-
-        if ($asQueueJob) {
-            // Todo kick off a job here
-            // $session->queueId = $queueId;
-        }
 
         return $session;
     }
@@ -212,7 +206,6 @@ class AssetIndexer extends Component
             'processedEntries' => 0,
             'cacheRemoteImages' => $cacheRemoteImages,
             'actionRequired' => false,
-            'queueId' => null,
             'isCli' => $isCli,
             'dateUpdated' => null,
         ]);
@@ -241,7 +234,6 @@ class AssetIndexer extends Component
         $record->processedEntries = $session->processedEntries;
         $record->cacheRemoteImages = $session->cacheRemoteImages;
         $record->actionRequired = $session->actionRequired;
-        $record->queueId = $session->queueId;
         $record->isCli = $session->isCli;
         $record->save();
 
@@ -810,7 +802,6 @@ class AssetIndexer extends Component
                 'totalEntries',
                 'processedEntries',
                 'cacheRemoteImages',
-                'queueId',
                 'isCli',
                 'actionRequired',
                 'dateCreated',

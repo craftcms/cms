@@ -73,13 +73,12 @@ class AssetIndexesController extends Controller
         $request = Craft::$app->getRequest();
         $volumes = (array)$request->getRequiredBodyParam('volumes');
         $cacheRemoteImages = (bool)$request->getBodyParam('cacheImages', false);
-        $asQueueJob = (bool)$request->getBodyParam('useQueue', false);
 
         if (empty($volumes)) {
             return $this->asErrorJson(Craft::t('app', 'No volumes specified'));
         }
 
-        $indexingSession = Craft::$app->getAssetIndexer()->startIndexingSession($volumes, $cacheRemoteImages, $asQueueJob);
+        $indexingSession = Craft::$app->getAssetIndexer()->startIndexingSession($volumes, $cacheRemoteImages);
         $sessionData = $this->prepareSessionData($indexingSession);
 
         return $this->asJson(['session' => $sessionData]);
