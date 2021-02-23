@@ -66,6 +66,7 @@ type ConcurrentTask = {
     sessionId: number,
     action: string,
     params: any,
+    callback?: () => void
 }
 
 /**
@@ -208,12 +209,12 @@ class AssetIndexer {
             this._updateCurrentIndexingSession();
 
             if (session.getSessionStatus() === SessionStatus.ACTIONREQUIRED && !response.skipDialog) {
-                if (!this._prunedSessionIds.includes(this._currentIndexingSession)) {
+                if (!this._prunedSessionIds.includes(this._currentIndexingSession as number)) {
                     this.reviewSession(session);
                 } else {
                     this.runTasks();
                 }
-            } else if (!this._prunedSessionIds.includes(this._currentIndexingSession)) {
+            } else if (!this._prunedSessionIds.includes(this._currentIndexingSession as number)) {
                 this.performIndexingStep();
             } else {
                 this.runTasks();
@@ -231,7 +232,10 @@ class AssetIndexer {
         const task: ConcurrentTask = {
             sessionId: session.getSessionId(),
             action: IndexingActions.OVERVIEW,
-            params: {sessionId: session.getSessionId()}
+            params: {sessionId: session.getSessionId()},
+            callback: () => {
+                this.renderIndexingSessionRow(session);
+            }
         }
 
         this.enqueueTask(task);
@@ -311,14 +315,19 @@ class AssetIndexer {
                 type: 'button',
                 class: 'btn',
                 text: Craft.t('app', 'Keep them'),
-            })
-            .appendTo($buttons);
+            }).on('click', ev => {
+                ev.preventDefault();
+                this.stopIndexingSession(session);
+                modal.settings.onHide = $.noop;
+                modal.hide();
+            }).appendTo($buttons);
 
             $('<button/>', {
                 type: 'submit',
                 class: 'btn submit',
                 text: Craft.t('app', 'Delete them'),
             }).appendTo($buttons);
+
         } else {
             $('<button/>', {
                 type: 'submit',
@@ -355,8 +364,8 @@ class AssetIndexer {
     public startIndexing(params: any, cb: () => void): void
     {
         Craft.postActionRequest(IndexingActions.START, params, (response: CraftResponse, textStatus: string) => {
-            cb();
             this.processResponse(response, textStatus);
+            cb();
         });
     }
 
@@ -447,7 +456,12 @@ class AssetIndexer {
         while (this._tasksWaiting.length + this._priorityTasks.length !== 0 && this._currentConnectionCount < this._maxConcurrentConnections) {
             this._currentConnectionCount++;
             const task = this._priorityTasks.length > 0 ? this._priorityTasks.shift()! : this._tasksWaiting.shift()!;
-            Craft.postActionRequest(task.action, task.params, this.processResponse.bind(this));
+            Craft.postActionRequest(task.action, task.params, (response: CraftResponse, textStatus: string) => {
+                this.processResponse(response, textStatus);
+                if (task.callback) {
+                    task.callback();
+                }
+            });
         }
     }
 

@@ -145,7 +145,10 @@ class AssetIndexer {
         const task = {
             sessionId: session.getSessionId(),
             action: IndexingActions.OVERVIEW,
-            params: { sessionId: session.getSessionId() }
+            params: { sessionId: session.getSessionId() },
+            callback: () => {
+                this.renderIndexingSessionRow(session);
+            }
         };
         this.enqueueTask(task);
     }
@@ -210,8 +213,12 @@ class AssetIndexer {
                 type: 'button',
                 class: 'btn',
                 text: Craft.t('app', 'Keep them'),
-            })
-                .appendTo($buttons);
+            }).on('click', ev => {
+                ev.preventDefault();
+                this.stopIndexingSession(session);
+                modal.settings.onHide = $.noop;
+                modal.hide();
+            }).appendTo($buttons);
             $('<button/>', {
                 type: 'submit',
                 class: 'btn submit',
@@ -245,8 +252,8 @@ class AssetIndexer {
     }
     startIndexing(params, cb) {
         Craft.postActionRequest(IndexingActions.START, params, (response, textStatus) => {
-            cb();
             this.processResponse(response, textStatus);
+            cb();
         });
     }
     performIndexingStep() {
@@ -319,7 +326,12 @@ class AssetIndexer {
         while (this._tasksWaiting.length + this._priorityTasks.length !== 0 && this._currentConnectionCount < this._maxConcurrentConnections) {
             this._currentConnectionCount++;
             const task = this._priorityTasks.length > 0 ? this._priorityTasks.shift() : this._tasksWaiting.shift();
-            Craft.postActionRequest(task.action, task.params, this.processResponse.bind(this));
+            Craft.postActionRequest(task.action, task.params, (response, textStatus) => {
+                this.processResponse(response, textStatus);
+                if (task.callback) {
+                    task.callback();
+                }
+            });
         }
     }
     _updateCurrentIndexingSession() {
