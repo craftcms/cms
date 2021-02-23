@@ -14,8 +14,8 @@
 - Updated Composer to 2.0.10.
 
 ### Removed
-- Removed all draft arguments for assets, categories, global sets, matrix blocks, tags, and user blocks when querying via the GraphQL API.
-- Removed the `status`, `archived` and `trashed` arguments for the global sets when querying via the GraphQL API.
+- Removed all draft arguments for assets, categories, global sets, Matrix blocks, tags, and users when querying via the GraphQL API.
+- Removed the `status`, `archived` and `trashed` arguments for global sets when querying via the GraphQL API.
 - Removed the `status` argument for assets when querying via the GraphQL API.
 
 ### Fixed
